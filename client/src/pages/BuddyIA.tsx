@@ -467,15 +467,42 @@ function MenuResultView({
 }) {
   const [activeDay, setActiveDay] = useState(0);
   const [saved, setSaved] = useState(false);
+  const [savedMenuId, setSavedMenuId] = useState<number | null>(null);
+  const [creatingList, setCreatingList] = useState(false);
+  const utils = trpc.useUtils();
+
+  const generateListMutation = trpc.shoppingLists.generateFromMenu.useMutation({
+    onSuccess: () => {
+      setCreatingList(false);
+      utils.shoppingLists.list.invalidate();
+      toast.success("🛒 Lista de la compra creada y lista para revisar");
+    },
+    onError: () => {
+      setCreatingList(false);
+      toast.error("No se pudo crear la lista. Inténtalo desde Lista de la Compra.");
+    },
+  });
 
   const saveMutation = trpc.buddyIA.saveGeneratedMenu.useMutation({
     onSuccess: (data) => {
       setSaved(true);
+      setSavedMenuId(data.menuId);
       toast.success("¡Menú guardado en tu planificador!");
       onSaved(data.menuId);
     },
     onError: () => toast.error("Error al guardar el menú. Asegúrate de estar conectado."),
   });
+
+  const handleCreateShoppingList = () => {
+    if (!savedMenuId) return;
+    setCreatingList(true);
+    generateListMutation.mutate({
+      menuId: savedMenuId,
+      persons: menu.persons || questionnaireData.persons || 1,
+      supermarket: "general",
+      name: `Lista: ${menu.menuName}`,
+    });
+  };
 
   const handleSave = () => {
     saveMutation.mutate({
@@ -567,17 +594,26 @@ function MenuResultView({
       </div>
 
       {saved && (
-        <div className="p-4 border-t border-border bg-background">
+        <div className="p-4 border-t border-border bg-background space-y-2">
           <div className="flex gap-2">
             <Link href="/menus" className="flex-1">
-              <Button variant="outline" className="w-full text-sm">Ver en planificador</Button>
+              <Button variant="outline" className="w-full text-sm">Ver planificador</Button>
             </Link>
-            <Link href="/shopping-lists" className="flex-1">
-              <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white text-sm">
-                🛒 Lista de la compra
+            <Button
+              onClick={handleCreateShoppingList}
+              disabled={creatingList || generateListMutation.isSuccess}
+              className="flex-1 bg-orange-500 hover:bg-orange-600 text-white text-sm"
+            >
+              {creatingList ? "⏳ Creando..." : generateListMutation.isSuccess ? "✅ Lista creada" : "🛒 Crear lista"}
+            </Button>
+          </div>
+          {generateListMutation.isSuccess && (
+            <Link href="/shopping-lists">
+              <Button variant="outline" className="w-full text-sm border-orange-300 text-orange-600">
+                Ver lista de la compra →
               </Button>
             </Link>
-          </div>
+          )}
         </div>
       )}
     </div>

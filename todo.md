@@ -180,26 +180,26 @@
 - [x] TypeScript: 0 errores
 - [x] Tests: 15/15 pasando
 
-## Sprint Menús Predefinidos + Lista de la Compra Inteligente
-- [ ] Generar 50 menús semanales predefinidos por objetivo (pérdida de peso, ganancia muscular, tonificación, pérdida de grasa, mantenimiento, volumen, definición, salud cardiovascular, antiinflamatorio, vegano)
-- [ ] Insertar 50 menús en BD con recetas asociadas por momento del día
-- [ ] Schema DB: añadir campo `persons` (número de personas) a menus y shoppingLists
-- [ ] Schema DB: añadir campo `supermarket` a shoppingLists
-- [ ] tRPC: endpoint para guardar menú de biblioteca al perfil del usuario
-- [ ] tRPC: endpoint para generar lista de la compra automática desde menú con personas y supermercado
-- [ ] Página Biblioteca de Menús: 50 menús filtrables por objetivo, duración, calorías, con botón Guardar
-- [ ] Lista de la Compra: selector de supermercado y número de personas al generar desde menú
-- [ ] Ajuste automático de cantidades de ingredientes según número de personas
+## Sprint Menús Predefinidos + Lista de la Compra Inteligente (completado)
+- [x] Generar 50 menús semanales predefinidos por objetivo (pérdida de peso, ganancia muscular, tonificación, pérdida de grasa, mantenimiento, volumen, definición, salud cardiovascular, antiinflamatorio, vegano)
+- [x] Insertar 50 menús en BD con recetas asociadas por momento del día
+- [x] Schema DB: añadir campo `persons` (número de personas) a menus y shoppingLists
+- [x] Schema DB: añadir campo `supermarket` a shoppingLists
+- [x] tRPC: endpoint para guardar menú de biblioteca al perfil del usuario
+- [x] tRPC: endpoint para generar lista de la compra automática desde menú con personas y supermercado
+- [x] Página Biblioteca de Menús: 50 menús filtrables por objetivo, duración, calorías, con botón Guardar
+- [x] Lista de la Compra: selector de supermercado y número de personas al generar desde menú
+- [x] Ajuste automático de cantidades de ingredientes según número de personas
 
-## Sprint Imágenes Reales para Recetas
-- [ ] Buscar imágenes reales por nombre de receta (Unsplash API) y actualizar imageUrl en BD para las 427 recetas
-- [ ] Actualizar Lista de la Compra: generador automático desde menú con selector de supermercado y número de personas
-- [ ] Añadir enlace Biblioteca de Menús en sidebar y Dashboard
+## Sprint Imágenes Reales para Recetas (completado)
+- [x] Buscar imágenes reales por nombre de receta (Unsplash API) y actualizar imageUrl en BD para las 427 recetas
+- [x] Actualizar Lista de la Compra: generador automático desde menú con selector de supermercado y número de personas
+- [x] Añadir enlace Biblioteca de Menús en sidebar y Dashboard
 
-## Sprint BuddyIA Cuestionario + Guardar Menú
-- [ ] tRPC router: procedimiento generateMenuWithQuestionnaire (fecha, estilo cocina, personas, comidas/día, objetivo, alergias)
-- [ ] BuddyIA: flujo cuestionario paso a paso antes de generar menú (6 preguntas)
-- [ ] BuddyIA: visualización del menú generado con cards por día y momento del día
-- [ ] BuddyIA: botón "Guardar menú" que lo guarda en el planificador
-- [ ] BuddyIA: botón "Crear lista de la compra" desde el menú generado
-- [ ] Estilos de cocina: batch cooking, tuppers, comida rápida, trabajo, restaurante
+## Sprint BuddyIA Cuestionario + Guardar Menú (completado)
+- [x] tRPC router: procedimiento generateMenuWithQuestionnaire (fecha, estilo cocina, personas, comidas/día, objetivo, alergias)
+- [x] BuddyIA: flujo cuestionario paso a paso antes de generar menú (7 pasos)
+- [x] BuddyIA: visualización del menú generado con cards por día y momento del día
+- [x] BuddyIA: botón "Guardar menú" que lo guarda en el planificador
+- [x] BuddyIA: botón "Crear lista de la compra" desde el menú generado
+- [x] Estilos de cocina: batch cooking, tuppers, comida rápida, trabajo, restaurante, mixto
