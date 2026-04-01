@@ -67,6 +67,8 @@ const SIDEBAR_ITEMS = [
   { key: "meal-log", label: "Diario Nutricional", to: "/meal-log", emoji: "📊" },
   { key: "profile", label: "Mi Perfil", to: "/profile", emoji: "👤" },
   { key: "subscription", label: "Suscripción", to: "/subscription", emoji: "⭐" },
+  { key: "buddy-shop", label: "BuddyShop", to: "/buddy-shop", emoji: "🛒" },
+  { key: "buddy-experts", label: "BuddyExperts", to: "/buddy-experts", emoji: "🧑‍🍳" },
 ];
 
 function matchesPath(location: string, paths: string[]) {

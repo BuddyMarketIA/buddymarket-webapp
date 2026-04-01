@@ -920,6 +920,126 @@ export const appRouter = router({
         };
       }),
   }),
+
+  // Mercadona integration — proxy to tienda.mercadona.es unofficial API
+  mercadona: router({
+    // Get all top-level categories
+    categories: publicProcedure.query(async () => {
+      const res = await fetch(
+        "https://tienda.mercadona.es/api/v1_1/categories/?wh=mad1&lang=es",
+        { headers: { "User-Agent": "Mozilla/5.0 (compatible; BuddyMarket/1.0)" } }
+      );
+      if (!res.ok) throw new Error("Mercadona API error");
+      const data = await res.json() as { results: any[] };
+      return data.results as Array<{
+        id: number;
+        name: string;
+        categories: Array<{ id: number; name: string }>;
+      }>;
+    }),
+
+    // Get products from a subcategory
+    productsByCategory: publicProcedure
+      .input(z.object({ categoryId: z.number() }))
+      .query(async ({ input }) => {
+        const res = await fetch(
+          `https://tienda.mercadona.es/api/v1_1/categories/${input.categoryId}/?wh=mad1&lang=es`,
+          { headers: { "User-Agent": "Mozilla/5.0 (compatible; BuddyMarket/1.0)" } }
+        );
+        if (!res.ok) throw new Error("Mercadona API error");
+        const data = await res.json() as any;
+        // Flatten all products from all subcategories
+        const products: any[] = [];
+        const subcats = data.categories || [];
+        for (const subcat of subcats) {
+          for (const p of subcat.products || []) {
+            products.push({
+              id: p.id,
+              name: p.display_name,
+              brand: p.brand,
+              price: p.price_instructions?.unit_price ?? 0,
+              priceStr: p.price_instructions?.unit_price
+                ? `${p.price_instructions.unit_price}€`
+                : "—",
+              unit: p.price_instructions?.reference_format ?? "",
+              thumbnail: p.photos?.[0]?.thumbnail ?? "",
+              subcategory: subcat.name,
+            });
+          }
+        }
+        return products;
+      }),
+
+    // Get a single product by ID
+    product: publicProcedure
+      .input(z.object({ productId: z.string() }))
+      .query(async ({ input }) => {
+        const res = await fetch(
+          `https://tienda.mercadona.es/api/v1_1/products/${input.productId}/?wh=mad1&lang=es`,
+          { headers: { "User-Agent": "Mozilla/5.0 (compatible; BuddyMarket/1.0)" } }
+        );
+        if (!res.ok) throw new Error("Mercadona API error");
+        return res.json();
+      }),
+
+    // Search products by keyword across all categories (AI-assisted matching)
+    searchProducts: publicProcedure
+      .input(z.object({ query: z.string().min(1) }))
+      .query(async ({ input }) => {
+        // Fetch all categories and search through subcategory names
+        const catRes = await fetch(
+          "https://tienda.mercadona.es/api/v1_1/categories/?wh=mad1&lang=es",
+          { headers: { "User-Agent": "Mozilla/5.0 (compatible; BuddyMarket/1.0)" } }
+        );
+        if (!catRes.ok) throw new Error("Mercadona API error");
+        const catData = await catRes.json() as { results: any[] };
+        const query = input.query.toLowerCase();
+
+        // Find matching subcategories
+        const matchingSubcatIds: number[] = [];
+        for (const cat of catData.results) {
+          for (const sub of cat.categories || []) {
+            if (sub.name.toLowerCase().includes(query) || cat.name.toLowerCase().includes(query)) {
+              matchingSubcatIds.push(sub.id);
+            }
+          }
+        }
+
+        // Fetch products from up to 3 matching subcategories
+        const results: any[] = [];
+        const toFetch = matchingSubcatIds.slice(0, 3);
+        await Promise.all(
+          toFetch.map(async (id) => {
+            const r = await fetch(
+              `https://tienda.mercadona.es/api/v1_1/categories/${id}/?wh=mad1&lang=es`,
+              { headers: { "User-Agent": "Mozilla/5.0 (compatible; BuddyMarket/1.0)" } }
+            );
+            if (!r.ok) return;
+            const d = await r.json() as any;
+            for (const subcat of d.categories || []) {
+              for (const p of subcat.products || []) {
+                const name = (p.display_name || "").toLowerCase();
+                if (name.includes(query) || subcat.name.toLowerCase().includes(query)) {
+                  results.push({
+                    id: p.id,
+                    name: p.display_name,
+                    brand: p.brand,
+                    price: p.price_instructions?.unit_price ?? 0,
+                    priceStr: p.price_instructions?.unit_price
+                      ? `${p.price_instructions.unit_price}€`
+                      : "—",
+                    unit: p.price_instructions?.reference_format ?? "",
+                    thumbnail: p.photos?.[0]?.thumbnail ?? "",
+                    subcategory: subcat.name,
+                  });
+                }
+              }
+            }
+          })
+        );
+        return results.slice(0, 30);
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

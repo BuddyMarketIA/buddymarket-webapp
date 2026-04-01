@@ -17,6 +17,8 @@ import MealLog from "./pages/MealLog";
 import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
 import Subscription from "./pages/Subscription";
+import BuddyExperts from "./pages/BuddyExperts";
+import MercadonaShop from "./pages/MercadonaShop";
 
 // Wraps a page component with AppLayout (for pages that don't include it themselves)
 function WithLayout({ component: Component, ...props }: { component: React.ComponentType<any>; [key: string]: any }) {
@@ -46,6 +48,8 @@ function Router() {
       <Route path="/profile">{() => <WithLayout component={Profile} />}</Route>
       <Route path="/admin">{() => <WithLayout component={Admin} />}</Route>
       <Route path="/subscription">{() => <WithLayout component={Subscription} />}</Route>
+      <Route path="/buddy-experts">{() => <WithLayout component={BuddyExperts} />}</Route>
+      <Route path="/buddy-shop">{() => <WithLayout component={MercadonaShop} />}</Route>
       {/* Fallback */}
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

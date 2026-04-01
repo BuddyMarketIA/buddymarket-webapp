@@ -1,7 +1,7 @@
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Link } from "wouter";
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
 
 const QUICK_ACCESS = [
@@ -31,11 +31,28 @@ function getDay() {
   return new Date().toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "short" });
 }
 
+const RECIPE_OF_DAY = [
+  { name: "Ensalada mediterránea", kcal: 320, time: "15 min", img: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&q=80", tag: "Ligero" },
+  { name: "Pollo al horno con verduras", kcal: 480, time: "40 min", img: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=600&q=80", tag: "Proteínas" },
+  { name: "Pasta con pesto y tomates", kcal: 540, time: "20 min", img: "https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=600&q=80", tag: "Energético" },
+  { name: "Salmón con quinoa", kcal: 420, time: "25 min", img: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=600&q=80", tag: "Omega-3" },
+  { name: "Bowl de açaí con frutas", kcal: 290, time: "10 min", img: "https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?w=600&q=80", tag: "Antioxidante" },
+];
+
 export default function Dashboard() {
   const { user } = useAuth();
   const [today] = useState(() => new Date().toISOString().split("T")[0]);
   const [goalCalories, setGoalCalories] = useState(2000);
   const [showGoalEdit, setShowGoalEdit] = useState(false);
+  const [recipeIdx, setRecipeIdx] = useState(0);
+
+  // Auto-rotate recipe carousel every 3 seconds
+  useEffect(() => {
+    const timer = setInterval(() => {
+      setRecipeIdx((prev) => (prev + 1) % RECIPE_OF_DAY.length);
+    }, 3000);
+    return () => clearInterval(timer);
+  }, []);
 
   const dailySummary = trpc.mealLogs.dailySummary.useQuery({ date: today });
   const inventoryList = trpc.inventory.list.useQuery();
@@ -228,6 +245,78 @@ export default function Dashboard() {
           </div>
         )}
       </div>
+
+      {/* Recipe of the Day Carousel */}
+      <div style={{ marginBottom: "20px" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+          <h2 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.02em" }}>Receta del día</h2>
+          <Link href="/recipes"><span style={{ fontSize: "13px", fontWeight: 600, color: "#F97316" }}>Ver más →</span></Link>
+        </div>
+        <div style={{ position: "relative", borderRadius: "22px", overflow: "hidden", height: "180px", boxShadow: "0 8px 24px rgba(0,0,0,0.15)" }}>
+          {RECIPE_OF_DAY.map((recipe, idx) => (
+            <div
+              key={idx}
+              style={{
+                position: "absolute", inset: 0,
+                background: `linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.75) 100%), url(${recipe.img}) center/cover`,
+                opacity: idx === recipeIdx ? 1 : 0,
+                transition: "opacity 0.7s ease",
+                display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "16px",
+              }}
+            >
+              <span style={{ display: "inline-block", background: "#F97316", color: "white", fontSize: "10px", fontWeight: 800, borderRadius: "8px", padding: "3px 8px", marginBottom: "6px", width: "fit-content" }}>{recipe.tag}</span>
+              <p style={{ margin: 0, fontSize: "18px", fontWeight: 900, color: "white", letterSpacing: "-0.02em", textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>{recipe.name}</p>
+              <div style={{ display: "flex", gap: "12px", marginTop: "4px" }}>
+                <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>🔥 {recipe.kcal} kcal</span>
+                <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>⏱ {recipe.time}</span>
+              </div>
+            </div>
+          ))}
+          {/* Dots indicator */}
+          <div style={{ position: "absolute", bottom: "12px", right: "12px", display: "flex", gap: "5px" }}>
+            {RECIPE_OF_DAY.map((_, idx) => (
+              <button
+                key={idx}
+                onClick={() => setRecipeIdx(idx)}
+                style={{ width: idx === recipeIdx ? "18px" : "6px", height: "6px", borderRadius: "3px", background: idx === recipeIdx ? "white" : "rgba(255,255,255,0.5)", border: "none", padding: 0, cursor: "pointer", transition: "all 0.3s" }}
+              />
+            ))}
+          </div>
+        </div>
+      </div>
+
+      {/* BuddyShop Card */}
+      <Link href="/buddy-shop">
+        <div style={{ background: "linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)", borderRadius: "22px", padding: "18px 20px", marginBottom: "14px", display: "flex", alignItems: "center", gap: "16px", boxShadow: "0 8px 24px rgba(0,0,0,0.20)", cursor: "pointer", position: "relative", overflow: "hidden" }}>
+          <div style={{ position: "absolute", top: "-15px", right: "-15px", width: "80px", height: "80px", borderRadius: "50%", background: "rgba(249,115,22,0.15)" }} />
+          <div style={{ width: "48px", height: "48px", borderRadius: "16px", background: "rgba(249,115,22,0.20)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", flexShrink: 0 }}>🛒</div>
+          <div style={{ flex: 1, position: "relative" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "2px" }}>
+              <p style={{ margin: 0, fontSize: "16px", fontWeight: 900, color: "white" }}>BuddyShop</p>
+              <span style={{ background: "#F97316", color: "white", fontSize: "9px", fontWeight: 800, borderRadius: "6px", padding: "2px 6px" }}>NUEVO</span>
+            </div>
+            <p style={{ margin: 0, fontSize: "12px", color: "rgba(255,255,255,0.6)" }}>Productos reales de Mercadona con precios</p>
+          </div>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 18l6-6-6-6"/>
+          </svg>
+        </div>
+      </Link>
+
+      {/* Pro/Pro Max Upgrade Card */}
+      <Link href="/subscription">
+        <div style={{ background: "linear-gradient(135deg, #F97316 0%, #FB923C 50%, #FDBA74 100%)", borderRadius: "22px", padding: "18px 20px", marginBottom: "20px", display: "flex", alignItems: "center", gap: "16px", boxShadow: "0 8px 24px rgba(249,115,22,0.35)", cursor: "pointer", position: "relative", overflow: "hidden" }}>
+          <div style={{ position: "absolute", top: "-20px", right: "-20px", width: "100px", height: "100px", borderRadius: "50%", background: "rgba(255,255,255,0.12)" }} />
+          <div style={{ width: "48px", height: "48px", borderRadius: "16px", background: "rgba(255,255,255,0.25)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", flexShrink: 0 }}>👑</div>
+          <div style={{ flex: 1, position: "relative" }}>
+            <p style={{ margin: "0 0 2px", fontSize: "16px", fontWeight: 900, color: "white" }}>Hazte Pro o Pro Max</p>
+            <p style={{ margin: 0, fontSize: "12px", color: "rgba(255,255,255,0.85)" }}>IA ilimitada · BuddyScan · Expertos</p>
+          </div>
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M9 18l6-6-6-6"/>
+          </svg>
+        </div>
+      </Link>
 
       {/* Add Meal CTA */}
       <Link href="/meal-log">
