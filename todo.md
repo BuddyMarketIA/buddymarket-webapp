@@ -134,12 +134,12 @@
 - [x] Dashboard: card de upgrade a Pro/Pro Max con CTA a /subscription
 
 ## BuddyShop Multi-Supermercado
-- [ ] Rediseñar BuddyShop como hub de supermercados (Mercadona, Carrefour, Lidl, Alcampo, Dia, El Corte Inglés)
-- [ ] Guardar supermercado preferido del usuario en la base de datos (campo preferredSupermarket en users)
-- [ ] Página BuddyShop: selector visual de supermercado con logo y descripción
-- [ ] Página Mercadona: productos reales con API (renombrar MercadonaShop → MercadonaStore)
-- [ ] Páginas stub para Carrefour, Lidl, Alcampo, Dia, El Corte Inglés (próximamente)
-- [ ] Dashboard card BuddyShop muestra el supermercado preferido del usuario
+- [x] Rediseñar BuddyShop como hub de supermercados (Mercadona, Carrefour, Lidl, Alcampo, Dia, El Corte Inglés)
+- [x] Guardar supermercado preferido del usuario en la base de datos (campo preferredSupermarket en users)
+- [x] Página BuddyShop: selector visual de supermercado con logo y descripción
+- [x] Página Mercadona: productos reales con API (renombrar MercadonaShop → MercadonaStore)
+- [x] Páginas stub para Carrefour, Lidl, Alcampo, Dia, El Corte Inglés (próximamente)
+- [x] Dashboard card BuddyShop muestra el supermercado preferido del usuario
 
 ## BuddyShop como enlace externo (buddyshop.app)
 - [x] Dashboard card BuddyShop → enlace externo a buddyshop.app (abre en nueva pestaña)
@@ -147,3 +147,8 @@
 - [x] Página intermedia /buddy-shop con descripción del marketplace y botón CTA a buddyshop.app
 - [x] Renombrar MercadonaShop → SupermercadoShop con selector multi-supermercado
 - [x] Añadir SupermercadoShop al sidebar como "Compra en Supermercados"
+
+## Rediseño accesos rápidos Dashboard (Sprint 4)
+- [x] Buscar y subir imágenes premium para cada acceso rápido (recetas, menús, inventario, supermercados, BuddyScan, diario)
+- [x] Rediseñar accesos rápidos con imágenes de fondo, glassmorphism y layout asimétrico tipo bento grid
+- [x] Añadir micro-animaciones en hover/tap en los accesos rápidos

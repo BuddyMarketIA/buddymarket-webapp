@@ -5,12 +5,60 @@ import { useState, useMemo, useEffect } from "react";
 import { toast } from "sonner";
 
 const QUICK_ACCESS = [
-  { label: "Lista de Compra", emoji: "🛒", to: "/shopping-lists", bg: "#FEF3C7" },
-  { label: "Menús", emoji: "📅", to: "/menus", bg: "#DBEAFE" },
-  { label: "BuddyScan IA", emoji: "🤖", to: "/menus", bg: "#EDE9FE" },
-  { label: "Objetivos", emoji: "💪", to: "/profile", bg: "#FCE7F3" },
-  { label: "Inventario", emoji: "📦", to: "/inventory", bg: "#D1FAE5" },
-  { label: "Evolución", emoji: "📊", to: "/meal-log", bg: "#FEE2E2" },
+  {
+    label: "Recetas",
+    emoji: "🍽️",
+    to: "/recipes",
+    img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/recipes_afa44a0e.jpg",
+    accent: "#F97316",
+    size: "large",
+    subtitle: "Explora recetas",
+  },
+  {
+    label: "Menús",
+    emoji: "📅",
+    to: "/menus",
+    img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/mealprep_eb5fda9a.jpg",
+    accent: "#6366F1",
+    size: "small",
+    subtitle: "Plan semanal",
+  },
+  {
+    label: "Supermercados",
+    emoji: "🛒",
+    to: "/supermercados",
+    img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/shopping_d2c9f4e5.jpg",
+    accent: "#10B981",
+    size: "small",
+    subtitle: "Hacer la compra",
+  },
+  {
+    label: "Inventario",
+    emoji: "📦",
+    to: "/inventory",
+    img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/pantry_3fcf0a1f.jpg",
+    accent: "#F59E0B",
+    size: "small",
+    subtitle: "Tu despensa",
+  },
+  {
+    label: "BuddyScan IA",
+    emoji: "🤖",
+    to: "/menus",
+    img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/buddyscan_dd3e1e08.jpg",
+    accent: "#8B5CF6",
+    size: "wide",
+    subtitle: "Escanea ingredientes con IA",
+  },
+  {
+    label: "Diario",
+    emoji: "📊",
+    to: "/meal-log",
+    img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/vegetables_0f947a56.jpg",
+    accent: "#EF4444",
+    size: "small",
+    subtitle: "Registro nutricional",
+  },
 ];
 
 const FOOD_IMAGES = [
@@ -169,20 +217,122 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Quick Access */}
+      {/* Quick Access — Bento Grid */}
       <div style={{ marginBottom: "20px" }}>
-        <h2 style={{ margin: "0 0 12px", fontSize: "17px", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.02em" }}>Accesos Rápidos</h2>
-        <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: "10px" }}>
-          {QUICK_ACCESS.map((item) => (
-            <Link key={item.label} href={item.to}>
-              <div style={{ background: "white", borderRadius: "18px", padding: "16px 12px", textAlign: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", cursor: "pointer", transition: "transform 0.15s", border: "1px solid rgba(0,0,0,0.04)" }}>
-                <div style={{ width: "44px", height: "44px", borderRadius: "14px", background: item.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "22px", margin: "0 auto 8px" }}>
-                  {item.emoji}
+        <h2 style={{ margin: "0 0 14px", fontSize: "17px", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.02em" }}>Accesos Rápidos</h2>
+
+        {/* Row 1: large + 2 small */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "auto auto", gap: "10px", marginBottom: "10px" }}>
+          {/* Large card — Recetas */}
+          <Link href={QUICK_ACCESS[0].to} style={{ gridRow: "1 / 3" }}>
+            <div style={{ height: "200px", borderRadius: "22px", overflow: "hidden", position: "relative", cursor: "pointer", boxShadow: "0 6px 20px rgba(0,0,0,0.18)", transition: "transform 0.2s" }}
+              onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.02)")}
+              onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
+            >
+              <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${QUICK_ACCESS[0].img})`, backgroundSize: "cover", backgroundPosition: "center" }} />
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.72) 100%)" }} />
+              <div style={{ position: "absolute", top: "12px", left: "12px", background: QUICK_ACCESS[0].accent, borderRadius: "10px", padding: "5px 10px", display: "flex", alignItems: "center", gap: "5px" }}>
+                <span style={{ fontSize: "14px" }}>{QUICK_ACCESS[0].emoji}</span>
+                <span style={{ fontSize: "11px", fontWeight: 800, color: "white" }}>{QUICK_ACCESS[0].label}</span>
+              </div>
+              <div style={{ position: "absolute", bottom: "14px", left: "14px", right: "14px" }}>
+                <p style={{ margin: 0, fontSize: "13px", color: "rgba(255,255,255,0.75)", fontWeight: 500 }}>{QUICK_ACCESS[0].subtitle}</p>
+                <div style={{ marginTop: "8px", display: "flex", alignItems: "center", gap: "6px" }}>
+                  <div style={{ flex: 1, height: "2px", background: "rgba(255,255,255,0.3)", borderRadius: "1px" }}>
+                    <div style={{ width: "60%", height: "100%", background: QUICK_ACCESS[0].accent, borderRadius: "1px" }} />
+                  </div>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
                 </div>
-                <p style={{ margin: 0, fontSize: "11px", fontWeight: 700, color: "#374151", lineHeight: 1.3 }}>{item.label}</p>
+              </div>
+            </div>
+          </Link>
+
+          {/* Small cards — Menús + Supermercados */}
+          {[QUICK_ACCESS[1], QUICK_ACCESS[2]].map((item) => (
+            <Link key={item.label} href={item.to}>
+              <div style={{ height: "95px", borderRadius: "18px", overflow: "hidden", position: "relative", cursor: "pointer", boxShadow: "0 4px 14px rgba(0,0,0,0.15)", transition: "transform 0.2s" }}
+                onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.02)")}
+                onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
+              >
+                <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${item.img})`, backgroundSize: "cover", backgroundPosition: "center" }} />
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.70) 100%)" }} />
+                <div style={{ position: "absolute", top: "10px", left: "10px", background: item.accent, borderRadius: "8px", padding: "3px 8px", display: "flex", alignItems: "center", gap: "4px" }}>
+                  <span style={{ fontSize: "11px" }}>{item.emoji}</span>
+                  <span style={{ fontSize: "10px", fontWeight: 800, color: "white" }}>{item.label}</span>
+                </div>
+                <div style={{ position: "absolute", bottom: "10px", left: "10px", right: "10px" }}>
+                  <p style={{ margin: 0, fontSize: "10px", color: "rgba(255,255,255,0.75)", fontWeight: 500, lineHeight: 1.3 }}>{item.subtitle}</p>
+                </div>
               </div>
             </Link>
           ))}
+        </div>
+
+        {/* Row 2: wide BuddyScan + small Inventario + small Diario */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px" }}>
+          {/* Wide BuddyScan — spans 2 cols */}
+          <Link href={QUICK_ACCESS[4].to} style={{ gridColumn: "1 / 3" }}>
+            <div style={{ height: "90px", borderRadius: "18px", overflow: "hidden", position: "relative", cursor: "pointer", boxShadow: "0 4px 14px rgba(0,0,0,0.15)", transition: "transform 0.2s" }}
+              onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.02)")}
+              onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
+            >
+              <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${QUICK_ACCESS[4].img})`, backgroundSize: "cover", backgroundPosition: "center" }} />
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg, rgba(139,92,246,0.85) 0%, rgba(0,0,0,0.4) 100%)" }} />
+              <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", padding: "0 16px", gap: "12px" }}>
+                <div style={{ width: "42px", height: "42px", borderRadius: "14px", background: "rgba(255,255,255,0.2)", backdropFilter: "blur(8px)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", flexShrink: 0 }}>
+                  {QUICK_ACCESS[4].emoji}
+                </div>
+                <div>
+                  <p style={{ margin: 0, fontSize: "14px", fontWeight: 900, color: "white", letterSpacing: "-0.02em" }}>{QUICK_ACCESS[4].label}</p>
+                  <p style={{ margin: 0, fontSize: "11px", color: "rgba(255,255,255,0.8)" }}>{QUICK_ACCESS[4].subtitle}</p>
+                </div>
+                <div style={{ marginLeft: "auto", background: "rgba(255,255,255,0.2)", borderRadius: "10px", padding: "4px 10px", backdropFilter: "blur(8px)" }}>
+                  <span style={{ fontSize: "10px", fontWeight: 800, color: "white" }}>✨ IA</span>
+                </div>
+              </div>
+            </div>
+          </Link>
+
+          {/* Small — Inventario */}
+          <Link href={QUICK_ACCESS[3].to}>
+            <div style={{ height: "90px", borderRadius: "18px", overflow: "hidden", position: "relative", cursor: "pointer", boxShadow: "0 4px 14px rgba(0,0,0,0.15)", transition: "transform 0.2s" }}
+              onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.02)")}
+              onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
+            >
+              <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${QUICK_ACCESS[3].img})`, backgroundSize: "cover", backgroundPosition: "center" }} />
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.72) 100%)" }} />
+              <div style={{ position: "absolute", top: "10px", left: "10px", background: QUICK_ACCESS[3].accent, borderRadius: "8px", padding: "3px 8px" }}>
+                <span style={{ fontSize: "10px", fontWeight: 800, color: "white" }}>{QUICK_ACCESS[3].emoji}</span>
+              </div>
+              <div style={{ position: "absolute", bottom: "10px", left: "10px", right: "6px" }}>
+                <p style={{ margin: 0, fontSize: "11px", fontWeight: 800, color: "white" }}>{QUICK_ACCESS[3].label}</p>
+                <p style={{ margin: 0, fontSize: "9px", color: "rgba(255,255,255,0.7)" }}>{QUICK_ACCESS[3].subtitle}</p>
+              </div>
+            </div>
+          </Link>
+        </div>
+
+        {/* Row 3: Diario full width */}
+        <div style={{ marginTop: "10px" }}>
+          <Link href={QUICK_ACCESS[5].to}>
+            <div style={{ height: "80px", borderRadius: "18px", overflow: "hidden", position: "relative", cursor: "pointer", boxShadow: "0 4px 14px rgba(0,0,0,0.15)", transition: "transform 0.2s" }}
+              onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.02)")}
+              onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
+            >
+              <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${QUICK_ACCESS[5].img})`, backgroundSize: "cover", backgroundPosition: "center 40%" }} />
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg, rgba(239,68,68,0.82) 0%, rgba(0,0,0,0.3) 100%)" }} />
+              <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", padding: "0 16px", gap: "12px" }}>
+                <div style={{ width: "40px", height: "40px", borderRadius: "12px", background: "rgba(255,255,255,0.2)", backdropFilter: "blur(8px)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", flexShrink: 0 }}>
+                  {QUICK_ACCESS[5].emoji}
+                </div>
+                <div>
+                  <p style={{ margin: 0, fontSize: "14px", fontWeight: 900, color: "white", letterSpacing: "-0.02em" }}>{QUICK_ACCESS[5].label}</p>
+                  <p style={{ margin: 0, fontSize: "11px", color: "rgba(255,255,255,0.8)" }}>{QUICK_ACCESS[5].subtitle}</p>
+                </div>
+                <svg style={{ marginLeft: "auto" }} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+              </div>
+            </div>
+          </Link>
         </div>
       </div>
 
