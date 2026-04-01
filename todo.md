@@ -127,8 +127,23 @@
 - [x] Tests: 15/15 pasando
 
 ## Sprint 3: BuddyExperts + Dashboard mejoras
-- [ ] Página BuddyExperts: listado de expertos con perfil, especialidad y botón de contacto
-- [ ] Ruta /buddy-experts en App.tsx y enlace en sidebar
-- [ ] Dashboard: carrusel de receta del día con auto-rotación cada 3 segundos
-- [ ] Dashboard: card BuddyShop (acceso a planes Pro/Pro Max)
-- [ ] Dashboard: card de upgrade a Pro/Pro Max con CTA a /subscription
+- [x] Página BuddyExperts: listado de expertos con perfil, especialidad y botón de contacto
+- [x] Ruta /buddy-experts en App.tsx y enlace en sidebar
+- [x] Dashboard: carrusel de receta del día con auto-rotación cada 3 segundos
+- [x] Dashboard: card BuddyShop (acceso a planes Pro/Pro Max)
+- [x] Dashboard: card de upgrade a Pro/Pro Max con CTA a /subscription
+
+## BuddyShop Multi-Supermercado
+- [ ] Rediseñar BuddyShop como hub de supermercados (Mercadona, Carrefour, Lidl, Alcampo, Dia, El Corte Inglés)
+- [ ] Guardar supermercado preferido del usuario en la base de datos (campo preferredSupermarket en users)
+- [ ] Página BuddyShop: selector visual de supermercado con logo y descripción
+- [ ] Página Mercadona: productos reales con API (renombrar MercadonaShop → MercadonaStore)
+- [ ] Páginas stub para Carrefour, Lidl, Alcampo, Dia, El Corte Inglés (próximamente)
+- [ ] Dashboard card BuddyShop muestra el supermercado preferido del usuario
+
+## BuddyShop como enlace externo (buddyshop.app)
+- [x] Dashboard card BuddyShop → enlace externo a buddyshop.app (abre en nueva pestaña)
+- [x] Sidebar BuddyShop → enlace externo a buddyshop.app
+- [x] Página intermedia /buddy-shop con descripción del marketplace y botón CTA a buddyshop.app
+- [x] Renombrar MercadonaShop → SupermercadoShop con selector multi-supermercado
+- [x] Añadir SupermercadoShop al sidebar como "Compra en Supermercados"
