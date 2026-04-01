@@ -238,35 +238,24 @@ export default function Dashboard() {
         </div>
       </Link>
 
-      {/* 3 Quick Access Cards: Lista compra, Menús BuddyExperts, BuddyIA */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px", marginBottom: "20px" }}>
-        <Link href="/shopping">
-          <div style={{ background: "white", borderRadius: "18px", padding: "16px 10px", textAlign: "center", boxShadow: "0 2px 10px rgba(0,0,0,0.07)", cursor: "pointer", transition: "transform 0.2s" }}
-            onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.04)"; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
-          >
-            <div style={{ fontSize: "28px", marginBottom: "6px" }}>🛒</div>
-            <p style={{ margin: 0, fontSize: "11px", fontWeight: 800, color: "#1a1a1a", lineHeight: 1.3 }}>Lista de la compra</p>
-          </div>
-        </Link>
-        <Link href="/buddy-experts">
-          <div style={{ background: "white", borderRadius: "18px", padding: "16px 10px", textAlign: "center", boxShadow: "0 2px 10px rgba(0,0,0,0.07)", cursor: "pointer", transition: "transform 0.2s" }}
-            onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.04)"; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
-          >
-            <div style={{ fontSize: "28px", marginBottom: "6px" }}>📅</div>
-            <p style={{ margin: 0, fontSize: "11px", fontWeight: 800, color: "#1a1a1a", lineHeight: 1.3 }}>Menús BuddyExperts</p>
-          </div>
-        </Link>
-        <Link href="/buddy-ia">
-          <div style={{ background: "white", borderRadius: "18px", padding: "16px 10px", textAlign: "center", boxShadow: "0 2px 10px rgba(0,0,0,0.07)", cursor: "pointer", transition: "transform 0.2s" }}
-            onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.04)"; }}
-            onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
-          >
-            <div style={{ fontSize: "28px", marginBottom: "6px" }}>🤖</div>
-            <p style={{ margin: 0, fontSize: "11px", fontWeight: 800, color: "#1a1a1a", lineHeight: 1.3 }}>Buddy IA</p>
-          </div>
-        </Link>
+      {/* 4 Quick Access Cards: Lista compra, Menús BuddyExperts, BuddyIA, Biblioteca Menús */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "20px" }}>
+        {[
+          { href: "/shopping-lists", emoji: "🛒", label: "Lista de la compra", bg: "white", color: "#1a1a1a", shadow: "0 2px 10px rgba(0,0,0,0.07)", border: "none" },
+          { href: "/buddy-experts", emoji: "🧑‍🍳", label: "Menús BuddyExperts", bg: "white", color: "#1a1a1a", shadow: "0 2px 10px rgba(0,0,0,0.07)", border: "none" },
+          { href: "/buddy-ia", emoji: "🤖", label: "Buddy IA", bg: "white", color: "#1a1a1a", shadow: "0 2px 10px rgba(0,0,0,0.07)", border: "none" },
+          { href: "/menu-library", emoji: "📚", label: "Biblioteca Menús", bg: "linear-gradient(135deg, #FFF7ED, #FFEDD5)", color: "#F97316", shadow: "0 2px 10px rgba(249,115,22,0.12)", border: "1px solid rgba(249,115,22,0.15)" },
+        ].map((item) => (
+          <Link key={item.href} href={item.href}>
+            <div style={{ background: item.bg, borderRadius: "18px", padding: "16px 10px", textAlign: "center", boxShadow: item.shadow, cursor: "pointer", transition: "transform 0.2s", border: item.border }}
+              onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.04)"; }}
+              onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
+            >
+              <div style={{ fontSize: "28px", marginBottom: "6px" }}>{item.emoji}</div>
+              <p style={{ margin: 0, fontSize: "11px", fontWeight: 800, color: item.color, lineHeight: 1.3 }}>{item.label}</p>
+            </div>
+          </Link>
+        ))}
       </div>
 
       {/* Quick Access — Bento Grid */}

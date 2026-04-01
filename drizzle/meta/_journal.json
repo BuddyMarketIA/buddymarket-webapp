@@ -36,6 +36,20 @@
       "when": 1775074825596,
       "tag": "0004_silent_umar",
       "breakpoints": true
+    },
+    {
+      "idx": 5,
+      "version": "5",
+      "when": 1775084657553,
+      "tag": "0005_shiny_valkyrie",
+      "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "5",
+      "when": 1775085401840,
+      "tag": "0006_little_raza",
+      "breakpoints": true
     }
   ]
 }

@@ -310,6 +310,9 @@ export const recipes = mysqlTable("recipes", {
   fiberPerServing: float("fiberPerServing"),
   // BuddyMaker link
   buddyMakerId: int("buddyMakerId"),
+  // Structured data (JSON)
+  ingredientsJson: text("ingredientsJson"), // JSON: [{name, amount, unit, category}]
+  instructionsJson: text("instructionsJson"), // JSON: [{step, text}]
   // Seed data flag
   isSeeded: boolean("isSeeded").default(false),
   deletedAt: timestamp("deletedAt"),
@@ -398,6 +401,11 @@ export const menuOrganizers = mysqlTable("menu_organizers", {
   type: mysqlEnum("type", ["weekly", "monthly", "custom"]).default("weekly"),
   isPublic: boolean("isPublic").default(false),
   objective: text("objective"),
+  goal: mysqlEnum("goal", ["perdida_peso", "ganancia_muscular", "tonificacion", "perdida_grasa", "mantenimiento", "bienestar", "vegano"]),
+  dailyCalories: int("dailyCalories"),
+  persons: int("persons").default(1),
+  difficulty: mysqlEnum("difficulty", ["facil", "medio", "dificil"]).default("facil"),
+  isSeeded: boolean("isSeeded").default(false),
   dailyMealsCount: int("dailyMealsCount").default(3),
   generatedByAI: boolean("generatedByAI").default(false),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
@@ -444,6 +452,8 @@ export const shoppingLists = mysqlTable("shopping_lists", {
   userId: int("userId").notNull(),
   name: varchar("name", { length: 256 }).notNull(),
   menuOrganizerId: int("menuOrganizerId"),
+  supermarket: mysqlEnum("supermarket", ["general", "mercadona", "lidl", "carrefour", "alcampo", "dia", "el_corte_ingles"]).default("general"),
+  persons: int("persons").default(1),
   generatedByAI: boolean("generatedByAI").default(false),
   completed: boolean("completed").default(false),
   createdAt: timestamp("createdAt").defaultNow().notNull(),

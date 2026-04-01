@@ -72,6 +72,7 @@ const SIDEBAR_ITEMS = [
   { key: "buddy-experts", label: "BuddyExperts", to: "/buddy-experts", emoji: "🧑‍🍳" },
   { key: "buddy-makers", label: "BuddyMakers", to: "/buddy-makers", emoji: "👨‍🍳" },
   { key: "buddy-ia", label: "BuddyIA", to: "/buddy-ia", emoji: "🤖" },
+  { key: "menu-library", label: "Biblioteca de Menús", to: "/menu-library", emoji: "📚" },
 ];
 
 function matchesPath(location: string, paths: string[]) {

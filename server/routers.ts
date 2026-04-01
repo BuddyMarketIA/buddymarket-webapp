@@ -609,6 +609,41 @@ export const appRouter = router({
         if (!content) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Error generando menú con IA" });
         return JSON.parse(content);
       }),
+    // ── Library: predefined seeded menus ─────────────────────────────────────────
+    library: publicProcedure
+      .input(
+        z.object({
+          goal: z.enum(["perdida_peso", "ganancia_muscular", "tonificacion", "perdida_grasa", "mantenimiento", "bienestar", "vegano"]).optional(),
+          difficulty: z.enum(["facil", "medio", "dificil"]).optional(),
+          limit: z.number().optional().default(50),
+        })
+      )
+      .query(async ({ input }) => {
+        const allMenus = await db.getSeededMenus();
+        let filtered = allMenus;
+        if (input.goal) filtered = filtered.filter((m: any) => m.goal === input.goal);
+        if (input.difficulty) filtered = filtered.filter((m: any) => m.difficulty === input.difficulty);
+        return filtered.slice(0, input.limit ?? 50);
+      }),
+    libraryDetail: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        const menu = await db.getSeededMenuDetail(input.id);
+        if (!menu) throw new TRPCError({ code: "NOT_FOUND" });
+        return menu;
+      }),
+    saveFromLibrary: protectedProcedure
+      .input(
+        z.object({
+          menuId: z.number(),
+          persons: z.number().min(1).max(20).default(1),
+          startDate: z.string().optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const result = await db.copyMenuForUser(input.menuId, ctx.user.id, input.persons, input.startDate);
+        return result;
+      }),
   }),
 
   // ---------------------------------------------------------------------------
@@ -675,10 +710,23 @@ export const appRouter = router({
     removeItem: protectedProcedure
       .input(z.object({ id: z.number() }))
       .mutation(({ input }) => db.deleteShoppingListItem(input.id)),
+    // ── Generate shopping list from a menu ──────────────────────────────────
+    generateFromMenu: protectedProcedure
+      .input(
+        z.object({
+          menuId: z.number(),
+          persons: z.number().min(1).max(20).default(1),
+          supermarket: z.enum(["general", "mercadona", "lidl", "carrefour", "alcampo", "dia", "el_corte_ingles"]).default("general"),
+          name: z.string().optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const result = await db.generateShoppingListFromMenu(ctx.user.id, input.menuId, input.persons, input.supermarket, input.name);
+        return result;
+      }),
   }),
-
   // ---------------------------------------------------------------------------
-  // INVENTORY
+  // INVENTORYY
   // ---------------------------------------------------------------------------
   inventory: router({
     list: protectedProcedure.query(({ ctx }) => db.getInventoryItems(ctx.user.id)),

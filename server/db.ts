@@ -1065,3 +1065,274 @@ export async function getAllMenus(limit = 100) {
   if (!db) return [];
   return db.select().from(menuOrganizers).limit(limit);
 }
+
+// =============================================================================
+// MENU LIBRARY (predefined seeded menus)
+// =============================================================================
+
+export async function getSeededMenus() {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select({
+      id: menuOrganizers.id,
+      name: menuOrganizers.name,
+      objective: menuOrganizers.objective,
+      goal: menuOrganizers.goal,
+      dailyCalories: menuOrganizers.dailyCalories,
+      difficulty: menuOrganizers.difficulty,
+      dailyMealsCount: menuOrganizers.dailyMealsCount,
+      persons: menuOrganizers.persons,
+    })
+    .from(menuOrganizers)
+    .where(eq(menuOrganizers.isSeeded, true))
+    .limit(100);
+}
+
+export async function getSeededMenuDetail(menuId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const [menu] = await db
+    .select()
+    .from(menuOrganizers)
+    .where(and(eq(menuOrganizers.id, menuId), eq(menuOrganizers.isSeeded, true)))
+    .limit(1);
+  if (!menu) return null;
+
+  // Get day parts
+  const dayPartsData = await db
+    .select()
+    .from(menuOrganizerDayParts)
+    .where(eq(menuOrganizerDayParts.menuOrganizerId, menuId));
+
+  // Get recipes for each day part
+  const dayPartsWithRecipes = await Promise.all(
+    dayPartsData.map(async (dp) => {
+      const recipesData = await db
+        .select({
+          id: recipes.id,
+          name: recipes.name,
+          imageUrl: recipes.imageUrl,
+          caloriesPerServing: recipes.caloriesPerServing,
+          preparationTime: recipes.preparationTime,
+          mealTime: recipes.mealTime,
+          ingredientsJson: recipes.ingredientsJson,
+        })
+        .from(menuOrganizerDayPartRecipes)
+        .innerJoin(recipes, eq(menuOrganizerDayPartRecipes.recipeId, recipes.id))
+        .where(eq(menuOrganizerDayPartRecipes.menuOrganizerDayPartId, dp.id));
+      return { ...dp, recipes: recipesData };
+    })
+  );
+
+  return { ...menu, dayParts: dayPartsWithRecipes };
+}
+
+export async function copyMenuForUser(
+  sourceMenuId: number,
+  userId: number,
+  persons: number,
+  startDateStr?: string
+) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+
+  const [sourceMenu] = await db
+    .select()
+    .from(menuOrganizers)
+    .where(eq(menuOrganizers.id, sourceMenuId))
+    .limit(1);
+  if (!sourceMenu) throw new Error("Menu not found");
+
+  const startDate = startDateStr ? new Date(startDateStr) : new Date();
+  const endDate = new Date(startDate);
+  endDate.setDate(endDate.getDate() + 6);
+
+  const newMenuInsert: InsertMenuOrganizer = {
+    userId,
+    name: sourceMenu.name,
+    objective: sourceMenu.objective ?? undefined,
+    goal: sourceMenu.goal ?? undefined,
+    dailyCalories: sourceMenu.dailyCalories ?? undefined,
+    difficulty: sourceMenu.difficulty ?? undefined,
+    persons,
+    isSeeded: false,
+    isPublic: false,
+    type: "weekly",
+    dailyMealsCount: sourceMenu.dailyMealsCount ?? 5,
+    startDate: startDate,
+    endDate: endDate,
+  };
+  const [newMenuResult] = await db.insert(menuOrganizers).values(newMenuInsert);
+  const newMenuId = (newMenuResult as any).insertId as number;
+
+  // Copy day parts and their recipes
+  const sourceDayParts = await db
+    .select()
+    .from(menuOrganizerDayParts)
+    .where(eq(menuOrganizerDayParts.menuOrganizerId, sourceMenuId));
+
+  for (const dp of sourceDayParts) {
+    const [newDpResult] = await db.insert(menuOrganizerDayParts).values({
+      menuOrganizerId: newMenuId,
+      dayPartId: dp.dayPartId,
+      date: dp.date ?? undefined,
+      dayNumber: dp.dayNumber ?? undefined,
+      mealNumber: dp.mealNumber ?? undefined,
+      name: dp.name ?? undefined,
+      completed: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+    const newDpId = (newDpResult as any).insertId as number;
+
+    const sourceRecipes = await db
+      .select()
+      .from(menuOrganizerDayPartRecipes)
+      .where(eq(menuOrganizerDayPartRecipes.menuOrganizerDayPartId, dp.id));
+
+    for (const r of sourceRecipes) {
+      await db.insert(menuOrganizerDayPartRecipes).values({
+        menuOrganizerDayPartId: newDpId,
+        recipeId: r.recipeId,
+        servings: r.servings ?? 1,
+        createdAt: new Date(),
+      }).onDuplicateKeyUpdate({ set: { servings: r.servings ?? 1 } });
+    }
+  }
+
+  return { success: true, menuId: newMenuId };
+}
+
+// =============================================================================
+// SHOPPING LIST FROM MENU
+// =============================================================================
+
+export async function generateShoppingListFromMenu(
+  userId: number,
+  menuId: number,
+  persons: number,
+  supermarket: string,
+  listName?: string
+) {
+  const db = await getDb();
+  if (!db) throw new Error("DB not available");
+
+  // Get all recipes in the menu
+  const menuData = await db
+    .select()
+    .from(menuOrganizers)
+    .where(eq(menuOrganizers.id, menuId))
+    .limit(1);
+  if (!menuData.length) throw new Error("Menu not found");
+
+  const menu = menuData[0];
+
+  // Get all day parts
+  const dayPartsData = await db
+    .select()
+    .from(menuOrganizerDayParts)
+    .where(eq(menuOrganizerDayParts.menuOrganizerId, menuId));
+
+  // Collect all recipe IDs
+  const allRecipeIds: number[] = [];
+  for (const dp of dayPartsData) {
+    const dpRecipes = await db
+      .select({ recipeId: menuOrganizerDayPartRecipes.recipeId, servings: menuOrganizerDayPartRecipes.servings })
+      .from(menuOrganizerDayPartRecipes)
+      .where(eq(menuOrganizerDayPartRecipes.menuOrganizerDayPartId, dp.id));
+    allRecipeIds.push(...dpRecipes.map((r) => r.recipeId));
+  }
+
+  // Get ingredients from all recipes (stored as JSON in recipes.ingredientsJson)
+  const recipeData = await db
+    .select({ id: recipes.id, name: recipes.name, ingredientsJson: recipes.ingredientsJson })
+    .from(recipes)
+    .where(inArray(recipes.id, allRecipeIds.length > 0 ? allRecipeIds : [-1]));
+
+  // Aggregate ingredients across all recipes
+  const ingredientMap = new Map<string, { name: string; amount: number; unit: string; category: string }>();
+
+  for (const recipe of recipeData) {
+    let ingredientsList: Array<{ name: string; amount?: any; unit?: string; category?: string }> = [];
+    try {
+      if (typeof recipe.ingredientsJson === "string") {
+        ingredientsList = JSON.parse(recipe.ingredientsJson);
+      } else if (Array.isArray(recipe.ingredientsJson)) {
+        ingredientsList = recipe.ingredientsJson as any;
+      }
+    } catch {
+      continue;
+    }
+
+    for (const ing of ingredientsList) {
+      if (!ing.name) continue;
+      const key = ing.name.toLowerCase().trim();
+      const existing = ingredientMap.get(key);
+      // Robustly parse amount: handle strings like "1 cucharadita", numbers, or missing values
+      let rawAmount = ing.amount;
+      let parsedAmount: number;
+      if (typeof rawAmount === "number" && !isNaN(rawAmount) && rawAmount > 0) {
+        parsedAmount = rawAmount;
+      } else if (typeof rawAmount === "string") {
+        // Extract the first number from strings like "1 cucharadita", "2-3", "1/2"
+        const match = rawAmount.match(/([\d]+\.?[\d]*)/);
+        parsedAmount = match ? parseFloat(match[1]) : 1;
+        if (isNaN(parsedAmount) || parsedAmount <= 0) parsedAmount = 1;
+      } else {
+        parsedAmount = 1;
+      }
+      const scaledAmount = parsedAmount * persons;
+      if (existing) {
+        existing.amount += scaledAmount;
+      } else {
+        ingredientMap.set(key, {
+          name: ing.name,
+          amount: scaledAmount,
+          unit: ing.unit || "unidad",
+          category: ing.category || "Otros",
+        });
+      }
+    }
+  }
+
+  // Create the shopping list
+  const supermarketLabel = {
+    general: "General",
+    mercadona: "Mercadona",
+    lidl: "Lidl",
+    carrefour: "Carrefour",
+    alcampo: "Alcampo",
+    dia: "Día",
+    el_corte_ingles: "El Corte Inglés",
+  }[supermarket] || "General";
+
+  const name = listName || `Lista de la compra - ${menu.name} (${supermarketLabel}, ${persons} ${persons === 1 ? "persona" : "personas"})`;
+
+  const [newListResult] = await db.insert(shoppingLists).values({
+    userId,
+    name,
+    menuOrganizerId: menuId,
+    supermarket: supermarket as any,
+    persons,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  });
+  const newListId = (newListResult as any).insertId as number;
+
+  // Insert items
+  const items = Array.from(ingredientMap.values());
+  for (const item of items) {
+    await db.insert(shoppingListItems).values({
+      shoppingListId: newListId,
+      customName: `${item.name} (${Math.round(item.amount * 10) / 10} ${item.unit})`,
+      amount: Math.round(item.amount * 10) / 10,
+      category: item.category,
+      checked: false,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+  }
+
+  return { success: true, shoppingListId: newListId, itemCount: items.length, name };
+}
