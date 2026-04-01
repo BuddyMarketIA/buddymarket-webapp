@@ -185,11 +185,59 @@ describe("auth", () => {
 
 // ─── Recipes ─────────────────────────────────────────────────────────────────
 describe("recipes", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
   it("list returns an array", async () => {
     const { ctx } = createAuthContext();
     const caller = appRouter.createCaller(ctx);
     const result = await caller.recipes.list({});
     expect(Array.isArray(result)).toBe(true);
+  });
+
+  it("list passes mealTime filter to db.getRecipes", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    const dbMock = await import("./db");
+    (dbMock.getRecipes as ReturnType<typeof vi.fn>).mockResolvedValueOnce([]);
+    await caller.recipes.list({ mealTime: "desayuno" });
+    expect(dbMock.getRecipes).toHaveBeenCalledWith(
+      expect.objectContaining({ mealTime: "desayuno" })
+    );
+  });
+
+  it("list passes excludeUserAllergens and currentUserId to db.getRecipes", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    const dbMock = await import("./db");
+    (dbMock.getRecipes as ReturnType<typeof vi.fn>).mockResolvedValueOnce([]);
+    await caller.recipes.list({ excludeUserAllergens: true });
+    expect(dbMock.getRecipes).toHaveBeenCalledWith(
+      expect.objectContaining({ excludeUserAllergens: true, currentUserId: 1 })
+    );
+  });
+
+  it("list passes buddyMakerId filter to db.getRecipes", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    const dbMock = await import("./db");
+    (dbMock.getRecipes as ReturnType<typeof vi.fn>).mockResolvedValueOnce([]);
+    await caller.recipes.list({ buddyMakerId: 42 });
+    expect(dbMock.getRecipes).toHaveBeenCalledWith(
+      expect.objectContaining({ buddyMakerId: 42 })
+    );
+  });
+
+  it("list passes isSeeded filter to db.getRecipes", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    const dbMock = await import("./db");
+    (dbMock.getRecipes as ReturnType<typeof vi.fn>).mockResolvedValueOnce([]);
+    await caller.recipes.list({ isSeeded: true });
+    expect(dbMock.getRecipes).toHaveBeenCalledWith(
+      expect.objectContaining({ isSeeded: true })
+    );
   });
 
   it("getById throws NOT_FOUND for non-existent recipe", async () => {

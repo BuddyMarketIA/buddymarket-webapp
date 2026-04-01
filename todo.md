@@ -167,3 +167,15 @@
 - [x] App.tsx: rutas /buddy-makers y /buddy-ia
 - [x] TypeScript: 0 errores
 - [x] Tests: 15/15 pasando
+
+## Sprint Recetas 500 + BuddyMakers + Dashboard Mockup (completado)
+- [x] Generar 427 recetas con momento del día, alergias, ingredientes+cantidades, instrucciones, valores nutricionales
+- [x] Insertar 427 recetas en la base de datos via script seed_recipes.mjs
+- [x] Schema DB: añadir mealTime, allergens, tags, fiber, buddyMakerId, isSeeded a tabla recipes
+- [x] tRPC: filtrar recetas por momento del día (desayuno, media mañana, comida, merienda, cena)
+- [x] tRPC: filtrar recetas por alergias del usuario
+- [x] tRPC: listar recetas de BuddyMakers con enlace al creador
+- [x] Rediseñar página Recetas: tabs (Para ti, Rápidas, Fitness, Vegetarianas, Top semana), cards con foto+tiempo+kcal, sección BuddyMakers
+- [x] Dashboard rediseño mockup: banner menú semanal naranja, 3 accesos rápidos (Lista compra, Menús BuddyExperts, BuddyIA)
+- [x] TypeScript: 0 errores
+- [x] Tests: 15/15 pasando

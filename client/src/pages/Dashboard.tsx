@@ -217,6 +217,58 @@ export default function Dashboard() {
         </div>
       )}
 
+      {/* Weekly Menu Banner (mockup style) */}
+      <Link href="/menus">
+        <div style={{ background: "linear-gradient(135deg, #F97316 0%, #EA580C 100%)", borderRadius: "22px", padding: "18px 20px", marginBottom: "16px", display: "flex", alignItems: "center", gap: "16px", boxShadow: "0 8px 24px rgba(249,115,22,0.35)", cursor: "pointer", position: "relative", overflow: "hidden" }}>
+          <div style={{ position: "absolute", top: "-10px", right: "-10px", width: "120px", height: "120px", borderRadius: "50%", background: "rgba(255,255,255,0.08)" }} />
+          <div style={{ flex: 1, position: "relative" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+              <span style={{ fontSize: "20px" }}>🍽️</span>
+              <p style={{ margin: 0, fontSize: "17px", fontWeight: 900, color: "white", letterSpacing: "-0.02em" }}>Menú semanal personalizado</p>
+            </div>
+            <p style={{ margin: "0 0 10px", fontSize: "12px", color: "rgba(255,255,255,0.85)" }}>Basado en tus objetivos</p>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(255,255,255,0.2)", borderRadius: "12px", padding: "6px 14px", backdropFilter: "blur(4px)" }}>
+              <span style={{ fontSize: "12px", fontWeight: 700, color: "white" }}>Ver menú</span>
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+            </div>
+          </div>
+          <div style={{ width: "80px", height: "80px", borderRadius: "16px", overflow: "hidden", flexShrink: 0 }}>
+            <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200&q=80" alt="Menú semanal" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          </div>
+        </div>
+      </Link>
+
+      {/* 3 Quick Access Cards: Lista compra, Menús BuddyExperts, BuddyIA */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px", marginBottom: "20px" }}>
+        <Link href="/shopping">
+          <div style={{ background: "white", borderRadius: "18px", padding: "16px 10px", textAlign: "center", boxShadow: "0 2px 10px rgba(0,0,0,0.07)", cursor: "pointer", transition: "transform 0.2s" }}
+            onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.04)"; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
+          >
+            <div style={{ fontSize: "28px", marginBottom: "6px" }}>🛒</div>
+            <p style={{ margin: 0, fontSize: "11px", fontWeight: 800, color: "#1a1a1a", lineHeight: 1.3 }}>Lista de la compra</p>
+          </div>
+        </Link>
+        <Link href="/buddy-experts">
+          <div style={{ background: "white", borderRadius: "18px", padding: "16px 10px", textAlign: "center", boxShadow: "0 2px 10px rgba(0,0,0,0.07)", cursor: "pointer", transition: "transform 0.2s" }}
+            onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.04)"; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
+          >
+            <div style={{ fontSize: "28px", marginBottom: "6px" }}>📅</div>
+            <p style={{ margin: 0, fontSize: "11px", fontWeight: 800, color: "#1a1a1a", lineHeight: 1.3 }}>Menús BuddyExperts</p>
+          </div>
+        </Link>
+        <Link href="/buddy-ia">
+          <div style={{ background: "white", borderRadius: "18px", padding: "16px 10px", textAlign: "center", boxShadow: "0 2px 10px rgba(0,0,0,0.07)", cursor: "pointer", transition: "transform 0.2s" }}
+            onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.04)"; }}
+            onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
+          >
+            <div style={{ fontSize: "28px", marginBottom: "6px" }}>🤖</div>
+            <p style={{ margin: 0, fontSize: "11px", fontWeight: 800, color: "#1a1a1a", lineHeight: 1.3 }}>Buddy IA</p>
+          </div>
+        </Link>
+      </div>
+
       {/* Quick Access — Bento Grid */}
       <div style={{ marginBottom: "20px" }}>
         <h2 style={{ margin: "0 0 14px", fontSize: "17px", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.02em" }}>Accesos Rápidos</h2>

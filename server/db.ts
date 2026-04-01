@@ -2,6 +2,7 @@ import { and, desc, eq, gte, ilike, inArray, like, lte, or, sql } from "drizzle-
 import { drizzle } from "drizzle-orm/mysql2";
 import {
   allergies,
+  buddyMakers,
   dayParts,
   dietRestrictions,
   foodCategories,
@@ -336,6 +337,12 @@ export async function getRecipes(params: {
   difficulty?: string;
   maxTime?: number;
   isPublic?: boolean;
+  mealTime?: string;
+  tag?: string;
+  buddyMakerId?: number;
+  isSeeded?: boolean;
+  excludeUserAllergens?: boolean;
+  currentUserId?: number;
   limit?: number;
   offset?: number;
 }) {
@@ -351,14 +358,46 @@ export async function getRecipes(params: {
   if (params.maxTime) {
     conditions.push(lte(sql`(${recipes.preparationTime} + ${recipes.cookTime})`, params.maxTime));
   }
+  if (params.mealTime && params.mealTime !== 'cualquiera') {
+    conditions.push(eq(recipes.mealTime, params.mealTime as any));
+  }
+  if (params.buddyMakerId) conditions.push(eq(recipes.buddyMakerId, params.buddyMakerId));
+  if (params.isSeeded !== undefined) conditions.push(eq(recipes.isSeeded, params.isSeeded));
+  if (params.tag) conditions.push(like(recipes.tags, `%${params.tag}%`));
 
-  return db
+  // Get user's allergies to filter out recipes with matching allergens
+  let userAllergenNames: string[] = [];
+  if (params.excludeUserAllergens && params.currentUserId) {
+    const userAllergyRows = await db
+      .select({ allergyName: allergies.nameEs })
+      .from(userAllergies)
+      .innerJoin(allergies, eq(userAllergies.allergyId, allergies.id))
+      .where(eq(userAllergies.userId, params.currentUserId));
+    userAllergenNames = userAllergyRows.map(r => (r.allergyName || '').toLowerCase());
+  }
+
+  const fetchLimit = userAllergenNames.length > 0 ? limit * 3 : limit;
+  const rows = await db
     .select()
     .from(recipes)
     .where(and(...conditions))
-    .limit(limit)
+    .limit(fetchLimit)
     .offset(offset)
     .orderBy(desc(recipes.createdAt));
+
+  if (userAllergenNames.length > 0) {
+    const filtered = rows.filter(r => {
+      try {
+        const recipeAllergens: string[] = JSON.parse(r.allergens || '[]');
+        return !recipeAllergens.some(a => userAllergenNames.includes(a.toLowerCase()));
+      } catch {
+        return true;
+      }
+    });
+    return filtered.slice(0, limit);
+  }
+
+  return rows;
 }
 
 export async function getRecipeById(id: number) {

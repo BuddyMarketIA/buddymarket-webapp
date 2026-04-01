@@ -294,16 +294,31 @@ export const recipes = mysqlTable("recipes", {
   difficulty: mysqlEnum("difficulty", ["easy", "medium", "hard"]).default("medium"),
   isPublic: boolean("isPublic").default(true),
   active: boolean("active").default(true),
+  // Meal time classification
+  mealTime: mysqlEnum("mealTime", ["desayuno", "media_manana", "comida", "merienda", "cena", "cualquiera"]).default("cualquiera"),
+  // Category
+  category: varchar("category", { length: 64 }),
+  // Allergens (JSON array of strings)
+  allergens: text("allergens"), // JSON: ["gluten", "lacteos", ...]
+  // Tags (JSON array of strings)
+  tags: text("tags"), // JSON: ["rapida", "fitness", ...]
   // Calculated nutritional info per serving
   caloriesPerServing: int("caloriesPerServing"),
   proteinsPerServing: float("proteinsPerServing"),
   carbsPerServing: float("carbsPerServing"),
   fatsPerServing: float("fatsPerServing"),
+  fiberPerServing: float("fiberPerServing"),
+  // BuddyMaker link
+  buddyMakerId: int("buddyMakerId"),
+  // Seed data flag
+  isSeeded: boolean("isSeeded").default(false),
   deletedAt: timestamp("deletedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 }, (t) => ({
   userIdx: index("recipe_user_idx").on(t.userId),
+  mealTimeIdx: index("recipe_meal_time_idx").on(t.mealTime),
+  buddyMakerIdx: index("recipe_buddy_maker_idx").on(t.buddyMakerId),
 }));
 
 export type Recipe = typeof recipes.$inferSelect;

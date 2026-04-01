@@ -267,11 +267,16 @@ export const appRouter = router({
           difficulty: z.string().optional(),
           maxTime: z.number().optional(),
           isPublic: z.boolean().optional(),
+          mealTime: z.string().optional(),
+          tag: z.string().optional(),
+          buddyMakerId: z.number().optional(),
+          isSeeded: z.boolean().optional(),
+          excludeUserAllergens: z.boolean().optional(),
           limit: z.number().optional(),
           offset: z.number().optional(),
         })
       )
-      .query(({ input }) => db.getRecipes(input)),
+      .query(({ input, ctx }) => db.getRecipes({ ...input, currentUserId: ctx.user?.id })),
 
     getById: publicProcedure
       .input(z.object({ id: z.number() }))
