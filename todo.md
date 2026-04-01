@@ -195,3 +195,11 @@
 - [ ] Buscar imágenes reales por nombre de receta (Unsplash API) y actualizar imageUrl en BD para las 427 recetas
 - [ ] Actualizar Lista de la Compra: generador automático desde menú con selector de supermercado y número de personas
 - [ ] Añadir enlace Biblioteca de Menús en sidebar y Dashboard
+
+## Sprint BuddyIA Cuestionario + Guardar Menú
+- [ ] tRPC router: procedimiento generateMenuWithQuestionnaire (fecha, estilo cocina, personas, comidas/día, objetivo, alergias)
+- [ ] BuddyIA: flujo cuestionario paso a paso antes de generar menú (6 preguntas)
+- [ ] BuddyIA: visualización del menú generado con cards por día y momento del día
+- [ ] BuddyIA: botón "Guardar menú" que lo guarda en el planificador
+- [ ] BuddyIA: botón "Crear lista de la compra" desde el menú generado
+- [ ] Estilos de cocina: batch cooking, tuppers, comida rápida, trabajo, restaurante

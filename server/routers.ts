@@ -1439,6 +1439,180 @@ Formato JSON estricto:
           return { menu: null, error: "Error al generar el menú" };
         }
       }),
+
+    // New: generate menu from full questionnaire answers
+    generateMenuWithQuestionnaire: protectedProcedure
+      .input(
+        z.object({
+          startDate: z.string(), // ISO date string YYYY-MM-DD
+          cookingStyle: z.enum(["batch_cooking", "tuppers", "rapido", "trabajo", "restaurante", "mixto"]),
+          persons: z.number().min(1).max(20),
+          mealsPerDay: z.number().min(2).max(6),
+          goal: z.enum(["perdida_peso", "ganancia_muscular", "tonificacion", "perdida_grasa", "mantenimiento", "definicion", "salud"]),
+          calories: z.number().min(1000).max(5000).optional(),
+          restrictions: z.array(z.string()).optional(),
+          preferences: z.string().optional(),
+          daysCount: z.number().min(1).max(7).default(7),
+        })
+      )
+      .mutation(async ({ input, ctx }) => {
+        const goalLabels: Record<string, string> = {
+          perdida_peso: "pérdida de peso",
+          ganancia_muscular: "ganancia muscular",
+          tonificacion: "tonificación",
+          perdida_grasa: "pérdida de grasa",
+          mantenimiento: "mantenimiento",
+          definicion: "definición corporal",
+          salud: "salud y bienestar",
+        };
+        const cookingStyleLabels: Record<string, string> = {
+          batch_cooking: "batch cooking (cocinar todo el domingo para la semana)",
+          tuppers: "preparar tuppers para llevar al trabajo",
+          rapido: "recetas rápidas de menos de 20 minutos",
+          trabajo: "comidas para llevar al trabajo",
+          restaurante: "comidas en restaurante o fuera de casa",
+          mixto: "combinación de cocina en casa y fuera",
+        };
+
+        const mealNames = [
+          "Desayuno",
+          input.mealsPerDay >= 3 ? "Media mañana" : null,
+          "Comida",
+          input.mealsPerDay >= 4 ? "Merienda" : null,
+          "Cena",
+          input.mealsPerDay >= 6 ? "Recena" : null,
+        ].filter(Boolean) as string[];
+
+        const targetCalories = input.calories || (input.goal === "perdida_peso" || input.goal === "perdida_grasa" ? 1600 : input.goal === "ganancia_muscular" ? 2800 : 2000);
+
+        const prompt = `Eres un nutricionista experto. Crea un menú semanal personalizado de ${input.daysCount} días.
+
+Perfil del usuario:
+- Objetivo: ${goalLabels[input.goal]}
+- Estilo de cocina: ${cookingStyleLabels[input.cookingStyle]}
+- Número de personas: ${input.persons}
+- Comidas al día: ${input.mealsPerDay} (${mealNames.join(", ")})
+- Calorías objetivo: ${targetCalories} kcal/día por persona
+${input.restrictions?.length ? `- Restricciones/alergias: ${input.restrictions.join(", ")}` : ""}
+${input.preferences ? `- Preferencias adicionales: ${input.preferences}` : ""}
+
+IMPORTANTE para el estilo "${cookingStyleLabels[input.cookingStyle]}":
+${input.cookingStyle === "batch_cooking" ? "- Agrupa ingredientes para cocinar en grandes cantidades el domingo\n- Reutiliza preparaciones base durante la semana (arroz, legumbres, proteínas)" : ""}
+${input.cookingStyle === "tuppers" ? "- Todas las comidas deben ser aptas para tupper y microondas\n- Evita ensaladas que se pongan malas, prioriza guisos y platos calientes" : ""}
+${input.cookingStyle === "rapido" ? "- Tiempo máximo de preparación: 20 minutos\n- Usa ingredientes fáciles de encontrar y preparar" : ""}
+
+Devuelve SOLO JSON válido con esta estructura exacta:
+{
+  "menuName": "nombre descriptivo del menú",
+  "targetCalories": ${targetCalories},
+  "persons": ${input.persons},
+  "cookingTips": "consejo rápido sobre este estilo de cocina",
+  "shoppingListSummary": "resumen de los ingredientes principales a comprar",
+  "days": [
+    {
+      "day": "Lunes",
+      "date": "${input.startDate}",
+      "totalCalories": ${targetCalories},
+      "meals": [
+        ${mealNames.map(m => `{ "name": "${m}", "food": "descripción detallada del plato", "calories": 400, "protein": 20, "carbs": 50, "fat": 10, "prepTime": "15 min", "ingredients": ["ingrediente 1 - cantidad", "ingrediente 2 - cantidad"] }`).join(",\n        ")}
+      ]
+    }
+  ]
+}`;
+
+        const response = await invokeLLM({
+          messages: [{ role: "user", content: prompt }],
+          response_format: { type: "json_object" },
+        });
+        const rawContent = response.choices?.[0]?.message?.content ?? "{}";
+        const content = typeof rawContent === "string" ? rawContent : "{}";
+        try {
+          const menu = JSON.parse(content);
+          return { menu, userId: ctx.user.id };
+        } catch {
+          return { menu: null, error: "Error al generar el menú. Inténtalo de nuevo." };
+        }
+      }),
+
+    // Save a generated menu to the planner
+    saveGeneratedMenu: protectedProcedure
+      .input(
+        z.object({
+          menuName: z.string(),
+          startDate: z.string(),
+          goal: z.string(),
+          persons: z.number().min(1).max(20),
+          targetCalories: z.number(),
+          days: z.array(
+            z.object({
+              day: z.string(),
+              date: z.string().optional(),
+              totalCalories: z.number().optional(),
+              meals: z.array(
+                z.object({
+                  name: z.string(),
+                  food: z.string(),
+                  calories: z.number().optional(),
+                  protein: z.number().optional(),
+                  carbs: z.number().optional(),
+                  fat: z.number().optional(),
+                  prepTime: z.string().optional(),
+                  ingredients: z.array(z.string()).optional(),
+                })
+              ),
+            })
+          ),
+        })
+      )
+      .mutation(async ({ input, ctx }) => {
+        const drizzleDb = await db.getDb();
+        const { menuOrganizers, menuOrganizerDayParts, dayParts } = await import("../drizzle/schema.js");
+
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB not available" });
+
+        // Get day parts
+        const allDayParts = await drizzleDb.select().from(dayParts);
+        const dayPartMap: Record<string, number> = {};
+        for (const dp of allDayParts) {
+          dayPartMap[dp.nameEs.toLowerCase()] = dp.id;
+          dayPartMap[dp.apiParam.toLowerCase()] = dp.id;
+        }
+
+        const startDateObj = new Date(input.startDate);
+        const endDateObj = new Date(startDateObj);
+        endDateObj.setDate(endDateObj.getDate() + input.days.length - 1);
+
+        // Create menu organizer
+        const [menu] = await drizzleDb.insert(menuOrganizers).values({
+          userId: ctx.user.id,
+          name: input.menuName,
+          startDate: startDateObj,
+          endDate: endDateObj,
+          goal: input.goal,
+          dailyCalories: input.targetCalories,
+          persons: input.persons,
+          isSeeded: false,
+        } as any).$returningId();
+
+        const menuId = menu.id;
+
+        // Insert day parts and meals
+        for (const dayData of input.days) {
+          for (const meal of dayData.meals) {
+            const dpId = dayPartMap[meal.name.toLowerCase()] || dayPartMap["comida"] || allDayParts[0]?.id;
+            if (!dpId) continue;
+
+            await drizzleDb.insert(menuOrganizerDayParts).values({
+              menuOrganizerId: menuId,
+              dayPartId: dpId,
+              date: new Date(dayData.date || input.startDate),
+              notes: meal.food,
+            } as any);
+          }
+        }
+
+        return { menuId, success: true };
+      }),
   }),
 });
 export type AppRouter = typeof appRouter;
