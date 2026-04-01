@@ -67,7 +67,7 @@
 - [x] Estados de carga y error en todas las páginas
 - [x] Checkpoint final y entrega
 
-## Mejoras futuras
+## Mejoras futuras (fuera del alcance inicial - v2)
 - [ ] Onboarding guiado para nuevos usuarios
 - [ ] Notificación por email en nuevos registros
 - [ ] Exportación de datos del perfil
@@ -75,3 +75,21 @@
 - [ ] PWA / App móvil
 - [ ] Recetas favoritas
 - [ ] Recomendaciones personalizadas de recetas
+
+## Rebranding VIVELY (nueva fase)
+- [x] Actualizar CSS global: colores VIVELY (#00D27A), fondo blanco/crema, tipografía Bricolage Grotesque
+- [x] Actualizar index.html con fuente Bricolage Grotesque de Google Fonts
+- [x] Actualizar VITE_APP_TITLE a "VIVELY"
+- [x] Reconstruir AppLayout: mobile-first, bottom navigation flotante estilo original, sin sidebar
+- [x] Reconstruir Dashboard con estilo VIVELY (cards blancas, fondo crema, accesos rápidos)
+- [x] Reconstruir página de Recetas con estilo VIVELY
+- [x] Reconstruir RecipeDetail con estilo VIVELY
+- [x] Reconstruir RecipeForm con estilo VIVELY
+- [x] Reconstruir Menús con estilo VIVELY
+- [x] Reconstruir ShoppingLists con estilo VIVELY
+- [x] Reconstruir Inventory con estilo VIVELY
+- [x] Reconstruir MealLog con estilo VIVELY
+- [x] Reconstruir Profile con estilo VIVELY
+- [x] Reconstruir Subscription con estilo VIVELY
+- [x] Reconstruir Admin con estilo VIVELY
+- [x] Reconstruir Home (landing) con estilo VIVELY

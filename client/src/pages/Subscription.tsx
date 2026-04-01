@@ -1,21 +1,19 @@
-import AppLayout from "@/components/AppLayout";
 import { trpc } from "@/lib/trpc";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { CheckCircle2, Crown, Loader2, Sparkles, Star, Zap } from "lucide-react";
 import { toast } from "sonner";
+import { SparklesIcon, BoltIcon, StarIcon } from "@heroicons/react/24/solid";
+import { CheckCircleIcon } from "@heroicons/react/24/outline";
 
-const plans = [
+const PLANS = [
   {
     key: "basic" as const,
     name: "Basic",
     price: "4,99€",
     period: "/mes",
-    icon: Zap,
-    color: "border-blue-200 bg-blue-50/30",
-    iconColor: "text-blue-600 bg-blue-100",
-    badgeColor: "bg-blue-100 text-blue-700",
+    icon: BoltIcon,
+    highlight: false,
+    color: "border-blue-100",
+    iconBg: "bg-blue-50",
+    iconColor: "text-blue-500",
     features: [
       "Recetas ilimitadas",
       "Planificador de menús",
@@ -29,11 +27,11 @@ const plans = [
     name: "Premium",
     price: "9,99€",
     period: "/mes",
-    icon: Star,
-    color: "border-primary bg-primary/5 ring-2 ring-primary/20",
-    iconColor: "text-primary bg-primary/10",
-    badgeColor: "bg-primary text-primary-foreground",
-    popular: true,
+    icon: StarIcon,
+    highlight: true,
+    color: "border-[#00D27A]",
+    iconBg: "bg-[#00D27A]/10",
+    iconColor: "text-[#00D27A]",
     features: [
       "Todo lo del plan Basic",
       "Generación de menús con IA",
@@ -49,144 +47,144 @@ const plans = [
     name: "Pro Max",
     price: "19,99€",
     period: "/mes",
-    icon: Crown,
-    color: "border-amber-200 bg-amber-50/30",
-    iconColor: "text-amber-600 bg-amber-100",
-    badgeColor: "bg-amber-100 text-amber-700",
+    icon: SparklesIcon,
+    highlight: false,
+    color: "border-purple-100",
+    iconBg: "bg-purple-50",
+    iconColor: "text-purple-500",
     features: [
       "Todo lo del plan Premium",
-      "Gestión de múltiples perfiles",
-      "Exportación de datos",
+      "Consultas con nutricionistas",
+      "Análisis avanzado de salud",
+      "Integración con dispositivos",
       "API de integración",
-      "Soporte dedicado 24/7",
-      "Acceso anticipado a nuevas funciones",
-      "Consulta con nutricionista",
+      "Soporte 24/7 dedicado",
     ],
   },
 ];
 
 export default function Subscription() {
-  const { data: subscription } = trpc.subscriptions.getStatus.useQuery();
+  const { data: subscription, isLoading } = trpc.subscriptions.getStatus.useQuery();
+
   const createCheckout = trpc.subscriptions.createCheckout.useMutation({
     onSuccess: (data) => {
       if (data.url) {
-        toast.success("Redirigiendo al pago...");
+        toast.info("Redirigiendo al pago...");
         window.open(data.url, "_blank");
       }
     },
     onError: (err) => toast.error(err.message),
   });
 
-  const currentPlan = subscription?.plan;
-  const isActive = subscription?.status === "active";
+  // cancel not implemented yet - placeholder
+  const cancelSub = { mutate: () => toast.info("Contacta con soporte para cancelar"), isPending: false };
+
+  const currentPlan = (subscription as any)?.plan ?? null;
+  const isActive = (subscription as any)?.status === "active";
 
   return (
-    <AppLayout>
-      <div className="p-6 max-w-5xl mx-auto space-y-8">
-        <div className="text-center">
-          <div className="inline-flex items-center gap-2 bg-primary/10 text-primary px-4 py-1.5 rounded-full text-sm font-medium mb-4">
-            <Sparkles className="w-4 h-4" />
-            Planes de suscripción
-          </div>
-          <h1 className="text-3xl font-bold text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-            Elige tu plan
-          </h1>
-          <p className="text-muted-foreground mt-2 max-w-xl mx-auto">
-            Desbloquea todas las funcionalidades de BuddyMarket con un plan premium.
-            Cancela cuando quieras.
-          </p>
+    <div className="vively-page container">
+      {/* Header */}
+      <div className="mb-6 text-center">
+        <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#00D27A]/10">
+          <SparklesIcon className="h-7 w-7 text-[#00D27A]" />
         </div>
-
-        {isActive && currentPlan && (
-          <div className="p-4 bg-green-50 border border-green-200 rounded-xl flex items-center gap-3">
-            <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" />
-            <div>
-              <p className="text-sm font-medium text-green-800">
-                Plan activo: {plans.find((p) => p.key === currentPlan)?.name || currentPlan}
-              </p>
-              <p className="text-xs text-green-600">Tu suscripción está activa y al día.</p>
-            </div>
-          </div>
-        )}
-
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-          {plans.map((plan) => {
-            const Icon = plan.icon;
-            const isCurrent = isActive && currentPlan === plan.key;
-
-            return (
-              <Card key={plan.key} className={`border-2 relative ${plan.color}`}>
-                {plan.popular && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                    <Badge className="bg-primary text-primary-foreground text-xs px-3 py-1">
-                      Más popular
-                    </Badge>
-                  </div>
-                )}
-                <CardHeader className="pb-4">
-                  <div className="flex items-center justify-between mb-3">
-                    <div className={`w-10 h-10 rounded-xl ${plan.iconColor} flex items-center justify-center`}>
-                      <Icon className="w-5 h-5" />
-                    </div>
-                    {isCurrent && (
-                      <Badge variant="secondary" className="text-xs">
-                        Plan actual
-                      </Badge>
-                    )}
-                  </div>
-                  <CardTitle className="text-xl" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                    {plan.name}
-                  </CardTitle>
-                  <div className="flex items-baseline gap-1 mt-1">
-                    <span className="text-3xl font-bold text-foreground">{plan.price}</span>
-                    <span className="text-muted-foreground text-sm">{plan.period}</span>
-                  </div>
-                </CardHeader>
-                <CardContent className="space-y-4">
-                  <ul className="space-y-2.5">
-                    {plan.features.map((feature) => (
-                      <li key={feature} className="flex items-start gap-2.5">
-                        <CheckCircle2 className="w-4 h-4 text-primary shrink-0 mt-0.5" />
-                        <span className="text-sm text-foreground">{feature}</span>
-                      </li>
-                    ))}
-                  </ul>
-                  <Button
-                    className="w-full"
-                    variant={plan.popular ? "default" : "outline"}
-                    disabled={isCurrent || createCheckout.isPending}
-                    onClick={() => {
-                      if (!isCurrent) {
-                        createCheckout.mutate({
-                          plan: plan.key,
-                          origin: window.location.origin,
-                        });
-                      }
-                    }}
-                  >
-                    {createCheckout.isPending && createCheckout.variables?.plan === plan.key ? (
-                      <Loader2 className="w-4 h-4 mr-2 animate-spin" />
-                    ) : null}
-                    {isCurrent ? "Plan actual" : `Suscribirse al ${plan.name}`}
-                  </Button>
-                </CardContent>
-              </Card>
-            );
-          })}
-        </div>
-
-        <div className="text-center space-y-2">
-          <p className="text-sm text-muted-foreground">
-            Pago seguro con Stripe. Cancela en cualquier momento.
-          </p>
-          <p className="text-xs text-muted-foreground">
-            Para pruebas, usa la tarjeta: <code className="bg-muted px-1.5 py-0.5 rounded text-xs">4242 4242 4242 4242</code>
-          </p>
-          <p className="text-xs text-muted-foreground">
-            La información de suscripción no constituye recomendación médica. Consulta siempre con un profesional de la salud.
-          </p>
-        </div>
+        <h1 className="text-2xl font-extrabold text-gray-900">Planes VIVELY</h1>
+        <p className="mt-1 text-sm text-gray-500">Elige el plan que mejor se adapta a tus necesidades</p>
       </div>
-    </AppLayout>
+
+      {/* Current plan badge */}
+      {isActive && currentPlan && (
+        <div className="mb-5 flex items-center gap-3 rounded-2xl bg-[#00D27A]/10 p-4">
+          <CheckCircleIcon className="h-5 w-5 shrink-0 text-[#00D27A]" />
+          <div className="flex-1">
+            <p className="text-sm font-bold text-gray-900">Plan activo: {currentPlan}</p>
+            <p className="text-xs text-gray-500">Tu suscripción está activa</p>
+          </div>
+          <button
+            onClick={() => {
+              if (confirm("¿Cancelar tu suscripción?")) cancelSub.mutate();
+            }}
+            className="rounded-xl border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-500 hover:bg-red-50"
+          >
+            Cancelar
+          </button>
+        </div>
+      )}
+
+      {/* Plans */}
+      <div className="space-y-4">
+        {PLANS.map((plan) => {
+          const Icon = plan.icon;
+          const isCurrent = currentPlan === plan.key && isActive;
+
+          return (
+            <div
+              key={plan.key}
+              className={`relative rounded-3xl border-2 bg-white p-5 transition-all ${plan.color} ${plan.highlight ? "shadow-lg shadow-[#00D27A]/10" : "shadow-sm"}`}
+            >
+              {plan.highlight && (
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#00D27A] px-4 py-1 text-[11px] font-bold text-white shadow">
+                  MÁS POPULAR
+                </div>
+              )}
+              {isCurrent && (
+                <div className="absolute -top-3 right-4 rounded-full bg-gray-900 px-3 py-1 text-[11px] font-bold text-white">
+                  ACTIVO
+                </div>
+              )}
+
+              <div className="mb-4 flex items-center gap-3">
+                <div className={`flex h-10 w-10 items-center justify-center rounded-2xl ${plan.iconBg}`}>
+                  <Icon className={`h-5 w-5 ${plan.iconColor}`} />
+                </div>
+                <div>
+                  <h2 className="text-base font-extrabold text-gray-900">{plan.name}</h2>
+                  <div className="flex items-baseline gap-0.5">
+                    <span className="text-xl font-extrabold text-gray-900">{plan.price}</span>
+                    <span className="text-xs text-gray-400">{plan.period}</span>
+                  </div>
+                </div>
+              </div>
+
+              <ul className="mb-4 space-y-2">
+                {plan.features.map((f) => (
+                  <li key={f} className="flex items-center gap-2 text-xs text-gray-600">
+                    <CheckCircleIcon className="h-4 w-4 shrink-0 text-[#00D27A]" />
+                    {f}
+                  </li>
+                ))}
+              </ul>
+
+              <button
+                onClick={() => createCheckout.mutate({ plan: plan.key, origin: window.location.origin })}
+                disabled={isCurrent || createCheckout.isPending}
+                className={`w-full rounded-2xl py-3 text-sm font-bold transition-all ${
+                  isCurrent
+                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    : plan.highlight
+                    ? "bg-[#00D27A] text-white hover:bg-[#00b868]"
+                    : "border-2 border-[#00D27A] text-[#00D27A] hover:bg-[#00D27A]/5"
+                }`}
+              >
+                {isCurrent ? "Plan actual" : `Suscribirse a ${plan.name}`}
+              </button>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Test mode notice */}
+      <div className="mt-5 rounded-2xl bg-yellow-50 p-4 text-center">
+        <p className="text-xs font-semibold text-yellow-700">🧪 Modo de prueba</p>
+        <p className="mt-1 text-xs text-yellow-600">
+          Usa la tarjeta <strong>4242 4242 4242 4242</strong> para probar pagos sin cargo real.
+        </p>
+      </div>
+
+      <div className="vively-disclaimer">
+        <p>Los precios incluyen IVA. Cancela en cualquier momento.</p>
+      </div>
+    </div>
   );
 }

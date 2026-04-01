@@ -1,338 +1,282 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
-import { Button } from "@/components/ui/button";
-import { Badge } from "@/components/ui/badge";
-import {
-  Apple,
-  ArrowRight,
-  BarChart3,
-  BookOpen,
-  Calendar,
-  CheckCircle2,
-  Package,
-  ShoppingCart,
-  Sparkles,
-  Star,
-  Utensils,
-  Zap,
-} from "lucide-react";
-import { Link } from "wouter";
+import { useEffect } from "react";
+import { useLocation, Link } from "wouter";
 
-const features = [
-  {
-    icon: BookOpen,
-    title: "Recetas Inteligentes",
-    description: "Crea y descubre recetas con información nutricional completa, filtros por alergias y restricciones dietéticas.",
-    color: "bg-emerald-100 text-emerald-700",
-  },
-  {
-    icon: Calendar,
-    title: "Planificador de Menús",
-    description: "Organiza tus menús semanales o mensuales. Genera planes automáticos con IA basados en tus preferencias.",
-    color: "bg-blue-100 text-blue-700",
-  },
-  {
-    icon: ShoppingCart,
-    title: "Lista de Compra",
-    description: "Genera listas de compra automáticamente desde tus menús planificados, agrupadas por categorías.",
-    color: "bg-orange-100 text-orange-700",
-  },
-  {
-    icon: Package,
-    title: "Inventario Alimentario",
-    description: "Controla tu despensa, nevera y congelador. Recibe alertas de productos próximos a vencer.",
-    color: "bg-purple-100 text-purple-700",
-  },
-  {
-    icon: BarChart3,
-    title: "Seguimiento Nutricional",
-    description: "Registra tus comidas y monitoriza el consumo diario de calorías, proteínas, carbohidratos y grasas.",
-    color: "bg-pink-100 text-pink-700",
-  },
-  {
-    icon: Sparkles,
-    title: "IA Personalizada",
-    description: "Recibe recomendaciones y genera menús con inteligencia artificial adaptados a tu perfil y objetivos.",
-    color: "bg-yellow-100 text-yellow-700",
-  },
+const FEATURES = [
+  { emoji: "🥗", title: "Recetas inteligentes", desc: "Miles de recetas con información nutricional completa y filtros avanzados." },
+  { emoji: "📅", title: "Planificador de menús", desc: "Organiza tus comidas semanales y genera menús automáticos con IA." },
+  { emoji: "🛒", title: "Lista de compra", desc: "Genera tu lista de la compra automáticamente desde tu menú planificado." },
+  { emoji: "📦", title: "Control de inventario", desc: "Gestiona tu despensa y recibe alertas de caducidades próximas." },
+  { emoji: "📊", title: "Seguimiento nutricional", desc: "Registra tus comidas y controla tus macronutrientes diarios." },
+  { emoji: "✨", title: "IA nutricional", desc: "Recomendaciones personalizadas basadas en tus objetivos y preferencias." },
 ];
 
-const benefits = [
-  "Perfil médico y nutricional personalizado",
-  "Gestión de alergias y restricciones dietéticas",
-  "Objetivos de salud y seguimiento de métricas",
-  "Más de 14 alergias y 11 restricciones dietéticas",
-  "Historial completo de comidas",
-  "Panel administrativo completo",
+const PLANS = [
+  {
+    name: "Básico",
+    price: "Gratis",
+    period: "",
+    features: ["5 recetas guardadas", "Planificador semanal", "Lista de compra básica"],
+    cta: "Empezar gratis",
+    highlight: false,
+  },
+  {
+    name: "Premium",
+    price: "9,99€",
+    period: "/mes",
+    features: ["Recetas ilimitadas", "Menús con IA", "Inventario completo", "Seguimiento nutricional", "Soporte prioritario"],
+    cta: "Probar Premium",
+    highlight: true,
+  },
+  {
+    name: "Pro Max",
+    price: "19,99€",
+    period: "/mes",
+    features: ["Todo en Premium", "Perfil médico avanzado", "Consultas con expertos", "API de integración"],
+    cta: "Contactar",
+    highlight: false,
+  },
 ];
 
 export default function Home() {
   const { isAuthenticated, loading } = useAuth();
+  const [, navigate] = useLocation();
+
+  useEffect(() => {
+    if (!loading && isAuthenticated) {
+      navigate("/dashboard");
+    }
+  }, [isAuthenticated, loading, navigate]);
+
+  if (loading) {
+    return (
+      <div className="flex min-h-screen items-center justify-center bg-white">
+        <div className="flex flex-col items-center gap-3">
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#00D27A] border-t-transparent" />
+          <span className="text-sm text-gray-500">Cargando...</span>
+        </div>
+      </div>
+    );
+  }
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Navigation */}
-      <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur-sm border-b border-border">
-        <div className="container flex items-center justify-between h-16">
-          <div className="flex items-center gap-2.5">
-            <div className="w-8 h-8 rounded-lg bg-primary flex items-center justify-center">
-              <Apple className="w-4.5 h-4.5 text-primary-foreground" />
+    <div className="min-h-screen bg-white font-sans">
+      {/* Nav */}
+      <nav className="sticky top-0 z-50 border-b border-gray-100 bg-white/80 backdrop-blur-md">
+        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
+          <div className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#00D27A]">
+              <span className="text-base">🥦</span>
             </div>
-            <span className="font-bold text-lg text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-              BuddyMarket
-            </span>
+            <span className="text-lg font-bold text-gray-900">VIVELY</span>
           </div>
-          <div className="flex items-center gap-3">
-            {!loading && (
-              isAuthenticated ? (
-                <Button asChild size="sm">
-                  <Link href="/dashboard">
-                    Ir al dashboard <ArrowRight className="w-4 h-4 ml-1.5" />
-                  </Link>
-                </Button>
-              ) : (
-                <>
-                  <Button variant="ghost" size="sm" asChild>
-                    <a href={getLoginUrl()}>Iniciar sesión</a>
-                  </Button>
-                  <Button size="sm" asChild>
-                    <a href={getLoginUrl()}>
-                      Comenzar gratis <ArrowRight className="w-4 h-4 ml-1.5" />
-                    </a>
-                  </Button>
-                </>
-              )
+          <div className="flex items-center gap-2">
+            {!loading && isAuthenticated ? (
+              <Link href="/dashboard" className="rounded-full bg-[#00D27A] px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#00b868]">
+                Ir al dashboard →
+              </Link>
+            ) : (
+              <a href={getLoginUrl()} className="rounded-full bg-[#00D27A] px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#00b868]">
+                Entrar
+              </a>
             )}
           </div>
         </div>
       </nav>
 
-      {/* Hero Section */}
-      <section className="relative overflow-hidden">
-        {/* Background decoration */}
+      {/* Hero */}
+      <section className="relative overflow-hidden bg-gradient-to-b from-[#f0fdf4] to-white px-4 py-20 text-center">
         <div className="absolute inset-0 -z-10">
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-primary/10 rounded-full blur-3xl" />
-          <div className="absolute bottom-0 right-1/4 w-80 h-80 bg-accent/20 rounded-full blur-3xl" />
+          <div className="absolute left-1/2 top-0 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-[#00D27A]/5 blur-3xl" />
         </div>
-
-        <div className="container py-20 lg:py-28">
-          <div className="max-w-4xl mx-auto text-center">
-            <Badge variant="secondary" className="mb-6 px-4 py-1.5 text-sm font-medium">
-              <Sparkles className="w-3.5 h-3.5 mr-1.5" />
-              Gestión nutricional con IA
-            </Badge>
-
-            <h1
-              className="text-4xl sm:text-5xl lg:text-6xl font-bold text-foreground leading-tight mb-6"
-              style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-            >
-              Tu compañero inteligente para{" "}
-              <span className="text-primary">comer mejor</span>
-            </h1>
-
-            <p className="text-lg sm:text-xl text-muted-foreground mb-10 max-w-2xl mx-auto leading-relaxed">
-              BuddyMarket te ayuda a organizar tu alimentación de forma inteligente. Planifica menús, gestiona recetas,
-              controla tu inventario y alcanza tus objetivos nutricionales con la ayuda de la IA.
-            </p>
-
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <Button size="lg" className="text-base px-8 h-12" asChild>
-                <a href={getLoginUrl()}>
-                  Empezar ahora — es gratis
-                  <ArrowRight className="w-5 h-5 ml-2" />
-                </a>
-              </Button>
-              <Button size="lg" variant="outline" className="text-base px-8 h-12 bg-background" asChild>
-                <Link href="/recipes">
-                  <BookOpen className="w-5 h-5 mr-2" />
-                  Ver recetas
-                </Link>
-              </Button>
-            </div>
-
-            {/* Social proof */}
-            <div className="mt-10 flex items-center justify-center gap-6 text-sm text-muted-foreground">
-              <div className="flex items-center gap-1.5">
-                <div className="flex -space-x-1">
-                  {["E", "M", "A", "J"].map((l, i) => (
-                    <div key={i} className="w-7 h-7 rounded-full bg-primary/20 border-2 border-background flex items-center justify-center text-[10px] font-bold text-primary">
-                      {l}
-                    </div>
-                  ))}
-                </div>
-                <span>+1,200 usuarios activos</span>
-              </div>
-              <div className="flex items-center gap-1">
-                {[...Array(5)].map((_, i) => (
-                  <Star key={i} className="w-4 h-4 fill-yellow-400 text-yellow-400" />
-                ))}
-                <span className="ml-1">4.9/5</span>
-              </div>
-            </div>
+        <div className="mx-auto max-w-2xl">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-[#00D27A]/10 px-4 py-1.5 text-sm font-semibold text-[#00a85f]">
+            <span>✨</span>
+            <span>Tu asistente nutricional inteligente</span>
           </div>
+          <h1 className="mb-4 text-4xl font-extrabold leading-tight tracking-tight text-gray-900 sm:text-5xl">
+            Come mejor,<br />
+            <span className="text-[#00D27A]">vive más sano</span>
+          </h1>
+          <p className="mb-8 text-base text-gray-500 sm:text-lg">
+            VIVELY te ayuda a planificar tus comidas, controlar tu nutrición y organizar tu despensa de forma inteligente.
+          </p>
+          <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
+            <a
+              href={getLoginUrl()}
+              className="w-full rounded-2xl bg-[#00D27A] px-8 py-4 text-base font-bold text-white shadow-lg transition-all hover:bg-[#00b868] hover:shadow-xl sm:w-auto"
+            >
+              Empezar gratis →
+            </a>
+            <a
+              href="#features"
+              className="w-full rounded-2xl border-2 border-gray-200 px-8 py-4 text-base font-semibold text-gray-700 transition-all hover:border-[#00D27A] sm:w-auto"
+            >
+              Ver funciones
+            </a>
+          </div>
+          <p className="mt-4 text-xs text-gray-400">Sin tarjeta de crédito · Cancela cuando quieras</p>
         </div>
       </section>
 
-      {/* Features Grid */}
-      <section className="py-20 bg-muted/30">
-        <div className="container">
-          <div className="text-center mb-14">
-            <h2
-              className="text-3xl sm:text-4xl font-bold text-foreground mb-4"
-              style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-            >
-              Todo lo que necesitas para comer bien
-            </h2>
-            <p className="text-muted-foreground text-lg max-w-xl mx-auto">
-              Una plataforma completa para gestionar tu alimentación de principio a fin.
-            </p>
-          </div>
+      {/* Stats */}
+      <section className="border-y border-gray-100 bg-white py-10">
+        <div className="mx-auto grid max-w-3xl grid-cols-3 gap-6 px-4 text-center">
+          {[
+            { value: "10k+", label: "Usuarios activos" },
+            { value: "50k+", label: "Recetas disponibles" },
+            { value: "98%", label: "Satisfacción" },
+          ].map((stat) => (
+            <div key={stat.label}>
+              <p className="text-2xl font-extrabold text-[#00D27A] sm:text-3xl">{stat.value}</p>
+              <p className="mt-1 text-xs text-gray-500 sm:text-sm">{stat.label}</p>
+            </div>
+          ))}
+        </div>
+      </section>
 
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
-            {features.map((feature) => (
+      {/* Features */}
+      <section id="features" className="px-4 py-16">
+        <div className="mx-auto max-w-5xl">
+          <h2 className="mb-2 text-center text-2xl font-extrabold text-gray-900 sm:text-3xl">
+            Todo lo que necesitas
+          </h2>
+          <p className="mb-10 text-center text-sm text-gray-500">
+            Una plataforma completa para gestionar tu alimentación
+          </p>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+            {FEATURES.map((f) => (
               <div
-                key={feature.title}
-                className="bg-card rounded-2xl p-6 border border-border hover:shadow-md transition-shadow duration-200"
+                key={f.title}
+                className="group rounded-3xl border border-gray-100 bg-white p-6 shadow-sm transition-all hover:border-[#00D27A]/30 hover:shadow-md"
               >
-                <div className={`w-11 h-11 rounded-xl ${feature.color} flex items-center justify-center mb-4`}>
-                  <feature.icon className="w-5.5 h-5.5" />
+                <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f0fdf4] text-2xl transition-transform group-hover:scale-110">
+                  {f.emoji}
                 </div>
-                <h3 className="font-semibold text-foreground text-lg mb-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-                  {feature.title}
-                </h3>
-                <p className="text-muted-foreground text-sm leading-relaxed">{feature.description}</p>
+                <h3 className="mb-1 text-sm font-bold text-gray-900">{f.title}</h3>
+                <p className="text-xs text-gray-500 leading-relaxed">{f.desc}</p>
               </div>
             ))}
           </div>
         </div>
       </section>
 
-      {/* Benefits Section */}
-      <section className="py-20">
-        <div className="container">
-          <div className="grid lg:grid-cols-2 gap-12 items-center">
-            <div>
-              <Badge variant="secondary" className="mb-4">
-                <Zap className="w-3.5 h-3.5 mr-1.5" />
-                Personalización total
-              </Badge>
-              <h2
-                className="text-3xl sm:text-4xl font-bold text-foreground mb-6"
-                style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-              >
-                Adaptado a ti y tus necesidades
-              </h2>
-              <p className="text-muted-foreground text-base mb-8 leading-relaxed">
-                BuddyMarket aprende de tus preferencias, alergias, restricciones dietéticas y objetivos de salud para
-                ofrecerte recomendaciones completamente personalizadas.
-              </p>
-              <ul className="space-y-3">
-                {benefits.map((benefit) => (
-                  <li key={benefit} className="flex items-center gap-3">
-                    <CheckCircle2 className="w-5 h-5 text-primary shrink-0" />
-                    <span className="text-foreground text-sm">{benefit}</span>
-                  </li>
-                ))}
-              </ul>
-              <div className="mt-8">
-                <Button asChild>
-                  <a href={getLoginUrl()}>
-                    Crear mi perfil nutricional
-                    <ArrowRight className="w-4 h-4 ml-2" />
-                  </a>
-                </Button>
-              </div>
-            </div>
-
-            {/* Visual card */}
-            <div className="relative">
-              <div className="bg-card rounded-3xl border border-border p-6 shadow-lg">
-                <div className="flex items-center gap-3 mb-6">
-                  <div className="w-10 h-10 rounded-xl bg-primary flex items-center justify-center">
-                    <Utensils className="w-5 h-5 text-primary-foreground" />
-                  </div>
-                  <div>
-                    <p className="font-semibold text-foreground">Menú de hoy</p>
-                    <p className="text-xs text-muted-foreground">Martes, 1 de Abril</p>
-                  </div>
+      {/* How it works */}
+      <section className="bg-[#f0fdf4] px-4 py-16">
+        <div className="mx-auto max-w-3xl">
+          <h2 className="mb-2 text-center text-2xl font-extrabold text-gray-900">
+            Cómo funciona
+          </h2>
+          <p className="mb-10 text-center text-sm text-gray-500">En 3 simples pasos</p>
+          <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+            {[
+              { step: "1", emoji: "👤", title: "Crea tu perfil", desc: "Cuéntanos tus objetivos, alergias y preferencias dietéticas." },
+              { step: "2", emoji: "📅", title: "Planifica tu menú", desc: "Elige recetas o deja que la IA genere un menú personalizado." },
+              { step: "3", emoji: "🛒", title: "Compra y cocina", desc: "Tu lista de compra se genera automáticamente. ¡A cocinar!" },
+            ].map((item) => (
+              <div key={item.step} className="relative text-center">
+                <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-[#00D27A] text-2xl shadow-md">
+                  {item.emoji}
                 </div>
-
-                {[
-                  { meal: "Desayuno", recipe: "Avena con frutas y semillas", cal: 380 },
-                  { meal: "Comida", recipe: "Pollo al horno con verduras", cal: 520 },
-                  { meal: "Merienda", recipe: "Yogur con nueces", cal: 180 },
-                  { meal: "Cena", recipe: "Ensalada mediterránea", cal: 320 },
-                ].map((item) => (
-                  <div key={item.meal} className="flex items-center justify-between py-3 border-b border-border last:border-0">
-                    <div>
-                      <p className="text-xs text-muted-foreground">{item.meal}</p>
-                      <p className="text-sm font-medium text-foreground">{item.recipe}</p>
-                    </div>
-                    <Badge variant="secondary" className="text-xs">{item.cal} kcal</Badge>
-                  </div>
-                ))}
-
-                <div className="mt-4 p-3 bg-primary/10 rounded-xl">
-                  <div className="flex justify-between text-sm mb-1.5">
-                    <span className="text-muted-foreground">Total calorías</span>
-                    <span className="font-semibold text-primary">1,400 / 2,000 kcal</span>
-                  </div>
-                  <div className="w-full bg-primary/20 rounded-full h-2">
-                    <div className="bg-primary h-2 rounded-full" style={{ width: "70%" }} />
-                  </div>
+                <div className="absolute -top-1 left-1/2 ml-6 flex h-5 w-5 items-center justify-center rounded-full bg-gray-900 text-[10px] font-bold text-white">
+                  {item.step}
                 </div>
+                <h3 className="mb-1 text-sm font-bold text-gray-900">{item.title}</h3>
+                <p className="text-xs text-gray-500 leading-relaxed">{item.desc}</p>
               </div>
-
-              {/* Floating badge */}
-              <div className="absolute -top-4 -right-4 bg-primary text-primary-foreground rounded-2xl px-4 py-2 shadow-lg">
-                <div className="flex items-center gap-1.5">
-                  <Sparkles className="w-4 h-4" />
-                  <span className="text-sm font-semibold">Generado con IA</span>
-                </div>
-              </div>
-            </div>
+            ))}
           </div>
         </div>
       </section>
 
-      {/* CTA Section */}
-      <section className="py-20 bg-primary">
-        <div className="container text-center">
-          <h2
-            className="text-3xl sm:text-4xl font-bold text-primary-foreground mb-4"
-            style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}
-          >
-            Empieza a comer mejor hoy
+      {/* Pricing */}
+      <section className="px-4 py-16">
+        <div className="mx-auto max-w-4xl">
+          <h2 className="mb-2 text-center text-2xl font-extrabold text-gray-900">
+            Planes y precios
           </h2>
-          <p className="text-primary-foreground/80 text-lg mb-8 max-w-xl mx-auto">
-            Únete a miles de personas que ya están mejorando su alimentación con BuddyMarket.
+          <p className="mb-10 text-center text-sm text-gray-500">Elige el plan que mejor se adapta a ti</p>
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+            {PLANS.map((plan) => (
+              <div
+                key={plan.name}
+                className={`relative rounded-3xl p-6 ${
+                  plan.highlight
+                    ? "bg-[#00D27A] text-white shadow-xl shadow-[#00D27A]/25"
+                    : "border border-gray-100 bg-white shadow-sm"
+                }`}
+              >
+                {plan.highlight && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gray-900 px-3 py-1 text-[10px] font-bold text-white">
+                    MÁS POPULAR
+                  </div>
+                )}
+                <h3 className={`mb-1 text-base font-bold ${plan.highlight ? "text-white" : "text-gray-900"}`}>
+                  {plan.name}
+                </h3>
+                <div className="mb-4 flex items-baseline gap-1">
+                  <span className={`text-3xl font-extrabold ${plan.highlight ? "text-white" : "text-gray-900"}`}>
+                    {plan.price}
+                  </span>
+                  <span className={`text-sm ${plan.highlight ? "text-white/70" : "text-gray-400"}`}>
+                    {plan.period}
+                  </span>
+                </div>
+                <ul className="mb-6 space-y-2">
+                  {plan.features.map((f) => (
+                    <li key={f} className={`flex items-center gap-2 text-xs ${plan.highlight ? "text-white/90" : "text-gray-600"}`}>
+                      <span className={`text-base ${plan.highlight ? "text-white" : "text-[#00D27A]"}`}>✓</span>
+                      {f}
+                    </li>
+                  ))}
+                </ul>
+                <a
+                  href={getLoginUrl()}
+                  className={`block w-full rounded-2xl py-3 text-center text-sm font-bold transition-all ${
+                    plan.highlight
+                      ? "bg-white text-[#00D27A] hover:bg-gray-50"
+                      : "border-2 border-[#00D27A] text-[#00D27A] hover:bg-[#00D27A]/5"
+                  }`}
+                >
+                  {plan.cta}
+                </a>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* CTA */}
+      <section className="bg-[#00D27A] px-4 py-16 text-center">
+        <div className="mx-auto max-w-xl">
+          <h2 className="mb-3 text-2xl font-extrabold text-white sm:text-3xl">
+            Empieza hoy mismo
+          </h2>
+          <p className="mb-8 text-sm text-white/80">
+            Únete a miles de personas que ya cuidan su alimentación con VIVELY.
           </p>
-          <Button size="lg" variant="secondary" className="text-base px-8 h-12" asChild>
-            <a href={getLoginUrl()}>
-              Crear cuenta gratuita
-              <ArrowRight className="w-5 h-5 ml-2" />
-            </a>
-          </Button>
+          <a
+            href={getLoginUrl()}
+            className="inline-block rounded-2xl bg-white px-8 py-4 text-base font-bold text-[#00D27A] shadow-lg transition-all hover:bg-gray-50 hover:shadow-xl"
+          >
+            Crear cuenta gratis →
+          </a>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="py-8 border-t border-border bg-background">
-        <div className="container">
-          <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-            <div className="flex items-center gap-2">
-              <div className="w-6 h-6 rounded-md bg-primary flex items-center justify-center">
-                <Apple className="w-3.5 h-3.5 text-primary-foreground" />
-              </div>
-              <span className="font-semibold text-sm text-foreground">BuddyMarket</span>
-            </div>
-            <p className="text-xs text-muted-foreground text-center">
-              El contenido de BuddyMarket no constituye recomendaciones profesionales de salud o nutrición.
-              Consulta siempre con un profesional cualificado.
-            </p>
-            <p className="text-xs text-muted-foreground">© 2024 BuddyMarket</p>
+      <footer className="border-t border-gray-100 bg-white px-4 py-8 text-center">
+        <div className="flex items-center justify-center gap-2 mb-3">
+          <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-[#00D27A]">
+            <span className="text-sm">🥦</span>
           </div>
+          <span className="text-base font-bold text-gray-900">VIVELY</span>
         </div>
+        <p className="text-xs text-gray-400">© 2026 VIVELY. Todos los derechos reservados.</p>
+        <p className="mt-2 text-[10px] text-gray-300">
+          VIVELY no constituye asesoramiento médico o nutricional profesional.
+        </p>
       </footer>
     </div>
   );

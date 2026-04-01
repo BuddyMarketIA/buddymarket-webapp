@@ -1,107 +1,34 @@
-import AppLayout from "@/components/AppLayout";
-import { useAuth } from "@/_core/hooks/useAuth";
+import { useState, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Badge } from "@/components/ui/badge";
-import { Card, CardContent } from "@/components/ui/card";
-import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import {
-  BookOpen,
-  Clock,
-  Heart,
-  Plus,
-  Search,
-  Sparkles,
-  Star,
-  Utensils,
-  Users,
-} from "lucide-react";
-import { useState } from "react";
 import { Link } from "wouter";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { MagnifyingGlassIcon, PlusIcon, ClockIcon, AdjustmentsHorizontalIcon } from "@heroicons/react/24/outline";
 import { toast } from "sonner";
 
-function RecipeCard({ recipe, onToggleFavorite }: { recipe: any; onToggleFavorite?: (id: number) => void }) {
-  const difficultyLabel = { easy: "Fácil", medium: "Media", hard: "Difícil" }[recipe.difficulty as string] || recipe.difficulty;
-  const difficultyColor = { easy: "bg-green-100 text-green-700", medium: "bg-yellow-100 text-yellow-700", hard: "bg-red-100 text-red-700" }[recipe.difficulty as string] || "";
-  const totalTime = (recipe.preparationTime || 0) + (recipe.cookTime || 0);
-
-  return (
-    <Card className="border-border hover:shadow-md transition-shadow duration-200 overflow-hidden group">
-      {/* Image placeholder */}
-      <div className="h-40 bg-gradient-to-br from-primary/10 to-accent/20 flex items-center justify-center relative">
-        {recipe.imageUrl ? (
-          <img src={recipe.imageUrl} alt={recipe.name} className="w-full h-full object-cover" />
-        ) : (
-          <Utensils className="w-10 h-10 text-primary/40" />
-        )}
-        {onToggleFavorite && (
-          <button
-            onClick={(e) => { e.preventDefault(); onToggleFavorite(recipe.id); }}
-            className="absolute top-2 right-2 w-8 h-8 rounded-full bg-white/90 flex items-center justify-center shadow-sm hover:bg-white transition-colors"
-          >
-            <Heart className="w-4 h-4 text-muted-foreground hover:text-red-500 transition-colors" />
-          </button>
-        )}
-        {recipe.difficulty && (
-          <Badge className={`absolute top-2 left-2 text-[10px] ${difficultyColor} border-0`}>
-            {difficultyLabel}
-          </Badge>
-        )}
-      </div>
-
-      <CardContent className="p-4">
-        <h3 className="font-semibold text-foreground text-sm leading-tight mb-2 line-clamp-2" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-          {recipe.name}
-        </h3>
-        {recipe.description && (
-          <p className="text-xs text-muted-foreground line-clamp-2 mb-3">{recipe.description}</p>
-        )}
-        <div className="flex items-center gap-3 text-xs text-muted-foreground">
-          {totalTime > 0 && (
-            <span className="flex items-center gap-1">
-              <Clock className="w-3.5 h-3.5" />
-              {totalTime} min
-            </span>
-          )}
-          {recipe.servings && (
-            <span className="flex items-center gap-1">
-              <Users className="w-3.5 h-3.5" />
-              {recipe.servings} pers.
-            </span>
-          )}
-        </div>
-        <div className="mt-3 pt-3 border-t border-border">
-          <Button size="sm" variant="outline" className="w-full h-8 text-xs" asChild>
-            <Link href={`/recipes/${recipe.id}`}>Ver receta</Link>
-          </Button>
-        </div>
-      </CardContent>
-    </Card>
-  );
-}
+const DIFFICULTIES = [
+  { value: "", label: "Todas" },
+  { value: "easy", label: "Fácil" },
+  { value: "medium", label: "Media" },
+  { value: "hard", label: "Difícil" },
+];
 
 export default function Recipes() {
-  const { isAuthenticated } = useAuth();
+  const { user, isAuthenticated } = useAuth();
   const [search, setSearch] = useState("");
-  const [difficulty, setDifficulty] = useState("all");
-  const [view, setView] = useState<"public" | "mine" | "favorites">("public");
+  const [difficulty, setDifficulty] = useState("");
+  const [showFilters, setShowFilters] = useState(false);
+  const [tab, setTab] = useState<"all" | "mine">("all");
 
   const { data: publicRecipes, isLoading: loadingPublic } = trpc.recipes.list.useQuery({
     search: search || undefined,
-    difficulty: difficulty !== "all" ? difficulty : undefined,
+    difficulty: difficulty || undefined,
     isPublic: true,
-    limit: 24,
+    limit: 40,
   });
 
   const { data: myRecipes, isLoading: loadingMine } = trpc.recipes.myRecipes.useQuery(
-    { limit: 24 },
-    { enabled: isAuthenticated && view === "mine" }
-  );
-
-  const { data: favorites, isLoading: loadingFavs } = trpc.recipes.favorites.useQuery(
-    undefined,
-    { enabled: isAuthenticated && view === "favorites" }
+    { limit: 40 },
+    { enabled: isAuthenticated && tab === "mine" }
   );
 
   const utils = trpc.useUtils();
@@ -112,132 +39,151 @@ export default function Recipes() {
     },
   });
 
-  const displayRecipes = view === "mine" ? myRecipes : view === "favorites" ? favorites : publicRecipes;
-  const isLoading = view === "mine" ? loadingMine : view === "favorites" ? loadingFavs : loadingPublic;
+  const displayRecipes = tab === "mine" ? myRecipes : publicRecipes;
+  const isLoading = tab === "mine" ? loadingMine : loadingPublic;
 
   return (
-    <AppLayout>
-      <div className="p-6 max-w-7xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-              Recetas
-            </h1>
-            <p className="text-muted-foreground text-sm mt-1">Descubre y gestiona tus recetas favoritas</p>
-          </div>
-          {isAuthenticated && (
-            <div className="flex gap-2">
-              <Button variant="outline" size="sm" asChild>
-                <Link href="/recipes/generate">
-                  <Sparkles className="w-4 h-4 mr-1.5" />
-                  Generar con IA
-                </Link>
-              </Button>
-              <Button size="sm" asChild>
-                <Link href="/recipes/new">
-                  <Plus className="w-4 h-4 mr-1.5" />
-                  Nueva receta
-                </Link>
-              </Button>
-            </div>
-          )}
+    <div className="vively-page container">
+      {/* Header */}
+      <div className="mb-5 flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-900">Recetas</h1>
+        <Link href="/recipes/new">
+          <button className="flex h-10 w-10 items-center justify-center rounded-full bg-[#00D27A] shadow-sm transition-transform hover:scale-105">
+            <PlusIcon className="h-5 w-5 text-white" />
+          </button>
+        </Link>
+      </div>
+
+      {/* Search bar */}
+      <div className="search-bar mb-4">
+        <MagnifyingGlassIcon className="h-5 w-5 shrink-0 text-gray-400" />
+        <input
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          placeholder="Buscar recetas o ingredientes..."
+          className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
+        />
+        <button
+          onClick={() => setShowFilters(!showFilters)}
+          className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
+            showFilters ? "bg-[#00D27A]/10 text-[#00D27A]" : "text-gray-400 hover:text-gray-600"
+          }`}
+        >
+          <AdjustmentsHorizontalIcon className="h-5 w-5" />
+        </button>
+      </div>
+
+      {/* Filters */}
+      {showFilters && (
+        <div className="mb-4 flex flex-wrap gap-2 animate-fade-in">
+          {DIFFICULTIES.map((d) => (
+            <button
+              key={d.value}
+              onClick={() => setDifficulty(d.value)}
+              className={`selectable-badge ${
+                difficulty === d.value ? "selectable-badge-active" : "selectable-badge-inactive"
+              }`}
+            >
+              {d.label}
+            </button>
+          ))}
         </div>
+      )}
 
-        {/* Filters */}
-        <div className="flex flex-col sm:flex-row gap-3">
-          <div className="relative flex-1">
-            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-            <Input
-              placeholder="Buscar recetas..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="pl-9"
-            />
-          </div>
-          <Select value={difficulty} onValueChange={setDifficulty}>
-            <SelectTrigger className="w-full sm:w-40">
-              <SelectValue placeholder="Dificultad" />
-            </SelectTrigger>
-            <SelectContent>
-              <SelectItem value="all">Todas</SelectItem>
-              <SelectItem value="easy">Fácil</SelectItem>
-              <SelectItem value="medium">Media</SelectItem>
-              <SelectItem value="hard">Difícil</SelectItem>
-            </SelectContent>
-          </Select>
-        </div>
+      {/* Tabs */}
+      <div className="mb-5 flex gap-2">
+        {(["all", "mine"] as const).map((t) => (
+          <button
+            key={t}
+            onClick={() => setTab(t)}
+            className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-all ${
+              tab === t
+                ? "bg-[#00D27A] text-white shadow-sm"
+                : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+            }`}
+          >
+            {t === "all" ? "Todas" : "Mis recetas"}
+          </button>
+        ))}
+      </div>
 
-        {/* View tabs */}
-        {isAuthenticated && (
-          <div className="flex gap-1 p-1 bg-muted rounded-lg w-fit">
-            {[
-              { key: "public", label: "Explorar" },
-              { key: "mine", label: "Mis recetas" },
-              { key: "favorites", label: "Favoritas" },
-            ].map((tab) => (
-              <button
-                key={tab.key}
-                onClick={() => setView(tab.key as any)}
-                className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${
-                  view === tab.key
-                    ? "bg-background text-foreground shadow-sm"
-                    : "text-muted-foreground hover:text-foreground"
-                }`}
-              >
-                {tab.label}
-              </button>
-            ))}
-          </div>
-        )}
-
-        {/* Recipe grid */}
-        {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {[...Array(8)].map((_, i) => (
-              <div key={i} className="rounded-xl border border-border bg-card animate-pulse">
-                <div className="h-40 bg-muted rounded-t-xl" />
-                <div className="p-4 space-y-2">
-                  <div className="h-4 bg-muted rounded w-3/4" />
-                  <div className="h-3 bg-muted rounded w-1/2" />
+      {/* Recipe list */}
+      {isLoading ? (
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="vively-card animate-pulse">
+              <div className="flex gap-4">
+                <div className="h-24 w-24 rounded-xl bg-gray-100" />
+                <div className="flex-1 space-y-2 pt-1">
+                  <div className="h-4 w-3/4 rounded bg-gray-100" />
+                  <div className="h-3 w-1/2 rounded bg-gray-100" />
+                  <div className="h-3 w-1/3 rounded bg-gray-100" />
                 </div>
               </div>
-            ))}
-          </div>
-        ) : displayRecipes && displayRecipes.length > 0 ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-            {displayRecipes.map((recipe) => (
-              <RecipeCard
-                key={recipe.id}
-                recipe={recipe}
-                onToggleFavorite={isAuthenticated ? (id) => toggleFav.mutate({ recipeId: id }) : undefined}
-              />
-            ))}
-          </div>
-        ) : (
-          <div className="text-center py-16">
-            <BookOpen className="w-14 h-14 text-muted-foreground/30 mx-auto mb-4" />
-            <h3 className="text-lg font-semibold text-foreground mb-2">
-              {view === "mine" ? "Aún no tienes recetas" : view === "favorites" ? "No tienes recetas favoritas" : "No se encontraron recetas"}
-            </h3>
-            <p className="text-muted-foreground text-sm mb-6">
-              {view === "mine"
-                ? "Crea tu primera receta para empezar"
-                : view === "favorites"
-                ? "Marca recetas como favoritas para verlas aquí"
-                : "Prueba con otros términos de búsqueda"}
-            </p>
-            {view === "mine" && (
-              <Button asChild>
-                <Link href="/recipes/new">
-                  <Plus className="w-4 h-4 mr-2" />
-                  Crear receta
-                </Link>
-              </Button>
-            )}
-          </div>
-        )}
+            </div>
+          ))}
+        </div>
+      ) : displayRecipes && displayRecipes.length > 0 ? (
+        <div className="space-y-3">
+          {displayRecipes.map((recipe) => (
+            <Link key={recipe.id} href={`/recipes/${recipe.id}`}>
+              <div className="recipe-tile cursor-pointer">
+                <div className="relative col-span-1">
+                  <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-xl bg-[#f0fdf4]">
+                    {recipe.imageUrl ? (
+                      <img
+                        src={recipe.imageUrl}
+                        alt={recipe.name}
+                        className="h-full w-full object-cover transition-transform group-hover:scale-105"
+                      />
+                    ) : (
+                      <span className="text-4xl">🍳</span>
+                    )}
+                  </div>
+                </div>
+                <div className="col-span-2 min-w-0">
+                  <h2 className="text-sm font-semibold text-gray-900 transition-colors group-hover:text-[#00D27A] line-clamp-2">
+                    {recipe.name}
+                  </h2>
+                  {recipe.preparationTime && (
+                    <div className="mt-1 flex items-center gap-1 text-xs text-gray-500">
+                      <ClockIcon className="h-3.5 w-3.5" />
+                      <span>{recipe.preparationTime} min</span>
+                    </div>
+                  )}
+                  <div className="mt-2 flex flex-wrap gap-1">
+                    {recipe.difficulty && (
+                      <span className={`${recipe.difficulty === "easy" ? "badge-primary" : recipe.difficulty === "medium" ? "badge-blue" : "badge-orange"}`}>
+                        {recipe.difficulty === "easy" ? "Fácil" : recipe.difficulty === "medium" ? "Media" : "Difícil"}
+                      </span>
+                    )}
+
+                    {!recipe.isPublic && (
+                      <span className="badge-gray">Borrador</span>
+                    )}
+                  </div>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      ) : (
+        <div className="flex flex-col items-center justify-center py-16 text-center">
+          <span className="mb-4 text-5xl">🍽️</span>
+          <h3 className="mb-2 text-base font-bold text-gray-900">No hay recetas</h3>
+          <p className="mb-6 text-sm text-gray-500">
+            {search ? "No se encontraron resultados" : "Sé el primero en añadir una receta"}
+          </p>
+          <Link href="/recipes/new">
+            <button className="btn-vively">Crear receta</button>
+          </Link>
+        </div>
+      )}
+
+      {/* Disclaimer */}
+      <div className="vively-disclaimer">
+        <p>La información nutricional es orientativa. Consulta con un profesional de la salud.</p>
       </div>
-    </AppLayout>
+    </div>
   );
 }

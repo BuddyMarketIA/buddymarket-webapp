@@ -1,263 +1,300 @@
-import AppLayout from "@/components/AppLayout";
 import { trpc } from "@/lib/trpc";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Badge } from "@/components/ui/badge";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import { Loader2, Plus, Trash2, Shield, Users, BookOpen, Tag, AlertCircle, Ruler } from "lucide-react";
 import { useState } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Link } from "wouter";
+import {
+  ShieldCheckIcon,
+  UsersIcon,
+  BookOpenIcon,
+  TagIcon,
+  ExclamationCircleIcon,
+  PlusIcon,
+  TrashIcon,
+} from "@heroicons/react/24/outline";
+
+const TABS = [
+  { key: "overview", label: "Resumen", icon: ShieldCheckIcon },
+  { key: "allergies", label: "Alergias", icon: ExclamationCircleIcon },
+  { key: "diets", label: "Dietas", icon: TagIcon },
+  { key: "categories", label: "Categorías", icon: BookOpenIcon },
+  { key: "users", label: "Usuarios", icon: UsersIcon },
+];
 
 function CatalogSection({
   title,
-  icon: Icon,
   items,
   onAdd,
   onDelete,
   isAdding,
 }: {
   title: string;
-  icon: any;
   items: { id: number; nameEs: string; nameEn?: string | null }[] | undefined;
   onAdd: (nameEs: string, nameEn?: string) => void;
   onDelete: (id: number) => void;
   isAdding: boolean;
 }) {
-  const [open, setOpen] = useState(false);
   const [nameEs, setNameEs] = useState("");
   const [nameEn, setNameEn] = useState("");
 
   return (
-    <Card className="border-border">
-      <CardHeader className="pb-3">
-        <div className="flex items-center justify-between">
-          <CardTitle className="text-base flex items-center gap-2">
-            <Icon className="w-4.5 h-4.5 text-primary" />
-            {title}
-            {items && <Badge variant="secondary" className="text-[10px]">{items.length}</Badge>}
-          </CardTitle>
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm" variant="outline">
-                <Plus className="w-3.5 h-3.5 mr-1.5" />
-                Añadir
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Añadir {title.toLowerCase()}</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 mt-2">
-                <div className="space-y-1.5">
-                  <Label>Nombre en español *</Label>
-                  <Input value={nameEs} onChange={(e) => setNameEs(e.target.value)} placeholder="Nombre en español" />
-                </div>
-                <div className="space-y-1.5">
-                  <Label>Nombre en inglés</Label>
-                  <Input value={nameEn} onChange={(e) => setNameEn(e.target.value)} placeholder="Name in English" />
-                </div>
-                <Button
-                  className="w-full"
-                  onClick={() => {
-                    if (!nameEs.trim()) return;
-                    onAdd(nameEs.trim(), nameEn.trim() || undefined);
-                    setNameEs("");
-                    setNameEn("");
-                    setOpen(false);
-                  }}
-                  disabled={isAdding}
-                >
-                  {isAdding && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                  Añadir
-                </Button>
+    <div className="vively-card space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-bold text-gray-700">{title}</h3>
+        <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-semibold text-gray-500">
+          {items?.length ?? 0}
+        </span>
+      </div>
+
+      {/* Add form */}
+      <div className="flex gap-2">
+        <input
+          value={nameEs}
+          onChange={(e) => setNameEs(e.target.value)}
+          placeholder="Nombre en español"
+          className="vively-input flex-1"
+          onKeyDown={(e) => {
+            if (e.key === "Enter" && nameEs.trim()) {
+              onAdd(nameEs.trim(), nameEn.trim() || undefined);
+              setNameEs("");
+              setNameEn("");
+            }
+          }}
+        />
+        <input
+          value={nameEn}
+          onChange={(e) => setNameEn(e.target.value)}
+          placeholder="English name"
+          className="vively-input flex-1"
+        />
+        <button
+          onClick={() => {
+            if (!nameEs.trim()) return;
+            onAdd(nameEs.trim(), nameEn.trim() || undefined);
+            setNameEs("");
+            setNameEn("");
+          }}
+          disabled={isAdding || !nameEs.trim()}
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#00D27A] text-white disabled:opacity-50"
+        >
+          <PlusIcon className="h-4 w-4" />
+        </button>
+      </div>
+
+      {/* Items list */}
+      <div className="max-h-48 overflow-y-auto space-y-1.5">
+        {items && items.length > 0 ? (
+          items.map((item) => (
+            <div key={item.id} className="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2">
+              <div>
+                <p className="text-sm font-medium text-gray-800">{item.nameEs}</p>
+                {item.nameEn && <p className="text-xs text-gray-400">{item.nameEn}</p>}
               </div>
-            </DialogContent>
-          </Dialog>
-        </div>
-      </CardHeader>
-      <CardContent>
-        {!items ? (
-          <div className="space-y-2">
-            {[...Array(3)].map((_, i) => <div key={i} className="h-9 bg-muted rounded animate-pulse" />)}
-          </div>
-        ) : items.length === 0 ? (
-          <p className="text-sm text-muted-foreground text-center py-4">Sin elementos</p>
+              <button
+                onClick={() => onDelete(item.id)}
+                className="flex h-7 w-7 items-center justify-center rounded-lg text-red-400 hover:bg-red-50"
+              >
+                <TrashIcon className="h-3.5 w-3.5" />
+              </button>
+            </div>
+          ))
         ) : (
-          <div className="space-y-1 max-h-64 overflow-y-auto">
-            {items.map((item) => (
-              <div key={item.id} className="flex items-center justify-between p-2 rounded-lg hover:bg-muted/50 group">
-                <div>
-                  <span className="text-sm text-foreground">{item.nameEs}</span>
-                  {item.nameEn && <span className="text-xs text-muted-foreground ml-2">({item.nameEn})</span>}
-                </div>
-                <Button
-                  variant="ghost"
-                  size="icon"
-                  className="w-7 h-7 opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-destructive"
-                  onClick={() => onDelete(item.id)}
-                >
-                  <Trash2 className="w-3.5 h-3.5" />
-                </Button>
-              </div>
-            ))}
-          </div>
+          <p className="py-3 text-center text-xs text-gray-400">Sin elementos. Añade el primero.</p>
         )}
-      </CardContent>
-    </Card>
+      </div>
+    </div>
   );
 }
 
 export default function Admin() {
+  const [activeTab, setActiveTab] = useState("overview");
   const { user } = useAuth();
 
-  const { data: adminStats } = trpc.admin.stats.useQuery();
+  const { data: stats } = trpc.admin.stats.useQuery();
   const { data: allergies } = trpc.catalogs.allergies.useQuery();
-  const { data: restrictions } = trpc.catalogs.dietRestrictions.useQuery();
-  const { data: categories } = trpc.catalogs.foodCategories.useQuery();
-  const { data: measures } = trpc.catalogs.measures.useQuery();
+  const { data: dietRestrictions } = trpc.catalogs.dietRestrictions.useQuery();
+  const { data: foodCategories } = trpc.catalogs.foodCategories.useQuery();
+  const { data: users } = trpc.admin.users.useQuery({});
   const utils = trpc.useUtils();
 
   const addAllergy = trpc.admin.createAllergy.useMutation({
     onSuccess: () => { utils.catalogs.allergies.invalidate(); toast.success("Alergia añadida"); },
+    onError: (err) => toast.error(err.message),
   });
   const deleteAllergy = trpc.admin.deleteAllergy.useMutation({
-    onSuccess: () => { utils.catalogs.allergies.invalidate(); toast.success("Alergia eliminada"); },
+    onSuccess: () => { utils.catalogs.allergies.invalidate(); toast.success("Eliminada"); },
   });
 
-  const addRestriction = trpc.admin.createDietRestriction.useMutation({
+  const addDiet = trpc.admin.createDietRestriction.useMutation({
     onSuccess: () => { utils.catalogs.dietRestrictions.invalidate(); toast.success("Restricción añadida"); },
+    onError: (err) => toast.error(err.message),
   });
-  const deleteRestriction = trpc.admin.deleteDietRestriction.useMutation({
-    onSuccess: () => { utils.catalogs.dietRestrictions.invalidate(); toast.success("Restricción eliminada"); },
+  const deleteDiet = trpc.admin.deleteDietRestriction.useMutation({
+    onSuccess: () => { utils.catalogs.dietRestrictions.invalidate(); toast.success("Eliminada"); },
   });
 
   const addCategory = trpc.admin.createFoodCategory.useMutation({
     onSuccess: () => { utils.catalogs.foodCategories.invalidate(); toast.success("Categoría añadida"); },
+    onError: (err) => toast.error(err.message),
   });
   const deleteCategory = trpc.admin.deleteFoodCategory.useMutation({
-    onSuccess: () => { utils.catalogs.foodCategories.invalidate(); toast.success("Categoría eliminada"); },
+    onSuccess: () => { utils.catalogs.foodCategories.invalidate(); toast.success("Eliminada"); },
   });
 
-  const addMeasure = trpc.admin.createMeasure.useMutation({
-    onSuccess: () => { utils.catalogs.measures.invalidate(); toast.success("Medida añadida"); },
-  });
-  const deleteMeasure = trpc.admin.deleteMeasure.useMutation({
-    onSuccess: () => { utils.catalogs.measures.invalidate(); toast.success("Medida eliminada"); },
+  const updateRole = trpc.admin.updateUserRole.useMutation({
+    onSuccess: () => { utils.admin.users.invalidate(); toast.success("Rol actualizado"); },
+    onError: (err) => toast.error(err.message),
   });
 
   if (user?.role !== "admin") {
     return (
-      <AppLayout>
-        <div className="flex flex-col items-center justify-center h-64 gap-4">
-          <Shield className="w-12 h-12 text-muted-foreground/30" />
-          <h2 className="text-lg font-semibold text-foreground">Acceso restringido</h2>
-          <p className="text-sm text-muted-foreground">Solo los administradores pueden acceder a esta sección.</p>
-          <Button asChild variant="outline">
-            <Link href="/dashboard">Volver al inicio</Link>
-          </Button>
-        </div>
-      </AppLayout>
+      <div className="vively-page container text-center">
+        <ShieldCheckIcon className="mx-auto mb-3 h-12 w-12 text-gray-300" />
+        <h2 className="text-lg font-bold text-gray-700">Acceso restringido</h2>
+        <p className="mt-1 text-sm text-gray-500">Solo los administradores pueden acceder a esta sección.</p>
+        <Link href="/dashboard" className="btn-vively mt-4 inline-block">
+          Ir al dashboard
+        </Link>
+      </div>
     );
   }
 
   return (
-    <AppLayout>
-      <div className="p-6 max-w-6xl mx-auto space-y-6">
-        <div>
-          <h1 className="text-2xl font-bold text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-            Panel de Administración
-          </h1>
-          <p className="text-muted-foreground text-sm mt-1">Gestiona los catálogos y configuración de la plataforma</p>
+    <div className="vively-page container">
+      {/* Header */}
+      <div className="mb-5 flex items-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gray-900">
+          <ShieldCheckIcon className="h-5 w-5 text-white" />
         </div>
+        <div>
+          <h1 className="text-xl font-extrabold text-gray-900">Panel Admin</h1>
+          <p className="text-xs text-gray-400">Gestión de VIVELY</p>
+        </div>
+      </div>
 
-        {/* Stats */}
-        {adminStats && (
-          <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+      {/* Tabs */}
+      <div className="mb-5 flex gap-1 overflow-x-auto pb-1">
+        {TABS.map((tab) => (
+          <button
+            key={tab.key}
+            onClick={() => setActiveTab(tab.key)}
+            className={`flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all ${
+              activeTab === tab.key
+                ? "bg-gray-900 text-white"
+                : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+            }`}
+          >
+            <tab.icon className="h-3.5 w-3.5" />
+            {tab.label}
+          </button>
+        ))}
+      </div>
+
+      {/* Overview */}
+      {activeTab === "overview" && (
+        <div className="space-y-3">
+          <div className="grid grid-cols-2 gap-3">
             {[
-              { label: "Usuarios", value: adminStats.totalUsers, icon: Users },
-              { label: "Recetas", value: adminStats.totalRecipes, icon: BookOpen },
-              { label: "Ingredientes", value: adminStats.totalIngredients, icon: Tag },
-              { label: "Menús", value: adminStats.totalMenus, icon: AlertCircle },
+              { label: "Usuarios totales", value: (stats as any)?.totalUsers ?? 0, icon: "👥" },
+              { label: "Recetas", value: (stats as any)?.totalRecipes ?? 0, icon: "🍽️" },
+              { label: "Alergias", value: (stats as any)?.totalAllergies ?? 0, icon: "⚠️" },
+              { label: "Categorías", value: (stats as any)?.totalCategories ?? 0, icon: "🏷️" },
             ].map((stat) => (
-              <Card key={stat.label} className="border-border">
-                <CardContent className="p-4 flex items-center gap-3">
-                  <div className="w-10 h-10 rounded-lg bg-primary/10 flex items-center justify-center">
-                    <stat.icon className="w-5 h-5 text-primary" />
-                  </div>
-                  <div>
-                    <p className="text-xl font-bold text-foreground">{stat.value}</p>
-                    <p className="text-xs text-muted-foreground">{stat.label}</p>
-                  </div>
-                </CardContent>
-              </Card>
+              <div key={stat.label} className="vively-card text-center">
+                <p className="text-2xl">{stat.icon}</p>
+                <p className="text-xl font-extrabold text-gray-900">{stat.value}</p>
+                <p className="text-xs text-gray-500">{stat.label}</p>
+              </div>
             ))}
           </div>
-        )}
+          <div className="vively-card">
+            <h3 className="mb-2 text-sm font-bold text-gray-700">Accesos rápidos</h3>
+            <div className="space-y-2">
+              {[
+                { label: "Gestionar alergias", tab: "allergies" },
+                { label: "Gestionar dietas", tab: "diets" },
+                { label: "Gestionar categorías", tab: "categories" },
+                { label: "Gestionar usuarios", tab: "users" },
+              ].map((item) => (
+                <button
+                  key={item.tab}
+                  onClick={() => setActiveTab(item.tab)}
+                  className="flex w-full items-center justify-between rounded-xl bg-gray-50 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                >
+                  {item.label}
+                  <span className="text-gray-400">→</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        </div>
+      )}
 
-        <Tabs defaultValue="allergies">
-          <TabsList className="grid grid-cols-4 w-full">
-            <TabsTrigger value="allergies" className="text-xs">Alergias</TabsTrigger>
-            <TabsTrigger value="restrictions" className="text-xs">Restricciones</TabsTrigger>
-            <TabsTrigger value="categories" className="text-xs">Categorías</TabsTrigger>
-            <TabsTrigger value="measures" className="text-xs">Medidas</TabsTrigger>
-          </TabsList>
+      {/* Allergies */}
+      {activeTab === "allergies" && (
+        <CatalogSection
+          title="Alergias alimentarias"
+          items={allergies}
+          onAdd={(nameEs, nameEn) => addAllergy.mutate({ apiParam: nameEs.toLowerCase().replace(/\s+/g, '_'), nameEs, nameEn })}
+          onDelete={(id) => deleteAllergy.mutate({ id })}
+          isAdding={addAllergy.isPending}
+        />
+      )}
 
-          <TabsContent value="allergies">
-            <CatalogSection
-              title="Alergias alimentarias"
-              icon={AlertCircle}
-              items={allergies}
-              onAdd={(nameEs, nameEn) => addAllergy.mutate({ apiParam: nameEs.toLowerCase().replace(/\s+/g, '_'), nameEs, nameEn })}
-              onDelete={(id) => { if (confirm("¿Eliminar esta alergia?")) deleteAllergy.mutate({ id }); }}
-              isAdding={addAllergy.isPending}
-            />
-          </TabsContent>
+      {/* Diets */}
+      {activeTab === "diets" && (
+        <CatalogSection
+          title="Restricciones dietéticas"
+          items={dietRestrictions}
+          onAdd={(nameEs, nameEn) => addDiet.mutate({ apiParam: nameEs.toLowerCase().replace(/\s+/g, '_'), nameEs, nameEn })}
+          onDelete={(id) => deleteDiet.mutate({ id })}
+          isAdding={addDiet.isPending}
+        />
+      )}
 
-          <TabsContent value="restrictions">
-            <CatalogSection
-              title="Restricciones dietéticas"
-              icon={Tag}
-              items={restrictions}
-              onAdd={(nameEs, nameEn) => addRestriction.mutate({ apiParam: nameEs.toLowerCase().replace(/\s+/g, '_'), nameEs, nameEn })}
-              onDelete={(id) => { if (confirm("¿Eliminar esta restricción?")) deleteRestriction.mutate({ id }); }}
-              isAdding={addRestriction.isPending}
-            />
-          </TabsContent>
+      {/* Categories */}
+      {activeTab === "categories" && (
+        <CatalogSection
+          title="Categorías de comida"
+          items={foodCategories}
+          onAdd={(nameEs, nameEn) => addCategory.mutate({ apiParam: nameEs.toLowerCase().replace(/\s+/g, '_'), nameEs, nameEn })}
+          onDelete={(id) => deleteCategory.mutate({ id })}
+          isAdding={addCategory.isPending}
+        />
+      )}
 
-          <TabsContent value="categories">
-            <CatalogSection
-              title="Categorías de alimentos"
-              icon={BookOpen}
-              items={categories}
-              onAdd={(nameEs, nameEn) => addCategory.mutate({ apiParam: nameEs.toLowerCase().replace(/\s+/g, '_'), nameEs, nameEn })}
-              onDelete={(id) => { if (confirm("¿Eliminar esta categoría?")) deleteCategory.mutate({ id }); }}
-              isAdding={addCategory.isPending}
-            />
-          </TabsContent>
-
-          <TabsContent value="measures">
-            <CatalogSection
-              title="Unidades de medida"
-              icon={Ruler}
-              items={measures}
-              onAdd={(nameEs, nameEn) => addMeasure.mutate({ apiParam: nameEs.toLowerCase().replace(/\s+/g, '_'), nameEs, nameEn })}
-              onDelete={(id) => { if (confirm("¿Eliminar esta medida?")) deleteMeasure.mutate({ id }); }}
-              isAdding={addMeasure.isPending}
-            />
-          </TabsContent>
-        </Tabs>
-      </div>
-    </AppLayout>
+      {/* Users */}
+      {activeTab === "users" && (
+        <div className="vively-card space-y-3">
+          <h3 className="text-sm font-bold text-gray-700">
+            Usuarios registrados
+            <span className="ml-2 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-500">
+              {users?.length ?? 0}
+            </span>
+          </h3>
+          <div className="max-h-[60vh] overflow-y-auto space-y-2">
+            {(users ?? []).map((u: any) => (
+              <div key={u.id} className="flex items-center gap-3 rounded-xl bg-gray-50 px-3 py-2.5">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#00D27A]/10 text-sm font-bold text-[#00D27A]">
+                  {u.name ? u.name[0].toUpperCase() : "?"}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="truncate text-sm font-semibold text-gray-800">{u.name || "Sin nombre"}</p>
+                  <p className="truncate text-xs text-gray-400">{u.email || u.openId}</p>
+                </div>
+                <select
+                  value={u.role}
+                  onChange={(e) => updateRole.mutate({ userId: u.id, role: e.target.value as any })}
+                  className="rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs font-semibold text-gray-700"
+                >
+                  <option value="user">Usuario</option>
+                  <option value="admin">Admin</option>
+                </select>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
   );
 }

@@ -1,359 +1,291 @@
-import AppLayout from "@/components/AppLayout";
-import { trpc } from "@/lib/trpc";
-import { Button } from "@/components/ui/button";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { Badge } from "@/components/ui/badge";
-import { Checkbox } from "@/components/ui/checkbox";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import {
-  Dialog,
-  DialogContent,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "@/components/ui/dialog";
-import {
-  ArrowLeft,
-  CheckCircle2,
-  Loader2,
-  Plus,
-  ShoppingCart,
-  Trash2,
-} from "lucide-react";
 import { useState } from "react";
+import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import {
+  PlusIcon,
+  ChevronLeftIcon,
+  TrashIcon,
+  CheckIcon,
+} from "@heroicons/react/24/outline";
+import { CheckCircleIcon } from "@heroicons/react/24/solid";
 
 function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => void }) {
   const { data: listData, isLoading } = trpc.shoppingLists.getById.useQuery({ id: listId });
-  const items = listData?.items;
   const utils = trpc.useUtils();
+  const [newItem, setNewItem] = useState("");
+  const [showAdd, setShowAdd] = useState(false);
 
   const toggleItem = trpc.shoppingLists.toggleItem.useMutation({
     onSuccess: () => utils.shoppingLists.getById.invalidate({ id: listId }),
   });
-
   const removeItem = trpc.shoppingLists.removeItem.useMutation({
     onSuccess: () => utils.shoppingLists.getById.invalidate({ id: listId }),
   });
-
-  const [newItemName, setNewItemName] = useState("");
-  const [newItemAmount, setNewItemAmount] = useState("");
-  const [addOpen, setAddOpen] = useState(false);
-
   const addItem = trpc.shoppingLists.addItem.useMutation({
     onSuccess: () => {
       utils.shoppingLists.getById.invalidate({ id: listId });
-      setNewItemName("");
-      setNewItemAmount("");
-      setAddOpen(false);
+      setNewItem("");
+      setShowAdd(false);
       toast.success("Producto añadido");
     },
   });
 
-  const purchasedCount = items?.filter((i) => i.item.checked).length || 0;
-  const totalCount = items?.length || 0;
+  const items = listData?.items ?? [];
+  const purchased = items.filter((i: any) => i.isPurchased).length;
+  const pct = items.length > 0 ? Math.round((purchased / items.length) * 100) : 0;
 
   // Group by category
-  const grouped = items?.reduce((acc: Record<string, (typeof items)[number][]>, item) => {
-    const cat = item.ingredient?.nameEs ? "Ingredientes" : "Otros";
-    if (!acc[cat]) acc[cat] = [];
-    acc[cat].push(item);
-    return acc;
-  }, {} as Record<string, (typeof items)[number][]>) || {};
+  const grouped: Record<string, any[]> = {};
+  items.forEach((item: any) => {
+    const cat = item.ingredient?.foodCategory?.name ?? "Sin categoría";
+    if (!grouped[cat]) grouped[cat] = [];
+    grouped[cat].push(item);
+  });
 
   return (
-    <div className="space-y-4">
-      <div className="flex items-center gap-3">
-        <Button variant="ghost" size="sm" onClick={onBack} className="-ml-2">
-          <ArrowLeft className="w-4 h-4 mr-1.5" />
-          Volver
-        </Button>
-        <div className="flex-1" />
-        <span className="text-sm text-muted-foreground">
-          {purchasedCount}/{totalCount} comprados
-        </span>
-        <Dialog open={addOpen} onOpenChange={setAddOpen}>
-          <DialogTrigger asChild>
-            <Button size="sm">
-              <Plus className="w-4 h-4 mr-1.5" />
-              Añadir
-            </Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>Añadir producto</DialogTitle>
-            </DialogHeader>
-            <div className="space-y-4 mt-2">
-              <div className="space-y-1.5">
-                <Label>Nombre del producto</Label>
-                <Input
-                  value={newItemName}
-                  onChange={(e) => setNewItemName(e.target.value)}
-                  placeholder="Ej: Tomates cherry"
-                />
-              </div>
-              <div className="space-y-1.5">
-                <Label>Cantidad (opcional)</Label>
-                <Input
-                  value={newItemAmount}
-                  onChange={(e) => setNewItemAmount(e.target.value)}
-                  placeholder="Ej: 500g, 2 unidades..."
-                />
-              </div>
-              <Button
-                className="w-full"
-                onClick={() => {
-                  if (!newItemName.trim()) return;
-                  addItem.mutate({
-                    shoppingListId: listId,
-                    customName: newItemName.trim(),
-                    amount: newItemAmount ? parseFloat(newItemAmount) : undefined,
-                  });
-                }}
-                disabled={addItem.isPending}
-              >
-                {addItem.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                Añadir producto
-              </Button>
-            </div>
-          </DialogContent>
-        </Dialog>
+    <div className="vively-page container">
+      {/* Header */}
+      <div className="mb-5 flex items-center gap-3">
+        <button onClick={onBack} className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100">
+          <ChevronLeftIcon className="h-5 w-5 text-gray-600" />
+        </button>
+        <div className="flex-1 min-w-0">
+          <h1 className="text-xl font-bold text-gray-900 truncate">{(listData as any)?.list?.name ?? (listData as any)?.name ?? "Lista de compra"}</h1>
+          <p className="text-xs text-gray-500">{purchased}/{items.length} comprados</p>
+        </div>
+        <button
+          onClick={() => setShowAdd(true)}
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-[#00D27A] shadow-sm"
+        >
+          <PlusIcon className="h-5 w-5 text-white" />
+        </button>
       </div>
 
-      {/* Progress bar */}
-      {totalCount > 0 && (
-        <div className="space-y-1.5">
-          <div className="w-full bg-muted rounded-full h-2">
-            <div
-              className="bg-primary h-2 rounded-full transition-all duration-300"
-              style={{ width: `${(purchasedCount / totalCount) * 100}%` }}
-            />
+      {/* Progress */}
+      {items.length > 0 && (
+        <div className="vively-card mb-5">
+          <div className="mb-2 flex items-center justify-between">
+            <span className="text-sm font-semibold text-gray-700">Progreso</span>
+            <span className="text-sm font-bold text-[#00D27A]">{pct}%</span>
           </div>
-          {purchasedCount === totalCount && totalCount > 0 && (
-            <div className="flex items-center gap-2 text-sm text-primary">
-              <CheckCircle2 className="w-4 h-4" />
-              ¡Lista completada!
-            </div>
-          )}
+          <div className="macro-bar">
+            <div className="macro-bar-fill" style={{ width: `${pct}%`, background: "#00D27A" }} />
+          </div>
         </div>
       )}
 
       {isLoading ? (
-        <div className="space-y-2">
-          {[...Array(5)].map((_, i) => (
-            <div key={i} className="h-12 bg-muted rounded-lg animate-pulse" />
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => (
+            <div key={i} className="vively-card animate-pulse h-14" />
           ))}
         </div>
-      ) : items && items.length > 0 ? (
+      ) : items.length === 0 ? (
+        <div className="empty-state">
+          <span className="mb-4 text-5xl">🛒</span>
+          <h3 className="mb-2 text-base font-bold text-gray-900">Lista vacía</h3>
+          <p className="mb-6 text-sm text-gray-500">Añade productos a tu lista de compra</p>
+          <button onClick={() => setShowAdd(true)} className="btn-vively">Añadir producto</button>
+        </div>
+      ) : (
         <div className="space-y-4">
-          {Object.entries(grouped).map(([category, categoryItems]) => (
+          {Object.entries(grouped).map(([category, catItems]) => (
             <div key={category}>
-              <h3 className="text-xs font-semibold text-muted-foreground uppercase tracking-wider mb-2">{category}</h3>
-              <div className="space-y-1">
-                {categoryItems.map((item) => (
+              <h3 className="mb-2 text-xs font-bold uppercase tracking-wider text-gray-400">{category}</h3>
+              <div className="space-y-2">
+                {catItems.map((item: any) => (
                   <div
-                    key={item.item.id}
-                    className={`flex items-center gap-3 p-3 rounded-lg border transition-colors ${
-                      item.item.checked ? "bg-muted/50 border-border/50" : "bg-card border-border"
+                    key={item.id}
+                    className={`flex items-center gap-3 rounded-2xl bg-white p-3 border transition-all ${
+                      item.isPurchased ? "border-[#00D27A]/30 bg-[#f0fdf4]" : "border-gray-100 shadow-sm"
                     }`}
                   >
-                    <Checkbox
-                      checked={item.item.checked || false}
-                      onCheckedChange={() =>
-                        toggleItem.mutate({ id: item.item.id })
-                      }
-                    />
+                    <button
+                      onClick={() => toggleItem.mutate({ id: item.id })}
+                      className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 transition-all ${
+                        item.isPurchased
+                          ? "border-[#00D27A] bg-[#00D27A]"
+                          : "border-gray-300 hover:border-[#00D27A]"
+                      }`}
+                    >
+                      {item.isPurchased && <CheckIcon className="h-4 w-4 text-white" />}
+                    </button>
                     <div className="flex-1 min-w-0">
-                      <span className={`text-sm ${item.item.checked ? "line-through text-muted-foreground" : "text-foreground"}`}>
-                        {item.ingredient?.nameEs || item.item.customName || "Producto"}
+                      <span className={`text-sm font-medium ${item.isPurchased ? "line-through text-gray-400" : "text-gray-900"}`}>
+                        {item.ingredient?.name ?? item.customName ?? "Producto"}
                       </span>
-                      {item.item.amount && (
-                        <span className="text-xs text-muted-foreground ml-2">
-                          {item.item.amount} {item.measure?.nameEs || ""}
+                      {item.amount && (
+                        <span className="ml-2 text-xs text-gray-400">
+                          {item.amount} {item.measure?.name ?? ""}
                         </span>
                       )}
                     </div>
-                    <Button
-                      variant="ghost"
-                      size="icon"
-                      className="w-7 h-7 text-muted-foreground hover:text-destructive shrink-0"
-                      onClick={() => removeItem.mutate({ id: item.item.id })}
+                    <button
+                      onClick={() => removeItem.mutate({ id: item.id })}
+                      className="flex h-7 w-7 items-center justify-center rounded-full text-gray-300 hover:bg-red-50 hover:text-red-400"
                     >
-                      <Trash2 className="w-3.5 h-3.5" />
-                    </Button>
+                      <TrashIcon className="h-4 w-4" />
+                    </button>
                   </div>
                 ))}
               </div>
             </div>
           ))}
         </div>
-      ) : (
-        <div className="text-center py-10">
-          <ShoppingCart className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
-          <p className="text-sm text-muted-foreground">Lista vacía. Añade productos para empezar.</p>
+      )}
+
+      {/* Add item modal */}
+      {showAdd && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4">
+          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up">
+            <h3 className="mb-4 text-lg font-bold text-gray-900">Añadir producto</h3>
+            <input
+              value={newItem}
+              onChange={(e) => setNewItem(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && addItem.mutate({ shoppingListId: listId, customName: newItem })}
+              placeholder="Nombre del producto"
+              className="vively-input mb-4"
+            />
+            <div className="flex gap-3">
+              <button onClick={() => setShowAdd(false)} className="flex-1 rounded-2xl border border-gray-200 py-3 text-sm font-semibold text-gray-600">
+                Cancelar
+              </button>
+              <button
+                onClick={() => addItem.mutate({ shoppingListId: listId, customName: newItem })}
+                disabled={!newItem || addItem.isPending}
+                className="flex-1 btn-vively"
+              >
+                Añadir
+              </button>
+            </div>
+          </div>
         </div>
       )}
+
+      <div className="vively-disclaimer">
+        <p>VIVELY no constituye recomendaciones profesionales de nutrición.</p>
+      </div>
     </div>
   );
 }
 
 export default function ShoppingLists() {
-  const [selectedList, setSelectedList] = useState<number | null>(null);
-  const [open, setOpen] = useState(false);
-  const [listName, setListName] = useState("");
+  const [selectedListId, setSelectedListId] = useState<number | null>(null);
+  const [showNew, setShowNew] = useState(false);
+  const [newName, setNewName] = useState("");
 
-  const { data: lists, isLoading } = trpc.shoppingLists.list.useQuery();
+  const { data: lists, isLoading, refetch } = trpc.shoppingLists.list.useQuery();
   const utils = trpc.useUtils();
 
   const createList = trpc.shoppingLists.create.useMutation({
-    onSuccess: (data) => {
-      utils.shoppingLists.list.invalidate();
-      setOpen(false);
-      setListName("");
-      if (data?.id) setSelectedList(data.id);
+    onSuccess: () => {
+      refetch();
+      setShowNew(false);
+      setNewName("");
       toast.success("Lista creada");
     },
-    onError: (err) => toast.error(err.message),
   });
-
   const deleteList = trpc.shoppingLists.delete.useMutation({
-    onSuccess: () => {
-      utils.shoppingLists.list.invalidate();
-      setSelectedList(null);
-      toast.success("Lista eliminada");
-    },
+    onSuccess: () => { refetch(); toast.success("Lista eliminada"); },
   });
 
-  const selectedListData = lists?.find((l) => l.id === selectedList);
+  if (selectedListId !== null) {
+    return <ShoppingListDetail listId={selectedListId} onBack={() => setSelectedListId(null)} />;
+  }
 
   return (
-    <AppLayout>
-      <div className="p-6 max-w-4xl mx-auto space-y-6">
-        {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-              Lista de Compra
-            </h1>
-            <p className="text-muted-foreground text-sm mt-1">Gestiona tus listas de la compra</p>
-          </div>
-          <Dialog open={open} onOpenChange={setOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm">
-                <Plus className="w-4 h-4 mr-1.5" />
-                Nueva lista
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Nueva lista de compra</DialogTitle>
-              </DialogHeader>
-              <div className="space-y-4 mt-2">
-                <div className="space-y-1.5">
-                  <Label>Nombre de la lista</Label>
-                  <Input
-                    value={listName}
-                    onChange={(e) => setListName(e.target.value)}
-                    placeholder="Ej: Compra semanal"
-                    onKeyDown={(e) => {
-                      if (e.key === "Enter" && listName.trim()) {
-                        createList.mutate({ name: listName.trim() });
-                      }
-                    }}
-                  />
-                </div>
-                <Button
-                  className="w-full"
-                  onClick={() => {
-                    if (listName.trim()) createList.mutate({ name: listName.trim() });
-                  }}
-                  disabled={createList.isPending}
-                >
-                  {createList.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}
-                  Crear lista
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-        </div>
-
-        <div className="grid lg:grid-cols-3 gap-6">
-          {/* Lists sidebar */}
-          <div className="space-y-2">
-            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wider">Mis listas</h2>
-            {isLoading ? (
-              <div className="space-y-2">
-                {[...Array(3)].map((_, i) => (
-                  <div key={i} className="h-16 bg-muted rounded-lg animate-pulse" />
-                ))}
-              </div>
-            ) : lists && lists.length > 0 ? (
-              lists.map((list) => (
-                <button
-                  key={list.id}
-                  onClick={() => setSelectedList(list.id)}
-                  className={`w-full text-left p-3 rounded-lg border transition-all ${
-                    selectedList === list.id
-                      ? "border-primary bg-primary/5"
-                      : "border-border bg-card hover:border-primary/50"
-                  }`}
-                >
-                  <div className="flex items-center justify-between">
-                    <p className="text-sm font-medium text-foreground truncate">{list.name}</p>
-                    {list.completed && (
-                      <CheckCircle2 className="w-4 h-4 text-primary shrink-0" />
-                    )}
-                  </div>
-                  <p className="text-xs text-muted-foreground mt-0.5">
-                    {new Date(list.createdAt).toLocaleDateString("es-ES")}
-                  </p>
-                </button>
-              ))
-            ) : (
-              <div className="text-center py-8">
-                <ShoppingCart className="w-8 h-8 text-muted-foreground/30 mx-auto mb-2" />
-                <p className="text-xs text-muted-foreground">Sin listas todavía</p>
-              </div>
-            )}
-          </div>
-
-          {/* List detail */}
-          <div className="lg:col-span-2">
-            {selectedList && selectedListData ? (
-              <Card className="border-border">
-                <CardHeader className="pb-3">
-                  <div className="flex items-center justify-between">
-                    <CardTitle className="text-base">{selectedListData.name}</CardTitle>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      className="text-destructive hover:text-destructive h-8"
-                      onClick={() => {
-                        if (confirm("¿Eliminar esta lista?")) {
-                          deleteList.mutate({ id: selectedList });
-                        }
-                      }}
-                    >
-                      <Trash2 className="w-4 h-4" />
-                    </Button>
-                  </div>
-                </CardHeader>
-                <CardContent>
-                  <ShoppingListDetail listId={selectedList} onBack={() => setSelectedList(null)} />
-                </CardContent>
-              </Card>
-            ) : (
-              <div className="flex items-center justify-center h-64 rounded-xl border-2 border-dashed border-border">
-                <div className="text-center">
-                  <ShoppingCart className="w-10 h-10 text-muted-foreground/30 mx-auto mb-3" />
-                  <p className="text-sm text-muted-foreground">Selecciona una lista para ver sus productos</p>
-                </div>
-              </div>
-            )}
-          </div>
-        </div>
+    <div className="vively-page container">
+      {/* Header */}
+      <div className="mb-5 flex items-center justify-between">
+        <h1 className="text-2xl font-bold text-gray-900">Lista de compra</h1>
+        <button
+          onClick={() => setShowNew(true)}
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-[#00D27A] shadow-sm"
+        >
+          <PlusIcon className="h-5 w-5 text-white" />
+        </button>
       </div>
-    </AppLayout>
+
+      {isLoading ? (
+        <div className="space-y-3">
+          {[1, 2, 3].map((i) => <div key={i} className="vively-card animate-pulse h-20" />)}
+        </div>
+      ) : lists && lists.length > 0 ? (
+        <div className="space-y-3">
+          {lists.map((list) => {
+            const total = (list as any).itemCount ?? 0;
+            const done = (list as any).purchasedCount ?? 0;
+            const pct = total > 0 ? Math.round((done / total) * 100) : 0;
+
+            return (
+              <div
+                key={list.id}
+                onClick={() => setSelectedListId(list.id)}
+                className="vively-card flex items-center gap-4 cursor-pointer hover:border-[#00D27A]/30 transition-all"
+              >
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#f0fdf4]">
+                  <span className="text-2xl">🛒</span>
+                </div>
+                <div className="flex-1 min-w-0">
+                  <h3 className="text-sm font-semibold text-gray-900 truncate">{list.name}</h3>
+                  <div className="mt-1 flex items-center gap-2">
+                    <div className="macro-bar flex-1">
+                      <div className="macro-bar-fill" style={{ width: `${pct}%`, background: "#00D27A" }} />
+                    </div>
+                    <span className="shrink-0 text-xs text-gray-400">{done}/{total}</span>
+                  </div>
+                </div>
+                <button
+                  onClick={(e) => {
+                    e.stopPropagation();
+                    if (confirm("¿Eliminar esta lista?")) deleteList.mutate({ id: list.id });
+                  }}
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-gray-300 hover:bg-red-50 hover:text-red-400"
+                >
+                  <TrashIcon className="h-4 w-4" />
+                </button>
+              </div>
+            );
+          })}
+        </div>
+      ) : (
+        <div className="empty-state">
+          <span className="mb-4 text-5xl">🛒</span>
+          <h3 className="mb-2 text-base font-bold text-gray-900">Sin listas de compra</h3>
+          <p className="mb-6 text-sm text-gray-500">Crea tu primera lista de compra</p>
+          <button onClick={() => setShowNew(true)} className="btn-vively">Crear lista</button>
+        </div>
+      )}
+
+      {showNew && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4">
+          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up">
+            <h3 className="mb-4 text-lg font-bold text-gray-900">Nueva lista</h3>
+            <input
+              value={newName}
+              onChange={(e) => setNewName(e.target.value)}
+              placeholder="Nombre de la lista (ej: Supermercado)"
+              className="vively-input mb-4"
+            />
+            <div className="flex gap-3">
+              <button onClick={() => setShowNew(false)} className="flex-1 rounded-2xl border border-gray-200 py-3 text-sm font-semibold text-gray-600">
+                Cancelar
+              </button>
+              <button
+                onClick={() => createList.mutate({ name: newName || "Mi lista" })}
+                disabled={createList.isPending}
+                className="flex-1 btn-vively"
+              >
+                Crear
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      <div className="vively-disclaimer">
+        <p>VIVELY no constituye recomendaciones profesionales de nutrición.</p>
+      </div>
+    </div>
   );
 }
