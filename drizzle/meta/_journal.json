@@ -15,6 +15,20 @@
       "when": 1775044220829,
       "tag": "0001_fuzzy_shooting_star",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1775063904748,
+      "tag": "0002_remarkable_quentin_quire",
+      "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1775064452706,
+      "tag": "0003_odd_marvex",
+      "breakpoints": true
     }
   ]
 }

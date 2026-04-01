@@ -152,3 +152,18 @@
 - [x] Buscar y subir imágenes premium para cada acceso rápido (recetas, menús, inventario, supermercados, BuddyScan, diario)
 - [x] Rediseñar accesos rápidos con imágenes de fondo, glassmorphism y layout asimétrico tipo bento grid
 - [x] Añadir micro-animaciones en hover/tap en los accesos rápidos
+
+## Sprint BuddyExperts + BuddyMakers + BuddyIA (completado)
+- [x] Schema DB: tablas buddyExperts, buddyMakers, expertPlans, expertMenus, creatorEarnings
+- [x] tRPC router BuddyExperts: listar, ver plan, copiar menú, menús compartidos gratuitos
+- [x] tRPC router BuddyMakers: listar, ver recetas, seguir
+- [x] tRPC router Stripe Connect: onboarding experto, pago comisión 20%
+- [x] tRPC router BuddyIA: chat nutricional, generador de menús semanales
+- [x] Página BuddyExperts: categorías, avatares, planes premium, menús compartidos gratuitos
+- [x] Página BuddyMakers: creadores de recetas con perfil Instagram
+- [x] Página BuddyIA: chat nutricional con sugerencias predefinidas y generador de menús
+- [x] Dashboard: sección Comunidad BuddyMarket con BuddyExperts, BuddyMakers, BuddyIA
+- [x] AppLayout sidebar: añadir BuddyMakers y BuddyIA al menú lateral
+- [x] App.tsx: rutas /buddy-makers y /buddy-ia
+- [x] TypeScript: 0 errores
+- [x] Tests: 15/15 pasando

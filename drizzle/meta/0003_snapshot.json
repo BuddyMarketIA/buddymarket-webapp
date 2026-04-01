@@ -1,8 +1,8 @@
 {
   "version": "5",
   "dialect": "mysql",
-  "id": "7656423f-2a18-4c6b-97b0-388a2b4ac0bf",
-  "prevId": "c2690fe5-f0c1-4257-936c-7706329ceb1e",
+  "id": "0dec7e42-46ed-4b06-b931-917d905c95f1",
+  "prevId": "7656423f-2a18-4c6b-97b0-388a2b4ac0bf",
   "tables": {
     "allergies": {
       "name": "allergies",
@@ -751,6 +751,158 @@
       "compositePrimaryKeys": {
         "expert_followers_id": {
           "name": "expert_followers_id",
+          "columns": [
+            "id"
+          ]
+        }
+      },
+      "uniqueConstraints": {},
+      "checkConstraint": {}
+    },
+    "expert_menus": {
+      "name": "expert_menus",
+      "columns": {
+        "id": {
+          "name": "id",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": true
+        },
+        "expertId": {
+          "name": "expertId",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "title": {
+          "name": "title",
+          "type": "varchar(256)",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false
+        },
+        "description": {
+          "name": "description",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "coverUrl": {
+          "name": "coverUrl",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "weekNumber": {
+          "name": "weekNumber",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "year": {
+          "name": "year",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "category": {
+          "name": "category",
+          "type": "enum('perdida_peso','ganancia_muscular','definicion','dieta_equilibrada','rendimiento','bienestar','vegano')",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false,
+          "default": "'dieta_equilibrada'"
+        },
+        "dailyCalories": {
+          "name": "dailyCalories",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "isFree": {
+          "name": "isFree",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "isPublic": {
+          "name": "isPublic",
+          "type": "boolean",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": true
+        },
+        "copiesCount": {
+          "name": "copiesCount",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "likesCount": {
+          "name": "likesCount",
+          "type": "int",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": 0
+        },
+        "menuData": {
+          "name": "menuData",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false,
+          "autoincrement": false
+        },
+        "createdAt": {
+          "name": "createdAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "default": "(now())"
+        },
+        "updatedAt": {
+          "name": "updatedAt",
+          "type": "timestamp",
+          "primaryKey": false,
+          "notNull": true,
+          "autoincrement": false,
+          "onUpdate": true,
+          "default": "(now())"
+        }
+      },
+      "indexes": {
+        "expert_menus_expert_idx": {
+          "name": "expert_menus_expert_idx",
+          "columns": [
+            "expertId"
+          ],
+          "isUnique": false
+        },
+        "expert_menus_category_idx": {
+          "name": "expert_menus_category_idx",
+          "columns": [
+            "category"
+          ],
+          "isUnique": false
+        }
+      },
+      "foreignKeys": {},
+      "compositePrimaryKeys": {
+        "expert_menus_id": {
+          "name": "expert_menus_id",
           "columns": [
             "id"
           ]

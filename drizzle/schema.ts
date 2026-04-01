@@ -525,3 +525,179 @@ export const userHealthMetrics = mysqlTable("user_health_metrics", {
 
 export type UserHealthMetric = typeof userHealthMetrics.$inferSelect;
 export type InsertUserHealthMetric = typeof userHealthMetrics.$inferInsert;
+
+// =============================================================================
+// BUDDY EXPERTS — Nutricionistas, deportistas y expertos que crean planes
+// =============================================================================
+
+export const buddyExperts = mysqlTable("buddy_experts", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().unique(),
+  displayName: varchar("displayName", { length: 128 }).notNull(),
+  specialty: varchar("specialty", { length: 128 }), // "Nutricionista", "Dietista", "Deportista", etc.
+  bio: text("bio"),
+  avatarUrl: text("avatarUrl"),
+  coverUrl: text("coverUrl"),
+  instagramHandle: varchar("instagramHandle", { length: 64 }),
+  websiteUrl: text("websiteUrl"),
+  category: mysqlEnum("category", ["perdida_peso", "ganancia_muscular", "definicion", "dieta_equilibrada", "rendimiento", "bienestar", "vegano"]).default("dieta_equilibrada"),
+  verified: boolean("verified").default(false).notNull(),
+  featured: boolean("featured").default(false).notNull(),
+  followersCount: int("followersCount").default(0).notNull(),
+  plansCount: int("plansCount").default(0).notNull(),
+  rating: float("rating").default(0),
+  reviewsCount: int("reviewsCount").default(0).notNull(),
+  stripeAccountId: varchar("stripeAccountId", { length: 128 }), // Stripe Connect account
+  stripeOnboardingCompleted: boolean("stripeOnboardingCompleted").default(false).notNull(),
+  commissionRate: float("commissionRate").default(0.20).notNull(), // 20% por defecto
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (t) => ({
+  userIdx: index("buddy_experts_user_idx").on(t.userId),
+  categoryIdx: index("buddy_experts_category_idx").on(t.category),
+}));
+export type BuddyExpert = typeof buddyExperts.$inferSelect;
+export type InsertBuddyExpert = typeof buddyExperts.$inferInsert;
+
+// Planes de menú creados por BuddyExperts
+export const expertPlans = mysqlTable("expert_plans", {
+  id: int("id").autoincrement().primaryKey(),
+  expertId: int("expertId").notNull(),
+  title: varchar("title", { length: 256 }).notNull(),
+  description: text("description"),
+  coverUrl: text("coverUrl"),
+  category: mysqlEnum("category", ["perdida_peso", "ganancia_muscular", "definicion", "dieta_equilibrada", "rendimiento", "bienestar", "vegano"]).default("dieta_equilibrada"),
+  durationWeeks: int("durationWeeks").default(4).notNull(),
+  dailyCalories: int("dailyCalories"),
+  dailyMeals: int("dailyMeals").default(3),
+  level: mysqlEnum("level", ["principiante", "intermedio", "avanzado"]).default("principiante"),
+  tags: text("tags"), // JSON array de tags
+  isPublic: boolean("isPublic").default(true).notNull(),
+  isFeatured: boolean("isFeatured").default(false).notNull(),
+  copiesCount: int("copiesCount").default(0).notNull(),
+  likesCount: int("likesCount").default(0).notNull(),
+  price: float("price").default(0), // 0 = gratis, >0 = de pago
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (t) => ({
+  expertIdx: index("expert_plans_expert_idx").on(t.expertId),
+  categoryIdx: index("expert_plans_category_idx").on(t.category),
+}));
+export type ExpertPlan = typeof expertPlans.$inferSelect;
+export type InsertExpertPlan = typeof expertPlans.$inferInsert;
+
+// Usuarios que han copiado/seguido un plan de experto
+export const userExpertPlanCopies = mysqlTable("user_expert_plan_copies", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  planId: int("planId").notNull(),
+  expertId: int("expertId").notNull(),
+  copiedAt: timestamp("copiedAt").defaultNow().notNull(),
+}, (t) => ({
+  userIdx: index("plan_copies_user_idx").on(t.userId),
+  planIdx: index("plan_copies_plan_idx").on(t.planId),
+}));
+
+// Seguidores de BuddyExperts
+export const expertFollowers = mysqlTable("expert_followers", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  expertId: int("expertId").notNull(),
+  followedAt: timestamp("followedAt").defaultNow().notNull(),
+}, (t) => ({
+  userIdx: index("expert_followers_user_idx").on(t.userId),
+  expertIdx: index("expert_followers_expert_idx").on(t.expertId),
+}));
+
+// =============================================================================
+// BUDDY MAKERS — Creadores de contenido / recetas (tipo Instagram)
+// =============================================================================
+
+export const buddyMakers = mysqlTable("buddy_makers", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().unique(),
+  displayName: varchar("displayName", { length: 128 }).notNull(),
+  bio: text("bio"),
+  avatarUrl: text("avatarUrl"),
+  coverUrl: text("coverUrl"),
+  instagramHandle: varchar("instagramHandle", { length: 64 }),
+  youtubeHandle: varchar("youtubeHandle", { length: 64 }),
+  tiktokHandle: varchar("tiktokHandle", { length: 64 }),
+  specialty: varchar("specialty", { length: 128 }), // "Cocina mediterránea", "Repostería", etc.
+  verified: boolean("verified").default(false).notNull(),
+  featured: boolean("featured").default(false).notNull(),
+  followersCount: int("followersCount").default(0).notNull(),
+  recipesCount: int("recipesCount").default(0).notNull(),
+  rating: float("rating").default(0),
+  stripeAccountId: varchar("stripeAccountId", { length: 128 }),
+  stripeOnboardingCompleted: boolean("stripeOnboardingCompleted").default(false).notNull(),
+  commissionRate: float("commissionRate").default(0.20).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (t) => ({
+  userIdx: index("buddy_makers_user_idx").on(t.userId),
+}));
+export type BuddyMaker = typeof buddyMakers.$inferSelect;
+export type InsertBuddyMaker = typeof buddyMakers.$inferInsert;
+
+// Seguidores de BuddyMakers
+export const makerFollowers = mysqlTable("maker_followers", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  makerId: int("makerId").notNull(),
+  followedAt: timestamp("followedAt").defaultNow().notNull(),
+}, (t) => ({
+  userIdx: index("maker_followers_user_idx").on(t.userId),
+  makerIdx: index("maker_followers_maker_idx").on(t.makerId),
+}));
+
+// =============================================================================
+// STRIPE CONNECT — Comisiones y pagos a creadores
+// =============================================================================
+
+export const creatorEarnings = mysqlTable("creator_earnings", {
+  id: int("id").autoincrement().primaryKey(),
+  creatorUserId: int("creatorUserId").notNull(),
+  creatorType: mysqlEnum("creatorType", ["buddyexpert", "buddymaker"]).notNull(),
+  subscriberUserId: int("subscriberUserId").notNull(),
+  subscriptionId: varchar("subscriptionId", { length: 128 }), // Stripe subscription ID
+  amount: float("amount").notNull(), // Importe en euros
+  commissionRate: float("commissionRate").default(0.20).notNull(),
+  commissionAmount: float("commissionAmount").notNull(), // amount * commissionRate
+  stripeTransferId: varchar("stripeTransferId", { length: 128 }),
+  status: mysqlEnum("status", ["pending", "paid", "failed"]).default("pending").notNull(),
+  paidAt: timestamp("paidAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  creatorIdx: index("creator_earnings_creator_idx").on(t.creatorUserId),
+  subscriberIdx: index("creator_earnings_subscriber_idx").on(t.subscriberUserId),
+}));
+export type CreatorEarning = typeof creatorEarnings.$inferSelect;
+
+// =============================================================================
+// EXPERT MENUS — Menús semanales compartidos por BuddyExperts (gratis, para ganar seguidores)
+// =============================================================================
+
+export const expertMenus = mysqlTable("expert_menus", {
+  id: int("id").autoincrement().primaryKey(),
+  expertId: int("expertId").notNull(),
+  title: varchar("title", { length: 256 }).notNull(),
+  description: text("description"),
+  coverUrl: text("coverUrl"),
+  weekNumber: int("weekNumber"), // Semana del año
+  year: int("year"),
+  category: mysqlEnum("category", ["perdida_peso", "ganancia_muscular", "definicion", "dieta_equilibrada", "rendimiento", "bienestar", "vegano"]).default("dieta_equilibrada"),
+  dailyCalories: int("dailyCalories"),
+  isFree: boolean("isFree").default(true).notNull(), // Siempre gratis para ganar seguidores
+  isPublic: boolean("isPublic").default(true).notNull(),
+  copiesCount: int("copiesCount").default(0).notNull(),
+  likesCount: int("likesCount").default(0).notNull(),
+  menuData: text("menuData"), // JSON con los días y comidas del menú semanal
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (t) => ({
+  expertIdx: index("expert_menus_expert_idx").on(t.expertId),
+  categoryIdx: index("expert_menus_category_idx").on(t.category),
+}));
+export type ExpertMenu = typeof expertMenus.$inferSelect;
+export type InsertExpertMenu = typeof expertMenus.$inferInsert;

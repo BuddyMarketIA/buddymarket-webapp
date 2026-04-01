@@ -18,6 +18,8 @@ import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
 import Subscription from "./pages/Subscription";
 import BuddyExperts from "./pages/BuddyExperts";
+import BuddyMakers from "./pages/BuddyMakers";
+import BuddyIA from "./pages/BuddyIA";
 import BuddyShop from "./pages/BuddyShop";
 import MercadonaShop from "./pages/MercadonaShop";
 
@@ -50,6 +52,8 @@ function Router() {
       <Route path="/admin">{() => <WithLayout component={Admin} />}</Route>
       <Route path="/subscription">{() => <WithLayout component={Subscription} />}</Route>
       <Route path="/buddy-experts">{() => <WithLayout component={BuddyExperts} />}</Route>
+      <Route path="/buddy-makers">{() => <WithLayout component={BuddyMakers} />}</Route>
+      <Route path="/buddy-ia">{() => <WithLayout component={BuddyIA} />}</Route>
       <Route path="/buddy-shop">{() => <WithLayout component={BuddyShop} />}</Route>
       <Route path="/supermercados">{() => <WithLayout component={MercadonaShop} />}</Route>
       {/* Fallback */}

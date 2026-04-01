@@ -435,6 +435,33 @@ export default function Dashboard() {
         </div>
       </div>
 
+      {/* Community Section: BuddyExperts, BuddyMakers, BuddyIA */}
+      <div style={{ marginBottom: "20px" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+          <h2 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.02em" }}>Comunidad BuddyMarket</h2>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px" }}>
+          {[
+            { label: "BuddyExperts", emoji: "\u{1F468}\u{200D}\u{2695}\u{FE0F}", to: "/buddy-experts", desc: "Nutricionistas y deportistas", color: "linear-gradient(135deg, #F97316, #EA580C)" },
+            { label: "BuddyMakers", emoji: "\u{1F468}\u{200D}\u{1F373}", to: "/buddy-makers", desc: "Creadores de recetas", color: "linear-gradient(135deg, #EC4899, #F97316)" },
+            { label: "BuddyIA", emoji: "\u{1F916}", to: "/buddy-ia", desc: "Asistente nutricional IA", color: "linear-gradient(135deg, #8B5CF6, #6366F1)" },
+          ].map((card) => (
+            <Link key={card.label} href={card.to}>
+              <div style={{ borderRadius: "18px", overflow: "hidden", cursor: "pointer", boxShadow: "0 4px 14px rgba(0,0,0,0.15)", transition: "transform 0.2s" }}
+                onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.03)")}
+                onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
+              >
+                <div style={{ background: card.color, padding: "14px 12px 12px", display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" }}>
+                  <span style={{ fontSize: "26px" }}>{card.emoji}</span>
+                  <p style={{ margin: 0, fontSize: "11px", fontWeight: 900, color: "white", textAlign: "center", letterSpacing: "-0.01em" }}>{card.label}</p>
+                  <p style={{ margin: 0, fontSize: "9px", color: "rgba(255,255,255,0.8)", textAlign: "center", lineHeight: 1.3 }}>{card.desc}</p>
+                </div>
+              </div>
+            </Link>
+          ))}
+        </div>
+      </div>
+
       {/* BuddyShop Card */}
       <Link href="/buddy-shop">
         <div style={{ background: "linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)", borderRadius: "22px", padding: "18px 20px", marginBottom: "14px", display: "flex", alignItems: "center", gap: "16px", boxShadow: "0 8px 24px rgba(0,0,0,0.20)", cursor: "pointer", position: "relative", overflow: "hidden" }}>

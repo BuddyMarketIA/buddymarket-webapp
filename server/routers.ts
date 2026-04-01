@@ -1040,6 +1040,352 @@ export const appRouter = router({
         return results.slice(0, 30);
       }),
   }),
-});
 
+  // ===========================================================================
+  // BUDDY EXPERTS
+  // ===========================================================================
+  buddyExperts: router({
+    list: publicProcedure
+      .input(z.object({ category: z.string().optional(), search: z.string().optional(), featured: z.boolean().optional() }).optional())
+      .query(async ({ input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return [];
+        const { buddyExperts: beTable, users: usersTable } = await import("../drizzle/schema");
+        const { eq, and, desc } = await import("drizzle-orm");
+        const conditions: any[] = [eq(beTable.verified, true)];
+        if (input?.category) conditions.push(eq(beTable.category, input.category as any));
+        if (input?.featured) conditions.push(eq(beTable.featured, true));
+        const rows = await drizzleDb
+          .select({ expert: beTable, user: { name: usersTable.name, imageUrl: usersTable.imageUrl, email: usersTable.email } })
+          .from(beTable)
+          .leftJoin(usersTable, eq(beTable.userId, usersTable.id))
+          .where(and(...conditions))
+          .orderBy(desc(beTable.followersCount))
+          .limit(50);
+        return rows;
+      }),
+
+    getPlans: publicProcedure
+      .input(z.object({ expertId: z.number(), category: z.string().optional() }))
+      .query(async ({ input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return [];
+        const { expertPlans: epTable, buddyExperts: beTable } = await import("../drizzle/schema");
+        const { eq, and, desc } = await import("drizzle-orm");
+        const conditions: any[] = [eq(epTable.expertId, input.expertId), eq(epTable.isPublic, true)];
+        if (input.category) conditions.push(eq(epTable.category, input.category as any));
+        return drizzleDb.select().from(epTable).where(and(...conditions)).orderBy(desc(epTable.copiesCount)).limit(20);
+      }),
+
+    getAllPlans: publicProcedure
+      .input(z.object({ category: z.string().optional(), search: z.string().optional() }).optional())
+      .query(async ({ input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return [];
+        const { expertPlans: epTable, buddyExperts: beTable } = await import("../drizzle/schema");
+        const { eq, and, desc } = await import("drizzle-orm");
+        const conditions: any[] = [eq(epTable.isPublic, true)];
+        if (input?.category) conditions.push(eq(epTable.category, input.category as any));
+        return drizzleDb
+          .select({ plan: epTable, expert: { id: beTable.id, displayName: beTable.displayName, specialty: beTable.specialty, avatarUrl: beTable.avatarUrl, verified: beTable.verified } })
+          .from(epTable)
+          .leftJoin(beTable, eq(epTable.expertId, beTable.id))
+          .where(and(...conditions))
+          .orderBy(desc(epTable.copiesCount))
+          .limit(30);
+      }),
+
+    getMenus: publicProcedure
+      .input(z.object({ expertId: z.number().optional(), category: z.string().optional() }).optional())
+      .query(async ({ input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return [];
+        const { expertMenus: emTable, buddyExperts: beTable } = await import("../drizzle/schema");
+        const { eq, and, desc } = await import("drizzle-orm");
+        const conditions: any[] = [eq(emTable.isPublic, true)];
+        if (input?.expertId) conditions.push(eq(emTable.expertId, input.expertId));
+        if (input?.category) conditions.push(eq(emTable.category, input.category as any));
+        return drizzleDb
+          .select({ menu: emTable, expert: { id: beTable.id, displayName: beTable.displayName, avatarUrl: beTable.avatarUrl, verified: beTable.verified, specialty: beTable.specialty } })
+          .from(emTable)
+          .leftJoin(beTable, eq(emTable.expertId, beTable.id))
+          .where(and(...conditions))
+          .orderBy(desc(emTable.copiesCount))
+          .limit(30);
+      }),
+
+    copyPlan: protectedProcedure
+      .input(z.object({ planId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { expertPlans: epTable, userExpertPlanCopies: copiesTable } = await import("../drizzle/schema");
+        const { eq, sql } = await import("drizzle-orm");
+        const plan = await drizzleDb.select().from(epTable).where(eq(epTable.id, input.planId)).limit(1);
+        if (!plan[0]) throw new TRPCError({ code: "NOT_FOUND" });
+        await drizzleDb.insert(copiesTable).values({ userId: ctx.user.id, planId: input.planId, expertId: plan[0].expertId });
+        await drizzleDb.update(epTable).set({ copiesCount: sql`${epTable.copiesCount} + 1` }).where(eq(epTable.id, input.planId));
+        return { success: true };
+      }),
+
+    follow: protectedProcedure
+      .input(z.object({ expertId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { expertFollowers: efTable, buddyExperts: beTable } = await import("../drizzle/schema");
+        const { eq, sql, and } = await import("drizzle-orm");
+        const existing = await drizzleDb.select().from(efTable).where(and(eq(efTable.userId, ctx.user.id), eq(efTable.expertId, input.expertId))).limit(1);
+        if (existing[0]) {
+          await drizzleDb.delete(efTable).where(and(eq(efTable.userId, ctx.user.id), eq(efTable.expertId, input.expertId)));
+          await drizzleDb.update(beTable).set({ followersCount: sql`${beTable.followersCount} - 1` }).where(eq(beTable.id, input.expertId));
+          return { following: false };
+        }
+        await drizzleDb.insert(efTable).values({ userId: ctx.user.id, expertId: input.expertId });
+        await drizzleDb.update(beTable).set({ followersCount: sql`${beTable.followersCount} + 1` }).where(eq(beTable.id, input.expertId));
+        return { following: true };
+      }),
+
+    seedDemoExperts: publicProcedure.mutation(async () => {
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { buddyExperts: beTable, expertPlans: epTable, expertMenus: emTable, users: usersTable } = await import("../drizzle/schema");
+      const existing = await drizzleDb.select().from(beTable).limit(1);
+      if (existing.length > 0) return { seeded: false, message: "Already seeded" };
+      const demoExperts = [
+        { displayName: "Miranda Jiménez", specialty: "Dietista", bio: "Especialista en pérdida de peso saludable con más de 10 años de experiencia.", category: "perdida_peso" as const, verified: true, featured: true, followersCount: 12400, plansCount: 8, rating: 4.9, reviewsCount: 234, avatarUrl: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=200&q=80", coverUrl: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=600&q=80" },
+        { displayName: "Carlos Ruiz", specialty: "Nutricionista deportivo", bio: "Nutricionista especializado en rendimiento deportivo y ganancia muscular.", category: "ganancia_muscular" as const, verified: true, featured: true, followersCount: 28900, plansCount: 12, rating: 4.8, reviewsCount: 456, avatarUrl: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=200&q=80", coverUrl: "https://images.unsplash.com/photo-1517836357463-d25dfeac3438?w=600&q=80" },
+        { displayName: "Laura Gómez", specialty: "Nutricionista", bio: "Experta en dietas antiinflamatorias y bienestar digestivo.", category: "bienestar" as const, verified: true, featured: false, followersCount: 8700, plansCount: 6, rating: 4.7, reviewsCount: 189, avatarUrl: "https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=200&q=80", coverUrl: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&q=80" },
+        { displayName: "Enrique Ortiz", specialty: "Dietista", bio: "Especialista en nutrición vegana y plant-based.", category: "vegano" as const, verified: true, featured: false, followersCount: 15200, plansCount: 9, rating: 4.6, reviewsCount: 312, avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80", coverUrl: "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=600&q=80" },
+      ];
+      for (const expert of demoExperts) {
+        const [userRes] = await drizzleDb.insert(usersTable).values({ openId: `demo_expert_${expert.displayName.replace(/ /g, "_")}`, name: expert.displayName, email: `${expert.displayName.toLowerCase().replace(/ /g, ".")}@buddymarket.io`, role: "buddyexpert" });
+        const userId = (userRes as any).insertId as number;
+        const [expRes] = await drizzleDb.insert(beTable).values({ userId, ...expert });
+        const expertId = (expRes as any).insertId as number;
+        await drizzleDb.insert(epTable).values({
+          expertId,
+          title: `Plan ${expert.category === "perdida_peso" ? "pérdida de peso" : expert.category === "ganancia_muscular" ? "fitness" : expert.category === "bienestar" ? "antiinflamatorio" : "vegano"}`,
+          description: `Plan nutricional de 4 semanas creado por ${expert.displayName}.`,
+          category: expert.category,
+          durationWeeks: 4,
+          dailyCalories: expert.category === "perdida_peso" ? 1500 : expert.category === "ganancia_muscular" ? 2200 : 1700,
+          level: "principiante",
+          isPublic: true,
+          isFeatured: expert.featured,
+          coverUrl: expert.coverUrl,
+        });
+        // Menú semanal gratuito para ganar seguidores
+        await drizzleDb.insert(emTable).values({
+          expertId,
+          title: `Menú semanal de ${expert.displayName}`,
+          description: `Menú semanal gratuito compartido por ${expert.displayName} para que puedas conocer su estilo de alimentación.`,
+          category: expert.category,
+          dailyCalories: expert.category === "perdida_peso" ? 1500 : expert.category === "ganancia_muscular" ? 2200 : 1700,
+          isFree: true,
+          isPublic: true,
+          coverUrl: expert.coverUrl,
+          menuData: JSON.stringify({
+            days: [
+              { day: "Lunes", meals: [{ name: "Desayuno", food: "Avena con frutas" }, { name: "Comida", food: "Pollo a la plancha con ensalada" }, { name: "Cena", food: "Salmón con verduras" }] },
+              { day: "Martes", meals: [{ name: "Desayuno", food: "Tostadas con aguacate" }, { name: "Comida", food: "Lentejas con arroz" }, { name: "Cena", food: "Tortilla de espinacas" }] },
+              { day: "Miércoles", meals: [{ name: "Desayuno", food: "Yogur con granola" }, { name: "Comida", food: "Pasta integral con atún" }, { name: "Cena", food: "Crema de verduras" }] },
+              { day: "Jueves", meals: [{ name: "Desayuno", food: "Batido de proteínas" }, { name: "Comida", food: "Arroz con pollo" }, { name: "Cena", food: "Ensalada César" }] },
+              { day: "Viernes", meals: [{ name: "Desayuno", food: "Frutas con queso" }, { name: "Comida", food: "Merluza al horno" }, { name: "Cena", food: "Revuelto de champiñones" }] },
+              { day: "Sábado", meals: [{ name: "Desayuno", food: "Pancakes de avena" }, { name: "Comida", food: "Paella de verduras" }, { name: "Cena", food: "Gazpacho con tostadas" }] },
+              { day: "Domingo", meals: [{ name: "Desayuno", food: "Huevos revueltos" }, { name: "Comida", food: "Cocido tradicional" }, { name: "Cena", food: "Sopa de pollo" }] },
+            ]
+          }),
+        });
+      }
+      return { seeded: true };
+    }),
+  }),
+
+  // ===========================================================================
+  // BUDDY MAKERS
+  // ===========================================================================
+  buddyMakers: router({
+    list: publicProcedure
+      .input(z.object({ featured: z.boolean().optional() }).optional())
+      .query(async ({ input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return [];
+        const { buddyMakers: bmTable, users: usersTable } = await import("../drizzle/schema");
+        const { eq, and, desc } = await import("drizzle-orm");
+        const conditions: any[] = [eq(bmTable.verified, true)];
+        if (input?.featured) conditions.push(eq(bmTable.featured, true));
+        return drizzleDb
+          .select({ maker: bmTable, user: { name: usersTable.name, imageUrl: usersTable.imageUrl } })
+          .from(bmTable)
+          .leftJoin(usersTable, eq(bmTable.userId, usersTable.id))
+          .where(and(...conditions))
+          .orderBy(desc(bmTable.followersCount))
+          .limit(50);
+      }),
+
+    follow: protectedProcedure
+      .input(z.object({ makerId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { makerFollowers: mfTable, buddyMakers: bmTable } = await import("../drizzle/schema");
+        const { eq, sql, and } = await import("drizzle-orm");
+        const existing = await drizzleDb.select().from(mfTable).where(and(eq(mfTable.userId, ctx.user.id), eq(mfTable.makerId, input.makerId))).limit(1);
+        if (existing[0]) {
+          await drizzleDb.delete(mfTable).where(and(eq(mfTable.userId, ctx.user.id), eq(mfTable.makerId, input.makerId)));
+          await drizzleDb.update(bmTable).set({ followersCount: sql`${bmTable.followersCount} - 1` }).where(eq(bmTable.id, input.makerId));
+          return { following: false };
+        }
+        await drizzleDb.insert(mfTable).values({ userId: ctx.user.id, makerId: input.makerId });
+        await drizzleDb.update(bmTable).set({ followersCount: sql`${bmTable.followersCount} + 1` }).where(eq(bmTable.id, input.makerId));
+        return { following: true };
+      }),
+  }),
+
+  // ===========================================================================
+  // STRIPE CONNECT — Onboarding y comisiones para creadores
+  // ===========================================================================
+  stripeConnect: router({
+    getOnboardingLink: protectedProcedure
+      .input(z.object({ creatorType: z.enum(["buddyexpert", "buddymaker"]) }))
+      .mutation(async ({ ctx, input }) => {
+        const Stripe = (await import("stripe")).default;
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+        const account = await stripe.accounts.create({
+          type: "express",
+          email: ctx.user.email ?? undefined,
+          capabilities: { transfers: { requested: true } },
+          metadata: { userId: ctx.user.id.toString(), creatorType: input.creatorType },
+        });
+        const drizzleDb = await db.getDb();
+        if (drizzleDb) {
+          const { buddyExperts: beTable, buddyMakers: bmTable } = await import("../drizzle/schema");
+          const { eq } = await import("drizzle-orm");
+          if (input.creatorType === "buddyexpert") {
+            await drizzleDb.update(beTable).set({ stripeAccountId: account.id }).where(eq(beTable.userId, ctx.user.id));
+          } else {
+            await drizzleDb.update(bmTable).set({ stripeAccountId: account.id }).where(eq(bmTable.userId, ctx.user.id));
+          }
+        }
+        const origin = (ctx.req.headers.origin as string) || "https://buddymarket-ndjzmo7p.manus.space";
+        const accountLink = await stripe.accountLinks.create({
+          account: account.id,
+          refresh_url: `${origin}/creator/onboarding?refresh=true`,
+          return_url: `${origin}/creator/onboarding?success=true`,
+          type: "account_onboarding",
+        });
+        return { url: accountLink.url, accountId: account.id };
+      }),
+
+     getEarnings: protectedProcedure.query(async ({ ctx }) => {
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) return { earnings: [], totalPaid: 0, totalPending: 0 };
+      const { creatorEarnings: ceTable } = await import("../drizzle/schema");
+      const { eq, desc } = await import("drizzle-orm");
+      const earnings = await drizzleDb.select().from(ceTable).where(eq(ceTable.creatorUserId, ctx.user.id)).orderBy(desc(ceTable.createdAt)).limit(50);
+      const totalPaid = earnings.filter((e) => e.status === "paid").reduce((acc: number, e) => acc + (e.commissionAmount ?? 0), 0);
+      const totalPending = earnings.filter((e) => e.status === "pending").reduce((acc: number, e) => acc + (e.commissionAmount ?? 0), 0);
+      return { earnings, totalPaid, totalPending };
+    }),
+  }),
+
+  // ===========================================================================
+  // BUDDY IA — Asistente nutricional con IA
+  // ===========================================================================
+  buddyIA: router({
+    chat: publicProcedure
+      .input(
+        z.object({
+          messages: z.array(
+            z.object({
+              role: z.enum(["system", "user", "assistant"]),
+              content: z.string(),
+            })
+          ),
+          userProfile: z
+            .object({
+              goal: z.string().optional(),
+              calories: z.number().optional(),
+              restrictions: z.array(z.string()).optional(),
+            })
+            .optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const systemPrompt = `Eres BuddyIA, el asistente nutricional inteligente de BuddyMarket. Eres un experto en nutrición, dietética y alimentación saludable. Tu objetivo es ayudar a los usuarios a:
+- Crear menús semanales personalizados
+- Calcular calorías y macronutrientes
+- Sugerir recetas saludables y deliciosas
+- Resolver dudas sobre nutrición y dieta
+- Adaptar la alimentación a sus objetivos (pérdida de peso, ganancia muscular, etc.)
+
+Siempre responde en español, de forma amigable, clara y motivadora. Usa emojis ocasionalmente para hacer las respuestas más visuales. Cuando sugiereas menús o recetas, incluye información nutricional aproximada (calorías, proteínas, carbohidratos, grasas).
+
+IMPORTANTE: No eres un médico. Siempre recomienda consultar con un profesional de la salud para condiciones médicas específicas.${input.userProfile ? `
+
+Perfil del usuario:
+- Objetivo: ${input.userProfile.goal || "no especificado"}
+- Calorías diarias objetivo: ${input.userProfile.calories || "no especificado"}
+- Restricciones alimentarias: ${input.userProfile.restrictions?.join(", ") || "ninguna"}` : ""}`;
+
+        const messagesWithSystem = [
+          { role: "system" as const, content: systemPrompt },
+          ...input.messages,
+        ];
+
+        const response = await invokeLLM({ messages: messagesWithSystem });
+        const content = response.choices?.[0]?.message?.content ?? "Lo siento, no pude procesar tu consulta. Inténtalo de nuevo.";
+        return { content };
+      }),
+
+    generateWeeklyMenu: publicProcedure
+      .input(
+        z.object({
+          calories: z.number().min(1000).max(5000),
+          goal: z.enum(["perdida_peso", "ganancia_muscular", "mantenimiento", "definicion"]),
+          restrictions: z.array(z.string()).optional(),
+          preferences: z.string().optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const goalLabels: Record<string, string> = {
+          perdida_peso: "pérdida de peso",
+          ganancia_muscular: "ganancia muscular",
+          mantenimiento: "mantenimiento",
+          definicion: "definición corporal",
+        };
+        const prompt = `Crea un menú semanal completo (7 días) para un objetivo de ${goalLabels[input.goal]} con ${input.calories} kcal/día.${input.restrictions?.length ? ` Restricciones: ${input.restrictions.join(", ")}.` : ""}${input.preferences ? ` Preferencias: ${input.preferences}.` : ""}
+
+Formato JSON estricto:
+{
+  "days": [
+    {
+      "day": "Lunes",
+      "totalCalories": 2000,
+      "meals": [
+        { "name": "Desayuno", "food": "descripción del desayuno", "calories": 400, "protein": 20, "carbs": 50, "fat": 10 },
+        { "name": "Media mañana", "food": "descripción", "calories": 200, "protein": 10, "carbs": 25, "fat": 5 },
+        { "name": "Comida", "food": "descripción", "calories": 700, "protein": 40, "carbs": 80, "fat": 20 },
+        { "name": "Merienda", "food": "descripción", "calories": 200, "protein": 10, "carbs": 25, "fat": 5 },
+        { "name": "Cena", "food": "descripción", "calories": 500, "protein": 35, "carbs": 50, "fat": 15 }
+      ]
+    }
+  ]
+}`;
+
+        const response = await invokeLLM({
+          messages: [{ role: "user", content: prompt }],
+          response_format: { type: "json_object" },
+        });
+        const rawContent = response.choices?.[0]?.message?.content ?? "{}";
+        const content = typeof rawContent === "string" ? rawContent : "{}";
+        try {
+          return { menu: JSON.parse(content) };
+        } catch {
+          return { menu: null, error: "Error al generar el menú" };
+        }
+      }),
+  }),
+});
 export type AppRouter = typeof appRouter;
