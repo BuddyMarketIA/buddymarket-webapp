@@ -53,7 +53,7 @@ export default function Home() {
     return (
       <div className="flex min-h-screen items-center justify-center bg-white">
         <div className="flex flex-col items-center gap-3">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#00D27A] border-t-transparent" />
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#F97316] border-t-transparent" />
           <span className="text-sm text-gray-500">Cargando...</span>
         </div>
       </div>
@@ -66,18 +66,18 @@ export default function Home() {
       <nav className="sticky top-0 z-50 border-b border-gray-100 bg-white/80 backdrop-blur-md">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
           <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#00D27A]">
+            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#F97316]">
               <span className="text-base">🥦</span>
             </div>
             <span className="text-lg font-bold text-gray-900">VIVELY</span>
           </div>
           <div className="flex items-center gap-2">
             {!loading && isAuthenticated ? (
-              <Link href="/dashboard" className="rounded-full bg-[#00D27A] px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#00b868]">
+              <Link href="/dashboard" className="rounded-full bg-[#F97316] px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#EA6C0A]">
                 Ir al dashboard →
               </Link>
             ) : (
-              <a href={getLoginUrl()} className="rounded-full bg-[#00D27A] px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#00b868]">
+              <a href={getLoginUrl()} className="rounded-full bg-[#F97316] px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#EA6C0A]">
                 Entrar
               </a>
             )}
@@ -86,18 +86,18 @@ export default function Home() {
       </nav>
 
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-[#f0fdf4] to-white px-4 py-20 text-center">
+      <section className="relative overflow-hidden bg-gradient-to-b from-orange-50 to-white px-4 py-20 text-center">
         <div className="absolute inset-0 -z-10">
-          <div className="absolute left-1/2 top-0 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-[#00D27A]/5 blur-3xl" />
+          <div className="absolute left-1/2 top-0 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-[#F97316]/5 blur-3xl" />
         </div>
         <div className="mx-auto max-w-2xl">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-[#00D27A]/10 px-4 py-1.5 text-sm font-semibold text-[#00a85f]">
+          <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-[#F97316]/10 px-4 py-1.5 text-sm font-semibold text-orange-600">
             <span>✨</span>
             <span>Tu asistente nutricional inteligente</span>
           </div>
           <h1 className="mb-4 text-4xl font-extrabold leading-tight tracking-tight text-gray-900 sm:text-5xl">
             Come mejor,<br />
-            <span className="text-[#00D27A]">vive más sano</span>
+            <span className="text-[#F97316]">vive más sano</span>
           </h1>
           <p className="mb-8 text-base text-gray-500 sm:text-lg">
             VIVELY te ayuda a planificar tus comidas, controlar tu nutrición y organizar tu despensa de forma inteligente.
@@ -105,13 +105,13 @@ export default function Home() {
           <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
             <a
               href={getLoginUrl()}
-              className="w-full rounded-2xl bg-[#00D27A] px-8 py-4 text-base font-bold text-white shadow-lg transition-all hover:bg-[#00b868] hover:shadow-xl sm:w-auto"
+              className="w-full rounded-2xl bg-[#F97316] px-8 py-4 text-base font-bold text-white shadow-lg transition-all hover:bg-[#EA6C0A] hover:shadow-xl sm:w-auto"
             >
               Empezar gratis →
             </a>
             <a
               href="#features"
-              className="w-full rounded-2xl border-2 border-gray-200 px-8 py-4 text-base font-semibold text-gray-700 transition-all hover:border-[#00D27A] sm:w-auto"
+              className="w-full rounded-2xl border-2 border-gray-200 px-8 py-4 text-base font-semibold text-gray-700 transition-all hover:border-[#F97316] sm:w-auto"
             >
               Ver funciones
             </a>
@@ -129,7 +129,7 @@ export default function Home() {
             { value: "98%", label: "Satisfacción" },
           ].map((stat) => (
             <div key={stat.label}>
-              <p className="text-2xl font-extrabold text-[#00D27A] sm:text-3xl">{stat.value}</p>
+              <p className="text-2xl font-extrabold text-[#F97316] sm:text-3xl">{stat.value}</p>
               <p className="mt-1 text-xs text-gray-500 sm:text-sm">{stat.label}</p>
             </div>
           ))}
@@ -149,9 +149,9 @@ export default function Home() {
             {FEATURES.map((f) => (
               <div
                 key={f.title}
-                className="group rounded-3xl border border-gray-100 bg-white p-6 shadow-sm transition-all hover:border-[#00D27A]/30 hover:shadow-md"
+                className="group rounded-3xl border border-gray-100 bg-white p-6 shadow-sm transition-all hover:border-[#F97316]/30 hover:shadow-md"
               >
-                <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-[#f0fdf4] text-2xl transition-transform group-hover:scale-110">
+                <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-2xl transition-transform group-hover:scale-110">
                   {f.emoji}
                 </div>
                 <h3 className="mb-1 text-sm font-bold text-gray-900">{f.title}</h3>
@@ -163,7 +163,7 @@ export default function Home() {
       </section>
 
       {/* How it works */}
-      <section className="bg-[#f0fdf4] px-4 py-16">
+      <section className="bg-orange-50 px-4 py-16">
         <div className="mx-auto max-w-3xl">
           <h2 className="mb-2 text-center text-2xl font-extrabold text-gray-900">
             Cómo funciona
@@ -176,7 +176,7 @@ export default function Home() {
               { step: "3", emoji: "🛒", title: "Compra y cocina", desc: "Tu lista de compra se genera automáticamente. ¡A cocinar!" },
             ].map((item) => (
               <div key={item.step} className="relative text-center">
-                <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-[#00D27A] text-2xl shadow-md">
+                <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-[#F97316] text-2xl shadow-md">
                   {item.emoji}
                 </div>
                 <div className="absolute -top-1 left-1/2 ml-6 flex h-5 w-5 items-center justify-center rounded-full bg-gray-900 text-[10px] font-bold text-white">
@@ -203,7 +203,7 @@ export default function Home() {
                 key={plan.name}
                 className={`relative rounded-3xl p-6 ${
                   plan.highlight
-                    ? "bg-[#00D27A] text-white shadow-xl shadow-[#00D27A]/25"
+                    ? "bg-[#F97316] text-white shadow-xl shadow-[#F97316]/25"
                     : "border border-gray-100 bg-white shadow-sm"
                 }`}
               >
@@ -226,7 +226,7 @@ export default function Home() {
                 <ul className="mb-6 space-y-2">
                   {plan.features.map((f) => (
                     <li key={f} className={`flex items-center gap-2 text-xs ${plan.highlight ? "text-white/90" : "text-gray-600"}`}>
-                      <span className={`text-base ${plan.highlight ? "text-white" : "text-[#00D27A]"}`}>✓</span>
+                      <span className={`text-base ${plan.highlight ? "text-white" : "text-[#F97316]"}`}>✓</span>
                       {f}
                     </li>
                   ))}
@@ -235,8 +235,8 @@ export default function Home() {
                   href={getLoginUrl()}
                   className={`block w-full rounded-2xl py-3 text-center text-sm font-bold transition-all ${
                     plan.highlight
-                      ? "bg-white text-[#00D27A] hover:bg-gray-50"
-                      : "border-2 border-[#00D27A] text-[#00D27A] hover:bg-[#00D27A]/5"
+                      ? "bg-white text-[#F97316] hover:bg-gray-50"
+                      : "border-2 border-[#F97316] text-[#F97316] hover:bg-[#F97316]/5"
                   }`}
                 >
                   {plan.cta}
@@ -248,7 +248,7 @@ export default function Home() {
       </section>
 
       {/* CTA */}
-      <section className="bg-[#00D27A] px-4 py-16 text-center">
+      <section className="bg-[#F97316] px-4 py-16 text-center">
         <div className="mx-auto max-w-xl">
           <h2 className="mb-3 text-2xl font-extrabold text-white sm:text-3xl">
             Empieza hoy mismo
@@ -258,7 +258,7 @@ export default function Home() {
           </p>
           <a
             href={getLoginUrl()}
-            className="inline-block rounded-2xl bg-white px-8 py-4 text-base font-bold text-[#00D27A] shadow-lg transition-all hover:bg-gray-50 hover:shadow-xl"
+            className="inline-block rounded-2xl bg-white px-8 py-4 text-base font-bold text-[#F97316] shadow-lg transition-all hover:bg-gray-50 hover:shadow-xl"
           >
             Crear cuenta gratis →
           </a>
@@ -268,7 +268,7 @@ export default function Home() {
       {/* Footer */}
       <footer className="border-t border-gray-100 bg-white px-4 py-8 text-center">
         <div className="flex items-center justify-center gap-2 mb-3">
-          <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-[#00D27A]">
+          <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-[#F97316]">
             <span className="text-sm">🥦</span>
           </div>
           <span className="text-base font-bold text-gray-900">VIVELY</span>

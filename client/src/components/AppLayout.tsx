@@ -1,173 +1,181 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
-import { Button } from "@/components/ui/button";
-import {
-  HomeIcon,
-  BookOpenIcon,
-  ClipboardDocumentListIcon,
-  UserCircleIcon,
-} from "@heroicons/react/24/outline";
-import {
-  HomeIcon as HomeIconSolid,
-  BookOpenIcon as BookOpenIconSolid,
-  ClipboardDocumentListIcon as ClipboardDocumentListIconSolid,
-  UserCircleIcon as UserCircleIconSolid,
-  SparklesIcon,
-} from "@heroicons/react/24/solid";
 import { Link, useLocation } from "wouter";
 
 const NAV_ITEMS = [
-  {
-    key: "home",
-    label: "Inicio",
-    to: "/dashboard",
-    matches: ["/dashboard", "/"],
-    icon: HomeIcon,
-    activeIcon: HomeIconSolid,
-  },
-  {
-    key: "recipes",
-    label: "Recetas",
-    to: "/recipes",
-    matches: ["/recipes", "/recipe"],
-    icon: BookOpenIcon,
-    activeIcon: BookOpenIconSolid,
-  },
-  {
-    key: "diary",
-    label: "Diario",
-    to: "/meal-log",
-    matches: ["/meal-log"],
-    icon: ClipboardDocumentListIcon,
-    activeIcon: ClipboardDocumentListIconSolid,
-  },
-  {
-    key: "profile",
-    label: "Perfil",
-    to: "/profile",
-    matches: ["/profile"],
-    icon: UserCircleIcon,
-    activeIcon: UserCircleIconSolid,
-  },
+  { key: "home",    label: "Inicio",   to: "/dashboard",     matches: ["/dashboard", "/"], emoji: "🏠" },
+  { key: "recipes", label: "Recetas",  to: "/recipes",       matches: ["/recipes"],        emoji: "📖" },
+  { key: "diary",   label: "Diario",   to: "/meal-log",      matches: ["/meal-log"],       emoji: "📋" },
+  { key: "profile", label: "Perfil",   to: "/profile",       matches: ["/profile"],        emoji: "👤" },
 ];
 
 const matchesPath = (pathname: string, matches: string[]) =>
-  matches.some(
-    (m) =>
-      pathname === m ||
-      pathname.startsWith(`${m}/`) ||
-      pathname.startsWith(`${m}?`)
-  );
+  matches.some((m) => pathname === m || pathname.startsWith(`${m}/`));
 
-export default function AppLayout({ children }: { children: React.ReactNode }) {
-  const { user, loading, isAuthenticated } = useAuth();
+interface AppLayoutProps {
+  children: React.ReactNode;
+  title?: string;
+  showBack?: boolean;
+  onBack?: () => void;
+  headerRight?: React.ReactNode;
+  hideNav?: boolean;
+}
+
+export default function AppLayout({
+  children,
+  title,
+  showBack = false,
+  onBack,
+  headerRight,
+  hideNav = false,
+}: AppLayoutProps) {
+  const { loading, isAuthenticated } = useAuth();
   const [location] = useLocation();
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-background">
-        <div className="flex flex-col items-center gap-4">
-          <div className="relative">
-            <div className="w-14 h-14 rounded-2xl bg-[#00D27A] flex items-center justify-center shadow-lg">
-              <span className="text-2xl font-black text-white tracking-tight">V</span>
-            </div>
-            <div className="absolute -bottom-1 -right-1 w-4 h-4 rounded-full bg-[#00D27A]/30 animate-ping" />
+      <div style={{
+        minHeight: "100dvh",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        background: "oklch(0.985 0.012 65)",
+      }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "20px" }}>
+          <div style={{
+            width: "72px", height: "72px", borderRadius: "22px",
+            background: "linear-gradient(135deg, #F97316, #FB923C)",
+            display: "flex", alignItems: "center", justifyContent: "center",
+            boxShadow: "0 8px 28px rgba(249,115,22,0.40)",
+          }}>
+            <span style={{ fontSize: "36px" }}>🥗</span>
           </div>
-          <p className="text-sm text-gray-500 font-medium">Cargando VIVELY...</p>
+          <p style={{ fontSize: "20px", fontWeight: 900, color: "#1a1a1a", letterSpacing: "-0.03em", margin: 0 }}>
+            VIVELY
+          </p>
+          <div style={{ display: "flex", gap: "6px" }}>
+            {[0, 150, 300].map((delay) => (
+              <div key={delay} style={{
+                width: "8px", height: "8px", borderRadius: "50%",
+                background: "#F97316",
+                animation: "bounce 1s infinite",
+                animationDelay: `${delay}ms`,
+              }} />
+            ))}
+          </div>
         </div>
       </div>
     );
   }
 
   if (!isAuthenticated) {
-    return (
-      <div className="min-h-screen flex flex-col items-center justify-center bg-background px-6">
-        <div className="text-center space-y-6 max-w-xs">
-          <div className="w-16 h-16 rounded-2xl bg-[#00D27A] flex items-center justify-center mx-auto shadow-lg">
-            <span className="text-3xl font-black text-white tracking-tight">V</span>
-          </div>
-          <div>
-            <h1 className="text-2xl font-bold text-gray-900">VIVELY</h1>
-            <p className="text-gray-500 text-sm mt-1">Come mejor. Vive mejor.</p>
-          </div>
-          <p className="text-gray-600 text-sm">
-            Inicia sesión para acceder a tu plataforma de nutrición inteligente.
-          </p>
-          <Button
-            asChild
-            className="w-full rounded-2xl bg-[#00D27A] hover:bg-[#00b868] text-white font-semibold py-3 h-auto"
-          >
-            <a href={getLoginUrl()}>Iniciar sesión</a>
-          </Button>
-        </div>
-      </div>
-    );
+    window.location.href = getLoginUrl();
+    return null;
   }
 
   const hiddenPrefixes = ["/onboarding"];
-  const shouldShowNav = !hiddenPrefixes.some((p) => location.startsWith(p));
-  const isAiActive = matchesPath(location, ["/ai-chat"]);
+  const shouldShowNav = !hideNav && !hiddenPrefixes.some((p) => location.startsWith(p));
 
   return (
-    <>
-      {/* Page content */}
-      <div className={shouldShowNav ? "pb-36" : ""}>{children}</div>
+    <div style={{
+      maxWidth: "480px",
+      margin: "0 auto",
+      minHeight: "100dvh",
+      background: "oklch(0.985 0.012 65)",
+      position: "relative",
+    }}>
+      {/* Optional sticky header */}
+      {(title || showBack || headerRight) && (
+        <div style={{
+          position: "sticky",
+          top: 0,
+          zIndex: 50,
+          background: "rgba(255,248,240,0.95)",
+          backdropFilter: "blur(20px)",
+          WebkitBackdropFilter: "blur(20px)",
+          borderBottom: "1px solid rgba(0,0,0,0.06)",
+          padding: "14px 16px",
+          display: "flex",
+          alignItems: "center",
+          gap: "12px",
+        }}>
+          {showBack && (
+            <button
+              onClick={onBack || (() => window.history.back())}
+              style={{
+                width: "40px", height: "40px", borderRadius: "50%",
+                background: "white", border: "none", cursor: "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                boxShadow: "0 2px 8px rgba(0,0,0,0.10)", flexShrink: 0,
+                transition: "transform 0.2s",
+              }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M15 18l-6-6 6-6" />
+              </svg>
+            </button>
+          )}
+          {title && (
+            <h1 style={{
+              flex: 1, fontSize: "18px", fontWeight: 800,
+              color: "oklch(0.13 0.01 30)", letterSpacing: "-0.03em", margin: 0,
+            }}>
+              {title}
+            </h1>
+          )}
+          {headerRight && <div style={{ marginLeft: "auto" }}>{headerRight}</div>}
+        </div>
+      )}
 
-      {/* Bottom navigation */}
+      {/* Content */}
+      <div style={{ paddingBottom: shouldShowNav ? "100px" : "0" }}>
+        {children}
+      </div>
+
+      {/* Bottom Navigation */}
       {shouldShowNav && (
         <div className="bottom-nav-container">
           <div className="bottom-nav-inner">
-            {/* Main nav bar */}
-            <nav className="bottom-nav-bar">
-              <div className="grid w-full grid-cols-4 gap-1">
-                {NAV_ITEMS.map((item) => {
-                  const isActive = matchesPath(location, item.matches);
-                  const Icon = isActive ? item.activeIcon : item.icon;
-                  return (
-                    <Link
-                      key={item.key}
-                      href={item.to}
-                      className={`flex min-w-0 flex-col items-center justify-center rounded-2xl px-1 py-1.5 text-center transition-colors ${
-                        isActive ? "text-[#00D27A]" : "text-gray-500 hover:text-gray-700"
-                      }`}
-                    >
-                      <Icon
-                        className={`mb-0.5 h-6 w-6 ${isActive ? "text-[#00D27A]" : "text-gray-400"}`}
-                      />
-                      <span
-                        className={`truncate text-[11px] font-semibold ${
-                          isActive ? "text-[#00D27A]" : "text-gray-700"
-                        }`}
-                      >
+            <nav className="bottom-nav-bar" style={{ justifyContent: "space-around" }}>
+              {NAV_ITEMS.map((item) => {
+                const active = matchesPath(location, item.matches);
+                return (
+                  <Link key={item.key} href={item.to}>
+                    <button style={{
+                      display: "flex", flexDirection: "column", alignItems: "center", gap: "2px",
+                      padding: "6px 10px", borderRadius: "14px", border: "none",
+                      background: "transparent", cursor: "pointer", transition: "all 0.2s",
+                      minWidth: "52px",
+                    }}>
+                      <span style={{ fontSize: "20px", lineHeight: 1 }}>{item.emoji}</span>
+                      <span style={{
+                        fontSize: "10px",
+                        fontWeight: active ? 800 : 600,
+                        color: active ? "#F97316" : "oklch(0.55 0 0)",
+                        transition: "color 0.2s",
+                      }}>
                         {item.label}
                       </span>
-                    </Link>
-                  );
-                })}
-              </div>
+                      {active && (
+                        <div style={{
+                          width: "4px", height: "4px", borderRadius: "50%",
+                          background: "#F97316",
+                        }} />
+                      )}
+                    </button>
+                  </Link>
+                );
+              })}
             </nav>
-
-            {/* AI chat button */}
-            <Link
-              href="/ai-chat"
-              aria-label="VIVELY IA"
-              className={`bottom-nav-ai-btn ${isAiActive ? "text-[#00D27A]" : "text-gray-700"}`}
-            >
-              <div
-                className={`flex h-10 w-10 items-center justify-center rounded-full border p-2 ${
-                  isAiActive
-                    ? "border-[#00D27A]/60 bg-[#00D27A]/15"
-                    : "border-[#00D27A]/30 bg-[#00D27A]/8"
-                }`}
-              >
-                <SparklesIcon
-                  className={`h-6 w-6 ${isAiActive ? "text-[#00D27A]" : "text-[#00D27A]/70"}`}
-                />
-              </div>
+            {/* AI / Menus button */}
+            <Link href="/menus">
+              <button className="bottom-nav-ai-btn" title="Menús con IA">
+                <span style={{ fontSize: "28px" }}>🤖</span>
+              </button>
             </Link>
           </div>
         </div>
       )}
-    </>
+    </div>
   );
 }

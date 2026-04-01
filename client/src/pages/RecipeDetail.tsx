@@ -39,9 +39,9 @@ export default function RecipeDetail() {
 
   if (isLoading) {
     return (
-      <div className="vively-page container">
+      <div className="vively-page">
         <div className="flex h-64 items-center justify-center">
-          <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#00D27A] border-t-transparent" />
+          <div className="h-8 w-8 animate-spin rounded-full border-4 border-[#F97316] border-t-transparent" />
         </div>
       </div>
     );
@@ -62,13 +62,13 @@ export default function RecipeDetail() {
   const totalTime = (recipe.preparationTime || 0) + (recipe.cookTime || 0);
   const difficultyLabel: Record<string, string> = { easy: "Fácil", medium: "Media", hard: "Difícil" };
   const difficultyColor: Record<string, string> = {
-    easy: "bg-green-100 text-green-700",
+    easy: "bg-orange-100 text-orange-700",
     medium: "bg-yellow-100 text-yellow-700",
     hard: "bg-red-100 text-red-700",
   };
 
   return (
-    <div className="vively-page container">
+    <div className="vively-page">
       {/* Back */}
       <Link href="/recipes" className="mb-4 flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-gray-900">
         <ArrowLeftIcon className="h-4 w-4" />
@@ -97,13 +97,13 @@ export default function RecipeDetail() {
       <div className="mb-5 flex gap-3 overflow-x-auto pb-1">
         {totalTime > 0 && (
           <div className="flex shrink-0 items-center gap-1.5 rounded-2xl bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-700">
-            <ClockIcon className="h-4 w-4 text-[#00D27A]" />
+            <ClockIcon className="h-4 w-4 text-[#F97316]" />
             {totalTime} min
           </div>
         )}
         {recipe.servings && (
           <div className="flex shrink-0 items-center gap-1.5 rounded-2xl bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-700">
-            <UserGroupIcon className="h-4 w-4 text-[#00D27A]" />
+            <UserGroupIcon className="h-4 w-4 text-[#F97316]" />
             {recipe.servings} porciones
           </div>
         )}
@@ -132,7 +132,7 @@ export default function RecipeDetail() {
           <>
             <Link
               href={`/recipes/${recipe.id}/edit`}
-              className="flex items-center gap-1.5 rounded-2xl border-2 border-gray-100 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:border-[#00D27A]"
+              className="flex items-center gap-1.5 rounded-2xl border-2 border-gray-100 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:border-[#F97316]"
             >
               <PencilIcon className="h-4 w-4" />
               Editar
@@ -180,7 +180,7 @@ export default function RecipeDetail() {
           <ul className="space-y-2">
             {recipe.ingredients.map((ing: any, i: number) => (
               <li key={i} className="flex items-center gap-2 text-sm">
-                <div className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#00D27A]" />
+                <div className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#F97316]" />
                 <span className="text-gray-700">
                   {ing.amount && <span className="font-semibold">{ing.amount} </span>}
                   {ing.measure?.nameEs && <span className="text-gray-500">{ing.measure.nameEs} de </span>}
@@ -203,7 +203,7 @@ export default function RecipeDetail() {
               .sort((a: any, b: any) => a.stepNumber - b.stepNumber)
               .map((step: any) => (
                 <li key={step.id} className="flex gap-3">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#00D27A] text-xs font-bold text-white">
+                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#F97316] text-xs font-bold text-white">
                     {step.stepNumber}
                   </div>
                   <p className="pt-0.5 text-sm leading-relaxed text-gray-700">{step.description}</p>

@@ -96,7 +96,7 @@ export default function Menus() {
   };
 
   return (
-    <div className="vively-page container">
+    <div className="vively-page">
       {/* Header */}
       <div className="mb-5 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Menús</h1>
@@ -110,7 +110,7 @@ export default function Menus() {
           </button>
           <button
             onClick={() => setShowNewMenu(true)}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-[#00D27A] shadow-sm"
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F97316] shadow-sm"
           >
             <PlusIcon className="h-5 w-5 text-white" />
           </button>
@@ -150,16 +150,16 @@ export default function Menus() {
               onClick={() => setSelectedDate(date)}
               className={`flex shrink-0 flex-col items-center rounded-2xl px-3 py-2 transition-all ${
                 isSelected
-                  ? "bg-[#00D27A] text-white shadow-sm"
+                  ? "bg-[#F97316] text-white shadow-sm"
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
             >
               <span className="text-[10px] font-medium">{DAYS_ES[date.getDay()]}</span>
-              <span className={`text-base font-bold ${isToday && !isSelected ? "text-[#00D27A]" : ""}`}>
+              <span className={`text-base font-bold ${isToday && !isSelected ? "text-[#F97316]" : ""}`}>
                 {date.getDate()}
               </span>
               {hasItems && (
-                <div className={`mt-0.5 h-1.5 w-1.5 rounded-full ${isSelected ? "bg-white" : "bg-[#00D27A]"}`} />
+                <div className={`mt-0.5 h-1.5 w-1.5 rounded-full ${isSelected ? "bg-white" : "bg-[#F97316]"}`} />
               )}
             </button>
           );

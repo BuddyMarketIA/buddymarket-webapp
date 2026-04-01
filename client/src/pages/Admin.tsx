@@ -75,7 +75,7 @@ function CatalogSection({
             setNameEn("");
           }}
           disabled={isAdding || !nameEs.trim()}
-          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#00D27A] text-white disabled:opacity-50"
+          className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F97316] text-white disabled:opacity-50"
         >
           <PlusIcon className="h-4 w-4" />
         </button>
@@ -160,7 +160,7 @@ export default function Admin() {
   }
 
   return (
-    <div className="vively-page container">
+    <div className="vively-page">
       {/* Header */}
       <div className="mb-5 flex items-center gap-3">
         <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-gray-900">
@@ -275,7 +275,7 @@ export default function Admin() {
           <div className="max-h-[60vh] overflow-y-auto space-y-2">
             {(users ?? []).map((u: any) => (
               <div key={u.id} className="flex items-center gap-3 rounded-xl bg-gray-50 px-3 py-2.5">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#00D27A]/10 text-sm font-bold text-[#00D27A]">
+                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F97316]/10 text-sm font-bold text-[#F97316]">
                   {u.name ? u.name[0].toUpperCase() : "?"}
                 </div>
                 <div className="flex-1 min-w-0">

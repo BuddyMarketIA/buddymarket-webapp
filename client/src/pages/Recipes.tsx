@@ -43,12 +43,12 @@ export default function Recipes() {
   const isLoading = tab === "mine" ? loadingMine : loadingPublic;
 
   return (
-    <div className="vively-page container">
+    <div className="vively-page">
       {/* Header */}
       <div className="mb-5 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Recetas</h1>
         <Link href="/recipes/new">
-          <button className="flex h-10 w-10 items-center justify-center rounded-full bg-[#00D27A] shadow-sm transition-transform hover:scale-105">
+          <button className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F97316] shadow-sm transition-transform hover:scale-105">
             <PlusIcon className="h-5 w-5 text-white" />
           </button>
         </Link>
@@ -66,7 +66,7 @@ export default function Recipes() {
         <button
           onClick={() => setShowFilters(!showFilters)}
           className={`flex h-8 w-8 items-center justify-center rounded-full transition-colors ${
-            showFilters ? "bg-[#00D27A]/10 text-[#00D27A]" : "text-gray-400 hover:text-gray-600"
+            showFilters ? "bg-[#F97316]/10 text-[#F97316]" : "text-gray-400 hover:text-gray-600"
           }`}
         >
           <AdjustmentsHorizontalIcon className="h-5 w-5" />
@@ -98,7 +98,7 @@ export default function Recipes() {
             onClick={() => setTab(t)}
             className={`rounded-full px-4 py-1.5 text-sm font-semibold transition-all ${
               tab === t
-                ? "bg-[#00D27A] text-white shadow-sm"
+                ? "bg-[#F97316] text-white shadow-sm"
                 : "bg-gray-100 text-gray-600 hover:bg-gray-200"
             }`}
           >
@@ -129,7 +129,7 @@ export default function Recipes() {
             <Link key={recipe.id} href={`/recipes/${recipe.id}`}>
               <div className="recipe-tile cursor-pointer">
                 <div className="relative col-span-1">
-                  <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-xl bg-[#f0fdf4]">
+                  <div className="flex h-24 w-24 items-center justify-center overflow-hidden rounded-xl bg-orange-50">
                     {recipe.imageUrl ? (
                       <img
                         src={recipe.imageUrl}
@@ -142,7 +142,7 @@ export default function Recipes() {
                   </div>
                 </div>
                 <div className="col-span-2 min-w-0">
-                  <h2 className="text-sm font-semibold text-gray-900 transition-colors group-hover:text-[#00D27A] line-clamp-2">
+                  <h2 className="text-sm font-semibold text-gray-900 transition-colors group-hover:text-[#F97316] line-clamp-2">
                     {recipe.name}
                   </h2>
                   {recipe.preparationTime && (

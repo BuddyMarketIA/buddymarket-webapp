@@ -29,9 +29,9 @@ const PLANS = [
     period: "/mes",
     icon: StarIcon,
     highlight: true,
-    color: "border-[#00D27A]",
-    iconBg: "bg-[#00D27A]/10",
-    iconColor: "text-[#00D27A]",
+    color: "border-[#F97316]",
+    iconBg: "bg-[#F97316]/10",
+    iconColor: "text-[#F97316]",
     features: [
       "Todo lo del plan Basic",
       "Generación de menús con IA",
@@ -83,11 +83,11 @@ export default function Subscription() {
   const isActive = (subscription as any)?.status === "active";
 
   return (
-    <div className="vively-page container">
+    <div className="vively-page">
       {/* Header */}
       <div className="mb-6 text-center">
-        <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#00D27A]/10">
-          <SparklesIcon className="h-7 w-7 text-[#00D27A]" />
+        <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-[#F97316]/10">
+          <SparklesIcon className="h-7 w-7 text-[#F97316]" />
         </div>
         <h1 className="text-2xl font-extrabold text-gray-900">Planes VIVELY</h1>
         <p className="mt-1 text-sm text-gray-500">Elige el plan que mejor se adapta a tus necesidades</p>
@@ -95,8 +95,8 @@ export default function Subscription() {
 
       {/* Current plan badge */}
       {isActive && currentPlan && (
-        <div className="mb-5 flex items-center gap-3 rounded-2xl bg-[#00D27A]/10 p-4">
-          <CheckCircleIcon className="h-5 w-5 shrink-0 text-[#00D27A]" />
+        <div className="mb-5 flex items-center gap-3 rounded-2xl bg-[#F97316]/10 p-4">
+          <CheckCircleIcon className="h-5 w-5 shrink-0 text-[#F97316]" />
           <div className="flex-1">
             <p className="text-sm font-bold text-gray-900">Plan activo: {currentPlan}</p>
             <p className="text-xs text-gray-500">Tu suscripción está activa</p>
@@ -121,10 +121,10 @@ export default function Subscription() {
           return (
             <div
               key={plan.key}
-              className={`relative rounded-3xl border-2 bg-white p-5 transition-all ${plan.color} ${plan.highlight ? "shadow-lg shadow-[#00D27A]/10" : "shadow-sm"}`}
+              className={`relative rounded-3xl border-2 bg-white p-5 transition-all ${plan.color} ${plan.highlight ? "shadow-lg shadow-[#F97316]/10" : "shadow-sm"}`}
             >
               {plan.highlight && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#00D27A] px-4 py-1 text-[11px] font-bold text-white shadow">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#F97316] px-4 py-1 text-[11px] font-bold text-white shadow">
                   MÁS POPULAR
                 </div>
               )}
@@ -150,7 +150,7 @@ export default function Subscription() {
               <ul className="mb-4 space-y-2">
                 {plan.features.map((f) => (
                   <li key={f} className="flex items-center gap-2 text-xs text-gray-600">
-                    <CheckCircleIcon className="h-4 w-4 shrink-0 text-[#00D27A]" />
+                    <CheckCircleIcon className="h-4 w-4 shrink-0 text-[#F97316]" />
                     {f}
                   </li>
                 ))}
@@ -163,8 +163,8 @@ export default function Subscription() {
                   isCurrent
                     ? "bg-gray-100 text-gray-400 cursor-not-allowed"
                     : plan.highlight
-                    ? "bg-[#00D27A] text-white hover:bg-[#00b868]"
-                    : "border-2 border-[#00D27A] text-[#00D27A] hover:bg-[#00D27A]/5"
+                    ? "bg-[#F97316] text-white hover:bg-[#EA6C0A]"
+                    : "border-2 border-[#F97316] text-[#F97316] hover:bg-[#F97316]/5"
                 }`}
               >
                 {isCurrent ? "Plan actual" : `Suscribirse a ${plan.name}`}

@@ -4,6 +4,7 @@ import NotFound from "@/pages/NotFound";
 import { Route, Switch } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
+import AppLayout from "./components/AppLayout";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import Recipes from "./pages/Recipes";
@@ -17,26 +18,34 @@ import Profile from "./pages/Profile";
 import Admin from "./pages/Admin";
 import Subscription from "./pages/Subscription";
 
+// Wraps a page component with AppLayout (for pages that don't include it themselves)
+function WithLayout({ component: Component, ...props }: { component: React.ComponentType<any>; [key: string]: any }) {
+  return (
+    <AppLayout>
+      <Component {...props} />
+    </AppLayout>
+  );
+}
+
 function Router() {
   return (
     <Switch>
-      {/* Public */}
+      {/* Public landing */}
       <Route path="/" component={Home} />
-
-      {/* App routes */}
+      {/* App routes — Dashboard and RecipeForm already include AppLayout internally */}
       <Route path="/dashboard" component={Dashboard} />
-      <Route path="/recipes" component={Recipes} />
       <Route path="/recipes/new" component={RecipeForm} />
       <Route path="/recipes/:id/edit" component={RecipeForm} />
-      <Route path="/recipes/:id" component={RecipeDetail} />
-      <Route path="/menus" component={Menus} />
-      <Route path="/shopping-lists" component={ShoppingLists} />
-      <Route path="/inventory" component={Inventory} />
-      <Route path="/meal-log" component={MealLog} />
-      <Route path="/profile" component={Profile} />
-      <Route path="/admin" component={Admin} />
-      <Route path="/subscription" component={Subscription} />
-
+      {/* Pages that use vively-page but not AppLayout — wrap them */}
+      <Route path="/recipes/:id">{(params) => <WithLayout component={RecipeDetail} params={params} />}</Route>
+      <Route path="/recipes">{() => <WithLayout component={Recipes} />}</Route>
+      <Route path="/menus">{() => <WithLayout component={Menus} />}</Route>
+      <Route path="/shopping-lists">{() => <WithLayout component={ShoppingLists} />}</Route>
+      <Route path="/inventory">{() => <WithLayout component={Inventory} />}</Route>
+      <Route path="/meal-log">{() => <WithLayout component={MealLog} />}</Route>
+      <Route path="/profile">{() => <WithLayout component={Profile} />}</Route>
+      <Route path="/admin">{() => <WithLayout component={Admin} />}</Route>
+      <Route path="/subscription">{() => <WithLayout component={Subscription} />}</Route>
       {/* Fallback */}
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

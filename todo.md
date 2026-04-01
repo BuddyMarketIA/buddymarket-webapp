@@ -93,3 +93,15 @@
 - [x] Reconstruir Subscription con estilo VIVELY
 - [x] Reconstruir Admin con estilo VIVELY
 - [x] Reconstruir Home (landing) con estilo VIVELY
+
+## Actualización diseño naranja/crema premium (fase actual)
+- [x] Cambiar todos los colores de verde (#00D27A) a naranja (#F97316) en todas las páginas
+- [x] Actualizar CSS global con colores naranja/crema premium
+- [x] Actualizar AppLayout con diseño naranja/crema
+- [x] Actualizar Dashboard con diseño naranja/crema
+- [x] Actualizar Home.tsx con colores naranja
+- [x] Añadir clases CSS search-bar y recipe-tile faltantes
+- [x] Corregir vively-page para no duplicar padding con AppLayout
+- [x] Añadir AppLayout a todas las páginas que no lo tenían (via WithLayout en App.tsx)
+- [x] Verificar TypeScript sin errores (0 errores)
+- [x] Verificar tests pasando (15/15 tests)

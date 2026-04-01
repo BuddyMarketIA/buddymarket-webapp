@@ -131,10 +131,10 @@ export default function Profile() {
     : "?";
 
   return (
-    <div className="vively-page container">
+    <div className="vively-page">
       {/* Avatar + name */}
       <div className="mb-6 flex flex-col items-center text-center">
-        <div className="mb-3 flex h-20 w-20 items-center justify-center rounded-full bg-[#00D27A] text-2xl font-bold text-white shadow-md">
+        <div className="mb-3 flex h-20 w-20 items-center justify-center rounded-full bg-[#F97316] text-2xl font-bold text-white shadow-md">
           {initials}
         </div>
         <h1 className="text-xl font-bold text-gray-900">{user?.name ?? "Mi perfil"}</h1>
@@ -148,7 +148,7 @@ export default function Profile() {
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
             className={`flex flex-1 items-center justify-center gap-1 rounded-xl py-2 text-[11px] font-semibold transition-all ${
-              activeTab === tab.key ? "bg-white text-gray-900 shadow-sm" : "text-gray-500"
+              activeTab === tab.key ? "bg-white text-orange-500 shadow-sm font-bold" : "text-gray-500"
             }`}
           >
             <tab.icon className="h-3.5 w-3.5" />
@@ -316,11 +316,11 @@ export default function Profile() {
           </div>
           <div className="flex items-center justify-between rounded-2xl bg-gray-50 px-4 py-3">
             <span className="text-sm font-medium text-gray-700">Prefiero productos ecológicos</span>
-            <input type="checkbox" checked={organicProducts} onChange={(e) => setOrganicProducts(e.target.checked)} className="h-5 w-5 rounded accent-[#00D27A]" />
+            <input type="checkbox" checked={organicProducts} onChange={(e) => setOrganicProducts(e.target.checked)} className="h-5 w-5 rounded accent-[#F97316]" />
           </div>
           <div className="flex items-center justify-between rounded-2xl bg-gray-50 px-4 py-3">
             <span className="text-sm font-medium text-gray-700">Sugerir alternativas más saludables</span>
-            <input type="checkbox" checked={suggestHealthier} onChange={(e) => setSuggestHealthier(e.target.checked)} className="h-5 w-5 rounded accent-[#00D27A]" />
+            <input type="checkbox" checked={suggestHealthier} onChange={(e) => setSuggestHealthier(e.target.checked)} className="h-5 w-5 rounded accent-[#F97316]" />
           </div>
           <button
             onClick={() => updatePreferences.mutate({

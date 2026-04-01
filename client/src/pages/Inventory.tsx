@@ -64,7 +64,7 @@ export default function Inventory() {
   }).length;
 
   return (
-    <div className="vively-page container">
+    <div className="vively-page">
       {/* Header */}
       <div className="mb-4 flex items-center justify-between">
         <div>
@@ -78,7 +78,7 @@ export default function Inventory() {
         </div>
         <button
           onClick={() => setShowAdd(true)}
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-[#00D27A] shadow-sm"
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F97316] shadow-sm"
         >
           <PlusIcon className="h-5 w-5 text-white" />
         </button>

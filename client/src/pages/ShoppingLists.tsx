@@ -43,7 +43,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
   });
 
   return (
-    <div className="vively-page container">
+    <div className="vively-page">
       {/* Header */}
       <div className="mb-5 flex items-center gap-3">
         <button onClick={onBack} className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100">
@@ -55,7 +55,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
         </div>
         <button
           onClick={() => setShowAdd(true)}
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-[#00D27A] shadow-sm"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F97316] shadow-sm"
         >
           <PlusIcon className="h-5 w-5 text-white" />
         </button>
@@ -66,10 +66,10 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
         <div className="vively-card mb-5">
           <div className="mb-2 flex items-center justify-between">
             <span className="text-sm font-semibold text-gray-700">Progreso</span>
-            <span className="text-sm font-bold text-[#00D27A]">{pct}%</span>
+            <span className="text-sm font-bold text-[#F97316]">{pct}%</span>
           </div>
           <div className="macro-bar">
-            <div className="macro-bar-fill" style={{ width: `${pct}%`, background: "#00D27A" }} />
+            <div className="macro-bar-fill" style={{ width: `${pct}%`, background: "#F97316" }} />
           </div>
         </div>
       )}
@@ -97,15 +97,15 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
                   <div
                     key={item.id}
                     className={`flex items-center gap-3 rounded-2xl bg-white p-3 border transition-all ${
-                      item.isPurchased ? "border-[#00D27A]/30 bg-[#f0fdf4]" : "border-gray-100 shadow-sm"
+                      item.isPurchased ? "border-[#F97316]/30 bg-orange-50" : "border-gray-100 shadow-sm"
                     }`}
                   >
                     <button
                       onClick={() => toggleItem.mutate({ id: item.id })}
                       className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 transition-all ${
                         item.isPurchased
-                          ? "border-[#00D27A] bg-[#00D27A]"
-                          : "border-gray-300 hover:border-[#00D27A]"
+                          ? "border-[#F97316] bg-[#F97316]"
+                          : "border-gray-300 hover:border-[#F97316]"
                       }`}
                     >
                       {item.isPurchased && <CheckIcon className="h-4 w-4 text-white" />}
@@ -194,13 +194,13 @@ export default function ShoppingLists() {
   }
 
   return (
-    <div className="vively-page container">
+    <div className="vively-page">
       {/* Header */}
       <div className="mb-5 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Lista de compra</h1>
         <button
           onClick={() => setShowNew(true)}
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-[#00D27A] shadow-sm"
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F97316] shadow-sm"
         >
           <PlusIcon className="h-5 w-5 text-white" />
         </button>
@@ -221,16 +221,16 @@ export default function ShoppingLists() {
               <div
                 key={list.id}
                 onClick={() => setSelectedListId(list.id)}
-                className="vively-card flex items-center gap-4 cursor-pointer hover:border-[#00D27A]/30 transition-all"
+                className="vively-card flex items-center gap-4 cursor-pointer hover:border-[#F97316]/30 transition-all"
               >
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-[#f0fdf4]">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-orange-50">
                   <span className="text-2xl">🛒</span>
                 </div>
                 <div className="flex-1 min-w-0">
                   <h3 className="text-sm font-semibold text-gray-900 truncate">{list.name}</h3>
                   <div className="mt-1 flex items-center gap-2">
                     <div className="macro-bar flex-1">
-                      <div className="macro-bar-fill" style={{ width: `${pct}%`, background: "#00D27A" }} />
+                      <div className="macro-bar-fill" style={{ width: `${pct}%`, background: "#F97316" }} />
                     </div>
                     <span className="shrink-0 text-xs text-gray-400">{done}/{total}</span>
                   </div>

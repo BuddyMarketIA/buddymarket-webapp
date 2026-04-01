@@ -83,13 +83,13 @@ export default function MealLog() {
   });
 
   return (
-    <div className="vively-page container">
+    <div className="vively-page">
       {/* Header */}
       <div className="mb-5 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Diario</h1>
         <button
           onClick={() => setShowAdd(true)}
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-[#00D27A] shadow-sm"
+          className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F97316] shadow-sm"
         >
           <PlusIcon className="h-5 w-5 text-white" />
         </button>
@@ -117,10 +117,10 @@ export default function MealLog() {
       <div className="vively-card mb-5">
         <div className="mb-3 flex items-center justify-between">
           <span className="text-sm font-bold text-gray-700">Calorías del día</span>
-          <span className="text-lg font-bold text-[#00D27A]">{Math.round(totalCals)} kcal</span>
+          <span className="text-lg font-bold text-[#F97316]">{Math.round(totalCals)} kcal</span>
         </div>
         <div className="macro-bar mb-1">
-          <div className="macro-bar-fill" style={{ width: `${calPct}%`, background: "#00D27A" }} />
+          <div className="macro-bar-fill" style={{ width: `${calPct}%`, background: "#F97316" }} />
         </div>
         <p className="text-right text-xs text-gray-400">Objetivo: {targetCals} kcal</p>
 
