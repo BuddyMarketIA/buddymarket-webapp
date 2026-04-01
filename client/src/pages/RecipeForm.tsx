@@ -1,4 +1,3 @@
-import AppLayout from "@/components/AppLayout";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -73,8 +72,7 @@ export default function RecipeForm() {
   };
 
   return (
-    <AppLayout>
-      <div className="p-6 max-w-3xl mx-auto space-y-6">
+    <div className="p-6 max-w-3xl mx-auto space-y-6">
         <Button variant="ghost" size="sm" asChild className="-ml-2">
           <Link href="/recipes">
             <ArrowLeft className="w-4 h-4 mr-1.5" />
@@ -253,7 +251,6 @@ export default function RecipeForm() {
             </Button>
           </div>
         </form>
-      </div>
-    </AppLayout>
+    </div>
   );
 }

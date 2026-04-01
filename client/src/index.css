@@ -151,7 +151,7 @@
   html, body {
     touch-action: manipulation;
     overscroll-behavior: none;
-    font-family: "Bricolage Grotesque", -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
+    font-family: "Plus Jakarta Sans", "Bricolage Grotesque", -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
     -moz-osx-font-smoothing: grayscale;
   }

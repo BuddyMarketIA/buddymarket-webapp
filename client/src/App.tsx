@@ -33,9 +33,9 @@ function Router() {
       {/* Public landing */}
       <Route path="/" component={Home} />
       {/* App routes — Dashboard and RecipeForm already include AppLayout internally */}
-      <Route path="/dashboard" component={Dashboard} />
-      <Route path="/recipes/new" component={RecipeForm} />
-      <Route path="/recipes/:id/edit" component={RecipeForm} />
+      <Route path="/dashboard">{() => <WithLayout component={Dashboard} />}</Route>
+      <Route path="/recipes/new">{() => <WithLayout component={RecipeForm} />}</Route>
+      <Route path="/recipes/:id/edit">{(params) => <WithLayout component={RecipeForm} params={params} />}</Route>
       {/* Pages that use vively-page but not AppLayout — wrap them */}
       <Route path="/recipes/:id">{(params) => <WithLayout component={RecipeDetail} params={params} />}</Route>
       <Route path="/recipes">{() => <WithLayout component={Recipes} />}</Route>

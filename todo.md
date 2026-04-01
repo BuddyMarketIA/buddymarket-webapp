@@ -105,3 +105,23 @@
 - [x] Añadir AppLayout a todas las páginas que no lo tenían (via WithLayout en App.tsx)
 - [x] Verificar TypeScript sin errores (0 errores)
 - [x] Verificar tests pasando (15/15 tests)
+
+## Rediseño premium estilo BuddyCoach
+- [ ] Reconstruir AppLayout: sidebar deslizante con hamburguesa, header con logo+página+campana
+- [ ] Bottom nav con iconos SVG estilo BuddyCoach (Inicio, Recetas, Diario, Menús, Perfil)
+- [ ] Fondo crema/beige en toda la app
+- [ ] Dashboard: greeting con avatar, cards con imagen de fondo oscura, accesos rápidos
+- [ ] Cards de recetas/menús con imagen de fondo y overlay oscuro
+- [ ] Sidebar: lista completa de navegación, selector de idioma, perfil de usuario en bottom
+- [ ] Header sticky con botón hamburguesa, logo BuddyMarket, nombre de página, campana
+- [ ] Actualizar todas las páginas con el nuevo diseño
+
+## Rediseño BuddyCoach-style (completado)
+- [x] AppLayout: sidebar deslizante con hamburguesa, header logo+página+campana
+- [x] Bottom nav con iconos SVG (Inicio, Recetas, Diario, Menús, Perfil)
+- [x] Dashboard: greeting con avatar, ring de calorías, accesos rápidos, recetas con imagen de fondo
+- [x] Home: landing page premium con stats, features, how-it-works, pricing
+- [x] Font: Plus Jakarta Sans como fuente principal
+- [x] Branding: BuddyMarket en título, meta description y header
+- [x] TypeScript: 0 errores
+- [x] Tests: 15/15 pasando

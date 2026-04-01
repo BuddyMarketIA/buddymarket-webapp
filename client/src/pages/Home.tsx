@@ -4,12 +4,12 @@ import { useEffect } from "react";
 import { useLocation, Link } from "wouter";
 
 const FEATURES = [
-  { emoji: "🥗", title: "Recetas inteligentes", desc: "Miles de recetas con información nutricional completa y filtros avanzados." },
-  { emoji: "📅", title: "Planificador de menús", desc: "Organiza tus comidas semanales y genera menús automáticos con IA." },
-  { emoji: "🛒", title: "Lista de compra", desc: "Genera tu lista de la compra automáticamente desde tu menú planificado." },
-  { emoji: "📦", title: "Control de inventario", desc: "Gestiona tu despensa y recibe alertas de caducidades próximas." },
-  { emoji: "📊", title: "Seguimiento nutricional", desc: "Registra tus comidas y controla tus macronutrientes diarios." },
-  { emoji: "✨", title: "IA nutricional", desc: "Recomendaciones personalizadas basadas en tus objetivos y preferencias." },
+  { emoji: "🥗", title: "Recetas inteligentes", desc: "Miles de recetas con información nutricional completa y filtros avanzados por objetivo." },
+  { emoji: "📅", title: "Planificador de menús", desc: "Organiza tus comidas semanales y genera menús automáticos con IA en segundos." },
+  { emoji: "🛒", title: "Lista de compra", desc: "Genera tu lista de la compra automáticamente desde tu menú semanal planificado." },
+  { emoji: "📦", title: "Control de inventario", desc: "Gestiona tu despensa y recibe alertas de caducidades próximas para evitar desperdicios." },
+  { emoji: "📊", title: "Seguimiento nutricional", desc: "Registra tus comidas y controla tus macronutrientes diarios con gráficas detalladas." },
+  { emoji: "🤖", title: "BuddyScan IA", desc: "Genera recetas basadas en los ingredientes que tienes en casa con inteligencia artificial." },
 ];
 
 const PLANS = [
@@ -17,7 +17,7 @@ const PLANS = [
     name: "Básico",
     price: "Gratis",
     period: "",
-    features: ["5 recetas guardadas", "Planificador semanal", "Lista de compra básica"],
+    features: ["5 recetas guardadas", "Planificador semanal", "Lista de compra básica", "Inventario básico"],
     cta: "Empezar gratis",
     highlight: false,
   },
@@ -39,123 +39,104 @@ const PLANS = [
   },
 ];
 
+const STATS = [
+  { value: "50K+", label: "Usuarios activos" },
+  { value: "12K+", label: "Recetas disponibles" },
+  { value: "4.9★", label: "Valoración media" },
+  { value: "98%", label: "Satisfacción" },
+];
+
 export default function Home() {
   const { isAuthenticated, loading } = useAuth();
   const [, navigate] = useLocation();
 
   useEffect(() => {
-    if (!loading && isAuthenticated) {
-      navigate("/dashboard");
-    }
+    if (!loading && isAuthenticated) navigate("/dashboard");
   }, [isAuthenticated, loading, navigate]);
 
   if (loading) {
     return (
-      <div className="flex min-h-screen items-center justify-center bg-white">
-        <div className="flex flex-col items-center gap-3">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#F97316] border-t-transparent" />
-          <span className="text-sm text-gray-500">Cargando...</span>
+      <div style={{ display: "flex", minHeight: "100dvh", alignItems: "center", justifyContent: "center", background: "#FFF8F0" }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
+          <div style={{ width: "60px", height: "60px", borderRadius: "18px", background: "linear-gradient(135deg, #F97316, #FB923C)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px", boxShadow: "0 8px 24px rgba(249,115,22,0.35)" }}>🛒</div>
+          <div style={{ display: "flex", gap: "6px" }}>
+            {[0, 150, 300].map((d) => <div key={d} style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#F97316", animation: "bounce 1s infinite", animationDelay: `${d}ms` }} />)}
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-white font-sans">
-      {/* Nav */}
-      <nav className="sticky top-0 z-50 border-b border-gray-100 bg-white/80 backdrop-blur-md">
-        <div className="mx-auto flex max-w-5xl items-center justify-between px-4 py-3">
-          <div className="flex items-center gap-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-xl bg-[#F97316]">
-              <span className="text-base">🥦</span>
-            </div>
-            <span className="text-lg font-bold text-gray-900">VIVELY</span>
+    <div style={{ minHeight: "100dvh", background: "#FFFFFF", fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
+
+      {/* Sticky Nav */}
+      <nav style={{ position: "sticky", top: 0, zIndex: 50, background: "rgba(255,255,255,0.95)", backdropFilter: "blur(20px)", borderBottom: "1px solid rgba(0,0,0,0.06)", padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div style={{ width: "38px", height: "38px", borderRadius: "12px", background: "linear-gradient(135deg, #F97316, #FB923C)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", boxShadow: "0 4px 12px rgba(249,115,22,0.30)" }}>🛒</div>
+          <div>
+            <p style={{ margin: 0, fontSize: "16px", fontWeight: 900, color: "#1a1a1a", letterSpacing: "-0.03em" }}>BuddyMarket</p>
+            <p style={{ margin: 0, fontSize: "10px", color: "#F97316", fontWeight: 600 }}>Gestor Nutricional</p>
           </div>
-          <div className="flex items-center gap-2">
-            {!loading && isAuthenticated ? (
-              <Link href="/dashboard" className="rounded-full bg-[#F97316] px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#EA6C0A]">
-                Ir al dashboard →
-              </Link>
-            ) : (
-              <a href={getLoginUrl()} className="rounded-full bg-[#F97316] px-5 py-2 text-sm font-semibold text-white shadow-sm hover:bg-[#EA6C0A]">
-                Entrar
-              </a>
-            )}
-          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <a href={getLoginUrl()} style={{ padding: "10px 20px", borderRadius: "12px", background: "linear-gradient(135deg, #F97316, #FB923C)", color: "white", fontSize: "14px", fontWeight: 700, textDecoration: "none", boxShadow: "0 4px 12px rgba(249,115,22,0.30)" }}>
+            Entrar →
+          </a>
         </div>
       </nav>
 
       {/* Hero */}
-      <section className="relative overflow-hidden bg-gradient-to-b from-orange-50 to-white px-4 py-20 text-center">
-        <div className="absolute inset-0 -z-10">
-          <div className="absolute left-1/2 top-0 h-[500px] w-[500px] -translate-x-1/2 rounded-full bg-[#F97316]/5 blur-3xl" />
-        </div>
-        <div className="mx-auto max-w-2xl">
-          <div className="mb-4 inline-flex items-center gap-2 rounded-full bg-[#F97316]/10 px-4 py-1.5 text-sm font-semibold text-orange-600">
-            <span>✨</span>
-            <span>Tu asistente nutricional inteligente</span>
+      <section style={{ background: "linear-gradient(180deg, #FFF8F0 0%, #FFFFFF 100%)", padding: "60px 20px 50px", textAlign: "center", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", top: "-100px", left: "50%", transform: "translateX(-50%)", width: "600px", height: "600px", borderRadius: "50%", background: "radial-gradient(circle, rgba(249,115,22,0.08) 0%, transparent 70%)", pointerEvents: "none" }} />
+        <div style={{ maxWidth: "600px", margin: "0 auto", position: "relative" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "rgba(249,115,22,0.10)", borderRadius: "100px", padding: "6px 16px", marginBottom: "20px" }}>
+            <span style={{ fontSize: "14px" }}>✨</span>
+            <span style={{ fontSize: "13px", fontWeight: 700, color: "#F97316" }}>Tu asistente nutricional inteligente</span>
           </div>
-          <h1 className="mb-4 text-4xl font-extrabold leading-tight tracking-tight text-gray-900 sm:text-5xl">
-            Come mejor,<br />
-            <span className="text-[#F97316]">vive más sano</span>
+          <h1 style={{ fontSize: "clamp(36px, 8vw, 56px)", fontWeight: 900, color: "#1a1a1a", letterSpacing: "-0.04em", lineHeight: 1.1, margin: "0 0 16px" }}>
+            Planifica, compra y<br />
+            <span style={{ color: "#F97316" }}>come mejor</span>
           </h1>
-          <p className="mb-8 text-base text-gray-500 sm:text-lg">
-            VIVELY te ayuda a planificar tus comidas, controlar tu nutrición y organizar tu despensa de forma inteligente.
+          <p style={{ fontSize: "16px", color: "#6b7280", lineHeight: 1.6, margin: "0 0 32px", maxWidth: "480px", marginLeft: "auto", marginRight: "auto" }}>
+            BuddyMarket conecta tu planificación de menús, gestión de despensa y lista de la compra en un solo ecosistema inteligente.
           </p>
-          <div className="flex flex-col items-center gap-3 sm:flex-row sm:justify-center">
-            <a
-              href={getLoginUrl()}
-              className="w-full rounded-2xl bg-[#F97316] px-8 py-4 text-base font-bold text-white shadow-lg transition-all hover:bg-[#EA6C0A] hover:shadow-xl sm:w-auto"
-            >
+          <div style={{ display: "flex", flexDirection: "column", gap: "12px", alignItems: "center" }}>
+            <a href={getLoginUrl()} style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "16px 32px", borderRadius: "16px", background: "linear-gradient(135deg, #F97316, #FB923C)", color: "white", fontSize: "16px", fontWeight: 800, textDecoration: "none", boxShadow: "0 8px 24px rgba(249,115,22,0.35)", letterSpacing: "-0.01em" }}>
               Empezar gratis →
             </a>
-            <a
-              href="#features"
-              className="w-full rounded-2xl border-2 border-gray-200 px-8 py-4 text-base font-semibold text-gray-700 transition-all hover:border-[#F97316] sm:w-auto"
-            >
-              Ver funciones
-            </a>
+            <p style={{ margin: 0, fontSize: "12px", color: "#9ca3af" }}>Sin tarjeta de crédito · Cancela cuando quieras</p>
           </div>
-          <p className="mt-4 text-xs text-gray-400">Sin tarjeta de crédito · Cancela cuando quieras</p>
         </div>
       </section>
 
       {/* Stats */}
-      <section className="border-y border-gray-100 bg-white py-10">
-        <div className="mx-auto grid max-w-3xl grid-cols-3 gap-6 px-4 text-center">
-          {[
-            { value: "10k+", label: "Usuarios activos" },
-            { value: "50k+", label: "Recetas disponibles" },
-            { value: "98%", label: "Satisfacción" },
-          ].map((stat) => (
-            <div key={stat.label}>
-              <p className="text-2xl font-extrabold text-[#F97316] sm:text-3xl">{stat.value}</p>
-              <p className="mt-1 text-xs text-gray-500 sm:text-sm">{stat.label}</p>
+      <section style={{ background: "#1a1a1a", padding: "28px 20px" }}>
+        <div style={{ maxWidth: "600px", margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "8px" }}>
+          {STATS.map((s) => (
+            <div key={s.value} style={{ textAlign: "center" }}>
+              <p style={{ margin: 0, fontSize: "22px", fontWeight: 900, color: "#F97316", letterSpacing: "-0.03em" }}>{s.value}</p>
+              <p style={{ margin: "2px 0 0", fontSize: "10px", color: "rgba(255,255,255,0.6)", fontWeight: 500 }}>{s.label}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* Features */}
-      <section id="features" className="px-4 py-16">
-        <div className="mx-auto max-w-5xl">
-          <h2 className="mb-2 text-center text-2xl font-extrabold text-gray-900 sm:text-3xl">
-            Todo lo que necesitas
-          </h2>
-          <p className="mb-10 text-center text-sm text-gray-500">
-            Una plataforma completa para gestionar tu alimentación
-          </p>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3">
+      <section id="features" style={{ padding: "60px 20px", background: "#FFF8F0" }}>
+        <div style={{ maxWidth: "600px", margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: "36px" }}>
+            <h2 style={{ fontSize: "28px", fontWeight: 900, color: "#1a1a1a", letterSpacing: "-0.03em", margin: "0 0 8px" }}>Todo lo que necesitas</h2>
+            <p style={{ fontSize: "15px", color: "#6b7280", margin: 0 }}>Un ecosistema completo para tu alimentación</p>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "14px" }}>
             {FEATURES.map((f) => (
-              <div
-                key={f.title}
-                className="group rounded-3xl border border-gray-100 bg-white p-6 shadow-sm transition-all hover:border-[#F97316]/30 hover:shadow-md"
-              >
-                <div className="mb-3 flex h-12 w-12 items-center justify-center rounded-2xl bg-orange-50 text-2xl transition-transform group-hover:scale-110">
+              <div key={f.title} style={{ background: "white", borderRadius: "20px", padding: "20px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", border: "1px solid rgba(0,0,0,0.04)" }}>
+                <div style={{ width: "44px", height: "44px", borderRadius: "14px", background: "rgba(249,115,22,0.10)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "22px", marginBottom: "12px" }}>
                   {f.emoji}
                 </div>
-                <h3 className="mb-1 text-sm font-bold text-gray-900">{f.title}</h3>
-                <p className="text-xs text-gray-500 leading-relaxed">{f.desc}</p>
+                <p style={{ margin: "0 0 6px", fontSize: "14px", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.01em" }}>{f.title}</p>
+                <p style={{ margin: 0, fontSize: "12px", color: "#6b7280", lineHeight: 1.5 }}>{f.desc}</p>
               </div>
             ))}
           </div>
@@ -163,27 +144,29 @@ export default function Home() {
       </section>
 
       {/* How it works */}
-      <section className="bg-orange-50 px-4 py-16">
-        <div className="mx-auto max-w-3xl">
-          <h2 className="mb-2 text-center text-2xl font-extrabold text-gray-900">
-            Cómo funciona
-          </h2>
-          <p className="mb-10 text-center text-sm text-gray-500">En 3 simples pasos</p>
-          <div className="grid grid-cols-1 gap-6 sm:grid-cols-3">
+      <section style={{ padding: "60px 20px", background: "white" }}>
+        <div style={{ maxWidth: "600px", margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: "36px" }}>
+            <h2 style={{ fontSize: "28px", fontWeight: 900, color: "#1a1a1a", letterSpacing: "-0.03em", margin: "0 0 8px" }}>Cómo funciona</h2>
+            <p style={{ fontSize: "15px", color: "#6b7280", margin: 0 }}>Tres pasos para transformar tu alimentación</p>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
             {[
-              { step: "1", emoji: "👤", title: "Crea tu perfil", desc: "Cuéntanos tus objetivos, alergias y preferencias dietéticas." },
-              { step: "2", emoji: "📅", title: "Planifica tu menú", desc: "Elige recetas o deja que la IA genere un menú personalizado." },
-              { step: "3", emoji: "🛒", title: "Compra y cocina", desc: "Tu lista de compra se genera automáticamente. ¡A cocinar!" },
+              { step: "01", title: "Configura tu perfil", desc: "Indica tus objetivos, alergias y preferencias alimentarias para personalizar tu experiencia.", emoji: "👤" },
+              { step: "02", title: "Planifica tu semana", desc: "Genera menús semanales con IA o crea los tuyos propios. BuddyMarket crea la lista de la compra automáticamente.", emoji: "📅" },
+              { step: "03", title: "Compra y cocina", desc: "Sigue tu lista de compra optimizada, gestiona tu despensa y registra tus comidas para controlar tu nutrición.", emoji: "🛒" },
             ].map((item) => (
-              <div key={item.step} className="relative text-center">
-                <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-full bg-[#F97316] text-2xl shadow-md">
+              <div key={item.step} style={{ display: "flex", gap: "16px", alignItems: "flex-start", background: "#FFF8F0", borderRadius: "20px", padding: "20px" }}>
+                <div style={{ width: "48px", height: "48px", borderRadius: "14px", background: "linear-gradient(135deg, #F97316, #FB923C)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", flexShrink: 0, boxShadow: "0 4px 12px rgba(249,115,22,0.25)" }}>
                   {item.emoji}
                 </div>
-                <div className="absolute -top-1 left-1/2 ml-6 flex h-5 w-5 items-center justify-center rounded-full bg-gray-900 text-[10px] font-bold text-white">
-                  {item.step}
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+                    <span style={{ fontSize: "11px", fontWeight: 800, color: "#F97316", letterSpacing: "0.05em" }}>{item.step}</span>
+                    <p style={{ margin: 0, fontSize: "15px", fontWeight: 800, color: "#1a1a1a" }}>{item.title}</p>
+                  </div>
+                  <p style={{ margin: 0, fontSize: "13px", color: "#6b7280", lineHeight: 1.5 }}>{item.desc}</p>
                 </div>
-                <h3 className="mb-1 text-sm font-bold text-gray-900">{item.title}</h3>
-                <p className="text-xs text-gray-500 leading-relaxed">{item.desc}</p>
               </div>
             ))}
           </div>
@@ -191,54 +174,38 @@ export default function Home() {
       </section>
 
       {/* Pricing */}
-      <section className="px-4 py-16">
-        <div className="mx-auto max-w-4xl">
-          <h2 className="mb-2 text-center text-2xl font-extrabold text-gray-900">
-            Planes y precios
-          </h2>
-          <p className="mb-10 text-center text-sm text-gray-500">Elige el plan que mejor se adapta a ti</p>
-          <div className="grid grid-cols-1 gap-4 sm:grid-cols-3">
+      <section style={{ padding: "60px 20px", background: "#FFF8F0" }}>
+        <div style={{ maxWidth: "600px", margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: "36px" }}>
+            <h2 style={{ fontSize: "28px", fontWeight: 900, color: "#1a1a1a", letterSpacing: "-0.03em", margin: "0 0 8px" }}>Planes y precios</h2>
+            <p style={{ fontSize: "15px", color: "#6b7280", margin: 0 }}>Elige el plan que mejor se adapta a ti</p>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
             {PLANS.map((plan) => (
-              <div
-                key={plan.name}
-                className={`relative rounded-3xl p-6 ${
-                  plan.highlight
-                    ? "bg-[#F97316] text-white shadow-xl shadow-[#F97316]/25"
-                    : "border border-gray-100 bg-white shadow-sm"
-                }`}
-              >
+              <div key={plan.name} style={{ background: plan.highlight ? "linear-gradient(135deg, #F97316, #FB923C)" : "white", borderRadius: "20px", padding: "24px", boxShadow: plan.highlight ? "0 8px 32px rgba(249,115,22,0.30)" : "0 2px 12px rgba(0,0,0,0.06)", border: plan.highlight ? "none" : "1px solid rgba(0,0,0,0.06)", position: "relative", overflow: "hidden" }}>
                 {plan.highlight && (
-                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-gray-900 px-3 py-1 text-[10px] font-bold text-white">
-                    MÁS POPULAR
-                  </div>
+                  <div style={{ position: "absolute", top: "16px", right: "16px", background: "rgba(255,255,255,0.25)", borderRadius: "8px", padding: "3px 10px", fontSize: "11px", fontWeight: 800, color: "white" }}>POPULAR</div>
                 )}
-                <h3 className={`mb-1 text-base font-bold ${plan.highlight ? "text-white" : "text-gray-900"}`}>
-                  {plan.name}
-                </h3>
-                <div className="mb-4 flex items-baseline gap-1">
-                  <span className={`text-3xl font-extrabold ${plan.highlight ? "text-white" : "text-gray-900"}`}>
-                    {plan.price}
-                  </span>
-                  <span className={`text-sm ${plan.highlight ? "text-white/70" : "text-gray-400"}`}>
-                    {plan.period}
-                  </span>
+                <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "16px" }}>
+                  <div>
+                    <p style={{ margin: 0, fontSize: "18px", fontWeight: 900, color: plan.highlight ? "white" : "#1a1a1a", letterSpacing: "-0.02em" }}>{plan.name}</p>
+                    <div style={{ display: "flex", alignItems: "baseline", gap: "2px", marginTop: "4px" }}>
+                      <span style={{ fontSize: "28px", fontWeight: 900, color: plan.highlight ? "white" : "#F97316", letterSpacing: "-0.04em" }}>{plan.price}</span>
+                      {plan.period && <span style={{ fontSize: "13px", color: plan.highlight ? "rgba(255,255,255,0.7)" : "#9ca3af" }}>{plan.period}</span>}
+                    </div>
+                  </div>
                 </div>
-                <ul className="mb-6 space-y-2">
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px", marginBottom: "20px" }}>
                   {plan.features.map((f) => (
-                    <li key={f} className={`flex items-center gap-2 text-xs ${plan.highlight ? "text-white/90" : "text-gray-600"}`}>
-                      <span className={`text-base ${plan.highlight ? "text-white" : "text-[#F97316]"}`}>✓</span>
-                      {f}
-                    </li>
+                    <div key={f} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <div style={{ width: "18px", height: "18px", borderRadius: "50%", background: plan.highlight ? "rgba(255,255,255,0.25)" : "rgba(249,115,22,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke={plan.highlight ? "white" : "#F97316"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round"/></svg>
+                      </div>
+                      <span style={{ fontSize: "13px", color: plan.highlight ? "rgba(255,255,255,0.9)" : "#374151" }}>{f}</span>
+                    </div>
                   ))}
-                </ul>
-                <a
-                  href={getLoginUrl()}
-                  className={`block w-full rounded-2xl py-3 text-center text-sm font-bold transition-all ${
-                    plan.highlight
-                      ? "bg-white text-[#F97316] hover:bg-gray-50"
-                      : "border-2 border-[#F97316] text-[#F97316] hover:bg-[#F97316]/5"
-                  }`}
-                >
+                </div>
+                <a href={getLoginUrl()} style={{ display: "block", textAlign: "center", padding: "13px", borderRadius: "12px", background: plan.highlight ? "white" : "#F97316", color: plan.highlight ? "#F97316" : "white", fontSize: "14px", fontWeight: 800, textDecoration: "none", boxShadow: plan.highlight ? "none" : "0 4px 12px rgba(249,115,22,0.25)" }}>
                   {plan.cta}
                 </a>
               </div>
@@ -248,34 +215,29 @@ export default function Home() {
       </section>
 
       {/* CTA */}
-      <section className="bg-[#F97316] px-4 py-16 text-center">
-        <div className="mx-auto max-w-xl">
-          <h2 className="mb-3 text-2xl font-extrabold text-white sm:text-3xl">
+      <section style={{ padding: "60px 20px", background: "#1a1a1a", textAlign: "center" }}>
+        <div style={{ maxWidth: "480px", margin: "0 auto" }}>
+          <div style={{ width: "64px", height: "64px", borderRadius: "20px", background: "linear-gradient(135deg, #F97316, #FB923C)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "30px", margin: "0 auto 20px", boxShadow: "0 8px 24px rgba(249,115,22,0.40)" }}>🛒</div>
+          <h2 style={{ fontSize: "28px", fontWeight: 900, color: "white", letterSpacing: "-0.03em", margin: "0 0 12px" }}>
             Empieza hoy mismo
           </h2>
-          <p className="mb-8 text-sm text-white/80">
-            Únete a miles de personas que ya cuidan su alimentación con VIVELY.
+          <p style={{ fontSize: "15px", color: "rgba(255,255,255,0.6)", margin: "0 0 28px", lineHeight: 1.6 }}>
+            Únete a miles de personas que ya han transformado su relación con la comida y la compra.
           </p>
-          <a
-            href={getLoginUrl()}
-            className="inline-block rounded-2xl bg-white px-8 py-4 text-base font-bold text-[#F97316] shadow-lg transition-all hover:bg-gray-50 hover:shadow-xl"
-          >
-            Crear cuenta gratis →
+          <a href={getLoginUrl()} style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "16px 32px", borderRadius: "16px", background: "linear-gradient(135deg, #F97316, #FB923C)", color: "white", fontSize: "16px", fontWeight: 800, textDecoration: "none", boxShadow: "0 8px 24px rgba(249,115,22,0.40)" }}>
+            Empezar gratis →
           </a>
         </div>
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-gray-100 bg-white px-4 py-8 text-center">
-        <div className="flex items-center justify-center gap-2 mb-3">
-          <div className="flex h-7 w-7 items-center justify-center rounded-xl bg-[#F97316]">
-            <span className="text-sm">🥦</span>
-          </div>
-          <span className="text-base font-bold text-gray-900">VIVELY</span>
+      <footer style={{ padding: "24px 20px", background: "#111111", textAlign: "center" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", marginBottom: "8px" }}>
+          <div style={{ width: "24px", height: "24px", borderRadius: "8px", background: "#F97316", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px" }}>🛒</div>
+          <span style={{ fontSize: "14px", fontWeight: 800, color: "white" }}>BuddyMarket</span>
         </div>
-        <p className="text-xs text-gray-400">© 2026 VIVELY. Todos los derechos reservados.</p>
-        <p className="mt-2 text-[10px] text-gray-300">
-          VIVELY no constituye asesoramiento médico o nutricional profesional.
+        <p style={{ margin: 0, fontSize: "11px", color: "rgba(255,255,255,0.3)", lineHeight: 1.5 }}>
+          © 2026 BuddyMarket. El contenido no constituye asesoramiento médico o nutricional profesional. Consulta a un profesional.
         </p>
       </footer>
     </div>
