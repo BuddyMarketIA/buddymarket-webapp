@@ -3,14 +3,17 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
 type MercadProduct = {
-  id: string;
+  id: number;
+  slug: string;
   name: string;
-  brand: string;
+  packaging: string | null;
+  thumbnail: string | null;
   price: number;
   priceStr: string;
   unit: string;
-  thumbnail: string;
-  subcategory: string;
+  category: string | null;
+  subcategory: string | null;
+  shareUrl: string | null;
 };
 
 type CartItem = MercadProduct & { qty: number };
@@ -19,7 +22,6 @@ const SUPERMARKETS = [
   {
     id: "mercadona",
     name: "Mercadona",
-    logo: "🟢",
     color: "#00A650",
     bg: "#E8F5E9",
     available: true,
@@ -28,7 +30,6 @@ const SUPERMARKETS = [
   {
     id: "carrefour",
     name: "Carrefour",
-    logo: "🔵",
     color: "#004A97",
     bg: "#E3F2FD",
     available: false,
@@ -37,7 +38,6 @@ const SUPERMARKETS = [
   {
     id: "lidl",
     name: "Lidl",
-    logo: "🟡",
     color: "#F5A623",
     bg: "#FFF8E1",
     available: false,
@@ -46,7 +46,6 @@ const SUPERMARKETS = [
   {
     id: "alcampo",
     name: "Alcampo",
-    logo: "🔴",
     color: "#E53935",
     bg: "#FFEBEE",
     available: false,
@@ -55,7 +54,6 @@ const SUPERMARKETS = [
   {
     id: "dia",
     name: "Dia",
-    logo: "🔴",
     color: "#C62828",
     bg: "#FFEBEE",
     available: false,
@@ -64,7 +62,6 @@ const SUPERMARKETS = [
   {
     id: "elcorteingles",
     name: "El Corte Inglés",
-    logo: "🟢",
     color: "#1B5E20",
     bg: "#E8F5E9",
     available: false,
@@ -85,7 +82,7 @@ const CATEGORY_ICONS: Record<string, string> = {
   "Cereales y galletas": "🥣",
   "Charcutería y quesos": "🧀",
   "Congelados": "🧊",
-  "Conservas y platos preparados": "🥫",
+  "Conservas, caldos y cremas": "🥫",
   "Cuidado del cabello": "💆",
   "Cuidado facial y corporal": "🧴",
   "Droguería": "🧹",
@@ -103,7 +100,8 @@ const CATEGORY_ICONS: Record<string, string> = {
 
 export default function SupermercadoShop() {
   const [selectedSupermarket, setSelectedSupermarket] = useState<string | null>(null);
-  const [selectedCatId, setSelectedCatId] = useState<number | null>(null);
+  const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
+  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [debouncedQuery, setDebouncedQuery] = useState("");
   const [cart, setCart] = useState<CartItem[]>([]);
@@ -112,30 +110,41 @@ export default function SupermercadoShop() {
 
   useEffect(() => {
     if (debounceRef.current) clearTimeout(debounceRef.current);
-    debounceRef.current = setTimeout(() => setDebouncedQuery(searchQuery), 600);
+    debounceRef.current = setTimeout(() => setDebouncedQuery(searchQuery), 500);
     return () => { if (debounceRef.current) clearTimeout(debounceRef.current); };
   }, [searchQuery]);
 
-  const { data: categories, isLoading: loadingCats } = trpc.mercadona.categories.useQuery(
+  // Load categories from DB
+  const { data: rawCategories, isLoading: loadingCats } = trpc.mercadona.categories.useQuery(
     undefined,
     { enabled: selectedSupermarket === "mercadona" }
   );
 
-  const { data: products, isLoading: loadingProducts } = trpc.mercadona.productsByCategory.useQuery(
-    { categoryId: selectedCatId! },
-    { enabled: !!selectedCatId && !debouncedQuery && selectedSupermarket === "mercadona" }
+  // Build unique top-level categories
+  const topCategories = rawCategories
+    ? Array.from(new Set(rawCategories.map(r => r.categoryName))).map(catName => ({
+        name: catName,
+        subcategories: rawCategories.filter(r => r.categoryName === catName).map(r => r.subcategoryName),
+      }))
+    : [];
+
+  // Load products by category
+  const { data: categoryProducts, isLoading: loadingCatProducts } = trpc.mercadona.byCategory.useQuery(
+    { categoryName: selectedCategory!, subcategoryName: selectedSubcategory ?? undefined, limit: 60 },
+    { enabled: !!selectedCategory && !debouncedQuery && selectedSupermarket === "mercadona" }
   );
 
+  // Search products
   const { data: searchResults, isLoading: loadingSearch } = trpc.mercadona.searchProducts.useQuery(
-    { query: debouncedQuery },
+    { query: debouncedQuery, limit: 40 },
     { enabled: debouncedQuery.length >= 2 && selectedSupermarket === "mercadona" }
   );
 
   const displayedProducts: MercadProduct[] = debouncedQuery.length >= 2
     ? (searchResults ?? [])
-    : (products ?? []);
+    : (categoryProducts ?? []);
 
-  const isLoading = debouncedQuery.length >= 2 ? loadingSearch : loadingProducts;
+  const isLoading = debouncedQuery.length >= 2 ? loadingSearch : loadingCatProducts;
 
   const addToCart = (product: MercadProduct) => {
     setCart((prev) => {
@@ -146,7 +155,7 @@ export default function SupermercadoShop() {
     toast.success(`${product.name} añadido`);
   };
 
-  const updateQty = (id: string, delta: number) => {
+  const updateQty = (id: number, delta: number) => {
     setCart((prev) =>
       prev.map((c) => c.id === id ? { ...c, qty: Math.max(0, c.qty + delta) } : c).filter((c) => c.qty > 0)
     );
@@ -189,13 +198,13 @@ export default function SupermercadoShop() {
               </div>
               <div className="flex-1">
                 <div className="flex items-center gap-2">
-                  <p className="text-base font-900 text-gray-900">{sm.name}</p>
+                  <p className="text-base font-bold text-gray-900">{sm.name}</p>
                   {sm.available ? (
-                    <span className="text-xs font-700 px-2 py-0.5 rounded-full text-white" style={{ background: sm.color }}>
+                    <span className="text-xs font-bold px-2 py-0.5 rounded-full text-white" style={{ background: sm.color }}>
                       Disponible
                     </span>
                   ) : (
-                    <span className="text-xs font-700 px-2 py-0.5 rounded-full bg-gray-200 text-gray-500">
+                    <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-gray-200 text-gray-500">
                       Próximamente
                     </span>
                   )}
@@ -212,7 +221,7 @@ export default function SupermercadoShop() {
         </div>
 
         <div className="mt-6 rounded-2xl p-4 bg-orange-50 border border-orange-100">
-          <p className="text-xs text-orange-700 font-600 text-center">
+          <p className="text-xs text-orange-700 font-semibold text-center">
             🚀 Estamos integrando más supermercados. ¡Pronto podrás comprar en todos desde BuddyMarket!
           </p>
         </div>
@@ -227,7 +236,7 @@ export default function SupermercadoShop() {
       <div className="mb-5 flex items-center justify-between">
         <div className="flex items-center gap-3">
           <button
-            onClick={() => { setSelectedSupermarket(null); setSelectedCatId(null); setSearchQuery(""); }}
+            onClick={() => { setSelectedSupermarket(null); setSelectedCategory(null); setSelectedSubcategory(null); setSearchQuery(""); }}
             className="w-9 h-9 rounded-2xl bg-white shadow-sm border border-gray-100 flex items-center justify-center"
           >
             <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -237,20 +246,20 @@ export default function SupermercadoShop() {
           <div>
             <div className="flex items-center gap-2">
               <div
-                className="w-8 h-8 rounded-xl flex items-center justify-center text-sm font-900 text-white"
+                className="w-8 h-8 rounded-xl flex items-center justify-center text-sm font-black text-white"
                 style={{ background: activeSupermarket?.color }}
               >
                 {activeSupermarket?.name.charAt(0)}
               </div>
-              <h1 className="text-lg font-900 text-gray-900">{activeSupermarket?.name}</h1>
+              <h1 className="text-lg font-black text-gray-900">{activeSupermarket?.name}</h1>
             </div>
-            <p className="text-xs text-gray-400">Precios en tiempo real</p>
+            <p className="text-xs text-gray-400">1.971 productos disponibles</p>
           </div>
         </div>
         {cartCount > 0 && (
           <button
             onClick={() => setShowCart(true)}
-            className="relative flex items-center gap-2 rounded-2xl px-3 py-2 text-sm font-800 text-white"
+            className="relative flex items-center gap-2 rounded-2xl px-3 py-2 text-sm font-bold text-white"
             style={{ background: "linear-gradient(135deg, #F97316, #FB923C)", boxShadow: "0 4px 12px rgba(249,115,22,0.35)" }}
           >
             <svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
@@ -268,7 +277,7 @@ export default function SupermercadoShop() {
         </svg>
         <input
           value={searchQuery}
-          onChange={(e) => { setSearchQuery(e.target.value); setSelectedCatId(null); }}
+          onChange={(e) => { setSearchQuery(e.target.value); setSelectedCategory(null); setSelectedSubcategory(null); }}
           placeholder="Buscar pollo, pasta, aceite..."
           className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
         />
@@ -281,10 +290,10 @@ export default function SupermercadoShop() {
         )}
       </div>
 
-      {/* Categories */}
+      {/* Categories grid */}
       {!debouncedQuery && (
         <div className="mb-5">
-          <p className="text-xs font-700 text-gray-400 uppercase tracking-wider mb-3">Categorías</p>
+          <p className="text-xs font-bold text-gray-400 uppercase tracking-wider mb-3">Categorías</p>
           {loadingCats ? (
             <div className="grid grid-cols-3 gap-2">
               {Array.from({ length: 9 }).map((_, i) => (
@@ -293,23 +302,22 @@ export default function SupermercadoShop() {
             </div>
           ) : (
             <div className="grid grid-cols-3 gap-2">
-              {(categories ?? []).map((cat) => (
+              {topCategories.map((cat) => (
                 <button
-                  key={cat.id}
-                  onClick={() => setSelectedCatId(cat.categories[0]?.id ?? null)}
+                  key={cat.name}
+                  onClick={() => {
+                    setSelectedCategory(cat.name);
+                    setSelectedSubcategory(null);
+                  }}
                   className={`rounded-2xl p-3 flex flex-col items-center gap-1.5 transition-all active:scale-95 ${
-                    selectedCatId && cat.categories.some((s) => s.id === selectedCatId)
+                    selectedCategory === cat.name
                       ? "text-white shadow-md"
                       : "bg-white text-gray-700 shadow-sm border border-gray-100"
                   }`}
-                  style={
-                    selectedCatId && cat.categories.some((s) => s.id === selectedCatId)
-                      ? { background: activeSupermarket?.color }
-                      : {}
-                  }
+                  style={selectedCategory === cat.name ? { background: activeSupermarket?.color } : {}}
                 >
                   <span className="text-2xl">{CATEGORY_ICONS[cat.name] ?? "🛍️"}</span>
-                  <span className="text-xs font-700 text-center leading-tight line-clamp-2">{cat.name}</span>
+                  <span className="text-xs font-bold text-center leading-tight line-clamp-2">{cat.name}</span>
                 </button>
               ))}
             </div>
@@ -318,27 +326,34 @@ export default function SupermercadoShop() {
       )}
 
       {/* Subcategory tabs */}
-      {!debouncedQuery && selectedCatId && categories && (
+      {!debouncedQuery && selectedCategory && (
         <div className="mb-4 flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-          {categories
-            .find((c) => c.categories.some((s) => s.id === selectedCatId))
-            ?.categories.map((sub) => (
-              <button
-                key={sub.id}
-                onClick={() => setSelectedCatId(sub.id)}
-                className={`shrink-0 rounded-full px-4 py-2 text-xs font-700 transition-all ${
-                  selectedCatId === sub.id ? "text-white" : "bg-white text-gray-600 border border-gray-200"
-                }`}
-                style={selectedCatId === sub.id ? { background: activeSupermarket?.color } : {}}
-              >
-                {sub.name}
-              </button>
-            ))}
+          <button
+            onClick={() => setSelectedSubcategory(null)}
+            className={`shrink-0 rounded-full px-4 py-2 text-xs font-bold transition-all ${
+              !selectedSubcategory ? "text-white" : "bg-white text-gray-600 border border-gray-200"
+            }`}
+            style={!selectedSubcategory ? { background: activeSupermarket?.color } : {}}
+          >
+            Todos
+          </button>
+          {topCategories.find(c => c.name === selectedCategory)?.subcategories.map((sub) => (
+            <button
+              key={sub}
+              onClick={() => setSelectedSubcategory(sub)}
+              className={`shrink-0 rounded-full px-4 py-2 text-xs font-bold transition-all ${
+                selectedSubcategory === sub ? "text-white" : "bg-white text-gray-600 border border-gray-200"
+              }`}
+              style={selectedSubcategory === sub ? { background: activeSupermarket?.color } : {}}
+            >
+              {sub}
+            </button>
+          ))}
         </div>
       )}
 
-      {/* Products */}
-      {(selectedCatId || debouncedQuery.length >= 2) && (
+      {/* Products grid */}
+      {(selectedCategory || debouncedQuery.length >= 2) && (
         <div>
           {isLoading ? (
             <div className="grid grid-cols-2 gap-3">
@@ -353,56 +368,63 @@ export default function SupermercadoShop() {
           ) : displayedProducts.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <div className="text-5xl mb-4">🔍</div>
-              <p className="text-base font-700 text-gray-700">No se encontraron productos</p>
+              <p className="text-base font-bold text-gray-700">No se encontraron productos</p>
               <p className="text-sm text-gray-400 mt-1">Prueba con otra búsqueda o categoría</p>
             </div>
           ) : (
-            <div className="grid grid-cols-2 gap-3">
-              {displayedProducts.map((product) => {
-                const inCart = cart.find((c) => c.id === product.id);
-                return (
-                  <div key={product.id} className="bg-white rounded-2xl p-3 shadow-sm border border-gray-100 flex flex-col">
-                    <div className="w-full h-28 bg-gray-50 rounded-xl mb-3 flex items-center justify-center overflow-hidden">
-                      {product.thumbnail ? (
-                        <img src={product.thumbnail} alt={product.name} className="w-full h-full object-contain p-2"
-                          onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
+            <>
+              <p className="text-xs text-gray-400 mb-3">{displayedProducts.length} productos</p>
+              <div className="grid grid-cols-2 gap-3">
+                {displayedProducts.map((product) => {
+                  const inCart = cart.find((c) => c.id === product.id);
+                  return (
+                    <div key={product.id} className="bg-white rounded-2xl p-3 shadow-sm border border-gray-100 flex flex-col">
+                      <div className="w-full h-28 bg-gray-50 rounded-xl mb-3 flex items-center justify-center overflow-hidden">
+                        {product.thumbnail ? (
+                          <img
+                            src={product.thumbnail}
+                            alt={product.name}
+                            className="w-full h-full object-contain p-2"
+                            onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
+                          />
+                        ) : (
+                          <span className="text-4xl">🛒</span>
+                        )}
+                      </div>
+                      <div className="flex-1">
+                        <p className="text-xs font-bold text-gray-900 leading-tight line-clamp-2 mb-1">{product.name}</p>
+                        {product.packaging && <p className="text-xs text-gray-400 mb-1">{product.packaging}</p>}
+                        {product.unit && <p className="text-xs text-gray-400 mb-1">{product.unit}</p>}
+                        <p className="text-base font-black mb-3" style={{ color: activeSupermarket?.color }}>{product.priceStr}</p>
+                      </div>
+                      {inCart ? (
+                        <div className="flex items-center justify-between rounded-xl px-2 py-1.5" style={{ background: activeSupermarket?.bg }}>
+                          <button onClick={() => updateQty(product.id, -1)} className="w-7 h-7 rounded-lg bg-white font-black flex items-center justify-center shadow-sm" style={{ color: activeSupermarket?.color }}>−</button>
+                          <span className="text-sm font-bold" style={{ color: activeSupermarket?.color }}>{inCart.qty}</span>
+                          <button onClick={() => updateQty(product.id, 1)} className="w-7 h-7 rounded-lg text-white font-black flex items-center justify-center" style={{ background: activeSupermarket?.color }}>+</button>
+                        </div>
                       ) : (
-                        <span className="text-4xl">🛒</span>
+                        <button
+                          onClick={() => addToCart(product)}
+                          className="w-full rounded-xl py-2 text-xs font-bold text-white transition-all active:scale-95"
+                          style={{ background: activeSupermarket?.color }}
+                        >
+                          + Añadir
+                        </button>
                       )}
                     </div>
-                    <div className="flex-1">
-                      <p className="text-xs font-700 text-gray-900 leading-tight line-clamp-2 mb-1">{product.name}</p>
-                      {product.brand && <p className="text-xs text-gray-400 mb-1">{product.brand}</p>}
-                      {product.unit && <p className="text-xs text-gray-400 mb-1">{product.unit}</p>}
-                      <p className="text-base font-900 mb-3" style={{ color: activeSupermarket?.color }}>{product.priceStr}</p>
-                    </div>
-                    {inCart ? (
-                      <div className="flex items-center justify-between rounded-xl px-2 py-1.5" style={{ background: `${activeSupermarket?.bg}` }}>
-                        <button onClick={() => updateQty(product.id, -1)} className="w-7 h-7 rounded-lg bg-white font-900 flex items-center justify-center shadow-sm" style={{ color: activeSupermarket?.color }}>−</button>
-                        <span className="text-sm font-800" style={{ color: activeSupermarket?.color }}>{inCart.qty}</span>
-                        <button onClick={() => updateQty(product.id, 1)} className="w-7 h-7 rounded-lg text-white font-900 flex items-center justify-center" style={{ background: activeSupermarket?.color }}>+</button>
-                      </div>
-                    ) : (
-                      <button
-                        onClick={() => addToCart(product)}
-                        className="w-full rounded-xl py-2 text-xs font-800 text-white transition-all active:scale-95"
-                        style={{ background: activeSupermarket?.color }}
-                      >
-                        + Añadir
-                      </button>
-                    )}
-                  </div>
-                );
-              })}
-            </div>
+                  );
+                })}
+              </div>
+            </>
           )}
         </div>
       )}
 
-      {!selectedCatId && !debouncedQuery && !loadingCats && (
+      {!selectedCategory && !debouncedQuery && !loadingCats && (
         <div className="flex flex-col items-center justify-center py-12 text-center">
           <div className="text-5xl mb-4">👆</div>
-          <p className="text-base font-700 text-gray-700">Selecciona una categoría</p>
+          <p className="text-base font-bold text-gray-700">Selecciona una categoría</p>
           <p className="text-sm text-gray-400 mt-1">o busca un producto directamente</p>
         </div>
       )}
@@ -414,7 +436,7 @@ export default function SupermercadoShop() {
           <div className="relative bg-white rounded-t-3xl max-h-[80vh] flex flex-col shadow-2xl">
             <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100">
               <div>
-                <h2 className="text-lg font-900 text-gray-900">Mi lista — {activeSupermarket?.name}</h2>
+                <h2 className="text-lg font-black text-gray-900">Mi lista — {activeSupermarket?.name}</h2>
                 <p className="text-xs text-gray-500">{cartCount} producto{cartCount !== 1 ? "s" : ""}</p>
               </div>
               <button onClick={() => setShowCart(false)} className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center">
@@ -430,33 +452,33 @@ export default function SupermercadoShop() {
                     {item.thumbnail ? <img src={item.thumbnail} alt={item.name} className="w-full h-full object-contain p-1" /> : <span className="text-xl">🛒</span>}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-700 text-gray-900 line-clamp-1">{item.name}</p>
-                    <p className="text-xs font-800" style={{ color: activeSupermarket?.color }}>{item.priceStr} × {item.qty} = {(item.price * item.qty).toFixed(2)}€</p>
+                    <p className="text-sm font-bold text-gray-900 line-clamp-1">{item.name}</p>
+                    <p className="text-xs font-bold" style={{ color: activeSupermarket?.color }}>{item.priceStr} × {item.qty} = {(item.price * item.qty).toFixed(2)}€</p>
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">
-                    <button onClick={() => updateQty(item.id, -1)} className="w-7 h-7 rounded-lg bg-gray-100 text-gray-700 font-900 flex items-center justify-center text-sm">−</button>
-                    <span className="text-sm font-800 w-5 text-center">{item.qty}</span>
-                    <button onClick={() => updateQty(item.id, 1)} className="w-7 h-7 rounded-lg text-white font-900 flex items-center justify-center text-sm" style={{ background: activeSupermarket?.color }}>+</button>
+                    <button onClick={() => updateQty(item.id, -1)} className="w-7 h-7 rounded-lg bg-gray-100 text-gray-700 font-black flex items-center justify-center text-sm">−</button>
+                    <span className="text-sm font-bold w-5 text-center">{item.qty}</span>
+                    <button onClick={() => updateQty(item.id, 1)} className="w-7 h-7 rounded-lg text-white font-black flex items-center justify-center text-sm" style={{ background: activeSupermarket?.color }}>+</button>
                   </div>
                 </div>
               ))}
             </div>
             <div className="px-5 pt-4 pb-8 border-t border-gray-100">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-base font-700 text-gray-700">Total estimado</span>
-                <span className="text-xl font-900 text-gray-900">{cartTotal.toFixed(2)}€</span>
+                <span className="text-base font-bold text-gray-700">Total estimado</span>
+                <span className="text-xl font-black text-gray-900">{cartTotal.toFixed(2)}€</span>
               </div>
               <div className="flex gap-3">
                 <button
                   onClick={() => { navigator.clipboard.writeText(cart.map((c) => `• ${c.name} x${c.qty} — ${(c.price * c.qty).toFixed(2)}€`).join("\n")); toast.success("Lista copiada"); }}
-                  className="flex-1 rounded-2xl py-3 text-sm font-800 border-2"
+                  className="flex-1 rounded-2xl py-3 text-sm font-bold border-2"
                   style={{ color: activeSupermarket?.color, borderColor: activeSupermarket?.color }}
                 >
                   Copiar lista
                 </button>
                 <button
                   onClick={() => { toast.success("Lista guardada en tu perfil"); setShowCart(false); }}
-                  className="flex-1 rounded-2xl py-3 text-sm font-800 text-white"
+                  className="flex-1 rounded-2xl py-3 text-sm font-bold text-white"
                   style={{ background: activeSupermarket?.color, boxShadow: `0 4px 12px ${activeSupermarket?.color}55` }}
                 >
                   Guardar lista

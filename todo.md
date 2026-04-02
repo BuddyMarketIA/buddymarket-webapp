@@ -391,3 +391,15 @@
 - [x] Modal foto+IA: captura foto, preview, análisis, selección de productos, fecha de caducidad por producto
 - [x] Colores de alerta por días restantes (verde/amarillo/naranja/rojo)
 - [x] Campo de caducidad en modal de añadir manual
+- [ ] Añadir acceso directo a BuddyCoach.io en sidebar bajo sección Comunidad Vively
+- [ ] Integrar imágenes de productos de Mercadona en la sección de supermercados
+
+## Sprint: Integración Catálogo Mercadona
+- [x] Importar 1.971 productos Mercadona a la BD con imágenes (thumbnails 300x300)
+- [x] Endpoint DB-based searchProducts (búsqueda por nombre, subcategoría, categoría)
+- [x] Endpoint categories (lista de categorías/subcategorías desde BD)
+- [x] Endpoint byCategory (productos por categoría/subcategoría)
+- [x] Reescribir MercadonaShop.tsx para usar endpoints de BD (sin llamadas externas)
+- [x] Grid de categorías con iconos emoji
+- [x] Tabs de subcategorías al seleccionar categoría
+- [x] Carrito de compra con contador, total y copiar/guardar lista

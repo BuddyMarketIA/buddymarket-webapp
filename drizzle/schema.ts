@@ -520,6 +520,37 @@ export type ShoppingListItem = typeof shoppingListItems.$inferSelect;
 export type InsertShoppingListItem = typeof shoppingListItems.$inferInsert;
 
 // =============================================================================
+// MERCADONA PRODUCTS CATALOG
+// =============================================================================
+
+export const mercadonaProducts = mysqlTable("mercadona_products", {
+  id: int("id").primaryKey(),
+  slug: varchar("slug", { length: 256 }).notNull(),
+  name: varchar("name", { length: 512 }).notNull(),
+  packaging: varchar("packaging", { length: 128 }),
+  thumbnail: varchar("thumbnail", { length: 512 }),
+  shareUrl: varchar("share_url", { length: 512 }),
+  categoryId: int("category_id"),
+  categoryName: varchar("category_name", { length: 256 }),
+  subcategoryId: int("subcategory_id"),
+  subcategoryName: varchar("subcategory_name", { length: 256 }),
+  bulkPrice: varchar("bulk_price", { length: 32 }),
+  unitPrice: varchar("unit_price", { length: 32 }),
+  unitSize: float("unit_size"),
+  sizeFormat: varchar("size_format", { length: 16 }),
+  referencePrice: varchar("reference_price", { length: 32 }),
+  referenceFormat: varchar("reference_format", { length: 16 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (t) => ({
+  slugIdx: index("merc_slug_idx").on(t.slug),
+  catIdx: index("merc_cat_idx").on(t.categoryId),
+  nameIdx: index("merc_name_idx").on(t.name),
+}));
+export type MercadonaProduct = typeof mercadonaProducts.$inferSelect;
+export type InsertMercadonaProduct = typeof mercadonaProducts.$inferInsert;
+
+// =============================================================================
 // INVENTORY
 // =============================================================================
 
