@@ -77,8 +77,8 @@ export const PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
 
     canAccessBuddyMakers: true, // can view
     canAccessBuddyExperts: false,
-    canBecomeBuddyMaker: false,
-    canBecomeBuddyExpert: false,
+    canBecomeBuddyMaker: true,  // any user can apply — BuddyMarket approves
+    canBecomeBuddyExpert: true, // any user can apply — BuddyMarket approves
 
     canExportData: false,
     canManageMultipleProfiles: false,
@@ -112,8 +112,8 @@ export const PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
 
     canAccessBuddyMakers: true,
     canAccessBuddyExperts: false,
-    canBecomeBuddyMaker: false,
-    canBecomeBuddyExpert: false,
+    canBecomeBuddyMaker: true,  // any user can apply — BuddyMarket approves
+    canBecomeBuddyExpert: true, // any user can apply — BuddyMarket approves
 
     canExportData: false,
     canManageMultipleProfiles: false,
@@ -269,8 +269,8 @@ export const FEATURE_DESCRIPTIONS: Partial<Record<keyof PlanLimits, { title: str
   canConnectSupermarket: { title: "Conectar supermercado", requiredPlan: "basic" },
   canTrackMetrics: { title: "Seguimiento de métricas", requiredPlan: "basic" },
   canAccessBuddyExperts: { title: "Acceso a BuddyExperts", requiredPlan: "premium" },
-  canBecomeBuddyMaker: { title: "Convertirte en BuddyMaker", requiredPlan: "premium" },
-  canBecomeBuddyExpert: { title: "Convertirte en BuddyExpert", requiredPlan: "premium" },
+  canBecomeBuddyMaker: { title: "Convertirte en BuddyMaker", requiredPlan: "free" },
+  canBecomeBuddyExpert: { title: "Convertirte en BuddyExpert", requiredPlan: "free" },
   canExportData: { title: "Exportar tus datos", requiredPlan: "premium" },
   canManageMultipleProfiles: { title: "Gestionar múltiples perfiles familiares", requiredPlan: "premium" },
 };

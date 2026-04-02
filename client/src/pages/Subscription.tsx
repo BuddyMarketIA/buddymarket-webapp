@@ -85,7 +85,7 @@ const COMPARISON: Array<{
       { label: "Ver recetas de la comunidad", free: true, pro: true, promax: true },
       { label: "Recetas guardadas", free: "10", pro: "Ilimitadas", promax: "Ilimitadas" },
       { label: "Crear tus propias recetas", free: false, pro: false, promax: true },
-      { label: "Publicar como BuddyMaker", free: false, pro: false, promax: true },
+      { label: "Publicar como BuddyMaker", free: "Con aprobación", pro: "Con aprobación", promax: "Con aprobación" },
     ],
   },
   {
@@ -132,8 +132,8 @@ const COMPARISON: Array<{
     rows: [
       { label: "Ver recetas de BuddyMakers", free: true, pro: true, promax: true },
       { label: "Consultas con BuddyExperts", free: false, pro: false, promax: true },
-      { label: "Convertirte en BuddyMaker", free: false, pro: false, promax: true },
-      { label: "Convertirte en BuddyExpert", free: false, pro: false, promax: true },
+      { label: "Solicitar ser BuddyMaker", free: "Con aprobación", pro: "Con aprobación", promax: "Con aprobación" },
+      { label: "Solicitar ser BuddyExpert", free: "Con aprobación", pro: "Con aprobación", promax: "Con aprobación" },
     ],
   },
   {

@@ -985,3 +985,30 @@ export const userPoints = mysqlTable("user_points", {
 });
 export type UserPoints = typeof userPoints.$inferSelect;
 export type InsertUserPoints = typeof userPoints.$inferInsert;
+
+// =============================================================================
+// ROLE REQUESTS (BuddyMaker / BuddyExpert)
+// =============================================================================
+// Any user can apply to become a BuddyMaker or BuddyExpert.
+// BuddyMarket admins review and approve/reject from the admin panel.
+
+export const roleRequests = mysqlTable("role_requests", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  roleType: mysqlEnum("roleType", ["buddymaker", "buddyexpert"]).notNull(),
+  status: mysqlEnum("status", ["pending", "approved", "rejected"]).default("pending").notNull(),
+  motivation: text("motivation"), // Why the user wants this role
+  socialLinks: text("socialLinks"), // JSON: { instagram, website, youtube }
+  specialties: text("specialties"), // JSON array: for buddyexpert (nutrition, sports, etc.)
+  reviewNote: text("reviewNote"), // Admin note on approval/rejection
+  reviewedAt: timestamp("reviewedAt"),
+  reviewedBy: int("reviewedBy"), // admin userId
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (t) => ({
+  userIdx: index("role_requests_user_idx").on(t.userId),
+  userRoleUnique: unique("role_requests_user_role_unique").on(t.userId, t.roleType),
+}));
+
+export type RoleRequest = typeof roleRequests.$inferSelect;
+export type InsertRoleRequest = typeof roleRequests.$inferInsert;

@@ -48,6 +48,9 @@ import {
   mealReminders,
   userAchievements,
   userPoints,
+  roleRequests,
+  RoleRequest,
+  InsertRoleRequest,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -1646,4 +1649,45 @@ export async function getMealStreak(userId: number): Promise<number> {
   } catch {
     return 0;
   }
+}
+
+// =============================================================================
+// ROLE REQUESTS (BuddyMaker / BuddyExpert)
+// =============================================================================
+
+export async function createRoleRequest(data: InsertRoleRequest): Promise<number> {
+  const db = await getDb();
+  if (!db) throw new Error("DB unavailable");
+  const [result] = await db.insert(roleRequests).values(data);
+  return (result as any).insertId as number;
+}
+
+export async function getRoleRequestByUserAndType(userId: number, roleType: "buddymaker" | "buddyexpert"): Promise<RoleRequest | undefined> {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(roleRequests)
+    .where(and(eq(roleRequests.userId, userId), eq(roleRequests.roleType, roleType)))
+    .limit(1);
+  return result[0];
+}
+
+export async function getRoleRequestsByUser(userId: number): Promise<RoleRequest[]> {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(roleRequests).where(eq(roleRequests.userId, userId));
+}
+
+export async function getAllRoleRequests(status?: "pending" | "approved" | "rejected"): Promise<RoleRequest[]> {
+  const db = await getDb();
+  if (!db) return [];
+  if (status) {
+    return db.select().from(roleRequests).where(eq(roleRequests.status, status)).orderBy(desc(roleRequests.createdAt));
+  }
+  return db.select().from(roleRequests).orderBy(desc(roleRequests.createdAt));
+}
+
+export async function updateRoleRequest(id: number, data: Partial<InsertRoleRequest>): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(roleRequests).set(data).where(eq(roleRequests.id, id));
 }

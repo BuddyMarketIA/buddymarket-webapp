@@ -660,7 +660,7 @@ export default function LandingPage() {
                   { label: "Ver recetas de la comunidad", free: true, pro: true, promax: true },
                   { label: "Recetas guardadas", free: "10", pro: "Ilimitadas", promax: "Ilimitadas" },
                   { label: "Crear tus propias recetas", free: false, pro: false, promax: true },
-                  { label: "Publicar como BuddyMaker", free: false, pro: false, promax: true },
+                  { label: "Publicar como BuddyMaker", free: "Con aprobación", pro: "Con aprobación", promax: "Con aprobación" },
                 ]},
                 { category: "Menús con IA", rows: [
                   { label: "Menús generados al mes", free: "3", pro: "Ilimitados", promax: "Ilimitados" },
@@ -689,8 +689,8 @@ export default function LandingPage() {
                 { category: "Comunidad BuddyMarket", rows: [
                   { label: "Ver recetas de BuddyMakers", free: true, pro: true, promax: true },
                   { label: "Consultas con BuddyExperts (nutricionistas)", free: false, pro: false, promax: true },
-                  { label: "Convertirte en BuddyMaker", free: false, pro: false, promax: true },
-                  { label: "Convertirte en BuddyExpert", free: false, pro: false, promax: true },
+                  { label: "Solicitar ser BuddyMaker", free: "Con aprobación", pro: "Con aprobación", promax: "Con aprobación" },
+                  { label: "Solicitar ser BuddyExpert", free: "Con aprobación", pro: "Con aprobación", promax: "Con aprobación" },
                 ]},
                 { category: "Extras Pro Max", rows: [
                   { label: "Exportar informes PDF", free: false, pro: false, promax: true },

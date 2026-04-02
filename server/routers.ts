@@ -3585,6 +3585,110 @@ Devuelve EXACTAMENTE este JSON:
   // ===========================================================================
   // SPECIALIZED MENUS — Menús para condiciones médicas y estilos de vida
   // ===========================================================================
+  // ---------------------------------------------------------------------------
+  // ROLE REQUESTS (BuddyMaker / BuddyExpert)
+  // ---------------------------------------------------------------------------
+  roleRequests: router({
+    // Any logged-in user can submit a request
+    submit: protectedProcedure
+      .input(z.object({
+        roleType: z.enum(["buddymaker", "buddyexpert"]),
+        motivation: z.string().min(20).max(1000),
+        socialLinks: z.object({
+          instagram: z.string().optional(),
+          website: z.string().optional(),
+          youtube: z.string().optional(),
+        }).optional(),
+        specialties: z.array(z.string()).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const existing = await db.getRoleRequestByUserAndType(ctx.user.id, input.roleType);
+        if (existing) {
+          if (existing.status === "approved") {
+            throw new TRPCError({ code: "BAD_REQUEST", message: "Ya tienes este rol aprobado" });
+          }
+          if (existing.status === "pending") {
+            throw new TRPCError({ code: "BAD_REQUEST", message: "Ya tienes una solicitud pendiente de revisión" });
+          }
+          // Rejected → allow resubmission
+          await db.updateRoleRequest(existing.id, {
+            status: "pending",
+            motivation: input.motivation,
+            socialLinks: input.socialLinks ? JSON.stringify(input.socialLinks) : null,
+            specialties: input.specialties ? JSON.stringify(input.specialties) : null,
+            reviewNote: null,
+            reviewedAt: null,
+            reviewedBy: null,
+          });
+          return { success: true, requestId: existing.id };
+        }
+        const requestId = await db.createRoleRequest({
+          userId: ctx.user.id,
+          roleType: input.roleType,
+          motivation: input.motivation,
+          socialLinks: input.socialLinks ? JSON.stringify(input.socialLinks) : null,
+          specialties: input.specialties ? JSON.stringify(input.specialties) : null,
+        });
+        return { success: true, requestId };
+      }),
+
+    getMine: protectedProcedure.query(async ({ ctx }) => {
+      const requests = await db.getRoleRequestsByUser(ctx.user.id);
+      return requests.map(r => ({
+        ...r,
+        socialLinks: r.socialLinks ? (() => { try { return JSON.parse(r.socialLinks!); } catch { return null; } })() : null,
+        specialties: r.specialties ? (() => { try { return JSON.parse(r.specialties!); } catch { return []; } })() : [],
+      }));
+    }),
+
+    adminList: protectedProcedure
+      .input(z.object({ status: z.enum(["pending", "approved", "rejected", "all"]).default("pending") }))
+      .query(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        const requests = await db.getAllRoleRequests(input.status === "all" ? undefined : input.status);
+        // Join with user data
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return [];
+        const { users: usersTable } = await import("../drizzle/schema");
+        const { inArray } = await import("drizzle-orm");
+        const userIds = Array.from(new Set(requests.map(r => r.userId)));
+        const usersData = userIds.length > 0 ? await drizzleDb.select({ id: usersTable.id, name: usersTable.name, email: usersTable.email, imageUrl: usersTable.imageUrl }).from(usersTable).where(inArray(usersTable.id, userIds)) : [];
+        const usersMap = Object.fromEntries(usersData.map(u => [u.id, u]));
+        return requests.map(r => ({ ...r, user: usersMap[r.userId] ?? null }));
+      }),
+
+    approve: protectedProcedure
+      .input(z.object({ requestId: z.number(), note: z.string().optional() }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        const allRequests = await db.getAllRoleRequests();
+        const req = allRequests.find(r => r.id === input.requestId);
+        if (!req) throw new TRPCError({ code: "NOT_FOUND" });
+        await db.updateRoleRequest(input.requestId, {
+          status: "approved",
+          reviewNote: input.note ?? null,
+          reviewedAt: new Date(),
+          reviewedBy: ctx.user.id,
+        });
+        const newRole = req.roleType as "buddymaker" | "buddyexpert";
+        await db.updateUser(req.userId, { role: newRole, accountType: newRole });
+        return { success: true };
+      }),
+
+    reject: protectedProcedure
+      .input(z.object({ requestId: z.number(), note: z.string().optional() }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        await db.updateRoleRequest(input.requestId, {
+          status: "rejected",
+          reviewNote: input.note ?? null,
+          reviewedAt: new Date(),
+          reviewedBy: ctx.user.id,
+        });
+        return { success: true };
+      }),
+  }),
+
   specializedMenus: router({
     generate: protectedProcedure
       .input(z.object({

@@ -840,3 +840,15 @@
 - [x] Landing page: destacar claramente las diferencias entre Pro y Pro Max
 - [x] Página /subscription: añadir tabla comparativa completa con todas las funciones
 - [x] Página /subscription: mostrar límites numéricos reales (5 menús/mes, 20 productos, etc.)
+
+## Sprint: Flujo de solicitud BuddyMaker/BuddyExpert (02/04/2026)
+- [x] BD: tabla `role_requests` (userId, roleType, status, reason, reviewedAt, reviewedBy)
+- [x] Backend: procedimiento `requestRole` (cualquier usuario puede solicitar)
+- [x] Backend: procedimiento `getMyRoleRequest` (ver estado de solicitud propia)
+- [x] Backend: procedimientos admin `getRoleRequests`, `approveRoleRequest`, `rejectRoleRequest`
+- [x] Tabla comparativa: cambiar BuddyMaker/Expert de "solo Pro Max" a "con aprobación de BuddyMarket"
+- [x] Frontend: botón "Solicitar ser BuddyMaker/Expert" en perfil (cualquier usuario)
+- [x] Frontend: modal de solicitud con campo de motivación/bio
+- [x] Frontend: estado visible de la solicitud (pendiente/aprobado/rechazado)
+- [x] Admin panel: sección de gestión de solicitudes BuddyMaker/Expert
+- [x] Admin panel: botones aprobar/rechazar con notificación al usuario
