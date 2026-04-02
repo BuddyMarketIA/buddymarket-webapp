@@ -50,20 +50,21 @@ interface GeneratedMenu {
 
 // ─── Event types ─────────────────────────────────────────────────────────────
 
-const EVENT_TYPES = [
-  { id: "cena_amigos", label: "Cena con amigos", emoji: "🍽️", desc: "Cena informal en casa" },
-  { id: "barbacoa", label: "Barbacoa", emoji: "🔥", desc: "Asado al aire libre" },
-  { id: "navidad", label: "Navidad", emoji: "🎄", desc: "Cena o comida navideña" },
-  { id: "fin_de_ano", label: "Fin de Año", emoji: "🥂", desc: "Nochevieja con estilo" },
-  { id: "reyes", label: "Reyes", emoji: "👑", desc: "Comida de Reyes Magos" },
-  { id: "cumpleanos", label: "Cumpleaños", emoji: "🎂", desc: "Celebración de cumpleaños" },
-  { id: "barbacoa", label: "Barbacoa", emoji: "🍖", desc: "Parrilla y brasa" },
-  { id: "brunch", label: "Brunch", emoji: "🥞", desc: "Brunch dominical" },
-  { id: "aperitivo", label: "Aperitivo", emoji: "🫒", desc: "Vermut y tapas" },
+type EventCategory = "todos" | "informal" | "familiar" | "formal" | "romántico" | "festivo";
 
-  { id: "cena_romantica", label: "Cena romántica", emoji: "🕯️", desc: "Para dos" },
-  { id: "semana_santa", label: "Semana Santa", emoji: "🐟", desc: "Menú de Cuaresma" },
-  { id: "otro", label: "Otro evento", emoji: "🎉", desc: "Personaliza tu evento" },
+const EVENT_TYPES = [
+  { id: "cena_amigos",   label: "Cena con amigos",  emoji: "🍽️", desc: "Cena informal en casa",      categories: ["informal"] as EventCategory[] },
+  { id: "barbacoa",      label: "Barbacoa",          emoji: "🔥", desc: "Asado al aire libre",        categories: ["informal", "familiar"] as EventCategory[] },
+  { id: "brunch",        label: "Brunch",             emoji: "🥞", desc: "Brunch dominical",           categories: ["informal", "familiar"] as EventCategory[] },
+  { id: "aperitivo",    label: "Aperitivo",          emoji: "🫒", desc: "Vermut y tapas",             categories: ["informal"] as EventCategory[] },
+  { id: "cumpleanos",   label: "Cumpleaños",        emoji: "🎂", desc: "Celebración de cumpleaños",  categories: ["familiar", "informal"] as EventCategory[] },
+  { id: "navidad",      label: "Navidad",             emoji: "🎄", desc: "Cena o comida navideña",    categories: ["familiar", "festivo"] as EventCategory[] },
+  { id: "fin_de_ano",   label: "Fin de Año",        emoji: "🥂", desc: "Nochevieja con estilo",     categories: ["festivo", "formal"] as EventCategory[] },
+  { id: "reyes",        label: "Reyes",              emoji: "👑", desc: "Comida de Reyes Magos",     categories: ["familiar", "festivo"] as EventCategory[] },
+  { id: "semana_santa", label: "Semana Santa",        emoji: "🐟", desc: "Menú de Cuaresma",         categories: ["familiar", "formal"] as EventCategory[] },
+  { id: "cena_empresa", label: "Cena de empresa",    emoji: "🤝", desc: "Comida corporativa",        categories: ["formal"] as EventCategory[] },
+  { id: "cena_romantica",label: "Cena romántica",   emoji: "🕯️", desc: "Para dos",                  categories: ["romántico"] as EventCategory[] },
+  { id: "otro",         label: "Otro evento",        emoji: "🎉", desc: "Personaliza tu evento",    categories: ["informal"] as EventCategory[] },
 ];
 
 const INTOLERANCES = [
@@ -99,6 +100,7 @@ export default function EventMenuPlanner() {
   const [expandedDish, setExpandedDish] = useState<string | null>(null);
   const [expandedCourse, setExpandedCourse] = useState<string | null>(null);
   const [activeTab, setActiveTab] = useState<"menu" | "shopping" | "prep" | "tips">("menu");
+  const [activeCategory, setActiveCategory] = useState<EventCategory>("todos");
 
   // Form state
   const [eventType, setEventType] = useState("");
@@ -231,8 +233,34 @@ export default function EventMenuPlanner() {
         {step === 0 && (
           <div className="space-y-4">
             <h2 className="text-lg font-bold text-gray-800">¿Qué tipo de evento vas a celebrar?</h2>
+
+            {/* Category filter chips */}
+            <div className="flex flex-wrap gap-2">
+              {([
+                { id: "todos",     label: "Todos",      emoji: "📌" },
+                { id: "informal",  label: "Informal",   emoji: "🍻" },
+                { id: "familiar", label: "Familiar",   emoji: "👨‍👩‍👧" },
+                { id: "formal",   label: "Formal",     emoji: "🤺" },
+                { id: "festivo",  label: "Festivo",    emoji: "🎊" },
+                { id: "romántico",label: "Romántico",  emoji: "🕯️" },
+              ] as { id: EventCategory; label: string; emoji: string }[]).map(cat => (
+                <button
+                  key={cat.id}
+                  onClick={() => setActiveCategory(cat.id)}
+                  className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border-2 transition-all ${
+                    activeCategory === cat.id
+                      ? "bg-orange-500 border-orange-500 text-white shadow-sm"
+                      : "bg-white border-gray-200 text-gray-600 hover:border-orange-300"
+                  }`}
+                >
+                  <span>{cat.emoji}</span>
+                  <span>{cat.label}</span>
+                </button>
+              ))}
+            </div>
+
             <div className="grid grid-cols-2 gap-3">
-              {EVENT_TYPES.map(e => (
+              {EVENT_TYPES.filter(e => activeCategory === "todos" || e.categories.includes(activeCategory)).map(e => (
                 <button
                   key={e.id + e.label}
                   onClick={() => { setEventType(e.id); if (e.id !== "otro") setStep(1); }}
