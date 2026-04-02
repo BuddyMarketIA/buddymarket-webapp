@@ -58,32 +58,65 @@ const NAV_ITEMS = [
   },
 ];
 
-const SIDEBAR_ITEMS = [
-  { key: "dashboard", label: "Dashboard", to: "/dashboard", emoji: "🏠" },
-  { key: "recipes", label: "Recetas", to: "/recipes", emoji: "📖" },
-  { key: "favorites", label: "Mis Favoritas", to: "/favorites", emoji: "❤️" },
-  { key: "menus", label: "Planificador de Menús", to: "/menus", emoji: "📅" },
-  { key: "shopping", label: "Lista de Compra", to: "/shopping-lists", emoji: "🛒" },
-  { key: "inventory", label: "Inventario", to: "/inventory", emoji: "📦" },
-  { key: "meal-log", label: "Diario Nutricional", to: "/meal-log", emoji: "📊" },
-  { key: "metrics", label: "Mis Métricas", to: "/metrics", emoji: "⚖️" },
-  { key: "profile", label: "Mi Perfil", to: "/profile", emoji: "👤" },
-  { key: "subscription", label: "Suscripción", to: "/subscription", emoji: "⭐" },
-  { key: "buddy-shop", label: "BuddyShop ↗", to: "/buddy-shop", emoji: "🛖" },
-  { key: "supermercados", label: "Mercadona", to: "/supermercados", emoji: "🟢" },
-  { key: "carrefour", label: "Carrefour", to: "/carrefour", emoji: "🔵" },
-  { key: "buddy-experts", label: "BuddyExperts", to: "/buddy-experts", emoji: "🧑‍🍳" },
-  { key: "buddy-expert-dashboard", label: "Mi Panel Experto", to: "/buddy-expert-dashboard", emoji: "🎓" },
-  { key: "buddy-makers", label: "BuddyMakers", to: "/buddy-makers", emoji: "👨‍🍳" },
-  { key: "buddy-maker-dashboard", label: "Mi Panel Creador", to: "/buddy-maker-dashboard", emoji: "🍳" },
-  { key: "following", label: "Siguiendo", to: "/following", emoji: "👥" },
-  { key: "buddy-ia", label: "BuddyIA", to: "/buddy-ia", emoji: "🤖" },
-  { key: "menu-library", label: "Biblioteca de Menús", to: "/menu-library", emoji: "📚" },
-  { key: "event-menu", label: "Menú para Eventos", to: "/event-menu", emoji: "🎉" },
-  { key: "saved-events", label: "Mis Eventos Guardados", to: "/saved-events", emoji: "⭐" },
-  { key: "_divider_vively", label: "__divider__", to: "", emoji: "" },
-  { key: "buddycoach", label: "BuddyCoach ↗", to: "https://buddycoach.io", emoji: "🏃" },
+const SIDEBAR_GROUPS = [
+  {
+    label: "Principal",
+    items: [
+      { key: "dashboard", label: "Dashboard", to: "/dashboard", emoji: "🏠" },
+      { key: "profile", label: "Mi Perfil", to: "/profile", emoji: "👤" },
+      { key: "metrics", label: "Mis Métricas", to: "/metrics", emoji: "⚖️" },
+      { key: "subscription", label: "Suscripción", to: "/subscription", emoji: "⭐" },
+    ],
+  },
+  {
+    label: "Nutrición",
+    items: [
+      { key: "meal-log", label: "Diario Nutricional", to: "/meal-log", emoji: "📊" },
+      { key: "recipes", label: "Recetas", to: "/recipes", emoji: "📖" },
+      { key: "favorites", label: "Mis Favoritas", to: "/favorites", emoji: "❤️" },
+      { key: "menus", label: "Planificador de Menús", to: "/menus", emoji: "📅" },
+      { key: "menu-library", label: "Biblioteca de Menús", to: "/menu-library", emoji: "📚" },
+      { key: "inventory", label: "Inventario", to: "/inventory", emoji: "📦" },
+    ],
+  },
+  {
+    label: "Compras",
+    items: [
+      { key: "shopping", label: "Lista de Compra", to: "/shopping-lists", emoji: "🛒" },
+      { key: "supermercados", label: "Mercadona", to: "/supermercados", emoji: "🟢" },
+      { key: "carrefour", label: "Carrefour", to: "/carrefour", emoji: "🔵" },
+      { key: "buddy-shop", label: "BuddyShop ↗", to: "/buddy-shop", emoji: "🛖" },
+    ],
+  },
+  {
+    label: "Asistentes IA",
+    items: [
+      { key: "buddy-ia", label: "BuddyIA", to: "/buddy-ia", emoji: "🤖" },
+      { key: "event-menu", label: "Menú para Eventos", to: "/event-menu", emoji: "🎉" },
+      { key: "saved-events", label: "Mis Eventos Guardados", to: "/saved-events", emoji: "⭐" },
+    ],
+  },
+  {
+    label: "Comunidad",
+    items: [
+      { key: "buddy-experts", label: "BuddyExperts", to: "/buddy-experts", emoji: "🧑‍🍳" },
+      { key: "buddy-makers", label: "BuddyMakers", to: "/buddy-makers", emoji: "👨‍🍳" },
+      { key: "following", label: "Siguiendo", to: "/following", emoji: "👥" },
+      { key: "buddy-expert-dashboard", label: "Mi Panel Experto", to: "/buddy-expert-dashboard", emoji: "🎓" },
+      { key: "buddy-maker-dashboard", label: "Mi Panel Creador", to: "/buddy-maker-dashboard", emoji: "🍳" },
+      { key: "buddy-application", label: "Solicitar Acceso", to: "/buddy-application", emoji: "📝" },
+    ],
+  },
+  {
+    label: "Comunidad Vively",
+    items: [
+      { key: "buddycoach", label: "BuddyCoach ↗", to: "https://buddycoach.io", emoji: "🏃" },
+    ],
+  },
 ];
+
+// Flatten for active detection
+const SIDEBAR_ITEMS = SIDEBAR_GROUPS.flatMap(g => g.items);
 
 function matchesPath(location: string, paths: string[]) {
   return paths.some((p) => location === p || location.startsWith(p + "/"));
@@ -171,7 +204,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
 
   if (!isAuthenticated) { window.location.href = getLoginUrl(); return null; }
 
-  const shouldShowNav = !hideNav && !location.startsWith("/onboarding");
+  const shouldShowNav = !hideNav;
   const currentNavItem = NAV_ITEMS.find((item) => matchesPath(location, item.matches));
   const currentSidebarItem = SIDEBAR_ITEMS.find((item) => location === item.to || location.startsWith(item.to + "/"));
   const pageTitle = title || currentNavItem?.label || currentSidebarItem?.label || "BuddyMarket";
@@ -215,51 +248,41 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
 
         {/* Sidebar Nav */}
         <nav style={{ flex: 1, padding: "12px" }}>
-          {SIDEBAR_ITEMS.map((item) => {
-            // Divider
-            if (item.label === "__divider__") {
-              return (
-                <div key={item.key}>
-                  <div style={{ height: "1px", background: "rgba(0,0,0,0.06)", margin: "10px 4px 6px" }} />
-                  <p style={{ margin: "0 0 4px 16px", fontSize: "10px", fontWeight: 800, color: "#9ca3af", letterSpacing: "0.08em", textTransform: "uppercase" }}>Comunidad Vively</p>
-                </div>
-              );
-            }
-            // External link
-            if (item.to.startsWith("http")) {
-              return (
-                <a key={item.key} href={item.to} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "14px", padding: "13px 16px", borderRadius: "14px", background: "linear-gradient(135deg, rgba(249,115,22,0.08), rgba(251,146,60,0.06))", cursor: "pointer", marginBottom: "2px", transition: "background 0.15s", border: "1px solid rgba(249,115,22,0.15)" }}>
-                    <span style={{ fontSize: "18px", width: "22px", textAlign: "center" }}>{item.emoji}</span>
-                    <span style={{ fontSize: "15px", fontWeight: 700, color: "#F97316" }}>{item.label}</span>
-                    <svg style={{ marginLeft: "auto" }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                  </div>
-                </a>
-              );
-            }
-            // Internal link
-            const active = location === item.to || location.startsWith(item.to + "/");
-            return (
-              <Link key={item.key} href={item.to}>
-                <div style={{ display: "flex", alignItems: "center", gap: "14px", padding: "13px 16px", borderRadius: "14px", background: active ? "rgba(249,115,22,0.10)" : "transparent", cursor: "pointer", marginBottom: "2px", transition: "background 0.15s" }}>
-                  <span style={{ fontSize: "18px", width: "22px", textAlign: "center" }}>{item.emoji}</span>
-                  <span style={{ fontSize: "15px", fontWeight: active ? 700 : 500, color: active ? "#F97316" : "#374151" }}>{item.label}</span>
-                  {active && <div style={{ marginLeft: "auto", width: "6px", height: "6px", borderRadius: "50%", background: "#F97316" }} />}
-                </div>
-              </Link>
-            );
-          })}
-          <div style={{ height: "1px", background: "rgba(0,0,0,0.06)", margin: "12px 4px" }} />
+          {SIDEBAR_GROUPS.map((group, gi) => (
+            <div key={group.label} style={{ marginBottom: "2px" }}>
+              <p style={{ margin: gi === 0 ? "4px 0 4px 16px" : "10px 0 4px 16px", fontSize: "10px", fontWeight: 800, color: "#9ca3af", letterSpacing: "0.08em", textTransform: "uppercase" }}>{group.label}</p>
+              {group.items.map((item) => {
+                if (item.to.startsWith("http")) {
+                  return (
+                    <a key={item.key} href={item.to} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "14px", padding: "11px 16px", borderRadius: "12px", background: "linear-gradient(135deg, rgba(249,115,22,0.08), rgba(251,146,60,0.06))", cursor: "pointer", marginBottom: "2px", border: "1px solid rgba(249,115,22,0.15)" }}>
+                        <span style={{ fontSize: "17px", width: "22px", textAlign: "center" }}>{item.emoji}</span>
+                        <span style={{ fontSize: "14px", fontWeight: 700, color: "#F97316" }}>{item.label}</span>
+                        <svg style={{ marginLeft: "auto" }} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                      </div>
+                    </a>
+                  );
+                }
+                const active = location === item.to || location.startsWith(item.to + "/");
+                return (
+                  <Link key={item.key} href={item.to}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 14px", borderRadius: "12px", background: active ? "rgba(249,115,22,0.10)" : "transparent", cursor: "pointer", marginBottom: "2px", transition: "background 0.15s" }}>
+                      <span style={{ fontSize: "16px", width: "20px", textAlign: "center" }}>{item.emoji}</span>
+                      <span style={{ fontSize: "14px", fontWeight: active ? 700 : 500, color: active ? "#F97316" : "#374151" }}>{item.label}</span>
+                      {active && <div style={{ marginLeft: "auto", width: "5px", height: "5px", borderRadius: "50%", background: "#F97316" }} />}
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          ))}
+          <div style={{ height: "1px", background: "rgba(0,0,0,0.06)", margin: "10px 4px" }} />
           <Link href="/admin">
-            <div style={{ display: "flex", alignItems: "center", gap: "14px", padding: "13px 16px", borderRadius: "14px", background: location === "/admin" ? "rgba(249,115,22,0.10)" : "transparent", cursor: "pointer", marginBottom: "2px" }}>
-              <span style={{ fontSize: "18px", width: "22px", textAlign: "center" }}>🛡️</span>
-              <span style={{ fontSize: "15px", fontWeight: location === "/admin" ? 700 : 500, color: location === "/admin" ? "#F97316" : "#374151" }}>Administración</span>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 14px", borderRadius: "12px", background: location === "/admin" ? "rgba(249,115,22,0.10)" : "transparent", cursor: "pointer", marginBottom: "2px" }}>
+              <span style={{ fontSize: "16px", width: "20px", textAlign: "center" }}>🛡️</span>
+              <span style={{ fontSize: "14px", fontWeight: location === "/admin" ? 700 : 500, color: location === "/admin" ? "#F97316" : "#374151" }}>Administración</span>
             </div>
           </Link>
-          <div style={{ display: "flex", alignItems: "center", gap: "14px", padding: "13px 16px", borderRadius: "14px", marginTop: "4px" }}>
-            <span style={{ fontSize: "18px", width: "22px", textAlign: "center" }}>🌐</span>
-            <span style={{ fontSize: "15px", fontWeight: 500, color: "#374151" }}>🇪🇸 Español</span>
-          </div>
         </nav>
 
         {/* Sidebar Footer */}

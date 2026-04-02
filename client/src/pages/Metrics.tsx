@@ -428,7 +428,10 @@ export default function Metrics() {
                           <td className="p-3 text-right">{m.waist != null ? `${m.waist} cm` : "—"}</td>
                           <td className="p-3 text-right">
                             <button
-                              onClick={() => deleteMutation.mutate({ id: m.id })}
+                              onClick={() => {
+                                if (!window.confirm(`¿Eliminar la medición del ${String(m.date).slice(0, 10)}?`)) return;
+                                deleteMutation.mutate({ id: m.id });
+                              }}
                               className="text-muted-foreground hover:text-destructive transition-colors"
                             >
                               <Trash2 className="w-4 h-4" />

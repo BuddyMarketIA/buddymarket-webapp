@@ -220,6 +220,11 @@ export default function ShoppingLists() {
     onSuccess: () => { refetch(); toast.success("Lista eliminada"); },
   });
 
+  const handleDeleteList = (id: number, name: string) => {
+    if (!window.confirm(`¿Eliminar la lista "${name}"? Esta acción no se puede deshacer.`)) return;
+    deleteList.mutate({ id });
+  };
+
   if (selectedListId !== null) {
     return <ShoppingListDetail listId={selectedListId} onBack={() => setSelectedListId(null)} />;
   }
@@ -297,7 +302,7 @@ export default function ShoppingLists() {
                 <button
                   onClick={(e) => {
                     e.stopPropagation();
-                    if (confirm("¿Eliminar esta lista?")) deleteList.mutate({ id: list.id });
+                    handleDeleteList(list.id, list.name ?? "Lista");
                   }}
                   className="flex h-8 w-8 items-center justify-center rounded-full text-gray-300 hover:bg-red-50 hover:text-red-400"
                 >

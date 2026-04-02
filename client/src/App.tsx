@@ -33,6 +33,7 @@ import Metrics from "./pages/Metrics";
 import BuddyApplication from "./pages/BuddyApplication";
 import EventMenuPlanner from "./pages/EventMenuPlanner";
 import SavedEvents from "./pages/SavedEvents";
+import { OnboardingModal } from "./components/OnboardingModal";
 
 // Wraps a page component with AppLayout (for pages that don't include it themselves)
 function WithLayout({ component: Component, ...props }: { component: React.ComponentType<any>; [key: string]: any }) {
@@ -92,6 +93,7 @@ function App() {
       <ThemeProvider defaultTheme="light">
         <TooltipProvider>
           <Toaster />
+          <OnboardingModal />
           <Router />
         </TooltipProvider>
       </ThemeProvider>

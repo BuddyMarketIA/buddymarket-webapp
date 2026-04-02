@@ -485,3 +485,85 @@
 - [ ] Botón "Guardar evento" en la pantalla de resultado del asistente
 - [ ] Página /saved-events con lista de eventos guardados y acceso rápido
 - [ ] Enlace en sidebar y en el asistente de eventos
+
+## Sprint: Corrección Problemas Críticos UX (Auditoría)
+- [ ] Corregir ruta rota Diario Nutricional (sidebar apunta a /nutrition-diary → corregir a /meal-log)
+- [ ] Reorganizar sidebar con grupos visuales y separadores (Nutrición, Compras, Asistentes IA, Mi cuenta, Comunidad, Mi panel, Admin)
+- [ ] Ocultar "Mi Panel Experto/Maker" del sidebar si el usuario no tiene solicitud aprobada
+- [ ] Implementar modal de bienvenida para nuevos usuarios (primer login, con checklist de 3 pasos)
+- [ ] Añadir chips de preguntas rápidas en BuddyIA para guiar al usuario nuevo
+- [ ] Estado vacío informativo en "Recomendaciones para ti" del dashboard con CTA a completar perfil
+- [ ] Estado vacío informativo en "Menús que te pueden interesar" del dashboard
+- [ ] Mejorar estado vacío del Inventario con CTA prominente naranja
+- [ ] Mejorar widget de calorías del dashboard cuando está en 0 con CTA a registrar comida
+- [ ] Corregir duplicado "Barbacoa" en EventMenuPlanner
+- [ ] Corregir badge de Carrefour de "Próximamente" a "Disponible" en /supermercados
+
+## Sprint: Mejora Completa de la Aplicación (Auditoría Total)
+
+### Backend - Bugs y Mejoras
+- [ ] Revisar y corregir todos los endpoints del router (validaciones, errores, ownership)
+- [ ] Mejorar endpoint de métricas: validar rangos de valores (ej: peso 20-500kg)
+- [ ] Añadir endpoint para eliminar cuenta de usuario
+- [ ] Mejorar manejo de errores en endpoints de IA (timeout, fallback)
+- [ ] Revisar y corregir endpoint de BuddyApplication (evitar solicitudes duplicadas)
+- [ ] Añadir paginación real a todos los endpoints que devuelven listas largas
+- [ ] Mejorar endpoint de inventario: validar fechas de caducidad
+
+### Frontend - Estados Vacíos
+- [ ] Estado vacío mejorado en Lista de Compra (con acceso a Mercadona/Carrefour)
+- [ ] Estado vacío mejorado en Inventario (con tips y CTA claro)
+- [ ] Estado vacío en Favoritas (con CTA para explorar recetas)
+- [ ] Estado vacío en Diario Nutricional (con CTA para registrar primera comida)
+- [ ] Estado vacío en Menús (con CTA para crear o explorar biblioteca)
+- [ ] Estado vacío en Siguiendo (con CTA para explorar BuddyExperts/Makers)
+
+### Frontend - Formularios Mejorados
+- [ ] BuddyApplication: convertir a formulario de 3 pasos con indicador de progreso
+- [ ] Métricas: mostrar solo campos relevantes según tipo de métrica seleccionado
+- [ ] Perfil: añadir checklist visual de completitud con % y CTA por sección
+
+### Frontend - Navegación y UX
+- [ ] Añadir breadcrumbs o título de sección en todas las páginas
+- [ ] Mejorar la página de Perfil: organizar en secciones colapsables
+- [ ] Añadir ejemplos de preguntas en BuddyIA (chips de sugerencias visibles)
+- [ ] Mejorar página de Suscripción: mostrar plan actual claramente
+- [ ] Añadir confirmación antes de eliminar cualquier elemento importante
+
+### Frontend - Consistencia Visual
+- [ ] Revisar que todos los botones de acción principal usen btn-vively
+- [ ] Asegurar que todos los modales tengan botón de cierre (X) visible
+- [ ] Verificar que todos los formularios tengan placeholder descriptivos
+- [ ] Añadir animaciones de éxito en acciones importantes (guardar, eliminar)
+
+### Tests y Calidad
+- [ ] Verificar que 19/19 tests siguen pasando
+- [ ] Añadir test para endpoint de métricas
+- [ ] Añadir test para endpoint de BuddyApplication
+
+## Sprint: Mejora Completa (en progreso)
+- [x] Bug crítico: Página Menús no muestra recetas asignadas (selectedItems hardcodeado como [])
+- [x] Añadir endpoint menus.getItemsByDate al backend
+- [x] Añadir endpoint menus.ensureDayPart al backend
+- [x] Añadir helpers getDayPartIdByName y createMenuDayPart a db.ts
+- [x] Reescribir Menus.tsx: muestra recetas por día, modal para añadir recetas, estado vacío mejorado
+- [x] Corregir ruta rota Diario Nutricional en sidebar
+- [x] Mejorar estados vacíos: ShoppingLists, Inventory, Favorites, MealLog
+- [x] Mejorar BuddyIA: chips de sugerencias visibles
+- [x] Mejorar Suscripción: mostrar plan actual claramente
+- [x] Añadir confirmación antes de eliminar elementos importantes
+- [x] Asegurar que todos los modales tengan botón X visible
+- [x] Mejorar validaciones en endpoints de métricas
+- [x] Tests: verificar 19/19 pasando
+- [x] Bug crítico: OnboardingModal usa solo localStorage, debe usar onboardingCompleted del servidor
+- [x] Backend: Validación en metrics.add (al menos un campo numérico)
+- [x] Backend: Validación en mealLogs.add (recipeId o customMealName obligatorio)
+- [x] Backend: Validación en inventory.add (ingredientId o customName obligatorio)
+- [x] Backend: Verificar ownership antes de eliminar en inventory.remove
+- [x] Backend: Verificar ownership antes de eliminar en mealLogs.remove
+- [x] Frontend: Confirmación antes de eliminar en Inventario
+- [x] Frontend: Confirmación antes de eliminar en Diario Nutricional
+- [x] Frontend: Confirmación antes de eliminar en Métricas
+- [x] Frontend: Confirmación antes de eliminar en Listas de Compra
+- [x] Frontend: Mejorar visualización del plan actual en Suscripción
+- [x] Frontend: Mejorar estado vacío de recomendaciones en Dashboard con CTA a completar perfil

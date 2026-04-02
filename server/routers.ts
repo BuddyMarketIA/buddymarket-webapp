@@ -596,6 +596,48 @@ export const appRouter = router({
       .input(z.object({ menuOrganizerDayPartId: z.number(), recipeId: z.number() }))
       .mutation(({ input }) => db.removeRecipeFromMenuDayPart(input.menuOrganizerDayPartId, input.recipeId)),
 
+    // Get all items for a specific date across all user menus
+    getItemsByDate: protectedProcedure
+      .input(z.object({ date: z.string() }))
+      .query(async ({ ctx, input }) => {
+        const userMenus = await db.getMenuOrganizers(ctx.user.id);
+        if (!userMenus.length) return [];
+        const results: any[] = [];
+        for (const menu of userMenus) {
+          const dayParts = await db.getMenuDayParts(menu.id);
+          const dateMatchingParts = dayParts.filter((dp: any) => dp.dayPart.date === input.date);
+          for (const dp of dateMatchingParts) {
+            const recipeItems = await db.getMenuDayPartRecipes(dp.dayPart.id);
+            results.push({
+              menuId: menu.id,
+              menuName: menu.name,
+              dayPartId: dp.dayPart.id,
+              dayPartName: dp.dayPartInfo?.nameEs ?? dp.dayPartInfo?.apiParam ?? "Comida",
+              dayPartKey: dp.dayPartInfo?.apiParam ?? "meal",
+              recipes: recipeItems.map((r: any) => ({ ...r.menuRecipe, recipe: r.recipe })),
+            });
+          }
+        }
+        return results;
+      }),
+
+    // Ensure a day part exists for a date+mealType, return its id
+    ensureDayPart: protectedProcedure
+      .input(z.object({ menuId: z.number(), date: z.string(), mealType: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+        const menu = await db.getMenuOrganizerById(input.menuId);
+        if (!menu) throw new TRPCError({ code: "NOT_FOUND" });
+        requireOwnership(menu.userId, ctx.user.id, ctx.user.role);
+        // Find or create the day part
+        const dayParts = await db.getMenuDayParts(input.menuId);
+        const existing = dayParts.find((dp: any) => dp.dayPart.date === input.date && (dp.dayPartInfo?.name === input.mealType || dp.dayPartInfo?.nameEs === input.mealType));
+        if (existing) return { id: existing.dayPart.id };
+        // Create new day part - find the dayPartId from catalog
+        const dayPartId = await db.getDayPartIdByName(input.mealType);
+        const id = await db.createMenuDayPart(input.menuId, dayPartId, input.date);
+        return { id };
+      }),
+
     generateWithAI: protectedProcedure
       .input(
         z.object({
@@ -794,7 +836,12 @@ export const appRouter = router({
           notes: z.string().optional(),
         })
       )
-      .mutation(({ ctx, input }) => db.addInventoryItem({ ...input, userId: ctx.user.id } as any)),
+      .mutation(({ ctx, input }) => {
+        if (!input.ingredientId && !input.customName?.trim()) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Debes indicar el nombre del alimento" });
+        }
+        return db.addInventoryItem({ ...input, userId: ctx.user.id } as any);
+      }),
 
     update: protectedProcedure
       .input(
@@ -813,7 +860,19 @@ export const appRouter = router({
 
     remove: protectedProcedure
       .input(z.object({ id: z.number() }))
-      .mutation(({ input }) => db.deleteInventoryItem(input.id)),
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { userInventoryItems } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+        // Verify ownership before deleting
+        const existing = await drizzleDb.select().from(userInventoryItems)
+          .where(and(eq(userInventoryItems.id, input.id), eq(userInventoryItems.userId, ctx.user.id)))
+          .limit(1);
+        if (existing.length === 0) throw new TRPCError({ code: "NOT_FOUND", message: "Producto no encontrado" });
+        await drizzleDb.delete(userInventoryItems).where(eq(userInventoryItems.id, input.id));
+        return { success: true };
+      }),
 
     // Analyse a photo of fridge/pantry with vision LLM and return detected products
     analyzePhoto: protectedProcedure
@@ -911,7 +970,12 @@ Si no puedes detectar productos, devuelve {"products": []}. No incluyas texto ad
           photoUrl: z.string().optional(),
         })
       )
-      .mutation(({ ctx, input }) => db.addMealLog({ ...input, userId: ctx.user.id, logDate: new Date(input.logDate) } as any)),
+      .mutation(({ ctx, input }) => {
+        if (!input.recipeId && !input.customMealName?.trim()) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Debes indicar el nombre de la comida" });
+        }
+        return db.addMealLog({ ...input, userId: ctx.user.id, logDate: new Date(input.logDate) } as any);
+      }),
 
     analyzeFood: protectedProcedure
       .input(z.object({
@@ -958,7 +1022,19 @@ Si no puedes detectar productos, devuelve {"products": []}. No incluyas texto ad
 
     remove: protectedProcedure
       .input(z.object({ id: z.number() }))
-      .mutation(({ input }) => db.deleteMealLog(input.id)),
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { mealLogs } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+        // Verify ownership before deleting
+        const existing = await drizzleDb.select().from(mealLogs)
+          .where(and(eq(mealLogs.id, input.id), eq(mealLogs.userId, ctx.user.id)))
+          .limit(1);
+        if (existing.length === 0) throw new TRPCError({ code: "NOT_FOUND", message: "Registro no encontrado" });
+        await drizzleDb.delete(mealLogs).where(eq(mealLogs.id, input.id));
+        return { success: true };
+      }),
   }),
 
   // ---------------------------------------------------------------------------
@@ -1396,6 +1472,17 @@ Si no puedes detectar productos, devuelve {"products": []}. No incluyas texto ad
         notes: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
+        // Validar que al menos un campo numérico esté presente
+        const hasData = input.weight || input.bodyFat || input.muscleMass || input.bmi || 
+          input.waist || input.hip || input.chest || input.arm || input.thigh || 
+          input.calf || input.neck || input.visceralFat || input.boneMass || 
+          input.waterPercentage || input.metabolicAge || input.basalMetabolism;
+        if (!hasData && !input.notes) {
+          throw new TRPCError({ 
+            code: "BAD_REQUEST", 
+            message: "Debes proporcionar al menos una medición o nota" 
+          });
+        }
         const drizzleDb = await db.getDb();
         if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
         const { userMetrics } = await import("../drizzle/schema");

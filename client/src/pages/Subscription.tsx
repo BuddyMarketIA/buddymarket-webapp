@@ -82,6 +82,13 @@ export default function Subscription() {
   const currentPlan = (subscription as any)?.plan ?? null;
   const isActive = (subscription as any)?.status === "active";
 
+  const planNames: Record<string, string> = {
+    basic: "Basic (4,99€/mes)",
+    premium: "Premium (9,99€/mes)",
+    pro_max: "Pro Max (19,99€/mes)",
+  };
+  const currentPlanName = currentPlan ? (planNames[currentPlan] ?? currentPlan) : null;
+
   return (
     <div className="vively-page">
       {/* Header */}
@@ -98,14 +105,12 @@ export default function Subscription() {
         <div className="mb-5 flex items-center gap-3 rounded-2xl bg-[#F97316]/10 p-4">
           <CheckCircleIcon className="h-5 w-5 shrink-0 text-[#F97316]" />
           <div className="flex-1">
-            <p className="text-sm font-bold text-gray-900">Plan activo: {currentPlan}</p>
-            <p className="text-xs text-gray-500">Tu suscripción está activa</p>
+            <p className="text-sm font-bold text-gray-900">Plan activo: {currentPlanName}</p>
+            <p className="text-xs text-gray-500">Tu suscripción está activa y al día</p>
           </div>
           <button
-            onClick={() => {
-              if (confirm("¿Cancelar tu suscripción?")) cancelSub.mutate();
-            }}
-            className="rounded-xl border border-red-200 px-3 py-1.5 text-xs font-semibold text-red-500 hover:bg-red-50"
+            onClick={() => toast.info("Para cancelar tu suscripción, contacta con soporte en support@buddymarket.app")}
+            className="rounded-xl border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-400 hover:bg-gray-50"
           >
             Cancelar
           </button>

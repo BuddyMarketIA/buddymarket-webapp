@@ -213,6 +213,22 @@ export async function getAllDayParts() {
   return db.select().from(dayParts).orderBy(dayParts.order);
 }
 
+export async function getDayPartIdByName(name: string): Promise<number> {
+  const db = await getDb();
+  if (!db) return 1;
+  const result = await db.select().from(dayParts)
+    .where(or(eq(dayParts.apiParam, name), eq(dayParts.nameEs, name), eq(dayParts.nameEn ?? dayParts.apiParam, name)))
+    .limit(1);
+  return result[0]?.id ?? 1;
+}
+
+export async function createMenuDayPart(menuOrganizerId: number, dayPartId: number, date: string): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db.insert(menuOrganizerDayParts).values({ menuOrganizerId, dayPartId, date: new Date(date) } as any);
+  return (result as any).insertId ?? 0;
+}
+
 export async function getAllStorageLocations() {
   const db = await getDb();
   if (!db) return [];

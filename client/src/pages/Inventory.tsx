@@ -119,6 +119,11 @@ export default function Inventory() {
     },
   });
 
+  const handleRemoveItem = (id: number, name: string) => {
+    if (!window.confirm(`¿Eliminar "${name}" del inventario?`)) return;
+    removeItem.mutate({ id });
+  };
+
   // ── filter items ──────────────────────────────────────────────────────────
   const filtered = (items ?? []).filter((item) => {
     const name = item.item.customName || item.ingredient?.nameEs || "";
@@ -331,20 +336,28 @@ export default function Inventory() {
         </div>
       ) : filtered.length === 0 ? (
         <div className="empty-state">
-          <span className="mb-4 text-5xl">📦</span>
-          <h3 className="mb-2 text-base font-bold text-gray-900">
-            {search ? "Sin resultados" : "Inventario vacío"}
-          </h3>
-          <p className="mb-6 text-sm text-gray-500">
-            {search ? "Prueba con otro término" : "Añade los alimentos que tienes en casa o haz una foto de tu nevera"}
-          </p>
-          {!search && (
-            <div className="flex gap-3">
-              <button onClick={() => setShowPhotoModal(true)} className="flex items-center gap-2 rounded-2xl bg-indigo-600 px-4 py-3 text-sm font-semibold text-white">
-                <CameraIcon className="h-4 w-4" /> Foto IA
-              </button>
-              <button onClick={() => setShowAdd(true)} className="btn-vively">Añadir manual</button>
-            </div>
+          {search ? (
+            <>
+              <span className="mb-4 text-5xl">🔍</span>
+              <h3 className="mb-2 text-base font-bold text-gray-900">Sin resultados</h3>
+              <p className="mb-6 text-sm text-gray-500">No encontramos "{search}" en tu inventario</p>
+              <button onClick={() => setSearch("")} className="btn-vively-outline">Limpiar búsqueda</button>
+            </>
+          ) : (
+            <>
+              <span className="mb-3 text-6xl">📦</span>
+              <h3 className="mb-1 text-lg font-bold text-gray-900">Tu inventario está vacío</h3>
+              <p className="mb-2 text-sm text-gray-500 max-w-xs text-center">Añade los alimentos que tienes en casa para recibir alertas de caducidad y sugerencias de recetas</p>
+              <div className="mb-6 flex flex-col gap-2 text-xs text-gray-400">
+                <span>💡 Tip: Usa la cámara para añadir varios productos a la vez con IA</span>
+              </div>
+              <div className="flex gap-3">
+                <button onClick={() => setShowPhotoModal(true)} className="flex items-center gap-2 rounded-2xl bg-indigo-600 px-5 py-3 text-sm font-semibold text-white shadow-md">
+                  <CameraIcon className="h-4 w-4" /> 📸 Foto con IA
+                </button>
+                <button onClick={() => setShowAdd(true)} className="btn-vively">+ Añadir manual</button>
+              </div>
+            </>
           )}
         </div>
       ) : (
@@ -379,7 +392,7 @@ export default function Inventory() {
                   </div>
                 </div>
                 <button
-                  onClick={() => removeItem.mutate({ id: item.item.id })}
+                  onClick={() => handleRemoveItem(item.item.id, name)}
                   className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-gray-300 hover:bg-red-50 hover:text-red-400 transition-colors"
                 >
                   <TrashIcon className="h-4 w-4" />

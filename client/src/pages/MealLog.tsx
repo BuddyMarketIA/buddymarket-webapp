@@ -77,6 +77,11 @@ export default function MealLog() {
     },
   });
 
+  const handleRemoveLog = (id: number, name: string) => {
+    if (!window.confirm(`¿Eliminar "${name}" del diario?`)) return;
+    removeLog.mutate({ id });
+  };
+
   const resetForm = () => {
     setMealName("");
     setCalories("");
@@ -264,7 +269,7 @@ export default function MealLog() {
                       </div>
                     </div>
                     <button
-                      onClick={() => removeLog.mutate({ id: log.log.id })}
+                      onClick={() => handleRemoveLog(log.log.id, log.recipe?.name ?? log.log.customMealName ?? "Comida")}
                       style={{ width: "30px", height: "30px", borderRadius: "8px", background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#d1d5db" }}
                       onMouseEnter={e => { e.currentTarget.style.background = "#fee2e2"; e.currentTarget.style.color = "#ef4444"; }}
                       onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#d1d5db"; }}

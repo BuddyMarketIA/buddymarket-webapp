@@ -592,10 +592,16 @@ export default function Dashboard() {
             ))}
           </div>
         ) : (
-          <div style={{ background: "white", borderRadius: "18px", padding: "20px", textAlign: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
-            <p style={{ margin: "0 0 4px", fontSize: "24px" }}>🍽️</p>
-            <p style={{ margin: 0, fontSize: "13px", color: "#9ca3af" }}>Completa tu perfil para recibir recomendaciones personalizadas</p>
-          </div>
+          <Link href="/profile">
+            <div style={{ background: "linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%)", borderRadius: "18px", padding: "20px", textAlign: "center", boxShadow: "0 2px 8px rgba(249,115,22,0.08)", border: "1px solid rgba(249,115,22,0.15)", cursor: "pointer" }}>
+              <p style={{ margin: "0 0 6px", fontSize: "28px" }}>🍽️</p>
+              <p style={{ margin: "0 0 4px", fontSize: "14px", fontWeight: 800, color: "#1a1a1a" }}>Personaliza tus recomendaciones</p>
+              <p style={{ margin: "0 0 12px", fontSize: "12px", color: "#9ca3af" }}>Completa tu perfil para recibir recetas adaptadas a tus objetivos y preferencias</p>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "#F97316", borderRadius: "12px", padding: "8px 16px" }}>
+                <span style={{ fontSize: "12px", fontWeight: 700, color: "white" }}>Completar perfil →</span>
+              </div>
+            </div>
+          </Link>
         )}
       </div>
 
@@ -658,10 +664,16 @@ export default function Dashboard() {
             })}
           </div>
         ) : (
-          <div style={{ background: "white", borderRadius: "18px", padding: "20px", textAlign: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
-            <p style={{ margin: "0 0 4px", fontSize: "24px" }}>📅</p>
-            <p style={{ margin: 0, fontSize: "13px", color: "#9ca3af" }}>No hay menús disponibles aún</p>
-          </div>
+          <Link href="/menu-library">
+            <div style={{ background: "linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%)", borderRadius: "18px", padding: "20px", textAlign: "center", boxShadow: "0 2px 8px rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.15)", cursor: "pointer" }}>
+              <p style={{ margin: "0 0 6px", fontSize: "28px" }}>📅</p>
+              <p style={{ margin: "0 0 4px", fontSize: "14px", fontWeight: 800, color: "#1a1a1a" }}>Explora la biblioteca de menús</p>
+              <p style={{ margin: "0 0 12px", fontSize: "12px", color: "#9ca3af" }}>50+ menús semanales por objetivo: pérdida de peso, ganancia muscular, vegano y más</p>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "#22C55E", borderRadius: "12px", padding: "8px 16px" }}>
+                <span style={{ fontSize: "12px", fontWeight: 700, color: "white" }}>Ver menús →</span>
+              </div>
+            </div>
+          </Link>
         )}
       </div>
 

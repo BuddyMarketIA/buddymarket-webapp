@@ -1,19 +1,22 @@
 import { useState, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { Link } from "wouter";
 import {
   PlusIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
   TrashIcon,
   SparklesIcon,
+  BookOpenIcon,
+  CalendarDaysIcon,
 } from "@heroicons/react/24/outline";
 
 const MEAL_TYPES = [
-  { key: "breakfast", label: "Desayuno", emoji: "🌅" },
-  { key: "lunch", label: "Almuerzo", emoji: "☀️" },
-  { key: "dinner", label: "Cena", emoji: "🌙" },
-  { key: "snack", label: "Snack", emoji: "🍎" },
+  { key: "breakfast", label: "Desayuno", emoji: "🌅", apiParam: "breakfast" },
+  { key: "lunch", label: "Almuerzo", emoji: "☀️", apiParam: "lunch" },
+  { key: "snack", label: "Merienda", emoji: "🍎", apiParam: "snack" },
+  { key: "dinner", label: "Cena", emoji: "🌙", apiParam: "dinner" },
 ];
 
 const DAYS_ES = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
@@ -38,9 +41,12 @@ export default function Menus() {
   const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
   const [showNewMenu, setShowNewMenu] = useState(false);
   const [showAI, setShowAI] = useState(false);
+  const [showAddRecipe, setShowAddRecipe] = useState<{ dayPartId: number; mealType: string } | null>(null);
   const [menuName, setMenuName] = useState("");
   const [aiObjective, setAiObjective] = useState("");
   const [generating, setGenerating] = useState(false);
+  const [recipeSearch, setRecipeSearch] = useState("");
+  const [selectedMenuId, setSelectedMenuId] = useState<number | null>(null);
 
   const baseDate = useMemo(() => {
     const d = new Date();
@@ -49,38 +55,58 @@ export default function Menus() {
   }, [weekOffset]);
 
   const weekDates = useMemo(() => getWeekDates(baseDate), [baseDate]);
-  const startDate = useMemo(() => weekDates[0].toISOString().split("T")[0], [weekDates]);
-  const endDate = useMemo(() => weekDates[6].toISOString().split("T")[0], [weekDates]);
 
-  const { data: menus, refetch } = trpc.menus.list.useQuery();
-  // Note: getItems not available, we'll use list and filter client-side
-  const { data: menuItemsRaw, refetch: refetchItems } = trpc.menus.list.useQuery();
+  const { data: menus, refetch: refetchMenus } = trpc.menus.list.useQuery();
+  const selectedDateStr = selectedDate.toISOString().split("T")[0];
+  const { data: dayItems, refetch: refetchDayItems } = trpc.menus.getItemsByDate.useQuery(
+    { date: selectedDateStr },
+    { enabled: true }
+  );
+
+  const { data: recipeResults } = trpc.recipes.list.useQuery(
+    { search: recipeSearch, limit: 20 },
+    { enabled: showAddRecipe !== null && recipeSearch.length > 1 }
+  );
 
   const utils = trpc.useUtils();
+
   const createMenu = trpc.menus.create.useMutation({
     onSuccess: () => {
-      refetch();
+      refetchMenus();
       setShowNewMenu(false);
       setMenuName("");
       toast.success("Menú creado");
     },
   });
-  const removeItem = trpc.menus.removeRecipeFromDayPart.useMutation({
-    onSuccess: () => { refetchItems(); toast.success("Receta eliminada del menú"); },
+
+  const ensureDayPart = trpc.menus.ensureDayPart.useMutation();
+
+  const addRecipeToDayPart = trpc.menus.addRecipeToDayPart.useMutation({
+    onSuccess: () => {
+      refetchDayItems();
+      setShowAddRecipe(null);
+      setRecipeSearch("");
+      toast.success("Receta añadida al menú");
+    },
+    onError: (err: any) => toast.error(err.message || "Error al añadir receta"),
   });
+
+  const removeRecipeFromDayPart = trpc.menus.removeRecipeFromDayPart.useMutation({
+    onSuccess: () => {
+      refetchDayItems();
+      toast.success("Receta eliminada del menú");
+    },
+  });
+
   const generateAI = trpc.menus.generateWithAI.useMutation({
     onSuccess: () => {
-      refetchItems();
+      refetchDayItems();
       setGenerating(false);
       setShowAI(false);
       toast.success("¡Menú generado con IA!");
     },
     onError: () => { setGenerating(false); toast.error("Error al generar el menú"); },
   });
-
-  const selectedDateStr = selectedDate.toISOString().split("T")[0];
-  // No per-day items endpoint available, show empty state
-  const selectedItems: any[] = [];
 
   const handleGenerateAI = () => {
     if (!menus || menus.length === 0) {
@@ -95,15 +121,57 @@ export default function Menus() {
     });
   };
 
+  const handleAddRecipeToMeal = async (mealType: string) => {
+    if (!menus || menus.length === 0) {
+      toast.error("Crea un menú primero para añadir recetas");
+      setShowNewMenu(true);
+      return;
+    }
+    const menuId = selectedMenuId ?? menus[0].id;
+    try {
+      const result = await ensureDayPart.mutateAsync({ menuId, date: selectedDateStr, mealType });
+      setShowAddRecipe({ dayPartId: result.id, mealType });
+    } catch (e: any) {
+      toast.error("Error al preparar el menú");
+    }
+  };
+
+  const handleAddRecipe = (recipeId: number) => {
+    if (!showAddRecipe) return;
+    addRecipeToDayPart.mutate({ menuOrganizerDayPartId: showAddRecipe.dayPartId, recipeId });
+  };
+
+  // Build a map of mealType -> items from dayItems
+  const mealMap: Record<string, any[]> = {};
+  (dayItems ?? []).forEach((dp: any) => {
+    const key = dp.dayPartKey ?? "meal";
+    if (!mealMap[key]) mealMap[key] = [];
+    mealMap[key].push(...(dp.recipes ?? []));
+  });
+
+  // Check if any day has items (for dot indicator)
+  const daysWithItems = new Set<string>();
+  (dayItems ?? []).forEach((dp: any) => {
+    if (dp.recipes?.length > 0) daysWithItems.add(selectedDateStr);
+  });
+
+  const hasMenus = menus && menus.length > 0;
+
   return (
     <div className="vively-page">
       {/* Header */}
       <div className="mb-5 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Menús</h1>
+        <h1 className="text-2xl font-bold text-gray-900">Planificador</h1>
         <div className="flex gap-2">
+          <Link href="/menu-library">
+            <button className="flex items-center gap-1.5 rounded-full bg-purple-50 px-3 py-2 text-xs font-semibold text-purple-600">
+              <BookOpenIcon className="h-4 w-4" />
+              Biblioteca
+            </button>
+          </Link>
           <button
             onClick={() => setShowAI(true)}
-            className="flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-600 transition-all hover:bg-blue-100"
+            className="flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-600"
           >
             <SparklesIcon className="h-4 w-4" />
             IA
@@ -116,6 +184,27 @@ export default function Menus() {
           </button>
         </div>
       </div>
+
+      {/* Active menu selector */}
+      {hasMenus && menus.length > 1 && (
+        <div className="mb-4 overflow-x-auto">
+          <div className="flex gap-2 pb-1">
+            {menus.map((menu: any) => (
+              <button
+                key={menu.id}
+                onClick={() => setSelectedMenuId(menu.id)}
+                className={`shrink-0 rounded-2xl px-3 py-1.5 text-xs font-semibold transition-all ${
+                  (selectedMenuId ?? menus[0].id) === menu.id
+                    ? "bg-[#F97316] text-white"
+                    : "bg-gray-100 text-gray-600"
+                }`}
+              >
+                {menu.name}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Week navigation */}
       <div className="mb-4 flex items-center justify-between">
@@ -142,8 +231,6 @@ export default function Menus() {
           const dateStr = date.toISOString().split("T")[0];
           const isSelected = dateStr === selectedDateStr;
           const isToday = dateStr === new Date().toISOString().split("T")[0];
-          const hasItems = false; // items loaded per-day
-
           return (
             <button
               key={dateStr}
@@ -158,69 +245,133 @@ export default function Menus() {
               <span className={`text-base font-bold ${isToday && !isSelected ? "text-[#F97316]" : ""}`}>
                 {date.getDate()}
               </span>
-              {hasItems && (
-                <div className={`mt-0.5 h-1.5 w-1.5 rounded-full ${isSelected ? "bg-white" : "bg-[#F97316]"}`} />
-              )}
             </button>
           );
         })}
       </div>
 
-      {/* Selected day meals */}
-      <div className="mb-4">
-        <h2 className="mb-3 text-sm font-bold text-gray-700">
-          {selectedDate.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })}
-        </h2>
+      {/* No menus state */}
+      {!hasMenus ? (
+        <div className="empty-state">
+          <span className="mb-4 text-5xl">📅</span>
+          <h3 className="mb-2 text-base font-bold text-gray-900">Sin planificador activo</h3>
+          <p className="mb-4 text-sm text-gray-500">Crea tu primer menú semanal o importa uno de la biblioteca de menús predefinidos.</p>
+          <div className="flex flex-col gap-2 w-full max-w-xs">
+            <button onClick={() => setShowNewMenu(true)} className="btn-vively w-full">➕ Crear menú nuevo</button>
+            <Link href="/menu-library">
+              <button className="btn-vively-outline w-full">📚 Explorar biblioteca</button>
+            </Link>
+            <button onClick={() => setShowAI(true)} className="flex items-center justify-center gap-2 rounded-2xl border border-blue-200 bg-blue-50 py-3 text-sm font-semibold text-blue-600 w-full">
+              ✨ Generar con IA
+            </button>
+          </div>
+        </div>
+      ) : (
+        <>
+          {/* Selected day meals */}
+          <div className="mb-4">
+            <h2 className="mb-3 text-sm font-bold text-gray-700">
+              {selectedDate.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })}
+            </h2>
 
-          {MEAL_TYPES.map((mealType) => {
-          const items: any[] = [];
-          return (
-            <div key={mealType.key} className="vively-card mb-3">
-              <div className="mb-2 flex items-center justify-between">
-                <div className="flex items-center gap-2">
-                  <span className="text-lg">{mealType.emoji}</span>
-                  <span className="text-sm font-semibold text-gray-800">{mealType.label}</span>
-                </div>
-                <span className="text-xs text-gray-400">{items.length} receta{items.length !== 1 ? "s" : ""}</span>
-              </div>
-
-              {items.length === 0 ? (
-                <p className="text-xs italic text-gray-400">Sin recetas asignadas</p>
-              ) : (
-                <div className="space-y-2">
-                  {items.map((item) => (
-                    <div key={item.id} className="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2">
-                      <div className="flex items-center gap-2">
-                        <span className="text-lg">🍳</span>
-                        <span className="text-sm font-medium text-gray-800">
-                          {(item as any).recipe?.name ?? "Receta eliminada"}
-                        </span>
-                      </div>
-                      <button
-                        onClick={() => removeItem.mutate({ menuOrganizerDayPartId: item.dayPartId ?? 0, recipeId: item.recipeId ?? 0 })}
-                        className="flex h-7 w-7 items-center justify-center rounded-full text-gray-400 hover:bg-red-50 hover:text-red-500"
-                      >
-                        <TrashIcon className="h-4 w-4" />
-                      </button>
+            {MEAL_TYPES.map((mealType) => {
+              const items = mealMap[mealType.apiParam] ?? [];
+              return (
+                <div key={mealType.key} className="vively-card mb-3">
+                  <div className="mb-2 flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <span className="text-lg">{mealType.emoji}</span>
+                      <span className="text-sm font-semibold text-gray-800">{mealType.label}</span>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
+                    <button
+                      onClick={() => handleAddRecipeToMeal(mealType.apiParam)}
+                      className="flex h-7 w-7 items-center justify-center rounded-full bg-orange-50 text-[#F97316] hover:bg-orange-100 transition-all"
+                    >
+                      <PlusIcon className="h-4 w-4" />
+                    </button>
+                  </div>
 
-      {/* Modals */}
+                  {items.length === 0 ? (
+                    <button
+                      onClick={() => handleAddRecipeToMeal(mealType.apiParam)}
+                      className="w-full rounded-xl border-2 border-dashed border-gray-200 py-3 text-xs text-gray-400 hover:border-[#F97316]/40 hover:text-[#F97316] transition-all"
+                    >
+                      + Añadir receta
+                    </button>
+                  ) : (
+                    <div className="space-y-2">
+                      {items.map((item: any) => (
+                        <div key={item.id} className="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2">
+                          <div className="flex items-center gap-2 min-w-0">
+                            {item.recipe?.imageUrl ? (
+                              <img src={item.recipe.imageUrl} alt="" className="h-8 w-8 rounded-lg object-cover shrink-0" />
+                            ) : (
+                              <span className="text-lg shrink-0">🍳</span>
+                            )}
+                            <div className="min-w-0">
+                              <p className="text-sm font-medium text-gray-800 truncate">
+                                {item.recipe?.name ?? "Receta eliminada"}
+                              </p>
+                              {item.recipe?.calories && (
+                                <p className="text-xs text-gray-400">{item.recipe.calories} kcal</p>
+                              )}
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => removeRecipeFromDayPart.mutate({
+                              menuOrganizerDayPartId: item.menuOrganizerDayPartId,
+                              recipeId: item.recipeId,
+                            })}
+                            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-gray-400 hover:bg-red-50 hover:text-red-500"
+                          >
+                            <TrashIcon className="h-4 w-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Quick actions */}
+          <div className="vively-card mb-4 bg-gradient-to-r from-orange-50 to-amber-50">
+            <div className="flex items-center gap-3">
+              <CalendarDaysIcon className="h-5 w-5 text-[#F97316] shrink-0" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-bold text-gray-800">Genera tu lista de la compra</p>
+                <p className="text-xs text-gray-500">Basada en las recetas de este menú</p>
+              </div>
+              <Link href="/shopping-lists">
+                <button className="shrink-0 rounded-xl bg-[#F97316] px-3 py-1.5 text-xs font-bold text-white">
+                  Crear lista
+                </button>
+              </Link>
+            </div>
+          </div>
+        </>
+      )}
+
+      {/* New menu modal */}
       {showNewMenu && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4">
           <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up">
-            <h3 className="mb-4 text-lg font-bold text-gray-900">Nuevo menú</h3>
+            <h3 className="mb-1 text-lg font-bold text-gray-900">Nuevo menú semanal</h3>
+            <p className="mb-4 text-xs text-gray-500">Dale un nombre a tu planificador</p>
             <input
               value={menuName}
               onChange={(e) => setMenuName(e.target.value)}
-              placeholder="Nombre del menú (ej: Semana saludable)"
+              onKeyDown={(e) => {
+                if (e.key === "Enter") {
+                  const today = new Date().toISOString().split("T")[0];
+                  const nextWeek = new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0];
+                  createMenu.mutate({ name: menuName || "Mi menú", startDate: today, endDate: nextWeek });
+                }
+              }}
+              placeholder="Ej: Semana saludable, Dieta mediterránea..."
               className="vively-input mb-4"
+              autoFocus
             />
             <div className="flex gap-3">
               <button
@@ -231,29 +382,42 @@ export default function Menus() {
               </button>
               <button
                 onClick={() => {
-                const today = new Date().toISOString().split("T")[0];
-                const nextWeek = new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0];
-                createMenu.mutate({ name: menuName || "Mi menú", startDate: today, endDate: nextWeek });
-              }}
+                  const today = new Date().toISOString().split("T")[0];
+                  const nextWeek = new Date(Date.now() + 7 * 86400000).toISOString().split("T")[0];
+                  createMenu.mutate({ name: menuName || "Mi menú", startDate: today, endDate: nextWeek });
+                }}
                 disabled={createMenu.isPending}
                 className="flex-1 btn-vively"
               >
-                Crear
+                {createMenu.isPending ? "Creando..." : "Crear"}
               </button>
             </div>
           </div>
         </div>
       )}
 
+      {/* AI generation modal */}
       {showAI && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4">
           <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up">
-            <h3 className="mb-1 text-lg font-bold text-gray-900">Generar menú con IA</h3>
-            <p className="mb-4 text-xs text-gray-500">La IA creará recetas basadas en tus preferencias</p>
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-50">
+                <SparklesIcon className="h-5 w-5 text-blue-600" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Generar con IA</h3>
+                <p className="text-xs text-gray-500">La IA creará un menú personalizado</p>
+              </div>
+            </div>
+            {!hasMenus && (
+              <div className="mb-4 rounded-2xl bg-amber-50 p-3 text-xs text-amber-700">
+                ⚠️ Necesitas crear un menú primero. Se creará uno automáticamente.
+              </div>
+            )}
             <input
               value={aiObjective}
               onChange={(e) => setAiObjective(e.target.value)}
-              placeholder="Objetivo (ej: perder peso, dieta mediterránea...)"
+              placeholder="Objetivo (ej: perder peso, dieta mediterránea, vegano...)"
               className="vively-input mb-4"
             />
             <div className="flex gap-3">
@@ -268,9 +432,58 @@ export default function Menus() {
                 disabled={generating}
                 className="flex-1 btn-vively"
               >
-                {generating ? "Generando..." : "Generar"}
+                {generating ? "Generando..." : "✨ Generar"}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* Add recipe modal */}
+      {showAddRecipe && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4">
+          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up max-h-[80vh] flex flex-col">
+            <h3 className="mb-1 text-lg font-bold text-gray-900">Añadir receta</h3>
+            <p className="mb-4 text-xs text-gray-500">Busca una receta para añadir al menú</p>
+            <input
+              value={recipeSearch}
+              onChange={(e) => setRecipeSearch(e.target.value)}
+              placeholder="Buscar receta..."
+              className="vively-input mb-3"
+              autoFocus
+            />
+            <div className="flex-1 overflow-y-auto space-y-2">
+              {recipeSearch.length < 2 ? (
+                <p className="text-center text-sm text-gray-400 py-4">Escribe al menos 2 letras para buscar</p>
+              ) : !recipeResults || (recipeResults as any).recipes?.length === 0 ? (
+                <p className="text-center text-sm text-gray-400 py-4">Sin resultados para "{recipeSearch}"</p>
+              ) : (
+                ((recipeResults as any).recipes ?? []).map((recipe: any) => (
+                  <button
+                    key={recipe.id}
+                    onClick={() => handleAddRecipe(recipe.id)}
+                    disabled={addRecipeToDayPart.isPending}
+                    className="w-full flex items-center gap-3 rounded-2xl border border-gray-100 bg-white p-3 text-left hover:border-[#F97316]/30 hover:bg-orange-50 transition-all"
+                  >
+                    {recipe.imageUrl ? (
+                      <img src={recipe.imageUrl} alt="" className="h-10 w-10 rounded-xl object-cover shrink-0" />
+                    ) : (
+                      <div className="h-10 w-10 rounded-xl bg-orange-100 flex items-center justify-center text-lg shrink-0">🍳</div>
+                    )}
+                    <div className="min-w-0">
+                      <p className="text-sm font-semibold text-gray-800 truncate">{recipe.name}</p>
+                      <p className="text-xs text-gray-400">{recipe.calories ? `${recipe.calories} kcal · ` : ""}{recipe.prepTime ? `${recipe.prepTime} min` : ""}</p>
+                    </div>
+                  </button>
+                ))
+              )}
+            </div>
+            <button
+              onClick={() => { setShowAddRecipe(null); setRecipeSearch(""); }}
+              className="mt-4 w-full rounded-2xl border border-gray-200 py-3 text-sm font-semibold text-gray-600"
+            >
+              Cancelar
+            </button>
           </div>
         </div>
       )}
