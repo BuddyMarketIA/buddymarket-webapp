@@ -154,11 +154,12 @@ export default function LandingPage() {
   const [heroVisible, setHeroVisible] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
   const loginUrl = getLoginUrl();
+  const appUrl = user ? "/app/dashboard" : loginUrl;
   const createCheckout = trpc.subscriptions.createCheckout.useMutation();
 
   const handlePlanCta = async (planName: string) => {
     if (planName === "Free") {
-      window.location.href = loginUrl;
+      window.location.href = appUrl;
       return;
     }
     if (!user) {
@@ -251,12 +252,12 @@ export default function LandingPage() {
 
           {/* Desktop CTAs */}
           <div className="lp-desktop-cta" style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <a href={loginUrl} style={{ fontSize: 14, fontWeight: 600, color: "#374151", textDecoration: "none", padding: "9px 18px", borderRadius: 10, border: "1.5px solid #e5e7eb", transition: "all 0.2s" }}
+            <a href={appUrl} style={{ fontSize: 14, fontWeight: 600, color: "#374151", textDecoration: "none", padding: "9px 18px", borderRadius: 10, border: "1.5px solid #e5e7eb", transition: "all 0.2s" }}
               onMouseEnter={e => { (e.target as HTMLElement).style.borderColor = "#F97316"; (e.target as HTMLElement).style.color = "#F97316"; }}
               onMouseLeave={e => { (e.target as HTMLElement).style.borderColor = "#e5e7eb"; (e.target as HTMLElement).style.color = "#374151"; }}>
               Iniciar sesión
             </a>
-            <a href={loginUrl} style={{ fontSize: 14, fontWeight: 700, color: "white", textDecoration: "none", padding: "10px 22px", borderRadius: 10, background: "linear-gradient(135deg,#F97316,#ea580c)", boxShadow: "0 4px 14px rgba(249,115,22,0.35)", transition: "all 0.2s" }}
+            <a href={appUrl} style={{ fontSize: 14, fontWeight: 700, color: "white", textDecoration: "none", padding: "10px 22px", borderRadius: 10, background: "linear-gradient(135deg,#F97316,#ea580c)", boxShadow: "0 4px 14px rgba(249,115,22,0.35)", transition: "all 0.2s" }}
               onMouseEnter={e => { (e.target as HTMLElement).style.transform = "translateY(-1px)"; (e.target as HTMLElement).style.boxShadow = "0 8px 24px rgba(249,115,22,0.45)"; }}
               onMouseLeave={e => { (e.target as HTMLElement).style.transform = "translateY(0)"; (e.target as HTMLElement).style.boxShadow = "0 4px 14px rgba(249,115,22,0.35)"; }}>
               Empezar gratis
@@ -294,8 +295,8 @@ export default function LandingPage() {
               </a>
             ))}
             <div style={{ height: 1, background: "#f3f4f6", margin: "8px 0" }} />
-            <a href={loginUrl} style={{ display: "block", textAlign: "center", padding: "13px 20px", borderRadius: 12, fontSize: 16, fontWeight: 600, color: "#374151", textDecoration: "none", border: "1.5px solid #e5e7eb", marginBottom: 8 }}>Iniciar sesión</a>
-            <a href={loginUrl} style={{ display: "block", textAlign: "center", padding: "14px 20px", borderRadius: 12, fontSize: 16, fontWeight: 700, color: "white", textDecoration: "none", background: "linear-gradient(135deg,#F97316,#ea580c)", boxShadow: "0 4px 14px rgba(249,115,22,0.35)" }}>Empezar gratis →</a>
+            <a href={appUrl} style={{ display: "block", textAlign: "center", padding: "13px 20px", borderRadius: 12, fontSize: 16, fontWeight: 600, color: "#374151", textDecoration: "none", border: "1.5px solid #e5e7eb", marginBottom: 8 }}>Iniciar sesión</a>
+            <a href={appUrl} style={{ display: "block", textAlign: "center", padding: "14px 20px", borderRadius: 12, fontSize: 16, fontWeight: 700, color: "white", textDecoration: "none", background: "linear-gradient(135deg,#F97316,#ea580c)", boxShadow: "0 4px 14px rgba(249,115,22,0.35)" }}>Empezar gratis →</a>
           </div>
         )}
       </nav>
@@ -330,7 +331,7 @@ export default function LandingPage() {
             </p>
 
             <div className="lp-hero-btns" style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 32 }}>
-              <a href={loginUrl} className="lp-btn-primary" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "17px 36px", borderRadius: 14, fontSize: 17, fontWeight: 800, color: "white", textDecoration: "none", background: "linear-gradient(135deg,#F97316,#ea580c)", boxShadow: "0 8px 32px rgba(249,115,22,0.4)", transition: "all 0.25s", width: "fit-content" }}>
+              <a href={appUrl} className="lp-btn-primary" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "17px 36px", borderRadius: 14, fontSize: 17, fontWeight: 800, color: "white", textDecoration: "none", background: "linear-gradient(135deg,#F97316,#ea580c)", boxShadow: "0 8px 32px rgba(249,115,22,0.4)", transition: "all 0.25s", width: "fit-content" }}>
                 Empezar gratis
                 <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
               </a>
@@ -448,7 +449,7 @@ export default function LandingPage() {
               <p style={{ fontSize: 16, color: "#6b7280", lineHeight: 1.8, marginBottom: 32, maxWidth: 480 }}>
                 {FEATURES[activeFeature].desc}
               </p>
-              <a href={loginUrl} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "13px 28px", borderRadius: 12, fontSize: 15, fontWeight: 700, color: "white", textDecoration: "none", background: FEATURES[activeFeature].color, boxShadow: `0 6px 20px ${FEATURES[activeFeature].color}55`, transition: "all 0.2s" }}>
+              <a href={appUrl} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "13px 28px", borderRadius: 12, fontSize: 15, fontWeight: 700, color: "white", textDecoration: "none", background: FEATURES[activeFeature].color, boxShadow: `0 6px 20px ${FEATURES[activeFeature].color}55`, transition: "all 0.2s" }}>
                 Probar ahora →
               </a>
             </div>
@@ -822,7 +823,7 @@ export default function LandingPage() {
           <p style={{ fontSize: "clamp(15px, 2vw, 19px)", color: "rgba(255,255,255,0.88)", marginBottom: 40, lineHeight: 1.75 }}>
             Únete a más de 50.000 personas que ya han transformado su alimentación con BuddyMarket. Gratis para siempre, sin tarjeta de crédito.
           </p>
-          <a href={loginUrl} style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "18px 48px", borderRadius: 16, fontSize: 18, fontWeight: 800, color: "#F97316", background: "white", textDecoration: "none", boxShadow: "0 16px 48px rgba(0,0,0,0.2)", transition: "all 0.25s" }}
+          <a href={appUrl} style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "18px 48px", borderRadius: 16, fontSize: 18, fontWeight: 800, color: "#F97316", background: "white", textDecoration: "none", boxShadow: "0 16px 48px rgba(0,0,0,0.2)", transition: "all 0.25s" }}
             onMouseEnter={e => { (e.target as HTMLElement).style.transform = "translateY(-3px)"; (e.target as HTMLElement).style.boxShadow = "0 24px 64px rgba(0,0,0,0.25)"; }}
             onMouseLeave={e => { (e.target as HTMLElement).style.transform = "translateY(0)"; (e.target as HTMLElement).style.boxShadow = "0 16px 48px rgba(0,0,0,0.2)"; }}>
             Crear cuenta gratuita

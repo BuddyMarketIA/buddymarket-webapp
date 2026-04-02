@@ -55,7 +55,7 @@ export default function MealLog() {
         setTimeout(() => {
           toast.success(`🏆 ¡Logro desbloqueado! +${data.newlyUnlocked.length} nuevo${data.newlyUnlocked.length > 1 ? "s" : ""} logro${data.newlyUnlocked.length > 1 ? "s" : ""}`, {
             duration: 5000,
-            action: { label: "Ver logros", onClick: () => window.location.href = "/achievements" },
+            action: { label: "Ver logros", onClick: () => window.location.href = "/app/achievements" },
           });
         }, 800);
       }

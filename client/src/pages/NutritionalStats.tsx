@@ -150,7 +150,7 @@ export default function NutritionalStats() {
     <div style={{ padding: "16px", paddingBottom: "24px" }}>
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
-        <Link href="/profile">
+        <Link href="/app/profile">
           <button style={{ width: "36px", height: "36px", borderRadius: "12px", background: "white", border: "1px solid rgba(0,0,0,0.08)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#1a1a1a" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
           </button>
@@ -197,7 +197,7 @@ export default function NutritionalStats() {
           <p style={{ fontSize: "40px", margin: "0 0 12px" }}>📊</p>
           <p style={{ margin: "0 0 8px", fontSize: "16px", fontWeight: 800, color: "#1a1a1a" }}>Sin datos suficientes</p>
           <p style={{ margin: "0 0 16px", fontSize: "13px", color: "#9ca3af" }}>Registra tus comidas en el Diario para ver estadísticas</p>
-          <Link href="/meal-log">
+          <Link href="/app/meal-log">
             <button style={{ background: "#F97316", color: "white", border: "none", borderRadius: "14px", padding: "12px 24px", fontSize: "14px", fontWeight: 700, cursor: "pointer" }}>
               Ir al Diario →
             </button>
@@ -315,7 +315,7 @@ export default function NutritionalStats() {
         <div style={{ background: "white", borderRadius: "20px", padding: "18px", marginBottom: "16px", boxShadow: "0 2px 12px rgba(0,0,0,0.07)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
             <p style={{ margin: 0, fontSize: "14px", fontWeight: 800, color: "#1a1a1a" }}>⚖️ Evolución del peso</p>
-            <Link href="/metrics">
+            <Link href="/app/metrics">
               <span style={{ fontSize: "14px", fontWeight: 600, color: "#F97316" }}>Ver métricas →</span>
             </Link>
           </div>
@@ -351,7 +351,7 @@ export default function NutritionalStats() {
       )}
 
       {/* CTA to log meals */}
-      <Link href="/meal-log">
+      <Link href="/app/meal-log">
         <div style={{ background: "linear-gradient(135deg, #FFF7ED, #FFEDD5)", borderRadius: "18px", padding: "16px 20px", display: "flex", alignItems: "center", gap: "14px", cursor: "pointer", border: "1px solid rgba(249,115,22,0.15)" }}>
           <span style={{ fontSize: "28px" }}>📝</span>
           <div style={{ flex: 1 }}>

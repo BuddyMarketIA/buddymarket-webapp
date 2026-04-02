@@ -51,7 +51,7 @@ export default function Home() {
   const [, navigate] = useLocation();
 
   useEffect(() => {
-    if (!loading && isAuthenticated) navigate("/dashboard");
+    if (!loading && isAuthenticated) navigate("/app/dashboard");
   }, [isAuthenticated, loading, navigate]);
 
   if (loading) {

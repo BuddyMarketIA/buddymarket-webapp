@@ -58,7 +58,7 @@ function ExpertCard({
     <div
       className="group relative bg-white rounded-[28px] overflow-hidden cursor-pointer"
       style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)" }}
-      onClick={() => navigate(`/buddy-experts/${expert.id}`)}
+      onClick={() => navigate(`/app/buddy-experts/${expert.id}`)}
     >
       {/* Gradient header */}
       <div className={`relative bg-gradient-to-br ${gradient} pt-5 pb-10 px-4 overflow-hidden`}>
@@ -166,7 +166,7 @@ function ExpertCard({
           <button
             onClick={(e) => {
               e.stopPropagation();
-              window.location.href = `/buddy-experts/${expert.id}`;
+              window.location.href = `/app/buddy-experts/${expert.id}`;
             }}
             className="flex-1 py-2.5 rounded-2xl text-sm font-black bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all duration-200"
           >
@@ -361,7 +361,7 @@ export default function BuddyExperts() {
                 </p>
                 {!search && !selectedCategory && (
                   <a
-                    href="/buddy-application?type=expert"
+                    href="/app/buddy-application?type=expert"
                     className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-500 to-violet-600 text-white font-bold text-sm px-6 py-3 rounded-2xl shadow-lg shadow-indigo-200"
                   >
                     Solicitar ser BuddyExpert

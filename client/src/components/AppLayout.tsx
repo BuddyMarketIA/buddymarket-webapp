@@ -17,7 +17,7 @@ interface AppLayoutProps {
 
 const NAV_ITEMS = [
   {
-    key: "inicio", label: "Inicio", to: "/dashboard", matches: ["/dashboard"],
+    key: "inicio", label: "Inicio", to: "/app/dashboard", matches: ["/app/dashboard"],
     icon: (active: boolean) => (
       <svg width="22" height="22" viewBox="0 0 24 24" fill={active ? "#F97316" : "none"} stroke={active ? "#F97316" : "#9ca3af"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/>
@@ -26,7 +26,7 @@ const NAV_ITEMS = [
     ),
   },
   {
-    key: "recetas", label: "Recetas", to: "/recipes", matches: ["/recipes"],
+    key: "recetas", label: "Recetas", to: "/app/recipes", matches: ["/app/recipes"],
     icon: (active: boolean) => (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? "#F97316" : "#9ca3af"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/>
@@ -35,7 +35,7 @@ const NAV_ITEMS = [
     ),
   },
   {
-    key: "diario", label: "Diario", to: "/meal-log", matches: ["/meal-log"],
+    key: "diario", label: "Diario", to: "/app/meal-log", matches: ["/app/meal-log"],
     icon: (active: boolean) => (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? "#F97316" : "#9ca3af"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/>
@@ -43,7 +43,7 @@ const NAV_ITEMS = [
     ),
   },
   {
-    key: "menus", label: "Menús", to: "/menus", matches: ["/menus"],
+    key: "/app/menus", label: "Menús", to: "/app/menus", matches: ["/app/menus"],
     icon: (active: boolean) => (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? "#F97316" : "#9ca3af"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
@@ -52,7 +52,7 @@ const NAV_ITEMS = [
     ),
   },
   {
-    key: "perfil", label: "Perfil", to: "/profile", matches: ["/profile"],
+    key: "perfil", label: "Perfil", to: "/app/profile", matches: ["/app/profile"],
     icon: (active: boolean) => (
       <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? "#F97316" : "#9ca3af"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
         <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/>
@@ -65,51 +65,51 @@ const SIDEBAR_GROUPS = [
   {
     label: "Principal",
     items: [
-      { key: "dashboard", label: "Dashboard", to: "/dashboard", emoji: "🏠" },
-      { key: "profile", label: "Mi Perfil", to: "/profile", emoji: "👤" },
-      { key: "metrics", label: "Mis Métricas", to: "/metrics", emoji: "⚖️" },
-      { key: "recipes", label: "Recetas", to: "/recipes", emoji: "📖" },
-      { key: "menus", label: "Menús", to: "/menus", emoji: "📅" },
-      { key: "inventory", label: "Inventario", to: "/inventory", emoji: "📦" },
+      { key: "/app/dashboard", label: "Dashboard", to: "/app/dashboard", emoji: "🏠" },
+      { key: "/app/profile", label: "Mi Perfil", to: "/app/profile", emoji: "👤" },
+      { key: "/app/metrics", label: "Mis Métricas", to: "/app/metrics", emoji: "⚖️" },
+      { key: "/app/recipes", label: "Recetas", to: "/app/recipes", emoji: "📖" },
+      { key: "/app/menus", label: "Menús", to: "/app/menus", emoji: "📅" },
+      { key: "/app/inventory", label: "Inventario", to: "/app/inventory", emoji: "📦" },
     ],
   },
   {
     label: "Nutrición",
     items: [
-      { key: "meal-log", label: "Diario Nutricional", to: "/meal-log", emoji: "📊" },
-      { key: "stats", label: "Estadísticas", to: "/stats", emoji: "📈" },
-      { key: "favorites", label: "Mis Favoritas", to: "/favorites", emoji: "❤️" },
-      { key: "menu-library", label: "Biblioteca de Menús", to: "/menu-library", emoji: "📚" },
-      { key: "specialized-menus", label: "Menús Especializados", to: "/specialized-menus", emoji: "🏥" },
-      { key: "notifications", label: "Recordatorios", to: "/notifications", emoji: "🔔" },
-      { key: "achievements", label: "Mis Logros", to: "/achievements", emoji: "🏆" },
+      { key: "/app/meal-log", label: "Diario Nutricional", to: "/app/meal-log", emoji: "📊" },
+      { key: "/app/stats", label: "Estadísticas", to: "/app/stats", emoji: "📈" },
+      { key: "/app/favorites", label: "Mis Favoritas", to: "/app/favorites", emoji: "❤️" },
+      { key: "/app/menu-library", label: "Biblioteca de Menús", to: "/app/menu-library", emoji: "📚" },
+      { key: "/app/specialized-menus", label: "Menús Especializados", to: "/app/specialized-menus", emoji: "🏥" },
+      { key: "/app/notifications", label: "Recordatorios", to: "/app/notifications", emoji: "🔔" },
+      { key: "/app/achievements", label: "Mis Logros", to: "/app/achievements", emoji: "🏆" },
     ],
   },
   {
     label: "Compras",
     items: [
-      { key: "shopping", label: "Lista de Compra", to: "/shopping-lists", emoji: "🛒" },
-      { key: "supermercados", label: "Supermercados", to: "/supermercados", emoji: "🏪" },
-      { key: "buddy-shop", label: "BuddyShop ↗", to: "/buddy-shop", emoji: "🛦" },
+      { key: "shopping", label: "Lista de Compra", to: "/app/shopping-lists", emoji: "🛒" },
+      { key: "/app/supermercados", label: "Supermercados", to: "/app/supermercados", emoji: "🏪" },
+      { key: "/app/buddy-shop", label: "BuddyShop ↗", to: "/app/buddy-shop", emoji: "🛦" },
     ],
   },
   {
     label: "Asistentes IA",
     items: [
-      { key: "buddy-ia", label: "BuddyIA", to: "/buddy-ia", emoji: "🤖" },
-      { key: "event-menu", label: "Menú para Eventos", to: "/event-menu", emoji: "🎉" },
-      { key: "saved-events", label: "Mis Eventos Guardados", to: "/saved-events", emoji: "⭐" },
+      { key: "/app/buddy-ia", label: "BuddyIA", to: "/app/buddy-ia", emoji: "🤖" },
+      { key: "/app/event-menu", label: "Menú para Eventos", to: "/app/event-menu", emoji: "🎉" },
+      { key: "/app/saved-events", label: "Mis Eventos Guardados", to: "/app/saved-events", emoji: "⭐" },
     ],
   },
   {
     label: "Comunidad",
     items: [
-      { key: "buddy-experts", label: "BuddyExperts", to: "/buddy-experts", emoji: "🧑‍🍳" },
-      { key: "buddy-makers", label: "BuddyMakers", to: "/buddy-makers", emoji: "👨‍🍳" },
-      { key: "following", label: "Siguiendo", to: "/following", emoji: "👥" },
-      { key: "buddy-expert-dashboard", label: "Mi Panel Experto", to: "/buddy-expert-dashboard", emoji: "🎓" },
-      { key: "buddy-maker-dashboard", label: "Mi Panel Creador", to: "/buddy-maker-dashboard", emoji: "🍳" },
-      { key: "buddy-application", label: "Solicitar Acceso", to: "/buddy-application", emoji: "📝" },
+      { key: "/app/buddy-experts", label: "BuddyExperts", to: "/app/buddy-experts", emoji: "🧑‍🍳" },
+      { key: "/app/buddy-makers", label: "BuddyMakers", to: "/app/buddy-makers", emoji: "👨‍🍳" },
+      { key: "/app/following", label: "Siguiendo", to: "/app/following", emoji: "👥" },
+      { key: "/app/buddy-expert-dashboard", label: "Mi Panel Experto", to: "/app/buddy-expert-dashboard", emoji: "🎓" },
+      { key: "/app/buddy-maker-dashboard", label: "Mi Panel Creador", to: "/app/buddy-maker-dashboard", emoji: "🍳" },
+      { key: "/app/buddy-application", label: "Solicitar Acceso", to: "/app/buddy-application", emoji: "📝" },
     ],
   },
   {
@@ -272,10 +272,10 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
               <p style={{ margin: gi === 0 ? "4px 0 4px 16px" : "10px 0 4px 16px", fontSize: "14px", fontWeight: 800, color: "#9ca3af", letterSpacing: "0.08em", textTransform: "uppercase" }}>{group.label}</p>
               {group.items.filter(item => {
                 // Hide expert/maker dashboards if not approved
-                if (item.key === "buddy-expert-dashboard" && !isApprovedExpert) return false;
-                if (item.key === "buddy-maker-dashboard" && !isApprovedMaker) return false;
+                if (item.key === "/app/buddy-expert-dashboard" && !isApprovedExpert) return false;
+                if (item.key === "/app/buddy-maker-dashboard" && !isApprovedMaker) return false;
                 // Hide buddy-application if already has a pending/approved application
-                if (item.key === "buddy-application" && (isApprovedExpert || isApprovedMaker || hasPendingApplication)) return false;
+                if (item.key === "/app/buddy-application" && (isApprovedExpert || isApprovedMaker || hasPendingApplication)) return false;
                 return true;
               }).map((item) => {
                 // Add pending badge to register link
@@ -306,10 +306,10 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
             </div>
           ))}
           <div style={{ height: "1px", background: "rgba(0,0,0,0.06)", margin: "10px 4px" }} />
-          <Link href="/admin">
-            <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 14px", borderRadius: "12px", background: location === "/admin" ? "rgba(249,115,22,0.10)" : "transparent", cursor: "pointer", marginBottom: "2px" }}>
+          <Link href="/app/admin">
+            <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 14px", borderRadius: "12px", background: location === "/app/admin" ? "rgba(249,115,22,0.10)" : "transparent", cursor: "pointer", marginBottom: "2px" }}>
               <span style={{ fontSize: "18px", width: "22px", textAlign: "center" }}>🛡️</span>
-              <span style={{ fontSize: "15px", fontWeight: location === "/admin" ? 700 : 500, color: location === "/admin" ? "#F97316" : "#374151" }}>Administración</span>
+              <span style={{ fontSize: "15px", fontWeight: location === "/app/admin" ? 700 : 500, color: location === "/app/admin" ? "#F97316" : "#374151" }}>Administración</span>
             </div>
           </Link>
         </nav>
@@ -323,7 +323,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
             <p style={{ margin: 0, fontSize: "15px", fontWeight: 700, color: "#1a1a1a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{userName}</p>
             <p style={{ margin: 0, fontSize: "13px", color: "#9ca3af", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{userEmail}</p>
           </div>
-          <Link href="/subscription">
+          <Link href="/app/subscription">
             <div style={{ background: planDisplay?.color || "#6B7280", borderRadius: "8px", padding: "4px 10px", fontSize: "13px", fontWeight: 800, color: "white", letterSpacing: "0.05em", cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}>
               {planDisplay?.badge || "Free"}
             </div>

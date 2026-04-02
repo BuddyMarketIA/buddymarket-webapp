@@ -343,7 +343,7 @@ export default function Achievements() {
             Cada comida registrada te acerca a nuevos logros y puntos de experiencia.
           </p>
         </div>
-        <Link href="/meal-log">
+        <Link href="/app/meal-log">
           <button
             style={{
               background: "#f97316",

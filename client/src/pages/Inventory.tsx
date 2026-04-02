@@ -305,7 +305,7 @@ export default function Inventory() {
             {recipeRecs.recipes.slice(0, 5).map((recipe: any) => (
               <button
                 key={recipe.id}
-                onClick={() => navigate(`/recipes/${recipe.id}`)}
+                onClick={() => navigate(`/app/recipes/${recipe.id}`)}
                 className="shrink-0 w-36 rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden text-left active:scale-95 transition-transform"
               >
                 {recipe.imageUrl ? (

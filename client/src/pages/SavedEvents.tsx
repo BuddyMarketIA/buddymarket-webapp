@@ -124,7 +124,7 @@ export default function SavedEvents() {
             <div className="text-6xl mb-4">🎉</div>
             <h3 className="text-xl font-bold text-gray-700 mb-2">Aún no tienes eventos guardados</h3>
             <p className="text-gray-500 mb-6">Genera un menú en el asistente de eventos y guárdalo para acceder rápidamente</p>
-            <a href="/event-menu" className="vively-btn-primary px-6 py-3 rounded-2xl inline-block">
+            <a href="/app/event-menu" className="vively-btn-primary px-6 py-3 rounded-2xl inline-block">
               Ir al Asistente de Eventos →
             </a>
           </div>

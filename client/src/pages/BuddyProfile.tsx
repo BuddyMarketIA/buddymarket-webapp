@@ -454,8 +454,8 @@ function NotFound({ type }: { type: string }) {
 
 // ─── Route dispatcher ─────────────────────────────────────────────────────────
 export default function BuddyProfile() {
-  const [matchExpert, paramsExpert] = useRoute("/buddy-experts/:id");
-  const [matchMaker, paramsMaker] = useRoute("/buddy-makers/:id");
+  const [matchExpert, paramsExpert] = useRoute("/app/buddy-experts/:id");
+  const [matchMaker, paramsMaker] = useRoute("/app/buddy-makers/:id");
 
   if (matchExpert && paramsExpert?.id) {
     const id = parseInt(paramsExpert.id);

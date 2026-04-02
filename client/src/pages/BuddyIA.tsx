@@ -598,7 +598,7 @@ function MenuResultView({
       {saved && (
         <div className="p-4 border-t border-border bg-background space-y-2">
           <div className="flex gap-2">
-            <Link href="/menus" className="flex-1">
+            <Link href="/app/menus" className="flex-1">
               <Button variant="outline" className="w-full text-sm">Ver planificador</Button>
             </Link>
             <Button
@@ -610,7 +610,7 @@ function MenuResultView({
             </Button>
           </div>
           {generateListMutation.isSuccess && (
-            <Link href="/shopping-lists">
+            <Link href="/app/shopping-lists">
               <Button variant="outline" className="w-full text-sm border-orange-300 text-orange-600">
                 Ver lista de la compra →
               </Button>

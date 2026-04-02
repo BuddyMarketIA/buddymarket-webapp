@@ -34,7 +34,7 @@ export default function RecipeDetail() {
   const deleteRecipe = trpc.recipes.delete.useMutation({
     onSuccess: () => {
       toast.success("Receta eliminada");
-      navigate("/recipes");
+      navigate("/app/recipes");
     },
   });
 
@@ -52,7 +52,7 @@ export default function RecipeDetail() {
     return (
       <div className="vively-page container text-center">
         <p className="text-gray-500">Receta no encontrada</p>
-        <Link href="/recipes" className="btn-vively mt-4 inline-block">
+        <Link href="/app/recipes" className="btn-vively mt-4 inline-block">
           Volver a recetas
         </Link>
       </div>
@@ -71,7 +71,7 @@ export default function RecipeDetail() {
   return (
     <div className="vively-page">
       {/* Back */}
-      <Link href="/recipes" className="mb-4 flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-gray-900">
+      <Link href="/app/recipes" className="mb-4 flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-gray-900">
         <ArrowLeftIcon className="h-4 w-4" />
         Volver a recetas
       </Link>
@@ -138,7 +138,7 @@ export default function RecipeDetail() {
         {isOwner && (
           <>
             <Link
-              href={`/recipes/${recipe.id}/edit`}
+              href={`/app/recipes/${recipe.id}/edit`}
               className="flex items-center gap-1.5 rounded-2xl border-2 border-gray-100 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:border-[#F97316]"
             >
               <PencilIcon className="h-4 w-4" />

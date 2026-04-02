@@ -907,3 +907,13 @@
 - [x] Corregir App.tsx: la ruta / debe mostrar LandingPage sin redirigir al registro
 - [x] Verificar que las rutas públicas (/, /blog, /terms, /subscription) son accesibles sin login
 - [x] El registro/login solo debe ocurrir cuando el usuario pulsa "Iniciar sesión" o "Empezar gratis"
+
+## Sprint: Separación rutas /app/* (02/04/2026)
+- [x] App.tsx: mover todas las rutas de la app bajo /app/* (ej: /app/dashboard, /app/recipes, etc.)
+- [x] App.tsx: crear componente ProtectedRoute que redirige al login si no autenticado
+- [x] App.tsx: rutas públicas siguen en / (landing, blog, terms, privacy, cookies)
+- [x] AppLayout: actualizar todos los enlaces internos de navegación a /app/*
+- [x] AppLayout: actualizar el botón "Ir a la app" / logo link a /app/dashboard
+- [x] Landing page: actualizar botones CTA a /app/dashboard (si logueado) o login (si no)
+- [x] Actualizar todos los navigate() y Link to= en páginas de la app a /app/*
+- [x] Verificar que /app redirige a /app/dashboard

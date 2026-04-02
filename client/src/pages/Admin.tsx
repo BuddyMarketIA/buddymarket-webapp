@@ -183,7 +183,7 @@ export default function Admin() {
         <ShieldCheckIcon className="mx-auto mb-3 h-12 w-12 text-gray-300" />
         <h2 className="text-lg font-bold text-gray-700">Acceso restringido</h2>
         <p className="mt-1 text-sm text-gray-500">Solo los administradores pueden acceder a esta sección.</p>
-        <Link href="/dashboard" className="btn-vively mt-4 inline-block">
+        <Link href="/app/dashboard" className="btn-vively mt-4 inline-block">
           Ir al dashboard
         </Link>
       </div>

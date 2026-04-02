@@ -4,7 +4,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
 import AppLayout from "@/components/AppLayout";
 
-type Tab = "profile" | "plans" | "menus";
+type Tab = "/app/profile" | "plans" | "/app/menus";
 
 const CATEGORIES = [
   { value: "perdida_peso", label: "Pérdida de peso" },
@@ -23,7 +23,7 @@ const MEALS = ["Desayuno", "Media mañana", "Comida", "Merienda", "Cena"];
 
 export default function BuddyExpertDashboard() {
   const { user, loading: authLoading } = useAuth();
-  const [activeTab, setActiveTab] = useState<Tab>("profile");
+  const [activeTab, setActiveTab] = useState<Tab>("/app/profile");
   const [showMenuForm, setShowMenuForm] = useState(false);
   const [editingMenu, setEditingMenu] = useState<any | null>(null);
   const [showPlanForm, setShowPlanForm] = useState(false);
@@ -293,7 +293,7 @@ export default function BuddyExpertDashboard() {
               ? "Tu solicitud está siendo revisada. Te notificaremos cuando sea aprobada."
               : "Para acceder a este panel necesitas solicitar y obtener el rol de BuddyExpert."}
           </p>
-          <a href="/buddy-application?type=expert" className="inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground h-10 px-6 text-sm font-medium hover:bg-primary/90 transition-colors">
+          <a href="/app/buddy-application?type=expert" className="inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground h-10 px-6 text-sm font-medium hover:bg-primary/90 transition-colors">
             {myApplication?.status === "pending" ? "Ver estado de mi solicitud" : "Solicitar acceso"}
           </a>
         </div>
@@ -317,19 +317,19 @@ export default function BuddyExpertDashboard() {
 
         {/* Tabs */}
         <div className="flex gap-1 mb-6 bg-gray-100 rounded-2xl p-1">
-          {(["profile", "plans", "menus"] as Tab[]).map((tab) => (
+          {(["/app/profile", "plans", "/app/menus"] as Tab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === tab ? "bg-white text-orange-600 shadow-sm" : "text-gray-500"}`}
             >
-              {tab === "profile" ? "👤 Perfil" : tab === "plans" ? "📊 Planes" : "📋 Menús"}
+              {tab === "/app/profile" ? "👤 Perfil" : tab === "plans" ? "📊 Planes" : "📋 Menús"}
             </button>
           ))}
         </div>
 
         {/* Profile Tab */}
-        {activeTab === "profile" && (
+        {activeTab === "/app/profile" && (
           <form onSubmit={handleSaveProfile} className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-4">
             <h2 className="text-base font-black text-gray-900 mb-2">
               {myProfile ? "Editar perfil de experto" : "Crear perfil de experto"}
@@ -627,7 +627,7 @@ export default function BuddyExpertDashboard() {
         )}
 
         {/* Menus Tab */}
-        {activeTab === "menus" && (
+        {activeTab === "/app/menus" && (
           <div className="space-y-4">
             {!myProfile && (
               <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4 text-sm text-orange-800 text-center">

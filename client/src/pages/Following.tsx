@@ -361,7 +361,7 @@ export default function Following() {
               </button>
             ) : (
               <a
-                href={activeTab === "experts" ? "/buddy-experts" : "/buddy-makers"}
+                href={activeTab === "experts" ? "/app/buddy-experts" : "/app/buddy-makers"}
                 className="inline-block bg-gradient-to-r from-orange-500 to-orange-600 text-white font-bold px-6 py-2.5 rounded-2xl hover:opacity-90 transition-opacity"
               >
                 Explorar {activeTab === "experts" ? "BuddyExperts" : "BuddyMakers"} →
@@ -384,7 +384,7 @@ export default function Following() {
                     verified={expert.verified ?? false}
                     badge="Expert"
                     badgeColor="from-orange-500 to-red-500"
-                    href={`/buddy-experts/${expert.id}`}
+                    href={`/app/buddy-experts/${expert.id}`}
                     onUnfollow={() => unfollowExpert.mutate({ expertId: expert.id })}
                     unfollowLoading={unfollowExpert.isPending}
                   />
@@ -404,7 +404,7 @@ export default function Following() {
                     verified={maker.verified ?? false}
                     badge="Maker"
                     badgeColor="from-pink-500 to-orange-500"
-                    href={`/buddy-makers/${maker.id}`}
+                    href={`/app/buddy-makers/${maker.id}`}
                     onUnfollow={() => unfollowMaker.mutate({ makerId: maker.id })}
                     unfollowLoading={unfollowMaker.isPending}
                   />

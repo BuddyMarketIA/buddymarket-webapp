@@ -4,7 +4,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
 import AppLayout from "@/components/AppLayout";
 
-type Tab = "profile" | "recipes";
+type Tab = "/app/profile" | "/app/recipes";
 
 const MEAL_TIMES = [
   { value: "desayuno", label: "Desayuno" },
@@ -36,7 +36,7 @@ const emptyStep = (n: number): Step => ({ step: n, text: "" });
 
 export default function BuddyMakerDashboard() {
   const { user, loading: authLoading } = useAuth();
-  const [activeTab, setActiveTab] = useState<Tab>("profile");
+  const [activeTab, setActiveTab] = useState<Tab>("/app/profile");
   const [showRecipeForm, setShowRecipeForm] = useState(false);
   const [editingRecipe, setEditingRecipe] = useState<any | null>(null);
 
@@ -261,7 +261,7 @@ export default function BuddyMakerDashboard() {
               ? "Tu solicitud está siendo revisada. Te notificaremos cuando sea aprobada."
               : "Para acceder a este panel necesitas solicitar y obtener el rol de BuddyMaker."}
           </p>
-          <a href="/buddy-application?type=maker" className="inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground h-10 px-6 text-sm font-medium hover:bg-primary/90 transition-colors">
+          <a href="/app/buddy-application?type=maker" className="inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground h-10 px-6 text-sm font-medium hover:bg-primary/90 transition-colors">
             {myApplication?.status === "pending" ? "Ver estado de mi solicitud" : "Solicitar acceso"}
           </a>
         </div>
@@ -288,19 +288,19 @@ export default function BuddyMakerDashboard() {
 
         {/* Tabs */}
         <div className="flex gap-2 mb-6 bg-gray-100 rounded-2xl p-1">
-          {(["profile", "recipes"] as Tab[]).map((tab) => (
+          {(["/app/profile", "/app/recipes"] as Tab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === tab ? "bg-white text-green-600 shadow-sm" : "text-gray-500"}`}
             >
-              {tab === "profile" ? "👤 Mi Perfil" : "🍽️ Mis Recetas"}
+              {tab === "/app/profile" ? "👤 Mi Perfil" : "🍽️ Mis Recetas"}
             </button>
           ))}
         </div>
 
         {/* Profile Tab */}
-        {activeTab === "profile" && (
+        {activeTab === "/app/profile" && (
           <form onSubmit={handleSaveProfile} className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-4">
             <h2 className="text-base font-black text-gray-900 mb-2">
               {myProfile ? "Editar perfil de creador" : "Crear perfil de creador"}
@@ -404,7 +404,7 @@ export default function BuddyMakerDashboard() {
         )}
 
         {/* Recipes Tab */}
-        {activeTab === "recipes" && (
+        {activeTab === "/app/recipes" && (
           <div className="space-y-4">
             {!myProfile && (
               <div className="bg-green-50 border border-green-200 rounded-2xl p-4 text-sm text-green-800 text-center">

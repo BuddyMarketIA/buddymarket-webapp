@@ -23,7 +23,7 @@ const DEMO_RECIPES = [
   { id: 6, title: "Pan de masa madre integral", makerId: 6, makerName: "Panadería Artesanal", makerAvatar: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/pan_masa_madre-VDEXokc7GYSoNjo4bvjcTU.webp", image: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/pan_masa_madre-VDEXokc7GYSoNjo4bvjcTU.webp", calories: 120, time: 180, likes: 2876, category: "Pan" },
 ];
 
-type Tab = "makers" | "recipes";
+type Tab = "makers" | "/app/recipes";
 
 // Gradient palettes per index for visual variety
 const GRADIENTS = [
@@ -62,7 +62,7 @@ function MakerCard({ row, onFollow, index }: { row: any; onFollow: (id: number) 
     <div
       className="group relative bg-white rounded-[28px] overflow-hidden cursor-pointer"
       style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)" }}
-      onClick={() => navigate(`/buddy-makers/${maker.id}`)}
+      onClick={() => navigate(`/app/buddy-makers/${maker.id}`)}
     >
       {/* ── Gradient header with decorative blobs ── */}
       <div className={`relative bg-gradient-to-br ${gradient} pt-5 pb-10 px-4 overflow-hidden`}>
@@ -168,7 +168,7 @@ function MakerCard({ row, onFollow, index }: { row: any; onFollow: (id: number) 
             {following ? "✓ Siguiendo" : "Seguir"}
           </button>
           <button
-            onClick={() => navigate(`/buddy-makers/${maker.id}`)}
+            onClick={() => navigate(`/app/buddy-makers/${maker.id}`)}
             className="flex-1 border-2 border-gray-100 text-gray-700 hover:border-orange-200 hover:text-orange-600 text-[13px] font-black py-3 rounded-2xl transition-all duration-200 active:scale-95"
           >
             Ver perfil
@@ -260,7 +260,7 @@ export default function BuddyMakers() {
 
         {/* Tabs */}
         <div className="flex gap-1 bg-gray-100 rounded-2xl p-1">
-          {(["makers", "recipes"] as Tab[]).map((t) => (
+          {(["makers", "/app/recipes"] as Tab[]).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
@@ -288,7 +288,7 @@ export default function BuddyMakers() {
           </div>
         )}
 
-        {tab === "recipes" && (
+        {tab === "/app/recipes" && (
           <div className="grid grid-cols-2 gap-3">
             {DEMO_RECIPES.map((r) => (
               <RecipeCard key={r.id} recipe={r} />

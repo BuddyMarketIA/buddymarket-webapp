@@ -9,7 +9,7 @@ const QUICK_ACCESS = [
   {
     label: "Recetas",
     emoji: "🍽️",
-    to: "/recipes",
+    to: "/app/recipes",
     img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/recipes_afa44a0e.jpg",
     accent: "#F97316",
     size: "large",
@@ -18,7 +18,7 @@ const QUICK_ACCESS = [
   {
     label: "Menús",
     emoji: "📅",
-    to: "/menus",
+    to: "/app/menus",
     img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/mealprep_eb5fda9a.jpg",
     accent: "#6366F1",
     size: "small",
@@ -27,7 +27,7 @@ const QUICK_ACCESS = [
   {
     label: "Supermercados",
     emoji: "🛒",
-    to: "/supermercados",
+    to: "/app/supermercados",
     img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/shopping_d2c9f4e5.jpg",
     accent: "#10B981",
     size: "small",
@@ -36,7 +36,7 @@ const QUICK_ACCESS = [
   {
     label: "Inventario",
     emoji: "📦",
-    to: "/inventory",
+    to: "/app/inventory",
     img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/pantry_3fcf0a1f.jpg",
     accent: "#F59E0B",
     size: "small",
@@ -45,7 +45,7 @@ const QUICK_ACCESS = [
   {
     label: "BuddyScan IA",
     emoji: "🤖",
-    to: "/menus",
+    to: "/app/menus",
     img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/buddyscan_dd3e1e08.jpg",
     accent: "#8B5CF6",
     size: "wide",
@@ -54,7 +54,7 @@ const QUICK_ACCESS = [
   {
     label: "Diario",
     emoji: "📊",
-    to: "/meal-log",
+    to: "/app/meal-log",
     img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/vegetables_0f947a56.jpg",
     accent: "#EF4444",
     size: "small",
@@ -216,7 +216,7 @@ export default function Dashboard() {
 
       {/* Profile Completion Card */}
       {showProfileCard && (
-        <Link href="/profile">
+        <Link href="/app/profile">
           <div style={{ background: "linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%)", border: "2px solid #C7D2FE", borderRadius: "20px", padding: "16px", marginBottom: "16px", cursor: "pointer", boxShadow: "0 4px 16px rgba(99,102,241,0.14)" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "10px" }}>
               <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: "linear-gradient(135deg, #6366F1, #818CF8)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", flexShrink: 0 }}>👤</div>
@@ -236,7 +236,7 @@ export default function Dashboard() {
       )}
 
       {/* Calorie Ring Card — clickable, navigates to /meal-log */}
-      <Link href="/meal-log">
+      <Link href="/app/meal-log">
         <div style={{ background: "linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)", borderRadius: "28px", padding: "22px", marginBottom: "16px", boxShadow: "0 12px 40px rgba(0,0,0,0.30)", position: "relative", overflow: "hidden", cursor: "pointer" }}>
           {/* Decorative blobs */}
           <div style={{ position: "absolute", top: "-30px", right: "-30px", width: "160px", height: "160px", borderRadius: "50%", background: "radial-gradient(circle, rgba(249,115,22,0.25) 0%, transparent 70%)" }} />
@@ -368,7 +368,7 @@ export default function Dashboard() {
         <div style={{ marginBottom: "20px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
             <h2 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.02em" }}>Menú de hoy</h2>
-            <Link href="/menus"><span style={{ fontSize: "13px", fontWeight: 600, color: "#F97316" }}>Ver semana →</span></Link>
+            <Link href="/app/menus"><span style={{ fontSize: "13px", fontWeight: 600, color: "#F97316" }}>Ver semana →</span></Link>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             {todayMenuItems.slice(0, 3).map((item: any, i: number) => (
@@ -380,7 +380,7 @@ export default function Dashboard() {
                   <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#1a1a1a" }}>{item.recipe?.nameEs || item.customMealName || "Comida"}</p>
                   <p style={{ margin: 0, fontSize: "14px", color: "#9ca3af" }}>{item.mealType === "breakfast" ? "Desayuno" : item.mealType === "lunch" ? "Comida" : item.mealType === "dinner" ? "Cena" : "Snack"}</p>
                 </div>
-                <Link href={`/meal-log`}>
+                <Link href={`/app/meal-log`}>
                   <button onClick={() => toast.success("Añadido al diario")} style={{ background: "#F97316", border: "none", borderRadius: "10px", padding: "6px 12px", fontSize: "14px", fontWeight: 700, color: "white", cursor: "pointer" }}>
                     + Registrar
                   </button>
@@ -392,7 +392,7 @@ export default function Dashboard() {
       )}
 
       {/* Weekly Menu Banner (mockup style) */}
-      <Link href="/menus">
+      <Link href="/app/menus">
         <div style={{ background: "linear-gradient(135deg, #F97316 0%, #EA580C 100%)", borderRadius: "22px", padding: "18px 20px", marginBottom: "16px", display: "flex", alignItems: "center", gap: "16px", boxShadow: "0 8px 24px rgba(249,115,22,0.35)", cursor: "pointer", position: "relative", overflow: "hidden" }}>
           <div style={{ position: "absolute", top: "-10px", right: "-10px", width: "120px", height: "120px", borderRadius: "50%", background: "rgba(255,255,255,0.08)" }} />
           <div style={{ flex: 1, position: "relative" }}>
@@ -415,10 +415,10 @@ export default function Dashboard() {
       {/* 4 Quick Access Cards: Lista compra, Menús BuddyExperts, BuddyIA, Biblioteca Menús */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "20px" }}>
         {[
-          { href: "/shopping-lists", emoji: "🛒", label: "Lista de la compra", bg: "white", color: "#1a1a1a", shadow: "0 2px 10px rgba(0,0,0,0.07)", border: "none" },
-          { href: "/buddy-experts", emoji: "🧑‍🍳", label: "Menús BuddyExperts", bg: "white", color: "#1a1a1a", shadow: "0 2px 10px rgba(0,0,0,0.07)", border: "none" },
-          { href: "/notifications", emoji: "🔔", label: "Recordatorios", bg: "linear-gradient(135deg, #FFF7ED, #FFEDD5)", color: "#F97316", shadow: "0 2px 10px rgba(249,115,22,0.12)", border: "1px solid rgba(249,115,22,0.15)" },
-          { href: "/achievements", emoji: "🏆", label: "Mis Logros", bg: "linear-gradient(135deg, #1e1b4b15, #312e8120)", color: "#312e81", shadow: "0 2px 10px rgba(49,46,129,0.12)", border: "1px solid rgba(49,46,129,0.15)" },
+          { href: "/app/shopping-lists", emoji: "🛒", label: "Lista de la compra", bg: "white", color: "#1a1a1a", shadow: "0 2px 10px rgba(0,0,0,0.07)", border: "none" },
+          { href: "/app/buddy-experts", emoji: "🧑‍🍳", label: "Menús BuddyExperts", bg: "white", color: "#1a1a1a", shadow: "0 2px 10px rgba(0,0,0,0.07)", border: "none" },
+          { href: "/app/notifications", emoji: "🔔", label: "Recordatorios", bg: "linear-gradient(135deg, #FFF7ED, #FFEDD5)", color: "#F97316", shadow: "0 2px 10px rgba(249,115,22,0.12)", border: "1px solid rgba(249,115,22,0.15)" },
+          { href: "/app/achievements", emoji: "🏆", label: "Mis Logros", bg: "linear-gradient(135deg, #1e1b4b15, #312e8120)", color: "#312e81", shadow: "0 2px 10px rgba(49,46,129,0.12)", border: "1px solid rgba(49,46,129,0.15)" },
         ].map((item) => (
           <Link key={item.href} href={item.href}>
             <div style={{ background: item.bg, borderRadius: "18px", padding: "16px 10px", textAlign: "center", boxShadow: item.shadow, cursor: "pointer", transition: "transform 0.2s", border: item.border }}
@@ -558,7 +558,7 @@ export default function Dashboard() {
         const diff = (exp.getTime() - Date.now()) / (1000 * 60 * 60 * 24);
         return diff <= 3 && diff >= 0;
       })?.length ?? 0) > 0) && (
-        <Link href="/inventory">
+        <Link href="/app/inventory">
           <div style={{ background: "linear-gradient(135deg, #FEF3C7, #FDE68A)", borderRadius: "18px", padding: "14px 16px", marginBottom: "20px", display: "flex", alignItems: "center", gap: "12px", cursor: "pointer", border: "1px solid rgba(245,158,11,0.2)" }}>
             <span style={{ fontSize: "24px" }}>⚠️</span>
             <div style={{ flex: 1 }}>
@@ -577,7 +577,7 @@ export default function Dashboard() {
           <h2 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.02em" }}>
             ✨ Recomendaciones para ti
           </h2>
-          <Link href="/recipes"><span style={{ fontSize: "13px", fontWeight: 600, color: "#F97316" }}>Ver todas →</span></Link>
+          <Link href="/app/recipes"><span style={{ fontSize: "13px", fontWeight: 600, color: "#F97316" }}>Ver todas →</span></Link>
         </div>
         {recommendedRecipes.isLoading ? (
           <div style={{ display: "flex", gap: "12px", overflowX: "auto", paddingBottom: "4px" }}>
@@ -588,7 +588,7 @@ export default function Dashboard() {
         ) : recommendedRecipes.data && recommendedRecipes.data.recipes.length > 0 ? (
           <div style={{ display: "flex", gap: "12px", overflowX: "auto", paddingBottom: "4px" }}>
             {recommendedRecipes.data.recipes.map((recipe: any, i: number) => (
-              <Link key={recipe.id} href={`/recipes/${recipe.id}`}>
+              <Link key={recipe.id} href={`/app/recipes/${recipe.id}`}>
                 <div style={{ width: "150px", flexShrink: 0, borderRadius: "18px", overflow: "hidden", cursor: "pointer", position: "relative", boxShadow: "0 4px 16px rgba(0,0,0,0.12)" }}>
                   <div style={{ height: "110px", background: `linear-gradient(180deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.70) 100%), url(${recipe.imageUrl || FOOD_IMAGES[i % FOOD_IMAGES.length]}) center/cover` }}>
                     <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "10px" }}>
@@ -610,7 +610,7 @@ export default function Dashboard() {
             ))}
           </div>
         ) : (
-          <Link href="/profile">
+          <Link href="/app/profile">
             <div style={{ background: "linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%)", borderRadius: "18px", padding: "20px", textAlign: "center", boxShadow: "0 2px 8px rgba(249,115,22,0.08)", border: "1px solid rgba(249,115,22,0.15)", cursor: "pointer" }}>
               <p style={{ margin: "0 0 6px", fontSize: "28px" }}>🍽️</p>
               <p style={{ margin: "0 0 4px", fontSize: "14px", fontWeight: 800, color: "#1a1a1a" }}>Personaliza tus recomendaciones</p>
@@ -629,7 +629,7 @@ export default function Dashboard() {
           <h2 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.02em" }}>
             📅 Menús que te pueden interesar
           </h2>
-          <Link href="/menu-library"><span style={{ fontSize: "13px", fontWeight: 600, color: "#F97316" }}>Ver todos →</span></Link>
+          <Link href="/app/menu-library"><span style={{ fontSize: "13px", fontWeight: 600, color: "#F97316" }}>Ver todos →</span></Link>
         </div>
         {suggestedMenus.isLoading ? (
           <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
@@ -662,7 +662,7 @@ export default function Dashboard() {
               const emoji = goalEmojis[menu.goal] || "📅";
               const label = goalLabels[menu.goal] || menu.goal;
               return (
-                <Link key={menu.id} href="/menu-library">
+                <Link key={menu.id} href="/app/menu-library">
                   <div style={{ background: "white", borderRadius: "16px", padding: "12px 14px", display: "flex", alignItems: "center", gap: "12px", boxShadow: "0 2px 10px rgba(0,0,0,0.07)", cursor: "pointer", border: "1px solid rgba(0,0,0,0.05)" }}>
                     <div style={{ width: "40px", height: "40px", borderRadius: "12px", background: bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", flexShrink: 0 }}>
                       {emoji}
@@ -682,7 +682,7 @@ export default function Dashboard() {
             })}
           </div>
         ) : (
-          <Link href="/menu-library">
+          <Link href="/app/menu-library">
             <div style={{ background: "linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%)", borderRadius: "18px", padding: "20px", textAlign: "center", boxShadow: "0 2px 8px rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.15)", cursor: "pointer" }}>
               <p style={{ margin: "0 0 6px", fontSize: "28px" }}>📅</p>
               <p style={{ margin: "0 0 4px", fontSize: "14px", fontWeight: 800, color: "#1a1a1a" }}>Explora la biblioteca de menús</p>
@@ -699,7 +699,7 @@ export default function Dashboard() {
       <div style={{ marginBottom: "20px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
           <h2 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.02em" }}>Receta del día</h2>
-          <Link href="/recipes"><span style={{ fontSize: "13px", fontWeight: 600, color: "#F97316" }}>Ver más →</span></Link>
+          <Link href="/app/recipes"><span style={{ fontSize: "13px", fontWeight: 600, color: "#F97316" }}>Ver más →</span></Link>
         </div>
         <div style={{ position: "relative", borderRadius: "22px", overflow: "hidden", height: "180px", boxShadow: "0 8px 24px rgba(0,0,0,0.15)" }}>
           {RECIPE_OF_DAY.map((recipe, idx) => (
@@ -741,9 +741,9 @@ export default function Dashboard() {
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px" }}>
           {[
-            { label: "BuddyExperts", emoji: "\u{1F468}\u{200D}\u{2695}\u{FE0F}", to: "/buddy-experts", desc: "Nutricionistas y deportistas", color: "linear-gradient(135deg, #F97316, #EA580C)" },
-            { label: "BuddyMakers", emoji: "\u{1F468}\u{200D}\u{1F373}", to: "/buddy-makers", desc: "Creadores de recetas", color: "linear-gradient(135deg, #EC4899, #F97316)" },
-            { label: "BuddyIA", emoji: "\u{1F916}", to: "/buddy-ia", desc: "Asistente nutricional IA", color: "linear-gradient(135deg, #8B5CF6, #6366F1)" },
+            { label: "BuddyExperts", emoji: "\u{1F468}\u{200D}\u{2695}\u{FE0F}", to: "/app/buddy-experts", desc: "Nutricionistas y deportistas", color: "linear-gradient(135deg, #F97316, #EA580C)" },
+            { label: "BuddyMakers", emoji: "\u{1F468}\u{200D}\u{1F373}", to: "/app/buddy-makers", desc: "Creadores de recetas", color: "linear-gradient(135deg, #EC4899, #F97316)" },
+            { label: "BuddyIA", emoji: "\u{1F916}", to: "/app/buddy-ia", desc: "Asistente nutricional IA", color: "linear-gradient(135deg, #8B5CF6, #6366F1)" },
           ].map((card) => (
             <Link key={card.label} href={card.to}>
               <div style={{ borderRadius: "18px", overflow: "hidden", cursor: "pointer", boxShadow: "0 4px 14px rgba(0,0,0,0.15)", transition: "transform 0.2s" }}
@@ -762,7 +762,7 @@ export default function Dashboard() {
       </div>
 
       {/* BuddyShop Card */}
-      <Link href="/buddy-shop">
+      <Link href="/app/buddy-shop">
         <div style={{ background: "linear-gradient(135deg, #1a1a1a 0%, #2d2d2d 100%)", borderRadius: "22px", padding: "18px 20px", marginBottom: "14px", display: "flex", alignItems: "center", gap: "16px", boxShadow: "0 8px 24px rgba(0,0,0,0.20)", cursor: "pointer", position: "relative", overflow: "hidden" }}>
           <div style={{ position: "absolute", top: "-15px", right: "-15px", width: "80px", height: "80px", borderRadius: "50%", background: "rgba(249,115,22,0.15)" }} />
           <div style={{ width: "48px", height: "48px", borderRadius: "16px", background: "rgba(249,115,22,0.20)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", flexShrink: 0 }}>🛖</div>
@@ -780,7 +780,7 @@ export default function Dashboard() {
       </Link>
 
       {/* Pro/Pro Max Upgrade Card */}
-      <Link href="/subscription">
+      <Link href="/app/subscription">
         <div style={{ background: "linear-gradient(135deg, #F97316 0%, #FB923C 50%, #FDBA74 100%)", borderRadius: "22px", padding: "18px 20px", marginBottom: "20px", display: "flex", alignItems: "center", gap: "16px", boxShadow: "0 8px 24px rgba(249,115,22,0.35)", cursor: "pointer", position: "relative", overflow: "hidden" }}>
           <div style={{ position: "absolute", top: "-20px", right: "-20px", width: "100px", height: "100px", borderRadius: "50%", background: "rgba(255,255,255,0.12)" }} />
           <div style={{ width: "48px", height: "48px", borderRadius: "16px", background: "rgba(255,255,255,0.25)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", flexShrink: 0 }}>👑</div>
@@ -795,7 +795,7 @@ export default function Dashboard() {
       </Link>
 
       {/* Add Meal CTA */}
-      <Link href="/meal-log">
+      <Link href="/app/meal-log">
         <div style={{ background: "white", borderRadius: "20px", padding: "16px 20px", marginBottom: "16px", display: "flex", alignItems: "center", gap: "16px", boxShadow: "0 2px 12px rgba(0,0,0,0.07)", border: "2px dashed rgba(249,115,22,0.25)", cursor: "pointer" }}>
           <div style={{ width: "44px", height: "44px", borderRadius: "14px", background: "#F97316", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
             <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">

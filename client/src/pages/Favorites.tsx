@@ -117,7 +117,7 @@ function FavoriteRecipeCard({ recipe, onRemove }: { recipe: Recipe; onRemove: ()
   const mealTime = recipe.mealTime || "cualquiera";
 
   return (
-    <Link href={`/recipes/${recipe.id}`}>
+    <Link href={`/app/recipes/${recipe.id}`}>
       <div
         style={{
           background: "white",
@@ -334,7 +334,7 @@ export default function Favorites() {
               Guarda tus recetas preferidas tocando el corazón ❤️ en cualquier receta para encontrarlas aquí rápidamente.
             </p>
             <button
-              onClick={() => navigate("/recipes")}
+              onClick={() => navigate("/app/recipes")}
               style={{ padding: "14px 28px", borderRadius: "14px", background: "linear-gradient(135deg, #F97316, #FB923C)", border: "none", color: "white", fontSize: "15px", fontWeight: 800, cursor: "pointer", boxShadow: "0 4px 16px rgba(249,115,22,0.4)" }}
             >
               Explorar recetas

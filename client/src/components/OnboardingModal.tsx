@@ -44,7 +44,7 @@ const STEPS = [
       "Completa tu perfil con tus objetivos, alergias e intolerancias para recibir recomendaciones personalizadas. ¡Solo tarda 2 minutos!",
     color: "#F97316",
     cta: "Configurar mi perfil",
-    ctaPath: "/profile",
+    ctaPath: "/app/profile",
   },
 ];
 

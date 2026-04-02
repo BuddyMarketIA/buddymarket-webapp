@@ -177,7 +177,7 @@ function RecipeCard({ recipe, searchQuery, isFav, onToggleFav }: { recipe: Recip
   const methodBadge = COOKING_METHOD_OPTIONS.find(m => m.value === recipe.cookingMethod);
 
   return (
-    <Link href={`/recipes/${recipe.id}`}>
+    <Link href={`/app/recipes/${recipe.id}`}>
       <div
         style={{
           background: "white",
@@ -536,7 +536,7 @@ export default function Recipes() {
           <p style={{ margin: "2px 0 0", fontSize: "14px", color: "#9ca3af" }}>427 recetas disponibles</p>
         </div>
         {isAuthenticated && (
-          <Link href="/recipes/new">
+          <Link href="/app/recipes/new">
             <button style={{ width: "38px", height: "38px", borderRadius: "12px", background: "#F97316", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(249,115,22,0.35)" }}>
               <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
                 <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
@@ -820,7 +820,7 @@ export default function Recipes() {
               </button>
             )}
             {showMyRecipes && isAuthenticated && !debouncedSearch && (
-              <Link href="/recipes/new">
+              <Link href="/app/recipes/new">
                 <button style={{ background: "#F97316", border: "none", borderRadius: "12px", padding: "10px 20px", fontSize: "13px", fontWeight: 700, color: "white", cursor: "pointer" }}>
                   Crear receta
                 </button>

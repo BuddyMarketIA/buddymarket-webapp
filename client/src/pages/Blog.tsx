@@ -139,7 +139,7 @@ export default function Blog() {
           </Link>
           <div style={{ display: "flex", gap: 24, alignItems: "center" }}>
             <Link href="/" style={{ fontSize: 14, color: "#6b7280", textDecoration: "none" }}>← Volver al inicio</Link>
-            <Link href="/dashboard" style={{
+            <Link href="/app/dashboard" style={{
               padding: "8px 20px", borderRadius: 10, fontSize: 14, fontWeight: 700,
               color: "white", background: ORANGE, textDecoration: "none",
             }}>Abrir app</Link>

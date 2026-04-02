@@ -163,7 +163,7 @@ export default function Menus() {
       <div className="mb-5 flex items-center justify-between">
         <h1 className="text-2xl font-bold text-gray-900">Planificador</h1>
         <div className="flex gap-2">
-          <Link href="/menu-library">
+          <Link href="/app/menu-library">
             <button className="flex items-center gap-1.5 rounded-full bg-purple-50 px-3 py-2 text-xs font-semibold text-purple-600">
               <BookOpenIcon className="h-4 w-4" />
               Biblioteca
@@ -258,7 +258,7 @@ export default function Menus() {
           <p className="mb-4 text-sm text-gray-500">Crea tu primer menú semanal o importa uno de la biblioteca de menús predefinidos.</p>
           <div className="flex flex-col gap-2 w-full max-w-xs">
             <button onClick={() => setShowNewMenu(true)} className="btn-vively w-full">➕ Crear menú nuevo</button>
-            <Link href="/menu-library">
+            <Link href="/app/menu-library">
               <button className="btn-vively-outline w-full">📚 Explorar biblioteca</button>
             </Link>
             <button onClick={() => setShowAI(true)} className="flex items-center justify-center gap-2 rounded-2xl border border-blue-200 bg-blue-50 py-3 text-sm font-semibold text-blue-600 w-full">
@@ -343,7 +343,7 @@ export default function Menus() {
                 <p className="text-sm font-bold text-gray-800">Genera tu lista de la compra</p>
                 <p className="text-xs text-gray-500">Basada en las recetas de este menú</p>
               </div>
-              <Link href="/shopping-lists">
+              <Link href="/app/shopping-lists">
                 <button className="shrink-0 rounded-xl bg-[#F97316] px-3 py-1.5 text-xs font-bold text-white">
                   Crear lista
                 </button>

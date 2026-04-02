@@ -274,7 +274,7 @@ export default function BuddyApplication({ type }: { type?: AppType }) {
       {currentApp?.status === "approved" && (
         <div style={card}>
           <button
-            onClick={() => navigate(activeType === "expert" ? "/buddy-expert-dashboard" : "/buddy-maker-dashboard")}
+            onClick={() => navigate(activeType === "expert" ? "/app/buddy-expert-dashboard" : "/app/buddy-maker-dashboard")}
             style={{ width: "100%", padding: "14px", borderRadius: "14px", background: "linear-gradient(135deg, #F97316, #FB923C)", color: "white", fontWeight: 700, fontSize: "15px", border: "none", cursor: "pointer" }}
           >
             Ir a mi panel de {activeType === "expert" ? "BuddyExpert" : "BuddyMaker"} →

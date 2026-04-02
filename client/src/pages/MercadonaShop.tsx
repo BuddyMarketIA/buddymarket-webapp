@@ -28,7 +28,7 @@ type MercadonaSession = {
 
 const SUPERMARKETS = [
   { id: "mercadona", name: "Mercadona", color: "#00A650", bg: "#E8F5E9", available: true, desc: "La cadena de supermercados más grande de España" },
-  { id: "carrefour", name: "Carrefour", color: "#004A97", bg: "#E3F2FD", available: true, desc: "Más de 14.000 productos disponibles" },
+  { id: "/app/carrefour", name: "Carrefour", color: "#004A97", bg: "#E3F2FD", available: true, desc: "Más de 14.000 productos disponibles" },
   { id: "lidl", name: "Lidl", color: "#F5A623", bg: "#FFF8E1", available: false, desc: "Próximamente disponible" },
   { id: "alcampo", name: "Alcampo", color: "#E53935", bg: "#FFEBEE", available: false, desc: "Próximamente disponible" },
   { id: "dia", name: "Dia", color: "#C62828", bg: "#FFEBEE", available: false, desc: "Próximamente disponible" },
@@ -183,7 +183,7 @@ export default function SupermercadoShop() {
               key={sm.id}
               onClick={() => {
               if (!sm.available) { toast.info(`${sm.name} estará disponible próximamente`); return; }
-              if (sm.id === "carrefour") { navigate("/carrefour"); return; }
+              if (sm.id === "/app/carrefour") { navigate("/app/carrefour"); return; }
               setSelectedSupermarket(sm.id);
             }}
               className={`flex items-center gap-4 rounded-3xl p-4 text-left transition-all active:scale-[0.98] ${sm.available ? "bg-white shadow-sm border border-gray-100" : "bg-gray-50 border border-gray-100 opacity-70"}`}

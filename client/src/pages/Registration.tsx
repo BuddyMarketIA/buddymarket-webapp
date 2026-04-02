@@ -677,7 +677,7 @@ function StepPendingApproval({ accountType, application }: { accountType: Accoun
         </div>
       )}
 
-      <button onClick={() => navigate("/dashboard")} style={continueBtnStyle}>
+      <button onClick={() => navigate("/app/dashboard")} style={continueBtnStyle}>
         {application?.status === "approved" ? "Ir a mi panel →" : "Ir al inicio →"}
       </button>
     </div>
@@ -696,7 +696,7 @@ export default function Registration() {
     if (regStatus) {
       // If already completed, redirect to dashboard
       if (regStatus.registrationStep === "completed" && regStatus.onboardingCompleted) {
-        navigate("/dashboard");
+        navigate("/app/dashboard");
         return;
       }
       setLocalStep(regStatus.registrationStep as RegistrationStep);

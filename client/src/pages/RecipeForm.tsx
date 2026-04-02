@@ -37,7 +37,7 @@ export default function RecipeForm() {
   const createRecipe = trpc.recipes.create.useMutation({
     onSuccess: (data) => {
       toast.success("Receta creada correctamente");
-      navigate(`/recipes/${data?.id}`);
+      navigate(`/app/recipes/${data?.id}`);
     },
     onError: (err) => toast.error(err.message),
   });
@@ -74,7 +74,7 @@ export default function RecipeForm() {
   return (
     <div className="p-6 max-w-3xl mx-auto space-y-6">
         <Button variant="ghost" size="sm" asChild className="-ml-2">
-          <Link href="/recipes">
+          <Link href="/app/recipes">
             <ArrowLeft className="w-4 h-4 mr-1.5" />
             Volver a recetas
           </Link>
@@ -243,7 +243,7 @@ export default function RecipeForm() {
 
           <div className="flex gap-3 justify-end">
             <Button type="button" variant="outline" asChild>
-              <Link href="/recipes">Cancelar</Link>
+              <Link href="/app/recipes">Cancelar</Link>
             </Button>
             <Button type="submit" disabled={createRecipe.isPending}>
               {createRecipe.isPending && <Loader2 className="w-4 h-4 mr-2 animate-spin" />}

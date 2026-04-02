@@ -1,10 +1,12 @@
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import NotFound from "@/pages/NotFound";
-import { Route, Switch } from "wouter";
+import { Route, Switch, Redirect, useLocation } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import AppLayout from "./components/AppLayout";
+import { useAuth } from "./_core/hooks/useAuth";
+import { getLoginUrl } from "./const";
 import Home from "./pages/Home";
 import Dashboard from "./pages/Dashboard";
 import Recipes from "./pages/Recipes";
@@ -55,6 +57,27 @@ function WithLayout({ component: Component, ...props }: { component: React.Compo
   );
 }
 
+// Protects app routes — redirects to Manus login if not authenticated
+function ProtectedRoute({ component: Component, params }: { component: React.ComponentType<any>; params?: any }) {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (!user) {
+    window.location.href = getLoginUrl();
+    return null;
+  }
+  return <WithLayout component={Component} params={params} />;
+}
+
+function ProtectedPage({ children }: { children: React.ReactNode }) {
+  const { user, loading } = useAuth();
+  if (loading) return null;
+  if (!user) {
+    window.location.href = getLoginUrl();
+    return null;
+  }
+  return <>{children}</>;
+}
+
 function Router() {
   return (
     <Switch>
@@ -66,42 +89,42 @@ function Router() {
       <Route path="/cookies" component={Cookies} />
       <Route path="/legal" component={Terms} />
       <Route path="/gdpr" component={Privacy} />
-      {/* App routes — Dashboard and RecipeForm already include AppLayout internally */}
-      <Route path="/dashboard">{() => <WithLayout component={Dashboard} />}</Route>
-      <Route path="/recipes/new">{() => <WithLayout component={RecipeForm} />}</Route>
-      <Route path="/recipes/:id/edit">{(params) => <WithLayout component={RecipeForm} params={params} />}</Route>
-      {/* Pages that use vively-page but not AppLayout — wrap them */}
-      <Route path="/recipes/:id">{(params) => <WithLayout component={RecipeDetail} params={params} />}</Route>
-      <Route path="/recipes">{() => <WithLayout component={Recipes} />}</Route>
-      <Route path="/menus">{() => <WithLayout component={Menus} />}</Route>
-      <Route path="/shopping-lists">{() => <WithLayout component={ShoppingLists} />}</Route>
-      <Route path="/inventory">{() => <WithLayout component={Inventory} />}</Route>
-      <Route path="/meal-log">{() => <WithLayout component={MealLog} />}</Route>
-      <Route path="/profile">{() => <WithLayout component={Profile} />}</Route>
-      <Route path="/admin">{() => <WithLayout component={Admin} />}</Route>
-      <Route path="/subscription">{() => <WithLayout component={Subscription} />}</Route>
-      <Route path="/buddy-experts">{() => <WithLayout component={BuddyExperts} />}</Route>
-      <Route path="/buddy-makers">{() => <WithLayout component={BuddyMakers} />}</Route>
-      <Route path="/buddy-ia">{() => <WithLayout component={BuddyIA} />}</Route>
-      <Route path="/buddy-shop">{() => <WithLayout component={BuddyShop} />}</Route>
-      <Route path="/supermercados">{() => <WithLayout component={MercadonaShop} />}</Route>
-      {/* /carrefour redirects to unified supermercados page */}
-      <Route path="/carrefour">{() => <WithLayout component={MercadonaShop} />}</Route>
-      <Route path="/menu-library">{() => <WithLayout component={MenuLibrary} />}</Route>
-      <Route path="/specialized-menus">{() => <SpecializedMenus />}</Route>
-      <Route path="/favorites">{() => <WithLayout component={Favorites} />}</Route>
-      <Route path="/buddy-experts/:id">{() => <BuddyProfile />}</Route>
-      <Route path="/buddy-makers/:id">{() => <BuddyProfile />}</Route>
-      <Route path="/following">{() => <WithLayout component={Following} />}</Route>
-      <Route path="/buddy-expert-dashboard">{() => <BuddyExpertDashboard />}</Route>
-      <Route path="/buddy-maker-dashboard">{() => <BuddyMakerDashboard />}</Route>
-      <Route path="/metrics">{() => <WithLayout component={Metrics} />}</Route>
-      <Route path="/stats">{() => <WithLayout component={NutritionalStats} />}</Route>
-      <Route path="/notifications">{() => <WithLayout component={MealNotifications} />}</Route>
-      <Route path="/achievements">{() => <WithLayout component={Achievements} />}</Route>
-      <Route path="/buddy-application">{() => <WithLayout component={BuddyApplication} />}</Route>
-      <Route path="/event-menu">{() => <EventMenuPlanner />}</Route>
-      <Route path="/saved-events">{() => <SavedEvents />}</Route>
+      {/* /app → redirect to /app/dashboard */}
+      <Route path="/app">{() => <Redirect to="/app/dashboard" />}</Route>
+      {/* Protected app routes */}
+      <Route path="/app/dashboard">{() => <ProtectedRoute component={Dashboard} />}</Route>
+      <Route path="/app/recipes/new">{() => <ProtectedRoute component={RecipeForm} />}</Route>
+      <Route path="/app/recipes/:id/edit">{(params) => <ProtectedRoute component={RecipeForm} params={params} />}</Route>
+      <Route path="/app/recipes/:id">{(params) => <ProtectedRoute component={RecipeDetail} params={params} />}</Route>
+      <Route path="/app/recipes">{() => <ProtectedRoute component={Recipes} />}</Route>
+      <Route path="/app/menus">{() => <ProtectedRoute component={Menus} />}</Route>
+      <Route path="/app/shopping-lists">{() => <ProtectedRoute component={ShoppingLists} />}</Route>
+      <Route path="/app/inventory">{() => <ProtectedRoute component={Inventory} />}</Route>
+      <Route path="/app/meal-log">{() => <ProtectedRoute component={MealLog} />}</Route>
+      <Route path="/app/profile">{() => <ProtectedRoute component={Profile} />}</Route>
+      <Route path="/app/admin">{() => <ProtectedRoute component={Admin} />}</Route>
+      <Route path="/app/subscription">{() => <ProtectedRoute component={Subscription} />}</Route>
+      <Route path="/app/buddy-experts">{() => <ProtectedRoute component={BuddyExperts} />}</Route>
+      <Route path="/app/buddy-makers">{() => <ProtectedRoute component={BuddyMakers} />}</Route>
+      <Route path="/app/buddy-ia">{() => <ProtectedRoute component={BuddyIA} />}</Route>
+      <Route path="/app/buddy-shop">{() => <ProtectedRoute component={BuddyShop} />}</Route>
+      <Route path="/app/supermercados">{() => <ProtectedRoute component={MercadonaShop} />}</Route>
+      <Route path="/app/carrefour">{() => <ProtectedRoute component={MercadonaShop} />}</Route>
+      <Route path="/app/menu-library">{() => <ProtectedRoute component={MenuLibrary} />}</Route>
+      <Route path="/app/specialized-menus">{() => <ProtectedPage><SpecializedMenus /></ProtectedPage>}</Route>
+      <Route path="/app/favorites">{() => <ProtectedRoute component={Favorites} />}</Route>
+      <Route path="/app/buddy-experts/:id">{() => <BuddyProfile />}</Route>
+      <Route path="/app/buddy-makers/:id">{() => <BuddyProfile />}</Route>
+      <Route path="/app/following">{() => <ProtectedRoute component={Following} />}</Route>
+      <Route path="/app/buddy-expert-dashboard">{() => <ProtectedPage><BuddyExpertDashboard /></ProtectedPage>}</Route>
+      <Route path="/app/buddy-maker-dashboard">{() => <ProtectedPage><BuddyMakerDashboard /></ProtectedPage>}</Route>
+      <Route path="/app/metrics">{() => <ProtectedRoute component={Metrics} />}</Route>
+      <Route path="/app/stats">{() => <ProtectedRoute component={NutritionalStats} />}</Route>
+      <Route path="/app/notifications">{() => <ProtectedRoute component={MealNotifications} />}</Route>
+      <Route path="/app/achievements">{() => <ProtectedRoute component={Achievements} />}</Route>
+      <Route path="/app/buddy-application">{() => <ProtectedRoute component={BuddyApplication} />}</Route>
+      <Route path="/app/event-menu">{() => <ProtectedPage><EventMenuPlanner /></ProtectedPage>}</Route>
+      <Route path="/app/saved-events">{() => <ProtectedPage><SavedEvents /></ProtectedPage>}</Route>
       <Route path="/register">{() => <Registration />}</Route>
       {/* Fallback */}
       <Route path="/404" component={NotFound} />

@@ -59,7 +59,7 @@ const SUPERMARKETS = [
   { id: "general", label: "General", emoji: "🛒" },
   { id: "mercadona", label: "Mercadona", emoji: "🟠" },
   { id: "lidl", label: "Lidl", emoji: "🔵" },
-  { id: "carrefour", label: "Carrefour", emoji: "🔴" },
+  { id: "/app/carrefour", label: "Carrefour", emoji: "🔴" },
   { id: "alcampo", label: "Alcampo", emoji: "🟡" },
   { id: "dia", label: "Día", emoji: "🟢" },
   { id: "el_corte_ingles", label: "El Corte Inglés", emoji: "🟤" },
@@ -283,7 +283,7 @@ export default function MenuLibrary() {
       {/* Header */}
       <div className="bg-white border-b sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-3">
-          <Link href="/menus">
+          <Link href="/app/menus">
             <button className="text-muted-foreground hover:text-foreground">
               ← Volver
             </button>
