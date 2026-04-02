@@ -341,3 +341,72 @@ describe("admin", () => {
     expect(typeof result.totalUsers).toBe("number");
   });
 });
+
+// ─── Metrics ─────────────────────────────────────────────────────────────────
+describe("metrics", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("add validates that at least one field is provided", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    await expect(
+      caller.metrics.add({ date: "2026-04-02" })
+    ).rejects.toThrow("Debes proporcionar al menos una medición o nota");
+  });
+
+  it("add validates weight range (20-500kg)", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    await expect(
+      caller.metrics.add({ date: "2026-04-02", weight: 10 })
+    ).rejects.toThrow("Peso mínimo 20kg");
+    await expect(
+      caller.metrics.add({ date: "2026-04-02", weight: 600 })
+    ).rejects.toThrow("Peso máximo 500kg");
+  });
+
+  it("add validates date format (YYYY-MM-DD)", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    await expect(
+      caller.metrics.add({ date: "02-04-2026", weight: 70 })
+    ).rejects.toThrow("Formato de fecha inválido");
+  });
+
+  it("add validates BMI range (10-80)", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    await expect(
+      caller.metrics.add({ date: "2026-04-02", bmi: 5 })
+    ).rejects.toThrow("IMC mínimo 10");
+    await expect(
+      caller.metrics.add({ date: "2026-04-02", bmi: 90 })
+    ).rejects.toThrow("IMC máximo 80");
+  });
+});
+
+// ─── BuddyApplications ───────────────────────────────────────────────────────
+describe("buddyApplications", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("submitApplication requires displayName", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    await expect(
+      caller.buddyApplications.submitApplication({ type: "expert", displayName: "A" })
+    ).rejects.toThrow();
+  });
+
+  it("getMyApplication requires valid type", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    // Should throw zod validation error for invalid type
+    await expect(
+      (caller.buddyApplications.getMyApplication as any)({ type: "invalid" })
+    ).rejects.toThrow();
+  });
+});

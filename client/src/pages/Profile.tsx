@@ -373,22 +373,45 @@ export default function Profile() {
     );
   }
 
+  // Calculate profile completion percentage
+  const criticalFields = [
+    name, height, weight, gender, birthYear, mainGoal, activityLevel, cookingLevel, dailyMeals,
+    workType, sleepHours, stressLevel, waterIntake, mealPrepTime, budgetPerWeek
+  ];
+  const filledFields = criticalFields.filter(f => f && f.toString().trim() !== "").length;
+  const completionPercent = Math.round((filledFields / criticalFields.length) * 100);
+
   const card: React.CSSProperties = { background: "white", borderRadius: "18px", padding: "20px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", marginBottom: "16px" };
 
   return (
     <div style={{ maxWidth: "600px", margin: "0 auto", padding: "16px" }}>
       {/* Header */}
-      <div style={{ ...card, display: "flex", alignItems: "center", gap: "16px" }}>
-        <div style={{ width: "64px", height: "64px", borderRadius: "50%", background: "linear-gradient(135deg, #F97316, #FB923C)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", fontWeight: 800, color: "white", flexShrink: 0 }}>
-          {(user?.name || user?.email || "U")[0].toUpperCase()}
+      <div style={{ ...card }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: completionPercent < 100 ? "14px" : "0" }}>
+          <div style={{ width: "64px", height: "64px", borderRadius: "50%", background: "linear-gradient(135deg, #F97316, #FB923C)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", fontWeight: 800, color: "white", flexShrink: 0 }}>
+            {(user?.name || user?.email || "U")[0].toUpperCase()}
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ margin: 0, fontSize: "18px", fontWeight: 800, color: "#1a1a1a" }}>{user?.name || "Mi perfil"}</p>
+            <p style={{ margin: "2px 0 0", fontSize: "13px", color: "#9ca3af" }}>{user?.email}</p>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "6px" }}>
+              <div style={{ flex: 1, height: "6px", borderRadius: "3px", background: "#f3f4f6", overflow: "hidden" }}>
+                <div style={{ height: "100%", width: `${completionPercent}%`, borderRadius: "3px", background: completionPercent === 100 ? "#22c55e" : "linear-gradient(90deg, #F97316, #FB923C)", transition: "width 0.5s ease" }} />
+              </div>
+              <span style={{ fontSize: "12px", fontWeight: 700, color: completionPercent === 100 ? "#22c55e" : "#F97316", flexShrink: 0 }}>{completionPercent}%</span>
+            </div>
+          </div>
+          <button onClick={logout} style={{ padding: "8px 14px", borderRadius: "10px", border: "1.5px solid #fee2e2", background: "white", color: "#ef4444", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>
+            Salir
+          </button>
         </div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ margin: 0, fontSize: "18px", fontWeight: 800, color: "#1a1a1a" }}>{user?.name || "Mi perfil"}</p>
-          <p style={{ margin: "2px 0 0", fontSize: "13px", color: "#9ca3af" }}>{user?.email}</p>
-        </div>
-        <button onClick={logout} style={{ padding: "8px 14px", borderRadius: "10px", border: "1.5px solid #fee2e2", background: "white", color: "#ef4444", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>
-          Salir
-        </button>
+        {completionPercent < 100 && (
+          <div style={{ padding: "10px 14px", borderRadius: "10px", background: "rgba(249,115,22,0.08)", border: "1px solid rgba(249,115,22,0.2)" }}>
+            <p style={{ margin: 0, fontSize: "12px", color: "#F97316", fontWeight: 600 }}>
+              💡 Completa tu perfil para recibir recomendaciones personalizadas. Faltan {criticalFields.length - filledFields} campos clave.
+            </p>
+          </div>
+        )}
       </div>
 
       {/* Tab bar */}

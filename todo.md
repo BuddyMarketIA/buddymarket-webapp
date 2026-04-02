@@ -567,3 +567,21 @@
 - [x] Frontend: Confirmación antes de eliminar en Listas de Compra
 - [x] Frontend: Mejorar visualización del plan actual en Suscripción
 - [x] Frontend: Mejorar estado vacío de recomendaciones en Dashboard con CTA a completar perfil
+
+## Sprint: Mejoras adicionales (en progreso)
+- [x] Backend: Validación de rangos en métricas (peso 20-500kg, IMC 10-80, etc.)
+- [x] Backend: Validación de fechas en inventario (formato YYYY-MM-DD)
+- [x] Backend: Validación de fechas en mealLogs (formato YYYY-MM-DD)
+- [x] Backend: Validación de raciones en mealLogs (0.1-20)
+- [x] Backend: Validación de calorías en mealLogs (0-10000)
+- [x] Backend: Validación de cantidades en inventario (0-99999)
+- [x] Frontend: Barra de progreso de completitud de perfil en Profile.tsx
+- [x] Frontend: Aviso de campos pendientes en perfil
+- [ ] Backend: Endpoint para eliminar cuenta de usuario
+- [ ] Backend: Mejorar manejo de errores en endpoints de IA (timeout, fallback)
+- [ ] Frontend: BuddyApplication formulario de 3 pasos con indicador de progreso
+- [ ] Frontend: Métricas mostrar solo campos relevantes según tipo
+- [ ] Frontend: Añadir breadcrumbs o título de sección en todas las páginas
+- [x] Tests: Añadir test para endpoint de métricas
+- [x] Tests: Añadir test para endpoint de BuddyApplication
+- [x] Tests: 25/25 tests pasando

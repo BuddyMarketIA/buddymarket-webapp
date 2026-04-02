@@ -827,13 +827,13 @@ export const appRouter = router({
       .input(
         z.object({
           ingredientId: z.number().optional(),
-          customName: z.string().optional(),
-          amount: z.number(),
+          customName: z.string().max(100, "Nombre máximo 100 caracteres").optional(),
+          amount: z.number().min(0, "Cantidad no puede ser negativa").max(99999, "Cantidad demasiado grande"),
           measureId: z.number().optional(),
           storageLocationId: z.number().optional(),
-          expirationDate: z.string().optional(),
-          purchaseDate: z.string().optional(),
-          notes: z.string().optional(),
+          expirationDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Formato de fecha inválido").optional(),
+          purchaseDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Formato de fecha inválido").optional(),
+          notes: z.string().max(200, "Notas máximo 200 caracteres").optional(),
         })
       )
       .mutation(({ ctx, input }) => {
@@ -847,10 +847,10 @@ export const appRouter = router({
       .input(
         z.object({
           id: z.number(),
-          amount: z.number().optional(),
-          expirationDate: z.string().optional(),
+          amount: z.number().min(0, "Cantidad no puede ser negativa").max(99999).optional(),
+          expirationDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Formato de fecha inválido").optional(),
           storageLocationId: z.number().optional(),
-          notes: z.string().optional(),
+          notes: z.string().max(200, "Notas máximo 200 caracteres").optional(),
         })
       )
       .mutation(({ input }) => {
@@ -958,16 +958,16 @@ Si no puedes detectar productos, devuelve {"products": []}. No incluyas texto ad
       .input(
         z.object({
           recipeId: z.number().optional(),
-          customMealName: z.string().optional(),
+          customMealName: z.string().max(100, "Nombre máximo 100 caracteres").optional(),
           dayPartId: z.number().optional(),
-          logDate: z.string(),
-          servings: z.number().optional(),
-          calories: z.number().optional(),
-          proteins: z.number().optional(),
-          carbohydrates: z.number().optional(),
-          fats: z.number().optional(),
-          notes: z.string().optional(),
-          photoUrl: z.string().optional(),
+          logDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Formato de fecha inválido (YYYY-MM-DD)"),
+          servings: z.number().min(0.1, "Raciones mínimas 0.1").max(20, "Raciones máximas 20").optional(),
+          calories: z.number().min(0, "Calorías no pueden ser negativas").max(10000, "Calorías demasiado altas").optional(),
+          proteins: z.number().min(0).max(1000).optional(),
+          carbohydrates: z.number().min(0).max(1000).optional(),
+          fats: z.number().min(0).max(1000).optional(),
+          notes: z.string().max(300, "Notas máximo 300 caracteres").optional(),
+          photoUrl: z.string().url("URL de foto inválida").optional(),
         })
       )
       .mutation(({ ctx, input }) => {
@@ -1452,24 +1452,24 @@ Si no puedes detectar productos, devuelve {"products": []}. No incluyas texto ad
   metrics: router({
     add: protectedProcedure
       .input(z.object({
-        date: z.string(), // ISO date string YYYY-MM-DD
-        weight: z.number().optional(),
-        bodyFat: z.number().optional(),
-        muscleMass: z.number().optional(),
-        bmi: z.number().optional(),
-        waist: z.number().optional(),
-        hip: z.number().optional(),
-        chest: z.number().optional(),
-        arm: z.number().optional(),
-        thigh: z.number().optional(),
-        calf: z.number().optional(),
-        neck: z.number().optional(),
-        visceralFat: z.number().optional(),
-        boneMass: z.number().optional(),
-        waterPercentage: z.number().optional(),
-        metabolicAge: z.number().optional(),
-        basalMetabolism: z.number().optional(),
-        notes: z.string().optional(),
+        date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Formato de fecha inválido (YYYY-MM-DD)"),
+        weight: z.number().min(20, "Peso mínimo 20kg").max(500, "Peso máximo 500kg").optional(),
+        bodyFat: z.number().min(1, "% grasa mínimo 1%").max(70, "% grasa máximo 70%").optional(),
+        muscleMass: z.number().min(5, "Masa muscular mínima 5kg").max(200, "Masa muscular máxima 200kg").optional(),
+        bmi: z.number().min(10, "IMC mínimo 10").max(80, "IMC máximo 80").optional(),
+        waist: z.number().min(30, "Cintura mínima 30cm").max(300, "Cintura máxima 300cm").optional(),
+        hip: z.number().min(30, "Cadera mínima 30cm").max(300, "Cadera máxima 300cm").optional(),
+        chest: z.number().min(30, "Pecho mínimo 30cm").max(300, "Pecho máximo 300cm").optional(),
+        arm: z.number().min(10, "Brazo mínimo 10cm").max(100, "Brazo máximo 100cm").optional(),
+        thigh: z.number().min(10, "Muslo mínimo 10cm").max(150, "Muslo máximo 150cm").optional(),
+        calf: z.number().min(10, "Gemelo mínimo 10cm").max(100, "Gemelo máximo 100cm").optional(),
+        neck: z.number().min(10, "Cuello mínimo 10cm").max(80, "Cuello máximo 80cm").optional(),
+        visceralFat: z.number().min(1, "Grasa visceral mínima 1").max(30, "Grasa visceral máxima 30").optional(),
+        boneMass: z.number().min(0.5, "Masa ósea mínima 0.5kg").max(10, "Masa ósea máxima 10kg").optional(),
+        waterPercentage: z.number().min(20, "% agua mínimo 20%").max(80, "% agua máximo 80%").optional(),
+        metabolicAge: z.number().min(10, "Edad metabólica mínima 10").max(100, "Edad metabólica máxima 100").optional(),
+        basalMetabolism: z.number().min(500, "Metabolismo basal mínimo 500kcal").max(5000, "Metabolismo basal máximo 5000kcal").optional(),
+        notes: z.string().max(500, "Notas máximo 500 caracteres").optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         // Validar que al menos un campo numérico esté presente
