@@ -60,8 +60,7 @@ const EVENT_TYPES = [
   { id: "barbacoa", label: "Barbacoa", emoji: "🍖", desc: "Parrilla y brasa" },
   { id: "brunch", label: "Brunch", emoji: "🥞", desc: "Brunch dominical" },
   { id: "aperitivo", label: "Aperitivo", emoji: "🫒", desc: "Vermut y tapas" },
-  { id: "comunion", label: "Comunión", emoji: "✝️", desc: "Banquete de comunión" },
-  { id: "boda", label: "Boda", emoji: "💍", desc: "Banquete nupcial" },
+
   { id: "cena_romantica", label: "Cena romántica", emoji: "🕯️", desc: "Para dos" },
   { id: "semana_santa", label: "Semana Santa", emoji: "🐟", desc: "Menú de Cuaresma" },
   { id: "otro", label: "Otro evento", emoji: "🎉", desc: "Personaliza tu evento" },

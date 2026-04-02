@@ -2638,8 +2638,6 @@ Devuelve SOLO JSON válido con esta estructura exacta:
           barbacoa: "Barbacoa",
           navidad: "Cena/Comida de Navidad",
           cumpleanos: "Cumpleaños",
-          comunion: "Comunión",
-          boda: "Boda",
           brunch: "Brunch dominical",
           aperitivo: "Aperitivo/Vermut",
           cena_romantica: "Cena romántica",
