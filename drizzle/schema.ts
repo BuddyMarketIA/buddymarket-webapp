@@ -297,6 +297,33 @@ export const ingredients = mysqlTable("ingredients", {
   fiber: float("fiber"),
   sugars: float("sugars"),
   sodium: float("sodium"),
+  // Extended nutritional info per 100g
+  potassium: float("potassium"),       // mg
+  calcium: float("calcium"),           // mg
+  iron: float("iron"),                 // mg
+  magnesium: float("magnesium"),       // mg
+  phosphorus: float("phosphorus"),     // mg
+  zinc: float("zinc"),                 // mg
+  vitaminC: float("vitaminC"),         // mg
+  vitaminA: float("vitaminA"),         // mcg RAE
+  vitaminD: float("vitaminD"),         // mcg
+  vitaminE: float("vitaminE"),         // mg
+  vitaminK: float("vitaminK"),         // mcg
+  vitaminB1: float("vitaminB1"),       // mg (tiamina)
+  vitaminB2: float("vitaminB2"),       // mg (riboflavina)
+  vitaminB3: float("vitaminB3"),       // mg (niacina)
+  vitaminB6: float("vitaminB6"),       // mg
+  vitaminB12: float("vitaminB12"),     // mcg
+  folate: float("folate"),             // mcg
+  cholesterol: float("cholesterol"),   // mg
+  omega3: float("omega3"),             // g
+  omega6: float("omega6"),             // g
+  // Classification
+  category: varchar("category", { length: 64 }),  // frutas, verduras, carnes, lácteos, cereales, legumbres, etc.
+  isVegan: boolean("isVegan").default(false),
+  isVegetarian: boolean("isVegetarian").default(false),
+  isGlutenFree: boolean("isGlutenFree").default(false),
+  isDairyFree: boolean("isDairyFree").default(false),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

@@ -3,25 +3,37 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import ShareRecipeButton from "@/components/ShareRecipeButton";
 import { Link, useLocation, useParams } from "wouter";
 import { toast } from "sonner";
+import { useState, useMemo } from "react";
 import {
   ArrowLeftIcon,
-  ClockIcon,
-  UserGroupIcon,
   HeartIcon,
   PencilIcon,
   TrashIcon,
+  ShoppingCartIcon,
+  CheckCircleIcon,
 } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartSolid } from "@heroicons/react/24/solid";
+
+type Tab = "ingredients" | "instructions" | "nutrition";
 
 export default function RecipeDetail() {
   const { id } = useParams<{ id: string }>();
   const [, navigate] = useLocation();
   const { user } = useAuth();
+  const [activeTab, setActiveTab] = useState<Tab>("ingredients");
+  const [servings, setServings] = useState<number | null>(null);
+  const [loggedMeal, setLoggedMeal] = useState(false);
 
   const { data: recipe, isLoading } = trpc.recipes.getById.useQuery(
     { id: Number(id) },
     { enabled: !!id }
   );
+
+  // Get user inventory to check stock
+  const { data: inventoryItems } = trpc.inventory.list.useQuery(undefined, {
+    enabled: !!user,
+  });
+
   const utils = trpc.useUtils();
 
   const toggleFav = trpc.recipes.toggleFavorite.useMutation({
@@ -37,6 +49,28 @@ export default function RecipeDetail() {
       navigate("/app/recipes");
     },
   });
+
+  const logMeal = trpc.mealLogs.add.useMutation({
+    onSuccess: () => {
+      setLoggedMeal(true);
+      toast.success("¡Plato registrado en tu diario!");
+    },
+  });
+
+  // Compute effective servings (default to recipe.servings)
+  const baseServings = recipe?.servings ?? 1;
+  const currentServings = servings ?? baseServings;
+  const ratio = currentServings / baseServings;
+
+  // Build inventory set of ingredient IDs for quick lookup
+  const inventoryIngredientIds = useMemo(() => {
+    if (!inventoryItems) return new Set<number>();
+    return new Set(
+      inventoryItems
+        .filter((item) => item.ingredient?.id != null)
+        .map((item) => item.ingredient!.id)
+    );
+  }, [inventoryItems]);
 
   if (isLoading) {
     return (
@@ -61,183 +95,366 @@ export default function RecipeDetail() {
 
   const isOwner = user?.id === recipe.userId;
   const totalTime = (recipe.preparationTime || 0) + (recipe.cookTime || 0);
-  const difficultyLabel: Record<string, string> = { easy: "Fácil", medium: "Media", hard: "Difícil" };
-  const difficultyColor: Record<string, string> = {
-    easy: "bg-orange-100 text-orange-700",
-    medium: "bg-yellow-100 text-yellow-700",
-    hard: "bg-red-100 text-red-700",
+
+  // Nutritional values scaled to current servings
+  const nutrition = {
+    calories: recipe.caloriesPerServing ? Math.round(recipe.caloriesPerServing * ratio) : null,
+    proteins: recipe.proteinsPerServing ? +(recipe.proteinsPerServing * ratio).toFixed(1) : null,
+    carbs: recipe.carbsPerServing ? +(recipe.carbsPerServing * ratio).toFixed(1) : null,
+    fats: recipe.fatsPerServing ? +(recipe.fatsPerServing * ratio).toFixed(1) : null,
+    fiber: recipe.fiberPerServing ? +(recipe.fiberPerServing * ratio).toFixed(1) : null,
   };
 
-  return (
-    <div className="vively-page">
-      {/* Back */}
-      <Link href="/app/recipes" className="mb-4 flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-gray-900">
-        <ArrowLeftIcon className="h-4 w-4" />
-        Volver a recetas
-      </Link>
+  const hasNutrition =
+    nutrition.calories || nutrition.proteins || nutrition.carbs || nutrition.fats;
 
-      {/* Header */}
-      <div className="mb-5">
-        <div className="mb-2 flex flex-wrap gap-2">
-          {recipe.difficulty && (
-            <span className={`rounded-full px-2.5 py-0.5 text-xs font-semibold ${difficultyColor[recipe.difficulty as string] || "bg-gray-100 text-gray-600"}`}>
-              {difficultyLabel[recipe.difficulty as string] || recipe.difficulty}
-            </span>
-          )}
-          {recipe.isPublic && (
-            <span className="rounded-full bg-blue-50 px-2.5 py-0.5 text-xs font-semibold text-blue-600">Pública</span>
+  // Parse ingredientsJson if no structured ingredients
+  const structuredIngredients: Array<{
+    id?: number;
+    name: string;
+    amount: number | null;
+    unit: string;
+    ingredientId?: number;
+  }> = useMemo(() => {
+    if (recipe.ingredients && recipe.ingredients.length > 0) {
+      return recipe.ingredients.map((ing: any) => ({
+        id: ing.id,
+        name: ing.ingredient?.nameEs || ing.customName || "Ingrediente",
+        amount: ing.amount ?? null,
+        unit: ing.measure?.nameEs || "g",
+        ingredientId: ing.ingredientId,
+      }));
+    }
+    // Fallback: parse ingredientsJson
+    if (recipe.ingredientsJson) {
+      try {
+        const parsed = JSON.parse(recipe.ingredientsJson as string);
+        if (Array.isArray(parsed)) {
+          return parsed.map((item: any, i: number) => ({
+            id: i,
+            name: item.name || item.ingredient || "Ingrediente",
+            amount: item.amount ?? item.quantity ?? null,
+            unit: item.unit || "g",
+          }));
+        }
+      } catch {}
+    }
+    return [];
+  }, [recipe]);
+
+  // Parse instructionsJson if no structured steps
+  const structuredSteps: Array<{ stepNumber: number; instruction: string }> = useMemo(() => {
+    if (recipe.steps && recipe.steps.length > 0) {
+      return recipe.steps
+        .sort((a: any, b: any) => a.stepNumber - b.stepNumber)
+        .map((s: any) => ({ stepNumber: s.stepNumber, instruction: s.instruction || s.description || "" }));
+    }
+    if (recipe.instructionsJson) {
+      try {
+        const parsed = JSON.parse(recipe.instructionsJson as string);
+        if (Array.isArray(parsed)) {
+          return parsed.map((item: any, i: number) => ({
+            stepNumber: item.step ?? i + 1,
+            instruction: item.text || item.instruction || item.description || "",
+          }));
+        }
+      } catch {}
+    }
+    return [];
+  }, [recipe]);
+
+  const tabs: { key: Tab; label: string; extra?: string; icon?: string }[] = [
+    { key: "ingredients", label: "Ingredientes", extra: structuredIngredients.length > 0 ? String(structuredIngredients.length) : undefined },
+    { key: "instructions", label: "Instrucciones", extra: totalTime > 0 ? `${totalTime} min` : undefined },
+    { key: "nutrition", label: "Valores\nnutricionales", icon: "🍽️" },
+  ];
+
+  return (
+    <div className="vively-page pb-24" style={{ background: "#FAF8F5", minHeight: "100vh" }}>
+      {/* Back button */}
+      <div className="flex items-center justify-between mb-2">
+        <button
+          onClick={() => navigate("/app/recipes")}
+          className="flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-gray-900"
+        >
+          <ArrowLeftIcon className="h-4 w-4" />
+          Volver
+        </button>
+        <div className="flex items-center gap-2">
+          <button
+            onClick={() => toggleFav.mutate({ recipeId: recipe.id })}
+            className="rounded-full p-2 hover:bg-orange-50"
+          >
+            <HeartIcon className="h-5 w-5 text-gray-400" />
+          </button>
+          <ShareRecipeButton
+            recipeId={recipe.id}
+            recipeName={recipe.name}
+            recipeDescription={recipe.description ?? undefined}
+            variant="icon"
+          />
+          {isOwner && (
+            <>
+              <Link
+                href={`/app/recipes/${recipe.id}/edit`}
+                className="rounded-full p-2 hover:bg-orange-50"
+              >
+                <PencilIcon className="h-5 w-5 text-gray-400" />
+              </Link>
+              <button
+                onClick={() => {
+                  if (confirm("¿Eliminar esta receta?")) deleteRecipe.mutate({ id: recipe.id });
+                }}
+                className="rounded-full p-2 hover:bg-red-50"
+              >
+                <TrashIcon className="h-5 w-5 text-red-400" />
+              </button>
+            </>
           )}
         </div>
-        <h1 className="mb-2 text-2xl font-extrabold text-gray-900">{recipe.name}</h1>
-        {recipe.description && (
-          <p className="text-sm leading-relaxed text-gray-500">{recipe.description}</p>
-        )}
       </div>
 
-      {/* Stats row */}
-      <div className="mb-5 flex gap-3 overflow-x-auto pb-1">
-        {totalTime > 0 && (
-          <div className="flex shrink-0 items-center gap-1.5 rounded-2xl bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-700">
-            <ClockIcon className="h-4 w-4 text-[#F97316]" />
-            {totalTime} min
-          </div>
-        )}
-        {recipe.servings && (
-          <div className="flex shrink-0 items-center gap-1.5 rounded-2xl bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-700">
-            <UserGroupIcon className="h-4 w-4 text-[#F97316]" />
-            {recipe.servings} porciones
-          </div>
-        )}
-        {recipe.preparationTime && (
-          <div className="flex shrink-0 items-center gap-1.5 rounded-2xl bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-700">
-            🔪 Prep: {recipe.preparationTime} min
-          </div>
-        )}
-        {recipe.cookTime && (
-          <div className="flex shrink-0 items-center gap-1.5 rounded-2xl bg-gray-50 px-3 py-2 text-xs font-semibold text-gray-700">
-            🍳 Cocción: {recipe.cookTime} min
-          </div>
-        )}
-      </div>
-
-      {/* Action buttons */}
-      <div className="mb-6 flex flex-wrap gap-2">
-        <button
-          onClick={() => toggleFav.mutate({ recipeId: recipe.id })}
-          className="flex items-center gap-1.5 rounded-2xl border-2 border-gray-100 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:border-red-200 hover:text-red-500"
-        >
-          <HeartIcon className="h-4 w-4" />
-          Favorito
-        </button>
-        <ShareRecipeButton
-          recipeId={recipe.id}
-          recipeName={recipe.name}
-          recipeDescription={recipe.description ?? undefined}
-          variant="full"
-        />
-        {isOwner && (
-          <>
-            <Link
-              href={`/app/recipes/${recipe.id}/edit`}
-              className="flex items-center gap-1.5 rounded-2xl border-2 border-gray-100 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:border-[#F97316]"
-            >
-              <PencilIcon className="h-4 w-4" />
-              Editar
-            </Link>
-            <button
-              onClick={() => {
-                if (confirm("¿Eliminar esta receta?")) deleteRecipe.mutate({ id: recipe.id });
-              }}
-              className="flex items-center gap-1.5 rounded-2xl border-2 border-red-100 px-4 py-2.5 text-sm font-semibold text-red-500 hover:bg-red-50"
-            >
-              <TrashIcon className="h-4 w-4" />
-            </button>
-          </>
-        )}
-      </div>
-
-      {/* Nutrition */}
-      {(recipe.caloriesPerServing || recipe.proteinsPerServing || recipe.carbsPerServing || recipe.fatsPerServing) && (
-        <div className="mb-5 vively-card">
-          <h2 className="mb-3 text-sm font-bold text-gray-700">Información nutricional (por porción)</h2>
-          <div className="grid grid-cols-4 gap-2 text-center">
-            {[
-              { label: "Calorías", value: recipe.caloriesPerServing, unit: "kcal", color: "text-orange-500" },
-              { label: "Proteínas", value: recipe.proteinsPerServing, unit: "g", color: "text-blue-500" },
-              { label: "Carbos", value: recipe.carbsPerServing, unit: "g", color: "text-yellow-500" },
-              { label: "Grasas", value: recipe.fatsPerServing, unit: "g", color: "text-red-400" },
-            ].map((n) => n.value ? (
-              <div key={n.label} className="rounded-2xl bg-gray-50 p-2">
-                <p className={`text-base font-extrabold ${n.color}`}>{n.value}</p>
-                <p className="text-[13px] text-gray-400">{n.unit}</p>
-                <p className="text-[13px] font-semibold text-gray-600">{n.label}</p>
-              </div>
-            ) : null)}
-          </div>
+      {/* Recipe image */}
+      {recipe.imageUrl && (
+        <div className="mb-4 -mx-4 overflow-hidden" style={{ height: 220 }}>
+          <img
+            src={recipe.imageUrl}
+            alt={recipe.name}
+            className="w-full h-full object-cover"
+          />
         </div>
       )}
 
-      {/* Ingredients */}
-      <div className="mb-5 vively-card">
-        <h2 className="mb-3 text-sm font-bold text-gray-700">
-          Ingredientes
-          {recipe.servings && <span className="ml-1 font-normal text-gray-400">para {recipe.servings} personas</span>}
-        </h2>
-        {recipe.ingredients && recipe.ingredients.length > 0 ? (
-          <ul className="space-y-2">
-            {recipe.ingredients.map((ing: any, i: number) => (
-              <li key={i} className="flex items-center gap-2 text-sm">
-                <div className="h-1.5 w-1.5 shrink-0 rounded-full bg-[#F97316]" />
-                <span className="text-gray-700">
-                  {ing.amount && <span className="font-semibold">{ing.amount} </span>}
-                  {ing.measure?.nameEs && <span className="text-gray-500">{ing.measure.nameEs} de </span>}
-                  {ing.ingredient?.nameEs || ing.customName || "Ingrediente"}
-                </span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="text-sm text-gray-400">Sin ingredientes registrados</p>
+      {/* Title & meta */}
+      <div className="mb-3 px-1">
+        <h1 className="text-xl font-extrabold text-gray-900 mb-1">{recipe.name}</h1>
+        {recipe.description && (
+          <p className="text-sm text-gray-500 leading-relaxed">{recipe.description}</p>
         )}
       </div>
 
-      {/* Steps */}
-      {recipe.steps && recipe.steps.length > 0 && (
-        <div className="mb-5 vively-card">
-          <h2 className="mb-3 text-sm font-bold text-gray-700">Pasos de preparación</h2>
-          <ol className="space-y-4">
-            {recipe.steps
-              .sort((a: any, b: any) => a.stepNumber - b.stepNumber)
-              .map((step: any) => (
-                <li key={step.id} className="flex gap-3">
-                  <div className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-[#F97316] text-xs font-bold text-white">
+      {/* Meal time tags */}
+      {recipe.mealTime && recipe.mealTime !== "cualquiera" && (
+        <div className="flex flex-wrap gap-2 mb-4 px-1">
+          {recipe.mealTime === "desayuno" && <span className="rounded-full border border-gray-300 px-3 py-1 text-xs font-semibold text-gray-600">Desayuno</span>}
+          {recipe.mealTime === "comida" && <span className="rounded-full border border-gray-300 px-3 py-1 text-xs font-semibold text-gray-600">Almuerzo</span>}
+          {recipe.mealTime === "cena" && <span className="rounded-full border border-gray-300 px-3 py-1 text-xs font-semibold text-gray-600">Cena</span>}
+          {recipe.mealTime === "merienda" && <span className="rounded-full border border-gray-300 px-3 py-1 text-xs font-semibold text-gray-600">Merienda</span>}
+          {recipe.mealTime === "media_manana" && <span className="rounded-full border border-gray-300 px-3 py-1 text-xs font-semibold text-gray-600">Media mañana</span>}
+        </div>
+      )}
+
+      {/* 3-tab selector */}
+      <div className="mb-4 rounded-2xl overflow-hidden border border-gray-100 bg-white shadow-sm">
+        <div className="grid grid-cols-3">
+          {tabs.map((tab, idx) => {
+            const isActive = activeTab === tab.key;
+            return (
+              <button
+                key={tab.key}
+                onClick={() => setActiveTab(tab.key)}
+                className={`relative flex flex-col items-center justify-center py-3 px-2 text-center transition-all ${
+                  isActive
+                    ? "bg-[#F97316] text-white"
+                    : "bg-white text-[#F97316]"
+                } ${idx < 2 ? "border-r border-gray-100" : ""}`}
+              >
+                {tab.icon && (
+                  <span className="text-base mb-0.5">{tab.icon}</span>
+                )}
+                {tab.extra && (
+                  <span className={`text-base font-bold ${isActive ? "text-white" : "text-[#F97316]"}`}>
+                    {tab.extra}
+                  </span>
+                )}
+                <span className={`text-xs font-semibold leading-tight whitespace-pre-line ${isActive ? "text-white" : "text-gray-700"}`}>
+                  {tab.label}
+                </span>
+              </button>
+            );
+          })}
+        </div>
+      </div>
+
+      {/* TAB: Ingredients */}
+      {activeTab === "ingredients" && (
+        <div className="rounded-2xl bg-white shadow-sm p-4">
+          {/* Servings selector */}
+          <div className="flex items-center gap-4 mb-5">
+            <button
+              onClick={() => setServings(Math.max(1, currentServings - 1))}
+              className="h-9 w-9 rounded-full border-2 border-[#F97316] flex items-center justify-center text-[#F97316] text-xl font-bold hover:bg-orange-50"
+            >
+              −
+            </button>
+            <span className="text-lg font-bold text-gray-900">{currentServings} raciones</span>
+            <button
+              onClick={() => setServings(currentServings + 1)}
+              className="h-9 w-9 rounded-full border-2 border-[#F97316] flex items-center justify-center text-[#F97316] text-xl font-bold hover:bg-orange-50"
+            >
+              +
+            </button>
+          </div>
+
+          {/* Ingredient list */}
+          {structuredIngredients.length > 0 ? (
+            <ul className="divide-y divide-gray-50">
+              {structuredIngredients.map((ing, i) => {
+                const inStock = ing.ingredientId
+                  ? inventoryIngredientIds.has(ing.ingredientId)
+                  : false;
+                const scaledAmount = ing.amount != null
+                  ? +(ing.amount * ratio).toFixed(1)
+                  : null;
+                // Remove trailing .0
+                const displayAmount = scaledAmount != null
+                  ? (scaledAmount % 1 === 0 ? scaledAmount.toFixed(0) : scaledAmount.toFixed(1))
+                  : null;
+
+                return (
+                  <li key={i} className="flex items-center justify-between py-3">
+                    <div className="flex items-center gap-2 flex-1 min-w-0">
+                      <span className="font-semibold text-gray-900 text-sm truncate">{ing.name}</span>
+                      {user && (
+                        inStock ? (
+                          <span className="flex items-center gap-1 rounded-full bg-green-50 px-2 py-0.5 text-xs font-semibold text-green-600 shrink-0">
+                            <CheckCircleIcon className="h-3 w-3" />
+                            En stock
+                          </span>
+                        ) : (
+                          <span className="flex items-center gap-1 rounded-full bg-red-50 px-2 py-0.5 text-xs font-semibold text-red-500 shrink-0">
+                            <ShoppingCartIcon className="h-3 w-3" />
+                            Sin stock
+                          </span>
+                        )
+                      )}
+                    </div>
+                    {displayAmount != null && (
+                      <span className="ml-3 text-sm font-bold text-[#F97316] shrink-0">
+                        {displayAmount} <span className="font-normal text-gray-500">{ing.unit}</span>
+                      </span>
+                    )}
+                  </li>
+                );
+              })}
+            </ul>
+          ) : (
+            <p className="text-sm text-gray-400 text-center py-4">Sin ingredientes registrados</p>
+          )}
+
+          {/* "He comido este plato" button */}
+          <button
+            onClick={() => {
+              if (!user) {
+                toast.error("Inicia sesión para registrar comidas");
+                return;
+              }
+              if (loggedMeal) return;
+              logMeal.mutate({
+                recipeId: recipe.id,
+                servings: currentServings,
+                logDate: new Date().toISOString().slice(0, 10),
+              });
+            }}
+            className={`mt-5 w-full rounded-2xl border-2 py-3 text-sm font-bold flex items-center justify-center gap-2 transition-all ${
+              loggedMeal
+                ? "border-green-400 text-green-600 bg-green-50"
+                : "border-[#F97316] text-[#F97316] hover:bg-orange-50"
+            }`}
+          >
+            <CheckCircleIcon className="h-5 w-5" />
+            {loggedMeal ? "¡Registrado en el diario!" : "He comido este plato"}
+          </button>
+        </div>
+      )}
+
+      {/* TAB: Instructions */}
+      {activeTab === "instructions" && (
+        <div className="space-y-3">
+          {structuredSteps.length > 0 ? (
+            structuredSteps.map((step) => (
+              <div key={step.stepNumber} className="rounded-2xl bg-white shadow-sm p-4">
+                <div className="flex items-center gap-3 mb-2">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#F97316] text-sm font-bold text-white">
                     {step.stepNumber}
                   </div>
-                  <p className="pt-0.5 text-sm leading-relaxed text-gray-700">{step.description}</p>
-                </li>
-              ))}
-          </ol>
+                  <span className="font-bold text-gray-900 text-sm">Paso {step.stepNumber}</span>
+                </div>
+                <p className="text-sm leading-relaxed text-gray-700 pl-11">{step.instruction}</p>
+              </div>
+            ))
+          ) : (
+            <div className="rounded-2xl bg-white shadow-sm p-6 text-center">
+              <p className="text-sm text-gray-400">Sin instrucciones registradas</p>
+            </div>
+          )}
         </div>
       )}
 
-      {/* Allergies & Diet */}
-      {(recipe.allergies && recipe.allergies.length > 0) && (
-        <div className="vively-card">
-          <div>
-              <h3 className="mb-2 text-xs font-bold text-gray-500 uppercase tracking-wide">Contiene alérgenos</h3>
+      {/* TAB: Nutritional values */}
+      {activeTab === "nutrition" && (
+        <div className="rounded-2xl bg-white shadow-sm p-4">
+          {hasNutrition ? (
+            <>
+              <p className="text-sm font-bold text-[#F97316] mb-4">
+                Por ración{currentServings !== baseServings ? ` (×${currentServings})` : ""}
+              </p>
+              <ul className="divide-y divide-gray-50">
+                {[
+                  { label: "Grasas", value: nutrition.fats, unit: "g" },
+                  { label: "Carbohidratos", value: nutrition.carbs, unit: "g" },
+                  { label: "Proteínas", value: nutrition.proteins, unit: "g" },
+                  { label: "Fibra", value: nutrition.fiber, unit: "g" },
+                  { label: "Calorías", value: nutrition.calories, unit: "Kcal", highlight: true },
+                ].map((row) =>
+                  row.value != null ? (
+                    <li key={row.label} className="flex items-center justify-between py-3">
+                      <span className="text-sm text-gray-700">{row.label}</span>
+                      <span
+                        className={`text-sm font-bold ${
+                          row.highlight ? "text-[#F97316] text-base" : "text-gray-900"
+                        }`}
+                      >
+                        {row.value} {row.unit}
+                      </span>
+                    </li>
+                  ) : null
+                )}
+              </ul>
+            </>
+          ) : (
+            <div className="py-8 text-center">
+              <p className="text-2xl mb-2">🍽️</p>
+              <p className="text-sm font-semibold text-gray-700 mb-1">Sin datos nutricionales</p>
+              <p className="text-xs text-gray-400">
+                Esta receta aún no tiene información nutricional calculada.
+              </p>
+            </div>
+          )}
+
+          {/* Allergens */}
+          {recipe.allergies && recipe.allergies.length > 0 && (
+            <div className="mt-5 pt-4 border-t border-gray-100">
+              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">
+                Contiene alérgenos
+              </h3>
               <div className="flex flex-wrap gap-1.5">
                 {recipe.allergies.map((a: any) => (
-                  <span key={a.id} className="rounded-full bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-600">
+                  <span
+                    key={a.id}
+                    className="rounded-full bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-600"
+                  >
                     {a.nameEs}
                   </span>
                 ))}
               </div>
             </div>
+          )}
         </div>
       )}
 
-      <div className="vively-disclaimer">
-        <p>VIVELY no constituye asesoramiento nutricional profesional.</p>
+      <div className="vively-disclaimer mt-6">
+        <p>BuddyMarket no constituye asesoramiento nutricional profesional.</p>
       </div>
     </div>
   );

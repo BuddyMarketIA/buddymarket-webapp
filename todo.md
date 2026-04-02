@@ -932,3 +932,11 @@
 - [x] Centrar todos los modales/dialogs en pantalla (no pegados abajo en móvil)
 - [x] Hacer todos los campos del perfil opcionales (sin validaciones required)
 - [x] El porcentaje de completado del perfil no debe bloquear funciones
+
+## Sprint: BD de ingredientes nutricionales (03/04/2026)
+- [ ] Schema BD: tabla `ingredientNutrition` con campos nutricionales completos (calorías, proteínas, carbos, grasas, fibra, azúcares, sodio, vitaminas, minerales)
+- [ ] Generar 1500 ingredientes con valores nutricionales por 100g
+- [ ] Script de inserción masiva en BD
+- [ ] Vincular ingredientes de recetas con la tabla de nutrición
+- [ ] Actualizar cálculo nutricional de recetas para usar BD de ingredientes
+- [ ] UI: mostrar nutrición calculada desde BD de ingredientes en RecipeDetail
