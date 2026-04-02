@@ -257,7 +257,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
           </div>
           <div>
             <p style={{ margin: 0, fontSize: "17px", fontWeight: 900, color: "#1a1a1a", letterSpacing: "-0.03em" }}>BuddyMarket</p>
-            <p style={{ margin: 0, fontSize: "12px", color: "#F97316", fontWeight: 600 }}>Gestor Nutricional</p>
+            <p style={{ margin: 0, fontSize: "14px", color: "#F97316", fontWeight: 600 }}>Gestor Nutricional</p>
           </div>
         </div>
 
@@ -265,7 +265,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
         <nav style={{ flex: 1, padding: "12px" }}>
           {SIDEBAR_GROUPS.map((group, gi) => (
             <div key={group.label} style={{ marginBottom: "2px" }}>
-              <p style={{ margin: gi === 0 ? "4px 0 4px 16px" : "10px 0 4px 16px", fontSize: "10px", fontWeight: 800, color: "#9ca3af", letterSpacing: "0.08em", textTransform: "uppercase" }}>{group.label}</p>
+              <p style={{ margin: gi === 0 ? "4px 0 4px 16px" : "10px 0 4px 16px", fontSize: "14px", fontWeight: 800, color: "#9ca3af", letterSpacing: "0.08em", textTransform: "uppercase" }}>{group.label}</p>
               {group.items.filter(item => {
                 // Hide expert/maker dashboards if not approved
                 if (item.key === "buddy-expert-dashboard" && !isApprovedExpert) return false;
@@ -276,8 +276,8 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
                   return (
                     <a key={item.key} href={item.to} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
                       <div style={{ display: "flex", alignItems: "center", gap: "14px", padding: "11px 16px", borderRadius: "12px", background: "linear-gradient(135deg, rgba(249,115,22,0.08), rgba(251,146,60,0.06))", cursor: "pointer", marginBottom: "2px", border: "1px solid rgba(249,115,22,0.15)" }}>
-                        <span style={{ fontSize: "17px", width: "22px", textAlign: "center" }}>{item.emoji}</span>
-                        <span style={{ fontSize: "14px", fontWeight: 700, color: "#F97316" }}>{item.label}</span>
+                        <span style={{ fontSize: "19px", width: "24px", textAlign: "center" }}>{item.emoji}</span>
+                        <span style={{ fontSize: "15px", fontWeight: 700, color: "#F97316" }}>{item.label}</span>
                         <svg style={{ marginLeft: "auto" }} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
                       </div>
                     </a>
@@ -287,8 +287,8 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
                 return (
                   <Link key={item.key} href={item.to}>
                     <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 14px", borderRadius: "12px", background: active ? "rgba(249,115,22,0.10)" : "transparent", cursor: "pointer", marginBottom: "2px", transition: "background 0.15s" }}>
-                      <span style={{ fontSize: "16px", width: "20px", textAlign: "center" }}>{item.emoji}</span>
-                      <span style={{ fontSize: "14px", fontWeight: active ? 700 : 500, color: active ? "#F97316" : "#374151" }}>{item.label}</span>
+                      <span style={{ fontSize: "18px", width: "22px", textAlign: "center" }}>{item.emoji}</span>
+                      <span style={{ fontSize: "15px", fontWeight: active ? 700 : 500, color: active ? "#F97316" : "#374151" }}>{item.label}</span>
                       {active && <div style={{ marginLeft: "auto", width: "5px", height: "5px", borderRadius: "50%", background: "#F97316" }} />}
                     </div>
                   </Link>
@@ -299,8 +299,8 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
           <div style={{ height: "1px", background: "rgba(0,0,0,0.06)", margin: "10px 4px" }} />
           <Link href="/admin">
             <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 14px", borderRadius: "12px", background: location === "/admin" ? "rgba(249,115,22,0.10)" : "transparent", cursor: "pointer", marginBottom: "2px" }}>
-              <span style={{ fontSize: "16px", width: "20px", textAlign: "center" }}>🛡️</span>
-              <span style={{ fontSize: "14px", fontWeight: location === "/admin" ? 700 : 500, color: location === "/admin" ? "#F97316" : "#374151" }}>Administración</span>
+              <span style={{ fontSize: "18px", width: "22px", textAlign: "center" }}>🛡️</span>
+              <span style={{ fontSize: "15px", fontWeight: location === "/admin" ? 700 : 500, color: location === "/admin" ? "#F97316" : "#374151" }}>Administración</span>
             </div>
           </Link>
         </nav>
@@ -311,10 +311,10 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
             {userInitial}
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ margin: 0, fontSize: "14px", fontWeight: 700, color: "#1a1a1a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{userName}</p>
-            <p style={{ margin: 0, fontSize: "11px", color: "#9ca3af", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{userEmail}</p>
+            <p style={{ margin: 0, fontSize: "15px", fontWeight: 700, color: "#1a1a1a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{userName}</p>
+            <p style={{ margin: 0, fontSize: "13px", color: "#9ca3af", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{userEmail}</p>
           </div>
-          <div style={{ background: "#F97316", borderRadius: "8px", padding: "3px 8px", fontSize: "10px", fontWeight: 800, color: "white", letterSpacing: "0.05em" }}>PRO</div>
+          <div style={{ background: "#F97316", borderRadius: "8px", padding: "4px 10px", fontSize: "14px", fontWeight: 800, color: "white", letterSpacing: "0.05em" }}>PRO</div>
         </div>
       </div>
 
@@ -326,9 +326,9 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ margin: 0, fontSize: "13px", fontWeight: 800, color: "white" }}>Instalar BuddyMarket</p>
-            <p style={{ margin: 0, fontSize: "11px", color: "rgba(255,255,255,0.85)" }}>Acceso rápido desde tu pantalla de inicio</p>
+            <p style={{ margin: 0, fontSize: "14px", color: "rgba(255,255,255,0.85)" }}>Acceso rápido desde tu pantalla de inicio</p>
           </div>
-          <button onClick={handleInstall} style={{ background: "white", color: "#F97316", border: "none", borderRadius: "10px", padding: "7px 12px", fontSize: "12px", fontWeight: 800, cursor: "pointer", flexShrink: 0 }}>Instalar</button>
+          <button onClick={handleInstall} style={{ background: "white", color: "#F97316", border: "none", borderRadius: "10px", padding: "7px 12px", fontSize: "14px", fontWeight: 800, cursor: "pointer", flexShrink: 0 }}>Instalar</button>
           <button onClick={dismissInstallBanner} style={{ background: "rgba(255,255,255,0.2)", border: "none", borderRadius: "8px", width: "28px", height: "28px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
             <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
@@ -354,8 +354,8 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
             <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/favicon-192_4af8bf2b.png" alt="BuddyMarket" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           </div>
           <div style={{ minWidth: 0 }}>
-            <p style={{ margin: 0, fontSize: "11px", fontWeight: 600, color: "#9ca3af", letterSpacing: "0.02em" }}>BuddyMarket</p>
-            <p style={{ margin: 0, fontSize: "15px", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.02em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{pageTitle}</p>
+            <p style={{ margin: 0, fontSize: "14px", fontWeight: 600, color: "#9ca3af", letterSpacing: "0.02em" }}>BuddyMarket</p>
+            <p style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.02em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{pageTitle}</p>
           </div>
         </div>
 
@@ -386,7 +386,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
                 <Link key={item.key} href={item.to}>
                   <button style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "3px", padding: "6px 10px", borderRadius: "16px", border: "none", background: active ? "rgba(249,115,22,0.08)" : "transparent", cursor: "pointer", transition: "all 0.2s", minWidth: "52px" }}>
                     {item.icon(active)}
-                    <span style={{ fontSize: "10px", fontWeight: active ? 800 : 500, color: active ? "#F97316" : "#9ca3af", transition: "color 0.2s" }}>{item.label}</span>
+                    <span style={{ fontSize: "13px", fontWeight: active ? 800 : 500, color: active ? "#F97316" : "#9ca3af", transition: "color 0.2s" }}>{item.label}</span>
                   </button>
                 </Link>
               );

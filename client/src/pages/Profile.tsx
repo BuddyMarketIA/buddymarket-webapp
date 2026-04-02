@@ -39,7 +39,7 @@ function Field({ label, children, hint }: { label: string; children: React.React
     <div style={{ marginBottom: "18px" }}>
       <label style={{ display: "block", fontSize: "14px", fontWeight: 600, color: "#374151", marginBottom: "6px" }}>{label}</label>
       {children}
-      {hint && <p style={{ margin: "4px 0 0", fontSize: "12px", color: "#9ca3af" }}>{hint}</p>}
+      {hint && <p style={{ margin: "4px 0 0", fontSize: "14px", color: "#9ca3af" }}>{hint}</p>}
     </div>
   );
 }
@@ -430,7 +430,7 @@ export default function Profile() {
               <div style={{ flex: 1, height: "6px", borderRadius: "3px", background: "#f3f4f6", overflow: "hidden" }}>
                 <div style={{ height: "100%", width: `${completionPercent}%`, borderRadius: "3px", background: completionPercent === 100 ? "#22c55e" : "linear-gradient(90deg, #F97316, #FB923C)", transition: "width 0.5s ease" }} />
               </div>
-              <span style={{ fontSize: "12px", fontWeight: 700, color: completionPercent === 100 ? "#22c55e" : "#F97316", flexShrink: 0 }}>{completionPercent}%</span>
+              <span style={{ fontSize: "14px", fontWeight: 700, color: completionPercent === 100 ? "#22c55e" : "#F97316", flexShrink: 0 }}>{completionPercent}%</span>
             </div>
           </div>
           <button onClick={logout} style={{ padding: "8px 14px", borderRadius: "10px", border: "1.5px solid #fee2e2", background: "white", color: "#ef4444", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>
@@ -439,7 +439,7 @@ export default function Profile() {
         </div>
         {completionPercent < 100 && (
           <div style={{ padding: "12px 14px", borderRadius: "12px", background: "rgba(249,115,22,0.06)", border: "1px solid rgba(249,115,22,0.15)" }}>
-            <p style={{ margin: "0 0 10px", fontSize: "12px", color: "#F97316", fontWeight: 700 }}>
+            <p style={{ margin: "0 0 10px", fontSize: "14px", color: "#F97316", fontWeight: 700 }}>
               💡 Completa tu perfil para recibir recomendaciones personalizadas
             </p>
             <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
@@ -450,7 +450,7 @@ export default function Profile() {
                   <button
                     key={key}
                     onClick={() => setActiveTab(key)}
-                    style={{ display: "flex", alignItems: "center", gap: "5px", padding: "5px 10px", borderRadius: "20px", border: done ? "1.5px solid #22c55e" : "1.5px solid rgba(249,115,22,0.3)", background: done ? "rgba(34,197,94,0.08)" : "rgba(249,115,22,0.08)", color: done ? "#16a34a" : "#F97316", fontSize: "11px", fontWeight: 700, cursor: done ? "default" : "pointer" }}
+                    style={{ display: "flex", alignItems: "center", gap: "5px", padding: "5px 10px", borderRadius: "20px", border: done ? "1.5px solid #22c55e" : "1.5px solid rgba(249,115,22,0.3)", background: done ? "rgba(34,197,94,0.08)" : "rgba(249,115,22,0.08)", color: done ? "#16a34a" : "#F97316", fontSize: "14px", fontWeight: 700, cursor: done ? "default" : "pointer" }}
                   >
                     {done ? "✓" : "○"} {tab?.label} {done ? "" : `(${val.filled}/${val.total})`}
                   </button>

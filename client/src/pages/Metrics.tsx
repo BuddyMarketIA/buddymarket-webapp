@@ -248,7 +248,7 @@ export default function Metrics() {
                   >
                     <span className="text-lg">{t.emoji}</span>
                     <span className="text-xs font-semibold leading-tight">{t.label}</span>
-                    <span className="text-[10px] leading-tight opacity-70 hidden sm:block">{t.desc}</span>
+                    <span className="text-[13px] leading-tight opacity-70 hidden sm:block">{t.desc}</span>
                   </button>
                 ))}
               </div>

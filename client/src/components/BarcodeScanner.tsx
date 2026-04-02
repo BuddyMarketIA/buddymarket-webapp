@@ -224,7 +224,7 @@ export default function BarcodeScanner({ onProductFound, onClose }: BarcodeScann
                   </div>
                   {scanning && (
                     <div style={{ position: "absolute", bottom: "12px", left: 0, right: 0, textAlign: "center" }}>
-                      <span style={{ background: "rgba(0,0,0,0.6)", color: "white", fontSize: "12px", fontWeight: 700, padding: "4px 12px", borderRadius: "20px" }}>
+                      <span style={{ background: "rgba(0,0,0,0.6)", color: "white", fontSize: "14px", fontWeight: 700, padding: "4px 12px", borderRadius: "20px" }}>
                         Apunta al código de barras
                       </span>
                     </div>
@@ -277,7 +277,7 @@ export default function BarcodeScanner({ onProductFound, onClose }: BarcodeScann
                   Buscar
                 </button>
               </div>
-              <p style={{ margin: "10px 0 0", fontSize: "12px", color: "#9CA3AF" }}>
+              <p style={{ margin: "10px 0 0", fontSize: "14px", color: "#9CA3AF" }}>
                 💡 Más de 3 millones de productos en la base de datos Open Food Facts
               </p>
             </div>

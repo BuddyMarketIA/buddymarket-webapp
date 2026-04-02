@@ -129,12 +129,12 @@ export default function Subscription() {
               className={`relative rounded-3xl border-2 bg-white p-5 transition-all ${plan.color} ${plan.highlight ? "shadow-lg shadow-[#F97316]/10" : "shadow-sm"}`}
             >
               {plan.highlight && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#F97316] px-4 py-1 text-[11px] font-bold text-white shadow">
+                <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#F97316] px-4 py-1 text-[13px] font-bold text-white shadow">
                   MÁS POPULAR
                 </div>
               )}
               {isCurrent && (
-                <div className="absolute -top-3 right-4 rounded-full bg-gray-900 px-3 py-1 text-[11px] font-bold text-white">
+                <div className="absolute -top-3 right-4 rounded-full bg-gray-900 px-3 py-1 text-[13px] font-bold text-white">
                   ACTIVO
                 </div>
               )}

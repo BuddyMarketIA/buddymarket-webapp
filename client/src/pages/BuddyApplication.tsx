@@ -94,13 +94,13 @@ function StepIndicator({ current, total, steps }: { current: number; total: numb
                 background: done ? "#F97316" : active ? "white" : "#f3f4f6",
                 border: active ? "2.5px solid #F97316" : done ? "none" : "2px solid #e5e7eb",
                 display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: "12px", fontWeight: 700, color: done ? "white" : active ? "#F97316" : "#9ca3af",
+                fontSize: "14px", fontWeight: 700, color: done ? "white" : active ? "#F97316" : "#9ca3af",
                 transition: "all 0.3s ease",
                 boxShadow: active ? "0 0 0 4px rgba(249,115,22,0.15)" : "none"
               }}>
                 {done ? <Check style={{ width: "14px", height: "14px" }} /> : i + 1}
               </div>
-              <p style={{ margin: "4px 0 0", fontSize: "10px", fontWeight: active ? 700 : 500, color: active ? "#F97316" : "#9ca3af", textAlign: i === 0 ? "left" : i === steps.length - 1 ? "right" : "center" }}>
+              <p style={{ margin: "4px 0 0", fontSize: "13px", fontWeight: active ? 700 : 500, color: active ? "#F97316" : "#9ca3af", textAlign: i === 0 ? "left" : i === steps.length - 1 ? "right" : "center" }}>
                 {step.title}
               </p>
             </div>
@@ -217,7 +217,7 @@ export default function BuddyApplication({ type }: { type?: AppType }) {
       {/* Type selector */}
       {(!currentApp || currentApp.status === "rejected") && (
         <div style={{ ...card }}>
-          <p style={{ margin: "0 0 12px", fontSize: "12px", fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.08em" }}>Elige tu rol</p>
+          <p style={{ margin: "0 0 12px", fontSize: "14px", fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.08em" }}>Elige tu rol</p>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
             <button
               onClick={() => { setActiveType("expert"); setStep(0); }}
@@ -232,12 +232,12 @@ export default function BuddyApplication({ type }: { type?: AppType }) {
                 <Star style={{ width: "16px", height: "16px", color: "#7c3aed" }} />
                 <span style={{ fontWeight: 700, fontSize: "14px", color: "#1a1a1a" }}>BuddyExpert</span>
                 {expertAppQuery.data && (
-                  <span style={{ marginLeft: "auto", fontSize: "10px", padding: "2px 6px", borderRadius: "6px", background: expertAppQuery.data.status === "approved" ? "#dcfce7" : "#fef9c3", color: expertAppQuery.data.status === "approved" ? "#166534" : "#854d0e", fontWeight: 700 }}>
+                  <span style={{ marginLeft: "auto", fontSize: "13px", padding: "2px 6px", borderRadius: "6px", background: expertAppQuery.data.status === "approved" ? "#dcfce7" : "#fef9c3", color: expertAppQuery.data.status === "approved" ? "#166534" : "#854d0e", fontWeight: 700 }}>
                     {expertAppQuery.data.status === "approved" ? "✓" : "⏳"}
                   </span>
                 )}
               </div>
-              <p style={{ margin: 0, fontSize: "12px", color: "#6b7280" }}>Nutricionistas y expertos en salud</p>
+              <p style={{ margin: 0, fontSize: "14px", color: "#6b7280" }}>Nutricionistas y expertos en salud</p>
             </button>
             <button
               onClick={() => { setActiveType("maker"); setStep(0); }}
@@ -252,12 +252,12 @@ export default function BuddyApplication({ type }: { type?: AppType }) {
                 <ChefHat style={{ width: "16px", height: "16px", color: "#F97316" }} />
                 <span style={{ fontWeight: 700, fontSize: "14px", color: "#1a1a1a" }}>BuddyMaker</span>
                 {makerAppQuery.data && (
-                  <span style={{ marginLeft: "auto", fontSize: "10px", padding: "2px 6px", borderRadius: "6px", background: makerAppQuery.data.status === "approved" ? "#dcfce7" : "#fef9c3", color: makerAppQuery.data.status === "approved" ? "#166534" : "#854d0e", fontWeight: 700 }}>
+                  <span style={{ marginLeft: "auto", fontSize: "13px", padding: "2px 6px", borderRadius: "6px", background: makerAppQuery.data.status === "approved" ? "#dcfce7" : "#fef9c3", color: makerAppQuery.data.status === "approved" ? "#166534" : "#854d0e", fontWeight: 700 }}>
                     {makerAppQuery.data.status === "approved" ? "✓" : "⏳"}
                   </span>
                 )}
               </div>
-              <p style={{ margin: 0, fontSize: "12px", color: "#6b7280" }}>Creadores de recetas y contenido</p>
+              <p style={{ margin: 0, fontSize: "14px", color: "#6b7280" }}>Creadores de recetas y contenido</p>
             </button>
           </div>
         </div>
@@ -314,7 +314,7 @@ export default function BuddyApplication({ type }: { type?: AppType }) {
                   onChange={f("displayName")}
                   style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid #e5e7eb", fontSize: "15px", background: "white", outline: "none", boxSizing: "border-box" }}
                 />
-                <p style={{ margin: "4px 0 0", fontSize: "12px", color: "#9ca3af" }}>Así te verán los usuarios en la plataforma</p>
+                <p style={{ margin: "4px 0 0", fontSize: "14px", color: "#9ca3af" }}>Así te verán los usuarios en la plataforma</p>
               </div>
 
               {activeType === "expert" && (
@@ -471,7 +471,7 @@ export default function BuddyApplication({ type }: { type?: AppType }) {
 
               {/* Summary before submit */}
               <div style={{ padding: "14px", borderRadius: "14px", background: "#f9fafb", border: "1.5px solid #e5e7eb" }}>
-                <p style={{ margin: "0 0 8px", fontSize: "12px", fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.06em" }}>Resumen de tu solicitud</p>
+                <p style={{ margin: "0 0 8px", fontSize: "14px", fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.06em" }}>Resumen de tu solicitud</p>
                 <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                   <p style={{ margin: 0, fontSize: "13px", color: "#374151" }}><strong>Rol:</strong> {activeType === "expert" ? "BuddyExpert" : "BuddyMaker"}</p>
                   <p style={{ margin: 0, fontSize: "13px", color: "#374151" }}><strong>Nombre:</strong> {form.displayName || "—"}</p>
@@ -511,7 +511,7 @@ export default function BuddyApplication({ type }: { type?: AppType }) {
             </button>
           </div>
 
-          <p style={{ margin: "12px 0 0", fontSize: "12px", color: "#9ca3af", textAlign: "center" }}>
+          <p style={{ margin: "12px 0 0", fontSize: "14px", color: "#9ca3af", textAlign: "center" }}>
             El equipo revisará tu solicitud en 24-48h. Recibirás una notificación cuando sea aprobada.
           </p>
         </div>

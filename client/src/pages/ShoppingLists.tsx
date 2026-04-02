@@ -376,7 +376,7 @@ export default function ShoppingLists() {
                     }`}
                   >
                     <span className="text-xl">{s.emoji}</span>
-                    <span className="text-[10px] font-medium text-gray-600 leading-tight">{s.name}</span>
+                    <span className="text-[13px] font-medium text-gray-600 leading-tight">{s.name}</span>
                   </button>
                 ))}
               </div>

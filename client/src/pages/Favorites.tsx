@@ -141,20 +141,20 @@ function FavoriteRecipeCard({ recipe, onRemove }: { recipe: Recipe; onRemove: ()
           <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.6) 100%)" }} />
           {/* Meal time badge */}
           <div style={{ position: "absolute", top: "10px", left: "10px", background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)", borderRadius: "10px", padding: "4px 8px", display: "flex", alignItems: "center", gap: "4px" }}>
-            <span style={{ fontSize: "11px" }}>{MEAL_TIME_EMOJI[mealTime] || "🕐"}</span>
-            <span style={{ fontSize: "10px", color: "white", fontWeight: 700 }}>{MEAL_TIME_LABELS[mealTime] || mealTime}</span>
+            <span style={{ fontSize: "14px" }}>{MEAL_TIME_EMOJI[mealTime] || "🕐"}</span>
+            <span style={{ fontSize: "13px", color: "white", fontWeight: 700 }}>{MEAL_TIME_LABELS[mealTime] || mealTime}</span>
           </div>
           {/* Heart button */}
           <HeartButton recipeId={recipe.id} isFav={true} onToggle={onRemove} />
           {/* Time + kcal overlay */}
           <div style={{ position: "absolute", bottom: "8px", left: "10px", display: "flex", gap: "6px" }}>
             {totalTime > 0 && (
-              <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.9)", fontWeight: 600, background: "rgba(0,0,0,0.4)", borderRadius: "8px", padding: "2px 6px" }}>
+              <span style={{ fontSize: "14px", color: "rgba(255,255,255,0.9)", fontWeight: 600, background: "rgba(0,0,0,0.4)", borderRadius: "8px", padding: "2px 6px" }}>
                 ⏱ {totalTime} min
               </span>
             )}
             {recipe.caloriesPerServing && (
-              <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.9)", fontWeight: 600, background: "rgba(0,0,0,0.4)", borderRadius: "8px", padding: "2px 6px" }}>
+              <span style={{ fontSize: "14px", color: "rgba(255,255,255,0.9)", fontWeight: 600, background: "rgba(0,0,0,0.4)", borderRadius: "8px", padding: "2px 6px" }}>
                 🔥 {recipe.caloriesPerServing} kcal
               </span>
             )}
@@ -168,20 +168,20 @@ function FavoriteRecipeCard({ recipe, onRemove }: { recipe: Recipe; onRemove: ()
           {/* Nutritional mini-summary */}
           {(recipe.proteinsPerServing || recipe.carbsPerServing || recipe.fatsPerServing) && (
             <div style={{ display: "flex", gap: "6px", marginTop: "6px", flexWrap: "wrap" }}>
-              {recipe.proteinsPerServing && <span style={{ fontSize: "10px", color: "#6b7280" }}>💪 {Math.round(recipe.proteinsPerServing)}g</span>}
-              {recipe.carbsPerServing && <span style={{ fontSize: "10px", color: "#6b7280" }}>🌾 {Math.round(recipe.carbsPerServing)}g</span>}
-              {recipe.fatsPerServing && <span style={{ fontSize: "10px", color: "#6b7280" }}>🥑 {Math.round(recipe.fatsPerServing)}g</span>}
+              {recipe.proteinsPerServing && <span style={{ fontSize: "13px", color: "#6b7280" }}>💪 {Math.round(recipe.proteinsPerServing)}g</span>}
+              {recipe.carbsPerServing && <span style={{ fontSize: "13px", color: "#6b7280" }}>🌾 {Math.round(recipe.carbsPerServing)}g</span>}
+              {recipe.fatsPerServing && <span style={{ fontSize: "13px", color: "#6b7280" }}>🥑 {Math.round(recipe.fatsPerServing)}g</span>}
             </div>
           )}
           {/* Cuisine + method tags */}
           <div style={{ display: "flex", gap: "4px", marginTop: "6px", flexWrap: "wrap" }}>
             {recipe.cuisineType && (
-              <span style={{ fontSize: "10px", fontWeight: 700, color: "#F97316", background: "rgba(249,115,22,0.1)", borderRadius: "6px", padding: "2px 6px" }}>
+              <span style={{ fontSize: "13px", fontWeight: 700, color: "#F97316", background: "rgba(249,115,22,0.1)", borderRadius: "6px", padding: "2px 6px" }}>
                 {CUISINE_OPTIONS.find(c => c.value === recipe.cuisineType)?.label || recipe.cuisineType}
               </span>
             )}
             {recipe.cookingMethod && (
-              <span style={{ fontSize: "10px", fontWeight: 600, color: "#6b7280", background: "#f3f4f6", borderRadius: "6px", padding: "2px 6px" }}>
+              <span style={{ fontSize: "13px", fontWeight: 600, color: "#6b7280", background: "#f3f4f6", borderRadius: "6px", padding: "2px 6px" }}>
                 {COOKING_METHOD_OPTIONS.find(m => m.value === recipe.cookingMethod)?.label || recipe.cookingMethod}
               </span>
             )}
@@ -286,7 +286,7 @@ export default function Favorites() {
           <select
             value={mealTimeFilter}
             onChange={e => setMealTimeFilter(e.target.value)}
-            style={{ padding: "8px 12px", borderRadius: "12px", border: `2px solid ${mealTimeFilter ? "#F97316" : "#f3f4f6"}`, background: mealTimeFilter ? "rgba(249,115,22,0.08)" : "white", fontSize: "12px", fontWeight: 600, color: mealTimeFilter ? "#F97316" : "#6b7280", cursor: "pointer", outline: "none", flexShrink: 0 }}
+            style={{ padding: "8px 12px", borderRadius: "12px", border: `2px solid ${mealTimeFilter ? "#F97316" : "#f3f4f6"}`, background: mealTimeFilter ? "rgba(249,115,22,0.08)" : "white", fontSize: "14px", fontWeight: 600, color: mealTimeFilter ? "#F97316" : "#6b7280", cursor: "pointer", outline: "none", flexShrink: 0 }}
           >
             {MEAL_TIME_FILTER.map(o => <option key={o.value} value={o.value}>{o.emoji} {o.label}</option>)}
           </select>
@@ -294,7 +294,7 @@ export default function Favorites() {
           <select
             value={cuisineFilter}
             onChange={e => setCuisineFilter(e.target.value)}
-            style={{ padding: "8px 12px", borderRadius: "12px", border: `2px solid ${cuisineFilter ? "#F97316" : "#f3f4f6"}`, background: cuisineFilter ? "rgba(249,115,22,0.08)" : "white", fontSize: "12px", fontWeight: 600, color: cuisineFilter ? "#F97316" : "#6b7280", cursor: "pointer", outline: "none", flexShrink: 0 }}
+            style={{ padding: "8px 12px", borderRadius: "12px", border: `2px solid ${cuisineFilter ? "#F97316" : "#f3f4f6"}`, background: cuisineFilter ? "rgba(249,115,22,0.08)" : "white", fontSize: "14px", fontWeight: 600, color: cuisineFilter ? "#F97316" : "#6b7280", cursor: "pointer", outline: "none", flexShrink: 0 }}
           >
             {CUISINE_OPTIONS.map(o => <option key={o.value} value={o.value}>{o.label}</option>)}
           </select>
@@ -302,7 +302,7 @@ export default function Favorites() {
           {(activeFilters > 0 || searchText) && (
             <button
               onClick={() => { setMealTimeFilter(""); setCuisineFilter(""); setSearchText(""); }}
-              style={{ padding: "8px 14px", borderRadius: "12px", border: "2px solid #ef4444", background: "rgba(239,68,68,0.08)", fontSize: "12px", fontWeight: 700, color: "#ef4444", cursor: "pointer", flexShrink: 0 }}
+              style={{ padding: "8px 14px", borderRadius: "12px", border: "2px solid #ef4444", background: "rgba(239,68,68,0.08)", fontSize: "14px", fontWeight: 700, color: "#ef4444", cursor: "pointer", flexShrink: 0 }}
             >
               Limpiar
             </button>
@@ -379,7 +379,7 @@ export default function Favorites() {
 
       {/* Disclaimer */}
       <div style={{ margin: "24px 16px 0", padding: "12px 14px", background: "rgba(249,115,22,0.06)", borderRadius: "12px", borderLeft: "3px solid #F97316" }}>
-        <p style={{ margin: 0, fontSize: "11px", color: "#9ca3af", lineHeight: 1.5 }}>
+        <p style={{ margin: 0, fontSize: "14px", color: "#9ca3af", lineHeight: 1.5 }}>
           <strong style={{ color: "#F97316" }}>BuddyMarket</strong> — El contenido de esta sección no constituye recomendaciones profesionales. Consulta con un nutricionista o profesional de la salud antes de realizar cambios en tu dieta.
         </p>
       </div>

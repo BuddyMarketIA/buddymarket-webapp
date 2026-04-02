@@ -200,8 +200,8 @@ function RecipeCard({ recipe, searchQuery, isFav, onToggleFav }: { recipe: Recip
           <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.6) 100%)" }} />
           {/* Meal time badge */}
           <div style={{ position: "absolute", top: "10px", left: "10px", background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)", borderRadius: "10px", padding: "4px 8px", display: "flex", alignItems: "center", gap: "4px" }}>
-            <span style={{ fontSize: "11px" }}>{MEAL_TIME_EMOJI[mealTime] || "🕐"}</span>
-            <span style={{ fontSize: "10px", color: "white", fontWeight: 700 }}>{MEAL_TIME_LABELS[mealTime] || mealTime}</span>
+            <span style={{ fontSize: "14px" }}>{MEAL_TIME_EMOJI[mealTime] || "🕐"}</span>
+            <span style={{ fontSize: "13px", color: "white", fontWeight: 700 }}>{MEAL_TIME_LABELS[mealTime] || mealTime}</span>
           </div>
           {/* Heart button — only shown when user is logged in */}
           {onToggleFav !== undefined && (
@@ -210,18 +210,18 @@ function RecipeCard({ recipe, searchQuery, isFav, onToggleFav }: { recipe: Recip
           {/* Cooking method badge — shift left when no heart button */}
           {methodBadge && methodBadge.value && onToggleFav === undefined && (
             <div style={{ position: "absolute", top: "10px", right: "10px", background: "rgba(249,115,22,0.85)", backdropFilter: "blur(4px)", borderRadius: "10px", padding: "4px 8px" }}>
-              <span style={{ fontSize: "11px" }}>{methodBadge.emoji}</span>
+              <span style={{ fontSize: "14px" }}>{methodBadge.emoji}</span>
             </div>
           )}
           {/* Time + kcal overlay */}
           <div style={{ position: "absolute", bottom: "8px", left: "10px", display: "flex", gap: "6px" }}>
             {totalTime > 0 && (
-              <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.9)", fontWeight: 600, background: "rgba(0,0,0,0.4)", borderRadius: "8px", padding: "2px 6px" }}>
+              <span style={{ fontSize: "14px", color: "rgba(255,255,255,0.9)", fontWeight: 600, background: "rgba(0,0,0,0.4)", borderRadius: "8px", padding: "2px 6px" }}>
                 ⏱ {totalTime} min
               </span>
             )}
             {recipe.caloriesPerServing && (
-              <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.9)", fontWeight: 600, background: "rgba(0,0,0,0.4)", borderRadius: "8px", padding: "2px 6px" }}>
+              <span style={{ fontSize: "14px", color: "rgba(255,255,255,0.9)", fontWeight: 600, background: "rgba(0,0,0,0.4)", borderRadius: "8px", padding: "2px 6px" }}>
                 🔥 {recipe.caloriesPerServing} kcal
               </span>
             )}
@@ -235,15 +235,15 @@ function RecipeCard({ recipe, searchQuery, isFav, onToggleFav }: { recipe: Recip
           {/* Nutritional mini-summary */}
           {(recipe.proteinsPerServing || recipe.carbsPerServing || recipe.fatsPerServing) && (
             <div style={{ display: "flex", gap: "6px", marginTop: "6px", flexWrap: "wrap" }}>
-              {recipe.proteinsPerServing && <span style={{ fontSize: "10px", color: "#6b7280" }}>💪 {Math.round(recipe.proteinsPerServing)}g</span>}
-              {recipe.carbsPerServing && <span style={{ fontSize: "10px", color: "#6b7280" }}>🌾 {Math.round(recipe.carbsPerServing)}g</span>}
-              {recipe.fatsPerServing && <span style={{ fontSize: "10px", color: "#6b7280" }}>🥑 {Math.round(recipe.fatsPerServing)}g</span>}
+              {recipe.proteinsPerServing && <span style={{ fontSize: "13px", color: "#6b7280" }}>💪 {Math.round(recipe.proteinsPerServing)}g</span>}
+              {recipe.carbsPerServing && <span style={{ fontSize: "13px", color: "#6b7280" }}>🌾 {Math.round(recipe.carbsPerServing)}g</span>}
+              {recipe.fatsPerServing && <span style={{ fontSize: "13px", color: "#6b7280" }}>🥑 {Math.round(recipe.fatsPerServing)}g</span>}
             </div>
           )}
           {/* Cuisine type */}
           {recipe.cuisineType && (
             <div style={{ marginTop: "6px" }}>
-              <span style={{ fontSize: "10px", fontWeight: 700, color: "#F97316", background: "rgba(249,115,22,0.1)", borderRadius: "6px", padding: "2px 6px" }}>
+              <span style={{ fontSize: "13px", fontWeight: 700, color: "#F97316", background: "rgba(249,115,22,0.1)", borderRadius: "6px", padding: "2px 6px" }}>
                 {CUISINE_OPTIONS.find(c => c.value === recipe.cuisineType)?.emoji || "🌍"} {recipe.cuisineType}
               </span>
             </div>
@@ -339,7 +339,7 @@ function FilterPill({ emoji, label, active, onClick }: { emoji: string; label: s
         borderRadius: "20px",
         border: `2px solid ${active ? "#F97316" : "#f3f4f6"}`,
         cursor: "pointer",
-        fontSize: "12px",
+        fontSize: "14px",
         fontWeight: 700,
         whiteSpace: "nowrap",
         background: active ? "rgba(249,115,22,0.08)" : "white",
@@ -520,7 +520,7 @@ export default function Recipes() {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
         <div>
           <h1 style={{ margin: 0, fontSize: "22px", fontWeight: 900, color: "#1a1a1a", letterSpacing: "-0.03em" }}>Recetas</h1>
-          <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#9ca3af" }}>427 recetas disponibles</p>
+          <p style={{ margin: "2px 0 0", fontSize: "14px", color: "#9ca3af" }}>427 recetas disponibles</p>
         </div>
         {isAuthenticated && (
           <Link href="/recipes/new">
@@ -564,7 +564,7 @@ export default function Recipes() {
           {isFetching && debouncedSearch ? (
             <div style={{ width: "18px", height: "18px", border: "2px solid #f3f4f6", borderTopColor: "#F97316", borderRadius: "50%", animation: "spin 0.8s linear infinite", flexShrink: 0 }} />
           ) : inputValue ? (
-            <button onClick={clearSearch} style={{ background: "#f3f4f6", border: "none", borderRadius: "50%", width: "22px", height: "22px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "#6b7280", fontSize: "12px", fontWeight: 700 }}>
+            <button onClick={clearSearch} style={{ background: "#f3f4f6", border: "none", borderRadius: "50%", width: "22px", height: "22px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "#6b7280", fontSize: "14px", fontWeight: 700 }}>
               ✕
             </button>
           ) : null}
@@ -589,10 +589,10 @@ export default function Recipes() {
             {inputValue.trim().length === 0 && recentSearches.length > 0 && (
               <div>
                 <div style={{ padding: "8px 14px 4px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span style={{ fontSize: "11px", fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em" }}>Búsquedas recientes</span>
+                  <span style={{ fontSize: "14px", fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em" }}>Búsquedas recientes</span>
                   <button
                     onClick={() => { localStorage.removeItem(RECENT_SEARCHES_KEY); setRecentSearches([]); }}
-                    style={{ fontSize: "11px", color: "#F97316", background: "none", border: "none", cursor: "pointer", fontWeight: 600 }}
+                    style={{ fontSize: "14px", color: "#F97316", background: "none", border: "none", cursor: "pointer", fontWeight: 600 }}
                   >
                     Limpiar
                   </button>
@@ -616,7 +616,7 @@ export default function Recipes() {
             {inputValue.trim().length >= 2 && (suggestionsQuery.data?.length ?? 0) > 0 && (
               <div>
                 <div style={{ padding: "8px 14px 4px" }}>
-                  <span style={{ fontSize: "11px", fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em" }}>Sugerencias</span>
+                  <span style={{ fontSize: "14px", fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em" }}>Sugerencias</span>
                 </div>
                 {suggestionsQuery.data?.map((s: any) => (
                   <button
@@ -636,7 +636,7 @@ export default function Recipes() {
                         <HighlightText text={s.name} query={inputValue} />
                       </p>
                       {s.caloriesPerServing && (
-                        <p style={{ margin: 0, fontSize: "11px", color: "#9ca3af" }}>{s.caloriesPerServing} kcal</p>
+                        <p style={{ margin: 0, fontSize: "14px", color: "#9ca3af" }}>{s.caloriesPerServing} kcal</p>
                       )}
                     </div>
                     <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg>
@@ -655,7 +655,7 @@ export default function Recipes() {
           <span style={{ fontSize: "13px", color: "#374151", fontWeight: 600, flex: 1 }}>
             Resultados para <strong style={{ color: "#F97316" }}>"{debouncedSearch}"</strong>
           </span>
-          <button onClick={clearSearch} style={{ fontSize: "12px", color: "#F97316", fontWeight: 700, background: "none", border: "none", cursor: "pointer" }}>
+          <button onClick={clearSearch} style={{ fontSize: "14px", color: "#F97316", fontWeight: 700, background: "none", border: "none", cursor: "pointer" }}>
             ✕ Limpiar
           </button>
         </div>
@@ -693,7 +693,7 @@ export default function Recipes() {
                   borderRadius: "12px",
                   border: `2px solid ${activeFilterCat === cat.id ? "#F97316" : "#f3f4f6"}`,
                   cursor: "pointer",
-                  fontSize: "11px",
+                  fontSize: "14px",
                   fontWeight: 700,
                   background: activeFilterCat === cat.id ? "rgba(249,115,22,0.08)" : "white",
                   color: activeFilterCat === cat.id ? "#F97316" : "#6b7280",
@@ -723,10 +723,10 @@ export default function Recipes() {
           {/* Active filters summary */}
           {activeFiltersCount > 0 && (
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px", background: "rgba(249,115,22,0.06)", borderRadius: "12px", padding: "8px 12px" }}>
-              <span style={{ fontSize: "12px", color: "#F97316", fontWeight: 700 }}>
+              <span style={{ fontSize: "14px", color: "#F97316", fontWeight: 700 }}>
                 {activeFiltersCount} filtro{activeFiltersCount > 1 ? "s" : ""} activo{activeFiltersCount > 1 ? "s" : ""}
               </span>
-              <button onClick={clearFilters} style={{ fontSize: "12px", color: "#F97316", fontWeight: 700, background: "none", border: "none", cursor: "pointer" }}>
+              <button onClick={clearFilters} style={{ fontSize: "14px", color: "#F97316", fontWeight: 700, background: "none", border: "none", cursor: "pointer" }}>
                 Limpiar ✕
               </button>
             </div>
@@ -749,7 +749,7 @@ export default function Recipes() {
             }
           </h2>
           {recipes && (
-            <span style={{ fontSize: "12px", color: "#9ca3af" }}>
+            <span style={{ fontSize: "14px", color: "#9ca3af" }}>
               {isFetching ? "Cargando..." : `${recipes.length}${hasNextPage ? "+" : ""} recetas`}
             </span>
           )}
@@ -823,17 +823,17 @@ export default function Recipes() {
           {isFetchingNextPage && (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
               <div style={{ width: "28px", height: "28px", border: "3px solid #f3f4f6", borderTop: "3px solid #F97316", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-              <span style={{ fontSize: "12px", color: "#9ca3af", fontWeight: 600 }}>Cargando más recetas...</span>
+              <span style={{ fontSize: "14px", color: "#9ca3af", fontWeight: 600 }}>Cargando más recetas...</span>
             </div>
           )}
           {!hasNextPage && recipes.length > 0 && !isFetchingNextPage && (
-            <p style={{ fontSize: "12px", color: "#d1d5db", fontWeight: 600, margin: 0 }}>✅ Has visto todas las recetas ({recipes.length})</p>
+            <p style={{ fontSize: "14px", color: "#d1d5db", fontWeight: 600, margin: 0 }}>✅ Has visto todas las recetas ({recipes.length})</p>
           )}
         </div>
       )}
 
       {/* Disclaimer */}
-      <p style={{ fontSize: "10px", color: "#d1d5db", textAlign: "center", margin: "8px 0 0", lineHeight: 1.5 }}>
+      <p style={{ fontSize: "13px", color: "#d1d5db", textAlign: "center", margin: "8px 0 0", lineHeight: 1.5 }}>
         Las recetas de BuddyMarket son orientativas. Consulta a un profesional de la nutrición.
       </p>
 

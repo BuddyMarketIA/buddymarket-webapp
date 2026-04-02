@@ -241,7 +241,7 @@ export default function Menus() {
                   : "bg-gray-100 text-gray-600 hover:bg-gray-200"
               }`}
             >
-              <span className="text-[10px] font-medium">{DAYS_ES[date.getDay()]}</span>
+              <span className="text-[13px] font-medium">{DAYS_ES[date.getDay()]}</span>
               <span className={`text-base font-bold ${isToday && !isSelected ? "text-[#F97316]" : ""}`}>
                 {date.getDate()}
               </span>

@@ -162,8 +162,8 @@ export default function RecipeDetail() {
             ].map((n) => n.value ? (
               <div key={n.label} className="rounded-2xl bg-gray-50 p-2">
                 <p className={`text-base font-extrabold ${n.color}`}>{n.value}</p>
-                <p className="text-[10px] text-gray-400">{n.unit}</p>
-                <p className="text-[10px] font-semibold text-gray-600">{n.label}</p>
+                <p className="text-[13px] text-gray-400">{n.unit}</p>
+                <p className="text-[13px] font-semibold text-gray-600">{n.label}</p>
               </div>
             ) : null)}
           </div>

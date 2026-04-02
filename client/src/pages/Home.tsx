@@ -76,7 +76,7 @@ export default function Home() {
           <div style={{ width: "38px", height: "38px", borderRadius: "12px", background: "linear-gradient(135deg, #F97316, #FB923C)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", boxShadow: "0 4px 12px rgba(249,115,22,0.30)" }}>🛒</div>
           <div>
             <p style={{ margin: 0, fontSize: "16px", fontWeight: 900, color: "#1a1a1a", letterSpacing: "-0.03em" }}>BuddyMarket</p>
-            <p style={{ margin: 0, fontSize: "10px", color: "#F97316", fontWeight: 600 }}>Gestor Nutricional</p>
+            <p style={{ margin: 0, fontSize: "13px", color: "#F97316", fontWeight: 600 }}>Gestor Nutricional</p>
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
@@ -105,7 +105,7 @@ export default function Home() {
             <a href={getLoginUrl()} style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "16px 32px", borderRadius: "16px", background: "linear-gradient(135deg, #F97316, #FB923C)", color: "white", fontSize: "16px", fontWeight: 800, textDecoration: "none", boxShadow: "0 8px 24px rgba(249,115,22,0.35)", letterSpacing: "-0.01em" }}>
               Empezar gratis →
             </a>
-            <p style={{ margin: 0, fontSize: "12px", color: "#9ca3af" }}>Sin tarjeta de crédito · Cancela cuando quieras</p>
+            <p style={{ margin: 0, fontSize: "14px", color: "#9ca3af" }}>Sin tarjeta de crédito · Cancela cuando quieras</p>
           </div>
         </div>
       </section>
@@ -116,7 +116,7 @@ export default function Home() {
           {STATS.map((s) => (
             <div key={s.value} style={{ textAlign: "center" }}>
               <p style={{ margin: 0, fontSize: "22px", fontWeight: 900, color: "#F97316", letterSpacing: "-0.03em" }}>{s.value}</p>
-              <p style={{ margin: "2px 0 0", fontSize: "10px", color: "rgba(255,255,255,0.6)", fontWeight: 500 }}>{s.label}</p>
+              <p style={{ margin: "2px 0 0", fontSize: "13px", color: "rgba(255,255,255,0.6)", fontWeight: 500 }}>{s.label}</p>
             </div>
           ))}
         </div>
@@ -136,7 +136,7 @@ export default function Home() {
                   {f.emoji}
                 </div>
                 <p style={{ margin: "0 0 6px", fontSize: "14px", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.01em" }}>{f.title}</p>
-                <p style={{ margin: 0, fontSize: "12px", color: "#6b7280", lineHeight: 1.5 }}>{f.desc}</p>
+                <p style={{ margin: 0, fontSize: "14px", color: "#6b7280", lineHeight: 1.5 }}>{f.desc}</p>
               </div>
             ))}
           </div>
@@ -162,7 +162,7 @@ export default function Home() {
                 </div>
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-                    <span style={{ fontSize: "11px", fontWeight: 800, color: "#F97316", letterSpacing: "0.05em" }}>{item.step}</span>
+                    <span style={{ fontSize: "14px", fontWeight: 800, color: "#F97316", letterSpacing: "0.05em" }}>{item.step}</span>
                     <p style={{ margin: 0, fontSize: "15px", fontWeight: 800, color: "#1a1a1a" }}>{item.title}</p>
                   </div>
                   <p style={{ margin: 0, fontSize: "13px", color: "#6b7280", lineHeight: 1.5 }}>{item.desc}</p>
@@ -184,7 +184,7 @@ export default function Home() {
             {PLANS.map((plan) => (
               <div key={plan.name} style={{ background: plan.highlight ? "linear-gradient(135deg, #F97316, #FB923C)" : "white", borderRadius: "20px", padding: "24px", boxShadow: plan.highlight ? "0 8px 32px rgba(249,115,22,0.30)" : "0 2px 12px rgba(0,0,0,0.06)", border: plan.highlight ? "none" : "1px solid rgba(0,0,0,0.06)", position: "relative", overflow: "hidden" }}>
                 {plan.highlight && (
-                  <div style={{ position: "absolute", top: "16px", right: "16px", background: "rgba(255,255,255,0.25)", borderRadius: "8px", padding: "3px 10px", fontSize: "11px", fontWeight: 800, color: "white" }}>POPULAR</div>
+                  <div style={{ position: "absolute", top: "16px", right: "16px", background: "rgba(255,255,255,0.25)", borderRadius: "8px", padding: "3px 10px", fontSize: "14px", fontWeight: 800, color: "white" }}>POPULAR</div>
                 )}
                 <div style={{ display: "flex", alignItems: "flex-start", justifyContent: "space-between", marginBottom: "16px" }}>
                   <div>
@@ -233,10 +233,10 @@ export default function Home() {
       {/* Footer */}
       <footer style={{ padding: "24px 20px", background: "#111111", textAlign: "center" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", marginBottom: "8px" }}>
-          <div style={{ width: "24px", height: "24px", borderRadius: "8px", background: "#F97316", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "12px" }}>🛒</div>
+          <div style={{ width: "24px", height: "24px", borderRadius: "8px", background: "#F97316", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px" }}>🛒</div>
           <span style={{ fontSize: "14px", fontWeight: 800, color: "white" }}>BuddyMarket</span>
         </div>
-        <p style={{ margin: 0, fontSize: "11px", color: "rgba(255,255,255,0.3)", lineHeight: 1.5 }}>
+        <p style={{ margin: 0, fontSize: "14px", color: "rgba(255,255,255,0.3)", lineHeight: 1.5 }}>
           © 2026 BuddyMarket. El contenido no constituye asesoramiento médico o nutricional profesional. Consulta a un profesional.
         </p>
       </footer>

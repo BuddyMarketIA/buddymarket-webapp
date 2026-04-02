@@ -29,7 +29,7 @@ function MiniBarChart({
   maxVal: number;
   height?: number;
 }) {
-  if (!data.length) return <div style={{ height, display: "flex", alignItems: "center", justifyContent: "center", color: "#9ca3af", fontSize: "12px" }}>Sin datos</div>;
+  if (!data.length) return <div style={{ height, display: "flex", alignItems: "center", justifyContent: "center", color: "#9ca3af", fontSize: "14px" }}>Sin datos</div>;
 
   return (
     <div style={{ display: "flex", alignItems: "flex-end", gap: "2px", height, padding: "0 2px" }}>
@@ -89,16 +89,16 @@ function StatCard({
           {emoji}
         </div>
         <div style={{ flex: 1 }}>
-          <p style={{ margin: 0, fontSize: "12px", fontWeight: 700, color: "#6b7280" }}>{title}</p>
+          <p style={{ margin: 0, fontSize: "14px", fontWeight: 700, color: "#6b7280" }}>{title}</p>
           <p style={{ margin: 0, fontSize: "20px", fontWeight: 900, color: "#1a1a1a", letterSpacing: "-0.03em" }}>
-            {avg}<span style={{ fontSize: "12px", fontWeight: 600, color: "#9ca3af", marginLeft: "3px" }}>{unit}/día</span>
+            {avg}<span style={{ fontSize: "14px", fontWeight: 600, color: "#9ca3af", marginLeft: "3px" }}>{unit}/día</span>
           </p>
         </div>
       </div>
       <MiniBarChart data={data} dataKey={dataKey} color={color} maxVal={max * 1.1} height={70} />
       <div style={{ display: "flex", justifyContent: "space-between", marginTop: "8px" }}>
-        <span style={{ fontSize: "10px", color: "#9ca3af", fontWeight: 600 }}>Mín: {min}{unit}</span>
-        <span style={{ fontSize: "10px", color: color, fontWeight: 700 }}>Máx: {max}{unit}</span>
+        <span style={{ fontSize: "13px", color: "#9ca3af", fontWeight: 600 }}>Mín: {min}{unit}</span>
+        <span style={{ fontSize: "13px", color: color, fontWeight: 700 }}>Máx: {max}{unit}</span>
       </div>
     </div>
   );
@@ -157,7 +157,7 @@ export default function NutritionalStats() {
         </Link>
         <div>
           <h1 style={{ margin: 0, fontSize: "22px", fontWeight: 900, color: "#1a1a1a", letterSpacing: "-0.03em" }}>📊 Estadísticas</h1>
-          <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#9ca3af", fontWeight: 500 }}>Tu evolución nutricional</p>
+          <p style={{ margin: "2px 0 0", fontSize: "14px", color: "#9ca3af", fontWeight: 500 }}>Tu evolución nutricional</p>
         </div>
       </div>
 
@@ -207,16 +207,16 @@ export default function NutritionalStats() {
         <>
           {/* Summary banner */}
           <div style={{ background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)", borderRadius: "22px", padding: "18px 20px", marginBottom: "16px", boxShadow: "0 8px 24px rgba(0,0,0,0.20)" }}>
-            <p style={{ margin: "0 0 4px", fontSize: "12px", fontWeight: 700, color: "rgba(255,255,255,0.6)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
+            <p style={{ margin: "0 0 4px", fontSize: "14px", fontWeight: 700, color: "rgba(255,255,255,0.6)", textTransform: "uppercase", letterSpacing: "0.06em" }}>
               Resumen — últimos {days} días
             </p>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginTop: "12px" }}>
               <div>
-                <p style={{ margin: 0, fontSize: "11px", color: "rgba(255,255,255,0.5)", fontWeight: 600 }}>Días registrados</p>
+                <p style={{ margin: 0, fontSize: "14px", color: "rgba(255,255,255,0.5)", fontWeight: 600 }}>Días registrados</p>
                 <p style={{ margin: 0, fontSize: "28px", fontWeight: 900, color: "white", letterSpacing: "-0.04em" }}>{stats.daysWithData}</p>
               </div>
               <div>
-                <p style={{ margin: 0, fontSize: "11px", color: "rgba(255,255,255,0.5)", fontWeight: 600 }}>Kcal media/día</p>
+                <p style={{ margin: 0, fontSize: "14px", color: "rgba(255,255,255,0.5)", fontWeight: 600 }}>Kcal media/día</p>
                 <p style={{ margin: 0, fontSize: "28px", fontWeight: 900, color: "#F97316", letterSpacing: "-0.04em" }}>{stats.calories.avg}</p>
               </div>
             </div>
@@ -292,9 +292,9 @@ export default function NutritionalStats() {
                   ].map(m => (
                     <div key={m.label}>
                       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "4px" }}>
-                        <span style={{ fontSize: "12px", fontWeight: 700, color: "#1a1a1a" }}>{m.emoji} {m.label}</span>
+                        <span style={{ fontSize: "14px", fontWeight: 700, color: "#1a1a1a" }}>{m.emoji} {m.label}</span>
                         <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
-                          <span style={{ fontSize: "10px", color: "#9ca3af", fontWeight: 600 }}>Objetivo: {m.target}</span>
+                          <span style={{ fontSize: "13px", color: "#9ca3af", fontWeight: 600 }}>Objetivo: {m.target}</span>
                           <span style={{ fontSize: "13px", fontWeight: 900, color: m.color }}>{m.pct}%</span>
                         </div>
                       </div>
@@ -316,7 +316,7 @@ export default function NutritionalStats() {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
             <p style={{ margin: 0, fontSize: "14px", fontWeight: 800, color: "#1a1a1a" }}>⚖️ Evolución del peso</p>
             <Link href="/metrics">
-              <span style={{ fontSize: "12px", fontWeight: 600, color: "#F97316" }}>Ver métricas →</span>
+              <span style={{ fontSize: "14px", fontWeight: 600, color: "#F97316" }}>Ver métricas →</span>
             </Link>
           </div>
           <div style={{ display: "flex", alignItems: "flex-end", gap: "4px", height: "80px" }}>
@@ -341,11 +341,11 @@ export default function NutritionalStats() {
             })}
           </div>
           <div style={{ display: "flex", justifyContent: "space-between", marginTop: "6px" }}>
-            <span style={{ fontSize: "10px", color: "#9ca3af" }}>{weightHistory[0]?.date}</span>
-            <span style={{ fontSize: "11px", fontWeight: 700, color: "#F97316" }}>
+            <span style={{ fontSize: "13px", color: "#9ca3af" }}>{weightHistory[0]?.date}</span>
+            <span style={{ fontSize: "14px", fontWeight: 700, color: "#F97316" }}>
               {weightHistory[weightHistory.length - 1]?.weight}kg actual
             </span>
-            <span style={{ fontSize: "10px", color: "#9ca3af" }}>{weightHistory[weightHistory.length - 1]?.date}</span>
+            <span style={{ fontSize: "13px", color: "#9ca3af" }}>{weightHistory[weightHistory.length - 1]?.date}</span>
           </div>
         </div>
       )}
@@ -356,13 +356,13 @@ export default function NutritionalStats() {
           <span style={{ fontSize: "28px" }}>📝</span>
           <div style={{ flex: 1 }}>
             <p style={{ margin: 0, fontSize: "14px", fontWeight: 800, color: "#1a1a1a" }}>Registra más comidas</p>
-            <p style={{ margin: 0, fontSize: "12px", color: "#9ca3af" }}>Cuantos más datos, mejores estadísticas</p>
+            <p style={{ margin: 0, fontSize: "14px", color: "#9ca3af" }}>Cuantos más datos, mejores estadísticas</p>
           </div>
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
         </div>
       </Link>
 
-      <p style={{ fontSize: "10px", color: "#d1d5db", textAlign: "center", margin: "16px 0 0", lineHeight: 1.5 }}>
+      <p style={{ fontSize: "13px", color: "#d1d5db", textAlign: "center", margin: "16px 0 0", lineHeight: 1.5 }}>
         BuddyMarket no constituye asesoramiento médico o nutricional profesional. Consulta a un profesional.
       </p>
     </div>

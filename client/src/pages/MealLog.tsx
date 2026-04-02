@@ -180,7 +180,7 @@ export default function MealLog() {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
         <div>
           <h1 style={{ margin: 0, fontSize: "22px", fontWeight: 900, color: "#1a1a1a", letterSpacing: "-0.03em" }}>Diario</h1>
-          <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#9ca3af" }}>Seguimiento nutricional</p>
+          <p style={{ margin: "2px 0 0", fontSize: "14px", color: "#9ca3af" }}>Seguimiento nutricional</p>
         </div>
         <button
           onClick={() => { setShowAdd(true); setAddMode("manual"); }}
@@ -219,20 +219,20 @@ export default function MealLog() {
         <div style={{ background: "rgba(255,255,255,0.25)", borderRadius: "999px", height: "8px", overflow: "hidden", marginBottom: "6px" }}>
           <div style={{ background: "white", borderRadius: "999px", height: "100%", width: `${calPct}%`, transition: "width 0.6s ease" }} />
         </div>
-        <p style={{ margin: 0, fontSize: "11px", color: "rgba(255,255,255,0.7)", textAlign: "right" }}>Objetivo: {targetCals} kcal</p>
+        <p style={{ margin: 0, fontSize: "14px", color: "rgba(255,255,255,0.7)", textAlign: "right" }}>Objetivo: {targetCals} kcal</p>
         {(summary as any)?.proteins !== undefined && (
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px", marginTop: "12px" }}>
             <div style={{ textAlign: "center", background: "rgba(255,255,255,0.15)", borderRadius: "12px", padding: "8px 4px" }}>
               <p style={{ margin: 0, fontSize: "15px", fontWeight: 900, color: "white" }}>{Math.round((summary as any).proteins ?? 0)}g</p>
-              <p style={{ margin: "2px 0 0", fontSize: "10px", color: "rgba(255,255,255,0.75)" }}>Proteína</p>
+              <p style={{ margin: "2px 0 0", fontSize: "13px", color: "rgba(255,255,255,0.75)" }}>Proteína</p>
             </div>
             <div style={{ textAlign: "center", background: "rgba(255,255,255,0.15)", borderRadius: "12px", padding: "8px 4px" }}>
               <p style={{ margin: 0, fontSize: "15px", fontWeight: 900, color: "white" }}>{Math.round((summary as any).carbohydrates ?? 0)}g</p>
-              <p style={{ margin: "2px 0 0", fontSize: "10px", color: "rgba(255,255,255,0.75)" }}>Carbos</p>
+              <p style={{ margin: "2px 0 0", fontSize: "13px", color: "rgba(255,255,255,0.75)" }}>Carbos</p>
             </div>
             <div style={{ textAlign: "center", background: "rgba(255,255,255,0.15)", borderRadius: "12px", padding: "8px 4px" }}>
               <p style={{ margin: 0, fontSize: "15px", fontWeight: 900, color: "white" }}>{Math.round((summary as any).fats ?? 0)}g</p>
-              <p style={{ margin: "2px 0 0", fontSize: "10px", color: "rgba(255,255,255,0.75)" }}>Grasas</p>
+              <p style={{ margin: "2px 0 0", fontSize: "13px", color: "rgba(255,255,255,0.75)" }}>Grasas</p>
             </div>
           </div>
         )}
@@ -282,8 +282,8 @@ export default function MealLog() {
                         {log.recipe?.name ?? log.log.customMealName ?? "Comida"}
                       </p>
                       <div style={{ display: "flex", gap: "8px", marginTop: "2px" }}>
-                        {log.log.calories && <span style={{ fontSize: "11px", color: "#F97316", fontWeight: 700 }}>{Math.round(log.log.calories)} kcal</span>}
-                        {log.log.proteins && <span style={{ fontSize: "11px", color: "#6b7280" }}>💪 {Math.round(log.log.proteins)}g</span>}
+                        {log.log.calories && <span style={{ fontSize: "14px", color: "#F97316", fontWeight: 700 }}>{Math.round(log.log.calories)} kcal</span>}
+                        {log.log.proteins && <span style={{ fontSize: "14px", color: "#6b7280" }}>💪 {Math.round(log.log.proteins)}g</span>}
                       </div>
                     </div>
                     <button
@@ -321,19 +321,19 @@ export default function MealLog() {
             <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
               <button
                 onClick={() => setAddMode("manual")}
-                style={{ flex: 1, padding: "10px", borderRadius: "14px", border: "none", cursor: "pointer", fontSize: "12px", fontWeight: 700, background: addMode === "manual" ? "#F97316" : "#f3f4f6", color: addMode === "manual" ? "white" : "#6b7280", transition: "all 0.2s" }}
+                style={{ flex: 1, padding: "10px", borderRadius: "14px", border: "none", cursor: "pointer", fontSize: "14px", fontWeight: 700, background: addMode === "manual" ? "#F97316" : "#f3f4f6", color: addMode === "manual" ? "white" : "#6b7280", transition: "all 0.2s" }}
               >
                 ✏️ Manual
               </button>
               <button
                 onClick={() => setAddMode("photo")}
-                style={{ flex: 1, padding: "10px", borderRadius: "14px", border: "none", cursor: "pointer", fontSize: "12px", fontWeight: 700, background: addMode === "photo" ? "#F97316" : "#f3f4f6", color: addMode === "photo" ? "white" : "#6b7280", transition: "all 0.2s" }}
+                style={{ flex: 1, padding: "10px", borderRadius: "14px", border: "none", cursor: "pointer", fontSize: "14px", fontWeight: 700, background: addMode === "photo" ? "#F97316" : "#f3f4f6", color: addMode === "photo" ? "white" : "#6b7280", transition: "all 0.2s" }}
               >
                 📸 Foto IA
               </button>
               <button
                 onClick={() => { setAddMode("barcode"); setShowBarcodeScanner(true); }}
-                style={{ flex: 1, padding: "10px", borderRadius: "14px", border: "none", cursor: "pointer", fontSize: "12px", fontWeight: 700, background: addMode === "barcode" ? "#F97316" : "#f3f4f6", color: addMode === "barcode" ? "white" : "#6b7280", transition: "all 0.2s" }}
+                style={{ flex: 1, padding: "10px", borderRadius: "14px", border: "none", cursor: "pointer", fontSize: "14px", fontWeight: 700, background: addMode === "barcode" ? "#F97316" : "#f3f4f6", color: addMode === "barcode" ? "white" : "#6b7280", transition: "all 0.2s" }}
               >
                 🔍 Código
               </button>
@@ -403,14 +403,14 @@ export default function MealLog() {
                         <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "10px" }}>
                           <span style={{ fontSize: "18px" }}>🤖</span>
                           <p style={{ margin: 0, fontSize: "13px", fontWeight: 800, color: "#9a3412" }}>Análisis IA completado</p>
-                          <span style={{ fontSize: "11px", color: "#ea580c", background: "rgba(249,115,22,0.15)", borderRadius: "6px", padding: "2px 6px", fontWeight: 700, marginLeft: "auto" }}>
+                          <span style={{ fontSize: "14px", color: "#ea580c", background: "rgba(249,115,22,0.15)", borderRadius: "6px", padding: "2px 6px", fontWeight: 700, marginLeft: "auto" }}>
                             Confianza: {aiResult.confidence}
                           </span>
                         </div>
                         {aiResult.foods.length > 0 && (
                           <div style={{ display: "flex", flexDirection: "column", gap: "4px", marginBottom: "8px" }}>
                             {aiResult.foods.map((food, i) => (
-                              <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: "12px" }}>
+                              <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: "14px" }}>
                                 <span style={{ color: "#374151", fontWeight: 600 }}>{food.name} ({food.quantity})</span>
                                 <span style={{ color: "#F97316", fontWeight: 700 }}>{food.calories} kcal</span>
                               </div>
@@ -420,22 +420,22 @@ export default function MealLog() {
                         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "6px", marginTop: "8px" }}>
                           <div style={{ textAlign: "center", background: "white", borderRadius: "8px", padding: "6px" }}>
                             <p style={{ margin: 0, fontSize: "13px", fontWeight: 900, color: "#F97316" }}>{aiResult.totalCalories}</p>
-                            <p style={{ margin: 0, fontSize: "10px", color: "#9ca3af" }}>kcal</p>
+                            <p style={{ margin: 0, fontSize: "13px", color: "#9ca3af" }}>kcal</p>
                           </div>
                           <div style={{ textAlign: "center", background: "white", borderRadius: "8px", padding: "6px" }}>
                             <p style={{ margin: 0, fontSize: "13px", fontWeight: 900, color: "#3b82f6" }}>{aiResult.totalProteins}g</p>
-                            <p style={{ margin: 0, fontSize: "10px", color: "#9ca3af" }}>prot</p>
+                            <p style={{ margin: 0, fontSize: "13px", color: "#9ca3af" }}>prot</p>
                           </div>
                           <div style={{ textAlign: "center", background: "white", borderRadius: "8px", padding: "6px" }}>
                             <p style={{ margin: 0, fontSize: "13px", fontWeight: 900, color: "#f59e0b" }}>{aiResult.totalCarbs}g</p>
-                            <p style={{ margin: 0, fontSize: "10px", color: "#9ca3af" }}>carbs</p>
+                            <p style={{ margin: 0, fontSize: "13px", color: "#9ca3af" }}>carbs</p>
                           </div>
                           <div style={{ textAlign: "center", background: "white", borderRadius: "8px", padding: "6px" }}>
                             <p style={{ margin: 0, fontSize: "13px", fontWeight: 900, color: "#eab308" }}>{aiResult.totalFats}g</p>
-                            <p style={{ margin: 0, fontSize: "10px", color: "#9ca3af" }}>grasas</p>
+                            <p style={{ margin: 0, fontSize: "13px", color: "#9ca3af" }}>grasas</p>
                           </div>
                         </div>
-                        {aiResult.notes && <p style={{ margin: "8px 0 0", fontSize: "11px", color: "#6b7280", fontStyle: "italic" }}>{aiResult.notes}</p>}
+                        {aiResult.notes && <p style={{ margin: "8px 0 0", fontSize: "14px", color: "#6b7280", fontStyle: "italic" }}>{aiResult.notes}</p>}
                       </div>
                     )}
                   </div>
@@ -500,7 +500,7 @@ export default function MealLog() {
       )}
 
       {/* Disclaimer */}
-      <p style={{ fontSize: "10px", color: "#d1d5db", textAlign: "center", margin: "24px 0 0", lineHeight: 1.5 }}>
+      <p style={{ fontSize: "13px", color: "#d1d5db", textAlign: "center", margin: "24px 0 0", lineHeight: 1.5 }}>
         BuddyMarket no constituye recomendaciones profesionales de nutrición. Consulta a un dietista.
       </p>
 

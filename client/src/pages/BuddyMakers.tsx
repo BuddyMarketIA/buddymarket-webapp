@@ -73,13 +73,13 @@ function MakerCard({ row, onFollow, index }: { row: any; onFollow: (id: number) 
         {/* Badges */}
         <div className="relative flex justify-between items-start mb-3">
           {maker.verified ? (
-            <span className="flex items-center gap-1 bg-white/20 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full border border-white/30">
+            <span className="flex items-center gap-1 bg-white/20 backdrop-blur-sm text-white text-[13px] font-bold px-2.5 py-1 rounded-full border border-white/30">
               <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
               Verificado
             </span>
           ) : <span />}
           {maker.featured && (
-            <span className="bg-yellow-400 text-yellow-900 text-[10px] font-black px-2.5 py-1 rounded-full shadow-lg">
+            <span className="bg-yellow-400 text-yellow-900 text-[13px] font-black px-2.5 py-1 rounded-full shadow-lg">
               ⭐ TOP
             </span>
           )}
@@ -107,14 +107,14 @@ function MakerCard({ row, onFollow, index }: { row: any; onFollow: (id: number) 
           <h3 className="font-black text-gray-900 text-[15px] text-center leading-tight tracking-tight">
             {maker.displayName}
           </h3>
-          <p className="text-[11px] text-orange-500 font-bold mt-0.5 tracking-wide uppercase">
+          <p className="text-[13px] text-orange-500 font-bold mt-0.5 tracking-wide uppercase">
             {maker.specialty}
           </p>
         </div>
 
         {/* Bio */}
         {maker.bio && (
-          <p className="text-[11px] text-gray-400 text-center line-clamp-2 leading-relaxed mb-3">
+          <p className="text-[13px] text-gray-400 text-center line-clamp-2 leading-relaxed mb-3">
             {maker.bio}
           </p>
         )}
@@ -123,19 +123,19 @@ function MakerCard({ row, onFollow, index }: { row: any; onFollow: (id: number) 
         <div className="flex items-center justify-center gap-0 mb-4 bg-gray-50 rounded-2xl p-2.5">
           <div className="flex-1 flex flex-col items-center">
             <span className="text-[13px] font-black text-gray-900">{fmtCount(maker.followersCount)}</span>
-            <span className="text-[9px] text-gray-400 font-semibold uppercase tracking-wider mt-0.5">Fans</span>
+            <span className="text-[13px] text-gray-400 font-semibold uppercase tracking-wider mt-0.5">Fans</span>
           </div>
           <div className="w-px h-7 bg-gray-200" />
           <div className="flex-1 flex flex-col items-center">
             <span className="text-[13px] font-black text-gray-900">{maker.recipesCount}</span>
-            <span className="text-[9px] text-gray-400 font-semibold uppercase tracking-wider mt-0.5">Recetas</span>
+            <span className="text-[13px] text-gray-400 font-semibold uppercase tracking-wider mt-0.5">Recetas</span>
           </div>
           {maker.rating > 0 && (
             <>
               <div className="w-px h-7 bg-gray-200" />
               <div className="flex-1 flex flex-col items-center">
                 <span className="text-[13px] font-black text-gray-900">⭐{maker.rating?.toFixed(1)}</span>
-                <span className="text-[9px] text-gray-400 font-semibold uppercase tracking-wider mt-0.5">Rating</span>
+                <span className="text-[13px] text-gray-400 font-semibold uppercase tracking-wider mt-0.5">Rating</span>
               </div>
             </>
           )}
@@ -147,7 +147,7 @@ function MakerCard({ row, onFollow, index }: { row: any; onFollow: (id: number) 
             href={`https://instagram.com/${maker.instagramHandle}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-1.5 mb-3 text-[11px] text-pink-500 font-bold hover:text-pink-600 transition-colors"
+            className="flex items-center justify-center gap-1.5 mb-3 text-[13px] text-pink-500 font-bold hover:text-pink-600 transition-colors"
             onClick={(e) => e.stopPropagation()}
           >
             <IgIcon />
@@ -189,16 +189,16 @@ function RecipeCard({ recipe }: { recipe: typeof DEMO_RECIPES[0] }) {
         <div className="absolute bottom-2.5 left-3 right-3">
           <p className="text-white font-black text-[13px] line-clamp-2 leading-tight">{recipe.title}</p>
         </div>
-        <span className="absolute top-2.5 right-2.5 bg-orange-500 text-white text-[10px] font-black px-2 py-0.5 rounded-full">
+        <span className="absolute top-2.5 right-2.5 bg-orange-500 text-white text-[13px] font-black px-2 py-0.5 rounded-full">
           {recipe.category}
         </span>
       </div>
       <div className="p-3">
         <div className="flex items-center gap-2 mb-2">
           <img src={recipe.makerAvatar} alt={recipe.makerName} className="w-5 h-5 rounded-full object-cover ring-1 ring-orange-100" />
-          <p className="text-[11px] font-bold text-gray-600 truncate">{recipe.makerName}</p>
+          <p className="text-[13px] font-bold text-gray-600 truncate">{recipe.makerName}</p>
         </div>
-        <div className="flex items-center justify-between text-[11px] text-gray-400 font-semibold">
+        <div className="flex items-center justify-between text-[13px] text-gray-400 font-semibold">
           <span>🔥 {recipe.calories} kcal</span>
           <span>⏱ {recipe.time}m</span>
           <span>❤️ {recipe.likes.toLocaleString()}</span>
@@ -251,9 +251,9 @@ export default function BuddyMakers() {
         <div className="flex items-center justify-between mb-3">
           <div>
             <h1 className="text-[22px] font-black text-gray-900 tracking-tight">BuddyMakers</h1>
-            <p className="text-[12px] text-gray-400 font-medium">Creadores de contenido nutricional</p>
+            <p className="text-sm text-gray-400 font-medium">Creadores de contenido nutricional</p>
           </div>
-          <span className="bg-orange-50 text-orange-600 text-[11px] font-black px-3 py-1.5 rounded-full border border-orange-100">
+          <span className="bg-orange-50 text-orange-600 text-[13px] font-black px-3 py-1.5 rounded-full border border-orange-100">
             {makers.length} makers
           </span>
         </div>

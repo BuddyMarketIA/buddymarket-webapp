@@ -208,7 +208,7 @@ export default function Dashboard() {
           <p style={{ margin: "2px 0 0", fontSize: "13px", color: "#9ca3af", fontWeight: 500 }}>
             {getDay().charAt(0).toUpperCase() + getDay().slice(1)}
           </p>
-          <p style={{ margin: "4px 0 0", fontSize: "12px", color: "#F97316", fontWeight: 600 }}>
+          <p style={{ margin: "4px 0 0", fontSize: "14px", color: "#F97316", fontWeight: 600 }}>
             🎯 ¡Sigue así, estás en racha!
           </p>
         </div>
@@ -222,7 +222,7 @@ export default function Dashboard() {
               <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: "linear-gradient(135deg, #6366F1, #818CF8)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", flexShrink: 0 }}>👤</div>
               <div style={{ flex: 1 }}>
                 <p style={{ margin: 0, fontSize: "14px", fontWeight: 800, color: "#3730a3" }}>Completa tu perfil</p>
-                <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#4338ca", fontWeight: 500 }}>Para darte las mejores recomendaciones personalizadas</p>
+                <p style={{ margin: "2px 0 0", fontSize: "14px", color: "#4338ca", fontWeight: 500 }}>Para darte las mejores recomendaciones personalizadas</p>
               </div>
               <span style={{ fontSize: "20px", fontWeight: 900, color: "#6366F1" }}>{profileCompletion}%</span>
             </div>
@@ -230,7 +230,7 @@ export default function Dashboard() {
             <div style={{ background: "#C7D2FE", borderRadius: "999px", height: "8px", overflow: "hidden" }}>
               <div style={{ background: "linear-gradient(90deg, #6366F1, #818CF8)", borderRadius: "999px", height: "100%", width: `${profileCompletion}%`, transition: "width 0.6s ease" }} />
             </div>
-            <p style={{ margin: "8px 0 0", fontSize: "11px", color: "#6366F1", fontWeight: 600, textAlign: "right" }}>Toca para completar →</p>
+            <p style={{ margin: "8px 0 0", fontSize: "14px", color: "#6366F1", fontWeight: 600, textAlign: "right" }}>Toca para completar →</p>
           </div>
         </Link>
       )}
@@ -252,7 +252,7 @@ export default function Dashboard() {
             </div>
             <button
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowGoalEdit(!showGoalEdit); }}
-              style={{ background: "rgba(249,115,22,0.20)", border: "1px solid rgba(249,115,22,0.35)", borderRadius: "10px", padding: "4px 10px", fontSize: "11px", color: "#FB923C", cursor: "pointer", fontWeight: 700 }}
+              style={{ background: "rgba(249,115,22,0.20)", border: "1px solid rgba(249,115,22,0.35)", borderRadius: "10px", padding: "4px 10px", fontSize: "14px", color: "#FB923C", cursor: "pointer", fontWeight: 700 }}
             >
               Meta: {goalCalories} kcal
             </button>
@@ -296,7 +296,7 @@ export default function Dashboard() {
               </svg>
               <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "2px" }}>
                 <span style={{ fontSize: "22px", fontWeight: 900, color: "white", lineHeight: 1, letterSpacing: "-0.04em" }}>{consumed}</span>
-                <span style={{ fontSize: "10px", color: "rgba(255,255,255,0.55)", fontWeight: 600, letterSpacing: "0.05em" }}>kcal</span>
+                <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.55)", fontWeight: 600, letterSpacing: "0.05em" }}>kcal</span>
                 <span style={{ fontSize: "9px", color: progress >= 100 ? "#EF4444" : "#22C55E", fontWeight: 700, marginTop: "1px" }}>
                   {progress >= 100 ? "¡Límite!" : `${Math.round(progress)}%`}
                 </span>
@@ -305,7 +305,7 @@ export default function Dashboard() {
 
             {/* Right column: remaining + macros */}
             <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ margin: "0 0 2px", fontSize: "11px", color: "rgba(255,255,255,0.5)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>Restantes</p>
+              <p style={{ margin: "0 0 2px", fontSize: "14px", color: "rgba(255,255,255,0.5)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>Restantes</p>
               <p style={{ margin: "0 0 16px", fontSize: "32px", fontWeight: 900, color: "white", letterSpacing: "-0.05em", lineHeight: 1 }}>
                 {remaining}<span style={{ fontSize: "14px", fontWeight: 600, color: "rgba(255,255,255,0.5)", marginLeft: "4px" }}>kcal</span>
               </p>
@@ -320,8 +320,8 @@ export default function Dashboard() {
                 return (
                   <div key={m.label} style={{ marginBottom: "7px" }}>
                     <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "3px" }}>
-                      <span style={{ fontSize: "10px", color: "rgba(255,255,255,0.6)", fontWeight: 600 }}>{m.emoji} {m.label}</span>
-                      <span style={{ fontSize: "10px", color: m.color, fontWeight: 800 }}>{m.value}g</span>
+                      <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.6)", fontWeight: 600 }}>{m.emoji} {m.label}</span>
+                      <span style={{ fontSize: "13px", color: m.color, fontWeight: 800 }}>{m.value}g</span>
                     </div>
                     <div style={{ height: "4px", borderRadius: "999px", background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
                       <div style={{ height: "100%", borderRadius: "999px", background: m.color, width: `${pct}%`, transition: "width 1s cubic-bezier(0.4,0,0.2,1)", boxShadow: `0 0 6px ${m.color}80` }} />
@@ -335,11 +335,11 @@ export default function Dashboard() {
           {/* Bottom CTA */}
           <div style={{ marginTop: "16px", paddingTop: "14px", borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "space-between", position: "relative" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <span style={{ fontSize: "12px" }}>📝</span>
-              <span style={{ fontSize: "12px", fontWeight: 600, color: "rgba(255,255,255,0.6)" }}>Toca para registrar comidas</span>
+              <span style={{ fontSize: "14px" }}>📝</span>
+              <span style={{ fontSize: "14px", fontWeight: 600, color: "rgba(255,255,255,0.6)" }}>Toca para registrar comidas</span>
             </div>
             <div style={{ display: "flex", alignItems: "center", gap: "4px", background: "rgba(249,115,22,0.20)", borderRadius: "10px", padding: "5px 10px" }}>
-              <span style={{ fontSize: "11px", fontWeight: 700, color: "#FB923C" }}>Abrir diario</span>
+              <span style={{ fontSize: "14px", fontWeight: 700, color: "#FB923C" }}>Abrir diario</span>
               <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FB923C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
             </div>
           </div>
@@ -356,7 +356,7 @@ export default function Dashboard() {
               <p style={{ margin: "0 0 2px", fontSize: "13px", fontWeight: 600, color: "rgba(255,255,255,0.85)" }}>Racha actual</p>
               <p style={{ margin: 0, fontSize: "24px", fontWeight: 900, color: "white", lineHeight: 1, letterSpacing: "-0.03em" }}>{streakData.data?.currentStreak ?? 0} días</p>
               {(streakData.data?.longestStreak ?? 0) > (streakData.data?.currentStreak ?? 0) && (
-                <p style={{ margin: "4px 0 0", fontSize: "11px", fontWeight: 600, color: "rgba(255,255,255,0.7)" }}>Récord: {streakData.data?.longestStreak} días 🏆</p>
+                <p style={{ margin: "4px 0 0", fontSize: "14px", fontWeight: 600, color: "rgba(255,255,255,0.7)" }}>Récord: {streakData.data?.longestStreak} días 🏆</p>
               )}
             </div>
           </div>
@@ -378,10 +378,10 @@ export default function Dashboard() {
                 </div>
                 <div style={{ flex: 1 }}>
                   <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#1a1a1a" }}>{item.recipe?.nameEs || item.customMealName || "Comida"}</p>
-                  <p style={{ margin: 0, fontSize: "11px", color: "#9ca3af" }}>{item.mealType === "breakfast" ? "Desayuno" : item.mealType === "lunch" ? "Comida" : item.mealType === "dinner" ? "Cena" : "Snack"}</p>
+                  <p style={{ margin: 0, fontSize: "14px", color: "#9ca3af" }}>{item.mealType === "breakfast" ? "Desayuno" : item.mealType === "lunch" ? "Comida" : item.mealType === "dinner" ? "Cena" : "Snack"}</p>
                 </div>
                 <Link href={`/meal-log`}>
-                  <button onClick={() => toast.success("Añadido al diario")} style={{ background: "#F97316", border: "none", borderRadius: "10px", padding: "6px 12px", fontSize: "11px", fontWeight: 700, color: "white", cursor: "pointer" }}>
+                  <button onClick={() => toast.success("Añadido al diario")} style={{ background: "#F97316", border: "none", borderRadius: "10px", padding: "6px 12px", fontSize: "14px", fontWeight: 700, color: "white", cursor: "pointer" }}>
                     + Registrar
                   </button>
                 </Link>
@@ -400,9 +400,9 @@ export default function Dashboard() {
               <span style={{ fontSize: "20px" }}>🍽️</span>
               <p style={{ margin: 0, fontSize: "17px", fontWeight: 900, color: "white", letterSpacing: "-0.02em" }}>Menú semanal personalizado</p>
             </div>
-            <p style={{ margin: "0 0 10px", fontSize: "12px", color: "rgba(255,255,255,0.85)" }}>Basado en tus objetivos</p>
+            <p style={{ margin: "0 0 10px", fontSize: "14px", color: "rgba(255,255,255,0.85)" }}>Basado en tus objetivos</p>
             <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(255,255,255,0.2)", borderRadius: "12px", padding: "6px 14px", backdropFilter: "blur(4px)" }}>
-              <span style={{ fontSize: "12px", fontWeight: 700, color: "white" }}>Ver menú</span>
+              <span style={{ fontSize: "14px", fontWeight: 700, color: "white" }}>Ver menú</span>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
             </div>
           </div>
@@ -426,7 +426,7 @@ export default function Dashboard() {
               onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
             >
               <div style={{ fontSize: "28px", marginBottom: "6px" }}>{item.emoji}</div>
-              <p style={{ margin: 0, fontSize: "11px", fontWeight: 800, color: item.color, lineHeight: 1.3 }}>{item.label}</p>
+              <p style={{ margin: 0, fontSize: "14px", fontWeight: 800, color: item.color, lineHeight: 1.3 }}>{item.label}</p>
             </div>
           </Link>
         ))}
@@ -448,7 +448,7 @@ export default function Dashboard() {
               <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.72) 100%)" }} />
               <div style={{ position: "absolute", top: "12px", left: "12px", background: QUICK_ACCESS[0].accent, borderRadius: "10px", padding: "5px 10px", display: "flex", alignItems: "center", gap: "5px" }}>
                 <span style={{ fontSize: "14px" }}>{QUICK_ACCESS[0].emoji}</span>
-                <span style={{ fontSize: "11px", fontWeight: 800, color: "white" }}>{QUICK_ACCESS[0].label}</span>
+                <span style={{ fontSize: "14px", fontWeight: 800, color: "white" }}>{QUICK_ACCESS[0].label}</span>
               </div>
               <div style={{ position: "absolute", bottom: "14px", left: "14px", right: "14px" }}>
                 <p style={{ margin: 0, fontSize: "13px", color: "rgba(255,255,255,0.75)", fontWeight: 500 }}>{QUICK_ACCESS[0].subtitle}</p>
@@ -472,11 +472,11 @@ export default function Dashboard() {
                 <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${item.img})`, backgroundSize: "cover", backgroundPosition: "center" }} />
                 <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.70) 100%)" }} />
                 <div style={{ position: "absolute", top: "10px", left: "10px", background: item.accent, borderRadius: "8px", padding: "3px 8px", display: "flex", alignItems: "center", gap: "4px" }}>
-                  <span style={{ fontSize: "11px" }}>{item.emoji}</span>
-                  <span style={{ fontSize: "10px", fontWeight: 800, color: "white" }}>{item.label}</span>
+                  <span style={{ fontSize: "14px" }}>{item.emoji}</span>
+                  <span style={{ fontSize: "13px", fontWeight: 800, color: "white" }}>{item.label}</span>
                 </div>
                 <div style={{ position: "absolute", bottom: "10px", left: "10px", right: "10px" }}>
-                  <p style={{ margin: 0, fontSize: "10px", color: "rgba(255,255,255,0.75)", fontWeight: 500, lineHeight: 1.3 }}>{item.subtitle}</p>
+                  <p style={{ margin: 0, fontSize: "13px", color: "rgba(255,255,255,0.75)", fontWeight: 500, lineHeight: 1.3 }}>{item.subtitle}</p>
                 </div>
               </div>
             </Link>
@@ -499,10 +499,10 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <p style={{ margin: 0, fontSize: "14px", fontWeight: 900, color: "white", letterSpacing: "-0.02em" }}>{QUICK_ACCESS[4].label}</p>
-                  <p style={{ margin: 0, fontSize: "11px", color: "rgba(255,255,255,0.8)" }}>{QUICK_ACCESS[4].subtitle}</p>
+                  <p style={{ margin: 0, fontSize: "14px", color: "rgba(255,255,255,0.8)" }}>{QUICK_ACCESS[4].subtitle}</p>
                 </div>
                 <div style={{ marginLeft: "auto", background: "rgba(255,255,255,0.2)", borderRadius: "10px", padding: "4px 10px", backdropFilter: "blur(8px)" }}>
-                  <span style={{ fontSize: "10px", fontWeight: 800, color: "white" }}>✨ IA</span>
+                  <span style={{ fontSize: "13px", fontWeight: 800, color: "white" }}>✨ IA</span>
                 </div>
               </div>
             </div>
@@ -517,10 +517,10 @@ export default function Dashboard() {
               <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${QUICK_ACCESS[3].img})`, backgroundSize: "cover", backgroundPosition: "center" }} />
               <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.72) 100%)" }} />
               <div style={{ position: "absolute", top: "10px", left: "10px", background: QUICK_ACCESS[3].accent, borderRadius: "8px", padding: "3px 8px" }}>
-                <span style={{ fontSize: "10px", fontWeight: 800, color: "white" }}>{QUICK_ACCESS[3].emoji}</span>
+                <span style={{ fontSize: "13px", fontWeight: 800, color: "white" }}>{QUICK_ACCESS[3].emoji}</span>
               </div>
               <div style={{ position: "absolute", bottom: "10px", left: "10px", right: "6px" }}>
-                <p style={{ margin: 0, fontSize: "11px", fontWeight: 800, color: "white" }}>{QUICK_ACCESS[3].label}</p>
+                <p style={{ margin: 0, fontSize: "14px", fontWeight: 800, color: "white" }}>{QUICK_ACCESS[3].label}</p>
                 <p style={{ margin: 0, fontSize: "9px", color: "rgba(255,255,255,0.7)" }}>{QUICK_ACCESS[3].subtitle}</p>
               </div>
             </div>
@@ -542,7 +542,7 @@ export default function Dashboard() {
                 </div>
                 <div>
                   <p style={{ margin: 0, fontSize: "14px", fontWeight: 900, color: "white", letterSpacing: "-0.02em" }}>{QUICK_ACCESS[5].label}</p>
-                  <p style={{ margin: 0, fontSize: "11px", color: "rgba(255,255,255,0.8)" }}>{QUICK_ACCESS[5].subtitle}</p>
+                  <p style={{ margin: 0, fontSize: "14px", color: "rgba(255,255,255,0.8)" }}>{QUICK_ACCESS[5].subtitle}</p>
                 </div>
                 <svg style={{ marginLeft: "auto" }} width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.7)" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
               </div>
@@ -565,7 +565,7 @@ export default function Dashboard() {
               <p style={{ margin: 0, fontSize: "13px", fontWeight: 800, color: "#92400E" }}>
                 Productos próximos a caducar en tu inventario
               </p>
-              <p style={{ margin: 0, fontSize: "11px", color: "#B45309" }}>Toca para ver el inventario →</p>
+              <p style={{ margin: 0, fontSize: "14px", color: "#B45309" }}>Toca para ver el inventario →</p>
             </div>
           </div>
         </Link>
@@ -592,12 +592,12 @@ export default function Dashboard() {
                 <div style={{ width: "150px", flexShrink: 0, borderRadius: "18px", overflow: "hidden", cursor: "pointer", position: "relative", boxShadow: "0 4px 16px rgba(0,0,0,0.12)" }}>
                   <div style={{ height: "110px", background: `linear-gradient(180deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.70) 100%), url(${recipe.imageUrl || FOOD_IMAGES[i % FOOD_IMAGES.length]}) center/cover` }}>
                     <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "10px" }}>
-                      <p style={{ margin: 0, fontSize: "12px", fontWeight: 800, color: "white", lineHeight: 1.3, textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}>{recipe.nameEs || recipe.name}</p>
-                      <p style={{ margin: "2px 0 0", fontSize: "10px", color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>🔥 {recipe.calories ?? 0} kcal</p>
+                      <p style={{ margin: 0, fontSize: "14px", fontWeight: 800, color: "white", lineHeight: 1.3, textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}>{recipe.nameEs || recipe.name}</p>
+                      <p style={{ margin: "2px 0 0", fontSize: "13px", color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>🔥 {recipe.calories ?? 0} kcal</p>
                     </div>
                   </div>
                   <div style={{ background: "white", padding: "6px 10px" }}>
-                    <p style={{ margin: 0, fontSize: "10px", color: "#9ca3af", fontWeight: 600 }}>
+                    <p style={{ margin: 0, fontSize: "13px", color: "#9ca3af", fontWeight: 600 }}>
                       {recipe.mealTime === "desayuno" ? "☀️ Desayuno" :
                        recipe.mealTime === "comida" ? "🍽️ Comida" :
                        recipe.mealTime === "cena" ? "🌙 Cena" :
@@ -614,9 +614,9 @@ export default function Dashboard() {
             <div style={{ background: "linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%)", borderRadius: "18px", padding: "20px", textAlign: "center", boxShadow: "0 2px 8px rgba(249,115,22,0.08)", border: "1px solid rgba(249,115,22,0.15)", cursor: "pointer" }}>
               <p style={{ margin: "0 0 6px", fontSize: "28px" }}>🍽️</p>
               <p style={{ margin: "0 0 4px", fontSize: "14px", fontWeight: 800, color: "#1a1a1a" }}>Personaliza tus recomendaciones</p>
-              <p style={{ margin: "0 0 12px", fontSize: "12px", color: "#9ca3af" }}>Completa tu perfil para recibir recetas adaptadas a tus objetivos y preferencias</p>
+              <p style={{ margin: "0 0 12px", fontSize: "14px", color: "#9ca3af" }}>Completa tu perfil para recibir recetas adaptadas a tus objetivos y preferencias</p>
               <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "#F97316", borderRadius: "12px", padding: "8px 16px" }}>
-                <span style={{ fontSize: "12px", fontWeight: 700, color: "white" }}>Completar perfil →</span>
+                <span style={{ fontSize: "14px", fontWeight: 700, color: "white" }}>Completar perfil →</span>
               </div>
             </div>
           </Link>
@@ -669,7 +669,7 @@ export default function Dashboard() {
                     </div>
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ margin: 0, fontSize: "13px", fontWeight: 800, color: "#1a1a1a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{menu.name}</p>
-                      <p style={{ margin: "2px 0 0", fontSize: "11px", color: "#9ca3af", fontWeight: 600 }}>
+                      <p style={{ margin: "2px 0 0", fontSize: "14px", color: "#9ca3af", fontWeight: 600 }}>
                         {label} · {menu.dailyCalories ?? "—"} kcal/día
                       </p>
                     </div>
@@ -686,9 +686,9 @@ export default function Dashboard() {
             <div style={{ background: "linear-gradient(135deg, #F0FDF4 0%, #DCFCE7 100%)", borderRadius: "18px", padding: "20px", textAlign: "center", boxShadow: "0 2px 8px rgba(34,197,94,0.08)", border: "1px solid rgba(34,197,94,0.15)", cursor: "pointer" }}>
               <p style={{ margin: "0 0 6px", fontSize: "28px" }}>📅</p>
               <p style={{ margin: "0 0 4px", fontSize: "14px", fontWeight: 800, color: "#1a1a1a" }}>Explora la biblioteca de menús</p>
-              <p style={{ margin: "0 0 12px", fontSize: "12px", color: "#9ca3af" }}>50+ menús semanales por objetivo: pérdida de peso, ganancia muscular, vegano y más</p>
+              <p style={{ margin: "0 0 12px", fontSize: "14px", color: "#9ca3af" }}>50+ menús semanales por objetivo: pérdida de peso, ganancia muscular, vegano y más</p>
               <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "#22C55E", borderRadius: "12px", padding: "8px 16px" }}>
-                <span style={{ fontSize: "12px", fontWeight: 700, color: "white" }}>Ver menús →</span>
+                <span style={{ fontSize: "14px", fontWeight: 700, color: "white" }}>Ver menús →</span>
               </div>
             </div>
           </Link>
@@ -713,11 +713,11 @@ export default function Dashboard() {
                 display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "16px",
               }}
             >
-              <span style={{ display: "inline-block", background: "#F97316", color: "white", fontSize: "10px", fontWeight: 800, borderRadius: "8px", padding: "3px 8px", marginBottom: "6px", width: "fit-content" }}>{recipe.tag}</span>
+              <span style={{ display: "inline-block", background: "#F97316", color: "white", fontSize: "13px", fontWeight: 800, borderRadius: "8px", padding: "3px 8px", marginBottom: "6px", width: "fit-content" }}>{recipe.tag}</span>
               <p style={{ margin: 0, fontSize: "18px", fontWeight: 900, color: "white", letterSpacing: "-0.02em", textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>{recipe.name}</p>
               <div style={{ display: "flex", gap: "12px", marginTop: "4px" }}>
-                <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>🔥 {recipe.kcal} kcal</span>
-                <span style={{ fontSize: "12px", color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>⏱ {recipe.time}</span>
+                <span style={{ fontSize: "14px", color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>🔥 {recipe.kcal} kcal</span>
+                <span style={{ fontSize: "14px", color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>⏱ {recipe.time}</span>
               </div>
             </div>
           ))}
@@ -752,7 +752,7 @@ export default function Dashboard() {
               >
                 <div style={{ background: card.color, padding: "14px 12px 12px", display: "flex", flexDirection: "column", alignItems: "center", gap: "6px" }}>
                   <span style={{ fontSize: "26px" }}>{card.emoji}</span>
-                  <p style={{ margin: 0, fontSize: "11px", fontWeight: 900, color: "white", textAlign: "center", letterSpacing: "-0.01em" }}>{card.label}</p>
+                  <p style={{ margin: 0, fontSize: "14px", fontWeight: 900, color: "white", textAlign: "center", letterSpacing: "-0.01em" }}>{card.label}</p>
                   <p style={{ margin: 0, fontSize: "9px", color: "rgba(255,255,255,0.8)", textAlign: "center", lineHeight: 1.3 }}>{card.desc}</p>
                 </div>
               </div>
@@ -771,7 +771,7 @@ export default function Dashboard() {
               <p style={{ margin: 0, fontSize: "16px", fontWeight: 900, color: "white" }}>BuddyShop</p>
               <span style={{ background: "#F97316", color: "white", fontSize: "9px", fontWeight: 800, borderRadius: "6px", padding: "2px 6px" }}>buddyshop.app</span>
             </div>
-            <p style={{ margin: 0, fontSize: "12px", color: "rgba(255,255,255,0.6)" }}>Utensilios y productos de cocina premium</p>
+            <p style={{ margin: 0, fontSize: "14px", color: "rgba(255,255,255,0.6)" }}>Utensilios y productos de cocina premium</p>
           </div>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M9 18l6-6-6-6"/>
@@ -786,7 +786,7 @@ export default function Dashboard() {
           <div style={{ width: "48px", height: "48px", borderRadius: "16px", background: "rgba(255,255,255,0.25)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", flexShrink: 0 }}>👑</div>
           <div style={{ flex: 1, position: "relative" }}>
             <p style={{ margin: "0 0 2px", fontSize: "16px", fontWeight: 900, color: "white" }}>Hazte Pro o Pro Max</p>
-            <p style={{ margin: 0, fontSize: "12px", color: "rgba(255,255,255,0.85)" }}>IA ilimitada · BuddyScan · Expertos</p>
+            <p style={{ margin: 0, fontSize: "14px", color: "rgba(255,255,255,0.85)" }}>IA ilimitada · BuddyScan · Expertos</p>
           </div>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M9 18l6-6-6-6"/>
@@ -804,13 +804,13 @@ export default function Dashboard() {
           </div>
           <div>
             <p style={{ margin: 0, fontSize: "14px", fontWeight: 800, color: "#1a1a1a" }}>Registrar comida</p>
-            <p style={{ margin: 0, fontSize: "12px", color: "#9ca3af" }}>Añade lo que has comido hoy</p>
+            <p style={{ margin: 0, fontSize: "14px", color: "#9ca3af" }}>Añade lo que has comido hoy</p>
           </div>
         </div>
       </Link>
 
       {/* Disclaimer */}
-      <p style={{ fontSize: "10px", color: "#d1d5db", textAlign: "center", margin: "8px 0 0", lineHeight: 1.5 }}>
+      <p style={{ fontSize: "13px", color: "#d1d5db", textAlign: "center", margin: "8px 0 0", lineHeight: 1.5 }}>
         BuddyMarket no constituye asesoramiento médico o nutricional profesional. Consulta a un profesional.
       </p>
     </div>
