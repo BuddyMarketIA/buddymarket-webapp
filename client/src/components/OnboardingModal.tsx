@@ -65,8 +65,12 @@ export function OnboardingModal() {
     // If user hasn't completed onboarding, redirect to registration wizard
     if (profileData && !profileData.user?.onboardingCompleted) {
       const path = window.location.pathname;
-      // Don't redirect if already on /register or public pages
-      if (path !== "/register" && path !== "/" && !path.startsWith("/buddy-experts/") && !path.startsWith("/buddy-makers/")) {
+      // Public pages — never redirect from these
+      const publicPaths = ["/", "/blog", "/terms", "/privacy", "/cookies", "/legal", "/gdpr", "/register"];
+      const isPublic = publicPaths.includes(path)
+        || path.startsWith("/buddy-experts/")
+        || path.startsWith("/buddy-makers/");
+      if (!isPublic) {
         navigate("/register");
       }
       return;
