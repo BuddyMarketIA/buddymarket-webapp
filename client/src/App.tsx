@@ -69,7 +69,8 @@ function Router() {
       <Route path="/buddy-ia">{() => <WithLayout component={BuddyIA} />}</Route>
       <Route path="/buddy-shop">{() => <WithLayout component={BuddyShop} />}</Route>
       <Route path="/supermercados">{() => <WithLayout component={MercadonaShop} />}</Route>
-      <Route path="/carrefour">{() => <WithLayout component={CarrefourShop} />}</Route>
+      {/* /carrefour redirects to unified supermercados page */}
+      <Route path="/carrefour">{() => <WithLayout component={MercadonaShop} />}</Route>
       <Route path="/menu-library">{() => <WithLayout component={MenuLibrary} />}</Route>
       <Route path="/favorites">{() => <WithLayout component={Favorites} />}</Route>
       <Route path="/buddy-experts/:id">{() => <BuddyProfile />}</Route>

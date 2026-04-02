@@ -1,11 +1,13 @@
 import { useState, useMemo, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import BarcodeScanner from "@/components/BarcodeScanner";
 
 export default function MealLog() {
   const [dateOffset, setDateOffset] = useState(0);
   const [showAdd, setShowAdd] = useState(false);
-  const [addMode, setAddMode] = useState<"manual" | "photo">("manual");
+  const [addMode, setAddMode] = useState<"manual" | "photo" | "barcode">("manual");
+  const [showBarcodeScanner, setShowBarcodeScanner] = useState(false);
 
   // Manual form state
   const [mealName, setMealName] = useState("");
@@ -303,15 +305,21 @@ export default function MealLog() {
             <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
               <button
                 onClick={() => setAddMode("manual")}
-                style={{ flex: 1, padding: "10px", borderRadius: "14px", border: "none", cursor: "pointer", fontSize: "13px", fontWeight: 700, background: addMode === "manual" ? "#F97316" : "#f3f4f6", color: addMode === "manual" ? "white" : "#6b7280", transition: "all 0.2s" }}
+                style={{ flex: 1, padding: "10px", borderRadius: "14px", border: "none", cursor: "pointer", fontSize: "12px", fontWeight: 700, background: addMode === "manual" ? "#F97316" : "#f3f4f6", color: addMode === "manual" ? "white" : "#6b7280", transition: "all 0.2s" }}
               >
                 ✏️ Manual
               </button>
               <button
                 onClick={() => setAddMode("photo")}
-                style={{ flex: 1, padding: "10px", borderRadius: "14px", border: "none", cursor: "pointer", fontSize: "13px", fontWeight: 700, background: addMode === "photo" ? "#F97316" : "#f3f4f6", color: addMode === "photo" ? "white" : "#6b7280", transition: "all 0.2s" }}
+                style={{ flex: 1, padding: "10px", borderRadius: "14px", border: "none", cursor: "pointer", fontSize: "12px", fontWeight: 700, background: addMode === "photo" ? "#F97316" : "#f3f4f6", color: addMode === "photo" ? "white" : "#6b7280", transition: "all 0.2s" }}
               >
-                📸 Foto + IA
+                📸 Foto IA
+              </button>
+              <button
+                onClick={() => { setAddMode("barcode"); setShowBarcodeScanner(true); }}
+                style={{ flex: 1, padding: "10px", borderRadius: "14px", border: "none", cursor: "pointer", fontSize: "12px", fontWeight: 700, background: addMode === "barcode" ? "#F97316" : "#f3f4f6", color: addMode === "barcode" ? "white" : "#6b7280", transition: "all 0.2s" }}
+              >
+                🔍 Código
               </button>
             </div>
 
@@ -479,6 +487,27 @@ export default function MealLog() {
       <p style={{ fontSize: "10px", color: "#d1d5db", textAlign: "center", margin: "24px 0 0", lineHeight: 1.5 }}>
         BuddyMarket no constituye recomendaciones profesionales de nutrición. Consulta a un dietista.
       </p>
+
+      {/* Barcode Scanner Modal */}
+      {showBarcodeScanner && (
+        <BarcodeScanner
+          onProductFound={(product) => {
+            // Pre-fill the manual form with the scanned product data
+            setMealName(product.name + (product.brand ? ` (${product.brand})` : ""));
+            setCalories(String(product.per100g.calories));
+            setProteins(String(product.per100g.proteins));
+            setCarbs(String(product.per100g.carbohydrates));
+            setFats(String(product.per100g.fats));
+            setAddMode("manual");
+            setShowBarcodeScanner(false);
+            toast.success(`✓ Producto encontrado: ${product.name}`);
+          }}
+          onClose={() => {
+            setShowBarcodeScanner(false);
+            setAddMode("manual");
+          }}
+        />
+      )}
     </div>
   );
 }

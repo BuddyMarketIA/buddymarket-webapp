@@ -66,7 +66,9 @@ const SIDEBAR_GROUPS = [
       { key: "dashboard", label: "Dashboard", to: "/dashboard", emoji: "🏠" },
       { key: "profile", label: "Mi Perfil", to: "/profile", emoji: "👤" },
       { key: "metrics", label: "Mis Métricas", to: "/metrics", emoji: "⚖️" },
-      { key: "subscription", label: "Suscripción", to: "/subscription", emoji: "⭐" },
+      { key: "recipes", label: "Recetas", to: "/recipes", emoji: "📖" },
+      { key: "menus", label: "Menús", to: "/menus", emoji: "📅" },
+      { key: "inventory", label: "Inventario", to: "/inventory", emoji: "📦" },
     ],
   },
   {
@@ -74,20 +76,16 @@ const SIDEBAR_GROUPS = [
     items: [
       { key: "meal-log", label: "Diario Nutricional", to: "/meal-log", emoji: "📊" },
       { key: "stats", label: "Estadísticas", to: "/stats", emoji: "📈" },
-      { key: "recipes", label: "Recetas", to: "/recipes", emoji: "📖" },
       { key: "favorites", label: "Mis Favoritas", to: "/favorites", emoji: "❤️" },
-      { key: "menus", label: "Planificador de Menús", to: "/menus", emoji: "📅" },
       { key: "menu-library", label: "Biblioteca de Menús", to: "/menu-library", emoji: "📚" },
-      { key: "inventory", label: "Inventario", to: "/inventory", emoji: "📦" },
     ],
   },
   {
     label: "Compras",
     items: [
       { key: "shopping", label: "Lista de Compra", to: "/shopping-lists", emoji: "🛒" },
-      { key: "supermercados", label: "Mercadona", to: "/supermercados", emoji: "🟢" },
-      { key: "carrefour", label: "Carrefour", to: "/carrefour", emoji: "🔵" },
-      { key: "buddy-shop", label: "BuddyShop ↗", to: "/buddy-shop", emoji: "🛖" },
+      { key: "supermercados", label: "Supermercados", to: "/supermercados", emoji: "🏪" },
+      { key: "buddy-shop", label: "BuddyShop ↗", to: "/buddy-shop", emoji: "🛦" },
     ],
   },
   {

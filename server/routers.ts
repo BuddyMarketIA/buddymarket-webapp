@@ -1099,6 +1099,41 @@ Si no puedes detectar productos, devuelve {"products": []}. No incluyas texto ad
       }
     }),
 
+    lookupBarcode: protectedProcedure
+      .input(z.object({ barcode: z.string().min(4).max(30) }))
+      .query(async ({ input }) => {
+        try {
+          const url = `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(input.barcode)}.json?fields=product_name,product_name_es,nutriments,image_front_small_url,brands,quantity,serving_size`;
+          const response = await fetch(url, {
+            headers: { "User-Agent": "BuddyMarket/1.0 (contact@buddymarket.app)" },
+            signal: AbortSignal.timeout(8000),
+          });
+          if (!response.ok) throw new TRPCError({ code: "NOT_FOUND", message: "Producto no encontrado" });
+          const data = await response.json() as any;
+          if (data.status !== 1 || !data.product) {
+            throw new TRPCError({ code: "NOT_FOUND", message: "Producto no encontrado en la base de datos" });
+          }
+          const p = data.product;
+          const n = p.nutriments || {};
+          return {
+            barcode: input.barcode,
+            name: (p.product_name_es || p.product_name || "Producto desconocido").trim(),
+            brand: p.brands || null,
+            quantity: p.quantity || null,
+            imageUrl: p.image_front_small_url || null,
+            per100g: {
+              calories: Math.round(Number(n["energy-kcal_100g"]) || 0),
+              proteins: Math.round((Number(n["proteins_100g"]) || 0) * 10) / 10,
+              carbohydrates: Math.round((Number(n["carbohydrates_100g"]) || 0) * 10) / 10,
+              fats: Math.round((Number(n["fat_100g"]) || 0) * 10) / 10,
+            },
+          };
+        } catch (err: any) {
+          if (err instanceof TRPCError) throw err;
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Error al consultar la base de datos de productos" });
+        }
+      }),
+
     nutritionalHistory: protectedProcedure
       .input(z.object({ days: z.number().min(7).max(90).default(30) }))
       .query(async ({ ctx, input }) => {

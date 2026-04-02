@@ -449,3 +449,41 @@ describe("mealLogs.getStreak", () => {
     expect(typeof result.longestStreak).toBe("number");
   });
 });
+
+// ─── lookupBarcode ────────────────────────────────────────────────────────────
+describe("mealLogs.lookupBarcode", () => {
+  it("rejects barcode shorter than 4 chars", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    await expect(
+      caller.mealLogs.lookupBarcode({ barcode: "123" })
+    ).rejects.toThrow();
+  });
+
+  it("rejects barcode longer than 30 chars", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    await expect(
+      caller.mealLogs.lookupBarcode({ barcode: "1234567890123456789012345678901" })
+    ).rejects.toThrow();
+  });
+
+  it("accepts valid barcode format (13 digits)", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    // This will either return data or throw NOT_FOUND (both are valid behaviors in test env)
+    try {
+      const result = await caller.mealLogs.lookupBarcode({ barcode: "3017620422003" });
+      expect(result).toHaveProperty("barcode");
+      expect(result).toHaveProperty("name");
+      expect(result).toHaveProperty("per100g");
+      expect(result.per100g).toHaveProperty("calories");
+      expect(result.per100g).toHaveProperty("proteins");
+      expect(result.per100g).toHaveProperty("carbohydrates");
+      expect(result.per100g).toHaveProperty("fats");
+    } catch (err: any) {
+      // NOT_FOUND or INTERNAL_SERVER_ERROR are acceptable in test env (no network)
+      expect(["NOT_FOUND", "INTERNAL_SERVER_ERROR"]).toContain(err.code);
+    }
+  });
+});
