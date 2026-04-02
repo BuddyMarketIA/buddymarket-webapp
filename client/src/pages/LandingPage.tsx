@@ -197,7 +197,7 @@ export default function LandingPage() {
       }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 72 }}>
           {/* Logo */}
-          <img src={LOGO_COLOR} alt="BuddyMarket" style={{ height: 44, objectFit: "contain" }} />
+          <img src={LOGO_COLOR} alt="BuddyMarket" style={{ height: 64, objectFit: "contain" }} />
 
           {/* Desktop Nav */}
           <div style={{ display: "flex", alignItems: "center", gap: 32 }} className="desktop-nav">
@@ -206,6 +206,7 @@ export default function LandingPage() {
               { label: "Menús Especiales", href: "#special" },
               { label: "Precios", href: "#pricing" },
               { label: "Blog", href: "/blog" },
+              { label: "BuddyCoach ↗", href: "https://buddycoach.io" },
             ].map(item => (
               <a key={item.label} href={item.href}
                 style={{ fontSize: 15, fontWeight: 500, color: scrolled ? "#374151" : "#111827", textDecoration: "none", transition: "color 0.2s" }}
@@ -519,6 +520,88 @@ export default function LandingPage() {
         </div>
       </section>
 
+      {/* ─── BUDDYCOACH ─────────────────────────────────────────────────── */}
+      <section style={{ padding: "100px 24px", background: "#0f172a" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 80, alignItems: "center" }}>
+            {/* Left: text */}
+            <div>
+              <span style={{ fontSize: 12, fontWeight: 700, color: "#f97316", letterSpacing: "0.1em", textTransform: "uppercase" }}>ECOSISTEMA BUDDY</span>
+              <h2 style={{ fontSize: "clamp(28px, 4vw, 48px)", fontWeight: 900, color: "white", marginTop: 12, marginBottom: 20, letterSpacing: "-0.02em", lineHeight: 1.1 }}>
+                ¿Eres entrenador personal?<br />
+                <span style={{ color: "#f97316" }}>Conoce BuddyCoach</span>
+              </h2>
+              <p style={{ fontSize: 17, color: "#94a3b8", lineHeight: 1.8, marginBottom: 32 }}>
+                BuddyCoach.io es la plataforma hermana de BuddyMarket diseñada para entrenadores personales y coaches de fitness. Gestiona tus clientes, crea planes de entrenamiento personalizados y conecta la nutrición con el rendimiento deportivo.
+              </p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 40 }}>
+                {[
+                  { icon: "👥", text: "Gestión completa de clientes y seguimiento de progreso" },
+                  { icon: "🏋️", text: "Planes de entrenamiento personalizados con IA" },
+                  { icon: "🔗", text: "Integración directa con los menús nutricionales de BuddyMarket" },
+                  { icon: "📈", text: "Métricas de rendimiento, fuerza y composición corporal" },
+                  { icon: "💬", text: "Comunicación directa con tus clientes desde la plataforma" },
+                ].map((item, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 14 }}>
+                    <span style={{ fontSize: 20, flexShrink: 0, marginTop: 2 }}>{item.icon}</span>
+                    <span style={{ fontSize: 15, color: "#cbd5e1", lineHeight: 1.6 }}>{item.text}</span>
+                  </div>
+                ))}
+              </div>
+              <a href="https://buddycoach.io" target="_blank" rel="noopener noreferrer" style={{
+                display: "inline-flex", alignItems: "center", gap: 10,
+                padding: "16px 32px", borderRadius: 12, fontSize: 16, fontWeight: 700,
+                color: "white", background: "#f97316", textDecoration: "none",
+                boxShadow: "0 8px 24px rgba(249,115,22,0.4)", transition: "all 0.2s",
+              }}
+                onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 16px 40px rgba(249,115,22,0.5)"; }}
+                onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(249,115,22,0.4)"; }}
+              >
+                Visitar BuddyCoach.io
+                <span style={{ fontSize: 18 }}>→</span>
+              </a>
+            </div>
+
+            {/* Right: feature cards */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+              {[
+                { icon: "🎯", title: "Planes a medida", desc: "Crea rutinas de entrenamiento adaptadas a cada cliente con IA" },
+                { icon: "📊", title: "Seguimiento real", desc: "Monitoriza fuerza, peso, medidas y rendimiento en tiempo real" },
+                { icon: "🥗", title: "Nutrición integrada", desc: "Conecta con BuddyMarket para planes nutricionales completos" },
+                { icon: "💰", title: "Gestión de negocio", desc: "Facturación, pagos y gestión de suscripciones de clientes" },
+              ].map((card, i) => (
+                <div key={i} style={{
+                  background: "#1e293b", borderRadius: 16, padding: "24px",
+                  border: "1px solid #334155", transition: "all 0.2s",
+                }}
+                  onMouseEnter={e => { e.currentTarget.style.borderColor = "#f97316"; e.currentTarget.style.transform = "translateY(-4px)"; }}
+                  onMouseLeave={e => { e.currentTarget.style.borderColor = "#334155"; e.currentTarget.style.transform = "translateY(0)"; }}
+                >
+                  <div style={{ fontSize: 32, marginBottom: 12 }}>{card.icon}</div>
+                  <div style={{ fontSize: 15, fontWeight: 700, color: "white", marginBottom: 8 }}>{card.title}</div>
+                  <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.6 }}>{card.desc}</div>
+                </div>
+              ))}
+              <div style={{
+                gridColumn: "1 / -1",
+                background: "linear-gradient(135deg, #f97316 0%, #ea580c 100%)",
+                borderRadius: 16, padding: "20px 24px",
+                display: "flex", alignItems: "center", justifyContent: "space-between",
+              }}>
+                <div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "white", marginBottom: 4 }}>🤝 Ecosistema completo</div>
+                  <div style={{ fontSize: 13, color: "rgba(255,255,255,0.85)" }}>BuddyMarket + BuddyCoach = nutrición y entrenamiento unidos</div>
+                </div>
+                <a href="https://buddycoach.io" target="_blank" rel="noopener noreferrer" style={{
+                  padding: "10px 20px", borderRadius: 10, fontSize: 13, fontWeight: 700,
+                  color: "#f97316", background: "white", textDecoration: "none", whiteSpace: "nowrap", flexShrink: 0,
+                }}>Ver más →</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* ─── CTA FINAL ──────────────────────────────────────────────────── */}
       <section style={{
         padding: "100px 24px",
@@ -526,7 +609,7 @@ export default function LandingPage() {
         textAlign: "center",
       }}>
         <div style={{ maxWidth: 700, margin: "0 auto" }}>
-          <img src={LOGO_COLOR} alt="BuddyMarket" style={{ height: 56, objectFit: "contain", marginBottom: 32, filter: "brightness(0) invert(1)" }} />
+          <img src={LOGO_COLOR} alt="BuddyMarket" style={{ height: 80, objectFit: "contain", marginBottom: 32, filter: "brightness(0) invert(1)" }} />
           <h2 style={{ fontSize: "clamp(28px, 5vw, 52px)", fontWeight: 900, color: "white", marginBottom: 20, letterSpacing: "-0.02em" }}>
             Empieza hoy a comer<br />de forma inteligente
           </h2>
@@ -550,7 +633,7 @@ export default function LandingPage() {
           <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", gap: 48, marginBottom: 48 }}>
             {/* Brand */}
             <div>
-              <img src={LOGO_COLOR} alt="BuddyMarket" style={{ height: 40, objectFit: "contain", marginBottom: 16, filter: "brightness(0) invert(1)" }} />
+              <img src={LOGO_COLOR} alt="BuddyMarket" style={{ height: 60, objectFit: "contain", marginBottom: 16, filter: "brightness(0) invert(1)" }} />
               <p style={{ fontSize: 14, lineHeight: 1.7, color: "#6b7280", maxWidth: 280 }}>
                 El gestor nutricional inteligente que se adapta a ti. Planifica, cocina y come bien cada día.
               </p>
@@ -570,6 +653,9 @@ export default function LandingPage() {
                   >{l}</a>
                 </div>
               ))}
+              <div style={{ marginBottom: 10 }}>
+                <a href="https://buddycoach.io" target="_blank" rel="noopener noreferrer" style={{ fontSize: 14, color: "#f97316", textDecoration: "none", fontWeight: 600 }}>BuddyCoach.io ↗</a>
+              </div>
             </div>
 
             {/* Resources */}

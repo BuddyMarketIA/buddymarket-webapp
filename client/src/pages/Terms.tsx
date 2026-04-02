@@ -16,7 +16,7 @@ export default function Terms() {
       {/* Navbar */}
       <nav style={{ background: "white", borderBottom: "1px solid #e5e7eb", padding: "0 24px", position: "sticky", top: 0, zIndex: 50 }}>
         <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 68 }}>
-          <Link href="/"><img src={LOGO_COLOR} alt="BuddyMarket" style={{ height: 40, objectFit: "contain", cursor: "pointer" }} /></Link>
+          <Link href="/"><img src={LOGO_COLOR} alt="BuddyMarket" style={{ height: 60, objectFit: "contain", cursor: "pointer" }} /></Link>
           <Link href="/" style={{ fontSize: 14, color: "#6b7280", textDecoration: "none" }}>← Volver al inicio</Link>
         </div>
       </nav>
