@@ -164,20 +164,20 @@ export default function Dashboard() {
       {/* Profile Completion Card */}
       {showProfileCard && (
         <Link href="/profile">
-          <div style={{ background: "linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%)", border: "2px solid #FED7AA", borderRadius: "20px", padding: "16px", marginBottom: "16px", cursor: "pointer", boxShadow: "0 4px 16px rgba(249,115,22,0.12)" }}>
+          <div style={{ background: "linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%)", border: "2px solid #C7D2FE", borderRadius: "20px", padding: "16px", marginBottom: "16px", cursor: "pointer", boxShadow: "0 4px 16px rgba(99,102,241,0.14)" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "10px" }}>
-              <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: "linear-gradient(135deg, #F97316, #FB923C)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", flexShrink: 0 }}>👤</div>
+              <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: "linear-gradient(135deg, #6366F1, #818CF8)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", flexShrink: 0 }}>👤</div>
               <div style={{ flex: 1 }}>
-                <p style={{ margin: 0, fontSize: "14px", fontWeight: 800, color: "#9a3412" }}>Completa tu perfil</p>
-                <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#c2410c", fontWeight: 500 }}>Para darte las mejores recomendaciones personalizadas</p>
+                <p style={{ margin: 0, fontSize: "14px", fontWeight: 800, color: "#3730a3" }}>Completa tu perfil</p>
+                <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#4338ca", fontWeight: 500 }}>Para darte las mejores recomendaciones personalizadas</p>
               </div>
-              <span style={{ fontSize: "20px", fontWeight: 900, color: "#F97316" }}>{profileCompletion}%</span>
+              <span style={{ fontSize: "20px", fontWeight: 900, color: "#6366F1" }}>{profileCompletion}%</span>
             </div>
             {/* Progress bar */}
-            <div style={{ background: "#FED7AA", borderRadius: "999px", height: "8px", overflow: "hidden" }}>
-              <div style={{ background: "linear-gradient(90deg, #F97316, #FB923C)", borderRadius: "999px", height: "100%", width: `${profileCompletion}%`, transition: "width 0.6s ease" }} />
+            <div style={{ background: "#C7D2FE", borderRadius: "999px", height: "8px", overflow: "hidden" }}>
+              <div style={{ background: "linear-gradient(90deg, #6366F1, #818CF8)", borderRadius: "999px", height: "100%", width: `${profileCompletion}%`, transition: "width 0.6s ease" }} />
             </div>
-            <p style={{ margin: "8px 0 0", fontSize: "11px", color: "#ea580c", fontWeight: 600, textAlign: "right" }}>Toca para completar →</p>
+            <p style={{ margin: "8px 0 0", fontSize: "11px", color: "#6366F1", fontWeight: 600, textAlign: "right" }}>Toca para completar →</p>
           </div>
         </Link>
       )}

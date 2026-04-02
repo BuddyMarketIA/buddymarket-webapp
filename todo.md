@@ -247,3 +247,25 @@
 - [x] Diario: miniatura de foto en cada entrada del diario
 - [x] TypeScript: 0 errores
 - [x] Tests: 19/19 pasando
+
+## Sprint Búsqueda de Recetas por Nombre e Ingredientes
+- [ ] Backend: ampliar búsqueda en getRecipes para buscar también en description e ingredientsJson
+- [ ] Backend: añadir endpoint recipes.searchSuggestions para autocompletado rápido
+- [ ] UI: barra de búsqueda siempre visible en Recipes.tsx (no oculta detrás de botón)
+- [ ] UI: búsqueda en tiempo real con debounce (300ms)
+- [ ] UI: mostrar resultados con texto resaltado (highlight) en nombre
+- [ ] UI: estado vacío específico para búsqueda sin resultados con sugerencias
+- [ ] UI: chips de búsqueda recientes (últimas 5 búsquedas guardadas en localStorage)
+- [ ] UI: indicador de "buscando..." mientras carga
+- [ ] UI: contador de resultados encontrados
+
+- [x] Backend: ampliar búsqueda en getRecipes para buscar también en description e ingredientsJson
+- [x] Backend: añadir endpoint recipes.searchSuggestions para autocompletado rápido
+- [x] UI: barra de búsqueda siempre visible en Recipes.tsx (no oculta detrás de botón)
+- [x] UI: búsqueda en tiempo real con debounce (300ms)
+- [x] UI: mostrar resultados con texto resaltado (highlight) en nombre
+- [x] UI: estado vacío específico para búsqueda sin resultados con sugerencias
+- [x] UI: chips de búsqueda recientes (últimas 5 búsquedas guardadas en localStorage)
+- [x] UI: indicador de "buscando..." mientras carga
+- [x] UI: contador de resultados encontrados
+- [x] Card "Completa tu perfil": cambiar color a degradado índigo/azul

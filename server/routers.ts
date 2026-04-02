@@ -295,6 +295,9 @@ export const appRouter = router({
         return { ...recipe, ingredients, steps, categories: categories.map((c) => c.category), allergies: recipeAllergies.map((a) => a.allergy) };
       }),
 
+    searchSuggestions: publicProcedure
+      .input(z.object({ query: z.string(), limit: z.number().optional() }))
+      .query(({ input }) => db.searchRecipeSuggestions(input.query, input.limit ?? 8)),
     myRecipes: protectedProcedure
       .input(z.object({ limit: z.number().optional(), offset: z.number().optional() }))
       .query(({ ctx, input }) => db.getRecipes({ userId: ctx.user.id, ...input })),

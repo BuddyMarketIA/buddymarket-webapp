@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 import { Link } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -98,17 +98,48 @@ const PLACEHOLDER_IMAGES = [
   "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&q=80",
 ];
 
+const RECENT_SEARCHES_KEY = "buddymarket_recent_recipe_searches";
+
 function getPlaceholderImage(id: number) {
   return PLACEHOLDER_IMAGES[id % PLACEHOLDER_IMAGES.length];
 }
 
+function getRecentSearches(): string[] {
+  try {
+    return JSON.parse(localStorage.getItem(RECENT_SEARCHES_KEY) || "[]");
+  } catch {
+    return [];
+  }
+}
+
+function saveRecentSearch(query: string) {
+  if (!query.trim()) return;
+  const existing = getRecentSearches().filter(s => s !== query);
+  const updated = [query, ...existing].slice(0, 5);
+  localStorage.setItem(RECENT_SEARCHES_KEY, JSON.stringify(updated));
+}
+
+// ─── Highlight text ───────────────────────────────────────────────────────────
+function HighlightText({ text, query }: { text: string; query: string }) {
+  if (!query.trim()) return <span>{text}</span>;
+  const idx = text.toLowerCase().indexOf(query.toLowerCase());
+  if (idx === -1) return <span>{text}</span>;
+  return (
+    <span>
+      {text.slice(0, idx)}
+      <mark style={{ background: "rgba(249,115,22,0.2)", color: "#c2410c", borderRadius: "3px", padding: "0 2px" }}>
+        {text.slice(idx, idx + query.length)}
+      </mark>
+      {text.slice(idx + query.length)}
+    </span>
+  );
+}
+
 // ─── Recipe Card ──────────────────────────────────────────────────────────────
-function RecipeCard({ recipe }: { recipe: Recipe }) {
+function RecipeCard({ recipe, searchQuery }: { recipe: Recipe; searchQuery?: string }) {
   const totalTime = (recipe.preparationTime || 0) + (recipe.cookTime || 0);
   const imgSrc = recipe.imageUrl || getPlaceholderImage(recipe.id);
   const mealTime = recipe.mealTime || "cualquiera";
-
-  // Cooking method badge
   const methodBadge = COOKING_METHOD_OPTIONS.find(m => m.value === recipe.cookingMethod);
 
   return (
@@ -162,7 +193,7 @@ function RecipeCard({ recipe }: { recipe: Recipe }) {
         {/* Content */}
         <div style={{ padding: "12px" }}>
           <p style={{ margin: "0 0 4px", fontSize: "14px", fontWeight: 800, color: "#1a1a1a", lineHeight: 1.3, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
-            {recipe.name}
+            {searchQuery ? <HighlightText text={recipe.name} query={searchQuery} /> : recipe.name}
           </p>
           {/* Nutritional mini-summary */}
           {(recipe.proteinsPerServing || recipe.carbsPerServing || recipe.fatsPerServing) && (
@@ -216,27 +247,67 @@ function FilterPill({ emoji, label, active, onClick }: { emoji: string; label: s
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function Recipes() {
   const { user, isAuthenticated } = useAuth();
-  const [search, setSearch] = useState("");
-  const [showSearch, setShowSearch] = useState(false);
+
+  // Search state
+  const [inputValue, setInputValue] = useState("");
+  const [debouncedSearch, setDebouncedSearch] = useState("");
+  const [searchFocused, setSearchFocused] = useState(false);
+  const [recentSearches, setRecentSearches] = useState<string[]>([]);
+  const searchRef = useRef<HTMLInputElement>(null);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  // Filter state
   const [activeFilterCat, setActiveFilterCat] = useState<FilterCategory>("momento");
   const [mealTimeFilter, setMealTimeFilter] = useState("");
   const [cuisineFilter, setCuisineFilter] = useState("");
   const [cookingMethodFilter, setCookingMethodFilter] = useState("");
   const [showMyRecipes, setShowMyRecipes] = useState(false);
 
+  // Load recent searches on mount
+  useEffect(() => {
+    setRecentSearches(getRecentSearches());
+  }, []);
+
+  // Debounce search input (300ms)
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      setDebouncedSearch(inputValue);
+    }, 300);
+    return () => clearTimeout(timer);
+  }, [inputValue]);
+
+  // Close dropdown when clicking outside
+  useEffect(() => {
+    const handleClick = (e: MouseEvent) => {
+      if (
+        dropdownRef.current && !dropdownRef.current.contains(e.target as Node) &&
+        searchRef.current && !searchRef.current.contains(e.target as Node)
+      ) {
+        setSearchFocused(false);
+      }
+    };
+    document.addEventListener("mousedown", handleClick);
+    return () => document.removeEventListener("mousedown", handleClick);
+  }, []);
+
+  // Suggestions query (fires when user is typing, before debounce commits)
+  const suggestionsQuery = trpc.recipes.searchSuggestions.useQuery(
+    { query: inputValue, limit: 6 },
+    { enabled: inputValue.trim().length >= 2 && searchFocused }
+  );
+
   const queryParams = useMemo(() => ({
-    search: search || undefined,
+    search: debouncedSearch || undefined,
     isPublic: showMyRecipes ? undefined : true,
     userId: showMyRecipes ? user?.id : undefined,
     mealTime: mealTimeFilter || undefined,
     cuisineType: cuisineFilter || undefined,
     cookingMethod: cookingMethodFilter || undefined,
     limit: 50,
-  }), [search, showMyRecipes, user?.id, mealTimeFilter, cuisineFilter, cookingMethodFilter]);
+  }), [debouncedSearch, showMyRecipes, user?.id, mealTimeFilter, cuisineFilter, cookingMethodFilter]);
 
-  const { data: recipes, isLoading } = trpc.recipes.list.useQuery(queryParams);
+  const { data: recipes, isLoading, isFetching } = trpc.recipes.list.useQuery(queryParams);
 
-  // Active filters count
   const activeFiltersCount = [mealTimeFilter, cuisineFilter, cookingMethodFilter].filter(Boolean).length;
 
   const clearFilters = () => {
@@ -245,56 +316,178 @@ export default function Recipes() {
     setCookingMethodFilter("");
   };
 
+  const handleSearchSubmit = useCallback((query: string) => {
+    setInputValue(query);
+    setDebouncedSearch(query);
+    setSearchFocused(false);
+    if (query.trim()) {
+      saveRecentSearch(query.trim());
+      setRecentSearches(getRecentSearches());
+    }
+    searchRef.current?.blur();
+  }, []);
+
+  const clearSearch = () => {
+    setInputValue("");
+    setDebouncedSearch("");
+    searchRef.current?.focus();
+  };
+
+  const showDropdown = searchFocused && (
+    (inputValue.trim().length >= 2 && (suggestionsQuery.data?.length ?? 0) > 0) ||
+    (inputValue.trim().length === 0 && recentSearches.length > 0)
+  );
+
   return (
     <div style={{ padding: "16px", maxWidth: "480px", margin: "0 auto", paddingBottom: "100px" }}>
 
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
         <div>
           <h1 style={{ margin: 0, fontSize: "22px", fontWeight: 900, color: "#1a1a1a", letterSpacing: "-0.03em" }}>Recetas</h1>
           <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#9ca3af" }}>427 recetas disponibles</p>
         </div>
-        <div style={{ display: "flex", gap: "8px" }}>
-          <button
-            onClick={() => setShowSearch(!showSearch)}
-            style={{ width: "38px", height: "38px", borderRadius: "12px", background: showSearch ? "#F97316" : "white", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.08)" }}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={showSearch ? "white" : "#374151"} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
-            </svg>
-          </button>
-          {isAuthenticated && (
-            <Link href="/recipes/new">
-              <button style={{ width: "38px", height: "38px", borderRadius: "12px", background: "#F97316", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(249,115,22,0.35)" }}>
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                  <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-              </button>
-            </Link>
-          )}
-        </div>
+        {isAuthenticated && (
+          <Link href="/recipes/new">
+            <button style={{ width: "38px", height: "38px", borderRadius: "12px", background: "#F97316", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(249,115,22,0.35)" }}>
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            </button>
+          </Link>
+        )}
       </div>
 
-      {/* Search bar */}
-      {showSearch && (
-        <div style={{ marginBottom: "14px" }}>
-          <div style={{ position: "relative" }}>
-            <svg style={{ position: "absolute", left: "12px", top: "50%", transform: "translateY(-50%)" }} width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
-            </svg>
-            <input
-              type="text"
-              placeholder="Buscar recetas..."
-              value={search}
-              onChange={e => setSearch(e.target.value)}
-              style={{ width: "100%", padding: "10px 12px 10px 38px", borderRadius: "14px", border: "2px solid #f3f4f6", background: "white", fontSize: "14px", outline: "none", boxSizing: "border-box" }}
-            />
+      {/* ─── Search Bar (always visible) ─────────────────────────────────────── */}
+      <div style={{ position: "relative", marginBottom: "14px" }} ref={dropdownRef}>
+        <div style={{
+          display: "flex",
+          alignItems: "center",
+          background: "white",
+          borderRadius: searchFocused ? "16px 16px 0 0" : "16px",
+          border: `2px solid ${searchFocused ? "#F97316" : "#f3f4f6"}`,
+          boxShadow: searchFocused ? "0 4px 20px rgba(249,115,22,0.15)" : "0 2px 8px rgba(0,0,0,0.06)",
+          padding: "10px 14px",
+          gap: "10px",
+          transition: "all 0.2s",
+        }}>
+          {/* Search icon */}
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke={searchFocused ? "#F97316" : "#9ca3af"} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ flexShrink: 0, transition: "stroke 0.2s" }}>
+            <circle cx="11" cy="11" r="8" /><path d="M21 21l-4.35-4.35" />
+          </svg>
+          <input
+            ref={searchRef}
+            type="text"
+            placeholder="Buscar por nombre o ingrediente..."
+            value={inputValue}
+            onChange={e => setInputValue(e.target.value)}
+            onFocus={() => setSearchFocused(true)}
+            onKeyDown={e => { if (e.key === "Enter" && inputValue.trim()) handleSearchSubmit(inputValue.trim()); }}
+            style={{ flex: 1, border: "none", outline: "none", fontSize: "14px", fontWeight: 500, color: "#1a1a1a", background: "transparent" }}
+          />
+          {/* Loading spinner or clear button */}
+          {isFetching && debouncedSearch ? (
+            <div style={{ width: "18px", height: "18px", border: "2px solid #f3f4f6", borderTopColor: "#F97316", borderRadius: "50%", animation: "spin 0.8s linear infinite", flexShrink: 0 }} />
+          ) : inputValue ? (
+            <button onClick={clearSearch} style={{ background: "#f3f4f6", border: "none", borderRadius: "50%", width: "22px", height: "22px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, color: "#6b7280", fontSize: "12px", fontWeight: 700 }}>
+              ✕
+            </button>
+          ) : null}
+        </div>
+
+        {/* ─── Dropdown: suggestions or recent searches ─────────────────────── */}
+        {showDropdown && (
+          <div style={{
+            position: "absolute",
+            top: "100%",
+            left: 0,
+            right: 0,
+            background: "white",
+            borderRadius: "0 0 16px 16px",
+            border: "2px solid #F97316",
+            borderTop: "none",
+            boxShadow: "0 8px 24px rgba(249,115,22,0.15)",
+            zIndex: 100,
+            overflow: "hidden",
+          }}>
+            {/* Recent searches (when input is empty) */}
+            {inputValue.trim().length === 0 && recentSearches.length > 0 && (
+              <div>
+                <div style={{ padding: "8px 14px 4px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <span style={{ fontSize: "11px", fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em" }}>Búsquedas recientes</span>
+                  <button
+                    onClick={() => { localStorage.removeItem(RECENT_SEARCHES_KEY); setRecentSearches([]); }}
+                    style={{ fontSize: "11px", color: "#F97316", background: "none", border: "none", cursor: "pointer", fontWeight: 600 }}
+                  >
+                    Limpiar
+                  </button>
+                </div>
+                {recentSearches.map(s => (
+                  <button
+                    key={s}
+                    onClick={() => handleSearchSubmit(s)}
+                    style={{ width: "100%", padding: "10px 14px", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: "10px", textAlign: "left" }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "#FFF7ED"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "none"; }}
+                  >
+                    <span style={{ fontSize: "14px" }}>🕐</span>
+                    <span style={{ fontSize: "13px", color: "#374151", fontWeight: 500 }}>{s}</span>
+                  </button>
+                ))}
+              </div>
+            )}
+
+            {/* Suggestions (when typing) */}
+            {inputValue.trim().length >= 2 && (suggestionsQuery.data?.length ?? 0) > 0 && (
+              <div>
+                <div style={{ padding: "8px 14px 4px" }}>
+                  <span style={{ fontSize: "11px", fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em" }}>Sugerencias</span>
+                </div>
+                {suggestionsQuery.data?.map((s: any) => (
+                  <button
+                    key={s.id}
+                    onClick={() => handleSearchSubmit(s.name)}
+                    style={{ width: "100%", padding: "8px 14px", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: "10px", textAlign: "left" }}
+                    onMouseEnter={e => { e.currentTarget.style.background = "#FFF7ED"; }}
+                    onMouseLeave={e => { e.currentTarget.style.background = "none"; }}
+                  >
+                    {s.imageUrl ? (
+                      <img src={s.imageUrl} alt={s.name} style={{ width: "36px", height: "36px", borderRadius: "8px", objectFit: "cover", flexShrink: 0 }} onError={e => { (e.target as HTMLImageElement).style.display = "none"; }} />
+                    ) : (
+                      <div style={{ width: "36px", height: "36px", borderRadius: "8px", background: "#f3f4f6", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px" }}>🍳</div>
+                    )}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#1a1a1a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
+                        <HighlightText text={s.name} query={inputValue} />
+                      </p>
+                      {s.caloriesPerServing && (
+                        <p style={{ margin: 0, fontSize: "11px", color: "#9ca3af" }}>{s.caloriesPerServing} kcal</p>
+                      )}
+                    </div>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg>
+                  </button>
+                ))}
+              </div>
+            )}
           </div>
+        )}
+      </div>
+
+      {/* Active search indicator */}
+      {debouncedSearch && (
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px", background: "rgba(249,115,22,0.06)", borderRadius: "12px", padding: "8px 12px" }}>
+          <span style={{ fontSize: "14px" }}>🔍</span>
+          <span style={{ fontSize: "13px", color: "#374151", fontWeight: 600, flex: 1 }}>
+            Resultados para <strong style={{ color: "#F97316" }}>"{debouncedSearch}"</strong>
+          </span>
+          <button onClick={clearSearch} style={{ fontSize: "12px", color: "#F97316", fontWeight: 700, background: "none", border: "none", cursor: "pointer" }}>
+            ✕ Limpiar
+          </button>
         </div>
       )}
 
       {/* My recipes / All recipes toggle */}
-      {isAuthenticated && (
+      {isAuthenticated && !debouncedSearch && (
         <div style={{ display: "flex", gap: "8px", marginBottom: "14px" }}>
           <button
             onClick={() => setShowMyRecipes(false)}
@@ -311,87 +504,80 @@ export default function Recipes() {
         </div>
       )}
 
-      {/* Filter category selector */}
-      <div style={{ display: "flex", gap: "6px", marginBottom: "12px" }}>
-        {FILTER_CATEGORIES.map(cat => (
-          <button
-            key={cat.id}
-            onClick={() => setActiveFilterCat(cat.id)}
-            style={{
-              flex: 1,
-              padding: "8px 6px",
-              borderRadius: "12px",
-              border: `2px solid ${activeFilterCat === cat.id ? "#F97316" : "#f3f4f6"}`,
-              cursor: "pointer",
-              fontSize: "11px",
-              fontWeight: 700,
-              background: activeFilterCat === cat.id ? "rgba(249,115,22,0.08)" : "white",
-              color: activeFilterCat === cat.id ? "#F97316" : "#6b7280",
-              transition: "all 0.2s",
-              textAlign: "center",
-            }}
-          >
-            <div style={{ fontSize: "16px", marginBottom: "2px" }}>{cat.emoji}</div>
-            <div style={{ lineHeight: 1.2 }}>{cat.label}</div>
-          </button>
-        ))}
-      </div>
+      {/* Filter category selector (hidden during active search) */}
+      {!debouncedSearch && (
+        <>
+          <div style={{ display: "flex", gap: "6px", marginBottom: "12px" }}>
+            {FILTER_CATEGORIES.map(cat => (
+              <button
+                key={cat.id}
+                onClick={() => setActiveFilterCat(cat.id)}
+                style={{
+                  flex: 1,
+                  padding: "8px 6px",
+                  borderRadius: "12px",
+                  border: `2px solid ${activeFilterCat === cat.id ? "#F97316" : "#f3f4f6"}`,
+                  cursor: "pointer",
+                  fontSize: "11px",
+                  fontWeight: 700,
+                  background: activeFilterCat === cat.id ? "rgba(249,115,22,0.08)" : "white",
+                  color: activeFilterCat === cat.id ? "#F97316" : "#6b7280",
+                  transition: "all 0.2s",
+                  textAlign: "center",
+                }}
+              >
+                <div style={{ fontSize: "16px", marginBottom: "2px" }}>{cat.emoji}</div>
+                <div style={{ lineHeight: 1.2 }}>{cat.label}</div>
+              </button>
+            ))}
+          </div>
 
-      {/* Filter pills */}
-      <div style={{ display: "flex", gap: "6px", overflowX: "auto", paddingBottom: "4px", marginBottom: "14px", scrollbarWidth: "none" }}>
-        {activeFilterCat === "momento" && MEAL_TIME_OPTIONS.map(opt => (
-          <FilterPill
-            key={opt.value}
-            emoji={opt.emoji}
-            label={opt.label}
-            active={mealTimeFilter === opt.value}
-            onClick={() => setMealTimeFilter(opt.value)}
-          />
-        ))}
-        {activeFilterCat === "cocina" && CUISINE_OPTIONS.map(opt => (
-          <FilterPill
-            key={opt.value}
-            emoji={opt.emoji}
-            label={opt.label}
-            active={cuisineFilter === opt.value}
-            onClick={() => setCuisineFilter(opt.value)}
-          />
-        ))}
-        {activeFilterCat === "metodo" && COOKING_METHOD_OPTIONS.map(opt => (
-          <FilterPill
-            key={opt.value}
-            emoji={opt.emoji}
-            label={opt.label}
-            active={cookingMethodFilter === opt.value}
-            onClick={() => setCookingMethodFilter(opt.value)}
-          />
-        ))}
-      </div>
+          {/* Filter pills */}
+          <div style={{ display: "flex", gap: "6px", overflowX: "auto", paddingBottom: "4px", marginBottom: "14px", scrollbarWidth: "none" }}>
+            {activeFilterCat === "momento" && MEAL_TIME_OPTIONS.map(opt => (
+              <FilterPill key={opt.value} emoji={opt.emoji} label={opt.label} active={mealTimeFilter === opt.value} onClick={() => setMealTimeFilter(opt.value)} />
+            ))}
+            {activeFilterCat === "cocina" && CUISINE_OPTIONS.map(opt => (
+              <FilterPill key={opt.value} emoji={opt.emoji} label={opt.label} active={cuisineFilter === opt.value} onClick={() => setCuisineFilter(opt.value)} />
+            ))}
+            {activeFilterCat === "metodo" && COOKING_METHOD_OPTIONS.map(opt => (
+              <FilterPill key={opt.value} emoji={opt.emoji} label={opt.label} active={cookingMethodFilter === opt.value} onClick={() => setCookingMethodFilter(opt.value)} />
+            ))}
+          </div>
 
-      {/* Active filters summary */}
-      {activeFiltersCount > 0 && (
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px", background: "rgba(249,115,22,0.06)", borderRadius: "12px", padding: "8px 12px" }}>
-          <span style={{ fontSize: "12px", color: "#F97316", fontWeight: 700 }}>
-            {activeFiltersCount} filtro{activeFiltersCount > 1 ? "s" : ""} activo{activeFiltersCount > 1 ? "s" : ""}
-          </span>
-          <button onClick={clearFilters} style={{ fontSize: "12px", color: "#F97316", fontWeight: 700, background: "none", border: "none", cursor: "pointer" }}>
-            Limpiar ✕
-          </button>
-        </div>
+          {/* Active filters summary */}
+          {activeFiltersCount > 0 && (
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px", background: "rgba(249,115,22,0.06)", borderRadius: "12px", padding: "8px 12px" }}>
+              <span style={{ fontSize: "12px", color: "#F97316", fontWeight: 700 }}>
+                {activeFiltersCount} filtro{activeFiltersCount > 1 ? "s" : ""} activo{activeFiltersCount > 1 ? "s" : ""}
+              </span>
+              <button onClick={clearFilters} style={{ fontSize: "12px", color: "#F97316", fontWeight: 700, background: "none", border: "none", cursor: "pointer" }}>
+                Limpiar ✕
+              </button>
+            </div>
+          )}
+        </>
       )}
 
       {/* Recipes count + grid */}
       <div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
           <h2 style={{ margin: 0, fontSize: "16px", fontWeight: 800, color: "#1a1a1a" }}>
-            {showMyRecipes ? "Mis recetas" : (
-              mealTimeFilter ? MEAL_TIME_OPTIONS.find(m => m.value === mealTimeFilter)?.label :
-              cuisineFilter ? `Cocina ${CUISINE_OPTIONS.find(c => c.value === cuisineFilter)?.label}` :
-              cookingMethodFilter ? `${COOKING_METHOD_OPTIONS.find(m => m.value === cookingMethodFilter)?.label}` :
-              "Todas las recetas"
-            )}
+            {debouncedSearch
+              ? `Resultados`
+              : showMyRecipes
+              ? "Mis recetas"
+              : mealTimeFilter ? MEAL_TIME_OPTIONS.find(m => m.value === mealTimeFilter)?.label
+              : cuisineFilter ? `Cocina ${CUISINE_OPTIONS.find(c => c.value === cuisineFilter)?.label}`
+              : cookingMethodFilter ? `${COOKING_METHOD_OPTIONS.find(m => m.value === cookingMethodFilter)?.label}`
+              : "Todas las recetas"
+            }
           </h2>
-          {recipes && <span style={{ fontSize: "12px", color: "#9ca3af" }}>{recipes.length} recetas</span>}
+          {recipes && (
+            <span style={{ fontSize: "12px", color: "#9ca3af" }}>
+              {isFetching ? "Buscando..." : `${recipes.length} recetas`}
+            </span>
+          )}
         </div>
 
         {isLoading ? (
@@ -403,24 +589,39 @@ export default function Recipes() {
         ) : recipes && recipes.length > 0 ? (
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
             {(recipes as Recipe[]).map((recipe) => (
-              <RecipeCard key={recipe.id} recipe={recipe} />
+              <RecipeCard key={recipe.id} recipe={recipe} searchQuery={debouncedSearch || undefined} />
             ))}
           </div>
         ) : (
           <div style={{ background: "white", borderRadius: "18px", padding: "32px 24px", textAlign: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
-            <p style={{ margin: "0 0 8px", fontSize: "32px" }}>🍳</p>
+            <p style={{ margin: "0 0 8px", fontSize: "32px" }}>
+              {debouncedSearch ? "🔍" : "🍳"}
+            </p>
             <p style={{ margin: "0 0 4px", fontSize: "15px", fontWeight: 700, color: "#1a1a1a" }}>
-              {showMyRecipes ? "Aún no tienes recetas" : "No hay recetas con estos filtros"}
+              {debouncedSearch
+                ? `Sin resultados para "${debouncedSearch}"`
+                : showMyRecipes
+                ? "Aún no tienes recetas"
+                : "No hay recetas con estos filtros"}
             </p>
             <p style={{ margin: "0 0 16px", fontSize: "13px", color: "#9ca3af" }}>
-              {showMyRecipes ? "Crea tu primera receta" : "Prueba cambiando los filtros"}
+              {debouncedSearch
+                ? "Prueba con otro nombre o ingrediente"
+                : showMyRecipes
+                ? "Crea tu primera receta"
+                : "Prueba cambiando los filtros"}
             </p>
-            {activeFiltersCount > 0 && (
+            {debouncedSearch && (
+              <button onClick={clearSearch} style={{ background: "#F97316", border: "none", borderRadius: "12px", padding: "10px 20px", fontSize: "13px", fontWeight: 700, color: "white", cursor: "pointer", marginRight: "8px" }}>
+                Limpiar búsqueda
+              </button>
+            )}
+            {activeFiltersCount > 0 && !debouncedSearch && (
               <button onClick={clearFilters} style={{ background: "#F97316", border: "none", borderRadius: "12px", padding: "10px 20px", fontSize: "13px", fontWeight: 700, color: "white", cursor: "pointer" }}>
                 Limpiar filtros
               </button>
             )}
-            {showMyRecipes && isAuthenticated && (
+            {showMyRecipes && isAuthenticated && !debouncedSearch && (
               <Link href="/recipes/new">
                 <button style={{ background: "#F97316", border: "none", borderRadius: "12px", padding: "10px 20px", fontSize: "13px", fontWeight: 700, color: "white", cursor: "pointer" }}>
                   Crear receta
@@ -435,6 +636,9 @@ export default function Recipes() {
       <p style={{ fontSize: "10px", color: "#d1d5db", textAlign: "center", margin: "24px 0 0", lineHeight: 1.5 }}>
         Las recetas de BuddyMarket son orientativas. Consulta a un profesional de la nutrición.
       </p>
+
+      {/* Spin animation */}
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }

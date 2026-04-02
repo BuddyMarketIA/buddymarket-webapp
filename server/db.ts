@@ -355,7 +355,17 @@ export async function getRecipes(params: {
   const conditions = [eq(recipes.active, true)];
   if (userId) conditions.push(eq(recipes.userId, userId));
   if (isPublic !== undefined) conditions.push(eq(recipes.isPublic, isPublic));
-  if (search) conditions.push(like(recipes.name, `%${search}%`));
+  if (search) {
+    // Full-text search across name, description, ingredientsJson and tags
+    conditions.push(
+      or(
+        like(recipes.name, `%${search}%`),
+        like(recipes.description, `%${search}%`),
+        like(recipes.ingredientsJson, `%${search}%`),
+        like(recipes.tags, `%${search}%`)
+      )!
+    );
+  }
   if (params.difficulty) conditions.push(eq(recipes.difficulty, params.difficulty as any));
   if (params.maxTime) {
     conditions.push(lte(sql`(${recipes.preparationTime} + ${recipes.cookTime})`, params.maxTime));
@@ -401,6 +411,36 @@ export async function getRecipes(params: {
     return filtered.slice(0, limit);
   }
 
+  return rows;
+}
+
+export async function searchRecipeSuggestions(query: string, limit = 8) {
+  const db = await getDb();
+  if (!db || !query.trim()) return [];
+  const rows = await db
+    .select({
+      id: recipes.id,
+      name: recipes.name,
+      imageUrl: recipes.imageUrl,
+      caloriesPerServing: recipes.caloriesPerServing,
+      mealTime: recipes.mealTime,
+      cuisineType: recipes.cuisineType,
+      cookingMethod: recipes.cookingMethod,
+    })
+    .from(recipes)
+    .where(
+      and(
+        eq(recipes.active, true),
+        eq(recipes.isPublic, true),
+        or(
+          like(recipes.name, `%${query}%`),
+          like(recipes.description, `%${query}%`),
+          like(recipes.ingredientsJson, `%${query}%`)
+        )!
+      )
+    )
+    .limit(limit)
+    .orderBy(desc(recipes.createdAt));
   return rows;
 }
 
