@@ -11,6 +11,7 @@ import {
   SparklesIcon,
   BeakerIcon,
   CakeIcon,
+  TrashIcon,
 } from "@heroicons/react/24/outline";
 
 const TABS = [
@@ -22,6 +23,7 @@ const TABS = [
   { key: "allergies", label: "Alergias", icon: ExclamationCircleIcon },
   { key: "prefs", label: "Preferencias", icon: BeakerIcon },
   { key: "shopping", label: "Compras", icon: ShoppingBagIcon },
+  { key: "account", label: "Cuenta", icon: TrashIcon },
 ];
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
@@ -798,6 +800,108 @@ export default function Profile() {
           <SaveButton onClick={handleSaveShopping} loading={updatePreferences.isPending} />
         </div>
       )}
+
+      {/* ACCOUNT TAB - Delete account */}
+      {activeTab === "account" && (
+        <DeleteAccountSection />
+      )}
+    </div>
+  );
+}
+
+function DeleteAccountSection() {
+  const [confirmText, setConfirmText] = useState("");
+  const [showConfirm, setShowConfirm] = useState(false);
+
+  const deleteAccount = trpc.profile.deleteAccount.useMutation({
+    onSuccess: () => {
+      toast.success("Cuenta eliminada correctamente");
+      // Clear session and redirect
+      setTimeout(() => { window.location.href = "/"; }, 1500);
+    },
+    onError: (e) => toast.error(e.message || "Error al eliminar la cuenta"),
+  });
+
+  const handleDelete = () => {
+    if (confirmText !== "DELETE MY ACCOUNT") {
+      toast.error("El texto de confirmación no es correcto");
+      return;
+    }
+    deleteAccount.mutate({ confirmation: "DELETE MY ACCOUNT" });
+  };
+
+  return (
+    <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+      {/* Privacy & Data section */}
+      <div style={{ background: "white", borderRadius: "16px", padding: "24px", border: "1px solid #f3f4f6" }}>
+        <p style={{ margin: "0 0 16px", fontSize: "13px", fontWeight: 800, color: "#9ca3af", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+          Privacidad y datos
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <div style={{ padding: "14px", background: "#f9fafb", borderRadius: "12px" }}>
+            <p style={{ margin: 0, fontWeight: 600, fontSize: "14px", color: "#111827" }}>📊 Exportar mis datos</p>
+            <p style={{ margin: "4px 0 0", fontSize: "13px", color: "#6b7280" }}>Descarga una copia de todos tus datos personales y actividad.</p>
+            <button
+              onClick={() => toast.info("Función disponible próximamente")}
+              style={{ marginTop: "10px", padding: "8px 16px", background: "#f3f4f6", border: "none", borderRadius: "8px", fontSize: "13px", fontWeight: 600, cursor: "pointer", color: "#374151" }}
+            >
+              Solicitar exportación
+            </button>
+          </div>
+        </div>
+      </div>
+
+      {/* Danger zone */}
+      <div style={{ background: "white", borderRadius: "16px", padding: "24px", border: "1.5px solid #fca5a5" }}>
+        <p style={{ margin: "0 0 16px", fontSize: "13px", fontWeight: 800, color: "#ef4444", letterSpacing: "0.08em", textTransform: "uppercase" }}>
+          ⚠️ Zona de peligro
+        </p>
+        <div style={{ display: "flex", flexDirection: "column", gap: "12px" }}>
+          <div>
+            <p style={{ margin: 0, fontWeight: 700, fontSize: "15px", color: "#111827" }}>Eliminar mi cuenta</p>
+            <p style={{ margin: "6px 0 0", fontSize: "13px", color: "#6b7280", lineHeight: 1.5 }}>
+              Esta acción es <strong>permanente e irreversible</strong>. Se eliminarán todos tus datos: perfil, recetas, métricas, listas de compra, diario nutricional y suscripciones.
+            </p>
+          </div>
+
+          {!showConfirm ? (
+            <button
+              onClick={() => setShowConfirm(true)}
+              style={{ padding: "10px 20px", background: "#fee2e2", border: "1px solid #fca5a5", borderRadius: "10px", fontSize: "14px", fontWeight: 600, cursor: "pointer", color: "#dc2626", alignSelf: "flex-start" }}
+            >
+              Eliminar mi cuenta
+            </button>
+          ) : (
+            <div style={{ display: "flex", flexDirection: "column", gap: "12px", padding: "16px", background: "#fff1f2", borderRadius: "12px", border: "1px solid #fca5a5" }}>
+              <p style={{ margin: 0, fontSize: "13px", color: "#374151", fontWeight: 600 }}>
+                Para confirmar, escribe exactamente: <code style={{ background: "#fee2e2", padding: "2px 6px", borderRadius: "4px", color: "#dc2626" }}>DELETE MY ACCOUNT</code>
+              </p>
+              <input
+                type="text"
+                value={confirmText}
+                onChange={(e) => setConfirmText(e.target.value)}
+                placeholder="DELETE MY ACCOUNT"
+                style={{ padding: "10px 14px", border: "1.5px solid #fca5a5", borderRadius: "10px", fontSize: "14px", outline: "none", background: "white" }}
+              />
+              <div style={{ display: "flex", gap: "10px" }}>
+                <button
+                  onClick={() => { setShowConfirm(false); setConfirmText(""); }}
+                  style={{ flex: 1, padding: "10px", background: "#f3f4f6", border: "none", borderRadius: "10px", fontSize: "14px", fontWeight: 600, cursor: "pointer", color: "#374151" }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleDelete}
+                  disabled={confirmText !== "DELETE MY ACCOUNT" || deleteAccount.isPending}
+                  style={{ flex: 1, padding: "10px", background: confirmText === "DELETE MY ACCOUNT" ? "#dc2626" : "#fca5a5", border: "none", borderRadius: "10px", fontSize: "14px", fontWeight: 700, cursor: confirmText === "DELETE MY ACCOUNT" ? "pointer" : "not-allowed", color: "white", transition: "background 0.2s" }}
+                >
+                  {deleteAccount.isPending ? "Eliminando..." : "Confirmar eliminación"}
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+      </div>
     </div>
   );
 }

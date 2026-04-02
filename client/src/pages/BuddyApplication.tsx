@@ -6,11 +6,10 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
-import { CheckCircle, Clock, XCircle, Star, ChefHat, ArrowLeft } from "lucide-react";
+import { CheckCircle, Clock, XCircle, Star, ChefHat, ArrowLeft, ArrowRight, Check } from "lucide-react";
 
 type AppType = "expert" | "maker";
 
@@ -26,61 +25,97 @@ const SPECIALTIES_MAKER = [
   "Cocina rápida", "Cocina familiar"
 ];
 
+const STEPS_EXPERT = [
+  { title: "Tipo y nombre", desc: "Elige tu rol y nombre público" },
+  { title: "Perfil profesional", desc: "Formación, experiencia y certificaciones" },
+  { title: "Redes sociales", desc: "Cómo encontrarte en internet" },
+];
+
+const STEPS_MAKER = [
+  { title: "Tipo y nombre", desc: "Elige tu rol y nombre público" },
+  { title: "Tu estilo culinario", desc: "Especialidad y motivación" },
+  { title: "Redes sociales", desc: "Cómo encontrarte en internet" },
+];
+
 function StatusBanner({ status, adminNote, type }: { status: string; adminNote?: string | null; type: AppType }) {
   if (status === "pending") return (
-    <Card className="border-yellow-200 bg-yellow-50 dark:bg-yellow-950/20">
-      <CardContent className="flex items-start gap-3 p-4">
-        <Clock className="w-5 h-5 text-yellow-600 mt-0.5 flex-shrink-0" />
-        <div>
-          <p className="font-semibold text-yellow-800 dark:text-yellow-400">Solicitud en revisión</p>
-          <p className="text-sm text-yellow-700 dark:text-yellow-500 mt-1">
-            Tu solicitud ha sido enviada y está siendo revisada por el equipo de BuddyMarket. 
-            Te notificaremos cuando sea aprobada.
-          </p>
-        </div>
-      </CardContent>
-    </Card>
+    <div style={{ padding: "14px 16px", borderRadius: "14px", background: "#fefce8", border: "1.5px solid #fde047", display: "flex", gap: "12px", alignItems: "flex-start" }}>
+      <Clock style={{ width: "18px", height: "18px", color: "#ca8a04", flexShrink: 0, marginTop: "1px" }} />
+      <div>
+        <p style={{ margin: 0, fontWeight: 700, color: "#854d0e", fontSize: "14px" }}>Solicitud en revisión</p>
+        <p style={{ margin: "4px 0 0", fontSize: "13px", color: "#92400e" }}>
+          Tu solicitud ha sido enviada y está siendo revisada por el equipo de BuddyMarket. Te notificaremos cuando sea aprobada.
+        </p>
+      </div>
+    </div>
   );
-
   if (status === "approved") return (
-    <Card className="border-green-200 bg-green-50 dark:bg-green-950/20">
-      <CardContent className="flex items-start gap-3 p-4">
-        <CheckCircle className="w-5 h-5 text-green-600 mt-0.5 flex-shrink-0" />
-        <div>
-          <p className="font-semibold text-green-800 dark:text-green-400">
-            ¡Solicitud aprobada! 🎉
-          </p>
-          <p className="text-sm text-green-700 dark:text-green-500 mt-1">
-            Ya tienes acceso completo a tu panel de {type === "expert" ? "BuddyExpert" : "BuddyMaker"}.
-            {adminNote && ` Nota del equipo: "${adminNote}"`}
-          </p>
-        </div>
-      </CardContent>
-    </Card>
+    <div style={{ padding: "14px 16px", borderRadius: "14px", background: "#f0fdf4", border: "1.5px solid #86efac", display: "flex", gap: "12px", alignItems: "flex-start" }}>
+      <CheckCircle style={{ width: "18px", height: "18px", color: "#16a34a", flexShrink: 0, marginTop: "1px" }} />
+      <div>
+        <p style={{ margin: 0, fontWeight: 700, color: "#14532d", fontSize: "14px" }}>¡Solicitud aprobada! 🎉</p>
+        <p style={{ margin: "4px 0 0", fontSize: "13px", color: "#166534" }}>
+          Ya tienes acceso completo a tu panel de {type === "expert" ? "BuddyExpert" : "BuddyMaker"}.
+          {adminNote && ` Nota del equipo: "${adminNote}"`}
+        </p>
+      </div>
+    </div>
   );
-
   if (status === "rejected") return (
-    <Card className="border-red-200 bg-red-50 dark:bg-red-950/20">
-      <CardContent className="flex items-start gap-3 p-4">
-        <XCircle className="w-5 h-5 text-red-600 mt-0.5 flex-shrink-0" />
-        <div>
-          <p className="font-semibold text-red-800 dark:text-red-400">Solicitud rechazada</p>
-          <p className="text-sm text-red-700 dark:text-red-500 mt-1">
-            {adminNote || "Tu solicitud no fue aprobada en esta ocasión."}
-            {" "}Puedes volver a enviar una solicitud con más información.
-          </p>
-        </div>
-      </CardContent>
-    </Card>
+    <div style={{ padding: "14px 16px", borderRadius: "14px", background: "#fef2f2", border: "1.5px solid #fca5a5", display: "flex", gap: "12px", alignItems: "flex-start" }}>
+      <XCircle style={{ width: "18px", height: "18px", color: "#dc2626", flexShrink: 0, marginTop: "1px" }} />
+      <div>
+        <p style={{ margin: 0, fontWeight: 700, color: "#7f1d1d", fontSize: "14px" }}>Solicitud rechazada</p>
+        <p style={{ margin: "4px 0 0", fontSize: "13px", color: "#991b1b" }}>
+          {adminNote || "Tu solicitud no fue aprobada en esta ocasión."} Puedes volver a enviar una solicitud con más información.
+        </p>
+      </div>
+    </div>
   );
-
   return null;
+}
+
+function StepIndicator({ current, total, steps }: { current: number; total: number; steps: { title: string; desc: string }[] }) {
+  return (
+    <div style={{ marginBottom: "24px" }}>
+      {/* Progress bar */}
+      <div style={{ height: "4px", borderRadius: "2px", background: "#f3f4f6", overflow: "hidden", marginBottom: "16px" }}>
+        <div style={{ height: "100%", width: `${((current + 1) / total) * 100}%`, background: "linear-gradient(90deg, #F97316, #FB923C)", borderRadius: "2px", transition: "width 0.4s ease" }} />
+      </div>
+      {/* Step dots */}
+      <div style={{ display: "flex", gap: "0", position: "relative" }}>
+        {steps.map((step, i) => {
+          const done = i < current;
+          const active = i === current;
+          return (
+            <div key={i} style={{ flex: 1, display: "flex", flexDirection: "column", alignItems: i === 0 ? "flex-start" : i === steps.length - 1 ? "flex-end" : "center" }}>
+              <div style={{
+                width: "28px", height: "28px", borderRadius: "50%",
+                background: done ? "#F97316" : active ? "white" : "#f3f4f6",
+                border: active ? "2.5px solid #F97316" : done ? "none" : "2px solid #e5e7eb",
+                display: "flex", alignItems: "center", justifyContent: "center",
+                fontSize: "12px", fontWeight: 700, color: done ? "white" : active ? "#F97316" : "#9ca3af",
+                transition: "all 0.3s ease",
+                boxShadow: active ? "0 0 0 4px rgba(249,115,22,0.15)" : "none"
+              }}>
+                {done ? <Check style={{ width: "14px", height: "14px" }} /> : i + 1}
+              </div>
+              <p style={{ margin: "4px 0 0", fontSize: "10px", fontWeight: active ? 700 : 500, color: active ? "#F97316" : "#9ca3af", textAlign: i === 0 ? "left" : i === steps.length - 1 ? "right" : "center" }}>
+                {step.title}
+              </p>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
 }
 
 export default function BuddyApplication({ type }: { type?: AppType }) {
   const { user, loading } = useAuth();
   const [, navigate] = useLocation();
   const [activeType, setActiveType] = useState<AppType>(type ?? "expert");
+  const [step, setStep] = useState(0);
   const [form, setForm] = useState({
     displayName: "",
     bio: "",
@@ -107,116 +142,188 @@ export default function BuddyApplication({ type }: { type?: AppType }) {
     onSuccess: () => {
       toast.success("¡Solicitud enviada! Te notificaremos cuando sea revisada.");
       utils.buddyApplications.getMyApplication.invalidate();
+      setStep(0);
     },
     onError: (e) => toast.error(e.message),
   });
 
   const currentApp = activeType === "expert" ? expertAppQuery.data : makerAppQuery.data;
-
-  const handleSubmit = (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!form.displayName.trim()) return toast.error("El nombre es obligatorio");
-    submitMutation.mutate({ type: activeType, ...form });
-  };
+  const steps = activeType === "expert" ? STEPS_EXPERT : STEPS_MAKER;
 
   const f = (field: keyof typeof form) => (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement | HTMLSelectElement>) =>
     setForm(prev => ({ ...prev, [field]: e.target.value }));
 
-  if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
-  if (!user) return (
-    <div className="flex flex-col items-center justify-center h-64 gap-4">
-      <p className="text-muted-foreground">Inicia sesión para enviar tu solicitud</p>
-      <Button onClick={() => window.location.href = getLoginUrl()}>Iniciar sesión</Button>
+  const validateStep = () => {
+    if (step === 0 && !form.displayName.trim()) {
+      toast.error("El nombre público es obligatorio");
+      return false;
+    }
+    if (step === 1 && activeType === "expert" && !form.bio.trim()) {
+      toast.error("Cuéntanos algo sobre ti");
+      return false;
+    }
+    return true;
+  };
+
+  const handleNext = () => {
+    if (!validateStep()) return;
+    if (step < steps.length - 1) setStep(s => s + 1);
+    else handleSubmit();
+  };
+
+  const handleSubmit = () => {
+    if (!form.displayName.trim()) return toast.error("El nombre es obligatorio");
+    submitMutation.mutate({ type: activeType, ...form });
+  };
+
+  if (loading) return (
+    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", height: "60vh" }}>
+      <div style={{ width: "40px", height: "40px", borderRadius: "50%", border: "3px solid #F97316", borderTopColor: "transparent", animation: "spin 0.8s linear infinite" }} />
     </div>
   );
 
+  if (!user) return (
+    <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "60vh", gap: "16px", padding: "24px" }}>
+      <div style={{ fontSize: "48px" }}>🔒</div>
+      <p style={{ margin: 0, fontWeight: 700, fontSize: "18px", color: "#1a1a1a" }}>Inicia sesión para continuar</p>
+      <p style={{ margin: 0, fontSize: "14px", color: "#6b7280", textAlign: "center" }}>Necesitas una cuenta para enviar tu solicitud como creador.</p>
+      <button
+        onClick={() => window.location.href = getLoginUrl()}
+        style={{ padding: "12px 24px", borderRadius: "14px", background: "linear-gradient(135deg, #F97316, #FB923C)", color: "white", fontWeight: 700, fontSize: "15px", border: "none", cursor: "pointer" }}
+      >
+        Iniciar sesión
+      </button>
+    </div>
+  );
+
+  const card: React.CSSProperties = { background: "white", borderRadius: "18px", padding: "20px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", marginBottom: "16px" };
+
   return (
-    <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
+    <div style={{ maxWidth: "600px", margin: "0 auto", padding: "16px" }}>
       {/* Header */}
-      <div className="flex items-center gap-3">
-        <button onClick={() => navigate(-1 as any)} className="text-muted-foreground hover:text-foreground">
-          <ArrowLeft className="w-5 h-5" />
+      <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
+        <button
+          onClick={() => step > 0 ? setStep(s => s - 1) : navigate(-1 as any)}
+          style={{ width: "36px", height: "36px", borderRadius: "50%", border: "1.5px solid #e5e7eb", background: "white", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}
+        >
+          <ArrowLeft style={{ width: "16px", height: "16px", color: "#6b7280" }} />
         </button>
         <div>
-          <h1 className="text-xl font-bold">Únete como creador</h1>
-          <p className="text-sm text-muted-foreground">Comparte tu conocimiento con la comunidad BuddyMarket</p>
+          <h1 style={{ margin: 0, fontSize: "20px", fontWeight: 800, color: "#1a1a1a" }}>Únete como creador</h1>
+          <p style={{ margin: "2px 0 0", fontSize: "13px", color: "#9ca3af" }}>Comparte tu conocimiento con la comunidad</p>
         </div>
       </div>
 
       {/* Type selector */}
-      <div className="grid grid-cols-2 gap-3">
-        <button
-          onClick={() => setActiveType("expert")}
-          className={`p-4 rounded-xl border-2 text-left transition-all ${activeType === "expert" ? "border-violet-500 bg-violet-50 dark:bg-violet-950/30" : "border-border hover:border-border/80"}`}
-        >
-          <div className="flex items-center gap-2 mb-1">
-            <Star className="w-5 h-5 text-violet-500" />
-            <span className="font-semibold">BuddyExpert</span>
-            {expertAppQuery.data && (
-              <Badge variant={expertAppQuery.data.status === "approved" ? "default" : "outline"} className="text-xs ml-auto">
-                {expertAppQuery.data.status === "approved" ? "✓ Aprobado" : expertAppQuery.data.status === "pending" ? "En revisión" : "Rechazado"}
-              </Badge>
-            )}
+      {(!currentApp || currentApp.status === "rejected") && (
+        <div style={{ ...card }}>
+          <p style={{ margin: "0 0 12px", fontSize: "12px", fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.08em" }}>Elige tu rol</p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+            <button
+              onClick={() => { setActiveType("expert"); setStep(0); }}
+              style={{
+                padding: "14px", borderRadius: "14px", textAlign: "left",
+                border: activeType === "expert" ? "2px solid #7c3aed" : "1.5px solid #e5e7eb",
+                background: activeType === "expert" ? "rgba(124,58,237,0.06)" : "white",
+                cursor: "pointer", transition: "all 0.2s"
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px" }}>
+                <Star style={{ width: "16px", height: "16px", color: "#7c3aed" }} />
+                <span style={{ fontWeight: 700, fontSize: "14px", color: "#1a1a1a" }}>BuddyExpert</span>
+                {expertAppQuery.data && (
+                  <span style={{ marginLeft: "auto", fontSize: "10px", padding: "2px 6px", borderRadius: "6px", background: expertAppQuery.data.status === "approved" ? "#dcfce7" : "#fef9c3", color: expertAppQuery.data.status === "approved" ? "#166534" : "#854d0e", fontWeight: 700 }}>
+                    {expertAppQuery.data.status === "approved" ? "✓" : "⏳"}
+                  </span>
+                )}
+              </div>
+              <p style={{ margin: 0, fontSize: "12px", color: "#6b7280" }}>Nutricionistas y expertos en salud</p>
+            </button>
+            <button
+              onClick={() => { setActiveType("maker"); setStep(0); }}
+              style={{
+                padding: "14px", borderRadius: "14px", textAlign: "left",
+                border: activeType === "maker" ? "2px solid #F97316" : "1.5px solid #e5e7eb",
+                background: activeType === "maker" ? "rgba(249,115,22,0.06)" : "white",
+                cursor: "pointer", transition: "all 0.2s"
+              }}
+            >
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "4px" }}>
+                <ChefHat style={{ width: "16px", height: "16px", color: "#F97316" }} />
+                <span style={{ fontWeight: 700, fontSize: "14px", color: "#1a1a1a" }}>BuddyMaker</span>
+                {makerAppQuery.data && (
+                  <span style={{ marginLeft: "auto", fontSize: "10px", padding: "2px 6px", borderRadius: "6px", background: makerAppQuery.data.status === "approved" ? "#dcfce7" : "#fef9c3", color: makerAppQuery.data.status === "approved" ? "#166534" : "#854d0e", fontWeight: 700 }}>
+                    {makerAppQuery.data.status === "approved" ? "✓" : "⏳"}
+                  </span>
+                )}
+              </div>
+              <p style={{ margin: 0, fontSize: "12px", color: "#6b7280" }}>Creadores de recetas y contenido</p>
+            </button>
           </div>
-          <p className="text-xs text-muted-foreground">Nutricionistas, dietistas y expertos en salud</p>
-        </button>
-        <button
-          onClick={() => setActiveType("maker")}
-          className={`p-4 rounded-xl border-2 text-left transition-all ${activeType === "maker" ? "border-orange-500 bg-orange-50 dark:bg-orange-950/30" : "border-border hover:border-border/80"}`}
-        >
-          <div className="flex items-center gap-2 mb-1">
-            <ChefHat className="w-5 h-5 text-orange-500" />
-            <span className="font-semibold">BuddyMaker</span>
-            {makerAppQuery.data && (
-              <Badge variant={makerAppQuery.data.status === "approved" ? "default" : "outline"} className="text-xs ml-auto">
-                {makerAppQuery.data.status === "approved" ? "✓ Aprobado" : makerAppQuery.data.status === "pending" ? "En revisión" : "Rechazado"}
-              </Badge>
-            )}
-          </div>
-          <p className="text-xs text-muted-foreground">Creadores de recetas y contenido culinario</p>
-        </button>
-      </div>
+        </div>
+      )}
 
-      {/* Status banner if application exists */}
+      {/* Status banner if application exists and not rejected */}
       {currentApp && currentApp.status !== "rejected" && (
-        <StatusBanner status={currentApp.status} adminNote={currentApp.adminNote} type={activeType} />
+        <div style={{ marginBottom: "16px" }}>
+          <StatusBanner status={currentApp.status} adminNote={currentApp.adminNote} type={activeType} />
+        </div>
       )}
 
       {/* If approved, show go-to-panel button */}
       {currentApp?.status === "approved" && (
-        <Button
-          className="w-full"
-          onClick={() => navigate(activeType === "expert" ? "/buddy-expert-dashboard" : "/buddy-maker-dashboard")}
-        >
-          Ir a mi panel de {activeType === "expert" ? "BuddyExpert" : "BuddyMaker"} →
-        </Button>
+        <div style={card}>
+          <button
+            onClick={() => navigate(activeType === "expert" ? "/buddy-expert-dashboard" : "/buddy-maker-dashboard")}
+            style={{ width: "100%", padding: "14px", borderRadius: "14px", background: "linear-gradient(135deg, #F97316, #FB923C)", color: "white", fontWeight: 700, fontSize: "15px", border: "none", cursor: "pointer" }}
+          >
+            Ir a mi panel de {activeType === "expert" ? "BuddyExpert" : "BuddyMaker"} →
+          </button>
+        </div>
       )}
 
       {/* Application form — show if no app or if rejected */}
       {(!currentApp || currentApp.status === "rejected") && (
-        <Card className="border-0 bg-card/60">
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base">
-              {currentApp?.status === "rejected" ? "Volver a solicitar" : `Solicitar acceso como ${activeType === "expert" ? "BuddyExpert" : "BuddyMaker"}`}
-            </CardTitle>
-          </CardHeader>
-          <CardContent>
-            {currentApp?.status === "rejected" && (
+        <div style={card}>
+          {currentApp?.status === "rejected" && (
+            <div style={{ marginBottom: "16px" }}>
               <StatusBanner status="rejected" adminNote={currentApp.adminNote} type={activeType} />
-            )}
-            <form onSubmit={handleSubmit} className="space-y-4 mt-4">
+            </div>
+          )}
+
+          {/* Step indicator */}
+          <StepIndicator current={step} total={steps.length} steps={steps} />
+
+          {/* Step title */}
+          <div style={{ marginBottom: "20px" }}>
+            <p style={{ margin: 0, fontSize: "16px", fontWeight: 800, color: "#1a1a1a" }}>{steps[step].title}</p>
+            <p style={{ margin: "2px 0 0", fontSize: "13px", color: "#9ca3af" }}>{steps[step].desc}</p>
+          </div>
+
+          {/* STEP 0: Basic info */}
+          {step === 0 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               <div>
-                <Label>Nombre público *</Label>
-                <Input placeholder="Cómo quieres que te conozcan" value={form.displayName} onChange={f("displayName")} required />
+                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#374151", marginBottom: "6px" }}>
+                  Nombre público <span style={{ color: "#ef4444" }}>*</span>
+                </label>
+                <input
+                  type="text"
+                  placeholder={activeType === "expert" ? "Ej: Dra. María García, Nutricionista" : "Ej: Chef Sano, Recetas Fit"}
+                  value={form.displayName}
+                  onChange={f("displayName")}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid #e5e7eb", fontSize: "15px", background: "white", outline: "none", boxSizing: "border-box" }}
+                />
+                <p style={{ margin: "4px 0 0", fontSize: "12px", color: "#9ca3af" }}>Así te verán los usuarios en la plataforma</p>
               </div>
 
               {activeType === "expert" && (
                 <div>
-                  <Label>Categoría de especialización</Label>
+                  <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#374151", marginBottom: "6px" }}>Categoría de especialización</label>
                   <select
-                    className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm"
                     value={form.expertCategory}
                     onChange={f("expertCategory")}
+                    style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid #e5e7eb", fontSize: "15px", background: "white", outline: "none", appearance: "none", boxSizing: "border-box" }}
                   >
                     <option value="">Selecciona una categoría</option>
                     {EXPERT_CATEGORIES.map(c => <option key={c} value={c}>{c}</option>)}
@@ -224,100 +331,190 @@ export default function BuddyApplication({ type }: { type?: AppType }) {
                 </div>
               )}
 
-              <div>
-                <Label>Especialidad</Label>
-                {activeType === "maker" ? (
+              {activeType === "maker" && (
+                <div>
+                  <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#374151", marginBottom: "6px" }}>Especialidad culinaria</label>
                   <select
-                    className="w-full h-9 rounded-md border border-input bg-background px-3 py-1 text-sm"
                     value={form.specialty}
                     onChange={f("specialty")}
+                    style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid #e5e7eb", fontSize: "15px", background: "white", outline: "none", appearance: "none", boxSizing: "border-box" }}
                   >
                     <option value="">Selecciona tu especialidad</option>
                     {SPECIALTIES_MAKER.map(s => <option key={s} value={s}>{s}</option>)}
                   </select>
-                ) : (
-                  <Input placeholder="Ej: Nutrición deportiva y pérdida de peso" value={form.specialty} onChange={f("specialty")} />
-                )}
-              </div>
+                </div>
+              )}
+            </div>
+          )}
 
+          {/* STEP 1: Professional profile */}
+          {step === 1 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
               <div>
-                <Label>Sobre ti</Label>
-                <Textarea
-                  placeholder="Cuéntanos quién eres y qué te hace especial..."
+                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#374151", marginBottom: "6px" }}>
+                  Sobre ti {activeType === "expert" && <span style={{ color: "#ef4444" }}>*</span>}
+                </label>
+                <textarea
+                  placeholder={activeType === "expert" ? "Cuéntanos quién eres, tu formación y en qué te especializas..." : "Cuéntanos quién eres y qué tipo de recetas creas..."}
                   value={form.bio}
                   onChange={f("bio")}
                   rows={3}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid #e5e7eb", fontSize: "15px", background: "white", outline: "none", resize: "vertical", boxSizing: "border-box" }}
                 />
               </div>
 
               <div>
-                <Label>¿Por qué quieres ser {activeType === "expert" ? "BuddyExpert" : "BuddyMaker"}?</Label>
-                <Textarea
+                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#374151", marginBottom: "6px" }}>¿Por qué quieres unirte?</label>
+                <textarea
                   placeholder="Cuéntanos tu motivación y qué aportarás a la comunidad..."
                   value={form.motivation}
                   onChange={f("motivation")}
                   rows={3}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid #e5e7eb", fontSize: "15px", background: "white", outline: "none", resize: "vertical", boxSizing: "border-box" }}
                 />
               </div>
 
               <div>
-                <Label>Experiencia previa</Label>
-                <Textarea
+                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#374151", marginBottom: "6px" }}>Experiencia previa</label>
+                <textarea
                   placeholder={activeType === "expert" ? "Formación, años de experiencia, casos de éxito..." : "Proyectos anteriores, seguidores, plataformas..."}
                   value={form.experience}
                   onChange={f("experience")}
                   rows={2}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid #e5e7eb", fontSize: "15px", background: "white", outline: "none", resize: "vertical", boxSizing: "border-box" }}
                 />
               </div>
 
               {activeType === "expert" && (
                 <div>
-                  <Label>Certificaciones y titulaciones</Label>
-                  <Textarea
+                  <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#374151", marginBottom: "6px" }}>Certificaciones y titulaciones</label>
+                  <textarea
                     placeholder="Ej: Graduada en Nutrición Humana y Dietética, Máster en Nutrición Deportiva..."
                     value={form.certifications}
                     onChange={f("certifications")}
                     rows={2}
+                    style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid #e5e7eb", fontSize: "15px", background: "white", outline: "none", resize: "vertical", boxSizing: "border-box" }}
                   />
                 </div>
               )}
 
-              <div className="grid grid-cols-2 gap-3">
+              {activeType === "expert" && (
                 <div>
-                  <Label>Instagram</Label>
-                  <Input placeholder="@usuario" value={form.instagramHandle} onChange={f("instagramHandle")} />
+                  <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#374151", marginBottom: "6px" }}>Especialidad</label>
+                  <input
+                    type="text"
+                    placeholder="Ej: Nutrición deportiva y pérdida de peso"
+                    value={form.specialty}
+                    onChange={f("specialty")}
+                    style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid #e5e7eb", fontSize: "15px", background: "white", outline: "none", boxSizing: "border-box" }}
+                  />
                 </div>
-                {activeType === "maker" ? (
-                  <div>
-                    <Label>YouTube</Label>
-                    <Input placeholder="@canal" value={form.youtubeHandle} onChange={f("youtubeHandle")} />
-                  </div>
-                ) : (
-                  <div>
-                    <Label>Web / LinkedIn</Label>
-                    <Input placeholder="https://..." value={form.websiteUrl} onChange={f("websiteUrl")} />
-                  </div>
-                )}
+              )}
+            </div>
+          )}
+
+          {/* STEP 2: Social media */}
+          {step === 2 && (
+            <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+              <div style={{ padding: "12px 14px", borderRadius: "12px", background: "rgba(249,115,22,0.06)", border: "1px solid rgba(249,115,22,0.2)" }}>
+                <p style={{ margin: 0, fontSize: "13px", color: "#9a3412", fontWeight: 500 }}>
+                  💡 Las redes sociales son opcionales pero ayudan al equipo a verificar tu perfil más rápido.
+                </p>
               </div>
 
-              {activeType === "maker" && (
+              <div>
+                <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#374151", marginBottom: "6px" }}>Instagram</label>
+                <input
+                  type="text"
+                  placeholder="@tu_usuario"
+                  value={form.instagramHandle}
+                  onChange={f("instagramHandle")}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid #e5e7eb", fontSize: "15px", background: "white", outline: "none", boxSizing: "border-box" }}
+                />
+              </div>
+
+              {activeType === "maker" ? (
+                <>
+                  <div>
+                    <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#374151", marginBottom: "6px" }}>YouTube</label>
+                    <input
+                      type="text"
+                      placeholder="@tu_canal"
+                      value={form.youtubeHandle}
+                      onChange={f("youtubeHandle")}
+                      style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid #e5e7eb", fontSize: "15px", background: "white", outline: "none", boxSizing: "border-box" }}
+                    />
+                  </div>
+                  <div>
+                    <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#374151", marginBottom: "6px" }}>TikTok</label>
+                    <input
+                      type="text"
+                      placeholder="@tu_usuario"
+                      value={form.tiktokHandle}
+                      onChange={f("tiktokHandle")}
+                      style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid #e5e7eb", fontSize: "15px", background: "white", outline: "none", boxSizing: "border-box" }}
+                    />
+                  </div>
+                </>
+              ) : (
                 <div>
-                  <Label>TikTok</Label>
-                  <Input placeholder="@usuario" value={form.tiktokHandle} onChange={f("tiktokHandle")} />
+                  <label style={{ display: "block", fontSize: "13px", fontWeight: 600, color: "#374151", marginBottom: "6px" }}>Web / LinkedIn</label>
+                  <input
+                    type="url"
+                    placeholder="https://tu-web.com"
+                    value={form.websiteUrl}
+                    onChange={f("websiteUrl")}
+                    style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid #e5e7eb", fontSize: "15px", background: "white", outline: "none", boxSizing: "border-box" }}
+                  />
                 </div>
               )}
 
-              <Button type="submit" className="w-full" disabled={submitMutation.isPending}>
-                {submitMutation.isPending ? "Enviando solicitud..." : "Enviar solicitud"}
-              </Button>
+              {/* Summary before submit */}
+              <div style={{ padding: "14px", borderRadius: "14px", background: "#f9fafb", border: "1.5px solid #e5e7eb" }}>
+                <p style={{ margin: "0 0 8px", fontSize: "12px", fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.06em" }}>Resumen de tu solicitud</p>
+                <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                  <p style={{ margin: 0, fontSize: "13px", color: "#374151" }}><strong>Rol:</strong> {activeType === "expert" ? "BuddyExpert" : "BuddyMaker"}</p>
+                  <p style={{ margin: 0, fontSize: "13px", color: "#374151" }}><strong>Nombre:</strong> {form.displayName || "—"}</p>
+                  {form.specialty && <p style={{ margin: 0, fontSize: "13px", color: "#374151" }}><strong>Especialidad:</strong> {form.specialty}</p>}
+                  {form.expertCategory && <p style={{ margin: 0, fontSize: "13px", color: "#374151" }}><strong>Categoría:</strong> {form.expertCategory}</p>}
+                </div>
+              </div>
+            </div>
+          )}
 
-              <p className="text-xs text-muted-foreground text-center">
-                El equipo de BuddyMarket revisará tu solicitud en un plazo de 24-48h.
-                Recibirás una notificación cuando sea aprobada.
-              </p>
-            </form>
-          </CardContent>
-        </Card>
+          {/* Navigation buttons */}
+          <div style={{ display: "flex", gap: "10px", marginTop: "24px" }}>
+            {step > 0 && (
+              <button
+                onClick={() => setStep(s => s - 1)}
+                style={{ flex: 1, padding: "13px", borderRadius: "14px", border: "1.5px solid #e5e7eb", background: "white", color: "#374151", fontWeight: 600, fontSize: "15px", cursor: "pointer" }}
+              >
+                ← Anterior
+              </button>
+            )}
+            <button
+              onClick={handleNext}
+              disabled={submitMutation.isPending}
+              style={{
+                flex: 2, padding: "13px", borderRadius: "14px",
+                background: submitMutation.isPending ? "#e5e7eb" : "linear-gradient(135deg, #F97316, #FB923C)",
+                color: "white", fontWeight: 700, fontSize: "15px", border: "none",
+                cursor: submitMutation.isPending ? "not-allowed" : "pointer",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: "8px"
+              }}
+            >
+              {submitMutation.isPending ? "Enviando..." : step < steps.length - 1 ? (
+                <><span>Siguiente</span><ArrowRight style={{ width: "16px", height: "16px" }} /></>
+              ) : (
+                <><Check style={{ width: "16px", height: "16px" }} /><span>Enviar solicitud</span></>
+              )}
+            </button>
+          </div>
+
+          <p style={{ margin: "12px 0 0", fontSize: "12px", color: "#9ca3af", textAlign: "center" }}>
+            El equipo revisará tu solicitud en 24-48h. Recibirás una notificación cuando sea aprobada.
+          </p>
+        </div>
       )}
     </div>
   );

@@ -278,7 +278,7 @@ export default function EventMenuPlanner() {
             <div className="grid grid-cols-2 gap-3">
               {EVENT_TYPES.filter(e => activeCategory === "todos" || e.categories.includes(activeCategory)).map(e => (
                 <button
-                  key={e.id + e.label}
+                  key={e.id}
                   onClick={() => { setEventType(e.id); if (e.id !== "otro") setStep(1); }}
                   className={`p-4 rounded-2xl border-2 text-left transition-all ${
                     eventType === e.id

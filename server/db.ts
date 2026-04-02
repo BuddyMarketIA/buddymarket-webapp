@@ -1396,3 +1396,37 @@ export async function generateShoppingListFromMenu(
 
   return { success: true, shoppingListId: newListId, itemCount: items.length, name };
 }
+
+// ---------------------------------------------------------------------------
+// DELETE USER ACCOUNT
+// ---------------------------------------------------------------------------
+export async function deleteUserAccount(userId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  // Delete junction/relation tables first
+  await Promise.all([
+    db.delete(userAllergies).where(eq(userAllergies.userId, userId)),
+    db.delete(userDietRestrictions).where(eq(userDietRestrictions.userId, userId)),
+    db.delete(userFoodCategories).where(eq(userFoodCategories.userId, userId)),
+    db.delete(userFavoriteRecipes).where(eq(userFavoriteRecipes.userId, userId)),
+    db.delete(userInventoryItems).where(eq(userInventoryItems.userId, userId)),
+    db.delete(mealLogs).where(eq(mealLogs.userId, userId)),
+    db.delete(userHealthMetrics).where(eq(userHealthMetrics.userId, userId)),
+    db.delete(userPreferences).where(eq(userPreferences.userId, userId)),
+    db.delete(userProfiles).where(eq(userProfiles.userId, userId)),
+    db.delete(userMedicalProfiles).where(eq(userMedicalProfiles.userId, userId)),
+    db.delete(userSubscriptions).where(eq(userSubscriptions.userId, userId)),
+    db.delete(userBannedIngredients).where(eq(userBannedIngredients.userId, userId)),
+  ]);
+
+  // Delete user-owned content
+  await Promise.all([
+    db.delete(recipes).where(eq(recipes.userId, userId)),
+    db.delete(menuOrganizers).where(eq(menuOrganizers.userId, userId)),
+    db.delete(shoppingLists).where(eq(shoppingLists.userId, userId)),
+  ]);
+
+  // Finally delete the user record
+  await db.delete(users).where(eq(users.id, userId));
+}

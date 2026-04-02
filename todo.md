@@ -577,9 +577,11 @@
 - [x] Backend: Validación de cantidades en inventario (0-99999)
 - [x] Frontend: Barra de progreso de completitud de perfil en Profile.tsx
 - [x] Frontend: Aviso de campos pendientes en perfil
-- [ ] Backend: Endpoint para eliminar cuenta de usuario
-- [ ] Backend: Mejorar manejo de errores en endpoints de IA (timeout, fallback)
-- [ ] Frontend: BuddyApplication formulario de 3 pasos con indicador de progreso
+- [x] Backend: Endpoint para eliminar cuenta de usuario
+- [x] Backend: Mejorar manejo de errores en endpoints de IA (timeout, fallback)
+- [x] Frontend: BuddyApplication formulario de 3 pasos con indicador de progreso
+- [x] Frontend: Sección de eliminar cuenta en Perfil con confirmación de texto
+- [x] Bug: Claves duplicadas en EventMenuPlanner.tsx corregido
 - [ ] Frontend: Métricas mostrar solo campos relevantes según tipo
 - [ ] Frontend: Añadir breadcrumbs o título de sección en todas las páginas
 - [x] Tests: Añadir test para endpoint de métricas

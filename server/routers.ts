@@ -214,6 +214,13 @@ export const appRouter = router({
       await db.updateUser(ctx.user.id, { onboardingCompleted: true });
       return { success: true };
     }),
+
+    deleteAccount: protectedProcedure
+      .input(z.object({ confirmation: z.literal("DELETE MY ACCOUNT") }))
+      .mutation(async ({ ctx }) => {
+        await db.deleteUserAccount(ctx.user.id);
+        return { success: true };
+      }),
   }),
 
   // ---------------------------------------------------------------------------
@@ -523,9 +530,13 @@ export const appRouter = router({
           ],
           response_format: { type: "json_object" },
         });
-         const content = response.choices[0]?.message?.content as string | undefined;
-        if (!content) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Error generando receta con IA" });
-        return JSON.parse(content);
+        const content = response.choices[0]?.message?.content as string | undefined;
+        if (!content) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Error generando receta con IA. Inténtalo de nuevo." });
+        try {
+          return JSON.parse(content);
+        } catch {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "La IA devolvió una respuesta inválida. Inténtalo de nuevo." });
+        }
       }),
   }),
   // ---------------------------------------------------------------------------
@@ -2466,9 +2477,17 @@ Perfil del usuario:
           ...input.messages,
         ];
 
-        const response = await invokeLLM({ messages: messagesWithSystem });
-        const content = response.choices?.[0]?.message?.content ?? "Lo siento, no pude procesar tu consulta. Inténtalo de nuevo.";
-        return { content };
+        try {
+          const response = await invokeLLM({ messages: messagesWithSystem });
+          const content = response.choices?.[0]?.message?.content ?? "Lo siento, no pude procesar tu consulta en este momento. Por favor, inténtalo de nuevo.";
+          return { content };
+        } catch (err: any) {
+          console.error("[BuddyIA] Error calling LLM:", err?.message || err);
+          // Return a friendly fallback instead of throwing
+          return {
+            content: "Lo siento, estoy teniendo dificultades para conectarme en este momento. Por favor, inténtalo de nuevo en unos segundos. Si el problema persiste, revisa tu conexión a internet. 🤖",
+          };
+        }
       }),
 
     generateWeeklyMenu: publicProcedure
@@ -2506,16 +2525,17 @@ Formato JSON estricto:
   ]
 }`;
 
-        const response = await invokeLLM({
-          messages: [{ role: "user", content: prompt }],
-          response_format: { type: "json_object" },
-        });
-        const rawContent = response.choices?.[0]?.message?.content ?? "{}";
-        const content = typeof rawContent === "string" ? rawContent : "{}";
         try {
+          const response = await invokeLLM({
+            messages: [{ role: "user", content: prompt }],
+            response_format: { type: "json_object" },
+          });
+          const rawContent = response.choices?.[0]?.message?.content ?? "{}";
+          const content = typeof rawContent === "string" ? rawContent : "{}";
           return { menu: JSON.parse(content) };
-        } catch {
-          return { menu: null, error: "Error al generar el menú" };
+        } catch (err: any) {
+          console.error("[BuddyIA] generateWeeklyMenu error:", err?.message || err);
+          return { menu: null, error: "Error al generar el menú. El servicio de IA no está disponible en este momento. Inténtalo de nuevo." };
         }
       }),
 
@@ -2599,17 +2619,18 @@ Devuelve SOLO JSON válido con esta estructura exacta:
   ]
 }`;
 
-        const response = await invokeLLM({
-          messages: [{ role: "user", content: prompt }],
-          response_format: { type: "json_object" },
-        });
-        const rawContent = response.choices?.[0]?.message?.content ?? "{}";
-        const content = typeof rawContent === "string" ? rawContent : "{}";
         try {
+          const response = await invokeLLM({
+            messages: [{ role: "user", content: prompt }],
+            response_format: { type: "json_object" },
+          });
+          const rawContent = response.choices?.[0]?.message?.content ?? "{}";
+          const content = typeof rawContent === "string" ? rawContent : "{}";
           const menu = JSON.parse(content);
           return { menu, userId: ctx.user.id };
-        } catch {
-          return { menu: null, error: "Error al generar el menú. Inténtalo de nuevo." };
+        } catch (err: any) {
+          console.error("[BuddyIA] generateMenuWithQuestionnaire error:", err?.message || err);
+          return { menu: null, error: "Error al generar el menú. El servicio de IA no está disponible en este momento. Inténtalo de nuevo en unos segundos." };
         }
       }),
 
