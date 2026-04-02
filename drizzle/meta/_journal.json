@@ -78,6 +78,13 @@
       "when": 1775121203184,
       "tag": "0010_mysterious_wonder_man",
       "breakpoints": true
+    },
+    {
+      "idx": 11,
+      "version": "5",
+      "when": 1775126601803,
+      "tag": "0011_aberrant_puppet_master",
+      "breakpoints": true
     }
   ]
 }

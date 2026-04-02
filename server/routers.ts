@@ -1312,6 +1312,65 @@ Si no puedes detectar productos, devuelve {"products": []}. No incluyas texto ad
   }),
 
   // ===========================================================================
+  // CARREFOUR INTEGRATION
+  // ===========================================================================
+  carrefour: router({
+    searchProducts: publicProcedure
+      .input(z.object({ q: z.string().optional(), category: z.string().optional(), subcategory: z.string().optional(), limit: z.number().optional() }))
+      .query(async ({ input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return [];
+        const { carrefourProducts } = await import("../drizzle/schema");
+        const { like, eq, and, or, desc } = await import("drizzle-orm");
+        const q = input.q?.trim();
+        const conditions: any[] = [];
+        if (q && q.length > 0) {
+          conditions.push(or(
+            like(carrefourProducts.name, `%${q}%`),
+            like(carrefourProducts.subcategory, `%${q}%`),
+            like(carrefourProducts.category, `%${q}%`),
+            like(carrefourProducts.brand, `%${q}%`),
+          ));
+        }
+        if (input.category) conditions.push(eq(carrefourProducts.category, input.category));
+        if (input.subcategory) conditions.push(eq(carrefourProducts.subcategory, input.subcategory));
+        const rows = await drizzleDb
+          .select()
+          .from(carrefourProducts)
+          .where(conditions.length > 0 ? and(...conditions) : undefined)
+          .orderBy(desc(carrefourProducts.price))
+          .limit(input.limit ?? 48);
+        return rows;
+      }),
+    categories: publicProcedure.query(async () => {
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) return [];
+      const { sql } = await import("drizzle-orm");
+      const rows = await drizzleDb.execute(
+        sql`SELECT category, subcategory, COUNT(*) as count FROM carrefour_products GROUP BY category, subcategory ORDER BY category, count DESC`
+      ) as any;
+      const result = rows[0] as Array<{ category: string; subcategory: string; count: number }>;
+      return result;
+    }),
+    byCategory: publicProcedure
+      .input(z.object({ category: z.string(), subcategory: z.string().optional(), limit: z.number().optional() }))
+      .query(async ({ input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return [];
+        const { carrefourProducts } = await import("../drizzle/schema");
+        const { eq, and, desc } = await import("drizzle-orm");
+        const conditions: any[] = [eq(carrefourProducts.category, input.category)];
+        if (input.subcategory) conditions.push(eq(carrefourProducts.subcategory, input.subcategory));
+        return drizzleDb
+          .select()
+          .from(carrefourProducts)
+          .where(and(...conditions))
+          .orderBy(desc(carrefourProducts.price))
+          .limit(input.limit ?? 48);
+      }),
+  }),
+
+  // ===========================================================================
   // BUDDY EXPERTS
   // ===========================================================================
   buddyExperts: router({

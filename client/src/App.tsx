@@ -22,6 +22,7 @@ import BuddyMakers from "./pages/BuddyMakers";
 import BuddyIA from "./pages/BuddyIA";
 import BuddyShop from "./pages/BuddyShop";
 import MercadonaShop from "./pages/MercadonaShop";
+import CarrefourShop from "./pages/CarrefourShop";
 import MenuLibrary from "./pages/MenuLibrary";
 import Favorites from "./pages/Favorites";
 import BuddyProfile from "./pages/BuddyProfile";
@@ -62,6 +63,7 @@ function Router() {
       <Route path="/buddy-ia">{() => <WithLayout component={BuddyIA} />}</Route>
       <Route path="/buddy-shop">{() => <WithLayout component={BuddyShop} />}</Route>
       <Route path="/supermercados">{() => <WithLayout component={MercadonaShop} />}</Route>
+      <Route path="/carrefour">{() => <WithLayout component={CarrefourShop} />}</Route>
       <Route path="/menu-library">{() => <WithLayout component={MenuLibrary} />}</Route>
       <Route path="/favorites">{() => <WithLayout component={Favorites} />}</Route>
       <Route path="/buddy-experts/:id">{() => <BuddyProfile />}</Route>

@@ -437,3 +437,16 @@
 ## Sprint Dashboard: Recomendaciones y Menús Sugeridos
 - [x] Reemplazar sección "Recetas destacadas" por "Recomendaciones para ti" (recetas personalizadas según perfil)
 - [x] Añadir sección "Menús que te pueden interesar" (menús de biblioteca filtrados por objetivo del usuario)
+
+## Sprint: Integración Carrefour
+- [ ] Investigar API pública de Carrefour España y estructura de productos
+- [ ] Importar catálogo de productos Carrefour con imágenes a la BD
+- [ ] Crear página CarrefourShop con búsqueda, categorías y carrito
+- [ ] Actualizar la página de Supermercados para incluir Carrefour
+- [ ] Integrar transferencia de carrito a carrefour.es
+
+- [x] Investigar API pública de Carrefour España y estructura de productos (API bloqueada por Cloudflare, usamos dataset Kaggle)
+- [x] Importar catálogo de productos Carrefour con imágenes a la BD (14.515 productos desde dataset Kaggle)
+- [x] Crear página CarrefourShop con búsqueda, categorías y carrito
+- [x] Actualizar la página de Supermercados para incluir Carrefour (sidebar: Mercadona y Carrefour separados)
+- [x] Integrar transferencia de carrito a carrefour.es (botón que abre carrefour.es + copia lista al portapapeles)
