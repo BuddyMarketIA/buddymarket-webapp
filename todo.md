@@ -820,3 +820,16 @@
 - [ ] UI en panel Admin: selector de tipo de cuenta por usuario
 - [ ] Notificación al usuario cuando el admin le activa Pro/Pro Max
 - [ ] Tests para los nuevos procedimientos admin
+
+## Sprint: Sistema de Planes con Límites Reales (02/04/2026)
+- [x] shared/plans.ts con definición de límites por plan (Free, Pro/basic, Pro Max/premium, Pro Max+/pro_max)
+- [x] server/planGuard.ts con helpers requirePlanFeature y requireUnderLimit
+- [x] Backend protegido: specializedMenus, mealPlanner, nutritionalDiary, recipes con validación de plan
+- [x] client/src/hooks/usePlan.ts hook para acceder al plan actual en el frontend
+- [x] client/src/components/UpgradeGate.tsx componente para bloquear funcionalidades según plan
+- [x] Gates añadidos en: BuddyIA, SpecializedMenus, MealLog
+- [x] Landing page: botones Pro y Pro Max conectados con Stripe checkout (handlePlanCta)
+- [x] Landing page: tabla de planes actualizada con límites reales (Free/Pro/Pro Max)
+- [x] Sidebar: badge dinámico del plan actual (Free/Pro/Pro Max) con enlace a /subscription
+- [x] Página /subscription rediseñada con planes correctos (Free gratis, Pro 9,99€, Pro Max 19,99€)
+- [x] Tests actualizados: specializedMenus tests usan mock de plan Pro (62/62 pasando)

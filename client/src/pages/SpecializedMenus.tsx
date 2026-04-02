@@ -6,6 +6,8 @@ import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { toast } from "sonner";
+import { usePlan } from "@/hooks/usePlan";
+import { UpgradeGate } from "@/components/UpgradeGate";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type CategoryKey =
@@ -90,6 +92,7 @@ const DAY_NAMES = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábad
 // ─── Component ────────────────────────────────────────────────────────────────
 export default function SpecializedMenus() {
   const { user } = useAuth();
+  const { can } = usePlan();
 
   const [selectedCategory, setSelectedCategory] = useState<CategoryDef | null>(null);
   const [days, setDays] = useState(7);
@@ -132,6 +135,17 @@ export default function SpecializedMenus() {
       extraNotes: extraNotes.trim() || undefined,
     });
   };
+
+  // ── Plan gate ──────────────────────────────────────────────────────────────
+  if (!can("canAccessSpecializedMenus")) {
+    return (
+      <AppLayout title="Menús Especializados" showBack>
+        <div style={{ padding: "40px 20px", maxWidth: 600, margin: "0 auto" }}>
+          <UpgradeGate feature="canAccessSpecializedMenus">{null}</UpgradeGate>
+        </div>
+      </AppLayout>
+    );
+  }
 
   // ── Catalog view ─────────────────────────────────────────────────────────────
   if (view === "catalog") {

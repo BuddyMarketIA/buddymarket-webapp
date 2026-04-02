@@ -3,6 +3,8 @@ import { getLoginUrl } from "@/const";
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
+import { usePlan } from "@/hooks/usePlan";
+import { PLAN_DISPLAY } from "@shared/plans";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -224,6 +226,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
   const currentNavItem = NAV_ITEMS.find((item) => matchesPath(location, item.matches));
   const currentSidebarItem = SIDEBAR_ITEMS.find((item) => location === item.to || location.startsWith(item.to + "/"));
   const pageTitle = title || currentNavItem?.label || currentSidebarItem?.label || "BuddyMarket";
+  const { tier, planDisplay } = usePlan();
   const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : "U";
   const userName = user?.name || "Usuario";
   const userEmail = user?.email || "";
@@ -320,7 +323,11 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
             <p style={{ margin: 0, fontSize: "15px", fontWeight: 700, color: "#1a1a1a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{userName}</p>
             <p style={{ margin: 0, fontSize: "13px", color: "#9ca3af", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{userEmail}</p>
           </div>
-          <div style={{ background: "#F97316", borderRadius: "8px", padding: "4px 10px", fontSize: "14px", fontWeight: 800, color: "white", letterSpacing: "0.05em" }}>PRO</div>
+          <Link href="/subscription">
+            <div style={{ background: planDisplay?.color || "#6B7280", borderRadius: "8px", padding: "4px 10px", fontSize: "13px", fontWeight: 800, color: "white", letterSpacing: "0.05em", cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}>
+              {planDisplay?.badge || "Free"}
+            </div>
+          </Link>
         </div>
       </div>
 

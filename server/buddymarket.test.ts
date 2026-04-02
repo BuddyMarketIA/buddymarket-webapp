@@ -1,4 +1,4 @@
-import { describe, expect, it, vi, beforeEach } from "vitest";
+import { describe, expect, it, vi, beforeEach, afterEach } from "vitest";
 import { appRouter } from "./routers";
 import type { TrpcContext } from "./_core/context";
 import { COOKIE_NAME } from "../shared/const";
@@ -722,6 +722,21 @@ describe("achievements.evaluate", () => {
 });
 
 describe("specializedMenus.generate", () => {
+  beforeEach(async () => {
+    // specializedMenus requires at least 'basic' (Pro) plan
+    const dbMock = await import("./db");
+    (dbMock.getUserSubscription as ReturnType<typeof vi.fn>).mockResolvedValue({
+      id: 1, userId: 1, plan: "basic", status: "active",
+      stripeCustomerId: null, stripeSubscriptionId: null,
+      currentPeriodStart: new Date(), currentPeriodEnd: new Date(Date.now() + 30 * 86400000),
+      createdAt: new Date(), updatedAt: new Date(),
+    });
+  });
+  afterEach(async () => {
+    const dbMock = await import("./db");
+    (dbMock.getUserSubscription as ReturnType<typeof vi.fn>).mockResolvedValue(null);
+  });
+
   it("should generate a specialized menu for a valid category", async () => {
     const { invokeLLM } = await import("./_core/llm");
     const mockMenu = {

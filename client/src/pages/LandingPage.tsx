@@ -1,6 +1,9 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "wouter";
 import { getLoginUrl } from "@/const";
+import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { toast } from "sonner";
 
 const LOGO_COLOR = "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/buddymarket-logo-color_856f2d67.jpg";
 
@@ -62,11 +65,35 @@ const STATS = [
 
 const PLANS = [
   { name: "Free", price: "0€", period: "para siempre", accent: "#6b7280", highlight: false, cta: "Empezar gratis",
-    features: ["Perfil nutricional básico", "5 recetas al mes", "Diario nutricional", "Lista de la compra", "Acceso a la comunidad"] },
+    features: [
+      "Perfil nutricional básico",
+      "Ver recetas de la comunidad",
+      "5 menús generados al mes",
+      "Lista de la compra básica",
+      "Inventario del hogar (hasta 20 productos)",
+      "Registro de comidas (hasta 10/mes)",
+    ] },
   { name: "Pro", price: "9,99€", period: "al mes", accent: "#F97316", highlight: true, cta: "Empezar con Pro",
-    features: ["Todo lo de Free", "Menús semanales ilimitados", "IA nutricional personalizada", "24 perfiles especializados", "Inventario del hogar", "Seguimiento avanzado", "Sin anuncios"] },
+    features: [
+      "✓ Todo lo de Free",
+      "Menús semanales ilimitados con IA",
+      "24 menús especializados (diabetes, embarazo...)",
+      "Asistente BuddyIA ilimitado",
+      "Diario nutricional completo",
+      "Inventario ilimitado + alertas caducidad",
+      "Métricas de salud avanzadas",
+      "Sin anuncios",
+    ] },
   { name: "Pro Max", price: "19,99€", period: "al mes", accent: "#7c3aed", highlight: false, cta: "Empezar con Pro Max",
-    features: ["Todo lo de Pro", "BuddyMaker: publica recetas", "BuddyExpert: consultas", "Análisis IA avanzado", "Exportar informes PDF", "Soporte prioritario 24/7"] },
+    features: [
+      "✓ Todo lo de Pro",
+      "Crear y publicar tus propias recetas",
+      "Acceso a BuddyExperts (nutricionistas)",
+      "Conectar supermercado online",
+      "Múltiples perfiles familiares",
+      "Exportar informes PDF",
+      "Soporte prioritario 24/7",
+    ] },
 ];
 
 // Animated counter hook
@@ -112,11 +139,43 @@ function StatCard({ value, suffix, label, icon, start }: { value: number; suffix
 }
 
 export default function LandingPage() {
+  const { user } = useAuth();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [activeFeature, setActiveFeature] = useState(0);
   const [heroVisible, setHeroVisible] = useState(false);
+  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
   const loginUrl = getLoginUrl();
+  const createCheckout = trpc.subscriptions.createCheckout.useMutation();
+
+  const handlePlanCta = async (planName: string) => {
+    if (planName === "Free") {
+      window.location.href = loginUrl;
+      return;
+    }
+    if (!user) {
+      window.location.href = loginUrl;
+      return;
+    }
+    const planMap: Record<string, "basic" | "premium" | "pro_max"> = {
+      "Pro": "basic",
+      "Pro Max": "pro_max",
+    };
+    const stripePlan = planMap[planName];
+    if (!stripePlan) return;
+    setCheckoutLoading(planName);
+    try {
+      const result = await createCheckout.mutateAsync({ plan: stripePlan, origin: window.location.origin });
+      if (result.url) {
+        toast.info("Redirigiendo al pago seguro...");
+        window.open(result.url, "_blank");
+      }
+    } catch {
+      toast.error("Error al iniciar el pago. Inténtalo de nuevo.");
+    } finally {
+      setCheckoutLoading(null);
+    }
+  };
 
   const statsSection = useInView(0.3);
   const featuresSection = useInView(0.1);
@@ -542,16 +601,21 @@ export default function LandingPage() {
                     </li>
                   ))}
                 </ul>
-                <a href={loginUrl} style={{
-                  display: "block", textAlign: "center", padding: "15px 20px", borderRadius: 14,
-                  fontSize: 15, fontWeight: 700, textDecoration: "none", transition: "all 0.2s",
-                  background: plan.highlight ? plan.accent : "transparent",
-                  color: plan.highlight ? "white" : plan.accent,
-                  border: `2px solid ${plan.accent}`,
-                  boxShadow: plan.highlight ? `0 8px 24px ${plan.accent}55` : "none",
-                }}>
-                  {plan.cta}
-                </a>
+                <button
+                  onClick={() => handlePlanCta(plan.name)}
+                  disabled={checkoutLoading === plan.name}
+                  style={{
+                    display: "block", width: "100%", textAlign: "center", padding: "15px 20px", borderRadius: 14,
+                    fontSize: 15, fontWeight: 700, cursor: checkoutLoading === plan.name ? "not-allowed" : "pointer",
+                    transition: "all 0.2s",
+                    background: checkoutLoading === plan.name ? "#D1D5DB" : (plan.highlight ? plan.accent : "transparent"),
+                    color: checkoutLoading === plan.name ? "#9CA3AF" : (plan.highlight ? "white" : plan.accent),
+                    border: `2px solid ${checkoutLoading === plan.name ? "#D1D5DB" : plan.accent}`,
+                    boxShadow: plan.highlight && checkoutLoading !== plan.name ? `0 8px 24px ${plan.accent}55` : "none",
+                  }}
+                >
+                  {checkoutLoading === plan.name ? "Procesando..." : plan.cta}
+                </button>
               </div>
             ))}
           </div>

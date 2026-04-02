@@ -8,6 +8,7 @@ import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { invokeLLM } from "./_core/llm";
 import { storagePut } from "./storage";
 import * as db from "./db";
+import { getUserPlanTier, requirePlanFeature, requireUnderLimit } from "./planGuard";
 
 // =============================================================================
 // HELPERS
@@ -489,6 +490,8 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ ctx, input }) => {
+        const tier = await getUserPlanTier(ctx.user.id);
+        requirePlanFeature(tier, "canCreateRecipes");
         const { categoryIds, allergyIds, restrictionIds, ...recipeData } = input;
         const result = await db.createRecipe({ ...recipeData, userId: ctx.user.id });
         if (result) {
@@ -765,6 +768,8 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ ctx, input }) => {
+        const tier = await getUserPlanTier(ctx.user.id);
+        requirePlanFeature(tier, "canGenerateAIMenus");
         const [profile, allergies, restrictions] = await Promise.all([
           db.getUserProfile(ctx.user.id),
           db.getUserAllergies(ctx.user.id),
@@ -1087,7 +1092,9 @@ Si no puedes detectar productos, devuelve {"products": []}. No incluyas texto ad
           photoUrl: z.string().url("URL de foto inválida").optional(),
         })
       )
-      .mutation(({ ctx, input }) => {
+      .mutation(async ({ ctx, input }) => {
+        const tier = await getUserPlanTier(ctx.user.id);
+        requirePlanFeature(tier, "canAccessDiary");
         if (!input.recipeId && !input.customMealName?.trim()) {
           throw new TRPCError({ code: "BAD_REQUEST", message: "Debes indicar el nombre de la comida" });
         }
@@ -2906,7 +2913,7 @@ Si no puedes detectar productos, devuelve {"products": []}. No incluyas texto ad
   // BUDDY IA — Asistente nutricional con IA
   // ===========================================================================
   buddyIA: router({
-    chat: publicProcedure
+    chat: protectedProcedure
       .input(
         z.object({
           messages: z.array(
@@ -2924,7 +2931,9 @@ Si no puedes detectar productos, devuelve {"products": []}. No incluyas texto ad
             .optional(),
         })
       )
-      .mutation(async ({ input }) => {
+      .mutation(async ({ ctx, input }) => {
+        const tier = await getUserPlanTier(ctx.user.id);
+        requirePlanFeature(tier, "canUseBuddyIA");
         const systemPrompt = `Eres BuddyIA, el asistente nutricional inteligente de BuddyMarket. Eres un experto en nutrición, dietética y alimentación saludable. Tu objetivo es ayudar a los usuarios a:
 - Crear menús semanales personalizados
 - Calcular calorías y macronutrientes
@@ -3592,7 +3601,9 @@ Devuelve EXACTAMENTE este JSON:
         extraNotes: z.string().max(500).optional(),
         allergies: z.array(z.string()).optional(),
       }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ ctx, input }) => {
+        const tier = await getUserPlanTier(ctx.user.id);
+        requirePlanFeature(tier, "canAccessSpecializedMenus");
         const CATEGORY_LABELS: Record<string, string> = {
           embarazada: "Embarazada",
           lactancia: "Madre en periodo de lactancia",

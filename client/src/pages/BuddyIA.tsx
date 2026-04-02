@@ -1,6 +1,8 @@
 import { useState, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import { usePlan } from "@/hooks/usePlan";
+import { UpgradeGate } from "@/components/UpgradeGate";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -622,10 +624,19 @@ function MenuResultView({
 
 // ─── Main BuddyIA Page ────────────────────────────────────────────────────────
 export default function BuddyIA() {
+  const { can } = usePlan();
   const [mode, setMode] = useState<AppMode>("home");
   const [generatedMenu, setGeneratedMenu] = useState<GeneratedMenu | null>(null);
   const [questionnaireData, setQuestionnaireData] = useState<Partial<QuestionnaireData>>({});
   const [savedMenuId, setSavedMenuId] = useState<number | null>(null);
+
+  if (!can("canUseBuddyIA")) {
+    return (
+      <div style={{ padding: "40px 20px", maxWidth: 600, margin: "0 auto" }}>
+        <UpgradeGate feature="canUseBuddyIA">{null}</UpgradeGate>
+      </div>
+    );
+  }
 
   if (mode === "chat") {
     return <div className="h-full flex flex-col"><ChatView onBack={() => setMode("home")} /></div>;
