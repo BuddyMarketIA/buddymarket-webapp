@@ -357,3 +357,10 @@
 - [x] -webkit-tap-highlight-color: transparent en todos los elementos
 - [x] Iconos PNG generados con PIL (72, 96, 128, 144, 152, 192, 384, 512)
 - [x] apple-touch-icon.png (180x180)
+
+## Sprint: Card de Calorías Visual
+- [ ] Rediseñar card de calorías con anillo de progreso SVG circular
+- [x] Mostrar macros (P/C/G) con barras de progreso horizontales y colores
+- [ ] Añadir streak de días consecutivos registrando comidas
+- [x] Card clickeable que navega a /meal-log
+- [ ] Animación de entrada del anillo de progreso

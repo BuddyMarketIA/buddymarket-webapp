@@ -182,54 +182,116 @@ export default function Dashboard() {
         </Link>
       )}
 
-      {/* Calorie Ring Card */}
-      <div style={{ background: "linear-gradient(135deg, #F97316 0%, #FB923C 60%, #FDBA74 100%)", borderRadius: "24px", padding: "20px", marginBottom: "16px", boxShadow: "0 8px 32px rgba(249,115,22,0.30)", position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", top: "-20px", right: "-20px", width: "120px", height: "120px", borderRadius: "50%", background: "rgba(255,255,255,0.10)" }} />
-        <div style={{ position: "absolute", bottom: "-30px", left: "-10px", width: "100px", height: "100px", borderRadius: "50%", background: "rgba(255,255,255,0.06)" }} />
-        <div style={{ display: "flex", alignItems: "center", gap: "20px", position: "relative" }}>
-          {/* Ring */}
-          <div style={{ position: "relative", width: "90px", height: "90px", flexShrink: 0 }}>
-            <svg width="90" height="90" viewBox="0 0 90 90">
-              <circle cx="45" cy="45" r="38" fill="none" stroke="rgba(255,255,255,0.25)" strokeWidth="8"/>
-              <circle cx="45" cy="45" r="38" fill="none" stroke="white" strokeWidth="8"
-                strokeDasharray={`${2 * Math.PI * 38}`}
-                strokeDashoffset={`${2 * Math.PI * 38 * (1 - progress / 100)}`}
-                strokeLinecap="round" transform="rotate(-90 45 45)"
-                style={{ transition: "stroke-dashoffset 0.8s ease" }}
+      {/* Calorie Ring Card — clickable, navigates to /meal-log */}
+      <Link href="/meal-log">
+        <div style={{ background: "linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)", borderRadius: "28px", padding: "22px", marginBottom: "16px", boxShadow: "0 12px 40px rgba(0,0,0,0.30)", position: "relative", overflow: "hidden", cursor: "pointer" }}>
+          {/* Decorative blobs */}
+          <div style={{ position: "absolute", top: "-30px", right: "-30px", width: "160px", height: "160px", borderRadius: "50%", background: "radial-gradient(circle, rgba(249,115,22,0.25) 0%, transparent 70%)" }} />
+          <div style={{ position: "absolute", bottom: "-40px", left: "-20px", width: "140px", height: "140px", borderRadius: "50%", background: "radial-gradient(circle, rgba(99,102,241,0.20) 0%, transparent 70%)" }} />
+
+          {/* Top row: label + meta button */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "18px", position: "relative" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <div style={{ width: "28px", height: "28px", borderRadius: "8px", background: "rgba(249,115,22,0.25)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <span style={{ fontSize: "14px" }}>🔥</span>
+              </div>
+              <span style={{ fontSize: "13px", fontWeight: 700, color: "rgba(255,255,255,0.75)", letterSpacing: "0.02em" }}>CALORÍAS HOY</span>
+            </div>
+            <button
+              onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowGoalEdit(!showGoalEdit); }}
+              style={{ background: "rgba(249,115,22,0.20)", border: "1px solid rgba(249,115,22,0.35)", borderRadius: "10px", padding: "4px 10px", fontSize: "11px", color: "#FB923C", cursor: "pointer", fontWeight: 700 }}
+            >
+              Meta: {goalCalories} kcal
+            </button>
+          </div>
+
+          {showGoalEdit && (
+            <div style={{ marginBottom: "14px", display: "flex", gap: "6px", position: "relative" }} onClick={(e) => e.stopPropagation()}>
+              <input
+                type="number"
+                defaultValue={goalCalories}
+                onBlur={(e) => { setGoalCalories(Number(e.target.value)); setShowGoalEdit(false); }}
+                style={{ flex: 1, padding: "8px 12px", borderRadius: "12px", border: "1px solid rgba(249,115,22,0.4)", fontSize: "14px", background: "rgba(255,255,255,0.1)", color: "white", outline: "none" }}
               />
-            </svg>
-            <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ fontSize: "18px", fontWeight: 900, color: "white", lineHeight: 1 }}>{consumed}</span>
-              <span style={{ fontSize: "9px", color: "rgba(255,255,255,0.8)", fontWeight: 600 }}>kcal</span>
+            </div>
+          )}
+
+          {/* Main content: big ring + numbers */}
+          <div style={{ display: "flex", alignItems: "center", gap: "20px", position: "relative" }}>
+            {/* Large SVG ring */}
+            <div style={{ position: "relative", width: "110px", height: "110px", flexShrink: 0 }}>
+              <svg width="110" height="110" viewBox="0 0 110 110">
+                {/* Background track */}
+                <circle cx="55" cy="55" r="46" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="10"/>
+                {/* Colored arc: green if on track, orange if over */}
+                <circle cx="55" cy="55" r="46" fill="none"
+                  stroke={progress >= 100 ? "#EF4444" : progress >= 80 ? "#F97316" : "#22C55E"}
+                  strokeWidth="10"
+                  strokeDasharray={`${2 * Math.PI * 46}`}
+                  strokeDashoffset={`${2 * Math.PI * 46 * (1 - Math.min(progress, 100) / 100)}`}
+                  strokeLinecap="round"
+                  transform="rotate(-90 55 55)"
+                  style={{ transition: "stroke-dashoffset 1s cubic-bezier(0.4,0,0.2,1), stroke 0.4s" }}
+                />
+                {/* Glow dot at tip */}
+                <circle
+                  cx={55 + 46 * Math.cos((Math.min(progress, 100) / 100 * 360 - 90) * Math.PI / 180)}
+                  cy={55 + 46 * Math.sin((Math.min(progress, 100) / 100 * 360 - 90) * Math.PI / 180)}
+                  r="5" fill={progress >= 100 ? "#EF4444" : progress >= 80 ? "#F97316" : "#22C55E"}
+                  style={{ filter: "drop-shadow(0 0 4px currentColor)" }}
+                />
+              </svg>
+              <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "2px" }}>
+                <span style={{ fontSize: "22px", fontWeight: 900, color: "white", lineHeight: 1, letterSpacing: "-0.04em" }}>{consumed}</span>
+                <span style={{ fontSize: "10px", color: "rgba(255,255,255,0.55)", fontWeight: 600, letterSpacing: "0.05em" }}>kcal</span>
+                <span style={{ fontSize: "9px", color: progress >= 100 ? "#EF4444" : "#22C55E", fontWeight: 700, marginTop: "1px" }}>
+                  {progress >= 100 ? "¡Límite!" : `${Math.round(progress)}%`}
+                </span>
+              </div>
+            </div>
+
+            {/* Right column: remaining + macros */}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ margin: "0 0 2px", fontSize: "11px", color: "rgba(255,255,255,0.5)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>Restantes</p>
+              <p style={{ margin: "0 0 16px", fontSize: "32px", fontWeight: 900, color: "white", letterSpacing: "-0.05em", lineHeight: 1 }}>
+                {remaining}<span style={{ fontSize: "14px", fontWeight: 600, color: "rgba(255,255,255,0.5)", marginLeft: "4px" }}>kcal</span>
+              </p>
+
+              {/* Macro bars */}
+              {[
+                { label: "Proteínas", value: Math.round(protein), max: Math.round((goalCalories * 0.30) / 4), color: "#818CF8", emoji: "💪" },
+                { label: "Carbos", value: Math.round(carbs), max: Math.round((goalCalories * 0.45) / 4), color: "#FBBF24", emoji: "⚡" },
+                { label: "Grasas", value: Math.round(fat), max: Math.round((goalCalories * 0.25) / 9), color: "#34D399", emoji: "🥑" },
+              ].map((m) => {
+                const pct = Math.min(100, m.max > 0 ? (m.value / m.max) * 100 : 0);
+                return (
+                  <div key={m.label} style={{ marginBottom: "7px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "3px" }}>
+                      <span style={{ fontSize: "10px", color: "rgba(255,255,255,0.6)", fontWeight: 600 }}>{m.emoji} {m.label}</span>
+                      <span style={{ fontSize: "10px", color: m.color, fontWeight: 800 }}>{m.value}g</span>
+                    </div>
+                    <div style={{ height: "4px", borderRadius: "999px", background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
+                      <div style={{ height: "100%", borderRadius: "999px", background: m.color, width: `${pct}%`, transition: "width 1s cubic-bezier(0.4,0,0.2,1)", boxShadow: `0 0 6px ${m.color}80` }} />
+                    </div>
+                  </div>
+                );
+              })}
             </div>
           </div>
-          {/* Stats */}
-          <div style={{ flex: 1 }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "4px" }}>
-              <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "rgba(255,255,255,0.9)" }}>Calorías hoy</p>
-              <button onClick={() => setShowGoalEdit(!showGoalEdit)} style={{ background: "rgba(255,255,255,0.2)", border: "none", borderRadius: "8px", padding: "2px 8px", fontSize: "11px", color: "white", cursor: "pointer", fontWeight: 600 }}>
-                Meta: {goalCalories}
-              </button>
+
+          {/* Bottom CTA */}
+          <div style={{ marginTop: "16px", paddingTop: "14px", borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "space-between", position: "relative" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <span style={{ fontSize: "12px" }}>📝</span>
+              <span style={{ fontSize: "12px", fontWeight: 600, color: "rgba(255,255,255,0.6)" }}>Toca para registrar comidas</span>
             </div>
-            {showGoalEdit && (
-              <div style={{ marginBottom: "8px", display: "flex", gap: "6px" }}>
-                <input type="number" defaultValue={goalCalories} onBlur={(e) => { setGoalCalories(Number(e.target.value)); setShowGoalEdit(false); }} style={{ flex: 1, padding: "4px 8px", borderRadius: "8px", border: "none", fontSize: "13px", background: "rgba(255,255,255,0.9)" }} />
-              </div>
-            )}
-            <p style={{ margin: "0 0 12px", fontSize: "26px", fontWeight: 900, color: "white", letterSpacing: "-0.04em" }}>
-              {remaining} <span style={{ fontSize: "13px", fontWeight: 600, opacity: 0.8 }}>restantes</span>
-            </p>
-            <div style={{ display: "flex", gap: "16px" }}>
-              {[{ label: "P", value: `${Math.round(protein)}g`, color: "rgba(255,255,255,0.9)" }, { label: "C", value: `${Math.round(carbs)}g`, color: "rgba(255,255,255,0.9)" }, { label: "G", value: `${Math.round(fat)}g`, color: "rgba(255,255,255,0.9)" }].map((m) => (
-                <div key={m.label} style={{ textAlign: "center" }}>
-                  <p style={{ margin: 0, fontSize: "14px", fontWeight: 800, color: m.color }}>{m.value}</p>
-                  <p style={{ margin: 0, fontSize: "10px", color: "rgba(255,255,255,0.7)", fontWeight: 600 }}>{m.label}</p>
-                </div>
-              ))}
+            <div style={{ display: "flex", alignItems: "center", gap: "4px", background: "rgba(249,115,22,0.20)", borderRadius: "10px", padding: "5px 10px" }}>
+              <span style={{ fontSize: "11px", fontWeight: 700, color: "#FB923C" }}>Abrir diario</span>
+              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FB923C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
             </div>
           </div>
         </div>
-      </div>
+      </Link>
 
       {/* Today's Menu */}
       {todayMenuItems.length > 0 && (
