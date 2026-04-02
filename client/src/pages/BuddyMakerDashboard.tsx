@@ -79,6 +79,11 @@ export default function BuddyMakerDashboard() {
     enabled: !!user,
   });
 
+  const { data: myApplication, isLoading: appLoading } = trpc.buddyApplications.getMyApplication.useQuery(
+    { type: "maker" },
+    { enabled: !!user }
+  );
+
   // Populate form when profile loads
   const [profileLoaded, setProfileLoaded] = useState(false);
   if (myProfile && !profileLoaded) {
@@ -239,6 +244,26 @@ export default function BuddyMakerDashboard() {
         <div className="flex flex-col items-center justify-center min-h-screen gap-4 p-8 text-center">
           <div className="text-5xl">🔒</div>
           <h2 className="text-xl font-bold text-gray-800">Inicia sesión para acceder a tu panel de creador</h2>
+        </div>
+      </AppLayout>
+    );
+  }
+
+  // Gate: only approved makers can access the dashboard
+  if (!appLoading && myApplication?.status !== "approved") {
+    return (
+      <AppLayout>
+        <div className="max-w-lg mx-auto px-4 py-12 text-center space-y-6">
+          <div className="text-6xl">👨‍🍳</div>
+          <h2 className="text-xl font-bold">Acceso restringido a BuddyMakers</h2>
+          <p className="text-muted-foreground">
+            {myApplication?.status === "pending"
+              ? "Tu solicitud está siendo revisada. Te notificaremos cuando sea aprobada."
+              : "Para acceder a este panel necesitas solicitar y obtener el rol de BuddyMaker."}
+          </p>
+          <a href="/buddy-application?type=maker" className="inline-flex items-center justify-center rounded-md bg-primary text-primary-foreground h-10 px-6 text-sm font-medium hover:bg-primary/90 transition-colors">
+            {myApplication?.status === "pending" ? "Ver estado de mi solicitud" : "Solicitar acceso"}
+          </a>
         </div>
       </AppLayout>
     );

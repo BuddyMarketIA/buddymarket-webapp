@@ -15,6 +15,7 @@ import {
 
 const TABS = [
   { key: "overview", label: "Resumen", icon: ShieldCheckIcon },
+  { key: "applications", label: "Solicitudes", icon: UsersIcon },
   { key: "allergies", label: "Alergias", icon: ExclamationCircleIcon },
   { key: "diets", label: "Dietas", icon: TagIcon },
   { key: "categories", label: "Categorías", icon: BookOpenIcon },
@@ -114,7 +115,13 @@ export default function Admin() {
   const { data: allergies } = trpc.catalogs.allergies.useQuery();
   const { data: dietRestrictions } = trpc.catalogs.dietRestrictions.useQuery();
   const { data: foodCategories } = trpc.catalogs.foodCategories.useQuery();
+  const [appFilter, setAppFilter] = useState<"pending" | "approved" | "rejected">("pending");
+  const [adminNote, setAdminNote] = useState<Record<number, string>>({});
   const { data: users } = trpc.admin.users.useQuery({});
+  const { data: applications, isLoading: appsLoading } = trpc.buddyApplications.listPending.useQuery(
+    { status: appFilter },
+    { enabled: activeTab === "applications" }
+  );
   const utils = trpc.useUtils();
 
   const addAllergy = trpc.admin.createAllergy.useMutation({
@@ -139,6 +146,14 @@ export default function Admin() {
   });
   const deleteCategory = trpc.admin.deleteFoodCategory.useMutation({
     onSuccess: () => { utils.catalogs.foodCategories.invalidate(); toast.success("Eliminada"); },
+  });
+
+  const reviewApplication = trpc.buddyApplications.review.useMutation({
+    onSuccess: (_data, vars) => {
+      utils.buddyApplications.listPending.invalidate();
+      toast.success((vars as any).action === "approve" ? "✅ Solicitud aprobada" : "❌ Solicitud rechazada");
+    },
+    onError: (err: any) => toast.error(err.message),
   });
 
   const updateRole = trpc.admin.updateUserRole.useMutation({
@@ -261,6 +276,107 @@ export default function Admin() {
           onDelete={(id) => deleteCategory.mutate({ id })}
           isAdding={addCategory.isPending}
         />
+      )}
+
+      {/* Applications */}
+      {activeTab === "applications" && (
+        <div className="space-y-4">
+          {/* Filter */}
+          <div className="flex gap-2">
+            {(["pending", "approved", "rejected"] as const).map(s => (
+              <button
+                key={s}
+                onClick={() => setAppFilter(s)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                  appFilter === s ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                }`}
+              >
+                {s === "pending" ? "⏳ Pendientes" : s === "approved" ? "✅ Aprobadas" : "❌ Rechazadas"}
+              </button>
+            ))}
+          </div>
+
+          {appsLoading ? (
+            <div className="flex justify-center py-8"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900" /></div>
+          ) : !applications?.length ? (
+            <div className="vively-card text-center py-8 text-gray-400">
+              <p className="text-2xl mb-2">📥</p>
+              <p className="text-sm">No hay solicitudes {appFilter === "pending" ? "pendientes" : appFilter === "approved" ? "aprobadas" : "rechazadas"}</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {(applications as any[]).map((row: any) => {
+                const app = row.app ?? row;
+                const appUser = row.user ?? {};
+                return (
+                <div key={app.id} className="vively-card space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">{app.type === "expert" ? "🎓" : "👨‍🍳"}</span>
+                      <div>
+                        <p className="font-bold text-sm text-gray-900">{app.displayName || appUser.name || "Sin nombre"}</p>
+                        <p className="text-xs text-gray-400">{appUser.email} · {app.type === "expert" ? "BuddyExpert" : "BuddyMaker"}</p>
+                      </div>
+                    </div>
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                      app.status === "pending" ? "bg-yellow-100 text-yellow-700" :
+                      app.status === "approved" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                    }`}>{app.status}</span>
+                  </div>
+
+                  {app.specialty && <p className="text-xs text-gray-600"><span className="font-medium">Especialidad:</span> {app.specialty}</p>}
+                  {app.expertCategory && <p className="text-xs text-gray-600"><span className="font-medium">Categoría:</span> {app.expertCategory}</p>}
+                  {app.motivation && (
+                    <div className="bg-gray-50 rounded-xl p-3">
+                      <p className="text-xs font-medium text-gray-500 mb-1">Motivación</p>
+                      <p className="text-xs text-gray-700">{app.motivation}</p>
+                    </div>
+                  )}
+                  {app.experience && (
+                    <div className="bg-gray-50 rounded-xl p-3">
+                      <p className="text-xs font-medium text-gray-500 mb-1">Experiencia</p>
+                      <p className="text-xs text-gray-700">{app.experience}</p>
+                    </div>
+                  )}
+                  {app.certifications && <p className="text-xs text-gray-600"><span className="font-medium">Certificaciones:</span> {app.certifications}</p>}
+                  {app.instagramHandle && <p className="text-xs text-gray-600">📸 {app.instagramHandle}</p>}
+
+                  {app.status === "pending" && (
+                    <div className="space-y-2 pt-1 border-t border-gray-100">
+                      <input
+                        placeholder="Nota para el usuario (opcional)"
+                        value={adminNote[app.id] ?? ""}
+                        onChange={e => setAdminNote(prev => ({ ...prev, [app.id]: e.target.value }))}
+                        className="vively-input w-full text-xs"
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => reviewApplication.mutate({ id: app.id, action: "approve", adminNote: adminNote[app.id] })}
+                          disabled={reviewApplication.isPending}
+                          className="flex-1 py-2 rounded-xl bg-green-500 text-white text-xs font-bold hover:bg-green-600 disabled:opacity-50"
+                        >
+                          ✅ Aprobar
+                        </button>
+                        <button
+                          onClick={() => reviewApplication.mutate({ id: app.id, action: "reject", adminNote: adminNote[app.id] })}
+                          disabled={reviewApplication.isPending}
+                          className="flex-1 py-2 rounded-xl bg-red-500 text-white text-xs font-bold hover:bg-red-600 disabled:opacity-50"
+                        >
+                          ❌ Rechazar
+                        </button>
+                      </div>
+                    </div>
+                  )}
+
+                  {app.adminNote && (
+                    <p className="text-xs text-gray-500 italic border-t border-gray-100 pt-2">Nota admin: "{app.adminNote}"</p>
+                  )}
+                </div>
+              );
+              })}
+            </div>
+          )}
+        </div>
       )}
 
       {/* Users */}

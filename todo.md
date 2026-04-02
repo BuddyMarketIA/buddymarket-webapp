@@ -450,3 +450,23 @@
 - [x] Crear página CarrefourShop con búsqueda, categorías y carrito
 - [x] Actualizar la página de Supermercados para incluir Carrefour (sidebar: Mercadona y Carrefour separados)
 - [x] Integrar transferencia de carrito a carrefour.es (botón que abre carrefour.es + copia lista al portapapeles)
+
+## Sprint: Métricas Personales + Sistema de Solicitud BuddyExpert/Maker
+- [ ] Schema DB: tabla `user_metrics` (userId, date, weight, bodyFat, muscleMass, bmi, waist, hip, chest, arm, thigh, notes)
+- [ ] Schema DB: campo `applicationStatus` en buddyExperts y buddyMakers (pending/approved/rejected)
+- [ ] Schema DB: campo `applicationNote` y `appliedAt` en buddyExperts y buddyMakers
+- [ ] tRPC metrics: addMetric, getMetrics (historial), getLatestMetric, deleteMetric
+- [ ] Página /metrics: formulario de registro de métricas, gráfica de evolución de peso, tabla de historial
+- [ ] Sidebar: enlace "Mis Métricas" con icono de balanza
+- [ ] tRPC buddyExperts.applyAsExpert: crear solicitud con estado pending
+- [ ] tRPC buddyExperts.getMyApplication: ver estado de mi solicitud
+- [ ] tRPC buddyMakers.applyAsMaker: crear solicitud con estado pending
+- [ ] tRPC buddyMakers.getMyApplication: ver estado de mi solicitud
+- [ ] tRPC admin.getPendingApplications: listar solicitudes pendientes (experts + makers)
+- [ ] tRPC admin.approveApplication: aprobar solicitud (cambia status a approved)
+- [ ] tRPC admin.rejectApplication: rechazar solicitud con motivo
+- [ ] Panel Admin: sección "Solicitudes" con tabs Experts/Makers, listado de pendientes, botones aprobar/rechazar
+- [ ] BuddyExpertDashboard: visible solo si applicationStatus === 'approved', si no muestra formulario de solicitud
+- [ ] BuddyMakerDashboard: visible solo si applicationStatus === 'approved', si no muestra formulario de solicitud
+- [ ] Sidebar: ocultar "Mi Panel Experto" y "Mi Panel Creador" si no tienen solicitud aprobada
+- [ ] Notificación al owner cuando llega una nueva solicitud

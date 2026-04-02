@@ -1371,6 +1371,270 @@ Si no puedes detectar productos, devuelve {"products": []}. No incluyas texto ad
   }),
 
   // ===========================================================================
+  // USER BODY METRICS
+  // ===========================================================================
+  metrics: router({
+    add: protectedProcedure
+      .input(z.object({
+        date: z.string(), // ISO date string YYYY-MM-DD
+        weight: z.number().optional(),
+        bodyFat: z.number().optional(),
+        muscleMass: z.number().optional(),
+        bmi: z.number().optional(),
+        waist: z.number().optional(),
+        hip: z.number().optional(),
+        chest: z.number().optional(),
+        arm: z.number().optional(),
+        thigh: z.number().optional(),
+        calf: z.number().optional(),
+        neck: z.number().optional(),
+        visceralFat: z.number().optional(),
+        boneMass: z.number().optional(),
+        waterPercentage: z.number().optional(),
+        metabolicAge: z.number().optional(),
+        basalMetabolism: z.number().optional(),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { userMetrics } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+        // Upsert: si ya existe una medición para ese día, la actualiza
+        const existing = await drizzleDb.select().from(userMetrics)
+          .where(and(eq(userMetrics.userId, ctx.user.id), eq(userMetrics.date, input.date as any)))
+          .limit(1);
+        const data = {
+          userId: ctx.user.id,
+          date: input.date as any,
+          weight: input.weight ?? null,
+          bodyFat: input.bodyFat ?? null,
+          muscleMass: input.muscleMass ?? null,
+          bmi: input.bmi ?? null,
+          waist: input.waist ?? null,
+          hip: input.hip ?? null,
+          chest: input.chest ?? null,
+          arm: input.arm ?? null,
+          thigh: input.thigh ?? null,
+          calf: input.calf ?? null,
+          neck: input.neck ?? null,
+          visceralFat: input.visceralFat ?? null,
+          boneMass: input.boneMass ?? null,
+          waterPercentage: input.waterPercentage ?? null,
+          metabolicAge: input.metabolicAge ?? null,
+          basalMetabolism: input.basalMetabolism ?? null,
+          notes: input.notes ?? null,
+        };
+        if (existing.length > 0) {
+          await drizzleDb.update(userMetrics).set(data).where(eq(userMetrics.id, existing[0].id));
+          return { id: existing[0].id, updated: true };
+        } else {
+          const result = await drizzleDb.insert(userMetrics).values(data);
+          return { id: (result as any).insertId, updated: false };
+        }
+      }),
+    getAll: protectedProcedure
+      .input(z.object({ limit: z.number().optional() }).optional())
+      .query(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return [];
+        const { userMetrics } = await import("../drizzle/schema");
+        const { eq, desc } = await import("drizzle-orm");
+        return drizzleDb.select().from(userMetrics)
+          .where(eq(userMetrics.userId, ctx.user.id))
+          .orderBy(desc(userMetrics.date))
+          .limit(input?.limit ?? 90);
+      }),
+    getLatest: protectedProcedure.query(async ({ ctx }) => {
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) return null;
+      const { userMetrics } = await import("../drizzle/schema");
+      const { eq, desc } = await import("drizzle-orm");
+      const rows = await drizzleDb.select().from(userMetrics)
+        .where(eq(userMetrics.userId, ctx.user.id))
+        .orderBy(desc(userMetrics.date))
+        .limit(1);
+      return rows[0] ?? null;
+    }),
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { userMetrics } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+        await drizzleDb.delete(userMetrics)
+          .where(and(eq(userMetrics.id, input.id), eq(userMetrics.userId, ctx.user.id)));
+        return { success: true };
+      }),
+  }),
+
+  // ===========================================================================
+  // BUDDY APPLICATIONS — Solicitudes Expert/Maker
+  // ===========================================================================
+  buddyApplications: router({
+    submitApplication: protectedProcedure
+      .input(z.object({
+        type: z.enum(["expert", "maker"]),
+        displayName: z.string().min(2),
+        bio: z.string().optional(),
+        specialty: z.string().optional(),
+        instagramHandle: z.string().optional(),
+        youtubeHandle: z.string().optional(),
+        tiktokHandle: z.string().optional(),
+        websiteUrl: z.string().optional(),
+        motivation: z.string().optional(),
+        experience: z.string().optional(),
+        expertCategory: z.string().optional(),
+        certifications: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { buddyApplications: appsTable } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+        // Check if already has a pending/approved application of this type
+        const existing = await drizzleDb.select().from(appsTable)
+          .where(and(eq(appsTable.userId, ctx.user.id), eq(appsTable.type, input.type)))
+          .limit(1);
+        if (existing.length > 0 && existing[0].status !== "rejected") {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "Ya tienes una solicitud activa para este rol" });
+        }
+        if (existing.length > 0 && existing[0].status === "rejected") {
+          // Allow re-apply after rejection — update the existing record
+          await drizzleDb.update(appsTable).set({
+            ...input,
+            status: "pending",
+            adminNote: null,
+            reviewedAt: null,
+            reviewedBy: null,
+          }).where(eq(appsTable.id, existing[0].id));
+          // Notify owner
+          try { const { notifyOwner } = await import("./_core/notification"); await notifyOwner({ title: `Nueva solicitud ${input.type}: ${input.displayName}`, content: `${ctx.user.name || ctx.user.email} quiere ser ${input.type === "expert" ? "BuddyExpert" : "BuddyMaker"}. Especialidad: ${input.specialty || "N/A"}` }); } catch {}
+          return { success: true, id: existing[0].id };
+        }
+        const result = await drizzleDb.insert(appsTable).values({
+          userId: ctx.user.id,
+          type: input.type,
+          status: "pending",
+          displayName: input.displayName,
+          bio: input.bio ?? null,
+          specialty: input.specialty ?? null,
+          instagramHandle: input.instagramHandle ?? null,
+          youtubeHandle: input.youtubeHandle ?? null,
+          tiktokHandle: input.tiktokHandle ?? null,
+          websiteUrl: input.websiteUrl ?? null,
+          motivation: input.motivation ?? null,
+          experience: input.experience ?? null,
+          expertCategory: input.expertCategory ?? null,
+          certifications: input.certifications ?? null,
+        });
+        // Notify owner
+        try { const { notifyOwner } = await import("./_core/notification"); await notifyOwner({ title: `Nueva solicitud ${input.type}: ${input.displayName}`, content: `${ctx.user.name || ctx.user.email} quiere ser ${input.type === "expert" ? "BuddyExpert" : "BuddyMaker"}. Especialidad: ${input.specialty || "N/A"}` }); } catch {}
+        return { success: true, id: (result as any).insertId };
+      }),
+    getMyApplication: protectedProcedure
+      .input(z.object({ type: z.enum(["expert", "maker"]) }))
+      .query(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return null;
+        const { buddyApplications: appsTable } = await import("../drizzle/schema");
+        const { eq, and, desc } = await import("drizzle-orm");
+        const rows = await drizzleDb.select().from(appsTable)
+          .where(and(eq(appsTable.userId, ctx.user.id), eq(appsTable.type, input.type)))
+          .orderBy(desc(appsTable.appliedAt))
+          .limit(1);
+        return rows[0] ?? null;
+      }),
+    // ADMIN: list all pending applications
+    listPending: protectedProcedure
+      .input(z.object({ type: z.enum(["expert", "maker", "all"]).optional(), status: z.enum(["pending", "approved", "rejected", "all"]).optional() }).optional())
+      .query(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return [];
+        const { buddyApplications: appsTable, users: usersTable } = await import("../drizzle/schema");
+        const { eq, and, desc } = await import("drizzle-orm");
+        const conditions: any[] = [];
+        if (input?.type && input.type !== "all") conditions.push(eq(appsTable.type, input.type));
+        const statusFilter = input?.status ?? "pending";
+        if (statusFilter !== "all") conditions.push(eq(appsTable.status, statusFilter as any));
+        const rows = await drizzleDb
+          .select({ app: appsTable, user: { name: usersTable.name, email: usersTable.email, imageUrl: usersTable.imageUrl } })
+          .from(appsTable)
+          .leftJoin(usersTable, eq(appsTable.userId, usersTable.id))
+          .where(conditions.length > 0 ? and(...conditions) : undefined)
+          .orderBy(desc(appsTable.appliedAt))
+          .limit(100);
+        return rows;
+      }),
+    // ADMIN: approve or reject application
+    review: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        action: z.enum(["approve", "reject"]),
+        adminNote: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { buddyApplications: appsTable, buddyExperts, buddyMakers, users: usersTable } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        const apps = await drizzleDb.select().from(appsTable).where(eq(appsTable.id, input.id)).limit(1);
+        if (!apps.length) throw new TRPCError({ code: "NOT_FOUND" });
+        const app = apps[0];
+        const newStatus = input.action === "approve" ? "approved" : "rejected";
+        await drizzleDb.update(appsTable).set({
+          status: newStatus,
+          adminNote: input.adminNote ?? null,
+          reviewedAt: new Date(),
+          reviewedBy: ctx.user.id,
+        }).where(eq(appsTable.id, input.id));
+        // If approved, create the expert/maker profile if it doesn't exist
+        if (input.action === "approve") {
+          const userRows = await drizzleDb.select().from(usersTable).where(eq(usersTable.id, app.userId)).limit(1);
+          const user = userRows[0];
+          if (app.type === "expert") {
+            const existing = await drizzleDb.select().from(buddyExperts).where(eq(buddyExperts.userId, app.userId)).limit(1);
+            if (!existing.length) {
+              await drizzleDb.insert(buddyExperts).values({
+                userId: app.userId,
+                displayName: app.displayName,
+                bio: app.bio ?? null,
+                avatarUrl: user?.imageUrl ?? null,
+                instagramHandle: app.instagramHandle ?? null,
+                specialty: app.specialty ?? null,
+                category: (app.expertCategory as any) ?? "dieta_equilibrada",
+                verified: true,
+              });
+            } else {
+              await drizzleDb.update(buddyExperts).set({ verified: true }).where(eq(buddyExperts.userId, app.userId));
+            }
+          } else {
+            const existing = await drizzleDb.select().from(buddyMakers).where(eq(buddyMakers.userId, app.userId)).limit(1);
+            if (!existing.length) {
+              await drizzleDb.insert(buddyMakers).values({
+                userId: app.userId,
+                displayName: app.displayName,
+                bio: app.bio ?? null,
+                avatarUrl: user?.imageUrl ?? null,
+                instagramHandle: app.instagramHandle ?? null,
+                youtubeHandle: app.youtubeHandle ?? null,
+                tiktokHandle: app.tiktokHandle ?? null,
+                specialty: app.specialty ?? null,
+                verified: true,
+              });
+            } else {
+              await drizzleDb.update(buddyMakers).set({ verified: true }).where(eq(buddyMakers.userId, app.userId));
+            }
+          }
+        }
+        return { success: true };
+      }),
+  }),
+
+  // ===========================================================================
   // BUDDY EXPERTS
   // ===========================================================================
   buddyExperts: router({

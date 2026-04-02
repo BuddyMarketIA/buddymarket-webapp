@@ -819,3 +819,71 @@ export const carrefourProducts = mysqlTable("carrefour_products", {
 
 export type CarrefourProduct = typeof carrefourProducts.$inferSelect;
 export type InsertCarrefourProduct = typeof carrefourProducts.$inferInsert;
+
+// =============================================================================
+// USER BODY METRICS — Historial de métricas corporales del usuario
+// =============================================================================
+export const userMetrics = mysqlTable("user_metrics", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  date: date("date").notNull(), // Fecha de la medición
+  weight: float("weight"), // kg
+  bodyFat: float("bodyFat"), // % grasa corporal
+  muscleMass: float("muscleMass"), // kg masa muscular
+  bmi: float("bmi"), // IMC
+  waist: float("waist"), // cm cintura
+  hip: float("hip"), // cm cadera
+  chest: float("chest"), // cm pecho
+  arm: float("arm"), // cm brazo
+  thigh: float("thigh"), // cm muslo
+  calf: float("calf"), // cm pantorrilla
+  neck: float("neck"), // cm cuello
+  visceralFat: float("visceralFat"), // grasa visceral (nivel 1-20)
+  boneMass: float("boneMass"), // kg masa ósea
+  waterPercentage: float("waterPercentage"), // % agua corporal
+  metabolicAge: int("metabolicAge"), // edad metabólica
+  basalMetabolism: int("basalMetabolism"), // kcal metabolismo basal
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  userIdx: index("user_metrics_user_idx").on(t.userId),
+  dateIdx: index("user_metrics_date_idx").on(t.date),
+  userDateIdx: index("user_metrics_user_date_idx").on(t.userId, t.date),
+}));
+export type UserMetric = typeof userMetrics.$inferSelect;
+export type InsertUserMetric = typeof userMetrics.$inferInsert;
+
+// =============================================================================
+// BUDDY APPLICATIONS — Solicitudes para convertirse en BuddyExpert o BuddyMaker
+// =============================================================================
+export const buddyApplications = mysqlTable("buddy_applications", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  type: mysqlEnum("type", ["expert", "maker"]).notNull(),
+  status: mysqlEnum("status", ["pending", "approved", "rejected"]).default("pending").notNull(),
+  // Datos de la solicitud
+  displayName: varchar("displayName", { length: 128 }).notNull(),
+  bio: text("bio"),
+  specialty: varchar("specialty", { length: 128 }),
+  instagramHandle: varchar("instagramHandle", { length: 64 }),
+  youtubeHandle: varchar("youtubeHandle", { length: 64 }),
+  tiktokHandle: varchar("tiktokHandle", { length: 64 }),
+  websiteUrl: varchar("websiteUrl", { length: 256 }),
+  motivation: text("motivation"), // Por qué quiere ser Expert/Maker
+  experience: text("experience"), // Experiencia previa
+  // Campos específicos para Expert
+  expertCategory: varchar("expertCategory", { length: 64 }),
+  certifications: text("certifications"),
+  // Admin
+  adminNote: text("adminNote"), // Nota del admin al aprobar/rechazar
+  reviewedAt: timestamp("reviewedAt"),
+  reviewedBy: int("reviewedBy"), // userId del admin que revisó
+  appliedAt: timestamp("appliedAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (t) => ({
+  userIdx: index("buddy_apps_user_idx").on(t.userId),
+  statusIdx: index("buddy_apps_status_idx").on(t.status),
+  typeIdx: index("buddy_apps_type_idx").on(t.type),
+}));
+export type BuddyApplication = typeof buddyApplications.$inferSelect;
+export type InsertBuddyApplication = typeof buddyApplications.$inferInsert;

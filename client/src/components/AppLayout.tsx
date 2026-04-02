@@ -66,6 +66,7 @@ const SIDEBAR_ITEMS = [
   { key: "shopping", label: "Lista de Compra", to: "/shopping-lists", emoji: "🛒" },
   { key: "inventory", label: "Inventario", to: "/inventory", emoji: "📦" },
   { key: "meal-log", label: "Diario Nutricional", to: "/meal-log", emoji: "📊" },
+  { key: "metrics", label: "Mis Métricas", to: "/metrics", emoji: "⚖️" },
   { key: "profile", label: "Mi Perfil", to: "/profile", emoji: "👤" },
   { key: "subscription", label: "Suscripción", to: "/subscription", emoji: "⭐" },
   { key: "buddy-shop", label: "BuddyShop ↗", to: "/buddy-shop", emoji: "🛖" },

@@ -85,6 +85,13 @@
       "when": 1775126601803,
       "tag": "0011_aberrant_puppet_master",
       "breakpoints": true
+    },
+    {
+      "idx": 12,
+      "version": "5",
+      "when": 1775128057640,
+      "tag": "0012_redundant_naoko",
+      "breakpoints": true
     }
   ]
 }
