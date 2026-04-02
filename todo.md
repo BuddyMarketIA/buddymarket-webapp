@@ -751,3 +751,17 @@
 
 ### Tests
 - [x] 9 tests para getAll, getUserStats, evaluate - 47/47 pasando
+
+## Sprint: Revisión Flujo BuddyExperts (02/04/2026)
+
+### Auditoría y correcciones
+- [x] Revisar schema BD: buddyExperts, expertPlans, expertMenus, expertSubscriptions
+- [x] Revisar router buddyExperts: endpoints completos para ambos flujos
+- [x] Corregir BuddyExperts.tsx: eliminar datos DEMO, usar datos reales con estado vacío correcto
+- [x] Corregir BuddyExpertDashboard.tsx: añadir tab "Mis Planes" con CRUD completo
+- [x] Flujo registro como BuddyExpert: formulario de solicitud, aprobación admin (ya existía)
+- [x] Añadir endpoints: getMyPlans, createPlan, updatePlan, deletePlan, getMyCopiedPlans
+- [x] BuddyProfile.tsx: indicador visual de "plan ya copiado" con estado verde
+- [x] BuddyProfile.tsx: spinner de carga durante copia de plan
+- [x] Fix test lookupBarcode: mock de fetch para evitar llamada real a Open Food Facts
+- [x] Tests: 47/47 pasando, 0 errores TypeScript

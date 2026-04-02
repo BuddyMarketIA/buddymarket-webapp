@@ -506,22 +506,43 @@ describe("mealLogs.lookupBarcode", () => {
     ).rejects.toThrow();
   });
 
-  it("accepts valid barcode format (13 digits)", async () => {
+  it("accepts valid barcode format (13 digits) and returns product shape", async () => {
     const { ctx } = createAuthContext();
     const caller = appRouter.createCaller(ctx);
-    // This will either return data or throw NOT_FOUND (both are valid behaviors in test env)
+    // Mock fetch to avoid real network call
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        status: 1,
+        product: {
+          product_name: "Nutella",
+          image_url: "https://example.com/nutella.jpg",
+          nutriments: {
+            "energy-kcal_100g": 539,
+            proteins_100g: 6.3,
+            carbohydrates_100g: 57.5,
+            fat_100g: 30.9,
+            fiber_100g: 3.0,
+            sugars_100g: 56.3,
+            sodium_100g: 0.107,
+          },
+          serving_size: "15g",
+        },
+      }),
+    });
+    const originalFetch = global.fetch;
+    global.fetch = mockFetch as any;
     try {
       const result = await caller.mealLogs.lookupBarcode({ barcode: "3017620422003" });
-      expect(result).toHaveProperty("barcode");
-      expect(result).toHaveProperty("name");
+      expect(result).toHaveProperty("barcode", "3017620422003");
+      expect(result).toHaveProperty("name", "Nutella");
       expect(result).toHaveProperty("per100g");
-      expect(result.per100g).toHaveProperty("calories");
-      expect(result.per100g).toHaveProperty("proteins");
-      expect(result.per100g).toHaveProperty("carbohydrates");
-      expect(result.per100g).toHaveProperty("fats");
-    } catch (err: any) {
-      // NOT_FOUND or INTERNAL_SERVER_ERROR are acceptable in test env (no network)
-      expect(["NOT_FOUND", "INTERNAL_SERVER_ERROR"]).toContain(err.code);
+      expect(result.per100g).toHaveProperty("calories", 539);
+      expect(result.per100g).toHaveProperty("proteins", 6.3);
+      expect(result.per100g).toHaveProperty("carbohydrates", 57.5);
+      expect(result.per100g).toHaveProperty("fats", 30.9);
+    } finally {
+      global.fetch = originalFetch;
     }
   });
 });

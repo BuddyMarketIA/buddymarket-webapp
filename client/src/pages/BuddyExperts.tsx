@@ -220,7 +220,7 @@ export default function BuddyExperts() {
     onError: () => toast.error("Error al seguir"),
   });
 
-  const experts = (expertsQuery.data && expertsQuery.data.length > 0) ? expertsQuery.data : DEMO_EXPERTS;
+  const experts = expertsQuery.data ?? [];
 
   const handleFollow = (id: number) => {
     if (!user) { toast.error("Inicia sesión para seguir"); return; }
@@ -261,13 +261,32 @@ export default function BuddyExperts() {
 
       <div className="px-4 py-4">
         {tab === "experts" && (
-          <div className="grid grid-cols-2 gap-3">
-            {expertsQuery.isLoading
-              ? [...Array(4)].map((_, i) => <SkeletonCard key={i} />)
-              : experts.map((row: any, i: number) => (
+          <div>
+            {expertsQuery.isLoading ? (
+              <div className="grid grid-cols-2 gap-3">
+                {[...Array(4)].map((_, i) => <SkeletonCard key={i} />)}
+              </div>
+            ) : experts.length === 0 ? (
+              <div className="text-center py-16 space-y-4">
+                <div className="text-6xl">🎓</div>
+                <h3 className="text-lg font-black text-gray-800">Aún no hay BuddyExperts</h3>
+                <p className="text-sm text-gray-500 max-w-xs mx-auto">
+                  Sé el primero en unirte como experto nutricional. Comparte tus conocimientos con la comunidad.
+                </p>
+                <a
+                  href="/buddy-application?type=expert"
+                  className="inline-flex items-center justify-center gap-2 bg-gradient-to-r from-indigo-500 to-violet-600 text-white font-bold text-sm px-6 py-3 rounded-2xl shadow-lg shadow-indigo-200"
+                >
+                  Solicitar ser BuddyExpert
+                </a>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                {experts.map((row: any, i: number) => (
                   <ExpertCard key={row.expert?.id ?? i} row={row} onFollow={handleFollow} index={i} />
-                ))
-            }
+                ))}
+              </div>
+            )}
           </div>
         )}
 

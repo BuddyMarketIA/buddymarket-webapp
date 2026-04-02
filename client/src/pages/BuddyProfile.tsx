@@ -29,7 +29,7 @@ function StatPill({ icon, value, label }: { icon: string; value: string | number
 }
 
 // ─── Plan card ────────────────────────────────────────────────────────────────
-function PlanCard({ plan, onCopy }: { plan: any; onCopy: () => void }) {
+function PlanCard({ plan, onCopy, alreadyCopied, copying }: { plan: any; onCopy: () => void; alreadyCopied?: boolean; copying?: boolean }) {
   const cat: Record<string, string> = {
     perdida_peso: "🔥 Pérdida de peso",
     ganancia_muscular: "💪 Ganancia muscular",
@@ -71,10 +71,23 @@ function PlanCard({ plan, onCopy }: { plan: any; onCopy: () => void }) {
           )}
         </div>
         <button
-          onClick={onCopy}
-          className="mt-3 w-full bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white text-xs font-bold py-2 rounded-xl transition-all shadow-sm hover:shadow-md"
+          onClick={alreadyCopied ? undefined : onCopy}
+          disabled={alreadyCopied || copying}
+          className={`mt-3 w-full text-xs font-bold py-2 rounded-xl transition-all shadow-sm ${
+            alreadyCopied
+              ? "bg-green-50 text-green-700 border border-green-200 cursor-default"
+              : "bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white hover:shadow-md disabled:opacity-60"
+          }`}
         >
-          {plan.price > 0 ? `💳 Obtener por ${plan.price}€` : "📋 Copiar plan"}
+          {copying ? (
+            <span className="flex items-center justify-center gap-1.5"><span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />Copiando...</span>
+          ) : alreadyCopied ? (
+            "✓ Plan ya copiado"
+          ) : plan.price > 0 ? (
+            `💳 Obtener por ${plan.price}€`
+          ) : (
+            "📋 Copiar plan"
+          )}
         </button>
       </div>
     </div>
@@ -101,8 +114,13 @@ function ExpertProfile({ id }: { id: number }) {
     onError: () => toast.error("Inicia sesión para seguir a expertos"),
   });
 
+  const { data: copiedPlans, refetch: refetchCopied } = trpc.buddyExperts.getMyCopiedPlans.useQuery(undefined, {
+    enabled: !!user,
+  });
+  const copiedPlanIds = new Set((copiedPlans ?? []).map((c: any) => c.copy?.planId).filter(Boolean));
+
   const copyPlanMut = trpc.buddyExperts.copyPlan.useMutation({
-    onSuccess: () => toast.success("Plan copiado a tu planificador"),
+    onSuccess: () => { toast.success("Plan copiado a tu planificador ✅"); refetchCopied(); },
     onError: () => toast.error("Inicia sesión para copiar planes"),
   });
 
@@ -140,7 +158,13 @@ function ExpertProfile({ id }: { id: number }) {
           <h3 className="font-bold text-gray-900 text-base mb-3">Planes nutricionales</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {plans.map((plan: any) => (
-              <PlanCard key={plan.id} plan={plan} onCopy={() => copyPlanMut.mutate({ planId: plan.id })} />
+              <PlanCard
+                key={plan.id}
+                plan={plan}
+                onCopy={() => copyPlanMut.mutate({ planId: plan.id })}
+                alreadyCopied={copiedPlanIds.has(plan.id)}
+                copying={copyPlanMut.isPending && copyPlanMut.variables?.planId === plan.id}
+              />
             ))}
           </div>
         </section>

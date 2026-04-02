@@ -2227,6 +2227,139 @@ Si no puedes detectar productos, devuelve {"products": []}. No incluyas texto ad
         await drizzleDb.delete(emTable).where(and(eq(emTable.id, input.menuId), eq(emTable.expertId, expert.id)));
         return { success: true };
       }),
+
+    // ── Expert plan self-management ──────────────────────────────────────────────
+    getMyPlans: protectedProcedure.query(async ({ ctx }) => {
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) return [];
+      const { expertPlans: epTable, buddyExperts: beTable } = await import("../drizzle/schema");
+      const { eq } = await import("drizzle-orm");
+      const [expert] = await drizzleDb.select().from(beTable).where(eq(beTable.userId, ctx.user.id)).limit(1);
+      if (!expert) return [];
+      return drizzleDb.select().from(epTable).where(eq(epTable.expertId, expert.id));
+    }),
+
+    createPlan: protectedProcedure
+      .input(z.object({
+        title: z.string().min(2).max(256),
+        description: z.string().optional(),
+        coverUrl: z.string().url().optional().or(z.literal("")),
+        category: z.enum(["perdida_peso","ganancia_muscular","definicion","dieta_equilibrada","rendimiento","bienestar","vegano"]).optional(),
+        durationWeeks: z.number().int().min(1).max(52).optional(),
+        dailyCalories: z.number().int().positive().optional(),
+        dailyMeals: z.number().int().min(1).max(8).optional(),
+        level: z.enum(["principiante","intermedio","avanzado"]).optional(),
+        price: z.number().min(0).optional(),
+        isPublic: z.boolean().optional().default(true),
+        tags: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { expertPlans: epTable, buddyExperts: beTable } = await import("../drizzle/schema");
+        const { eq, sql } = await import("drizzle-orm");
+        const [expert] = await drizzleDb.select().from(beTable).where(eq(beTable.userId, ctx.user.id)).limit(1);
+        if (!expert) throw new TRPCError({ code: "FORBIDDEN", message: "Necesitas un perfil de experto para crear planes" });
+        const [res] = await drizzleDb.insert(epTable).values({
+          expertId: expert.id,
+          title: input.title,
+          description: input.description,
+          coverUrl: input.coverUrl || null,
+          category: input.category ?? "dieta_equilibrada",
+          durationWeeks: input.durationWeeks ?? 4,
+          dailyCalories: input.dailyCalories,
+          dailyMeals: input.dailyMeals ?? 3,
+          level: input.level ?? "principiante",
+          price: input.price ?? 0,
+          isPublic: input.isPublic ?? true,
+          tags: input.tags,
+        });
+        // Increment plansCount on expert profile
+        await drizzleDb.update(beTable).set({ plansCount: sql`${beTable.plansCount} + 1` }).where(eq(beTable.id, expert.id));
+        return { id: (res as any).insertId as number };
+      }),
+
+    updatePlan: protectedProcedure
+      .input(z.object({
+        planId: z.number().int(),
+        title: z.string().min(2).max(256).optional(),
+        description: z.string().optional(),
+        coverUrl: z.string().url().optional().or(z.literal("")),
+        category: z.enum(["perdida_peso","ganancia_muscular","definicion","dieta_equilibrada","rendimiento","bienestar","vegano"]).optional(),
+        durationWeeks: z.number().int().min(1).max(52).optional(),
+        dailyCalories: z.number().int().positive().optional(),
+        dailyMeals: z.number().int().min(1).max(8).optional(),
+        level: z.enum(["principiante","intermedio","avanzado"]).optional(),
+        price: z.number().min(0).optional(),
+        isPublic: z.boolean().optional(),
+        tags: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { expertPlans: epTable, buddyExperts: beTable } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+        const [expert] = await drizzleDb.select().from(beTable).where(eq(beTable.userId, ctx.user.id)).limit(1);
+        if (!expert) throw new TRPCError({ code: "FORBIDDEN" });
+        const updates: Record<string, any> = {};
+        if (input.title !== undefined) updates.title = input.title;
+        if (input.description !== undefined) updates.description = input.description;
+        if (input.coverUrl !== undefined) updates.coverUrl = input.coverUrl || null;
+        if (input.category !== undefined) updates.category = input.category;
+        if (input.durationWeeks !== undefined) updates.durationWeeks = input.durationWeeks;
+        if (input.dailyCalories !== undefined) updates.dailyCalories = input.dailyCalories;
+        if (input.dailyMeals !== undefined) updates.dailyMeals = input.dailyMeals;
+        if (input.level !== undefined) updates.level = input.level;
+        if (input.price !== undefined) updates.price = input.price;
+        if (input.isPublic !== undefined) updates.isPublic = input.isPublic;
+        if (input.tags !== undefined) updates.tags = input.tags;
+        await drizzleDb.update(epTable).set(updates).where(and(eq(epTable.id, input.planId), eq(epTable.expertId, expert.id)));
+        return { success: true };
+      }),
+
+    deletePlan: protectedProcedure
+      .input(z.object({ planId: z.number().int() }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { expertPlans: epTable, buddyExperts: beTable } = await import("../drizzle/schema");
+        const { eq, and, sql } = await import("drizzle-orm");
+        const [expert] = await drizzleDb.select().from(beTable).where(eq(beTable.userId, ctx.user.id)).limit(1);
+        if (!expert) throw new TRPCError({ code: "FORBIDDEN" });
+        await drizzleDb.delete(epTable).where(and(eq(epTable.id, input.planId), eq(epTable.expertId, expert.id)));
+        await drizzleDb.update(beTable).set({ plansCount: sql`GREATEST(${beTable.plansCount} - 1, 0)` }).where(eq(beTable.id, expert.id));
+        return { success: true };
+      }),
+
+    getMyCopiedPlans: protectedProcedure.query(async ({ ctx }) => {
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) return [];
+      const { userExpertPlanCopies: copiesTable, expertPlans: epTable, buddyExperts: beTable } = await import("../drizzle/schema");
+      const { eq, desc } = await import("drizzle-orm");
+      return drizzleDb
+        .select({
+          copy: copiesTable,
+          plan: epTable,
+          expert: { id: beTable.id, displayName: beTable.displayName, avatarUrl: beTable.avatarUrl, specialty: beTable.specialty, verified: beTable.verified },
+        })
+        .from(copiesTable)
+        .leftJoin(epTable, eq(copiesTable.planId, epTable.id))
+        .leftJoin(beTable, eq(copiesTable.expertId, beTable.id))
+        .where(eq(copiesTable.userId, ctx.user.id))
+        .orderBy(desc(copiesTable.copiedAt))
+        .limit(50);
+    }),
+
+    hasCopiedPlan: protectedProcedure
+      .input(z.object({ planId: z.number().int() }))
+      .query(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return { copied: false };
+        const { userExpertPlanCopies: copiesTable } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+        const [row] = await drizzleDb.select().from(copiesTable).where(and(eq(copiesTable.userId, ctx.user.id), eq(copiesTable.planId, input.planId))).limit(1);
+        return { copied: !!row };
+      }),
   }),
   // ===========================================================================
   // BUDDY MAKERSS

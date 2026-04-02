@@ -4,7 +4,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
 import AppLayout from "@/components/AppLayout";
 
-type Tab = "profile" | "menus";
+type Tab = "profile" | "plans" | "menus";
 
 const CATEGORIES = [
   { value: "perdida_peso", label: "Pérdida de peso" },
@@ -26,6 +26,23 @@ export default function BuddyExpertDashboard() {
   const [activeTab, setActiveTab] = useState<Tab>("profile");
   const [showMenuForm, setShowMenuForm] = useState(false);
   const [editingMenu, setEditingMenu] = useState<any | null>(null);
+  const [showPlanForm, setShowPlanForm] = useState(false);
+  const [editingPlan, setEditingPlan] = useState<any | null>(null);
+
+  // Plan form state
+  const [planForm, setPlanForm] = useState({
+    title: "",
+    description: "",
+    coverUrl: "",
+    category: "dieta_equilibrada" as Category,
+    durationWeeks: "4",
+    dailyCalories: "",
+    dailyMeals: "3",
+    level: "principiante" as "principiante" | "intermedio" | "avanzado",
+    price: "0",
+    isPublic: true,
+    tags: "",
+  });
 
   // Profile form state
   const [profileForm, setProfileForm] = useState({
@@ -82,6 +99,10 @@ export default function BuddyExpertDashboard() {
     enabled: !!user && !!myProfile,
   });
 
+  const { data: myPlans, refetch: refetchPlans } = trpc.buddyExperts.getMyPlans.useQuery(undefined, {
+    enabled: !!user && !!myProfile,
+  });
+
   const createProfileMutation = trpc.buddyExperts.createProfile.useMutation({
     onSuccess: () => { toast.success("Perfil de experto creado"); refetchProfile(); },
     onError: (e) => toast.error(e.message),
@@ -106,6 +127,65 @@ export default function BuddyExpertDashboard() {
     onSuccess: () => { toast.success("Menú eliminado"); refetchMenus(); },
     onError: (e) => toast.error(e.message),
   });
+
+  const createPlanMutation = trpc.buddyExperts.createPlan.useMutation({
+    onSuccess: () => { toast.success("Plan publicado"); setShowPlanForm(false); refetchPlans(); resetPlanForm(); },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const updatePlanMutation = trpc.buddyExperts.updatePlan.useMutation({
+    onSuccess: () => { toast.success("Plan actualizado"); setShowPlanForm(false); setEditingPlan(null); refetchPlans(); },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const deletePlanMutation = trpc.buddyExperts.deletePlan.useMutation({
+    onSuccess: () => { toast.success("Plan eliminado"); refetchPlans(); },
+    onError: (e) => toast.error(e.message),
+  });
+
+  function resetPlanForm() {
+    setPlanForm({ title: "", description: "", coverUrl: "", category: "dieta_equilibrada", durationWeeks: "4", dailyCalories: "", dailyMeals: "3", level: "principiante", price: "0", isPublic: true, tags: "" });
+  }
+
+  function openEditPlan(plan: any) {
+    setPlanForm({
+      title: plan.title ?? "",
+      description: plan.description ?? "",
+      coverUrl: plan.coverUrl ?? "",
+      category: (plan.category as Category) ?? "dieta_equilibrada",
+      durationWeeks: plan.durationWeeks?.toString() ?? "4",
+      dailyCalories: plan.dailyCalories?.toString() ?? "",
+      dailyMeals: plan.dailyMeals?.toString() ?? "3",
+      level: plan.level ?? "principiante",
+      price: plan.price?.toString() ?? "0",
+      isPublic: plan.isPublic ?? true,
+      tags: plan.tags ?? "",
+    });
+    setEditingPlan(plan);
+    setShowPlanForm(true);
+  }
+
+  function handleSavePlan(e: React.FormEvent) {
+    e.preventDefault();
+    const payload = {
+      title: planForm.title,
+      description: planForm.description || undefined,
+      coverUrl: planForm.coverUrl || undefined,
+      category: planForm.category,
+      durationWeeks: planForm.durationWeeks ? parseInt(planForm.durationWeeks) : undefined,
+      dailyCalories: planForm.dailyCalories ? parseInt(planForm.dailyCalories) : undefined,
+      dailyMeals: planForm.dailyMeals ? parseInt(planForm.dailyMeals) : undefined,
+      level: planForm.level,
+      price: planForm.price ? parseFloat(planForm.price) : 0,
+      isPublic: planForm.isPublic,
+      tags: planForm.tags || undefined,
+    };
+    if (editingPlan) {
+      updatePlanMutation.mutate({ planId: editingPlan.id, ...payload });
+    } else {
+      createPlanMutation.mutate(payload);
+    }
+  }
 
   function resetMenuForm() {
     setMenuForm({
@@ -236,14 +316,14 @@ export default function BuddyExpertDashboard() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-2 mb-6 bg-gray-100 rounded-2xl p-1">
-          {(["profile", "menus"] as Tab[]).map((tab) => (
+        <div className="flex gap-1 mb-6 bg-gray-100 rounded-2xl p-1">
+          {(["profile", "plans", "menus"] as Tab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === tab ? "bg-white text-orange-600 shadow-sm" : "text-gray-500"}`}
+              className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === tab ? "bg-white text-orange-600 shadow-sm" : "text-gray-500"}`}
             >
-              {tab === "profile" ? "👤 Mi Perfil" : "📋 Mis Menús"}
+              {tab === "profile" ? "👤 Perfil" : tab === "plans" ? "📊 Planes" : "📋 Menús"}
             </button>
           ))}
         </div>
@@ -352,6 +432,198 @@ export default function BuddyExpertDashboard() {
                 : myProfile ? "✓ Guardar cambios" : "✓ Crear perfil de experto"}
             </button>
           </form>
+        )}
+
+        {/* Plans Tab */}
+        {activeTab === "plans" && (
+          <div className="space-y-4">
+            {!myProfile && (
+              <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4 text-sm text-orange-800 text-center">
+                Primero debes crear tu perfil de experto en la pestaña "Perfil".
+              </div>
+            )}
+            {myProfile && !showPlanForm && (
+              <>
+                <button
+                  onClick={() => { resetPlanForm(); setEditingPlan(null); setShowPlanForm(true); }}
+                  className="w-full py-3.5 rounded-2xl text-sm font-bold text-white flex items-center justify-center gap-2"
+                  style={{ background: "linear-gradient(135deg, #F97316, #FB923C)" }}
+                >
+                  + Crear nuevo plan nutricional
+                </button>
+                {(!myPlans || myPlans.length === 0) ? (
+                  <div className="text-center py-12 text-gray-400">
+                    <div className="text-5xl mb-3">📊</div>
+                    <p className="font-semibold">Aún no has creado ningún plan</p>
+                    <p className="text-sm mt-1">Crea planes nutricionales para compartir con la comunidad</p>
+                  </div>
+                ) : (
+                  <div className="space-y-3">
+                    {myPlans.map((plan) => (
+                      <div key={plan.id} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                        <div className="flex items-start gap-3">
+                          {plan.coverUrl && (
+                            <img src={plan.coverUrl} alt={plan.title} className="w-16 h-16 rounded-xl object-cover shrink-0" />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <h3 className="font-bold text-gray-900 text-sm line-clamp-1">{plan.title}</h3>
+                            <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{plan.description}</p>
+                            <div className="flex flex-wrap items-center gap-2 mt-2">
+                              <span className="text-xs bg-orange-100 text-orange-700 rounded-full px-2 py-0.5 font-semibold">
+                                {CATEGORIES.find((c) => c.value === plan.category)?.label ?? plan.category}
+                              </span>
+                              <span className="text-xs text-gray-400">{plan.durationWeeks} semanas</span>
+                              {plan.dailyCalories && <span className="text-xs text-gray-400">{plan.dailyCalories} kcal</span>}
+                              <span className={`text-xs rounded-full px-2 py-0.5 font-semibold ${
+                                plan.price && plan.price > 0 ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"
+                              }`}>
+                                {plan.price && plan.price > 0 ? `${plan.price}€` : "Gratis"}
+                              </span>
+                              <span className={`text-xs rounded-full px-2 py-0.5 font-semibold ${plan.isPublic ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
+                                {plan.isPublic ? "Público" : "Privado"}
+                              </span>
+                            </div>
+                            <p className="text-xs text-gray-400 mt-1">{plan.copiesCount} copias</p>
+                          </div>
+                          <div className="flex flex-col gap-2 shrink-0">
+                            <button
+                              onClick={() => openEditPlan(plan)}
+                              className="text-xs font-bold text-orange-600 bg-orange-50 rounded-xl px-3 py-1.5"
+                            >
+                              Editar
+                            </button>
+                            <button
+                              onClick={() => { if (confirm("¿Eliminar este plan?")) deletePlanMutation.mutate({ planId: plan.id }); }}
+                              className="text-xs font-bold text-red-500 bg-red-50 rounded-xl px-3 py-1.5"
+                            >
+                              Eliminar
+                            </button>
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            )}
+
+            {/* Plan Form */}
+            {showPlanForm && (
+              <form onSubmit={handleSavePlan} className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-5">
+                <div className="flex items-center justify-between">
+                  <h2 className="text-base font-black text-gray-900">
+                    {editingPlan ? "Editar plan" : "Nuevo plan nutricional"}
+                  </h2>
+                  <button type="button" onClick={() => { setShowPlanForm(false); setEditingPlan(null); }} className="text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
+                </div>
+                <div className="grid grid-cols-1 gap-4">
+                  <div>
+                    <label className="text-xs font-bold text-gray-600 mb-1 block">Título del plan *</label>
+                    <input
+                      required
+                      value={planForm.title}
+                      onChange={(e) => setPlanForm((p) => ({ ...p, title: e.target.value }))}
+                      placeholder="Ej: Plan de pérdida de peso en 4 semanas"
+                      className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-gray-600 mb-1 block">Descripción</label>
+                    <textarea
+                      value={planForm.description}
+                      onChange={(e) => setPlanForm((p) => ({ ...p, description: e.target.value }))}
+                      placeholder="Describe el objetivo y características del plan..."
+                      rows={2}
+                      className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
+                    />
+                  </div>
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <label className="text-xs font-bold text-gray-600 mb-1 block">Categoría</label>
+                      <select
+                        value={planForm.category}
+                        onChange={(e) => setPlanForm((p) => ({ ...p, category: e.target.value as Category }))}
+                        className="w-full rounded-xl border border-gray-200 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                      >
+                        {CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-600 mb-1 block">Nivel</label>
+                      <select
+                        value={planForm.level}
+                        onChange={(e) => setPlanForm((p) => ({ ...p, level: e.target.value as any }))}
+                        className="w-full rounded-xl border border-gray-200 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                      >
+                        <option value="principiante">Principiante</option>
+                        <option value="intermedio">Intermedio</option>
+                        <option value="avanzado">Avanzado</option>
+                      </select>
+                    </div>
+                  </div>
+                  <div className="grid grid-cols-3 gap-3">
+                    <div>
+                      <label className="text-xs font-bold text-gray-600 mb-1 block">Semanas</label>
+                      <input
+                        value={planForm.durationWeeks}
+                        onChange={(e) => setPlanForm((p) => ({ ...p, durationWeeks: e.target.value }))}
+                        type="number" min="1" max="52"
+                        className="w-full rounded-xl border border-gray-200 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-600 mb-1 block">Kcal/día</label>
+                      <input
+                        value={planForm.dailyCalories}
+                        onChange={(e) => setPlanForm((p) => ({ ...p, dailyCalories: e.target.value }))}
+                        type="number" min="500" max="5000" placeholder="Ej: 1800"
+                        className="w-full rounded-xl border border-gray-200 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                      />
+                    </div>
+                    <div>
+                      <label className="text-xs font-bold text-gray-600 mb-1 block">Precio (€)</label>
+                      <input
+                        value={planForm.price}
+                        onChange={(e) => setPlanForm((p) => ({ ...p, price: e.target.value }))}
+                        type="number" min="0" step="0.01" placeholder="0 = gratis"
+                        className="w-full rounded-xl border border-gray-200 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                      />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-gray-600 mb-1 block">URL imagen de portada</label>
+                    <input
+                      value={planForm.coverUrl}
+                      onChange={(e) => setPlanForm((p) => ({ ...p, coverUrl: e.target.value }))}
+                      placeholder="https://..."
+                      type="url"
+                      className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                    />
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <input
+                      type="checkbox"
+                      id="planIsPublic"
+                      checked={planForm.isPublic}
+                      onChange={(e) => setPlanForm((p) => ({ ...p, isPublic: e.target.checked }))}
+                      className="w-4 h-4 accent-orange-500"
+                    />
+                    <label htmlFor="planIsPublic" className="text-sm text-gray-700">Visible públicamente en BuddyExperts</label>
+                  </div>
+                </div>
+                <button
+                  type="submit"
+                  disabled={createPlanMutation.isPending || updatePlanMutation.isPending}
+                  className="w-full py-3.5 rounded-2xl text-sm font-bold text-white flex items-center justify-center gap-2 disabled:opacity-60"
+                  style={{ background: "linear-gradient(135deg, #F97316, #FB923C)" }}
+                >
+                  {(createPlanMutation.isPending || updatePlanMutation.isPending)
+                    ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Guardando...</>
+                    : editingPlan ? "✓ Guardar cambios" : "✓ Publicar plan"}
+                </button>
+              </form>
+            )}
+          </div>
         )}
 
         {/* Menus Tab */}
