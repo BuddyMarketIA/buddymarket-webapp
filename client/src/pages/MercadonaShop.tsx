@@ -460,7 +460,53 @@ export default function SupermercadoShop() {
       {showTransferModal && session && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => !addToCartMutation.isPending && setShowTransferModal(false)} />
-          <div className="relative bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl">
+          <div className="relative bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl overflow-hidden">
+            {/* Animated loading overlay */}
+            {addToCartMutation.isPending && (
+              <div className="absolute inset-0 z-10 flex flex-col items-center justify-center rounded-3xl" style={{ background: "linear-gradient(135deg, #00A650ee, #00C65Aee)" }}>
+                {/* Pulsing cart icon */}
+                <div className="relative mb-6">
+                  <div className="w-20 h-20 rounded-full bg-white/20 flex items-center justify-center animate-pulse">
+                    <div className="w-16 h-16 rounded-full bg-white/30 flex items-center justify-center">
+                      <svg className="w-8 h-8 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+                      </svg>
+                    </div>
+                  </div>
+                  {/* Orbiting spinner ring */}
+                  <div className="absolute inset-0 flex items-center justify-center">
+                    <svg className="w-24 h-24 animate-spin" style={{ animationDuration: "1.2s" }} viewBox="0 0 96 96" fill="none">
+                      <circle cx="48" cy="48" r="44" stroke="white" strokeWidth="4" strokeOpacity="0.3" />
+                      <path d="M48 4a44 44 0 0 1 44 44" stroke="white" strokeWidth="4" strokeLinecap="round" />
+                    </svg>
+                  </div>
+                </div>
+                <p className="text-white font-black text-lg mb-2">Enviando al carrito...</p>
+                <p className="text-white/80 text-sm mb-6 text-center px-4">
+                  Añadiendo {cartCount} producto{cartCount !== 1 ? "s" : ""} a tu cuenta de Mercadona
+                </p>
+                {/* Progress steps */}
+                <div className="w-full max-w-xs flex flex-col gap-2 px-2">
+                  {[
+                    { label: "Conectando con Mercadona", done: true },
+                    { label: "Preparando productos", done: true },
+                    { label: "Añadiendo al carrito", done: false },
+                  ].map((step, i) => (
+                    <div key={i} className="flex items-center gap-3">
+                      <div className={`w-5 h-5 rounded-full flex items-center justify-center shrink-0 ${
+                        step.done ? "bg-white" : "bg-white/30 border-2 border-white/60"
+                      }`}>
+                        {step.done
+                          ? <svg className="w-3 h-3 text-green-600" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                          : <div className="w-2 h-2 rounded-full bg-white animate-pulse" />}
+                      </div>
+                      <span className={`text-sm ${step.done ? "text-white font-semibold" : "text-white/70"}`}>{step.label}</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {transferDone ? (
               <div className="text-center">
                 <div className="text-6xl mb-4">✅</div>

@@ -403,3 +403,6 @@
 - [x] Grid de categorías con iconos emoji
 - [x] Tabs de subcategorías al seleccionar categoría
 - [x] Carrito de compra con contador, total y copiar/guardar lista
+
+## Sprint: Indicador de carga transferencia Mercadona
+- [x] Indicador visual animado (spinner + pasos progresivos) mientras se transfieren productos al carrito de Mercadona
