@@ -924,6 +924,61 @@ export const appRouter = router({
     removeItem: protectedProcedure
       .input(z.object({ id: z.number() }))
       .mutation(({ input }) => db.deleteShoppingListItem(input.id)),
+    // ── OCR: parse shopping list from photo ────────────────────────────────
+    parseFromPhoto: protectedProcedure
+      .input(z.object({ imageBase64: z.string().min(10) }))
+      .mutation(async ({ input }) => {
+        const { invokeLLM } = await import("./_core/llm");
+        const response = await invokeLLM({
+          messages: [
+            {
+              role: "user",
+              content: [
+                {
+                  type: "image_url",
+                  image_url: { url: input.imageBase64, detail: "high" },
+                },
+                {
+                  type: "text",
+                  text: `Eres un asistente de lista de la compra. Analiza la imagen y extrae todos los productos o alimentos que aparecen escritos. Devuelve SOLO un JSON con este formato exacto, sin texto adicional:\n{"items": [{"name": "nombre del producto", "amount": 1, "category": "categoría"}]}\nCategorías posibles: Frutas y verduras, Carnes y pescados, Lácteos y huevos, Pan y cereales, Bebidas, Congelados, Conservas, Limpieza, Higiene, Otros.\nSi no hay cantidad visible, usa 1. Normaliza los nombres al español. Devuelve máximo 50 items.`,
+                },
+              ],
+            },
+          ],
+          response_format: {
+            type: "json_schema",
+            json_schema: {
+              name: "shopping_list",
+              strict: true,
+              schema: {
+                type: "object",
+                properties: {
+                  items: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        name: { type: "string" },
+                        amount: { type: "number" },
+                        category: { type: "string" },
+                      },
+                      required: ["name", "amount", "category"],
+                      additionalProperties: false,
+                    },
+                  },
+                },
+                required: ["items"],
+                additionalProperties: false,
+              },
+            },
+          },
+        });
+        const content = response.choices?.[0]?.message?.content;
+        if (!content) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "No se pudo analizar la imagen" });
+        const parsed = typeof content === "string" ? JSON.parse(content) : content;
+        return parsed as { items: { name: string; amount: number; category: string }[] };
+      }),
+
     // ── Generate shopping list from a menu ──────────────────────────────────
     generateFromMenu: protectedProcedure
       .input(

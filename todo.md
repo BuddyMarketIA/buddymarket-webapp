@@ -869,3 +869,36 @@
 - [x] Botón compartir en tarjetas de recetas (icono pequeño en esquina)
 - [x] Mensaje de WhatsApp preformateado con nombre, descripción y enlace de la receta
 - [x] Toast de confirmación al copiar enlace
+
+## Sprint: Escáner código de barras + OCR + Métricas + Calculadora (02/04/2026)
+
+### Escáner de código de barras
+- [x] Instalar @zxing/browser para lectura de códigos de barras desde cámara
+- [x] Componente BarcodeScanner: activa cámara, detecta código EAN/UPC en tiempo real
+- [x] tRPC procedure: lookupBarcode(barcode) → consulta Open Food Facts API → devuelve nombre, nutrición, imagen
+- [x] tRPC procedure: addInventoryItemFromBarcode → crea item en inventario con datos del producto
+- [x] Botón "Escanear" en página de Inventario que abre el escáner
+- [x] Modal de confirmación: muestra producto encontrado con foto y nutrición antes de añadir
+- [x] Fallback: si no se encuentra el código, permite introducir manualmente
+
+### OCR lista de la compra
+- [x] Componente ShoppingListOCR: botón "Foto de lista" que activa cámara o sube imagen
+- [x] tRPC procedure: parseShoppingListImage(imageBase64) → usa LLM con visión para extraer productos
+- [x] Modal de revisión: muestra productos detectados con checkboxes para confirmar/editar antes de añadir
+- [x] Botón "Importar desde foto" en página de Listas de la Compra
+- [x] Subir imagen a S3 antes de enviar al LLM
+
+### Seguimiento de peso y métricas
+- [x] Schema DB: tabla weightLogs (userId, weight, bodyFat, muscleMass, waist, hip, notes, measuredAt)
+- [x] tRPC procedures: addWeightLog, getWeightHistory, deleteWeightLog
+- [x] Página /metrics con formulario de registro y gráficas de evolución
+- [x] Gráficas: peso (línea), IMC calculado (línea), grasa corporal (área), medidas (barras)
+- [x] Instalar recharts para gráficas
+- [x] Enlace en sidebar y Dashboard
+
+### Calculadora de calorías diarias (TDEE)
+- [x] Componente CalorieCalculator con fórmula Mifflin-St Jeor + factor de actividad
+- [x] Inputs: edad, peso, altura, sexo, nivel de actividad, objetivo (perder/mantener/ganar)
+- [x] Resultado: TDEE, distribución de macros (proteínas/carbos/grasas), déficit/superávit recomendado
+- [x] Guardar resultado en perfil del usuario como objetivo calórico diario
+- [x] Integrar en página de Métricas y en el Dashboard como card

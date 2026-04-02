@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import {
@@ -10,6 +10,7 @@ import {
   CalendarDaysIcon,
   UserGroupIcon,
   BuildingStorefrontIcon,
+  CameraIcon,
 } from "@heroicons/react/24/outline";
 
 const SUPERMARKETS = [
@@ -191,6 +192,13 @@ export default function ShoppingLists() {
   const [selectedMenuId, setSelectedMenuId] = useState<number | null>(null);
   const [persons, setPersons] = useState(2);
   const [supermarket, setSupermarket] = useState("general");
+  // OCR state
+  const [showOcrModal, setShowOcrModal] = useState(false);
+  const [ocrPreview, setOcrPreview] = useState<string | null>(null);
+  const [ocrItems, setOcrItems] = useState<{ name: string; amount: number; category: string; selected: boolean }[]>([]);
+  const [ocrListName, setOcrListName] = useState("");
+  const [ocrAdding, setOcrAdding] = useState(false);
+  const ocrFileRef = useRef<HTMLInputElement>(null);
 
   const { data: lists, isLoading, refetch } = trpc.shoppingLists.list.useQuery();
   const { data: myMenus } = trpc.menus.list.useQuery();
@@ -220,6 +228,53 @@ export default function ShoppingLists() {
     onSuccess: () => { refetch(); toast.success("Lista eliminada"); },
   });
 
+  const parseFromPhoto = trpc.shoppingLists.parseFromPhoto.useMutation({
+    onSuccess: (data) => {
+      setOcrItems(data.items.map(i => ({ ...i, selected: true })));
+    },
+    onError: (err: any) => {
+      toast.error(err.message || "No se pudo analizar la imagen");
+    },
+  });
+
+  const addItem = trpc.shoppingLists.addItem.useMutation();
+
+  const handleOcrFile = (file: File) => {
+    const reader = new FileReader();
+    reader.onload = (e) => {
+      const dataUrl = e.target?.result as string;
+      setOcrPreview(dataUrl);
+      setOcrItems([]);
+      parseFromPhoto.mutate({ imageBase64: dataUrl });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleOcrAddToList = async () => {
+    const selected = ocrItems.filter(i => i.selected);
+    if (!selected.length) { toast.error("Selecciona al menos un producto"); return; }
+    setOcrAdding(true);
+    try {
+      // Create new list first
+      const listName = ocrListName.trim() || `Lista ${new Date().toLocaleDateString("es-ES")}`;
+      const newList = await createList.mutateAsync({ name: listName });
+      // Add all items
+      await Promise.all(selected.map(item =>
+        addItem.mutateAsync({ shoppingListId: (newList as any).id, customName: item.name, amount: item.amount, category: item.category })
+      ));
+      toast.success(`Lista "${listName}" creada con ${selected.length} productos`);
+      refetch();
+      setShowOcrModal(false);
+      setOcrPreview(null);
+      setOcrItems([]);
+      setOcrListName("");
+    } catch {
+      toast.error("Error al crear la lista");
+    } finally {
+      setOcrAdding(false);
+    }
+  };
+
   const handleDeleteList = (id: number, name: string) => {
     if (!window.confirm(`¿Eliminar la lista "${name}"? Esta acción no se puede deshacer.`)) return;
     deleteList.mutate({ id });
@@ -241,6 +296,13 @@ export default function ShoppingLists() {
           >
             <CalendarDaysIcon className="h-4 w-4" />
             Desde menú
+          </button>
+          <button
+            onClick={() => setShowOcrModal(true)}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-violet-600 shadow-sm"
+            title="Importar desde foto"
+          >
+            <CameraIcon className="h-5 w-5 text-white" />
           </button>
           <button
             onClick={() => setShowNew(true)}
@@ -466,6 +528,97 @@ export default function ShoppingLists() {
       <div className="vively-disclaimer">
         <p>BuddyMarket no constituye recomendaciones profesionales de nutrición.</p>
       </div>
+
+      {/* ─── OCR Photo Modal ────────────────────────────────────────────────────── */}
+      {showOcrModal && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 9999, display: "flex", alignItems: "flex-end", justifyContent: "center" }}
+          onClick={(e) => { if (e.target === e.currentTarget) { setShowOcrModal(false); setOcrPreview(null); setOcrItems([]); } }}>
+          <div style={{ background: "white", borderRadius: "24px 24px 0 0", width: "100%", maxWidth: 520, maxHeight: "90vh", overflow: "auto", padding: "24px 24px 32px", boxShadow: "0 -8px 40px rgba(0,0,0,0.2)" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
+              <div>
+                <h2 style={{ margin: 0, fontSize: 18, fontWeight: 900, color: "#1a1a1a" }}>Importar lista desde foto</h2>
+                <p style={{ margin: "4px 0 0", fontSize: 13, color: "#6b7280" }}>Haz una foto a tu lista escrita o impresa</p>
+              </div>
+              <button onClick={() => { setShowOcrModal(false); setOcrPreview(null); setOcrItems([]); }}
+                style={{ background: "#f3f4f6", border: "none", borderRadius: "50%", width: 36, height: 36, cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+            </div>
+            {!ocrPreview && (
+              <div style={{ border: "2px dashed #d1d5db", borderRadius: 16, padding: "32px 24px", textAlign: "center", cursor: "pointer", background: "#fafafa", marginBottom: 16 }}
+                onClick={() => ocrFileRef.current?.click()}
+                onDragOver={(e) => e.preventDefault()}
+                onDrop={(e) => { e.preventDefault(); const file = e.dataTransfer.files[0]; if (file) handleOcrFile(file); }}>
+                <div style={{ fontSize: 48, marginBottom: 12 }}>📸</div>
+                <p style={{ margin: "0 0 8px", fontWeight: 700, color: "#374151", fontSize: 15 }}>Sube una foto de tu lista</p>
+                <p style={{ margin: 0, fontSize: 13, color: "#9ca3af" }}>Arrastra aquí o pulsa para seleccionar</p>
+                <p style={{ margin: "8px 0 0", fontSize: 12, color: "#9ca3af" }}>JPG, PNG, HEIC • Máx. 10 MB</p>
+              </div>
+            )}
+            <input ref={ocrFileRef} type="file" accept="image/*" capture="environment" style={{ display: "none" }}
+              onChange={(e) => { const file = e.target.files?.[0]; if (file) handleOcrFile(file); }} />
+            {ocrPreview && (
+              <div style={{ marginBottom: 16 }}>
+                <img src={ocrPreview} alt="Lista" style={{ width: "100%", maxHeight: 200, objectFit: "contain", borderRadius: 12, border: "1px solid #e5e7eb" }} />
+                {parseFromPhoto.isPending && (
+                  <div style={{ textAlign: "center", padding: "16px 0", color: "#7c3aed", fontWeight: 700, fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                    <div style={{ width: 18, height: 18, border: "2px solid #7c3aed", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+                    Analizando imagen con IA...
+                  </div>
+                )}
+                {!parseFromPhoto.isPending && ocrItems.length === 0 && (
+                  <button onClick={() => { setOcrPreview(null); }}
+                    style={{ marginTop: 12, width: "100%", padding: "10px", background: "#f3f4f6", border: "none", borderRadius: 12, fontWeight: 700, cursor: "pointer", fontSize: 14 }}>
+                    Cambiar foto
+                  </button>
+                )}
+              </div>
+            )}
+            {ocrItems.length > 0 && (
+              <div>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                  <p style={{ margin: 0, fontWeight: 800, fontSize: 14, color: "#374151" }}>{ocrItems.filter(i => i.selected).length} de {ocrItems.length} productos detectados</p>
+                  <button onClick={() => setOcrItems(items => items.map(i => ({ ...i, selected: !items.every(x => x.selected) })))}
+                    style={{ fontSize: 12, fontWeight: 700, color: "#7c3aed", background: "none", border: "none", cursor: "pointer" }}>
+                    {ocrItems.every(i => i.selected) ? "Deseleccionar todos" : "Seleccionar todos"}
+                  </button>
+                </div>
+                <div style={{ maxHeight: 260, overflowY: "auto", border: "1px solid #f3f4f6", borderRadius: 12 }}>
+                  {ocrItems.map((item, idx) => (
+                    <div key={idx} style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 14px",
+                      borderBottom: idx < ocrItems.length - 1 ? "1px solid #f9fafb" : "none",
+                      background: item.selected ? "#faf5ff" : "white", cursor: "pointer" }}
+                      onClick={() => setOcrItems(items => items.map((x, i) => i === idx ? { ...x, selected: !x.selected } : x))}>
+                      <div style={{ width: 20, height: 20, borderRadius: 6, border: `2px solid ${item.selected ? "#7c3aed" : "#d1d5db"}`,
+                        background: item.selected ? "#7c3aed" : "white", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        {item.selected && <CheckIcon style={{ width: 12, height: 12, color: "white" }} />}
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: "#1a1a1a" }}>{item.name}</p>
+                        <p style={{ margin: 0, fontSize: 12, color: "#9ca3af" }}>{item.category} • {item.amount} ud.</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+                <div style={{ marginTop: 16, marginBottom: 16 }}>
+                  <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#374151", marginBottom: 6 }}>Nombre de la lista (opcional)</label>
+                  <input type="text" value={ocrListName} onChange={e => setOcrListName(e.target.value)}
+                    placeholder={`Lista ${new Date().toLocaleDateString("es-ES")}`}
+                    style={{ width: "100%", padding: "10px 12px", border: "2px solid #e5e7eb", borderRadius: 10, fontSize: 14, boxSizing: "border-box" }} />
+                </div>
+                <button onClick={handleOcrAddToList} disabled={ocrAdding || ocrItems.filter(i => i.selected).length === 0}
+                  style={{ width: "100%", padding: "14px", background: ocrItems.filter(i => i.selected).length > 0 ? "#7c3aed" : "#e5e7eb",
+                    color: ocrItems.filter(i => i.selected).length > 0 ? "white" : "#9ca3af",
+                    border: "none", borderRadius: 14, fontSize: 15, fontWeight: 800, cursor: ocrAdding ? "wait" : "pointer",
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                  {ocrAdding
+                    ? <><div style={{ width: 16, height: 16, border: "2px solid white", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />Creando lista...</>
+                    : <>➕ Crear lista con {ocrItems.filter(i => i.selected).length} productos</>}
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
     </div>
   );
 }

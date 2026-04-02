@@ -221,9 +221,10 @@ export default function Metrics() {
 
       <Tabs defaultValue="register">
         <TabsList className="w-full">
-          <TabsTrigger value="register" className="flex-1">Registrar</TabsTrigger>
-          <TabsTrigger value="evolution" className="flex-1">Evolución</TabsTrigger>
-          <TabsTrigger value="history" className="flex-1">Historial</TabsTrigger>
+          <TabsTrigger value="register" className="flex-1 text-xs">Registrar</TabsTrigger>
+          <TabsTrigger value="evolution" className="flex-1 text-xs">Evolución</TabsTrigger>
+          <TabsTrigger value="history" className="flex-1 text-xs">Historial</TabsTrigger>
+          <TabsTrigger value="tdee" className="flex-1 text-xs">Calorías</TabsTrigger>
         </TabsList>
 
         {/* REGISTER TAB */}
@@ -441,7 +442,202 @@ export default function Metrics() {
             </CardContent>
           </Card>
         </TabsContent>
+
+        {/* TDEE CALCULATOR TAB */}
+        <TabsContent value="tdee">
+          <TDEECalculator profileData={profileQuery.data?.profile} latestWeight={latestQuery.data?.weight} />
+        </TabsContent>
       </Tabs>
+    </div>
+  );
+}
+
+function TDEECalculator({ profileData, latestWeight }: { profileData?: any; latestWeight?: number | null }) {
+  const [weight, setWeight] = useState(latestWeight?.toString() ?? profileData?.weight?.toString() ?? "");
+  const [height, setHeight] = useState(profileData?.height?.toString() ?? "");
+  const [age, setAge] = useState(profileData?.age?.toString() ?? "");
+  const [gender, setGender] = useState<"male" | "female">(profileData?.gender === "female" ? "female" : "male");
+  const [activity, setActivity] = useState(profileData?.activityLevel ?? "moderate");
+  const [goal, setGoal] = useState(profileData?.mainGoal ?? "maintain");
+
+  const ACTIVITY_FACTORS: Record<string, { label: string; factor: number }> = {
+    sedentary:   { label: "Sedentario (sin ejercicio)", factor: 1.2 },
+    light:       { label: "Ligero (1-3 días/semana)", factor: 1.375 },
+    moderate:    { label: "Moderado (3-5 días/semana)", factor: 1.55 },
+    active:      { label: "Activo (6-7 días/semana)", factor: 1.725 },
+    very_active: { label: "Muy activo (2x/día)", factor: 1.9 },
+  };
+
+  const GOAL_ADJUSTMENTS: Record<string, { label: string; kcal: number; color: string }> = {
+    lose_weight:     { label: "Perder peso", kcal: -500, color: "#ef4444" },
+    gain_muscle:     { label: "Ganar músculo", kcal: +300, color: "#3b82f6" },
+    maintain:        { label: "Mantener peso", kcal: 0, color: "#10b981" },
+    improve_health:  { label: "Mejorar salud", kcal: -200, color: "#f59e0b" },
+    eat_healthier:   { label: "Comer mejor", kcal: 0, color: "#8b5cf6" },
+  };
+
+  const w = parseFloat(weight);
+  const h = parseFloat(height);
+  const a = parseFloat(age);
+  const valid = !isNaN(w) && !isNaN(h) && !isNaN(a) && w > 0 && h > 0 && a > 0;
+
+  // Mifflin-St Jeor formula
+  const bmr = valid
+    ? gender === "male"
+      ? 10 * w + 6.25 * h - 5 * a + 5
+      : 10 * w + 6.25 * h - 5 * a - 161
+    : null;
+  const tdee = bmr ? Math.round(bmr * (ACTIVITY_FACTORS[activity]?.factor ?? 1.55)) : null;
+  const goalKcal = tdee ? tdee + (GOAL_ADJUSTMENTS[goal]?.kcal ?? 0) : null;
+
+  // Macros (based on goal)
+  const protein = goalKcal && w ? Math.round(w * (goal === "gain_muscle" ? 2.2 : 1.8)) : null;
+  const fat = goalKcal ? Math.round((goalKcal * 0.25) / 9) : null;
+  const carbs = goalKcal && protein && fat ? Math.round((goalKcal - protein * 4 - fat * 9) / 4) : null;
+
+  return (
+    <div className="space-y-4">
+      <Card className="border-0 bg-card/60">
+        <CardHeader className="pb-3">
+          <CardTitle className="text-base flex items-center gap-2">
+            <span className="text-xl">🔥</span> Calculadora de calorías diarias
+          </CardTitle>
+          <p className="text-xs text-muted-foreground">Fórmula Mifflin-St Jeor • Valores orientativos</p>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label className="text-xs">Peso (kg)</Label>
+              <Input type="number" step="0.1" placeholder="70" value={weight} onChange={e => setWeight(e.target.value)} />
+            </div>
+            <div>
+              <Label className="text-xs">Altura (cm)</Label>
+              <Input type="number" step="1" placeholder="170" value={height} onChange={e => setHeight(e.target.value)} />
+            </div>
+            <div>
+              <Label className="text-xs">Edad</Label>
+              <Input type="number" step="1" placeholder="30" value={age} onChange={e => setAge(e.target.value)} />
+            </div>
+            <div>
+              <Label className="text-xs">Sexo</Label>
+              <div className="flex gap-2 mt-1">
+                <button type="button" onClick={() => setGender("male")}
+                  className={`flex-1 py-2 rounded-xl text-xs font-bold border-2 transition-all ${
+                    gender === "male" ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"
+                  }`}>♂ Hombre</button>
+                <button type="button" onClick={() => setGender("female")}
+                  className={`flex-1 py-2 rounded-xl text-xs font-bold border-2 transition-all ${
+                    gender === "female" ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"
+                  }`}>♀ Mujer</button>
+              </div>
+            </div>
+          </div>
+
+          <div>
+            <Label className="text-xs">Nivel de actividad</Label>
+            <select value={activity} onChange={e => setActivity(e.target.value)}
+              className="w-full mt-1 p-2.5 rounded-xl border-2 border-border bg-background text-sm">
+              {Object.entries(ACTIVITY_FACTORS).map(([k, v]) => (
+                <option key={k} value={k}>{v.label}</option>
+              ))}
+            </select>
+          </div>
+
+          <div>
+            <Label className="text-xs">Objetivo</Label>
+            <div className="grid grid-cols-2 gap-2 mt-1">
+              {Object.entries(GOAL_ADJUSTMENTS).map(([k, v]) => (
+                <button key={k} type="button" onClick={() => setGoal(k)}
+                  className={`py-2 px-3 rounded-xl text-xs font-semibold border-2 transition-all text-left ${
+                    goal === k ? "border-primary bg-primary/10 text-primary" : "border-border text-muted-foreground"
+                  }`}>{v.label}</button>
+              ))}
+            </div>
+          </div>
+        </CardContent>
+      </Card>
+
+      {valid && tdee && goalKcal && (
+        <>
+          <Card className="border-0 bg-gradient-to-br from-orange-500 to-amber-400 text-white">
+            <CardContent className="pt-5 pb-5">
+              <div className="text-center">
+                <p className="text-sm font-semibold opacity-90 mb-1">Calorías diarias recomendadas</p>
+                <p className="text-5xl font-black">{goalKcal.toLocaleString()}</p>
+                <p className="text-sm opacity-80 mt-1">kcal/día • {GOAL_ADJUSTMENTS[goal]?.label}</p>
+              </div>
+              <div className="mt-4 grid grid-cols-3 gap-3 text-center">
+                <div className="bg-white/20 rounded-xl p-2">
+                  <p className="text-xs opacity-80">BMR basal</p>
+                  <p className="font-bold text-sm">{Math.round(bmr!)} kcal</p>
+                </div>
+                <div className="bg-white/20 rounded-xl p-2">
+                  <p className="text-xs opacity-80">TDEE total</p>
+                  <p className="font-bold text-sm">{tdee} kcal</p>
+                </div>
+                <div className="bg-white/20 rounded-xl p-2">
+                  <p className="text-xs opacity-80">Ajuste</p>
+                  <p className="font-bold text-sm">{GOAL_ADJUSTMENTS[goal]?.kcal > 0 ? "+" : ""}{GOAL_ADJUSTMENTS[goal]?.kcal} kcal</p>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {protein && fat && carbs && (
+            <Card className="border-0 bg-card/60">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm">Distribución de macronutrientes</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="text-center p-3 rounded-2xl bg-blue-50 dark:bg-blue-950/30">
+                    <p className="text-2xl font-black text-blue-600">{protein}g</p>
+                    <p className="text-xs font-semibold text-blue-500 mt-0.5">Proteína</p>
+                    <p className="text-xs text-muted-foreground">{protein * 4} kcal</p>
+                  </div>
+                  <div className="text-center p-3 rounded-2xl bg-amber-50 dark:bg-amber-950/30">
+                    <p className="text-2xl font-black text-amber-600">{carbs}g</p>
+                    <p className="text-xs font-semibold text-amber-500 mt-0.5">Carbohidratos</p>
+                    <p className="text-xs text-muted-foreground">{carbs * 4} kcal</p>
+                  </div>
+                  <div className="text-center p-3 rounded-2xl bg-red-50 dark:bg-red-950/30">
+                    <p className="text-2xl font-black text-red-600">{fat}g</p>
+                    <p className="text-xs font-semibold text-red-500 mt-0.5">Grasas</p>
+                    <p className="text-xs text-muted-foreground">{fat * 9} kcal</p>
+                  </div>
+                </div>
+                <div className="mt-3 h-3 rounded-full overflow-hidden flex">
+                  <div style={{ width: `${Math.round((protein! * 4 / goalKcal) * 100)}%`, background: "#3b82f6" }} />
+                  <div style={{ width: `${Math.round((carbs! * 4 / goalKcal) * 100)}%`, background: "#f59e0b" }} />
+                  <div style={{ width: `${Math.round((fat! * 9 / goalKcal) * 100)}%`, background: "#ef4444" }} />
+                </div>
+                <div className="flex justify-between text-xs text-muted-foreground mt-1">
+                  <span>🔵 Prot {Math.round((protein! * 4 / goalKcal) * 100)}%</span>
+                  <span>🟡 Carb {Math.round((carbs! * 4 / goalKcal) * 100)}%</span>
+                  <span>🔴 Gras {Math.round((fat! * 9 / goalKcal) * 100)}%</span>
+                </div>
+              </CardContent>
+            </Card>
+          )}
+
+          <Card className="border-0 bg-card/60">
+            <CardContent className="pt-4">
+              <p className="text-xs text-muted-foreground text-center">
+                ⚠️ Estos valores son orientativos. Consulta con un nutricionista para un plan personalizado.
+              </p>
+            </CardContent>
+          </Card>
+        </>
+      )}
+
+      {!valid && (
+        <Card className="border-0 bg-card/60">
+          <CardContent className="py-8 text-center">
+            <p className="text-4xl mb-3">📊</p>
+            <p className="text-sm text-muted-foreground">Rellena todos los campos para calcular tus calorías diarias recomendadas</p>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

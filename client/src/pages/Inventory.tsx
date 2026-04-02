@@ -2,6 +2,7 @@ import { useState, useRef, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
+import BarcodeScanner from "@/components/BarcodeScanner";
 import {
   PlusIcon,
   TrashIcon,
@@ -79,6 +80,17 @@ export default function Inventory() {
 
   // Photo AI state
   const [showPhotoModal, setShowPhotoModal] = useState(false);
+  const [showBarcodeScanner, setShowBarcodeScanner] = useState(false);
+  const [barcodeProduct, setBarcodeProduct] = useState<{
+    name: string;
+    brand: string | null;
+    imageUrl: string | null;
+    quantity: string | null;
+    per100g: { calories: number; proteins: number; carbohydrates: number; fats: number };
+  } | null>(null);
+  const [barcodeAmount, setBarcodeAmount] = useState("1");
+  const [barcodeExpiry, setBarcodeExpiry] = useState("");
+  const [barcodeLocation, setBarcodeLocation] = useState("1");
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [analyzing, setAnalyzing] = useState(false);
@@ -232,6 +244,19 @@ export default function Inventory() {
             title="Analizar con foto"
           >
             <CameraIcon className="h-5 w-5 text-white" />
+          </button>
+          <button
+            onClick={() => setShowBarcodeScanner(true)}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-emerald-600 shadow-sm"
+            title="Escanear código de barras"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 9V6a1 1 0 011-1h3M3 15v3a1 1 0 001 1h3m11-4v3a1 1 0 01-1 1h-3m4-11V6a1 1 0 00-1-1h-3" />
+              <line x1="7" y1="8" x2="7" y2="16" stroke="currentColor" strokeWidth="1.5" />
+              <line x1="10" y1="8" x2="10" y2="16" stroke="currentColor" strokeWidth="1.5" />
+              <line x1="13" y1="8" x2="13" y2="16" stroke="currentColor" strokeWidth="2" />
+              <line x1="16" y1="8" x2="16" y2="16" stroke="currentColor" strokeWidth="1.5" />
+            </svg>
           </button>
           <button
             onClick={() => setShowAdd(true)}
@@ -628,6 +653,95 @@ export default function Inventory() {
       <div className="vively-disclaimer">
         <p>VIVELY no constituye recomendaciones profesionales de nutrición.</p>
       </div>
+
+      {/* ─── Barcode Scanner ─────────────────────────────────────────────── */}
+      {showBarcodeScanner && (
+        <BarcodeScanner
+          onProductFound={(product) => {
+            setShowBarcodeScanner(false);
+            setBarcodeProduct({ ...product, quantity: null });
+            setBarcodeAmount("1");
+            setBarcodeExpiry("");
+            setBarcodeLocation("1");
+          }}
+          onClose={() => setShowBarcodeScanner(false)}
+        />
+      )}
+
+      {/* ─── Barcode Product Confirmation Modal ──────────────────────────── */}
+      {barcodeProduct && (
+        <div
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 9998, display: "flex", alignItems: "flex-end", justifyContent: "center", padding: "0 0 0 0" }}
+          onClick={(e) => { if (e.target === e.currentTarget) setBarcodeProduct(null); }}
+        >
+          <div style={{ background: "white", borderRadius: "24px 24px 0 0", width: "100%", maxWidth: 480, padding: "24px 24px 32px", boxShadow: "0 -8px 40px rgba(0,0,0,0.2)", animation: "slideUp 0.25s ease" }}>
+            <style>{`@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }`}</style>
+            <div style={{ display: "flex", alignItems: "flex-start", gap: 16, marginBottom: 20 }}>
+              {barcodeProduct.imageUrl && (
+                <img src={barcodeProduct.imageUrl} alt={barcodeProduct.name} style={{ width: 72, height: 72, borderRadius: 12, objectFit: "cover", flexShrink: 0 }} />
+              )}
+              <div style={{ flex: 1, minWidth: 0 }}>
+                <h3 style={{ margin: "0 0 4px", fontSize: 17, fontWeight: 800, color: "#1a1a1a", lineHeight: 1.3 }}>{barcodeProduct.name}</h3>
+                {barcodeProduct.brand && <p style={{ margin: "0 0 6px", fontSize: 13, color: "#6b7280", fontWeight: 600 }}>{barcodeProduct.brand}</p>}
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+                  <span style={{ fontSize: 12, fontWeight: 700, background: "#fff7ed", color: "#ea580c", padding: "3px 8px", borderRadius: 8 }}>🔥 {barcodeProduct.per100g.calories} kcal/100g</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, background: "#f0fdf4", color: "#16a34a", padding: "3px 8px", borderRadius: 8 }}>💪 {barcodeProduct.per100g.proteins}g prot</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, background: "#eff6ff", color: "#2563eb", padding: "3px 8px", borderRadius: 8 }}>🌾 {barcodeProduct.per100g.carbohydrates}g carb</span>
+                </div>
+              </div>
+            </div>
+
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
+              <div>
+                <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#374151", marginBottom: 6 }}>Cantidad</label>
+                <input type="number" value={barcodeAmount} onChange={e => setBarcodeAmount(e.target.value)} min="0.1" step="0.1"
+                  style={{ width: "100%", padding: "10px 12px", border: "2px solid #e5e7eb", borderRadius: 10, fontSize: 15, fontWeight: 600, boxSizing: "border-box" }} />
+              </div>
+              <div>
+                <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#374151", marginBottom: 6 }}>Ubicación</label>
+                <select value={barcodeLocation} onChange={e => setBarcodeLocation(e.target.value)}
+                  style={{ width: "100%", padding: "10px 12px", border: "2px solid #e5e7eb", borderRadius: 10, fontSize: 14, fontWeight: 600, boxSizing: "border-box" }}>
+                  <option value="1">🧊 Nevera</option>
+                  <option value="2">❄️ Congelador</option>
+                  <option value="3">🏠 Despensa</option>
+                </select>
+              </div>
+            </div>
+
+            <div style={{ marginBottom: 20 }}>
+              <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#374151", marginBottom: 6 }}>Fecha de caducidad (opcional)</label>
+              <input type="date" value={barcodeExpiry} onChange={e => setBarcodeExpiry(e.target.value)}
+                style={{ width: "100%", padding: "10px 12px", border: "2px solid #e5e7eb", borderRadius: 10, fontSize: 14, boxSizing: "border-box" }} />
+            </div>
+
+            <div style={{ display: "flex", gap: 10 }}>
+              <button onClick={() => setBarcodeProduct(null)}
+                style={{ flex: 1, padding: "13px", background: "#f3f4f6", border: "none", borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: "pointer", color: "#374151" }}>
+                Cancelar
+              </button>
+              <button
+                onClick={async () => {
+                  try {
+                    await addItem.mutateAsync({
+                      customName: barcodeProduct.name,
+                      amount: parseFloat(barcodeAmount) || 1,
+                      storageLocationId: parseInt(barcodeLocation),
+                      expirationDate: barcodeExpiry || undefined,
+                    });
+                    toast.success(`"${barcodeProduct.name}" añadido al inventario`);
+                    setBarcodeProduct(null);
+                  } catch {
+                    toast.error("Error al añadir el producto");
+                  }
+                }}
+                style={{ flex: 2, padding: "13px", background: "#16a34a", border: "none", borderRadius: 14, fontSize: 14, fontWeight: 800, cursor: "pointer", color: "white", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
+                <CheckIcon className="h-4 w-4" />
+                Añadir al inventario
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
