@@ -470,3 +470,11 @@
 - [ ] BuddyMakerDashboard: visible solo si applicationStatus === 'approved', si no muestra formulario de solicitud
 - [ ] Sidebar: ocultar "Mi Panel Experto" y "Mi Panel Creador" si no tienen solicitud aprobada
 - [ ] Notificación al owner cuando llega una nueva solicitud
+
+## Sprint: Asistente de Menús para Eventos Especiales
+- [ ] Endpoint tRPC `events.generateMenu` con IA para generar menú completo según parámetros del evento
+- [ ] Página EventMenuPlanner con selector visual de tipo de evento (cena amigos, barbacoa, Navidad, cumpleaños, etc.)
+- [ ] Flujo conversacional por pasos: tipo evento → nº personas → intolerancias → alcohol → nº platos → preferencias → generar
+- [ ] Resultado: menú completo con aperitivo, entrantes, plato principal, postre y bebidas con recetas detalladas
+- [ ] Opción de guardar el menú generado en la biblioteca personal
+- [ ] Ruta /event-menu y enlace en sidebar

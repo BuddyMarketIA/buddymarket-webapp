@@ -79,6 +79,7 @@ const SIDEBAR_ITEMS = [
   { key: "following", label: "Siguiendo", to: "/following", emoji: "👥" },
   { key: "buddy-ia", label: "BuddyIA", to: "/buddy-ia", emoji: "🤖" },
   { key: "menu-library", label: "Biblioteca de Menús", to: "/menu-library", emoji: "📚" },
+  { key: "event-menu", label: "Menú para Eventos", to: "/event-menu", emoji: "🎉" },
   { key: "_divider_vively", label: "__divider__", to: "", emoji: "" },
   { key: "buddycoach", label: "BuddyCoach ↗", to: "https://buddycoach.io", emoji: "🏃" },
 ];

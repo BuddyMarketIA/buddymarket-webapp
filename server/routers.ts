@@ -2606,5 +2606,135 @@ Devuelve SOLO JSON válido con esta estructura exacta:
         return { menuId, success: true };
       }),
   }),
+
+  // ---------------------------------------------------------------------------
+  // EVENTS - Asistente de menús para eventos especiales
+  // ---------------------------------------------------------------------------
+  events: router({
+    generateMenu: protectedProcedure
+      .input(z.object({
+        eventType: z.string(),
+        eventName: z.string().optional(),
+        persons: z.number().min(1).max(500),
+        hasChildren: z.boolean().optional(),
+        intolerances: z.array(z.string()).optional(),
+        servesAlcohol: z.boolean().optional(),
+        alcoholTypes: z.array(z.string()).optional(),
+        courses: z.object({
+          aperitivo: z.boolean().optional(),
+          primero: z.boolean().optional(),
+          segundo: z.boolean().optional(),
+          postre: z.boolean().optional(),
+          cafe: z.boolean().optional(),
+        }).optional(),
+        cuisineStyle: z.string().optional(),
+        budget: z.string().optional(),
+        season: z.string().optional(),
+        extraNotes: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const eventLabels: Record<string, string> = {
+          cena_amigos: "Cena con amigos en casa",
+          barbacoa: "Barbacoa",
+          navidad: "Cena/Comida de Navidad",
+          cumpleanos: "Cumpleaños",
+          comunion: "Comunión",
+          boda: "Boda",
+          brunch: "Brunch dominical",
+          aperitivo: "Aperitivo/Vermut",
+          cena_romantica: "Cena romántica",
+          fin_de_ano: "Cena de Fin de Año",
+          reyes: "Comida de Reyes",
+          semana_santa: "Semana Santa",
+          otro: input.eventName || "Evento especial",
+        };
+
+        const eventLabel = eventLabels[input.eventType] || input.eventName || input.eventType;
+        const courses = input.courses || { aperitivo: true, primero: true, segundo: true, postre: true };
+        const courseList = Object.entries(courses)
+          .filter(([, v]) => v)
+          .map(([k]) => ({
+            aperitivo: "Aperitivo",
+            primero: "Primer plato",
+            segundo: "Segundo plato",
+            postre: "Postre",
+            cafe: "Café y petit fours",
+          }[k] || k))
+          .join(", ");
+
+        const systemPrompt = `Eres un chef experto y anfitrión profesional español. Creas menús completos, deliciosos y prácticos para eventos especiales. Siempre respondes con JSON válido y bien estructurado. Tus menús son creativos, adaptados a la temporada y al número de comensales, con consejos útiles para el anfitrión.`;
+
+        const userPrompt = `Crea un menú completo para:
+
+**Evento:** ${eventLabel}
+**Personas:** ${input.persons}${input.hasChildren ? " (incluyendo niños)" : ""}
+**Intolerancias/alergias:** ${input.intolerances?.length ? input.intolerances.join(", ") : "Ninguna"}
+**Alcohol:** ${input.servesAlcohol ? `Sí (${input.alcoholTypes?.join(", ") || "a elección"})` : "No"}
+**Platos:** ${courseList}
+${input.cuisineStyle ? `**Estilo:** ${input.cuisineStyle}` : ""}
+${input.budget ? `**Presupuesto:** ${input.budget}` : ""}
+${input.season ? `**Temporada:** ${input.season}` : ""}
+${input.extraNotes ? `**Notas:** ${input.extraNotes}` : ""}
+
+Devuelve EXACTAMENTE este JSON:
+{
+  "eventTitle": "Título del menú",
+  "intro": "Descripción del menú y estilo (2-3 frases)",
+  "timeline": "Horario sugerido del evento",
+  "courses": [
+    {
+      "name": "Aperitivo",
+      "emoji": "🥂",
+      "description": "Descripción breve del momento",
+      "dishes": [
+        {
+          "name": "Nombre del plato",
+          "description": "Descripción apetitosa",
+          "servingTip": "Consejo de presentación",
+          "prepTime": "20 min",
+          "canPrepAhead": true,
+          "difficulty": "Fácil",
+          "ingredients": ["Ingrediente 1 (cantidad para ${input.persons} personas)"],
+          "steps": ["Paso 1", "Paso 2"]
+        }
+      ]
+    }
+  ],
+  "drinks": {
+    "nonAlcoholic": ["Agua con gas", "Limonada"],
+    "alcoholic": ${input.servesAlcohol ? '["Vino blanco fresco", "Cava brut"]' : "null"}
+  },
+  "shoppingList": [
+    { "category": "Carnes y pescados", "items": ["Producto (cantidad total)"] },
+    { "category": "Verduras y frutas", "items": [] },
+    { "category": "Lácteos y huevos", "items": [] },
+    { "category": "Despensa y conservas", "items": [] },
+    { "category": "Pan y repostería", "items": [] }
+  ],
+  "hostingTips": ["Consejo 1 para ser un anfitrión 10", "Consejo 2", "Consejo 3", "Consejo 4"],
+  "estimatedBudget": "Estimación del coste total",
+  "prepSchedule": [
+    { "when": "2 días antes", "tasks": ["Tarea 1", "Tarea 2"] },
+    { "when": "El día anterior", "tasks": ["Tarea 1"] },
+    { "when": "El mismo día", "tasks": ["Tarea 1", "Tarea 2"] }
+  ]
+}`;
+
+        const response = await invokeLLM({
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: userPrompt },
+          ],
+          response_format: { type: "json_object" },
+        });
+
+        const content = String(response.choices[0]?.message?.content || "{}");
+        try {
+          return JSON.parse(content) as Record<string, unknown>;
+        } catch {
+          return { error: "No se pudo generar el menú. Inténtalo de nuevo.", raw: content };
+        }
+      }),
+  }),
 });
 export type AppRouter = typeof appRouter;
