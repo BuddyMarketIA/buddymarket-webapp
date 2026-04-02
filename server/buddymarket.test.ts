@@ -889,3 +889,47 @@ describe("Registration Flow", () => {
     ).rejects.toThrow();
   });
 });
+
+// =============================================================================
+// ADMIN: setUserPlan & setUserAccountType
+// =============================================================================
+describe("admin.setUserPlan", () => {
+  it("should reject non-admin users with FORBIDDEN", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    await expect(
+      caller.admin.setUserPlan({ userId: 999, plan: "pro_max" })
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+  });
+
+  it("should allow admin to set a plan (returns success or NOT_FOUND)", async () => {
+    const { ctx } = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+    try {
+      const result = await caller.admin.setUserPlan({ userId: 999, plan: "pro_max" });
+      expect(result.success).toBe(true);
+    } catch (err: any) {
+      // NOT_FOUND is acceptable when userId 999 doesn't exist in test DB
+      expect(["NOT_FOUND", "INTERNAL_SERVER_ERROR"]).toContain(err.code);
+    }
+  });
+});
+
+describe("admin.setUserAccountType", () => {
+  it("should reject non-admin users with FORBIDDEN", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    await expect(
+      caller.admin.setUserAccountType({ userId: 999, accountType: "buddymaker" })
+    ).rejects.toMatchObject({ code: "FORBIDDEN" });
+  });
+
+  it("should allow admin to set account type", async () => {
+    const { ctx } = createAdminContext();
+    const caller = appRouter.createCaller(ctx);
+    // updateUser is mocked to succeed
+    const result = await caller.admin.setUserAccountType({ userId: 1, accountType: "buddymaker" });
+    expect(result.success).toBe(true);
+    expect(result.accountType).toBe("buddymaker");
+  });
+});

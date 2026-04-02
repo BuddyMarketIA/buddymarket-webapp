@@ -160,6 +160,22 @@ export default function Admin() {
     onSuccess: () => { utils.admin.users.invalidate(); toast.success("Rol actualizado"); },
     onError: (err) => toast.error(err.message),
   });
+  const setUserPlan = trpc.admin.setUserPlan.useMutation({
+    onSuccess: (_data, vars) => {
+      utils.admin.users.invalidate();
+      const labels: Record<string, string> = { free: "Free", basic: "Pro", premium: "Pro", pro_max: "Pro Max" };
+      toast.success(`Plan cambiado a ${labels[vars.plan] ?? vars.plan}`);
+    },
+    onError: (err) => toast.error(err.message),
+  });
+  const setUserAccountType = trpc.admin.setUserAccountType.useMutation({
+    onSuccess: (_data, vars) => {
+      utils.admin.users.invalidate();
+      const labels: Record<string, string> = { user: "Usuario", buddymaker: "BuddyMaker", buddyexpert: "BuddyExpert", business: "Empresa" };
+      toast.success(`Tipo de cuenta: ${labels[vars.accountType] ?? vars.accountType}`);
+    },
+    onError: (err) => toast.error(err.message),
+  });
 
   if (user?.role !== "admin") {
     return (
@@ -388,26 +404,83 @@ export default function Admin() {
               {users?.length ?? 0}
             </span>
           </h3>
-          <div className="max-h-[60vh] overflow-y-auto space-y-2">
-            {(users ?? []).map((u: any) => (
-              <div key={u.id} className="flex items-center gap-3 rounded-xl bg-gray-50 px-3 py-2.5">
-                <div className="flex h-9 w-9 shrink-0 items-center justify-center rounded-full bg-[#F97316]/10 text-sm font-bold text-[#F97316]">
-                  {u.name ? u.name[0].toUpperCase() : "?"}
+          <div className="max-h-[70vh] overflow-y-auto space-y-3">
+            {(users ?? []).map((u: any) => {
+              const planLabel = u.subscription?.status === "active"
+                ? (u.subscription?.plan === "pro_max" ? "Pro Max" : "Pro")
+                : "Free";
+              const planColor = u.subscription?.status === "active"
+                ? (u.subscription?.plan === "pro_max" ? "bg-purple-100 text-purple-700" : "bg-orange-100 text-orange-700")
+                : "bg-gray-100 text-gray-500";
+              const accountTypeLabel: Record<string, string> = {
+                user: "Usuario", buddymaker: "BuddyMaker", buddyexpert: "BuddyExpert", business: "Empresa"
+              };
+              return (
+                <div key={u.id} className="rounded-2xl border border-gray-100 bg-white p-3 shadow-sm space-y-3">
+                  {/* User info row */}
+                  <div className="flex items-center gap-3">
+                    <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F97316]/10 text-sm font-bold text-[#F97316]">
+                      {u.name ? u.name[0].toUpperCase() : "?"}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="truncate text-sm font-semibold text-gray-800">{u.name || "Sin nombre"}</p>
+                      <p className="truncate text-xs text-gray-400">{u.email || u.openId}</p>
+                    </div>
+                    <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-bold ${planColor}`}>
+                      {planLabel}
+                    </span>
+                  </div>
+                  {/* Controls row */}
+                  <div className="grid grid-cols-3 gap-2">
+                    {/* Rol del sistema */}
+                    <div className="space-y-1">
+                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Rol</p>
+                      <select
+                        value={u.role}
+                        onChange={(e) => updateRole.mutate({ userId: u.id, role: e.target.value as any })}
+                        className="w-full rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-xs font-semibold text-gray-700"
+                      >
+                        <option value="user">Usuario</option>
+                        <option value="admin">Admin</option>
+                        <option value="buddyexpert">BuddyExpert</option>
+                      </select>
+                    </div>
+                    {/* Tipo de cuenta */}
+                    <div className="space-y-1">
+                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Tipo</p>
+                      <select
+                        defaultValue={(u as any).accountType ?? "user"}
+                        onChange={(e) => setUserAccountType.mutate({ userId: u.id, accountType: e.target.value as any })}
+                        className="w-full rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-xs font-semibold text-gray-700"
+                      >
+                        <option value="user">Usuario</option>
+                        <option value="buddymaker">BuddyMaker</option>
+                        <option value="buddyexpert">BuddyExpert</option>
+                        <option value="business">Empresa</option>
+                      </select>
+                    </div>
+                    {/* Plan */}
+                    <div className="space-y-1">
+                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Plan</p>
+                      <select
+                        value={
+                          u.subscription?.status === "active"
+                            ? (u.subscription?.plan ?? "basic")
+                            : "free"
+                        }
+                        onChange={(e) => setUserPlan.mutate({ userId: u.id, plan: e.target.value as any })}
+                        className="w-full rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-xs font-semibold text-gray-700"
+                      >
+                        <option value="free">Free</option>
+                        <option value="basic">Pro (Basic)</option>
+                        <option value="premium">Pro (Premium)</option>
+                        <option value="pro_max">Pro Max</option>
+                      </select>
+                    </div>
+                  </div>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="truncate text-sm font-semibold text-gray-800">{u.name || "Sin nombre"}</p>
-                  <p className="truncate text-xs text-gray-400">{u.email || u.openId}</p>
-                </div>
-                <select
-                  value={u.role}
-                  onChange={(e) => updateRole.mutate({ userId: u.id, role: e.target.value as any })}
-                  className="rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs font-semibold text-gray-700"
-                >
-                  <option value="user">Usuario</option>
-                  <option value="admin">Admin</option>
-                </select>
-              </div>
-            ))}
+              );
+            })}
           </div>
         </div>
       )}

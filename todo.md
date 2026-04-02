@@ -812,3 +812,11 @@
 - [x] Enlace "Menús Especializados" añadido al sidebar (sección Nutrición)
 - [x] Ruta /specialized-menus registrada en App.tsx
 - [x] Tests unitarios para specializedMenus.generate (5 tests, todos pasan - 52/52 total)
+
+## Admin: Gestión de planes y tipos de cuenta (02/04/2026)
+- [ ] Procedimiento tRPC admin.setUserPlan para cambiar Free/Pro/Pro Max sin pago
+- [ ] Procedimiento tRPC admin.setUserAccountType para cambiar tipo de cuenta
+- [ ] UI en panel Admin: selector de plan por usuario con botón de aplicar
+- [ ] UI en panel Admin: selector de tipo de cuenta por usuario
+- [ ] Notificación al usuario cuando el admin le activa Pro/Pro Max
+- [ ] Tests para los nuevos procedimientos admin

@@ -1335,7 +1335,15 @@ Si no puedes detectar productos, devuelve {"products": []}. No incluyas texto ad
       .input(z.object({ limit: z.number().optional(), offset: z.number().optional() }))
       .query(async ({ ctx, input }) => {
         if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
-        return db.getAllUsers(input.limit, input.offset);
+        const userList = await db.getAllUsers(input.limit, input.offset);
+        // Enrich with subscription data for each user
+        const enriched = await Promise.all(
+          userList.map(async (u) => {
+            const subscription = await db.getUserSubscription(u.id);
+            return { ...u, subscription: subscription ?? null };
+          })
+        );
+        return enriched;
       }),
 
     updateUserRole: protectedProcedure
@@ -1358,6 +1366,77 @@ Si no puedes detectar productos, devuelve {"products": []}. No incluyas texto ad
         });
         return { success: true };
       }),
+    // ── Admin: cambiar plan sin pago ──────────────────────────────────────────
+    setUserPlan: protectedProcedure
+      .input(z.object({
+        userId: z.number(),
+        plan: z.enum(["free", "basic", "premium", "pro_max"]),
+        notify: z.boolean().optional().default(true),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { users: usersTable } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        const targetUsers = await drizzleDb.select().from(usersTable).where(eq(usersTable.id, input.userId)).limit(1);
+        const targetUser = targetUsers[0];
+        if (!targetUser) throw new TRPCError({ code: "NOT_FOUND", message: "Usuario no encontrado" });
+        if (input.plan === "free") {
+          await db.upsertUserSubscription(input.userId, {
+            status: "cancelled",
+            plan: "basic",
+            currentPeriodStart: new Date(),
+            currentPeriodEnd: new Date(),
+          });
+        } else {
+          await db.upsertUserSubscription(input.userId, {
+            status: "active",
+            plan: input.plan,
+            currentPeriodStart: new Date(),
+            currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+          });
+        }
+        if (input.notify) {
+          const planLabels: Record<string, string> = { free: "Free", basic: "Pro", premium: "Pro", pro_max: "Pro Max" };
+          const planLabel = planLabels[input.plan] ?? input.plan;
+          try {
+            const { notifyOwner } = await import("./_core/notification");
+            await notifyOwner({
+              title: `Plan actualizado: ${targetUser.name ?? targetUser.email}`,
+              content: `El administrador ha cambiado el plan de ${targetUser.name ?? targetUser.email} a ${planLabel}.`,
+            });
+          } catch (_) { /* non-critical */ }
+        }
+        return { success: true, plan: input.plan };
+      }),
+
+    // ── Admin: cambiar tipo de cuenta ─────────────────────────────────────────
+    setUserAccountType: protectedProcedure
+      .input(z.object({
+        userId: z.number(),
+        accountType: z.enum(["user", "buddymaker", "buddyexpert", "business"]),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        await db.updateUser(input.userId, {
+          accountType: input.accountType as any,
+          registrationStep: "completed" as any,
+        });
+        if (input.accountType === "buddyexpert") {
+          await db.updateUser(input.userId, { role: "buddyexpert" as any });
+        }
+        return { success: true, accountType: input.accountType };
+      }),
+
+    // ── Admin: suscripción de un usuario ──────────────────────────────────────
+    getUserSubscriptionDetails: protectedProcedure
+      .input(z.object({ userId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        return db.getUserSubscription(input.userId);
+      }),
+
 
     createAllergy: protectedProcedure
       .input(z.object({ apiParam: z.string(), nameEs: z.string(), nameEn: z.string().optional() }))
