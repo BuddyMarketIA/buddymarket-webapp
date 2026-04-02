@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link } from "wouter";
 import { getLoginUrl } from "@/const";
 
@@ -24,75 +24,148 @@ const FOOD = {
 };
 
 const FEATURES = [
-  { icon: "🤖", tag: "IA Nutricional", title: "IA Nutricional Personalizada", img: FOOD.salmon,
-    desc: "Nuestra inteligencia artificial analiza tu perfil, alergias, condiciones médicas y objetivos para generar planes de alimentación únicos para ti. Más de 24 perfiles especiales." },
-  { icon: "📋", tag: "Menús", title: "Menús Semanales Automáticos", img: FOOD.menu,
-    desc: "Genera tu menú semanal completo en segundos. Con 5 comidas diarias, macros detallados y lista de la compra integrada. Adaptado a tus restricciones dietéticas." },
-  { icon: "🍳", tag: "Recetas", title: "Biblioteca de Recetas", img: FOOD.recipes,
-    desc: "Miles de recetas saludables con información nutricional completa, instrucciones paso a paso, tiempos de preparación y filtros por alérgenos." },
-  { icon: "🛒", tag: "Compras", title: "Lista de la Compra Inteligente", img: FOOD.shopping,
-    desc: "Genera automáticamente tu lista de la compra a partir de tus menús semanales. Organizada por categorías, con control de inventario." },
-  { icon: "📊", tag: "Seguimiento", title: "Seguimiento Nutricional", img: FOOD.mealprep,
-    desc: "Registra tus comidas y monitoriza en tiempo real tus calorías, proteínas, carbohidratos y grasas. Estadísticas detalladas y sistema de logros." },
-  { icon: "🏪", tag: "Inventario", title: "Inventario del Hogar", img: FOOD.pantry,
-    desc: "Controla lo que tienes en tu despensa, nevera y congelador. BuddyMarket te avisa de lo que está por caducar y adapta tus recetas." },
+  { icon: "🤖", tag: "IA Nutricional", title: "IA Nutricional\nPersonalizada", img: FOOD.salmon,
+    desc: "Nuestra inteligencia artificial analiza tu perfil, alergias, condiciones médicas y objetivos para generar planes de alimentación únicos. Más de 24 perfiles especiales.", color: "#F97316" },
+  { icon: "📋", tag: "Menús", title: "Menús Semanales\nAutomáticos", img: FOOD.menu,
+    desc: "Genera tu menú semanal completo en segundos. Con 5 comidas diarias, macros detallados y lista de la compra integrada. Adaptado a tus restricciones dietéticas.", color: "#10b981" },
+  { icon: "🍳", tag: "Recetas", title: "Biblioteca de\nRecetas", img: FOOD.recipes,
+    desc: "Miles de recetas saludables con información nutricional completa, instrucciones paso a paso, tiempos de preparación y filtros por alérgenos.", color: "#8b5cf6" },
+  { icon: "🛒", tag: "Compras", title: "Lista de la Compra\nInteligente", img: FOOD.shopping,
+    desc: "Genera automáticamente tu lista de la compra a partir de tus menús semanales. Organizada por categorías, con control de inventario en tiempo real.", color: "#3b82f6" },
+  { icon: "📊", tag: "Seguimiento", title: "Seguimiento\nNutricional", img: FOOD.mealprep,
+    desc: "Registra tus comidas y monitoriza en tiempo real tus calorías, proteínas, carbohidratos y grasas. Estadísticas detalladas y sistema de logros.", color: "#f59e0b" },
+  { icon: "🏪", tag: "Inventario", title: "Inventario\ndel Hogar", img: FOOD.pantry,
+    desc: "Controla lo que tienes en tu despensa, nevera y congelador. BuddyMarket te avisa de lo que está por caducar y adapta tus recetas al instante.", color: "#ec4899" },
 ];
 
 const SPECIAL_MENUS = [
-  { emoji: "🤰", label: "Embarazadas" }, { emoji: "🌱", label: "Veganos" },
-  { emoji: "🌾", label: "Celíacos" },    { emoji: "💉", label: "Diabéticos" },
-  { emoji: "❤️", label: "Hipertensión" },{ emoji: "💪", label: "Deportistas" },
-  { emoji: "🤧", label: "Resfriado" },   { emoji: "🧓", label: "Mayores 65" },
-  { emoji: "👶", label: "Niños" },       { emoji: "🔬", label: "Oncológico" },
-  { emoji: "🧘", label: "Intestino irritable" }, { emoji: "🦴", label: "Osteoporosis" },
+  { emoji: "🤰", label: "Embarazadas", color: "#fce7f3" },
+  { emoji: "🌱", label: "Veganos", color: "#d1fae5" },
+  { emoji: "🌾", label: "Celíacos", color: "#fef3c7" },
+  { emoji: "💉", label: "Diabéticos", color: "#dbeafe" },
+  { emoji: "❤️", label: "Hipertensión", color: "#fee2e2" },
+  { emoji: "💪", label: "Deportistas", color: "#ede9fe" },
+  { emoji: "🤧", label: "Resfriado", color: "#e0f2fe" },
+  { emoji: "🧓", label: "Mayores 65", color: "#f0fdf4" },
+  { emoji: "👶", label: "Niños", color: "#fef9c3" },
+  { emoji: "🔬", label: "Oncológico", color: "#f3f4f6" },
+  { emoji: "🧘", label: "Intestino irritable", color: "#ecfdf5" },
+  { emoji: "🦴", label: "Osteoporosis", color: "#eff6ff" },
 ];
 
-const TESTIMONIALS = [
-  { text: "Desde que uso BuddyMarket he perdido 8 kg en 3 meses sin pasar hambre. Los menús son deliciosos y muy fáciles de seguir.", name: "María G.", role: "Usuaria desde 2024", img: FOOD.ensalada },
-  { text: "Como celíaco, siempre fue difícil encontrar recetas variadas. BuddyMarket me genera menús sin gluten increíbles cada semana.", name: "Carlos M.", role: "Celíaco, usuario Pro", img: FOOD.pasta },
-  { text: "Soy nutricionista y recomiendo BuddyMarket a mis pacientes. La precisión nutricional y la variedad de perfiles médicos es impresionante.", name: "Laura P.", role: "Nutricionista", img: FOOD.bowl },
+const STATS = [
+  { value: 50000, suffix: "+", label: "Usuarios activos", icon: "👥" },
+  { value: 200000, suffix: "+", label: "Menús generados", icon: "📋" },
+  { value: 15000, suffix: "+", label: "Recetas disponibles", icon: "🍳" },
+  { value: 24, suffix: "", label: "Perfiles especializados", icon: "🎯" },
 ];
 
 const PLANS = [
-  { name: "Free", price: "0€", period: "para siempre", color: "#6b7280", highlight: false, cta: "Empezar gratis",
+  { name: "Free", price: "0€", period: "para siempre", accent: "#6b7280", highlight: false, cta: "Empezar gratis",
     features: ["Perfil nutricional básico", "5 recetas al mes", "Diario nutricional", "Lista de la compra", "Acceso a la comunidad"] },
-  { name: "Pro", price: "9,99€", period: "al mes", color: "#F97316", highlight: true, cta: "Empezar con Pro",
-    features: ["Todo lo de Free", "Menús semanales ilimitados", "IA nutricional personalizada", "Menús especializados (24 perfiles)", "Inventario del hogar", "Seguimiento avanzado", "Sin anuncios"] },
-  { name: "Pro Max", price: "19,99€", period: "al mes", color: "#7c3aed", highlight: false, cta: "Empezar con Pro Max",
-    features: ["Todo lo de Pro", "BuddyMaker: publica recetas", "BuddyExpert: consultas", "Análisis nutricional IA avanzado", "Exportar informes PDF", "Soporte prioritario 24/7"] },
+  { name: "Pro", price: "9,99€", period: "al mes", accent: "#F97316", highlight: true, cta: "Empezar con Pro",
+    features: ["Todo lo de Free", "Menús semanales ilimitados", "IA nutricional personalizada", "24 perfiles especializados", "Inventario del hogar", "Seguimiento avanzado", "Sin anuncios"] },
+  { name: "Pro Max", price: "19,99€", period: "al mes", accent: "#7c3aed", highlight: false, cta: "Empezar con Pro Max",
+    features: ["Todo lo de Pro", "BuddyMaker: publica recetas", "BuddyExpert: consultas", "Análisis IA avanzado", "Exportar informes PDF", "Soporte prioritario 24/7"] },
 ];
+
+// Animated counter hook
+function useCounter(target: number, duration = 2000, start = false) {
+  const [count, setCount] = useState(0);
+  useEffect(() => {
+    if (!start) return;
+    let startTime: number | null = null;
+    const step = (timestamp: number) => {
+      if (!startTime) startTime = timestamp;
+      const progress = Math.min((timestamp - startTime) / duration, 1);
+      const eased = 1 - Math.pow(1 - progress, 3);
+      setCount(Math.floor(eased * target));
+      if (progress < 1) requestAnimationFrame(step);
+    };
+    requestAnimationFrame(step);
+  }, [target, duration, start]);
+  return count;
+}
+
+// Intersection observer hook
+function useInView(threshold = 0.2) {
+  const ref = useRef<HTMLDivElement>(null);
+  const [inView, setInView] = useState(false);
+  useEffect(() => {
+    const obs = new IntersectionObserver(([e]) => { if (e.isIntersecting) setInView(true); }, { threshold });
+    if (ref.current) obs.observe(ref.current);
+    return () => obs.disconnect();
+  }, [threshold]);
+  return { ref, inView };
+}
+
+function StatCard({ value, suffix, label, icon, start }: { value: number; suffix: string; label: string; icon: string; start: boolean }) {
+  const count = useCounter(value, 1800, start);
+  const display = value >= 1000 ? (count >= 1000 ? `${Math.floor(count / 1000)}k` : "0") : count.toString();
+  return (
+    <div className="lp-stat-card">
+      <div className="lp-stat-icon">{icon}</div>
+      <div className="lp-stat-value">{display}{suffix}</div>
+      <div className="lp-stat-label">{label}</div>
+    </div>
+  );
+}
 
 export default function LandingPage() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
   const [activeFeature, setActiveFeature] = useState(0);
+  const [heroVisible, setHeroVisible] = useState(false);
   const loginUrl = getLoginUrl();
+
+  const statsSection = useInView(0.3);
+  const featuresSection = useInView(0.1);
+  const specialSection = useInView(0.1);
+  const pricingSection = useInView(0.1);
+  const coachSection = useInView(0.1);
+
+  useEffect(() => {
+    const t = setTimeout(() => setHeroVisible(true), 100);
+    return () => clearTimeout(t);
+  }, []);
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 40);
-    window.addEventListener("scroll", onScroll);
+    window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Close menu on resize to desktop
   useEffect(() => {
     const onResize = () => { if (window.innerWidth > 768) setMobileMenuOpen(false); };
     window.addEventListener("resize", onResize);
     return () => window.removeEventListener("resize", onResize);
   }, []);
 
+  // Auto-rotate features
+  useEffect(() => {
+    const t = setInterval(() => setActiveFeature(i => (i + 1) % FEATURES.length), 4000);
+    return () => clearInterval(t);
+  }, []);
+
   return (
-    <div className="landing-root">
+    <div style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", overflowX: "hidden" }}>
 
       {/* ═══ NAVBAR ═══════════════════════════════════════════════════════ */}
-      <nav className={`landing-nav ${scrolled || mobileMenuOpen ? "landing-nav--scrolled" : ""}`}>
-        <div className="landing-nav__bar">
-          <a href="/" className="landing-nav__logo">
-            <img src={LOGO_COLOR} alt="BuddyMarket" className="landing-logo-img" />
+      <nav style={{
+        position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
+        background: scrolled || mobileMenuOpen ? "rgba(255,255,255,0.98)" : "rgba(255,255,255,0.85)",
+        backdropFilter: "blur(20px)",
+        borderBottom: scrolled ? "1px solid #f3f4f6" : "1px solid transparent",
+        boxShadow: scrolled ? "0 4px 32px rgba(0,0,0,0.06)" : "none",
+        transition: "all 0.3s ease",
+      }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", height: 72, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
+          <a href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none", flexShrink: 0 }}>
+            <img src={LOGO_COLOR} alt="BuddyMarket" style={{ height: 52, width: "auto", objectFit: "contain" }} />
           </a>
 
           {/* Desktop links */}
-          <div className="landing-nav__links">
+          <div className="lp-desktop-nav" style={{ display: "flex", alignItems: "center", gap: 4 }}>
             {[
               { label: "Funcionalidades", href: "#features" },
               { label: "Menús Especiales", href: "#special" },
@@ -100,37 +173,43 @@ export default function LandingPage() {
               { label: "Blog", href: "/blog" },
               { label: "BuddyCoach ↗", href: "https://buddycoach.io" },
             ].map(item => (
-              <a key={item.label} href={item.href} className="landing-nav__link">{item.label}</a>
+              <a key={item.label} href={item.href}
+                style={{ fontSize: 14, fontWeight: 600, color: "#374151", textDecoration: "none", padding: "8px 14px", borderRadius: 10, transition: "all 0.2s" }}
+                onMouseEnter={e => { (e.target as HTMLElement).style.color = "#F97316"; (e.target as HTMLElement).style.background = "#fff7ed"; }}
+                onMouseLeave={e => { (e.target as HTMLElement).style.color = "#374151"; (e.target as HTMLElement).style.background = "transparent"; }}>
+                {item.label}
+              </a>
             ))}
           </div>
 
           {/* Desktop CTAs */}
-          <div className="landing-nav__ctas">
-            <a href={loginUrl} className="landing-btn-outline-sm">Iniciar sesión</a>
-            <a href={loginUrl} className="landing-btn-primary-sm">Empezar gratis</a>
+          <div className="lp-desktop-cta" style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <a href={loginUrl} style={{ fontSize: 14, fontWeight: 600, color: "#374151", textDecoration: "none", padding: "9px 18px", borderRadius: 10, border: "1.5px solid #e5e7eb", transition: "all 0.2s" }}
+              onMouseEnter={e => { (e.target as HTMLElement).style.borderColor = "#F97316"; (e.target as HTMLElement).style.color = "#F97316"; }}
+              onMouseLeave={e => { (e.target as HTMLElement).style.borderColor = "#e5e7eb"; (e.target as HTMLElement).style.color = "#374151"; }}>
+              Iniciar sesión
+            </a>
+            <a href={loginUrl} style={{ fontSize: 14, fontWeight: 700, color: "white", textDecoration: "none", padding: "10px 22px", borderRadius: 10, background: "linear-gradient(135deg,#F97316,#ea580c)", boxShadow: "0 4px 14px rgba(249,115,22,0.35)", transition: "all 0.2s" }}
+              onMouseEnter={e => { (e.target as HTMLElement).style.transform = "translateY(-1px)"; (e.target as HTMLElement).style.boxShadow = "0 8px 24px rgba(249,115,22,0.45)"; }}
+              onMouseLeave={e => { (e.target as HTMLElement).style.transform = "translateY(0)"; (e.target as HTMLElement).style.boxShadow = "0 4px 14px rgba(249,115,22,0.35)"; }}>
+              Empezar gratis
+            </a>
           </div>
 
           {/* Hamburger */}
-          <button
-            className="landing-hamburger"
+          <button className="lp-hamburger"
             onClick={() => setMobileMenuOpen(o => !o)}
-            aria-label={mobileMenuOpen ? "Cerrar menú" : "Abrir menú"}
-          >
-            {mobileMenuOpen ? (
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round">
-                <path d="M18 6L6 18M6 6l12 12"/>
-              </svg>
-            ) : (
-              <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2.5" strokeLinecap="round">
-                <path d="M4 6h16M4 12h16M4 18h16"/>
-              </svg>
-            )}
+            style={{ display: "none", alignItems: "center", justifyContent: "center", width: 44, height: 44, borderRadius: 12, border: "1.5px solid #e5e7eb", background: "white", cursor: "pointer", flexShrink: 0 }}>
+            {mobileMenuOpen
+              ? <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              : <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2.5" strokeLinecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+            }
           </button>
         </div>
 
         {/* Mobile menu */}
         {mobileMenuOpen && (
-          <div className="landing-mobile-menu">
+          <div style={{ padding: "12px 20px 20px", borderTop: "1px solid #f3f4f6", display: "flex", flexDirection: "column", gap: 4, background: "white" }}>
             {[
               { label: "Funcionalidades", href: "#features", emoji: "✨" },
               { label: "Menús Especiales", href: "#special", emoji: "🥗" },
@@ -138,139 +217,248 @@ export default function LandingPage() {
               { label: "Blog", href: "/blog", emoji: "📝" },
               { label: "BuddyCoach ↗", href: "https://buddycoach.io", emoji: "💪", external: true },
             ].map(item => (
-              <a
-                key={item.label}
-                href={item.href}
-                target={item.external ? "_blank" : undefined}
-                rel={item.external ? "noopener noreferrer" : undefined}
+              <a key={item.label} href={item.href}
+                target={(item as any).external ? "_blank" : undefined}
+                rel={(item as any).external ? "noopener noreferrer" : undefined}
                 onClick={() => setMobileMenuOpen(false)}
-                className="landing-mobile-menu__item"
-              >
-                <span className="landing-mobile-menu__emoji">{item.emoji}</span>
+                style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px", borderRadius: 12, fontSize: 16, fontWeight: 600, color: "#374151", textDecoration: "none" }}>
+                <span style={{ fontSize: 20, width: 28, textAlign: "center" }}>{item.emoji}</span>
                 <span>{item.label}</span>
               </a>
             ))}
-            <div className="landing-mobile-menu__divider" />
-            <a href={loginUrl} className="landing-mobile-menu__login">Iniciar sesión</a>
-            <a href={loginUrl} className="landing-mobile-menu__register">Empezar gratis →</a>
+            <div style={{ height: 1, background: "#f3f4f6", margin: "8px 0" }} />
+            <a href={loginUrl} style={{ display: "block", textAlign: "center", padding: "13px 20px", borderRadius: 12, fontSize: 16, fontWeight: 600, color: "#374151", textDecoration: "none", border: "1.5px solid #e5e7eb", marginBottom: 8 }}>Iniciar sesión</a>
+            <a href={loginUrl} style={{ display: "block", textAlign: "center", padding: "14px 20px", borderRadius: 12, fontSize: 16, fontWeight: 700, color: "white", textDecoration: "none", background: "linear-gradient(135deg,#F97316,#ea580c)", boxShadow: "0 4px 14px rgba(249,115,22,0.35)" }}>Empezar gratis →</a>
           </div>
         )}
       </nav>
 
       {/* ═══ HERO ═════════════════════════════════════════════════════════ */}
-      <section className="landing-hero">
-        <div className="landing-hero__inner">
-          {/* Text */}
-          <div className="landing-hero__text">
-            <div className="landing-badge">🚀 Ahora con IA Nutricional</div>
-            <h1 className="landing-h1">
+      <section style={{ paddingTop: 72, background: "linear-gradient(150deg, #fff7ed 0%, #ffffff 55%, #f0fdf4 100%)", minHeight: "100svh", display: "flex", alignItems: "center", position: "relative", overflow: "hidden" }}>
+        {/* Decorative blobs */}
+        <div style={{ position: "absolute", top: "10%", right: "-5%", width: 500, height: 500, borderRadius: "50%", background: "radial-gradient(circle, rgba(249,115,22,0.08) 0%, transparent 70%)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", bottom: "5%", left: "-8%", width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle, rgba(16,185,129,0.07) 0%, transparent 70%)", pointerEvents: "none" }} />
+
+        <div className="lp-hero-inner" style={{ maxWidth: 1200, margin: "0 auto", padding: "56px 24px", display: "flex", flexDirection: "column", gap: 48, width: "100%" }}>
+          {/* Text column */}
+          <div className="lp-hero-text" style={{ opacity: heroVisible ? 1 : 0, transform: heroVisible ? "translateY(0)" : "translateY(32px)", transition: "all 0.8s cubic-bezier(0.16,1,0.3,1)" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 16px", borderRadius: 100, background: "#fff7ed", border: "1.5px solid #fed7aa", fontSize: 13, fontWeight: 700, color: "#ea580c", marginBottom: 24 }}>
+              <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: "#F97316", animation: "lp-pulse 2s infinite" }} />
+              Ahora con IA Nutricional
+            </div>
+
+            <h1 style={{ fontSize: "clamp(40px, 8vw, 80px)", fontWeight: 900, color: "#111827", lineHeight: 1.02, letterSpacing: "-0.04em", margin: "0 0 24px" }}>
               Tu nutrición,<br />
-              <span className="landing-orange">inteligente</span><br />
+              <span style={{ color: "#F97316", position: "relative" }}>
+                inteligente
+                <svg style={{ position: "absolute", bottom: -6, left: 0, width: "100%", height: 8, overflow: "visible" }} viewBox="0 0 200 8" preserveAspectRatio="none">
+                  <path d="M0,6 Q50,0 100,5 Q150,10 200,4" stroke="#F97316" strokeWidth="3" fill="none" strokeLinecap="round" opacity="0.6"/>
+                </svg>
+              </span><br />
               y personalizada
             </h1>
-            <p className="landing-hero__desc">
+
+            <p style={{ fontSize: "clamp(16px, 2.5vw, 20px)", color: "#6b7280", lineHeight: 1.75, maxWidth: 540, marginBottom: 36 }}>
               BuddyMarket es el gestor nutricional que se adapta a ti. Menús semanales automáticos, recetas personalizadas, control de inventario y seguimiento nutricional — todo en un solo lugar.
             </p>
-            <div className="landing-hero__btns">
-              <a href={loginUrl} className="landing-btn-primary">Empezar gratis →</a>
-              <a href="#features" className="landing-btn-outline">Ver funcionalidades</a>
+
+            <div className="lp-hero-btns" style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 32 }}>
+              <a href={loginUrl} className="lp-btn-primary" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "17px 36px", borderRadius: 14, fontSize: 17, fontWeight: 800, color: "white", textDecoration: "none", background: "linear-gradient(135deg,#F97316,#ea580c)", boxShadow: "0 8px 32px rgba(249,115,22,0.4)", transition: "all 0.25s", width: "fit-content" }}>
+                Empezar gratis
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </a>
+              <a href="#features" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "16px 28px", borderRadius: 14, fontSize: 16, fontWeight: 700, color: "#374151", textDecoration: "none", border: "2px solid #e5e7eb", background: "white", transition: "all 0.2s", width: "fit-content" }}>
+                Ver funcionalidades
+              </a>
             </div>
-            <div className="landing-trust">
+
+            <div className="lp-trust-row" style={{ display: "flex", flexWrap: "wrap", gap: 16 }}>
               {["✅ Sin tarjeta de crédito", "✅ Gratis para siempre", "✅ Cancela cuando quieras"].map(t => (
-                <span key={t} className="landing-trust__item">{t}</span>
+                <span key={t} style={{ fontSize: 13, color: "#6b7280", fontWeight: 600 }}>{t}</span>
               ))}
             </div>
           </div>
 
           {/* Food grid */}
-          <div className="landing-hero__grid">
-            <div className="landing-hero__grid-tall">
-              <img src={FOOD.salmon} alt="Salmón con quinoa" className="landing-img-cover" />
-            </div>
-            <div className="landing-hero__grid-sm">
-              <img src={FOOD.ensalada} alt="Ensalada mediterránea" className="landing-img-cover" />
-            </div>
-            <div className="landing-hero__grid-sm">
-              <img src={FOOD.bowl} alt="Bowl de açaí" className="landing-img-cover" />
+          <div className="lp-hero-grid" style={{ opacity: heroVisible ? 1 : 0, transform: heroVisible ? "translateY(0)" : "translateY(48px)", transition: "all 1s cubic-bezier(0.16,1,0.3,1) 0.2s" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "200px 200px", gap: 12, borderRadius: 24, overflow: "hidden" }}>
+              <div style={{ gridRow: "1 / 3", borderRadius: 20, overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.12)" }}>
+                <img src={FOOD.salmon} alt="Salmón con quinoa" style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.6s", display: "block" }}
+                  onMouseEnter={e => (e.target as HTMLImageElement).style.transform = "scale(1.05)"}
+                  onMouseLeave={e => (e.target as HTMLImageElement).style.transform = "scale(1)"} />
+              </div>
+              <div style={{ borderRadius: 20, overflow: "hidden", boxShadow: "0 12px 40px rgba(0,0,0,0.1)" }}>
+                <img src={FOOD.ensalada} alt="Ensalada mediterránea" style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.6s", display: "block" }}
+                  onMouseEnter={e => (e.target as HTMLImageElement).style.transform = "scale(1.05)"}
+                  onMouseLeave={e => (e.target as HTMLImageElement).style.transform = "scale(1)"} />
+              </div>
+              <div style={{ borderRadius: 20, overflow: "hidden", boxShadow: "0 12px 40px rgba(0,0,0,0.1)" }}>
+                <img src={FOOD.bowl} alt="Bowl de açaí" style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.6s", display: "block" }}
+                  onMouseEnter={e => (e.target as HTMLImageElement).style.transform = "scale(1.05)"}
+                  onMouseLeave={e => (e.target as HTMLImageElement).style.transform = "scale(1)"} />
+              </div>
             </div>
           </div>
         </div>
       </section>
 
-      {/* ═══ STATS ════════════════════════════════════════════════════════ */}
-      <section className="landing-stats">
-        <div className="landing-stats__grid">
-          {[
-            { value: "50.000+", label: "Usuarios activos" },
-            { value: "200.000+", label: "Menús generados" },
-            { value: "15.000+", label: "Recetas disponibles" },
-            { value: "24", label: "Perfiles especializados" },
-          ].map(s => (
-            <div key={s.label} className="landing-stats__item">
-              <div className="landing-stats__value">{s.value}</div>
-              <div className="landing-stats__label">{s.label}</div>
+      {/* ═══ MARQUEE STRIP ════════════════════════════════════════════════ */}
+      <div style={{ background: "#F97316", padding: "14px 0", overflow: "hidden", position: "relative" }}>
+        <div style={{ display: "flex", animation: "lp-marquee 20s linear infinite", whiteSpace: "nowrap", gap: 0 }}>
+          {[...Array(3)].map((_, i) => (
+            <div key={i} style={{ display: "flex", gap: 0, flexShrink: 0 }}>
+              {["🤖 IA Nutricional", "📋 Menús Semanales", "🍳 Miles de Recetas", "🛒 Lista de Compra", "📊 Seguimiento", "🏪 Inventario", "🤰 Embarazadas", "🌱 Veganos", "🌾 Celíacos", "💉 Diabéticos", "💪 Deportistas"].map(item => (
+                <span key={item} style={{ fontSize: 14, fontWeight: 700, color: "white", padding: "0 32px", letterSpacing: "0.02em" }}>
+                  {item} <span style={{ opacity: 0.5, marginLeft: 16 }}>•</span>
+                </span>
+              ))}
             </div>
           ))}
+        </div>
+      </div>
+
+      {/* ═══ STATS ════════════════════════════════════════════════════════ */}
+      <section ref={statsSection.ref} style={{ background: "#111827", padding: "72px 24px" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+          <div className="lp-stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 24 }}>
+            {STATS.map((s, i) => (
+              <div key={i} className="lp-stat-card" style={{
+                textAlign: "center", padding: "32px 20px",
+                background: "rgba(255,255,255,0.04)", borderRadius: 20,
+                border: "1px solid rgba(255,255,255,0.08)",
+                opacity: statsSection.inView ? 1 : 0,
+                transform: statsSection.inView ? "translateY(0)" : "translateY(24px)",
+                transition: `all 0.6s cubic-bezier(0.16,1,0.3,1) ${i * 0.1}s`,
+              }}>
+                <div style={{ fontSize: 32, marginBottom: 8 }}>{s.icon}</div>
+                <div style={{ fontSize: "clamp(32px, 6vw, 52px)", fontWeight: 900, color: "#F97316", lineHeight: 1 }}>
+                  <StatCard value={s.value} suffix={s.suffix} label={s.label} icon="" start={statsSection.inView} />
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       </section>
 
       {/* ═══ FEATURES ═════════════════════════════════════════════════════ */}
-      <section id="features" className="landing-section landing-section--white">
-        <div className="landing-container">
-          <div className="landing-section__header">
-            <span className="landing-eyebrow">FUNCIONALIDADES</span>
-            <h2 className="landing-h2">Todo lo que necesitas para<br className="hidden sm:block" /> comer bien cada día</h2>
-            <p className="landing-section__sub">Una plataforma completa que combina inteligencia artificial con nutrición real para ayudarte a alcanzar tus objetivos.</p>
+      <section id="features" ref={featuresSection.ref} style={{ padding: "96px 24px", background: "#ffffff" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 56,
+            opacity: featuresSection.inView ? 1 : 0, transform: featuresSection.inView ? "translateY(0)" : "translateY(24px)",
+            transition: "all 0.7s cubic-bezier(0.16,1,0.3,1)" }}>
+            <span style={{ fontSize: 11, fontWeight: 800, color: "#F97316", letterSpacing: "0.12em", textTransform: "uppercase" }}>FUNCIONALIDADES</span>
+            <h2 style={{ fontSize: "clamp(28px, 5vw, 52px)", fontWeight: 900, color: "#111827", margin: "12px 0 16px", letterSpacing: "-0.03em", lineHeight: 1.1 }}>
+              Todo lo que necesitas<br className="lp-desktop-br" /> para comer bien cada día
+            </h2>
+            <p style={{ fontSize: "clamp(15px, 2vw, 18px)", color: "#6b7280", maxWidth: 560, margin: "0 auto", lineHeight: 1.75 }}>
+              Una plataforma completa que combina inteligencia artificial con nutrición real.
+            </p>
           </div>
 
           {/* Feature tabs */}
-          <div className="landing-tabs">
+          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 48, overflowX: "auto", scrollbarWidth: "none", paddingBottom: 4 }}>
             {FEATURES.map((f, i) => (
-              <button key={i} onClick={() => setActiveFeature(i)}
-                className={`landing-tab ${activeFeature === i ? "landing-tab--active" : ""}`}>
+              <button key={i} onClick={() => setActiveFeature(i)} style={{
+                padding: "10px 18px", borderRadius: 100, fontSize: 14, fontWeight: 700,
+                cursor: "pointer", border: "none", transition: "all 0.25s", flexShrink: 0,
+                background: activeFeature === i ? FEATURES[i].color : "#f3f4f6",
+                color: activeFeature === i ? "white" : "#374151",
+                boxShadow: activeFeature === i ? `0 4px 16px ${FEATURES[i].color}55` : "none",
+                transform: activeFeature === i ? "scale(1.05)" : "scale(1)",
+              }}>
                 {f.icon} {f.tag}
               </button>
             ))}
           </div>
 
           {/* Active feature */}
-          <div className="landing-feature">
-            <div className="landing-feature__text">
-              <div className="landing-feature__icon">{FEATURES[activeFeature].icon}</div>
-              <h3 className="landing-h3">{FEATURES[activeFeature].title}</h3>
-              <p className="landing-feature__desc">{FEATURES[activeFeature].desc}</p>
-              <a href={loginUrl} className="landing-btn-primary landing-btn-primary--sm">Probar ahora →</a>
+          <div className="lp-feature-layout" style={{ display: "flex", flexDirection: "column", gap: 40 }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontSize: 48, marginBottom: 16 }}>{FEATURES[activeFeature].icon}</div>
+              <h3 style={{ fontSize: "clamp(24px, 4vw, 36px)", fontWeight: 900, color: "#111827", margin: "0 0 16px", letterSpacing: "-0.025em", lineHeight: 1.15, whiteSpace: "pre-line" }}>
+                {FEATURES[activeFeature].title}
+              </h3>
+              <p style={{ fontSize: 16, color: "#6b7280", lineHeight: 1.8, marginBottom: 32, maxWidth: 480 }}>
+                {FEATURES[activeFeature].desc}
+              </p>
+              <a href={loginUrl} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "13px 28px", borderRadius: 12, fontSize: 15, fontWeight: 700, color: "white", textDecoration: "none", background: FEATURES[activeFeature].color, boxShadow: `0 6px 20px ${FEATURES[activeFeature].color}55`, transition: "all 0.2s" }}>
+                Probar ahora →
+              </a>
             </div>
-            <div className="landing-feature__img-wrap">
-              <img src={FEATURES[activeFeature].img} alt={FEATURES[activeFeature].title} className="landing-img-cover" />
+            <div style={{ flex: 1, borderRadius: 24, overflow: "hidden", boxShadow: "0 24px 80px rgba(0,0,0,0.12)", aspectRatio: "4/3", transition: "all 0.4s" }}>
+              <img src={FEATURES[activeFeature].img} alt={FEATURES[activeFeature].title} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "all 0.5s", display: "block" }} />
             </div>
           </div>
         </div>
       </section>
 
       {/* ═══ SPECIAL MENUS ════════════════════════════════════════════════ */}
-      <section id="special" className="landing-section landing-section--warm">
-        <div className="landing-container">
-          <div className="landing-section__header">
-            <span className="landing-eyebrow">MENÚS ESPECIALIZADOS</span>
-            <h2 className="landing-h2">Un menú para cada persona,<br className="hidden sm:block" /> condición y momento vital</h2>
-            <p className="landing-section__sub">Nuestra IA genera menús adaptados a más de 24 perfiles especiales, desde embarazadas hasta personas con condiciones médicas crónicas.</p>
+      <section id="special" ref={specialSection.ref} style={{ padding: "96px 24px", background: "linear-gradient(135deg, #fff7ed 0%, #fef9c3 100%)" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 52,
+            opacity: specialSection.inView ? 1 : 0, transform: specialSection.inView ? "translateY(0)" : "translateY(24px)",
+            transition: "all 0.7s cubic-bezier(0.16,1,0.3,1)" }}>
+            <span style={{ fontSize: 11, fontWeight: 800, color: "#F97316", letterSpacing: "0.12em", textTransform: "uppercase" }}>MENÚS ESPECIALIZADOS</span>
+            <h2 style={{ fontSize: "clamp(28px, 5vw, 52px)", fontWeight: 900, color: "#111827", margin: "12px 0 16px", letterSpacing: "-0.03em", lineHeight: 1.1 }}>
+              Un menú para cada persona,<br className="lp-desktop-br" /> condición y momento vital
+            </h2>
+            <p style={{ fontSize: "clamp(15px, 2vw, 18px)", color: "#6b7280", maxWidth: 560, margin: "0 auto", lineHeight: 1.75 }}>
+              Nuestra IA genera menús adaptados a más de 24 perfiles especiales.
+            </p>
           </div>
 
-          <div className="landing-special-grid">
-            {SPECIAL_MENUS.map(m => (
-              <div key={m.label} className="landing-special-card">
-                <div className="landing-special-card__emoji">{m.emoji}</div>
-                <div className="landing-special-card__label">{m.label}</div>
+          <div className="lp-special-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 40 }}>
+            {SPECIAL_MENUS.map((m, i) => (
+              <div key={m.label} style={{
+                background: m.color, borderRadius: 16, padding: "20px 12px", textAlign: "center",
+                border: "2px solid transparent", cursor: "pointer",
+                opacity: specialSection.inView ? 1 : 0,
+                transform: specialSection.inView ? "translateY(0) scale(1)" : "translateY(16px) scale(0.95)",
+                transition: `all 0.5s cubic-bezier(0.16,1,0.3,1) ${i * 0.05}s`,
+              }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px) scale(1.03)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 32px rgba(0,0,0,0.12)"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(0) scale(1)"; (e.currentTarget as HTMLElement).style.boxShadow = "none"; }}>
+                <div style={{ fontSize: 28, marginBottom: 8 }}>{m.emoji}</div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: "#374151", lineHeight: 1.3 }}>{m.label}</div>
               </div>
             ))}
           </div>
 
-          {/* Food mosaic */}
-          <div className="landing-mosaic">
+          {/* Mosaic */}
+          <div className="lp-mosaic-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8, borderRadius: 24, overflow: "hidden", boxShadow: "0 24px 80px rgba(0,0,0,0.1)" }}>
             {[FOOD.pasta, FOOD.teriyaki, FOOD.brownie, FOOD.tortilla, FOOD.acai, FOOD.buddha, FOOD.pan, FOOD.pollo].map((img, i) => (
-              <div key={i} className="landing-mosaic__cell">
-                <img src={img} alt="" className="landing-img-cover landing-mosaic__img" />
+              <div key={i} style={{ aspectRatio: "1", overflow: "hidden" }}>
+                <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", transition: "transform 0.5s" }}
+                  onMouseEnter={e => (e.target as HTMLImageElement).style.transform = "scale(1.08)"}
+                  onMouseLeave={e => (e.target as HTMLImageElement).style.transform = "scale(1)"} />
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ HOW IT WORKS ═════════════════════════════════════════════════ */}
+      <section style={{ padding: "96px 24px", background: "#111827" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 56 }}>
+            <span style={{ fontSize: 11, fontWeight: 800, color: "#F97316", letterSpacing: "0.12em", textTransform: "uppercase" }}>CÓMO FUNCIONA</span>
+            <h2 style={{ fontSize: "clamp(28px, 5vw, 52px)", fontWeight: 900, color: "white", margin: "12px 0 16px", letterSpacing: "-0.03em", lineHeight: 1.1 }}>
+              En 3 pasos, come mejor
+            </h2>
+          </div>
+          <div className="lp-steps-grid" style={{ display: "grid", gridTemplateColumns: "1fr", gap: 24 }}>
+            {[
+              { step: "01", icon: "👤", title: "Crea tu perfil", desc: "Indica tus objetivos, alergias, condiciones médicas y preferencias. La IA aprende de ti." },
+              { step: "02", icon: "🤖", title: "La IA genera tu plan", desc: "En segundos, BuddyMarket crea tu menú semanal personalizado con recetas y lista de la compra." },
+              { step: "03", icon: "🎯", title: "Sigue tu progreso", desc: "Registra tus comidas, monitoriza tus macros y alcanza tus objetivos con estadísticas en tiempo real." },
+            ].map((s, i) => (
+              <div key={i} style={{ display: "flex", gap: 20, alignItems: "flex-start", padding: "28px", background: "rgba(255,255,255,0.04)", borderRadius: 20, border: "1px solid rgba(255,255,255,0.08)" }}>
+                <div style={{ fontSize: 11, fontWeight: 900, color: "#F97316", letterSpacing: "0.06em", opacity: 0.6, minWidth: 28, paddingTop: 4 }}>{s.step}</div>
+                <div style={{ fontSize: 36 }}>{s.icon}</div>
+                <div>
+                  <div style={{ fontSize: 18, fontWeight: 800, color: "white", marginBottom: 8 }}>{s.title}</div>
+                  <div style={{ fontSize: 15, color: "#9ca3af", lineHeight: 1.7 }}>{s.desc}</div>
+                </div>
               </div>
             ))}
           </div>
@@ -278,24 +466,32 @@ export default function LandingPage() {
       </section>
 
       {/* ═══ TESTIMONIALS ═════════════════════════════════════════════════ */}
-      <section className="landing-section landing-section--white">
-        <div className="landing-container">
-          <div className="landing-section__header">
-            <span className="landing-eyebrow">TESTIMONIOS</span>
-            <h2 className="landing-h2">Lo que dicen nuestros usuarios</h2>
+      <section style={{ padding: "96px 24px", background: "#ffffff" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 52 }}>
+            <span style={{ fontSize: 11, fontWeight: 800, color: "#F97316", letterSpacing: "0.12em", textTransform: "uppercase" }}>TESTIMONIOS</span>
+            <h2 style={{ fontSize: "clamp(28px, 5vw, 52px)", fontWeight: 900, color: "#111827", margin: "12px 0", letterSpacing: "-0.03em", lineHeight: 1.1 }}>
+              Lo que dicen nuestros usuarios
+            </h2>
           </div>
-          <div className="landing-testimonials">
-            {TESTIMONIALS.map((t, i) => (
-              <div key={i} className="landing-testimonial">
-                <div className="landing-testimonial__stars">{"★★★★★"}</div>
-                <p className="landing-testimonial__text">"{t.text}"</p>
-                <div className="landing-testimonial__author">
-                  <div className="landing-testimonial__avatar">
-                    <img src={t.img} alt={t.name} className="landing-img-cover" />
+          <div className="lp-testimonials-grid" style={{ display: "grid", gridTemplateColumns: "1fr", gap: 20 }}>
+            {[
+              { text: "Desde que uso BuddyMarket he perdido 8 kg en 3 meses sin pasar hambre. Los menús son deliciosos y muy fáciles de seguir.", name: "María G.", role: "Usuaria desde 2024", img: FOOD.ensalada, rating: 5 },
+              { text: "Como celíaco, siempre fue difícil encontrar recetas variadas. BuddyMarket me genera menús sin gluten increíbles cada semana.", name: "Carlos M.", role: "Celíaco, usuario Pro", img: FOOD.pasta, rating: 5 },
+              { text: "Soy nutricionista y recomiendo BuddyMarket a mis pacientes. La precisión nutricional y la variedad de perfiles médicos es impresionante.", name: "Laura P.", role: "Nutricionista", img: FOOD.bowl, rating: 5 },
+            ].map((t, i) => (
+              <div key={i} style={{ background: "#f9fafb", borderRadius: 20, padding: "28px", border: "1px solid #f3f4f6", transition: "all 0.3s" }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 16px 48px rgba(0,0,0,0.08)"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow = "none"; }}>
+                <div style={{ color: "#F97316", fontSize: 18, letterSpacing: 3, marginBottom: 14 }}>{"★".repeat(t.rating)}</div>
+                <p style={{ fontSize: 15, color: "#374151", lineHeight: 1.75, marginBottom: 20, fontStyle: "italic" }}>"{t.text}"</p>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ width: 48, height: 48, borderRadius: "50%", overflow: "hidden", flexShrink: 0 }}>
+                    <img src={t.img} alt={t.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
                   </div>
                   <div>
-                    <div className="landing-testimonial__name">{t.name}</div>
-                    <div className="landing-testimonial__role">{t.role}</div>
+                    <div style={{ fontWeight: 700, fontSize: 14, color: "#111827" }}>{t.name}</div>
+                    <div style={{ fontSize: 13, color: "#9ca3af" }}>{t.role}</div>
                   </div>
                 </div>
               </div>
@@ -305,32 +501,55 @@ export default function LandingPage() {
       </section>
 
       {/* ═══ PRICING ══════════════════════════════════════════════════════ */}
-      <section id="pricing" className="landing-section landing-section--gray">
-        <div className="landing-container">
-          <div className="landing-section__header">
-            <span className="landing-eyebrow">PRECIOS</span>
-            <h2 className="landing-h2">Elige tu plan</h2>
-            <p className="landing-section__sub">Sin permanencia. Cancela cuando quieras.</p>
+      <section id="pricing" ref={pricingSection.ref} style={{ padding: "96px 24px", background: "#f9fafb" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 56,
+            opacity: pricingSection.inView ? 1 : 0, transform: pricingSection.inView ? "translateY(0)" : "translateY(24px)",
+            transition: "all 0.7s cubic-bezier(0.16,1,0.3,1)" }}>
+            <span style={{ fontSize: 11, fontWeight: 800, color: "#F97316", letterSpacing: "0.12em", textTransform: "uppercase" }}>PRECIOS</span>
+            <h2 style={{ fontSize: "clamp(28px, 5vw, 52px)", fontWeight: 900, color: "#111827", margin: "12px 0 16px", letterSpacing: "-0.03em" }}>
+              Elige tu plan
+            </h2>
+            <p style={{ fontSize: 17, color: "#6b7280" }}>Sin permanencia. Cancela cuando quieras.</p>
           </div>
-          <div className="landing-pricing">
+          <div className="lp-pricing-grid" style={{ display: "grid", gridTemplateColumns: "1fr", gap: 20 }}>
             {PLANS.map((plan, i) => (
-              <div key={i} className={`landing-plan ${plan.highlight ? "landing-plan--highlight" : ""}`}>
-                {plan.highlight && <div className="landing-plan__badge">MÁS POPULAR</div>}
-                <div className="landing-plan__name" style={{ color: plan.color }}>{plan.name.toUpperCase()}</div>
-                <div className="landing-plan__price">
-                  <span className="landing-plan__amount" style={{ color: plan.highlight ? "white" : "#111827" }}>{plan.price}</span>
-                  <span className="landing-plan__period">/{plan.period}</span>
+              <div key={i} style={{
+                background: plan.highlight ? "#111827" : "white",
+                borderRadius: 24, padding: "36px 28px",
+                border: `2px solid ${plan.highlight ? plan.accent : "#e5e7eb"}`,
+                position: "relative",
+                boxShadow: plan.highlight ? "0 24px 80px rgba(0,0,0,0.15)" : "0 4px 20px rgba(0,0,0,0.04)",
+                opacity: pricingSection.inView ? 1 : 0,
+                transform: pricingSection.inView ? (plan.highlight ? "scale(1.02)" : "scale(1)") : "translateY(24px)",
+                transition: `all 0.6s cubic-bezier(0.16,1,0.3,1) ${i * 0.1}s`,
+              }}>
+                {plan.highlight && (
+                  <div style={{ position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)", background: "#F97316", color: "white", fontSize: 11, fontWeight: 800, padding: "5px 20px", borderRadius: 100, letterSpacing: "0.06em", whiteSpace: "nowrap" }}>
+                    ⭐ MÁS POPULAR
+                  </div>
+                )}
+                <div style={{ fontSize: 12, fontWeight: 800, color: plan.accent, marginBottom: 10, letterSpacing: "0.08em" }}>{plan.name.toUpperCase()}</div>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 6 }}>
+                  <span style={{ fontSize: 48, fontWeight: 900, color: plan.highlight ? "white" : "#111827", lineHeight: 1 }}>{plan.price}</span>
+                  <span style={{ fontSize: 14, color: "#6b7280" }}>/{plan.period}</span>
                 </div>
-                <div className="landing-plan__divider" />
-                <ul className="landing-plan__features">
+                <div style={{ height: 1, background: plan.highlight ? "#374151" : "#f3f4f6", margin: "20px 0" }} />
+                <ul style={{ listStyle: "none", padding: 0, margin: "0 0 28px", display: "flex", flexDirection: "column", gap: 12 }}>
                   {plan.features.map((f, j) => (
-                    <li key={j} className="landing-plan__feature" style={{ color: plan.highlight ? "#d1d5db" : "#374151" }}>
-                      <span style={{ color: plan.color }}>✓</span> {f}
+                    <li key={j} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 14, color: plan.highlight ? "#d1d5db" : "#374151" }}>
+                      <span style={{ color: plan.accent, fontWeight: 800, flexShrink: 0 }}>✓</span> {f}
                     </li>
                   ))}
                 </ul>
-                <a href={loginUrl} className={`landing-plan__cta ${plan.highlight ? "landing-plan__cta--highlight" : ""}`}
-                  style={plan.highlight ? {} : { color: plan.color, borderColor: plan.color }}>
+                <a href={loginUrl} style={{
+                  display: "block", textAlign: "center", padding: "15px 20px", borderRadius: 14,
+                  fontSize: 15, fontWeight: 700, textDecoration: "none", transition: "all 0.2s",
+                  background: plan.highlight ? plan.accent : "transparent",
+                  color: plan.highlight ? "white" : plan.accent,
+                  border: `2px solid ${plan.accent}`,
+                  boxShadow: plan.highlight ? `0 8px 24px ${plan.accent}55` : "none",
+                }}>
                   {plan.cta}
                 </a>
               </div>
@@ -340,58 +559,57 @@ export default function LandingPage() {
       </section>
 
       {/* ═══ BUDDYCOACH ═══════════════════════════════════════════════════ */}
-      <section className="landing-section landing-section--dark">
-        <div className="landing-container">
-          <div className="landing-buddycoach">
-            {/* Left */}
-            <div className="landing-buddycoach__text">
-              <span className="landing-eyebrow landing-eyebrow--orange">ECOSISTEMA BUDDY</span>
-              <h2 className="landing-h2 landing-h2--white">
+      <section ref={coachSection.ref} style={{ padding: "96px 24px", background: "#0f172a" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+          <div className="lp-coach-layout" style={{ display: "flex", flexDirection: "column", gap: 48 }}>
+            <div style={{ opacity: coachSection.inView ? 1 : 0, transform: coachSection.inView ? "translateX(0)" : "translateX(-32px)", transition: "all 0.8s cubic-bezier(0.16,1,0.3,1)" }}>
+              <span style={{ fontSize: 11, fontWeight: 800, color: "#F97316", letterSpacing: "0.12em", textTransform: "uppercase" }}>ECOSISTEMA BUDDY</span>
+              <h2 style={{ fontSize: "clamp(28px, 5vw, 52px)", fontWeight: 900, color: "white", margin: "12px 0 20px", letterSpacing: "-0.03em", lineHeight: 1.1 }}>
                 ¿Eres entrenador personal?<br />
-                <span className="landing-orange">Conoce BuddyCoach</span>
+                <span style={{ color: "#F97316" }}>Conoce BuddyCoach</span>
               </h2>
-              <p className="landing-buddycoach__desc">
-                BuddyCoach.io es la plataforma hermana de BuddyMarket diseñada para entrenadores personales y coaches de fitness. Gestiona tus clientes, crea planes de entrenamiento personalizados y conecta la nutrición con el rendimiento deportivo.
+              <p style={{ fontSize: 16, color: "#94a3b8", lineHeight: 1.8, marginBottom: 28, maxWidth: 520 }}>
+                BuddyCoach.io es la plataforma hermana diseñada para entrenadores personales y coaches de fitness. Gestiona tus clientes, crea planes de entrenamiento con IA y conecta la nutrición con el rendimiento deportivo.
               </p>
-              <div className="landing-buddycoach__list">
+              <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 36 }}>
                 {[
                   { icon: "👥", text: "Gestión completa de clientes y seguimiento de progreso" },
                   { icon: "🏋️", text: "Planes de entrenamiento personalizados con IA" },
                   { icon: "🔗", text: "Integración directa con los menús nutricionales de BuddyMarket" },
                   { icon: "📈", text: "Métricas de rendimiento, fuerza y composición corporal" },
-                  { icon: "💬", text: "Comunicación directa con tus clientes desde la plataforma" },
                 ].map((item, i) => (
-                  <div key={i} className="landing-buddycoach__list-item">
-                    <span className="landing-buddycoach__list-icon">{item.icon}</span>
-                    <span className="landing-buddycoach__list-text">{item.text}</span>
+                  <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                    <span style={{ fontSize: 18, flexShrink: 0, marginTop: 2 }}>{item.icon}</span>
+                    <span style={{ fontSize: 15, color: "#cbd5e1", lineHeight: 1.6 }}>{item.text}</span>
                   </div>
                 ))}
               </div>
-              <a href="https://buddycoach.io" target="_blank" rel="noopener noreferrer" className="landing-btn-primary">
+              <a href="https://buddycoach.io" target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "15px 32px", borderRadius: 14, fontSize: 16, fontWeight: 700, color: "white", textDecoration: "none", background: "linear-gradient(135deg,#F97316,#ea580c)", boxShadow: "0 8px 32px rgba(249,115,22,0.4)" }}>
                 Visitar BuddyCoach.io →
               </a>
             </div>
 
-            {/* Right: cards */}
-            <div className="landing-buddycoach__cards">
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, opacity: coachSection.inView ? 1 : 0, transform: coachSection.inView ? "translateX(0)" : "translateX(32px)", transition: "all 0.8s cubic-bezier(0.16,1,0.3,1) 0.2s" }}>
               {[
-                { icon: "🎯", title: "Planes a medida", desc: "Crea rutinas de entrenamiento adaptadas a cada cliente con IA" },
-                { icon: "📊", title: "Seguimiento real", desc: "Monitoriza fuerza, peso, medidas y rendimiento en tiempo real" },
-                { icon: "🥗", title: "Nutrición integrada", desc: "Conecta con BuddyMarket para planes nutricionales completos" },
-                { icon: "💰", title: "Gestión de negocio", desc: "Facturación, pagos y gestión de suscripciones de clientes" },
+                { icon: "🎯", title: "Planes a medida", desc: "Rutinas adaptadas a cada cliente con IA" },
+                { icon: "📊", title: "Seguimiento real", desc: "Fuerza, peso, medidas y rendimiento" },
+                { icon: "🥗", title: "Nutrición integrada", desc: "Conecta con BuddyMarket" },
+                { icon: "💰", title: "Gestión de negocio", desc: "Facturación y suscripciones" },
               ].map((card, i) => (
-                <div key={i} className="landing-buddycoach__card">
-                  <div className="landing-buddycoach__card-icon">{card.icon}</div>
-                  <div className="landing-buddycoach__card-title">{card.title}</div>
-                  <div className="landing-buddycoach__card-desc">{card.desc}</div>
+                <div key={i} style={{ background: "#1e293b", borderRadius: 16, padding: "22px", border: "1px solid #334155", transition: "all 0.25s", cursor: "pointer" }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "#F97316"; (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "#334155"; (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; }}>
+                  <div style={{ fontSize: 28, marginBottom: 10 }}>{card.icon}</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "white", marginBottom: 6 }}>{card.title}</div>
+                  <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.6 }}>{card.desc}</div>
                 </div>
               ))}
-              <div className="landing-buddycoach__banner">
+              <div style={{ gridColumn: "1 / -1", background: "linear-gradient(135deg,#F97316,#ea580c)", borderRadius: 16, padding: "18px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
                 <div>
-                  <div className="landing-buddycoach__banner-title">🤝 Ecosistema completo</div>
-                  <div className="landing-buddycoach__banner-sub">BuddyMarket + BuddyCoach = nutrición y entrenamiento unidos</div>
+                  <div style={{ fontSize: 14, fontWeight: 700, color: "white", marginBottom: 4 }}>🤝 Ecosistema completo</div>
+                  <div style={{ fontSize: 13, color: "rgba(255,255,255,0.85)" }}>BuddyMarket + BuddyCoach = nutrición y entrenamiento unidos</div>
                 </div>
-                <a href="https://buddycoach.io" target="_blank" rel="noopener noreferrer" className="landing-buddycoach__banner-btn">Ver más →</a>
+                <a href="https://buddycoach.io" target="_blank" rel="noopener noreferrer" style={{ padding: "9px 18px", borderRadius: 10, fontSize: 13, fontWeight: 700, color: "#F97316", background: "white", textDecoration: "none", whiteSpace: "nowrap", flexShrink: 0 }}>Ver más →</a>
               </div>
             </div>
           </div>
@@ -399,66 +617,133 @@ export default function LandingPage() {
       </section>
 
       {/* ═══ CTA FINAL ════════════════════════════════════════════════════ */}
-      <section className="landing-cta-final">
-        <div className="landing-cta-final__inner">
-          <img src={LOGO_COLOR} alt="BuddyMarket" className="landing-cta-final__logo" />
-          <h2 className="landing-cta-final__title">Empieza hoy a comer<br />de forma inteligente</h2>
-          <p className="landing-cta-final__sub">Únete a más de 50.000 personas que ya han transformado su alimentación con BuddyMarket. Gratis para siempre, sin tarjeta de crédito.</p>
-          <a href={loginUrl} className="landing-cta-final__btn">Crear cuenta gratuita →</a>
+      <section style={{ padding: "96px 24px", background: "linear-gradient(135deg, #F97316 0%, #ea580c 100%)", textAlign: "center", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", top: "20%", left: "10%", width: 300, height: 300, borderRadius: "50%", background: "rgba(255,255,255,0.06)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", bottom: "10%", right: "5%", width: 200, height: 200, borderRadius: "50%", background: "rgba(255,255,255,0.05)", pointerEvents: "none" }} />
+        <div style={{ maxWidth: 680, margin: "0 auto", position: "relative" }}>
+          <img src={LOGO_COLOR} alt="BuddyMarket" style={{ height: 72, objectFit: "contain", marginBottom: 28, filter: "brightness(0) invert(1)" }} />
+          <h2 style={{ fontSize: "clamp(28px, 6vw, 56px)", fontWeight: 900, color: "white", margin: "0 0 16px", letterSpacing: "-0.03em", lineHeight: 1.05 }}>
+            Empieza hoy a comer<br />de forma inteligente
+          </h2>
+          <p style={{ fontSize: "clamp(15px, 2vw, 19px)", color: "rgba(255,255,255,0.88)", marginBottom: 40, lineHeight: 1.75 }}>
+            Únete a más de 50.000 personas que ya han transformado su alimentación con BuddyMarket. Gratis para siempre, sin tarjeta de crédito.
+          </p>
+          <a href={loginUrl} style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "18px 48px", borderRadius: 16, fontSize: 18, fontWeight: 800, color: "#F97316", background: "white", textDecoration: "none", boxShadow: "0 16px 48px rgba(0,0,0,0.2)", transition: "all 0.25s" }}
+            onMouseEnter={e => { (e.target as HTMLElement).style.transform = "translateY(-3px)"; (e.target as HTMLElement).style.boxShadow = "0 24px 64px rgba(0,0,0,0.25)"; }}
+            onMouseLeave={e => { (e.target as HTMLElement).style.transform = "translateY(0)"; (e.target as HTMLElement).style.boxShadow = "0 16px 48px rgba(0,0,0,0.2)"; }}>
+            Crear cuenta gratuita
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+          <p style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", marginTop: 20 }}>Sin tarjeta de crédito · Gratis para siempre · Cancela cuando quieras</p>
         </div>
       </section>
 
       {/* ═══ FOOTER ═══════════════════════════════════════════════════════ */}
-      <footer className="landing-footer">
-        <div className="landing-container">
-          <div className="landing-footer__grid">
-            <div className="landing-footer__brand">
-              <img src={LOGO_COLOR} alt="BuddyMarket" className="landing-footer__logo" />
-              <p className="landing-footer__tagline">El gestor nutricional inteligente que se adapta a ti. Planifica, cocina y come bien cada día.</p>
-              <p className="landing-footer__disclaimer">⚠️ El contenido de BuddyMarket es orientativo y no sustituye el consejo de un profesional de la salud. Consulta siempre con un nutricionista o médico.</p>
+      <footer style={{ background: "#0f172a", padding: "60px 24px 32px" }}>
+        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+          <div className="lp-footer-grid" style={{ display: "grid", gridTemplateColumns: "1fr", gap: 36, marginBottom: 44 }}>
+            <div>
+              <img src={LOGO_COLOR} alt="BuddyMarket" style={{ height: 56, objectFit: "contain", marginBottom: 16, filter: "brightness(0) invert(1)" }} />
+              <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.75, maxWidth: 280, marginBottom: 12 }}>El gestor nutricional inteligente que se adapta a ti. Planifica, cocina y come bien cada día.</p>
+              <p style={{ fontSize: 12, color: "#4b5563", lineHeight: 1.6 }}>⚠️ El contenido de BuddyMarket es orientativo y no sustituye el consejo de un profesional de la salud.</p>
             </div>
 
             <div>
-              <h4 className="landing-footer__col-title">Producto</h4>
+              <h4 style={{ fontSize: 12, fontWeight: 700, color: "white", marginBottom: 16, letterSpacing: "0.08em", textTransform: "uppercase" }}>Producto</h4>
               {["Funcionalidades", "Precios", "Menús Especiales", "BuddyMakers", "BuddyExperts"].map(l => (
-                <div key={l} className="landing-footer__link-row"><a href="#" className="landing-footer__link">{l}</a></div>
+                <div key={l} style={{ marginBottom: 10 }}><a href="#" style={{ fontSize: 14, color: "#6b7280", textDecoration: "none", transition: "color 0.2s" }}
+                  onMouseEnter={e => (e.target as HTMLElement).style.color = "#F97316"}
+                  onMouseLeave={e => (e.target as HTMLElement).style.color = "#6b7280"}>{l}</a></div>
               ))}
-              <div className="landing-footer__link-row">
-                <a href="https://buddycoach.io" target="_blank" rel="noopener noreferrer" className="landing-footer__link landing-footer__link--orange">BuddyCoach.io ↗</a>
-              </div>
+              <div style={{ marginBottom: 10 }}><a href="https://buddycoach.io" target="_blank" rel="noopener noreferrer" style={{ fontSize: 14, color: "#F97316", fontWeight: 600, textDecoration: "none" }}>BuddyCoach.io ↗</a></div>
             </div>
 
             <div>
-              <h4 className="landing-footer__col-title">Recursos</h4>
+              <h4 style={{ fontSize: 12, fontWeight: 700, color: "white", marginBottom: 16, letterSpacing: "0.08em", textTransform: "uppercase" }}>Recursos</h4>
               {[{ label: "Blog", href: "/blog" }, { label: "Centro de ayuda", href: "#" }, { label: "Comunidad", href: "#" }].map(l => (
-                <div key={l.label} className="landing-footer__link-row"><a href={l.href} className="landing-footer__link">{l.label}</a></div>
+                <div key={l.label} style={{ marginBottom: 10 }}><a href={l.href} style={{ fontSize: 14, color: "#6b7280", textDecoration: "none" }}
+                  onMouseEnter={e => (e.target as HTMLElement).style.color = "#F97316"}
+                  onMouseLeave={e => (e.target as HTMLElement).style.color = "#6b7280"}>{l.label}</a></div>
               ))}
             </div>
 
             <div>
-              <h4 className="landing-footer__col-title">Legal</h4>
+              <h4 style={{ fontSize: 12, fontWeight: 700, color: "white", marginBottom: 16, letterSpacing: "0.08em", textTransform: "uppercase" }}>Legal</h4>
               {[
                 { label: "Términos y Condiciones", href: "/terms" },
                 { label: "Política de Privacidad", href: "/privacy" },
                 { label: "Política de Cookies", href: "/cookies" },
               ].map(l => (
-                <div key={l.label} className="landing-footer__link-row">
-                  <Link href={l.href} className="landing-footer__link">{l.label}</Link>
+                <div key={l.label} style={{ marginBottom: 10 }}>
+                  <Link href={l.href} style={{ fontSize: 14, color: "#6b7280", textDecoration: "none" }}>{l.label}</Link>
                 </div>
               ))}
             </div>
           </div>
 
-          <div className="landing-footer__bottom">
-            <p className="landing-footer__copy">© 2025 BuddyMarket. Todos los derechos reservados.</p>
-            <div className="landing-footer__socials">
+          <div style={{ borderTop: "1px solid #1e293b", paddingTop: 28, display: "flex", flexDirection: "column", gap: 12 }}>
+            <p style={{ fontSize: 13, color: "#4b5563" }}>© 2025 BuddyMarket. Todos los derechos reservados.</p>
+            <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
               {["Twitter/X", "Instagram", "LinkedIn"].map(s => (
-                <a key={s} href="#" className="landing-footer__social">{s}</a>
+                <a key={s} href="#" style={{ fontSize: 13, color: "#4b5563", textDecoration: "none" }}
+                  onMouseEnter={e => (e.target as HTMLElement).style.color = "#F97316"}
+                  onMouseLeave={e => (e.target as HTMLElement).style.color = "#4b5563"}>{s}</a>
               ))}
             </div>
           </div>
         </div>
       </footer>
+
+      {/* ═══ GLOBAL ANIMATIONS ════════════════════════════════════════════ */}
+      <style>{`
+        @keyframes lp-pulse {
+          0%, 100% { opacity: 1; transform: scale(1); }
+          50% { opacity: 0.6; transform: scale(0.85); }
+        }
+        @keyframes lp-marquee {
+          0% { transform: translateX(0); }
+          100% { transform: translateX(-33.333%); }
+        }
+        .lp-btn-primary:hover { transform: translateY(-2px) !important; box-shadow: 0 16px 48px rgba(249,115,22,0.5) !important; }
+        .lp-stat-card .lp-stat-icon { display: none; }
+        .lp-stat-card .lp-stat-value { font-size: clamp(32px,6vw,52px); font-weight: 900; color: #F97316; line-height: 1; }
+        .lp-stat-card .lp-stat-label { font-size: 13px; color: #9ca3af; margin-top: 8px; font-weight: 500; }
+
+        /* Responsive */
+        @media (max-width: 767px) {
+          .lp-desktop-nav, .lp-desktop-cta { display: none !important; }
+          .lp-hamburger { display: flex !important; }
+        }
+        @media (min-width: 640px) {
+          .lp-stats-grid { grid-template-columns: repeat(4, 1fr) !important; }
+          .lp-special-grid { grid-template-columns: repeat(4, 1fr) !important; }
+          .lp-mosaic-grid { grid-template-columns: repeat(4, 1fr) !important; }
+          .lp-testimonials-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .lp-pricing-grid { grid-template-columns: repeat(2, 1fr) !important; }
+          .lp-steps-grid { grid-template-columns: repeat(3, 1fr) !important; }
+          .lp-hero-btns { flex-direction: row !important; }
+          .lp-trust-row { flex-direction: row !important; }
+          .lp-footer-grid { grid-template-columns: 1fr 1fr !important; }
+        }
+        @media (min-width: 1024px) {
+          .lp-hero-inner { flex-direction: row !important; align-items: center !important; gap: 72px !important; }
+          .lp-hero-text { flex: 1; }
+          .lp-hero-grid { flex: 1; }
+          .lp-hero-grid > div { grid-template-rows: 280px 280px !important; }
+          .lp-feature-layout { flex-direction: row !important; gap: 72px !important; align-items: center !important; }
+          .lp-feature-layout > div:first-child { flex: 1; }
+          .lp-feature-layout > div:last-child { flex: 1; }
+          .lp-testimonials-grid { grid-template-columns: repeat(3, 1fr) !important; }
+          .lp-pricing-grid { grid-template-columns: repeat(3, 1fr) !important; }
+          .lp-coach-layout { flex-direction: row !important; gap: 80px !important; align-items: center !important; }
+          .lp-coach-layout > div:first-child { flex: 1; }
+          .lp-coach-layout > div:last-child { flex: 1; }
+          .lp-footer-grid { grid-template-columns: 2fr 1fr 1fr 1fr !important; }
+          .lp-special-grid { grid-template-columns: repeat(6, 1fr) !important; }
+          .lp-desktop-br { display: block; }
+          .lp-footer-grid > div:last-child, .lp-footer-grid > div:nth-child(3), .lp-footer-grid > div:nth-child(4) { display: block; }
+        }
+      `}</style>
     </div>
   );
 }
