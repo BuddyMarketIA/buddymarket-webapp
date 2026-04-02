@@ -1,5 +1,6 @@
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
+import ShareRecipeButton from "@/components/ShareRecipeButton";
 import { Link, useLocation, useParams } from "wouter";
 import { toast } from "sonner";
 import {
@@ -120,7 +121,7 @@ export default function RecipeDetail() {
       </div>
 
       {/* Action buttons */}
-      <div className="mb-6 flex gap-2">
+      <div className="mb-6 flex flex-wrap gap-2">
         <button
           onClick={() => toggleFav.mutate({ recipeId: recipe.id })}
           className="flex items-center gap-1.5 rounded-2xl border-2 border-gray-100 px-4 py-2.5 text-sm font-semibold text-gray-700 hover:border-red-200 hover:text-red-500"
@@ -128,6 +129,12 @@ export default function RecipeDetail() {
           <HeartIcon className="h-4 w-4" />
           Favorito
         </button>
+        <ShareRecipeButton
+          recipeId={recipe.id}
+          recipeName={recipe.name}
+          recipeDescription={recipe.description ?? undefined}
+          variant="full"
+        />
         {isOwner && (
           <>
             <Link

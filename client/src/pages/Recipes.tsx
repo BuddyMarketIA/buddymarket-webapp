@@ -3,6 +3,7 @@ import { trpc } from "@/lib/trpc";
 import { Link } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
+import ShareRecipeButton from "@/components/ShareRecipeButton";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Recipe = {
@@ -207,6 +208,18 @@ function RecipeCard({ recipe, searchQuery, isFav, onToggleFav }: { recipe: Recip
           {onToggleFav !== undefined && (
             <HeartButton isFav={!!isFav} onToggle={onToggleFav} />
           )}
+          {/* Share button — always visible, top-right corner */}
+          <div
+            style={{ position: "absolute", top: "10px", right: onToggleFav !== undefined ? "46px" : "10px" }}
+            onClick={e => e.preventDefault()}
+          >
+            <ShareRecipeButton
+              recipeId={recipe.id}
+              recipeName={recipe.name}
+              recipeDescription={recipe.description ?? undefined}
+              variant="icon"
+            />
+          </div>
           {/* Cooking method badge — shift left when no heart button */}
           {methodBadge && methodBadge.value && onToggleFav === undefined && (
             <div style={{ position: "absolute", top: "10px", right: "10px", background: "rgba(249,115,22,0.85)", backdropFilter: "blur(4px)", borderRadius: "10px", padding: "4px 8px" }}>

@@ -116,6 +116,30 @@ export default function InstallAppBanner() {
             from { transform: translateY(100%); opacity: 0; }
             to { transform: translateY(0); opacity: 1; }
           }
+          @keyframes iconFloat {
+            0%, 100% { transform: translateY(0px) rotate(0deg); }
+            25% { transform: translateY(-4px) rotate(-2deg); }
+            75% { transform: translateY(-2px) rotate(2deg); }
+          }
+          @keyframes pulseRing {
+            0% { transform: scale(1); opacity: 0.6; }
+            70% { transform: scale(1.55); opacity: 0; }
+            100% { transform: scale(1.55); opacity: 0; }
+          }
+          @keyframes pulseRing2 {
+            0% { transform: scale(1); opacity: 0.4; }
+            70% { transform: scale(1.85); opacity: 0; }
+            100% { transform: scale(1.85); opacity: 0; }
+          }
+          @keyframes shimmer {
+            0% { background-position: -200% center; }
+            100% { background-position: 200% center; }
+          }
+          @keyframes iconPop {
+            0% { transform: scale(0.5); opacity: 0; }
+            70% { transform: scale(1.1); }
+            100% { transform: scale(1); opacity: 1; }
+          }
         `}</style>
 
         <div
@@ -153,24 +177,57 @@ export default function InstallAppBanner() {
 
           {/* Header */}
           <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 16 }}>
-            <div
-              style={{
-                width: 56,
-                height: 56,
+            {/* Animated icon container */}
+            <div style={{ position: "relative", flexShrink: 0, width: 56, height: 56 }}>
+              {/* Outer pulse ring */}
+              <div style={{
+                position: "absolute",
+                inset: 0,
                 borderRadius: 16,
-                background: "linear-gradient(135deg, #F97316, #ea580c)",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                flexShrink: 0,
-                boxShadow: "0 4px 16px rgba(249,115,22,0.35)",
-              }}
-            >
-              {platform === "desktop" ? (
-                <Monitor size={28} color="white" />
-              ) : (
-                <Smartphone size={28} color="white" />
-              )}
+                background: "rgba(249,115,22,0.25)",
+                animation: "pulseRing2 2.4s ease-out infinite",
+                animationDelay: "0.3s",
+              }} />
+              {/* Inner pulse ring */}
+              <div style={{
+                position: "absolute",
+                inset: 0,
+                borderRadius: 16,
+                background: "rgba(249,115,22,0.35)",
+                animation: "pulseRing 2.4s ease-out infinite",
+              }} />
+              {/* Icon itself — floats up/down */}
+              <div
+                style={{
+                  position: "relative",
+                  width: 56,
+                  height: 56,
+                  borderRadius: 16,
+                  background: "linear-gradient(135deg, #F97316, #ea580c)",
+                  display: "flex",
+                  alignItems: "center",
+                  justifyContent: "center",
+                  boxShadow: "0 6px 20px rgba(249,115,22,0.45)",
+                  animation: "iconPop 0.5s cubic-bezier(0.16,1,0.3,1) both, iconFloat 3.5s ease-in-out 0.6s infinite",
+                  overflow: "hidden",
+                }}
+              >
+                {/* Shimmer sweep */}
+                <div style={{
+                  position: "absolute",
+                  inset: 0,
+                  background: "linear-gradient(105deg, transparent 40%, rgba(255,255,255,0.35) 50%, transparent 60%)",
+                  backgroundSize: "200% 100%",
+                  animation: "shimmer 2.8s ease-in-out 1s infinite",
+                  borderRadius: 16,
+                  pointerEvents: "none",
+                }} />
+                {platform === "desktop" ? (
+                  <Monitor size={28} color="white" />
+                ) : (
+                  <Smartphone size={28} color="white" />
+                )}
+              </div>
             </div>
             <div>
               <p style={{ margin: 0, fontWeight: 800, fontSize: 18, color: "#111827", lineHeight: 1.2 }}>

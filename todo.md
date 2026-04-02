@@ -860,3 +860,12 @@
 - [x] Detectar plataforma: Android (prompt nativo), iOS (instrucciones Añadir a pantalla inicio), Desktop (prompt nativo)
 - [x] Guardar preferencia en localStorage para no mostrar de nuevo si el usuario lo descarta
 - [x] Integrar en App.tsx para que aparezca en todas las páginas
+
+## Sprint: Compartir recetas (02/04/2026)
+- [x] Componente ShareRecipeButton con Web Share API (móvil nativo) y fallback menú desplegable
+- [x] Opciones de compartir: WhatsApp, copiar enlace, Twitter/X, Telegram
+- [x] URL pública de receta: /recipes/:id (ya existe, solo necesita ser compartible)
+- [x] Botón compartir en RecipeDetail (prominente, junto al título)
+- [x] Botón compartir en tarjetas de recetas (icono pequeño en esquina)
+- [x] Mensaje de WhatsApp preformateado con nombre, descripción y enlace de la receta
+- [x] Toast de confirmación al copiar enlace
