@@ -1,0 +1,1 @@
+ALTER TABLE `meal_reminders` MODIFY COLUMN `mealType` varchar(20) NOT NULL;

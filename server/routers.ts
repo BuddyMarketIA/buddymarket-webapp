@@ -3027,5 +3027,89 @@ Devuelve EXACTAMENTE este JSON:
         return { success: true };
       }),
   }),
+
+  // ---------------------------------------------------------------------------
+  // NOTIFICATIONS & MEAL REMINDERS
+  // ---------------------------------------------------------------------------
+  notifications: router({
+    getReminders: protectedProcedure.query(async ({ ctx }) => {
+      const { getMealReminders } = await import("./db");
+      return getMealReminders(ctx.user.id);
+    }),
+
+    upsertReminder: protectedProcedure
+      .input(z.object({
+        mealType: z.enum(["desayuno", "almuerzo", "merienda", "cena", "snack"]),
+        time: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Formato HH:MM requerido"),
+        enabled: z.boolean().default(true),
+        daysMask: z.number().int().min(0).max(127).default(127),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { upsertMealReminder } = await import("./db");
+        const result = await upsertMealReminder(
+          ctx.user.id,
+          input.mealType,
+          input.time,
+          input.enabled,
+          input.daysMask,
+        );
+        return { success: true, action: result.action };
+      }),
+
+    deleteReminder: protectedProcedure
+      .input(z.object({ mealType: z.enum(["desayuno", "almuerzo", "merienda", "cena", "snack"]) }))
+      .mutation(async ({ ctx, input }) => {
+        const { deleteMealReminder } = await import("./db");
+        await deleteMealReminder(ctx.user.id, input.mealType);
+        return { success: true };
+      }),
+
+    savePushSubscription: protectedProcedure
+      .input(z.object({
+        endpoint: z.string().url(),
+        p256dh: z.string().min(1),
+        auth: z.string().min(1),
+        userAgent: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { pushSubscriptions } = await import("../drizzle/schema");
+        const { getDb } = await import("./db");
+        const { eq, and } = await import("drizzle-orm");
+        const drizzleDb = await getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        // Upsert by endpoint (same device)
+        const existing = await drizzleDb.select({ id: pushSubscriptions.id })
+          .from(pushSubscriptions)
+          .where(and(eq(pushSubscriptions.userId, ctx.user.id), eq(pushSubscriptions.endpoint, input.endpoint)))
+          .limit(1);
+        if (existing.length > 0) {
+          await drizzleDb.update(pushSubscriptions)
+            .set({ p256dh: input.p256dh, auth: input.auth, userAgent: input.userAgent ?? null })
+            .where(eq(pushSubscriptions.id, existing[0]!.id));
+        } else {
+          await drizzleDb.insert(pushSubscriptions).values({
+            userId: ctx.user.id,
+            endpoint: input.endpoint,
+            p256dh: input.p256dh,
+            auth: input.auth,
+            userAgent: input.userAgent ?? null,
+          });
+        }
+        return { success: true };
+      }),
+
+    removePushSubscription: protectedProcedure
+      .input(z.object({ endpoint: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+        const { pushSubscriptions } = await import("../drizzle/schema");
+        const { getDb } = await import("./db");
+        const { eq, and } = await import("drizzle-orm");
+        const drizzleDb = await getDb();
+        if (!drizzleDb) return { success: true };
+        await drizzleDb.delete(pushSubscriptions)
+          .where(and(eq(pushSubscriptions.userId, ctx.user.id), eq(pushSubscriptions.endpoint, input.endpoint)));
+        return { success: true };
+      }),
+  }),
 });
 export type AppRouter = typeof appRouter;

@@ -90,6 +90,35 @@ vi.mock("./db", () => ({
   getInventoryById: vi.fn().mockResolvedValue(null),
   getUserMedicalProfile: vi.fn().mockResolvedValue(null),
   upsertUserMedicalProfile: vi.fn().mockResolvedValue({ id: 1 }),
+  // Notification helpers
+  getMealReminders: vi.fn().mockResolvedValue([]),
+  upsertMealReminder: vi.fn().mockResolvedValue({ action: "created" }),
+  deleteMealReminder: vi.fn().mockResolvedValue(undefined),
+  // getDb: used by notifications router and other inline DB calls
+  getDb: vi.fn().mockResolvedValue({
+    select: vi.fn().mockReturnValue({
+      from: vi.fn().mockReturnValue({
+        where: vi.fn().mockReturnValue({
+          limit: vi.fn().mockResolvedValue([]),
+          orderBy: vi.fn().mockResolvedValue([]),
+          then: vi.fn().mockResolvedValue([]),
+        }),
+        orderBy: vi.fn().mockResolvedValue([]),
+        then: vi.fn().mockResolvedValue([]),
+      }),
+    }),
+    insert: vi.fn().mockReturnValue({
+      values: vi.fn().mockResolvedValue({ insertId: 1 }),
+    }),
+    update: vi.fn().mockReturnValue({
+      set: vi.fn().mockReturnValue({
+        where: vi.fn().mockResolvedValue({}),
+      }),
+    }),
+    delete: vi.fn().mockReturnValue({
+      where: vi.fn().mockResolvedValue({}),
+    }),
+  }),
 }));
 
 // Mock stripe-webhook
@@ -485,5 +514,63 @@ describe("mealLogs.lookupBarcode", () => {
       // NOT_FOUND or INTERNAL_SERVER_ERROR are acceptable in test env (no network)
       expect(["NOT_FOUND", "INTERNAL_SERVER_ERROR"]).toContain(err.code);
     }
+  });
+});
+
+// ─── Notifications / Meal Reminders ──────────────────────────────────────────
+describe("notifications.getReminders", () => {
+  it("returns an array for authenticated user", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.notifications.getReminders();
+    expect(Array.isArray(result)).toBe(true);
+  });
+});
+
+describe("notifications.upsertReminder", () => {
+  it("rejects invalid time format", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    await expect(
+      caller.notifications.upsertReminder({ mealType: "desayuno", time: "25:99", enabled: true, daysMask: 127 })
+    ).rejects.toThrow();
+  });
+
+  it("rejects invalid mealType", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    await expect(
+      caller.notifications.upsertReminder({ mealType: "brunch" as any, time: "09:00", enabled: true, daysMask: 127 })
+    ).rejects.toThrow();
+  });
+
+  it("rejects daysMask out of range", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    await expect(
+      caller.notifications.upsertReminder({ mealType: "desayuno", time: "08:00", enabled: true, daysMask: 200 })
+    ).rejects.toThrow();
+  });
+
+  it("accepts valid reminder upsert", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.notifications.upsertReminder({
+      mealType: "desayuno",
+      time: "08:00",
+      enabled: true,
+      daysMask: 31, // weekdays only
+    });
+    expect(result.success).toBe(true);
+    expect(["created", "updated"]).toContain(result.action);
+  });
+});
+
+describe("notifications.deleteReminder", () => {
+  it("deletes a reminder successfully", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.notifications.deleteReminder({ mealType: "cena" });
+    expect(result.success).toBe(true);
   });
 });

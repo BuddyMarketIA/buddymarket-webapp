@@ -417,8 +417,8 @@ export default function Dashboard() {
         {[
           { href: "/shopping-lists", emoji: "🛒", label: "Lista de la compra", bg: "white", color: "#1a1a1a", shadow: "0 2px 10px rgba(0,0,0,0.07)", border: "none" },
           { href: "/buddy-experts", emoji: "🧑‍🍳", label: "Menús BuddyExperts", bg: "white", color: "#1a1a1a", shadow: "0 2px 10px rgba(0,0,0,0.07)", border: "none" },
+          { href: "/notifications", emoji: "🔔", label: "Recordatorios", bg: "linear-gradient(135deg, #FFF7ED, #FFEDD5)", color: "#F97316", shadow: "0 2px 10px rgba(249,115,22,0.12)", border: "1px solid rgba(249,115,22,0.15)" },
           { href: "/stats", emoji: "📈", label: "Estadísticas", bg: "linear-gradient(135deg, #EEF2FF, #E0E7FF)", color: "#6366F1", shadow: "0 2px 10px rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.15)" },
-          { href: "/menu-library", emoji: "📚", label: "Biblioteca Menús", bg: "linear-gradient(135deg, #FFF7ED, #FFEDD5)", color: "#F97316", shadow: "0 2px 10px rgba(249,115,22,0.12)", border: "1px solid rgba(249,115,22,0.15)" },
         ].map((item) => (
           <Link key={item.href} href={item.href}>
             <div style={{ background: item.bg, borderRadius: "18px", padding: "16px 10px", textAlign: "center", boxShadow: item.shadow, cursor: "pointer", transition: "transform 0.2s", border: item.border }}

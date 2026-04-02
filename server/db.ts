@@ -45,6 +45,7 @@ import {
   userProfiles,
   users,
   userSubscriptions,
+  mealReminders,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -1429,4 +1430,46 @@ export async function deleteUserAccount(userId: number): Promise<void> {
 
   // Finally delete the user record
   await db.delete(users).where(eq(users.id, userId));
+}
+
+// ─── Meal Reminders ───────────────────────────────────────────────────────────
+
+export async function getMealReminders(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(mealReminders).where(eq(mealReminders.userId, userId));
+}
+
+export async function upsertMealReminder(
+  userId: number,
+  mealType: string,
+  time: string,
+  enabled: boolean,
+  daysMask: number,
+): Promise<{ action: "created" | "updated" }> {
+  const db = await getDb();
+  if (!db) throw new Error("Database not available");
+  const existing = await db
+    .select({ id: mealReminders.id })
+    .from(mealReminders)
+    .where(and(eq(mealReminders.userId, userId), eq(mealReminders.mealType, mealType)))
+    .limit(1);
+  if (existing.length > 0) {
+    await db
+      .update(mealReminders)
+      .set({ time, enabled, daysMask, updatedAt: new Date() })
+      .where(and(eq(mealReminders.userId, userId), eq(mealReminders.mealType, mealType)));
+    return { action: "updated" };
+  } else {
+    await db.insert(mealReminders).values({ userId, mealType, time, enabled, daysMask });
+    return { action: "created" };
+  }
+}
+
+export async function deleteMealReminder(userId: number, mealType: string) {
+  const db = await getDb();
+  if (!db) return;
+  await db
+    .delete(mealReminders)
+    .where(and(eq(mealReminders.userId, userId), eq(mealReminders.mealType, mealType)));
 }

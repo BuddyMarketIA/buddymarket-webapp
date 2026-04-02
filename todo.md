@@ -672,3 +672,30 @@
 - [x] Sidebar sección COMPRAS: Supermercados (en lugar de Mercadona y Carrefour por separado)
 - [x] Sección NUTRICIóN: Diario Nutricional, Estadísticas, Mis Favoritas, Biblioteca de Menús
 - [x] Ruta /carrefour redirige a página unificada de Supermercados
+
+## Sprint: Sistema de Notificaciones de Comidas (02/04/2026)
+
+### Base de Datos
+- [x] Tabla `mealReminders` en drizzle/schema.ts (userId, mealType, time HH:MM, enabled, days bitmask)
+- [x] Tabla `pushSubscriptions` en BD (userId, endpoint, p256dh, auth)
+- [x] Migración con pnpm db:push
+
+### Backend (tRPC)
+- [x] `notifications.getReminders` — listar recordatorios del usuario
+- [x] `notifications.upsertReminder` — crear/actualizar recordatorio
+- [x] `notifications.deleteReminder` — eliminar recordatorio
+- [x] `notifications.savePushSubscription` — guardar suscripción push
+- [x] Helpers en db.ts: getMealReminders, upsertMealReminder, deleteMealReminder
+
+### Frontend
+- [x] Página `/notifications` con configuración de recordatorios por comida
+- [x] Toggle para activar/desactivar cada recordatorio
+- [x] Selector de hora para cada comida
+- [x] Selector de días de la semana (L M X J V S D)
+- [x] Botón "Activar notificaciones del navegador" con solicitud de permiso
+- [x] Service Worker con handlers push, notificationclick y SCHEDULE_REMINDER
+- [x] Acceso desde sidebar (sección Nutrición) y Dashboard (card acceso rápido)
+- [x] Presets rápidos (activar todas, solo laborables, todos los días)
+
+### Tests
+- [x] Tests para getReminders, upsertReminder, deleteReminder - 38/38 pasando

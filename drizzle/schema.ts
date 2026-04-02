@@ -918,3 +918,38 @@ export const recipeFavorites = mysqlTable("recipe_favorites", {
 }));
 export type RecipeFavorite = typeof recipeFavorites.$inferSelect;
 export type InsertRecipeFavorite = typeof recipeFavorites.$inferInsert;
+
+// ─── Meal Reminders ───────────────────────────────────────────────────────────
+export const mealReminders = mysqlTable("meal_reminders", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  mealType: varchar("mealType", { length: 20 }).notNull(), // desayuno | almuerzo | merienda | cena | snack
+  time: varchar("time", { length: 5 }).notNull(), // HH:MM format
+  enabled: boolean("enabled").default(true).notNull(),
+  // Days bitmask: bit 0 = Monday, bit 1 = Tuesday, ..., bit 6 = Sunday
+  // 127 = all days (1111111), 31 = weekdays (0011111), 96 = weekend (1100000)
+  daysMask: int("daysMask").default(127).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (t) => ({
+  userIdx: index("meal_reminders_user_idx").on(t.userId),
+  uniqueUserMeal: unique("meal_reminders_unique").on(t.userId, t.mealType),
+}));
+export type MealReminder = typeof mealReminders.$inferSelect;
+export type InsertMealReminder = typeof mealReminders.$inferInsert;
+
+// ─── Push Subscriptions ───────────────────────────────────────────────────────
+export const pushSubscriptions = mysqlTable("push_subscriptions", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  endpoint: text("endpoint").notNull(),
+  p256dh: text("p256dh").notNull(),
+  auth: text("auth").notNull(),
+  userAgent: text("userAgent"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (t) => ({
+  userIdx: index("push_subs_user_idx").on(t.userId),
+}));
+export type PushSubscription = typeof pushSubscriptions.$inferSelect;
+export type InsertPushSubscription = typeof pushSubscriptions.$inferInsert;

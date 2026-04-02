@@ -32,6 +32,7 @@ import BuddyMakerDashboard from "./pages/BuddyMakerDashboard";
 import Metrics from "./pages/Metrics";
 import BuddyApplication from "./pages/BuddyApplication";
 import NutritionalStats from "./pages/NutritionalStats";
+import MealNotifications from "./pages/MealNotifications";
 import EventMenuPlanner from "./pages/EventMenuPlanner";
 import SavedEvents from "./pages/SavedEvents";
 import { OnboardingModal } from "./components/OnboardingModal";
@@ -80,6 +81,7 @@ function Router() {
       <Route path="/buddy-maker-dashboard">{() => <BuddyMakerDashboard />}</Route>
       <Route path="/metrics">{() => <WithLayout component={Metrics} />}</Route>
       <Route path="/stats">{() => <WithLayout component={NutritionalStats} />}</Route>
+      <Route path="/notifications">{() => <WithLayout component={MealNotifications} />}</Route>
       <Route path="/buddy-application">{() => <WithLayout component={BuddyApplication} />}</Route>
       <Route path="/event-menu">{() => <EventMenuPlanner />}</Route>
       <Route path="/saved-events">{() => <SavedEvents />}</Route>

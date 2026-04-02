@@ -1,5 +1,5 @@
-// BuddyMarket Service Worker — v1.0
-const CACHE_NAME = 'buddymarket-v1';
+// BuddyMarket Service Worker — v2.0 (with push notifications)
+const CACHE_NAME = 'buddymarket-v2';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
@@ -63,5 +63,92 @@ self.addEventListener('fetch', (event) => {
       })
     );
     return;
+  }
+});
+
+// =============================================================================
+// PUSH NOTIFICATIONS
+// =============================================================================
+
+// Handle incoming push messages from server
+self.addEventListener('push', (event) => {
+  let data = {
+    title: 'BuddyMarket',
+    body: '¡Recuerda registrar tus comidas!',
+    icon: '/icon-192x192.png',
+    badge: '/icon-192x192.png',
+    tag: 'meal-reminder',
+    url: '/meal-log',
+  };
+  try {
+    if (event.data) {
+      const parsed = event.data.json();
+      data = { ...data, ...parsed };
+    }
+  } catch (e) {
+    if (event.data) data.body = event.data.text();
+  }
+
+  const options = {
+    body: data.body,
+    icon: data.icon || '/icon-192x192.png',
+    badge: data.badge || '/icon-192x192.png',
+    tag: data.tag || 'meal-reminder',
+    data: { url: data.url || '/meal-log' },
+    requireInteraction: false,
+    silent: false,
+    vibrate: [200, 100, 200],
+    actions: [
+      { action: 'open', title: 'Registrar ahora' },
+      { action: 'dismiss', title: 'Más tarde' },
+    ],
+  };
+
+  event.waitUntil(self.registration.showNotification(data.title, options));
+});
+
+// Handle notification click
+self.addEventListener('notificationclick', (event) => {
+  event.notification.close();
+  if (event.action === 'dismiss') return;
+
+  const targetUrl = event.notification.data?.url || '/meal-log';
+
+  event.waitUntil(
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
+      // Focus existing window if open
+      for (const client of clients) {
+        if (client.url.includes(self.location.origin) && 'focus' in client) {
+          client.focus();
+          client.navigate(targetUrl);
+          return;
+        }
+      }
+      // Otherwise open new window
+      if (self.clients.openWindow) {
+        return self.clients.openWindow(targetUrl);
+      }
+    })
+  );
+});
+
+// Handle messages from the main thread (schedule local notifications)
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SCHEDULE_REMINDER') {
+    const { title, body, delay } = event.data;
+    setTimeout(() => {
+      self.registration.showNotification(title || 'BuddyMarket', {
+        body: body || '¡Es hora de registrar tu comida!',
+        icon: '/icon-192x192.png',
+        badge: '/icon-192x192.png',
+        tag: 'local-meal-reminder',
+        data: { url: '/meal-log' },
+        vibrate: [200, 100, 200],
+        actions: [
+          { action: 'open', title: 'Registrar ahora' },
+          { action: 'dismiss', title: 'Más tarde' },
+        ],
+      });
+    }, delay || 0);
   }
 });
