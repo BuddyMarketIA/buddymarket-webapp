@@ -927,3 +927,8 @@
 ## Bug: Errores en /app/event-menu (02/04/2026)
 - [x] subscriptions.getStatus: nunca devolver undefined, siempre retornar objeto con plan free si no hay suscripción
 - [x] user_medical_profiles: sincronizar schema con BD (columnas faltantes)
+
+## Bug: Modales y perfil (02/04/2026)
+- [x] Centrar todos los modales/dialogs en pantalla (no pegados abajo en móvil)
+- [x] Hacer todos los campos del perfil opcionales (sin validaciones required)
+- [x] El porcentaje de completado del perfil no debe bloquear funciones

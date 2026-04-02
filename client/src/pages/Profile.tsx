@@ -393,6 +393,14 @@ export default function Profile() {
   }
 
   // Calculate profile completion percentage by section
+  // Medical fields are fully optional — they don't count toward required completion
+  const requiredSectionFields = {
+    personal: [name, birthYear, gender],
+    body: [height, weight, mainGoal],
+    lifestyle: [activityLevel, sleepHours],
+    culinary: [cookingLevel, dailyMeals],
+  };
+  // All section fields (for display purposes, showing how much is filled)
   const sectionFields = {
     personal: [name, birthYear, gender, description],
     body: [height, weight, mainGoal, targetWeight, weightChangeRate, motivationLevel, fitnessGoalDetail],
@@ -403,15 +411,17 @@ export default function Profile() {
   
   const sectionCompletion: Record<string, { filled: number; total: number; percent: number }> = {};
   Object.entries(sectionFields).forEach(([section, fields]) => {
-    const filled = fields.filter(f => f && f.toString().trim() !== "").length;
+    const filled = fields.filter(f => f !== null && f !== undefined && f.toString().trim() !== "").length;
     const total = fields.length;
-    sectionCompletion[section] = { filled, total, percent: Math.round((filled / total) * 100) };
+    // Medical section: always show as 100% (fully optional)
+    sectionCompletion[section] = { filled, total, percent: section === "medical" ? 100 : Math.round((filled / total) * 100) };
   });
   
-  const totalFields = Object.values(sectionFields).flat();
-  const totalFilled = totalFields.filter(f => f && f.toString().trim() !== "").length;
-  const completionPercent = Math.round((totalFilled / totalFields.length) * 100);
-  const incompleteSections = Object.entries(sectionCompletion).filter(([_, v]) => v.percent < 100).map(([k]) => TABS.find(t => t.key === k)?.label).filter(Boolean);
+  // Completion % based only on required fields
+  const requiredFields = Object.values(requiredSectionFields).flat();
+  const requiredFilled = requiredFields.filter(f => f !== null && f !== undefined && f.toString().trim() !== "").length;
+  const completionPercent = Math.round((requiredFilled / requiredFields.length) * 100);
+  const incompleteSections = Object.entries(sectionCompletion).filter(([k, v]) => k !== "medical" && v.percent < 100).map(([k]) => TABS.find(t => t.key === k)?.label).filter(Boolean);
 
   const card: React.CSSProperties = { background: "white", borderRadius: "18px", padding: "20px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", marginBottom: "16px" };
 

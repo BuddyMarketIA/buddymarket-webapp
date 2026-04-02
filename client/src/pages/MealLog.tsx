@@ -306,7 +306,7 @@ export default function MealLog() {
 
       {/* Add log modal */}
       {showAdd && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "flex-end", justifyContent: "center", background: "rgba(0,0,0,0.4)", padding: "16px" }}>
+        <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.4)", padding: "16px" }}>
           <div style={{ width: "100%", maxWidth: "480px", borderRadius: "28px", background: "white", padding: "24px", boxShadow: "0 -8px 40px rgba(0,0,0,0.2)", maxHeight: "90vh", overflowY: "auto" }}>
 
             {/* Modal header */}
