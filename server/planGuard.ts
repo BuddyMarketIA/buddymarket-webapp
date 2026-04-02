@@ -2,18 +2,37 @@
  * planGuard.ts — Server-side plan access validation helpers
  *
  * Usage inside tRPC procedures:
- *   const tier = await getUserPlanTier(ctx.user.id);
+ *   const tier = await getUserPlanTier(ctx.user.id, ctx.user.role);
  *   requirePlanFeature(tier, "canUseBuddyIA");
  */
 import { TRPCError } from "@trpc/server";
 import { getPlanTier, PLAN_LIMITS, PLAN_DISPLAY, type PlanTier, type PlanLimits } from "../shared/plans";
 import * as db from "./db";
 
-/** Get the current plan tier for a user */
-export async function getUserPlanTier(userId: number): Promise<PlanTier> {
+/**
+ * Get the current plan tier for a user.
+ * - Admins always get pro_max tier regardless of subscription.
+ * - Users with a manual plan override (set by admin) use that plan.
+ * - Otherwise, uses the active Stripe subscription.
+ */
+export async function getUserPlanTier(userId: number, userRole?: string): Promise<PlanTier> {
+  // Admins have full access to all features — no subscription needed
+  if (userRole === "admin") return "pro_max";
+
   const sub = await db.getUserSubscription(userId);
-  if (!sub || sub.status !== "active") return "free";
-  return getPlanTier(sub.plan);
+  if (!sub) return "free";
+
+  // Manual plan assigned by admin (no Stripe required)
+  if (sub.manualPlan && sub.manualPlan !== "free") {
+    return getPlanTier(sub.manualPlan);
+  }
+
+  // Stripe subscription
+  if (sub.status === "active" && sub.plan) {
+    return getPlanTier(sub.plan);
+  }
+
+  return "free";
 }
 
 /** Throw FORBIDDEN if user doesn't have the required feature */

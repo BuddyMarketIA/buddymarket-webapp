@@ -344,11 +344,14 @@ describe("mealLogs", () => {
 
 // ─── Subscriptions ───────────────────────────────────────────────────────────
 describe("subscriptions", () => {
-  it("getStatus returns null for new user", async () => {
+  it("getStatus returns free plan for new user", async () => {
     const { ctx } = createAuthContext();
     const caller = appRouter.createCaller(ctx);
     const result = await caller.subscriptions.getStatus();
-    expect(result).toBeNull();
+    // getStatus now always returns an object (never null/undefined)
+    expect(result).toBeDefined();
+    expect(result.plan).toBe("free");
+    expect(result.status).toBe("inactive");
   });
 
   it("createCheckout returns a URL", async () => {

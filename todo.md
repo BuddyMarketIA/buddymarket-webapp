@@ -917,3 +917,13 @@
 - [x] Landing page: actualizar botones CTA a /app/dashboard (si logueado) o login (si no)
 - [x] Actualizar todos los navigate() y Link to= en páginas de la app a /app/*
 - [x] Verificar que /app redirige a /app/dashboard
+
+## Bug: Admin sin plan Pro (02/04/2026)
+- [ ] planGuard: el rol admin siempre tiene acceso a todas las funciones (bypass de plan)
+- [ ] Panel admin: selector de plan para asignar Pro/Pro Max a usuarios sin Stripe
+- [ ] tRPC procedure: adminSetUserPlan(userId, plan) para asignar plan manualmente
+- [ ] BD: columna manualPlan en subscriptions o campo en users para plan asignado por admin
+
+## Bug: Errores en /app/event-menu (02/04/2026)
+- [x] subscriptions.getStatus: nunca devolver undefined, siempre retornar objeto con plan free si no hay suscripción
+- [x] user_medical_profiles: sincronizar schema con BD (columnas faltantes)

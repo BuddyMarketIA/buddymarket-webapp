@@ -170,6 +170,8 @@ export const userSubscriptions = mysqlTable("user_subscriptions", {
   currentPeriodStart: timestamp("currentPeriodStart"),
   currentPeriodEnd: timestamp("currentPeriodEnd"),
   cancelAtPeriodEnd: boolean("cancelAtPeriodEnd").default(false),
+  manualPlan: mysqlEnum("manualPlan", ["free", "basic", "premium", "pro_max"]).default("free"),
+  manualPlanNote: varchar("manualPlanNote", { length: 255 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

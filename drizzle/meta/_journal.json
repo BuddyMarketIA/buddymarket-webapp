@@ -148,6 +148,13 @@
       "when": 1775164277853,
       "tag": "0020_brown_golden_guardian",
       "breakpoints": true
+    },
+    {
+      "idx": 21,
+      "version": "5",
+      "when": 1775169088516,
+      "tag": "0021_tan_black_queen",
+      "breakpoints": true
     }
   ]
 }

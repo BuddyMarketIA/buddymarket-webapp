@@ -490,7 +490,7 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ ctx, input }) => {
-        const tier = await getUserPlanTier(ctx.user.id);
+        const tier = await getUserPlanTier(ctx.user.id, ctx.user.role);
         requirePlanFeature(tier, "canCreateRecipes");
         const { categoryIds, allergyIds, restrictionIds, ...recipeData } = input;
         const result = await db.createRecipe({ ...recipeData, userId: ctx.user.id });
@@ -768,7 +768,7 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ ctx, input }) => {
-        const tier = await getUserPlanTier(ctx.user.id);
+        const tier = await getUserPlanTier(ctx.user.id, ctx.user.role);
         requirePlanFeature(tier, "canGenerateAIMenus");
         const [profile, allergies, restrictions] = await Promise.all([
           db.getUserProfile(ctx.user.id),
@@ -1148,7 +1148,7 @@ Si no puedes detectar productos, devuelve {"products": []}. No incluyas texto ad
         })
       )
       .mutation(async ({ ctx, input }) => {
-        const tier = await getUserPlanTier(ctx.user.id);
+        const tier = await getUserPlanTier(ctx.user.id, ctx.user.role);
         requirePlanFeature(tier, "canAccessDiary");
         if (!input.recipeId && !input.customMealName?.trim()) {
           throw new TRPCError({ code: "BAD_REQUEST", message: "Debes indicar el nombre de la comida" });
@@ -1366,7 +1366,18 @@ Si no puedes detectar productos, devuelve {"products": []}. No incluyas texto ad
         });
         return { url: session.url };
       }),
-    getStatus: protectedProcedure.query(({ ctx }) => db.getUserSubscription(ctx.user.id)),
+    getStatus: protectedProcedure.query(async ({ ctx }) => {
+      // Admins always have pro_max
+      if (ctx.user.role === "admin") {
+        return { plan: "pro_max" as const, status: "active" as const, tier: "pro_max" as const };
+      }
+      const sub = await db.getUserSubscription(ctx.user.id);
+      if (!sub || sub.status !== "active") {
+        return { plan: "free" as const, status: "inactive" as const, tier: "free" as const };
+      }
+      const { getPlanTier } = await import("../shared/plans");
+      return { ...sub, tier: getPlanTier(sub.plan) };
+    }),
   }),
   // ---------------------------------------------------------------------------
   // HEALTH METRICS
@@ -2987,7 +2998,7 @@ Si no puedes detectar productos, devuelve {"products": []}. No incluyas texto ad
         })
       )
       .mutation(async ({ ctx, input }) => {
-        const tier = await getUserPlanTier(ctx.user.id);
+        const tier = await getUserPlanTier(ctx.user.id, ctx.user.role);
         requirePlanFeature(tier, "canUseBuddyIA");
         const systemPrompt = `Eres BuddyIA, el asistente nutricional inteligente de BuddyMarket. Eres un experto en nutrición, dietética y alimentación saludable. Tu objetivo es ayudar a los usuarios a:
 - Crear menús semanales personalizados
@@ -3761,7 +3772,7 @@ Devuelve EXACTAMENTE este JSON:
         allergies: z.array(z.string()).optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        const tier = await getUserPlanTier(ctx.user.id);
+        const tier = await getUserPlanTier(ctx.user.id, ctx.user.role);
         requirePlanFeature(tier, "canAccessSpecializedMenus");
         const CATEGORY_LABELS: Record<string, string> = {
           embarazada: "Embarazada",
