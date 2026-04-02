@@ -269,3 +269,24 @@
 - [x] UI: indicador de "buscando..." mientras carga
 - [x] UI: contador de resultados encontrados
 - [x] Card "Completa tu perfil": cambiar color a degradado índigo/azul
+
+## Sprint: Recetas Favoritas
+- [ ] Tabla `recipeFavorites` en drizzle/schema.ts (userId, recipeId, createdAt)
+- [ ] Helper `toggleFavorite`, `getFavorites`, `isFavorite` en server/db.ts
+- [ ] Endpoints tRPC: `recipes.toggleFavorite`, `recipes.getFavorites`, `recipes.getFavoriteIds`
+- [ ] Botón corazón en tarjeta de receta (toggle optimista, animación)
+- [ ] Página /favorites "Mis Favoritas" con grid de recetas y filtros
+- [ ] Entrada en sidebar/navegación para Mis Favoritas
+- [ ] Tests vitest para los nuevos endpoints
+- [ ] Acceso directo a buddycoach.io en sidebar (sección Comunidad Vively)
+- [ ] Banner/card de BuddyCoach en Dashboard con link a buddycoach.io
+- [ ] Ampliar perfil: campos detallados de salud, estilo de vida, preferencias culinarias y objetivos
+- [ ] Rediseñar Profile.tsx con secciones extensas y preguntas completas
+- [ ] Ampliar perfil: campos detallados de salud, estilo de vida, preferencias culinarias y objetivos
+- [ ] Redisenar Profile.tsx con secciones extensas y preguntas completas
+- [x] Ampliar perfil: 8 secciones detalladas (Personal, Cuerpo, Estilo de vida, Cocina, Salud, Alergias, Preferencias, Compras)
+- [x] Añadir birthYear y bodyFatPercentage al router updateProfile
+- [x] Card "Completa tu perfil" en color índigo/azul
+- [x] Favoritos: botón corazón en tarjetas de receta
+- [x] Página Mis Favoritas
+- [x] BuddyCoach.io shortcut en sidebar

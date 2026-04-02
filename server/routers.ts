@@ -109,6 +109,28 @@ export const appRouter = router({
           practicesSports: z.boolean().optional(),
           heightUnit: z.enum(["cm", "ft"]).optional(),
           weightUnit: z.enum(["kg", "lb"]).optional(),
+          // Extended lifestyle
+          sportsFrequency: z.enum(["never", "1_2_week", "3_4_week", "5_plus_week", "daily"]).optional(),
+          sportsTypes: z.string().optional(),
+          workType: z.enum(["sedentary_desk", "light_standing", "moderate_physical", "heavy_physical"]).optional(),
+          stressLevel: z.enum(["low", "moderate", "high", "very_high"]).optional(),
+          waterIntake: z.number().optional(),
+          alcoholConsumption: z.enum(["none", "occasional", "moderate", "frequent"]).optional(),
+          smokingStatus: z.enum(["non_smoker", "ex_smoker", "smoker"]).optional(),
+          weightChangeRate: z.number().optional(),
+          mealPrepTime: z.enum(["under_15", "15_30", "30_60", "over_60"]).optional(),
+          budgetPerWeek: z.number().optional(),
+          favoriteCuisines: z.string().optional(),
+          dislikedIngredients: z.string().optional(),
+          cookingEquipment: z.string().optional(),
+          mealsPerDayDetail: z.string().optional(),
+          snackingHabits: z.enum(["never", "rarely", "sometimes", "often"]).optional(),
+          eatOutFrequency: z.enum(["never", "1_2_month", "1_2_week", "3_plus_week"]).optional(),
+          fitnessGoalDetail: z.string().optional(),
+          motivationLevel: z.enum(["low", "medium", "high", "very_high"]).optional(),
+          previousDietExperience: z.string().optional(),
+          birthYear: z.number().optional(),
+          bodyFatPercentage: z.number().optional(),
         })
       )
       .mutation(async ({ ctx, input }) => {
@@ -150,6 +172,15 @@ export const appRouter = router({
           notifications: z.boolean().optional(),
           newsletter: z.boolean().optional(),
           acceptTerms: z.boolean().optional(),
+          preferredMealComplexity: z.enum(["simple", "moderate", "complex"]).optional(),
+          portionSize: z.enum(["small", "medium", "large"]).optional(),
+          preferSeasonalIngredients: z.boolean().optional(),
+          preferLocalProducts: z.boolean().optional(),
+          avoidProcessedFood: z.boolean().optional(),
+          interestedInMealPrep: z.boolean().optional(),
+          wantsShoppingListAutomation: z.boolean().optional(),
+          wantsCalorieTracking: z.boolean().optional(),
+          wantsMacroTracking: z.boolean().optional(),
         })
       )
       .mutation(async ({ ctx, input }) => {
@@ -314,6 +345,11 @@ export const appRouter = router({
     isFavorite: protectedProcedure
       .input(z.object({ recipeId: z.number() }))
       .query(({ ctx, input }) => db.isRecipeFavorite(ctx.user.id, input.recipeId)),
+
+    getFavoriteIds: protectedProcedure.query(async ({ ctx }) => {
+      const favs = await db.getFavoriteRecipes(ctx.user.id);
+      return favs.map((f) => f.recipe.id);
+    }),
 
     create: protectedProcedure
       .input(

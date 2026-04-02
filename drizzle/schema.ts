@@ -69,6 +69,29 @@ export const userProfiles = mysqlTable("user_profiles", {
   heightUnit: mysqlEnum("heightUnit", ["cm", "ft"]).default("cm"),
   weightUnit: mysqlEnum("weightUnit", ["kg", "lb"]).default("kg"),
   practicesSports: boolean("practicesSports").default(false),
+  // Extended lifestyle fields
+  sportsFrequency: mysqlEnum("sportsFrequency", ["never", "1_2_week", "3_4_week", "5_plus_week", "daily"]),
+  sportsTypes: text("sportsTypes"), // JSON array of sport types
+  workType: mysqlEnum("workType", ["sedentary_desk", "light_standing", "moderate_physical", "heavy_physical"]),
+  stressLevel: mysqlEnum("stressLevel", ["low", "moderate", "high", "very_high"]),
+  waterIntake: float("waterIntake"), // litres per day
+  alcoholConsumption: mysqlEnum("alcoholConsumption", ["none", "occasional", "moderate", "frequent"]),
+  smokingStatus: mysqlEnum("smokingStatus", ["non_smoker", "ex_smoker", "smoker"]),
+  // Extended nutrition goals
+  weightChangeRate: float("weightChangeRate"), // kg per week target
+  mealPrepTime: mysqlEnum("mealPrepTime", ["under_15", "15_30", "30_60", "over_60"]), // minutes
+  budgetPerWeek: float("budgetPerWeek"), // euros
+  // Culinary preferences
+  favoriteCuisines: text("favoriteCuisines"), // JSON array
+  dislikedIngredients: text("dislikedIngredients"), // JSON array
+  cookingEquipment: text("cookingEquipment"), // JSON array: airfryer, oven, etc.
+  mealsPerDayDetail: text("mealsPerDayDetail"), // JSON: which meals (breakfast, lunch, etc.)
+  snackingHabits: mysqlEnum("snackingHabits", ["never", "rarely", "sometimes", "often"]),
+  eatOutFrequency: mysqlEnum("eatOutFrequency", ["never", "1_2_month", "1_2_week", "3_plus_week"]),
+  // Body composition goals
+  fitnessGoalDetail: text("fitnessGoalDetail"),
+  motivationLevel: mysqlEnum("motivationLevel", ["low", "medium", "high", "very_high"]),
+  previousDietExperience: text("previousDietExperience"), // JSON array of past diets tried
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });
@@ -109,6 +132,16 @@ export const userPreferences = mysqlTable("user_preferences", {
   notifications: boolean("notifications").default(false),
   newsletter: boolean("newsletter").default(false),
   acceptTerms: boolean("acceptTerms").default(false),
+  // Extended preferences
+  preferredMealComplexity: mysqlEnum("preferredMealComplexity", ["simple", "moderate", "complex"]),
+  portionSize: mysqlEnum("portionSize", ["small", "medium", "large"]),
+  preferSeasonalIngredients: boolean("preferSeasonalIngredients").default(false),
+  preferLocalProducts: boolean("preferLocalProducts").default(false),
+  avoidProcessedFood: boolean("avoidProcessedFood").default(false),
+  interestedInMealPrep: boolean("interestedInMealPrep").default(false),
+  wantsShoppingListAutomation: boolean("wantsShoppingListAutomation").default(false),
+  wantsCalorieTracking: boolean("wantsCalorieTracking").default(false),
+  wantsMacroTracking: boolean("wantsMacroTracking").default(false),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

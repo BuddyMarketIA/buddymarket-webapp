@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 import { Link } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { toast } from "sonner";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Recipe = {
@@ -135,8 +136,40 @@ function HighlightText({ text, query }: { text: string; query: string }) {
   );
 }
 
+// ─── Heart Button ────────────────────────────────────────────────────────────
+function HeartButton({ isFav, onToggle }: { isFav: boolean; onToggle: () => void }) {
+  return (
+    <button
+      onClick={(e) => { e.preventDefault(); e.stopPropagation(); onToggle(); }}
+      style={{
+        position: "absolute",
+        top: "10px",
+        right: "10px",
+        width: "32px",
+        height: "32px",
+        borderRadius: "50%",
+        background: isFav ? "rgba(239,68,68,0.95)" : "rgba(255,255,255,0.88)",
+        border: "none",
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        boxShadow: "0 2px 8px rgba(0,0,0,0.2)",
+        transition: "transform 0.15s, background 0.2s",
+        zIndex: 10,
+      }}
+      onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(1.2)"; }}
+      onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = "scale(1)"; }}
+    >
+      <svg width="14" height="14" viewBox="0 0 24 24" fill={isFav ? "white" : "none"} stroke={isFav ? "white" : "#ef4444"} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z" />
+      </svg>
+    </button>
+  );
+}
+
 // ─── Recipe Card ──────────────────────────────────────────────────────────────
-function RecipeCard({ recipe, searchQuery }: { recipe: Recipe; searchQuery?: string }) {
+function RecipeCard({ recipe, searchQuery, isFav, onToggleFav }: { recipe: Recipe; searchQuery?: string; isFav?: boolean; onToggleFav?: () => void }) {
   const totalTime = (recipe.preparationTime || 0) + (recipe.cookTime || 0);
   const imgSrc = recipe.imageUrl || getPlaceholderImage(recipe.id);
   const mealTime = recipe.mealTime || "cualquiera";
@@ -170,8 +203,12 @@ function RecipeCard({ recipe, searchQuery }: { recipe: Recipe; searchQuery?: str
             <span style={{ fontSize: "11px" }}>{MEAL_TIME_EMOJI[mealTime] || "🕐"}</span>
             <span style={{ fontSize: "10px", color: "white", fontWeight: 700 }}>{MEAL_TIME_LABELS[mealTime] || mealTime}</span>
           </div>
-          {/* Cooking method badge */}
-          {methodBadge && methodBadge.value && (
+          {/* Heart button — only shown when user is logged in */}
+          {onToggleFav !== undefined && (
+            <HeartButton isFav={!!isFav} onToggle={onToggleFav} />
+          )}
+          {/* Cooking method badge — shift left when no heart button */}
+          {methodBadge && methodBadge.value && onToggleFav === undefined && (
             <div style={{ position: "absolute", top: "10px", right: "10px", background: "rgba(249,115,22,0.85)", backdropFilter: "blur(4px)", borderRadius: "10px", padding: "4px 8px" }}>
               <span style={{ fontSize: "11px" }}>{methodBadge.emoji}</span>
             </div>
@@ -307,6 +344,35 @@ export default function Recipes() {
   }), [debouncedSearch, showMyRecipes, user?.id, mealTimeFilter, cuisineFilter, cookingMethodFilter]);
 
   const { data: recipes, isLoading, isFetching } = trpc.recipes.list.useQuery(queryParams);
+
+  // Favorites
+  const utils = trpc.useUtils();
+  const { data: favoriteIds } = trpc.recipes.getFavoriteIds.useQuery(undefined, { enabled: isAuthenticated });
+  const toggleFavMutation = trpc.recipes.toggleFavorite.useMutation({
+    onMutate: async ({ recipeId }) => {
+      await utils.recipes.getFavoriteIds.cancel();
+      const prev = utils.recipes.getFavoriteIds.getData();
+      utils.recipes.getFavoriteIds.setData(undefined, (old) => {
+        if (!old) return [recipeId];
+        return old.includes(recipeId) ? old.filter(id => id !== recipeId) : [...old, recipeId];
+      });
+      return { prev };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev !== undefined) utils.recipes.getFavoriteIds.setData(undefined, ctx.prev);
+      toast.error("Error al actualizar favoritos");
+    },
+    onSettled: () => {
+      utils.recipes.getFavoriteIds.invalidate();
+      utils.recipes.favorites.invalidate();
+    },
+  });
+
+  const handleToggleFav = (recipe: Recipe) => {
+    const isFav = favoriteIds?.includes(recipe.id);
+    toggleFavMutation.mutate({ recipeId: recipe.id });
+    toast.success(isFav ? `"${recipe.name}" eliminada de favoritos` : `"${recipe.name}" añadida a favoritos ❤️`);
+  };
 
   const activeFiltersCount = [mealTimeFilter, cuisineFilter, cookingMethodFilter].filter(Boolean).length;
 
@@ -589,7 +655,13 @@ export default function Recipes() {
         ) : recipes && recipes.length > 0 ? (
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
             {(recipes as Recipe[]).map((recipe) => (
-              <RecipeCard key={recipe.id} recipe={recipe} searchQuery={debouncedSearch || undefined} />
+              <RecipeCard
+                key={recipe.id}
+                recipe={recipe}
+                searchQuery={debouncedSearch || undefined}
+                isFav={favoriteIds?.includes(recipe.id)}
+                onToggleFav={isAuthenticated ? () => handleToggleFav(recipe) : undefined}
+              />
             ))}
           </div>
         ) : (

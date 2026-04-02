@@ -61,6 +61,7 @@ const NAV_ITEMS = [
 const SIDEBAR_ITEMS = [
   { key: "dashboard", label: "Dashboard", to: "/dashboard", emoji: "🏠" },
   { key: "recipes", label: "Recetas", to: "/recipes", emoji: "📖" },
+  { key: "favorites", label: "Mis Favoritas", to: "/favorites", emoji: "❤️" },
   { key: "menus", label: "Planificador de Menús", to: "/menus", emoji: "📅" },
   { key: "shopping", label: "Lista de Compra", to: "/shopping-lists", emoji: "🛒" },
   { key: "inventory", label: "Inventario", to: "/inventory", emoji: "📦" },
@@ -73,6 +74,8 @@ const SIDEBAR_ITEMS = [
   { key: "buddy-makers", label: "BuddyMakers", to: "/buddy-makers", emoji: "👨‍🍳" },
   { key: "buddy-ia", label: "BuddyIA", to: "/buddy-ia", emoji: "🤖" },
   { key: "menu-library", label: "Biblioteca de Menús", to: "/menu-library", emoji: "📚" },
+  { key: "_divider_vively", label: "__divider__", to: "", emoji: "" },
+  { key: "buddycoach", label: "BuddyCoach ↗", to: "https://buddycoach.io", emoji: "🏃" },
 ];
 
 function matchesPath(location: string, paths: string[]) {
@@ -156,6 +159,28 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
         {/* Sidebar Nav */}
         <nav style={{ flex: 1, padding: "12px" }}>
           {SIDEBAR_ITEMS.map((item) => {
+            // Divider
+            if (item.label === "__divider__") {
+              return (
+                <div key={item.key}>
+                  <div style={{ height: "1px", background: "rgba(0,0,0,0.06)", margin: "10px 4px 6px" }} />
+                  <p style={{ margin: "0 0 4px 16px", fontSize: "10px", fontWeight: 800, color: "#9ca3af", letterSpacing: "0.08em", textTransform: "uppercase" }}>Comunidad Vively</p>
+                </div>
+              );
+            }
+            // External link
+            if (item.to.startsWith("http")) {
+              return (
+                <a key={item.key} href={item.to} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "14px", padding: "13px 16px", borderRadius: "14px", background: "linear-gradient(135deg, rgba(249,115,22,0.08), rgba(251,146,60,0.06))", cursor: "pointer", marginBottom: "2px", transition: "background 0.15s", border: "1px solid rgba(249,115,22,0.15)" }}>
+                    <span style={{ fontSize: "18px", width: "22px", textAlign: "center" }}>{item.emoji}</span>
+                    <span style={{ fontSize: "15px", fontWeight: 700, color: "#F97316" }}>{item.label}</span>
+                    <svg style={{ marginLeft: "auto" }} width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  </div>
+                </a>
+              );
+            }
+            // Internal link
             const active = location === item.to || location.startsWith(item.to + "/");
             return (
               <Link key={item.key} href={item.to}>
