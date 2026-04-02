@@ -50,6 +50,20 @@
       "when": 1775085401840,
       "tag": "0006_little_raza",
       "breakpoints": true
+    },
+    {
+      "idx": 7,
+      "version": "5",
+      "when": 1775087691865,
+      "tag": "0007_red_centennial",
+      "breakpoints": true
+    },
+    {
+      "idx": 8,
+      "version": "5",
+      "when": 1775088038823,
+      "tag": "0008_short_vindicator",
+      "breakpoints": true
     }
   ]
 }

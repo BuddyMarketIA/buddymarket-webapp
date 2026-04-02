@@ -203,3 +203,47 @@
 - [x] BuddyIA: botón "Guardar menú" que lo guarda en el planificador
 - [x] BuddyIA: botón "Crear lista de la compra" desde el menú generado
 - [x] Estilos de cocina: batch cooking, tuppers, comida rápida, trabajo, restaurante, mixto
+
+## Sprint Diario con Fotos
+- [ ] tRPC: endpoint analyzeFood para subir imagen a S3 y analizarla con IA (detectar alimentos, calorías, macros)
+- [ ] Diario: botón de cámara que abre cámara del móvil o selector de archivo
+- [ ] Diario: preview de la foto tomada antes de confirmar
+- [ ] Diario: la IA detecta automáticamente alimentos, calorías y macros de la foto
+- [ ] Diario: confirmación/edición de los alimentos detectados antes de registrar
+- [ ] Diario: registro automático de la entrada con la foto adjunta
+- [ ] Diario: mostrar miniatura de la foto en la entrada del diario
+
+## Sprint Perfil + Categorías Recetas + Fotos Diario
+- [ ] Dashboard: card de perfil incompleto con indicador de progreso (% completado) y CTA a perfil
+- [ ] Dashboard: la card desaparece cuando el perfil está 100% completo
+- [ ] Schema DB: añadir campo cookingMethod a recetas (airfryer, horno, microondas, plancha, olla, sin cocción, wok, barbacoa)
+- [ ] Schema DB: añadir campo cuisineType a recetas (mediterránea, asiática, italiana, mexicana, española, americana, árabe, japonesa)
+- [ ] Actualizar recetas seeded con cookingMethod y cuisineType
+- [ ] Página Recetas: tabs de categorías por método de cocinado (Airfryer, Horno, Microondas, Plancha, Sin cocción...)
+- [ ] Página Recetas: tabs de categorías por tipo de cocina (Mediterránea, Asiática, Italiana, Española...)
+- [ ] tRPC: endpoint mealLogs.analyzeFood (subir imagen a S3 + análisis IA con visión)
+- [ ] tRPC: mealLogs.add acepta photoUrl
+- [ ] Diario: botón de cámara/foto en el formulario de registro de comida
+- [ ] Diario: preview de la foto antes de confirmar
+- [ ] Diario: análisis automático con IA (detecta alimentos, calorías, macros)
+- [ ] Diario: confirmación/edición de alimentos detectados antes de registrar
+- [ ] Diario: miniatura de foto en cada entrada del diario
+
+## Sprint Perfil + Categorías Recetas + Fotos Diario (COMPLETADO)
+- [x] Dashboard: card de perfil incompleto con indicador de progreso (% completado) y CTA a perfil
+- [x] Dashboard: la card desaparece cuando el perfil está 100% completo
+- [x] Schema DB: añadir campo cookingMethod a recetas (airfryer, horno, microondas, plancha, olla, sin cocción, wok)
+- [x] Schema DB: añadir campo cuisineType a recetas (española, italiana, asiática, mexicana, americana, árabe, francesa, mediterránea)
+- [x] 427 recetas categorizadas con cookingMethod y cuisineType
+- [x] Página Recetas: filtros por método de cocinado (Airfryer, Horno, Plancha, Olla, Sin cocción, Microondas, Wok)
+- [x] Página Recetas: filtros por tipo de cocina (Española, Italiana, Asiática, Mexicana, Americana, Árabe, Francesa, Mediterránea)
+- [x] Página Recetas: 3 categorías de filtro (momento del día, tipo de cocina, método de cocinado)
+- [x] tRPC: endpoint mealLogs.analyzeFood (subir imagen a S3 + análisis IA con visión)
+- [x] tRPC: mealLogs.add acepta photoUrl
+- [x] Diario: botón de cámara/foto en el formulario de registro de comida
+- [x] Diario: preview de la foto antes de confirmar
+- [x] Diario: análisis automático con IA (detecta alimentos, calorías, macros)
+- [x] Diario: confirmación/edición de alimentos detectados antes de registrar
+- [x] Diario: miniatura de foto en cada entrada del diario
+- [x] TypeScript: 0 errores
+- [x] Tests: 19/19 pasando

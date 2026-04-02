@@ -6,6 +6,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { invokeLLM } from "./_core/llm";
+import { storagePut } from "./storage";
 import * as db from "./db";
 
 // =============================================================================
@@ -272,6 +273,8 @@ export const appRouter = router({
           buddyMakerId: z.number().optional(),
           isSeeded: z.boolean().optional(),
           excludeUserAllergens: z.boolean().optional(),
+          cuisineType: z.string().optional(),
+          cookingMethod: z.string().optional(),
           limit: z.number().optional(),
           offset: z.number().optional(),
         })
@@ -791,9 +794,53 @@ export const appRouter = router({
           carbohydrates: z.number().optional(),
           fats: z.number().optional(),
           notes: z.string().optional(),
+          photoUrl: z.string().optional(),
         })
       )
       .mutation(({ ctx, input }) => db.addMealLog({ ...input, userId: ctx.user.id, logDate: new Date(input.logDate) } as any)),
+
+    analyzeFood: protectedProcedure
+      .input(z.object({
+        imageBase64: z.string(),
+        mimeType: z.string().default("image/jpeg"),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        // 1. Upload image to S3
+        const imageBuffer = Buffer.from(input.imageBase64, "base64");
+        const fileKey = `meal-photos/${ctx.user.id}-${Date.now()}.jpg`;
+        const { url: photoUrl } = await storagePut(fileKey, imageBuffer, input.mimeType);
+        // 2. Analyze with vision AI
+        const response = await invokeLLM({
+          messages: [
+            {
+              role: "system",
+              content: `Eres un nutricionista experto. Analiza la imagen de comida y devuelve SOLO un JSON válido con los alimentos detectados y sus valores nutricionales estimados.`,
+            },
+            {
+              role: "user",
+              content: [
+                { type: "image_url", image_url: { url: photoUrl, detail: "high" } },
+                {
+                  type: "text",
+                  text: `Analiza esta imagen y devuelve SOLO este JSON (sin texto adicional, sin markdown):
+{"mealName":"nombre del plato","foods":[{"name":"alimento","quantity":"cantidad estimada","calories":0,"proteins":0,"carbs":0,"fats":0}],"totalCalories":0,"totalProteins":0,"totalCarbs":0,"totalFats":0,"confidence":"alta","notes":"observaciones"}`,
+                },
+              ],
+            },
+          ],
+        });
+        // 3. Parse AI response
+        let analysis: { mealName: string; foods: Array<{ name: string; quantity: string; calories: number; proteins: number; carbs: number; fats: number }>; totalCalories: number; totalProteins: number; totalCarbs: number; totalFats: number; confidence: string; notes: string };
+        try {
+          const content = response.choices[0]?.message?.content ?? "{}";
+          const jsonStr = typeof content === "string" ? content : JSON.stringify(content);
+          const cleaned = jsonStr.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
+          analysis = JSON.parse(cleaned);
+        } catch {
+          analysis = { mealName: "Comida detectada", foods: [], totalCalories: 0, totalProteins: 0, totalCarbs: 0, totalFats: 0, confidence: "baja", notes: "No se pudo analizar la imagen" };
+        }
+        return { photoUrl, analysis };
+      }),
 
     remove: protectedProcedure
       .input(z.object({ id: z.number() }))

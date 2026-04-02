@@ -343,6 +343,8 @@ export async function getRecipes(params: {
   isSeeded?: boolean;
   excludeUserAllergens?: boolean;
   currentUserId?: number;
+  cuisineType?: string;
+  cookingMethod?: string;
   limit?: number;
   offset?: number;
 }) {
@@ -364,6 +366,8 @@ export async function getRecipes(params: {
   if (params.buddyMakerId) conditions.push(eq(recipes.buddyMakerId, params.buddyMakerId));
   if (params.isSeeded !== undefined) conditions.push(eq(recipes.isSeeded, params.isSeeded));
   if (params.tag) conditions.push(like(recipes.tags, `%${params.tag}%`));
+  if (params.cuisineType) conditions.push(eq(recipes.cuisineType, params.cuisineType));
+  if (params.cookingMethod) conditions.push(eq(recipes.cookingMethod, params.cookingMethod));
 
   // Get user's allergies to filter out recipes with matching allergens
   let userAllergenNames: string[] = [];

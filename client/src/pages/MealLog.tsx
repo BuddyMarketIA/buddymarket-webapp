@@ -1,30 +1,36 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import {
-  PlusIcon,
-  ChevronLeftIcon,
-  ChevronRightIcon,
-  TrashIcon,
-} from "@heroicons/react/24/outline";
-
-const MEAL_TYPES = [
-  { key: "breakfast", label: "Desayuno", emoji: "🌅" },
-  { key: "lunch", label: "Almuerzo", emoji: "☀️" },
-  { key: "dinner", label: "Cena", emoji: "🌙" },
-  { key: "snack", label: "Snack", emoji: "🍎" },
-];
 
 export default function MealLog() {
   const [dateOffset, setDateOffset] = useState(0);
   const [showAdd, setShowAdd] = useState(false);
-  const [mealType, setMealType] = useState("lunch");
+  const [addMode, setAddMode] = useState<"manual" | "photo">("manual");
+
+  // Manual form state
   const [mealName, setMealName] = useState("");
   const [calories, setCalories] = useState("");
   const [proteins, setProteins] = useState("");
   const [carbs, setCarbs] = useState("");
   const [fats, setFats] = useState("");
-  const [servings, setServings] = useState("1");
+  const [selectedDayPart, setSelectedDayPart] = useState("1");
+
+  // Photo/AI state
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [photoBase64, setPhotoBase64] = useState<string | null>(null);
+  const [aiResult, setAiResult] = useState<{
+    mealName: string;
+    foods: Array<{ name: string; quantity: string; calories: number; proteins: number; carbs: number; fats: number }>;
+    totalCalories: number;
+    totalProteins: number;
+    totalCarbs: number;
+    totalFats: number;
+    confidence: string;
+    notes: string;
+    photoUrl: string;
+  } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const cameraInputRef = useRef<HTMLInputElement>(null);
 
   const selectedDate = useMemo(() => {
     const d = new Date();
@@ -45,14 +51,22 @@ export default function MealLog() {
       utils.mealLogs.list.invalidate({ startDate: selectedDate, endDate: selectedDate });
       utils.mealLogs.dailySummary.invalidate({ date: selectedDate });
       setShowAdd(false);
-      setMealName("");
-      setCalories("");
-      setProteins("");
-      setCarbs("");
-      setFats("");
-      toast.success("Comida registrada");
+      resetForm();
+      toast.success("Comida registrada ✓");
     },
     onError: (err) => toast.error(err.message),
+  });
+
+  const analyzeFood = trpc.mealLogs.analyzeFood.useMutation({
+    onSuccess: (data) => {
+      setAiResult({ ...data.analysis, photoUrl: data.photoUrl });
+      setMealName(data.analysis.mealName || "");
+      setCalories(String(data.analysis.totalCalories || ""));
+      setProteins(String(data.analysis.totalProteins || ""));
+      setCarbs(String(data.analysis.totalCarbs || ""));
+      setFats(String(data.analysis.totalFats || ""));
+    },
+    onError: (err) => toast.error("Error al analizar la imagen: " + err.message),
   });
 
   const removeLog = trpc.mealLogs.remove.useMutation({
@@ -62,6 +76,19 @@ export default function MealLog() {
       toast.success("Registro eliminado");
     },
   });
+
+  const resetForm = () => {
+    setMealName("");
+    setCalories("");
+    setProteins("");
+    setCarbs("");
+    setFats("");
+    setSelectedDayPart("1");
+    setPhotoPreview(null);
+    setPhotoBase64(null);
+    setAiResult(null);
+    setAddMode("manual");
+  };
 
   const isToday = dateOffset === 0;
   const dateLabel = isToday
@@ -82,99 +109,169 @@ export default function MealLog() {
     grouped[part].push(log);
   });
 
+  // Handle file selection
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 10 * 1024 * 1024) {
+      toast.error("La imagen es demasiado grande (máx 10MB)");
+      return;
+    }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result as string;
+      setPhotoPreview(dataUrl);
+      // Extract base64 without data URL prefix
+      const base64 = dataUrl.split(",")[1];
+      setPhotoBase64(base64);
+      setAiResult(null);
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleAnalyze = () => {
+    if (!photoBase64) return;
+    analyzeFood.mutate({ imageBase64: photoBase64, mimeType: "image/jpeg" });
+  };
+
+  const handleConfirmAndSave = () => {
+    const name = mealName.trim();
+    if (!name) { toast.error("El nombre es obligatorio"); return; }
+    addLog.mutate({
+      customMealName: name,
+      logDate: selectedDate,
+      dayPartId: Number(selectedDayPart) || 1,
+      servings: 1,
+      calories: calories ? Number(calories) : undefined,
+      proteins: proteins ? Number(proteins) : undefined,
+      carbohydrates: carbs ? Number(carbs) : undefined,
+      fats: fats ? Number(fats) : undefined,
+      photoUrl: aiResult?.photoUrl || undefined,
+    });
+  };
+
   return (
-    <div className="vively-page">
+    <div style={{ padding: "16px", maxWidth: "480px", margin: "0 auto", paddingBottom: "100px" }}>
+
       {/* Header */}
-      <div className="mb-5 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Diario</h1>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
+        <div>
+          <h1 style={{ margin: 0, fontSize: "22px", fontWeight: 900, color: "#1a1a1a", letterSpacing: "-0.03em" }}>Diario</h1>
+          <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#9ca3af" }}>Seguimiento nutricional</p>
+        </div>
         <button
-          onClick={() => setShowAdd(true)}
-          className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F97316] shadow-sm"
+          onClick={() => { setShowAdd(true); setAddMode("manual"); }}
+          style={{ width: "42px", height: "42px", borderRadius: "14px", background: "#F97316", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(249,115,22,0.35)" }}
         >
-          <PlusIcon className="h-5 w-5 text-white" />
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+          </svg>
         </button>
       </div>
 
       {/* Date navigation */}
-      <div className="mb-5 flex items-center justify-between">
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px", background: "white", borderRadius: "16px", padding: "12px 16px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
         <button
-          onClick={() => setDateOffset((o) => o - 1)}
-          className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200"
+          onClick={() => setDateOffset(o => o - 1)}
+          style={{ width: "32px", height: "32px", borderRadius: "10px", background: "#f3f4f6", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
         >
-          <ChevronLeftIcon className="h-4 w-4" />
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
         </button>
-        <span className="text-sm font-bold capitalize text-gray-800">{dateLabel}</span>
+        <span style={{ fontSize: "14px", fontWeight: 800, color: "#1a1a1a", textTransform: "capitalize" }}>{dateLabel}</span>
         <button
-          onClick={() => setDateOffset((o) => Math.min(0, o + 1))}
+          onClick={() => setDateOffset(o => Math.min(0, o + 1))}
           disabled={isToday}
-          className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200 disabled:opacity-30"
+          style={{ width: "32px", height: "32px", borderRadius: "10px", background: isToday ? "#f9fafb" : "#f3f4f6", border: "none", cursor: isToday ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", opacity: isToday ? 0.3 : 1 }}
         >
-          <ChevronRightIcon className="h-4 w-4" />
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg>
         </button>
       </div>
 
       {/* Calorie summary card */}
-      <div className="vively-card mb-5">
-        <div className="mb-3 flex items-center justify-between">
-          <span className="text-sm font-bold text-gray-700">Calorías del día</span>
-          <span className="text-lg font-bold text-[#F97316]">{Math.round(totalCals)} kcal</span>
+      <div style={{ background: "linear-gradient(135deg, #F97316 0%, #FB923C 60%, #FDBA74 100%)", borderRadius: "20px", padding: "18px", marginBottom: "16px", boxShadow: "0 6px 24px rgba(249,115,22,0.25)" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+          <span style={{ fontSize: "13px", fontWeight: 700, color: "rgba(255,255,255,0.85)" }}>Calorías del día</span>
+          <span style={{ fontSize: "20px", fontWeight: 900, color: "white" }}>{Math.round(totalCals)} kcal</span>
         </div>
-        <div className="macro-bar mb-1">
-          <div className="macro-bar-fill" style={{ width: `${calPct}%`, background: "#F97316" }} />
+        <div style={{ background: "rgba(255,255,255,0.25)", borderRadius: "999px", height: "8px", overflow: "hidden", marginBottom: "6px" }}>
+          <div style={{ background: "white", borderRadius: "999px", height: "100%", width: `${calPct}%`, transition: "width 0.6s ease" }} />
         </div>
-        <p className="text-right text-xs text-gray-400">Objetivo: {targetCals} kcal</p>
-
+        <p style={{ margin: 0, fontSize: "11px", color: "rgba(255,255,255,0.7)", textAlign: "right" }}>Objetivo: {targetCals} kcal</p>
         {(summary as any)?.proteins !== undefined && (
-          <div className="mt-4 grid grid-cols-3 gap-3">
-            <div className="text-center">
-              <p className="text-base font-bold text-blue-500">{Math.round((summary as any).proteins ?? 0)}g</p>
-              <p className="text-xs text-gray-400">Proteína</p>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px", marginTop: "12px" }}>
+            <div style={{ textAlign: "center", background: "rgba(255,255,255,0.15)", borderRadius: "12px", padding: "8px 4px" }}>
+              <p style={{ margin: 0, fontSize: "15px", fontWeight: 900, color: "white" }}>{Math.round((summary as any).proteins ?? 0)}g</p>
+              <p style={{ margin: "2px 0 0", fontSize: "10px", color: "rgba(255,255,255,0.75)" }}>Proteína</p>
             </div>
-            <div className="text-center">
-              <p className="text-base font-bold text-orange-500">{Math.round((summary as any).carbohydrates ?? 0)}g</p>
-              <p className="text-xs text-gray-400">Carbos</p>
+            <div style={{ textAlign: "center", background: "rgba(255,255,255,0.15)", borderRadius: "12px", padding: "8px 4px" }}>
+              <p style={{ margin: 0, fontSize: "15px", fontWeight: 900, color: "white" }}>{Math.round((summary as any).carbohydrates ?? 0)}g</p>
+              <p style={{ margin: "2px 0 0", fontSize: "10px", color: "rgba(255,255,255,0.75)" }}>Carbos</p>
             </div>
-            <div className="text-center">
-              <p className="text-base font-bold text-yellow-500">{Math.round((summary as any).fats ?? 0)}g</p>
-              <p className="text-xs text-gray-400">Grasas</p>
+            <div style={{ textAlign: "center", background: "rgba(255,255,255,0.15)", borderRadius: "12px", padding: "8px 4px" }}>
+              <p style={{ margin: 0, fontSize: "15px", fontWeight: 900, color: "white" }}>{Math.round((summary as any).fats ?? 0)}g</p>
+              <p style={{ margin: "2px 0 0", fontSize: "10px", color: "rgba(255,255,255,0.75)" }}>Grasas</p>
             </div>
           </div>
         )}
       </div>
 
+      {/* Quick add photo button */}
+      <button
+        onClick={() => { setShowAdd(true); setAddMode("photo"); }}
+        style={{ width: "100%", background: "white", border: "2px dashed #FED7AA", borderRadius: "16px", padding: "14px", marginBottom: "16px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", color: "#F97316", fontWeight: 700, fontSize: "14px", transition: "all 0.2s" }}
+        onMouseEnter={e => { e.currentTarget.style.background = "rgba(249,115,22,0.04)"; }}
+        onMouseLeave={e => { e.currentTarget.style.background = "white"; }}
+      >
+        <span style={{ fontSize: "22px" }}>📸</span>
+        <span>Fotografía tu comida → Análisis IA</span>
+      </button>
+
       {/* Meal logs by type */}
       {isLoading ? (
-        <div className="space-y-3">
-          {[1, 2, 3].map((i) => <div key={i} className="vively-card animate-pulse h-20" />)}
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+          {[1, 2, 3].map(i => <div key={i} style={{ borderRadius: "16px", background: "#f3f4f6", height: "80px" }} />)}
         </div>
       ) : Object.keys(grouped).length === 0 ? (
-        <div className="empty-state">
-          <span className="mb-4 text-5xl">📋</span>
-          <h3 className="mb-2 text-base font-bold text-gray-900">Sin registros para hoy</h3>
-          <p className="mb-6 text-sm text-gray-500">Registra tus comidas para hacer seguimiento nutricional</p>
-          <button onClick={() => setShowAdd(true)} className="btn-vively">Registrar comida</button>
+        <div style={{ background: "white", borderRadius: "20px", padding: "32px 24px", textAlign: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+          <p style={{ margin: "0 0 8px", fontSize: "36px" }}>📋</p>
+          <p style={{ margin: "0 0 4px", fontSize: "15px", fontWeight: 700, color: "#1a1a1a" }}>Sin registros para hoy</p>
+          <p style={{ margin: "0 0 16px", fontSize: "13px", color: "#9ca3af" }}>Registra tus comidas para hacer seguimiento nutricional</p>
+          <button onClick={() => { setShowAdd(true); setAddMode("manual"); }} style={{ background: "#F97316", border: "none", borderRadius: "12px", padding: "10px 20px", fontSize: "13px", fontWeight: 700, color: "white", cursor: "pointer" }}>
+            Registrar comida
+          </button>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
           {Object.entries(grouped).map(([part, partLogs]) => (
-            <div key={part} className="vively-card">
-              <h3 className="mb-2 text-sm font-semibold text-gray-700">{part}</h3>
-              <div className="space-y-1.5">
+            <div key={part} style={{ background: "white", borderRadius: "18px", padding: "14px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+              <h3 style={{ margin: "0 0 10px", fontSize: "13px", fontWeight: 800, color: "#374151" }}>{part}</h3>
+              <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                 {partLogs.map((log: any) => (
-                  <div key={log.log.id} className="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2">
-                    <div>
-                      <span className="text-sm font-medium text-gray-800">
+                  <div key={log.log.id} style={{ display: "flex", alignItems: "center", gap: "10px", background: "#f9fafb", borderRadius: "12px", padding: "10px 12px" }}>
+                    {/* Photo thumbnail if available */}
+                    {log.log.photoUrl && (
+                      <div style={{ width: "40px", height: "40px", borderRadius: "10px", overflow: "hidden", flexShrink: 0 }}>
+                        <img src={log.log.photoUrl} alt="food" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                      </div>
+                    )}
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#1a1a1a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
                         {log.recipe?.name ?? log.log.customMealName ?? "Comida"}
-                      </span>
-                      {log.log.calories && (
-                        <span className="ml-2 text-xs text-gray-400">{Math.round(log.log.calories)} kcal</span>
-                      )}
+                      </p>
+                      <div style={{ display: "flex", gap: "8px", marginTop: "2px" }}>
+                        {log.log.calories && <span style={{ fontSize: "11px", color: "#F97316", fontWeight: 700 }}>{Math.round(log.log.calories)} kcal</span>}
+                        {log.log.proteins && <span style={{ fontSize: "11px", color: "#6b7280" }}>💪 {Math.round(log.log.proteins)}g</span>}
+                      </div>
                     </div>
                     <button
                       onClick={() => removeLog.mutate({ id: log.log.id })}
-                      className="flex h-7 w-7 items-center justify-center rounded-full text-gray-300 hover:bg-red-50 hover:text-red-400"
+                      style={{ width: "30px", height: "30px", borderRadius: "8px", background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#d1d5db" }}
+                      onMouseEnter={e => { e.currentTarget.style.background = "#fee2e2"; e.currentTarget.style.color = "#ef4444"; }}
+                      onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#d1d5db"; }}
                     >
-                      <TrashIcon className="h-4 w-4" />
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                        <polyline points="3 6 5 6 21 6" /><path d="M19 6l-1 14H6L5 6" /><path d="M10 11v6" /><path d="M14 11v6" />
+                      </svg>
                     </button>
                   </div>
                 ))}
@@ -186,70 +283,197 @@ export default function MealLog() {
 
       {/* Add log modal */}
       {showAdd && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4">
-          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up">
-            <h3 className="mb-4 text-lg font-bold text-gray-900">Registrar comida</h3>
-            <div className="space-y-3">
-              <input
-                value={mealName}
-                onChange={(e) => setMealName(e.target.value)}
-                placeholder="¿Qué comiste? (ej: Ensalada de pollo)"
-                className="vively-input"
-              />
-              <select
-                value={servings}
-                onChange={(e) => setServings(e.target.value)}
-                className="vively-input"
-              >
-                {dayParts?.map((dp) => (
-                  <option key={dp.id} value={String(dp.id)}>{dp.nameEs}</option>
-                )) ?? (
-                  <>
-                    <option value="1">Desayuno</option>
-                    <option value="2">Almuerzo</option>
-                    <option value="3">Merienda</option>
-                    <option value="4">Cena</option>
-                  </>
-                )}
-              </select>
-              <div className="grid grid-cols-2 gap-2">
-                <input type="number" value={calories} onChange={(e) => setCalories(e.target.value)} placeholder="Calorías (kcal)" className="vively-input" />
-                <input type="number" value={proteins} onChange={(e) => setProteins(e.target.value)} placeholder="Proteínas (g)" className="vively-input" />
-                <input type="number" value={carbs} onChange={(e) => setCarbs(e.target.value)} placeholder="Carbohidratos (g)" className="vively-input" />
-                <input type="number" value={fats} onChange={(e) => setFats(e.target.value)} placeholder="Grasas (g)" className="vively-input" />
-              </div>
+        <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "flex-end", justifyContent: "center", background: "rgba(0,0,0,0.4)", padding: "16px" }}>
+          <div style={{ width: "100%", maxWidth: "480px", borderRadius: "28px", background: "white", padding: "24px", boxShadow: "0 -8px 40px rgba(0,0,0,0.2)", maxHeight: "90vh", overflowY: "auto" }}>
+
+            {/* Modal header */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
+              <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 900, color: "#1a1a1a" }}>Registrar comida</h3>
+              <button onClick={() => { setShowAdd(false); resetForm(); }} style={{ width: "32px", height: "32px", borderRadius: "10px", background: "#f3f4f6", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
+              </button>
             </div>
-            <div className="mt-4 flex gap-3">
-              <button onClick={() => setShowAdd(false)} className="flex-1 rounded-2xl border border-gray-200 py-3 text-sm font-semibold text-gray-600">
-                Cancelar
+
+            {/* Mode selector */}
+            <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
+              <button
+                onClick={() => setAddMode("manual")}
+                style={{ flex: 1, padding: "10px", borderRadius: "14px", border: "none", cursor: "pointer", fontSize: "13px", fontWeight: 700, background: addMode === "manual" ? "#F97316" : "#f3f4f6", color: addMode === "manual" ? "white" : "#6b7280", transition: "all 0.2s" }}
+              >
+                ✏️ Manual
               </button>
               <button
-                onClick={() => {
-                  if (!mealName.trim()) { toast.error("El nombre es obligatorio"); return; }
-                  addLog.mutate({
-                    customMealName: mealName.trim(),
-                    logDate: selectedDate,
-                    dayPartId: Number(servings) || 1,
-                    servings: 1,
-                    calories: calories ? Number(calories) : undefined,
-                    proteins: proteins ? Number(proteins) : undefined,
-                    carbohydrates: carbs ? Number(carbs) : undefined,
-                    fats: fats ? Number(fats) : undefined,
-                  });
-                }}
-                disabled={addLog.isPending}
-                className="flex-1 btn-vively"
+                onClick={() => setAddMode("photo")}
+                style={{ flex: 1, padding: "10px", borderRadius: "14px", border: "none", cursor: "pointer", fontSize: "13px", fontWeight: 700, background: addMode === "photo" ? "#F97316" : "#f3f4f6", color: addMode === "photo" ? "white" : "#6b7280", transition: "all 0.2s" }}
               >
-                Registrar
+                📸 Foto + IA
               </button>
             </div>
+
+            {/* Photo mode */}
+            {addMode === "photo" && (
+              <div style={{ marginBottom: "16px" }}>
+                {/* Hidden file inputs */}
+                <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} style={{ display: "none" }} />
+                <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" onChange={handleFileChange} style={{ display: "none" }} />
+
+                {!photoPreview ? (
+                  <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                    <button
+                      onClick={() => cameraInputRef.current?.click()}
+                      style={{ width: "100%", background: "linear-gradient(135deg, #F97316, #FB923C)", border: "none", borderRadius: "16px", padding: "16px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", color: "white", fontWeight: 700, fontSize: "15px" }}
+                    >
+                      <span style={{ fontSize: "24px" }}>📷</span>
+                      <span>Tomar foto</span>
+                    </button>
+                    <button
+                      onClick={() => fileInputRef.current?.click()}
+                      style={{ width: "100%", background: "white", border: "2px dashed #FED7AA", borderRadius: "16px", padding: "14px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", color: "#F97316", fontWeight: 700, fontSize: "14px" }}
+                    >
+                      <span style={{ fontSize: "20px" }}>🖼️</span>
+                      <span>Elegir de galería</span>
+                    </button>
+                  </div>
+                ) : (
+                  <div>
+                    {/* Photo preview */}
+                    <div style={{ position: "relative", borderRadius: "16px", overflow: "hidden", marginBottom: "12px" }}>
+                      <img src={photoPreview} alt="preview" style={{ width: "100%", height: "200px", objectFit: "cover" }} />
+                      <button
+                        onClick={() => { setPhotoPreview(null); setPhotoBase64(null); setAiResult(null); }}
+                        style={{ position: "absolute", top: "8px", right: "8px", width: "28px", height: "28px", borderRadius: "50%", background: "rgba(0,0,0,0.6)", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "white", fontSize: "14px" }}
+                      >
+                        ✕
+                      </button>
+                    </div>
+
+                    {/* Analyze button */}
+                    {!aiResult && (
+                      <button
+                        onClick={handleAnalyze}
+                        disabled={analyzeFood.isPending}
+                        style={{ width: "100%", background: analyzeFood.isPending ? "#f3f4f6" : "linear-gradient(135deg, #F97316, #FB923C)", border: "none", borderRadius: "14px", padding: "14px", cursor: analyzeFood.isPending ? "not-allowed" : "pointer", color: analyzeFood.isPending ? "#9ca3af" : "white", fontWeight: 700, fontSize: "14px", marginBottom: "12px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
+                      >
+                        {analyzeFood.isPending ? (
+                          <>
+                            <span style={{ animation: "spin 1s linear infinite", display: "inline-block" }}>⏳</span>
+                            <span>Analizando con IA...</span>
+                          </>
+                        ) : (
+                          <>
+                            <span>🤖</span>
+                            <span>Analizar con IA</span>
+                          </>
+                        )}
+                      </button>
+                    )}
+
+                    {/* AI Result */}
+                    {aiResult && (
+                      <div style={{ background: "linear-gradient(135deg, #FFF7ED, #FFEDD5)", borderRadius: "14px", padding: "14px", marginBottom: "12px", border: "1px solid #FED7AA" }}>
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "10px" }}>
+                          <span style={{ fontSize: "18px" }}>🤖</span>
+                          <p style={{ margin: 0, fontSize: "13px", fontWeight: 800, color: "#9a3412" }}>Análisis IA completado</p>
+                          <span style={{ fontSize: "11px", color: "#ea580c", background: "rgba(249,115,22,0.15)", borderRadius: "6px", padding: "2px 6px", fontWeight: 700, marginLeft: "auto" }}>
+                            Confianza: {aiResult.confidence}
+                          </span>
+                        </div>
+                        {aiResult.foods.length > 0 && (
+                          <div style={{ display: "flex", flexDirection: "column", gap: "4px", marginBottom: "8px" }}>
+                            {aiResult.foods.map((food, i) => (
+                              <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: "12px" }}>
+                                <span style={{ color: "#374151", fontWeight: 600 }}>{food.name} ({food.quantity})</span>
+                                <span style={{ color: "#F97316", fontWeight: 700 }}>{food.calories} kcal</span>
+                              </div>
+                            ))}
+                          </div>
+                        )}
+                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "6px", marginTop: "8px" }}>
+                          <div style={{ textAlign: "center", background: "white", borderRadius: "8px", padding: "6px" }}>
+                            <p style={{ margin: 0, fontSize: "13px", fontWeight: 900, color: "#F97316" }}>{aiResult.totalCalories}</p>
+                            <p style={{ margin: 0, fontSize: "10px", color: "#9ca3af" }}>kcal</p>
+                          </div>
+                          <div style={{ textAlign: "center", background: "white", borderRadius: "8px", padding: "6px" }}>
+                            <p style={{ margin: 0, fontSize: "13px", fontWeight: 900, color: "#3b82f6" }}>{aiResult.totalProteins}g</p>
+                            <p style={{ margin: 0, fontSize: "10px", color: "#9ca3af" }}>prot</p>
+                          </div>
+                          <div style={{ textAlign: "center", background: "white", borderRadius: "8px", padding: "6px" }}>
+                            <p style={{ margin: 0, fontSize: "13px", fontWeight: 900, color: "#f59e0b" }}>{aiResult.totalCarbs}g</p>
+                            <p style={{ margin: 0, fontSize: "10px", color: "#9ca3af" }}>carbs</p>
+                          </div>
+                          <div style={{ textAlign: "center", background: "white", borderRadius: "8px", padding: "6px" }}>
+                            <p style={{ margin: 0, fontSize: "13px", fontWeight: 900, color: "#eab308" }}>{aiResult.totalFats}g</p>
+                            <p style={{ margin: 0, fontSize: "10px", color: "#9ca3af" }}>grasas</p>
+                          </div>
+                        </div>
+                        {aiResult.notes && <p style={{ margin: "8px 0 0", fontSize: "11px", color: "#6b7280", fontStyle: "italic" }}>{aiResult.notes}</p>}
+                      </div>
+                    )}
+                  </div>
+                )}
+              </div>
+            )}
+
+            {/* Common form fields (shown in both modes, or after AI analysis) */}
+            {(addMode === "manual" || aiResult) && (
+              <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                <input
+                  value={mealName}
+                  onChange={e => setMealName(e.target.value)}
+                  placeholder="¿Qué comiste? (ej: Ensalada de pollo)"
+                  style={{ width: "100%", padding: "12px 14px", borderRadius: "14px", border: "2px solid #f3f4f6", fontSize: "14px", outline: "none", boxSizing: "border-box", fontWeight: 600 }}
+                />
+                <select
+                  value={selectedDayPart}
+                  onChange={e => setSelectedDayPart(e.target.value)}
+                  style={{ width: "100%", padding: "12px 14px", borderRadius: "14px", border: "2px solid #f3f4f6", fontSize: "14px", outline: "none", background: "white", boxSizing: "border-box" }}
+                >
+                  {dayParts?.map(dp => (
+                    <option key={dp.id} value={String(dp.id)}>{dp.nameEs}</option>
+                  )) ?? (
+                    <>
+                      <option value="1">Desayuno</option>
+                      <option value="2">Almuerzo</option>
+                      <option value="3">Merienda</option>
+                      <option value="4">Cena</option>
+                    </>
+                  )}
+                </select>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+                  <input type="number" value={calories} onChange={e => setCalories(e.target.value)} placeholder="Calorías (kcal)" style={{ padding: "10px 12px", borderRadius: "12px", border: "2px solid #f3f4f6", fontSize: "13px", outline: "none" }} />
+                  <input type="number" value={proteins} onChange={e => setProteins(e.target.value)} placeholder="Proteínas (g)" style={{ padding: "10px 12px", borderRadius: "12px", border: "2px solid #f3f4f6", fontSize: "13px", outline: "none" }} />
+                  <input type="number" value={carbs} onChange={e => setCarbs(e.target.value)} placeholder="Carbohidratos (g)" style={{ padding: "10px 12px", borderRadius: "12px", border: "2px solid #f3f4f6", fontSize: "13px", outline: "none" }} />
+                  <input type="number" value={fats} onChange={e => setFats(e.target.value)} placeholder="Grasas (g)" style={{ padding: "10px 12px", borderRadius: "12px", border: "2px solid #f3f4f6", fontSize: "13px", outline: "none" }} />
+                </div>
+              </div>
+            )}
+
+            {/* Action buttons */}
+            {(addMode === "manual" || aiResult) && (
+              <div style={{ display: "flex", gap: "10px", marginTop: "16px" }}>
+                <button
+                  onClick={() => { setShowAdd(false); resetForm(); }}
+                  style={{ flex: 1, padding: "13px", borderRadius: "14px", border: "2px solid #f3f4f6", background: "white", fontSize: "14px", fontWeight: 700, color: "#6b7280", cursor: "pointer" }}
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handleConfirmAndSave}
+                  disabled={addLog.isPending}
+                  style={{ flex: 2, padding: "13px", borderRadius: "14px", border: "none", background: addLog.isPending ? "#f3f4f6" : "#F97316", color: addLog.isPending ? "#9ca3af" : "white", fontSize: "14px", fontWeight: 700, cursor: addLog.isPending ? "not-allowed" : "pointer", boxShadow: addLog.isPending ? "none" : "0 4px 12px rgba(249,115,22,0.35)" }}
+                >
+                  {addLog.isPending ? "Guardando..." : (aiResult ? "✓ Confirmar y guardar" : "Registrar")}
+                </button>
+              </div>
+            )}
           </div>
         </div>
       )}
 
-      <div className="vively-disclaimer">
-        <p>VIVELY no constituye recomendaciones profesionales de nutrición.</p>
-      </div>
+      {/* Disclaimer */}
+      <p style={{ fontSize: "10px", color: "#d1d5db", textAlign: "center", margin: "24px 0 0", lineHeight: 1.5 }}>
+        BuddyMarket no constituye recomendaciones profesionales de nutrición. Consulta a un dietista.
+      </p>
     </div>
   );
 }

@@ -298,6 +298,10 @@ export const recipes = mysqlTable("recipes", {
   mealTime: mysqlEnum("mealTime", ["desayuno", "media_manana", "comida", "merienda", "cena", "cualquiera"]).default("cualquiera"),
   // Category
   category: varchar("category", { length: 64 }),
+  // Cuisine type (mediterranea, asiatica, italiana, mexicana, española, americana, etc.)
+  cuisineType: varchar("cuisineType", { length: 64 }),
+  // Cooking method (airfryer, horno, microondas, sin_coccion, plancha, olla, wok, vaporizador)
+  cookingMethod: varchar("cookingMethod", { length: 64 }),
   // Allergens (JSON array of strings)
   allergens: text("allergens"), // JSON: ["gluten", "lacteos", ...]
   // Tags (JSON array of strings)
@@ -524,6 +528,7 @@ export const mealLogs = mysqlTable("meal_logs", {
   carbohydrates: float("carbohydrates"),
   fats: float("fats"),
   notes: text("notes"),
+  photoUrl: varchar("photoUrl", { length: 1024 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 }, (t) => ({

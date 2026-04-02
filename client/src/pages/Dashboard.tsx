@@ -118,6 +118,27 @@ export default function Dashboard() {
   const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : "U";
 
   const todayMenuItems: any[] = [];
+  const profileData = trpc.profile.get.useQuery();
+
+  // Calculate profile completion percentage
+  const profileCompletion = (() => {
+    if (!profileData.data) return 0;
+    const { profile, medicalProfile, allergies, dietRestrictions } = profileData.data;
+    const checks = [
+      !!profile?.age,
+      !!profile?.height,
+      !!profile?.weight,
+      !!profile?.gender,
+      !!profile?.mainGoal,
+      !!profile?.activityLevel,
+      !!profile?.dailyCalorieGoal,
+      !!profile?.dailyMeals,
+      (allergies?.length ?? 0) > 0 || (dietRestrictions?.length ?? 0) > 0,
+      !!medicalProfile,
+    ];
+    return Math.round((checks.filter(Boolean).length / checks.length) * 100);
+  })();
+  const showProfileCard = profileCompletion < 100 && !profileData.isLoading;
 
   return (
     <div style={{ padding: "16px", paddingBottom: "8px" }}>
@@ -139,6 +160,27 @@ export default function Dashboard() {
           </p>
         </div>
       </div>
+
+      {/* Profile Completion Card */}
+      {showProfileCard && (
+        <Link href="/profile">
+          <div style={{ background: "linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%)", border: "2px solid #FED7AA", borderRadius: "20px", padding: "16px", marginBottom: "16px", cursor: "pointer", boxShadow: "0 4px 16px rgba(249,115,22,0.12)" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "10px" }}>
+              <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: "linear-gradient(135deg, #F97316, #FB923C)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", flexShrink: 0 }}>👤</div>
+              <div style={{ flex: 1 }}>
+                <p style={{ margin: 0, fontSize: "14px", fontWeight: 800, color: "#9a3412" }}>Completa tu perfil</p>
+                <p style={{ margin: "2px 0 0", fontSize: "12px", color: "#c2410c", fontWeight: 500 }}>Para darte las mejores recomendaciones personalizadas</p>
+              </div>
+              <span style={{ fontSize: "20px", fontWeight: 900, color: "#F97316" }}>{profileCompletion}%</span>
+            </div>
+            {/* Progress bar */}
+            <div style={{ background: "#FED7AA", borderRadius: "999px", height: "8px", overflow: "hidden" }}>
+              <div style={{ background: "linear-gradient(90deg, #F97316, #FB923C)", borderRadius: "999px", height: "100%", width: `${profileCompletion}%`, transition: "width 0.6s ease" }} />
+            </div>
+            <p style={{ margin: "8px 0 0", fontSize: "11px", color: "#ea580c", fontWeight: 600, textAlign: "right" }}>Toca para completar →</p>
+          </div>
+        </Link>
+      )}
 
       {/* Calorie Ring Card */}
       <div style={{ background: "linear-gradient(135deg, #F97316 0%, #FB923C 60%, #FDBA74 100%)", borderRadius: "24px", padding: "20px", marginBottom: "16px", boxShadow: "0 8px 32px rgba(249,115,22,0.30)", position: "relative", overflow: "hidden" }}>
