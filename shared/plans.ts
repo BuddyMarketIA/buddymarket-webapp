@@ -86,32 +86,33 @@ export const PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
     prioritySupport: false,
   },
 
+  // PRO — 9,99€/mes
   basic: {
     canCreateRecipes: true,
-    maxSavedRecipes: 100,
+    maxSavedRecipes: -1,          // unlimited
 
-    maxMenusPerMonth: 20,
+    maxMenusPerMonth: -1,         // unlimited
     canGenerateAIMenus: true,
     canAccessSpecializedMenus: true,
 
     canAccessDiary: true,
-    maxDiaryEntriesPerDay: 5,
+    maxDiaryEntriesPerDay: -1,    // unlimited
 
     canAccessInventory: true,
-    maxInventoryItems: 200,
+    maxInventoryItems: -1,        // unlimited
 
     canUseBuddyIA: true,
-    maxBuddyIAMessagesPerDay: 20,
+    maxBuddyIAMessagesPerDay: 50,
 
     canGenerateShoppingList: true,
     canConnectSupermarket: true,
 
     canTrackMetrics: true,
-    maxMetricsHistory: 90,
+    maxMetricsHistory: 180,       // 6 months
 
     canAccessBuddyMakers: true,
     canAccessBuddyExperts: false,
-    canBecomeBuddyMaker: true,
+    canBecomeBuddyMaker: false,
     canBecomeBuddyExpert: false,
 
     canExportData: false,
@@ -120,6 +121,7 @@ export const PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
     prioritySupport: false,
   },
 
+  // PRO MAX — 19,99€/mes
   premium: {
     canCreateRecipes: true,
     maxSavedRecipes: -1,
@@ -135,13 +137,13 @@ export const PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
     maxInventoryItems: -1,
 
     canUseBuddyIA: true,
-    maxBuddyIAMessagesPerDay: 100,
+    maxBuddyIAMessagesPerDay: -1, // unlimited
 
     canGenerateShoppingList: true,
     canConnectSupermarket: true,
 
     canTrackMetrics: true,
-    maxMetricsHistory: 365,
+    maxMetricsHistory: -1,        // unlimited
 
     canAccessBuddyMakers: true,
     canAccessBuddyExperts: true,
@@ -149,9 +151,9 @@ export const PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
     canBecomeBuddyExpert: true,
 
     canExportData: true,
-    canManageMultipleProfiles: false,
+    canManageMultipleProfiles: true,
 
-    prioritySupport: false,
+    prioritySupport: true,
   },
 
   pro_max: {
@@ -207,19 +209,19 @@ export const PLAN_DISPLAY: Record<PlanTier, {
   },
   basic: {
     name: "Pro",
-    price: "4,99€/mes",
-    priceMonthly: 499,
+    price: "9,99€/mes",
+    priceMonthly: 999,
     color: "#F97316",
     badge: "Pro",
     description: "Para usuarios que quieren sacar el máximo partido",
   },
   premium: {
     name: "Pro Max",
-    price: "9,99€/mes",
-    priceMonthly: 999,
-    color: "#8B5CF6",
+    price: "19,99€/mes",
+    priceMonthly: 1999,
+    color: "#7c3aed",
     badge: "Pro Max",
-    description: "Para usuarios avanzados y profesionales de la salud",
+    description: "Para profesionales de la salud y usuarios avanzados",
   },
   pro_max: {
     name: "Pro Max Plus",
@@ -267,8 +269,8 @@ export const FEATURE_DESCRIPTIONS: Partial<Record<keyof PlanLimits, { title: str
   canConnectSupermarket: { title: "Conectar supermercado", requiredPlan: "basic" },
   canTrackMetrics: { title: "Seguimiento de métricas", requiredPlan: "basic" },
   canAccessBuddyExperts: { title: "Acceso a BuddyExperts", requiredPlan: "premium" },
-  canBecomeBuddyMaker: { title: "Convertirte en BuddyMaker", requiredPlan: "basic" },
+  canBecomeBuddyMaker: { title: "Convertirte en BuddyMaker", requiredPlan: "premium" },
   canBecomeBuddyExpert: { title: "Convertirte en BuddyExpert", requiredPlan: "premium" },
   canExportData: { title: "Exportar tus datos", requiredPlan: "premium" },
-  canManageMultipleProfiles: { title: "Gestionar múltiples perfiles", requiredPlan: "pro_max" },
+  canManageMultipleProfiles: { title: "Gestionar múltiples perfiles familiares", requiredPlan: "premium" },
 };

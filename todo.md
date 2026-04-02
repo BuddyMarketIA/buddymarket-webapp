@@ -833,3 +833,10 @@
 - [x] Sidebar: badge dinámico del plan actual (Free/Pro/Pro Max) con enlace a /subscription
 - [x] Página /subscription rediseñada con planes correctos (Free gratis, Pro 9,99€, Pro Max 19,99€)
 - [x] Tests actualizados: specializedMenus tests usan mock de plan Pro (62/62 pasando)
+
+## Sprint: Tabla comparativa de planes con funciones reales (02/04/2026)
+- [x] Auditar funciones reales de la app y asignarlas a cada plan (Free/Pro/Pro Max)
+- [x] Landing page: reemplazar listas de features por tabla comparativa visual (✓/✗/número)
+- [x] Landing page: destacar claramente las diferencias entre Pro y Pro Max
+- [x] Página /subscription: añadir tabla comparativa completa con todas las funciones
+- [x] Página /subscription: mostrar límites numéricos reales (5 menús/mes, 20 productos, etc.)

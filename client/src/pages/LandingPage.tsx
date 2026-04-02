@@ -64,36 +64,44 @@ const STATS = [
 ];
 
 const PLANS = [
-  { name: "Free", price: "0€", period: "para siempre", accent: "#6b7280", highlight: false, cta: "Empezar gratis",
+  {
+    name: "Free", price: "0€", period: "para siempre", accent: "#6b7280", highlight: false, cta: "Empezar gratis",
+    description: "Para empezar a explorar BuddyMarket",
     features: [
       "Perfil nutricional básico",
       "Ver recetas de la comunidad",
-      "5 menús generados al mes",
+      "3 menús generados al mes (sin IA)",
       "Lista de la compra básica",
       "Inventario del hogar (hasta 20 productos)",
-      "Registro de comidas (hasta 10/mes)",
-    ] },
-  { name: "Pro", price: "9,99€", period: "al mes", accent: "#F97316", highlight: true, cta: "Empezar con Pro",
+    ],
+  },
+  {
+    name: "Pro", price: "9,99€", period: "al mes", accent: "#F97316", highlight: true, cta: "Empezar con Pro",
+    description: "Para quienes quieren sacar el máximo partido a su nutrición",
     features: [
-      "✓ Todo lo de Free",
       "Menús semanales ilimitados con IA",
-      "24 menús especializados (diabetes, embarazo...)",
-      "Asistente BuddyIA ilimitado",
-      "Diario nutricional completo",
-      "Inventario ilimitado + alertas caducidad",
-      "Métricas de salud avanzadas",
-      "Sin anuncios",
-    ] },
-  { name: "Pro Max", price: "19,99€", period: "al mes", accent: "#7c3aed", highlight: false, cta: "Empezar con Pro Max",
-    features: [
-      "✓ Todo lo de Pro",
-      "Crear y publicar tus propias recetas",
-      "Acceso a BuddyExperts (nutricionistas)",
+      "24 menús especializados (diabetes, embarazo, celiacía...)",
+      "BuddyIA: hasta 50 mensajes/día",
+      "Diario nutricional ilimitado",
+      "Inventario ilimitado + alertas de caducidad",
+      "Métricas de salud (6 meses de historial)",
       "Conectar supermercado online",
+    ],
+  },
+  {
+    name: "Pro Max", price: "19,99€", period: "al mes", accent: "#7c3aed", highlight: false, cta: "Empezar con Pro Max",
+    description: "Para profesionales de la salud y usuarios avanzados",
+    features: [
+      "Todo lo de Pro",
+      "BuddyIA ilimitado (sin límite de mensajes)",
+      "Historial de métricas ilimitado",
+      "Crear y publicar tus propias recetas",
+      "Acceso a BuddyExperts (nutricionistas reales)",
       "Múltiples perfiles familiares",
       "Exportar informes PDF",
       "Soporte prioritario 24/7",
-    ] },
+    ],
+  },
 ];
 
 // Animated counter hook
@@ -561,7 +569,8 @@ export default function LandingPage() {
 
       {/* ═══ PRICING ══════════════════════════════════════════════════════ */}
       <section id="pricing" ref={pricingSection.ref} style={{ padding: "96px 24px", background: "#f9fafb" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          {/* Header */}
           <div style={{ textAlign: "center", marginBottom: 56,
             opacity: pricingSection.inView ? 1 : 0, transform: pricingSection.inView ? "translateY(0)" : "translateY(24px)",
             transition: "all 0.7s cubic-bezier(0.16,1,0.3,1)" }}>
@@ -571,11 +580,13 @@ export default function LandingPage() {
             </h2>
             <p style={{ fontSize: 17, color: "#6b7280" }}>Sin permanencia. Cancela cuando quieras.</p>
           </div>
-          <div className="lp-pricing-grid" style={{ display: "grid", gridTemplateColumns: "1fr", gap: 20 }}>
+
+          {/* Plan cards */}
+          <div className="lp-pricing-grid" style={{ display: "grid", gridTemplateColumns: "1fr", gap: 20, marginBottom: 56 }}>
             {PLANS.map((plan, i) => (
               <div key={i} style={{
                 background: plan.highlight ? "#111827" : "white",
-                borderRadius: 24, padding: "36px 28px",
+                borderRadius: 24, padding: "32px 28px",
                 border: `2px solid ${plan.highlight ? plan.accent : "#e5e7eb"}`,
                 position: "relative",
                 boxShadow: plan.highlight ? "0 24px 80px rgba(0,0,0,0.15)" : "0 4px 20px rgba(0,0,0,0.04)",
@@ -585,19 +596,21 @@ export default function LandingPage() {
               }}>
                 {plan.highlight && (
                   <div style={{ position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)", background: "#F97316", color: "white", fontSize: 11, fontWeight: 800, padding: "5px 20px", borderRadius: 100, letterSpacing: "0.06em", whiteSpace: "nowrap" }}>
-                    ⭐ MÁS POPULAR
+                    &#9733; MÁS POPULAR
                   </div>
                 )}
-                <div style={{ fontSize: 12, fontWeight: 800, color: plan.accent, marginBottom: 10, letterSpacing: "0.08em" }}>{plan.name.toUpperCase()}</div>
-                <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 6 }}>
-                  <span style={{ fontSize: 48, fontWeight: 900, color: plan.highlight ? "white" : "#111827", lineHeight: 1 }}>{plan.price}</span>
-                  <span style={{ fontSize: 14, color: "#6b7280" }}>/{plan.period}</span>
+                <div style={{ fontSize: 12, fontWeight: 800, color: plan.accent, marginBottom: 8, letterSpacing: "0.08em" }}>{plan.name.toUpperCase()}</div>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 4 }}>
+                  <span style={{ fontSize: 44, fontWeight: 900, color: plan.highlight ? "white" : "#111827", lineHeight: 1 }}>{plan.price}</span>
+                  <span style={{ fontSize: 13, color: plan.highlight ? "#9ca3af" : "#6b7280" }}>/{plan.period}</span>
                 </div>
-                <div style={{ height: 1, background: plan.highlight ? "#374151" : "#f3f4f6", margin: "20px 0" }} />
-                <ul style={{ listStyle: "none", padding: 0, margin: "0 0 28px", display: "flex", flexDirection: "column", gap: 12 }}>
+                <p style={{ fontSize: 13, color: plan.highlight ? "#9ca3af" : "#6b7280", marginBottom: 20, marginTop: 4 }}>{plan.description}</p>
+                <div style={{ height: 1, background: plan.highlight ? "#374151" : "#f3f4f6", margin: "0 0 20px" }} />
+                <ul style={{ listStyle: "none", padding: 0, margin: "0 0 24px", display: "flex", flexDirection: "column", gap: 10 }}>
                   {plan.features.map((f, j) => (
-                    <li key={j} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 14, color: plan.highlight ? "#d1d5db" : "#374151" }}>
-                      <span style={{ color: plan.accent, fontWeight: 800, flexShrink: 0 }}>✓</span> {f}
+                    <li key={j} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 13.5, color: plan.highlight ? "#d1d5db" : "#374151" }}>
+                      <span style={{ color: plan.accent, fontWeight: 900, flexShrink: 0, fontSize: 15 }}>&#10003;</span>
+                      <span>{f}</span>
                     </li>
                   ))}
                 </ul>
@@ -605,7 +618,7 @@ export default function LandingPage() {
                   onClick={() => handlePlanCta(plan.name)}
                   disabled={checkoutLoading === plan.name}
                   style={{
-                    display: "block", width: "100%", textAlign: "center", padding: "15px 20px", borderRadius: 14,
+                    display: "block", width: "100%", textAlign: "center", padding: "14px 20px", borderRadius: 14,
                     fontSize: 15, fontWeight: 700, cursor: checkoutLoading === plan.name ? "not-allowed" : "pointer",
                     transition: "all 0.2s",
                     background: checkoutLoading === plan.name ? "#D1D5DB" : (plan.highlight ? plan.accent : "transparent"),
@@ -618,6 +631,123 @@ export default function LandingPage() {
                 </button>
               </div>
             ))}
+          </div>
+
+          {/* Full comparison table */}
+          <div style={{ opacity: pricingSection.inView ? 1 : 0, transition: "all 0.8s 0.4s" }}>
+            <h3 style={{ textAlign: "center", fontSize: 20, fontWeight: 800, color: "#111827", marginBottom: 24 }}>
+              Comparativa completa de planes
+            </h3>
+            <div style={{ background: "white", borderRadius: 24, overflow: "hidden", border: "1px solid #e5e7eb", boxShadow: "0 4px 20px rgba(0,0,0,0.04)" }}>
+              {/* Table header */}
+              <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", background: "#111827" }}>
+                <div style={{ padding: "18px 24px", fontSize: 12, fontWeight: 700, color: "#9ca3af" }}>Funcionalidad</div>
+                {[
+                  { name: "Free", color: "#9ca3af", price: "0€" },
+                  { name: "Pro", color: "#F97316", price: "9,99€" },
+                  { name: "Pro Max", color: "#a78bfa", price: "19,99€" },
+                ].map(p => (
+                  <div key={p.name} style={{ padding: "18px 12px", textAlign: "center" }}>
+                    <div style={{ fontSize: 14, fontWeight: 900, color: p.color }}>{p.name}</div>
+                    <div style={{ fontSize: 11, color: "#6b7280", marginTop: 2 }}>{p.price}/mes</div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Rows */}
+              {([
+                { category: "Recetas", rows: [
+                  { label: "Ver recetas de la comunidad", free: true, pro: true, promax: true },
+                  { label: "Recetas guardadas", free: "10", pro: "Ilimitadas", promax: "Ilimitadas" },
+                  { label: "Crear tus propias recetas", free: false, pro: false, promax: true },
+                  { label: "Publicar como BuddyMaker", free: false, pro: false, promax: true },
+                ]},
+                { category: "Menús con IA", rows: [
+                  { label: "Menús generados al mes", free: "3", pro: "Ilimitados", promax: "Ilimitados" },
+                  { label: "Generación de menús con IA", free: false, pro: true, promax: true },
+                  { label: "24 menús especializados (diabetes, embarazo...)", free: false, pro: true, promax: true },
+                ]},
+                { category: "Diario Nutricional", rows: [
+                  { label: "Registro de comidas diario", free: false, pro: true, promax: true },
+                  { label: "Seguimiento de macros y calorías", free: false, pro: true, promax: true },
+                  { label: "Historial nutricional", free: false, pro: "6 meses", promax: "Ilimitado" },
+                ]},
+                { category: "Inventario", rows: [
+                  { label: "Inventario del hogar", free: "20 productos", pro: "Ilimitado", promax: "Ilimitado" },
+                  { label: "Alertas de caducidad", free: false, pro: true, promax: true },
+                  { label: "Lista de la compra automática", free: true, pro: true, promax: true },
+                  { label: "Conectar supermercado online", free: false, pro: true, promax: true },
+                ]},
+                { category: "BuddyIA (Asistente IA)", rows: [
+                  { label: "Mensajes al día con BuddyIA", free: "0", pro: "50", promax: "Ilimitados" },
+                  { label: "Generación de menús por cuestionario", free: false, pro: true, promax: true },
+                ]},
+                { category: "Métricas de Salud", rows: [
+                  { label: "Seguimiento de peso y medidas", free: false, pro: true, promax: true },
+                  { label: "Historial de métricas", free: false, pro: "6 meses", promax: "Ilimitado" },
+                ]},
+                { category: "Comunidad BuddyMarket", rows: [
+                  { label: "Ver recetas de BuddyMakers", free: true, pro: true, promax: true },
+                  { label: "Consultas con BuddyExperts (nutricionistas)", free: false, pro: false, promax: true },
+                  { label: "Convertirte en BuddyMaker", free: false, pro: false, promax: true },
+                  { label: "Convertirte en BuddyExpert", free: false, pro: false, promax: true },
+                ]},
+                { category: "Extras Pro Max", rows: [
+                  { label: "Exportar informes PDF", free: false, pro: false, promax: true },
+                  { label: "Múltiples perfiles familiares", free: false, pro: false, promax: true },
+                  { label: "Soporte prioritario 24/7", free: false, pro: false, promax: true },
+                ]},
+              ] as Array<{ category: string; rows: Array<{ label: string; free: boolean | string; pro: boolean | string; promax: boolean | string }>}>).map((section, si) => (
+                <div key={si}>
+                  <div style={{ background: "#f9fafb", padding: "9px 24px", fontSize: 11, fontWeight: 800, color: "#9ca3af", letterSpacing: "0.1em", textTransform: "uppercase", borderTop: si > 0 ? "1px solid #f3f4f6" : "none" }}>
+                    {section.category}
+                  </div>
+                  {section.rows.map((row, ri) => (
+                    <div key={ri} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", borderTop: "1px solid #f3f4f6" }}>
+                      <div style={{ padding: "13px 24px", fontSize: 13.5, color: "#374151" }}>{row.label}</div>
+                      {([row.free, row.pro, row.promax] as Array<boolean | string>).map((val, ci) => {
+                        const colors = ["#9ca3af", "#F97316", "#7c3aed"];
+                        const isTrue = val === true;
+                        const isFalse = val === false;
+                        return (
+                          <div key={ci} style={{ padding: "13px 12px", textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                            {isTrue && <span style={{ fontSize: 17, color: colors[ci], fontWeight: 900 }}>&#10003;</span>}
+                            {isFalse && <span style={{ fontSize: 17, color: "#e5e7eb" }}>&#8722;</span>}
+                            {!isTrue && !isFalse && <span style={{ fontSize: 12, fontWeight: 700, color: colors[ci] }}>{val}</span>}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  ))}
+                </div>
+              ))}
+
+              {/* CTA row */}
+              <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", borderTop: "2px solid #f3f4f6", background: "#f9fafb" }}>
+                <div style={{ padding: "20px 24px" }} />
+                {[
+                  { name: "Free", accent: "#6b7280", cta: "Empezar gratis" },
+                  { name: "Pro", accent: "#F97316", cta: "Empezar con Pro" },
+                  { name: "Pro Max", accent: "#7c3aed", cta: "Empezar con Pro Max" },
+                ].map(p => (
+                  <div key={p.name} style={{ padding: "16px 10px" }}>
+                    <button
+                      onClick={() => handlePlanCta(p.name)}
+                      disabled={checkoutLoading === p.name}
+                      style={{
+                        width: "100%", padding: "10px 6px", borderRadius: 10, fontSize: 12, fontWeight: 700,
+                        cursor: "pointer", transition: "all 0.2s",
+                        background: p.name === "Pro" ? p.accent : "transparent",
+                        color: p.name === "Pro" ? "white" : p.accent,
+                        border: `2px solid ${p.accent}`,
+                      }}
+                    >
+                      {checkoutLoading === p.name ? "..." : p.cta}
+                    </button>
+                  </div>
+                ))}
+              </div>
+            </div>
           </div>
         </div>
       </section>
