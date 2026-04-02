@@ -384,8 +384,8 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
 
       {/* Bottom Navigation */}
       {shouldShowNav && (
-        <div style={{ position: "fixed", bottom: 0, left: "50%", transform: "translateX(-50%)", width: "100%", maxWidth: "480px", zIndex: 100, padding: "0 12px", paddingBottom: "max(8px, env(safe-area-inset-bottom))" }}>
-          <div style={{ background: "rgba(255,255,255,0.97)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", borderRadius: "24px", padding: "8px 4px", boxShadow: "0 -2px 20px rgba(0,0,0,0.08), 0 4px 24px rgba(0,0,0,0.06)", border: "1px solid rgba(255,255,255,0.8)", display: "flex", alignItems: "center", justifyContent: "space-around" }}>
+        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100, padding: "0 12px", paddingBottom: "max(8px, env(safe-area-inset-bottom))", display: "flex", justifyContent: "center" }}>
+          <div style={{ background: "rgba(255,255,255,0.97)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", borderRadius: "24px", padding: "8px 4px", boxShadow: "0 -2px 20px rgba(0,0,0,0.08), 0 4px 24px rgba(0,0,0,0.06)", border: "1px solid rgba(255,255,255,0.8)", display: "flex", alignItems: "center", justifyContent: "space-around", width: "100%", maxWidth: "540px" }}>
             {NAV_ITEMS.map((item) => {
               const active = matchesPath(location, item.matches);
               return (
