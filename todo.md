@@ -327,3 +327,33 @@
 - [x] Following.tsx: filtro de especialidad (chips por categoría)
 - [x] Following.tsx: ordenación por popularidad (seguidores) y nombre
 - [x] Following.tsx: contador de resultados filtrados
+
+## Sprint: Versión Móvil / PWA
+
+- [ ] manifest.json con nombre, iconos, colores, display standalone
+- [ ] Meta tags iOS: apple-touch-icon, apple-mobile-web-app-capable, status-bar-style
+- [ ] Meta tags Android: theme-color, mobile-web-app-capable
+- [ ] Viewport meta tag optimizado (viewport-fit=cover)
+- [ ] Service Worker básico para offline/cache
+- [ ] Splash screen y loading state nativo
+- [ ] Scroll snap en carruseles del Dashboard
+- [ ] Bottom sheet modals en lugar de alerts/popups
+- [ ] Swipe para cerrar sidebar
+- [ ] Safe area insets en todas las páginas con contenido que llega al borde
+- [ ] Fuente optimizada para mobile (Inter/SF Pro feel)
+- [ ] Animaciones de transición entre páginas
+
+## Sprint: Versión Móvil PWA
+- [x] manifest.json con iconos 72-512px, shortcuts y categorías
+- [x] Meta tags iOS (apple-mobile-web-app-capable, status-bar-style, touch-icon)
+- [x] Meta tags Android (mobile-web-app-capable, theme-color)
+- [x] Open Graph tags para compartir
+- [x] Service Worker con cache-first para assets y network-first para navegación
+- [x] Registro del Service Worker en main.tsx
+- [x] Banner de instalación PWA (beforeinstallprompt) con dismiss persistente
+- [x] Swipe derecha desde borde izquierdo para abrir sidebar
+- [x] Swipe izquierda para cerrar sidebar
+- [x] viewport-fit=cover para notch/island de iPhone
+- [x] -webkit-tap-highlight-color: transparent en todos los elementos
+- [x] Iconos PNG generados con PIL (72, 96, 128, 144, 152, 192, 384, 512)
+- [x] apple-touch-icon.png (180x180)

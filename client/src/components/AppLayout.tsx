@@ -1,6 +1,6 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 
 interface AppLayoutProps {
@@ -87,6 +87,10 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
   const { loading, isAuthenticated, user } = useAuth();
   const [location] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const [installPrompt, setInstallPrompt] = useState<any>(null);
+  const [showInstallBanner, setShowInstallBanner] = useState(false);
+  const touchStartX = useRef(0);
+  const touchStartY = useRef(0);
 
   useEffect(() => { setSidebarOpen(false); }, [location]);
 
@@ -94,6 +98,52 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
     document.body.style.overflow = sidebarOpen ? "hidden" : "";
     return () => { document.body.style.overflow = ""; };
   }, [sidebarOpen]);
+
+  // PWA install prompt
+  useEffect(() => {
+    const handler = (e: any) => {
+      e.preventDefault();
+      setInstallPrompt(e);
+      const dismissed = localStorage.getItem('pwa-install-dismissed');
+      if (!dismissed) setShowInstallBanner(true);
+    };
+    window.addEventListener('beforeinstallprompt', handler);
+    return () => window.removeEventListener('beforeinstallprompt', handler);
+  }, []);
+
+  // Swipe right to open sidebar, swipe left to close
+  useEffect(() => {
+    const onTouchStart = (e: TouchEvent) => {
+      touchStartX.current = e.touches[0].clientX;
+      touchStartY.current = e.touches[0].clientY;
+    };
+    const onTouchEnd = (e: TouchEvent) => {
+      const dx = e.changedTouches[0].clientX - touchStartX.current;
+      const dy = Math.abs(e.changedTouches[0].clientY - touchStartY.current);
+      if (dy > 60) return; // vertical swipe — ignore
+      if (!sidebarOpen && dx > 60 && touchStartX.current < 30) setSidebarOpen(true);
+      if (sidebarOpen && dx < -60) setSidebarOpen(false);
+    };
+    document.addEventListener('touchstart', onTouchStart, { passive: true });
+    document.addEventListener('touchend', onTouchEnd, { passive: true });
+    return () => {
+      document.removeEventListener('touchstart', onTouchStart);
+      document.removeEventListener('touchend', onTouchEnd);
+    };
+  }, [sidebarOpen]);
+
+  const handleInstall = async () => {
+    if (!installPrompt) return;
+    installPrompt.prompt();
+    const { outcome } = await installPrompt.userChoice;
+    if (outcome === 'accepted') setShowInstallBanner(false);
+    setInstallPrompt(null);
+  };
+
+  const dismissInstallBanner = () => {
+    setShowInstallBanner(false);
+    localStorage.setItem('pwa-install-dismissed', '1');
+  };
 
   if (loading) {
     return (
@@ -218,6 +268,23 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
           <div style={{ background: "#F97316", borderRadius: "8px", padding: "3px 8px", fontSize: "10px", fontWeight: 800, color: "white", letterSpacing: "0.05em" }}>PRO</div>
         </div>
       </div>
+
+      {/* PWA Install Banner */}
+      {showInstallBanner && (
+        <div style={{ background: "linear-gradient(135deg, #F97316, #FB923C)", padding: "10px 16px", display: "flex", alignItems: "center", gap: "10px", zIndex: 150 }}>
+          <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "rgba(255,255,255,0.2)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <span style={{ fontSize: "18px" }}>🛒</span>
+          </div>
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ margin: 0, fontSize: "13px", fontWeight: 800, color: "white" }}>Instalar BuddyMarket</p>
+            <p style={{ margin: 0, fontSize: "11px", color: "rgba(255,255,255,0.85)" }}>Acceso rápido desde tu pantalla de inicio</p>
+          </div>
+          <button onClick={handleInstall} style={{ background: "white", color: "#F97316", border: "none", borderRadius: "10px", padding: "7px 12px", fontSize: "12px", fontWeight: 800, cursor: "pointer", flexShrink: 0 }}>Instalar</button>
+          <button onClick={dismissInstallBanner} style={{ background: "rgba(255,255,255,0.2)", border: "none", borderRadius: "8px", width: "28px", height: "28px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          </button>
+        </div>
+      )}
 
       {/* Sticky Header */}
       <div style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(255,248,240,0.95)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", borderBottom: "1px solid rgba(0,0,0,0.05)", padding: "12px 16px", display: "flex", alignItems: "center", gap: "12px" }}>

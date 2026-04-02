@@ -3,14 +3,48 @@
 
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1" />
+    <!-- ── Viewport: cover for notch/island devices ── -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
     <title>BuddyMarket — Tu gestor nutricional inteligente</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
     <meta name="description" content="BuddyMarket — El ecosistema inteligente para planificar, comprar y gestionar tu alimentación diaria. Menús, recetas, inventario y lista de la compra en un solo lugar." />
+
+    <!-- ── PWA Manifest ── -->
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- ── Theme color ── -->
+    <meta name="theme-color" content="#F97316" />
+    <meta name="msapplication-TileColor" content="#F97316" />
+    <meta name="msapplication-TileImage" content="/icon-144x144.png" />
+
+    <!-- ── iOS PWA ── -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="BuddyMarket" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/icon-152x152.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/icon-192x192.png" />
+
+    <!-- ── Android ── -->
+    <meta name="mobile-web-app-capable" content="yes" />
+
+    <!-- ── Favicon ── -->
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192x192.png" />
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon-96x96.png" />
+
+    <!-- ── Open Graph ── -->
+    <meta property="og:title" content="BuddyMarket — Gestor Nutricional Inteligente" />
+    <meta property="og:description" content="Planifica tus menús, gestiona tu lista de la compra y lleva un diario nutricional con IA." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="/icon-512x512.png" />
+
+    <style>
+      html { background: #FFF8F0; }
+      body { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+      * { -webkit-tap-highlight-color: transparent; }
+    </style>
   </head>
 
   <body>
