@@ -4,132 +4,158 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
 
-// ─── Types ───────────────────────────────────────────────────────────────────
-
-type Category = {
-  id: string;
-  label: string;
-  emoji: string;
-  color: string;
-};
-
-const CATEGORIES: Category[] = [
-  { id: "all", label: "Todos", emoji: "✨", color: "bg-orange-100 text-orange-700" },
-  { id: "perdida_peso", label: "Pérdida de peso", emoji: "🔥", color: "bg-red-100 text-red-700" },
-  { id: "ganancia_muscular", label: "Ganancia muscular", emoji: "💪", color: "bg-blue-100 text-blue-700" },
-  { id: "definicion", label: "Definición", emoji: "⚡", color: "bg-yellow-100 text-yellow-700" },
-  { id: "dieta_equilibrada", label: "Dieta equilibrada", emoji: "🥗", color: "bg-green-100 text-green-700" },
-  { id: "rendimiento", label: "Rendimiento", emoji: "🏆", color: "bg-purple-100 text-purple-700" },
-  { id: "bienestar", label: "Bienestar", emoji: "🌿", color: "bg-teal-100 text-teal-700" },
-  { id: "vegano", label: "Vegano", emoji: "🌱", color: "bg-lime-100 text-lime-700" },
+// ─── Demo data ────────────────────────────────────────────────────────────────
+const DEMO_EXPERTS = [
+  { expert: { id: 1, displayName: "Dra. María López", specialty: "Pérdida de peso", bio: "Dietista-nutricionista con 12 años de experiencia. Especializada en pérdida de peso sostenible y cambio de hábitos.", avatarUrl: "https://images.unsplash.com/photo-1559839734-2b71ea197ec2?w=200&q=80", credentials: "Dietista-Nutricionista", followersCount: 128400, consultationsCount: 2340, rating: 4.9, verified: true, featured: true, category: "weight-loss" }, user: { name: "María López", imageUrl: null } },
+  { expert: { id: 2, displayName: "Lic. Carlos Ruiz", specialty: "Nutrición deportiva", bio: "Nutricionista deportivo. Trabajo con atletas de élite y deportistas amateur para optimizar su rendimiento.", avatarUrl: "https://images.unsplash.com/photo-1612349317150-e413f6a5b16d?w=200&q=80", credentials: "Nutricionista Deportivo", followersCount: 87200, consultationsCount: 1890, rating: 4.8, verified: true, featured: true, category: "sports" }, user: { name: "Carlos Ruiz", imageUrl: null } },
+  { expert: { id: 3, displayName: "Dra. Sara Gómez", specialty: "Nutrición clínica", bio: "Especialista en nutrición clínica y enfermedades metabólicas. Diabetes, colesterol y enfermedades cardiovasculares.", avatarUrl: "https://images.unsplash.com/photo-1594824476967-48c8b964273f?w=200&q=80", credentials: "Nutricionista Clínica", followersCount: 54300, consultationsCount: 3120, rating: 4.9, verified: true, featured: false, category: "clinical" }, user: { name: "Sara Gómez", imageUrl: null } },
+  { expert: { id: 4, displayName: "Lic. Pablo Martín", specialty: "Nutrición vegana", bio: "Experto en dietas plant-based. Te ayudo a seguir una dieta vegana completa y equilibrada sin déficits nutricionales.", avatarUrl: "https://images.unsplash.com/photo-1582750433449-648ed127bb54?w=200&q=80", credentials: "Dietista-Nutricionista", followersCount: 32100, consultationsCount: 876, rating: 4.7, verified: true, featured: false, category: "vegan" }, user: { name: "Pablo Martín", imageUrl: null } },
+  { expert: { id: 5, displayName: "Dra. Elena Torres", specialty: "Bienestar integral", bio: "Nutricionista y coach de bienestar. Combino nutrición, mindfulness y hábitos saludables para una vida plena.", avatarUrl: "https://images.unsplash.com/photo-1551836022-d5d88e9218df?w=200&q=80", credentials: "Nutricionista & Coach", followersCount: 76800, consultationsCount: 1540, rating: 4.8, verified: true, featured: true, category: "wellness" }, user: { name: "Elena Torres", imageUrl: null } },
+  { expert: { id: 6, displayName: "Lic. Javier Sanz", specialty: "Ganancia muscular", bio: "Nutricionista especializado en hipertrofia y composición corporal. Planes de nutrición para ganar músculo de forma eficiente.", avatarUrl: "https://images.unsplash.com/photo-1571019613454-1cb2f99b2d8b?w=200&q=80", credentials: "Nutricionista Deportivo", followersCount: 43500, consultationsCount: 1230, rating: 4.6, verified: false, featured: false, category: "muscle" }, user: { name: "Javier Sanz", imageUrl: null } },
 ];
 
-type Tab = "experts" | "menus" | "plans";
+// Gradient palettes — different from Makers for visual distinction
+const GRADIENTS = [
+  "from-indigo-500 via-violet-500 to-purple-600",
+  "from-teal-400 via-emerald-500 to-green-600",
+  "from-rose-500 via-pink-500 to-fuchsia-600",
+  "from-blue-500 via-cyan-500 to-teal-500",
+  "from-amber-500 via-orange-500 to-red-500",
+  "from-violet-600 via-purple-600 to-indigo-700",
+];
 
-// ─── Stat badge ──────────────────────────────────────────────────────────────
+const CATEGORY_LABELS: Record<string, string> = {
+  "weight-loss": "Pérdida de peso",
+  "sports": "Nutrición deportiva",
+  "clinical": "Nutrición clínica",
+  "vegan": "Nutrición vegana",
+  "wellness": "Bienestar integral",
+  "muscle": "Ganancia muscular",
+  "balance": "Dieta equilibrada",
+  "performance": "Rendimiento",
+};
 
-function StatBadge({ icon, value, label }: { icon: string; value: string | number; label: string }) {
-  return (
-    <div className="flex items-center gap-1 text-xs text-gray-500">
-      <span>{icon}</span>
-      <span className="font-semibold text-gray-700">{value}</span>
-      <span>{label}</span>
-    </div>
-  );
-}
+type Tab = "experts" | "testimonials";
 
-// ─── Expert card — clean vertical layout, no overlap ─────────────────────────
-
-function ExpertCard({ row, onFollow }: { row: any; onFollow: (id: number) => void }) {
+// ─── Premium Expert Card ──────────────────────────────────────────────────────
+function ExpertCard({ row, onFollow, index }: { row: any; onFollow: (id: number) => void; index: number }) {
   const [, navigate] = useLocation();
+  const [following, setFollowing] = useState(false);
   const expert = row.expert;
-  const cat = CATEGORIES.find((c) => c.id === expert.category) ?? CATEGORIES[0];
+  const gradient = GRADIENTS[index % GRADIENTS.length];
+
+  const handleFollow = () => {
+    setFollowing(!following);
+    onFollow(expert.id);
+  };
+
+  const fmtCount = (n: number) => n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n);
 
   return (
-    <div className="bg-white rounded-3xl overflow-hidden shadow-md border border-gray-100 active:scale-[0.98] transition-transform duration-150">
+    <div
+      className="group relative bg-white rounded-[28px] overflow-hidden cursor-pointer"
+      style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)" }}
+      onClick={() => navigate(`/buddy-experts/${expert.id}`)}
+    >
+      {/* ── Gradient header ── */}
+      <div className={`relative bg-gradient-to-br ${gradient} pt-5 pb-10 px-4 overflow-hidden`}>
+        {/* Decorative blobs */}
+        <div className="absolute -top-4 -right-4 w-20 h-20 rounded-full bg-white/10 blur-xl" />
+        <div className="absolute -bottom-6 -left-6 w-24 h-24 rounded-full bg-black/10 blur-2xl" />
+        {/* Subtle grid pattern */}
+        <div className="absolute inset-0 opacity-10" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, white 1px, transparent 0)", backgroundSize: "16px 16px" }} />
 
-      {/* ── Header with gradient background + avatar + badges ── */}
-      <div className="relative bg-gradient-to-br from-orange-500 via-orange-600 to-orange-700 pt-6 pb-8 px-5">
-        {/* Badges — top corners */}
-        <div className="absolute top-3 left-3 right-3 flex justify-between items-start">
+        {/* Badges */}
+        <div className="relative flex justify-between items-start mb-3">
           {expert.verified ? (
-            <span className="bg-white/95 text-orange-600 text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm">
-              ✓ Verificado
+            <span className="flex items-center gap-1 bg-white/20 backdrop-blur-sm text-white text-[10px] font-bold px-2.5 py-1 rounded-full border border-white/30">
+              <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
+              Verificado
             </span>
           ) : <span />}
           {expert.featured && (
-            <span className="bg-yellow-400 text-yellow-900 text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm">⭐ Top</span>
+            <span className="bg-yellow-400 text-yellow-900 text-[10px] font-black px-2.5 py-1 rounded-full shadow-lg">
+              ⭐ TOP
+            </span>
           )}
         </div>
 
-        {/* Avatar — large and centered */}
-        <div className="flex justify-center mt-2">
-          <div className="ring-4 ring-white/40 rounded-3xl shadow-xl overflow-hidden w-24 h-24 shrink-0">
-            <img
-              src={expert.avatarUrl ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(expert.displayName)}&background=F97316&color=fff&size=96`}
-              alt={expert.displayName}
-              className="w-full h-full object-cover"
-            />
+        {/* Avatar with glow */}
+        <div className="flex justify-center">
+          <div className="relative">
+            <div className="absolute inset-0 rounded-2xl bg-white/30 blur-md scale-110" />
+            <div className="relative w-20 h-20 rounded-2xl overflow-hidden ring-[3px] ring-white/60 shadow-2xl">
+              <img
+                src={expert.avatarUrl ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(expert.displayName)}&background=6366F1&color=fff&size=80`}
+                alt={expert.displayName}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+            </div>
           </div>
         </div>
       </div>
 
       {/* ── Body ── */}
-      <div className="flex flex-col items-center px-5 pb-5 pt-4">
-
+      <div className="px-4 pb-4 -mt-5">
         {/* Name + specialty */}
-        <h3 className="font-extrabold text-gray-900 text-base text-center leading-snug">
-          {expert.displayName}
-        </h3>
-        <p className="text-xs text-orange-500 font-semibold mt-0.5 text-center">
-          {expert.specialty}
-        </p>
-
-        {/* Category chip */}
-        <span className={`mt-2 text-[10px] font-bold px-2.5 py-1 rounded-full ${cat.color}`}>
-          {cat.emoji} {cat.label}
-        </span>
+        <div className="flex flex-col items-center mb-2.5">
+          <h3 className="font-black text-gray-900 text-[15px] text-center leading-tight tracking-tight">
+            {expert.displayName}
+          </h3>
+          <p className="text-[11px] text-indigo-500 font-bold mt-0.5 tracking-wide uppercase">
+            {CATEGORY_LABELS[expert.category] ?? expert.specialty}
+          </p>
+          {expert.credentials && (
+            <span className="mt-1.5 bg-indigo-50 text-indigo-600 text-[10px] font-bold px-2.5 py-0.5 rounded-full border border-indigo-100">
+              {expert.credentials}
+            </span>
+          )}
+        </div>
 
         {/* Bio */}
         {expert.bio && (
-          <p className="text-xs text-gray-500 mt-2 text-center line-clamp-2 leading-relaxed">{expert.bio}</p>
+          <p className="text-[11px] text-gray-400 text-center line-clamp-2 leading-relaxed mb-3">
+            {expert.bio}
+          </p>
         )}
 
         {/* Stats */}
-        <div className="flex items-center justify-center gap-5 mt-4 w-full">
-          <div className="flex flex-col items-center">
-            <span className="text-sm font-extrabold text-gray-800">
-              {expert.followersCount >= 1000 ? `${(expert.followersCount / 1000).toFixed(1)}k` : expert.followersCount}
-            </span>
-            <span className="text-[10px] text-gray-400 font-medium">seguidores</span>
+        <div className="flex items-center justify-center gap-0 mb-4 bg-gray-50 rounded-2xl p-2.5">
+          <div className="flex-1 flex flex-col items-center">
+            <span className="text-[13px] font-black text-gray-900">{fmtCount(expert.followersCount)}</span>
+            <span className="text-[9px] text-gray-400 font-semibold uppercase tracking-wider mt-0.5">Seguidores</span>
           </div>
           <div className="w-px h-7 bg-gray-200" />
-          <div className="flex flex-col items-center">
-            <span className="text-sm font-extrabold text-gray-800">{expert.plansCount}</span>
-            <span className="text-[10px] text-gray-400 font-medium">planes</span>
+          <div className="flex-1 flex flex-col items-center">
+            <span className="text-[13px] font-black text-gray-900">{fmtCount(expert.consultationsCount)}</span>
+            <span className="text-[9px] text-gray-400 font-semibold uppercase tracking-wider mt-0.5">Consultas</span>
           </div>
           {expert.rating > 0 && (
             <>
               <div className="w-px h-7 bg-gray-200" />
-              <div className="flex flex-col items-center">
-                <span className="text-sm font-extrabold text-gray-800">⭐ {expert.rating?.toFixed(1)}</span>
-                <span className="text-[10px] text-gray-400 font-medium">valoración</span>
+              <div className="flex-1 flex flex-col items-center">
+                <span className="text-[13px] font-black text-gray-900">⭐{expert.rating?.toFixed(1)}</span>
+                <span className="text-[9px] text-gray-400 font-semibold uppercase tracking-wider mt-0.5">Rating</span>
               </div>
             </>
           )}
         </div>
 
         {/* CTA buttons */}
-        <div className="flex gap-2 mt-4 w-full">
+        <div className="flex gap-2" onClick={(e) => e.stopPropagation()}>
           <button
-            onClick={() => onFollow(expert.id)}
-            className="flex-1 bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white text-sm font-bold py-3 rounded-2xl transition-colors"
+            onClick={handleFollow}
+            className={`flex-1 text-[13px] font-black py-3 rounded-2xl transition-all duration-200 ${
+              following
+                ? "bg-gray-100 text-gray-500 border-2 border-gray-200"
+                : "bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-lg shadow-indigo-200 hover:shadow-indigo-300 active:scale-95"
+            }`}
           >
-            Seguir
+            {following ? "✓ Siguiendo" : "Seguir"}
           </button>
           <button
             onClick={() => navigate(`/buddy-experts/${expert.id}`)}
-            className="flex-1 border-2 border-orange-200 text-orange-600 hover:bg-orange-50 active:bg-orange-100 text-sm font-bold py-3 rounded-2xl transition-colors"
+            className="flex-1 border-2 border-gray-100 text-gray-700 hover:border-indigo-200 hover:text-indigo-600 text-[13px] font-black py-3 rounded-2xl transition-all duration-200 active:scale-95"
           >
             Ver perfil
           </button>
@@ -139,440 +165,119 @@ function ExpertCard({ row, onFollow }: { row: any; onFollow: (id: number) => voi
   );
 }
 
-// ─── Menu card ───────────────────────────────────────────────────────────────
-
-function MenuCard({ row }: { row: any }) {
-  const menu = row.menu;
-  const expert = row.expert;
-  const [expanded, setExpanded] = useState(false);
-  const cat = CATEGORIES.find((c) => c.id === menu.category) ?? CATEGORIES[0];
-
-  let menuData: any = null;
-  try { menuData = menu.menuData ? JSON.parse(menu.menuData) : null; } catch { menuData = null; }
-
+// ─── Skeleton ─────────────────────────────────────────────────────────────────
+function SkeletonCard() {
   return (
-    <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 border border-orange-100">
-      <div className="relative h-36 overflow-hidden">
-        {menu.coverUrl ? (
-          <img src={menu.coverUrl} alt="" className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-orange-300 to-orange-500" />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-        <div className="absolute bottom-3 left-3 right-3">
-          <p className="text-white font-bold text-sm line-clamp-2">{menu.title}</p>
-          <p className="text-white/80 text-xs mt-0.5">{menu.dailyCalories} kcal/día</p>
+    <div className="bg-white rounded-[28px] overflow-hidden animate-pulse" style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.06)" }}>
+      <div className="h-32 bg-gradient-to-br from-gray-200 to-gray-100" />
+      <div className="p-4 flex flex-col items-center gap-3">
+        <div className="w-20 h-20 rounded-2xl bg-gray-200 -mt-10" />
+        <div className="h-4 w-28 bg-gray-200 rounded-full" />
+        <div className="h-3 w-20 bg-gray-100 rounded-full" />
+        <div className="h-10 w-full bg-gray-100 rounded-2xl" />
+        <div className="flex gap-2 w-full">
+          <div className="flex-1 h-11 bg-gray-200 rounded-2xl" />
+          <div className="flex-1 h-11 bg-gray-100 rounded-2xl" />
         </div>
-        <span className="absolute top-2 left-2 bg-green-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-          🎁 GRATIS
-        </span>
-        <span className={`absolute top-2 right-2 text-xs font-semibold px-2 py-0.5 rounded-full ${cat.color}`}>
-          {cat.emoji}
-        </span>
-      </div>
-
-      <div className="p-4">
-        {expert && (
-          <div className="flex items-center gap-2 mb-3">
-            <img
-              src={expert.avatarUrl ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(expert.displayName ?? "")}&background=F97316&color=fff&size=40`}
-              alt={expert.displayName ?? ""}
-              className="w-8 h-8 rounded-full object-cover"
-            />
-            <div>
-              <p className="text-xs font-semibold text-gray-800">{expert.displayName}</p>
-              <p className="text-xs text-orange-500">{expert.specialty}</p>
-            </div>
-            {expert.verified && <span className="ml-auto text-orange-500 text-xs font-bold">✓</span>}
-          </div>
-        )}
-
-        {menu.description && (
-          <p className="text-xs text-gray-500 mb-3 line-clamp-2">{menu.description}</p>
-        )}
-
-        <div className="flex gap-3 mb-3">
-          <StatBadge icon="📋" value={menu.copiesCount} label="copias" />
-          <StatBadge icon="❤️" value={menu.likesCount} label="likes" />
-        </div>
-
-        {menuData?.days && (
-          <button
-            onClick={() => setExpanded(!expanded)}
-            className="w-full text-xs text-orange-600 font-semibold border border-orange-200 rounded-xl py-2 hover:bg-orange-50 transition-colors mb-2"
-          >
-            {expanded ? "▲ Ocultar menú" : "▼ Ver menú semanal completo"}
-          </button>
-        )}
-
-        {expanded && menuData?.days && (
-          <div className="space-y-2 mt-2 max-h-64 overflow-y-auto">
-            {menuData.days.map((day: any, i: number) => (
-              <div key={i} className="bg-orange-50 rounded-xl p-2">
-                <p className="text-xs font-bold text-orange-700 mb-1">{day.day}</p>
-                <div className="space-y-0.5">
-                  {day.meals?.map((meal: any, j: number) => (
-                    <p key={j} className="text-xs text-gray-600">
-                      <span className="font-medium text-gray-700">{meal.name}:</span> {meal.food}
-                    </p>
-                  ))}
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
-
-        <button
-          onClick={() => toast.success("Menú copiado a tu planificador")}
-          className="w-full bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold py-2 rounded-xl transition-colors mt-2"
-        >
-          📋 Copiar este menú
-        </button>
       </div>
     </div>
   );
 }
 
-// ─── Plan card ───────────────────────────────────────────────────────────────
+// ─── Testimonial card ─────────────────────────────────────────────────────────
+const TESTIMONIALS = [
+  { id: 1, name: "Lucía M.", text: "Perdí 12kg en 4 meses con la Dra. López. Su método es increíble y muy sostenible.", rating: 5, expert: "Dra. María López" },
+  { id: 2, name: "Marcos R.", text: "Carlos me ayudó a mejorar mi rendimiento en triatlón. Mis tiempos mejoraron un 15%.", rating: 5, expert: "Lic. Carlos Ruiz" },
+  { id: 3, name: "Ana G.", text: "Elena me cambió la vida. No solo perdí peso, sino que aprendí a relacionarme mejor con la comida.", rating: 5, expert: "Dra. Elena Torres" },
+  { id: 4, name: "Diego P.", text: "Javier me diseñó un plan perfecto para ganar músculo sin ganar grasa. ¡Increíble resultado!", rating: 5, expert: "Lic. Javier Sanz" },
+];
 
-function PlanCard({ row, onCopy }: { row: any; onCopy: (id: number) => void }) {
-  const plan = row.plan;
-  const expert = row.expert;
-  const cat = CATEGORIES.find((c) => c.id === plan.category) ?? CATEGORIES[0];
-
+function TestimonialCard({ t }: { t: typeof TESTIMONIALS[0] }) {
   return (
-    <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 border border-orange-100">
-      <div className="relative h-32 overflow-hidden">
-        {plan.coverUrl ? (
-          <img src={plan.coverUrl} alt="" className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-orange-400 to-red-500" />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent" />
-        <div className="absolute bottom-3 left-3 right-3">
-          <p className="text-white font-bold text-sm line-clamp-1">{plan.title}</p>
+    <div className="bg-white rounded-[24px] p-4" style={{ boxShadow: "0 4px 20px rgba(0,0,0,0.06)" }}>
+      <div className="flex items-start gap-3 mb-3">
+        <div className="w-10 h-10 rounded-2xl bg-gradient-to-br from-indigo-400 to-violet-500 flex items-center justify-center text-white font-black text-sm shrink-0">
+          {t.name[0]}
         </div>
-        <span className={`absolute top-2 right-2 text-xs font-semibold px-2 py-0.5 rounded-full ${cat.color}`}>
-          {cat.emoji} {cat.label}
-        </span>
-        {plan.isFeatured && (
-          <span className="absolute top-2 left-2 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-0.5 rounded-full">
-            ⭐ Destacado
-          </span>
-        )}
+        <div>
+          <p className="font-black text-gray-900 text-[13px]">{t.name}</p>
+          <p className="text-[10px] text-indigo-500 font-bold">{t.expert}</p>
+        </div>
+        <div className="ml-auto text-yellow-400 text-[12px]">{"⭐".repeat(t.rating)}</div>
       </div>
-
-      <div className="p-4">
-        {expert && (
-          <div className="flex items-center gap-2 mb-3">
-            <img
-              src={expert.avatarUrl ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(expert.displayName ?? "")}&background=F97316&color=fff&size=40`}
-              alt={expert.displayName ?? ""}
-              className="w-7 h-7 rounded-full object-cover"
-            />
-            <p className="text-xs font-semibold text-gray-700">{expert.displayName}</p>
-            {expert.verified && <span className="ml-auto text-orange-500 text-xs">✓</span>}
-          </div>
-        )}
-
-        {plan.description && (
-          <p className="text-xs text-gray-500 mb-3 line-clamp-2">{plan.description}</p>
-        )}
-
-        <div className="grid grid-cols-3 gap-2 mb-3">
-          <div className="bg-orange-50 rounded-xl p-2 text-center">
-            <p className="text-xs font-bold text-orange-700">{plan.durationWeeks}sem</p>
-            <p className="text-xs text-gray-500">duración</p>
-          </div>
-          <div className="bg-orange-50 rounded-xl p-2 text-center">
-            <p className="text-xs font-bold text-orange-700">{plan.dailyCalories}</p>
-            <p className="text-xs text-gray-500">kcal/día</p>
-          </div>
-          <div className="bg-orange-50 rounded-xl p-2 text-center">
-            <p className="text-xs font-bold text-orange-700 capitalize">{plan.level}</p>
-            <p className="text-xs text-gray-500">nivel</p>
-          </div>
-        </div>
-
-        <div className="flex gap-2 items-center mb-3">
-          <StatBadge icon="📋" value={plan.copiesCount} label="copias" />
-          <StatBadge icon="❤️" value={plan.likesCount} label="likes" />
-          {plan.price > 0 ? (
-            <span className="ml-auto text-sm font-bold text-orange-600">{plan.price}€</span>
-          ) : (
-            <span className="ml-auto text-xs font-bold text-green-600 bg-green-100 px-2 py-0.5 rounded-full">GRATIS</span>
-          )}
-        </div>
-
-        <button
-          onClick={() => onCopy(plan.id)}
-          className="w-full bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold py-2 rounded-xl transition-colors"
-        >
-          {plan.price > 0 ? `💳 Obtener por ${plan.price}€` : "📋 Copiar plan"}
-        </button>
-      </div>
+      <p className="text-[12px] text-gray-500 leading-relaxed italic">"{t.text}"</p>
     </div>
   );
 }
 
 // ─── Main page ────────────────────────────────────────────────────────────────
-
 export default function BuddyExperts() {
+  const [tab, setTab] = useState<Tab>("experts");
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<Tab>("experts");
-  const [selectedCategory, setSelectedCategory] = useState("all");
-
-  const categoryParam = selectedCategory === "all" ? undefined : selectedCategory;
-
-  const { data: experts = [], isLoading: loadingExperts, refetch: refetchExperts } = trpc.buddyExperts.list.useQuery(
-    { category: categoryParam },
-    { staleTime: 60_000 }
-  );
-
-  const { data: menus = [], isLoading: loadingMenus } = trpc.buddyExperts.getMenus.useQuery(
-    { category: categoryParam },
-    { staleTime: 60_000 }
-  );
-
-  const { data: plans = [], isLoading: loadingPlans } = trpc.buddyExperts.getAllPlans.useQuery(
-    { category: categoryParam },
-    { staleTime: 60_000 }
-  );
-
-  const seedMutation = trpc.buddyExperts.seedDemoExperts.useMutation({
-    onSuccess: (data) => {
-      if (data.seeded) {
-        toast.success("Expertos demo creados correctamente");
-        refetchExperts();
-      } else {
-        toast.info("Los expertos demo ya existen");
-      }
-    },
-    onError: () => toast.error("Error al crear expertos demo"),
-  });
-
+  const expertsQuery = trpc.buddyExperts.list.useQuery({});
   const followMutation = trpc.buddyExperts.follow.useMutation({
-    onSuccess: (data) => {
-      toast.success(data.following ? "Siguiendo al experto" : "Has dejado de seguir al experto");
-    },
-    onError: () => toast.error("Inicia sesión para seguir a expertos"),
+    onSuccess: () => toast.success("¡Ahora sigues a este BuddyExpert! 🎉"),
+    onError: () => toast.error("Error al seguir"),
   });
 
-  const copyPlanMutation = trpc.buddyExperts.copyPlan.useMutation({
-    onSuccess: () => toast.success("Plan copiado a tu planificador"),
-    onError: () => toast.error("Inicia sesión para copiar planes"),
-  });
+  const experts = (expertsQuery.data && expertsQuery.data.length > 0) ? expertsQuery.data : DEMO_EXPERTS;
 
-  const tabs: { id: Tab; label: string; icon: string; count: number }[] = [
-    { id: "experts", label: "Expertos", icon: "👨‍⚕️", count: experts.length },
-    { id: "menus", label: "Menús semanales", icon: "🗓️", count: menus.length },
-    { id: "plans", label: "Planes premium", icon: "⭐", count: plans.length },
-  ];
-
-  const isLoading = activeTab === "experts" ? loadingExperts : activeTab === "menus" ? loadingMenus : loadingPlans;
-  const isEmpty = activeTab === "experts" ? experts.length === 0 : activeTab === "menus" ? menus.length === 0 : plans.length === 0;
+  const handleFollow = (id: number) => {
+    if (!user) { toast.error("Inicia sesión para seguir"); return; }
+    followMutation.mutate({ expertId: id });
+  };
 
   return (
-    <div className="min-h-screen bg-[#FFF8F0]">
-      {/* Sticky header with tabs */}
-      <div className="bg-white border-b border-orange-100 px-4 pt-4 pb-0 sticky top-0 z-20">
-        <div className="flex items-center justify-between mb-4">
+    <div className="min-h-screen bg-[#F7F3EF]">
+      {/* Header */}
+      <div className="bg-white/80 backdrop-blur-xl border-b border-gray-100/80 px-4 pt-4 pb-3 sticky top-0 z-10">
+        <div className="flex items-center justify-between mb-3">
           <div>
-            <h1 className="text-xl font-bold text-gray-900">BuddyExperts</h1>
-            <p className="text-xs text-gray-500">Nutricionistas y dietistas verificados</p>
+            <h1 className="text-[22px] font-black text-gray-900 tracking-tight">BuddyExperts</h1>
+            <p className="text-[12px] text-gray-400 font-medium">Nutricionistas y dietistas certificados</p>
           </div>
-          <div className="flex items-center gap-2">
-            {user?.role === "admin" && (
-              <button
-                onClick={() => seedMutation.mutate()}
-                disabled={seedMutation.isPending}
-                className="text-xs bg-gray-100 hover:bg-gray-200 text-gray-600 px-3 py-1.5 rounded-xl font-medium transition-colors"
-              >
-                {seedMutation.isPending ? "..." : "Seed demo"}
-              </button>
-            )}
-            <div className="w-10 h-10 rounded-2xl bg-orange-500 flex items-center justify-center text-white text-lg shadow-md">
-              👨‍⚕️
-            </div>
-          </div>
+          <span className="bg-indigo-50 text-indigo-600 text-[11px] font-black px-3 py-1.5 rounded-full border border-indigo-100">
+            {experts.length} expertos
+          </span>
         </div>
 
-        <div className="flex gap-1 overflow-x-auto scrollbar-hide">
-          {tabs.map((tab) => (
+        {/* Tabs */}
+        <div className="flex gap-1 bg-gray-100 rounded-2xl p-1">
+          {(["experts", "testimonials"] as Tab[]).map((t) => (
             <button
-              key={tab.id}
-              onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold whitespace-nowrap border-b-2 transition-colors ${
-                activeTab === tab.id
-                  ? "border-orange-500 text-orange-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
+              key={t}
+              onClick={() => setTab(t)}
+              className={`flex-1 py-2 rounded-xl text-[13px] font-black transition-all duration-200 ${
+                tab === t
+                  ? "bg-white text-gray-900 shadow-sm"
+                  : "text-gray-400 hover:text-gray-600"
               }`}
             >
-              <span>{tab.icon}</span>
-              <span>{tab.label}</span>
-              {tab.count > 0 && (
-                <span className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${activeTab === tab.id ? "bg-orange-100 text-orange-600" : "bg-gray-100 text-gray-500"}`}>
-                  {tab.count}
-                </span>
-              )}
+              {t === "experts" ? "🎓 Expertos" : "💬 Testimonios"}
             </button>
           ))}
         </div>
       </div>
 
-      <div className="px-4 py-4 space-y-4">
-        {/* Hero banner per tab */}
-        {activeTab === "experts" && (
-          <div className="relative rounded-2xl overflow-hidden bg-gradient-to-r from-orange-500 to-orange-600 p-4 text-white">
-            <div className="relative z-10">
-              <p className="text-xs font-semibold opacity-80 mb-1">🌟 Comunidad de expertos</p>
-              <h2 className="text-lg font-bold mb-1">Come como los mejores</h2>
-              <p className="text-xs opacity-80 mb-3">Sigue a nutricionistas certificados y copia sus menús semanales gratuitos. Accede a sus planes premium para resultados garantizados.</p>
-              <div className="flex gap-2">
-                <div className="bg-white/20 rounded-xl px-3 py-1.5 text-xs font-semibold">🗓️ Menús gratis</div>
-                <div className="bg-white/20 rounded-xl px-3 py-1.5 text-xs font-semibold">⭐ Planes premium</div>
-              </div>
-            </div>
+      <div className="px-4 py-4">
+        {tab === "experts" && (
+          <div className="grid grid-cols-2 gap-3">
+            {expertsQuery.isLoading
+              ? [...Array(4)].map((_, i) => <SkeletonCard key={i} />)
+              : experts.map((row: any, i: number) => (
+                  <ExpertCard key={row.expert?.id ?? i} row={row} onFollow={handleFollow} index={i} />
+                ))
+            }
           </div>
         )}
 
-        {activeTab === "menus" && (
-          <div className="relative rounded-2xl overflow-hidden bg-gradient-to-r from-green-500 to-teal-600 p-4 text-white">
-            <p className="text-xs font-semibold opacity-80 mb-1">🎁 100% gratuito</p>
-            <h2 className="text-lg font-bold mb-1">Menús semanales de expertos</h2>
-            <p className="text-xs opacity-80">Los BuddyExperts comparten sus menús semanales de forma gratuita para que puedas conocer su estilo de alimentación. Cópialos a tu planificador con un clic.</p>
-          </div>
-        )}
-
-        {activeTab === "plans" && (
-          <div className="relative rounded-2xl overflow-hidden bg-gradient-to-r from-purple-500 to-indigo-600 p-4 text-white">
-            <p className="text-xs font-semibold opacity-80 mb-1">⭐ Planes personalizados</p>
-            <h2 className="text-lg font-bold mb-1">Planes premium de nutricionistas</h2>
-            <p className="text-xs opacity-80">Planes de alimentación detallados creados por expertos certificados. Incluyen seguimiento, ajustes y soporte directo del nutricionista.</p>
-          </div>
-        )}
-
-        {/* Category filter */}
-        <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
-          {CATEGORIES.map((cat) => (
-            <button
-              key={cat.id}
-              onClick={() => setSelectedCategory(cat.id)}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold whitespace-nowrap transition-all ${
-                selectedCategory === cat.id
-                  ? "bg-orange-500 text-white shadow-md scale-105"
-                  : "bg-white text-gray-600 border border-gray-200 hover:border-orange-300"
-              }`}
-            >
-              <span>{cat.emoji}</span>
-              <span>{cat.label}</span>
-            </button>
-          ))}
-        </div>
-
-        {/* Content grid */}
-        {isLoading ? (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {[1, 2, 3, 4].map((i) => (
-              <div key={i} className="bg-white rounded-2xl h-64 animate-pulse border border-orange-100" />
+        {tab === "testimonials" && (
+          <div className="flex flex-col gap-3">
+            {TESTIMONIALS.map((t) => (
+              <TestimonialCard key={t.id} t={t} />
             ))}
           </div>
-        ) : isEmpty ? (
-          <div className="text-center py-16">
-            <div className="text-5xl mb-4">
-              {activeTab === "experts" ? "👨‍⚕️" : activeTab === "menus" ? "🗓️" : "⭐"}
-            </div>
-            <h3 className="text-lg font-bold text-gray-700 mb-2">
-              {activeTab === "experts" ? "No hay expertos todavía" : activeTab === "menus" ? "No hay menús disponibles" : "No hay planes disponibles"}
-            </h3>
-            <p className="text-sm text-gray-500 mb-4">
-              {activeTab === "experts"
-                ? "Los BuddyExperts verificados aparecerán aquí pronto."
-                : activeTab === "menus"
-                ? "Los menús semanales gratuitos de los expertos aparecerán aquí."
-                : "Los planes premium de los expertos aparecerán aquí."}
-            </p>
-            {user?.role === "admin" && (
-              <button
-                onClick={() => seedMutation.mutate()}
-                disabled={seedMutation.isPending}
-                className="bg-orange-500 hover:bg-orange-600 text-white font-semibold px-6 py-2.5 rounded-xl text-sm transition-colors"
-              >
-                {seedMutation.isPending ? "Creando..." : "Crear expertos demo"}
-              </button>
-            )}
-          </div>
-        ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-            {activeTab === "experts" &&
-              experts.map((row: any, i: number) => (
-                <ExpertCard key={i} row={row} onFollow={(id) => followMutation.mutate({ expertId: id })} />
-              ))}
-            {activeTab === "menus" &&
-              menus.map((row: any, i: number) => <MenuCard key={i} row={row} />)}
-            {activeTab === "plans" &&
-              plans.map((row: any, i: number) => (
-                <PlanCard key={i} row={row} onCopy={(id) => copyPlanMutation.mutate({ planId: id })} />
-              ))}
-          </div>
         )}
-
-        {/* Become an expert CTA */}
-        <div className="bg-gradient-to-r from-orange-50 to-orange-100 rounded-2xl p-4 border border-orange-200">
-          <div className="flex items-center gap-3">
-            <div className="w-12 h-12 bg-orange-500 rounded-2xl flex items-center justify-center text-white text-xl flex-shrink-0">
-              🚀
-            </div>
-            <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-gray-900 text-sm">¿Eres nutricionista o dietista?</h3>
-              <p className="text-xs text-gray-500 mt-0.5">Comparte tus menús semanales, crea planes premium y gana el 80% de cada venta.</p>
-            </div>
-          </div>
-          <div className="grid grid-cols-3 gap-2 mt-3 mb-3">
-            {[
-              { icon: "🗓️", label: "Menús gratis", desc: "Para ganar seguidores" },
-              { icon: "⭐", label: "Planes premium", desc: "Ingresos recurrentes" },
-              { icon: "💳", label: "80% comisión", desc: "Pagos directos" },
-            ].map((item, i) => (
-              <div key={i} className="bg-white rounded-xl p-2 text-center">
-                <div className="text-lg mb-0.5">{item.icon}</div>
-                <p className="text-xs font-bold text-gray-800">{item.label}</p>
-                <p className="text-xs text-gray-500">{item.desc}</p>
-              </div>
-            ))}
-          </div>
-          <button
-            onClick={() => toast.info("Solicitud de BuddyExpert — próximamente")}
-            className="w-full bg-orange-500 hover:bg-orange-600 text-white font-semibold py-2.5 rounded-xl text-sm transition-colors"
-          >
-            Convertirme en BuddyExpert →
-          </button>
-        </div>
-
-        {/* How it works */}
-        <div className="bg-white rounded-2xl p-4 border border-orange-100">
-          <h3 className="font-bold text-gray-900 text-sm mb-3">¿Cómo funciona?</h3>
-          <div className="space-y-3">
-            {[
-              { icon: "🗓️", title: "Menús semanales gratis", desc: "Los expertos comparten menús semanales gratuitos para que puedas conocer su estilo de alimentación y decidir si seguirles." },
-              { icon: "👥", title: "Sigue a tus expertos", desc: "Sigue a los nutricionistas que más te gusten y recibe notificaciones cuando publiquen nuevos menús o planes." },
-              { icon: "⭐", title: "Accede a planes premium", desc: "Compra planes de alimentación detallados con seguimiento personalizado. El experto recibe el 80% de cada venta." },
-              { icon: "💳", title: "Pagos seguros con Stripe", desc: "Todos los pagos se procesan de forma segura. Los expertos cobran directamente en su cuenta bancaria." },
-            ].map((item, i) => (
-              <div key={i} className="flex gap-3">
-                <div className="w-8 h-8 bg-orange-100 rounded-xl flex items-center justify-center text-sm flex-shrink-0">
-                  {item.icon}
-                </div>
-                <div>
-                  <p className="text-xs font-semibold text-gray-800">{item.title}</p>
-                  <p className="text-xs text-gray-500 mt-0.5">{item.desc}</p>
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-
-        <div className="h-6" />
       </div>
     </div>
   );

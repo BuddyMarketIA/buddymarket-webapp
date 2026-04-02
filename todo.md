@@ -370,3 +370,4 @@
 - [x] Rediseñar MakerCard con layout vertical limpio y avatar bien posicionado
 - [x] Rediseñar ExpertCard con layout vertical limpio y avatar bien posicionado
 - [ ] Quitar foto de portada en MakerCard y ExpertCard, reemplazar con degradado + avatar grande
+- [ ] Cards BuddyMakers/Experts: rediseño premium nivel 500M con glassmorphism, sombras multicapa, animaciones
