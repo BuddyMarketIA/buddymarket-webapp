@@ -62,10 +62,14 @@ export function OnboardingModal() {
   useEffect(() => {
     // Wait until profile data is loaded
     if (isLoading) return;
-    // If user hasn't completed onboarding (server-side check)
+    // If user hasn't completed onboarding, redirect to registration wizard
     if (profileData && !profileData.user?.onboardingCompleted) {
-      const t = setTimeout(() => setOpen(true), 1200);
-      return () => clearTimeout(t);
+      const path = window.location.pathname;
+      // Don't redirect if already on /register or public pages
+      if (path !== "/register" && path !== "/" && !path.startsWith("/buddy-experts/") && !path.startsWith("/buddy-makers/")) {
+        navigate("/register");
+      }
+      return;
     }
   }, [profileData, isLoading]);
 

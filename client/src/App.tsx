@@ -37,6 +37,7 @@ import MealNotifications from "./pages/MealNotifications";
 import Achievements from "./pages/Achievements";
 import EventMenuPlanner from "./pages/EventMenuPlanner";
 import SavedEvents from "./pages/SavedEvents";
+import Registration from "./pages/Registration";
 import { OnboardingModal } from "./components/OnboardingModal";
 
 // Wraps a page component with AppLayout (for pages that don't include it themselves)
@@ -89,6 +90,7 @@ function Router() {
       <Route path="/buddy-application">{() => <WithLayout component={BuddyApplication} />}</Route>
       <Route path="/event-menu">{() => <EventMenuPlanner />}</Route>
       <Route path="/saved-events">{() => <SavedEvents />}</Route>
+      <Route path="/register">{() => <Registration />}</Route>
       {/* Fallback */}
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

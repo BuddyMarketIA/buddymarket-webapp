@@ -141,6 +141,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
   });
   const isApprovedExpert = expertApplicationQuery.data?.status === "approved";
   const isApprovedMaker = makerApplicationQuery.data?.status === "approved";
+  const hasPendingApplication = expertApplicationQuery.data?.status === "pending" || makerApplicationQuery.data?.status === "pending";
   const [installPrompt, setInstallPrompt] = useState<any>(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
   const touchStartX = useRef(0);
@@ -270,8 +271,12 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
                 // Hide expert/maker dashboards if not approved
                 if (item.key === "buddy-expert-dashboard" && !isApprovedExpert) return false;
                 if (item.key === "buddy-maker-dashboard" && !isApprovedMaker) return false;
+                // Hide buddy-application if already has a pending/approved application
+                if (item.key === "buddy-application" && (isApprovedExpert || isApprovedMaker || hasPendingApplication)) return false;
                 return true;
               }).map((item) => {
+                // Add pending badge to register link
+                const isPendingItem = item.key === "register" && hasPendingApplication;
                 if (item.to.startsWith("http")) {
                   return (
                     <a key={item.key} href={item.to} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
@@ -286,10 +291,11 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
                 const active = location === item.to || location.startsWith(item.to + "/");
                 return (
                   <Link key={item.key} href={item.to}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 14px", borderRadius: "12px", background: active ? "rgba(249,115,22,0.10)" : "transparent", cursor: "pointer", marginBottom: "2px", transition: "background 0.15s" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 14px", borderRadius: "12px", background: active ? "rgba(249,115,22,0.10)" : isPendingItem ? "rgba(234,179,8,0.08)" : "transparent", cursor: "pointer", marginBottom: "2px", transition: "background 0.15s" }}>
                       <span style={{ fontSize: "18px", width: "22px", textAlign: "center" }}>{item.emoji}</span>
-                      <span style={{ fontSize: "15px", fontWeight: active ? 700 : 500, color: active ? "#F97316" : "#374151" }}>{item.label}</span>
-                      {active && <div style={{ marginLeft: "auto", width: "5px", height: "5px", borderRadius: "50%", background: "#F97316" }} />}
+                      <span style={{ fontSize: "15px", fontWeight: active ? 700 : 500, color: active ? "#F97316" : isPendingItem ? "#B45309" : "#374151" }}>{item.label}</span>
+                      {isPendingItem && <span style={{ marginLeft: "auto", fontSize: "11px", fontWeight: 700, background: "#FEF3C7", color: "#D97706", borderRadius: "6px", padding: "2px 7px" }}>En revisión</span>}
+                      {active && !isPendingItem && <div style={{ marginLeft: "auto", width: "5px", height: "5px", borderRadius: "50%", background: "#F97316" }} />}
                     </div>
                   </Link>
                 );

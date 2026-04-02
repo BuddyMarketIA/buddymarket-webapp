@@ -820,3 +820,72 @@ describe("specializedMenus.generate", () => {
     ).rejects.toThrow();
   });
 });
+
+// ─── Registration Flow Tests ─────────────────────────────────────────────────
+describe("Registration Flow", () => {
+  beforeEach(() => {
+    vi.clearAllMocks();
+  });
+
+  it("should set account type for a user", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.profile.setAccountType({ accountType: "user" });
+    expect(result.success).toBe(true);
+  });
+
+  it("should advance registration step", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.profile.advanceRegistrationStep({ step: "profile_setup" });
+    expect(result.success).toBe(true);
+  });
+
+  it("should get registration status for a user", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.profile.getRegistrationStatus();
+    // Returns null when DB mock returns empty array, which is valid
+    if (result !== null) {
+      expect(result).toHaveProperty("registrationStep");
+      expect(result).toHaveProperty("accountType");
+      expect(result).toHaveProperty("application");
+    }
+  });
+
+  it("should require authentication for setAccountType", async () => {
+    const unauthCtx: TrpcContext = {
+      user: null,
+      req: { protocol: "https", headers: {} } as TrpcContext["req"],
+      res: {} as TrpcContext["res"],
+    };
+    const caller = appRouter.createCaller(unauthCtx);
+    await expect(
+      caller.profile.setAccountType({ accountType: "user" })
+    ).rejects.toThrow();
+  });
+
+  it("should require authentication for advanceRegistrationStep", async () => {
+    const unauthCtx: TrpcContext = {
+      user: null,
+      req: { protocol: "https", headers: {} } as TrpcContext["req"],
+      res: {} as TrpcContext["res"],
+    };
+    const caller = appRouter.createCaller(unauthCtx);
+    await expect(
+      caller.profile.advanceRegistrationStep({ step: "profile_setup" })
+    ).rejects.toThrow();
+  });
+
+  it("should require authentication for getRegistrationStatus", async () => {
+    const unauthCtx: TrpcContext = {
+      user: null,
+      req: { protocol: "https", headers: {} } as TrpcContext["req"],
+      res: {} as TrpcContext["res"],
+    };
+    const caller = appRouter.createCaller(unauthCtx);
+    await expect(
+      caller.profile.getRegistrationStatus()
+    ).rejects.toThrow();
+  });
+});

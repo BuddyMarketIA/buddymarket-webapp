@@ -220,6 +220,107 @@ export const appRouter = router({
       return { success: true };
     }),
 
+    // ── Registration flow ──────────────────────────────────────────────────
+    getRegistrationStatus: protectedProcedure.query(async ({ ctx }) => {
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) return null;
+      const { users: usersTable, buddyApplications: appsTable } = await import("../drizzle/schema");
+      const { eq, desc } = await import("drizzle-orm");
+      const userRows = await drizzleDb.select().from(usersTable).where(eq(usersTable.id, ctx.user.id)).limit(1);
+      const user = userRows[0];
+      if (!user) return null;
+      const apps = await drizzleDb.select().from(appsTable)
+        .where(eq(appsTable.userId, ctx.user.id))
+        .orderBy(desc(appsTable.appliedAt))
+        .limit(1);
+      const latestApp = apps[0] ?? null;
+      return {
+        accountType: (user as any).accountType ?? "user",
+        registrationStep: (user as any).registrationStep ?? "account_type",
+        onboardingCompleted: user.onboardingCompleted,
+        application: latestApp ? {
+          id: latestApp.id,
+          type: latestApp.type,
+          status: latestApp.status,
+          adminNote: latestApp.adminNote,
+          appliedAt: latestApp.appliedAt,
+        } : null,
+      };
+    }),
+
+    setAccountType: protectedProcedure
+      .input(z.object({
+        accountType: z.enum(["user", "buddymaker", "buddyexpert", "business"]),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const nextStep = "profile_setup";
+        await db.updateUser(ctx.user.id, {
+          accountType: input.accountType as any,
+          registrationStep: nextStep as any,
+        });
+        return { success: true, nextStep };
+      }),
+
+    advanceRegistrationStep: protectedProcedure
+      .input(z.object({
+        step: z.enum(["profile_setup", "application", "pending_approval", "completed"]),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        await db.updateUser(ctx.user.id, { registrationStep: input.step as any });
+        return { success: true };
+      }),
+
+    submitRegistrationApplication: protectedProcedure
+      .input(z.object({
+        type: z.enum(["expert", "maker"]),
+        displayName: z.string().min(2).max(128),
+        bio: z.string().max(1000).optional(),
+        specialty: z.string().max(128).optional(),
+        instagramHandle: z.string().max(64).optional(),
+        youtubeHandle: z.string().max(64).optional(),
+        tiktokHandle: z.string().max(64).optional(),
+        websiteUrl: z.string().optional(),
+        motivation: z.string().max(2000).optional(),
+        experience: z.string().max(2000).optional(),
+        expertCategory: z.string().max(64).optional(),
+        certifications: z.string().max(2000).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { buddyApplications: appsTable } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        const existing = await drizzleDb.select().from(appsTable)
+          .where(eq(appsTable.userId, ctx.user.id))
+          .limit(1);
+        if (existing.length && existing[0].status === "pending") {
+          throw new TRPCError({ code: "CONFLICT", message: "Ya tienes una solicitud pendiente de revisión" });
+        }
+        await drizzleDb.insert(appsTable).values({
+          userId: ctx.user.id,
+          type: input.type,
+          displayName: input.displayName,
+          bio: input.bio ?? null,
+          specialty: input.specialty ?? null,
+          instagramHandle: input.instagramHandle ?? null,
+          youtubeHandle: input.youtubeHandle ?? null,
+          tiktokHandle: input.tiktokHandle ?? null,
+          websiteUrl: input.websiteUrl || null,
+          motivation: input.motivation ?? null,
+          experience: input.experience ?? null,
+          expertCategory: input.expertCategory ?? null,
+          certifications: input.certifications ?? null,
+          status: "pending",
+        });
+        await db.updateUser(ctx.user.id, { registrationStep: "pending_approval" as any });
+        const { notifyOwner } = await import("./_core/notification");
+        await notifyOwner({
+          title: `Nueva solicitud de ${input.type === "expert" ? "BuddyExpert" : "BuddyMaker"}: ${input.displayName}`,
+          content: `El usuario ${ctx.user.name ?? ctx.user.email ?? ctx.user.id} ha solicitado ser ${input.type === "expert" ? "BuddyExpert" : "BuddyMaker"}. Especialidad: ${input.specialty ?? "No especificada"}. Revísala en el panel de administración.`,
+        });
+        return { success: true };
+      }),
+
     deleteAccount: protectedProcedure
       .input(z.object({ confirmation: z.literal("DELETE MY ACCOUNT") }))
       .mutation(async ({ ctx }) => {
@@ -1825,6 +1926,26 @@ Si no puedes detectar productos, devuelve {"products": []}. No incluyas texto ad
           reviewedAt: new Date(),
           reviewedBy: ctx.user.id,
         }).where(eq(appsTable.id, input.id));
+        // Update user registrationStep
+        await drizzleDb.update(usersTable).set({
+          registrationStep: (input.action === "approve" ? "completed" : "application") as any,
+          ...(input.action === "approve" ? { onboardingCompleted: true } : {}),
+        }).where(eq(usersTable.id, app.userId));
+        // Notify the applicant
+        try {
+          const { notifyOwner } = await import("./_core/notification");
+          if (input.action === "approve") {
+            await notifyOwner({
+              title: `✅ Tu solicitud de ${app.type === "expert" ? "BuddyExpert" : "BuddyMaker"} ha sido aprobada`,
+              content: `¡Enhorabuena ${app.displayName}! Tu cuenta ha sido verificada. Ya puedes acceder a todas las funciones de ${app.type === "expert" ? "BuddyExpert" : "BuddyMaker"} en BuddyMarket.`,
+            });
+          } else {
+            await notifyOwner({
+              title: `Tu solicitud de ${app.type === "expert" ? "BuddyExpert" : "BuddyMaker"} ha sido revisada`,
+              content: `Hemos revisado tu solicitud. ${input.adminNote ? `Motivo: ${input.adminNote}` : "Puedes volver a solicitarlo cuando quieras."}`,
+            });
+          }
+        } catch {}
         // If approved, create the expert/maker profile if it doesn't exist
         if (input.action === "approve") {
           const userRows = await drizzleDb.select().from(usersTable).where(eq(usersTable.id, app.userId)).limit(1);

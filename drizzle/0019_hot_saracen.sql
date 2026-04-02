@@ -1,0 +1,3 @@
+ALTER TABLE `users` MODIFY COLUMN `role` enum('user','admin','buddyexpert','buddymaker','business') NOT NULL DEFAULT 'user';--> statement-breakpoint
+ALTER TABLE `users` ADD `accountType` enum('user','buddymaker','buddyexpert','business') DEFAULT 'user' NOT NULL;--> statement-breakpoint
+ALTER TABLE `users` ADD `registrationStep` enum('account_type','profile_setup','application','pending_approval','completed') DEFAULT 'account_type' NOT NULL;
