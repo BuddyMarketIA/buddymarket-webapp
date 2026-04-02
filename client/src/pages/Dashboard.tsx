@@ -557,9 +557,9 @@ export default function Dashboard() {
               <div key={i} style={{ width: "160px", height: "120px", borderRadius: "18px", background: "#f3f4f6", flexShrink: 0, animation: "pulse 1.5s infinite" }} />
             ))}
           </div>
-        ) : recentRecipes.data && recentRecipes.data.length > 0 ? (
+        ) : recentRecipes.data && recentRecipes.data.recipes && recentRecipes.data.recipes.length > 0 ? (
           <div style={{ display: "flex", gap: "12px", overflowX: "auto", paddingBottom: "4px" }}>
-            {recentRecipes.data.map((recipe: any, i: number) => (
+            {recentRecipes.data.recipes.map((recipe: any, i: number) => (
               <Link key={recipe.id} href={`/recipes/${recipe.id}`}>
                 <div style={{ width: "160px", flexShrink: 0, borderRadius: "18px", overflow: "hidden", cursor: "pointer", position: "relative", boxShadow: "0 4px 16px rgba(0,0,0,0.12)" }}>
                   <div style={{ height: "110px", background: `linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.65) 100%), url(${FOOD_IMAGES[i % FOOD_IMAGES.length]}) center/cover` }}>

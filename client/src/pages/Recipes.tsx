@@ -340,10 +340,44 @@ export default function Recipes() {
     mealTime: mealTimeFilter || undefined,
     cuisineType: cuisineFilter || undefined,
     cookingMethod: cookingMethodFilter || undefined,
-    limit: 50,
+    limit: 20,
   }), [debouncedSearch, showMyRecipes, user?.id, mealTimeFilter, cuisineFilter, cookingMethodFilter]);
 
-  const { data: recipes, isLoading, isFetching } = trpc.recipes.list.useQuery(queryParams);
+  // Sentinel ref for IntersectionObserver
+  const sentinelRef = useRef<HTMLDivElement>(null);
+
+  const {
+    data: infiniteData,
+    isLoading,
+    isFetchingNextPage,
+    hasNextPage,
+    fetchNextPage,
+  } = trpc.recipes.list.useInfiniteQuery(
+    queryParams,
+    { getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined }
+  );
+
+  const recipes: Recipe[] = useMemo(
+    () => (infiniteData?.pages ?? []).flatMap((p) => p.recipes as Recipe[]),
+    [infiniteData]
+  );
+  const isFetching = isFetchingNextPage;
+
+  // IntersectionObserver — load next page when sentinel enters viewport
+  useEffect(() => {
+    const el = sentinelRef.current;
+    if (!el) return;
+    const observer = new IntersectionObserver(
+      (entries) => {
+        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
+          fetchNextPage();
+        }
+      },
+      { threshold: 0.1 }
+    );
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
 
   // Favorites
   const utils = trpc.useUtils();
@@ -641,7 +675,7 @@ export default function Recipes() {
           </h2>
           {recipes && (
             <span style={{ fontSize: "12px", color: "#9ca3af" }}>
-              {isFetching ? "Buscando..." : `${recipes.length} recetas`}
+              {isFetching ? "Cargando..." : `${recipes.length}${hasNextPage ? "+" : ""} recetas`}
             </span>
           )}
         </div>
@@ -704,8 +738,23 @@ export default function Recipes() {
         )}
       </div>
 
+      {/* Infinite scroll sentinel */}
+      {recipes.length > 0 && (
+        <div ref={sentinelRef} style={{ height: "60px", display: "flex", alignItems: "center", justifyContent: "center", marginTop: "8px" }}>
+          {isFetchingNextPage && (
+            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
+              <div style={{ width: "28px", height: "28px", border: "3px solid #f3f4f6", borderTop: "3px solid #F97316", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+              <span style={{ fontSize: "12px", color: "#9ca3af", fontWeight: 600 }}>Cargando más recetas...</span>
+            </div>
+          )}
+          {!hasNextPage && recipes.length > 0 && !isFetchingNextPage && (
+            <p style={{ fontSize: "12px", color: "#d1d5db", fontWeight: 600, margin: 0 }}>✅ Has visto todas las recetas ({recipes.length})</p>
+          )}
+        </div>
+      )}
+
       {/* Disclaimer */}
-      <p style={{ fontSize: "10px", color: "#d1d5db", textAlign: "center", margin: "24px 0 0", lineHeight: 1.5 }}>
+      <p style={{ fontSize: "10px", color: "#d1d5db", textAlign: "center", margin: "8px 0 0", lineHeight: 1.5 }}>
         Las recetas de BuddyMarket son orientativas. Consulta a un profesional de la nutrición.
       </p>
 

@@ -193,7 +193,8 @@ describe("recipes", () => {
     const { ctx } = createAuthContext();
     const caller = appRouter.createCaller(ctx);
     const result = await caller.recipes.list({});
-    expect(Array.isArray(result)).toBe(true);
+    // recipes.list now returns { recipes, nextCursor } for infinite scroll
+    expect(Array.isArray(result.recipes)).toBe(true);
   });
 
   it("list passes mealTime filter to db.getRecipes", async () => {

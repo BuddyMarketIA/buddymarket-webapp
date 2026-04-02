@@ -307,10 +307,18 @@ export const appRouter = router({
           cuisineType: z.string().optional(),
           cookingMethod: z.string().optional(),
           limit: z.number().optional(),
-          offset: z.number().optional(),
+          cursor: z.number().optional(), // offset cursor for infinite scroll
         })
       )
-      .query(({ input, ctx }) => db.getRecipes({ ...input, currentUserId: ctx.user?.id })),
+      .query(async ({ input, ctx }) => {
+        const limit = input.limit ?? 20;
+        const offset = input.cursor ?? 0;
+        const items = await db.getRecipes({ ...input, limit: limit + 1, offset, currentUserId: ctx.user?.id });
+        const hasMore = items.length > limit;
+        const recipes = hasMore ? items.slice(0, limit) : items;
+        const nextCursor = hasMore ? offset + limit : undefined;
+        return { recipes, nextCursor, total: undefined };
+      }),
 
     getById: publicProcedure
       .input(z.object({ id: z.number() }))
