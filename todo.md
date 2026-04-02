@@ -321,3 +321,9 @@
 - [x] Profile: formulario multi-step sin overflow horizontal (grid auto-fit), inputs táctiles, progress bar visible
 - [x] Sidebar: entrada "Siguiendo" añadida después de BuddyMakers
 - [x] General: touch targets mínimo 44px, texto legible (14px+), sin scroll horizontal
+
+## Sprint: Filtros en Siguiendo
+
+- [x] Following.tsx: filtro de especialidad (chips por categoría)
+- [x] Following.tsx: ordenación por popularidad (seguidores) y nombre
+- [x] Following.tsx: contador de resultados filtrados
