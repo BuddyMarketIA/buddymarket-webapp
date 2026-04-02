@@ -1215,6 +1215,100 @@ Si no puedes detectar productos, devuelve {"products": []}. No incluyas texto ad
           shareUrl: p.shareUrl,
         }));
       }),
+
+    // ── Mercadona Account Integration ──────────────────────────────────────────
+    // Authenticate with Mercadona account and get token + customer info
+    login: protectedProcedure
+      .input(z.object({ email: z.string().email(), password: z.string().min(1), postalCode: z.string().optional().default("28001") }))
+      .mutation(async ({ input }) => {
+        const MERC_BASE = "https://tienda.mercadona.es/api";
+        const HEADERS = {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+          "Origin": "https://tienda.mercadona.es",
+          "Referer": "https://tienda.mercadona.es/",
+        };
+        // Step 1: Set warehouse by postal code
+        await fetch(`${MERC_BASE}/postal_codes/${input.postalCode}/`, { headers: HEADERS }).catch(() => {});
+        // Step 2: Authenticate
+        const authRes = await fetch(`${MERC_BASE}/auth/tokens/`, {
+          method: "POST",
+          headers: HEADERS,
+          body: JSON.stringify({ username: input.email, password: input.password }),
+        });
+        if (!authRes.ok) {
+          const errText = await authRes.text();
+          if (authRes.status === 400 || authRes.status === 401) {
+            throw new TRPCError({ code: "UNAUTHORIZED", message: "Email o contraseña incorrectos" });
+          }
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: `Error de Mercadona: ${errText}` });
+        }
+        const authData = await authRes.json() as { access_token: string; customer_id: string };
+        // Step 3: Get customer info (includes cart_id)
+        const custRes = await fetch(`${MERC_BASE}/customers/${authData.customer_id}/`, {
+          headers: { ...HEADERS, "Authorization": `Bearer ${authData.access_token}` },
+        });
+        const custData = custRes.ok ? await custRes.json() as any : {};
+        return {
+          accessToken: authData.access_token,
+          customerId: authData.customer_id,
+          cartId: custData.cart_id ?? null,
+          customerName: custData.first_name ?? null,
+        };
+      }),
+
+    // Add a list of products to the Mercadona cart
+    addToCart: protectedProcedure
+      .input(z.object({
+        accessToken: z.string(),
+        customerId: z.string(),
+        cartId: z.string(),
+        items: z.array(z.object({ productId: z.string(), quantity: z.number().int().min(1) })),
+      }))
+      .mutation(async ({ input }) => {
+        const MERC_BASE = "https://tienda.mercadona.es/api";
+        const HEADERS = {
+          "Content-Type": "application/json",
+          "Accept": "application/json",
+          "Authorization": `Bearer ${input.accessToken}`,
+          "User-Agent": "Mozilla/5.0 (iPhone; CPU iPhone OS 17_0 like Mac OS X) AppleWebKit/605.1.15 (KHTML, like Gecko) Version/17.0 Mobile/15E148 Safari/604.1",
+          "Origin": "https://tienda.mercadona.es",
+          "Referer": "https://tienda.mercadona.es/",
+        };
+        // Get current cart to get its version
+        const cartRes = await fetch(`${MERC_BASE}/customers/${input.customerId}/cart/`, { headers: HEADERS });
+        const cartData = cartRes.ok ? await cartRes.json() as any : { id: input.cartId, version: 1, lines: [] };
+        const currentVersion = cartData.version ?? 1;
+        const existingLines: any[] = cartData.lines ?? [];
+        // Merge existing lines with new items
+        const newLines = [...existingLines];
+        for (const item of input.items) {
+          const existingIdx = newLines.findIndex((l: any) => String(l.product_id) === String(item.productId));
+          if (existingIdx >= 0) {
+            newLines[existingIdx] = { ...newLines[existingIdx], quantity: newLines[existingIdx].quantity + item.quantity };
+          } else {
+            newLines.push({ quantity: item.quantity, product_id: String(item.productId), sources: [] });
+          }
+        }
+        // PUT updated cart
+        const putRes = await fetch(`${MERC_BASE}/customers/${input.customerId}/cart/`, {
+          method: "PUT",
+          headers: HEADERS,
+          body: JSON.stringify({ id: input.cartId, version: currentVersion, lines: newLines }),
+        });
+        if (!putRes.ok) {
+          const errText = await putRes.text();
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: `Error al añadir al carrito: ${errText}` });
+        }
+        const result = await putRes.json() as any;
+        return {
+          success: true,
+          itemsAdded: input.items.length,
+          cartLines: result.lines?.length ?? newLines.length,
+          cartTotal: result.total_price ?? null,
+        };
+      }),
   }),
 
   // ===========================================================================
