@@ -3110,6 +3110,28 @@ Devuelve EXACTAMENTE este JSON:
           .where(and(eq(pushSubscriptions.userId, ctx.user.id), eq(pushSubscriptions.endpoint, input.endpoint)));
         return { success: true };
       }),
+
+    getDailySummary: protectedProcedure.query(async ({ ctx }) => {
+      const today = new Date().toISOString().split("T")[0];
+      const [nutrition, profile] = await Promise.all([
+        db.getDailyNutritionSummary(ctx.user.id, today),
+        db.getUserProfile(ctx.user.id),
+      ]);
+      const consumed = nutrition?.calories ?? 0;
+      const goal = profile?.dailyCalorieGoal ?? 2000;
+      const percentage = goal > 0 ? Math.round((consumed / goal) * 100) : 0;
+      const remaining = Math.max(0, goal - consumed);
+      return {
+        consumed: Math.round(consumed),
+        goal,
+        percentage: Math.min(percentage, 100),
+        remaining: Math.round(remaining),
+        proteins: Math.round(nutrition?.proteins ?? 0),
+        carbohydrates: Math.round(nutrition?.carbohydrates ?? 0),
+        fats: Math.round(nutrition?.fats ?? 0),
+        date: today,
+      };
+    }),
   }),
 });
 export type AppRouter = typeof appRouter;

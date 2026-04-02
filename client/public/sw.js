@@ -1,5 +1,5 @@
-// BuddyMarket Service Worker — v2.0 (with push notifications)
-const CACHE_NAME = 'buddymarket-v2';
+// BuddyMarket Service Worker — v3.0 (with caloric summary in push notifications)
+const CACHE_NAME = 'buddymarket-v3';
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
@@ -67,6 +67,61 @@ self.addEventListener('fetch', (event) => {
 });
 
 // =============================================================================
+// HELPERS — build caloric summary body text
+// =============================================================================
+
+/**
+ * Builds a human-readable body for a meal reminder notification that includes
+ * the user's caloric progress for the day.
+ *
+ * @param {object} summary  - { consumed, goal, percentage, remaining, proteins, carbohydrates, fats }
+ * @param {string} mealType - e.g. "desayuno", "almuerzo", "cena"
+ * @returns {string}
+ */
+function buildNotificationBody(summary, mealType) {
+  const mealEmojis = {
+    desayuno: '🌅',
+    almuerzo: '☀️',
+    merienda: '🍎',
+    cena: '🌙',
+    snack: '🥜',
+  };
+  const emoji = mealEmojis[mealType] || '🍽️';
+  const mealLabel = mealType ? `${emoji} Hora de ${mealType}` : '🍽️ Hora de comer';
+
+  if (!summary || summary.goal <= 0) {
+    return `${mealLabel} — ¡Recuerda registrar tus comidas!`;
+  }
+
+  const { consumed, goal, percentage, remaining, proteins, carbohydrates, fats } = summary;
+
+  // Progress bar using unicode blocks (10 chars wide)
+  const filled = Math.round(percentage / 10);
+  const empty = 10 - filled;
+  const bar = '█'.repeat(filled) + '░'.repeat(empty);
+
+  if (consumed === 0) {
+    return `${mealLabel}\n📊 ${bar} 0%\nAún no has registrado comidas hoy. ¡Empieza ahora!`;
+  }
+
+  const lines = [
+    `${mealLabel}`,
+    `📊 ${bar} ${percentage}%`,
+    `🔥 ${consumed} / ${goal} kcal consumidas`,
+  ];
+
+  if (remaining > 0) {
+    lines.push(`⚡ Te quedan ${remaining} kcal para tu objetivo`);
+  } else {
+    lines.push(`✅ ¡Has alcanzado tu objetivo calórico!`);
+  }
+
+  lines.push(`🥩 P: ${proteins}g  🌾 C: ${carbohydrates}g  🫒 G: ${fats}g`);
+
+  return lines.join('\n');
+}
+
+// =============================================================================
 // PUSH NOTIFICATIONS
 // =============================================================================
 
@@ -79,7 +134,10 @@ self.addEventListener('push', (event) => {
     badge: '/icon-192x192.png',
     tag: 'meal-reminder',
     url: '/meal-log',
+    mealType: null,
+    summary: null,
   };
+
   try {
     if (event.data) {
       const parsed = event.data.json();
@@ -87,6 +145,11 @@ self.addEventListener('push', (event) => {
     }
   } catch (e) {
     if (event.data) data.body = event.data.text();
+  }
+
+  // If we have a caloric summary, build an enriched body
+  if (data.summary) {
+    data.body = buildNotificationBody(data.summary, data.mealType);
   }
 
   const options = {
@@ -132,16 +195,22 @@ self.addEventListener('notificationclick', (event) => {
   );
 });
 
-// Handle messages from the main thread (schedule local notifications)
+// Handle messages from the main thread (schedule local notifications with caloric summary)
 self.addEventListener('message', (event) => {
   if (event.data?.type === 'SCHEDULE_REMINDER') {
-    const { title, body, delay } = event.data;
+    const { title, mealType, summary, delay } = event.data;
+
+    // Build body with caloric summary if available
+    const body = summary
+      ? buildNotificationBody(summary, mealType)
+      : `¡Es hora de registrar tu ${mealType || 'comida'}!`;
+
     setTimeout(() => {
       self.registration.showNotification(title || 'BuddyMarket', {
-        body: body || '¡Es hora de registrar tu comida!',
+        body,
         icon: '/icon-192x192.png',
         badge: '/icon-192x192.png',
-        tag: 'local-meal-reminder',
+        tag: `local-meal-reminder-${mealType || 'generic'}`,
         data: { url: '/meal-log' },
         vibrate: [200, 100, 200],
         actions: [

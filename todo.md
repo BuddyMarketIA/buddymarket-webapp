@@ -699,3 +699,22 @@
 
 ### Tests
 - [x] Tests para getReminders, upsertReminder, deleteReminder - 38/38 pasando
+
+## Sprint: Resumen Calórico en Notificaciones (02/04/2026)
+
+### Backend
+- [x] Endpoint `notifications.getDailySummary` — devuelve calorías consumidas hoy, objetivo, porcentaje y macros
+- [x] Usa `getDailyNutritionSummary` + `getUserProfile.dailyCalorieGoal` (default 2000 kcal)
+
+### Frontend (Service Worker)
+- [x] Al disparar notificación push, incluir datos calóricos en el payload
+- [x] Notificación muestra barra de progreso Unicode, kcal consumidas/objetivo, macros
+- [x] `buildNotificationBody()` en sw.js genera cuerpo enriquecido con resumen del día
+
+### Frontend (Página Recordatorios)
+- [x] Widget de resumen calórico en /notifications con barra de progreso visual
+- [x] Muestra kcal consumidas, objetivo, porcentaje, macros y kcal restantes
+- [x] Mensaje contextual: "Te quedan X kcal" o "¡Has alcanzado tu objetivo!"
+
+### Tests
+- [x] 3 tests para getDailySummary (shape, default goal, date format) - 41/41 pasando

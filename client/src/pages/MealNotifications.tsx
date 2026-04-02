@@ -51,8 +51,11 @@ async function getServiceWorkerRegistration(): Promise<ServiceWorkerRegistration
   }
 }
 
-// Schedule local notifications for today based on reminders
-function scheduleLocalReminders(reminders: Array<{ mealType: string; time: string; enabled: boolean; daysMask: number }>) {
+// Schedule local notifications for today based on reminders (with caloric summary)
+function scheduleLocalRemindersWithSummary(
+  reminders: Array<{ mealType: string; time: string; enabled: boolean; daysMask: number }>,
+  summary?: { consumed: number; goal: number; percentage: number; remaining: number; proteins: number; carbohydrates: number; fats: number } | null
+) {
   if (!("serviceWorker" in navigator)) return;
   navigator.serviceWorker.ready.then((reg) => {
     const now = new Date();
@@ -74,7 +77,8 @@ function scheduleLocalReminders(reminders: Array<{ mealType: string; time: strin
       reg.active?.postMessage({
         type: "SCHEDULE_REMINDER",
         title: `BuddyMarket — ${config?.label || reminder.mealType}`,
-        body: config?.description || "¡Es hora de registrar tu comida!",
+        mealType: reminder.mealType,
+        summary: summary ?? null,
         delay,
       });
     }
@@ -94,6 +98,7 @@ export default function MealNotifications() {
 
   // tRPC
   const { data: reminders, isLoading, refetch } = trpc.notifications.getReminders.useQuery();
+  const { data: dailySummary } = trpc.notifications.getDailySummary.useQuery();
   const upsertReminder = trpc.notifications.upsertReminder.useMutation({
     onSuccess: () => { refetch(); },
     onError: (e) => toast.error("Error al guardar: " + e.message),
@@ -130,11 +135,11 @@ export default function MealNotifications() {
     }
   }, []);
 
-  // Schedule local reminders whenever data changes
+  // Schedule local reminders whenever data changes (pass caloric summary to SW)
   useEffect(() => {
     if (!reminders || notifPermission !== "granted") return;
-    scheduleLocalReminders(reminders);
-  }, [reminders, notifPermission]);
+    scheduleLocalRemindersWithSummary(reminders, dailySummary);
+  }, [reminders, notifPermission, dailySummary]);
 
   const handleRequestPermission = useCallback(async () => {
     const granted = await requestNotificationPermission();
@@ -259,6 +264,48 @@ export default function MealNotifications() {
           <span style={{ fontSize: 18 }}>🚫</span>
           <p style={{ fontSize: 13, color: "#991b1b", margin: 0 }}>
             Notificaciones bloqueadas. Ve a la configuración de tu navegador para activarlas.
+          </p>
+        </div>
+      )}
+
+      {/* Caloric Summary Widget */}
+      {dailySummary && (
+        <div style={{ background: "linear-gradient(135deg, #fff7ed, #fef9f5)", border: "1.5px solid #fed7aa", borderRadius: 16, padding: "16px 20px", marginBottom: 20 }}>
+          <p style={{ fontWeight: 700, color: "#92400e", margin: "0 0 10px", fontSize: 14, display: "flex", alignItems: "center", gap: 6 }}>
+            <span>🔥</span> Resumen calórico de hoy
+          </p>
+          {/* Progress bar */}
+          <div style={{ background: "#fed7aa", borderRadius: 99, height: 10, marginBottom: 10, overflow: "hidden" }}>
+            <div
+              style={{
+                background: dailySummary.percentage >= 100 ? "#22c55e" : "#F97316",
+                width: `${Math.min(dailySummary.percentage, 100)}%`,
+                height: "100%",
+                borderRadius: 99,
+                transition: "width 0.5s ease",
+              }}
+            />
+          </div>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+            <span style={{ fontSize: 22, fontWeight: 800, color: "#ea580c" }}>{dailySummary.consumed} kcal</span>
+            <span style={{ fontSize: 13, color: "#9a3412", fontWeight: 600 }}>{dailySummary.percentage}% de {dailySummary.goal} kcal</span>
+          </div>
+          <div style={{ display: "flex", gap: 12, fontSize: 12, color: "#b45309" }}>
+            <span>🥩 Prot: <strong>{dailySummary.proteins}g</strong></span>
+            <span>🌾 Carb: <strong>{dailySummary.carbohydrates}g</strong></span>
+            <span>🫒 Grasas: <strong>{dailySummary.fats}g</strong></span>
+          </div>
+          {dailySummary.remaining > 0 ? (
+            <p style={{ fontSize: 12, color: "#b45309", margin: "8px 0 0", fontStyle: "italic" }}>
+              ⚡ Te quedan <strong>{dailySummary.remaining} kcal</strong> para alcanzar tu objetivo diario.
+            </p>
+          ) : (
+            <p style={{ fontSize: 12, color: "#166534", margin: "8px 0 0", fontWeight: 600 }}>
+              ✅ ¡Has alcanzado tu objetivo calórico de hoy!
+            </p>
+          )}
+          <p style={{ fontSize: 11, color: "#d97706", margin: "8px 0 0", fontStyle: "italic" }}>
+            Este resumen se incluirá automáticamente en tus notificaciones de recordatorio.
           </p>
         </div>
       )}

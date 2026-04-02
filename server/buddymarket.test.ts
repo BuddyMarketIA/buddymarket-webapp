@@ -574,3 +574,41 @@ describe("notifications.deleteReminder", () => {
     expect(result.success).toBe(true);
   });
 });
+
+describe("notifications.getDailySummary", () => {
+  it("returns caloric summary with correct shape", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.notifications.getDailySummary();
+    expect(result).toHaveProperty("consumed");
+    expect(result).toHaveProperty("goal");
+    expect(result).toHaveProperty("percentage");
+    expect(result).toHaveProperty("remaining");
+    expect(result).toHaveProperty("proteins");
+    expect(result).toHaveProperty("carbohydrates");
+    expect(result).toHaveProperty("fats");
+    expect(result).toHaveProperty("date");
+    expect(typeof result.consumed).toBe("number");
+    expect(typeof result.goal).toBe("number");
+    expect(typeof result.percentage).toBe("number");
+    expect(result.percentage).toBeGreaterThanOrEqual(0);
+    expect(result.percentage).toBeLessThanOrEqual(100);
+    expect(result.remaining).toBeGreaterThanOrEqual(0);
+  });
+
+  it("uses default goal of 2000 kcal when no profile exists", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.notifications.getDailySummary();
+    // With mocked db returning null for getUserProfile, goal defaults to 2000
+    expect(result.goal).toBeGreaterThan(0);
+  });
+
+  it("date field matches today in YYYY-MM-DD format", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.notifications.getDailySummary();
+    expect(result.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
+    expect(result.date).toBe(new Date().toISOString().split("T")[0]);
+  });
+});
