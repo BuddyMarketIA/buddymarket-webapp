@@ -254,6 +254,81 @@ function RecipeCard({ recipe, searchQuery, isFav, onToggleFav }: { recipe: Recip
   );
 }
 
+// ─── Recipe Card Skeleton ────────────────────────────────────────────────────
+function RecipeCardSkeleton() {
+  return (
+    <div
+      style={{
+        background: "white",
+        borderRadius: "18px",
+        overflow: "hidden",
+        boxShadow: "0 2px 12px rgba(0,0,0,0.06)",
+      }}
+    >
+      {/* Image placeholder */}
+      <div
+        style={{
+          height: "160px",
+          background: "linear-gradient(90deg, #f3f4f6 25%, #e9eaec 50%, #f3f4f6 75%)",
+          backgroundSize: "200% 100%",
+          animation: "shimmer 1.4s infinite",
+        }}
+      />
+      {/* Content placeholder */}
+      <div style={{ padding: "12px", display: "flex", flexDirection: "column", gap: "8px" }}>
+        {/* Title lines */}
+        <div
+          style={{
+            height: "14px",
+            borderRadius: "7px",
+            background: "linear-gradient(90deg, #f3f4f6 25%, #e9eaec 50%, #f3f4f6 75%)",
+            backgroundSize: "200% 100%",
+            animation: "shimmer 1.4s infinite",
+            width: "85%",
+          }}
+        />
+        <div
+          style={{
+            height: "14px",
+            borderRadius: "7px",
+            background: "linear-gradient(90deg, #f3f4f6 25%, #e9eaec 50%, #f3f4f6 75%)",
+            backgroundSize: "200% 100%",
+            animation: "shimmer 1.4s 0.1s infinite",
+            width: "60%",
+          }}
+        />
+        {/* Macros row */}
+        <div style={{ display: "flex", gap: "6px", marginTop: "2px" }}>
+          {["40%", "35%", "30%"].map((w, i) => (
+            <div
+              key={i}
+              style={{
+                height: "10px",
+                borderRadius: "5px",
+                background: "linear-gradient(90deg, #f3f4f6 25%, #e9eaec 50%, #f3f4f6 75%)",
+                backgroundSize: "200% 100%",
+                animation: `shimmer 1.4s ${i * 0.1}s infinite`,
+                width: w,
+              }}
+            />
+          ))}
+        </div>
+        {/* Cuisine badge */}
+        <div
+          style={{
+            height: "20px",
+            borderRadius: "6px",
+            background: "linear-gradient(90deg, #f3f4f6 25%, #e9eaec 50%, #f3f4f6 75%)",
+            backgroundSize: "200% 100%",
+            animation: "shimmer 1.4s 0.2s infinite",
+            width: "45%",
+          }}
+        />
+      </div>
+    </div>
+  );
+}
+
 // ─── Filter Pill ──────────────────────────────────────────────────────────────
 function FilterPill({ emoji, label, active, onClick }: { emoji: string; label: string; active: boolean; onClick: () => void }) {
   return (
@@ -682,8 +757,8 @@ export default function Recipes() {
 
         {isLoading ? (
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-            {[1, 2, 3, 4, 5, 6].map(i => (
-              <div key={i} style={{ borderRadius: "18px", background: "#f3f4f6", height: "220px" }} />
+            {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
+              <RecipeCardSkeleton key={i} />
             ))}
           </div>
         ) : recipes && recipes.length > 0 ? (
@@ -696,6 +771,10 @@ export default function Recipes() {
                 isFav={favoriteIds?.includes(recipe.id)}
                 onToggleFav={isAuthenticated ? () => handleToggleFav(recipe) : undefined}
               />
+            ))}
+            {/* Skeleton cards appended while fetching next page */}
+            {isFetchingNextPage && [1, 2, 3, 4].map(i => (
+              <RecipeCardSkeleton key={`skeleton-next-${i}`} />
             ))}
           </div>
         ) : (
@@ -758,8 +837,14 @@ export default function Recipes() {
         Las recetas de BuddyMarket son orientativas. Consulta a un profesional de la nutrición.
       </p>
 
-      {/* Spin animation */}
-      <style>{`@keyframes spin { to { transform: rotate(360deg); } }`}</style>
+      {/* Animations */}
+      <style>{`
+        @keyframes spin { to { transform: rotate(360deg); } }
+        @keyframes shimmer {
+          0% { background-position: 200% 0; }
+          100% { background-position: -200% 0; }
+        }
+      `}</style>
     </div>
   );
 }
