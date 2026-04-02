@@ -375,13 +375,26 @@ export default function Profile() {
     );
   }
 
-  // Calculate profile completion percentage
-  const criticalFields = [
-    name, height, weight, gender, birthYear, mainGoal, activityLevel, cookingLevel, dailyMeals,
-    workType, sleepHours, stressLevel, waterIntake, mealPrepTime, budgetPerWeek
-  ];
-  const filledFields = criticalFields.filter(f => f && f.toString().trim() !== "").length;
-  const completionPercent = Math.round((filledFields / criticalFields.length) * 100);
+  // Calculate profile completion percentage by section
+  const sectionFields = {
+    personal: [name, birthYear, gender, description],
+    body: [height, weight, mainGoal, targetWeight, weightChangeRate, motivationLevel, fitnessGoalDetail],
+    lifestyle: [activityLevel, workType, sleepHours, stressLevel, waterIntake],
+    culinary: [cookingLevel, dailyMeals, mealPrepTime, budgetPerWeek],
+    medical: [medicalConditions, medicalFamilyBackground],
+  };
+  
+  const sectionCompletion: Record<string, { filled: number; total: number; percent: number }> = {};
+  Object.entries(sectionFields).forEach(([section, fields]) => {
+    const filled = fields.filter(f => f && f.toString().trim() !== "").length;
+    const total = fields.length;
+    sectionCompletion[section] = { filled, total, percent: Math.round((filled / total) * 100) };
+  });
+  
+  const totalFields = Object.values(sectionFields).flat();
+  const totalFilled = totalFields.filter(f => f && f.toString().trim() !== "").length;
+  const completionPercent = Math.round((totalFilled / totalFields.length) * 100);
+  const incompleteSections = Object.entries(sectionCompletion).filter(([_, v]) => v.percent < 100).map(([k]) => TABS.find(t => t.key === k)?.label).filter(Boolean);
 
   const card: React.CSSProperties = { background: "white", borderRadius: "18px", padding: "20px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", marginBottom: "16px" };
 
@@ -408,10 +421,25 @@ export default function Profile() {
           </button>
         </div>
         {completionPercent < 100 && (
-          <div style={{ padding: "10px 14px", borderRadius: "10px", background: "rgba(249,115,22,0.08)", border: "1px solid rgba(249,115,22,0.2)" }}>
-            <p style={{ margin: 0, fontSize: "12px", color: "#F97316", fontWeight: 600 }}>
-              💡 Completa tu perfil para recibir recomendaciones personalizadas. Faltan {criticalFields.length - filledFields} campos clave.
+          <div style={{ padding: "12px 14px", borderRadius: "12px", background: "rgba(249,115,22,0.06)", border: "1px solid rgba(249,115,22,0.15)" }}>
+            <p style={{ margin: "0 0 10px", fontSize: "12px", color: "#F97316", fontWeight: 700 }}>
+              💡 Completa tu perfil para recibir recomendaciones personalizadas
             </p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
+              {Object.entries(sectionCompletion).map(([key, val]) => {
+                const tab = TABS.find(t => t.key === key);
+                const done = val.percent === 100;
+                return (
+                  <button
+                    key={key}
+                    onClick={() => setActiveTab(key)}
+                    style={{ display: "flex", alignItems: "center", gap: "5px", padding: "5px 10px", borderRadius: "20px", border: done ? "1.5px solid #22c55e" : "1.5px solid rgba(249,115,22,0.3)", background: done ? "rgba(34,197,94,0.08)" : "rgba(249,115,22,0.08)", color: done ? "#16a34a" : "#F97316", fontSize: "11px", fontWeight: 700, cursor: done ? "default" : "pointer" }}
+                  >
+                    {done ? "✓" : "○"} {tab?.label} {done ? "" : `(${val.filled}/${val.total})`}
+                  </button>
+                );
+              })}
+            </div>
           </div>
         )}
       </div>

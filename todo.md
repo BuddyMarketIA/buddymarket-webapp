@@ -204,14 +204,14 @@
 - [x] BuddyIA: botón "Crear lista de la compra" desde el menú generado
 - [x] Estilos de cocina: batch cooking, tuppers, comida rápida, trabajo, restaurante, mixto
 
-## Sprint Diario con Fotos
-- [ ] tRPC: endpoint analyzeFood para subir imagen a S3 y analizarla con IA (detectar alimentos, calorías, macros)
-- [ ] Diario: botón de cámara que abre cámara del móvil o selector de archivo
-- [ ] Diario: preview de la foto tomada antes de confirmar
-- [ ] Diario: la IA detecta automáticamente alimentos, calorías y macros de la foto
-- [ ] Diario: confirmación/edición de los alimentos detectados antes de registrar
-- [ ] Diario: registro automático de la entrada con la foto adjunta
-- [ ] Diario: mostrar miniatura de la foto en la entrada del diario
+## Sprint Diario con Fotos (COMPLETADO)
+- [x] tRPC: endpoint analyzeFood para subir imagen a S3 y analizarla con IA (detectar alimentos, calorías, macros)
+- [x] Diario: botón de cámara que abre cámara del móvil o selector de archivo
+- [x] Diario: preview de la foto tomada antes de confirmar
+- [x] Diario: la IA detecta automáticamente alimentos, calorías y macros de la foto
+- [x] Diario: confirmación/edición de los alimentos detectados antes de registrar
+- [x] Diario: registro automático de la entrada con la foto adjunta
+- [x] Diario: mostrar miniatura de la foto en la entrada del diario
 
 ## Sprint Perfil + Categorías Recetas + Fotos Diario
 - [ ] Dashboard: card de perfil incompleto con indicador de progreso (% completado) y CTA a perfil
@@ -587,3 +587,12 @@
 - [x] Tests: Añadir test para endpoint de métricas
 - [x] Tests: Añadir test para endpoint de BuddyApplication
 - [x] Tests: 25/25 tests pasando
+
+## Sprint: Perfil Ampliado + Cards Premium (EN PROGRESO)
+- [x] Profile.tsx: barra de progreso con desglose por secciones (Personal, Cuerpo, Salud, Cocina, Objetivos)
+- [x] Profile.tsx: indicador visual de qué secciones faltan completar (chips clicables con estado)
+- [x] BuddyExperts.tsx: cards con calidad premium (foto grande, especialidad, rating, credenciales, seguidores)
+- [x] BuddyMakers.tsx: cards con calidad premium (foto, recetas, seguidores, especialidad, Instagram)
+- [x] BuddyExperts.tsx: cards funcionales con navegación a /buddy-experts/:id
+- [x] BuddyMakers.tsx: cards funcionales con navegación a /buddy-makers/:id
+- [x] BuddyProfile.tsx: página de perfil público con estrellas, stats y plan cards
