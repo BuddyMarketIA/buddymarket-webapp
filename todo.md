@@ -373,3 +373,21 @@
 - [ ] Cards BuddyMakers/Experts: rediseño premium nivel 500M con glassmorphism, sombras multicapa, animaciones
 - [ ] Scroll infinito en Recetas: paginación cursor-based en backend + useInfiniteQuery + IntersectionObserver
 - [x] Skeleton loader animado (shimmer) para tarjetas de recetas en carga inicial y scroll infinito
+
+## Sprint: Inventario con caducidad + IA
+- [ ] Inventario: campo expiryDate en BD (inventory_items)
+- [ ] Inventario: endpoint IA para analizar foto y detectar productos
+- [ ] Inventario: subida de foto a S3 para análisis
+- [ ] Inventario: alertas visuales de caducidad (hoy, esta semana, próximos 30 días)
+- [ ] Inventario: sección "Recetas con lo que tienes" priorizando ingredientes próximos a caducar
+- [ ] Inventario: botón "Foto + IA" para añadir productos automáticamente
+
+## Sprint: Inventario mejorado
+- [x] Endpoint inventory.analyzePhoto: análisis IA de foto con vision LLM
+- [x] Endpoint inventory.getExpiringItems: productos que caducan en N días
+- [x] Endpoint inventory.getRecipesByExpiring: recetas recomendadas por ingredientes próximos a caducar
+- [x] Banner de caducidad próxima en Inventory.tsx
+- [x] Sección de recetas recomendadas por caducidad en Inventory.tsx
+- [x] Modal foto+IA: captura foto, preview, análisis, selección de productos, fecha de caducidad por producto
+- [x] Colores de alerta por días restantes (verde/amarillo/naranja/rojo)
+- [x] Campo de caducidad en modal de añadir manual

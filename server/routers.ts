@@ -814,10 +814,77 @@ export const appRouter = router({
     remove: protectedProcedure
       .input(z.object({ id: z.number() }))
       .mutation(({ input }) => db.deleteInventoryItem(input.id)),
-  }),
 
+    // Analyse a photo of fridge/pantry with vision LLM and return detected products
+    analyzePhoto: protectedProcedure
+      .input(z.object({ imageUrl: z.string() }))
+      .mutation(async ({ input }) => {
+        const response = await invokeLLM({
+          messages: [
+            {
+              role: "system",
+              content: `Eres un asistente de nutrición. Analiza la imagen del frigorífico o despensa y devuelve ÚNICAMENTE un JSON válido con los productos detectados. Formato exacto:
+{"products": [{"name": "Leche entera", "amount": 1, "unit": "litro", "category": "lácteo"}, ...]}
+Si no puedes detectar productos, devuelve {"products": []}. No incluyas texto adicional fuera del JSON.`,
+            },
+            {
+              role: "user",
+              content: [
+                { type: "image_url", image_url: { url: input.imageUrl, detail: "high" } },
+                { type: "text", text: "Lista todos los productos alimenticios que ves en esta imagen con su cantidad aproximada y unidad." },
+              ],
+            },
+          ],
+        });
+        const rawContent = response?.choices?.[0]?.message?.content;
+        const content = typeof rawContent === "string" ? rawContent : "{\"products\": []}";
+        try {
+          const jsonMatch = content.match(/\{[\s\S]*\}/);
+          return JSON.parse(jsonMatch ? jsonMatch[0] : content) as { products: { name: string; amount: number; unit: string; category: string }[] };
+        } catch {
+          return { products: [] };
+        }
+      }),
+
+    // Get items expiring soon (within N days)
+    getExpiringItems: protectedProcedure
+      .input(z.object({ days: z.number().default(7) }))
+      .query(async ({ ctx, input }) => {
+        const items = await db.getInventoryItems(ctx.user.id);
+        const now = new Date();
+        const cutoff = new Date(now.getTime() + input.days * 24 * 60 * 60 * 1000);
+        return items.filter((item: any) => {
+          if (!item.expirationDate) return false;
+          const exp = new Date(item.expirationDate);
+          return exp <= cutoff;
+        }).sort((a: any, b: any) => new Date(a.expirationDate).getTime() - new Date(b.expirationDate).getTime());
+      }),
+
+    // Get recipe recommendations based on expiring inventory ingredients
+    getRecipesByExpiring: protectedProcedure
+      .query(async ({ ctx }) => {
+        const items = await db.getInventoryItems(ctx.user.id);
+        const now = new Date();
+        const cutoff = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+        const expiring = items
+          .filter((item: any) => item.expirationDate && new Date(item.expirationDate) <= cutoff)
+          .map((item: any) => item.customName || item.ingredientId)
+          .filter(Boolean)
+          .slice(0, 10);
+        if (expiring.length === 0) {
+          // Return some recent recipes if nothing is expiring
+          const result = await db.getRecipes({ userId: ctx.user.id, limit: 6 });
+          const recipes = Array.isArray(result) ? result : (result as any).recipes ?? result;
+          return { recipes, expiringIngredients: [] };
+        }
+        // Search recipes that match expiring ingredients
+        const result = await db.getRecipes({ userId: ctx.user.id, search: expiring[0] as string, limit: 6 });
+        const recipes = Array.isArray(result) ? result : (result as any).recipes ?? result;
+        return { recipes, expiringIngredients: expiring };
+      }),
+  }),
   // ---------------------------------------------------------------------------
-  // MEAL LOGS
+  // MEAL LOGSS
   // ---------------------------------------------------------------------------
   mealLogs: router({
     list: protectedProcedure
