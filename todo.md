@@ -433,3 +433,7 @@
 - [x] Sidebar: accesos directos "Mi Panel Experto" y "Mi Panel Creador"
 - [x] TypeScript: 0 errores
 - [x] Tests: 19/19 pasando
+
+## Sprint Dashboard: Recomendaciones y Menús Sugeridos
+- [x] Reemplazar sección "Recetas destacadas" por "Recomendaciones para ti" (recetas personalizadas según perfil)
+- [x] Añadir sección "Menús que te pueden interesar" (menús de biblioteca filtrados por objetivo del usuario)

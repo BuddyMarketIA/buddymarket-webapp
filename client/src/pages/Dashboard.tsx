@@ -163,6 +163,14 @@ export default function Dashboard() {
     prevAllCompleteRef.current = allMacrosComplete;
   }, [allMacrosComplete]);
   const profileData = trpc.profile.get.useQuery();
+  // Recommendations: recipes personalized by meal time and user goal
+  const userGoal = profileData.data?.profile?.mainGoal;
+  const recommendedRecipes = trpc.recipes.list.useQuery(
+    { limit: 5, isPublic: true, isSeeded: true },
+    { enabled: true }
+  );
+  // Suggested menus from library
+  const suggestedMenus = trpc.menus.library.useQuery({ limit: 4 });
 
   // Calculate profile completion percentage
   const profileCompletion = (() => {
@@ -545,42 +553,114 @@ export default function Dashboard() {
         </Link>
       )}
 
-      {/* Recent Recipes */}
+      {/* Recommendations Section */}
       <div style={{ marginBottom: "20px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
-          <h2 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.02em" }}>Recetas destacadas</h2>
+          <h2 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.02em" }}>
+            ✨ Recomendaciones para ti
+          </h2>
           <Link href="/recipes"><span style={{ fontSize: "13px", fontWeight: 600, color: "#F97316" }}>Ver todas →</span></Link>
         </div>
-        {recentRecipes.isLoading ? (
+        {recommendedRecipes.isLoading ? (
           <div style={{ display: "flex", gap: "12px", overflowX: "auto", paddingBottom: "4px" }}>
-            {[0, 1, 2].map((i) => (
-              <div key={i} style={{ width: "160px", height: "120px", borderRadius: "18px", background: "#f3f4f6", flexShrink: 0, animation: "pulse 1.5s infinite" }} />
+            {[0, 1, 2, 3].map((i) => (
+              <div key={i} style={{ width: "150px", height: "130px", borderRadius: "18px", background: "#f3f4f6", flexShrink: 0, animation: "pulse 1.5s infinite" }} />
             ))}
           </div>
-        ) : recentRecipes.data && recentRecipes.data.recipes && recentRecipes.data.recipes.length > 0 ? (
+        ) : recommendedRecipes.data && recommendedRecipes.data.recipes.length > 0 ? (
           <div style={{ display: "flex", gap: "12px", overflowX: "auto", paddingBottom: "4px" }}>
-            {recentRecipes.data.recipes.map((recipe: any, i: number) => (
+            {recommendedRecipes.data.recipes.map((recipe: any, i: number) => (
               <Link key={recipe.id} href={`/recipes/${recipe.id}`}>
-                <div style={{ width: "160px", flexShrink: 0, borderRadius: "18px", overflow: "hidden", cursor: "pointer", position: "relative", boxShadow: "0 4px 16px rgba(0,0,0,0.12)" }}>
-                  <div style={{ height: "110px", background: `linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.65) 100%), url(${FOOD_IMAGES[i % FOOD_IMAGES.length]}) center/cover` }}>
+                <div style={{ width: "150px", flexShrink: 0, borderRadius: "18px", overflow: "hidden", cursor: "pointer", position: "relative", boxShadow: "0 4px 16px rgba(0,0,0,0.12)" }}>
+                  <div style={{ height: "110px", background: `linear-gradient(180deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.70) 100%), url(${recipe.imageUrl || FOOD_IMAGES[i % FOOD_IMAGES.length]}) center/cover` }}>
                     <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "10px" }}>
-                      <p style={{ margin: 0, fontSize: "12px", fontWeight: 800, color: "white", lineHeight: 1.3, textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}>{recipe.nameEs}</p>
-                      <p style={{ margin: "2px 0 0", fontSize: "10px", color: "rgba(255,255,255,0.8)" }}>{recipe.calories ?? 0} kcal</p>
+                      <p style={{ margin: 0, fontSize: "12px", fontWeight: 800, color: "white", lineHeight: 1.3, textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}>{recipe.nameEs || recipe.name}</p>
+                      <p style={{ margin: "2px 0 0", fontSize: "10px", color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>🔥 {recipe.calories ?? 0} kcal</p>
                     </div>
+                  </div>
+                  <div style={{ background: "white", padding: "6px 10px" }}>
+                    <p style={{ margin: 0, fontSize: "10px", color: "#9ca3af", fontWeight: 600 }}>
+                      {recipe.mealTime === "desayuno" ? "☀️ Desayuno" :
+                       recipe.mealTime === "comida" ? "🍽️ Comida" :
+                       recipe.mealTime === "cena" ? "🌙 Cena" :
+                       recipe.mealTime === "merienda" ? "🍎 Merienda" :
+                       recipe.mealTime === "media_manana" ? "🥐 Media mañana" : "🍴 Cualquiera"}
+                    </p>
                   </div>
                 </div>
               </Link>
             ))}
           </div>
         ) : (
-          <div style={{ background: "white", borderRadius: "18px", padding: "24px", textAlign: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
-            <p style={{ margin: "0 0 4px", fontSize: "28px" }}>🍽️</p>
-            <p style={{ margin: 0, fontSize: "13px", color: "#9ca3af" }}>Aún no hay recetas públicas</p>
-            <Link href="/recipes/new">
-              <button style={{ marginTop: "10px", background: "#F97316", border: "none", borderRadius: "10px", padding: "8px 16px", fontSize: "12px", fontWeight: 700, color: "white", cursor: "pointer" }}>
-                Crear receta
-              </button>
-            </Link>
+          <div style={{ background: "white", borderRadius: "18px", padding: "20px", textAlign: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+            <p style={{ margin: "0 0 4px", fontSize: "24px" }}>🍽️</p>
+            <p style={{ margin: 0, fontSize: "13px", color: "#9ca3af" }}>Completa tu perfil para recibir recomendaciones personalizadas</p>
+          </div>
+        )}
+      </div>
+
+      {/* Suggested Menus Section */}
+      <div style={{ marginBottom: "20px" }}>
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+          <h2 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.02em" }}>
+            📅 Menús que te pueden interesar
+          </h2>
+          <Link href="/menu-library"><span style={{ fontSize: "13px", fontWeight: 600, color: "#F97316" }}>Ver todos →</span></Link>
+        </div>
+        {suggestedMenus.isLoading ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {[0, 1, 2].map((i) => (
+              <div key={i} style={{ height: "64px", borderRadius: "16px", background: "#f3f4f6", animation: "pulse 1.5s infinite" }} />
+            ))}
+          </div>
+        ) : suggestedMenus.data && suggestedMenus.data.length > 0 ? (
+          <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+            {suggestedMenus.data.slice(0, 4).map((menu: any) => {
+              const goalColors: Record<string, string> = {
+                perdida_peso: "linear-gradient(135deg, #22C55E, #16A34A)",
+                ganancia_muscular: "linear-gradient(135deg, #3B82F6, #1D4ED8)",
+                tonificacion: "linear-gradient(135deg, #F97316, #EA580C)",
+                perdida_grasa: "linear-gradient(135deg, #EF4444, #B91C1C)",
+                mantenimiento: "linear-gradient(135deg, #8B5CF6, #6D28D9)",
+                bienestar: "linear-gradient(135deg, #10B981, #059669)",
+                vegano: "linear-gradient(135deg, #84CC16, #4D7C0F)",
+              };
+              const goalEmojis: Record<string, string> = {
+                perdida_peso: "⚖️", ganancia_muscular: "💪", tonificacion: "🏋️",
+                perdida_grasa: "🔥", mantenimiento: "🎯", bienestar: "🌿", vegano: "🥦",
+              };
+              const goalLabels: Record<string, string> = {
+                perdida_peso: "Pérdida de peso", ganancia_muscular: "Ganancia muscular",
+                tonificacion: "Tonificación", perdida_grasa: "Pérdida de grasa",
+                mantenimiento: "Mantenimiento", bienestar: "Bienestar", vegano: "Vegano",
+              };
+              const bg = goalColors[menu.goal] || "linear-gradient(135deg, #F97316, #EA580C)";
+              const emoji = goalEmojis[menu.goal] || "📅";
+              const label = goalLabels[menu.goal] || menu.goal;
+              return (
+                <Link key={menu.id} href="/menu-library">
+                  <div style={{ background: "white", borderRadius: "16px", padding: "12px 14px", display: "flex", alignItems: "center", gap: "12px", boxShadow: "0 2px 10px rgba(0,0,0,0.07)", cursor: "pointer", border: "1px solid rgba(0,0,0,0.05)" }}>
+                    <div style={{ width: "40px", height: "40px", borderRadius: "12px", background: bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", flexShrink: 0 }}>
+                      {emoji}
+                    </div>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <p style={{ margin: 0, fontSize: "13px", fontWeight: 800, color: "#1a1a1a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{menu.name}</p>
+                      <p style={{ margin: "2px 0 0", fontSize: "11px", color: "#9ca3af", fontWeight: 600 }}>
+                        {label} · {menu.dailyCalories ?? "—"} kcal/día
+                      </p>
+                    </div>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#d1d5db" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                      <path d="M9 18l6-6-6-6"/>
+                    </svg>
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        ) : (
+          <div style={{ background: "white", borderRadius: "18px", padding: "20px", textAlign: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+            <p style={{ margin: "0 0 4px", fontSize: "24px" }}>📅</p>
+            <p style={{ margin: 0, fontSize: "13px", color: "#9ca3af" }}>No hay menús disponibles aún</p>
           </div>
         )}
       </div>
