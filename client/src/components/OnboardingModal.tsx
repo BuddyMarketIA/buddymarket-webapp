@@ -24,7 +24,7 @@ const STEPS = [
     title: "Compra inteligente",
     subtitle: "Mercadona y Carrefour integrados",
     description:
-      "Genera listas de la compra automáticamente desde tus menús y envíalas directamente al carrito de Mercadona con un solo clic.",
+      "Genera listas de la compra automáticamente desde tus menús y envíalas directamente al carrito de tu Super con un solo clic.",
     color: "#3B82F6",
   },
   {

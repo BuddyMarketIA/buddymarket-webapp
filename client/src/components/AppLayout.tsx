@@ -73,6 +73,7 @@ const SIDEBAR_GROUPS = [
     label: "Nutrición",
     items: [
       { key: "meal-log", label: "Diario Nutricional", to: "/meal-log", emoji: "📊" },
+      { key: "stats", label: "Estadísticas", to: "/stats", emoji: "📈" },
       { key: "recipes", label: "Recetas", to: "/recipes", emoji: "📖" },
       { key: "favorites", label: "Mis Favoritas", to: "/favorites", emoji: "❤️" },
       { key: "menus", label: "Planificador de Menús", to: "/menus", emoji: "📅" },

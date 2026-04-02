@@ -410,3 +410,42 @@ describe("buddyApplications", () => {
     ).rejects.toThrow();
   });
 });
+
+// ─── Nutritional History ──────────────────────────────────────────────────────
+describe("mealLogs.nutritionalHistory", () => {
+  it("returns data array for valid days input", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.mealLogs.nutritionalHistory({ days: 30 });
+    expect(result).toBeDefined();
+    expect(Array.isArray(result.data)).toBe(true);
+  });
+
+  it("rejects days below 7", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    await expect(
+      caller.mealLogs.nutritionalHistory({ days: 3 })
+    ).rejects.toThrow();
+  });
+
+  it("rejects days above 90", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    await expect(
+      caller.mealLogs.nutritionalHistory({ days: 100 })
+    ).rejects.toThrow();
+  });
+});
+
+// ─── Streak ───────────────────────────────────────────────────────────────────
+describe("mealLogs.getStreak", () => {
+  it("returns currentStreak and longestStreak", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.mealLogs.getStreak();
+    expect(result).toBeDefined();
+    expect(typeof result.currentStreak).toBe("number");
+    expect(typeof result.longestStreak).toBe("number");
+  });
+});

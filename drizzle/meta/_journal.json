@@ -99,6 +99,13 @@
       "when": 1775130373467,
       "tag": "0013_useful_speedball",
       "breakpoints": true
+    },
+    {
+      "idx": 14,
+      "version": "5",
+      "when": 1775140046173,
+      "tag": "0014_sour_firestar",
+      "breakpoints": true
     }
   ]
 }

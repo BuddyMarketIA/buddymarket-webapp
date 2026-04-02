@@ -904,3 +904,17 @@ export const savedEvents = mysqlTable("saved_events", {
 }));
 export type SavedEvent = typeof savedEvents.$inferSelect;
 export type InsertSavedEvent = typeof savedEvents.$inferInsert;
+
+// ─── Recipe Favorites ─────────────────────────────────────────────────────────────────────────────────
+export const recipeFavorites = mysqlTable("recipe_favorites", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  recipeId: int("recipeId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  userIdx: index("recipe_favorites_user_idx").on(t.userId),
+  recipeIdx: index("recipe_favorites_recipe_idx").on(t.recipeId),
+  uniqueUserRecipe: unique("recipe_favorites_unique").on(t.userId, t.recipeId),
+}));
+export type RecipeFavorite = typeof recipeFavorites.$inferSelect;
+export type InsertRecipeFavorite = typeof recipeFavorites.$inferInsert;

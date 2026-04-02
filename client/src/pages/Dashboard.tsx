@@ -104,6 +104,7 @@ export default function Dashboard() {
   }, []);
 
   const dailySummary = trpc.mealLogs.dailySummary.useQuery({ date: today });
+  const streakData = trpc.mealLogs.getStreak.useQuery();
   const inventoryList = trpc.inventory.list.useQuery();
   const recentRecipes = trpc.recipes.list.useQuery(useMemo(() => ({ limit: 3, isPublic: true }), []));
   const _menusList = trpc.menus.list.useQuery();
@@ -345,6 +346,23 @@ export default function Dashboard() {
         </div>
       </Link>
 
+      {/* Streak Widget */}
+      {(streakData.data?.currentStreak ?? 0) > 0 && (
+        <div style={{ background: "linear-gradient(135deg, #6366F1 0%, #4F46E5 100%)", borderRadius: "20px", padding: "18px 20px", marginBottom: "16px", boxShadow: "0 8px 24px rgba(99,102,241,0.35)", position: "relative", overflow: "hidden" }}>
+          <div style={{ position: "absolute", top: "-20px", right: "-20px", width: "140px", height: "140px", borderRadius: "50%", background: "rgba(255,255,255,0.08)" }} />
+          <div style={{ position: "relative", display: "flex", alignItems: "center", gap: "16px" }}>
+            <div style={{ width: "56px", height: "56px", borderRadius: "16px", background: "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px", flexShrink: 0 }}>🔥</div>
+            <div style={{ flex: 1 }}>
+              <p style={{ margin: "0 0 2px", fontSize: "13px", fontWeight: 600, color: "rgba(255,255,255,0.85)" }}>Racha actual</p>
+              <p style={{ margin: 0, fontSize: "24px", fontWeight: 900, color: "white", lineHeight: 1, letterSpacing: "-0.03em" }}>{streakData.data?.currentStreak ?? 0} días</p>
+              {(streakData.data?.longestStreak ?? 0) > (streakData.data?.currentStreak ?? 0) && (
+                <p style={{ margin: "4px 0 0", fontSize: "11px", fontWeight: 600, color: "rgba(255,255,255,0.7)" }}>Récord: {streakData.data?.longestStreak} días 🏆</p>
+              )}
+            </div>
+          </div>
+        </div>
+      )}
+
       {/* Today's Menu */}
       {todayMenuItems.length > 0 && (
         <div style={{ marginBottom: "20px" }}>
@@ -399,7 +417,7 @@ export default function Dashboard() {
         {[
           { href: "/shopping-lists", emoji: "🛒", label: "Lista de la compra", bg: "white", color: "#1a1a1a", shadow: "0 2px 10px rgba(0,0,0,0.07)", border: "none" },
           { href: "/buddy-experts", emoji: "🧑‍🍳", label: "Menús BuddyExperts", bg: "white", color: "#1a1a1a", shadow: "0 2px 10px rgba(0,0,0,0.07)", border: "none" },
-          { href: "/buddy-ia", emoji: "🤖", label: "Buddy IA", bg: "white", color: "#1a1a1a", shadow: "0 2px 10px rgba(0,0,0,0.07)", border: "none" },
+          { href: "/stats", emoji: "📈", label: "Estadísticas", bg: "linear-gradient(135deg, #EEF2FF, #E0E7FF)", color: "#6366F1", shadow: "0 2px 10px rgba(99,102,241,0.12)", border: "1px solid rgba(99,102,241,0.15)" },
           { href: "/menu-library", emoji: "📚", label: "Biblioteca Menús", bg: "linear-gradient(135deg, #FFF7ED, #FFEDD5)", color: "#F97316", shadow: "0 2px 10px rgba(249,115,22,0.12)", border: "1px solid rgba(249,115,22,0.15)" },
         ].map((item) => (
           <Link key={item.href} href={item.href}>

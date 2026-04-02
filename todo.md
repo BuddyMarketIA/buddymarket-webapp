@@ -596,3 +596,54 @@
 - [x] BuddyExperts.tsx: cards funcionales con navegación a /buddy-experts/:id
 - [x] BuddyMakers.tsx: cards funcionales con navegación a /buddy-makers/:id
 - [x] BuddyProfile.tsx: página de perfil público con estrellas, stats y plan cards
+
+## Sprint: Funcionalidades Pendientes Completas (02/04/2026)
+
+### Recetas Favoritas
+- [x] Tabla `recipeFavorites` en drizzle/schema.ts (userId, recipeId, createdAt)
+- [x] Helper `toggleFavorite`, `getFavoriteIds` en server/db.ts
+- [x] Endpoints tRPC: `recipes.toggleFavorite`, `recipes.getFavoriteIds`
+- [x] Botón corazón en RecipeCard con toggle optimista y animación
+- [x] Página /favorites con grid de recetas favoritas y filtros
+- [x] Tests vitest para toggleFavorite y getFavoriteIds
+
+### Dashboard Mejorado
+- [x] Anillo de progreso SVG circular para calorías (con animación)
+- [x] Streak de días consecutivos registrando comidas (endpoint backend + widget visual)
+
+### Búsqueda de Recetas Mejorada
+- [x] Ampliar búsqueda en `description` e `ingredientsJson` en backend (ya implementado)
+- [x] Endpoint `recipes.searchSuggestions` para autocompletado (ya implementado)
+
+### Inventario Mejorado
+- [x] Campo `expirationDate` en tabla inventory_items en BD (ya implementado)
+- [x] Endpoint IA para analizar foto y detectar productos del inventario (ya implementado)
+
+### PWA / Mobile
+- [x] manifest.json con nombre, iconos, colores, display standalone (ya implementado)
+- [x] Meta tags iOS/Android para instalación como app (ya implementado)
+- [x] Service Worker básico para offline/cache (ya implementado)
+
+### Scroll Infinito en Recetas
+- [x] Paginación cursor-based en backend (recipes.list con cursor) (ya implementado)
+- [x] useInfiniteQuery en Recipes.tsx con IntersectionObserver (ya implementado)
+
+## Sprint: Nuevas Mejoras de Alto Impacto (02/04/2026)
+
+### UX General
+- [ ] Añadir breadcrumbs/título de sección en todas las páginas (pendiente)
+- [ ] Mejorar página Menús: drag-and-drop entre días/comidas
+- [x] Añadir página de estadísticas nutricionales (gráficos de evolución)
+- [ ] Mejorar BuddyIA: historial de conversaciones guardado en BD
+- [ ] Añadir página de ajustes/configuración de usuario
+- [x] Mejorar lista de compra: marcar items como comprados con animación (ya implementado)
+
+### Backend
+- [x] Endpoint para obtener estadísticas nutricionales históricas (últimos 7/30 días)
+- [ ] Endpoint para exportar datos del perfil en JSON
+- [ ] Mejorar endpoint BuddyApplication: evitar solicitudes duplicadas
+
+### Tests
+- [x] Añadir tests para endpoints de favoritos (nutritionalHistory + streak)
+- [x] Añadir tests para endpoint de streak
+- [x] Tests: 29/29 pasando

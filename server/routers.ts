@@ -1046,6 +1046,102 @@ Si no puedes detectar productos, devuelve {"products": []}. No incluyas texto ad
         await drizzleDb.delete(mealLogs).where(eq(mealLogs.id, input.id));
         return { success: true };
       }),
+
+    getStreak: protectedProcedure.query(async ({ ctx }) => {
+      try {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return { currentStreak: 0, longestStreak: 0 };
+        const { mealLogs: logsTable } = await import("../drizzle/schema");
+        const { eq, desc } = await import("drizzle-orm");
+        // Get all unique log dates (descending)
+        const rows = await drizzleDb
+          .selectDistinct({ logDate: logsTable.logDate })
+          .from(logsTable)
+          .where(eq(logsTable.userId, ctx.user.id))
+          .orderBy(desc(logsTable.logDate));
+        if (rows.length === 0) return { currentStreak: 0, longestStreak: 0 };
+        // Sort dates descending
+        const dates = rows
+          .map(r => new Date(r.logDate).toISOString().split("T")[0])
+          .sort()
+          .reverse();
+        const today = new Date().toISOString().split("T")[0];
+        const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
+        // Current streak: must include today or yesterday
+        let currentStreak = 0;
+        if (dates[0] === today || dates[0] === yesterday) {
+          currentStreak = 1;
+          for (let i = 1; i < dates.length; i++) {
+            const prev = new Date(dates[i - 1]);
+            const curr = new Date(dates[i]);
+            const diffDays = Math.round((prev.getTime() - curr.getTime()) / 86400000);
+            if (diffDays === 1) currentStreak++;
+            else break;
+          }
+        }
+        // Longest streak
+        let longestStreak = currentStreak;
+        let tempStreak = 1;
+        for (let i = 1; i < dates.length; i++) {
+          const prev = new Date(dates[i - 1]);
+          const curr = new Date(dates[i]);
+          const diffDays = Math.round((prev.getTime() - curr.getTime()) / 86400000);
+          if (diffDays === 1) {
+            tempStreak++;
+            longestStreak = Math.max(longestStreak, tempStreak);
+          } else {
+            tempStreak = 1;
+          }
+        }
+        return { currentStreak, longestStreak };
+      } catch {
+        return { currentStreak: 0, longestStreak: 0 };
+      }
+    }),
+
+    nutritionalHistory: protectedProcedure
+      .input(z.object({ days: z.number().min(7).max(90).default(30) }))
+      .query(async ({ ctx, input }) => {
+        try {
+          const drizzleDb = await db.getDb();
+          if (!drizzleDb) return { data: [] };
+          const { mealLogs: logsTable } = await import("../drizzle/schema");
+          const { eq, gte, sql } = await import("drizzle-orm");
+          // Calculate start date
+          const endDate = new Date();
+          const startDate = new Date(endDate.getTime() - input.days * 24 * 60 * 60 * 1000);
+          const startDateStr = startDate.toISOString().split("T")[0];
+          // Get daily aggregated data
+          const rows = await drizzleDb
+            .select({
+              date: logsTable.logDate,
+              calories: sql<number>`COALESCE(SUM(${logsTable.calories}), 0)`,
+              proteins: sql<number>`COALESCE(SUM(${logsTable.proteins}), 0)`,
+              carbohydrates: sql<number>`COALESCE(SUM(${logsTable.carbohydrates}), 0)`,
+              fats: sql<number>`COALESCE(SUM(${logsTable.fats}), 0)`,
+            })
+            .from(logsTable)
+            .where(eq(logsTable.userId, ctx.user.id))
+            .groupBy(logsTable.logDate)
+            .orderBy(logsTable.logDate);
+          // Filter by date range and format
+          const data = rows
+            .filter(r => {
+              const dateStr = new Date(r.date).toISOString().split("T")[0];
+              return dateStr >= startDateStr;
+            })
+            .map(r => ({
+              date: new Date(r.date).toISOString().split("T")[0],
+              calories: Math.round(Number(r.calories) || 0),
+              proteins: Math.round(Number(r.proteins) || 0),
+              carbohydrates: Math.round(Number(r.carbohydrates) || 0),
+              fats: Math.round(Number(r.fats) || 0),
+            }));
+          return { data };
+        } catch {
+          return { data: [] };
+        }
+      }),
   }),
 
   // ---------------------------------------------------------------------------
