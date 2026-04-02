@@ -46,6 +46,8 @@ import {
   users,
   userSubscriptions,
   mealReminders,
+  userAchievements,
+  userPoints,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -1472,4 +1474,141 @@ export async function deleteMealReminder(userId: number, mealType: string) {
   await db
     .delete(mealReminders)
     .where(and(eq(mealReminders.userId, userId), eq(mealReminders.mealType, mealType)));
+}
+
+// =============================================================================
+// ACHIEVEMENTS
+// =============================================================================
+
+export async function getUserAchievements(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(userAchievements)
+    .where(eq(userAchievements.userId, userId))
+    .orderBy(desc(userAchievements.unlockedAt));
+}
+
+export async function hasAchievement(userId: number, achievementId: string): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return false;
+  const rows = await db
+    .select()
+    .from(userAchievements)
+    .where(and(eq(userAchievements.userId, userId), eq(userAchievements.achievementId, achievementId)))
+    .limit(1);
+  return rows.length > 0;
+}
+
+export async function unlockAchievement(userId: number, achievementId: string, points: number) {
+  const db = await getDb();
+  if (!db) return null;
+  // Insert achievement (ignore if already exists due to unique constraint)
+  try {
+    await db.insert(userAchievements).values({ userId, achievementId, pointsAwarded: points });
+    // Update user points
+    await addUserPoints(userId, points);
+    return { unlocked: true };
+  } catch {
+    return { unlocked: false }; // Already unlocked
+  }
+}
+
+export async function getUserPoints(userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db.select().from(userPoints).where(eq(userPoints.userId, userId)).limit(1);
+  return rows[0] ?? null;
+}
+
+export async function addUserPoints(userId: number, points: number) {
+  const db = await getDb();
+  if (!db) return;
+  const existing = await getUserPoints(userId);
+  if (existing) {
+    const newTotal = existing.totalPoints + points;
+    // Compute level from points (simple threshold system)
+    const level = computeLevel(newTotal);
+    await db
+      .update(userPoints)
+      .set({ totalPoints: newTotal, level })
+      .where(eq(userPoints.userId, userId));
+  } else {
+    const level = computeLevel(points);
+    await db.insert(userPoints).values({ userId, totalPoints: points, level });
+  }
+}
+
+function computeLevel(points: number): number {
+  const thresholds = [0, 50, 150, 350, 700, 1200, 2000, 3500, 5000];
+  let level = 1;
+  for (let i = 0; i < thresholds.length; i++) {
+    if (points >= thresholds[i]!) level = i + 1;
+    else break;
+  }
+  return level;
+}
+
+export async function getTotalMealLogs(userId: number): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const rows = await db
+    .select({ count: sql<number>`COUNT(*)` })
+    .from(mealLogs)
+    .where(eq(mealLogs.userId, userId));
+  return Number(rows[0]?.count ?? 0);
+}
+
+export async function getDistinctRecipesLogged(userId: number): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const rows = await db
+    .select({ count: sql<number>`COUNT(DISTINCT ${mealLogs.recipeId})` })
+    .from(mealLogs)
+    .where(and(eq(mealLogs.userId, userId), sql`${mealLogs.recipeId} IS NOT NULL`));
+  return Number(rows[0]?.count ?? 0);
+}
+
+export async function getMealTypesLoggedToday(userId: number): Promise<number[]> {
+  const db = await getDb();
+  if (!db) return [];
+  const today = new Date().toISOString().split("T")[0];
+  const rows = await db
+    .select({ dayPartId: mealLogs.dayPartId })
+    .from(mealLogs)
+    .where(and(eq(mealLogs.userId, userId), sql`DATE(${mealLogs.logDate}) = ${today}`));
+  const ids = rows.map((r) => r.dayPartId).filter((id): id is number => id !== null && id !== undefined);
+  return Array.from(new Set(ids));
+}
+
+export async function getMealStreak(userId: number): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  try {
+    const rows = await db
+      .selectDistinct({ logDate: mealLogs.logDate })
+      .from(mealLogs)
+      .where(eq(mealLogs.userId, userId))
+      .orderBy(desc(mealLogs.logDate));
+    if (rows.length === 0) return 0;
+    const dates = rows
+      .map((r) => new Date(r.logDate).toISOString().split("T")[0])
+      .sort()
+      .reverse();
+    const today = new Date().toISOString().split("T")[0];
+    const yesterday = new Date(Date.now() - 86400000).toISOString().split("T")[0];
+    if (dates[0] !== today && dates[0] !== yesterday) return 0;
+    let streak = 1;
+    for (let i = 1; i < dates.length; i++) {
+      const prev = new Date(dates[i - 1]!);
+      const curr = new Date(dates[i]!);
+      const diffDays = Math.round((prev.getTime() - curr.getTime()) / 86400000);
+      if (diffDays === 1) streak++;
+      else break;
+    }
+    return streak;
+  } catch {
+    return 0;
+  }
 }

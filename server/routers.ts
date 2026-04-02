@@ -3133,5 +3133,106 @@ Devuelve EXACTAMENTE este JSON:
       };
     }),
   }),
+
+  // ---------------------------------------------------------------------------
+  // ACHIEVEMENTS
+  // ---------------------------------------------------------------------------
+  achievements: router({
+    getAll: protectedProcedure.query(async ({ ctx }) => {
+      const { ACHIEVEMENTS_CATALOG, getLevelForPoints, getNextLevel } = await import("./achievements-catalog");
+      const [unlocked, pointsRow] = await Promise.all([
+        db.getUserAchievements(ctx.user.id),
+        db.getUserPoints(ctx.user.id),
+      ]);
+      const unlockedIds = new Set(unlocked.map((a) => a.achievementId));
+      const totalPoints = pointsRow?.totalPoints ?? 0;
+      const currentLevel = getLevelForPoints(totalPoints);
+      const nextLevel = getNextLevel(totalPoints);
+      const achievements = ACHIEVEMENTS_CATALOG.map((a) => ({
+        ...a,
+        unlocked: unlockedIds.has(a.id),
+        unlockedAt: unlocked.find((u) => u.achievementId === a.id)?.unlockedAt ?? null,
+      }));
+      return {
+        achievements,
+        totalPoints,
+        level: currentLevel,
+        nextLevel,
+        unlockedCount: unlockedIds.size,
+        totalCount: ACHIEVEMENTS_CATALOG.length,
+      };
+    }),
+
+    getUserStats: protectedProcedure.query(async ({ ctx }) => {
+      const { getLevelForPoints, getNextLevel, ACHIEVEMENTS_CATALOG } = await import("./achievements-catalog");
+      const [unlocked, pointsRow] = await Promise.all([
+        db.getUserAchievements(ctx.user.id),
+        db.getUserPoints(ctx.user.id),
+      ]);
+      const totalPoints = pointsRow?.totalPoints ?? 0;
+      const currentLevel = getLevelForPoints(totalPoints);
+      const nextLevel = getNextLevel(totalPoints);
+      const pointsToNext = nextLevel ? nextLevel.minPoints - totalPoints : 0;
+      const progressToNext = nextLevel
+        ? Math.round(((totalPoints - currentLevel.minPoints) / (nextLevel.minPoints - currentLevel.minPoints)) * 100)
+        : 100;
+      return {
+        totalPoints,
+        level: currentLevel,
+        nextLevel,
+        pointsToNext,
+        progressToNext,
+        unlockedCount: unlocked.length,
+        totalCount: ACHIEVEMENTS_CATALOG.length,
+        recentUnlocked: unlocked.slice(0, 3),
+      };
+    }),
+
+    evaluate: protectedProcedure
+      .input(z.object({
+        trigger: z.enum(["meal_logged", "recipe_created", "profile_completed", "barcode_used", "photo_added"]),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { ACHIEVEMENTS_CATALOG } = await import("./achievements-catalog");
+        const userId = ctx.user.id;
+        const newlyUnlocked: string[] = [];
+
+        // Gather stats needed for evaluation
+        const [totalLogs, distinctRecipes, streak, mealTypesToday] = await Promise.all([
+          db.getTotalMealLogs(userId),
+          db.getDistinctRecipesLogged(userId),
+          db.getMealStreak(userId),
+          db.getMealTypesLoggedToday(userId),
+        ]);
+
+        for (const achievement of ACHIEVEMENTS_CATALOG) {
+          const alreadyUnlocked = await db.hasAchievement(userId, achievement.id);
+          if (alreadyUnlocked) continue;
+
+          let shouldUnlock = false;
+          const cond = achievement.condition;
+
+          if (cond.type === "first_log" && totalLogs >= 1) shouldUnlock = true;
+          else if (cond.type === "total_logs" && totalLogs >= cond.count) shouldUnlock = true;
+          else if (cond.type === "streak_days" && streak >= cond.days) shouldUnlock = true;
+          else if (cond.type === "distinct_recipes" && distinctRecipes >= cond.count) shouldUnlock = true;
+          else if (cond.type === "distinct_meal_types" && mealTypesToday.length >= cond.count) shouldUnlock = true;
+          else if (cond.type === "used_barcode_scanner" && input.trigger === "barcode_used") shouldUnlock = true;
+          else if (cond.type === "added_meal_photo" && input.trigger === "photo_added") shouldUnlock = true;
+          else if (cond.type === "created_recipe" && input.trigger === "recipe_created") shouldUnlock = true;
+          else if (cond.type === "completed_profile" && input.trigger === "profile_completed") shouldUnlock = true;
+
+          if (shouldUnlock) {
+            const result = await db.unlockAchievement(userId, achievement.id, achievement.points);
+            if (result?.unlocked) newlyUnlocked.push(achievement.id);
+          }
+        }
+
+        return {
+          newlyUnlocked,
+          count: newlyUnlocked.length,
+        };
+      }),
+  }),
 });
 export type AppRouter = typeof appRouter;

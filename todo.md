@@ -718,3 +718,36 @@
 
 ### Tests
 - [x] 3 tests para getDailySummary (shape, default goal, date format) - 41/41 pasando
+
+## Sprint: Sistema de Logros y Recompensas (02/04/2026)
+
+### Base de Datos
+- [x] Tabla `user_achievements` (userId, achievementId, unlockedAt, pointsAwarded)
+- [x] Tabla `user_points` (userId, totalPoints, updatedAt)
+- [x] Migración con pnpm db:push
+
+### Backend (tRPC) — router `achievements`
+- [x] `achievements.getAll` — lista todos los logros con estado (desbloqueado/bloqueado) del usuario
+- [x] `achievements.getUserStats` — puntos totales, nivel actual, logros desbloqueados/total
+- [x] `achievements.evaluate` — evalúa y desbloquea logros automáticamente tras registrar comida
+- [x] Catálogo de logros en `server/achievements-catalog.ts` (25+ logros en 5 categorías)
+- [x] Helpers en db.ts: getUserAchievements, getUserPoints, unlockAchievement, hasAchievement, getTotalMealLogs, getDistinctRecipesLogged, getMealStreak, getMealTypesLoggedToday
+- [x] Sistema de 10 niveles (Principiante → Experto Nutricional) basado en puntos
+
+### Catálogo de Logros (25 logros en 5 categorías)
+- [x] Categoría RACHA: Primer registro, 3 días, 7 días, 30 días, 100 días
+- [x] Categoría CANTIDAD: 10, 50, 100, 500 registros
+- [x] Categoría VARIEDAD: 5 tipos distintos, 10 recetas distintas
+- [x] Categoría NUTRICIÓN: Objetivo calórico 3 días, 7 días, completar macros
+- [x] Categoría EXPLORADOR: Escáner de código de barras, foto a comida, crear receta
+
+### Frontend
+- [x] Página `/achievements` con galería de badges (desbloqueados en color, bloqueados en gris)
+- [x] Card de nivel y puntos en la parte superior con barra de progreso
+- [x] Filtros por categoría (Racha, Cantidad, Variedad, Nutrición, Explorador)
+- [x] Toast de notificación con acción "Ver logros" al desbloquear un logro
+- [x] Evaluación automática al registrar comida en MealLog.tsx
+- [x] Acceso desde sidebar (sección Nutrición) y Dashboard (card de acceso rápido)
+
+### Tests
+- [x] 9 tests para getAll, getUserStats, evaluate - 47/47 pasando

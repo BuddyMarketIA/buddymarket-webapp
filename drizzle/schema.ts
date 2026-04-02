@@ -953,3 +953,28 @@ export const pushSubscriptions = mysqlTable("push_subscriptions", {
 }));
 export type PushSubscription = typeof pushSubscriptions.$inferSelect;
 export type InsertPushSubscription = typeof pushSubscriptions.$inferInsert;
+
+// ─── Achievements ─────────────────────────────────────────────────────────────
+export const userAchievements = mysqlTable("user_achievements", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  achievementId: varchar("achievementId", { length: 64 }).notNull(),
+  unlockedAt: timestamp("unlockedAt").defaultNow().notNull(),
+  pointsAwarded: int("pointsAwarded").default(0).notNull(),
+}, (t) => ({
+  userIdx: index("user_achievements_user_idx").on(t.userId),
+  uniqueUserAchievement: unique("user_achievements_unique").on(t.userId, t.achievementId),
+}));
+export type UserAchievement = typeof userAchievements.$inferSelect;
+export type InsertUserAchievement = typeof userAchievements.$inferInsert;
+
+// ─── User Points ──────────────────────────────────────────────────────────────
+export const userPoints = mysqlTable("user_points", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull().unique(),
+  totalPoints: int("totalPoints").default(0).notNull(),
+  level: int("level").default(1).notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type UserPoints = typeof userPoints.$inferSelect;
+export type InsertUserPoints = typeof userPoints.$inferInsert;

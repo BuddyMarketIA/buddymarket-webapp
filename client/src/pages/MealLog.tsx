@@ -48,6 +48,20 @@ export default function MealLog() {
   const { data: dayParts } = trpc.catalogs.dayParts.useQuery();
   const utils = trpc.useUtils();
 
+  const evaluateAchievements = trpc.achievements.evaluate.useMutation({
+    onSuccess: (data) => {
+      if (data.newlyUnlocked.length > 0) {
+        // Small delay so the meal success toast shows first
+        setTimeout(() => {
+          toast.success(`🏆 ¡Logro desbloqueado! +${data.newlyUnlocked.length} nuevo${data.newlyUnlocked.length > 1 ? "s" : ""} logro${data.newlyUnlocked.length > 1 ? "s" : ""}`, {
+            duration: 5000,
+            action: { label: "Ver logros", onClick: () => window.location.href = "/achievements" },
+          });
+        }, 800);
+      }
+    },
+  });
+
   const addLog = trpc.mealLogs.add.useMutation({
     onSuccess: () => {
       utils.mealLogs.list.invalidate({ startDate: selectedDate, endDate: selectedDate });
@@ -55,6 +69,8 @@ export default function MealLog() {
       setShowAdd(false);
       resetForm();
       toast.success("Comida registrada ✓");
+      // Evaluate achievements after logging a meal
+      evaluateAchievements.mutate({ trigger: "meal_logged" });
     },
     onError: (err) => toast.error(err.message),
   });

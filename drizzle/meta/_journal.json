@@ -120,6 +120,13 @@
       "when": 1775143285904,
       "tag": "0016_nappy_squirrel_girl",
       "breakpoints": true
+    },
+    {
+      "idx": 17,
+      "version": "5",
+      "when": 1775143924611,
+      "tag": "0017_clumsy_nitro",
+      "breakpoints": true
     }
   ]
 }

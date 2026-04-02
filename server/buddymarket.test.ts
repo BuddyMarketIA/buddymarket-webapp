@@ -94,6 +94,15 @@ vi.mock("./db", () => ({
   getMealReminders: vi.fn().mockResolvedValue([]),
   upsertMealReminder: vi.fn().mockResolvedValue({ action: "created" }),
   deleteMealReminder: vi.fn().mockResolvedValue(undefined),
+  // Achievement helpers
+  getUserAchievements: vi.fn().mockResolvedValue([]),
+  getUserPoints: vi.fn().mockResolvedValue({ totalPoints: 150 }),
+  unlockAchievement: vi.fn().mockResolvedValue({ unlocked: true }),
+  hasAchievement: vi.fn().mockResolvedValue(false),
+  getTotalMealLogs: vi.fn().mockResolvedValue(5),
+  getDistinctRecipesLogged: vi.fn().mockResolvedValue(3),
+  getMealStreak: vi.fn().mockResolvedValue(3),
+  getMealTypesLoggedToday: vi.fn().mockResolvedValue([1, 2]),
   // getDb: used by notifications router and other inline DB calls
   getDb: vi.fn().mockResolvedValue({
     select: vi.fn().mockReturnValue({
@@ -610,5 +619,83 @@ describe("notifications.getDailySummary", () => {
     const result = await caller.notifications.getDailySummary();
     expect(result.date).toMatch(/^\d{4}-\d{2}-\d{2}$/);
     expect(result.date).toBe(new Date().toISOString().split("T")[0]);
+  });
+});
+
+// =============================================================================
+// ACHIEVEMENTS TESTS
+// =============================================================================
+describe("achievements.getAll", () => {
+  it("returns achievements list with unlocked status and level info", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.achievements.getAll();
+    expect(result).toHaveProperty("achievements");
+    expect(result).toHaveProperty("totalPoints");
+    expect(result).toHaveProperty("level");
+    expect(result).toHaveProperty("unlockedCount");
+    expect(result).toHaveProperty("totalCount");
+    expect(Array.isArray(result.achievements)).toBe(true);
+    expect(result.totalCount).toBeGreaterThan(0);
+  });
+
+  it("each achievement has required fields", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.achievements.getAll();
+    for (const a of result.achievements) {
+      expect(a).toHaveProperty("id");
+      expect(a).toHaveProperty("title");
+      expect(a).toHaveProperty("description");
+      expect(a).toHaveProperty("emoji");
+      expect(a).toHaveProperty("points");
+      expect(a).toHaveProperty("category");
+      expect(a).toHaveProperty("unlocked");
+    }
+  });
+
+  it("level has required fields", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.achievements.getAll();
+    expect(result.level).toHaveProperty("level");
+    expect(result.level).toHaveProperty("title");
+    expect(result.level).toHaveProperty("emoji");
+    expect(result.level).toHaveProperty("minPoints");
+  });
+});
+
+describe("achievements.getUserStats", () => {
+  it("returns user stats with points and progress", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.achievements.getUserStats();
+    expect(result).toHaveProperty("totalPoints");
+    expect(result).toHaveProperty("level");
+    expect(result).toHaveProperty("progressToNext");
+    expect(result).toHaveProperty("unlockedCount");
+    expect(result).toHaveProperty("totalCount");
+    expect(result.progressToNext).toBeGreaterThanOrEqual(0);
+    expect(result.progressToNext).toBeLessThanOrEqual(100);
+  });
+});
+
+describe("achievements.evaluate", () => {
+  it("evaluates meal_logged trigger and returns newly unlocked array", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.achievements.evaluate({ trigger: "meal_logged" });
+    expect(result).toHaveProperty("newlyUnlocked");
+    expect(result).toHaveProperty("count");
+    expect(Array.isArray(result.newlyUnlocked)).toBe(true);
+    expect(result.count).toBe(result.newlyUnlocked.length);
+  });
+
+  it("rejects invalid trigger values", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    await expect(
+      caller.achievements.evaluate({ trigger: "invalid_trigger" as any })
+    ).rejects.toThrow();
   });
 });
