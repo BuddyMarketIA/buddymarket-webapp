@@ -188,19 +188,22 @@ export default function LandingPage() {
 
       {/* ─── NAVBAR ─────────────────────────────────────────────────────── */}
       <nav style={{
-        position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
-        background: scrolled ? "rgba(255,255,255,0.97)" : "transparent",
-        backdropFilter: scrolled ? "blur(12px)" : "none",
-        borderBottom: scrolled ? "1px solid #f3f4f6" : "none",
+        position: "fixed", top: 0, left: 0, right: 0, zIndex: 1000,
+        background: scrolled || mobileMenuOpen ? "rgba(255,255,255,0.98)" : "transparent",
+        backdropFilter: scrolled || mobileMenuOpen ? "blur(16px)" : "none",
+        WebkitBackdropFilter: scrolled || mobileMenuOpen ? "blur(16px)" : "none",
+        borderBottom: scrolled || mobileMenuOpen ? "1px solid #f3f4f6" : "none",
         transition: "all 0.3s ease",
-        padding: "0 24px",
       }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 72 }}>
+        {/* ── Top bar ── */}
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 20px", display: "flex", alignItems: "center", justifyContent: "space-between", height: 68 }}>
           {/* Logo */}
-          <img src={LOGO_COLOR} alt="BuddyMarket" style={{ height: 64, objectFit: "contain" }} />
+          <a href="/" style={{ textDecoration: "none", flexShrink: 0 }}>
+            <img src={LOGO_COLOR} alt="BuddyMarket" style={{ height: 56, objectFit: "contain", display: "block" }} />
+          </a>
 
-          {/* Desktop Nav */}
-          <div style={{ display: "flex", alignItems: "center", gap: 32 }} className="desktop-nav">
+          {/* Desktop Nav — hidden on mobile */}
+          <div style={{ display: "flex", alignItems: "center", gap: 28 }} className="landing-desktop-nav">
             {[
               { label: "Funcionalidades", href: "#features" },
               { label: "Menús Especiales", href: "#special" },
@@ -209,33 +212,118 @@ export default function LandingPage() {
               { label: "BuddyCoach ↗", href: "https://buddycoach.io" },
             ].map(item => (
               <a key={item.label} href={item.href}
-                style={{ fontSize: 15, fontWeight: 500, color: scrolled ? "#374151" : "#111827", textDecoration: "none", transition: "color 0.2s" }}
+                style={{ fontSize: 15, fontWeight: 500, color: "#374151", textDecoration: "none", transition: "color 0.2s", whiteSpace: "nowrap" }}
                 onMouseEnter={e => (e.currentTarget.style.color = ORANGE)}
-                onMouseLeave={e => (e.currentTarget.style.color = scrolled ? "#374151" : "#111827")}
+                onMouseLeave={e => (e.currentTarget.style.color = "#374151")}
               >{item.label}</a>
             ))}
           </div>
 
-          {/* CTA */}
-          <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
+          {/* Desktop CTAs — hidden on mobile */}
+          <div style={{ display: "flex", gap: 10, alignItems: "center" }} className="landing-desktop-cta">
             <a href={loginUrl} style={{
-              padding: "10px 20px", borderRadius: 10, fontSize: 14, fontWeight: 600,
+              padding: "9px 18px", borderRadius: 10, fontSize: 14, fontWeight: 600,
               color: ORANGE, background: "transparent", border: `2px solid ${ORANGE}`,
-              textDecoration: "none", transition: "all 0.2s",
+              textDecoration: "none", transition: "all 0.2s", whiteSpace: "nowrap",
             }}
               onMouseEnter={e => { e.currentTarget.style.background = ORANGE; e.currentTarget.style.color = "white"; }}
               onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = ORANGE; }}
             >Iniciar sesión</a>
             <a href={loginUrl} style={{
-              padding: "10px 20px", borderRadius: 10, fontSize: 14, fontWeight: 700,
+              padding: "9px 18px", borderRadius: 10, fontSize: 14, fontWeight: 700,
               color: "white", background: ORANGE, border: "none",
-              textDecoration: "none", transition: "all 0.2s", boxShadow: "0 4px 14px rgba(249,115,22,0.35)",
+              textDecoration: "none", transition: "all 0.2s", boxShadow: "0 4px 14px rgba(249,115,22,0.35)", whiteSpace: "nowrap",
             }}
               onMouseEnter={e => { e.currentTarget.style.background = ORANGE_DARK; e.currentTarget.style.transform = "translateY(-1px)"; }}
               onMouseLeave={e => { e.currentTarget.style.background = ORANGE; e.currentTarget.style.transform = "translateY(0)"; }}
             >Empezar gratis</a>
           </div>
+
+          {/* Hamburger button — visible on mobile only */}
+          <button
+            onClick={() => setMobileMenuOpen(o => !o)}
+            className="landing-hamburger"
+            aria-label={mobileMenuOpen ? "Cerrar menú" : "Abrir menú"}
+            style={{
+              display: "none", /* overridden by CSS media query */
+              flexDirection: "column", justifyContent: "center", alignItems: "center",
+              width: 44, height: 44, borderRadius: 12,
+              background: mobileMenuOpen ? "rgba(249,115,22,0.1)" : "rgba(0,0,0,0.05)",
+              border: "none", cursor: "pointer", gap: 5, padding: 0,
+              transition: "background 0.2s", flexShrink: 0,
+            }}
+          >
+            {mobileMenuOpen ? (
+              /* X icon */
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke={ORANGE} strokeWidth="2.5" strokeLinecap="round">
+                <path d="M18 6L6 18M6 6l12 12"/>
+              </svg>
+            ) : (
+              /* Hamburger icon */
+              <>
+                <span style={{ width: 22, height: 2.5, borderRadius: 2, background: "#374151", transition: "all 0.2s" }} />
+                <span style={{ width: 16, height: 2.5, borderRadius: 2, background: "#374151", transition: "all 0.2s", alignSelf: "flex-start", marginLeft: 3 }} />
+                <span style={{ width: 22, height: 2.5, borderRadius: 2, background: "#374151", transition: "all 0.2s" }} />
+              </>
+            )}
+          </button>
         </div>
+
+        {/* ── Mobile dropdown menu ── */}
+        {mobileMenuOpen && (
+          <div style={{
+            background: "white",
+            borderTop: "1px solid #f3f4f6",
+            padding: "16px 20px 24px",
+            display: "flex", flexDirection: "column", gap: 4,
+            boxShadow: "0 8px 32px rgba(0,0,0,0.08)",
+          }} className="landing-mobile-menu">
+            {[
+              { label: "Funcionalidades", href: "#features", emoji: "✨" },
+              { label: "Menús Especiales", href: "#special", emoji: "🥗" },
+              { label: "Precios", href: "#pricing", emoji: "💎" },
+              { label: "Blog", href: "/blog", emoji: "📝" },
+              { label: "BuddyCoach", href: "https://buddycoach.io", emoji: "💪", external: true },
+            ].map(item => (
+              <a
+                key={item.label}
+                href={item.href}
+                target={item.external ? "_blank" : undefined}
+                rel={item.external ? "noopener noreferrer" : undefined}
+                onClick={() => setMobileMenuOpen(false)}
+                style={{
+                  display: "flex", alignItems: "center", gap: 14,
+                  padding: "13px 16px", borderRadius: 12,
+                  fontSize: 16, fontWeight: 600, color: "#111827",
+                  textDecoration: "none", transition: "all 0.15s",
+                  background: "transparent",
+                }}
+                onMouseEnter={e => { e.currentTarget.style.background = "rgba(249,115,22,0.07)"; e.currentTarget.style.color = ORANGE; }}
+                onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#111827"; }}
+              >
+                <span style={{ fontSize: 20 }}>{item.emoji}</span>
+                <span>{item.label}{item.external ? " ↗" : ""}</span>
+              </a>
+            ))}
+
+            {/* Divider */}
+            <div style={{ height: 1, background: "#f3f4f6", margin: "8px 0" }} />
+
+            {/* Auth buttons */}
+            <a href={loginUrl} style={{
+              display: "block", textAlign: "center",
+              padding: "13px 20px", borderRadius: 12, fontSize: 15, fontWeight: 600,
+              color: ORANGE, background: "transparent", border: `2px solid ${ORANGE}`,
+              textDecoration: "none", marginBottom: 8,
+            }}>Iniciar sesión</a>
+            <a href={loginUrl} style={{
+              display: "block", textAlign: "center",
+              padding: "14px 20px", borderRadius: 12, fontSize: 15, fontWeight: 700,
+              color: "white", background: ORANGE,
+              textDecoration: "none", boxShadow: "0 4px 14px rgba(249,115,22,0.35)",
+            }}>Empezar gratis →</a>
+          </div>
+        )}
       </nav>
 
       {/* ─── HERO ───────────────────────────────────────────────────────── */}

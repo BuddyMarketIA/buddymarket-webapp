@@ -443,3 +443,18 @@
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
 }
+
+/* ── Landing page responsive navbar ─────────────────────────────────────── */
+/* Desktop: show nav links + CTA buttons, hide hamburger */
+.landing-desktop-nav  { display: flex !important; }
+.landing-desktop-cta  { display: flex !important; }
+.landing-hamburger    { display: none !important; }
+.landing-mobile-menu  { display: none !important; }
+
+/* Mobile (≤ 768px): hide desktop nav, show hamburger */
+@media (max-width: 768px) {
+  .landing-desktop-nav { display: none !important; }
+  .landing-desktop-cta { display: none !important; }
+  .landing-hamburger   { display: flex !important; }
+  .landing-mobile-menu { display: flex !important; }
+}
