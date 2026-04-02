@@ -991,40 +991,75 @@ export async function seedCatalogs() {
   const db = await getDb();
   if (!db) return;
 
-  // Seed allergies
+  // Seed allergies (30+ options covering EU 14 allergens + common intolerances)
   const allergyData = [
-    { apiParam: "gluten", nameEs: "Gluten", nameEn: "Gluten" },
-    { apiParam: "lactose", nameEs: "Lactosa", nameEn: "Lactose" },
-    { apiParam: "nuts", nameEs: "Frutos secos", nameEn: "Nuts" },
+    // EU 14 allergens obligatorios
+    { apiParam: "gluten", nameEs: "Gluten (trigo, cebada, centeno)", nameEn: "Gluten" },
+    { apiParam: "lactose", nameEs: "Lactosa / Lácteos", nameEn: "Lactose / Dairy" },
+    { apiParam: "nuts", nameEs: "Frutos secos (almendras, nueces, avellanas...)", nameEn: "Tree Nuts" },
     { apiParam: "eggs", nameEs: "Huevos", nameEn: "Eggs" },
     { apiParam: "fish", nameEs: "Pescado", nameEn: "Fish" },
-    { apiParam: "shellfish", nameEs: "Mariscos", nameEn: "Shellfish" },
+    { apiParam: "shellfish", nameEs: "Crustáceos (gambas, cangrejos, langosta)", nameEn: "Crustaceans" },
     { apiParam: "soy", nameEs: "Soja", nameEn: "Soy" },
     { apiParam: "peanuts", nameEs: "Cacahuetes", nameEn: "Peanuts" },
     { apiParam: "sesame", nameEs: "Sésamo", nameEn: "Sesame" },
     { apiParam: "mustard", nameEs: "Mostaza", nameEn: "Mustard" },
     { apiParam: "celery", nameEs: "Apio", nameEn: "Celery" },
-    { apiParam: "sulfites", nameEs: "Sulfitos", nameEn: "Sulfites" },
+    { apiParam: "sulfites", nameEs: "Sulfitos / Dióxido de azufre", nameEn: "Sulfites" },
     { apiParam: "lupin", nameEs: "Altramuces", nameEn: "Lupin" },
-    { apiParam: "molluscs", nameEs: "Moluscos", nameEn: "Molluscs" },
+    { apiParam: "molluscs", nameEs: "Moluscos (mejillones, almejas, pulpo)", nameEn: "Molluscs" },
+    // Intolerancias comunes adicionales
+    { apiParam: "wheat", nameEs: "Trigo (intolerancia específica)", nameEn: "Wheat" },
+    { apiParam: "corn", nameEs: "Maíz", nameEn: "Corn" },
+    { apiParam: "fructose", nameEs: "Fructosa", nameEn: "Fructose" },
+    { apiParam: "histamine", nameEs: "Histamina", nameEn: "Histamine" },
+    { apiParam: "fodmap", nameEs: "FODMAP (fermentables)", nameEn: "FODMAPs" },
+    { apiParam: "nightshades", nameEs: "Solanáceas (tomate, pimiento, berenjena)", nameEn: "Nightshades" },
+    { apiParam: "citrus", nameEs: "Cítricos (naranja, limón, pomelo)", nameEn: "Citrus" },
+    { apiParam: "strawberries", nameEs: "Fresas / Frutos rojos", nameEn: "Strawberries / Berries" },
+    { apiParam: "kiwi", nameEs: "Kiwi", nameEn: "Kiwi" },
+    { apiParam: "peach", nameEs: "Melocotón / Frutas con hueso", nameEn: "Peach / Stone fruits" },
+    { apiParam: "banana", nameEs: "Plátano", nameEn: "Banana" },
+    { apiParam: "avocado", nameEs: "Aguacate", nameEn: "Avocado" },
+    { apiParam: "garlic_onion", nameEs: "Ajo y cebolla", nameEn: "Garlic & Onion" },
+    { apiParam: "alcohol", nameEs: "Alcohol", nameEn: "Alcohol" },
+    { apiParam: "caffeine", nameEs: "Cafeína", nameEn: "Caffeine" },
+    { apiParam: "chocolate", nameEs: "Chocolate / Cacao", nameEn: "Chocolate / Cacao" },
+    { apiParam: "artificial_colors", nameEs: "Colorantes artificiales", nameEn: "Artificial colors" },
+    { apiParam: "artificial_sweeteners", nameEs: "Edulcorantes artificiales", nameEn: "Artificial sweeteners" },
+    { apiParam: "msg", nameEs: "Glutamato monosódico (MSG)", nameEn: "MSG" },
+    { apiParam: "latex_fruit", nameEs: "Síndrome látex-fruta (aguacate, kiwi, plátano)", nameEn: "Latex-fruit syndrome" },
   ];
   for (const a of allergyData) {
     await db.insert(allergies).values(a).onDuplicateKeyUpdate({ set: { nameEs: a.nameEs } });
   }
 
-  // Seed diet restrictions
+  // Seed diet restrictions (expanded)
   const restrictionData = [
     { apiParam: "vegan", nameEs: "Vegano", nameEn: "Vegan" },
     { apiParam: "vegetarian", nameEs: "Vegetariano", nameEn: "Vegetarian" },
-    { apiParam: "keto", nameEs: "Keto", nameEn: "Keto" },
+    { apiParam: "pescatarian", nameEs: "Pescetariano", nameEn: "Pescatarian" },
+    { apiParam: "flexitarian", nameEs: "Flexitariano", nameEn: "Flexitarian" },
+    { apiParam: "keto", nameEs: "Keto / Cetogénico", nameEn: "Keto" },
     { apiParam: "paleo", nameEs: "Paleo", nameEn: "Paleo" },
-    { apiParam: "gluten_free", nameEs: "Sin gluten", nameEn: "Gluten free" },
+    { apiParam: "gluten_free", nameEs: "Sin gluten (celiacía)", nameEn: "Gluten free" },
     { apiParam: "dairy_free", nameEs: "Sin lácteos", nameEn: "Dairy free" },
     { apiParam: "low_carb", nameEs: "Bajo en carbohidratos", nameEn: "Low carb" },
     { apiParam: "low_fat", nameEs: "Bajo en grasas", nameEn: "Low fat" },
+    { apiParam: "low_sodium", nameEs: "Bajo en sodio (hipertensión)", nameEn: "Low sodium" },
+    { apiParam: "low_sugar", nameEs: "Bajo en azúcar (diabetes)", nameEn: "Low sugar" },
+    { apiParam: "high_protein", nameEs: "Alto en proteína", nameEn: "High protein" },
+    { apiParam: "high_fiber", nameEs: "Alto en fibra", nameEn: "High fiber" },
     { apiParam: "mediterranean", nameEs: "Mediterránea", nameEn: "Mediterranean" },
+    { apiParam: "dash", nameEs: "Dieta DASH (hipertensión)", nameEn: "DASH diet" },
+    { apiParam: "diabetic", nameEs: "Dieta para diabéticos", nameEn: "Diabetic diet" },
+    { apiParam: "renal", nameEs: "Dieta renal (enfermedad renal)", nameEn: "Renal diet" },
+    { apiParam: "fodmap_free", nameEs: "Sin FODMAP (colon irritable)", nameEn: "Low FODMAP" },
+    { apiParam: "anti_inflammatory", nameEs: "Antiinflamatoria", nameEn: "Anti-inflammatory" },
     { apiParam: "halal", nameEs: "Halal", nameEn: "Halal" },
     { apiParam: "kosher", nameEs: "Kosher", nameEn: "Kosher" },
+    { apiParam: "raw_food", nameEs: "Crudivegana / Raw food", nameEn: "Raw food" },
+    { apiParam: "intermittent_fasting", nameEs: "Ayuno intermitente", nameEn: "Intermittent fasting" },
   ];
   for (const r of restrictionData) {
     await db.insert(dietRestrictions).values(r).onDuplicateKeyUpdate({ set: { nameEs: r.nameEs } });

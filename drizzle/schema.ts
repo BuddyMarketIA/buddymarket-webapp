@@ -114,6 +114,11 @@ export const userMedicalProfiles = mysqlTable("user_medical_profiles", {
   useMetabolismMedication: boolean("useMetabolismMedication").default(false),
   medicalConditions: text("medicalConditions"),
   hasMedicalConditions: boolean("hasMedicalConditions").default(false),
+  // Lifestyle & dietary pattern
+  dietaryPattern: varchar("dietaryPattern", { length: 64 }), // omnivore, vegetarian, vegan, pescatarian, flexitarian, keto, paleo
+  lifestyle: text("lifestyle"), // JSON array: pregnant, breastfeeding, athlete, elderly, child, etc.
+  specialNeeds: text("specialNeeds"), // JSON array: cold_recovery, post_surgery, fatigue, stress, etc.
+  pregnancyWeek: int("pregnancyWeek"), // if pregnant, week number
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

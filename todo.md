@@ -765,3 +765,50 @@
 - [x] BuddyProfile.tsx: spinner de carga durante copia de plan
 - [x] Fix test lookupBarcode: mock de fetch para evitar llamada real a Open Food Facts
 - [x] Tests: 47/47 pasando, 0 errores TypeScript
+
+## Sprint: Mejoras BuddyExperts UI/UX (02/04/2026)
+
+- [ ] BuddyExperts.tsx: añadir barra de búsqueda funcional (conectada a buddyExperts.list con search)
+- [ ] BuddyExperts.tsx: añadir filtros por categoría funcionales (conectados al backend)
+- [ ] BuddyExperts.tsx: limpiar código DEMO residual (constante DEMO_EXPERTS sin usar)
+- [ ] Crear página /mis-planes-expertos con planes copiados del usuario
+- [ ] Añadir enlace "Mis Planes de Expertos" en sidebar (sección Comunidad)
+- [ ] Añadir ruta /mis-planes-expertos en App.tsx
+- [ ] BuddyProfile.tsx: planes de pago (price > 0) deben abrir Stripe checkout en lugar de copyPlan
+- [ ] BuddyMakers.tsx: eliminar fallback a DEMO_MAKERS (igual que se hizo en BuddyExperts)
+
+## Sprint: Perfil de Salud Ampliado + Menús Especializados (02/04/2026)
+
+### Base de Datos
+- [ ] Ampliar campo `allergies` en userProfiles: 30+ alergias/intolerancias
+- [ ] Añadir campo `medicalConditions` en userProfiles (JSON array)
+- [ ] Añadir campo `lifestyle` en userProfiles (vegano, vegetariano, embarazada, etc.)
+- [ ] Añadir campo `specialNeeds` en userProfiles (estado temporal: resfriado, recuperación, etc.)
+- [ ] Migración con pnpm db:push
+
+### Backend
+- [ ] Actualizar endpoint `userProfiles.update` para incluir nuevos campos
+- [ ] Endpoint `menus.getSpecialized` — menús filtrados por condición médica/estilo de vida
+- [ ] Endpoint `menus.generateForProfile` — generar menú IA personalizado por perfil de salud
+- [ ] Actualizar BuddyIA para incluir condiciones médicas en el contexto del usuario
+
+### Frontend — Perfil
+- [ ] Sección "Alergias e Intolerancias" ampliada (30+ opciones en chips visuales)
+- [ ] Sección "Condiciones Médicas" (diabetes, hipertensión, celiaquía, hipotiroidismo, etc.)
+- [ ] Sección "Estilo de Vida" (vegano, vegetariano, embarazada, lactancia, deportista)
+- [ ] Sección "Estado Actual" (resfriado, recuperación post-operatoria, etc.)
+
+### Frontend — Menús Especializados
+- [ ] Página /menus-especializados con catálogo de menús por perfil
+- [ ] Categorías: Condiciones Médicas, Estilos de Vida, Momentos Especiales, Recuperación
+- [ ] Generador IA de menú personalizado basado en perfil de salud completo
+- [ ] Acceso desde sidebar y Dashboard
+
+## Sprint: Menús Especializados + Alergias Ampliadas (02/04/2026)
+- [x] Catálogo de alergias ampliado a 34 opciones (14 alérgenos UE + 20 intolerancias adicionales)
+- [x] Catálogo de restricciones dietéticas ampliado a 24 opciones
+- [x] Router `specializedMenus.generate` con 24 categorías (condiciones médicas, estilos de vida, etapas vitales, digestivo, recuperación)
+- [x] Página /specialized-menus con catálogo visual por grupos, configurador y resultados con IA
+- [x] Enlace "Menús Especializados" añadido al sidebar (sección Nutrición)
+- [x] Ruta /specialized-menus registrada en App.tsx
+- [x] Tests unitarios para specializedMenus.generate (5 tests, todos pasan - 52/52 total)

@@ -168,6 +168,7 @@ export default function Profile() {
   // Medical
   const [hasMedicalConditions, setHasMedicalConditions] = useState(false);
   const [medicalConditions, setMedicalConditions] = useState("");
+  const [selectedMedicalConditions, setSelectedMedicalConditions] = useState<string[]>([]);
   const [hasSurgery, setHasSurgery] = useState(false);
   const [surgery, setSurgery] = useState("");
   const [useMetabolismMedication, setUseMetabolismMedication] = useState(false);
@@ -178,6 +179,11 @@ export default function Profile() {
   const [medicalDiet, setMedicalDiet] = useState("");
   const [hasMedicalFamilyBackground, setHasMedicalFamilyBackground] = useState(false);
   const [medicalFamilyBackground, setMedicalFamilyBackground] = useState("");
+  // New health profile fields
+  const [dietaryPattern, setDietaryPattern] = useState("");
+  const [selectedLifestyle, setSelectedLifestyle] = useState<string[]>([]);
+  const [selectedSpecialNeeds, setSelectedSpecialNeeds] = useState<string[]>([]);
+  const [pregnancyWeek, setPregnancyWeek] = useState("");
 
   // Allergies
   const [selectedAllergies, setSelectedAllergies] = useState<number[]>([]);
@@ -253,6 +259,7 @@ export default function Profile() {
     if (m) {
       setHasMedicalConditions(m.hasMedicalConditions ?? false);
       setMedicalConditions(m.medicalConditions || "");
+      setSelectedMedicalConditions(m.medicalConditions ? m.medicalConditions.split(",").map((s: string) => s.trim()).filter(Boolean) : []);
       setHasSurgery(m.hasSurgery ?? false);
       setSurgery(m.surgery || "");
       setUseMetabolismMedication(m.useMetabolismMedication ?? false);
@@ -263,6 +270,11 @@ export default function Profile() {
       setMedicalDiet(m.medicalDiet || "");
       setHasMedicalFamilyBackground(m.hasMedicalFamilyBackground ?? false);
       setMedicalFamilyBackground(m.medicalFamilyBackground || "");
+      // New fields
+      setDietaryPattern(m.dietaryPattern || "");
+      setSelectedLifestyle(m.lifestyle ? JSON.parse(m.lifestyle) : []);
+      setSelectedSpecialNeeds(m.specialNeeds ? JSON.parse(m.specialNeeds) : []);
+      setPregnancyWeek(m.pregnancyWeek?.toString() || "");
     }
 
     if (pr) {
@@ -340,12 +352,17 @@ export default function Profile() {
   });
 
   const handleSaveMedical = () => updateMedical.mutate({
-    hasMedicalConditions, medicalConditions: medicalConditions || undefined,
+    hasMedicalConditions,
+    medicalConditions: selectedMedicalConditions.length ? selectedMedicalConditions.join(", ") : (medicalConditions || undefined),
     hasSurgery, surgery: surgery || undefined,
     useMetabolismMedication, metabolismMedication: metabolismMedication || undefined,
     useNutritionalSupplements, nutritionalSupplements: nutritionalSupplements || undefined,
     hasMedicalDiet, medicalDiet: medicalDiet || undefined,
     hasMedicalFamilyBackground, medicalFamilyBackground: medicalFamilyBackground || undefined,
+    dietaryPattern: dietaryPattern || undefined,
+    lifestyle: selectedLifestyle.length ? JSON.stringify(selectedLifestyle) : undefined,
+    specialNeeds: selectedSpecialNeeds.length ? JSON.stringify(selectedSpecialNeeds) : undefined,
+    pregnancyWeek: pregnancyWeek ? parseInt(pregnancyWeek) : undefined,
   });
 
   const handleSaveAllergies = () => {
@@ -691,12 +708,135 @@ export default function Profile() {
       {activeTab === "medical" && (
         <div style={card}>
           <SectionTitle>Historial de salud</SectionTitle>
-          <Toggle checked={hasMedicalConditions} onChange={setHasMedicalConditions} label="¿Tienes alguna condición médica diagnosticada?" />
-          {hasMedicalConditions && (
-            <Field label="Describe tus condiciones médicas" hint="Ej: diabetes tipo 2, hipotiroidismo, hipertensión...">
-              <textarea value={medicalConditions} onChange={(e) => setMedicalConditions(e.target.value)} rows={3} style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid #e5e7eb", fontSize: "15px", background: "white", outline: "none", resize: "vertical", boxSizing: "border-box" }} />
+
+          {/* Dietary Pattern */}
+          <Field label="🌱 Patrón alimentario" hint="¿Cómo describes tu forma de comer habitualmente?">
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+              {[
+                { value: "omnivore", label: "🥩 Omnívoro" },
+                { value: "flexitarian", label: "🥗 Flexitariano" },
+                { value: "vegetarian", label: "🥦 Vegetariano" },
+                { value: "vegan", label: "🌿 Vegano" },
+                { value: "pescatarian", label: "🐟 Pescetariano" },
+                { value: "keto", label: "🥑 Keto / Cetogénico" },
+                { value: "paleo", label: "🦴 Paleo" },
+                { value: "mediterranean", label: "🫒 Mediterráneo" },
+                { value: "low_carb", label: "🍞 Bajo en carbos" },
+                { value: "high_protein", label: "💪 Alto en proteína" },
+                { value: "gluten_free", label: "🌾 Sin gluten" },
+                { value: "lactose_free", label: "🥛 Sin lactosa" },
+              ].map((opt) => (
+                <button key={opt.value} onClick={() => setDietaryPattern(dietaryPattern === opt.value ? "" : opt.value)}
+                  style={{ padding: "8px 14px", borderRadius: "20px", border: dietaryPattern === opt.value ? "2px solid #10b981" : "1.5px solid #e5e7eb", background: dietaryPattern === opt.value ? "rgba(16,185,129,0.1)" : "white", color: dietaryPattern === opt.value ? "#059669" : "#374151", fontSize: "13px", fontWeight: dietaryPattern === opt.value ? 700 : 500, cursor: "pointer" }}>
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </Field>
+
+          {/* Lifestyle */}
+          <Field label="👩‍👦 Situación vital" hint="Selecciona las que apliquen a tu situación actual.">
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+              {[
+                { value: "pregnant", label: "🤰 Embarazada" },
+                { value: "breastfeeding", label: "🤱 Lactancia" },
+                { value: "trying_to_conceive", label: "💚 Buscando embarazo" },
+                { value: "menopause", label: "🌸 Menopausia" },
+                { value: "athlete", label: "🏃 Deportista" },
+                { value: "elderly", label: "👴 Adulto mayor (+65)" },
+                { value: "child", label: "👶 Niño / Adolescente" },
+                { value: "student", label: "📚 Estudiante" },
+                { value: "shift_worker", label: "🌙 Trabajo a turnos" },
+                { value: "high_stress", label: "🧠 Alto estrés" },
+              ].map((opt) => {
+                const sel = selectedLifestyle.includes(opt.value);
+                return (
+                  <button key={opt.value} onClick={() => setSelectedLifestyle(sel ? selectedLifestyle.filter((x) => x !== opt.value) : [...selectedLifestyle, opt.value])}
+                    style={{ padding: "8px 14px", borderRadius: "20px", border: sel ? "2px solid #6366f1" : "1.5px solid #e5e7eb", background: sel ? "rgba(99,102,241,0.1)" : "white", color: sel ? "#6366f1" : "#374151", fontSize: "13px", fontWeight: sel ? 700 : 500, cursor: "pointer" }}>
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+          </Field>
+
+          {/* Pregnancy week if pregnant */}
+          {selectedLifestyle.includes("pregnant") && (
+            <Field label="Semana de embarazo" hint="Opcional, para personalizar mejor las recomendaciones.">
+              <Input value={pregnancyWeek} onChange={setPregnancyWeek} placeholder="Ej: 20" type="number" />
             </Field>
           )}
+
+          {/* Medical Conditions — chips */}
+          <Field label="🏥 Condiciones médicas" hint="Selecciona las condiciones diagnosticadas que tengas.">
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+              {[
+                { value: "diabetes_type1", label: "🩸 Diabetes tipo 1" },
+                { value: "diabetes_type2", label: "🩸 Diabetes tipo 2" },
+                { value: "prediabetes", label: "⚠️ Prediabetes" },
+                { value: "hypertension", label: "❤️ Hipertensión" },
+                { value: "hypotension", label: "🟦 Hipotensión" },
+                { value: "celiac", label: "🌾 Celiaqía" },
+                { value: "crohn", label: "🪴 Crohn" },
+                { value: "ibs", label: "🟡 Colon irritable" },
+                { value: "hypothyroidism", label: "🦋 Hipotiroidismo" },
+                { value: "hyperthyroidism", label: "🦋 Hipertiroidismo" },
+                { value: "pcos", label: "🌸 SOP (ovario policístico)" },
+                { value: "anemia", label: "🩸 Anemia" },
+                { value: "high_cholesterol", label: "🧠 Colesterol alto" },
+                { value: "high_triglycerides", label: "🧠 Triglicéridos altos" },
+                { value: "gout", label: "🦛 Gota" },
+                { value: "kidney_disease", label: "🫘 Enfermedad renal" },
+                { value: "liver_disease", label: "🫘 Enfermedad hepática" },
+                { value: "heart_disease", label: "❤️ Enfermedad cardíaca" },
+                { value: "osteoporosis", label: "🦴 Osteoporosis" },
+                { value: "arthritis", label: "🦴 Artritis" },
+                { value: "fibromyalgia", label: "💪 Fibromialgia" },
+                { value: "eating_disorder", label: "💜 TCA (trastorno alimentario)" },
+                { value: "depression", label: "🟣 Depresión" },
+                { value: "anxiety", label: "🟡 Ansiedad" },
+                { value: "cancer", label: "🎀 Cáncer (en tratamiento)" },
+              ].map((opt) => {
+                const sel = selectedMedicalConditions.includes(opt.value);
+                return (
+                  <button key={opt.value} onClick={() => { setSelectedMedicalConditions(sel ? selectedMedicalConditions.filter((x) => x !== opt.value) : [...selectedMedicalConditions, opt.value]); setHasMedicalConditions(true); }}
+                    style={{ padding: "8px 14px", borderRadius: "20px", border: sel ? "2px solid #ef4444" : "1.5px solid #e5e7eb", background: sel ? "rgba(239,68,68,0.1)" : "white", color: sel ? "#ef4444" : "#374151", fontSize: "13px", fontWeight: sel ? 700 : 500, cursor: "pointer" }}>
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+          </Field>
+
+          {/* Special Needs / Momentary State */}
+          <Field label="🤧 Estado actual o necesidades especiales" hint="Situaciones temporales que afectan tu alimentación.">
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+              {[
+                { value: "cold_flu", label: "🤧 Resfriado / Gripe" },
+                { value: "stomach_bug", label: "🤢 Gastroenteritis" },
+                { value: "post_surgery", label: "🏥 Post-operatorio" },
+                { value: "post_covid", label: "🤡 Post-COVID" },
+                { value: "fatigue", label: "🛌 Fatiga crónica" },
+                { value: "muscle_recovery", label: "💪 Recuperación muscular" },
+                { value: "detox", label: "🍋 Depuración / Detox" },
+                { value: "weight_loss_phase", label: "⬇️ Fase de pérdida de peso" },
+                { value: "muscle_gain_phase", label: "⬆️ Fase de ganancia muscular" },
+                { value: "competition_prep", label: "🏆 Preparación competición" },
+                { value: "exam_period", label: "📚 Época de exámenes" },
+                { value: "travel", label: "✈️ Viaje frecuente" },
+              ].map((opt) => {
+                const sel = selectedSpecialNeeds.includes(opt.value);
+                return (
+                  <button key={opt.value} onClick={() => setSelectedSpecialNeeds(sel ? selectedSpecialNeeds.filter((x) => x !== opt.value) : [...selectedSpecialNeeds, opt.value])}
+                    style={{ padding: "8px 14px", borderRadius: "20px", border: sel ? "2px solid #f59e0b" : "1.5px solid #e5e7eb", background: sel ? "rgba(245,158,11,0.1)" : "white", color: sel ? "#d97706" : "#374151", fontSize: "13px", fontWeight: sel ? 700 : 500, cursor: "pointer" }}>
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+          </Field>
+
+          {/* Medication & Supplements */}
           <Toggle checked={useMetabolismMedication} onChange={setUseMetabolismMedication} label="¿Tomas medicación que afecte al metabolismo o peso?" />
           {useMetabolismMedication && (
             <Field label="Medicación" hint="Ej: corticoides, antidepresivos, insulina...">

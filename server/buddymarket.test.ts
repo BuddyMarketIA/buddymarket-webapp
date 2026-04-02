@@ -720,3 +720,103 @@ describe("achievements.evaluate", () => {
     ).rejects.toThrow();
   });
 });
+
+describe("specializedMenus.generate", () => {
+  it("should generate a specialized menu for a valid category", async () => {
+    const { invokeLLM } = await import("./_core/llm");
+    const mockMenu = {
+      menuTitle: "Menú para Diabético",
+      targetProfile: "Diabético (control de glucemia)",
+      keyNutrients: ["Fibra", "Proteína", "Omega-3"],
+      avoidList: ["Azúcar refinado", "Harinas blancas"],
+      generalTips: ["Distribuye los hidratos en 5 comidas"],
+      days: [
+        {
+          day: "Lunes",
+          totalCalories: 1800,
+          meals: [
+            { name: "Desayuno", food: "Avena con frutos rojos", calories: 350, protein: 12, carbs: 45, fat: 8, nutritionNote: "Bajo IG" },
+          ],
+        },
+      ],
+    };
+    (invokeLLM as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      choices: [{ message: { content: JSON.stringify(mockMenu) } }],
+    });
+
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.specializedMenus.generate({
+      category: "diabetico",
+      days: 1,
+      persons: 1,
+    });
+
+    expect(result.menu).toBeDefined();
+    expect(result.menu.menuTitle).toBe("Menú para Diabético");
+    expect(result.menu.days).toHaveLength(1);
+    expect(result.category).toBe("diabetico");
+  });
+
+  it("should generate a menu for embarazada category", async () => {
+    const { invokeLLM } = await import("./_core/llm");
+    const mockMenu = {
+      menuTitle: "Menú para Embarazada",
+      targetProfile: "Embarazada",
+      keyNutrients: ["Ácido fólico", "Hierro", "Calcio"],
+      avoidList: ["Pescados con mercurio", "Alcohol"],
+      generalTips: ["5 comidas al día"],
+      days: [{ day: "Lunes", totalCalories: 2200, meals: [] }],
+    };
+    (invokeLLM as ReturnType<typeof vi.fn>).mockResolvedValueOnce({
+      choices: [{ message: { content: JSON.stringify(mockMenu) } }],
+    });
+
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.specializedMenus.generate({
+      category: "embarazada",
+      days: 1,
+      persons: 1,
+    });
+
+    expect(result.menu).toBeDefined();
+    expect(result.category).toBe("embarazada");
+  });
+
+  it("should reject invalid category", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    await expect(
+      caller.specializedMenus.generate({ category: "invalid_category" as any, days: 1, persons: 1 })
+    ).rejects.toThrow();
+  });
+
+  it("should handle LLM error gracefully", async () => {
+    const { invokeLLM } = await import("./_core/llm");
+    (invokeLLM as ReturnType<typeof vi.fn>).mockRejectedValueOnce(new Error("LLM unavailable"));
+
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    const result = await caller.specializedMenus.generate({
+      category: "acatarrado",
+      days: 1,
+      persons: 1,
+    });
+
+    expect(result.menu).toBeNull();
+    expect(result.error).toBeDefined();
+  });
+
+  it("should require authentication", async () => {
+    const unauthCtx: TrpcContext = {
+      user: null,
+      req: { protocol: "https", headers: {} } as TrpcContext["req"],
+      res: {} as TrpcContext["res"],
+    };
+    const caller = appRouter.createCaller(unauthCtx);
+    await expect(
+      caller.specializedMenus.generate({ category: "vegano", days: 1, persons: 1 })
+    ).rejects.toThrow();
+  });
+});

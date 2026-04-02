@@ -153,6 +153,11 @@ export const appRouter = router({
           useMetabolismMedication: z.boolean().optional(),
           medicalConditions: z.string().optional(),
           hasMedicalConditions: z.boolean().optional(),
+          // New health profile fields
+          dietaryPattern: z.string().optional(),
+          lifestyle: z.string().optional(), // JSON array
+          specialNeeds: z.string().optional(), // JSON array
+          pregnancyWeek: z.number().optional(),
         })
       )
       .mutation(async ({ ctx, input }) => {
@@ -3365,6 +3370,129 @@ Devuelve EXACTAMENTE este JSON:
           newlyUnlocked,
           count: newlyUnlocked.length,
         };
+      }),
+  }),
+
+  // ===========================================================================
+  // SPECIALIZED MENUS — Menús para condiciones médicas y estilos de vida
+  // ===========================================================================
+  specializedMenus: router({
+    generate: protectedProcedure
+      .input(z.object({
+        category: z.enum([
+          "embarazada", "lactancia", "vegano", "vegetariano", "celiaco",
+          "diabetico", "hipertension", "colesterol", "renal", "cancer",
+          "acatarrado", "gastritis", "reflujo", "intestino_irritable",
+          "anemia", "hipotiroidismo", "osteoporosis", "gota",
+          "nino_6_12", "adolescente", "mayor_65", "deportista",
+          "perdida_peso_medica", "preoperatorio", "postoperatorio",
+        ]),
+        days: z.number().min(1).max(7).default(7),
+        persons: z.number().min(1).max(10).default(1),
+        extraNotes: z.string().max(500).optional(),
+        allergies: z.array(z.string()).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const CATEGORY_LABELS: Record<string, string> = {
+          embarazada: "Embarazada",
+          lactancia: "Madre en periodo de lactancia",
+          vegano: "Vegano (sin productos animales)",
+          vegetariano: "Vegetariano",
+          celiaco: "Celíaco (sin gluten)",
+          diabetico: "Diabético (control de glucemia)",
+          hipertension: "Hipertensión (bajo en sodio)",
+          colesterol: "Colesterol alto (bajo en grasas saturadas)",
+          renal: "Enfermedad renal (bajo en potasio y fósforo)",
+          cancer: "Paciente oncológico (apoyo nutricional)",
+          acatarrado: "Resfriado/gripe (recuperación)",
+          gastritis: "Gastritis (dieta blanda)",
+          reflujo: "Reflujo gastroesofágico",
+          intestino_irritable: "Síndrome de intestino irritable",
+          anemia: "Anemia (rico en hierro)",
+          hipotiroidismo: "Hipotiroidismo",
+          osteoporosis: "Osteoporosis (rico en calcio)",
+          gota: "Gota (bajo en purinas)",
+          nino_6_12: "Niño de 6 a 12 años",
+          adolescente: "Adolescente (12-18 años)",
+          mayor_65: "Persona mayor de 65 años",
+          deportista: "Deportista de alto rendimiento",
+          perdida_peso_medica: "Pérdida de peso bajo supervisión médica",
+          preoperatorio: "Pre-operatorio",
+          postoperatorio: "Post-operatorio",
+        };
+
+        const CATEGORY_GUIDELINES: Record<string, string> = {
+          embarazada: "Aumenta el ácido fólico, hierro, calcio y omega-3. Evita pescados con mercurio, embutidos crudos, quesos no pasteurizados y alcohol. Incluye 5 comidas al día.",
+          lactancia: "Aumenta las calorías en 500 kcal/día, hidratación abundante, calcio, omega-3. Evita cafeína en exceso y alcohol.",
+          vegano: "Sin ningún producto de origen animal. Asegura proteína completa combinando legumbres y cereales. Suplementa B12, hierro, zinc y omega-3 de origen vegetal.",
+          vegetariano: "Sin carne ni pescado. Puede incluir huevos y lácteos. Asegura hierro no hemo con vitamina C.",
+          celiaco: "ESTRICTAMENTE sin gluten. Evita trigo, cebada, centeno, espelta. Usa arroz, maíz, quinoa, patata. Vigila contaminación cruzada.",
+          diabetico: "Bajo índice glucémico. Controla las raciones de hidratos. Evita azúcares simples. 5-6 comidas pequeñas. Prioriza fibra y proteína.",
+          hipertension: "Dieta DASH: bajo en sodio (<2g/día), rico en potasio, magnesio y calcio. Evita sal añadida, embutidos, conservas y alimentos procesados.",
+          colesterol: "Bajo en grasas saturadas y trans. Rico en fibra soluble, omega-3 y esteroles vegetales. Evita carnes rojas, mantequilla, fritos.",
+          renal: "Bajo en potasio, fósforo y sodio. Controla proteínas. Evita plátano, naranja, tomate, legumbres, lácteos en exceso.",
+          cancer: "Alimentos antiinflamatorios, antioxidantes. Fácil digestión. Alta densidad nutricional. Evita azúcar refinado y ultraprocesados.",
+          acatarrado: "Alimentos ricos en vitamina C, zinc, jengibre, ajo. Caldos, sopas y purés calientes. Hidratación máxima. Fácil digestión.",
+          gastritis: "Dieta blanda: evita picantes, ácidos, fritos, alcohol, cafeína. Comidas pequeñas y frecuentes. Cocción suave.",
+          reflujo: "Evita tomate, cítricos, chocolate, menta, fritos, alcohol. Cenas ligeras 3h antes de dormir. Porciones pequeñas.",
+          intestino_irritable: "Dieta baja en FODMAPs. Evita lactosa, fructosa, sorbitol, trigo, legumbres en exceso. Cocción suave.",
+          anemia: "Rico en hierro hemo (carnes rojas, hígado) y no hemo (espinacas, lentejas). Combina con vitamina C. Evita té y café con las comidas.",
+          hipotiroidismo: "Evita el exceso de soja y crucíferas crudas. Asegura yodo y selenio. Dieta equilibrada con fibra.",
+          osteoporosis: "Rico en calcio (lácteos, sardinas, brócoli) y vitamina D. Evita exceso de sal, cafeína y alcohol.",
+          gota: "Bajo en purinas: evita vísceras, mariscos, embutidos, alcohol (especialmente cerveza). Rico en agua y vitamina C.",
+          nino_6_12: "Equilibrado y variado. Aporta calcio, hierro y omega-3 para el crecimiento. Presentación atractiva y raciones adaptadas.",
+          adolescente: "Alto requerimiento calórico y proteico. Calcio y hierro prioritarios. Evita ultraprocesados. Hidratación.",
+          mayor_65: "Fácil masticación, alta densidad nutricional, rico en proteína para evitar sarcopenia, calcio y vitamina D. Hidratación.",
+          deportista: "Alta en carbohidratos complejos y proteína. Timing nutricional pre/post entreno. Hidratación y electrolitos.",
+          perdida_peso_medica: "Déficit calórico moderado (500 kcal), alto en proteína y fibra, bajo en grasas saturadas y azúcares. 5 comidas.",
+          preoperatorio: "Fácil digestión, alto en proteína, vitaminas y minerales. Ayuno según protocolo médico.",
+          postoperatorio: "Progresión: líquidos → semisólidos → sólidos. Alto en proteína para cicatrización. Evita flatulentos.",
+        };
+
+        const label = CATEGORY_LABELS[input.category] || input.category;
+        const guidelines = CATEGORY_GUIDELINES[input.category] || "";
+        const allergiesStr = input.allergies?.length ? `\nAlergias/intolerancias adicionales: ${input.allergies.join(", ")}` : "";
+        const extraStr = input.extraNotes ? `\nNotas adicionales: ${input.extraNotes}` : "";
+
+        const prompt = `Eres un dietista-nutricionista clínico especializado. Crea un menú de ${input.days} días para ${input.persons} persona(s) con la siguiente condición/perfil:
+
+**Perfil:** ${label}
+**Pautas nutricionales obligatorias:** ${guidelines}${allergiesStr}${extraStr}
+
+Devuelve SOLO JSON válido con esta estructura exacta:
+{
+  "menuTitle": "Título descriptivo del menú",
+  "targetProfile": "${label}",
+  "keyNutrients": ["nutriente clave 1", "nutriente clave 2", "nutriente clave 3"],
+  "avoidList": ["alimento a evitar 1", "alimento a evitar 2"],
+  "generalTips": ["consejo nutricional 1", "consejo nutricional 2", "consejo nutricional 3"],
+  "days": [
+    {
+      "day": "Lunes",
+      "totalCalories": 1800,
+      "meals": [
+        { "name": "Desayuno", "food": "descripción detallada", "calories": 350, "protein": 15, "carbs": 45, "fat": 10, "nutritionNote": "por qué es adecuado para este perfil" },
+        { "name": "Media mañana", "food": "descripción", "calories": 150, "protein": 5, "carbs": 20, "fat": 5, "nutritionNote": "" },
+        { "name": "Comida", "food": "descripción detallada", "calories": 600, "protein": 35, "carbs": 70, "fat": 15, "nutritionNote": "" },
+        { "name": "Merienda", "food": "descripción", "calories": 200, "protein": 8, "carbs": 25, "fat": 7, "nutritionNote": "" },
+        { "name": "Cena", "food": "descripción detallada", "calories": 500, "protein": 30, "carbs": 50, "fat": 12, "nutritionNote": "" }
+      ]
+    }
+  ]
+}`;
+
+        try {
+          const response = await invokeLLM({
+            messages: [{ role: "user", content: prompt }],
+            response_format: { type: "json_object" },
+          });
+          const rawContent = response.choices?.[0]?.message?.content ?? "{}";
+          const content = typeof rawContent === "string" ? rawContent : "{}";
+          return { menu: JSON.parse(content), category: input.category };
+        } catch (err: any) {
+          console.error("[SpecializedMenus] error:", err?.message || err);
+          return { menu: null, error: "Error al generar el menú. El servicio de IA no está disponible en este momento." };
+        }
       }),
   }),
 });

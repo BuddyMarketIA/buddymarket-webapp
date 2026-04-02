@@ -24,6 +24,7 @@ import BuddyShop from "./pages/BuddyShop";
 import MercadonaShop from "./pages/MercadonaShop";
 import CarrefourShop from "./pages/CarrefourShop";
 import MenuLibrary from "./pages/MenuLibrary";
+import SpecializedMenus from "./pages/SpecializedMenus";
 import Favorites from "./pages/Favorites";
 import BuddyProfile from "./pages/BuddyProfile";
 import Following from "./pages/Following";
@@ -74,6 +75,7 @@ function Router() {
       {/* /carrefour redirects to unified supermercados page */}
       <Route path="/carrefour">{() => <WithLayout component={MercadonaShop} />}</Route>
       <Route path="/menu-library">{() => <WithLayout component={MenuLibrary} />}</Route>
+      <Route path="/specialized-menus">{() => <SpecializedMenus />}</Route>
       <Route path="/favorites">{() => <WithLayout component={Favorites} />}</Route>
       <Route path="/buddy-experts/:id">{() => <BuddyProfile />}</Route>
       <Route path="/buddy-makers/:id">{() => <BuddyProfile />}</Route>

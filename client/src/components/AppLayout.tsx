@@ -78,6 +78,7 @@ const SIDEBAR_GROUPS = [
       { key: "stats", label: "Estadísticas", to: "/stats", emoji: "📈" },
       { key: "favorites", label: "Mis Favoritas", to: "/favorites", emoji: "❤️" },
       { key: "menu-library", label: "Biblioteca de Menús", to: "/menu-library", emoji: "📚" },
+      { key: "specialized-menus", label: "Menús Especializados", to: "/specialized-menus", emoji: "🏥" },
       { key: "notifications", label: "Recordatorios", to: "/notifications", emoji: "🔔" },
       { key: "achievements", label: "Mis Logros", to: "/achievements", emoji: "🏆" },
     ],
