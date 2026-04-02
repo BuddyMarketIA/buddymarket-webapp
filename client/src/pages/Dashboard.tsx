@@ -63,10 +63,10 @@ const QUICK_ACCESS = [
 ];
 
 const FOOD_IMAGES = [
-  "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80",
-  "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&q=80",
-  "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400&q=80",
-  "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&q=80",
+  "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/pollo_al_horno_verduras-7EonsjzW4cbvVFKgkiA4g3.webp",
+  "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/ensalada_mediterranea-A94kBrNm9EPozXzzbctf5A.webp",
+  "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/acai_bowl_granola-mcBZCMgPadkRDbMhMseJwZ.webp",
+  "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/salmon_quinoa-GK5uCABZM54kHC6jSfHP9p.webp",
 ];
 
 function getGreeting() {
@@ -81,11 +81,11 @@ function getDay() {
 }
 
 const RECIPE_OF_DAY = [
-  { name: "Ensalada mediterránea", kcal: 320, time: "15 min", img: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&q=80", tag: "Ligero" },
-  { name: "Pollo al horno con verduras", kcal: 480, time: "40 min", img: "https://images.unsplash.com/photo-1604908176997-125f25cc6f3d?w=600&q=80", tag: "Proteínas" },
-  { name: "Pasta con pesto y tomates", kcal: 540, time: "20 min", img: "https://images.unsplash.com/photo-1473093295043-cdd812d0e601?w=600&q=80", tag: "Energético" },
-  { name: "Salmón con quinoa", kcal: 420, time: "25 min", img: "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=600&q=80", tag: "Omega-3" },
-  { name: "Bowl de açaí con frutas", kcal: 290, time: "10 min", img: "https://images.unsplash.com/photo-1490474418585-ba9bad8fd0ea?w=600&q=80", tag: "Antioxidante" },
+  { name: "Ensalada mediterránea", kcal: 320, time: "15 min", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/ensalada_mediterranea-A94kBrNm9EPozXzzbctf5A.webp", tag: "Ligero" },
+  { name: "Pollo al horno con verduras", kcal: 480, time: "40 min", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/pollo_al_horno_verduras-7EonsjzW4cbvVFKgkiA4g3.webp", tag: "Proteínas" },
+  { name: "Pasta con pesto y tomates", kcal: 540, time: "20 min", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/pasta_pesto_tomates-ShvKafyUPxQbbjm5oqKBmm.webp", tag: "Energético" },
+  { name: "Salmón con quinoa", kcal: 420, time: "25 min", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/salmon_quinoa-GK5uCABZM54kHC6jSfHP9p.webp", tag: "Omega-3" },
+  { name: "Bowl de açaí con frutas", kcal: 290, time: "10 min", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/bowl_acai_frutas-VPHcDyWLiwTWng4EtSyWaN.webp", tag: "Antioxidante" },
 ];
 
 export default function Dashboard() {
@@ -407,7 +407,7 @@ export default function Dashboard() {
             </div>
           </div>
           <div style={{ width: "80px", height: "80px", borderRadius: "16px", overflow: "hidden", flexShrink: 0 }}>
-            <img src="https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=200&q=80" alt="Menú semanal" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/menu_semanal_banner-bJvcZL6L7JygtVy2QeuafW.webp" alt="Menú semanal" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           </div>
         </div>
       </Link>

@@ -92,11 +92,11 @@ const MEAL_TIME_EMOJI: Record<string, string> = {
 };
 
 const PLACEHOLDER_IMAGES = [
-  "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&q=80",
-  "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=400&q=80",
-  "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400&q=80",
-  "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&q=80",
-  "https://images.unsplash.com/photo-1504674900247-0877df9cc836?w=400&q=80",
+  "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/pollo_al_horno_verduras-7EonsjzW4cbvVFKgkiA4g3.webp",
+  "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/ensalada_mediterranea-A94kBrNm9EPozXzzbctf5A.webp",
+  "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/acai_bowl_granola-mcBZCMgPadkRDbMhMseJwZ.webp",
+  "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/buddha_bowl_vegano-LbSLY3naX2TfQAWVDygbXL.webp",
+  "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/salmon_quinoa-GK5uCABZM54kHC6jSfHP9p.webp",
 ];
 
 const RECENT_SEARCHES_KEY = "buddymarket_recent_recipe_searches";
