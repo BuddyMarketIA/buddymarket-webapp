@@ -446,7 +446,7 @@ export default function Profile() {
               <Select value={heightUnit} onChange={setHeightUnit} options={[{ value: "cm", label: "cm" }, { value: "ft", label: "ft/in" }]} />
             </Field>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "12px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(100px, 1fr))", gap: "12px" }}>
             <Field label={`Peso actual (${weightUnit})`}>
               <Input value={weight} onChange={setWeight} type="number" placeholder="70" />
             </Field>

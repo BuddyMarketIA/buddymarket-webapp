@@ -24,6 +24,8 @@ import BuddyShop from "./pages/BuddyShop";
 import MercadonaShop from "./pages/MercadonaShop";
 import MenuLibrary from "./pages/MenuLibrary";
 import Favorites from "./pages/Favorites";
+import BuddyProfile from "./pages/BuddyProfile";
+import Following from "./pages/Following";
 
 // Wraps a page component with AppLayout (for pages that don't include it themselves)
 function WithLayout({ component: Component, ...props }: { component: React.ComponentType<any>; [key: string]: any }) {
@@ -60,6 +62,9 @@ function Router() {
       <Route path="/supermercados">{() => <WithLayout component={MercadonaShop} />}</Route>
       <Route path="/menu-library">{() => <WithLayout component={MenuLibrary} />}</Route>
       <Route path="/favorites">{() => <WithLayout component={Favorites} />}</Route>
+      <Route path="/buddy-experts/:id">{() => <BuddyProfile />}</Route>
+      <Route path="/buddy-makers/:id">{() => <BuddyProfile />}</Route>
+      <Route path="/following">{() => <WithLayout component={Following} />}</Route>
       {/* Fallback */}
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

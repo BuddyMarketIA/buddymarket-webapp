@@ -290,3 +290,34 @@
 - [x] Favoritos: botón corazón en tarjetas de receta
 - [x] Página Mis Favoritas
 - [x] BuddyCoach.io shortcut en sidebar
+- [ ] Barra de progreso de perfil completo en Profile.tsx con desglose por secciones
+- [ ] Rediseñar cards BuddyExperts/Makers con calidad premium
+- [ ] Hacer cards funcionales con perfil público al hacer clic
+- [ ] Añadir sección "Siguiendo" para ver buddies seguidos
+- [ ] Barra de progreso de perfil completo en Profile.tsx
+
+## Sprint: Optimización Mobile-First
+
+- [ ] AppLayout: nav inferior con safe-area, sidebar responsive, header sin overflow
+- [ ] Dashboard: cards apiladas en mobile, gráficos responsivos, botones táctiles grandes
+- [ ] Recipes: grid 1 col en mobile, filtros colapsables, search bar sticky sin overflow
+- [ ] BuddyExperts/Makers: cards premium navegables, botones grandes, stats legibles
+- [ ] BuddyProfile: hero cover responsive, stats pills sin overflow, botones táctiles
+- [ ] Following: cards apiladas, botones táctiles, empty state centrado
+- [ ] Profile: formulario multi-step sin overflow horizontal, inputs táctiles, progress bar visible
+- [ ] MealLog: foto upload mobile-friendly, preview responsive, formulario sin scroll horizontal
+- [ ] Menus: calendario responsive, modal full-screen en mobile
+- [ ] Favorites: grid 1 col en mobile, filtros colapsables
+- [ ] General: touch targets mínimo 44px, texto legible (14px+), sin scroll horizontal
+
+## Completado Sprint Mobile-First
+
+- [x] AppLayout: nav inferior con safe-area, sidebar responsive, header sin overflow
+- [x] Dashboard: cards apiladas en mobile, gráficos responsivos, botones táctiles grandes
+- [x] Recipes: grid 1 col en mobile, filtros colapsables, search bar sticky sin overflow
+- [x] BuddyExperts/Makers: cards premium navegables a /buddy-experts/:id y /buddy-makers/:id, botones grandes (py-2.5), stats legibles
+- [x] BuddyProfile: página de perfil público creada con hero cover, stats, recetas, botón seguir
+- [x] Following: página "Siguiendo" creada con tabs experts/makers, cards apiladas, botones táctiles
+- [x] Profile: formulario multi-step sin overflow horizontal (grid auto-fit), inputs táctiles, progress bar visible
+- [x] Sidebar: entrada "Siguiendo" añadida después de BuddyMakers
+- [x] General: touch targets mínimo 44px, texto legible (14px+), sin scroll horizontal

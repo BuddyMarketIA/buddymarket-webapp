@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
@@ -40,6 +41,7 @@ function StatBadge({ icon, value, label }: { icon: string; value: string | numbe
 // ─── Expert card ─────────────────────────────────────────────────────────────
 
 function ExpertCard({ row, onFollow }: { row: any; onFollow: (id: number) => void }) {
+  const [, navigate] = useLocation();
   const expert = row.expert;
   const cat = CATEGORIES.find((c) => c.id === expert.category) ?? CATEGORIES[0];
 
@@ -94,15 +96,15 @@ function ExpertCard({ row, onFollow }: { row: any; onFollow: (id: number) => voi
         <div className="flex gap-2">
           <button
             onClick={() => onFollow(expert.id)}
-            className="flex-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold py-2 rounded-xl transition-colors"
+            className="flex-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold py-2.5 rounded-xl transition-colors"
           >
             Seguir
           </button>
           <button
-            onClick={() => toast.info(`Ver perfil de ${expert.displayName} — próximamente`)}
-            className="flex-1 border border-orange-200 text-orange-600 hover:bg-orange-50 text-xs font-semibold py-2 rounded-xl transition-colors"
+            onClick={() => navigate(`/buddy-experts/${expert.id}`)}
+            className="flex-1 border border-orange-200 text-orange-600 hover:bg-orange-50 text-xs font-semibold py-2.5 rounded-xl transition-colors"
           >
-            Ver planes
+            Ver perfil
           </button>
         </div>
       </div>

@@ -1285,6 +1285,50 @@ export const appRouter = router({
         return { following: true };
       }),
 
+    getById: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return null;
+        const { buddyExperts: beTable, users: usersTable, expertPlans: epTable, expertMenus: emTable } = await import("../drizzle/schema");
+        const { eq, and, desc } = await import("drizzle-orm");
+        const rows = await drizzleDb
+          .select({ expert: beTable, user: { name: usersTable.name, imageUrl: usersTable.imageUrl, email: usersTable.email } })
+          .from(beTable)
+          .leftJoin(usersTable, eq(beTable.userId, usersTable.id))
+          .where(eq(beTable.id, input.id))
+          .limit(1);
+        if (!rows[0]) return null;
+        const plans = await drizzleDb.select().from(epTable).where(and(eq(epTable.expertId, input.id), eq(epTable.isPublic, true))).orderBy(desc(epTable.copiesCount)).limit(6);
+        const menus = await drizzleDb.select().from(emTable).where(and(eq(emTable.expertId, input.id), eq(emTable.isPublic, true))).orderBy(desc(emTable.copiesCount)).limit(3);
+        return { ...rows[0], plans, menus };
+      }),
+
+    isFollowing: protectedProcedure
+      .input(z.object({ expertId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return { following: false };
+        const { expertFollowers: efTable } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+        const row = await drizzleDb.select().from(efTable).where(and(eq(efTable.userId, ctx.user.id), eq(efTable.expertId, input.expertId))).limit(1);
+        return { following: !!row[0] };
+      }),
+
+    getFollowing: protectedProcedure.query(async ({ ctx }) => {
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) return [];
+      const { expertFollowers: efTable, buddyExperts: beTable } = await import("../drizzle/schema");
+      const { eq, desc } = await import("drizzle-orm");
+      return drizzleDb
+        .select({ expert: beTable, followedAt: efTable.followedAt })
+        .from(efTable)
+        .leftJoin(beTable, eq(efTable.expertId, beTable.id))
+        .where(eq(efTable.userId, ctx.user.id))
+        .orderBy(desc(efTable.followedAt))
+        .limit(50);
+    }),
+
     seedDemoExperts: publicProcedure.mutation(async () => {
       const drizzleDb = await db.getDb();
       if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
@@ -1362,6 +1406,47 @@ export const appRouter = router({
           .orderBy(desc(bmTable.followersCount))
           .limit(50);
       }),
+
+    getById: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return null;
+        const { buddyMakers: bmTable, users: usersTable } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        const rows = await drizzleDb
+          .select({ maker: bmTable, user: { name: usersTable.name, imageUrl: usersTable.imageUrl } })
+          .from(bmTable)
+          .leftJoin(usersTable, eq(bmTable.userId, usersTable.id))
+          .where(eq(bmTable.id, input.id))
+          .limit(1);
+        return rows[0] ?? null;
+      }),
+
+    isFollowing: protectedProcedure
+      .input(z.object({ makerId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return { following: false };
+        const { makerFollowers: mfTable } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+        const row = await drizzleDb.select().from(mfTable).where(and(eq(mfTable.userId, ctx.user.id), eq(mfTable.makerId, input.makerId))).limit(1);
+        return { following: !!row[0] };
+      }),
+
+    getFollowing: protectedProcedure.query(async ({ ctx }) => {
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) return [];
+      const { makerFollowers: mfTable, buddyMakers: bmTable } = await import("../drizzle/schema");
+      const { eq, desc } = await import("drizzle-orm");
+      return drizzleDb
+        .select({ maker: bmTable, followedAt: mfTable.followedAt })
+        .from(mfTable)
+        .leftJoin(bmTable, eq(mfTable.makerId, bmTable.id))
+        .where(eq(mfTable.userId, ctx.user.id))
+        .orderBy(desc(mfTable.followedAt))
+        .limit(50);
+    }),
 
     follow: protectedProcedure
       .input(z.object({ makerId: z.number() }))

@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
@@ -58,6 +59,7 @@ type Tab = "makers" | "recipes";
 // ─── Maker card ───────────────────────────────────────────────────────────────
 
 function MakerCard({ row, onFollow }: { row: any; onFollow: (id: number) => void }) {
+  const [, navigate] = useLocation();
   const maker = row.maker;
 
   return (
@@ -139,15 +141,15 @@ function MakerCard({ row, onFollow }: { row: any; onFollow: (id: number) => void
         <div className="flex gap-2">
           <button
             onClick={() => onFollow(maker.id)}
-            className="flex-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold py-2 rounded-xl transition-colors"
+            className="flex-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold py-2.5 rounded-xl transition-colors"
           >
             Seguir
           </button>
           <button
-            onClick={() => toast.info(`Ver recetas de ${maker.displayName} — próximamente`)}
-            className="flex-1 border border-orange-200 text-orange-600 hover:bg-orange-50 text-xs font-semibold py-2 rounded-xl transition-colors"
+            onClick={() => navigate(`/buddy-makers/${maker.id}`)}
+            className="flex-1 border border-orange-200 text-orange-600 hover:bg-orange-50 text-xs font-semibold py-2.5 rounded-xl transition-colors"
           >
-            Ver recetas
+            Ver perfil
           </button>
         </div>
       </div>
