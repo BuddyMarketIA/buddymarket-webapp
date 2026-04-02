@@ -902,3 +902,8 @@
 - [x] Resultado: TDEE, distribución de macros (proteínas/carbos/grasas), déficit/superávit recomendado
 - [x] Guardar resultado en perfil del usuario como objetivo calórico diario
 - [x] Integrar en página de Métricas y en el Dashboard como card
+
+## Bug: Redirección automática al registro (02/04/2026)
+- [x] Corregir App.tsx: la ruta / debe mostrar LandingPage sin redirigir al registro
+- [x] Verificar que las rutas públicas (/, /blog, /terms, /subscription) son accesibles sin login
+- [x] El registro/login solo debe ocurrir cuando el usuario pulsa "Iniciar sesión" o "Empezar gratis"

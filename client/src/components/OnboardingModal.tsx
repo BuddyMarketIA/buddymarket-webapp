@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
+import { useAuth } from "@/_core/hooks/useAuth";
 
 const STEPS = [
   {
@@ -51,31 +52,35 @@ export function OnboardingModal() {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState(0);
   const [, navigate] = useLocation();
+  const { user, loading: authLoading } = useAuth();
 
   const { data: profileData, isLoading } = trpc.profile.get.useQuery(undefined, {
     retry: false,
+    // Only query profile when user is authenticated
+    enabled: !!user,
   });
 
   const completeOnboarding = trpc.profile.completeOnboarding.useMutation();
   const utils = trpc.useUtils();
 
   useEffect(() => {
-    // Wait until profile data is loaded
-    if (isLoading) return;
-    // If user hasn't completed onboarding, redirect to registration wizard
-    if (profileData && !profileData.user?.onboardingCompleted) {
-      const path = window.location.pathname;
-      // Public pages — never redirect from these
-      const publicPaths = ["/", "/blog", "/terms", "/privacy", "/cookies", "/legal", "/gdpr", "/register"];
-      const isPublic = publicPaths.includes(path)
-        || path.startsWith("/buddy-experts/")
-        || path.startsWith("/buddy-makers/");
-      if (!isPublic) {
-        navigate("/register");
+    // Wait until auth and profile data are loaded
+    if (authLoading || isLoading) return;
+    // Only show onboarding modal for brand-new users (registrationStep === 'account_type' means they just signed up)
+    // Never force-redirect existing users - they can complete their profile from /profile
+    if (user && profileData && !profileData.user?.onboardingCompleted) {
+      const regStep = (profileData.user as any)?.registrationStep;
+      // Only show the welcome modal if it's a brand new user on their first visit
+      // Don't redirect - let them navigate freely
+      if (regStep === "completed" || regStep === "pending_approval") {
+        // User went through registration, show welcome modal
+        setOpen(true);
       }
+      // For users with incomplete registration, just let them use the app
+      // They can complete profile from /profile page
       return;
     }
-  }, [profileData, isLoading]);
+  }, [user, authLoading, profileData, isLoading]);
 
   const handleClose = () => {
     setOpen(false);
