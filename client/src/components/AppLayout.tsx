@@ -2,6 +2,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
+import { trpc } from "@/lib/trpc";
 
 interface AppLayoutProps {
   children: React.ReactNode;
@@ -126,6 +127,18 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
   const { loading, isAuthenticated, user } = useAuth();
   const [location] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+
+  // Query buddy application status to conditionally show expert/maker panels
+  const expertApplicationQuery = trpc.buddyApplications.getMyApplication.useQuery({ type: "expert" }, {
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000, // 5 min cache
+  });
+  const makerApplicationQuery = trpc.buddyApplications.getMyApplication.useQuery({ type: "maker" }, {
+    enabled: !!user,
+    staleTime: 5 * 60 * 1000, // 5 min cache
+  });
+  const isApprovedExpert = expertApplicationQuery.data?.status === "approved";
+  const isApprovedMaker = makerApplicationQuery.data?.status === "approved";
   const [installPrompt, setInstallPrompt] = useState<any>(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
   const touchStartX = useRef(0);
@@ -251,7 +264,12 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
           {SIDEBAR_GROUPS.map((group, gi) => (
             <div key={group.label} style={{ marginBottom: "2px" }}>
               <p style={{ margin: gi === 0 ? "4px 0 4px 16px" : "10px 0 4px 16px", fontSize: "10px", fontWeight: 800, color: "#9ca3af", letterSpacing: "0.08em", textTransform: "uppercase" }}>{group.label}</p>
-              {group.items.map((item) => {
+              {group.items.filter(item => {
+                // Hide expert/maker dashboards if not approved
+                if (item.key === "buddy-expert-dashboard" && !isApprovedExpert) return false;
+                if (item.key === "buddy-maker-dashboard" && !isApprovedMaker) return false;
+                return true;
+              }).map((item) => {
                 if (item.to.startsWith("http")) {
                   return (
                     <a key={item.key} href={item.to} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>

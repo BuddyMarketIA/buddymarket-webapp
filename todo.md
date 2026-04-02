@@ -489,7 +489,7 @@
 ## Sprint: Corrección Problemas Críticos UX (Auditoría)
 - [ ] Corregir ruta rota Diario Nutricional (sidebar apunta a /nutrition-diary → corregir a /meal-log)
 - [ ] Reorganizar sidebar con grupos visuales y separadores (Nutrición, Compras, Asistentes IA, Mi cuenta, Comunidad, Mi panel, Admin)
-- [ ] Ocultar "Mi Panel Experto/Maker" del sidebar si el usuario no tiene solicitud aprobada
+- [x] Ocultar "Mi Panel Experto/Maker" del sidebar si el usuario no tiene solicitud aprobada
 - [ ] Implementar modal de bienvenida para nuevos usuarios (primer login, con checklist de 3 pasos)
 - [ ] Añadir chips de preguntas rápidas en BuddyIA para guiar al usuario nuevo
 - [ ] Estado vacío informativo en "Recomendaciones para ti" del dashboard con CTA a completar perfil
@@ -497,7 +497,7 @@
 - [ ] Mejorar estado vacío del Inventario con CTA prominente naranja
 - [ ] Mejorar widget de calorías del dashboard cuando está en 0 con CTA a registrar comida
 - [ ] Corregir duplicado "Barbacoa" en EventMenuPlanner
-- [ ] Corregir badge de Carrefour de "Próximamente" a "Disponible" en /supermercados
+- [x] Corregir badge de Carrefour de "Próximamente" a "Disponible" en /supermercados
 
 ## Sprint: Mejora Completa de la Aplicación (Auditoría Total)
 
@@ -582,7 +582,7 @@
 - [x] Frontend: BuddyApplication formulario de 3 pasos con indicador de progreso
 - [x] Frontend: Sección de eliminar cuenta en Perfil con confirmación de texto
 - [x] Bug: Claves duplicadas en EventMenuPlanner.tsx corregido
-- [ ] Frontend: Métricas mostrar solo campos relevantes según tipo
+- [x] Frontend: Métricas mostrar solo campos relevantes según tipo (selector de tipo: Peso, Composición, Medidas, Báscula IA)
 - [ ] Frontend: Añadir breadcrumbs o título de sección en todas las páginas
 - [x] Tests: Añadir test para endpoint de métricas
 - [x] Tests: Añadir test para endpoint de BuddyApplication

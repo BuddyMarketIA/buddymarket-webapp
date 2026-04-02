@@ -13,7 +13,7 @@ import { toast } from "sonner";
 import {
   LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend
 } from "recharts";
-import { Scale, TrendingDown, TrendingUp, Minus, Plus, Trash2, ChevronDown, ChevronUp } from "lucide-react";
+import { Scale, TrendingDown, TrendingUp, Minus, Plus, Trash2, ChevronDown, ChevronUp, Ruler, Activity, Zap } from "lucide-react";
 
 const TODAY = new Date().toISOString().split("T")[0];
 
@@ -63,10 +63,20 @@ function calcBmi(weight: number, heightCm: number) {
   return Math.round((weight / (h * h)) * 10) / 10;
 }
 
+// Metric type presets
+const METRIC_TYPES = [
+  { id: "basic", label: "Peso", emoji: "⚖️", desc: "Solo peso y talla", icon: Scale },
+  { id: "composition", label: "Composición", emoji: "💪", desc: "Grasa y músculo", icon: Activity },
+  { id: "measures", label: "Medidas", emoji: "📏", desc: "Circunferencias", icon: Ruler },
+  { id: "smart", label: "Báscula IA", emoji: "⚡", desc: "Todos los datos", icon: Zap },
+] as const;
+type MetricType = typeof METRIC_TYPES[number]["id"];
+
 export default function Metrics() {
   const { user, loading } = useAuth();
   const [form, setForm] = useState<MetricForm>(EMPTY_FORM);
   const [showAdvanced, setShowAdvanced] = useState(false);
+  const [metricType, setMetricType] = useState<MetricType>("basic");
   const [activeChart, setActiveChart] = useState<"weight" | "bodyFat" | "muscleMass" | "waist">("weight");
 
   const metricsQuery = trpc.metrics.getAll.useQuery(undefined, { enabled: !!user });
@@ -223,99 +233,84 @@ export default function Metrics() {
               <CardTitle className="text-base">Nueva medición</CardTitle>
             </CardHeader>
             <CardContent>
+              {/* Metric type selector */}
+              <div className="grid grid-cols-4 gap-2 mb-5">
+                {METRIC_TYPES.map(t => (
+                  <button
+                    key={t.id}
+                    type="button"
+                    onClick={() => setMetricType(t.id)}
+                    className={`flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition-all text-center ${
+                      metricType === t.id
+                        ? "border-primary bg-primary/10 text-primary"
+                        : "border-border bg-card/40 text-muted-foreground hover:border-primary/40"
+                    }`}
+                  >
+                    <span className="text-lg">{t.emoji}</span>
+                    <span className="text-xs font-semibold leading-tight">{t.label}</span>
+                    <span className="text-[10px] leading-tight opacity-70 hidden sm:block">{t.desc}</span>
+                  </button>
+                ))}
+              </div>
+
               <form onSubmit={handleSubmit} className="space-y-4">
                 <div>
                   <Label>Fecha</Label>
                   <Input type="date" value={form.date} onChange={f("date")} max={TODAY} />
                 </div>
 
-                {/* Primary metrics */}
-                <div className="grid grid-cols-2 gap-3">
-                  <div>
-                    <Label>Peso (kg)</Label>
-                    <Input type="number" step="0.1" placeholder="70.5" value={form.weight} onChange={f("weight")} />
-                  </div>
-                  <div>
-                    <Label>% Grasa corporal</Label>
-                    <Input type="number" step="0.1" placeholder="20.0" value={form.bodyFat} onChange={f("bodyFat")} />
-                  </div>
-                  <div>
-                    <Label>Masa muscular (kg)</Label>
-                    <Input type="number" step="0.1" placeholder="35.0" value={form.muscleMass} onChange={f("muscleMass")} />
-                  </div>
-                  <div>
-                    <Label>IMC <span className="text-xs text-muted-foreground">(auto si vacío)</span></Label>
-                    <Input type="number" step="0.1" placeholder="Auto" value={form.bmi} onChange={f("bmi")} />
-                  </div>
-                </div>
-
-                {/* Circumferences */}
-                <div>
-                  <h3 className="text-sm font-semibold text-muted-foreground mb-2">Medidas corporales (cm)</h3>
+                {/* Basic: weight + BMI */}
+                {(metricType === "basic" || metricType === "composition" || metricType === "smart") && (
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <Label>Cintura</Label>
-                      <Input type="number" step="0.5" placeholder="80" value={form.waist} onChange={f("waist")} />
+                      <Label>Peso (kg) <span className="text-red-400">*</span></Label>
+                      <Input type="number" step="0.1" placeholder="70.5" value={form.weight} onChange={f("weight")} />
                     </div>
                     <div>
-                      <Label>Cadera</Label>
-                      <Input type="number" step="0.5" placeholder="95" value={form.hip} onChange={f("hip")} />
-                    </div>
-                    <div>
-                      <Label>Pecho</Label>
-                      <Input type="number" step="0.5" placeholder="90" value={form.chest} onChange={f("chest")} />
-                    </div>
-                    <div>
-                      <Label>Brazo</Label>
-                      <Input type="number" step="0.5" placeholder="32" value={form.arm} onChange={f("arm")} />
-                    </div>
-                    <div>
-                      <Label>Muslo</Label>
-                      <Input type="number" step="0.5" placeholder="55" value={form.thigh} onChange={f("thigh")} />
-                    </div>
-                    <div>
-                      <Label>Pantorrilla</Label>
-                      <Input type="number" step="0.5" placeholder="38" value={form.calf} onChange={f("calf")} />
+                      <Label>IMC <span className="text-xs text-muted-foreground">(auto)</span></Label>
+                      <Input type="number" step="0.1" placeholder="Auto" value={form.bmi} onChange={f("bmi")} />
                     </div>
                   </div>
-                </div>
+                )}
 
-                {/* Advanced toggle */}
-                <button
-                  type="button"
-                  className="flex items-center gap-1 text-sm text-muted-foreground hover:text-foreground transition-colors"
-                  onClick={() => setShowAdvanced(v => !v)}
-                >
-                  {showAdvanced ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
-                  Métricas avanzadas (báscula inteligente)
-                </button>
+                {/* Composition: body fat + muscle */}
+                {(metricType === "composition" || metricType === "smart") && (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div>
+                      <Label>% Grasa corporal</Label>
+                      <Input type="number" step="0.1" placeholder="20.0" value={form.bodyFat} onChange={f("bodyFat")} />
+                    </div>
+                    <div>
+                      <Label>Masa muscular (kg)</Label>
+                      <Input type="number" step="0.1" placeholder="35.0" value={form.muscleMass} onChange={f("muscleMass")} />
+                    </div>
+                  </div>
+                )}
 
-                {showAdvanced && (
+                {/* Measures: circumferences */}
+                {(metricType === "measures" || metricType === "smart") && (
+                  <div>
+                    <h3 className="text-sm font-semibold text-muted-foreground mb-2">Medidas corporales (cm)</h3>
+                    <div className="grid grid-cols-2 gap-3">
+                      <div><Label>Cintura</Label><Input type="number" step="0.5" placeholder="80" value={form.waist} onChange={f("waist")} /></div>
+                      <div><Label>Cadera</Label><Input type="number" step="0.5" placeholder="95" value={form.hip} onChange={f("hip")} /></div>
+                      <div><Label>Pecho</Label><Input type="number" step="0.5" placeholder="90" value={form.chest} onChange={f("chest")} /></div>
+                      <div><Label>Brazo</Label><Input type="number" step="0.5" placeholder="32" value={form.arm} onChange={f("arm")} /></div>
+                      <div><Label>Muslo</Label><Input type="number" step="0.5" placeholder="55" value={form.thigh} onChange={f("thigh")} /></div>
+                      <div><Label>Pantorrilla</Label><Input type="number" step="0.5" placeholder="38" value={form.calf} onChange={f("calf")} /></div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Smart scale: advanced fields */}
+                {metricType === "smart" && (
                   <div className="grid grid-cols-2 gap-3 pt-1 border-t border-border/50">
-                    <div>
-                      <Label>Cuello (cm)</Label>
-                      <Input type="number" step="0.5" placeholder="38" value={form.neck} onChange={f("neck")} />
-                    </div>
-                    <div>
-                      <Label>Grasa visceral (nivel)</Label>
-                      <Input type="number" step="1" placeholder="5" value={form.visceralFat} onChange={f("visceralFat")} />
-                    </div>
-                    <div>
-                      <Label>Masa ósea (kg)</Label>
-                      <Input type="number" step="0.1" placeholder="3.2" value={form.boneMass} onChange={f("boneMass")} />
-                    </div>
-                    <div>
-                      <Label>% Agua corporal</Label>
-                      <Input type="number" step="0.1" placeholder="55" value={form.waterPercentage} onChange={f("waterPercentage")} />
-                    </div>
-                    <div>
-                      <Label>Edad metabólica</Label>
-                      <Input type="number" step="1" placeholder="28" value={form.metabolicAge} onChange={f("metabolicAge")} />
-                    </div>
-                    <div>
-                      <Label>Metabolismo basal (kcal)</Label>
-                      <Input type="number" step="1" placeholder="1650" value={form.basalMetabolism} onChange={f("basalMetabolism")} />
-                    </div>
+                    <div><Label>Cuello (cm)</Label><Input type="number" step="0.5" placeholder="38" value={form.neck} onChange={f("neck")} /></div>
+                    <div><Label>Grasa visceral</Label><Input type="number" step="1" placeholder="5" value={form.visceralFat} onChange={f("visceralFat")} /></div>
+                    <div><Label>Masa ósea (kg)</Label><Input type="number" step="0.1" placeholder="3.2" value={form.boneMass} onChange={f("boneMass")} /></div>
+                    <div><Label>% Agua corporal</Label><Input type="number" step="0.1" placeholder="55" value={form.waterPercentage} onChange={f("waterPercentage")} /></div>
+                    <div><Label>Edad metabólica</Label><Input type="number" step="1" placeholder="28" value={form.metabolicAge} onChange={f("metabolicAge")} /></div>
+                    <div><Label>Metabolismo basal (kcal)</Label><Input type="number" step="1" placeholder="1650" value={form.basalMetabolism} onChange={f("basalMetabolism")} /></div>
                   </div>
                 )}
 
