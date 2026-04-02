@@ -499,6 +499,14 @@ export default function RecipeDetail() {
         </div>
       )}
 
+      {/* Social share bar */}
+      <ShareRecipeButton
+        recipeId={recipe.id}
+        recipeName={recipe.name}
+        recipeDescription={recipe.description ?? undefined}
+        variant="bar"
+      />
+
       <div className="vively-disclaimer mt-6">
         <p>BuddyMarket no constituye asesoramiento nutricional profesional.</p>
       </div>

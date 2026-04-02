@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { Share2, Copy, Check, MessageCircle, Send, X } from "lucide-react";
+import { Share2, Copy, Check, X } from "lucide-react";
 import { toast } from "sonner";
 
 interface ShareRecipeButtonProps {
@@ -7,7 +7,7 @@ interface ShareRecipeButtonProps {
   recipeName: string;
   recipeDescription?: string;
   /** "icon" = small icon button for cards, "full" = full button for detail page */
-  variant?: "icon" | "full";
+  variant?: "icon" | "full" | "bar";
 }
 
 export default function ShareRecipeButton({
@@ -21,7 +21,7 @@ export default function ShareRecipeButton({
   const menuRef = useRef<HTMLDivElement>(null);
 
   // Build the public URL for this recipe
-  const recipeUrl = `${window.location.origin}/recipes/${recipeId}`;
+  const recipeUrl = `${window.location.origin}/app/recipes/${recipeId}`;
 
   // WhatsApp message
   const whatsappText = encodeURIComponent(
@@ -34,6 +34,17 @@ export default function ShareRecipeButton({
 
   // Twitter/X
   const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(`🍽️ ${recipeName}`)}&url=${encodeURIComponent(recipeUrl)}`;
+
+  const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(recipeUrl)}`;
+
+  const instagramAction = async () => {
+    try {
+      await navigator.clipboard.writeText(recipeUrl);
+      toast.success("Enlace copiado — pégalo en Instagram Stories o en tu bio 📸");
+    } catch {
+      toast.error("No se pudo copiar el enlace");
+    }
+  };
 
   // Close menu when clicking outside
   useEffect(() => {
@@ -120,6 +131,8 @@ export default function ShareRecipeButton({
             whatsappUrl={whatsappUrl}
             telegramUrl={telegramUrl}
             twitterUrl={twitterUrl}
+            facebookUrl={facebookUrl}
+            onInstagram={instagramAction}
             onCopy={handleCopy}
             copied={copied}
             onClose={() => setShowMenu(false)}
@@ -168,6 +181,8 @@ export default function ShareRecipeButton({
           whatsappUrl={whatsappUrl}
           telegramUrl={telegramUrl}
           twitterUrl={twitterUrl}
+          facebookUrl={facebookUrl}
+          onInstagram={instagramAction}
           onCopy={handleCopy}
           copied={copied}
           onClose={() => setShowMenu(false)}
@@ -183,6 +198,8 @@ function ShareMenu({
   whatsappUrl,
   telegramUrl,
   twitterUrl,
+  facebookUrl,
+  onInstagram,
   onCopy,
   copied,
   onClose,
@@ -191,6 +208,8 @@ function ShareMenu({
   whatsappUrl: string;
   telegramUrl: string;
   twitterUrl: string;
+  facebookUrl: string;
+  onInstagram: () => void;
   onCopy: (e: React.MouseEvent) => void;
   copied: boolean;
   onClose: () => void;
@@ -278,6 +297,17 @@ function ShareMenu({
           {opt.label}
         </a>
       ))}
+
+      {/* Instagram */}
+      <button
+        onClick={(e) => { e.stopPropagation(); onInstagram(); onClose(); }}
+        style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 10px", borderRadius: 10, background: "transparent", border: "none", cursor: "pointer", fontWeight: 600, fontSize: 13, width: "100%", color: "#bc1888", transition: "background 0.15s" }}
+        onMouseEnter={(e) => (e.currentTarget.style.background = "#fdf2f8")}
+        onMouseLeave={(e) => (e.currentTarget.style.background = "transparent")}
+      >
+        <span style={{ fontSize: 18, lineHeight: 1 }}>📸</span>
+        Instagram (copiar enlace)
+      </button>
 
       {/* Divider */}
       <div style={{ height: 1, background: "#f3f4f6", margin: "4px 0" }} />
