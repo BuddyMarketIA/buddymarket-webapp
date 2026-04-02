@@ -852,3 +852,11 @@
 - [x] Frontend: estado visible de la solicitud (pendiente/aprobado/rechazado)
 - [x] Admin panel: sección de gestión de solicitudes BuddyMaker/Expert
 - [x] Admin panel: botones aprobar/rechazar con notificación al usuario
+
+## Sprint: Pop-up de instalación de la app (02/04/2026)
+- [x] Componente InstallAppBanner con lógica PWA (beforeinstallprompt + iOS detection)
+- [x] Pop-up aparece después de 3 segundos en la primera visita (no vuelve a aparecer si se descarta)
+- [x] Diseño premium con logo BuddyMarket, beneficios clave y botones Instalar/Ahora no
+- [x] Detectar plataforma: Android (prompt nativo), iOS (instrucciones Añadir a pantalla inicio), Desktop (prompt nativo)
+- [x] Guardar preferencia en localStorage para no mostrar de nuevo si el usuario lo descarta
+- [x] Integrar en App.tsx para que aparezca en todas las páginas

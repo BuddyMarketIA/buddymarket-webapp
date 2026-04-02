@@ -44,6 +44,7 @@ import Terms from "./pages/Terms";
 import Privacy from "./pages/Privacy";
 import Cookies from "./pages/Cookies";
 import { OnboardingModal } from "./components/OnboardingModal";
+import InstallAppBanner from "./components/InstallAppBanner";
 
 // Wraps a page component with AppLayout (for pages that don't include it themselves)
 function WithLayout({ component: Component, ...props }: { component: React.ComponentType<any>; [key: string]: any }) {
@@ -116,6 +117,7 @@ function App() {
         <TooltipProvider>
           <Toaster />
           <OnboardingModal />
+          <InstallAppBanner />
           <Router />
         </TooltipProvider>
       </ThemeProvider>
