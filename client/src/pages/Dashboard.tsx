@@ -1,8 +1,9 @@
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Link } from "wouter";
-import { useState, useMemo, useEffect } from "react";
+import { useState, useMemo, useEffect, useRef } from "react";
 import { toast } from "sonner";
+import confetti from "canvas-confetti";
 
 const QUICK_ACCESS = [
   {
@@ -118,6 +119,49 @@ export default function Dashboard() {
   const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : "U";
 
   const todayMenuItems: any[] = [];
+
+  // Macro goals (based on calorie goal)
+  const proteinGoal = Math.round((goalCalories * 0.30) / 4);
+  const carbsGoal = Math.round((goalCalories * 0.45) / 4);
+  const fatGoal = Math.round((goalCalories * 0.25) / 9);
+
+  const proteinPct = proteinGoal > 0 ? (protein / proteinGoal) * 100 : 0;
+  const carbsPct = carbsGoal > 0 ? (carbs / carbsGoal) * 100 : 0;
+  const fatPct = fatGoal > 0 ? (fat / fatGoal) * 100 : 0;
+
+  const allMacrosComplete = proteinPct >= 100 && carbsPct >= 100 && fatPct >= 100 && consumed > 0;
+
+  // Track whether we already fired confetti today to avoid repeated triggers
+  const confettiFiredRef = useRef(false);
+  const prevAllCompleteRef = useRef(false);
+
+  useEffect(() => {
+    // Only fire when transitioning from incomplete → complete (not on every render)
+    if (allMacrosComplete && !prevAllCompleteRef.current && !confettiFiredRef.current) {
+      confettiFiredRef.current = true;
+
+      // Burst from both sides
+      const fire = (particleRatio: number, opts: confetti.Options) => {
+        confetti({
+          origin: { y: 0.6 },
+          ...opts,
+          particleCount: Math.floor(200 * particleRatio),
+        });
+      };
+
+      fire(0.25, { spread: 26, startVelocity: 55, colors: ["#F97316", "#FB923C", "#FCD34D"] });
+      fire(0.2,  { spread: 60, colors: ["#818CF8", "#6366F1", "#A5B4FC"] });
+      fire(0.35, { spread: 100, decay: 0.91, scalar: 0.8, colors: ["#22C55E", "#34D399", "#86EFAC"] });
+      fire(0.1,  { spread: 120, startVelocity: 25, decay: 0.92, scalar: 1.2, colors: ["#FBBF24", "#F59E0B"] });
+      fire(0.1,  { spread: 120, startVelocity: 45, colors: ["#EF4444", "#F87171"] });
+
+      toast.success("🎉 ¡Objetivos de macros completados!", {
+        description: "Has alcanzado tus metas de proteínas, carbos y grasas del día. ¡Excelente trabajo!",
+        duration: 6000,
+      });
+    }
+    prevAllCompleteRef.current = allMacrosComplete;
+  }, [allMacrosComplete]);
   const profileData = trpc.profile.get.useQuery();
 
   // Calculate profile completion percentage

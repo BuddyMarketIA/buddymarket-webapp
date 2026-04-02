@@ -364,3 +364,8 @@
 - [ ] Añadir streak de días consecutivos registrando comidas
 - [x] Card clickeable que navega a /meal-log
 - [ ] Animación de entrada del anillo de progreso
+- [ ] Animación confeti al completar todos los macros del día
+
+## Sprint: Cards BuddyMakers/Experts
+- [x] Rediseñar MakerCard con layout vertical limpio y avatar bien posicionado
+- [x] Rediseñar ExpertCard con layout vertical limpio y avatar bien posicionado

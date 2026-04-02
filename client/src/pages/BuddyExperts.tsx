@@ -38,7 +38,7 @@ function StatBadge({ icon, value, label }: { icon: string; value: string | numbe
   );
 }
 
-// ─── Expert card ─────────────────────────────────────────────────────────────
+// ─── Expert card — clean vertical layout, no overlap ─────────────────────────
 
 function ExpertCard({ row, onFollow }: { row: any; onFollow: (id: number) => void }) {
   const [, navigate] = useLocation();
@@ -46,63 +46,94 @@ function ExpertCard({ row, onFollow }: { row: any; onFollow: (id: number) => voi
   const cat = CATEGORIES.find((c) => c.id === expert.category) ?? CATEGORIES[0];
 
   return (
-    <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-md transition-all duration-200 border border-orange-100 group">
-      {/* Cover */}
-      <div className="relative h-28 overflow-hidden">
+    <div className="bg-white rounded-3xl overflow-hidden shadow-md border border-gray-100 active:scale-[0.98] transition-transform duration-150">
+
+      {/* ── Cover image (taller so avatar sits cleanly below) ── */}
+      <div className="relative h-36 overflow-hidden">
         {expert.coverUrl ? (
-          <img src={expert.coverUrl} alt="" className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300" />
+          <img src={expert.coverUrl} alt="" className="w-full h-full object-cover" />
         ) : (
           <div className="w-full h-full bg-gradient-to-br from-orange-400 to-orange-600" />
         )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent" />
-        <span className={`absolute top-2 right-2 text-xs font-semibold px-2 py-0.5 rounded-full ${cat.color}`}>
-          {cat.emoji} {cat.label}
-        </span>
-        {expert.verified && (
-          <span className="absolute top-2 left-2 bg-orange-500 text-white text-xs font-bold px-2 py-0.5 rounded-full">
-            ✓ Verificado
-          </span>
-        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
+
+        {/* Badges — top corners, well above the avatar */}
+        <div className="absolute top-3 left-3 right-3 flex justify-between items-start">
+          {expert.verified ? (
+            <span className="bg-orange-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm">
+              ✓ Verificado
+            </span>
+          ) : <span />}
+          {expert.featured && (
+            <span className="bg-yellow-400 text-yellow-900 text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm">⭐ Top</span>
+          )}
+        </div>
       </div>
 
-      <div className="px-4 pb-4">
-        <div className="flex items-end gap-3 -mt-8 mb-3">
-          <div className="relative">
-            <img
-              src={expert.avatarUrl ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(expert.displayName)}&background=F97316&color=fff&size=80`}
-              alt={expert.displayName}
-              className="w-16 h-16 rounded-2xl border-4 border-white shadow-md object-cover"
-            />
-            {expert.featured && (
-              <span className="absolute -bottom-1 -right-1 bg-yellow-400 rounded-full w-5 h-5 flex items-center justify-center text-xs">⭐</span>
-            )}
-          </div>
-          <div className="pb-1 flex-1 min-w-0">
-            <h3 className="font-bold text-gray-900 text-sm truncate">{expert.displayName}</h3>
-            <p className="text-xs text-orange-600 font-medium">{expert.specialty}</p>
-          </div>
+      {/* ── Body — avatar centred, no negative margin into cover ── */}
+      <div className="flex flex-col items-center px-5 pb-5">
+        {/* Avatar */}
+        <div className="-mt-10 mb-3 ring-4 ring-white rounded-2xl shadow-lg overflow-hidden w-20 h-20 shrink-0">
+          <img
+            src={expert.avatarUrl ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(expert.displayName)}&background=F97316&color=fff&size=80`}
+            alt={expert.displayName}
+            className="w-full h-full object-cover"
+          />
         </div>
 
+        {/* Name + specialty */}
+        <h3 className="font-extrabold text-gray-900 text-base text-center leading-snug">
+          {expert.displayName}
+        </h3>
+        <p className="text-xs text-orange-500 font-semibold mt-0.5 text-center">
+          {expert.specialty}
+        </p>
+
+        {/* Category chip */}
+        <span className={`mt-2 text-[10px] font-bold px-2.5 py-1 rounded-full ${cat.color}`}>
+          {cat.emoji} {cat.label}
+        </span>
+
+        {/* Bio */}
         {expert.bio && (
-          <p className="text-xs text-gray-500 mb-3 line-clamp-2">{expert.bio}</p>
+          <p className="text-xs text-gray-500 mt-2 text-center line-clamp-2 leading-relaxed">{expert.bio}</p>
         )}
 
-        <div className="flex gap-3 mb-3 flex-wrap">
-          <StatBadge icon="👥" value={expert.followersCount >= 1000 ? `${(expert.followersCount / 1000).toFixed(1)}k` : expert.followersCount} label="seguidores" />
-          <StatBadge icon="📋" value={expert.plansCount} label="planes" />
-          {expert.rating > 0 && <StatBadge icon="⭐" value={expert.rating?.toFixed(1)} label={`(${expert.reviewsCount})`} />}
+        {/* Stats */}
+        <div className="flex items-center justify-center gap-5 mt-4 w-full">
+          <div className="flex flex-col items-center">
+            <span className="text-sm font-extrabold text-gray-800">
+              {expert.followersCount >= 1000 ? `${(expert.followersCount / 1000).toFixed(1)}k` : expert.followersCount}
+            </span>
+            <span className="text-[10px] text-gray-400 font-medium">seguidores</span>
+          </div>
+          <div className="w-px h-7 bg-gray-200" />
+          <div className="flex flex-col items-center">
+            <span className="text-sm font-extrabold text-gray-800">{expert.plansCount}</span>
+            <span className="text-[10px] text-gray-400 font-medium">planes</span>
+          </div>
+          {expert.rating > 0 && (
+            <>
+              <div className="w-px h-7 bg-gray-200" />
+              <div className="flex flex-col items-center">
+                <span className="text-sm font-extrabold text-gray-800">⭐ {expert.rating?.toFixed(1)}</span>
+                <span className="text-[10px] text-gray-400 font-medium">valoración</span>
+              </div>
+            </>
+          )}
         </div>
 
-        <div className="flex gap-2">
+        {/* CTA buttons */}
+        <div className="flex gap-2 mt-4 w-full">
           <button
             onClick={() => onFollow(expert.id)}
-            className="flex-1 bg-orange-500 hover:bg-orange-600 text-white text-xs font-semibold py-2.5 rounded-xl transition-colors"
+            className="flex-1 bg-orange-500 hover:bg-orange-600 active:bg-orange-700 text-white text-sm font-bold py-3 rounded-2xl transition-colors"
           >
             Seguir
           </button>
           <button
             onClick={() => navigate(`/buddy-experts/${expert.id}`)}
-            className="flex-1 border border-orange-200 text-orange-600 hover:bg-orange-50 text-xs font-semibold py-2.5 rounded-xl transition-colors"
+            className="flex-1 border-2 border-orange-200 text-orange-600 hover:bg-orange-50 active:bg-orange-100 text-sm font-bold py-3 rounded-2xl transition-colors"
           >
             Ver perfil
           </button>
