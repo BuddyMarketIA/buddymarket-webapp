@@ -38,6 +38,11 @@ import Achievements from "./pages/Achievements";
 import EventMenuPlanner from "./pages/EventMenuPlanner";
 import SavedEvents from "./pages/SavedEvents";
 import Registration from "./pages/Registration";
+import LandingPage from "./pages/LandingPage";
+import Blog from "./pages/Blog";
+import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
+import Cookies from "./pages/Cookies";
 import { OnboardingModal } from "./components/OnboardingModal";
 
 // Wraps a page component with AppLayout (for pages that don't include it themselves)
@@ -53,7 +58,13 @@ function Router() {
   return (
     <Switch>
       {/* Public landing */}
-      <Route path="/" component={Home} />
+      <Route path="/" component={LandingPage} />
+      <Route path="/blog" component={Blog} />
+      <Route path="/terms" component={Terms} />
+      <Route path="/privacy" component={Privacy} />
+      <Route path="/cookies" component={Cookies} />
+      <Route path="/legal" component={Terms} />
+      <Route path="/gdpr" component={Privacy} />
       {/* App routes — Dashboard and RecipeForm already include AppLayout internally */}
       <Route path="/dashboard">{() => <WithLayout component={Dashboard} />}</Route>
       <Route path="/recipes/new">{() => <WithLayout component={RecipeForm} />}</Route>
