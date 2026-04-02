@@ -9,6 +9,29 @@ function getQueryParam(req: Request, key: string): string | undefined {
   return typeof value === "string" ? value : undefined;
 }
 
+/** Retry a DB operation up to `maxAttempts` times on transient connection errors */
+async function withRetry<T>(fn: () => Promise<T>, maxAttempts = 3): Promise<T> {
+  let lastError: unknown;
+  for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+    try {
+      return await fn();
+    } catch (err: unknown) {
+      const code = (err as NodeJS.ErrnoException & { cause?: NodeJS.ErrnoException })?.cause?.code
+        ?? (err as NodeJS.ErrnoException)?.code;
+      const isTransient = code === "ECONNRESET" || code === "PROTOCOL_CONNECTION_LOST" || code === "ETIMEDOUT";
+      if (isTransient && attempt < maxAttempts) {
+        console.warn(`[OAuth] DB transient error (${code}), retrying attempt ${attempt + 1}/${maxAttempts}...`);
+        // Small back-off before retry
+        await new Promise((r) => setTimeout(r, 200 * attempt));
+        lastError = err;
+        continue;
+      }
+      throw err;
+    }
+  }
+  throw lastError;
+}
+
 export function registerOAuthRoutes(app: Express) {
   app.get("/api/oauth/callback", async (req: Request, res: Response) => {
     const code = getQueryParam(req, "code");
@@ -28,13 +51,16 @@ export function registerOAuthRoutes(app: Express) {
         return;
       }
 
-      await db.upsertUser({
-        openId: userInfo.openId,
-        name: userInfo.name || null,
-        email: userInfo.email ?? null,
-        loginMethod: userInfo.loginMethod ?? userInfo.platform ?? null,
-        lastSignedIn: new Date(),
-      });
+      // Retry upsertUser on transient DB connection errors (e.g. ECONNRESET after idle)
+      await withRetry(() =>
+        db.upsertUser({
+          openId: userInfo.openId,
+          name: userInfo.name || null,
+          email: userInfo.email ?? null,
+          loginMethod: userInfo.loginMethod ?? userInfo.platform ?? null,
+          lastSignedIn: new Date(),
+        })
+      );
 
       const sessionToken = await sdk.createSessionToken(userInfo.openId, {
         name: userInfo.name || "",
@@ -47,7 +73,8 @@ export function registerOAuthRoutes(app: Express) {
       res.redirect(302, "/");
     } catch (error) {
       console.error("[OAuth] Callback failed", error);
-      res.status(500).json({ error: "OAuth callback failed" });
+      // Redirect to login page with error instead of showing a raw JSON error
+      res.redirect(302, "/?auth_error=1");
     }
   });
 }
