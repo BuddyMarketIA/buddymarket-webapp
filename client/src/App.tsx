@@ -26,6 +26,8 @@ import MenuLibrary from "./pages/MenuLibrary";
 import Favorites from "./pages/Favorites";
 import BuddyProfile from "./pages/BuddyProfile";
 import Following from "./pages/Following";
+import BuddyExpertDashboard from "./pages/BuddyExpertDashboard";
+import BuddyMakerDashboard from "./pages/BuddyMakerDashboard";
 
 // Wraps a page component with AppLayout (for pages that don't include it themselves)
 function WithLayout({ component: Component, ...props }: { component: React.ComponentType<any>; [key: string]: any }) {
@@ -65,6 +67,8 @@ function Router() {
       <Route path="/buddy-experts/:id">{() => <BuddyProfile />}</Route>
       <Route path="/buddy-makers/:id">{() => <BuddyProfile />}</Route>
       <Route path="/following">{() => <WithLayout component={Following} />}</Route>
+      <Route path="/buddy-expert-dashboard">{() => <BuddyExpertDashboard />}</Route>
+      <Route path="/buddy-maker-dashboard">{() => <BuddyMakerDashboard />}</Route>
       {/* Fallback */}
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

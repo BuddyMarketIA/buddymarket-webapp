@@ -1514,10 +1514,170 @@ Si no puedes detectar productos, devuelve {"products": []}. No incluyas texto ad
       }
       return { seeded: true };
     }),
-  }),
 
+    // ── Expert self-management (panel propio) ────────────────────────────────────────
+    getMyProfile: protectedProcedure.query(async ({ ctx }) => {
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) return null;
+      const { buddyExperts: beTable } = await import("../drizzle/schema");
+      const { eq } = await import("drizzle-orm");
+      const [row] = await drizzleDb.select().from(beTable).where(eq(beTable.userId, ctx.user.id)).limit(1);
+      return row ?? null;
+    }),
+
+    createProfile: protectedProcedure
+      .input(z.object({
+        displayName: z.string().min(2).max(128),
+        bio: z.string().optional(),
+        specialty: z.string().max(128).optional(),
+        avatarUrl: z.string().url().optional(),
+        coverUrl: z.string().url().optional(),
+        category: z.enum(["perdida_peso","ganancia_muscular","definicion","dieta_equilibrada","rendimiento","bienestar","vegano"]).optional(),
+        instagramHandle: z.string().max(64).optional(),
+        websiteUrl: z.string().url().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { buddyExperts: beTable } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        const existing = await drizzleDb.select().from(beTable).where(eq(beTable.userId, ctx.user.id)).limit(1);
+        if (existing[0]) throw new TRPCError({ code: "CONFLICT", message: "Ya tienes un perfil de experto" });
+        const [res] = await drizzleDb.insert(beTable).values({
+          userId: ctx.user.id,
+          displayName: input.displayName,
+          bio: input.bio,
+          specialty: input.specialty,
+          avatarUrl: input.avatarUrl,
+          coverUrl: input.coverUrl,
+          category: input.category ?? "dieta_equilibrada",
+          instagramHandle: input.instagramHandle,
+          websiteUrl: input.websiteUrl,
+          verified: false,
+          featured: false,
+        });
+        return { id: (res as any).insertId as number };
+      }),
+
+    updateProfile: protectedProcedure
+      .input(z.object({
+        displayName: z.string().min(2).max(128).optional(),
+        bio: z.string().optional(),
+        specialty: z.string().max(128).optional(),
+        avatarUrl: z.string().url().optional().or(z.literal("")),
+        coverUrl: z.string().url().optional().or(z.literal("")),
+        category: z.enum(["perdida_peso","ganancia_muscular","definicion","dieta_equilibrada","rendimiento","bienestar","vegano"]).optional(),
+        instagramHandle: z.string().max(64).optional(),
+        youtubeHandle: z.string().max(64).optional(),
+        tiktokHandle: z.string().max(64).optional(),
+        priceMonthly: z.number().positive().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { buddyExperts: beTable } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        const updates: Record<string, any> = {};
+        if (input.displayName !== undefined) updates.displayName = input.displayName;
+        if (input.bio !== undefined) updates.bio = input.bio;
+        if (input.specialty !== undefined) updates.specialty = input.specialty;
+        if (input.avatarUrl !== undefined) updates.avatarUrl = input.avatarUrl;
+        if (input.coverUrl !== undefined) updates.coverUrl = input.coverUrl;
+        if (input.category !== undefined) updates.category = input.category;
+        if (input.instagramHandle !== undefined) updates.instagramHandle = input.instagramHandle;
+        if (input.youtubeHandle !== undefined) updates.youtubeHandle = input.youtubeHandle;
+        if (input.tiktokHandle !== undefined) updates.tiktokHandle = input.tiktokHandle;
+        if (input.priceMonthly !== undefined) updates.priceMonthly = input.priceMonthly;
+        await drizzleDb.update(beTable).set(updates).where(eq(beTable.userId, ctx.user.id));
+        return { success: true };
+      }),
+
+    getMyMenus: protectedProcedure.query(async ({ ctx }) => {
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) return [];
+      const { expertMenus: emTable, buddyExperts: beTable } = await import("../drizzle/schema");
+      const { eq } = await import("drizzle-orm");
+      const [expert] = await drizzleDb.select().from(beTable).where(eq(beTable.userId, ctx.user.id)).limit(1);
+      if (!expert) return [];
+      return drizzleDb.select().from(emTable).where(eq(emTable.expertId, expert.id));
+    }),
+
+    createMenu: protectedProcedure
+      .input(z.object({
+        title: z.string().min(2).max(256),
+        description: z.string().optional(),
+        coverUrl: z.string().url().optional().or(z.literal("")),
+        category: z.enum(["perdida_peso","ganancia_muscular","definicion","dieta_equilibrada","rendimiento","bienestar","vegano"]).optional(),
+        dailyCalories: z.number().int().positive().optional(),
+        isPublic: z.boolean().optional().default(true),
+        menuData: z.string().optional(), // JSON string
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { expertMenus: emTable, buddyExperts: beTable } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        const [expert] = await drizzleDb.select().from(beTable).where(eq(beTable.userId, ctx.user.id)).limit(1);
+        if (!expert) throw new TRPCError({ code: "FORBIDDEN", message: "Necesitas un perfil de experto para publicar menús" });
+        const [res] = await drizzleDb.insert(emTable).values({
+          expertId: expert.id,
+          title: input.title,
+          description: input.description,
+          coverUrl: input.coverUrl,
+          category: input.category ?? "dieta_equilibrada",
+          dailyCalories: input.dailyCalories,
+          isFree: true,
+          isPublic: input.isPublic ?? true,
+          menuData: input.menuData,
+        });
+        return { id: (res as any).insertId as number };
+      }),
+
+    updateMenu: protectedProcedure
+      .input(z.object({
+        menuId: z.number().int(),
+        title: z.string().min(2).max(256).optional(),
+        description: z.string().optional(),
+        coverUrl: z.string().url().optional().or(z.literal("")),
+        category: z.enum(["perdida_peso","ganancia_muscular","definicion","dieta_equilibrada","rendimiento","bienestar","vegano"]).optional(),
+        dailyCalories: z.number().int().positive().optional(),
+        isPublic: z.boolean().optional(),
+        menuData: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { expertMenus: emTable, buddyExperts: beTable } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+        const [expert] = await drizzleDb.select().from(beTable).where(eq(beTable.userId, ctx.user.id)).limit(1);
+        if (!expert) throw new TRPCError({ code: "FORBIDDEN" });
+        const updates: Record<string, any> = {};
+        if (input.title !== undefined) updates.title = input.title;
+        if (input.description !== undefined) updates.description = input.description;
+        if (input.coverUrl !== undefined) updates.coverUrl = input.coverUrl;
+        if (input.category !== undefined) updates.category = input.category;
+        if (input.dailyCalories !== undefined) updates.dailyCalories = input.dailyCalories;
+        if (input.isPublic !== undefined) updates.isPublic = input.isPublic;
+        if (input.menuData !== undefined) updates.menuData = input.menuData;
+        await drizzleDb.update(emTable).set(updates).where(and(eq(emTable.id, input.menuId), eq(emTable.expertId, expert.id)));
+        return { success: true };
+      }),
+
+    deleteMenu: protectedProcedure
+      .input(z.object({ menuId: z.number().int() }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { expertMenus: emTable, buddyExperts: beTable } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+        const [expert] = await drizzleDb.select().from(beTable).where(eq(beTable.userId, ctx.user.id)).limit(1);
+        if (!expert) throw new TRPCError({ code: "FORBIDDEN" });
+        await drizzleDb.delete(emTable).where(and(eq(emTable.id, input.menuId), eq(emTable.expertId, expert.id)));
+        return { success: true };
+      }),
+  }),
   // ===========================================================================
-  // BUDDY MAKERS
+  // BUDDY MAKERSS
   // ===========================================================================
   buddyMakers: router({
     list: publicProcedure
@@ -1595,6 +1755,213 @@ Si no puedes detectar productos, devuelve {"products": []}. No incluyas texto ad
         await drizzleDb.insert(mfTable).values({ userId: ctx.user.id, makerId: input.makerId });
         await drizzleDb.update(bmTable).set({ followersCount: sql`${bmTable.followersCount} + 1` }).where(eq(bmTable.id, input.makerId));
         return { following: true };
+      }),
+
+    // -- Maker self-management (panel propio) --
+    getMyProfile: protectedProcedure.query(async ({ ctx }) => {
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) return null;
+      const { buddyMakers: bmSelf } = await import("../drizzle/schema");
+      const { eq } = await import("drizzle-orm");
+      const [row] = await drizzleDb.select().from(bmSelf).where(eq(bmSelf.userId, ctx.user.id)).limit(1);
+      return row ?? null;
+    }),
+
+    createProfile: protectedProcedure
+      .input(z.object({
+        displayName: z.string().min(2).max(128),
+        bio: z.string().optional(),
+        specialty: z.string().max(128).optional(),
+        avatarUrl: z.string().url().optional(),
+        coverUrl: z.string().url().optional(),
+        instagramHandle: z.string().max(64).optional(),
+        youtubeHandle: z.string().max(64).optional(),
+        tiktokHandle: z.string().max(64).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { buddyMakers: bmSelf } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        const existing = await drizzleDb.select().from(bmSelf).where(eq(bmSelf.userId, ctx.user.id)).limit(1);
+        if (existing[0]) throw new TRPCError({ code: "CONFLICT", message: "Ya tienes un perfil de creador" });
+        const [res] = await drizzleDb.insert(bmSelf).values({
+          userId: ctx.user.id,
+          displayName: input.displayName,
+          bio: input.bio,
+          specialty: input.specialty,
+          avatarUrl: input.avatarUrl,
+          coverUrl: input.coverUrl,
+          instagramHandle: input.instagramHandle,
+          youtubeHandle: input.youtubeHandle,
+          tiktokHandle: input.tiktokHandle,
+          verified: false,
+          featured: false,
+        });
+        return { id: (res as any).insertId as number };
+      }),
+
+    updateProfile: protectedProcedure
+      .input(z.object({
+        displayName: z.string().min(2).max(128).optional(),
+        bio: z.string().optional(),
+        specialty: z.string().max(128).optional(),
+        avatarUrl: z.string().url().optional().or(z.literal("")),
+        coverUrl: z.string().url().optional().or(z.literal("")),
+        instagramHandle: z.string().max(64).optional(),
+        youtubeHandle: z.string().max(64).optional(),
+        tiktokHandle: z.string().max(64).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { buddyMakers: bmSelf } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        const updates: Record<string, any> = {};
+        if (input.displayName !== undefined) updates.displayName = input.displayName;
+        if (input.bio !== undefined) updates.bio = input.bio;
+        if (input.specialty !== undefined) updates.specialty = input.specialty;
+        if (input.avatarUrl !== undefined) updates.avatarUrl = input.avatarUrl;
+        if (input.coverUrl !== undefined) updates.coverUrl = input.coverUrl;
+        if (input.instagramHandle !== undefined) updates.instagramHandle = input.instagramHandle;
+        if (input.youtubeHandle !== undefined) updates.youtubeHandle = input.youtubeHandle;
+        if (input.tiktokHandle !== undefined) updates.tiktokHandle = input.tiktokHandle;
+        await drizzleDb.update(bmSelf).set(updates).where(eq(bmSelf.userId, ctx.user.id));
+        return { success: true };
+      }),
+
+    getMyRecipes: protectedProcedure.query(async ({ ctx }) => {
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) return [];
+      const { recipes: rSelf, buddyMakers: bmSelf } = await import("../drizzle/schema");
+      const { eq } = await import("drizzle-orm");
+      const [maker] = await drizzleDb.select().from(bmSelf).where(eq(bmSelf.userId, ctx.user.id)).limit(1);
+      if (!maker) return [];
+      return drizzleDb.select().from(rSelf).where(eq(rSelf.buddyMakerId, maker.id));
+    }),
+
+    createRecipe: protectedProcedure
+      .input(z.object({
+        name: z.string().min(2).max(256),
+        description: z.string().optional(),
+        imageUrl: z.string().url().optional().or(z.literal("")),
+        prepTime: z.number().int().positive().optional(),
+        cookTime: z.number().int().positive().optional(),
+        servings: z.number().int().positive().optional(),
+        calories: z.number().int().positive().optional(),
+        protein: z.number().nonnegative().optional(),
+        carbs: z.number().nonnegative().optional(),
+        fat: z.number().nonnegative().optional(),
+        mealTime: z.enum(["desayuno","media_manana","comida","merienda","cena","cualquiera"]).optional(),
+        cookingMethod: z.string().optional(),
+        cuisineType: z.string().optional(),
+        difficulty: z.enum(["easy","medium","hard"]).optional(),
+        ingredientsJson: z.string().optional(),
+        instructionsJson: z.string().optional(),
+        allergens: z.string().optional(),
+        tags: z.string().optional(),
+        isPublic: z.boolean().optional().default(true),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { recipes: rSelf, buddyMakers: bmSelf } = await import("../drizzle/schema");
+        const { eq, sql: sqlFn } = await import("drizzle-orm");
+        const [maker] = await drizzleDb.select().from(bmSelf).where(eq(bmSelf.userId, ctx.user.id)).limit(1);
+        if (!maker) throw new TRPCError({ code: "FORBIDDEN", message: "Necesitas un perfil de BuddyMaker para publicar recetas" });
+        const [res] = await drizzleDb.insert(rSelf).values({
+          name: input.name,
+          description: input.description,
+          imageUrl: input.imageUrl,
+          preparationTime: input.prepTime,
+          cookTime: input.cookTime,
+          servings: input.servings ?? 2,
+          caloriesPerServing: input.calories,
+          proteinsPerServing: input.protein,
+          carbsPerServing: input.carbs,
+          fatsPerServing: input.fat,
+          mealTime: input.mealTime,
+          cookingMethod: input.cookingMethod,
+          cuisineType: input.cuisineType,
+          difficulty: input.difficulty ?? "medium",
+          ingredientsJson: input.ingredientsJson,
+          instructionsJson: input.instructionsJson,
+          allergens: input.allergens,
+          tags: input.tags,
+          isPublic: input.isPublic ?? true,
+          buddyMakerId: maker.id,
+          isSeeded: false,
+          userId: ctx.user.id,
+        });
+        await drizzleDb.update(bmSelf).set({ recipesCount: sqlFn`${bmSelf.recipesCount} + 1` }).where(eq(bmSelf.id, maker.id));
+        return { id: (res as any).insertId as number };
+      }),
+
+    updateRecipe: protectedProcedure
+      .input(z.object({
+        recipeId: z.number().int(),
+        name: z.string().min(2).max(256).optional(),
+        description: z.string().optional(),
+        imageUrl: z.string().url().optional().or(z.literal("")),
+        prepTime: z.number().int().positive().optional(),
+        cookTime: z.number().int().positive().optional(),
+        servings: z.number().int().positive().optional(),
+        calories: z.number().int().positive().optional(),
+        protein: z.number().nonnegative().optional(),
+        carbs: z.number().nonnegative().optional(),
+        fat: z.number().nonnegative().optional(),
+        mealTime: z.enum(["desayuno","media_manana","comida","merienda","cena","cualquiera"]).optional(),
+        cookingMethod: z.string().optional(),
+        cuisineType: z.string().optional(),
+        difficulty: z.enum(["easy","medium","hard"]).optional(),
+        ingredientsJson: z.string().optional(),
+        instructionsJson: z.string().optional(),
+        allergens: z.string().optional(),
+        tags: z.string().optional(),
+        isPublic: z.boolean().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { recipes: rSelf, buddyMakers: bmSelf } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+        const [maker] = await drizzleDb.select().from(bmSelf).where(eq(bmSelf.userId, ctx.user.id)).limit(1);
+        if (!maker) throw new TRPCError({ code: "FORBIDDEN" });
+        const updates: Record<string, any> = {};
+        if (input.name !== undefined) updates.name = input.name;
+        if (input.description !== undefined) updates.description = input.description;
+        if (input.imageUrl !== undefined) updates.imageUrl = input.imageUrl;
+        if (input.prepTime !== undefined) updates.preparationTime = input.prepTime;
+        if (input.cookTime !== undefined) updates.cookTime = input.cookTime;
+        if (input.servings !== undefined) updates.servings = input.servings;
+        if (input.calories !== undefined) updates.caloriesPerServing = input.calories;
+        if (input.protein !== undefined) updates.proteinsPerServing = input.protein;
+        if (input.carbs !== undefined) updates.carbsPerServing = input.carbs;
+        if (input.fat !== undefined) updates.fatsPerServing = input.fat;
+        if (input.mealTime !== undefined) updates.mealTime = input.mealTime;
+        if (input.cookingMethod !== undefined) updates.cookingMethod = input.cookingMethod;
+        if (input.cuisineType !== undefined) updates.cuisineType = input.cuisineType;
+        if (input.difficulty !== undefined) updates.difficulty = input.difficulty;
+        if (input.ingredientsJson !== undefined) updates.ingredientsJson = input.ingredientsJson;
+        if (input.instructionsJson !== undefined) updates.instructionsJson = input.instructionsJson;
+        if (input.allergens !== undefined) updates.allergens = input.allergens;
+        if (input.tags !== undefined) updates.tags = input.tags;
+        if (input.isPublic !== undefined) updates.isPublic = input.isPublic;
+        await drizzleDb.update(rSelf).set(updates).where(and(eq(rSelf.id, input.recipeId), eq(rSelf.buddyMakerId, maker.id)));
+        return { success: true };
+      }),
+
+    deleteRecipe: protectedProcedure
+      .input(z.object({ recipeId: z.number().int() }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { recipes: rSelf, buddyMakers: bmSelf } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+        const [maker] = await drizzleDb.select().from(bmSelf).where(eq(bmSelf.userId, ctx.user.id)).limit(1);
+        if (!maker) throw new TRPCError({ code: "FORBIDDEN" });
+        await drizzleDb.delete(rSelf).where(and(eq(rSelf.id, input.recipeId), eq(rSelf.buddyMakerId, maker.id)));
+        return { success: true };
       }),
   }),
 

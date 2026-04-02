@@ -406,3 +406,30 @@
 
 ## Sprint: Indicador de carga transferencia Mercadona
 - [x] Indicador visual animado (spinner + pasos progresivos) mientras se transfieren productos al carrito de Mercadona
+
+## Sprint: Paneles de gestión BuddyExperts y BuddyMakers
+- [ ] Panel BuddyExperts: página /buddy-experts/dashboard con registro como experto (bio, especialidad, foto, precio)
+- [ ] Panel BuddyExperts: listado de mis menús subidos con opciones editar/eliminar
+- [ ] Panel BuddyExperts: formulario para subir nuevo menú (nombre, descripción, objetivo, precio, días con recetas)
+- [ ] Panel BuddyExperts: formulario para editar menú existente
+- [ ] tRPC: procedimientos createExpertProfile, updateExpertProfile, getMyExpertProfile
+- [ ] tRPC: procedimientos createExpertMenu, updateExpertMenu, deleteExpertMenu, getMyExpertMenus
+- [ ] Panel BuddyMakers: página /buddy-makers/dashboard con registro como creador (bio, especialidad, foto, redes sociales)
+- [ ] Panel BuddyMakers: listado de mis recetas subidas con opciones editar/eliminar
+- [ ] Panel BuddyMakers: formulario para subir nueva receta (nombre, ingredientes, pasos, nutrición, foto, categorías)
+- [ ] Panel BuddyMakers: formulario para editar receta existente
+- [ ] tRPC: procedimientos createMakerProfile, updateMakerProfile, getMyMakerProfile
+- [ ] tRPC: procedimientos createMakerRecipe, updateMakerRecipe, deleteMakerRecipe, getMyMakerRecipes
+- [ ] Botón "Mi panel" en BuddyExperts.tsx y BuddyMakers.tsx para acceder al dashboard propio
+
+## Sprint Paneles de Gestión BuddyExperts y BuddyMakers
+- [x] Backend: procedimientos getMyProfile, createProfile, updateProfile para BuddyExperts
+- [x] Backend: procedimientos getMyMenus, createMenu, updateMenu, deleteMenu para BuddyExperts
+- [x] Backend: procedimientos getMyProfile, createProfile, updateProfile para BuddyMakers
+- [x] Backend: procedimientos getMyRecipes, createRecipe, updateRecipe, deleteRecipe para BuddyMakers
+- [x] Página BuddyExpertDashboard: panel con tabs Perfil y Menús, formulario completo de menú semanal (7 días x 5 comidas)
+- [x] Página BuddyMakerDashboard: panel con tabs Perfil y Recetas, formulario completo con ingredientes, pasos, nutrición
+- [x] Rutas /buddy-expert-dashboard y /buddy-maker-dashboard en App.tsx
+- [x] Sidebar: accesos directos "Mi Panel Experto" y "Mi Panel Creador"
+- [x] TypeScript: 0 errores
+- [x] Tests: 19/19 pasando
