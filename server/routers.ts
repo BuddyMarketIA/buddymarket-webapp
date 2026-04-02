@@ -2734,5 +2734,59 @@ Devuelve EXACTAMENTE este JSON:
         }
       }),
   }),
+
+  // ─── Saved Events ────────────────────────────────────────────────────────────
+  savedEvents: router({
+    save: protectedProcedure
+      .input(z.object({
+        eventType: z.string(),
+        eventName: z.string(),
+        persons: z.number().int().min(1).default(4),
+        categories: z.string().optional(),
+        menuData: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { savedEvents } = await import("../drizzle/schema");
+        const { getDb } = await import("./db");
+        const { eq } = await import("drizzle-orm");
+        const drizzleDb = await getDb();
+        await drizzleDb!.insert(savedEvents).values({
+          userId: ctx.user.id,
+          eventType: input.eventType,
+          eventName: input.eventName,
+          persons: input.persons,
+          categories: input.categories,
+          menuData: input.menuData,
+        });
+        return { success: true };
+      }),
+
+    list: protectedProcedure
+      .query(async ({ ctx }) => {
+        const { savedEvents } = await import("../drizzle/schema");
+        const { getDb } = await import("./db");
+        const { eq, desc } = await import("drizzle-orm");
+        const drizzleDb = await getDb();
+        const rows = await drizzleDb!
+          .select()
+          .from(savedEvents)
+          .where(eq(savedEvents.userId, ctx.user.id))
+          .orderBy(desc(savedEvents.createdAt));
+        return rows;
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number().int() }))
+      .mutation(async ({ ctx, input }) => {
+        const { savedEvents } = await import("../drizzle/schema");
+        const { getDb } = await import("./db");
+        const { eq, and } = await import("drizzle-orm");
+        const drizzleDb = await getDb();
+        await drizzleDb!
+          .delete(savedEvents)
+          .where(and(eq(savedEvents.id, input.id), eq(savedEvents.userId, ctx.user.id)));
+        return { success: true };
+      }),
+  }),
 });
 export type AppRouter = typeof appRouter;

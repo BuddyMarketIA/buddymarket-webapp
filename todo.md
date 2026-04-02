@@ -478,3 +478,10 @@
 - [ ] Resultado: menú completo con aperitivo, entrantes, plato principal, postre y bebidas con recetas detalladas
 - [ ] Opción de guardar el menú generado en la biblioteca personal
 - [ ] Ruta /event-menu y enlace en sidebar
+
+## Sprint: Eventos Favoritos Guardados
+- [ ] Tabla saved_events en BD (userId, eventType, eventName, persons, menuData JSON, createdAt)
+- [ ] Endpoints tRPC: saveEvent, listSavedEvents, deleteSavedEvent
+- [ ] Botón "Guardar evento" en la pantalla de resultado del asistente
+- [ ] Página /saved-events con lista de eventos guardados y acceso rápido
+- [ ] Enlace en sidebar y en el asistente de eventos

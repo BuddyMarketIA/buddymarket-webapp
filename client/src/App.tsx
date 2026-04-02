@@ -32,6 +32,7 @@ import BuddyMakerDashboard from "./pages/BuddyMakerDashboard";
 import Metrics from "./pages/Metrics";
 import BuddyApplication from "./pages/BuddyApplication";
 import EventMenuPlanner from "./pages/EventMenuPlanner";
+import SavedEvents from "./pages/SavedEvents";
 
 // Wraps a page component with AppLayout (for pages that don't include it themselves)
 function WithLayout({ component: Component, ...props }: { component: React.ComponentType<any>; [key: string]: any }) {
@@ -77,6 +78,7 @@ function Router() {
       <Route path="/metrics">{() => <WithLayout component={Metrics} />}</Route>
       <Route path="/buddy-application">{() => <WithLayout component={BuddyApplication} />}</Route>
       <Route path="/event-menu">{() => <EventMenuPlanner />}</Route>
+      <Route path="/saved-events">{() => <SavedEvents />}</Route>
       {/* Fallback */}
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />

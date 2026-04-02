@@ -128,6 +128,22 @@ export default function EventMenuPlanner() {
   });
   const [extraNotes, setExtraNotes] = useState("");
 
+  const saveEvent = trpc.savedEvents.save.useMutation({
+    onSuccess: () => toast.success("⭐ Evento guardado en Mis Eventos"),
+    onError: () => toast.error("Error al guardar el evento"),
+  });
+
+  const handleSaveEvent = () => {
+    if (!generatedMenu) return;
+    saveEvent.mutate({
+      eventType,
+      eventName: generatedMenu.eventTitle,
+      persons,
+      categories: activeCategory,
+      menuData: JSON.stringify(generatedMenu),
+    });
+  };
+
   const generateMenu = trpc.events.generateMenu.useMutation({
     onSuccess: (data) => {
       setGeneratedMenu(data as unknown as GeneratedMenu);
@@ -836,21 +852,30 @@ export default function EventMenuPlanner() {
               </div>
             )}
 
-            {/* Botón nuevo menú */}
-            <button
-              onClick={() => {
-                setStep(0);
-                setGeneratedMenu(null);
-                setEventType("");
-                setEventName("");
-                setIntolerances([]);
-                setAlcoholTypes(["Vino tinto", "Vino blanco", "Cava / Champán"]);
-                setExtraNotes("");
-              }}
-              className="w-full py-3 rounded-2xl border-2 border-gray-200 text-gray-600 font-bold text-sm hover:bg-gray-50 transition-colors"
-            >
-              🔄 Planificar otro evento
-            </button>
+            {/* Botones de acción */}
+            <div className="flex gap-3">
+              <button
+                onClick={handleSaveEvent}
+                disabled={saveEvent.isPending}
+                className="flex-1 py-3 rounded-2xl bg-orange-500 text-white font-bold text-sm hover:bg-orange-600 transition-colors disabled:opacity-60"
+              >
+                {saveEvent.isPending ? "⏳ Guardando..." : "⭐ Guardar evento"}
+              </button>
+              <button
+                onClick={() => {
+                  setStep(0);
+                  setGeneratedMenu(null);
+                  setEventType("");
+                  setEventName("");
+                  setIntolerances([]);
+                  setAlcoholTypes(["Vino tinto", "Vino blanco", "Cava / Champán"]);
+                  setExtraNotes("");
+                }}
+                className="flex-1 py-3 rounded-2xl border-2 border-gray-200 text-gray-600 font-bold text-sm hover:bg-gray-50 transition-colors"
+              >
+                🔄 Planificar otro
+              </button>
+            </div>
           </div>
         )}
 

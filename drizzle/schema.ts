@@ -887,3 +887,20 @@ export const buddyApplications = mysqlTable("buddy_applications", {
 }));
 export type BuddyApplication = typeof buddyApplications.$inferSelect;
 export type InsertBuddyApplication = typeof buddyApplications.$inferInsert;
+
+
+// ─── Saved Events ─────────────────────────────────────────────────────────────
+export const savedEvents = mysqlTable("saved_events", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  eventType: varchar("eventType", { length: 64 }).notNull(),
+  eventName: varchar("eventName", { length: 128 }).notNull(),
+  persons: int("persons").notNull().default(4),
+  categories: varchar("categories", { length: 256 }),
+  menuData: text("menuData").notNull(), // JSON blob of generated menu
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  userIdx: index("saved_events_user_idx").on(t.userId),
+}));
+export type SavedEvent = typeof savedEvents.$inferSelect;
+export type InsertSavedEvent = typeof savedEvents.$inferInsert;
