@@ -369,3 +369,4 @@
 ## Sprint: Cards BuddyMakers/Experts
 - [x] Rediseñar MakerCard con layout vertical limpio y avatar bien posicionado
 - [x] Rediseñar ExpertCard con layout vertical limpio y avatar bien posicionado
+- [ ] Quitar foto de portada en MakerCard y ExpertCard, reemplazar con degradado + avatar grande

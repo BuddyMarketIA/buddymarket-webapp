@@ -61,20 +61,12 @@ function MakerCard({ row, onFollow }: { row: any; onFollow: (id: number) => void
   return (
     <div className="bg-white rounded-3xl overflow-hidden shadow-md border border-gray-100 active:scale-[0.98] transition-transform duration-150">
 
-      {/* ── Cover image (taller so avatar sits cleanly below) ── */}
-      <div className="relative h-36 overflow-hidden">
-        {maker.coverUrl ? (
-          <img src={maker.coverUrl} alt="" className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-orange-400 to-pink-500" />
-        )}
-        {/* Subtle dark gradient at bottom for readability */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/30 via-transparent to-transparent" />
-
-        {/* Badges — top corners, well above the avatar */}
+      {/* ── Header with gradient background + avatar + badges ── */}
+      <div className="relative bg-gradient-to-br from-orange-400 via-orange-500 to-pink-500 pt-6 pb-8 px-5">
+        {/* Badges — top corners */}
         <div className="absolute top-3 left-3 right-3 flex justify-between items-start">
           {maker.verified ? (
-            <span className="bg-orange-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm">
+            <span className="bg-white/95 text-orange-600 text-[10px] font-bold px-2.5 py-1 rounded-full shadow-sm">
               ✓ Verificado
             </span>
           ) : <span />}
@@ -84,18 +76,21 @@ function MakerCard({ row, onFollow }: { row: any; onFollow: (id: number) => void
             </span>
           )}
         </div>
+
+        {/* Avatar — large and centered */}
+        <div className="flex justify-center mt-2">
+          <div className="ring-4 ring-white/40 rounded-3xl shadow-xl overflow-hidden w-24 h-24 shrink-0">
+            <img
+              src={maker.avatarUrl ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(maker.displayName)}&background=F97316&color=fff&size=96`}
+              alt={maker.displayName}
+              className="w-full h-full object-cover"
+            />
+          </div>
+        </div>
       </div>
 
-      {/* ── Body — avatar centred, no negative margin into cover ── */}
-      <div className="flex flex-col items-center px-5 pb-5">
-        {/* Avatar — pulled up with negative margin from body top */}
-        <div className="-mt-10 mb-3 ring-4 ring-white rounded-2xl shadow-lg overflow-hidden w-20 h-20 shrink-0">
-          <img
-            src={maker.avatarUrl ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(maker.displayName)}&background=F97316&color=fff&size=80`}
-            alt={maker.displayName}
-            className="w-full h-full object-cover"
-          />
-        </div>
+      {/* ── Body ── */}
+      <div className="flex flex-col items-center px-5 pb-5 pt-4">
 
         {/* Name + specialty */}
         <h3 className="font-extrabold text-gray-900 text-base text-center leading-snug">
