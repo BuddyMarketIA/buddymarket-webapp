@@ -500,9 +500,9 @@ export default function Dashboard() {
                 <div style={{ width: "42px", height: "42px", borderRadius: "14px", background: "rgba(255,255,255,0.2)", backdropFilter: "blur(8px)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", flexShrink: 0 }}>
                   {QUICK_ACCESS[4].emoji}
                 </div>
-                <div>
-                  <p style={{ margin: 0, fontSize: "14px", fontWeight: 900, color: "white", letterSpacing: "-0.02em" }}>{QUICK_ACCESS[4].label}</p>
-                  <p style={{ margin: 0, fontSize: "14px", color: "rgba(255,255,255,0.8)" }}>{QUICK_ACCESS[4].subtitle}</p>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ margin: 0, fontSize: "13px", fontWeight: 900, color: "white", letterSpacing: "-0.02em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{QUICK_ACCESS[4].label}</p>
+                  <p style={{ margin: 0, fontSize: "11px", color: "rgba(255,255,255,0.8)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{QUICK_ACCESS[4].subtitle}</p>
                 </div>
                 <div style={{ marginLeft: "auto", background: "rgba(255,255,255,0.2)", borderRadius: "10px", padding: "4px 10px", backdropFilter: "blur(8px)" }}>
                   <span style={{ fontSize: "13px", fontWeight: 800, color: "white" }}>✨ IA</span>
@@ -593,10 +593,10 @@ export default function Dashboard() {
             {recommendedRecipes.data.recipes.map((recipe: any, i: number) => (
               <Link key={recipe.id} href={`/app/recipes/${recipe.id}`}>
                 <div style={{ width: "150px", flexShrink: 0, borderRadius: "18px", overflow: "hidden", cursor: "pointer", position: "relative", boxShadow: "0 4px 16px rgba(0,0,0,0.12)" }}>
-                  <div style={{ height: "110px", background: `linear-gradient(180deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.70) 100%), url(${recipe.imageUrl || FOOD_IMAGES[i % FOOD_IMAGES.length]}) center/cover` }}>
-                    <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "10px" }}>
-                      <p style={{ margin: 0, fontSize: "14px", fontWeight: 800, color: "white", lineHeight: 1.3, textShadow: "0 1px 3px rgba(0,0,0,0.5)" }}>{recipe.nameEs || recipe.name}</p>
-                      <p style={{ margin: "2px 0 0", fontSize: "13px", color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>🔥 {recipe.calories ?? 0} kcal</p>
+                  <div style={{ height: "110px", position: "relative", background: `linear-gradient(180deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.70) 100%), url(${recipe.imageUrl || FOOD_IMAGES[i % FOOD_IMAGES.length]}) center/cover` }}>
+                    <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "8px 10px" }}>
+                      <p style={{ margin: 0, fontSize: "12px", fontWeight: 800, color: "white", lineHeight: 1.25, textShadow: "0 1px 4px rgba(0,0,0,0.7)", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{recipe.nameEs || recipe.name}</p>
+                      <p style={{ margin: "2px 0 0", fontSize: "11px", color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>🔥 {recipe.calories ?? 0} kcal</p>
                     </div>
                   </div>
                   <div style={{ background: "white", padding: "6px 10px" }}>
