@@ -942,8 +942,67 @@ export const appRouter = router({
       )
       .mutation(async ({ ctx, input }) => {
         const result = await db.copyMenuForUser(input.menuId, ctx.user.id, input.persons, input.startDate);
+        // Auto-activate the newly saved menu
+        if (result?.menuId) {
+          const drizzleDb = await db.getDb();
+          if (drizzleDb) {
+            const { menuOrganizers } = await import("../drizzle/schema.js");
+            const { eq, and } = await import("drizzle-orm");
+            await drizzleDb.update(menuOrganizers).set({ isActive: false }).where(eq(menuOrganizers.userId, ctx.user.id));
+            await drizzleDb.update(menuOrganizers).set({ isActive: true }).where(and(eq(menuOrganizers.id, result.menuId), eq(menuOrganizers.userId, ctx.user.id)));
+          }
+        }
         return result;
       }),
+
+    // Set a menu as active (menú en curso)
+    setActive: protectedProcedure
+      .input(z.object({ menuId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const menu = await db.getMenuOrganizerById(input.menuId);
+        if (!menu) throw new TRPCError({ code: "NOT_FOUND" });
+        requireOwnership(menu.userId, ctx.user.id, ctx.user.role);
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { menuOrganizers } = await import("../drizzle/schema.js");
+        const { eq } = await import("drizzle-orm");
+        await drizzleDb.update(menuOrganizers).set({ isActive: false }).where(eq(menuOrganizers.userId, ctx.user.id));
+        await drizzleDb.update(menuOrganizers).set({ isActive: true }).where(eq(menuOrganizers.id, input.menuId));
+        return { success: true };
+      }),
+    // Get the currently active menu with full week detail
+    getActive: protectedProcedure.query(async ({ ctx }) => {
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) return null;
+      const { menuOrganizers, menuOrganizerDayParts, menuOrganizerDayPartRecipes, dayParts, recipes } = await import("../drizzle/schema.js");
+      const { eq, and } = await import("drizzle-orm");
+      const [activeMenu] = await drizzleDb
+        .select()
+        .from(menuOrganizers)
+        .where(and(eq(menuOrganizers.userId, ctx.user.id), eq(menuOrganizers.isActive, true)))
+        .limit(1);
+      if (!activeMenu) return null;
+      const dpRows = await drizzleDb
+        .select({ dp: menuOrganizerDayParts, dpInfo: dayParts })
+        .from(menuOrganizerDayParts)
+        .leftJoin(dayParts, eq(menuOrganizerDayParts.dayPartId, dayParts.id))
+        .where(eq(menuOrganizerDayParts.menuOrganizerId, activeMenu.id));
+      const dayPartsWithRecipes = await Promise.all(
+        dpRows.map(async (row) => {
+          const recipeRows = await drizzleDb
+            .select({ dpRecipe: menuOrganizerDayPartRecipes, recipe: recipes })
+            .from(menuOrganizerDayPartRecipes)
+            .leftJoin(recipes, eq(menuOrganizerDayPartRecipes.recipeId, recipes.id))
+            .where(eq(menuOrganizerDayPartRecipes.menuOrganizerDayPartId, row.dp.id));
+          return {
+            ...row.dp,
+            dayPartInfo: row.dpInfo,
+            recipes: recipeRows.map((r) => ({ ...r.dpRecipe, recipe: r.recipe })),
+          };
+        })
+      );
+      return { ...activeMenu, dayParts: dayPartsWithRecipes };
+    }),
 
     // Update start date of a menu (shifts all day parts accordingly)
     updateStartDate: protectedProcedure

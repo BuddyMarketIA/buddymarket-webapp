@@ -480,13 +480,13 @@ export const menuOrganizers = mysqlTable("menu_organizers", {
   difficulty: mysqlEnum("difficulty", ["facil", "medio", "dificil"]).default("facil"),
   isSeeded: boolean("isSeeded").default(false),
   dailyMealsCount: int("dailyMealsCount").default(3),
-  generatedByAI: boolean("generatedByAI").default(false),
+   generatedByAI: boolean("generatedByAI").default(false),
+  isActive: boolean("isActive").default(false),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 }, (t) => ({
   userIdx: index("menu_user_idx").on(t.userId),
 }));
-
 export type MenuOrganizer = typeof menuOrganizers.$inferSelect;
 export type InsertMenuOrganizer = typeof menuOrganizers.$inferInsert;
 

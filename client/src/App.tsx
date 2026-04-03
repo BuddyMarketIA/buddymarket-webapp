@@ -26,6 +26,7 @@ import BuddyShop from "./pages/BuddyShop";
 import MercadonaShop from "./pages/MercadonaShop";
 import CarrefourShop from "./pages/CarrefourShop";
 import MenuLibrary from "./pages/MenuLibrary";
+import ActiveMenu from "./pages/ActiveMenu";
 import SpecializedMenus from "./pages/SpecializedMenus";
 import Favorites from "./pages/Favorites";
 import BuddyProfile from "./pages/BuddyProfile";
@@ -118,6 +119,7 @@ function Router() {
       <Route path="/app/supermercados">{() => <ProtectedRoute component={MercadonaShop} />}</Route>
       <Route path="/app/carrefour">{() => <ProtectedRoute component={MercadonaShop} />}</Route>
       <Route path="/app/menu-library">{() => <ProtectedRoute component={MenuLibrary} />}</Route>
+      <Route path="/app/active-menu">{() => <ProtectedRoute component={ActiveMenu} />}</Route>
       <Route path="/app/specialized-menus">{() => <ProtectedPage><SpecializedMenus /></ProtectedPage>}</Route>
       <Route path="/app/favorites">{() => <ProtectedRoute component={Favorites} />}</Route>
       <Route path="/app/buddy-experts/:id">{() => <BuddyProfile />}</Route>

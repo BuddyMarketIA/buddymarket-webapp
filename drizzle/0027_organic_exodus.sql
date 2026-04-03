@@ -1,0 +1,1 @@
+ALTER TABLE `menu_organizers` ADD `isActive` boolean DEFAULT false;

@@ -206,24 +206,18 @@ export default function NutritionCalendar({ onClose, calorieGoal = 2000, goalTyp
         </div>
 
         {/* Legend */}
-        <div className="flex items-center justify-end gap-4 px-6 pb-4">
+        <div className="flex items-center justify-center gap-5 px-6 pb-4">
           <div className="flex items-center gap-1.5">
             <div className="h-2.5 w-2.5 rounded-full" style={{ background: "#dc2626" }} />
-            <span className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
-              {data?.isWeightLoss ? "&lt;34%" : "&gt;110%"}
-            </span>
+            <span className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>Excedido</span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="h-2.5 w-2.5 rounded-full" style={{ background: "#ea580c" }} />
-            <span className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
-              {data?.isWeightLoss ? "34–100%" : "34–66%"}
-            </span>
+            <span className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>Incompleto</span>
           </div>
           <div className="flex items-center gap-1.5">
             <div className="h-2.5 w-2.5 rounded-full" style={{ background: "#16a34a" }} />
-            <span className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>
-              {data?.isWeightLoss ? "≤100%" : "66–110%"}
-            </span>
+            <span className="text-xs" style={{ color: "rgba(255,255,255,0.5)" }}>En objetivo</span>
           </div>
         </div>
 

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
@@ -79,12 +79,15 @@ function SaveMenuDialog({
   const [persons, setPersons] = useState(1);
   const [startDate, setStartDate] = useState(() => new Date().toISOString().split("T")[0]);
   const utils = trpc.useUtils();
+  const [, navigate] = useLocation();
 
   const saveMutation = trpc.menus.saveFromLibrary.useMutation({
     onSuccess: (data) => {
-      toast.success("¡Menú guardado! Ya puedes verlo en tu planificador.");
+      toast.success("¡Menú activado! Redirigiendo a tu menú en curso...");
       utils.menus.list.invalidate();
+      utils.menus.getActive.invalidate();
       onClose();
+      setTimeout(() => navigate("/app/active-menu"), 500);
     },
     onError: (err) => {
       toast.error("Error al guardar el menú: " + err.message);
