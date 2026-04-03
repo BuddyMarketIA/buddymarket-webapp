@@ -162,6 +162,13 @@
       "when": 1775171349986,
       "tag": "0022_cooing_champions",
       "breakpoints": true
+    },
+    {
+      "idx": 23,
+      "version": "5",
+      "when": 1775204518909,
+      "tag": "0023_past_vulcan",
+      "breakpoints": true
     }
   ]
 }

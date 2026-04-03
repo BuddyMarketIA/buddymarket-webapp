@@ -1041,3 +1041,74 @@ export const roleRequests = mysqlTable("role_requests", {
 
 export type RoleRequest = typeof roleRequests.$inferSelect;
 export type InsertRoleRequest = typeof roleRequests.$inferInsert;
+
+// ─── Recipe Likes ─────────────────────────────────────────────────────────────
+export const recipeLikes = mysqlTable("recipe_likes", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  recipeId: int("recipeId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  userIdx: index("recipe_likes_user_idx").on(t.userId),
+  recipeIdx: index("recipe_likes_recipe_idx").on(t.recipeId),
+  uniqueUserRecipe: unique("recipe_likes_unique").on(t.userId, t.recipeId),
+}));
+export type RecipeLike = typeof recipeLikes.$inferSelect;
+export type InsertRecipeLike = typeof recipeLikes.$inferInsert;
+
+// ─── Complements (small daily foods: coffee, tea, yogurt, protein shake, etc.) ─
+export const complements = mysqlTable("complements", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 256 }).notNull(),
+  nameEs: varchar("nameEs", { length: 256 }),
+  category: mysqlEnum("category", [
+    "bebida_caliente",
+    "bebida_fria",
+    "lacteo",
+    "proteina",
+    "fruta",
+    "snack_saludable",
+    "suplemento",
+    "otro",
+  ]).default("otro").notNull(),
+  servingSize: int("servingSize").default(100).notNull(),
+  servingUnit: varchar("servingUnit", { length: 20 }).default("g").notNull(),
+  servingLabel: varchar("servingLabel", { length: 64 }),
+  calories: int("calories"),
+  proteins: float("proteins"),
+  carbs: float("carbs"),
+  fats: float("fats"),
+  fiber: float("fiber"),
+  sugar: float("sugar"),
+  caffeine: float("caffeine"),
+  imageUrl: text("imageUrl"),
+  emoji: varchar("emoji", { length: 8 }).default("🍽️"),
+  isSeeded: boolean("isSeeded").default(false),
+  isPublic: boolean("isPublic").default(true),
+  userId: int("userId"),
+  deletedAt: timestamp("deletedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (t) => ({
+  nameIdx: index("complements_name_idx").on(t.name),
+  categoryIdx: index("complements_category_idx").on(t.category),
+}));
+export type Complement = typeof complements.$inferSelect;
+export type InsertComplement = typeof complements.$inferInsert;
+
+// ─── Complement Logs (diary entries for complements) ──────────────────────────
+export const complementLogs = mysqlTable("complement_logs", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  complementId: int("complementId").notNull(),
+  quantity: float("quantity").default(1).notNull(),
+  loggedAt: timestamp("loggedAt").defaultNow().notNull(),
+  mealType: mysqlEnum("mealType", ["desayuno", "media_manana", "comida", "merienda", "cena", "otro"]).default("otro").notNull(),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  userIdx: index("complement_logs_user_idx").on(t.userId),
+  dateIdx: index("complement_logs_date_idx").on(t.loggedAt),
+}));
+export type ComplementLog = typeof complementLogs.$inferSelect;
+export type InsertComplementLog = typeof complementLogs.$inferInsert;

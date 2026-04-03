@@ -3876,5 +3876,92 @@ Devuelve SOLO JSON válido con esta estructura exacta:
         }
       }),
   }),
+
+  // ---------------------------------------------------------------------------
+  // RECIPE LIKES
+  // ---------------------------------------------------------------------------
+  recipeLikes: router({
+    toggle: protectedProcedure
+      .input(z.object({ recipeId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        return db.toggleRecipeLike(ctx.user.id, input.recipeId);
+      }),
+    getStatus: protectedProcedure
+      .input(z.object({ recipeId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const [liked, count] = await Promise.all([
+          db.getUserRecipeLike(ctx.user.id, input.recipeId),
+          db.getRecipeLikesCount(input.recipeId),
+        ]);
+        return { liked, likesCount: count };
+      }),
+    getBatch: protectedProcedure
+      .input(z.object({ recipeIds: z.array(z.number()) }))
+      .query(async ({ ctx, input }) => {
+        const [counts, likedSet] = await Promise.all([
+          db.getRecipeLikesCounts(input.recipeIds),
+          db.getUserRecipeLikes(ctx.user.id, input.recipeIds),
+        ]);
+        return { counts, liked: Array.from(likedSet) };
+      }),
+  }),
+
+  // ---------------------------------------------------------------------------
+  // COMPLEMENTS
+  // ---------------------------------------------------------------------------
+  complements: router({
+    list: publicProcedure
+      .input(z.object({ search: z.string().optional(), category: z.string().optional(), limit: z.number().default(60), offset: z.number().default(0) }).optional())
+      .query(async ({ input }) => {
+        return db.listComplements(input ?? {});
+      }),
+    getById: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        return db.getComplementById(input.id);
+      }),
+    create: protectedProcedure
+      .input(z.object({
+        name: z.string().min(1),
+        nameEs: z.string().optional(),
+        category: z.enum(["bebida_caliente","bebida_fria","lacteo","proteina","fruta","snack_saludable","suplemento","otro"]).default("otro"),
+        emoji: z.string().optional(),
+        servingSize: z.number().default(100),
+        servingUnit: z.string().default("g"),
+        servingLabel: z.string().optional(),
+        calories: z.number().optional(),
+        proteins: z.number().optional(),
+        carbs: z.number().optional(),
+        fats: z.number().optional(),
+        fiber: z.number().optional(),
+        sugar: z.number().optional(),
+        caffeine: z.number().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        return db.createComplement({ ...input, userId: ctx.user.id, isPublic: false });
+      }),
+    log: protectedProcedure
+      .input(z.object({
+        complementId: z.number(),
+        quantity: z.number().default(1),
+        mealType: z.enum(["desayuno","media_manana","comida","merienda","cena","otro"]).default("otro"),
+        loggedAt: z.string().optional(),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const loggedAt = input.loggedAt ? new Date(input.loggedAt) : new Date();
+        return db.logComplement({ userId: ctx.user.id, complementId: input.complementId, quantity: input.quantity, mealType: input.mealType, loggedAt, notes: input.notes });
+      }),
+    getLogs: protectedProcedure
+      .input(z.object({ date: z.string() }))
+      .query(async ({ ctx, input }) => {
+        return db.getComplementLogsByDate(ctx.user.id, input.date);
+      }),
+    deleteLog: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        return db.deleteComplementLog(input.id, ctx.user.id);
+      }),
+  }),
 });
 export type AppRouter = typeof appRouter;

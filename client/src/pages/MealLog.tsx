@@ -182,14 +182,21 @@ export default function MealLog() {
           <h1 style={{ margin: 0, fontSize: "22px", fontWeight: 900, color: "#1a1a1a", letterSpacing: "-0.03em" }}>Diario</h1>
           <p style={{ margin: "2px 0 0", fontSize: "14px", color: "#9ca3af" }}>Seguimiento nutricional</p>
         </div>
-        <button
-          onClick={() => { setShowAdd(true); setAddMode("manual"); }}
-          style={{ width: "42px", height: "42px", borderRadius: "14px", background: "#F97316", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(249,115,22,0.35)" }}
-        >
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-            <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-          </svg>
-        </button>
+        <div style={{ display: "flex", gap: "8px" }}>
+          <a
+            href="/app/complements"
+            style={{ width: "42px", height: "42px", borderRadius: "14px", background: "#FFF7ED", border: "1.5px solid #FED7AA", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none", fontSize: "20px", flexShrink: 0 }}
+            title="Complementos (café, té, snacks...)"
+          >☕</a>
+          <button
+            onClick={() => { setShowAdd(true); setAddMode("manual"); }}
+            style={{ width: "42px", height: "42px", borderRadius: "14px", background: "#F97316", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(249,115,22,0.35)" }}
+          >
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+          </button>
+        </div>
       </div>
 
       {/* Date navigation */}

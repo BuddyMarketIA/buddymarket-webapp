@@ -53,6 +53,9 @@ import {
   roleRequests,
   RoleRequest,
   InsertRoleRequest,
+  complements,
+  complementLogs,
+  recipeLikes,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -1719,4 +1722,114 @@ export async function updateRoleRequest(id: number, data: Partial<InsertRoleRequ
   const db = await getDb();
   if (!db) return;
   await db.update(roleRequests).set(data).where(eq(roleRequests.id, id));
+}
+
+// =============================================================================
+// RECIPE LIKES
+// =============================================================================
+
+export async function toggleRecipeLike(userId: number, recipeId: number): Promise<{ liked: boolean; likesCount: number }> {
+  const db = await getDb();
+  if (!db) return { liked: false, likesCount: 0 };
+  const existing = await db.select().from(recipeLikes)
+    .where(and(eq(recipeLikes.userId, userId), eq(recipeLikes.recipeId, recipeId)))
+    .limit(1);
+  if (existing.length > 0) {
+    await db.delete(recipeLikes).where(and(eq(recipeLikes.userId, userId), eq(recipeLikes.recipeId, recipeId)));
+    const [{ count }] = await db.select({ count: sql<number>`COUNT(*)` }).from(recipeLikes).where(eq(recipeLikes.recipeId, recipeId));
+    return { liked: false, likesCount: Number(count) };
+  } else {
+    await db.insert(recipeLikes).values({ userId, recipeId });
+    const [{ count }] = await db.select({ count: sql<number>`COUNT(*)` }).from(recipeLikes).where(eq(recipeLikes.recipeId, recipeId));
+    return { liked: true, likesCount: Number(count) };
+  }
+}
+
+export async function getRecipeLikesCount(recipeId: number): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const [{ count }] = await db.select({ count: sql<number>`COUNT(*)` }).from(recipeLikes).where(eq(recipeLikes.recipeId, recipeId));
+  return Number(count);
+}
+
+export async function getUserRecipeLike(userId: number, recipeId: number): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return false;
+  const result = await db.select().from(recipeLikes)
+    .where(and(eq(recipeLikes.userId, userId), eq(recipeLikes.recipeId, recipeId)))
+    .limit(1);
+  return result.length > 0;
+}
+
+export async function getRecipeLikesCounts(recipeIds: number[]): Promise<Record<number, number>> {
+  const db = await getDb();
+  if (!db || recipeIds.length === 0) return {};
+  const rows = await db.select({ recipeId: recipeLikes.recipeId, count: sql<number>`COUNT(*)` })
+    .from(recipeLikes)
+    .where(inArray(recipeLikes.recipeId, recipeIds))
+    .groupBy(recipeLikes.recipeId);
+  return Object.fromEntries(rows.map(r => [r.recipeId, Number(r.count)]));
+}
+
+export async function getUserRecipeLikes(userId: number, recipeIds: number[]): Promise<Set<number>> {
+  const db = await getDb();
+  if (!db || recipeIds.length === 0) return new Set();
+  const rows = await db.select({ recipeId: recipeLikes.recipeId })
+    .from(recipeLikes)
+    .where(and(eq(recipeLikes.userId, userId), inArray(recipeLikes.recipeId, recipeIds)));
+  return new Set(rows.map(r => r.recipeId));
+}
+
+// =============================================================================
+// COMPLEMENTS
+// =============================================================================
+
+export async function listComplements(opts: { search?: string; category?: string; limit?: number; offset?: number } = {}) {
+  const db = await getDb();
+  if (!db) return [];
+  const { search, category, limit = 60, offset = 0 } = opts;
+  const conditions: any[] = [eq(complements.isPublic, true)];
+  if (search) conditions.push(like(complements.name, `%${search}%`));
+  if (category) conditions.push(eq(complements.category, category as any));
+  return db.select().from(complements).where(and(...conditions)).orderBy(complements.category, complements.name).limit(limit).offset(offset);
+}
+
+export async function getComplementById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(complements).where(eq(complements.id, id)).limit(1);
+  return result[0];
+}
+
+export async function createComplement(data: typeof complements.$inferInsert) {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db.insert(complements).values(data);
+  return (result as any).insertId as number;
+}
+
+export async function logComplement(data: typeof complementLogs.$inferInsert) {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db.insert(complementLogs).values(data);
+  return (result as any).insertId as number;
+}
+
+export async function getComplementLogsByDate(userId: number, date: string) {
+  const db = await getDb();
+  if (!db) return [];
+  const start = new Date(date + "T00:00:00.000Z");
+  const end = new Date(date + "T23:59:59.999Z");
+  return db
+    .select({ log: complementLogs, complement: complements })
+    .from(complementLogs)
+    .innerJoin(complements, eq(complementLogs.complementId, complements.id))
+    .where(and(eq(complementLogs.userId, userId), gte(complementLogs.loggedAt, start), lte(complementLogs.loggedAt, end)))
+    .orderBy(complementLogs.loggedAt);
+}
+
+export async function deleteComplementLog(id: number, userId: number) {
+  const db = await getDb();
+  if (!db) return;
+  await db.delete(complementLogs).where(and(eq(complementLogs.id, id), eq(complementLogs.userId, userId)));
 }

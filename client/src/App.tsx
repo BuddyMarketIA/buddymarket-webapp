@@ -47,6 +47,7 @@ import Privacy from "./pages/Privacy";
 import Cookies from "./pages/Cookies";
 import { OnboardingModal } from "./components/OnboardingModal";
 import InstallAppBanner from "./components/InstallAppBanner";
+import Complements from "./pages/Complements";
 
 // Wraps a page component with AppLayout (for pages that don't include it themselves)
 function WithLayout({ component: Component, ...props }: { component: React.ComponentType<any>; [key: string]: any }) {
@@ -101,6 +102,7 @@ function Router() {
       <Route path="/app/shopping-lists">{() => <ProtectedRoute component={ShoppingLists} />}</Route>
       <Route path="/app/inventory">{() => <ProtectedRoute component={Inventory} />}</Route>
       <Route path="/app/meal-log">{() => <ProtectedRoute component={MealLog} />}</Route>
+      <Route path="/app/complements">{() => <ProtectedRoute component={Complements} />}</Route>
       <Route path="/app/profile">{() => <ProtectedRoute component={Profile} />}</Route>
       <Route path="/app/admin">{() => <ProtectedRoute component={Admin} />}</Route>
       <Route path="/app/subscription">{() => <ProtectedRoute component={Subscription} />}</Route>
