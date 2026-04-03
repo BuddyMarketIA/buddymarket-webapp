@@ -75,6 +75,7 @@ export default function Inventory() {
   const [showAdd, setShowAdd] = useState(false);
   const [customName, setCustomName] = useState("");
   const [amount, setAmount] = useState("");
+  const [measureId, setMeasureId] = useState("5"); // default: unidad
   const [storageLocation, setStorageLocation] = useState("1");
   const [expirationDate, setExpirationDate] = useState("");
 
@@ -100,6 +101,7 @@ export default function Inventory() {
 
   const { data: items, isLoading, refetch } = trpc.inventory.list.useQuery();
   const { data: storageLocations } = trpc.catalogs.storageLocations.useQuery();
+  const { data: measures } = trpc.catalogs.measures.useQuery();
   const { data: expiringItems } = trpc.inventory.getExpiringItems.useQuery({ days: 7 });
   const { data: recipeRecs } = trpc.inventory.getRecipesByExpiring.useQuery();
   const utils = trpc.useUtils();
@@ -113,6 +115,7 @@ export default function Inventory() {
       setShowAdd(false);
       setCustomName("");
       setAmount("");
+      setMeasureId("5");
       setExpirationDate("");
       toast.success("Producto añadido al inventario");
     },
@@ -451,24 +454,45 @@ export default function Inventory() {
                   value={amount}
                   onChange={(e) => setAmount(e.target.value)}
                   placeholder="Cantidad"
+                  min="0"
+                  step="0.1"
                   className="vively-input"
                 />
                 <select
-                  value={storageLocation}
-                  onChange={(e) => setStorageLocation(e.target.value)}
+                  value={measureId}
+                  onChange={(e) => setMeasureId(e.target.value)}
                   className="vively-input"
                 >
-                  {storageLocations?.map((loc) => (
-                    <option key={loc.id} value={String(loc.id)}>{loc.nameEs}</option>
+                  {measures?.map((m) => (
+                    <option key={m.id} value={String(m.id)}>{m.nameEs}</option>
                   )) ?? (
                     <>
-                      <option value="1">Despensa</option>
-                      <option value="2">Nevera</option>
-                      <option value="3">Congelador</option>
+                      <option value="1">gramos</option>
+                      <option value="2">kilogramos</option>
+                      <option value="3">mililitros</option>
+                      <option value="4">litros</option>
+                      <option value="5">unidad</option>
+                      <option value="6">cucharada</option>
+                      <option value="8">taza</option>
                     </>
                   )}
                 </select>
               </div>
+              <select
+                value={storageLocation}
+                onChange={(e) => setStorageLocation(e.target.value)}
+                className="vively-input"
+              >
+                {storageLocations?.map((loc) => (
+                  <option key={loc.id} value={String(loc.id)}>{loc.nameEs}</option>
+                )) ?? (
+                  <>
+                    <option value="1">Despensa</option>
+                    <option value="2">Nevera</option>
+                    <option value="3">Congelador</option>
+                  </>
+                )}
+              </select>
               <div>
                 <label className="mb-1 block text-xs font-semibold text-gray-500">📅 Fecha de caducidad</label>
                 <input
@@ -490,6 +514,7 @@ export default function Inventory() {
                   addItem.mutate({
                     customName: customName.trim(),
                     amount: amount ? Number(amount) : 1,
+                    measureId: Number(measureId),
                     storageLocationId: Number(storageLocation),
                     expirationDate: expirationDate || undefined,
                   });

@@ -80,12 +80,18 @@ export default function RecipeDetail() {
     unit: string;
     ingredientId?: number;
   }> = useMemo(() => {
+    // Returns null if value is not a valid finite positive number
+    const safeAmount = (v: any): number | null => {
+      if (v == null) return null;
+      const n = typeof v === "string" ? parseFloat(v) : Number(v);
+      return isFinite(n) && n > 0 ? n : null;
+    };
     if (!recipe) return [];
     if (recipe.ingredients && recipe.ingredients.length > 0) {
       return recipe.ingredients.map((ing: any) => ({
         id: ing.id,
         name: ing.ingredient?.nameEs || ing.customName || "Ingrediente",
-        amount: ing.amount ?? null,
+        amount: safeAmount(ing.amount),
         unit: ing.measure?.nameEs || "g",
         ingredientId: ing.ingredientId,
       }));
@@ -97,7 +103,7 @@ export default function RecipeDetail() {
           return parsed.map((item: any, i: number) => ({
             id: i,
             name: item.name || item.ingredient || "Ingrediente",
-            amount: item.amount ?? item.quantity ?? null,
+            amount: safeAmount(item.amount ?? item.quantity),
             unit: item.unit || "g",
           }));
         }
