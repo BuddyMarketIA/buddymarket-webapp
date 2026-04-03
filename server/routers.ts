@@ -220,12 +220,17 @@ export const appRouter = router({
       await db.updateUser(ctx.user.id, { onboardingCompleted: true });
       // Send welcome email asynchronously (don't block the response)
       if (ctx.user.email) {
-        const { sendWelcomeEmail } = await import("./email");
+        const { sendWelcomeEmail, scheduleOnboardingSequence } = await import("./email");
         sendWelcomeEmail({
           to: ctx.user.email,
           name: ctx.user.name ?? ctx.user.email,
           accountType: (ctx.user as any).accountType ?? "user",
         }).catch((err) => console.error("[Email] Welcome email error:", err));
+        scheduleOnboardingSequence({
+          userId: ctx.user.id,
+          email: ctx.user.email,
+          name: ctx.user.name ?? ctx.user.email,
+        }).catch((err) => console.error("[Email] Schedule sequence error:", err));
       }
       return { success: true };
     }),
@@ -279,16 +284,20 @@ export const appRouter = router({
         await db.updateUser(ctx.user.id, { registrationStep: input.step as any });
         // Send welcome email when a regular user completes registration
         if (input.step === "completed" && ctx.user.email) {
-          const { sendWelcomeEmail } = await import("./email");
+           const { sendWelcomeEmail, scheduleOnboardingSequence } = await import("./email");
           sendWelcomeEmail({
             to: ctx.user.email,
             name: ctx.user.name ?? ctx.user.email,
             accountType: (ctx.user as any).accountType ?? "user",
           }).catch((err) => console.error("[Email] Welcome email error:", err));
+          scheduleOnboardingSequence({
+            userId: ctx.user.id,
+            email: ctx.user.email,
+            name: ctx.user.name ?? ctx.user.email,
+          }).catch((err) => console.error("[Email] Schedule sequence error:", err));
         }
         return { success: true };
       }),
-
     submitRegistrationApplication: protectedProcedure
       .input(z.object({
         type: z.enum(["expert", "maker"]),

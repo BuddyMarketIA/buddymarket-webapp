@@ -8,6 +8,7 @@ import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { registerStripeWebhook } from "../stripe-webhook";
+import { processPendingEmails } from "../email";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -66,3 +67,12 @@ async function startServer() {
 }
 
 startServer().catch(console.error);
+
+// ─── Email Sequence Scheduler (every 15 min) ───────────────────────────────
+setTimeout(() => {
+  processPendingEmails().catch(console.error);
+  setInterval(() => {
+    processPendingEmails().catch(console.error);
+  }, 15 * 60 * 1000);
+  console.log("[Email] Sequence scheduler started (every 15 min)");
+}, 5000); // wait 5s after server start

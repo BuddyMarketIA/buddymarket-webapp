@@ -1112,3 +1112,23 @@ export const complementLogs = mysqlTable("complement_logs", {
 }));
 export type ComplementLog = typeof complementLogs.$inferSelect;
 export type InsertComplementLog = typeof complementLogs.$inferInsert;
+
+// ─── Email Sequence Queue (scheduled onboarding emails) ───────────────────────
+export const emailSequenceQueue = mysqlTable("email_sequence_queue", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  email: varchar("email", { length: 255 }).notNull(),
+  name: varchar("name", { length: 255 }),
+  sequenceStep: int("sequenceStep").notNull(), // 1=day2, 2=day4, 3=day7
+  scheduledAt: timestamp("scheduledAt").notNull(),
+  sentAt: timestamp("sentAt"),
+  status: mysqlEnum("status", ["pending", "sent", "failed", "cancelled"]).default("pending").notNull(),
+  errorMessage: text("errorMessage"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  userIdx: index("email_seq_user_idx").on(t.userId),
+  statusIdx: index("email_seq_status_idx").on(t.status),
+  scheduledIdx: index("email_seq_scheduled_idx").on(t.scheduledAt),
+}));
+export type EmailSequenceQueue = typeof emailSequenceQueue.$inferSelect;
+export type InsertEmailSequenceQueue = typeof emailSequenceQueue.$inferInsert;

@@ -169,6 +169,13 @@
       "when": 1775204518909,
       "tag": "0023_past_vulcan",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "5",
+      "when": 1775210234596,
+      "tag": "0024_boring_randall_flagg",
+      "breakpoints": true
     }
   ]
 }
