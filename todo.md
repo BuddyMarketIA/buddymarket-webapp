@@ -975,3 +975,6 @@
 - [x] Crear LoginPage.tsx con diseño mejorado: fondo crema, logo grande, formulario email/contraseña, botón naranja, enlace registro
 - [x] Conectar LoginPage al flujo OAuth de Manus (getLoginUrl con type=signIn y type=signUp)
 - [x] Redirigir appbuddymarket.com / a LoginPage en lugar de directamente a getLoginUrl()
+
+## Feature: Botón "Continuar con Google" en LoginPage (03/04/2026)
+- [x] Añadir botón "Continuar con Google" en ambas pestañas de LoginPage.tsx
