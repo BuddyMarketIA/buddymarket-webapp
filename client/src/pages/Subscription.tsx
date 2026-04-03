@@ -146,10 +146,15 @@ const COMPARISON: Array<{
   },
 ];
 
-// ─── Component ────────────────────────────────────────────────────────────────
+// // ─── Component ────────────────────────────────────────────────────────────────
 export default function Subscription() {
   const { data: subscription, isLoading } = trpc.subscriptions.getStatus.useQuery();
-  const { tier, planDisplay } = usePlan();
+  const { tier, planDisplay, isFree, isPro, isProMax } = usePlan();
+
+  // Read ?plan= URL param to pre-highlight a plan (e.g. from Dashboard upgrade card)
+  const urlPlan = typeof window !== "undefined"
+    ? new URLSearchParams(window.location.search).get("plan")
+    : null;
 
   const createCheckout = trpc.subscriptions.createCheckout.useMutation({
     onSuccess: (data) => {
@@ -160,9 +165,14 @@ export default function Subscription() {
     },
     onError: (err) => toast.error(err.message),
   });
-
   const currentPlan = (subscription as any)?.plan ?? null;
   const isActive = (subscription as any)?.status === "active";
+
+  // For Pro users, only show Pro Max as upgrade option (hide Free and Pro cards)
+  // For Pro Max users, show all plans as read-only (no upgrade available)
+  const visiblePlans = isPro
+    ? PLANS.filter((p) => p.key === "premium") // Pro users only see Pro Max
+    : PLANS; // Free and Pro Max users see all plans
 
   function isCurrent(planKey: string) {
     if (planKey === "free") return !isActive || !currentPlan;
@@ -170,7 +180,14 @@ export default function Subscription() {
     if (planKey === "premium") return isActive && (currentPlan === "premium" || currentPlan === "pro_max");
     return false;
   }
-
+  function isHighlighted(planKey: string) {
+    // If coming from a ?plan= param, highlight that plan
+    if (urlPlan && planKey === urlPlan) return true;
+    // For Pro users, always highlight Pro Max
+    if (isPro && planKey === "premium") return true;
+    // Default highlight from plan definition
+    return !isPro && PLANS.find((p) => p.key === planKey)?.highlight;
+  }
   function handleSubscribe(planKey: string) {
     if (planKey === "free") return;
     const stripeKey = planKey === "premium" ? "premium" : "basic";
@@ -215,19 +232,41 @@ export default function Subscription() {
       </div>
 
       {/* Plan cards */}
+      {/* Context banners by tier */}
+      {isPro && (
+        <div className="mb-4 flex items-center gap-3 rounded-2xl bg-purple-50 border border-purple-200 p-4">
+          <span className="text-xl">✨</span>
+          <div>
+            <p className="text-sm font-bold text-purple-800">Ya eres usuario Pro</p>
+            <p className="text-xs text-purple-600">Aquí puedes mejorar a Pro Max para desbloquear funciones exclusivas</p>
+          </div>
+        </div>
+      )}
+      {isProMax && (
+        <div className="mb-4 flex items-center gap-3 rounded-2xl bg-purple-50 border border-purple-200 p-4">
+          <span className="text-xl">👑</span>
+          <div>
+            <p className="text-sm font-bold text-purple-800">Ya tienes el plan más completo</p>
+            <p className="text-xs text-purple-600">Estás en Pro Max — tienes acceso a todas las funciones de BuddyMarket</p>
+          </div>
+        </div>
+      )}
       <div className="space-y-4 mb-8">
-        {PLANS.map((plan) => {
+        {visiblePlans.map((plan) => {
           const Icon = plan.icon;
           const current = isCurrent(plan.key);
-
+          const highlighted = isHighlighted(plan.key);
+          const badgeLabel = isPro && plan.key === "premium" ? "MEJORA RECOMENDADA" : "MÁS POPULAR";
+          const badgeBg = isPro && plan.key === "premium" ? "bg-purple-600" : "bg-[#F97316]";
           return (
             <div
               key={plan.key}
-              className={`relative rounded-3xl border-2 bg-white p-5 transition-all ${plan.borderColor} ${plan.highlight ? "shadow-lg shadow-[#F97316]/10" : "shadow-sm"}`}
+              className={`relative rounded-3xl border-2 bg-white p-5 transition-all ${highlighted ? "shadow-lg" : plan.borderColor + " shadow-sm"}`}
+              style={highlighted && plan.key === "premium" ? { borderColor: "#7c3aed" } : highlighted ? { borderColor: "#F97316" } : {}}
             >
-              {plan.highlight && (
-                <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-[#F97316] px-4 py-1 text-[13px] font-bold text-white shadow">
-                  MÁS POPULAR
+              {highlighted && (
+                <div className={`absolute -top-3 left-1/2 -translate-x-1/2 rounded-full ${badgeBg} px-4 py-1 text-[13px] font-bold text-white shadow`}>
+                  {badgeLabel}
                 </div>
               )}
               {current && (
@@ -235,7 +274,6 @@ export default function Subscription() {
                   ACTIVO
                 </div>
               )}
-
               <div className="mb-3 flex items-start gap-3">
                 <div className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl ${plan.iconBg}`}>
                   <Icon className={`h-5 w-5 ${plan.iconColor}`} />
@@ -249,7 +287,6 @@ export default function Subscription() {
                   <p className="text-xs text-gray-500 mt-0.5">{plan.description}</p>
                 </div>
               </div>
-
               <ul className="mb-4 space-y-1.5">
                 {plan.features.map((f) => (
                   <li key={f} className="flex items-start gap-2 text-xs text-gray-600">
@@ -258,24 +295,29 @@ export default function Subscription() {
                   </li>
                 ))}
               </ul>
-
               {plan.key === "free" ? (
                 <div className="w-full rounded-2xl bg-gray-100 py-3 text-center text-sm font-bold text-gray-400">
                   {current ? "Plan actual" : "Plan básico gratuito"}
                 </div>
+              ) : isProMax && current ? (
+                <div className="w-full rounded-2xl bg-purple-50 py-3 text-center text-sm font-bold text-purple-500">
+                  Plan actual — tienes acceso completo
+                </div>
               ) : (
                 <button
                   onClick={() => handleSubscribe(plan.key)}
-                  disabled={current || createCheckout.isPending}
+                  disabled={current || isProMax || createCheckout.isPending}
                   className={`w-full rounded-2xl py-3 text-sm font-bold transition-all ${
-                    current
+                    current || isProMax
                       ? "bg-gray-100 text-gray-400 cursor-not-allowed"
-                      : plan.highlight
+                      : isPro && plan.key === "premium"
+                      ? "bg-purple-600 text-white hover:bg-purple-700"
+                      : highlighted
                       ? "bg-[#F97316] text-white hover:bg-[#EA6C0A]"
                       : "border-2 border-purple-500 text-purple-600 hover:bg-purple-50"
                   }`}
                 >
-                  {current ? "Plan actual" : `Mejorar a ${plan.name}`}
+                  {current ? "Plan actual" : isPro && plan.key === "premium" ? "Mejorar a Pro Max" : `Mejorar a ${plan.name}`}
                 </button>
               )}
             </div>

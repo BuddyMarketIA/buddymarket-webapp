@@ -5,6 +5,7 @@ import { useState, useMemo, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
 import { RECIPE_PLACEHOLDER_IMAGE } from "@/lib/constants";
+import { usePlan } from "@/hooks/usePlan";
 
 const QUICK_ACCESS = [
   {
@@ -87,7 +88,7 @@ const RECIPE_OF_DAY = [
 export default function Dashboard() {
   const { user } = useAuth();
   const [today] = useState(() => new Date().toISOString().split("T")[0]);
-  const [goalCalories, setGoalCalories] = useState(2000);
+  const [goalCaloriesOverride, setGoalCaloriesOverride] = useState<number | null>(null);
   const [showGoalEdit, setShowGoalEdit] = useState(false);
   const [recipeIdx, setRecipeIdx] = useState(0);
 
@@ -106,6 +107,9 @@ export default function Dashboard() {
   const _menusList = trpc.menus.list.useQuery();
 
   const consumed = dailySummary.data?.calories ?? 0;
+  // goalCalories: use profile's dailyCalorieGoal if set, else manual override, else default 2000
+  const profileCalorieGoal = profileData.data?.profile?.dailyCalorieGoal;
+  const goalCalories = goalCaloriesOverride ?? profileCalorieGoal ?? 2000;
   const remaining = Math.max(0, goalCalories - consumed);
   const progress = Math.min(100, (consumed / goalCalories) * 100);
   const protein = dailySummary.data?.proteins ?? 0;
@@ -161,15 +165,8 @@ export default function Dashboard() {
   }, [allMacrosComplete]);
   const profileData = trpc.profile.get.useQuery();
 
-  // Subscription check - hide upgrade card if user already has a paid plan
-  const subscription = profileData.data?.subscription;
-  const isPaidPlan = (() => {
-    if (!subscription) return false;
-    const paidPlans = ["basic", "premium", "pro_max"];
-    const isActivePlan = paidPlans.includes(subscription.plan ?? "") && subscription.status === "active";
-    const isManualPlan = paidPlans.includes(subscription.manualPlan ?? "");
-    return isActivePlan || isManualPlan;
-  })();
+  // Subscription tier for contextual upgrade card
+  const { tier, isFree, isPro, isProMax } = usePlan();
 
   // Recommendations: recipes personalized by meal time and user goal
   const userGoal = profileData.data?.profile?.mainGoal;
@@ -270,7 +267,7 @@ export default function Dashboard() {
               <input
                 type="number"
                 defaultValue={goalCalories}
-                onBlur={(e) => { setGoalCalories(Number(e.target.value)); setShowGoalEdit(false); }}
+                onBlur={(e) => { setGoalCaloriesOverride(Number(e.target.value)); setShowGoalEdit(false); }}
                 style={{ flex: 1, padding: "8px 12px", borderRadius: "12px", border: "1px solid rgba(249,115,22,0.4)", fontSize: "14px", background: "rgba(255,255,255,0.1)", color: "white", outline: "none" }}
               />
             </div>
@@ -422,18 +419,18 @@ export default function Dashboard() {
       {/* 4 Quick Access Cards: Lista compra, Menús BuddyExperts, BuddyIA, Biblioteca Menús */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "20px" }}>
         {[
-          { href: "/app/shopping-lists", emoji: "🛒", label: "Lista de la compra", bg: "white", color: "#1a1a1a", shadow: "0 2px 10px rgba(0,0,0,0.07)", border: "none" },
-          { href: "/app/buddy-experts", emoji: "🧑‍🍳", label: "Menús BuddyExperts", bg: "white", color: "#1a1a1a", shadow: "0 2px 10px rgba(0,0,0,0.07)", border: "none" },
-          { href: "/app/notifications", emoji: "🔔", label: "Recordatorios", bg: "linear-gradient(135deg, #FFF7ED, #FFEDD5)", color: "#F97316", shadow: "0 2px 10px rgba(249,115,22,0.12)", border: "1px solid rgba(249,115,22,0.15)" },
-          { href: "/app/achievements", emoji: "🏆", label: "Mis Logros", bg: "linear-gradient(135deg, #1e1b4b15, #312e8120)", color: "#312e81", shadow: "0 2px 10px rgba(49,46,129,0.12)", border: "1px solid rgba(49,46,129,0.15)" },
+          { href: "/app/shopping-lists", emoji: "🛒", label: "Lista de la compra" },
+          { href: "/app/buddy-experts", emoji: "🧑‍🍳", label: "Menús BuddyExperts" },
+          { href: "/app/notifications", emoji: "🔔", label: "Recordatorios" },
+          { href: "/app/achievements", emoji: "🏆", label: "Mis Logros" },
         ].map((item) => (
           <Link key={item.href} href={item.href}>
-            <div style={{ background: item.bg, borderRadius: "18px", padding: "16px 10px", textAlign: "center", boxShadow: item.shadow, cursor: "pointer", transition: "transform 0.2s", border: item.border }}
+            <div style={{ background: "white", borderRadius: "18px", padding: "18px 10px", textAlign: "center", boxShadow: "0 2px 10px rgba(0,0,0,0.07)", cursor: "pointer", transition: "transform 0.2s", border: "none", minHeight: "110px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "6px" }}
               onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.04)"; }}
               onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
             >
-              <div style={{ fontSize: "28px", marginBottom: "6px" }}>{item.emoji}</div>
-              <p style={{ margin: 0, fontSize: "14px", fontWeight: 800, color: item.color, lineHeight: 1.3 }}>{item.label}</p>
+              <div style={{ fontSize: "30px" }}>{item.emoji}</div>
+              <p style={{ margin: 0, fontSize: "13px", fontWeight: 800, color: "#1a1a1a", lineHeight: 1.3 }}>{item.label}</p>
             </div>
           </Link>
         ))}
@@ -786,8 +783,8 @@ export default function Dashboard() {
         </div>
       </Link>
 
-      {/* Pro/Pro Max Upgrade Card - only shown to free users */}
-      {!isPaidPlan && (
+      {/* Upgrade Card - contextual by tier */}
+      {isFree && (
         <Link href="/app/subscription">
           <div style={{ background: "linear-gradient(135deg, #F97316 0%, #FB923C 50%, #FDBA74 100%)", borderRadius: "22px", padding: "18px 20px", marginBottom: "20px", display: "flex", alignItems: "center", gap: "16px", boxShadow: "0 8px 24px rgba(249,115,22,0.35)", cursor: "pointer", position: "relative", overflow: "hidden" }}>
             <div style={{ position: "absolute", top: "-20px", right: "-20px", width: "100px", height: "100px", borderRadius: "50%", background: "rgba(255,255,255,0.12)" }} />
@@ -802,6 +799,22 @@ export default function Dashboard() {
           </div>
         </Link>
       )}
+      {isPro && (
+        <Link href="/app/subscription?plan=premium">
+          <div style={{ background: "linear-gradient(135deg, #7c3aed 0%, #9333ea 50%, #a855f7 100%)", borderRadius: "22px", padding: "18px 20px", marginBottom: "20px", display: "flex", alignItems: "center", gap: "16px", boxShadow: "0 8px 24px rgba(124,58,237,0.35)", cursor: "pointer", position: "relative", overflow: "hidden" }}>
+            <div style={{ position: "absolute", top: "-20px", right: "-20px", width: "100px", height: "100px", borderRadius: "50%", background: "rgba(255,255,255,0.10)" }} />
+            <div style={{ width: "48px", height: "48px", borderRadius: "16px", background: "rgba(255,255,255,0.20)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", flexShrink: 0 }}>✨</div>
+            <div style={{ flex: 1, position: "relative" }}>
+              <p style={{ margin: "0 0 2px", fontSize: "16px", fontWeight: 900, color: "white" }}>Mejora a Pro Max</p>
+              <p style={{ margin: 0, fontSize: "14px", color: "rgba(255,255,255,0.85)" }}>IA ilimitada · BuddyExperts · Múltiples perfiles</p>
+            </div>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 18l6-6-6-6"/>
+            </svg>
+          </div>
+        </Link>
+      )}
+      {/* Pro Max users: no upgrade card shown */}
 
       {/* Add Meal CTA */}
       <Link href="/app/meal-log">
