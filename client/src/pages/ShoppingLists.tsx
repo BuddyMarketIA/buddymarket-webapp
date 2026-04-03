@@ -11,7 +11,31 @@ import {
   UserGroupIcon,
   BuildingStorefrontIcon,
   CameraIcon,
+  ArrowTopRightOnSquareIcon,
 } from "@heroicons/react/24/outline";
+
+// Supermarket online search URL builders
+const SUPERMARKET_SEARCH_URLS: Record<string, (q: string) => string> = {
+  mercadona: (q) => `https://tienda.mercadona.es/search-results?query=${encodeURIComponent(q)}`,
+  carrefour: (q) => `https://www.carrefour.es/supermercado/buscar?query=${encodeURIComponent(q)}`,
+  lidl: (q) => `https://www.lidl.es/es/buscar.htm?query=${encodeURIComponent(q)}`,
+  alcampo: (q) => `https://www.alcampo.es/compra-online/buscar/?q=${encodeURIComponent(q)}`,
+  dia: (q) => `https://www.dia.es/buscar?text=${encodeURIComponent(q)}`,
+  el_corte_ingles: (q) => `https://www.elcorteingles.es/supermercado/buscar/?s=${encodeURIComponent(q)}`,
+  consum: (q) => `https://www.consum.es/es/buscar?q=${encodeURIComponent(q)}`,
+  eroski: (q) => `https://www.eroski.es/buscar?q=${encodeURIComponent(q)}`,
+};
+
+const SUPERMARKET_OPTIONS = [
+  { id: "mercadona", name: "Mercadona", emoji: "🟠" },
+  { id: "carrefour", name: "Carrefour", emoji: "🔵" },
+  { id: "lidl", name: "Lidl", emoji: "🟡" },
+  { id: "alcampo", name: "Alcampo", emoji: "🟢" },
+  { id: "dia", name: "Dia", emoji: "🔴" },
+  { id: "el_corte_ingles", name: "El Corte Inglés", emoji: "🟢" },
+  { id: "consum", name: "Consum", emoji: "🟠" },
+  { id: "eroski", name: "Eroski", emoji: "🔴" },
+];
 
 const SUPERMARKETS = [
   { id: "general", name: "General", emoji: "🛒" },
@@ -28,6 +52,8 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
   const utils = trpc.useUtils();
   const [newItem, setNewItem] = useState("");
   const [showAdd, setShowAdd] = useState(false);
+  const [showExport, setShowExport] = useState(false);
+  const [selectedSupermarket, setSelectedSupermarket] = useState<string | null>(null);
 
   const toggleItem = trpc.shoppingLists.toggleItem.useMutation({
     onSuccess: () => utils.shoppingLists.getById.invalidate({ id: listId }),
@@ -79,6 +105,13 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
           </h1>
           <p className="text-xs text-gray-500">{purchased}/{items.length} productos</p>
         </div>
+        <button
+          onClick={() => { setShowExport(true); setSelectedSupermarket(null); }}
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm mr-1"
+          title="Comprar en supermercado online"
+        >
+          <BuildingStorefrontIcon className="h-5 w-5 text-[#F97316]" />
+        </button>
         <button
           onClick={() => setShowAdd(true)}
           className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F97316] shadow-sm"
@@ -177,6 +210,94 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
         </div>
       )}
 
+      {/* Export to supermarket modal */}
+      {showExport && (
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) { setShowExport(false); setSelectedSupermarket(null); } }}>
+          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up max-h-[85vh] overflow-y-auto">
+            {!selectedSupermarket ? (
+              <>
+                <div className="mb-5 flex items-center justify-between">
+                  <h3 className="text-lg font-bold text-gray-900">Comprar online</h3>
+                  <button onClick={() => setShowExport(false)} className="text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
+                </div>
+                <p className="mb-5 text-sm text-gray-500">Elige tu supermercado y abriremos la búsqueda de cada producto en su tienda online.</p>
+                <div className="grid grid-cols-2 gap-3">
+                  {SUPERMARKET_OPTIONS.map((s) => (
+                    <button
+                      key={s.id}
+                      onClick={() => setSelectedSupermarket(s.id)}
+                      className="flex flex-col items-center gap-2 rounded-2xl border-2 border-gray-100 p-4 hover:border-[#F97316] hover:bg-orange-50 transition-all"
+                    >
+                      <span className="text-2xl">{s.emoji}</span>
+                      <span className="text-sm font-semibold text-gray-700">{s.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </>
+            ) : (
+              <>
+                <div className="mb-5 flex items-center gap-3">
+                  <button onClick={() => setSelectedSupermarket(null)} className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-600">
+                    <ChevronLeftIcon className="h-4 w-4" />
+                  </button>
+                  <h3 className="text-lg font-bold text-gray-900">
+                    {SUPERMARKET_OPTIONS.find(s => s.id === selectedSupermarket)?.emoji}{" "}
+                    {SUPERMARKET_OPTIONS.find(s => s.id === selectedSupermarket)?.name}
+                  </h3>
+                  <button onClick={() => setShowExport(false)} className="ml-auto text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
+                </div>
+                <p className="mb-4 text-sm text-gray-500">Pulsa en cada producto para buscarlo, o usa el botón para abrir todos a la vez.</p>
+                <button
+                  onClick={() => {
+                    const searchFn = SUPERMARKET_SEARCH_URLS[selectedSupermarket];
+                    if (!searchFn) return;
+                    const unpurchased = items.filter((i: any) => !i.isPurchased);
+                    if (unpurchased.length === 0) { toast.error("No hay productos pendientes"); return; }
+                    unpurchased.forEach((item: any, idx: number) => {
+                      const name = item.ingredient?.name ?? item.customName ?? item.name ?? "";
+                      if (name) setTimeout(() => window.open(searchFn(name), "_blank"), idx * 400);
+                    });
+                    toast.success(`Abriendo ${unpurchased.length} búsquedas en ${SUPERMARKET_OPTIONS.find(s => s.id === selectedSupermarket)?.name}`);
+                  }}
+                  className="mb-4 w-full flex items-center justify-center gap-2 rounded-2xl bg-[#F97316] py-3 text-sm font-bold text-white"
+                >
+                  <ArrowTopRightOnSquareIcon className="h-4 w-4" />
+                  Buscar todos los productos ({items.filter((i: any) => !i.isPurchased).length})
+                </button>
+                <div className="space-y-2">
+                  {items
+                    .filter((i: any) => !i.isPurchased)
+                    .map((item: any) => {
+                      const name = item.ingredient?.name ?? item.customName ?? item.name ?? "";
+                      const qty = item.amount ?? item.quantity ?? "";
+                      const unit = item.measure?.name ?? item.unit ?? "";
+                      const searchFn = SUPERMARKET_SEARCH_URLS[selectedSupermarket];
+                      return (
+                        <a
+                          key={item.id}
+                          href={searchFn ? searchFn(name) : "#"}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="flex items-center gap-3 rounded-2xl border border-gray-100 p-3 hover:border-[#F97316] hover:bg-orange-50 transition-all"
+                        >
+                          <ShoppingCartIcon className="h-4 w-4 shrink-0 text-[#F97316]" />
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-medium text-gray-900 truncate">{name}</p>
+                            {(qty || unit) && <p className="text-xs text-gray-400">{qty} {unit}</p>}
+                          </div>
+                          <ArrowTopRightOnSquareIcon className="h-4 w-4 shrink-0 text-gray-300" />
+                        </a>
+                      );
+                    })}
+                  {items.filter((i: any) => i.isPurchased).length > 0 && (
+                    <p className="pt-2 text-center text-xs text-gray-400">{items.filter((i: any) => i.isPurchased).length} producto(s) ya marcados como comprados no se muestran</p>
+                  )}
+                </div>
+              </>
+            )}
+          </div>
+        </div>
+      )}
       <div className="vively-disclaimer">
         <p>BuddyMarket no constituye recomendaciones profesionales de nutrición.</p>
       </div>
