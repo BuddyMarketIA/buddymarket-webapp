@@ -313,8 +313,8 @@ export default function MealLog() {
 
       {/* Add log modal */}
       {showAdd && (
-        <div style={{ position: "fixed", inset: 0, zIndex: 50, display: "flex", alignItems: "center", justifyContent: "center", background: "rgba(0,0,0,0.4)", padding: "16px" }}>
-          <div style={{ width: "100%", maxWidth: "480px", borderRadius: "28px", background: "white", padding: "24px", boxShadow: "0 -8px 40px rgba(0,0,0,0.2)", maxHeight: "90vh", overflowY: "auto" }}>
+        <div className="modal-overlay">
+          <div style={{ width: "100%", maxWidth: "480px", borderRadius: "28px", background: "white", padding: "24px", boxShadow: "0 8px 40px rgba(0,0,0,0.2)", maxHeight: "calc(100dvh - 90px - 48px)", overflowY: "auto" }}>
 
             {/* Modal header */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>

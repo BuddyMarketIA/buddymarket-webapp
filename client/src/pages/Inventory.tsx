@@ -433,7 +433,7 @@ export default function Inventory() {
 
       {/* ── Add manually modal ─────────────────────────────────────────────── */}
       {showAdd && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+        <div className="modal-overlay">
           <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up">
             <div className="mb-4 flex items-center justify-between">
               <h3 className="text-lg font-bold text-gray-900">Añadir al inventario</h3>
@@ -531,7 +531,7 @@ export default function Inventory() {
 
       {/* ── Photo AI modal ─────────────────────────────────────────────────── */}
       {showPhotoModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 p-4">
+        <div className="modal-overlay">
           <div className="w-full max-w-sm rounded-3xl bg-white shadow-2xl animate-slide-up overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4">
@@ -696,11 +696,10 @@ export default function Inventory() {
       {/* ─── Barcode Product Confirmation Modal ──────────────────────────── */}
       {barcodeProduct && (
         <div
-          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 9998, display: "flex", alignItems: "center", justifyContent: "center", padding: "0 0 0 0" }}
+          className="modal-overlay"
           onClick={(e) => { if (e.target === e.currentTarget) setBarcodeProduct(null); }}
         >
-          <div style={{ background: "white", borderRadius: "24px 24px 0 0", width: "100%", maxWidth: 480, padding: "24px 24px 32px", boxShadow: "0 -8px 40px rgba(0,0,0,0.2)", animation: "slideUp 0.25s ease" }}>
-            <style>{`@keyframes slideUp { from { transform: translateY(100%); } to { transform: translateY(0); } }`}</style>
+          <div style={{ background: "white", borderRadius: "24px", width: "100%", maxWidth: 480, padding: "24px 24px 32px", boxShadow: "0 8px 40px rgba(0,0,0,0.2)" }}>
             <div style={{ display: "flex", alignItems: "flex-start", gap: 16, marginBottom: 20 }}>
               {barcodeProduct.imageUrl && (
                 <img src={barcodeProduct.imageUrl} alt={barcodeProduct.name} style={{ width: 72, height: 72, borderRadius: 12, objectFit: "cover", flexShrink: 0 }} />

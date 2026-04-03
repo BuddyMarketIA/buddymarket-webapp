@@ -385,7 +385,7 @@ export default function Menus() {
 
       {/* New menu modal */}
       {showNewMenu && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+        <div className="modal-overlay">
           <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up">
             <h3 className="mb-1 text-lg font-bold text-gray-900">Nuevo menú semanal</h3>
             <p className="mb-4 text-xs text-gray-500">Dale un nombre a tu planificador</p>
@@ -428,7 +428,7 @@ export default function Menus() {
 
       {/* AI generation modal */}
       {showAI && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+        <div className="modal-overlay">
           <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up">
             <div className="mb-4 flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-50">
@@ -471,7 +471,7 @@ export default function Menus() {
 
       {/* Add recipe modal */}
       {showAddRecipe && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+        <div className="modal-overlay">
           <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up max-h-[80vh] flex flex-col">
             <h3 className="mb-1 text-lg font-bold text-gray-900">Añadir receta</h3>
             <p className="mb-4 text-xs text-gray-500">Busca una receta para añadir al menú</p>
@@ -521,7 +521,7 @@ export default function Menus() {
 
       {/* Apply to Calendar modal */}
       {showApplyModal !== null && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+        <div className="modal-overlay">
           <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl">
             <div className="mb-4 flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-orange-50">

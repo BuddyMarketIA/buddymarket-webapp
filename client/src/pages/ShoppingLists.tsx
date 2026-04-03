@@ -150,7 +150,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
 
       {/* Add item modal */}
       {showAdd && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+        <div className="modal-overlay">
           <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up">
             <h3 className="mb-4 text-lg font-bold text-gray-900">Añadir producto</h3>
             <input
@@ -388,7 +388,7 @@ export default function ShoppingLists() {
 
       {/* New list modal */}
       {showNew && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+        <div className="modal-overlay">
           <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up">
             <h3 className="mb-4 text-lg font-bold text-gray-900">Nueva lista</h3>
             <input
@@ -415,7 +415,7 @@ export default function ShoppingLists() {
 
       {/* Generate from menu modal */}
       {showFromMenu && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+        <div className="modal-overlay">
           <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up max-h-[85vh] overflow-y-auto">
             <h3 className="mb-1 text-lg font-bold text-gray-900">Lista desde menú</h3>
             <p className="mb-5 text-sm text-gray-500">Genera automáticamente todos los ingredientes de tu menú</p>
@@ -531,9 +531,9 @@ export default function ShoppingLists() {
 
       {/* ─── OCR Photo Modal ────────────────────────────────────────────────────── */}
       {showOcrModal && (
-        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center" }}
+        <div className="modal-overlay"
           onClick={(e) => { if (e.target === e.currentTarget) { setShowOcrModal(false); setOcrPreview(null); setOcrItems([]); } }}>
-          <div style={{ background: "white", borderRadius: "24px 24px 0 0", width: "100%", maxWidth: 520, maxHeight: "90vh", overflow: "auto", padding: "24px 24px 32px", boxShadow: "0 -8px 40px rgba(0,0,0,0.2)" }}>
+          <div style={{ background: "white", borderRadius: "24px", width: "100%", maxWidth: 520, maxHeight: "calc(100dvh - 90px - 48px)", overflow: "auto", padding: "24px 24px 32px", boxShadow: "0 8px 40px rgba(0,0,0,0.2)" }}>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 20 }}>
               <div>
                 <h2 style={{ margin: 0, fontSize: 18, fontWeight: 900, color: "#1a1a1a" }}>Importar lista desde foto</h2>

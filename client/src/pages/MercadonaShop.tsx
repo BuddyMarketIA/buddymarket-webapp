@@ -355,9 +355,9 @@ export default function SupermercadoShop() {
 
       {/* ── Cart drawer ─────────────────────────────────────────────────────────── */}
       {showCart && (
-        <div className="fixed inset-0 z-50 flex flex-col justify-end">
+        <div className="fixed inset-0 z-[9000] flex flex-col justify-end" style={{ paddingBottom: "90px" }}>
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowCart(false)} />
-          <div className="relative bg-white rounded-t-3xl max-h-[85vh] flex flex-col shadow-2xl">
+          <div className="relative bg-white rounded-t-3xl max-h-[75vh] flex flex-col shadow-2xl">
             <div className="flex items-center justify-between px-5 pt-5 pb-4 border-b border-gray-100">
               <div>
                 <h2 className="text-lg font-black text-gray-900">Mi lista — {activeSupermarket?.name}</h2>
@@ -415,9 +415,8 @@ export default function SupermercadoShop() {
 
       {/* ── Login modal ─────────────────────────────────────────────────────────── */}
       {showLoginModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => setShowLoginModal(false)} />
-          <div className="relative bg-white rounded-3xl w-full max-w-lg p-6 shadow-2xl">
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowLoginModal(false); }}>
+          <div className="bg-white rounded-3xl w-full max-w-lg p-6 shadow-2xl">
             <div className="flex items-center justify-between mb-5">
               <div>
                 <h2 className="text-lg font-black text-gray-900">Conectar cuenta Mercadona</h2>
@@ -464,8 +463,7 @@ export default function SupermercadoShop() {
 
       {/* ── Transfer confirmation modal ──────────────────────────────────────────── */}
       {showTransferModal && session && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" onClick={() => !addToCartMutation.isPending && setShowTransferModal(false)} />
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget && !addToCartMutation.isPending) setShowTransferModal(false); }}>
           <div className="relative bg-white rounded-3xl w-full max-w-sm p-6 shadow-2xl overflow-hidden">
             {/* Animated loading overlay */}
             {addToCartMutation.isPending && (

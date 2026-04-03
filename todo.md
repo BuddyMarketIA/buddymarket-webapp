@@ -952,3 +952,8 @@
 - [x] Corregir viewport: overflow-x hidden en html y body en index.css
 - [x] Corregir index.html: overflow-x hidden y max-width: 100vw en body
 - [x] Meta viewport ya correcto: maximum-scale=1.0, user-scalable=no, viewport-fit=cover
+
+## Bug: Modales tapados por barra inferior (03/04/2026)
+- [x] Corregir todos los modales/popups para que queden centrados en pantalla con padding-bottom suficiente para no quedar tapados por la barra de navegación inferior (90px)
+- [x] Crear clase CSS global .modal-overlay con padding-bottom: calc(90px + 16px) y z-index: 9000
+- [x] Aplicar .modal-overlay a todos los modales: Menus (4), Inventory (3), ShoppingLists (4), MealLog (1), RecipeDetail (1), MercadonaShop (2 centrados + 1 bottom sheet con padding)
