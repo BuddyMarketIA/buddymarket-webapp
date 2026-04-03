@@ -23,21 +23,21 @@ function daysUntil(date: Date | string | null | undefined): number | null {
 }
 
 function expiryColor(days: number | null) {
-  if (days === null) return "";
-  if (days < 0) return "border-red-300 bg-red-50";
-  if (days <= 2) return "border-red-200 bg-red-50";
-  if (days <= 5) return "border-orange-200 bg-orange-50";
-  if (days <= 7) return "border-yellow-200 bg-yellow-50";
-  return "border-gray-100 bg-white";
+  if (days === null) return "border-gray-100 bg-white";
+  if (days < 0)  return "border-l-4 border-l-red-600   border-t border-r border-b border-red-200   bg-red-50";
+  if (days <= 2) return "border-l-4 border-l-red-500   border-t border-r border-b border-red-200   bg-red-50";
+  if (days <= 5) return "border-l-4 border-l-orange-400 border-t border-r border-b border-orange-200 bg-orange-50";
+  if (days <= 7) return "border-l-4 border-l-yellow-400 border-t border-r border-b border-yellow-200 bg-yellow-50";
+  return "border border-gray-100 bg-white";
 }
 
 function expiryBadge(days: number | null) {
   if (days === null) return null;
-  if (days < 0) return <span className="shrink-0 rounded-full bg-red-100 px-2 py-0.5 text-xs font-bold text-red-600">Vencido</span>;
-  if (days === 0) return <span className="shrink-0 rounded-full bg-red-100 px-2 py-0.5 text-xs font-bold text-red-600">Hoy</span>;
-  if (days <= 2) return <span className="shrink-0 rounded-full bg-red-100 px-2 py-0.5 text-xs font-bold text-red-600">{days}d ⚠️</span>;
-  if (days <= 5) return <span className="shrink-0 rounded-full bg-orange-100 px-2 py-0.5 text-xs font-bold text-orange-600">{days}d</span>;
-  if (days <= 7) return <span className="shrink-0 rounded-full bg-yellow-100 px-2 py-0.5 text-xs font-bold text-yellow-600">{days}d</span>;
+  if (days < 0)  return <span className="shrink-0 rounded-full bg-red-600   px-2.5 py-0.5 text-xs font-bold text-white shadow-sm">⚠ Vencido</span>;
+  if (days === 0) return <span className="shrink-0 rounded-full bg-red-500   px-2.5 py-0.5 text-xs font-bold text-white shadow-sm">⚠ Caduca hoy</span>;
+  if (days <= 2) return <span className="shrink-0 rounded-full bg-red-500   px-2.5 py-0.5 text-xs font-bold text-white shadow-sm">⚠ {days}d</span>;
+  if (days <= 5) return <span className="shrink-0 rounded-full bg-orange-400 px-2.5 py-0.5 text-xs font-bold text-white shadow-sm">⏰ {days}d</span>;
+  if (days <= 7) return <span className="shrink-0 rounded-full bg-yellow-400 px-2.5 py-0.5 text-xs font-bold text-gray-800 shadow-sm">⏳ {days}d</span>;
   return null;
 }
 
@@ -552,22 +552,34 @@ export default function Inventory() {
                 key={item.item.id}
                 className={`flex items-center gap-3 rounded-2xl p-3 border shadow-sm ${expiryColor(days)}`}
               >
-                <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-xl bg-white/80 text-xl shadow-sm">
+                <div className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-xl shadow-sm ${
+                  days !== null && days < 0  ? "bg-red-100" :
+                  days !== null && days <= 2 ? "bg-red-100" :
+                  days !== null && days <= 5 ? "bg-orange-100" :
+                  days !== null && days <= 7 ? "bg-yellow-100" :
+                  "bg-white/80"
+                }`}>
                   {emoji}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className="text-sm font-semibold text-gray-900 truncate">{name}</span>
+                    <span className={`text-sm font-semibold truncate ${days !== null && days <= 7 ? "text-gray-900" : "text-gray-900"}`}>{name}</span>
                     {expiryBadge(days)}
                   </div>
-                  <div className="mt-0.5 flex items-center gap-2 text-xs text-gray-400 flex-wrap">
-                    {item.item.amount && <span>{item.item.amount} {item.measure?.nameEs ?? ""}</span>}
+                  <div className="mt-0.5 flex items-center gap-2 text-xs flex-wrap">
+                    {item.item.amount && <span className="text-gray-400">{item.item.amount} {item.measure?.nameEs ?? ""}</span>}
                     {item.item.expirationDate && (
-                      <span className="flex items-center gap-1">
+                      <span className={`flex items-center gap-1 font-medium ${
+                        days !== null && days < 0  ? "text-red-600" :
+                        days !== null && days <= 2 ? "text-red-500" :
+                        days !== null && days <= 5 ? "text-orange-500" :
+                        days !== null && days <= 7 ? "text-yellow-600" :
+                        "text-gray-400"
+                      }`}>
                         📅 {new Date(item.item.expirationDate).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "2-digit" })}
                       </span>
                     )}
-                    <span className="rounded-full bg-gray-100 px-2 py-0.5">{locLabel}</span>
+                    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-gray-400">{locLabel}</span>
                   </div>
                 </div>
                 <button
