@@ -100,6 +100,7 @@ export default function Dashboard() {
     return () => clearInterval(timer);
   }, []);
 
+  const profileData = trpc.profile.get.useQuery();
   const dailySummary = trpc.mealLogs.dailySummary.useQuery({ date: today });
   const streakData = trpc.mealLogs.getStreak.useQuery();
   const inventoryList = trpc.inventory.list.useQuery();
@@ -163,9 +164,7 @@ export default function Dashboard() {
     }
     prevAllCompleteRef.current = allMacrosComplete;
   }, [allMacrosComplete]);
-  const profileData = trpc.profile.get.useQuery();
-
-  // Subscription tier for contextual upgrade card
+  // Subscription tier for contextual upgrade cardd
   const { tier, isFree, isPro, isProMax } = usePlan();
 
   // Recommendations: recipes personalized by meal time and user goal
