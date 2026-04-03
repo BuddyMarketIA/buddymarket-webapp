@@ -160,6 +160,17 @@ export default function Dashboard() {
     prevAllCompleteRef.current = allMacrosComplete;
   }, [allMacrosComplete]);
   const profileData = trpc.profile.get.useQuery();
+
+  // Subscription check - hide upgrade card if user already has a paid plan
+  const subscription = profileData.data?.subscription;
+  const isPaidPlan = (() => {
+    if (!subscription) return false;
+    const paidPlans = ["basic", "premium", "pro_max"];
+    const isActivePlan = paidPlans.includes(subscription.plan ?? "") && subscription.status === "active";
+    const isManualPlan = paidPlans.includes(subscription.manualPlan ?? "");
+    return isActivePlan || isManualPlan;
+  })();
+
   // Recommendations: recipes personalized by meal time and user goal
   const userGoal = profileData.data?.profile?.mainGoal;
   const recommendedRecipes = trpc.recipes.list.useQuery(
@@ -775,20 +786,22 @@ export default function Dashboard() {
         </div>
       </Link>
 
-      {/* Pro/Pro Max Upgrade Card */}
-      <Link href="/app/subscription">
-        <div style={{ background: "linear-gradient(135deg, #F97316 0%, #FB923C 50%, #FDBA74 100%)", borderRadius: "22px", padding: "18px 20px", marginBottom: "20px", display: "flex", alignItems: "center", gap: "16px", boxShadow: "0 8px 24px rgba(249,115,22,0.35)", cursor: "pointer", position: "relative", overflow: "hidden" }}>
-          <div style={{ position: "absolute", top: "-20px", right: "-20px", width: "100px", height: "100px", borderRadius: "50%", background: "rgba(255,255,255,0.12)" }} />
-          <div style={{ width: "48px", height: "48px", borderRadius: "16px", background: "rgba(255,255,255,0.25)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", flexShrink: 0 }}>👑</div>
-          <div style={{ flex: 1, position: "relative" }}>
-            <p style={{ margin: "0 0 2px", fontSize: "16px", fontWeight: 900, color: "white" }}>Hazte Pro o Pro Max</p>
-            <p style={{ margin: 0, fontSize: "14px", color: "rgba(255,255,255,0.85)" }}>IA ilimitada · BuddyScan · Expertos</p>
+      {/* Pro/Pro Max Upgrade Card - only shown to free users */}
+      {!isPaidPlan && (
+        <Link href="/app/subscription">
+          <div style={{ background: "linear-gradient(135deg, #F97316 0%, #FB923C 50%, #FDBA74 100%)", borderRadius: "22px", padding: "18px 20px", marginBottom: "20px", display: "flex", alignItems: "center", gap: "16px", boxShadow: "0 8px 24px rgba(249,115,22,0.35)", cursor: "pointer", position: "relative", overflow: "hidden" }}>
+            <div style={{ position: "absolute", top: "-20px", right: "-20px", width: "100px", height: "100px", borderRadius: "50%", background: "rgba(255,255,255,0.12)" }} />
+            <div style={{ width: "48px", height: "48px", borderRadius: "16px", background: "rgba(255,255,255,0.25)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", flexShrink: 0 }}>👑</div>
+            <div style={{ flex: 1, position: "relative" }}>
+              <p style={{ margin: "0 0 2px", fontSize: "16px", fontWeight: 900, color: "white" }}>Hazte Pro o Pro Max</p>
+              <p style={{ margin: 0, fontSize: "14px", color: "rgba(255,255,255,0.85)" }}>IA ilimitada · BuddyScan · Expertos</p>
+            </div>
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 18l6-6-6-6"/>
+            </svg>
           </div>
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.8)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-            <path d="M9 18l6-6-6-6"/>
-          </svg>
-        </div>
-      </Link>
+        </Link>
+      )}
 
       {/* Add Meal CTA */}
       <Link href="/app/meal-log">
