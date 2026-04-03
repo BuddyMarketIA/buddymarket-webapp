@@ -964,3 +964,6 @@
 ## Feature: Separar landing (buddymarketapp.com) de app (buddymarket.app) (03/04/2026)
 - [x] Actualizar todos los CTAs de la landing page para apuntar a https://buddymarket.app (4 enlaces)
 - [x] Redirigir usuarios autenticados en la landing a https://buddymarket.app/app/dashboard
+
+## Bug: Banner PWA aparece en la landing page (03/04/2026)
+- [x] Condicionar el banner PWA para que solo aparezca en rutas /app/* y /register, no en la landing ni en páginas públicas

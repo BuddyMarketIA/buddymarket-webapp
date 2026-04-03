@@ -135,6 +135,12 @@ function Router() {
   );
 }
 
+function AppBanners() {
+  const [location] = useLocation();
+  const isAppRoute = location.startsWith("/app") || location.startsWith("/register");
+  return isAppRoute ? <InstallAppBanner /> : null;
+}
+
 function App() {
   return (
     <ErrorBoundary>
@@ -142,7 +148,7 @@ function App() {
         <TooltipProvider>
           <Toaster />
           <OnboardingModal />
-          <InstallAppBanner />
+          <AppBanners />
           <Router />
         </TooltipProvider>
       </ThemeProvider>
