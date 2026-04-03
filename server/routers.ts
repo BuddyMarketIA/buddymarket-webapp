@@ -3764,9 +3764,23 @@ Formato JSON estricto:
         ].filter(Boolean) as string[];
 
         const targetCalories = input.calories || (input.goal === "perdida_peso" || input.goal === "perdida_grasa" ? 1600 : input.goal === "ganancia_muscular" ? 2800 : 2000);
-
+        // Build strict dietary restriction enforcement rules
+        const dietaryRules: string[] = [];
+        if (input.restrictions?.length) {
+          const lowerR = input.restrictions.map((r: string) => r.toLowerCase());
+          if (lowerR.some((r: string) => r.includes('vegan') || r.includes('vegano'))) {
+            dietaryRules.push('DIETA VEGANA ESTRICTA: ABSOLUTAMENTE PROHIBIDO incluir cualquier producto de origen animal. Esto incluye: carne (pollo, ternera, cerdo, cordero, pavo), pescado, marisco, huevos, leche, queso, yogur, mantequilla, nata, miel, gelatina. SOLO alimentos 100% de origen vegetal. Verifica CADA plato.');
+          } else if (lowerR.some((r: string) => r.includes('vegetar'))) {
+            dietaryRules.push('DIETA VEGETARIANA ESTRICTA: ABSOLUTAMENTE PROHIBIDO incluir carne, pollo, pescado o marisco. Permitido: huevos, lácteos, miel. Verifica CADA plato.');
+          }
+          if (lowerR.some((r: string) => r.includes('sin gluten') || r.includes('celiaco') || r.includes('celíaco'))) {
+            dietaryRules.push('SIN GLUTEN: PROHIBIDO trigo, cebada, centeno, avena convencional. Usar alternativas certificadas sin gluten.');
+          }
+          if (lowerR.some((r: string) => r.includes('sin lactosa') || r.includes('intolerante'))) {
+            dietaryRules.push('SIN LACTOSA: Usar bebidas vegetales (avena, soja, almendras). Evitar lácteos convencionales.');
+          }
+        }
         const prompt = `Eres un nutricionista experto. Crea un menú semanal personalizado de ${input.daysCount} días.
-
 Perfil del usuario:
 - Objetivo: ${goalLabels[input.goal]}
 - Estilo de cocina: ${cookingStyleLabels[input.cookingStyle]}
@@ -3775,7 +3789,7 @@ Perfil del usuario:
 - Calorías objetivo: ${targetCalories} kcal/día por persona
 ${input.restrictions?.length ? `- Restricciones/alergias: ${input.restrictions.join(", ")}` : ""}
 ${input.preferences ? `- Preferencias adicionales: ${input.preferences}` : ""}
-
+${dietaryRules.length > 0 ? `\n⚠️ RESTRICCIONES DIETÉTICAS OBLIGATORIAS (INCUMPLIRLAS ES UN ERROR GRAVE):\n${dietaryRules.join('\n')}` : ""}
 IMPORTANTE para el estilo "${cookingStyleLabels[input.cookingStyle]}":
 ${input.cookingStyle === "batch_cooking" ? "- Agrupa ingredientes para cocinar en grandes cantidades el domingo\n- Reutiliza preparaciones base durante la semana (arroz, legumbres, proteínas)" : ""}
 ${input.cookingStyle === "tuppers" ? "- Todas las comidas deben ser aptas para tupper y microondas\n- Evita ensaladas que se pongan malas, prioriza guisos y platos calientes" : ""}
