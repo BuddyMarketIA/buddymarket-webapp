@@ -1087,3 +1087,9 @@
 - [x] Mostrar barra de progreso y estadisticas de despensa vs comprados
 - [x] Excluir items en despensa de la exportacion a supermercados online
 - [x] Integrar boton de despensa en GenericListModal del menu en curso
+
+- [x] Panel de estadísticas para BuddyMakers con seguidores, recetas, ganancias y Stripe Connect
+- [x] Panel de estadísticas para BuddyExperts con seguidores, planes, menús, ganancias y Stripe Connect
+- [x] Procedimientos tRPC getMyStats y getMyFollowers para buddyMakers y buddyExperts
+- [x] Procedimientos tRPC getConnectStatus y getStripeDashboardLink en stripeConnect
+- [x] Enlace a estadísticas desde los dashboards de BuddyMaker y BuddyExpert

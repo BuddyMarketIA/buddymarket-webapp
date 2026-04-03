@@ -3488,6 +3488,50 @@ Genera 3 recetas que aprovechen estos ingredientes. Para cada receta incluye: no
         const [row] = await drizzleDb.select().from(copiesTable).where(and(eq(copiesTable.userId, ctx.user.id), eq(copiesTable.planId, input.planId))).limit(1);
         return { copied: !!row };
       }),
+    // ── Creator Dashboard Stats ─────────────────────────────────────────────
+    getMyStats: protectedProcedure.query(async ({ ctx }) => {
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) return null;
+      const { buddyExperts: beTable, expertFollowers: efTable, expertPlans: epTable, expertMenus: emTable, creatorEarnings: ceTable } = await import("../drizzle/schema");
+      const { eq, count, desc } = await import("drizzle-orm");
+      const [expert] = await drizzleDb.select().from(beTable).where(eq(beTable.userId, ctx.user.id)).limit(1);
+      if (!expert) return null;
+      const [followerRow] = await drizzleDb.select({ total: count() }).from(efTable).where(eq(efTable.expertId, expert.id));
+      const [planRow] = await drizzleDb.select({ total: count() }).from(epTable).where(eq(epTable.expertId, expert.id));
+      const [menuRow] = await drizzleDb.select({ total: count() }).from(emTable).where(eq(emTable.expertId, expert.id));
+      const earnings = await drizzleDb.select().from(ceTable).where(eq(ceTable.creatorUserId, ctx.user.id)).orderBy(desc(ceTable.createdAt)).limit(20);
+      const totalPaid = earnings.filter(e => e.status === "paid").reduce((s, e) => s + (e.commissionAmount ?? 0), 0);
+      const totalPending = earnings.filter(e => e.status === "pending").reduce((s, e) => s + (e.commissionAmount ?? 0), 0);
+      return {
+        expert,
+        followersCount: followerRow?.total ?? 0,
+        plansCount: planRow?.total ?? 0,
+        menusCount: menuRow?.total ?? 0,
+        recentEarnings: earnings.slice(0, 10),
+        totalPaid,
+        totalPending,
+      };
+    }),
+    getMyFollowers: protectedProcedure
+      .input(z.object({ limit: z.number().int().max(50).default(20), offset: z.number().int().default(0) }))
+      .query(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return { followers: [], total: 0 };
+        const { buddyExperts: beTable, expertFollowers: efTable, users: usersTable } = await import("../drizzle/schema");
+        const { eq, count, desc } = await import("drizzle-orm");
+        const [expert] = await drizzleDb.select().from(beTable).where(eq(beTable.userId, ctx.user.id)).limit(1);
+        if (!expert) return { followers: [], total: 0 };
+        const [{ total }] = await drizzleDb.select({ total: count() }).from(efTable).where(eq(efTable.expertId, expert.id));
+        const rows = await drizzleDb
+          .select({ followedAt: efTable.followedAt, user: { id: usersTable.id, name: usersTable.name, email: usersTable.email, avatarUrl: usersTable.avatarUrl } })
+          .from(efTable)
+          .leftJoin(usersTable, eq(efTable.userId, usersTable.id))
+          .where(eq(efTable.expertId, expert.id))
+          .orderBy(desc(efTable.followedAt))
+          .limit(input.limit)
+          .offset(input.offset);
+        return { followers: rows, total };
+      }),
   }),
   // ===========================================================================
   // BUDDY MAKERSS
@@ -3771,13 +3815,54 @@ Genera 3 recetas que aprovechen estos ingredientes. Para cada receta incluye: no
         if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
         const { recipes: rSelf, buddyMakers: bmSelf } = await import("../drizzle/schema");
         const { eq, and } = await import("drizzle-orm");
-        const [maker] = await drizzleDb.select().from(bmSelf).where(eq(bmSelf.userId, ctx.user.id)).limit(1);
+         const [maker] = await drizzleDb.select().from(bmSelf).where(eq(bmSelf.userId, ctx.user.id)).limit(1);
         if (!maker) throw new TRPCError({ code: "FORBIDDEN" });
         await drizzleDb.delete(rSelf).where(and(eq(rSelf.id, input.recipeId), eq(rSelf.buddyMakerId, maker.id)));
         return { success: true };
       }),
+    // ── Creator Dashboard Stats ─────────────────────────────────────────────
+    getMyStats: protectedProcedure.query(async ({ ctx }) => {
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) return null;
+      const { buddyMakers: bmTable, makerFollowers: mfTable, recipes: rTable, creatorEarnings: ceTable } = await import("../drizzle/schema");
+      const { eq, count, desc } = await import("drizzle-orm");
+      const [maker] = await drizzleDb.select().from(bmTable).where(eq(bmTable.userId, ctx.user.id)).limit(1);
+      if (!maker) return null;
+      const [followerRow] = await drizzleDb.select({ total: count() }).from(mfTable).where(eq(mfTable.makerId, maker.id));
+      const [recipeRow] = await drizzleDb.select({ total: count() }).from(rTable).where(eq(rTable.buddyMakerId, maker.id));
+      const earnings = await drizzleDb.select().from(ceTable).where(eq(ceTable.creatorUserId, ctx.user.id)).orderBy(desc(ceTable.createdAt)).limit(20);
+      const totalPaid = earnings.filter(e => e.status === "paid").reduce((s, e) => s + (e.commissionAmount ?? 0), 0);
+      const totalPending = earnings.filter(e => e.status === "pending").reduce((s, e) => s + (e.commissionAmount ?? 0), 0);
+      return {
+        maker,
+        followersCount: followerRow?.total ?? 0,
+        recipesCount: recipeRow?.total ?? 0,
+        recentEarnings: earnings.slice(0, 10),
+        totalPaid,
+        totalPending,
+      };
+    }),
+    getMyFollowers: protectedProcedure
+      .input(z.object({ limit: z.number().int().max(50).default(20), offset: z.number().int().default(0) }))
+      .query(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return { followers: [], total: 0 };
+        const { buddyMakers: bmTable, makerFollowers: mfTable, users: usersTable } = await import("../drizzle/schema");
+        const { eq, count, desc } = await import("drizzle-orm");
+        const [maker] = await drizzleDb.select().from(bmTable).where(eq(bmTable.userId, ctx.user.id)).limit(1);
+        if (!maker) return { followers: [], total: 0 };
+        const [{ total }] = await drizzleDb.select({ total: count() }).from(mfTable).where(eq(mfTable.makerId, maker.id));
+        const rows = await drizzleDb
+          .select({ followedAt: mfTable.followedAt, user: { id: usersTable.id, name: usersTable.name, email: usersTable.email, avatarUrl: usersTable.avatarUrl } })
+          .from(mfTable)
+          .leftJoin(usersTable, eq(mfTable.userId, usersTable.id))
+          .where(eq(mfTable.makerId, maker.id))
+          .orderBy(desc(mfTable.followedAt))
+          .limit(input.limit)
+          .offset(input.offset);
+        return { followers: rows, total };
+      }),
   }),
-
   // ===========================================================================
   // STRIPE CONNECT — Onboarding y comisiones para creadores
   // ===========================================================================
@@ -3813,7 +3898,7 @@ Genera 3 recetas que aprovechen estos ingredientes. Para cada receta incluye: no
         return { url: accountLink.url, accountId: account.id };
       }),
 
-     getEarnings: protectedProcedure.query(async ({ ctx }) => {
+    getEarnings: protectedProcedure.query(async ({ ctx }) => {
       const drizzleDb = await db.getDb();
       if (!drizzleDb) return { earnings: [], totalPaid: 0, totalPending: 0 };
       const { creatorEarnings: ceTable } = await import("../drizzle/schema");
@@ -3823,6 +3908,67 @@ Genera 3 recetas que aprovechen estos ingredientes. Para cada receta incluye: no
       const totalPending = earnings.filter((e) => e.status === "pending").reduce((acc: number, e) => acc + (e.commissionAmount ?? 0), 0);
       return { earnings, totalPaid, totalPending };
     }),
+    getConnectStatus: protectedProcedure
+      .input(z.object({ creatorType: z.enum(["buddyexpert", "buddymaker"]) }))
+      .query(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return { connected: false, onboardingCompleted: false, stripeAccountId: null };
+        const { buddyExperts: beTable, buddyMakers: bmTable } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        if (input.creatorType === "buddyexpert") {
+          const [expert] = await drizzleDb.select({ stripeAccountId: beTable.stripeAccountId, stripeOnboardingCompleted: beTable.stripeOnboardingCompleted }).from(beTable).where(eq(beTable.userId, ctx.user.id)).limit(1);
+          if (!expert) return { connected: false, onboardingCompleted: false, stripeAccountId: null };
+          // If we have an account ID, check with Stripe if onboarding is complete
+          if (expert.stripeAccountId && !expert.stripeOnboardingCompleted) {
+            try {
+              const Stripe = (await import("stripe")).default;
+              const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+              const account = await stripe.accounts.retrieve(expert.stripeAccountId);
+              if (account.details_submitted) {
+                await drizzleDb.update(beTable).set({ stripeOnboardingCompleted: true }).where(eq(beTable.userId, ctx.user.id));
+                return { connected: true, onboardingCompleted: true, stripeAccountId: expert.stripeAccountId };
+              }
+            } catch (_e) { /* ignore */ }
+          }
+          return { connected: !!expert.stripeAccountId, onboardingCompleted: expert.stripeOnboardingCompleted, stripeAccountId: expert.stripeAccountId };
+        } else {
+          const [maker] = await drizzleDb.select({ stripeAccountId: bmTable.stripeAccountId, stripeOnboardingCompleted: bmTable.stripeOnboardingCompleted }).from(bmTable).where(eq(bmTable.userId, ctx.user.id)).limit(1);
+          if (!maker) return { connected: false, onboardingCompleted: false, stripeAccountId: null };
+          if (maker.stripeAccountId && !maker.stripeOnboardingCompleted) {
+            try {
+              const Stripe = (await import("stripe")).default;
+              const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+              const account = await stripe.accounts.retrieve(maker.stripeAccountId);
+              if (account.details_submitted) {
+                await drizzleDb.update(bmTable).set({ stripeOnboardingCompleted: true }).where(eq(bmTable.userId, ctx.user.id));
+                return { connected: true, onboardingCompleted: true, stripeAccountId: maker.stripeAccountId };
+              }
+            } catch (_e) { /* ignore */ }
+          }
+          return { connected: !!maker.stripeAccountId, onboardingCompleted: maker.stripeOnboardingCompleted, stripeAccountId: maker.stripeAccountId };
+        }
+      }),
+    getStripeDashboardLink: protectedProcedure
+      .input(z.object({ creatorType: z.enum(["buddyexpert", "buddymaker"]) }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { buddyExperts: beTable, buddyMakers: bmTable } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        let stripeAccountId: string | null = null;
+        if (input.creatorType === "buddyexpert") {
+          const [expert] = await drizzleDb.select({ stripeAccountId: beTable.stripeAccountId }).from(beTable).where(eq(beTable.userId, ctx.user.id)).limit(1);
+          stripeAccountId = expert?.stripeAccountId ?? null;
+        } else {
+          const [maker] = await drizzleDb.select({ stripeAccountId: bmTable.stripeAccountId }).from(bmTable).where(eq(bmTable.userId, ctx.user.id)).limit(1);
+          stripeAccountId = maker?.stripeAccountId ?? null;
+        }
+        if (!stripeAccountId) throw new TRPCError({ code: "BAD_REQUEST", message: "No tienes una cuenta de Stripe Connect configurada" });
+        const Stripe = (await import("stripe")).default;
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+        const loginLink = await stripe.accounts.createLoginLink(stripeAccountId);
+        return { url: loginLink.url };
+      }),
   }),
 
   // ===========================================================================

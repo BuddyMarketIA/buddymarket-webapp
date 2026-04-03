@@ -309,10 +309,13 @@ export default function BuddyExpertDashboard() {
           <div className="w-10 h-10 rounded-2xl flex items-center justify-center text-xl" style={{ background: "linear-gradient(135deg, #F97316, #FB923C)" }}>
             🎓
           </div>
-          <div>
+          <div className="flex-1">
             <h1 className="text-xl font-black text-gray-900">Panel BuddyExpert</h1>
             <p className="text-xs text-gray-500">Gestiona tu perfil y tus menús semanales</p>
           </div>
+          <a href="/app/buddy-expert-stats" className="flex items-center gap-1.5 rounded-xl bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-600 hover:bg-blue-100 transition-colors">
+            <span>📊</span> Estadísticas
+          </a>
         </div>
 
         {/* Tabs */}
