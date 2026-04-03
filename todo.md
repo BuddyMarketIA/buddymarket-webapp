@@ -1069,3 +1069,21 @@
 - [ ] Limpiar listas de la compra duplicadas en BD
 - [ ] Prevenir creación de listas duplicadas al generar desde menú
 - [ ] Asignar imágenes reales a todas las recetas del sistema
+
+## Sprint: Marcar ingredientes en despensa (COMPLETADO)
+- [x] Añadir campo inPantry a shoppingListItems en BD (drizzle/schema.ts + db:push)
+- [x] Crear procedimiento togglePantry en server/routers.ts
+- [x] Actualizar UI ShoppingListDetail con botón 🏠 por item para marcar/desmarcar despensa
+- [x] Añadir tabs de filtro (Todos / Por comprar / En despensa / Comprados) en lista de la compra
+- [x] Mostrar barra de progreso y estadísticas de despensa vs comprados
+- [x] Excluir items en despensa de la exportación a supermercados online
+- [x] Integrar botón de despensa en GenericListModal del menú en curso (ActiveMenu)
+
+## Sprint: Marcar ingredientes en despensa (COMPLETADO)
+- [x] Añadir campo inPantry a shoppingListItems en BD (drizzle/schema.ts + db:push)
+- [x] Crear procedimiento togglePantry en server/routers.ts
+- [x] Actualizar UI ShoppingListDetail con boton de despensa por item
+- [x] Añadir tabs de filtro (Todos / Por comprar / En despensa / Comprados)
+- [x] Mostrar barra de progreso y estadisticas de despensa vs comprados
+- [x] Excluir items en despensa de la exportacion a supermercados online
+- [x] Integrar boton de despensa en GenericListModal del menu en curso

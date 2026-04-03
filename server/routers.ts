@@ -1314,6 +1314,22 @@ export const appRouter = router({
     toggleItem: protectedProcedure
       .input(z.object({ id: z.number() }))
       .mutation(({ input }) => db.toggleShoppingListItem(input.id)),
+    togglePantry: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { shoppingListItems } = await import("../drizzle/schema.js");
+        const { eq } = await import("drizzle-orm");
+        const [current] = await drizzleDb.select({ inPantry: shoppingListItems.inPantry })
+          .from(shoppingListItems)
+          .where(eq(shoppingListItems.id, input.id));
+        if (!current) throw new TRPCError({ code: "NOT_FOUND" });
+        await drizzleDb.update(shoppingListItems)
+          .set({ inPantry: !current.inPantry })
+          .where(eq(shoppingListItems.id, input.id));
+        return { success: true, inPantry: !current.inPantry };
+      }),
 
     removeItem: protectedProcedure
       .input(z.object({ id: z.number() }))

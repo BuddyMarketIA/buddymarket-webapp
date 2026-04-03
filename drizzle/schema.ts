@@ -548,6 +548,7 @@ export const shoppingListItems = mysqlTable("shopping_list_items", {
   measureId: int("measureId"),
   category: varchar("category", { length: 128 }),
   checked: boolean("checked").default(false),
+  inPantry: boolean("inPantry").default(false),
   order: int("order").default(0),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

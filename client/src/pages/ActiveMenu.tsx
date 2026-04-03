@@ -10,6 +10,7 @@ import {
   ClockIcon,
   FireIcon,
   PlayIcon,
+  HomeIcon,
 } from "@heroicons/react/24/outline";
 import { CheckCircleIcon as CheckCircleSolid } from "@heroicons/react/24/solid";
 import MercadonaCartExport from "@/components/MercadonaCartExport";
@@ -62,6 +63,7 @@ interface GeneratedListItem {
   qty?: string;
   unit?: string;
   isPurchased: boolean;
+  inPantry?: boolean;
 }
 
 interface MercadonaListModalProps {
@@ -96,8 +98,17 @@ interface GenericListModalProps {
 }
 
 function GenericListModal({ items, supermarket, supermarketName, onClose }: GenericListModalProps) {
+  const utils = trpc.useUtils();
+  const [localItems, setLocalItems] = useState<GeneratedListItem[]>(items);
+  const togglePantry = trpc.shoppingLists.togglePantry.useMutation({
+    onMutate: async ({ id }) => {
+      setLocalItems(prev => prev.map(item =>
+        item.id === id ? { ...item, inPantry: !item.inPantry } : item
+      ));
+    },
+  });
   const searchFn = SUPERMARKET_SEARCH_URLS[supermarket];
-  const pending = items.filter((i) => !i.isPurchased);
+  const pending = localItems.filter((i) => !i.isPurchased && !i.inPantry);
 
   return (
     <div
@@ -129,28 +140,71 @@ function GenericListModal({ items, supermarket, supermarketName, onClose }: Gene
             Buscar todos los productos ({pending.length})
           </button>
         )}
+        {/* In-pantry info hint */}
+        {localItems.filter(i => i.inPantry).length === 0 && (
+          <div className="mb-3 flex items-start gap-2 rounded-2xl bg-green-50 p-3">
+            <HomeIcon className="mt-0.5 h-4 w-4 shrink-0 text-green-600" />
+            <p className="text-xs text-green-700"><span className="font-semibold">¿Ya tienes algo en casa?</span> Pulsa 🏠 para marcarlo como en despensa.</p>
+          </div>
+        )}
         <div className="space-y-2">
-          {pending.map((item) => (
-            <a
+          {localItems.filter(i => !i.isPurchased).map((item) => (
+            <div
               key={item.id}
-              href={searchFn ? searchFn(item.name) : "#"}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="flex items-center gap-3 rounded-2xl border border-gray-100 p-3 hover:border-orange-300 hover:bg-orange-50 transition-all"
+              className={`flex items-center gap-3 rounded-2xl border p-3 transition-all ${
+                item.inPantry
+                  ? "border-green-200 bg-green-50"
+                  : "border-gray-100 hover:border-orange-300 hover:bg-orange-50"
+              }`}
             >
-              <ShoppingCartIcon className="h-4 w-4 shrink-0 text-[#FF6B35]" />
-              <div className="flex-1 min-w-0">
-                <p className="text-sm font-medium text-gray-900 truncate">{item.name}</p>
-                {(item.qty || item.unit) && (
-                  <p className="text-xs text-gray-400">{item.qty} {item.unit}</p>
+              {/* Link to search */}
+              <a
+                href={!item.inPantry && searchFn ? searchFn(item.name) : undefined}
+                onClick={item.inPantry ? (e) => e.preventDefault() : undefined}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex flex-1 items-center gap-3 min-w-0"
+              >
+                {item.inPantry
+                  ? <HomeIcon className="h-4 w-4 shrink-0 text-green-500" />
+                  : <ShoppingCartIcon className="h-4 w-4 shrink-0 text-[#FF6B35]" />
+                }
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-1.5">
+                    <p className={`text-sm font-medium truncate ${item.inPantry ? "text-green-700" : "text-gray-900"}`}>{item.name}</p>
+                    {item.inPantry && <span className="rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-semibold text-green-700">despensa</span>}
+                  </div>
+                  {(item.qty || item.unit) && (
+                    <p className="text-xs text-gray-400">{item.qty} {item.unit}</p>
+                  )}
+                </div>
+                {!item.inPantry && (
+                  <svg className="h-4 w-4 shrink-0 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+                  </svg>
                 )}
-              </div>
-              <svg className="h-4 w-4 shrink-0 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
-              </svg>
-            </a>
+              </a>
+              {/* Pantry toggle */}
+              <button
+                onClick={() => {
+                  togglePantry.mutate({ id: item.id });
+                  if (!item.inPantry) toast.success("Marcado como en despensa");
+                }}
+                className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full transition-all ${
+                  item.inPantry ? "bg-green-500 text-white" : "text-gray-300 hover:bg-green-50 hover:text-green-500"
+                }`}
+                title={item.inPantry ? "Quitar de despensa" : "Marcar como en despensa"}
+              >
+                <HomeIcon className="h-4 w-4" />
+              </button>
+            </div>
           ))}
         </div>
+        {localItems.filter(i => i.inPantry).length > 0 && (
+          <p className="mt-3 text-center text-xs text-gray-400">
+            {localItems.filter(i => i.inPantry).length} producto(s) marcados como en despensa (no se compran)
+          </p>
+        )}
       </div>
     </div>
   );
@@ -193,6 +247,7 @@ export default function ActiveMenu() {
             qty: i.amount ? String(Math.round(i.amount * 10) / 10) : "",
             unit: i.measure?.name ?? i.unit ?? "",
             isPurchased: i.isPurchased ?? false,
+            inPantry: i.inPantry ?? false,
           })) ?? [];
           setGeneratedItems(items);
           if (selectedSupermarket === "mercadona") {

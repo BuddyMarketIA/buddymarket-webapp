@@ -16,6 +16,8 @@ import {
   ArrowTopRightOnSquareIcon,
   BookmarkIcon,
   DocumentDuplicateIcon,
+  HomeIcon,
+  FunnelIcon,
 } from "@heroicons/react/24/outline";
 
 // Supermarket online search URL builders
@@ -51,6 +53,9 @@ const SUPERMARKETS = [
   { id: "el_corte_ingles", name: "El Corte Inglés", emoji: "🟢" },
 ];
 
+// View filter types
+type ViewFilter = "all" | "to_buy" | "in_pantry" | "purchased";
+
 function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => void }) {
   const { data: listData, isLoading } = trpc.shoppingLists.getById.useQuery({ id: listId });
   const utils = trpc.useUtils();
@@ -62,6 +67,8 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
   const [showLidlCart, setShowLidlCart] = useState(false);
   const [showSaveTemplate, setShowSaveTemplate] = useState(false);
   const [templateName, setTemplateName] = useState("");
+  const [viewFilter, setViewFilter] = useState<ViewFilter>("all");
+
   const saveAsTemplate = trpc.shoppingLists.saveAsTemplate.useMutation({
     onSuccess: () => {
       toast.success("Plantilla guardada");
@@ -72,8 +79,37 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
   });
 
   const toggleItem = trpc.shoppingLists.toggleItem.useMutation({
-    onSuccess: () => utils.shoppingLists.getById.invalidate({ id: listId }),
+    onMutate: async ({ id }) => {
+      await utils.shoppingLists.getById.cancel({ id: listId });
+      const prev = utils.shoppingLists.getById.getData({ id: listId });
+      utils.shoppingLists.getById.setData({ id: listId }, (old: any) => {
+        if (!old) return old;
+        return { ...old, items: old.items.map((item: any) => item.id === id ? { ...item, checked: !item.checked, isPurchased: !item.isPurchased } : item) };
+      });
+      return { prev };
+    },
+    onError: (_err: any, _vars: any, ctx: any) => {
+      if (ctx?.prev) utils.shoppingLists.getById.setData({ id: listId }, ctx.prev);
+    },
+    onSettled: () => utils.shoppingLists.getById.invalidate({ id: listId }),
   });
+
+  const togglePantry = trpc.shoppingLists.togglePantry.useMutation({
+    onMutate: async ({ id }) => {
+      await utils.shoppingLists.getById.cancel({ id: listId });
+      const prev = utils.shoppingLists.getById.getData({ id: listId });
+      utils.shoppingLists.getById.setData({ id: listId }, (old: any) => {
+        if (!old) return old;
+        return { ...old, items: old.items.map((item: any) => item.id === id ? { ...item, inPantry: !item.inPantry } : item) };
+      });
+      return { prev };
+    },
+    onError: (_err: any, _vars: any, ctx: any) => {
+      if (ctx?.prev) utils.shoppingLists.getById.setData({ id: listId }, ctx.prev);
+    },
+    onSettled: () => utils.shoppingLists.getById.invalidate({ id: listId }),
+  });
+
   const removeItem = trpc.shoppingLists.removeItem.useMutation({
     onSuccess: () => utils.shoppingLists.getById.invalidate({ id: listId }),
   });
@@ -86,14 +122,27 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
     },
   });
 
-  const items = listData?.items ?? [];
-  const purchased = items.filter((i: any) => i.isPurchased).length;
-  const pct = items.length > 0 ? Math.round((purchased / items.length) * 100) : 0;
+  const allItems = (listData?.items ?? []) as any[];
+
+  // Stats
+  const inPantryCount = allItems.filter((i) => i.inPantry).length;
+  const purchasedCount = allItems.filter((i) => i.isPurchased && !i.inPantry).length;
+  const toBuyCount = allItems.filter((i) => !i.isPurchased && !i.inPantry).length;
+  const totalCount = allItems.length;
+  const pct = totalCount > 0 ? Math.round(((purchasedCount + inPantryCount) / totalCount) * 100) : 0;
+
+  // Filter items based on view
+  const filteredItems = allItems.filter((item) => {
+    if (viewFilter === "to_buy") return !item.isPurchased && !item.inPantry;
+    if (viewFilter === "in_pantry") return item.inPantry;
+    if (viewFilter === "purchased") return item.isPurchased && !item.inPantry;
+    return true; // "all"
+  });
 
   // Group by category
   const grouped: Record<string, any[]> = {};
-  items.forEach((item: any) => {
-    const cat = item.ingredient?.foodCategory?.name ?? "General";
+  filteredItems.forEach((item: any) => {
+    const cat = item.ingredient?.foodCategory?.name ?? item.category ?? "General";
     if (!grouped[cat]) grouped[cat] = [];
     grouped[cat].push(item);
   });
@@ -119,7 +168,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
           <h1 className="text-lg font-bold text-gray-900 truncate">
             {(listData as any)?.list?.name ?? (listData as any)?.name ?? "Lista"}
           </h1>
-          <p className="text-xs text-gray-500">{purchased}/{items.length} productos</p>
+          <p className="text-xs text-gray-500">{purchasedCount + inPantryCount}/{totalCount} listos</p>
         </div>
         <button
           onClick={() => setShowSaveTemplate(true)}
@@ -143,15 +192,77 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
         </button>
       </div>
 
-      {/* Progress */}
-      {items.length > 0 && (
-        <div className="vively-card mb-4 flex items-center gap-4">
-          <div className="flex-1">
-            <div className="macro-bar">
-              <div className="macro-bar-fill" style={{ width: `${pct}%`, background: "#F97316" }} />
+      {/* Progress bar */}
+      {totalCount > 0 && (
+        <div className="vively-card mb-4">
+          <div className="flex items-center gap-3 mb-2">
+            <div className="flex-1">
+              <div className="macro-bar">
+                <div className="macro-bar-fill" style={{ width: `${pct}%`, background: "#F97316" }} />
+              </div>
+            </div>
+            <span className="text-sm font-bold text-[#F97316]">{pct}%</span>
+          </div>
+          {/* Stats row */}
+          <div className="flex gap-3 text-xs">
+            <div className="flex items-center gap-1 text-gray-500">
+              <span className="inline-block h-2 w-2 rounded-full bg-gray-200"></span>
+              <span>{toBuyCount} por comprar</span>
+            </div>
+            <div className="flex items-center gap-1 text-green-600">
+              <span className="inline-block h-2 w-2 rounded-full bg-green-400"></span>
+              <span>{inPantryCount} en despensa</span>
+            </div>
+            <div className="flex items-center gap-1 text-[#F97316]">
+              <span className="inline-block h-2 w-2 rounded-full bg-[#F97316]"></span>
+              <span>{purchasedCount} comprados</span>
             </div>
           </div>
-          <span className="text-sm font-bold text-[#F97316]">{pct}%</span>
+        </div>
+      )}
+
+      {/* View filter tabs */}
+      {totalCount > 0 && (
+        <div className="mb-4 flex gap-2 overflow-x-auto pb-1">
+          {([
+            { id: "all", label: "Todos", count: totalCount },
+            { id: "to_buy", label: "Por comprar", count: toBuyCount },
+            { id: "in_pantry", label: "En despensa", count: inPantryCount },
+            { id: "purchased", label: "Comprados", count: purchasedCount },
+          ] as { id: ViewFilter; label: string; count: number }[]).map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setViewFilter(tab.id)}
+              className={`flex shrink-0 items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
+                viewFilter === tab.id
+                  ? tab.id === "in_pantry"
+                    ? "bg-green-100 text-green-700"
+                    : tab.id === "purchased"
+                    ? "bg-orange-100 text-[#F97316]"
+                    : "bg-gray-900 text-white"
+                  : "bg-white text-gray-500 shadow-sm"
+              }`}
+            >
+              {tab.id === "in_pantry" && <HomeIcon className="h-3 w-3" />}
+              {tab.id === "purchased" && <CheckIcon className="h-3 w-3" />}
+              {tab.label}
+              {tab.count > 0 && (
+                <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
+                  viewFilter === tab.id ? "bg-white/20" : "bg-gray-100"
+                }`}>{tab.count}</span>
+              )}
+            </button>
+          ))}
+        </div>
+      )}
+
+      {/* In-pantry info banner */}
+      {viewFilter === "all" && inPantryCount === 0 && totalCount > 0 && (
+        <div className="mb-4 flex items-start gap-3 rounded-2xl bg-green-50 p-3">
+          <HomeIcon className="mt-0.5 h-4 w-4 shrink-0 text-green-600" />
+          <p className="text-xs text-green-700">
+            <span className="font-semibold">¿Ya tienes algo en casa?</span> Pulsa el icono 🏠 en cada producto para marcarlo como «en despensa» y no tenerlo que comprar.
+          </p>
         </div>
       )}
 
@@ -163,26 +274,62 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
             {catItems.map((item: any) => (
               <div
                 key={item.id}
-                className={`vively-card flex items-center gap-3 transition-all ${item.isPurchased ? "opacity-50" : ""}`}
+                className={`vively-card flex items-center gap-3 transition-all ${
+                  item.inPantry
+                    ? "border-l-4 border-l-green-400 bg-green-50/50"
+                    : item.isPurchased
+                    ? "opacity-50"
+                    : ""
+                }`}
               >
+                {/* Purchased checkbox */}
                 <button
                   onClick={() => toggleItem.mutate({ id: item.id })}
                   className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 transition-all ${
                     item.isPurchased ? "border-[#F97316] bg-[#F97316]" : "border-gray-200"
                   }`}
+                  title={item.isPurchased ? "Marcar como no comprado" : "Marcar como comprado"}
                 >
                   {item.isPurchased && <CheckIcon className="h-4 w-4 text-white" />}
                 </button>
+
+                {/* Item info */}
                 <div className="flex-1 min-w-0">
-                  <p className={`text-sm font-medium ${item.isPurchased ? "line-through text-gray-400" : "text-gray-900"}`}>
-                    {item.ingredient?.name ?? item.customName ?? item.name ?? "Producto"}
-                  </p>
+                  <div className="flex items-center gap-1.5">
+                    <p className={`text-sm font-medium ${
+                      item.isPurchased ? "line-through text-gray-400" :
+                      item.inPantry ? "text-green-700" : "text-gray-900"
+                    }`}>
+                      {item.ingredient?.name ?? item.customName ?? item.name ?? "Producto"}
+                    </p>
+                    {item.inPantry && (
+                      <span className="rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-semibold text-green-700">despensa</span>
+                    )}
+                  </div>
                   {(item.amount || item.quantity) && (
                     <p className="text-xs text-gray-400">
                       {item.amount ?? item.quantity} {item.measure?.name ?? item.unit ?? ""}
                     </p>
                   )}
                 </div>
+
+                {/* Pantry toggle button */}
+                <button
+                  onClick={() => {
+                    togglePantry.mutate({ id: item.id });
+                    if (!item.inPantry) toast.success("Marcado como en despensa");
+                  }}
+                  className={`flex h-7 w-7 items-center justify-center rounded-full transition-all ${
+                    item.inPantry
+                      ? "bg-green-500 text-white"
+                      : "text-gray-300 hover:bg-green-50 hover:text-green-500"
+                  }`}
+                  title={item.inPantry ? "Quitar de despensa" : "Marcar como en despensa"}
+                >
+                  <HomeIcon className="h-4 w-4" />
+                </button>
+
+                {/* Delete button */}
                 <button
                   onClick={() => removeItem.mutate({ id: item.id })}
                   className="flex h-7 w-7 items-center justify-center rounded-full text-gray-300 hover:bg-red-50 hover:text-red-400"
@@ -195,7 +342,18 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
         </div>
       ))}
 
-      {items.length === 0 && (
+      {/* Empty state for filtered view */}
+      {filteredItems.length === 0 && totalCount > 0 && (
+        <div className="rounded-2xl bg-gray-50 py-8 text-center">
+          <p className="text-sm text-gray-400">
+            {viewFilter === "in_pantry" && "Ningún producto marcado como en despensa"}
+            {viewFilter === "purchased" && "Ningún producto marcado como comprado"}
+            {viewFilter === "to_buy" && "¡Todo listo! No quedan productos por comprar"}
+          </p>
+        </div>
+      )}
+
+      {allItems.length === 0 && (
         <div className="empty-state">
           <span className="mb-4 text-5xl">🛒</span>
           <h3 className="mb-2 text-base font-bold text-gray-900">Lista vacía</h3>
@@ -274,7 +432,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
                   onClick={() => {
                     const searchFn = SUPERMARKET_SEARCH_URLS[selectedSupermarket];
                     if (!searchFn) return;
-                    const unpurchased = items.filter((i: any) => !i.isPurchased);
+                    const unpurchased = allItems.filter((i: any) => !i.isPurchased && !i.inPantry);
                     if (unpurchased.length === 0) { toast.error("No hay productos pendientes"); return; }
                     unpurchased.forEach((item: any, idx: number) => {
                       const name = item.ingredient?.name ?? item.customName ?? item.name ?? "";
@@ -285,11 +443,11 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
                   className="mb-4 w-full flex items-center justify-center gap-2 rounded-2xl bg-[#F97316] py-3 text-sm font-bold text-white"
                 >
                   <ArrowTopRightOnSquareIcon className="h-4 w-4" />
-                  Buscar todos los productos ({items.filter((i: any) => !i.isPurchased).length})
+                  Buscar todos los productos ({allItems.filter((i: any) => !i.isPurchased && !i.inPantry).length})
                 </button>
                 <div className="space-y-2">
-                  {items
-                    .filter((i: any) => !i.isPurchased)
+                  {allItems
+                    .filter((i: any) => !i.isPurchased && !i.inPantry)
                     .map((item: any) => {
                       const name = item.ingredient?.name ?? item.customName ?? item.name ?? "";
                       const qty = item.amount ?? item.quantity ?? "";
@@ -312,8 +470,8 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
                         </a>
                       );
                     })}
-                  {items.filter((i: any) => i.isPurchased).length > 0 && (
-                    <p className="pt-2 text-center text-xs text-gray-400">{items.filter((i: any) => i.isPurchased).length} producto(s) ya marcados como comprados no se muestran</p>
+                  {(allItems.filter((i: any) => i.isPurchased).length + allItems.filter((i: any) => i.inPantry).length) > 0 && (
+                    <p className="pt-2 text-center text-xs text-gray-400">{allItems.filter((i: any) => i.isPurchased || i.inPantry).length} producto(s) ya marcados (comprados o en despensa) no se muestran</p>
                   )}
                 </div>
               </>
@@ -326,7 +484,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowMercadonaCart(false); }}>
           <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up max-h-[85vh] overflow-y-auto">
             <MercadonaCartExport
-              items={items.map((i: any) => ({ id: i.id, name: i.ingredient?.name ?? i.customName ?? i.name ?? "Producto", qty: String(i.amount ?? i.quantity ?? ""), unit: i.measure?.name ?? i.unit ?? "", isPurchased: i.isPurchased }))}
+              items={allItems.map((i: any) => ({ id: i.id, name: i.ingredient?.name ?? i.customName ?? i.name ?? "Producto", qty: String(i.amount ?? i.quantity ?? ""), unit: i.measure?.name ?? i.unit ?? "", isPurchased: i.isPurchased || i.inPantry }))}
               onBack={() => { setShowMercadonaCart(false); setShowExport(true); }}
               onClose={() => setShowMercadonaCart(false)}
             />
@@ -338,7 +496,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowLidlCart(false); }}>
           <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up max-h-[85vh] overflow-y-auto">
             <LidlCartExport
-              items={items.map((i: any) => ({ id: i.id, name: i.ingredient?.name ?? i.customName ?? i.name ?? "Producto", qty: String(i.amount ?? i.quantity ?? ""), unit: i.measure?.name ?? i.unit ?? "", isPurchased: i.isPurchased }))}
+              items={allItems.map((i: any) => ({ id: i.id, name: i.ingredient?.name ?? i.customName ?? i.name ?? "Producto", qty: String(i.amount ?? i.quantity ?? ""), unit: i.measure?.name ?? i.unit ?? "", isPurchased: i.isPurchased || i.inPantry }))}
               onBack={() => { setShowLidlCart(false); setShowExport(true); }}
               onClose={() => setShowLidlCart(false)}
             />
