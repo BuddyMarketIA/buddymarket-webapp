@@ -1367,6 +1367,110 @@ export const appRouter = router({
         const result = await db.generateShoppingListFromMenu(ctx.user.id, input.menuId, input.persons, input.supermarket, input.name);
         return result;
       }),
+    // -------------------------------------------------------------------------
+    // SHOPPING LIST TEMPLATES
+    // -------------------------------------------------------------------------
+    saveAsTemplate: protectedProcedure
+      .input(z.object({
+        listId: z.number(),
+        name: z.string().min(1).max(256),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { shoppingLists, shoppingListItems, shoppingListTemplates, ingredients, measures } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+        const list = await drizzleDb.select().from(shoppingLists)
+          .where(and(eq(shoppingLists.id, input.listId), eq(shoppingLists.userId, ctx.user.id)))
+          .limit(1);
+        if (list.length === 0) throw new TRPCError({ code: "NOT_FOUND", message: "Lista no encontrada" });
+        const items = await drizzleDb.select({
+          customName: shoppingListItems.customName,
+          amount: shoppingListItems.amount,
+          category: shoppingListItems.category,
+          ingredientName: ingredients.nameEs,
+          measureName: measures.nameEs,
+        })
+          .from(shoppingListItems)
+          .leftJoin(ingredients, eq(shoppingListItems.ingredientId, ingredients.id))
+          .leftJoin(measures, eq(shoppingListItems.measureId, measures.id))
+          .where(eq(shoppingListItems.shoppingListId, input.listId));
+        const itemsJson = JSON.stringify(items.map(i => ({
+          name: i.ingredientName ?? i.customName ?? "Producto",
+          qty: i.amount ? String(i.amount) : "",
+          unit: i.measureName ?? "",
+          category: i.category ?? "General",
+        })));
+        await drizzleDb.insert(shoppingListTemplates).values({
+          userId: ctx.user.id,
+          name: input.name,
+          supermarket: (list[0] as any).supermarket ?? "general",
+          itemsJson,
+        });
+        return { success: true, name: input.name };
+      }),
+    listTemplates: protectedProcedure
+      .query(async ({ ctx }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { shoppingListTemplates } = await import("../drizzle/schema");
+        const { eq, desc } = await import("drizzle-orm");
+        const templates = await drizzleDb.select().from(shoppingListTemplates)
+          .where(eq(shoppingListTemplates.userId, ctx.user.id))
+          .orderBy(desc(shoppingListTemplates.createdAt));
+        return templates.map(t => ({
+          ...t,
+          items: JSON.parse(t.itemsJson) as { name: string; qty: string; unit: string; category: string }[],
+        }));
+      }),
+    createFromTemplate: protectedProcedure
+      .input(z.object({
+        templateId: z.number(),
+        name: z.string().min(1).max(256).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { shoppingListTemplates, shoppingLists, shoppingListItems } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+        const template = await drizzleDb.select().from(shoppingListTemplates)
+          .where(and(eq(shoppingListTemplates.id, input.templateId), eq(shoppingListTemplates.userId, ctx.user.id)))
+          .limit(1);
+        if (template.length === 0) throw new TRPCError({ code: "NOT_FOUND", message: "Plantilla no encontrada" });
+        const t = template[0];
+        const listName = input.name ?? (t.name + " (copia)");
+        const [listResult] = await drizzleDb.insert(shoppingLists).values({
+          userId: ctx.user.id,
+          name: listName,
+          supermarket: (t.supermarket ?? "general") as "general" | "mercadona" | "lidl" | "carrefour" | "alcampo" | "dia" | "el_corte_ingles",
+          persons: 1,
+        });
+        const newListId = (listResult as any).insertId;
+        const items = JSON.parse(t.itemsJson) as { name: string; qty: string; unit: string; category: string }[];
+        if (items.length > 0) {
+          await drizzleDb.insert(shoppingListItems).values(
+            items.map(item => ({
+              shoppingListId: newListId,
+              customName: item.name,
+              amount: item.qty ? parseFloat(item.qty) || null : null,
+              category: item.category ?? "General",
+              checked: false,
+            }))
+          );
+        }
+        return { id: newListId, name: listName };
+      }),
+    deleteTemplate: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { shoppingListTemplates } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+        await drizzleDb.delete(shoppingListTemplates)
+          .where(and(eq(shoppingListTemplates.id, input.id), eq(shoppingListTemplates.userId, ctx.user.id)));
+        return { success: true };
+      }),
   }),
   // ---------------------------------------------------------------------------
   // INVENTORYY

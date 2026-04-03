@@ -13,6 +13,8 @@ import {
   BuildingStorefrontIcon,
   CameraIcon,
   ArrowTopRightOnSquareIcon,
+  BookmarkIcon,
+  DocumentDuplicateIcon,
 } from "@heroicons/react/24/outline";
 
 // Supermarket online search URL builders
@@ -56,6 +58,16 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
   const [showExport, setShowExport] = useState(false);
   const [selectedSupermarket, setSelectedSupermarket] = useState<string | null>(null);
   const [showMercadonaCart, setShowMercadonaCart] = useState(false);
+  const [showSaveTemplate, setShowSaveTemplate] = useState(false);
+  const [templateName, setTemplateName] = useState("");
+  const saveAsTemplate = trpc.shoppingLists.saveAsTemplate.useMutation({
+    onSuccess: () => {
+      toast.success("Plantilla guardada");
+      setShowSaveTemplate(false);
+      setTemplateName("");
+    },
+    onError: (err: any) => toast.error(err.message || "Error al guardar la plantilla"),
+  });
 
   const toggleItem = trpc.shoppingLists.toggleItem.useMutation({
     onSuccess: () => utils.shoppingLists.getById.invalidate({ id: listId }),
@@ -107,6 +119,13 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
           </h1>
           <p className="text-xs text-gray-500">{purchased}/{items.length} productos</p>
         </div>
+        <button
+          onClick={() => setShowSaveTemplate(true)}
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm mr-1"
+          title="Guardar como plantilla"
+        >
+          <BookmarkIcon className="h-5 w-5 text-violet-500" />
+        </button>
         <button
           onClick={() => { setShowExport(true); setSelectedSupermarket(null); }}
           className="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm mr-1"
@@ -312,13 +331,42 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
           </div>
         </div>
       )}
+      {/* Save as Template Modal */}
+      {showSaveTemplate && (
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowSaveTemplate(false); }}>
+          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up">
+            <h3 className="mb-2 text-lg font-bold text-gray-900">Guardar como plantilla</h3>
+            <p className="mb-4 text-sm text-gray-500">Podrás reutilizar esta lista para crear nuevas listas de la compra rápidamente.</p>
+            <label className="mb-1 block text-xs font-semibold text-gray-600">Nombre de la plantilla</label>
+            <input
+              value={templateName}
+              onChange={(e) => setTemplateName(e.target.value)}
+              placeholder={(listData as any)?.list?.name ?? "Mi plantilla"}
+              className="mb-4 w-full rounded-2xl border-2 border-gray-100 bg-gray-50 px-4 py-3 text-sm focus:border-violet-400 focus:outline-none"
+              autoFocus
+            />
+            <div className="flex gap-3">
+              <button onClick={() => setShowSaveTemplate(false)} className="flex-1 rounded-2xl border-2 border-gray-100 py-3 text-sm font-semibold text-gray-600">Cancelar</button>
+              <button
+                onClick={() => {
+                  const name = templateName.trim() || ((listData as any)?.list?.name ?? "Mi plantilla");
+                  saveAsTemplate.mutate({ listId, name });
+                }}
+                disabled={saveAsTemplate.isPending}
+                className="flex-1 rounded-2xl bg-violet-600 py-3 text-sm font-bold text-white disabled:opacity-60"
+              >
+                {saveAsTemplate.isPending ? "Guardando..." : "Guardar plantilla"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
       <div className="vively-disclaimer">
         <p>BuddyMarket no constituye recomendaciones profesionales de nutrición.</p>
       </div>
     </div>
   );
 }
-
 export default function ShoppingLists() {
   const [selectedListId, setSelectedListId] = useState<number | null>(null);
   const [showNew, setShowNew] = useState(false);
@@ -336,6 +384,17 @@ export default function ShoppingLists() {
   const ocrFileRef = useRef<HTMLInputElement>(null);
 
   const { data: lists, isLoading, refetch } = trpc.shoppingLists.list.useQuery();
+  const { data: templates, refetch: refetchTemplates } = trpc.shoppingLists.listTemplates.useQuery();
+  const createFromTemplate = trpc.shoppingLists.createFromTemplate.useMutation({
+    onSuccess: (data: any) => {
+      refetch();
+      toast.success(`Lista "${data.name}" creada`);
+    },
+    onError: (err: any) => toast.error(err.message || "Error al crear la lista"),
+  });
+  const deleteTemplate = trpc.shoppingLists.deleteTemplate.useMutation({
+    onSuccess: () => { refetchTemplates(); toast.success("Plantilla eliminada"); },
+  });
   const { data: myMenus } = trpc.menus.list.useQuery();
 
   const createList = trpc.shoppingLists.create.useMutation({
@@ -521,6 +580,39 @@ export default function ShoppingLists() {
         </div>
       )}
 
+      {/* Templates section */}
+      {templates && templates.length > 0 && (
+        <div className="mt-6">
+          <h2 className="mb-3 text-sm font-bold text-gray-700 uppercase tracking-wide">Plantillas guardadas</h2>
+          <div className="space-y-2">
+            {templates.map((tpl: any) => (
+              <div key={tpl.id} className="vively-card flex items-center gap-3">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-violet-50">
+                  <BookmarkIcon className="h-5 w-5 text-violet-500" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-900 truncate">{tpl.name}</p>
+                  <p className="text-xs text-gray-400">{tpl.itemCount} productos · {tpl.supermarket ?? "General"}</p>
+                </div>
+                <button
+                  onClick={() => createFromTemplate.mutate({ templateId: tpl.id })}
+                  className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-600 text-white hover:bg-violet-700"
+                  title="Crear lista desde plantilla"
+                >
+                  <PlusIcon className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => deleteTemplate.mutate({ id: tpl.id })}
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-gray-300 hover:bg-red-50 hover:text-red-400"
+                  title="Eliminar plantilla"
+                >
+                  <TrashIcon className="h-4 w-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
       {/* New list modal */}
       {showNew && (
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowNew(false); }}>

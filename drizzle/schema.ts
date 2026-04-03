@@ -557,6 +557,21 @@ export type ShoppingListItem = typeof shoppingListItems.$inferSelect;
 export type InsertShoppingListItem = typeof shoppingListItems.$inferInsert;
 
 // =============================================================================
+// SHOPPING LIST TEMPLATES
+// =============================================================================
+export const shoppingListTemplates = mysqlTable("shopping_list_templates", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  name: varchar("name", { length: 256 }).notNull(),
+  supermarket: varchar("supermarket", { length: 64 }).default("general"),
+  itemsJson: text("itemsJson").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+export type ShoppingListTemplate = typeof shoppingListTemplates.$inferSelect;
+export type InsertShoppingListTemplate = typeof shoppingListTemplates.$inferInsert;
+
+// =============================================================================
 // MERCADONA PRODUCTS CATALOG
 // =============================================================================
 

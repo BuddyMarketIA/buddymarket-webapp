@@ -1013,3 +1013,9 @@
 - [x] Ruta /app/notifications registrada en App.tsx (nueva pagina de notificaciones in-app)
 - [x] Ruta /app/meal-notifications para recordatorios de comidas (antigua /app/notifications)
 - [x] Error en Inventory.tsx linea 434 corregido (caracteres box-drawing en comentario JSX)
+
+## Plantillas de Lista de la Compra
+- [ ] Tabla shoppingListTemplates en drizzle/schema.ts (id, userId, name, items JSON, createdAt)
+- [ ] Procedimientos tRPC: saveAsTemplate, listTemplates, createFromTemplate, deleteTemplate
+- [ ] Botón 'Guardar como plantilla' en cabecera de ShoppingListDetail
+- [ ] Sección 'Plantillas' en ShoppingLists para crear nueva lista desde plantilla guardada
