@@ -16,14 +16,128 @@ import {
   ClockIcon,
   CalendarDaysIcon,
   LinkIcon,
+  BanknotesIcon,
+  ArrowPathIcon,
+  ReceiptRefundIcon,
+  ArrowDownTrayIcon,
 } from "@heroicons/react/24/outline";
 import { CheckCircleIcon as CheckCircleSolid } from "@heroicons/react/24/solid";
 
 type Tab = "overview" | "followers" | "content" | "payments";
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function fmtAmount(cents: number, currency = "eur") {
+  return new Intl.NumberFormat("es-ES", { style: "currency", currency: currency.toUpperCase() }).format(cents / 100);
+}
+function fmtDate(ts: number) {
+  return new Date(ts * 1000).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" });
+}
+
+// ─── Status badge ─────────────────────────────────────────────────────────────
+function StatusBadge({ status }: { status: string }) {
+  const map: Record<string, { label: string; cls: string }> = {
+    succeeded: { label: "Cobrado", cls: "bg-green-100 text-green-700" },
+    paid:      { label: "Pagado",  cls: "bg-green-100 text-green-700" },
+    pending:   { label: "Pendiente", cls: "bg-yellow-100 text-yellow-700" },
+    in_transit:{ label: "En tránsito", cls: "bg-blue-100 text-blue-700" },
+    failed:    { label: "Fallido", cls: "bg-red-100 text-red-600" },
+    canceled:  { label: "Cancelado", cls: "bg-gray-100 text-gray-500" },
+    refunded:  { label: "Reembolsado", cls: "bg-orange-100 text-orange-600" },
+  };
+  const s = map[status] ?? { label: status, cls: "bg-gray-100 text-gray-500" };
+  return <span className={`rounded-full px-2 py-0.5 text-[10px] font-semibold ${s.cls}`}>{s.label}</span>;
+}
+
+// ─── Balance card ─────────────────────────────────────────────────────────────
+function BalanceCard({ available, pending }: { available: { amount: number; currency: string }[]; pending: { amount: number; currency: string }[] }) {
+  const avail = available.reduce((s, b) => s + b.amount, 0);
+  const pend  = pending.reduce((s, b) => s + b.amount, 0);
+  const currency = available[0]?.currency ?? pending[0]?.currency ?? "eur";
+  return (
+    <div className="grid grid-cols-2 gap-3">
+      <div className="rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 p-4 text-white shadow-md">
+        <div className="mb-1 flex items-center gap-1.5 text-green-100">
+          <BanknotesIcon className="h-4 w-4" />
+          <span className="text-xs font-medium">Disponible</span>
+        </div>
+        <p className="text-2xl font-bold">{fmtAmount(avail, currency)}</p>
+        <p className="mt-0.5 text-xs text-green-100">Listo para transferir</p>
+      </div>
+      <div className="rounded-2xl bg-gradient-to-br from-yellow-400 to-amber-500 p-4 text-white shadow-md">
+        <div className="mb-1 flex items-center gap-1.5 text-yellow-100">
+          <ClockIcon className="h-4 w-4" />
+          <span className="text-xs font-medium">Pendiente</span>
+        </div>
+        <p className="text-2xl font-bold">{fmtAmount(pend, currency)}</p>
+        <p className="mt-0.5 text-xs text-yellow-100">En proceso</p>
+      </div>
+    </div>
+  );
+}
+
+// ─── Charge row ───────────────────────────────────────────────────────────────
+function ChargeRow({ charge }: { charge: { id: string; amount: number; currency: string; status: string; description: string | null; created: number; receiptUrl: string | null; refunded: boolean; customerEmail: string | null } }) {
+  return (
+    <div className="flex items-center gap-3 px-4 py-3">
+      <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${charge.refunded ? "bg-orange-100" : charge.status === "succeeded" ? "bg-green-100" : "bg-gray-100"}`}>
+        {charge.refunded ? (
+          <ReceiptRefundIcon className="h-5 w-5 text-orange-500" />
+        ) : (
+          <BanknotesIcon className={`h-5 w-5 ${charge.status === "succeeded" ? "text-green-600" : "text-gray-400"}`} />
+        )}
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="truncate text-sm font-medium text-gray-800">
+          {charge.description ?? "Pago recibido"}
+        </p>
+        <p className="truncate text-xs text-gray-400">
+          {charge.customerEmail ?? "—"} · {fmtDate(charge.created)}
+        </p>
+      </div>
+      <div className="flex shrink-0 flex-col items-end gap-1">
+        <p className={`text-sm font-bold ${charge.refunded ? "text-orange-500 line-through" : charge.status === "succeeded" ? "text-green-600" : "text-gray-400"}`}>
+          {fmtAmount(charge.amount, charge.currency)}
+        </p>
+        <StatusBadge status={charge.refunded ? "refunded" : charge.status} />
+      </div>
+      {charge.receiptUrl && !charge.refunded && (
+        <a href={charge.receiptUrl} target="_blank" rel="noopener noreferrer"
+          className="ml-1 shrink-0 rounded-lg p-1.5 text-gray-400 hover:bg-gray-100 hover:text-gray-600">
+          <ArrowDownTrayIcon className="h-4 w-4" />
+        </a>
+      )}
+    </div>
+  );
+}
+
+// ─── Payout row ───────────────────────────────────────────────────────────────
+function PayoutRow({ payout }: { payout: { id: string; amount: number; currency: string; status: string; arrivalDate: number; created: number; description: string | null } }) {
+  return (
+    <div className="flex items-center gap-3 px-4 py-3">
+      <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${payout.status === "paid" ? "bg-blue-100" : "bg-yellow-100"}`}>
+        <ArrowDownTrayIcon className={`h-5 w-5 ${payout.status === "paid" ? "text-blue-600" : "text-yellow-600"}`} />
+      </div>
+      <div className="flex-1 min-w-0">
+        <p className="truncate text-sm font-medium text-gray-800">
+          {payout.description ?? "Transferencia a cuenta bancaria"}
+        </p>
+        <p className="truncate text-xs text-gray-400">
+          Llegada estimada: {fmtDate(payout.arrivalDate)}
+        </p>
+      </div>
+      <div className="flex shrink-0 flex-col items-end gap-1">
+        <p className="text-sm font-bold text-blue-600">{fmtAmount(payout.amount, payout.currency)}</p>
+        <StatusBadge status={payout.status} />
+      </div>
+    </div>
+  );
+}
+
+// ─── Main component ───────────────────────────────────────────────────────────
 export default function BuddyExpertStats() {
   const { user, loading: authLoading } = useAuth();
   const [activeTab, setActiveTab] = useState<Tab>("overview");
+  const [paymentView, setPaymentView] = useState<"charges" | "payouts" | "commissions">("charges");
 
   const { data: stats, isLoading: statsLoading } = trpc.buddyExperts.getMyStats.useQuery(undefined, { enabled: !!user });
   const { data: followersData, isLoading: followersLoading } = trpc.buddyExperts.getMyFollowers.useQuery(
@@ -33,6 +147,10 @@ export default function BuddyExpertStats() {
   const { data: connectStatus, refetch: refetchConnect } = trpc.stripeConnect.getConnectStatus.useQuery(
     { creatorType: "buddyexpert" },
     { enabled: !!user }
+  );
+  const { data: paymentHistory, isLoading: paymentsLoading, refetch: refetchPayments } = trpc.stripeConnect.getPaymentHistory.useQuery(
+    { creatorType: "buddyexpert", limit: 20 },
+    { enabled: !!user && activeTab === "payments" && !!connectStatus?.onboardingCompleted }
   );
   const { data: myProfile } = trpc.buddyExperts.getMyProfile.useQuery(undefined, { enabled: !!user });
   const { data: myPlans } = trpc.buddyExperts.getMyPlans.useQuery(undefined, { enabled: !!user && activeTab === "content" });
@@ -51,7 +169,7 @@ export default function BuddyExpertStats() {
     return (
       <AppLayout>
         <div className="flex min-h-[60vh] items-center justify-center">
-          <div className="h-10 w-10 animate-spin rounded-full border-4 border-[#FF6B35] border-t-transparent" />
+          <div className="h-10 w-10 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
         </div>
       </AppLayout>
     );
@@ -77,10 +195,10 @@ export default function BuddyExpertStats() {
   }
 
   const tabs: { id: Tab; label: string; icon: React.ElementType }[] = [
-    { id: "overview", label: "Resumen", icon: ChartBarIcon },
-    { id: "followers", label: "Seguidores", icon: UsersIcon },
-    { id: "content", label: "Contenido", icon: BookOpenIcon },
-    { id: "payments", label: "Pagos", icon: CurrencyEuroIcon },
+    { id: "overview",   label: "Resumen",    icon: ChartBarIcon },
+    { id: "followers",  label: "Seguidores", icon: UsersIcon },
+    { id: "content",    label: "Contenido",  icon: BookOpenIcon },
+    { id: "payments",   label: "Pagos",      icon: CurrencyEuroIcon },
   ];
 
   const CATEGORY_LABELS: Record<string, string> = {
@@ -138,9 +256,9 @@ export default function BuddyExpertStats() {
         {activeTab === "overview" && (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
-              <StatCard icon={UsersIcon} label="Seguidores" value={stats?.followersCount ?? 0} color="blue" />
-              <StatCard icon={BookOpenIcon} label="Planes" value={stats?.plansCount ?? 0} color="purple" />
-              <StatCard icon={CalendarDaysIcon} label="Menús" value={stats?.menusCount ?? 0} color="teal" />
+              <StatCard icon={UsersIcon}        label="Seguidores" value={stats?.followersCount ?? 0} color="blue" />
+              <StatCard icon={BookOpenIcon}     label="Planes"     value={stats?.plansCount ?? 0}     color="purple" />
+              <StatCard icon={CalendarDaysIcon} label="Menús"      value={stats?.menusCount ?? 0}     color="teal" />
               <StatCard icon={CurrencyEuroIcon} label="Ganado (€)" value={(stats?.totalPaid ?? 0).toFixed(2)} color="green" />
             </div>
             <StripeConnectCard connectStatus={connectStatus}
@@ -214,7 +332,6 @@ export default function BuddyExpertStats() {
         {/* CONTENT */}
         {activeTab === "content" && (
           <div className="space-y-4">
-            {/* Plans */}
             <div>
               <div className="mb-3 flex items-center justify-between">
                 <h3 className="font-semibold text-gray-800">Planes nutricionales ({myPlans?.length ?? 0})</h3>
@@ -252,7 +369,6 @@ export default function BuddyExpertStats() {
                 </div>
               )}
             </div>
-            {/* Menus */}
             <div>
               <div className="mb-3 flex items-center justify-between">
                 <h3 className="font-semibold text-gray-800">Menús semanales ({myMenus?.length ?? 0})</h3>
@@ -279,46 +395,169 @@ export default function BuddyExpertStats() {
         {/* PAYMENTS */}
         {activeTab === "payments" && (
           <div className="space-y-4">
+            {/* Stripe Connect status card */}
             <StripeConnectCard connectStatus={connectStatus}
               onOnboard={() => getOnboardingLink.mutate({ creatorType: "buddyexpert" })}
               onDashboard={() => getStripeDashboard.mutate({ creatorType: "buddyexpert" })}
               onboardingLoading={getOnboardingLink.isPending} dashboardLoading={getStripeDashboard.isPending}
               onRefresh={() => refetchConnect()} accentColor="blue" />
-            <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-              <h3 className="mb-3 font-semibold text-gray-800">Resumen de ganancias</h3>
-              <div className="grid grid-cols-2 gap-3">
-                <div className="rounded-xl bg-green-50 p-3 text-center">
-                  <p className="text-2xl font-bold text-green-600">{(stats?.totalPaid ?? 0).toFixed(2)} €</p>
-                  <p className="text-xs text-green-500">Total cobrado</p>
-                </div>
-                <div className="rounded-xl bg-yellow-50 p-3 text-center">
-                  <p className="text-2xl font-bold text-yellow-600">{(stats?.totalPending ?? 0).toFixed(2)} €</p>
-                  <p className="text-xs text-yellow-500">Pendiente de cobro</p>
-                </div>
-              </div>
-              <p className="mt-3 text-xs text-gray-400">
-                BuddyMarket aplica una comisión del {((stats?.expert?.commissionRate ?? 0.2) * 100).toFixed(0)}% sobre cada venta. Los pagos se transfieren a tu cuenta de Stripe Connect.
-              </p>
-            </div>
-            {(stats?.recentEarnings?.length ?? 0) > 0 && (
-              <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-                <h3 className="mb-3 font-semibold text-gray-800">Historial de comisiones</h3>
-                <div className="space-y-2">
-                  {stats!.recentEarnings.map((e) => (
-                    <div key={e.id} className="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2">
-                      <div>
-                        <p className="text-sm font-medium text-gray-700">{new Date(e.createdAt).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" })}</p>
-                        <p className="text-xs text-gray-400">Importe bruto: {e.amount.toFixed(2)} € · Comisión {(e.commissionRate * 100).toFixed(0)}%</p>
-                      </div>
-                      <div className="text-right">
-                        <p className={`text-sm font-bold ${e.status === "paid" ? "text-green-600" : e.status === "pending" ? "text-yellow-600" : "text-red-500"}`}>+{e.commissionAmount.toFixed(2)} €</p>
-                        <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${e.status === "paid" ? "bg-green-100 text-green-700" : e.status === "pending" ? "bg-yellow-100 text-yellow-700" : "bg-red-100 text-red-600"}`}>
-                          {e.status === "paid" ? "Pagado" : e.status === "pending" ? "Pendiente" : "Fallido"}
-                        </span>
-                      </div>
+
+            {/* If Stripe is connected and onboarding complete, show full payment history */}
+            {connectStatus?.onboardingCompleted ? (
+              <>
+                {/* Balance cards */}
+                {paymentsLoading ? (
+                  <div className="flex justify-center py-8">
+                    <div className="h-8 w-8 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" />
+                  </div>
+                ) : paymentHistory?.balance ? (
+                  <BalanceCard available={paymentHistory.balance.available} pending={paymentHistory.balance.pending} />
+                ) : (
+                  <div className="grid grid-cols-2 gap-3">
+                    <div className="rounded-2xl bg-gradient-to-br from-green-500 to-emerald-600 p-4 text-white shadow-md">
+                      <div className="mb-1 flex items-center gap-1.5 text-green-100"><BanknotesIcon className="h-4 w-4" /><span className="text-xs font-medium">Disponible</span></div>
+                      <p className="text-2xl font-bold">0,00 €</p>
+                      <p className="mt-0.5 text-xs text-green-100">Listo para transferir</p>
                     </div>
-                  ))}
+                    <div className="rounded-2xl bg-gradient-to-br from-yellow-400 to-amber-500 p-4 text-white shadow-md">
+                      <div className="mb-1 flex items-center gap-1.5 text-yellow-100"><ClockIcon className="h-4 w-4" /><span className="text-xs font-medium">Pendiente</span></div>
+                      <p className="text-2xl font-bold">0,00 €</p>
+                      <p className="mt-0.5 text-xs text-yellow-100">En proceso</p>
+                    </div>
+                  </div>
+                )}
+
+                {/* Commission info */}
+                <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3">
+                  <p className="text-xs text-blue-700">
+                    <strong>Comisión de plataforma:</strong> BuddyMarket aplica un {((stats?.expert?.commissionRate ?? 0.2) * 100).toFixed(0)}% sobre cada venta.
+                    El importe neto se transfiere automáticamente a tu cuenta de Stripe Connect.
+                  </p>
                 </div>
+
+                {/* Sub-tabs: Cobros / Transferencias / Comisiones internas */}
+                <div className="rounded-2xl border border-gray-100 bg-white shadow-sm">
+                  <div className="flex border-b border-gray-100">
+                    {[
+                      { id: "charges" as const,     label: "Cobros",         icon: BanknotesIcon },
+                      { id: "payouts" as const,      label: "Transferencias", icon: ArrowDownTrayIcon },
+                      { id: "commissions" as const,  label: "Comisiones",     icon: ReceiptRefundIcon },
+                    ].map((v) => (
+                      <button key={v.id} onClick={() => setPaymentView(v.id)}
+                        className={`flex flex-1 items-center justify-center gap-1.5 px-3 py-3 text-xs font-medium transition-colors ${
+                          paymentView === v.id ? "border-b-2 border-blue-600 text-blue-600" : "text-gray-500 hover:text-gray-700"
+                        }`}>
+                        <v.icon className="h-3.5 w-3.5 shrink-0" />
+                        <span className="hidden sm:inline">{v.label}</span>
+                      </button>
+                    ))}
+                    <button onClick={() => { refetchPayments(); toast.success("Datos actualizados"); }}
+                      className="px-3 py-3 text-gray-400 hover:text-gray-600">
+                      <ArrowPathIcon className="h-4 w-4" />
+                    </button>
+                  </div>
+
+                  {/* Cobros (charges from Stripe) */}
+                  {paymentView === "charges" && (
+                    paymentsLoading ? (
+                      <div className="flex justify-center py-8"><div className="h-7 w-7 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" /></div>
+                    ) : (paymentHistory?.charges?.length ?? 0) === 0 ? (
+                      <div className="py-12 text-center text-gray-400">
+                        <BanknotesIcon className="mx-auto mb-3 h-10 w-10 opacity-30" />
+                        <p className="text-sm">Aún no has recibido pagos.</p>
+                        <p className="mt-1 text-xs">Los pagos de tus planes aparecerán aquí.</p>
+                      </div>
+                    ) : (
+                      <ul className="divide-y divide-gray-50">
+                        {paymentHistory!.charges.map((charge) => (
+                          <li key={charge.id}><ChargeRow charge={charge} /></li>
+                        ))}
+                      </ul>
+                    )
+                  )}
+
+                  {/* Transferencias (payouts to bank) */}
+                  {paymentView === "payouts" && (
+                    paymentsLoading ? (
+                      <div className="flex justify-center py-8"><div className="h-7 w-7 animate-spin rounded-full border-4 border-blue-500 border-t-transparent" /></div>
+                    ) : (paymentHistory?.payouts?.length ?? 0) === 0 ? (
+                      <div className="py-12 text-center text-gray-400">
+                        <ArrowDownTrayIcon className="mx-auto mb-3 h-10 w-10 opacity-30" />
+                        <p className="text-sm">Aún no hay transferencias a tu cuenta bancaria.</p>
+                        <p className="mt-1 text-xs">Las transferencias aparecen cuando Stripe envía fondos a tu banco.</p>
+                      </div>
+                    ) : (
+                      <ul className="divide-y divide-gray-50">
+                        {paymentHistory!.payouts.map((payout) => (
+                          <li key={payout.id}><PayoutRow payout={payout} /></li>
+                        ))}
+                      </ul>
+                    )
+                  )}
+
+                  {/* Comisiones internas (from creatorEarnings table) */}
+                  {paymentView === "commissions" && (
+                    (stats?.recentEarnings?.length ?? 0) === 0 ? (
+                      <div className="py-12 text-center text-gray-400">
+                        <ReceiptRefundIcon className="mx-auto mb-3 h-10 w-10 opacity-30" />
+                        <p className="text-sm">No hay comisiones registradas aún.</p>
+                      </div>
+                    ) : (
+                      <ul className="divide-y divide-gray-50">
+                        {stats!.recentEarnings.map((e) => (
+                          <li key={e.id} className="flex items-center gap-3 px-4 py-3">
+                            <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${e.status === "paid" ? "bg-green-100" : e.status === "pending" ? "bg-yellow-100" : "bg-red-100"}`}>
+                              <ReceiptRefundIcon className={`h-5 w-5 ${e.status === "paid" ? "text-green-600" : e.status === "pending" ? "text-yellow-600" : "text-red-500"}`} />
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <p className="truncate text-sm font-medium text-gray-800">Comisión de venta</p>
+                              <p className="text-xs text-gray-400">
+                                {new Date(e.createdAt).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" })}
+                                {" · "}Bruto: {e.amount.toFixed(2)} € · Tasa: {(e.commissionRate * 100).toFixed(0)}%
+                              </p>
+                            </div>
+                            <div className="flex shrink-0 flex-col items-end gap-1">
+                              <p className={`text-sm font-bold ${e.status === "paid" ? "text-green-600" : e.status === "pending" ? "text-yellow-600" : "text-red-500"}`}>
+                                +{e.commissionAmount.toFixed(2)} €
+                              </p>
+                              <StatusBadge status={e.status} />
+                            </div>
+                          </li>
+                        ))}
+                      </ul>
+                    )
+                  )}
+                </div>
+
+                {/* Link to full Stripe dashboard */}
+                <div className="flex justify-center">
+                  <button
+                    onClick={() => getStripeDashboard.mutate({ creatorType: "buddyexpert" })}
+                    disabled={getStripeDashboard.isPending}
+                    className="flex items-center gap-2 rounded-2xl border border-blue-200 bg-white px-5 py-2.5 text-sm font-semibold text-blue-600 shadow-sm hover:bg-blue-50 disabled:opacity-60"
+                  >
+                    <ArrowTopRightOnSquareIcon className="h-4 w-4" />
+                    {getStripeDashboard.isPending ? "Abriendo..." : "Ver panel completo en Stripe"}
+                  </button>
+                </div>
+              </>
+            ) : (
+              /* Stripe not yet connected — show summary from internal DB */
+              <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+                <h3 className="mb-3 font-semibold text-gray-800">Resumen de ganancias</h3>
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="rounded-xl bg-green-50 p-3 text-center">
+                    <p className="text-2xl font-bold text-green-600">{(stats?.totalPaid ?? 0).toFixed(2)} €</p>
+                    <p className="text-xs text-green-500">Total cobrado</p>
+                  </div>
+                  <div className="rounded-xl bg-yellow-50 p-3 text-center">
+                    <p className="text-2xl font-bold text-yellow-600">{(stats?.totalPending ?? 0).toFixed(2)} €</p>
+                    <p className="text-xs text-yellow-500">Pendiente de cobro</p>
+                  </div>
+                </div>
+                <p className="mt-3 text-xs text-gray-400">
+                  Conecta tu cuenta de Stripe para ver el historial completo de pagos y transferencias.
+                </p>
               </div>
             )}
           </div>
@@ -328,10 +567,15 @@ export default function BuddyExpertStats() {
   );
 }
 
+// ─── Sub-components ───────────────────────────────────────────────────────────
 function StatCard({ icon: Icon, label, value, color }: { icon: React.ElementType; label: string; value: string | number; color: "blue" | "purple" | "teal" | "green" | "orange" | "yellow" }) {
   const colors = {
-    blue: "bg-blue-50 text-blue-600", purple: "bg-purple-50 text-purple-600", teal: "bg-teal-50 text-teal-600",
-    green: "bg-green-50 text-green-600", orange: "bg-orange-50 text-[#FF6B35]", yellow: "bg-yellow-50 text-yellow-600",
+    blue:   "bg-blue-50 text-blue-600",
+    purple: "bg-purple-50 text-purple-600",
+    teal:   "bg-teal-50 text-teal-600",
+    green:  "bg-green-50 text-green-600",
+    orange: "bg-orange-50 text-[#FF6B35]",
+    yellow: "bg-yellow-50 text-yellow-600",
   };
   return (
     <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
@@ -348,9 +592,7 @@ function StripeConnectCard({ connectStatus, onOnboard, onDashboard, onboardingLo
   onboardingLoading: boolean; dashboardLoading: boolean; onRefresh: () => void;
   accentColor?: "orange" | "blue";
 }) {
-  const btnClass = accentColor === "blue"
-    ? "bg-blue-600 hover:bg-blue-700"
-    : "bg-[#FF6B35] hover:bg-orange-600";
+  const btnClass = accentColor === "blue" ? "bg-blue-600 hover:bg-blue-700" : "bg-[#FF6B35] hover:bg-orange-600";
   return (
     <div className={`rounded-2xl border p-4 shadow-sm ${connectStatus?.onboardingCompleted ? "border-green-200 bg-green-50" : connectStatus?.connected ? "border-yellow-200 bg-yellow-50" : accentColor === "blue" ? "border-blue-200 bg-blue-50" : "border-orange-200 bg-orange-50"}`}>
       <div className="flex items-start gap-3">

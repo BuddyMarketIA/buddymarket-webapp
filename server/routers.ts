@@ -4008,6 +4008,75 @@ Genera 3 recetas que aprovechen estos ingredientes. Para cada receta incluye: no
           return { connected: !!maker.stripeAccountId, onboardingCompleted: maker.stripeOnboardingCompleted, stripeAccountId: maker.stripeAccountId };
         }
       }),
+    getPaymentHistory: protectedProcedure
+      .input(z.object({
+        creatorType: z.enum(["buddyexpert", "buddymaker"]),
+        limit: z.number().int().max(50).default(20),
+      }))
+      .query(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return { balance: null, charges: [], payouts: [], totalReceived: 0, totalPending: 0 };
+        const { buddyExperts: beTable, buddyMakers: bmTable } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        let stripeAccountId: string | null = null;
+        if (input.creatorType === "buddyexpert") {
+          const [expert] = await drizzleDb.select({ stripeAccountId: beTable.stripeAccountId, stripeOnboardingCompleted: beTable.stripeOnboardingCompleted }).from(beTable).where(eq(beTable.userId, ctx.user.id)).limit(1);
+          if (!expert?.stripeAccountId || !expert.stripeOnboardingCompleted) return { balance: null, charges: [], payouts: [], totalReceived: 0, totalPending: 0, notConnected: true };
+          stripeAccountId = expert.stripeAccountId;
+        } else {
+          const [maker] = await drizzleDb.select({ stripeAccountId: bmTable.stripeAccountId, stripeOnboardingCompleted: bmTable.stripeOnboardingCompleted }).from(bmTable).where(eq(bmTable.userId, ctx.user.id)).limit(1);
+          if (!maker?.stripeAccountId || !maker.stripeOnboardingCompleted) return { balance: null, charges: [], payouts: [], totalReceived: 0, totalPending: 0, notConnected: true };
+          stripeAccountId = maker.stripeAccountId;
+        }
+        try {
+          const Stripe = (await import("stripe")).default;
+          const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+          // Fetch balance, charges and payouts in parallel from the connected account
+          const [balance, chargesList, payoutsList] = await Promise.all([
+            stripe.balance.retrieve({ stripeAccount: stripeAccountId }),
+            stripe.charges.list({ limit: input.limit, expand: ["data.payment_intent"] }, { stripeAccount: stripeAccountId }),
+            stripe.payouts.list({ limit: 10 }, { stripeAccount: stripeAccountId }),
+          ]);
+          const totalReceived = balance.available.reduce((acc, b) => acc + b.amount, 0);
+          const totalPending = balance.pending.reduce((acc, b) => acc + b.amount, 0);
+          const charges = chargesList.data.map((c) => ({
+            id: c.id,
+            amount: c.amount,
+            currency: c.currency,
+            status: c.status,
+            description: c.description,
+            created: c.created,
+            receiptUrl: c.receipt_url,
+            refunded: c.refunded,
+            customerEmail: c.billing_details?.email ?? null,
+          }));
+          const payouts = payoutsList.data.map((p) => ({
+            id: p.id,
+            amount: p.amount,
+            currency: p.currency,
+            status: p.status,
+            arrivalDate: p.arrival_date,
+            created: p.created,
+            description: p.description,
+          }));
+          return {
+            balance: {
+              available: balance.available.map((b) => ({ amount: b.amount, currency: b.currency })),
+              pending: balance.pending.map((b) => ({ amount: b.amount, currency: b.currency })),
+            },
+            charges,
+            payouts,
+            totalReceived,
+            totalPending,
+            notConnected: false,
+          };
+        } catch (err: any) {
+          // If Stripe account not fully set up, return empty
+          console.error("[Stripe] getPaymentHistory error:", err?.message);
+          return { balance: null, charges: [], payouts: [], totalReceived: 0, totalPending: 0, notConnected: false, error: err?.message };
+        }
+      }),
+
     getStripeDashboardLink: protectedProcedure
       .input(z.object({ creatorType: z.enum(["buddyexpert", "buddymaker"]) }))
       .mutation(async ({ ctx, input }) => {
