@@ -26,6 +26,10 @@ export default function RecipeDetail() {
   const [activeTab, setActiveTab] = useState<Tab>("ingredients");
   const [servings, setServings] = useState<number | null>(null);
   const [loggedMeal, setLoggedMeal] = useState(false);
+  const [showLogDialog, setShowLogDialog] = useState(false);
+  const [logDate, setLogDate] = useState(() => new Date().toISOString().slice(0, 10));
+  const [logDayPartId, setLogDayPartId] = useState("1");
+  const { data: dayParts } = trpc.catalogs.dayParts.useQuery();
 
   const { data: recipe, isLoading } = trpc.recipes.getById.useQuery(
     { id: Number(id) },
@@ -55,6 +59,7 @@ export default function RecipeDetail() {
   const logMeal = trpc.mealLogs.add.useMutation({
     onSuccess: () => {
       setLoggedMeal(true);
+      setShowLogDialog(false);
       toast.success("¡Plato registrado en tu diario!");
     },
   });
@@ -393,11 +398,7 @@ export default function RecipeDetail() {
                 return;
               }
               if (loggedMeal) return;
-              logMeal.mutate({
-                recipeId: recipe.id,
-                servings: currentServings,
-                logDate: new Date().toISOString().slice(0, 10),
-              });
+              setShowLogDialog(true);
             }}
             className={`mt-5 w-full rounded-2xl border-2 py-3 text-sm font-bold flex items-center justify-center gap-2 transition-all ${
               loggedMeal
@@ -502,6 +503,96 @@ export default function RecipeDetail() {
               </div>
             </div>
           )}
+        </div>
+      )}
+
+      {/* Log meal dialog */}
+      {showLogDialog && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 p-4">
+          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl mb-4">
+            <div className="mb-5 flex items-center justify-between">
+              <h3 className="text-lg font-bold text-gray-900">¿Cuándo lo comiste?</h3>
+              <button
+                onClick={() => setShowLogDialog(false)}
+                className="rounded-full p-1 hover:bg-gray-100"
+              >
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+              </button>
+            </div>
+            <div className="space-y-4">
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-gray-500">📅 Día</label>
+                <input
+                  type="date"
+                  value={logDate}
+                  onChange={(e) => setLogDate(e.target.value)}
+                  max={new Date().toISOString().slice(0, 10)}
+                  className="w-full rounded-2xl border-2 border-gray-100 bg-gray-50 px-4 py-3 text-sm font-semibold text-gray-800 outline-none focus:border-[#F97316]"
+                />
+              </div>
+              <div>
+                <label className="mb-1.5 block text-xs font-semibold text-gray-500">🕐 Momento del día</label>
+                <div className="grid grid-cols-2 gap-2">
+                  {(dayParts ?? [
+                    { id: 1, nameEs: "Desayuno" },
+                    { id: 2, nameEs: "Media mañana" },
+                    { id: 3, nameEs: "Almuerzo" },
+                    { id: 4, nameEs: "Merienda" },
+                    { id: 5, nameEs: "Cena" },
+                  ]).map((dp) => {
+                    const emojis: Record<string, string> = {
+                      "Desayuno": "🌅",
+                      "Media mañana": "☕",
+                      "Almuerzo": "🍽️",
+                      "Comida": "🍽️",
+                      "Merienda": "🍎",
+                      "Cena": "🌙",
+                    };
+                    const isSelected = String(dp.id) === logDayPartId;
+                    return (
+                      <button
+                        key={dp.id}
+                        onClick={() => setLogDayPartId(String(dp.id))}
+                        className={`flex items-center gap-2 rounded-2xl border-2 px-3 py-2.5 text-sm font-semibold transition-all ${
+                          isSelected
+                            ? "border-[#F97316] bg-orange-50 text-[#F97316]"
+                            : "border-gray-100 bg-gray-50 text-gray-600 hover:border-orange-200"
+                        }`}
+                      >
+                        <span>{emojis[dp.nameEs] ?? "🍴"}</span>
+                        <span>{dp.nameEs}</span>
+                      </button>
+                    );
+                  })}
+                </div>
+              </div>
+              <p className="text-xs text-gray-400 text-center">
+                Se registrarán <strong>{currentServings} ración{currentServings !== 1 ? "es" : ""}</strong> de <strong>{recipe.name}</strong>
+              </p>
+            </div>
+            <div className="mt-5 flex gap-3">
+              <button
+                onClick={() => setShowLogDialog(false)}
+                className="flex-1 rounded-2xl border-2 border-gray-200 py-3 text-sm font-semibold text-gray-600"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => {
+                  logMeal.mutate({
+                    recipeId: recipe.id,
+                    servings: currentServings,
+                    logDate: logDate,
+                    dayPartId: Number(logDayPartId),
+                  });
+                }}
+                disabled={logMeal.isPending}
+                className="flex-1 rounded-2xl bg-[#F97316] py-3 text-sm font-bold text-white shadow-sm hover:bg-orange-600 disabled:opacity-60"
+              >
+                {logMeal.isPending ? "Guardando..." : "Guardar en el diario"}
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
