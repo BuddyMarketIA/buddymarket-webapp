@@ -12,6 +12,7 @@ import {
   PlayIcon,
 } from "@heroicons/react/24/outline";
 import { CheckCircleIcon as CheckCircleSolid } from "@heroicons/react/24/solid";
+import MercadonaCartExport from "@/components/MercadonaCartExport";
 
 const SUPERMARKETS = [
   { id: "general", name: "General", emoji: "🛒" },
@@ -22,6 +23,15 @@ const SUPERMARKETS = [
   { id: "dia", name: "Día", emoji: "🟢" },
   { id: "el_corte_ingles", name: "El Corte Inglés", emoji: "🟤" },
 ] as const;
+
+const SUPERMARKET_SEARCH_URLS: Record<string, (q: string) => string> = {
+  general: (q) => `https://www.google.com/search?q=${encodeURIComponent(q + " comprar supermercado")}`,
+  lidl: (q) => `https://www.lidl.es/es/buscar.htm?query=${encodeURIComponent(q)}`,
+  carrefour: (q) => `https://www.carrefour.es/supermercado/buscar?query=${encodeURIComponent(q)}`,
+  alcampo: (q) => `https://www.alcampo.es/compra-online/buscar/?q=${encodeURIComponent(q)}`,
+  dia: (q) => `https://www.dia.es/buscar?text=${encodeURIComponent(q)}`,
+  el_corte_ingles: (q) => `https://www.elcorteingles.es/supermercado/buscar/?s=${encodeURIComponent(q)}`,
+};
 
 const DAY_NAMES = ["Lun", "Mar", "Mié", "Jue", "Vie", "Sáb", "Dom"];
 const MEAL_ORDER = ["desayuno", "almuerzo", "comida", "merienda", "cena", "snack"];
@@ -44,23 +54,155 @@ function groupByDay(dayParts: any[]) {
   return groups;
 }
 
+// ── Inline Mercadona-style list view ─────────────────────────────────────────
+interface GeneratedListItem {
+  id: number;
+  name: string;
+  qty?: string;
+  unit?: string;
+  isPurchased: boolean;
+}
+
+interface MercadonaListModalProps {
+  items: GeneratedListItem[];
+  supermarket: string;
+  onClose: () => void;
+}
+
+function MercadonaListModal({ items, supermarket, onClose }: MercadonaListModalProps) {
+  return (
+    <div
+      className="modal-overlay"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up max-h-[90vh] overflow-y-auto">
+        <MercadonaCartExport
+          items={items}
+          onBack={onClose}
+          onClose={onClose}
+        />
+      </div>
+    </div>
+  );
+}
+
+// ── Non-Mercadona generic list modal ─────────────────────────────────────────
+interface GenericListModalProps {
+  items: GeneratedListItem[];
+  supermarket: string;
+  supermarketName: string;
+  onClose: () => void;
+}
+
+function GenericListModal({ items, supermarket, supermarketName, onClose }: GenericListModalProps) {
+  const searchFn = SUPERMARKET_SEARCH_URLS[supermarket];
+  const pending = items.filter((i) => !i.isPurchased);
+
+  return (
+    <div
+      className="modal-overlay"
+      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+    >
+      <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up max-h-[90vh] overflow-y-auto">
+        <div className="mb-5 flex items-center justify-between">
+          <h3 className="text-lg font-bold text-gray-900">
+            {SUPERMARKETS.find((s) => s.id === supermarket)?.emoji} {supermarketName}
+          </h3>
+          <button onClick={onClose} className="text-gray-400 text-xl font-bold">×</button>
+        </div>
+        <p className="mb-4 text-sm text-gray-500">
+          {pending.length} productos de tu menú. Pulsa en cada uno para buscarlo en {supermarketName}.
+        </p>
+        {searchFn && (
+          <button
+            onClick={() => {
+              pending.forEach((item, idx) => {
+                setTimeout(() => window.open(searchFn(item.name), "_blank"), idx * 400);
+              });
+              toast.success(`Abriendo ${pending.length} búsquedas en ${supermarketName}`);
+            }}
+            className="mb-4 w-full flex items-center justify-center gap-2 rounded-2xl py-3 text-sm font-bold text-white"
+            style={{ background: "#FF6B35" }}
+          >
+            <ShoppingCartIcon className="h-4 w-4" />
+            Buscar todos los productos ({pending.length})
+          </button>
+        )}
+        <div className="space-y-2">
+          {pending.map((item) => (
+            <a
+              key={item.id}
+              href={searchFn ? searchFn(item.name) : "#"}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="flex items-center gap-3 rounded-2xl border border-gray-100 p-3 hover:border-orange-300 hover:bg-orange-50 transition-all"
+            >
+              <ShoppingCartIcon className="h-4 w-4 shrink-0 text-[#FF6B35]" />
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium text-gray-900 truncate">{item.name}</p>
+                {(item.qty || item.unit) && (
+                  <p className="text-xs text-gray-400">{item.qty} {item.unit}</p>
+                )}
+              </div>
+              <svg className="h-4 w-4 shrink-0 text-gray-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10 6H6a2 2 0 00-2 2v10a2 2 0 002 2h10a2 2 0 002-2v-4M14 4h6m0 0v6m0-6L10 14" />
+              </svg>
+            </a>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ── Main component ────────────────────────────────────────────────────────────
 export default function ActiveMenu() {
   const [, navigate] = useLocation();
-  const [selectedSupermarket, setSelectedSupermarket] = useState<string>("general");
-  const [showSupermarketPicker, setShowSupermarketPicker] = useState(false);
+  const [selectedSupermarket, setSelectedSupermarket] = useState<string>("mercadona");
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
+  const [showMercadonaModal, setShowMercadonaModal] = useState(false);
+  const [showGenericModal, setShowGenericModal] = useState(false);
+  const [generatedItems, setGeneratedItems] = useState<GeneratedListItem[]>([]);
+  const [isGenerating, setIsGenerating] = useState(false);
   const utils = trpc.useUtils();
 
   const { data: activeMenu, isLoading } = trpc.menus.getActive.useQuery();
 
   const generateShoppingList = trpc.shoppingLists.generateFromMenu.useMutation({
-    onSuccess: (data) => {
-      toast.success("¡Lista de la compra generada!");
+    onSuccess: async (data) => {
+      setIsGenerating(false);
+      // Fetch the generated list items to show in the modal
       utils.shoppingLists.list.invalidate();
-      navigate("/app/shopping-lists");
+      // Get the list items via getById
+      if (data.shoppingListId) {
+        try {
+          const listData = await utils.shoppingLists.getById.fetch({ id: data.shoppingListId });
+          const items: GeneratedListItem[] = (listData as any)?.items?.map((i: any) => ({
+            id: i.id,
+            name: i.ingredient?.name ?? i.customName ?? i.name ?? "Producto",
+            qty: i.amount ? String(Math.round(i.amount * 10) / 10) : "",
+            unit: i.measure?.name ?? i.unit ?? "",
+            isPurchased: i.isPurchased ?? false,
+          })) ?? [];
+          setGeneratedItems(items);
+          if (selectedSupermarket === "mercadona") {
+            setShowMercadonaModal(true);
+          } else {
+            setShowGenericModal(true);
+          }
+        } catch {
+          // Fallback: navigate to shopping lists
+          toast.success("¡Lista generada! Redirigiendo...");
+          navigate("/app/shopping-lists");
+        }
+      }
     },
-    onError: (err) => toast.error("Error al generar la lista: " + err.message),
+    onError: (err) => {
+      setIsGenerating(false);
+      toast.error("Error al generar la lista: " + err.message);
+    },
   });
+
   const confirmDayPart = trpc.menus.confirmDayPart.useMutation({
     onSuccess: (data, vars) => {
       if (vars.undo) {
@@ -108,7 +250,6 @@ export default function ActiveMenu() {
   const totalDays = Object.keys(dayGroups).length;
   const allDayNumbers = Object.keys(dayGroups).map(Number).sort((a, b) => a - b);
 
-  // Calculate week dates from startDate
   const startDate = activeMenu.startDate ? new Date(activeMenu.startDate) : new Date();
 
   function getDayDate(dayNumber: number) {
@@ -130,9 +271,20 @@ export default function ActiveMenu() {
     return (ai === -1 ? 99 : ai) - (bi === -1 ? 99 : bi);
   });
 
-  const totalRecipes = (activeMenu.dayParts ?? []).reduce((sum: number, dp: any) => sum + (dp.recipes?.length ?? 0), 0);
   const completedDps = (activeMenu.dayParts ?? []).filter((dp: any) => dp.completed).length;
   const progressPct = activeMenu.dayParts?.length ? Math.round((completedDps / activeMenu.dayParts.length) * 100) : 0;
+
+  const handleGenerateList = () => {
+    setIsGenerating(true);
+    generateShoppingList.mutate({
+      menuId: activeMenu.id,
+      persons: activeMenu.persons ?? 1,
+      supermarket: selectedSupermarket as any,
+      name: `Lista - ${activeMenu.name}`,
+    });
+  };
+
+  const selectedSupermarketInfo = SUPERMARKETS.find((s) => s.id === selectedSupermarket);
 
   return (
     <div className="vively-page pb-24">
@@ -264,9 +416,7 @@ export default function ActiveMenu() {
                       {r.recipe?.imageUrl ? (
                         <img src={r.recipe.imageUrl} alt={r.recipe.nameEs} className="h-10 w-10 rounded-xl object-cover flex-shrink-0" />
                       ) : (
-                        <div className="h-10 w-10 rounded-xl bg-orange-50 flex items-center justify-center flex-shrink-0">
-                          <span className="text-lg">🍽️</span>
-                        </div>
+                        <div className="h-10 w-10 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0 text-lg">🍽️</div>
                       )}
                       <div className="flex-1 min-w-0">
                         <p className="text-sm font-semibold text-gray-800 truncate">{r.recipe?.nameEs ?? "Receta"}</p>
@@ -297,60 +447,74 @@ export default function ActiveMenu() {
         )}
       </div>
 
-      {/* Shopping list CTA */}
-      <div className="vively-card p-5 mb-4" style={{ background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)" }}>
-        <div className="flex items-start gap-4">
-          <div className="h-12 w-12 rounded-2xl bg-white/10 flex items-center justify-center flex-shrink-0">
-            <ShoppingCartIcon className="h-6 w-6 text-white" />
-          </div>
-          <div className="flex-1 min-w-0">
-            <h3 className="text-base font-bold text-white mb-1">Lista de la compra</h3>
-            <p className="text-xs text-white/60 mb-3">
-              Genera la lista completa de ingredientes para toda la semana, organizada por categorías.
-            </p>
-            {/* Supermarket selector */}
-            <div className="flex gap-2 overflow-x-auto pb-1 mb-3 scrollbar-hide">
-              {SUPERMARKETS.map((s) => (
-                <button
-                  key={s.id}
-                  onClick={() => setSelectedSupermarket(s.id)}
-                  className="flex-shrink-0 flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-semibold transition-all"
-                  style={{
-                    background: selectedSupermarket === s.id ? "#FF6B35" : "rgba(255,255,255,0.1)",
-                    color: selectedSupermarket === s.id ? "white" : "rgba(255,255,255,0.6)",
-                  }}
-                >
-                  <span>{s.emoji}</span>
-                  <span>{s.name}</span>
-                </button>
-              ))}
+      {/* Shopping list CTA — new design */}
+      <div className="rounded-3xl overflow-hidden mb-4 shadow-lg">
+        {/* Header */}
+        <div className="p-5" style={{ background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)" }}>
+          <div className="flex items-center gap-3 mb-1">
+            <div className="h-10 w-10 rounded-2xl bg-white/10 flex items-center justify-center flex-shrink-0">
+              <ShoppingCartIcon className="h-5 w-5 text-white" />
             </div>
-            <button
-              onClick={() => {
-                generateShoppingList.mutate({
-                  menuId: activeMenu.id,
-                  persons: activeMenu.persons ?? 1,
-                  supermarket: selectedSupermarket as any,
-                  name: `Lista - ${activeMenu.name}`,
-                });
-              }}
-              disabled={generateShoppingList.isPending}
-              className="w-full py-3 rounded-2xl font-bold text-sm transition-all"
-              style={{ background: "#FF6B35", color: "white" }}
-            >
-              {generateShoppingList.isPending ? (
-                <span className="flex items-center justify-center gap-2">
-                  <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                  Generando lista...
-                </span>
-              ) : (
-                <span className="flex items-center justify-center gap-2">
-                  <ShoppingCartIcon className="h-4 w-4" />
-                  Generar lista de la compra
-                </span>
-              )}
-            </button>
+            <div>
+              <h3 className="text-base font-bold text-white">Lista de la compra</h3>
+              <p className="text-xs text-white/50">Genera los ingredientes de toda la semana</p>
+            </div>
           </div>
+        </div>
+
+        {/* Supermarket selector */}
+        <div className="bg-white px-4 pt-4 pb-2">
+          <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Elige tu supermercado</p>
+          <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
+            {SUPERMARKETS.map((s) => (
+              <button
+                key={s.id}
+                onClick={() => setSelectedSupermarket(s.id)}
+                className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all border-2"
+                style={{
+                  background: selectedSupermarket === s.id ? "#FF6B35" : "white",
+                  color: selectedSupermarket === s.id ? "white" : "#6b7280",
+                  borderColor: selectedSupermarket === s.id ? "#FF6B35" : "#f3f4f6",
+                }}
+              >
+                <span>{s.emoji}</span>
+                <span>{s.name}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Generate button */}
+        <div className="bg-white px-4 pb-4">
+          {/* Mercadona badge */}
+          {selectedSupermarket === "mercadona" && (
+            <div className="mb-3 flex items-center gap-2 rounded-2xl bg-green-50 border border-green-100 px-3 py-2">
+              <span className="text-green-600 text-sm">🟢</span>
+              <p className="text-xs text-green-700 font-semibold">
+                Integración directa con Mercadona — verás productos reales con foto y precio
+              </p>
+            </div>
+          )}
+          <button
+            onClick={handleGenerateList}
+            disabled={isGenerating || generateShoppingList.isPending}
+            className="w-full py-3.5 rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2"
+            style={{ background: "linear-gradient(135deg, #FF6B35, #f59e0b)", color: "white", boxShadow: "0 4px 16px rgba(255,107,53,0.35)" }}
+          >
+            {isGenerating || generateShoppingList.isPending ? (
+              <>
+                <span className="h-4 w-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                Generando lista...
+              </>
+            ) : (
+              <>
+                <ShoppingCartIcon className="h-4 w-4" />
+                {selectedSupermarket === "mercadona"
+                  ? `Generar lista para Mercadona`
+                  : `Generar lista${selectedSupermarketInfo ? ` para ${selectedSupermarketInfo.name}` : ""}`}
+              </>
+            )}
+          </button>
         </div>
       </div>
 
@@ -361,6 +525,25 @@ export default function ActiveMenu() {
       >
         Cambiar menú activo
       </button>
+
+      {/* Mercadona modal */}
+      {showMercadonaModal && generatedItems.length > 0 && (
+        <MercadonaListModal
+          items={generatedItems}
+          supermarket={selectedSupermarket}
+          onClose={() => setShowMercadonaModal(false)}
+        />
+      )}
+
+      {/* Generic supermarket modal */}
+      {showGenericModal && generatedItems.length > 0 && (
+        <GenericListModal
+          items={generatedItems}
+          supermarket={selectedSupermarket}
+          supermarketName={selectedSupermarketInfo?.name ?? selectedSupermarket}
+          onClose={() => setShowGenericModal(false)}
+        />
+      )}
     </div>
   );
 }

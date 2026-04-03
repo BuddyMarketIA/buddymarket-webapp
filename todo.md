@@ -1019,3 +1019,4 @@
 - [ ] Procedimientos tRPC: saveAsTemplate, listTemplates, createFromTemplate, deleteTemplate
 - [ ] Botón 'Guardar como plantilla' en cabecera de ShoppingListDetail
 - [ ] Sección 'Plantillas' en ShoppingLists para crear nueva lista desde plantilla guardada
+- [ ] Lista de la compra desde menú en curso: mostrar vista Mercadona completa (foto, nombre, precio, controles cantidad, total, botón enviar al carrito)
