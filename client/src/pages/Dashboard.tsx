@@ -106,6 +106,8 @@ export default function Dashboard() {
   const inventoryList = trpc.inventory.list.useQuery();
   const recentRecipes = trpc.recipes.list.useQuery(useMemo(() => ({ limit: 3, isPublic: true }), []));
   const _menusList = trpc.menus.list.useQuery();
+  const activeMenuData = trpc.menus.getActive.useQuery();
+  const activeMenu = activeMenuData.data;
 
   const consumed = dailySummary.data?.calories ?? 0;
   // goalCalories: use profile's dailyCalorieGoal if set, else manual override, else default 2000
@@ -394,19 +396,43 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* Weekly Menu Banner (mockup style) */}
-      <Link href="/app/menus">
+      {/* Weekly Menu Banner - shows active menu if exists */}
+      <Link href={activeMenu ? "/app/active-menu" : "/app/menu-library"}>
         <div style={{ background: "linear-gradient(135deg, #F97316 0%, #EA580C 100%)", borderRadius: "22px", padding: "18px 20px", marginBottom: "16px", display: "flex", alignItems: "center", gap: "16px", boxShadow: "0 8px 24px rgba(249,115,22,0.35)", cursor: "pointer", position: "relative", overflow: "hidden" }}>
           <div style={{ position: "absolute", top: "-10px", right: "-10px", width: "120px", height: "120px", borderRadius: "50%", background: "rgba(255,255,255,0.08)" }} />
           <div style={{ flex: 1, position: "relative" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
-              <span style={{ fontSize: "20px" }}>🍽️</span>
-              <p style={{ margin: 0, fontSize: "17px", fontWeight: 900, color: "white", letterSpacing: "-0.02em" }}>Menú semanal personalizado</p>
-            </div>
-            <p style={{ margin: "0 0 10px", fontSize: "14px", color: "rgba(255,255,255,0.85)" }}>Basado en tus objetivos</p>
+            {activeMenu ? (
+              <>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "2px" }}>
+                  <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: "#4ade80", boxShadow: "0 0 6px #4ade80" }} />
+                  <span style={{ fontSize: "11px", fontWeight: 700, color: "rgba(255,255,255,0.9)", textTransform: "uppercase", letterSpacing: "0.05em" }}>Menú en curso</span>
+                </div>
+                <p style={{ margin: "0 0 4px", fontSize: "17px", fontWeight: 900, color: "white", letterSpacing: "-0.02em" }}>{activeMenu.name}</p>
+                {(() => {
+                  const total = activeMenu.dayParts?.length ?? 0;
+                  const done = activeMenu.dayParts?.filter((dp: any) => dp.completed).length ?? 0;
+                  return total > 0 ? (
+                    <p style={{ margin: "0 0 10px", fontSize: "13px", color: "rgba(255,255,255,0.85)" }}>
+                      {done}/{total} comidas confirmadas esta semana
+                    </p>
+                  ) : (
+                    <p style={{ margin: "0 0 10px", fontSize: "13px", color: "rgba(255,255,255,0.85)" }}>
+                      Toca para ver y confirmar tus comidas
+                    </p>
+                  );
+                })()}
+              </>
+            ) : (
+              <>
+                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+                  <span style={{ fontSize: "20px" }}>🍽️</span>
+                  <p style={{ margin: 0, fontSize: "17px", fontWeight: 900, color: "white", letterSpacing: "-0.02em" }}>Menú semanal personalizado</p>
+                </div>
+                <p style={{ margin: "0 0 10px", fontSize: "14px", color: "rgba(255,255,255,0.85)" }}>Basado en tus objetivos</p>
+              </>
+            )}
             <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(255,255,255,0.2)", borderRadius: "12px", padding: "6px 14px", backdropFilter: "blur(4px)" }}>
-              <span style={{ fontSize: "14px", fontWeight: 700, color: "white" }}>Ver menú</span>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+              <span style={{ fontSize: "14px", fontWeight: 700, color: "white" }}>{activeMenu ? "Ver menú →" : "Elegir menú →"}</span>
             </div>
           </div>
           <div style={{ width: "80px", height: "80px", borderRadius: "16px", overflow: "hidden", flexShrink: 0 }}>

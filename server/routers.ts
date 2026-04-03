@@ -1165,6 +1165,67 @@ export const appRouter = router({
         }
         return { success: true, logsCreated };
       }),
+    // Confirm a single day part (meal slot) - logs its recipes to the diary and marks it completed
+    confirmDayPart: protectedProcedure
+      .input(z.object({
+        dayPartId: z.number(), // menuOrganizerDayPart.id
+        logDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/), // YYYY-MM-DD
+        undo: z.boolean().default(false), // if true, unmark as completed and remove logs
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { menuOrganizerDayParts, menuOrganizerDayPartRecipes, mealLogs, recipes, menuOrganizers } = await import("../drizzle/schema.js");
+        const { eq, and } = await import("drizzle-orm");
+        // Verify ownership via menu
+        const [dp] = await drizzleDb.select().from(menuOrganizerDayParts).where(eq(menuOrganizerDayParts.id, input.dayPartId)).limit(1);
+        if (!dp) throw new TRPCError({ code: "NOT_FOUND" });
+        const [menu] = await drizzleDb.select().from(menuOrganizers).where(eq(menuOrganizers.id, dp.menuOrganizerId)).limit(1);
+        if (!menu) throw new TRPCError({ code: "NOT_FOUND" });
+        requireOwnership(menu.userId, ctx.user.id, ctx.user.role);
+        if (input.undo) {
+          // Unmark as completed
+          await drizzleDb.update(menuOrganizerDayParts).set({ completed: false }).where(eq(menuOrganizerDayParts.id, input.dayPartId));
+          // Remove meal logs added from this day part on this date (those with notes containing menu name)
+          // Remove meal logs for this day part on this date
+          const { sql: sqlTag } = await import("drizzle-orm");
+          await drizzleDb.delete(mealLogs).where(
+            and(
+              eq(mealLogs.userId, ctx.user.id),
+              sqlTag`${mealLogs.logDate} = ${input.logDate}`,
+              eq(mealLogs.dayPartId, dp.dayPartId ?? 0)
+            )
+          );
+          return { success: true, logsCreated: 0 };
+        }
+        // Get recipes for this day part
+        const dpRecipes = await drizzleDb
+          .select({ dpRecipe: menuOrganizerDayPartRecipes, recipe: recipes })
+          .from(menuOrganizerDayPartRecipes)
+          .leftJoin(recipes, eq(menuOrganizerDayPartRecipes.recipeId, recipes.id))
+          .where(eq(menuOrganizerDayPartRecipes.menuOrganizerDayPartId, input.dayPartId));
+        let logsCreated = 0;
+        for (const { dpRecipe, recipe } of dpRecipes) {
+          if (!recipe) continue;
+          await drizzleDb.insert(mealLogs).values({
+            userId: ctx.user.id,
+            recipeId: recipe.id,
+            customMealName: recipe.name,
+            dayPartId: dp.dayPartId,
+            logDate: input.logDate,
+            servings: dpRecipe.servings || 1,
+            calories: recipe.caloriesPerServing ? Math.round(recipe.caloriesPerServing * (dpRecipe.servings || 1)) : null,
+            proteins: recipe.proteinsPerServing ? recipe.proteinsPerServing * (dpRecipe.servings || 1) : null,
+            carbohydrates: recipe.carbsPerServing ? recipe.carbsPerServing * (dpRecipe.servings || 1) : null,
+            fats: recipe.fatsPerServing ? recipe.fatsPerServing * (dpRecipe.servings || 1) : null,
+            notes: `Del menú: ${menu.name}`,
+          } as any);
+          logsCreated++;
+        }
+        // Mark day part as completed
+        await drizzleDb.update(menuOrganizerDayParts).set({ completed: true }).where(eq(menuOrganizerDayParts.id, input.dayPartId));
+        return { success: true, logsCreated };
+      }),
   }),
   // ---------------------------------------------------------------------------
   // SHOPPING LISTS

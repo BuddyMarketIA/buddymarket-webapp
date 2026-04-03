@@ -61,6 +61,18 @@ export default function ActiveMenu() {
     },
     onError: (err) => toast.error("Error al generar la lista: " + err.message),
   });
+  const confirmDayPart = trpc.menus.confirmDayPart.useMutation({
+    onSuccess: (data, vars) => {
+      if (vars.undo) {
+        toast.success("Comida desmarcada del diario");
+      } else {
+        toast.success(data.logsCreated > 0 ? `✅ ${data.logsCreated} receta(s) añadidas al diario` : "✅ Comida confirmada");
+      }
+      utils.menus.getActive.invalidate();
+      utils.mealLogs.dailySummary.invalidate();
+    },
+    onError: (err) => toast.error("Error: " + err.message),
+  });
 
   if (isLoading) {
     return (
@@ -226,7 +238,24 @@ export default function ActiveMenu() {
                     {dp.dayPartInfo?.nameEs ?? dp.dayPartInfo?.apiParam ?? "Comida"}
                   </span>
                 </div>
-                {dp.completed && <CheckCircleSolid className="h-5 w-5 text-green-500" />}
+                <button
+                  onClick={() => {
+                    const logDate = getDayDate(activeDayNum).toISOString().split("T")[0];
+                    confirmDayPart.mutate({ dayPartId: dp.id, logDate, undo: dp.completed });
+                  }}
+                  disabled={confirmDayPart.isPending}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl text-xs font-bold transition-all"
+                  style={{
+                    background: dp.completed ? "#dcfce7" : "#FF6B35",
+                    color: dp.completed ? "#16a34a" : "white",
+                  }}
+                >
+                  {dp.completed ? (
+                    <><CheckCircleSolid className="h-3.5 w-3.5" />Confirmado</>
+                  ) : (
+                    <><PlayIcon className="h-3.5 w-3.5" />Confirmar</>
+                  )}
+                </button>
               </div>
               {dp.recipes?.length > 0 ? (
                 <div className="space-y-2">
