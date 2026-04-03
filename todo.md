@@ -1028,3 +1028,39 @@
 - [x] Crear componente LidlCartExport.tsx con vista estilo Lidl (azul/amarillo)
 - [x] Integrar LidlCartExport en ActiveMenu.tsx (menú en curso)
 - [x] Integrar LidlCartExport en ShoppingLists.tsx (supermercados)
+
+## Corrección de errores detectados en auditoría (2026-04-03)
+
+### Errores Críticos
+- [ ] Error 1: Notificaciones - endpoint unreadCount falla constantemente (bucle de reintentos)
+- [ ] Error 2: Lidl aparece como "Próximamente" en /app/supermercados aunque ya está integrado
+- [ ] Error 3: Recetas del menú en curso muestran "Receta" genérico sin nombre real ni imagen
+- [ ] Error 4: Lista de la compra muestra 0/0 items aunque existen items generados
+
+### Errores Importantes
+- [ ] Error 5: Todas las recetas muestran imagen placeholder "Sin foto aún"
+- [ ] Error 6: Calorías muestran 0 kcal en tarjetas de recetas
+- [ ] Error 7: Ruta de Lidl no conectada desde página de Supermercados
+- [ ] Error 8: Días del menú en curso muestran recetas sin nombre visible
+- [ ] Error 9: Listas de la compra duplicadas del mismo menú
+- [ ] Error 10: Botón "Fotografía tu comida" sin feedback visual de carga
+
+### Mejoras UX/UI
+- [ ] Mejora 11: Actualizar badge Lidl a "Disponible" y habilitar click en supermercados
+- [ ] Mejora 12: Marcar Alcampo, Día y El Corte Inglés como "Próximamente" en menú en curso
+- [x] Mejora 13: Scroll horizontal en filtros de recetas en móvil (ya estaba implementado)
+- [x] Mejora 14: Estadísticas filtran días con 0 kcal correctamente (problema de datos, no de código)
+- [x] Mejora 15: Estado vacío con CTA ya implementado en inventario
+- [ ] Mejora 16: Historial de conversaciones en BuddyIA
+- [x] Mejora 17: Calorías 0 en carrusel: ahora muestra "—" cuando valor es 0 o null
+- [x] Mejora 18: Perfil completado: lógica correcta, muestra % real de campos rellenos
+- [x] Mejora 19: Ruta /app/diary añadida como alias de /app/meal-log
+- [x] Mejora 20: Ruta /app/supermarkets añadida como alias de /app/supermercados
+
+## Correcciones de errores (auditoría 03/04/2026)
+- [x] Lidl habilitado en página de Supermercados (antes mostraba "Próximamente")
+- [x] Nombres de recetas en Menú en Curso (nameEs→name, calories→caloriesPerServing)
+- [x] Calorías en Dashboard recomendaciones: mostrar "—" en lugar de "0 kcal"
+- [x] Lista de la compra: conteo de items ahora muestra X/Y (antes 0/0)
+- [x] Rutas alias: /app/diary → /app/meal-log, /app/supermarkets → /app/supermercados
+- [x] Notificaciones: verificado que funciona correctamente para usuarios autenticados

@@ -418,23 +418,23 @@ export default function ActiveMenu() {
                   {dp.recipes.map((r: any) => (
                     <div key={r.id} className="flex items-center gap-3 py-1">
                       {r.recipe?.imageUrl ? (
-                        <img src={r.recipe.imageUrl} alt={r.recipe.nameEs} className="h-10 w-10 rounded-xl object-cover flex-shrink-0" />
+                        <img src={r.recipe.imageUrl} alt={r.recipe.name} className="h-10 w-10 rounded-xl object-cover flex-shrink-0" />
                       ) : (
                         <div className="h-10 w-10 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0 text-lg">🍽️</div>
                       )}
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-gray-800 truncate">{r.recipe?.nameEs ?? "Receta"}</p>
+                        <p className="text-sm font-semibold text-gray-800 truncate">{r.recipe?.name ?? "Receta"}</p>
                         <div className="flex items-center gap-2 mt-0.5">
-                          {r.recipe?.prepTime && (
+                          {r.recipe?.preparationTime ? (
                             <span className="text-xs text-gray-400 flex items-center gap-0.5">
-                              <ClockIcon className="h-3 w-3" />{r.recipe.prepTime}min
+                              <ClockIcon className="h-3 w-3" />{r.recipe.preparationTime}min
                             </span>
-                          )}
-                          {r.recipe?.calories && (
+                          ) : null}
+                          {r.recipe?.caloriesPerServing ? (
                             <span className="text-xs text-gray-400 flex items-center gap-0.5">
-                              <FireIcon className="h-3 w-3" />{r.recipe.calories}kcal
+                              <FireIcon className="h-3 w-3" />{r.recipe.caloriesPerServing}kcal
                             </span>
-                          )}
+                          ) : null}
                           {r.servings && r.servings !== 1 && (
                             <span className="text-xs text-gray-400">×{r.servings}</span>
                           )}

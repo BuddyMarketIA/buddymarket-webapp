@@ -1231,7 +1231,27 @@ export const appRouter = router({
   // SHOPPING LISTS
   // ---------------------------------------------------------------------------
   shoppingLists: router({
-    list: protectedProcedure.query(({ ctx }) => db.getShoppingLists(ctx.user.id)),
+    list: protectedProcedure.query(async ({ ctx }) => {
+      const lists = await db.getShoppingLists(ctx.user.id);
+      if (!lists.length) return [];
+      // Enrich each list with item counts
+      const { shoppingListItems } = await import("../drizzle/schema.js");
+      const { eq, count, sql } = await import("drizzle-orm");
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) return lists;
+      const enriched = await Promise.all(lists.map(async (list) => {
+        const rows = await drizzleDb
+          .select({
+            total: count(),
+            purchased: sql<number>`SUM(CASE WHEN ${shoppingListItems.checked} = 1 THEN 1 ELSE 0 END)`,
+          })
+          .from(shoppingListItems)
+          .where(eq(shoppingListItems.shoppingListId, list.id));
+        const { total, purchased } = rows[0] ?? { total: 0, purchased: 0 };
+        return { ...list, itemCount: Number(total), purchasedCount: Number(purchased) };
+      }));
+      return enriched;
+    }),
 
     getById: protectedProcedure
       .input(z.object({ id: z.number() }))

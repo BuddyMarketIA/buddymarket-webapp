@@ -2,6 +2,7 @@ import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+import LidlCartExport from "@/components/LidlCartExport";
 
 type MercadProduct = {
   id: number;
@@ -29,7 +30,7 @@ type MercadonaSession = {
 const SUPERMARKETS = [
   { id: "mercadona", name: "Mercadona", color: "#00A650", bg: "#E8F5E9", available: true, desc: "La cadena de supermercados más grande de España" },
   { id: "/app/carrefour", name: "Carrefour", color: "#004A97", bg: "#E3F2FD", available: true, desc: "Más de 14.000 productos disponibles" },
-  { id: "lidl", name: "Lidl", color: "#F5A623", bg: "#FFF8E1", available: false, desc: "Próximamente disponible" },
+  { id: "lidl", name: "Lidl", color: "#0050AA", bg: "#E8F0FB", available: true, desc: "134 productos disponibles en BuddyMarket" },
   { id: "alcampo", name: "Alcampo", color: "#E53935", bg: "#FFEBEE", available: false, desc: "Próximamente disponible" },
   { id: "dia", name: "Dia", color: "#C62828", bg: "#FFEBEE", available: false, desc: "Próximamente disponible" },
   { id: "elcorteingles", name: "El Corte Inglés", color: "#1B5E20", bg: "#E8F5E9", available: false, desc: "Próximamente disponible" },
@@ -49,6 +50,7 @@ const CATEGORY_ICONS: Record<string, string> = {
 export default function SupermercadoShop() {
   const [, navigate] = useLocation();
   const [selectedSupermarket, setSelectedSupermarket] = useState<string | null>(null);
+  const [showLidlModal, setShowLidlModal] = useState(false);
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
   const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
@@ -172,6 +174,7 @@ export default function SupermercadoShop() {
   // ── Supermarket selector ──────────────────────────────────────────────────────
   if (!selectedSupermarket) {
     return (
+      <>
       <div className="vively-page pb-32">
         <div className="mb-6">
           <h1 className="text-2xl font-black text-gray-900 tracking-tight mb-1">Supermercados</h1>
@@ -184,6 +187,7 @@ export default function SupermercadoShop() {
               onClick={() => {
               if (!sm.available) { toast.info(`${sm.name} estará disponible próximamente`); return; }
               if (sm.id === "/app/carrefour") { navigate("/app/carrefour"); return; }
+              if (sm.id === "lidl") { setShowLidlModal(true); return; }
               setSelectedSupermarket(sm.id);
             }}
               className={`flex items-center gap-4 rounded-3xl p-4 text-left transition-all active:scale-[0.98] ${sm.available ? "bg-white shadow-sm border border-gray-100" : "bg-gray-50 border border-gray-100 opacity-70"}`}
@@ -210,6 +214,19 @@ export default function SupermercadoShop() {
           </p>
         </div>
       </div>
+      {/* Lidl Modal */}
+      {showLidlModal && (
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowLidlModal(false); }}>
+          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up max-h-[85vh] overflow-y-auto">
+            <LidlCartExport
+              items={[]}
+              onBack={() => setShowLidlModal(false)}
+              onClose={() => setShowLidlModal(false)}
+            />
+          </div>
+        </div>
+      )}
+      </>
     );
   }
 

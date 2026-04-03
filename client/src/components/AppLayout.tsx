@@ -8,9 +8,12 @@ import { PLAN_DISPLAY } from "@shared/plans";
 
 function NotificationBell() {
   const [, navigate] = useLocation();
+  const { isAuthenticated } = useAuth();
   const { data: unreadCount = 0 } = trpc.notifications.inApp.unreadCount.useQuery(undefined, {
-    refetchInterval: 30000,
-    staleTime: 15000,
+    refetchInterval: isAuthenticated ? 60000 : false,
+    staleTime: 30000,
+    enabled: isAuthenticated,
+    retry: false,
   });
   const count = typeof unreadCount === "number" ? unreadCount : 0;
   return (

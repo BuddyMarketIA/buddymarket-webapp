@@ -382,7 +382,7 @@ export default function Dashboard() {
                   {item.mealType === "breakfast" ? "🌅" : item.mealType === "lunch" ? "☀️" : item.mealType === "dinner" ? "🌙" : "🍎"}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#1a1a1a" }}>{item.recipe?.nameEs || item.customMealName || "Comida"}</p>
+                  <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#1a1a1a" }}>{item.recipe?.name || item.customMealName || "Comida"}</p>
                   <p style={{ margin: 0, fontSize: "14px", color: "#9ca3af" }}>{item.mealType === "breakfast" ? "Desayuno" : item.mealType === "lunch" ? "Comida" : item.mealType === "dinner" ? "Cena" : "Snack"}</p>
                 </div>
                 <Link href={`/app/meal-log`}>
@@ -621,8 +621,8 @@ export default function Dashboard() {
                 <div style={{ width: "150px", flexShrink: 0, borderRadius: "18px", overflow: "hidden", cursor: "pointer", position: "relative", boxShadow: "0 4px 16px rgba(0,0,0,0.12)" }}>
                   <div style={{ height: "110px", position: "relative", background: `linear-gradient(180deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.70) 100%), url(${recipe.imageUrl || FOOD_IMAGES[i % FOOD_IMAGES.length]}) center/cover` }}>
                     <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "8px 10px" }}>
-                      <p style={{ margin: 0, fontSize: "12px", fontWeight: 800, color: "white", lineHeight: 1.25, textShadow: "0 1px 4px rgba(0,0,0,0.7)", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{recipe.nameEs || recipe.name}</p>
-                      <p style={{ margin: "2px 0 0", fontSize: "11px", color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>🔥 {recipe.calories ?? 0} kcal</p>
+                      <p style={{ margin: 0, fontSize: "12px", fontWeight: 800, color: "white", lineHeight: 1.25, textShadow: "0 1px 4px rgba(0,0,0,0.7)", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{recipe.name}</p>
+                      <p style={{ margin: "2px 0 0", fontSize: "11px", color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>🔥 {recipe.caloriesPerServing ? `${recipe.caloriesPerServing} kcal` : "—"}</p>
                     </div>
                   </div>
                   <div style={{ background: "white", padding: "6px 10px" }}>

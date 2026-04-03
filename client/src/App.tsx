@@ -108,6 +108,7 @@ function Router() {
       <Route path="/app/shopping-lists">{() => <ProtectedRoute component={ShoppingLists} />}</Route>
       <Route path="/app/inventory">{() => <ProtectedRoute component={Inventory} />}</Route>
       <Route path="/app/meal-log">{() => <ProtectedRoute component={MealLog} />}</Route>
+      <Route path="/app/diary">{() => <Redirect to="/app/meal-log" />}</Route>
       <Route path="/app/complements">{() => <ProtectedRoute component={Complements} />}</Route>
       <Route path="/app/profile">{() => <ProtectedRoute component={Profile} />}</Route>
       <Route path="/app/admin">{() => <ProtectedRoute component={Admin} />}</Route>
@@ -117,6 +118,7 @@ function Router() {
       <Route path="/app/buddy-ia">{() => <ProtectedRoute component={BuddyIA} />}</Route>
       <Route path="/app/buddy-shop">{() => <ProtectedRoute component={BuddyShop} />}</Route>
       <Route path="/app/supermercados">{() => <ProtectedRoute component={MercadonaShop} />}</Route>
+      <Route path="/app/supermarkets">{() => <Redirect to="/app/supermercados" />}</Route>
       <Route path="/app/carrefour">{() => <ProtectedRoute component={MercadonaShop} />}</Route>
       <Route path="/app/menu-library">{() => <ProtectedRoute component={MenuLibrary} />}</Route>
       <Route path="/app/active-menu">{() => <ProtectedRoute component={ActiveMenu} />}</Route>
