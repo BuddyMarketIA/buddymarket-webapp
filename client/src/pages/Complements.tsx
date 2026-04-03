@@ -69,11 +69,11 @@ function LogDialog({
 
   const logMutation = trpc.complements.log.useMutation({
     onSuccess: () => {
-      toast({ title: "Registrado", description: `${complement.name} añadido al diario` });
+      toast.success(`${complement.name} añadido al diario`);
       utils.complements.getLogs.invalidate();
       onClose();
     },
-    onError: () => toast({ title: "Error", description: "No se pudo registrar", variant: "destructive" }),
+    onError: () => toast.error("No se pudo registrar"),
   });
 
   const scaledCalories = complement.calories ? Math.round(complement.calories * quantity) : null;
