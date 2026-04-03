@@ -241,15 +241,15 @@ export default function Metrics() {
                     key={t.id}
                     type="button"
                     onClick={() => setMetricType(t.id)}
-                    className={`flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition-all text-center ${
+                    className={`flex flex-col items-center justify-center gap-1 rounded-xl border-2 transition-all text-center ${
                       metricType === t.id
                         ? "border-primary bg-primary/10 text-primary"
                         : "border-border bg-card/40 text-muted-foreground hover:border-primary/40"
                     }`}
+                    style={{ padding: "10px 4px", minHeight: "72px", width: "100%" }}
                   >
-                    <span className="text-lg">{t.emoji}</span>
-                    <span className="text-xs font-semibold leading-tight">{t.label}</span>
-                    <span className="text-[13px] leading-tight opacity-70 hidden sm:block">{t.desc}</span>
+                    <span className="text-xl leading-none">{t.emoji}</span>
+                    <span style={{ fontSize: "11px", fontWeight: 700, lineHeight: 1.25, marginTop: "4px", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden", textAlign: "center", maxWidth: "100%" }}>{t.label}</span>
                   </button>
                 ))}
               </div>
