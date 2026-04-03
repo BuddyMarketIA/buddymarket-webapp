@@ -241,7 +241,7 @@ export default function BuddyExpertStats() {
                         )}
                         <div className="flex-1 min-w-0">
                           <p className="truncate text-sm font-semibold text-gray-800">{plan.title}</p>
-                          <p className="text-xs text-gray-400">{plan.durationWeeks} semanas · {plan.price > 0 ? `${plan.price} €` : "Gratis"}</p>
+                          <p className="text-xs text-gray-400">{plan.durationWeeks} semanas · {(plan.price ?? 0) > 0 ? `${plan.price} €` : "Gratis"}</p>
                           <span className={`mt-1 inline-block rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${plan.isPublic ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
                             {plan.isPublic ? "Público" : "Privado"}
                           </span>
@@ -267,7 +267,7 @@ export default function BuddyExpertStats() {
                   {myMenus!.slice(0, 4).map((menu) => (
                     <div key={menu.id} className="rounded-2xl border border-gray-100 bg-white p-3 shadow-sm">
                       <p className="text-sm font-semibold text-gray-800">{menu.title}</p>
-                      <p className="text-xs text-gray-400">{menu.targetCalories ? `${menu.targetCalories} kcal/día` : ""}</p>
+                      <p className="text-xs text-gray-400">{(menu as any).dailyCalories ? `${(menu as any).dailyCalories} kcal/día` : ""}</p>
                     </div>
                   ))}
                 </div>

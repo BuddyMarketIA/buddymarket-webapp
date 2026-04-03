@@ -3523,7 +3523,7 @@ Genera 3 recetas que aprovechen estos ingredientes. Para cada receta incluye: no
         if (!expert) return { followers: [], total: 0 };
         const [{ total }] = await drizzleDb.select({ total: count() }).from(efTable).where(eq(efTable.expertId, expert.id));
         const rows = await drizzleDb
-          .select({ followedAt: efTable.followedAt, user: { id: usersTable.id, name: usersTable.name, email: usersTable.email, avatarUrl: usersTable.avatarUrl } })
+          .select({ followedAt: efTable.followedAt, user: { id: usersTable.id, name: usersTable.name, email: usersTable.email, avatarUrl: usersTable.imageUrl } })
           .from(efTable)
           .leftJoin(usersTable, eq(efTable.userId, usersTable.id))
           .where(eq(efTable.expertId, expert.id))
@@ -3853,7 +3853,7 @@ Genera 3 recetas que aprovechen estos ingredientes. Para cada receta incluye: no
         if (!maker) return { followers: [], total: 0 };
         const [{ total }] = await drizzleDb.select({ total: count() }).from(mfTable).where(eq(mfTable.makerId, maker.id));
         const rows = await drizzleDb
-          .select({ followedAt: mfTable.followedAt, user: { id: usersTable.id, name: usersTable.name, email: usersTable.email, avatarUrl: usersTable.avatarUrl } })
+          .select({ followedAt: mfTable.followedAt, user: { id: usersTable.id, name: usersTable.name, email: usersTable.email, avatarUrl: usersTable.imageUrl } })
           .from(mfTable)
           .leftJoin(usersTable, eq(mfTable.userId, usersTable.id))
           .where(eq(mfTable.makerId, maker.id))
