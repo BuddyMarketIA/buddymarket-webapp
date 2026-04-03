@@ -160,8 +160,7 @@
   }
 
   html, body {
-    touch-action: pan-y;
-    overscroll-behavior: none;
+    touch-action: manipulation;
     overscroll-behavior-x: none;
     font-family: "Plus Jakarta Sans", "Bricolage Grotesque", -apple-system, BlinkMacSystemFont, "Inter", "Segoe UI", Roboto, sans-serif;
     -webkit-font-smoothing: antialiased;
@@ -177,6 +176,7 @@
     min-height: 100dvh;
     padding-top: env(safe-area-inset-top);
     position: relative;
+    -webkit-overflow-scrolling: touch;
   }
 
   #root {
