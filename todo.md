@@ -957,3 +957,10 @@
 - [x] Corregir todos los modales/popups para que queden centrados en pantalla con padding-bottom suficiente para no quedar tapados por la barra de navegación inferior (90px)
 - [x] Crear clase CSS global .modal-overlay con padding-bottom: calc(90px + 16px) y z-index: 9000
 - [x] Aplicar .modal-overlay a todos los modales: Menus (4), Inventory (3), ShoppingLists (4), MealLog (1), RecipeDetail (1), MercadonaShop (2 centrados + 1 bottom sheet con padding)
+
+## Feature: Cerrar modales al hacer clic fuera (03/04/2026)
+- [x] Añadir onClick en el overlay de todos los modales para cerrarlos al hacer clic fuera del contenido (13 modales en total)
+
+## Feature: Separar landing (buddymarketapp.com) de app (buddymarket.app) (03/04/2026)
+- [x] Actualizar todos los CTAs de la landing page para apuntar a https://buddymarket.app (4 enlaces)
+- [x] Redirigir usuarios autenticados en la landing a https://buddymarket.app/app/dashboard

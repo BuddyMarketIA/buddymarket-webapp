@@ -508,7 +508,7 @@ export default function RecipeDetail() {
 
       {/* Log meal dialog */}
       {showLogDialog && (
-        <div className="modal-overlay">
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowLogDialog(false); }}>
           <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl">
             <div className="mb-5 flex items-center justify-between">
               <h3 className="text-lg font-bold text-gray-900">¿Cuándo lo comiste?</h3>

@@ -433,7 +433,7 @@ export default function Inventory() {
 
       {/* ── Add manually modal ─────────────────────────────────────────────── */}
       {showAdd && (
-        <div className="modal-overlay">
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowAdd(false); }}>
           <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up">
             <div className="mb-4 flex items-center justify-between">
               <h3 className="text-lg font-bold text-gray-900">Añadir al inventario</h3>
@@ -531,7 +531,7 @@ export default function Inventory() {
 
       {/* ── Photo AI modal ─────────────────────────────────────────────────── */}
       {showPhotoModal && (
-        <div className="modal-overlay">
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) { setShowPhotoModal(false); setPhotoPreview(null); setPhotoFile(null); setDetectedProducts([]); } }}>
           <div className="w-full max-w-sm rounded-3xl bg-white shadow-2xl animate-slide-up overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4">

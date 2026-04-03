@@ -150,7 +150,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
 
       {/* Add item modal */}
       {showAdd && (
-        <div className="modal-overlay">
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowAdd(false); }}>
           <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up">
             <h3 className="mb-4 text-lg font-bold text-gray-900">Añadir producto</h3>
             <input
@@ -388,7 +388,7 @@ export default function ShoppingLists() {
 
       {/* New list modal */}
       {showNew && (
-        <div className="modal-overlay">
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowNew(false); }}>
           <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up">
             <h3 className="mb-4 text-lg font-bold text-gray-900">Nueva lista</h3>
             <input
@@ -415,7 +415,7 @@ export default function ShoppingLists() {
 
       {/* Generate from menu modal */}
       {showFromMenu && (
-        <div className="modal-overlay">
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowFromMenu(false); }}>
           <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up max-h-[85vh] overflow-y-auto">
             <h3 className="mb-1 text-lg font-bold text-gray-900">Lista desde menú</h3>
             <p className="mb-5 text-sm text-gray-500">Genera automáticamente todos los ingredientes de tu menú</p>

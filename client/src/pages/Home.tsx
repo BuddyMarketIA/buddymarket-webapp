@@ -1,5 +1,4 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import { getLoginUrl } from "@/const";
 import { useEffect } from "react";
 import { useLocation, Link } from "wouter";
 
@@ -51,7 +50,7 @@ export default function Home() {
   const [, navigate] = useLocation();
 
   useEffect(() => {
-    if (!loading && isAuthenticated) navigate("/app/dashboard");
+    if (!loading && isAuthenticated) window.location.href = "https://buddymarket.app/app/dashboard";
   }, [isAuthenticated, loading, navigate]);
 
   if (loading) {
@@ -80,7 +79,7 @@ export default function Home() {
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-          <a href={getLoginUrl()} style={{ padding: "10px 20px", borderRadius: "12px", background: "linear-gradient(135deg, #F97316, #FB923C)", color: "white", fontSize: "14px", fontWeight: 700, textDecoration: "none", boxShadow: "0 4px 12px rgba(249,115,22,0.30)" }}>
+          <a href="https://buddymarket.app" style={{ padding: "10px 20px", borderRadius: "12px", background: "linear-gradient(135deg, #F97316, #FB923C)", color: "white", fontSize: "14px", fontWeight: 700, textDecoration: "none", boxShadow: "0 4px 12px rgba(249,115,22,0.30)" }}>
             Entrar →
           </a>
         </div>
@@ -102,7 +101,7 @@ export default function Home() {
             BuddyMarket conecta tu planificación de menús, gestión de despensa y lista de la compra en un solo ecosistema inteligente.
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: "12px", alignItems: "center" }}>
-            <a href={getLoginUrl()} style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "16px 32px", borderRadius: "16px", background: "linear-gradient(135deg, #F97316, #FB923C)", color: "white", fontSize: "16px", fontWeight: 800, textDecoration: "none", boxShadow: "0 8px 24px rgba(249,115,22,0.35)", letterSpacing: "-0.01em" }}>
+            <a href="https://buddymarket.app" style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "16px 32px", borderRadius: "16px", background: "linear-gradient(135deg, #F97316, #FB923C)", color: "white", fontSize: "16px", fontWeight: 800, textDecoration: "none", boxShadow: "0 8px 24px rgba(249,115,22,0.35)", letterSpacing: "-0.01em" }}>
               Empezar gratis →
             </a>
             <p style={{ margin: 0, fontSize: "14px", color: "#9ca3af" }}>Sin tarjeta de crédito · Cancela cuando quieras</p>
@@ -205,7 +204,7 @@ export default function Home() {
                     </div>
                   ))}
                 </div>
-                <a href={getLoginUrl()} style={{ display: "block", textAlign: "center", padding: "13px", borderRadius: "12px", background: plan.highlight ? "white" : "#F97316", color: plan.highlight ? "#F97316" : "white", fontSize: "14px", fontWeight: 800, textDecoration: "none", boxShadow: plan.highlight ? "none" : "0 4px 12px rgba(249,115,22,0.25)" }}>
+                <a href="https://buddymarket.app" style={{ display: "block", textAlign: "center", padding: "13px", borderRadius: "12px", background: plan.highlight ? "white" : "#F97316", color: plan.highlight ? "#F97316" : "white", fontSize: "14px", fontWeight: 800, textDecoration: "none", boxShadow: plan.highlight ? "none" : "0 4px 12px rgba(249,115,22,0.25)" }}>
                   {plan.cta}
                 </a>
               </div>
@@ -224,7 +223,7 @@ export default function Home() {
           <p style={{ fontSize: "15px", color: "rgba(255,255,255,0.6)", margin: "0 0 28px", lineHeight: 1.6 }}>
             Únete a miles de personas que ya han transformado su relación con la comida y la compra.
           </p>
-          <a href={getLoginUrl()} style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "16px 32px", borderRadius: "16px", background: "linear-gradient(135deg, #F97316, #FB923C)", color: "white", fontSize: "16px", fontWeight: 800, textDecoration: "none", boxShadow: "0 8px 24px rgba(249,115,22,0.40)" }}>
+          <a href="https://buddymarket.app" style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "16px 32px", borderRadius: "16px", background: "linear-gradient(135deg, #F97316, #FB923C)", color: "white", fontSize: "16px", fontWeight: 800, textDecoration: "none", boxShadow: "0 8px 24px rgba(249,115,22,0.40)" }}>
             Empezar gratis →
           </a>
         </div>
