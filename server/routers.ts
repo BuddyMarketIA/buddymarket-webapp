@@ -3911,9 +3911,9 @@ Devuelve SOLO JSON válido con esta estructura exacta:
   // ---------------------------------------------------------------------------
   complements: router({
     list: publicProcedure
-      .input(z.object({ search: z.string().optional(), category: z.string().optional(), limit: z.number().default(60), offset: z.number().default(0) }).optional())
-      .query(async ({ input }) => {
-        return db.listComplements(input ?? {});
+      .input(z.object({ search: z.string().optional(), category: z.string().optional(), limit: z.number().default(100), offset: z.number().default(0) }).optional())
+      .query(async ({ ctx, input }) => {
+        return db.listComplements({ ...(input ?? {}), userId: ctx.user?.id });
       }),
     getById: publicProcedure
       .input(z.object({ id: z.number() }))
@@ -3961,6 +3961,12 @@ Devuelve SOLO JSON válido con esta estructura exacta:
       .input(z.object({ id: z.number() }))
       .mutation(async ({ ctx, input }) => {
         return db.deleteComplementLog(input.id, ctx.user.id);
+      }),
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.deleteUserComplement(input.id, ctx.user.id);
+        return { success: true };
       }),
   }),
 });

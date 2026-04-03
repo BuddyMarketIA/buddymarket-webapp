@@ -1784,14 +1784,23 @@ export async function getUserRecipeLikes(userId: number, recipeIds: number[]): P
 // COMPLEMENTS
 // =============================================================================
 
-export async function listComplements(opts: { search?: string; category?: string; limit?: number; offset?: number } = {}) {
+export async function listComplements(opts: { search?: string; category?: string; limit?: number; offset?: number; userId?: number } = {}) {
   const db = await getDb();
   if (!db) return [];
-  const { search, category, limit = 60, offset = 0 } = opts;
-  const conditions: any[] = [eq(complements.isPublic, true)];
-  if (search) conditions.push(like(complements.name, `%${search}%`));
+  const { search, category, limit = 100, offset = 0, userId } = opts;
+  // Show public complements OR user's own private complements
+  const visibilityCondition = userId
+    ? or(eq(complements.isPublic, true), eq(complements.userId, userId))
+    : eq(complements.isPublic, true);
+  const conditions: any[] = [visibilityCondition];
+  if (search) conditions.push(or(like(complements.name, `%${search}%`), like(complements.nameEs, `%${search}%`)));
   if (category) conditions.push(eq(complements.category, category as any));
   return db.select().from(complements).where(and(...conditions)).orderBy(complements.category, complements.name).limit(limit).offset(offset);
+}
+export async function deleteUserComplement(id: number, userId: number) {
+  const db = await getDb();
+  if (!db) return;
+  await db.delete(complements).where(and(eq(complements.id, id), eq(complements.userId, userId)));
 }
 
 export async function getComplementById(id: number) {
