@@ -1381,11 +1381,35 @@ export const appRouter = router({
           persons: z.number().min(1).max(20).default(1),
           supermarket: z.enum(["general", "mercadona", "lidl", "carrefour", "alcampo", "dia", "el_corte_ingles"]).default("general"),
           name: z.string().optional(),
+          replaceExisting: z.boolean().optional().default(false),
         })
       )
       .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { shoppingLists, shoppingListItems } = await import("../drizzle/schema.js");
+        const { eq, and } = await import("drizzle-orm");
+        // Check for existing list with same menu + supermarket to prevent duplicates
+        const existing = await drizzleDb
+          .select({ id: shoppingLists.id, name: shoppingLists.name })
+          .from(shoppingLists)
+          .where(and(
+            eq(shoppingLists.userId, ctx.user.id),
+            eq(shoppingLists.menuOrganizerId, input.menuId),
+            eq(shoppingLists.supermarket, input.supermarket as any)
+          ))
+          .limit(1);
+        if (existing.length > 0 && !input.replaceExisting) {
+          // Return signal to frontend to ask user what to do
+          return { success: false as const, existingListId: existing[0].id, existingListName: existing[0].name, requiresConfirmation: true as const, shoppingListId: existing[0].id, itemCount: 0, name: existing[0].name };
+        }
+        // If replacing, delete the old list and its items first
+        if (existing.length > 0 && input.replaceExisting) {
+          await drizzleDb.delete(shoppingListItems).where(eq(shoppingListItems.shoppingListId, existing[0].id));
+          await drizzleDb.delete(shoppingLists).where(eq(shoppingLists.id, existing[0].id));
+        }
         const result = await db.generateShoppingListFromMenu(ctx.user.id, input.menuId, input.persons, input.supermarket, input.name);
-        return result;
+        return { ...result, requiresConfirmation: false as const };
       }),
     // -------------------------------------------------------------------------
     // SHOPPING LIST TEMPLATES

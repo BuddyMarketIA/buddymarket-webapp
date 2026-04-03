@@ -166,6 +166,8 @@ export default function ActiveMenu() {
   const [showGenericModal, setShowGenericModal] = useState(false);
   const [generatedItems, setGeneratedItems] = useState<GeneratedListItem[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
+  const [showDuplicateDialog, setShowDuplicateDialog] = useState(false);
+  const [existingListInfo, setExistingListInfo] = useState<{ id: number; name: string } | null>(null);
   const utils = trpc.useUtils();
 
   const { data: activeMenu, isLoading } = trpc.menus.getActive.useQuery();
@@ -173,6 +175,12 @@ export default function ActiveMenu() {
   const generateShoppingList = trpc.shoppingLists.generateFromMenu.useMutation({
     onSuccess: async (data) => {
       setIsGenerating(false);
+      // Handle duplicate detection — backend signals requiresConfirmation
+      if ((data as any).requiresConfirmation) {
+        setExistingListInfo({ id: (data as any).existingListId, name: (data as any).existingListName });
+        setShowDuplicateDialog(true);
+        return;
+      }
       // Fetch the generated list items to show in the modal
       utils.shoppingLists.list.invalidate();
       // Get the list items via getById
@@ -278,13 +286,15 @@ export default function ActiveMenu() {
   const completedDps = (activeMenu.dayParts ?? []).filter((dp: any) => dp.completed).length;
   const progressPct = activeMenu.dayParts?.length ? Math.round((completedDps / activeMenu.dayParts.length) * 100) : 0;
 
-  const handleGenerateList = () => {
+  const handleGenerateList = (replaceExisting = false) => {
+    setShowDuplicateDialog(false);
     setIsGenerating(true);
     generateShoppingList.mutate({
       menuId: activeMenu.id,
       persons: activeMenu.persons ?? 1,
       supermarket: selectedSupermarket as any,
       name: `Lista - ${activeMenu.name}`,
+      replaceExisting,
     });
   };
 
@@ -500,7 +510,7 @@ export default function ActiveMenu() {
             </div>
           )}
           <button
-            onClick={handleGenerateList}
+            onClick={() => handleGenerateList(false)}
             disabled={isGenerating || generateShoppingList.isPending}
             className="w-full py-3.5 rounded-2xl font-bold text-sm transition-all flex items-center justify-center gap-2"
             style={{ background: "linear-gradient(135deg, #FF6B35, #f59e0b)", color: "white", boxShadow: "0 4px 16px rgba(255,107,53,0.35)" }}
@@ -563,6 +573,46 @@ export default function ActiveMenu() {
           supermarketName={selectedSupermarketInfo?.name ?? selectedSupermarket}
           onClose={() => setShowGenericModal(false)}
         />
+      )}
+
+      {/* Duplicate list confirmation dialog */}
+      {showDuplicateDialog && existingListInfo && (
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowDuplicateDialog(false); }}>
+          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up">
+            <div className="text-center mb-5">
+              <div className="text-4xl mb-3">📋</div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">Ya existe una lista</h3>
+              <p className="text-sm text-gray-500">
+                Ya tienes una lista de la compra para este menú en <strong>{selectedSupermarketInfo?.name ?? selectedSupermarket}</strong>.
+                ¿Qué quieres hacer?
+              </p>
+            </div>
+            <div className="space-y-3">
+              <button
+                onClick={() => handleGenerateList(true)}
+                className="w-full py-3 rounded-2xl font-bold text-sm text-white"
+                style={{ background: "linear-gradient(135deg, #FF6B35, #f59e0b)" }}
+              >
+                🔄 Reemplazar lista existente
+              </button>
+              <button
+                onClick={() => {
+                  setShowDuplicateDialog(false);
+                  navigate("/app/shopping-lists");
+                }}
+                className="w-full py-3 rounded-2xl font-bold text-sm bg-gray-100 text-gray-700"
+              >
+                👁 Ver lista existente
+              </button>
+              <button
+                onClick={() => setShowDuplicateDialog(false)}
+                className="w-full py-2 text-sm text-gray-400"
+              >
+                Cancelar
+              </button>
+            </div>
+          </div>
+        </div>
       )}
     </div>
   );

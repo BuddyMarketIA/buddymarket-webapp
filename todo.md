@@ -1064,3 +1064,8 @@
 - [x] Lista de la compra: conteo de items ahora muestra X/Y (antes 0/0)
 - [x] Rutas alias: /app/diary → /app/meal-log, /app/supermarkets → /app/supermercados
 - [x] Notificaciones: verificado que funciona correctamente para usuarios autenticados
+
+## Pendientes resueltos (03/04/2026)
+- [ ] Limpiar listas de la compra duplicadas en BD
+- [ ] Prevenir creación de listas duplicadas al generar desde menú
+- [ ] Asignar imágenes reales a todas las recetas del sistema
