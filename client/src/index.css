@@ -865,3 +865,170 @@
   .landing-footer__grid { grid-template-columns: 2fr 1fr 1fr 1fr; }
   .landing-special-grid { grid-template-columns: repeat(6, 1fr); }
 }
+
+/* ═══════════════════════════════════════════════════════════════════
+   DARK MODE — AppLayout adaptive styles
+   ═══════════════════════════════════════════════════════════════════ */
+.app-header {
+  background: rgba(255,248,240,0.95);
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  transition: background 0.3s, border-color 0.3s;
+}
+.dark .app-header {
+  background: rgba(20,14,10,0.97);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.app-header__title-main {
+  color: #1a1a1a;
+  transition: color 0.3s;
+}
+.dark .app-header__title-main {
+  color: #f5f0eb;
+}
+.app-header__title-sub {
+  color: #9ca3af;
+  transition: color 0.3s;
+}
+.dark .app-header__title-sub {
+  color: #6b7280;
+}
+.app-header__icon-btn {
+  background: white;
+  transition: background 0.3s;
+}
+.dark .app-header__icon-btn {
+  background: rgba(255,255,255,0.08);
+}
+.app-sidebar {
+  background: white;
+  transition: background 0.3s;
+}
+.dark .app-sidebar {
+  background: #120d09;
+}
+.app-sidebar__label {
+  color: #9ca3af;
+  transition: color 0.3s;
+}
+.dark .app-sidebar__label {
+  color: #4b5563;
+}
+.app-sidebar__item-text {
+  color: #374151;
+  transition: color 0.3s;
+}
+.dark .app-sidebar__item-text {
+  color: #d1d5db;
+}
+.app-sidebar__name {
+  color: #1a1a1a;
+  transition: color 0.3s;
+}
+.dark .app-sidebar__name {
+  color: #f5f0eb;
+}
+.app-sidebar__email {
+  color: #9ca3af;
+  transition: color 0.3s;
+}
+.dark .app-sidebar__email {
+  color: #6b7280;
+}
+.app-nav-bar {
+  background: rgba(255,255,255,0.95) !important;
+  border-top: 1px solid rgba(0,0,0,0.06);
+  transition: background 0.3s, border-color 0.3s;
+}
+.dark .app-nav-bar {
+  background: rgba(18,13,9,0.97) !important;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.app-content {
+  background: var(--background);
+  min-height: 100vh;
+  transition: background 0.3s;
+}
+
+
+/* ═══════════════════════════════════════════════════════════════════
+   DARK MODE — AppLayout adaptive styles
+   ═══════════════════════════════════════════════════════════════════ */
+.app-header {
+  background: rgba(255,248,240,0.95);
+  border-bottom: 1px solid rgba(0,0,0,0.05);
+  transition: background 0.3s, border-color 0.3s;
+}
+.dark .app-header {
+  background: rgba(20,14,10,0.97);
+  border-bottom: 1px solid rgba(255,255,255,0.06);
+}
+.app-header__title-main {
+  color: #1a1a1a;
+  transition: color 0.3s;
+}
+.dark .app-header__title-main {
+  color: #f5f0eb;
+}
+.app-header__title-sub {
+  color: #9ca3af;
+  transition: color 0.3s;
+}
+.dark .app-header__title-sub {
+  color: #6b7280;
+}
+.app-header__icon-btn {
+  background: white;
+  transition: background 0.3s;
+}
+.dark .app-header__icon-btn {
+  background: rgba(255,255,255,0.08);
+}
+.app-sidebar {
+  background: white;
+  transition: background 0.3s;
+}
+.dark .app-sidebar {
+  background: #120d09;
+}
+.app-sidebar__label {
+  color: #9ca3af;
+  transition: color 0.3s;
+}
+.dark .app-sidebar__label {
+  color: #4b5563;
+}
+.app-sidebar__item-text {
+  color: #374151;
+  transition: color 0.3s;
+}
+.dark .app-sidebar__item-text {
+  color: #d1d5db;
+}
+.app-sidebar__name {
+  color: #1a1a1a;
+  transition: color 0.3s;
+}
+.dark .app-sidebar__name {
+  color: #f5f0eb;
+}
+.app-sidebar__email {
+  color: #9ca3af;
+  transition: color 0.3s;
+}
+.dark .app-sidebar__email {
+  color: #6b7280;
+}
+.app-nav-bar {
+  background: rgba(255,255,255,0.95) !important;
+  border-top: 1px solid rgba(0,0,0,0.06);
+  transition: background 0.3s, border-color 0.3s;
+}
+.dark .app-nav-bar {
+  background: rgba(18,13,9,0.97) !important;
+  border-top: 1px solid rgba(255,255,255,0.06);
+}
+.app-content {
+  background: var(--background);
+  min-height: 100vh;
+  transition: background 0.3s;
+}

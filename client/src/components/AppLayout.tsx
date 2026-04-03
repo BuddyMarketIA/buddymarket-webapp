@@ -5,6 +5,7 @@ import { Link, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { usePlan } from "@/hooks/usePlan";
 import { PLAN_DISPLAY } from "@shared/plans";
+import { useTheme } from "@/contexts/ThemeContext";
 
 function NotificationBell() {
   const [, navigate] = useLocation();
@@ -29,6 +30,51 @@ function NotificationBell() {
         <div style={{ position: "absolute", top: "6px", right: "6px", minWidth: "16px", height: "16px", borderRadius: "8px", background: "#F97316", border: "2px solid white", display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px" }}>
           <span style={{ fontSize: "9px", fontWeight: 800, color: "white", lineHeight: 1 }}>{count > 99 ? "99+" : count}</span>
         </div>
+      )}
+    </button>
+  );
+}
+
+function DarkModeToggle() {
+  const { theme, toggleTheme, switchable } = useTheme();
+  if (!switchable || !toggleTheme) return null;
+  const isDark = theme === "dark";
+  return (
+    <button
+      onClick={toggleTheme}
+      aria-label={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+      style={{
+        width: "36px",
+        height: "36px",
+        borderRadius: "10px",
+        background: isDark ? "rgba(249,115,22,0.15)" : "rgba(0,0,0,0.06)",
+        border: "none",
+        cursor: "pointer",
+        display: "flex",
+        alignItems: "center",
+        justifyContent: "center",
+        transition: "all 0.2s",
+        flexShrink: 0,
+      }}
+    >
+      {isDark ? (
+        // Sun icon
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <circle cx="12" cy="12" r="5"/>
+          <line x1="12" y1="1" x2="12" y2="3"/>
+          <line x1="12" y1="21" x2="12" y2="23"/>
+          <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"/>
+          <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"/>
+          <line x1="1" y1="12" x2="3" y2="12"/>
+          <line x1="21" y1="12" x2="23" y2="12"/>
+          <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"/>
+          <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"/>
+        </svg>
+      ) : (
+        // Moon icon
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/>
+        </svg>
       )}
     </button>
   );
@@ -271,13 +317,12 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       )}
 
       {/* Sidebar Panel */}
-      <div style={{
+      <div className="app-sidebar" style={{
         position: "fixed",
         top: 0,
         left: sidebarOpen ? "max(0px, calc(50vw - 240px))" : "max(-320px, calc(50vw - 560px))",
         width: "300px",
         height: "100dvh",
-        background: "#FFFFFF",
         zIndex: 300,
         transition: "left 0.3s cubic-bezier(0.4,0,0.2,1)",
         display: "flex",
@@ -401,7 +446,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       )}
 
       {/* Sticky Header */}
-      <div style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(255,248,240,0.95)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", borderBottom: "1px solid rgba(0,0,0,0.05)", padding: "12px 16px", display: "flex", alignItems: "center", gap: "12px" }}>
+      <div className="app-header" style={{ position: "sticky", top: 0, zIndex: 100, backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", padding: "12px 16px", display: "flex", alignItems: "center", gap: "12px" }}>
         {showBack ? (
           <button onClick={onBack || (() => window.history.back())} style={{ width: "40px", height: "40px", borderRadius: "12px", background: "white", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", flexShrink: 0 }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
@@ -419,16 +464,15 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
             <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/favicon-192_4af8bf2b.png" alt="BuddyMarket" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           </div>
           <div style={{ minWidth: 0 }}>
-            <p style={{ margin: 0, fontSize: "14px", fontWeight: 600, color: "#9ca3af", letterSpacing: "0.02em" }}>BuddyMarket</p>
-            <p style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.02em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{pageTitle}</p>
+            <p className="app-header__title-sub" style={{ margin: 0, fontSize: "14px", fontWeight: 600, letterSpacing: "0.02em" }}>BuddyMarket</p>
+            <p className="app-header__title-main" style={{ margin: 0, fontSize: "17px", fontWeight: 800, letterSpacing: "-0.02em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{pageTitle}</p>
           </div>
         </div>
 
-        {headerRight ? (
-          <div style={{ flexShrink: 0 }}>{headerRight}</div>
-        ) : (
-          <NotificationBell />
-        )}
+        <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
+          <DarkModeToggle />
+          {headerRight ? headerRight : <NotificationBell />}
+        </div>
       </div>
 
       {/* Content */}
@@ -439,7 +483,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       {/* Bottom Navigation */}
       {shouldShowNav && (
         <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100, padding: "0 12px", paddingBottom: "max(8px, env(safe-area-inset-bottom))", display: "flex", justifyContent: "center" }}>
-          <div style={{ background: "rgba(255,255,255,0.97)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", borderRadius: "24px", padding: "8px 4px", boxShadow: "0 -2px 20px rgba(0,0,0,0.08), 0 4px 24px rgba(0,0,0,0.06)", border: "1px solid rgba(255,255,255,0.8)", display: "flex", alignItems: "center", justifyContent: "space-around", width: "100%", maxWidth: "540px" }}>
+          <div className="app-nav-bar" style={{ backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", borderRadius: "24px", padding: "8px 4px", boxShadow: "0 -2px 20px rgba(0,0,0,0.08), 0 4px 24px rgba(0,0,0,0.06)", border: "1px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "space-around", width: "100%", maxWidth: "540px" }}>
             {NAV_ITEMS.map((item) => {
               const active = matchesPath(location, item.matches);
               return (
