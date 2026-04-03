@@ -978,3 +978,18 @@
 
 ## Feature: Botón "Continuar con Google" en LoginPage (03/04/2026)
 - [x] Añadir botón "Continuar con Google" en ambas pestañas de LoginPage.tsx
+
+## Feature: Onboarding de nuevos usuarios (03/04/2026)
+- [ ] Detectar usuarios nuevos (sin perfil completado) y mostrar OnboardingModal en el dashboard
+- [ ] OnboardingModal paso 1: Bienvenida con nombre del usuario
+- [ ] OnboardingModal paso 2: Objetivo nutricional (perder peso, mantener, ganar masa)
+- [ ] OnboardingModal paso 3: Datos físicos (edad, sexo, altura, peso)
+- [ ] OnboardingModal paso 4: Preferencias alimentarias (vegetariano, sin gluten, alergias, etc.)
+- [ ] Guardar datos de onboarding en el perfil del usuario
+- [ ] Marcar onboarding como completado para no volver a mostrarlo
+
+## Bug: App móvil con zoom y overflow horizontal (03/04/2026 - segunda vez)
+- [x] Revisar y corregir meta viewport en index.html: overflow-x hidden, overflow-y scroll, max-width 100vw
+- [x] Añadir touch-action pan-y y overflow-x hidden a nivel global en index.css
+- [x] Corregir AppLayout outer wrapper: overflowX clip en lugar de hidden para no bloquear fixed children
+- [x] Añadir img/video/iframe max-width 100% en index.html para evitar overflow de medios

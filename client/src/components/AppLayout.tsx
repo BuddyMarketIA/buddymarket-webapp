@@ -235,7 +235,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
   const userEmail = user?.email || "";
 
   return (
-    <div style={{ maxWidth: "480px", margin: "0 auto", minHeight: "100dvh", background: "#FFF8F0", position: "relative", overflow: "hidden" }}>
+    <div style={{ width: "100%", maxWidth: "480px", margin: "0 auto", minHeight: "100dvh", background: "#FFF8F0", position: "relative", overflowX: "clip", overflowY: "visible" }}>
 
       {/* Sidebar Overlay */}
       {sidebarOpen && (
