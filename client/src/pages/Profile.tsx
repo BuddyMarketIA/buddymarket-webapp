@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
+import ImageCropModal from "@/components/ImageCropModal";
 import { toast } from "sonner";
 import {
   UserIcon,
@@ -301,8 +302,9 @@ export default function Profile() {
     setSelectedRestrictions(profile.dietRestrictions.map((r) => r.id));
   }, [profile]);
 
-  // Photo upload
+  // Photo upload with crop
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
   const uploadProfilePhoto = trpc.profile.uploadProfilePhoto.useMutation({
     onSuccess: () => { utils.profile.get.invalidate(); toast.success("Foto de perfil actualizada"); setPhotoPreview(null); },
     onError: () => toast.error("Error al subir la foto. Inténtalo de nuevo."),
@@ -310,16 +312,28 @@ export default function Profile() {
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 5 * 1024 * 1024) { toast.error("La foto no puede superar 5 MB"); return; }
+    // Reset input so same file can be selected again
+    e.target.value = "";
+    if (file.size > 10 * 1024 * 1024) { toast.error("La foto no puede superar 10 MB"); return; }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result as string;
+      setCropImageSrc(dataUrl); // open crop modal
+    };
+    reader.readAsDataURL(file);
+  };
+  const handleCropComplete = (blob: Blob) => {
+    setCropImageSrc(null);
     const reader = new FileReader();
     reader.onload = (ev) => {
       const dataUrl = ev.target?.result as string;
       setPhotoPreview(dataUrl);
       const base64 = dataUrl.split(",")[1];
-      uploadProfilePhoto.mutate({ imageBase64: base64, mimeType: file.type || "image/jpeg" });
+      uploadProfilePhoto.mutate({ imageBase64: base64, mimeType: "image/jpeg" });
     };
-    reader.readAsDataURL(file);
+    reader.readAsDataURL(blob);
   };
+  const handleCropCancel = () => setCropImageSrc(null);
 
   const updateBasic = trpc.profile.updateBasic.useMutation({ onSuccess: () => { utils.profile.get.invalidate(); toast.success("Datos personales guardados"); } });
   const updateProfile = trpc.profile.updateProfile.useMutation({ onSuccess: () => { utils.profile.get.invalidate(); toast.success("Perfil actualizado"); } });
@@ -447,6 +461,14 @@ export default function Profile() {
 
   return (
     <div style={{ maxWidth: "600px", margin: "0 auto", padding: "16px" }}>
+      {/* Image Crop Modal */}
+      {cropImageSrc && (
+        <ImageCropModal
+          imageSrc={cropImageSrc}
+          onCropComplete={handleCropComplete}
+          onCancel={handleCropCancel}
+        />
+      )}
       {/* Header */}
       <div style={{ ...card }}>
         <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: completionPercent < 100 ? "14px" : "0" }}>
