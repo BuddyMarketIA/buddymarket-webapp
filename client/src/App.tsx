@@ -35,6 +35,7 @@ import BuddyExpertDashboard from "./pages/BuddyExpertDashboard";
 import BuddyMakerDashboard from "./pages/BuddyMakerDashboard";
 import BuddyMakerStats from "./pages/BuddyMakerStats";
 import BuddyExpertStats from "./pages/BuddyExpertStats";
+import ReferralDashboard from "./pages/ReferralDashboard";
 import Metrics from "./pages/Metrics";
 import BuddyApplication from "./pages/BuddyApplication";
 import NutritionalStats from "./pages/NutritionalStats";
@@ -133,6 +134,7 @@ function Router() {
       <Route path="/app/buddy-maker-dashboard">{() => <ProtectedPage><BuddyMakerDashboard /></ProtectedPage>}</Route>
       <Route path="/app/buddy-maker-stats">{() => <ProtectedPage><BuddyMakerStats /></ProtectedPage>}</Route>
       <Route path="/app/buddy-expert-stats">{() => <ProtectedPage><BuddyExpertStats /></ProtectedPage>}</Route>
+      <Route path="/app/referrals">{() => <ProtectedPage><ReferralDashboard /></ProtectedPage>}</Route>
       <Route path="/app/metrics">{() => <ProtectedRoute component={Metrics} />}</Route>
       <Route path="/app/stats">{() => <ProtectedRoute component={NutritionalStats} />}</Route>
       <Route path="/app/notifications">{() => <ProtectedRoute component={Notifications} />}</Route>

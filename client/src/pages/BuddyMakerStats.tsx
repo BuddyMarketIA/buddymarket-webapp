@@ -114,6 +114,16 @@ export default function BuddyMakerStats() {
           </div>
         </div>
 
+        {/* Referral CTA */}
+        <div className="mb-4 flex items-center justify-between rounded-2xl bg-gradient-to-r from-violet-50 to-purple-50 border border-violet-200 px-4 py-3">
+          <div>
+            <p className="text-sm font-semibold text-violet-800">Programa de Referidos</p>
+            <p className="text-xs text-violet-600">Gana el 20% de cada suscripción de tus referidos</p>
+          </div>
+          <a href="/app/referrals" className="rounded-xl bg-violet-600 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-700 transition-colors whitespace-nowrap">
+            Ver mi código
+          </a>
+        </div>
         {/* Tabs */}
         <div className="mb-6 flex gap-1 overflow-x-auto rounded-2xl bg-gray-100 p-1">
           {tabs.map((tab) => (

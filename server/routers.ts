@@ -2092,14 +2092,36 @@ Genera 3 recetas que aprovechen estos ingredientes. Para cada receta incluye: no
       .input(z.object({
         plan: z.enum(["basic", "premium", "pro_max"]),
         origin: z.string(),
+        referralCode: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
+        // Resolve referral code -> Stripe promotion code
+        let stripePromoCodeId: string | undefined;
+        let referralCodeId: number | undefined;
+        if (input.referralCode) {
+          try {
+            const drizzleDb = await db.getDb();
+            if (drizzleDb) {
+              const { referralCodes } = await import("../drizzle/schema");
+              const { eq, and } = await import("drizzle-orm");
+              const [rc] = await drizzleDb.select().from(referralCodes)
+                .where(and(eq(referralCodes.code, input.referralCode.toUpperCase()), eq(referralCodes.isActive, true)))
+                .limit(1);
+              if (rc) {
+                stripePromoCodeId = rc.stripePromoCodeId ?? undefined;
+                referralCodeId = rc.id;
+              }
+            }
+          } catch (e) { console.error("[Referral] lookup error:", e); }
+        }
         const session = await createCheckoutSession({
           userId: ctx.user.id,
           userEmail: ctx.user.email,
           userName: ctx.user.name,
           plan: input.plan,
           origin: input.origin,
+          stripePromoCodeId,
+          referralCodeId,
         });
         return { url: session.url };
       }),
@@ -3140,9 +3162,24 @@ Genera 3 recetas que aprovechen estos ingredientes. Para cada receta incluye: no
         }
         await drizzleDb.insert(efTable).values({ userId: ctx.user.id, expertId: input.expertId });
         await drizzleDb.update(beTable).set({ followersCount: sql`${beTable.followersCount} + 1` }).where(eq(beTable.id, input.expertId));
+        // Notify the expert about the new follower
+        try {
+          const { users: usersTable } = await import("../drizzle/schema");
+          const [follower, expert] = await Promise.all([
+            drizzleDb.select({ name: usersTable.name, imageUrl: usersTable.imageUrl }).from(usersTable).where(eq(usersTable.id, ctx.user.id)).limit(1),
+            drizzleDb.select({ userId: beTable.userId, displayName: beTable.displayName }).from(beTable).where(eq(beTable.id, input.expertId)).limit(1),
+          ]);
+          if (expert[0]) {
+            await createInAppNotif(expert[0].userId, {
+              title: "Nuevo seguidor 🎉",
+              body: `${follower[0]?.name || "Alguien"} ha empezado a seguirte. ¡Ya tienes un nuevo fan!`,
+              type: "success",
+              link: "/app/buddy-expert-stats",
+            });
+          }
+        } catch (e) { console.error("[Notif] follow expert:", e); }
         return { following: true };
       }),
-
     getById: publicProcedure
       .input(z.object({ id: z.number() }))
       .query(async ({ input }) => {
@@ -4098,6 +4135,167 @@ Genera 3 recetas que aprovechen estos ingredientes. Para cada receta incluye: no
         const loginLink = await stripe.accounts.createLoginLink(stripeAccountId);
         return { url: loginLink.url };
       }),
+   }),
+
+  // ===========================================================================
+  // REFERRAL CODES — Códigos de referido para BuddyExperts y BuddyMakers
+  // ===========================================================================
+  referrals: router({
+    // Get or create the referral code for the current creator
+    getMyCode: protectedProcedure
+      .input(z.object({ creatorType: z.enum(["buddyexpert", "buddymaker"]) }))
+      .query(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { referralCodes } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+        const existing = await drizzleDb.select().from(referralCodes)
+          .where(and(eq(referralCodes.userId, ctx.user.id), eq(referralCodes.ownerType, input.creatorType)))
+          .limit(1);
+        return existing[0] ?? null;
+      }),
+
+    // Generate a new referral code (creates Stripe coupon automatically)
+    generate: protectedProcedure
+      .input(z.object({
+        creatorType: z.enum(["buddyexpert", "buddymaker"]),
+        discountPercent: z.number().int().min(5).max(50).default(15),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { referralCodes, users: usersTable } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+
+        // Check if code already exists
+        const existing = await drizzleDb.select().from(referralCodes)
+          .where(and(eq(referralCodes.userId, ctx.user.id), eq(referralCodes.ownerType, input.creatorType)))
+          .limit(1);
+        if (existing[0]) return existing[0];
+
+        // Build a clean code from the user name
+        const [userRow] = await drizzleDb.select({ name: usersTable.name }).from(usersTable).where(eq(usersTable.id, ctx.user.id)).limit(1);
+        const baseName = (userRow?.name ?? "BUDDY").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10);
+        const suffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+        const code = `${baseName}${suffix}`;
+
+        // Create Stripe coupon + promotion code
+        let stripeCouponId: string | null = null;
+        let stripePromoCodeId: string | null = null;
+        try {
+          const Stripe = (await import("stripe")).default;
+          const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+          const coupon = await stripe.coupons.create({
+            percent_off: input.discountPercent,
+            duration: "once",
+            name: `Referido ${code} - ${input.discountPercent}% descuento`,
+            metadata: { referral_code: code, creator_user_id: ctx.user.id.toString(), creator_type: input.creatorType },
+          });
+          stripeCouponId = coupon.id;
+          const promoCode = await stripe.promotionCodes.create({
+            coupon: coupon.id,
+            code,
+            metadata: { referral_code: code, creator_user_id: ctx.user.id.toString() },
+          } as any);
+          stripePromoCodeId = promoCode.id;
+        } catch (e: any) {
+          console.error("[Referral] Stripe coupon creation failed:", e?.message);
+          // Continue even if Stripe fails — code still works for tracking
+        }
+
+        const [inserted] = await drizzleDb.insert(referralCodes).values({
+          userId: ctx.user.id,
+          ownerType: input.creatorType,
+          code,
+          stripeCouponId,
+          stripePromoCodeId,
+          discountPercent: input.discountPercent,
+          commissionPercent: 20,
+        });
+        const [newCode] = await drizzleDb.select().from(referralCodes)
+          .where(and(eq(referralCodes.userId, ctx.user.id), eq(referralCodes.ownerType, input.creatorType)))
+          .limit(1);
+        return newCode;
+      }),
+
+    // Validate a referral code (public — called at checkout)
+    validate: publicProcedure
+      .input(z.object({ code: z.string() }))
+      .query(async ({ input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return null;
+        const { referralCodes, users: usersTable } = await import("../drizzle/schema");
+        const { eq, and } = await import("drizzle-orm");
+        const rows = await drizzleDb
+          .select({ rc: referralCodes, userName: usersTable.name, userImage: usersTable.imageUrl })
+          .from(referralCodes)
+          .leftJoin(usersTable, eq(referralCodes.userId, usersTable.id))
+          .where(and(eq(referralCodes.code, input.code.toUpperCase()), eq(referralCodes.isActive, true)))
+          .limit(1);
+        if (!rows[0]) return null;
+        return {
+          id: rows[0].rc.id,
+          code: rows[0].rc.code,
+          discountPercent: rows[0].rc.discountPercent,
+          stripeCouponId: rows[0].rc.stripeCouponId,
+          stripePromoCodeId: rows[0].rc.stripePromoCodeId,
+          ownerName: rows[0].userName,
+          ownerImage: rows[0].userImage,
+          ownerType: rows[0].rc.ownerType,
+        };
+      }),
+
+    // Get earnings history for the current creator
+    getMyEarnings: protectedProcedure
+      .input(z.object({ limit: z.number().int().min(1).max(100).default(50) }).optional())
+      .query(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return { earnings: [], totalEarned: 0, activeReferrals: 0 };
+        const { referralCodes, referralEarnings, referralSubscriptions, users: usersTable } = await import("../drizzle/schema");
+        const { eq, desc, sum, count } = await import("drizzle-orm");
+        const limit = input?.limit ?? 50;
+
+        // Get the creator's referral code
+        const [myCode] = await drizzleDb.select().from(referralCodes).where(eq(referralCodes.userId, ctx.user.id)).limit(1);
+        if (!myCode) return { earnings: [], totalEarned: 0, activeReferrals: 0 };
+
+        const [earnings, activeCount] = await Promise.all([
+          drizzleDb.select({
+            earning: referralEarnings,
+            referredName: usersTable.name,
+            referredImage: usersTable.imageUrl,
+          })
+            .from(referralEarnings)
+            .leftJoin(usersTable, eq(referralEarnings.referredUserId, usersTable.id))
+            .where(eq(referralEarnings.referralCodeId, myCode.id))
+            .orderBy(desc(referralEarnings.createdAt))
+            .limit(limit),
+          drizzleDb.select({ cnt: count() }).from(referralSubscriptions)
+            .where(eq(referralSubscriptions.referralCodeId, myCode.id)),
+        ]);
+
+        return {
+          code: myCode,
+          earnings: earnings.map((r) => ({ ...r.earning, referredName: r.referredName, referredImage: r.referredImage })),
+          totalEarned: myCode.totalEarned,
+          activeReferrals: activeCount[0]?.cnt ?? 0,
+          usageCount: myCode.usageCount,
+        };
+      }),
+
+    // Admin: list all referral codes
+    adminList: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) return [];
+      const { referralCodes, users: usersTable } = await import("../drizzle/schema");
+      const { eq, desc } = await import("drizzle-orm");
+      return drizzleDb.select({ rc: referralCodes, userName: usersTable.name })
+        .from(referralCodes)
+        .leftJoin(usersTable, eq(referralCodes.userId, usersTable.id))
+        .orderBy(desc(referralCodes.totalEarned))
+        .limit(200);
+    }),
   }),
 
   // ===========================================================================

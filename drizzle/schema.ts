@@ -1193,3 +1193,69 @@ export const inAppNotifications = mysqlTable("in_app_notifications", {
 }));
 export type InAppNotification = typeof inAppNotifications.$inferSelect;
 export type InsertInAppNotification = typeof inAppNotifications.$inferInsert;
+
+// ─── Referral Codes ───────────────────────────────────────────────────────────
+// Each BuddyExpert/BuddyMaker has one referral code.
+// When a new user subscribes using this code they get a discount (Stripe coupon).
+// The referrer earns 20% of each active subscription payment.
+export const referralCodes = mysqlTable("referral_codes", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  ownerType: mysqlEnum("ownerType", ["buddyexpert", "buddymaker"]).notNull(),
+  code: varchar("code", { length: 50 }).notNull().unique(),
+  stripeCouponId: varchar("stripeCouponId", { length: 100 }),
+  stripePromoCodeId: varchar("stripePromoCodeId", { length: 100 }),
+  discountPercent: int("discountPercent").default(15).notNull(),
+  commissionPercent: int("commissionPercent").default(20).notNull(),
+  isActive: boolean("isActive").default(true).notNull(),
+  usageCount: int("usageCount").default(0).notNull(),
+  totalEarned: int("totalEarned").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  userIdx: index("referral_user_idx").on(t.userId),
+  codeIdx: index("referral_code_idx").on(t.code),
+}));
+export type ReferralCode = typeof referralCodes.$inferSelect;
+export type InsertReferralCode = typeof referralCodes.$inferInsert;
+
+// ─── Referral Earnings ────────────────────────────────────────────────────────
+export const referralEarnings = mysqlTable("referral_earnings", {
+  id: int("id").autoincrement().primaryKey(),
+  referralCodeId: int("referralCodeId").notNull(),
+  referrerId: int("referrerId").notNull(),
+  referredUserId: int("referredUserId").notNull(),
+  stripeSubscriptionId: varchar("stripeSubscriptionId", { length: 100 }),
+  stripeInvoiceId: varchar("stripeInvoiceId", { length: 100 }),
+  stripeTransferId: varchar("stripeTransferId", { length: 100 }),
+  subscriptionAmount: int("subscriptionAmount").notNull(),
+  commissionAmount: int("commissionAmount").notNull(),
+  currency: varchar("currency", { length: 10 }).default("eur").notNull(),
+  status: mysqlEnum("status", ["pending", "transferred", "failed"]).default("pending").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  transferredAt: timestamp("transferredAt"),
+}, (t) => ({
+  referralCodeIdx: index("ref_earn_code_idx").on(t.referralCodeId),
+  referrerIdx: index("ref_earn_referrer_idx").on(t.referrerId),
+}));
+export type ReferralEarning = typeof referralEarnings.$inferSelect;
+export type InsertReferralEarning = typeof referralEarnings.$inferInsert;
+
+// ─── Referral Subscriptions ───────────────────────────────────────────────────
+export const referralSubscriptions = mysqlTable("referral_subscriptions", {
+  id: int("id").autoincrement().primaryKey(),
+  referralCodeId: int("referralCodeId").notNull(),
+  referrerId: int("referrerId").notNull(),
+  referredUserId: int("referredUserId").notNull(),
+  stripeSubscriptionId: varchar("stripeSubscriptionId", { length: 100 }).notNull(),
+  stripeCustomerId: varchar("stripeCustomerId", { length: 100 }),
+  plan: varchar("plan", { length: 50 }),
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  cancelledAt: timestamp("cancelledAt"),
+}, (t) => ({
+  codeIdx: index("ref_sub_code_idx").on(t.referralCodeId),
+  referrerIdx: index("ref_sub_referrer_idx").on(t.referrerId),
+  subIdx: index("ref_sub_stripe_idx").on(t.stripeSubscriptionId),
+}));
+export type ReferralSubscription = typeof referralSubscriptions.$inferSelect;
+export type InsertReferralSubscription = typeof referralSubscriptions.$inferInsert;
