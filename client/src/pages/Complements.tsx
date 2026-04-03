@@ -205,7 +205,7 @@ function TodaysLog() {
 
   const deleteMutation = trpc.complements.deleteLog.useMutation({
     onSuccess: () => utils.complements.getLogs.invalidate(),
-    onError: () => toast({ title: "Error", description: "No se pudo eliminar", variant: "destructive" }),
+    onError: () => toast.error("No se pudo eliminar"),
   });
 
   if (isLoading) return null;
