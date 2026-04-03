@@ -967,3 +967,11 @@
 
 ## Bug: Banner PWA aparece en la landing page (03/04/2026)
 - [x] Condicionar el banner PWA para que solo aparezca en rutas /app/* y /register, no en la landing ni en páginas públicas
+
+## Feature: appbuddymarket.com muestra login directo (03/04/2026)
+- [x] Detectar dominio appbuddymarket.com y redirigir / al login en lugar de la landing page
+
+## Feature: Página de login/registro mejorada para appbuddymarket.com (03/04/2026)
+- [x] Crear LoginPage.tsx con diseño mejorado: fondo crema, logo grande, formulario email/contraseña, botón naranja, enlace registro
+- [x] Conectar LoginPage al flujo OAuth de Manus (getLoginUrl con type=signIn y type=signUp)
+- [x] Redirigir appbuddymarket.com / a LoginPage en lugar de directamente a getLoginUrl()

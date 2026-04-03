@@ -48,6 +48,7 @@ import Cookies from "./pages/Cookies";
 import { OnboardingModal } from "./components/OnboardingModal";
 import InstallAppBanner from "./components/InstallAppBanner";
 import Complements from "./pages/Complements";
+import LoginPage from "./pages/LoginPage";
 
 // Wraps a page component with AppLayout (for pages that don't include it themselves)
 function WithLayout({ component: Component, ...props }: { component: React.ComponentType<any>; [key: string]: any }) {
@@ -80,10 +81,13 @@ function ProtectedPage({ children }: { children: React.ReactNode }) {
 }
 
 function Router() {
+  // On appbuddymarket.com, redirect root to Manus login directly
+  const isAppDomain = typeof window !== 'undefined' && window.location.hostname.includes('appbuddymarket.com');
   return (
     <Switch>
-      {/* Public landing */}
-      <Route path="/" component={LandingPage} />
+      {/* Public landing — on appbuddymarket.com show LoginPage */}
+      <Route path="/">{() => isAppDomain ? <LoginPage /> : <LandingPage />}</Route>
+      <Route path="/login" component={LoginPage} />
       <Route path="/blog" component={Blog} />
       <Route path="/terms" component={Terms} />
       <Route path="/privacy" component={Privacy} />
