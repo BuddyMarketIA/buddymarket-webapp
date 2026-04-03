@@ -2,9 +2,11 @@ import { useState, useMemo, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import BarcodeScanner from "@/components/BarcodeScanner";
+import NutritionCalendar from "@/components/NutritionCalendar";
 
 export default function MealLog() {
   const [dateOffset, setDateOffset] = useState(0);
+  const [showCalendar, setShowCalendar] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [addMode, setAddMode] = useState<"manual" | "photo" | "barcode">("manual");
   const [showBarcodeScanner, setShowBarcodeScanner] = useState(false);
@@ -46,6 +48,7 @@ export default function MealLog() {
   });
   const { data: summary } = trpc.mealLogs.dailySummary.useQuery({ date: selectedDate });
   const { data: dayParts } = trpc.catalogs.dayParts.useQuery();
+  const { data: profileData } = trpc.profile.get.useQuery();
   const utils = trpc.useUtils();
 
   const evaluateAchievements = trpc.achievements.evaluate.useMutation({
@@ -121,7 +124,8 @@ export default function MealLog() {
     : new Date(selectedDate).toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" });
 
   const totalCals = (summary as any)?.calories ?? 0;
-  const targetCals = 2000;
+  const targetCals = (profileData?.profile as any)?.dailyCalorieGoal ?? 2000;
+  const goalType = (profileData?.profile as any)?.goal ?? undefined;
   const calPct = Math.min(100, Math.round((totalCals / targetCals) * 100));
 
   // Group by day part
@@ -200,22 +204,53 @@ export default function MealLog() {
       </div>
 
       {/* Date navigation */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px", background: "white", borderRadius: "16px", padding: "12px 16px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "16px" }}>
+        {/* Calendar overview button */}
         <button
-          onClick={() => setDateOffset(o => o - 1)}
-          style={{ width: "32px", height: "32px", borderRadius: "10px", background: "#f3f4f6", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+          onClick={() => setShowCalendar(true)}
+          style={{ height: "48px", borderRadius: "14px", background: "#1a1a2e", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", padding: "0 14px", gap: "6px", flexShrink: 0, boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}
+          title="Ver resumen mensual"
         >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="4" width="18" height="18" rx="2" ry="2" /><line x1="16" y1="2" x2="16" y2="6" /><line x1="8" y1="2" x2="8" y2="6" /><line x1="3" y1="10" x2="21" y2="10" />
+          </svg>
+          <span style={{ fontSize: "11px", fontWeight: 800, color: "rgba(255,255,255,0.8)", letterSpacing: "0.05em" }}>MES</span>
         </button>
-        <span style={{ fontSize: "14px", fontWeight: 800, color: "#1a1a1a", textTransform: "capitalize" }}>{dateLabel}</span>
-        <button
-          onClick={() => setDateOffset(o => Math.min(0, o + 1))}
-          disabled={isToday}
-          style={{ width: "32px", height: "32px", borderRadius: "10px", background: isToday ? "#f9fafb" : "#f3f4f6", border: "none", cursor: isToday ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", opacity: isToday ? 0.3 : 1 }}
-        >
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg>
-        </button>
+        {/* Day navigator */}
+        <div style={{ flex: 1, display: "flex", alignItems: "center", justifyContent: "space-between", background: "white", borderRadius: "14px", padding: "10px 14px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+          <button
+            onClick={() => setDateOffset(o => o - 1)}
+            style={{ width: "30px", height: "30px", borderRadius: "10px", background: "#f3f4f6", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+          </button>
+          <span style={{ fontSize: "14px", fontWeight: 800, color: "#1a1a1a", textTransform: "capitalize" }}>{dateLabel}</span>
+          <button
+            onClick={() => setDateOffset(o => Math.min(0, o + 1))}
+            disabled={isToday}
+            style={{ width: "30px", height: "30px", borderRadius: "10px", background: isToday ? "#f9fafb" : "#f3f4f6", border: "none", cursor: isToday ? "not-allowed" : "pointer", display: "flex", alignItems: "center", justifyContent: "center", opacity: isToday ? 0.3 : 1 }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6" /></svg>
+          </button>
+        </div>
       </div>
+      {/* Nutrition Calendar Modal */}
+      {showCalendar && (
+        <NutritionCalendar
+          onClose={() => setShowCalendar(false)}
+          calorieGoal={targetCals}
+          goalType={goalType}
+          onDayPress={(date) => {
+            const today = new Date();
+            today.setHours(0, 0, 0, 0);
+            const target = new Date(date);
+            target.setHours(0, 0, 0, 0);
+            const diff = Math.round((target.getTime() - today.getTime()) / 86400000);
+            setDateOffset(diff);
+            setShowCalendar(false);
+          }}
+        />
+      )}
 
       {/* Calorie summary card */}
       <div style={{ background: "linear-gradient(135deg, #F97316 0%, #FB923C 60%, #FDBA74 100%)", borderRadius: "20px", padding: "18px", marginBottom: "16px", boxShadow: "0 6px 24px rgba(249,115,22,0.25)" }}>

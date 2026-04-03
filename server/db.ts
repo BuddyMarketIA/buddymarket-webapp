@@ -906,6 +906,38 @@ export async function getDailyNutritionSummary(userId: number, date: string) {
   );
 }
 
+export async function getMonthlyCalorieSummary(
+  userId: number,
+  year: number,
+  month: number // 1-12
+): Promise<Array<{ date: string; calories: number; hasLogs: boolean }>> {
+  const db = await getDb();
+  if (!db) return [];
+  const startDate = `${year}-${String(month).padStart(2, "0")}-01`;
+  const lastDay = new Date(year, month, 0).getDate();
+  const endDate = `${year}-${String(month).padStart(2, "0")}-${String(lastDay).padStart(2, "0")}`;
+  const rows = await db
+    .select({
+      logDate: mealLogs.logDate,
+      calories: sql<number>`SUM(COALESCE(${mealLogs.calories}, 0))`,
+      count: sql<number>`COUNT(*)`,
+    })
+    .from(mealLogs)
+    .where(
+      and(
+        eq(mealLogs.userId, userId),
+        sql`${mealLogs.logDate} >= ${startDate}`,
+        sql`${mealLogs.logDate} <= ${endDate}`
+      )
+    )
+    .groupBy(mealLogs.logDate);
+  return rows.map((r) => ({
+    date: typeof r.logDate === "string" ? r.logDate : new Date(r.logDate as Date).toISOString().split("T")[0],
+    calories: Number(r.calories) || 0,
+    hasLogs: Number(r.count) > 0,
+  }));
+}
+
 // =============================================================================
 // HEALTH METRICS
 // =============================================================================

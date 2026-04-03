@@ -1554,6 +1554,36 @@ Genera 3 recetas que aprovechen estos ingredientes. Para cada receta incluye: no
       .input(z.object({ date: z.string() }))
       .query(({ ctx, input }) => db.getDailyNutritionSummary(ctx.user.id, input.date)),
 
+    monthlySummary: protectedProcedure
+      .input(z.object({
+        year: z.number().int().min(2020).max(2100),
+        month: z.number().int().min(1).max(12),
+        calorieGoal: z.number().int().min(500).max(10000).default(2000),
+        goalType: z.enum(["perdida_peso", "ganancia_muscular", "tonificacion", "perdida_grasa", "mantenimiento", "bienestar", "vegano"]).optional(),
+      }))
+      .query(async ({ ctx, input }) => {
+        const days = await db.getMonthlyCalorieSummary(ctx.user.id, input.year, input.month);
+        const goal = input.calorieGoal;
+        const isWeightLoss = input.goalType === "perdida_peso" || input.goalType === "perdida_grasa";
+        const result = days.map((d) => {
+          const pct = goal > 0 ? d.calories / goal : 0;
+          let color: "green" | "red" | "orange" | null = null;
+          if (d.hasLogs) {
+            if (isWeightLoss) {
+              if (pct > 1.0) color = "red";
+              else if (pct >= 0.34) color = "green";
+              else color = "orange";
+            } else {
+              if (pct > 1.1) color = "red";
+              else if (pct >= 0.66) color = "green";
+              else color = "orange";
+            }
+          }
+          return { date: d.date, calories: d.calories, color };
+        });
+        return { days: result, goal, isWeightLoss };
+      }),
+
     add: protectedProcedure
       .input(
         z.object({
