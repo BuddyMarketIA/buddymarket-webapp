@@ -282,7 +282,9 @@ export default function BuddyExpertDashboard() {
   }
 
   // Gate: only approved experts can access the dashboard
-  if (!appLoading && myApplication?.status !== "approved") {
+  // Allow access if: (a) application is approved OR (b) user has buddyexpert role (assigned by admin)
+  const hasAccess = myApplication?.status === "approved" || (user as any)?.role === "buddyexpert" || (user as any)?.accountType === "buddyexpert";
+  if (!appLoading && !hasAccess) {
     return (
       <AppLayout>
         <div className="max-w-lg mx-auto px-4 py-12 text-center space-y-6">

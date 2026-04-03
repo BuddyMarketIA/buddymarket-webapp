@@ -2103,6 +2103,53 @@ Genera 3 recetas que aprovechen estos ingredientes. Para cada receta incluye: no
         });
         return { url: session.url };
       }),
+    createExpertPlanCheckout: protectedProcedure
+      .input(z.object({
+        planId: z.number(),
+        origin: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { expertPlans: epTable, buddyExperts: beTable } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        const [plan] = await drizzleDb.select().from(epTable).where(eq(epTable.id, input.planId)).limit(1);
+        if (!plan) throw new TRPCError({ code: "NOT_FOUND", message: "Plan no encontrado" });
+        if (!plan.isPublic) throw new TRPCError({ code: "FORBIDDEN", message: "Este plan no está disponible" });
+        if ((plan.price ?? 0) <= 0) throw new TRPCError({ code: "BAD_REQUEST", message: "Este plan es gratuito, usa copyPlan" });
+        const [expert] = await drizzleDb.select({ displayName: beTable.displayName }).from(beTable).where(eq(beTable.id, plan.expertId)).limit(1);
+        const Stripe = (await import("stripe")).default;
+        const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+        const session = await stripe.checkout.sessions.create({
+          mode: "payment",
+          customer_email: ctx.user.email ?? undefined,
+          allow_promotion_codes: true,
+          line_items: [{
+            price_data: {
+              currency: "eur",
+              product_data: {
+                name: plan.title,
+                description: `Plan nutricional de ${expert?.displayName ?? "BuddyExpert"} — ${plan.durationWeeks} semanas`,
+              },
+              unit_amount: Math.round((plan.price ?? 0) * 100),
+            },
+            quantity: 1,
+          }],
+          client_reference_id: ctx.user.id.toString(),
+          metadata: {
+            user_id: ctx.user.id.toString(),
+            customer_email: ctx.user.email ?? "",
+            customer_name: ctx.user.name ?? "",
+            expert_plan_id: plan.id.toString(),
+            expert_id: plan.expertId.toString(),
+            type: "expert_plan",
+          },
+          success_url: `${input.origin}/app/buddy-experts?plan_purchased=true`,
+          cancel_url: `${input.origin}/app/buddy-experts`,
+        });
+        return { url: session.url! };
+      }),
+
     getStatus: protectedProcedure.query(async ({ ctx }) => {
       // Admins always have pro_max
       if (ctx.user.role === "admin") {
@@ -3872,30 +3919,43 @@ Genera 3 recetas que aprovechen estos ingredientes. Para cada receta incluye: no
       .mutation(async ({ ctx, input }) => {
         const Stripe = (await import("stripe")).default;
         const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-        const account = await stripe.accounts.create({
-          type: "express",
-          email: ctx.user.email ?? undefined,
-          capabilities: { transfers: { requested: true } },
-          metadata: { userId: ctx.user.id.toString(), creatorType: input.creatorType },
-        });
         const drizzleDb = await db.getDb();
-        if (drizzleDb) {
-          const { buddyExperts: beTable, buddyMakers: bmTable } = await import("../drizzle/schema");
-          const { eq } = await import("drizzle-orm");
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { buddyExperts: beTable, buddyMakers: bmTable } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        // Reutilizar cuenta Stripe existente si ya existe — no crear una nueva cada vez
+        let existingAccountId: string | null = null;
+        if (input.creatorType === "buddyexpert") {
+          const [expert] = await drizzleDb.select({ stripeAccountId: beTable.stripeAccountId }).from(beTable).where(eq(beTable.userId, ctx.user.id)).limit(1);
+          existingAccountId = expert?.stripeAccountId ?? null;
+        } else {
+          const [maker] = await drizzleDb.select({ stripeAccountId: bmTable.stripeAccountId }).from(bmTable).where(eq(bmTable.userId, ctx.user.id)).limit(1);
+          existingAccountId = maker?.stripeAccountId ?? null;
+        }
+        let accountId = existingAccountId;
+        if (!accountId) {
+          // Solo crear cuenta Stripe si no existe ya una
+          const account = await stripe.accounts.create({
+            type: "express",
+            email: ctx.user.email ?? undefined,
+            capabilities: { transfers: { requested: true } },
+            metadata: { userId: ctx.user.id.toString(), creatorType: input.creatorType },
+          });
+          accountId = account.id;
           if (input.creatorType === "buddyexpert") {
-            await drizzleDb.update(beTable).set({ stripeAccountId: account.id }).where(eq(beTable.userId, ctx.user.id));
+            await drizzleDb.update(beTable).set({ stripeAccountId: accountId }).where(eq(beTable.userId, ctx.user.id));
           } else {
-            await drizzleDb.update(bmTable).set({ stripeAccountId: account.id }).where(eq(bmTable.userId, ctx.user.id));
+            await drizzleDb.update(bmTable).set({ stripeAccountId: accountId }).where(eq(bmTable.userId, ctx.user.id));
           }
         }
         const origin = (ctx.req.headers.origin as string) || "https://buddymarket-ndjzmo7p.manus.space";
         const accountLink = await stripe.accountLinks.create({
-          account: account.id,
-          refresh_url: `${origin}/creator/onboarding?refresh=true`,
-          return_url: `${origin}/creator/onboarding?success=true`,
+          account: accountId,
+          refresh_url: `${origin}/app/buddy-expert-stats?refresh=true`,
+          return_url: `${origin}/app/buddy-expert-stats?stripe=success`,
           type: "account_onboarding",
         });
-        return { url: accountLink.url, accountId: account.id };
+        return { url: accountLink.url, accountId };
       }),
 
     getEarnings: protectedProcedure.query(async ({ ctx }) => {

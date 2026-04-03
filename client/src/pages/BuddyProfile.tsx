@@ -29,7 +29,14 @@ function StatPill({ icon, value, label }: { icon: string; value: string | number
 }
 
 // ─── Plan card ────────────────────────────────────────────────────────────────
-function PlanCard({ plan, onCopy, alreadyCopied, copying }: { plan: any; onCopy: () => void; alreadyCopied?: boolean; copying?: boolean }) {
+function PlanCard({ plan, onCopy, onBuy, alreadyCopied, copying, buying }: {
+  plan: any;
+  onCopy: () => void;
+  onBuy?: () => void;
+  alreadyCopied?: boolean;
+  copying?: boolean;
+  buying?: boolean;
+}) {
   const cat: Record<string, string> = {
     perdida_peso: "🔥 Pérdida de peso",
     ganancia_muscular: "💪 Ganancia muscular",
@@ -39,6 +46,7 @@ function PlanCard({ plan, onCopy, alreadyCopied, copying }: { plan: any; onCopy:
     bienestar: "🌿 Bienestar",
     vegano: "🌱 Vegano",
   };
+  const isPaid = (plan.price ?? 0) > 0;
   return (
     <div className="bg-white rounded-2xl overflow-hidden border border-orange-100 shadow-sm hover:shadow-md transition-all">
       <div className="relative h-28 overflow-hidden">
@@ -64,31 +72,45 @@ function PlanCard({ plan, onCopy, alreadyCopied, copying }: { plan: any; onCopy:
         </div>
         <div className="flex items-center justify-between">
           <span className="text-xs text-gray-400">{cat[plan.category] ?? plan.category}</span>
-          {plan.price > 0 ? (
+          {isPaid ? (
             <span className="text-sm font-bold text-orange-600">{plan.price}€</span>
           ) : (
             <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">GRATIS</span>
           )}
         </div>
-        <button
-          onClick={alreadyCopied ? undefined : onCopy}
-          disabled={alreadyCopied || copying}
-          className={`mt-3 w-full text-xs font-bold py-2 rounded-xl transition-all shadow-sm ${
-            alreadyCopied
-              ? "bg-green-50 text-green-700 border border-green-200 cursor-default"
-              : "bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white hover:shadow-md disabled:opacity-60"
-          }`}
-        >
-          {copying ? (
-            <span className="flex items-center justify-center gap-1.5"><span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />Copiando...</span>
-          ) : alreadyCopied ? (
-            "✓ Plan ya copiado"
-          ) : plan.price > 0 ? (
-            `💳 Obtener por ${plan.price}€`
-          ) : (
-            "📋 Copiar plan"
-          )}
-        </button>
+        {isPaid ? (
+          // Paid plan: open Stripe checkout
+          <button
+            onClick={onBuy}
+            disabled={buying}
+            className="mt-3 w-full text-xs font-bold py-2 rounded-xl transition-all shadow-sm bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white hover:shadow-md disabled:opacity-60"
+          >
+            {buying ? (
+              <span className="flex items-center justify-center gap-1.5"><span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />Procesando...</span>
+            ) : (
+              `💳 Obtener por ${plan.price}€`
+            )}
+          </button>
+        ) : (
+          // Free plan: copy to planner
+          <button
+            onClick={alreadyCopied ? undefined : onCopy}
+            disabled={alreadyCopied || copying}
+            className={`mt-3 w-full text-xs font-bold py-2 rounded-xl transition-all shadow-sm ${
+              alreadyCopied
+                ? "bg-green-50 text-green-700 border border-green-200 cursor-default"
+                : "bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white hover:shadow-md disabled:opacity-60"
+            }`}
+          >
+            {copying ? (
+              <span className="flex items-center justify-center gap-1.5"><span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />Copiando...</span>
+            ) : alreadyCopied ? (
+              "✓ Plan ya copiado"
+            ) : (
+              "📋 Copiar plan"
+            )}
+          </button>
+        )}
       </div>
     </div>
   );
@@ -122,6 +144,14 @@ function ExpertProfile({ id }: { id: number }) {
   const copyPlanMut = trpc.buddyExperts.copyPlan.useMutation({
     onSuccess: () => { toast.success("Plan copiado a tu planificador ✅"); refetchCopied(); },
     onError: () => toast.error("Inicia sesión para copiar planes"),
+  });
+
+  const buyPlanMut = trpc.subscriptions.createExpertPlanCheckout.useMutation({
+    onSuccess: (data: { url: string }) => {
+      toast.success("Redirigiendo al pago...");
+      window.open(data.url, "_blank");
+    },
+    onError: (err: { message?: string }) => toast.error(err.message || "Error al procesar el pago"),
   });
 
   if (isLoading) return <ProfileSkeleton />;
@@ -162,8 +192,10 @@ function ExpertProfile({ id }: { id: number }) {
                 key={plan.id}
                 plan={plan}
                 onCopy={() => copyPlanMut.mutate({ planId: plan.id })}
+                onBuy={() => buyPlanMut.mutate({ planId: plan.id, origin: window.location.origin })}
                 alreadyCopied={copiedPlanIds.has(plan.id)}
                 copying={copyPlanMut.isPending && copyPlanMut.variables?.planId === plan.id}
+                buying={buyPlanMut.isPending && buyPlanMut.variables?.planId === plan.id}
               />
             ))}
           </div>
