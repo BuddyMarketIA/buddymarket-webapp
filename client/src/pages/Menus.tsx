@@ -48,6 +48,8 @@ export default function Menus() {
   const [generating, setGenerating] = useState(false);
   const [recipeSearch, setRecipeSearch] = useState("");
   const [selectedMenuId, setSelectedMenuId] = useState<number | null>(null);
+  const [showApplyModal, setShowApplyModal] = useState<number | null>(null); // menuId
+  const [applyStartDate, setApplyStartDate] = useState(() => new Date().toISOString().split("T")[0]);
 
   const baseDate = useMemo(() => {
     const d = new Date();
@@ -97,6 +99,15 @@ export default function Menus() {
       refetchDayItems();
       toast.success("Receta eliminada del menú");
     },
+  });
+
+  const applyToCalendar = trpc.menus.applyToCalendar.useMutation({
+    onSuccess: (data) => {
+      utils.mealLogs.list.invalidate();
+      setShowApplyModal(null);
+      toast.success(`✅ ${data.logsCreated} comidas añadidas al diario desde ${applyStartDate}`);
+    },
+    onError: () => toast.error("Error al aplicar el menú al diario."),
   });
 
   const generateAI = trpc.menus.generateWithAI.useMutation({
@@ -187,23 +198,40 @@ export default function Menus() {
       </div>
 
       {/* Active menu selector */}
-      {hasMenus && menus.length > 1 && (
-        <div className="mb-4 overflow-x-auto">
-          <div className="flex gap-2 pb-1">
-            {menus.map((menu: any) => (
+      {hasMenus && (
+        <div className="mb-4">
+          {menus.length > 1 && (
+            <div className="overflow-x-auto mb-2">
+              <div className="flex gap-2 pb-1">
+                {menus.map((menu: any) => (
+                  <button
+                    key={menu.id}
+                    onClick={() => setSelectedMenuId(menu.id)}
+                    className={`shrink-0 rounded-2xl px-3 py-1.5 text-xs font-semibold transition-all ${
+                      (selectedMenuId ?? menus[0].id) === menu.id
+                        ? "bg-[#F97316] text-white"
+                        : "bg-gray-100 text-gray-600"
+                    }`}
+                  >
+                    {menu.name}
+                  </button>
+                ))}
+              </div>
+            </div>
+          )}
+          {/* Apply to diary button for active menu */}
+          {(() => {
+            const activeMenu = menus.find((m: any) => m.id === (selectedMenuId ?? menus[0].id)) ?? menus[0];
+            return activeMenu ? (
               <button
-                key={menu.id}
-                onClick={() => setSelectedMenuId(menu.id)}
-                className={`shrink-0 rounded-2xl px-3 py-1.5 text-xs font-semibold transition-all ${
-                  (selectedMenuId ?? menus[0].id) === menu.id
-                    ? "bg-[#F97316] text-white"
-                    : "bg-gray-100 text-gray-600"
-                }`}
+                onClick={() => { setShowApplyModal(activeMenu.id); setApplyStartDate(new Date().toISOString().split("T")[0]); }}
+                className="flex items-center gap-2 rounded-2xl bg-orange-50 border border-orange-200 px-3 py-2 text-xs font-semibold text-orange-600 w-full justify-center"
               >
-                {menu.name}
+                <CalendarDaysIcon className="h-4 w-4" />
+                Aplicar "{activeMenu.name}" al diario de comidas
               </button>
-            ))}
-          </div>
+            ) : null;
+          })()}
         </div>
       )}
 
@@ -487,6 +515,50 @@ export default function Menus() {
             >
               Cancelar
             </button>
+          </div>
+        </div>
+      )}
+
+      {/* Apply to Calendar modal */}
+      {showApplyModal !== null && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
+          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl">
+            <div className="mb-4 flex items-center gap-3">
+              <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-orange-50">
+                <CalendarDaysIcon className="h-5 w-5 text-orange-500" />
+              </div>
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Aplicar al diario</h3>
+                <p className="text-xs text-gray-500">Las comidas del menú se añadirán a tu diario</p>
+              </div>
+            </div>
+            <div className="mb-4">
+              <label className="block text-xs font-semibold text-gray-700 mb-1">Fecha de inicio</label>
+              <input
+                type="date"
+                value={applyStartDate}
+                onChange={e => setApplyStartDate(e.target.value)}
+                className="vively-input"
+              />
+              <p className="text-xs text-gray-400 mt-1">
+                Las comidas se distribuirán a partir de esta fecha según los días del menú.
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowApplyModal(null)}
+                className="flex-1 rounded-2xl border border-gray-200 py-3 text-sm font-semibold text-gray-600"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => applyToCalendar.mutate({ menuId: showApplyModal, startDate: applyStartDate, overwrite: false })}
+                disabled={applyToCalendar.isPending}
+                className="flex-1 btn-vively"
+              >
+                {applyToCalendar.isPending ? "⏳ Aplicando..." : "✅ Aplicar"}
+              </button>
+            </div>
           </div>
         </div>
       )}

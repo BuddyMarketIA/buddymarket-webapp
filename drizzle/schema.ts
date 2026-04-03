@@ -498,6 +498,7 @@ export const menuOrganizerDayParts = mysqlTable("menu_organizer_day_parts", {
   dayNumber: int("dayNumber"),
   mealNumber: int("mealNumber"),
   name: varchar("name", { length: 128 }),
+  notes: text("notes"),
   completed: boolean("completed").default(false),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),

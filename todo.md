@@ -940,3 +940,15 @@
 - [ ] Vincular ingredientes de recetas con la tabla de nutrición
 - [ ] Actualizar cálculo nutricional de recetas para usar BD de ingredientes
 - [ ] UI: mostrar nutrición calculada desde BD de ingredientes en RecipeDetail
+
+## Sprint: Menú IA → Mis Menús → Diario (fase actual)
+- [x] Al generar un menú con IA, guardarlo automáticamente en Mis Menús con nombre "Menú [Objetivo] IA"
+- [x] Las recetas nuevas generadas por la IA que no existan en la BD se añaden automáticamente a la base de datos
+- [x] Desde el menú guardado, permitir asignar una fecha de inicio para el menú
+- [x] Al asignar fecha de inicio, volcar las comidas del menú al diario/calendario día a día
+- [ ] Mostrar indicador visual "Generado por IA" en el menú guardado
+
+## Bug: App móvil con zoom y movimiento horizontal (03/04/2026)
+- [x] Corregir viewport: overflow-x hidden en html y body en index.css
+- [x] Corregir index.html: overflow-x hidden y max-width: 100vw en body
+- [x] Meta viewport ya correcto: maximum-scale=1.0, user-scalable=no, viewport-fit=cover

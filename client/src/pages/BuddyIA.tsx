@@ -471,7 +471,27 @@ function MenuResultView({
   const [saved, setSaved] = useState(false);
   const [savedMenuId, setSavedMenuId] = useState<number | null>(null);
   const [creatingList, setCreatingList] = useState(false);
+  const [applyDate, setApplyDate] = useState(() => new Date().toISOString().split("T")[0]);
+  const [applying, setApplying] = useState(false);
   const utils = trpc.useUtils();
+
+  const applyToCalendarMutation = trpc.menus.applyToCalendar.useMutation({
+    onSuccess: (data) => {
+      setApplying(false);
+      utils.mealLogs.list.invalidate();
+      toast.success(`✅ ${data.logsCreated} comidas añadidas al diario desde ${applyDate}`);
+    },
+    onError: () => {
+      setApplying(false);
+      toast.error("Error al aplicar el menú al diario.");
+    },
+  });
+
+  const handleApplyToCalendar = () => {
+    if (!savedMenuId) return;
+    setApplying(true);
+    applyToCalendarMutation.mutate({ menuId: savedMenuId, startDate: applyDate, overwrite: false });
+  };
 
   const generateListMutation = trpc.shoppingLists.generateFromMenu.useMutation({
     onSuccess: () => {
@@ -596,7 +616,35 @@ function MenuResultView({
       </div>
 
       {saved && (
-        <div className="p-4 border-t border-border bg-background space-y-2">
+        <div className="p-4 border-t border-border bg-background space-y-3">
+          {/* Apply to calendar */}
+          <div className="bg-orange-50 dark:bg-orange-950/20 rounded-xl p-3 border border-orange-200 dark:border-orange-800">
+            <p className="text-xs font-semibold text-orange-700 dark:text-orange-300 mb-2">📅 Aplicar al diario de comidas</p>
+            <p className="text-xs text-muted-foreground mb-2">Elige la fecha de inicio y las comidas se añadirán automáticamente a tu diario.</p>
+            <div className="flex gap-2">
+              <input
+                type="date"
+                value={applyDate}
+                onChange={e => setApplyDate(e.target.value)}
+                className="flex-1 text-xs border border-border rounded-lg px-2 py-1.5 bg-background"
+              />
+              <Button
+                onClick={handleApplyToCalendar}
+                disabled={applying || applyToCalendarMutation.isSuccess}
+                size="sm"
+                className="bg-orange-500 hover:bg-orange-600 text-white text-xs"
+              >
+                {applying ? "⏳" : applyToCalendarMutation.isSuccess ? "✅ Aplicado" : "Aplicar"}
+              </Button>
+            </div>
+            {applyToCalendarMutation.isSuccess && (
+              <Link href="/app/meal-log">
+                <Button variant="outline" className="w-full text-xs mt-2 border-orange-300 text-orange-600">
+                  Ver diario de comidas →
+                </Button>
+              </Link>
+            )}
+          </div>
           <div className="flex gap-2">
             <Link href="/app/menus" className="flex-1">
               <Button variant="outline" className="w-full text-sm">Ver planificador</Button>

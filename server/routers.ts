@@ -885,6 +885,159 @@ export const appRouter = router({
         const result = await db.copyMenuForUser(input.menuId, ctx.user.id, input.persons, input.startDate);
         return result;
       }),
+
+    // Update start date of a menu (shifts all day parts accordingly)
+    updateStartDate: protectedProcedure
+      .input(
+        z.object({
+          menuId: z.number(),
+          startDate: z.string(), // ISO date string YYYY-MM-DD
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const menu = await db.getMenuOrganizerById(input.menuId);
+        if (!menu) throw new TRPCError({ code: "NOT_FOUND" });
+        requireOwnership(menu.userId, ctx.user.id, ctx.user.role);
+
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { menuOrganizerDayParts, menuOrganizers } = await import("../drizzle/schema.js");
+        const { eq, and } = await import("drizzle-orm");
+
+        // Get all day parts for this menu
+        const dayPartRows = await drizzleDb
+          .select()
+          .from(menuOrganizerDayParts)
+          .where(eq(menuOrganizerDayParts.menuOrganizerId, input.menuId));
+
+        // Calculate offset from original start date
+        const oldStart = menu.startDate ? new Date(menu.startDate) : null;
+        const newStart = new Date(input.startDate);
+        const offsetMs = oldStart ? newStart.getTime() - oldStart.getTime() : 0;
+        const offsetDays = Math.round(offsetMs / (1000 * 60 * 60 * 24));
+
+        // Update each day part date
+        for (const dp of dayPartRows) {
+          if (dp.date) {
+            const oldDate = new Date(dp.date);
+            const newDate = new Date(oldDate.getTime() + offsetDays * 24 * 60 * 60 * 1000);
+            await drizzleDb
+              .update(menuOrganizerDayParts)
+              .set({ date: newDate })
+              .where(eq(menuOrganizerDayParts.id, dp.id));
+          }
+        }
+
+        // Update menu start/end dates
+        const newStartDate = newStart;
+        const daysCount = dayPartRows.length > 0 ? Math.max(...dayPartRows.map(dp => {
+          if (!dp.date) return 0;
+          const d = new Date(dp.date);
+          return Math.round((d.getTime() - newStart.getTime()) / (1000 * 60 * 60 * 24));
+        })) : 0;
+        const newEndDate = new Date(newStart.getTime() + daysCount * 24 * 60 * 60 * 1000);
+
+        await drizzleDb
+          .update(menuOrganizers)
+          .set({ startDate: newStartDate, endDate: newEndDate })
+          .where(eq(menuOrganizers.id, input.menuId));
+
+        return { success: true };
+      }),
+
+    // Apply menu meals to the food diary (meal_logs) from a given start date
+    applyToCalendar: protectedProcedure
+      .input(
+        z.object({
+          menuId: z.number(),
+          startDate: z.string(), // ISO date string YYYY-MM-DD
+          overwrite: z.boolean().default(false), // if true, delete existing logs for those dates first
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        const menu = await db.getMenuOrganizerById(input.menuId);
+        if (!menu) throw new TRPCError({ code: "NOT_FOUND" });
+        requireOwnership(menu.userId, ctx.user.id, ctx.user.role);
+
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { menuOrganizerDayParts, menuOrganizerDayPartRecipes, mealLogs, recipes, dayParts } = await import("../drizzle/schema.js");
+        const { eq, and, sql } = await import("drizzle-orm");
+
+        // Get all day parts with their recipes
+        const dayPartRows = await drizzleDb
+          .select({ dp: menuOrganizerDayParts, dpInfo: dayParts })
+          .from(menuOrganizerDayParts)
+          .leftJoin(dayParts, eq(menuOrganizerDayParts.dayPartId, dayParts.id))
+          .where(eq(menuOrganizerDayParts.menuOrganizerId, input.menuId));
+
+        if (dayPartRows.length === 0) {
+          return { success: true, logsCreated: 0 };
+        }
+
+        // Determine the original menu start date to calculate offsets
+        const menuOriginalStart = menu.startDate ? new Date(menu.startDate) : new Date(dayPartRows[0].dp.date!);
+        const newStart = new Date(input.startDate);
+        const offsetDays = Math.round((newStart.getTime() - menuOriginalStart.getTime()) / (1000 * 60 * 60 * 24));
+
+        let logsCreated = 0;
+
+        for (const { dp, dpInfo } of dayPartRows) {
+          // Calculate target date
+          let targetDate: string;
+          if (dp.date) {
+            const originalDate = new Date(dp.date);
+            const shifted = new Date(originalDate.getTime() + offsetDays * 24 * 60 * 60 * 1000);
+            targetDate = shifted.toISOString().split("T")[0];
+          } else if (dp.dayNumber != null) {
+            const shifted = new Date(newStart.getTime() + (dp.dayNumber - 1) * 24 * 60 * 60 * 1000);
+            targetDate = shifted.toISOString().split("T")[0];
+          } else {
+            targetDate = input.startDate;
+          }
+
+          // Get recipes for this day part
+          const dpRecipes = await drizzleDb
+            .select({ dpRecipe: menuOrganizerDayPartRecipes, recipe: recipes })
+            .from(menuOrganizerDayPartRecipes)
+            .leftJoin(recipes, eq(menuOrganizerDayPartRecipes.recipeId, recipes.id))
+            .where(eq(menuOrganizerDayPartRecipes.menuOrganizerDayPartId, dp.id));
+
+          if (dpRecipes.length > 0) {
+            // Log each recipe
+            for (const { dpRecipe, recipe } of dpRecipes) {
+              if (!recipe) continue;
+              await drizzleDb.insert(mealLogs).values({
+                userId: ctx.user.id,
+                recipeId: recipe.id,
+                customMealName: recipe.name,
+                dayPartId: dp.dayPartId,
+                logDate: targetDate,
+                servings: dpRecipe.servings || 1,
+                calories: recipe.caloriesPerServing ? Math.round(recipe.caloriesPerServing * (dpRecipe.servings || 1)) : null,
+                proteins: recipe.proteinsPerServing ? recipe.proteinsPerServing * (dpRecipe.servings || 1) : null,
+                carbohydrates: recipe.carbsPerServing ? recipe.carbsPerServing * (dpRecipe.servings || 1) : null,
+                fats: recipe.fatsPerServing ? recipe.fatsPerServing * (dpRecipe.servings || 1) : null,
+                notes: `Del menú: ${menu.name}`,
+              } as any);
+              logsCreated++;
+            }
+          } else if (dp.name || dp.notes) {
+            // No recipe linked, create a custom meal log entry
+            await drizzleDb.insert(mealLogs).values({
+              userId: ctx.user.id,
+              customMealName: dp.name || dp.notes || "Comida del menú",
+              dayPartId: dp.dayPartId,
+              logDate: targetDate,
+              servings: 1,
+              notes: `Del menú: ${menu.name}`,
+            } as any);
+            logsCreated++;
+          }
+        }
+
+        return { success: true, logsCreated };
+      }),
   }),
 
   // ---------------------------------------------------------------------------
@@ -3301,7 +3454,8 @@ Devuelve SOLO JSON válido con esta estructura exacta:
       )
       .mutation(async ({ input, ctx }) => {
         const drizzleDb = await db.getDb();
-        const { menuOrganizers, menuOrganizerDayParts, dayParts } = await import("../drizzle/schema.js");
+        const { menuOrganizers, menuOrganizerDayParts, menuOrganizerDayPartRecipes, dayParts, recipes } = await import("../drizzle/schema.js");
+        const { eq } = await import("drizzle-orm");
 
         if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB not available" });
 
@@ -3317,32 +3471,114 @@ Devuelve SOLO JSON válido con esta estructura exacta:
         const endDateObj = new Date(startDateObj);
         endDateObj.setDate(endDateObj.getDate() + input.days.length - 1);
 
+        // Normalize goal to valid enum value
+        const validGoals = ["perdida_peso","ganancia_muscular","tonificacion","perdida_grasa","mantenimiento","bienestar","vegano"];
+        const goalValue = validGoals.includes(input.goal) ? input.goal : "mantenimiento";
+
         // Create menu organizer
         const [menu] = await drizzleDb.insert(menuOrganizers).values({
           userId: ctx.user.id,
           name: input.menuName,
           startDate: startDateObj,
           endDate: endDateObj,
-          goal: input.goal,
+          goal: goalValue as any,
           dailyCalories: input.targetCalories,
           persons: input.persons,
           isSeeded: false,
-        } as any).$returningId();
+          generatedByAI: true,
+        }).$returningId();
 
         const menuId = menu.id;
 
-        // Insert day parts and meals
+        // Cache: meal food name -> recipeId (avoid duplicate recipes for same dish across days)
+        const mealRecipeCache: Record<string, number> = {};
+
+        // Meal time mapping
+        const mealTimeMap: Record<string, string> = {
+          "desayuno": "desayuno",
+          "media mañana": "media_manana",
+          "almuerzo": "comida",
+          "comida": "comida",
+          "merienda": "merienda",
+          "cena": "cena",
+        };
+
+        // Insert day parts and meals, creating recipes for each unique meal
         for (const dayData of input.days) {
+          const dayDate = dayData.date || input.startDate;
           for (const meal of dayData.meals) {
             const dpId = dayPartMap[meal.name.toLowerCase()] || dayPartMap["comida"] || allDayParts[0]?.id;
             if (!dpId) continue;
 
-            await drizzleDb.insert(menuOrganizerDayParts).values({
+            // Create or reuse recipe for this meal
+            const cacheKey = meal.food.substring(0, 80).toLowerCase().trim();
+            let recipeId = mealRecipeCache[cacheKey];
+
+            if (!recipeId) {
+              // Check if recipe already exists in DB for this user
+              const existing = await drizzleDb
+                .select({ id: recipes.id })
+                .from(recipes)
+                .where(eq(recipes.name, meal.food))
+                .limit(1);
+
+              if (existing.length > 0) {
+                recipeId = existing[0].id;
+              } else {
+                // Create new recipe
+                const mealTimeLower = meal.name.toLowerCase();
+                const mealTime = mealTimeMap[mealTimeLower] || "cualquiera";
+                let prepTimeMin = 20;
+                if (meal.prepTime) {
+                  const match = meal.prepTime.match(/(\d+)/);
+                  if (match) prepTimeMin = parseInt(match[1], 10);
+                }
+                const ingredientsJson = meal.ingredients && meal.ingredients.length > 0
+                  ? JSON.stringify(meal.ingredients.map((ing, i) => ({ name: ing, amount: "", unit: "", order: i })))
+                  : null;
+
+                const [newRecipe] = await drizzleDb.insert(recipes).values({
+                  userId: ctx.user.id,
+                  name: meal.food,
+                  description: `Receta generada por IA. Ingredientes: ${meal.ingredients?.join(", ") || "Ver detalles"}.`,
+                  preparationTime: prepTimeMin,
+                  cookTime: 0,
+                  servings: input.persons,
+                  difficulty: "easy" as any,
+                  isPublic: false,
+                  active: true,
+                  mealTime: mealTime as any,
+                  caloriesPerServing: meal.calories || null,
+                  proteinsPerServing: meal.protein || null,
+                  carbsPerServing: meal.carbs || null,
+                  fatsPerServing: meal.fat || null,
+                  ingredientsJson,
+                  isSeeded: false,
+                }).$returningId();
+                recipeId = newRecipe.id;
+              }
+              mealRecipeCache[cacheKey] = recipeId;
+            }
+
+            // Create day part entry
+            const [dp] = await drizzleDb.insert(menuOrganizerDayParts).values({
               menuOrganizerId: menuId,
               dayPartId: dpId,
-              date: new Date(dayData.date || input.startDate),
+              date: new Date(dayDate),
+              name: meal.food,
               notes: meal.food,
-            } as any);
+            }).$returningId();
+
+            // Link recipe to day part
+            try {
+              await drizzleDb.insert(menuOrganizerDayPartRecipes).values({
+                menuOrganizerDayPartId: dp.id,
+                recipeId,
+                servings: input.persons,
+              });
+            } catch (_e) {
+              // Ignore duplicate key errors
+            }
           }
         }
 

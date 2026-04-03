@@ -1,0 +1,1 @@
+ALTER TABLE `menu_organizer_day_parts` ADD `notes` text;
