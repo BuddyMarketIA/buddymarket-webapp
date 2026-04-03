@@ -834,7 +834,7 @@ export default function Dashboard() {
       {/* Pro Max users: no upgrade card shown */}
 
       {/* BuddyCoach Card */}
-      <Link href="/app/buddy-coach">
+      <a href="https://www.buddycoach.io" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
         <div style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", borderRadius: "22px", padding: "18px 20px", marginBottom: "14px", display: "flex", alignItems: "center", gap: "16px", boxShadow: "0 8px 24px rgba(0,0,0,0.22)", cursor: "pointer", position: "relative", overflow: "hidden" }}>
           <div style={{ position: "absolute", top: "-15px", right: "-15px", width: "80px", height: "80px", borderRadius: "50%", background: "rgba(99,102,241,0.18)" }} />
           <div style={{ width: "48px", height: "48px", borderRadius: "16px", background: "rgba(99,102,241,0.22)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", flexShrink: 0 }}>🧑‍🏫</div>
@@ -849,8 +849,7 @@ export default function Dashboard() {
             <path d="M9 18l6-6-6-6"/>
           </svg>
         </div>
-      </Link>
-
+      </a>
       {/* Disclaimer */}
       <p style={{ fontSize: "13px", color: "#d1d5db", textAlign: "center", margin: "8px 0 0", lineHeight: 1.5 }}>
         BuddyMarket no constituye asesoramiento médico o nutricional profesional. Consulta a un profesional.
