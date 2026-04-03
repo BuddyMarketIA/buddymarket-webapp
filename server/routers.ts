@@ -218,6 +218,15 @@ export const appRouter = router({
 
     completeOnboarding: protectedProcedure.mutation(async ({ ctx }) => {
       await db.updateUser(ctx.user.id, { onboardingCompleted: true });
+      // Send welcome email asynchronously (don't block the response)
+      if (ctx.user.email) {
+        const { sendWelcomeEmail } = await import("./email");
+        sendWelcomeEmail({
+          to: ctx.user.email,
+          name: ctx.user.name ?? ctx.user.email,
+          accountType: (ctx.user as any).accountType ?? "user",
+        }).catch((err) => console.error("[Email] Welcome email error:", err));
+      }
       return { success: true };
     }),
 
@@ -268,6 +277,15 @@ export const appRouter = router({
       }))
       .mutation(async ({ ctx, input }) => {
         await db.updateUser(ctx.user.id, { registrationStep: input.step as any });
+        // Send welcome email when a regular user completes registration
+        if (input.step === "completed" && ctx.user.email) {
+          const { sendWelcomeEmail } = await import("./email");
+          sendWelcomeEmail({
+            to: ctx.user.email,
+            name: ctx.user.name ?? ctx.user.email,
+            accountType: (ctx.user as any).accountType ?? "user",
+          }).catch((err) => console.error("[Email] Welcome email error:", err));
+        }
         return { success: true };
       }),
 
