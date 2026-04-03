@@ -131,6 +131,9 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
   const { loading, isAuthenticated, user } = useAuth();
   const [location] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
+  const logout = trpc.auth.logout.useMutation({
+    onSuccess: () => { window.location.href = "/"; },
+  });
 
   // Query buddy application status to conditionally show expert/maker panels
   const expertApplicationQuery = trpc.buddyApplications.getMyApplication.useQuery({ type: "expert" }, {
@@ -328,6 +331,23 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
               {planDisplay?.badge || "Free"}
             </div>
           </Link>
+        </div>
+        {/* Logout button */}
+        <div style={{ padding: "0 20px 20px" }}>
+          <button
+            onClick={() => logout.mutate()}
+            disabled={logout.isPending}
+            style={{ width: "100%", display: "flex", alignItems: "center", gap: "10px", padding: "11px 16px", borderRadius: "14px", border: "1.5px solid rgba(239,68,68,0.2)", background: "rgba(239,68,68,0.04)", cursor: logout.isPending ? "not-allowed" : "pointer", transition: "all 0.2s", opacity: logout.isPending ? 0.7 : 1 }}
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4" />
+              <polyline points="16 17 21 12 16 7" />
+              <line x1="21" y1="12" x2="9" y2="12" />
+            </svg>
+            <span style={{ fontSize: "14px", fontWeight: 600, color: "#EF4444" }}>
+              {logout.isPending ? "Cerrando sesión..." : "Cerrar sesión"}
+            </span>
+          </button>
         </div>
       </div>
 
