@@ -1089,7 +1089,14 @@ export const appRouter = router({
         const list = await db.getShoppingListById(input.id);
         if (!list) throw new TRPCError({ code: "NOT_FOUND" });
         requireOwnership(list.userId, ctx.user.id, ctx.user.role);
-        const items = await db.getShoppingListItems(input.id);
+        const rawItems = await db.getShoppingListItems(input.id);
+        // Flatten nested {item, ingredient, measure} structure for frontend
+        const items = rawItems.map(({ item, ingredient, measure }) => ({
+          ...item,
+          isPurchased: item.checked,
+          ingredient: ingredient ? { ...ingredient } : null,
+          measure: measure ? { ...measure } : null,
+        }));
         return { ...list, items };
       }),
 
