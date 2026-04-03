@@ -384,6 +384,36 @@ export const appRouter = router({
         await db.deleteUserAccount(ctx.user.id);
         return { success: true };
       }),
+
+    // -- Upload profile photo to S3 and update imageUrl/avatarUrl ---------------
+    uploadProfilePhoto: protectedProcedure
+      .input(z.object({
+        imageBase64: z.string(),
+        mimeType: z.string().default("image/jpeg"),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { users: usersTable, buddyExperts: beTable, buddyMakers: bmTable } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const imageBuffer = Buffer.from(input.imageBase64, "base64");
+        const ext = input.mimeType.split("/")[1]?.replace("jpeg", "jpg") ?? "jpg";
+        const fileKey = `profile-photos/${ctx.user.id}-${Date.now()}.${ext}`;
+        const { url } = await storagePut(fileKey, imageBuffer, input.mimeType);
+        // Update imageUrl on the users table
+        await drizzleDb.update(usersTable).set({ imageUrl: url }).where(eq(usersTable.id, ctx.user.id));
+        // Also sync avatarUrl on buddyExperts if the user is an expert
+        const expertRow = await drizzleDb.select({ id: beTable.id }).from(beTable).where(eq(beTable.userId, ctx.user.id)).limit(1);
+        if (expertRow.length > 0) {
+          await drizzleDb.update(beTable).set({ avatarUrl: url }).where(eq(beTable.userId, ctx.user.id));
+        }
+        // Also sync avatarUrl on buddyMakers if the user is a maker
+        const makerRow = await drizzleDb.select({ id: bmTable.id }).from(bmTable).where(eq(bmTable.userId, ctx.user.id)).limit(1);
+        if (makerRow.length > 0) {
+          await drizzleDb.update(bmTable).set({ avatarUrl: url }).where(eq(bmTable.userId, ctx.user.id));
+        }
+        return { url };
+      }),
   }),
 
   // ---------------------------------------------------------------------------

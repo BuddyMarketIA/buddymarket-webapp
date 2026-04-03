@@ -301,6 +301,26 @@ export default function Profile() {
     setSelectedRestrictions(profile.dietRestrictions.map((r) => r.id));
   }, [profile]);
 
+  // Photo upload
+  const [photoPreview, setPhotoPreview] = useState<string | null>(null);
+  const uploadProfilePhoto = trpc.profile.uploadProfilePhoto.useMutation({
+    onSuccess: () => { utils.profile.get.invalidate(); toast.success("Foto de perfil actualizada"); setPhotoPreview(null); },
+    onError: () => toast.error("Error al subir la foto. Inténtalo de nuevo."),
+  });
+  const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { toast.error("La foto no puede superar 5 MB"); return; }
+    const reader = new FileReader();
+    reader.onload = (ev) => {
+      const dataUrl = ev.target?.result as string;
+      setPhotoPreview(dataUrl);
+      const base64 = dataUrl.split(",")[1];
+      uploadProfilePhoto.mutate({ imageBase64: base64, mimeType: file.type || "image/jpeg" });
+    };
+    reader.readAsDataURL(file);
+  };
+
   const updateBasic = trpc.profile.updateBasic.useMutation({ onSuccess: () => { utils.profile.get.invalidate(); toast.success("Datos personales guardados"); } });
   const updateProfile = trpc.profile.updateProfile.useMutation({ onSuccess: () => { utils.profile.get.invalidate(); toast.success("Perfil actualizado"); } });
   const updateMedical = trpc.profile.updateMedical.useMutation({ onSuccess: () => { utils.profile.get.invalidate(); toast.success("Datos de salud guardados"); } });
@@ -430,9 +450,23 @@ export default function Profile() {
       {/* Header */}
       <div style={{ ...card }}>
         <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: completionPercent < 100 ? "14px" : "0" }}>
-          <div style={{ width: "64px", height: "64px", borderRadius: "50%", background: "linear-gradient(135deg, #F97316, #FB923C)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", fontWeight: 800, color: "white", flexShrink: 0 }}>
-            {(user?.name || user?.email || "U")[0].toUpperCase()}
-          </div>
+          <label htmlFor="profile-photo-input" style={{ position: "relative", width: "64px", height: "64px", borderRadius: "50%", flexShrink: 0, cursor: "pointer", display: "block" }}>
+            {(photoPreview || user?.imageUrl) ? (
+              <img src={photoPreview || user?.imageUrl!} alt="Foto de perfil" style={{ width: "64px", height: "64px", borderRadius: "50%", objectFit: "cover", border: "2px solid #F97316" }} />
+            ) : (
+              <div style={{ width: "64px", height: "64px", borderRadius: "50%", background: "linear-gradient(135deg, #F97316, #FB923C)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", fontWeight: 800, color: "white" }}>
+                {(user?.name || user?.email || "U")[0].toUpperCase()}
+              </div>
+            )}
+            <div style={{ position: "absolute", bottom: 0, right: 0, width: "20px", height: "20px", borderRadius: "50%", background: "#F97316", display: "flex", alignItems: "center", justifyContent: "center", border: "2px solid white" }}>
+              {uploadProfilePhoto.isPending ? (
+                <div style={{ width: "10px", height: "10px", borderRadius: "50%", border: "2px solid white", borderTopColor: "transparent", animation: "spin 0.8s linear infinite" }} />
+              ) : (
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3"><path d="M12 5v14M5 12h14"/></svg>
+              )}
+            </div>
+            <input id="profile-photo-input" type="file" accept="image/*" onChange={handlePhotoChange} style={{ display: "none" }} />
+          </label>
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ margin: 0, fontSize: "18px", fontWeight: 800, color: "#1a1a1a" }}>{user?.name || "Mi perfil"}</p>
             <p style={{ margin: "2px 0 0", fontSize: "13px", color: "#9ca3af" }}>{user?.email}</p>

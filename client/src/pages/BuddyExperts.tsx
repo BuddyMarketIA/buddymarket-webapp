@@ -56,12 +56,12 @@ function ExpertCard({
 
   return (
     <div
-      className="group relative bg-white rounded-[28px] overflow-hidden cursor-pointer"
+      className="group relative bg-white rounded-[20px] overflow-hidden cursor-pointer"
       style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)" }}
       onClick={() => navigate(`/app/buddy-experts/${expert.id}`)}
     >
       {/* Gradient header */}
-      <div className={`relative bg-gradient-to-br ${gradient} pt-5 pb-10 px-4 overflow-hidden`}>
+      <div className={`relative bg-gradient-to-br ${gradient} pt-4 pb-8 px-3 overflow-hidden`}>
         <div className="absolute -top-4 -right-4 w-20 h-20 rounded-full bg-white/10 blur-xl" />
         <div className="absolute -bottom-6 -left-6 w-24 h-24 rounded-full bg-black/10 blur-2xl" />
         <div
@@ -73,7 +73,7 @@ function ExpertCard({
         />
         <div className="relative flex justify-between items-start mb-3">
           {expert.verified ? (
-            <span className="flex items-center gap-1 bg-white/20 backdrop-blur-sm text-white text-[13px] font-bold px-2.5 py-1 rounded-full border border-white/30">
+            <span className="flex items-center gap-1 bg-white/20 backdrop-blur-sm text-white text-[11px] font-bold px-2 py-0.5 rounded-full border border-white/30">
               <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
                 <path
                   fillRule="evenodd"
@@ -87,7 +87,7 @@ function ExpertCard({
             <span />
           )}
           {expert.featured && (
-            <span className="bg-yellow-400 text-yellow-900 text-[13px] font-black px-2.5 py-1 rounded-full shadow-lg">
+            <span className="bg-yellow-400 text-yellow-900 text-[11px] font-black px-2 py-0.5 rounded-full shadow-lg">
               ⭐ TOP
             </span>
           )}
@@ -98,10 +98,10 @@ function ExpertCard({
             <img
               src={expert.avatarUrl}
               alt={expert.displayName}
-              className="w-20 h-20 rounded-2xl object-cover border-4 border-white/30 shadow-xl"
+              className="w-16 h-16 rounded-xl object-cover border-4 border-white/30 shadow-xl"
             />
           ) : (
-            <div className="w-20 h-20 rounded-2xl bg-white/30 backdrop-blur-sm flex items-center justify-center text-3xl border-4 border-white/30 shadow-xl">
+            <div className="w-16 h-16 rounded-xl bg-white/30 backdrop-blur-sm flex items-center justify-center text-2xl border-4 border-white/30 shadow-xl">
               {expert.displayName?.[0] ?? "?"}
             </div>
           )}
@@ -109,56 +109,47 @@ function ExpertCard({
       </div>
 
       {/* Content */}
-      <div className="px-4 pb-4 pt-3 flex flex-col items-center text-center gap-1">
-        <h3 className="font-black text-gray-900 text-[14px] leading-tight line-clamp-1">
+      <div className="px-3 pb-3 pt-2 flex flex-col items-center text-center gap-0.5">
+        <h3 className="font-black text-gray-900 text-[13px] leading-tight line-clamp-1 w-full">
           {expert.displayName}
         </h3>
-        <p className="text-[13px] text-indigo-500 font-bold">
+        <p className="text-[11px] text-indigo-500 font-bold line-clamp-1 w-full">
           {expert.specialty ?? CATEGORY_LABELS[expert.category] ?? "Nutricionista"}
         </p>
-        {expert.bio && (
-          <p className="text-[13px] text-gray-400 leading-relaxed line-clamp-2 mt-0.5">{expert.bio}</p>
-        )}
 
-        {/* Stats */}
-        <div className="flex items-center gap-3 mt-1.5">
-          <div className="flex flex-col items-center">
-            <span className="font-black text-gray-900 text-[13px]">
-              {fmtCount(expert.followersCount ?? 0)}
-            </span>
-            <span className="text-[13px] text-gray-400 font-medium">seguidores</span>
+        {/* Stats — compact row */}
+        <div className="flex items-center justify-center gap-2 mt-1.5 w-full overflow-hidden">
+          <div className="flex flex-col items-center shrink-0">
+            <span className="font-black text-gray-900 text-[12px]">{fmtCount(expert.followersCount ?? 0)}</span>
+            <span className="text-[10px] text-gray-400 font-medium">seguid.</span>
           </div>
-          <div className="w-px h-6 bg-gray-100" />
-          <div className="flex flex-col items-center">
-            <span className="font-black text-gray-900 text-[13px]">
-              {expert.plansCount ?? 0}
-            </span>
-            <span className="text-[13px] text-gray-400 font-medium">planes</span>
+          <div className="w-px h-5 bg-gray-100 shrink-0" />
+          <div className="flex flex-col items-center shrink-0">
+            <span className="font-black text-gray-900 text-[12px]">{expert.plansCount ?? 0}</span>
+            <span className="text-[10px] text-gray-400 font-medium">planes</span>
           </div>
           {expert.rating && (
             <>
-              <div className="w-px h-6 bg-gray-100" />
-              <div className="flex flex-col items-center">
-                <span className="font-black text-gray-900 text-[13px]">
-                  {Number(expert.rating).toFixed(1)}⭐
-                </span>
-                <span className="text-[13px] text-gray-400 font-medium">valoración</span>
+              <div className="w-px h-5 bg-gray-100 shrink-0" />
+              <div className="flex flex-col items-center shrink-0">
+                <span className="font-black text-gray-900 text-[12px]">{Number(expert.rating).toFixed(1)}⭐</span>
+                <span className="text-[10px] text-gray-400 font-medium">valor.</span>
               </div>
             </>
           )}
         </div>
 
         {/* Action buttons */}
-        <div className="flex gap-2 w-full mt-2">
+        <div className="flex gap-1.5 w-full mt-2">
           <button
             onClick={(e) => {
               e.stopPropagation();
               onFollow(expert.id);
             }}
-            className={`flex-1 py-2.5 rounded-2xl text-sm font-black transition-all duration-200 ${
+            className={`flex-1 py-2 rounded-xl text-[11px] font-black transition-all duration-200 ${
               isFollowing
                 ? "bg-indigo-50 text-indigo-600 border border-indigo-200"
-                : "bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-lg shadow-indigo-200"
+                : "bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-md shadow-indigo-200"
             }`}
           >
             {isFollowing ? "✓ Siguiendo" : "+ Seguir"}
@@ -168,7 +159,7 @@ function ExpertCard({
               e.stopPropagation();
               window.location.href = `/app/buddy-experts/${expert.id}`;
             }}
-            className="flex-1 py-2.5 rounded-2xl text-sm font-black bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all duration-200"
+            className="flex-1 py-2 rounded-xl text-[11px] font-black bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all duration-200"
           >
             Ver perfil
           </button>

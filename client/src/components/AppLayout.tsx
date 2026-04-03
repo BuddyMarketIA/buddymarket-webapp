@@ -344,9 +344,13 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
 
         {/* Sidebar Footer */}
         <div style={{ padding: "16px 20px", borderTop: "1px solid rgba(0,0,0,0.06)", display: "flex", alignItems: "center", gap: "12px" }}>
-          <div style={{ width: "42px", height: "42px", borderRadius: "50%", background: "linear-gradient(135deg, #F97316, #FB923C)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px", fontWeight: 800, color: "white", flexShrink: 0 }}>
-            {userInitial}
-          </div>
+          {user?.imageUrl ? (
+            <img src={user.imageUrl} alt={userName} style={{ width: "42px", height: "42px", borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: "2px solid #F97316" }} />
+          ) : (
+            <div style={{ width: "42px", height: "42px", borderRadius: "50%", background: "linear-gradient(135deg, #F97316, #FB923C)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px", fontWeight: 800, color: "white", flexShrink: 0 }}>
+              {userInitial}
+            </div>
+          )}
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ margin: 0, fontSize: "15px", fontWeight: 700, color: "#1a1a1a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{userName}</p>
             <p style={{ margin: 0, fontSize: "13px", color: "#9ca3af", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{userEmail}</p>
