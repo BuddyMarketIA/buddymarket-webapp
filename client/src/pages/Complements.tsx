@@ -85,9 +85,11 @@ function LogDialog({
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-sm">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
-            <span className="text-2xl">{complement.emoji ?? "🍽️"}</span>
-            {complement.nameEs ?? complement.name}
+          <DialogTitle>
+            <span className="flex items-center gap-2">
+              <span className="text-2xl">{complement.emoji ?? "🍽️"}</span>
+              {complement.nameEs ?? complement.name}
+            </span>
           </DialogTitle>
         </DialogHeader>
 
