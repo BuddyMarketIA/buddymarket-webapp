@@ -1372,6 +1372,175 @@ Si no puedes detectar productos, devuelve {"products": []}. No incluyas texto ad
         const recipes = Array.isArray(result) ? result : (result as any).recipes ?? result;
         return { recipes, expiringIngredients: expiring };
       }),
+
+    // Suggest expiration date for a product using AI (with fast lookup table fallback)
+    suggestExpirationDate: protectedProcedure
+      .input(z.object({ productName: z.string().min(1) }))
+      .mutation(async ({ input }) => {
+        // Fast lookup table for common products (avoids LLM call for most cases)
+        const lookup: Record<string, number> = {
+          // Lácteos
+          leche: 7, "leche entera": 7, "leche desnatada": 7, "leche semidesnatada": 7,
+          yogur: 14, "yogur griego": 14, queso: 21, "queso fresco": 5, "queso curado": 60,
+          mantequilla: 30, nata: 7, "nata para cocinar": 14,
+          // Carnes
+          pollo: 3, "pechuga de pollo": 3, "muslos de pollo": 3,
+          ternera: 4, "carne picada": 2, cerdo: 4, "lomo de cerdo": 4,
+          "jamón": 5, "jamón serrano": 30, "jamón cocido": 7,
+          salchichas: 5, chorizo: 14, "chorizo curado": 30,
+          // Pescados
+          "salmón": 2, merluza: 2, "atún": 2, "atún en lata": 730, bacalao: 3,
+          gambas: 2, mejillones: 2,
+          // Frutas
+          manzana: 14, pera: 7, "plátano": 5, naranja: 14, "limón": 21,
+          fresa: 4, uva: 7, "melón": 5, "sandía": 5, "melocotón": 5,
+          aguacate: 4, mango: 5, "piña": 5, kiwi: 7,
+          // Verduras
+          lechuga: 5, tomate: 7, cebolla: 30, ajo: 60, patata: 30,
+          zanahoria: 14, pimiento: 7, "calabacín": 7, berenjena: 7,
+          espinacas: 4, "brócoli": 5, coliflor: 7, pepino: 7,
+          // Huevos
+          huevos: 28, huevo: 28,
+          // Panadería
+          pan: 3, "pan de molde": 7, baguette: 2, croissant: 2,
+          // Pasta, arroz, legumbres
+          pasta: 730, arroz: 730, lentejas: 730, garbanzos: 730,
+          alubias: 730, quinoa: 730, avena: 365,
+          // Conservas
+          "tomate triturado": 730, "tomate frito": 730, aceitunas: 365,
+          "aceite de oliva": 730, aceite: 365, vinagre: 730,
+          // Bebidas
+          zumo: 7, "zumo de naranja": 7, cerveza: 180, vino: 365,
+          // Congelados
+          "guisantes congelados": 365, "judías verdes congeladas": 365,
+          // Salsas y condimentos
+          mayonesa: 60, ketchup: 90, mostaza: 180, salsa: 14,
+          // Dulces y snacks
+          chocolate: 180, galletas: 90, cereales: 180,
+        };
+
+        const nameLower = input.productName.toLowerCase().trim();
+        let days: number | undefined = lookup[nameLower];
+        if (!days) {
+          for (const [key, val] of Object.entries(lookup)) {
+            if (nameLower.includes(key) || key.includes(nameLower)) {
+              days = val;
+              break;
+            }
+          }
+        }
+
+        if (days) {
+          const date = new Date();
+          date.setDate(date.getDate() + days);
+          return { expirationDate: date.toISOString().split("T")[0], daysFromNow: days, source: "lookup" as const };
+        }
+
+        // Fallback: ask LLM for unknown products
+        try {
+          const response = await invokeLLM({
+            messages: [
+              {
+                role: "system",
+                content: `Eres un experto en seguridad alimentaria. Dado el nombre de un alimento, responde SOLO con un JSON con el campo "daysUntilExpiry" (número entero de días desde hoy hasta la caducidad típica en nevera/despensa). Sin texto adicional.`,
+              },
+              { role: "user", content: `Alimento: "${input.productName}"` },
+            ],
+            response_format: {
+              type: "json_schema",
+              json_schema: {
+                name: "expiry_suggestion",
+                strict: true,
+                schema: {
+                  type: "object",
+                  properties: { daysUntilExpiry: { type: "integer", description: "Días hasta caducidad típica" } },
+                  required: ["daysUntilExpiry"],
+                  additionalProperties: false,
+                },
+              },
+            },
+          });
+          const content = response?.choices?.[0]?.message?.content;
+          const parsed = JSON.parse(typeof content === "string" ? content : "{}");
+          const llmDays = Math.max(1, Math.min(3650, parsed.daysUntilExpiry || 7));
+          const date = new Date();
+          date.setDate(date.getDate() + llmDays);
+          return { expirationDate: date.toISOString().split("T")[0], daysFromNow: llmDays, source: "ai" as const };
+        } catch {
+          const date = new Date();
+          date.setDate(date.getDate() + 7);
+          return { expirationDate: date.toISOString().split("T")[0], daysFromNow: 7, source: "fallback" as const };
+        }
+      }),
+
+    // Generate AI recipes using expiring ingredients
+    generateRecipesFromExpiring: protectedProcedure
+      .mutation(async ({ ctx }) => {
+        const items = await db.getInventoryItems(ctx.user.id);
+        const now = new Date();
+        const cutoff = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+        const expiring = items
+          .filter((item: any) => item.expirationDate && new Date(item.expirationDate) <= cutoff)
+          .map((item: any) => ({
+            name: item.customName || item.ingredient?.nameEs || "Alimento",
+            daysLeft: Math.ceil((new Date(item.expirationDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)),
+          }))
+          .slice(0, 8);
+
+        if (expiring.length === 0) {
+          return { recipes: [], message: "No tienes productos próximos a caducar." };
+        }
+
+        const ingredientList = expiring.map((e: any) => `- ${e.name} (caduca en ${e.daysLeft} días)`).join("\n");
+        const response = await invokeLLM({
+          messages: [
+            {
+              role: "system",
+              content: `Eres un chef experto en cocina española y mediterránea. Genera recetas usando los ingredientes que están a punto de caducar para evitar el desperdicio alimentario. Responde SOLO con JSON válido.`,
+            },
+            {
+              role: "user",
+              content: `Tengo estos ingredientes próximos a caducar:
+${ingredientList}
+
+Genera 3 recetas que aprovechen estos ingredientes. Para cada receta incluye: nombre, descripción breve (1 frase), tiempo de preparación en minutos, dificultad (Fácil/Media/Difícil), ingredientes principales usados de la lista, y emoji representativo.`,
+            },
+          ],
+          response_format: {
+            type: "json_schema",
+            json_schema: {
+              name: "expiring_recipes",
+              strict: true,
+              schema: {
+                type: "object",
+                properties: {
+                  recipes: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        name: { type: "string" },
+                        description: { type: "string" },
+                        prepTime: { type: "integer" },
+                        difficulty: { type: "string" },
+                        usedIngredients: { type: "array", items: { type: "string" } },
+                        emoji: { type: "string" },
+                      },
+                      required: ["name", "description", "prepTime", "difficulty", "usedIngredients", "emoji"],
+                      additionalProperties: false,
+                    },
+                  },
+                },
+                required: ["recipes"],
+                additionalProperties: false,
+              },
+            },
+          },
+        });
+        const content = response?.choices?.[0]?.message?.content;
+        const parsed = JSON.parse(typeof content === "string" ? content : '{"recipes":[]}');
+        return { recipes: parsed.recipes || [], expiringIngredients: expiring };
+      }),
   }),
   // ---------------------------------------------------------------------------
   // MEAL LOGSS

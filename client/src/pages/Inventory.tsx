@@ -78,6 +78,15 @@ export default function Inventory() {
   const [measureId, setMeasureId] = useState("5"); // default: unidad
   const [storageLocation, setStorageLocation] = useState("1");
   const [expirationDate, setExpirationDate] = useState("");
+  const [expiryLoading, setExpiryLoading] = useState(false);
+  const [expirySource, setExpirySource] = useState<"lookup" | "ai" | "fallback" | null>(null);
+  // Anti-waste recipe generation state
+  const [showAntiWaste, setShowAntiWaste] = useState(false);
+  const [generatingRecipes, setGeneratingRecipes] = useState(false);
+  const [generatedRecipes, setGeneratedRecipes] = useState<Array<{
+    name: string; description: string; prepTime: number; difficulty: string;
+    usedIngredients: string[]; emoji: string;
+  }>>([]);
 
   // Photo AI state
   const [showPhotoModal, setShowPhotoModal] = useState(false);
@@ -117,6 +126,7 @@ export default function Inventory() {
       setAmount("");
       setMeasureId("5");
       setExpirationDate("");
+      setExpirySource(null);
       toast.success("Producto añadido al inventario");
     },
     onError: (err) => toast.error(err.message),
@@ -125,6 +135,8 @@ export default function Inventory() {
   const addItemSilent = trpc.inventory.add.useMutation({
     onError: (err) => toast.error(err.message),
   });
+  const suggestExpiry = trpc.inventory.suggestExpirationDate.useMutation();
+  const generateAntiWaste = trpc.inventory.generateRecipesFromExpiring.useMutation();
 
   const removeItem = trpc.inventory.remove.useMutation({
     onSuccess: () => {
@@ -196,6 +208,21 @@ export default function Inventory() {
       setAnalyzing(false);
     }
   }, [photoFile, photoPreview, analyzePhoto]);
+
+  // Auto-suggest expiration date when product name changes
+  const handleNameBlur = useCallback(async (name: string) => {
+    if (!name.trim() || expirationDate) return; // don't overwrite if user already set a date
+    setExpiryLoading(true);
+    try {
+      const result = await suggestExpiry.mutateAsync({ productName: name.trim() });
+      setExpirationDate(result.expirationDate);
+      setExpirySource(result.source);
+    } catch {
+      // silently fail
+    } finally {
+      setExpiryLoading(false);
+    }
+  }, [expirationDate, suggestExpiry]);
 
   const handleAddDetected = useCallback(async () => {
     const selected = detectedProducts.filter((p) => p.selected);
@@ -297,12 +324,81 @@ export default function Inventory() {
         </div>
       )}
 
-      {/* Recipe recommendations from expiring items */}
+      {/* Anti-waste section: generate AI recipes for expiring products */}
+      {(expiringItems ?? []).length > 0 && (
+        <div className="mb-5 rounded-2xl border border-green-200 bg-gradient-to-br from-green-50 to-emerald-50 p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">♻️</span>
+              <div>
+                <p className="text-sm font-bold text-green-800">Anti-desperdicio</p>
+                <p className="text-xs text-green-600">{(expiringItems ?? []).length} producto{(expiringItems ?? []).length !== 1 ? "s" : ""} próximo{(expiringItems ?? []).length !== 1 ? "s" : ""} a caducar</p>
+              </div>
+            </div>
+            <button
+              onClick={async () => {
+                if (generatedRecipes.length > 0) { setShowAntiWaste(true); return; }
+                setGeneratingRecipes(true);
+                try {
+                  const result = await generateAntiWaste.mutateAsync();
+                  if (result.recipes && result.recipes.length > 0) {
+                    setGeneratedRecipes(result.recipes);
+                    setShowAntiWaste(true);
+                  } else {
+                    toast.info("No hay suficientes productos próximos a caducar para generar recetas.");
+                  }
+                } catch {
+                  toast.error("Error al generar recetas. Inténtalo de nuevo.");
+                } finally {
+                  setGeneratingRecipes(false);
+                }
+              }}
+              disabled={generatingRecipes}
+              className="flex items-center gap-1.5 rounded-xl bg-green-600 px-3 py-2 text-xs font-bold text-white shadow-sm active:scale-95 transition-transform disabled:opacity-60"
+            >
+              {generatingRecipes ? (
+                <>
+                  <span className="animate-spin">⏳</span>
+                  Generando...
+                </>
+              ) : (
+                <>
+                  <SparklesIcon className="h-3.5 w-3.5" />
+                  {generatedRecipes.length > 0 ? "Ver recetas" : "Generar recetas IA"}
+                </>
+              )}
+            </button>
+          </div>
+          {/* Expiring items chips */}
+          <div className="flex flex-wrap gap-1.5">
+            {(expiringItems ?? []).slice(0, 6).map((item: any) => {
+              const days = daysUntil(item.expirationDate);
+              const name = item.customName || item.ingredientId || "Alimento";
+              return (
+                <span key={item.id} className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
+                  days !== null && days <= 2 ? "bg-red-100 text-red-700" :
+                  days !== null && days <= 5 ? "bg-orange-100 text-orange-700" :
+                  "bg-yellow-100 text-yellow-700"
+                }`}>
+                  {name} · {days === 0 ? "hoy" : days !== null && days < 0 ? "vencido" : `${days}d`}
+                </span>
+              );
+            })}
+            {(expiringItems ?? []).length > 6 && (
+              <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-500">
+                +{(expiringItems ?? []).length - 6} más
+              </span>
+            )}
+          </div>
+        </div>
+      )}
+
+      {/* Old recipe recs from DB (existing recipes that match expiring items) */}
       {recipeRecs && recipeRecs.expiringIngredients.length > 0 && recipeRecs.recipes.length > 0 && (
         <div className="mb-5">
           <div className="mb-2 flex items-center gap-2">
             <SparklesIcon className="h-4 w-4 text-orange-500" />
-            <span className="text-sm font-bold text-gray-800">Recetas para lo que caduca</span>
+            <span className="text-sm font-bold text-gray-800">Recetas del catálogo</span>
           </div>
           <div className="flex gap-3 overflow-x-auto pb-2">
             {recipeRecs.recipes.slice(0, 5).map((recipe: any) => (
@@ -444,7 +540,8 @@ export default function Inventory() {
             <div className="space-y-3">
               <input
                 value={customName}
-                onChange={(e) => setCustomName(e.target.value)}
+                onChange={(e) => { setCustomName(e.target.value); setExpirySource(null); }}
+                onBlur={(e) => handleNameBlur(e.target.value)}
                 placeholder="Nombre del alimento *"
                 className="vively-input"
               />
@@ -494,14 +591,27 @@ export default function Inventory() {
                 )}
               </select>
               <div>
-                <label className="mb-1 block text-xs font-semibold text-gray-500">📅 Fecha de caducidad</label>
+                <div className="mb-1 flex items-center justify-between">
+                  <label className="text-xs font-semibold text-gray-500">📅 Fecha de caducidad</label>
+                  {expiryLoading && (
+                    <span className="text-xs text-orange-500 animate-pulse">✨ Estimando...</span>
+                  )}
+                  {!expiryLoading && expirySource && expirationDate && (
+                    <span className="text-xs text-green-600">
+                      {expirySource === "lookup" ? "✓ Estimada" : expirySource === "ai" ? "✨ IA" : "✓ Estimada"} · editable
+                    </span>
+                  )}
+                </div>
                 <input
                   type="date"
                   value={expirationDate}
-                  onChange={(e) => setExpirationDate(e.target.value)}
+                  onChange={(e) => { setExpirationDate(e.target.value); setExpirySource(null); }}
                   className="vively-input"
                   min={new Date().toISOString().split("T")[0]}
                 />
+                {!expirationDate && !expiryLoading && customName.trim() && (
+                  <p className="mt-1 text-xs text-gray-400">Escribe el nombre y pulsa fuera para estimar la fecha</p>
+                )}
               </div>
             </div>
             <div className="mt-4 flex gap-3">
@@ -761,6 +871,88 @@ export default function Inventory() {
                 style={{ flex: 2, padding: "13px", background: "#16a34a", border: "none", borderRadius: 14, fontSize: 14, fontWeight: 800, cursor: "pointer", color: "white", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
                 <CheckIcon className="h-4 w-4" />
                 Añadir al inventario
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Anti-waste AI recipes modal */}
+      {showAntiWaste && generatedRecipes.length > 0 && (
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowAntiWaste(false); }}>
+          <div className="w-full max-w-sm rounded-3xl bg-white shadow-2xl animate-slide-up overflow-hidden max-h-[85vh] flex flex-col">
+            {/* Header */}
+            <div className="flex items-center justify-between bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-4 shrink-0">
+              <div className="flex items-center gap-2 text-white">
+                <span className="text-xl">♻️</span>
+                <div>
+                  <p className="font-bold">Recetas anti-desperdicio</p>
+                  <p className="text-xs text-green-100">Generadas con IA para tus productos</p>
+                </div>
+              </div>
+              <button onClick={() => setShowAntiWaste(false)} className="rounded-full p-1 hover:bg-white/20">
+                <XMarkIcon className="h-5 w-5 text-white" />
+              </button>
+            </div>
+            {/* Recipes list */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              {generatedRecipes.map((recipe, idx) => (
+                <div key={idx} className="rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden">
+                  <div className="flex items-start gap-3 p-4">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-green-100 to-emerald-100 text-2xl">
+                      {recipe.emoji}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-bold text-gray-900 leading-tight">{recipe.name}</p>
+                      <p className="mt-0.5 text-xs text-gray-500 line-clamp-2">{recipe.description}</p>
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
+                          ⏱ {recipe.prepTime} min
+                        </span>
+                        <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                          recipe.difficulty === "Fácil" ? "bg-green-100 text-green-700" :
+                          recipe.difficulty === "Media" ? "bg-yellow-100 text-yellow-700" :
+                          "bg-red-100 text-red-700"
+                        }`}>
+                          {recipe.difficulty}
+                        </span>
+                      </div>
+                      {recipe.usedIngredients.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          {recipe.usedIngredients.map((ing, i) => (
+                            <span key={i} className="rounded-full bg-orange-50 px-2 py-0.5 text-xs text-orange-700 border border-orange-100">
+                              {ing}
+                            </span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            {/* Footer */}
+            <div className="shrink-0 border-t border-gray-100 p-4">
+              <button
+                onClick={async () => {
+                  setGeneratedRecipes([]);
+                  setGeneratingRecipes(true);
+                  setShowAntiWaste(false);
+                  try {
+                    const result = await generateAntiWaste.mutateAsync();
+                    if (result.recipes && result.recipes.length > 0) {
+                      setGeneratedRecipes(result.recipes);
+                      setShowAntiWaste(true);
+                    }
+                  } catch {
+                    toast.error("Error al regenerar recetas.");
+                  } finally {
+                    setGeneratingRecipes(false);
+                  }
+                }}
+                className="w-full rounded-2xl border border-green-200 py-3 text-sm font-semibold text-green-700 hover:bg-green-50 active:scale-95 transition-transform"
+              >
+                ✨ Regenerar recetas
               </button>
             </div>
           </div>
