@@ -204,6 +204,13 @@
       "when": 1775235602651,
       "tag": "0028_big_shocker",
       "breakpoints": true
+    },
+    {
+      "idx": 29,
+      "version": "5",
+      "when": 1775239982861,
+      "tag": "0029_dazzling_nomad",
+      "breakpoints": true
     }
   ]
 }

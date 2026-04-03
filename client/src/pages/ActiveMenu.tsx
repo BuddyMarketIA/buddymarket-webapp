@@ -13,6 +13,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { CheckCircleIcon as CheckCircleSolid } from "@heroicons/react/24/solid";
 import MercadonaCartExport from "@/components/MercadonaCartExport";
+import LidlCartExport from "@/components/LidlCartExport";
 
 const SUPERMARKETS = [
   { id: "general", name: "General", emoji: "🛒" },
@@ -161,6 +162,7 @@ export default function ActiveMenu() {
   const [selectedSupermarket, setSelectedSupermarket] = useState<string>("mercadona");
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [showMercadonaModal, setShowMercadonaModal] = useState(false);
+  const [showLidlModal, setShowLidlModal] = useState(false);
   const [showGenericModal, setShowGenericModal] = useState(false);
   const [generatedItems, setGeneratedItems] = useState<GeneratedListItem[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -187,6 +189,8 @@ export default function ActiveMenu() {
           setGeneratedItems(items);
           if (selectedSupermarket === "mercadona") {
             setShowMercadonaModal(true);
+          } else if (selectedSupermarket === "lidl") {
+            setShowLidlModal(true);
           } else {
             setShowGenericModal(true);
           }
@@ -533,6 +537,22 @@ export default function ActiveMenu() {
           supermarket={selectedSupermarket}
           onClose={() => setShowMercadonaModal(false)}
         />
+      )}
+
+      {/* Lidl modal */}
+      {showLidlModal && generatedItems.length > 0 && (
+        <div
+          className="modal-overlay"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowLidlModal(false); }}
+        >
+          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up max-h-[90vh] overflow-y-auto">
+            <LidlCartExport
+              items={generatedItems}
+              onBack={() => setShowLidlModal(false)}
+              onClose={() => setShowLidlModal(false)}
+            />
+          </div>
+        </div>
       )}
 
       {/* Generic supermarket modal */}

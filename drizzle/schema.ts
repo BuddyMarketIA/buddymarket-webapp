@@ -603,6 +603,30 @@ export type MercadonaProduct = typeof mercadonaProducts.$inferSelect;
 export type InsertMercadonaProduct = typeof mercadonaProducts.$inferInsert;
 
 // =============================================================================
+// LIDL PRODUCTS
+// =============================================================================
+
+export const lidlProducts = mysqlTable("lidl_products", {
+  id: varchar("id", { length: 64 }).primaryKey(), // erpNumber
+  name: varchar("name", { length: 512 }).notNull(),
+  fullTitle: varchar("full_title", { length: 512 }),
+  brand: varchar("brand", { length: 256 }),
+  image: varchar("image", { length: 512 }),
+  price: float("price"),
+  packaging: varchar("packaging", { length: 128 }),
+  category: varchar("category", { length: 256 }),
+  canonicalPath: varchar("canonical_path", { length: 512 }),
+  onlineAvailable: boolean("online_available").default(false),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (t) => ({
+  nameIdx: index("lidl_name_idx").on(t.name),
+  catIdx: index("lidl_cat_idx").on(t.category),
+}));
+export type LidlProduct = typeof lidlProducts.$inferSelect;
+export type InsertLidlProduct = typeof lidlProducts.$inferInsert;
+
+// =============================================================================
 // INVENTORY
 // =============================================================================
 

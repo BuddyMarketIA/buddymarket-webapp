@@ -1020,3 +1020,11 @@
 - [ ] Botón 'Guardar como plantilla' en cabecera de ShoppingListDetail
 - [ ] Sección 'Plantillas' en ShoppingLists para crear nueva lista desde plantilla guardada
 - [ ] Lista de la compra desde menú en curso: mostrar vista Mercadona completa (foto, nombre, precio, controles cantidad, total, botón enviar al carrito)
+
+## Integración Lidl Supermercado (fase actual)
+- [x] Añadir tabla lidl_products en drizzle/schema.ts
+- [x] Importar catálogo de productos alimentarios de Lidl España via script (134 productos)
+- [x] Añadir procedimiento tRPC lidl.searchProducts en server/routers.ts
+- [x] Crear componente LidlCartExport.tsx con vista estilo Lidl (azul/amarillo)
+- [x] Integrar LidlCartExport en ActiveMenu.tsx (menú en curso)
+- [x] Integrar LidlCartExport en ShoppingLists.tsx (supermercados)

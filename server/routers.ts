@@ -2588,6 +2588,55 @@ Genera 3 recetas que aprovechen estos ingredientes. Para cada receta incluye: no
   }),
 
   // ===========================================================================
+  // LIDL INTEGRATION
+  // ===========================================================================
+  lidl: router({
+    // Search products from local DB (fast, no external API calls)
+    searchProducts: publicProcedure
+      .input(z.object({ query: z.string().min(1), limit: z.number().optional().default(30) }))
+      .query(async ({ input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return [];
+        const { lidlProducts } = await import("../drizzle/schema");
+        const { like, or } = await import("drizzle-orm");
+        const q = `%${input.query}%`;
+        const rows = await drizzleDb
+          .select()
+          .from(lidlProducts)
+          .where(or(
+            like(lidlProducts.name, q),
+            like(lidlProducts.brand, q),
+            like(lidlProducts.category, q)
+          ))
+          .limit(input.limit);
+        return rows.map(p => ({
+          id: p.id,
+          name: p.name,
+          fullTitle: p.fullTitle ?? p.name,
+          brand: p.brand ?? "",
+          thumbnail: p.image ?? "",
+          price: p.price ?? 0,
+          priceStr: p.price ? `${p.price.toFixed(2)}\u20ac` : "\u2014",
+          packaging: p.packaging ?? "",
+          category: p.category ?? "",
+          canonicalPath: p.canonicalPath ?? "",
+          onlineAvailable: p.onlineAvailable ?? false,
+          shareUrl: p.canonicalPath ? `https://www.lidl.es${p.canonicalPath}` : "https://www.lidl.es",
+        }));
+      }),
+    // Get all categories from DB
+    categories: publicProcedure.query(async () => {
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) return [];
+      const { sql } = await import("drizzle-orm");
+      const rows = await drizzleDb.execute(
+        sql`SELECT category, COUNT(*) as count FROM lidl_products GROUP BY category ORDER BY count DESC`
+      ) as any;
+      const result = rows[0] as Array<{ category: string; count: number }>;
+      return result;
+    }),
+  }),
+  // ===========================================================================
   // USER BODY METRICS
   // ===========================================================================
   metrics: router({

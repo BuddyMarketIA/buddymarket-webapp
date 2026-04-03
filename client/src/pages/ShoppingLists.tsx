@@ -1,5 +1,6 @@
 import { useState, useRef } from "react";
 import MercadonaCartExport from "@/components/MercadonaCartExport";
+import LidlCartExport from "@/components/LidlCartExport";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import {
@@ -58,6 +59,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
   const [showExport, setShowExport] = useState(false);
   const [selectedSupermarket, setSelectedSupermarket] = useState<string | null>(null);
   const [showMercadonaCart, setShowMercadonaCart] = useState(false);
+  const [showLidlCart, setShowLidlCart] = useState(false);
   const [showSaveTemplate, setShowSaveTemplate] = useState(false);
   const [templateName, setTemplateName] = useState("");
   const saveAsTemplate = trpc.shoppingLists.saveAsTemplate.useMutation({
@@ -246,7 +248,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
                   {SUPERMARKET_OPTIONS.map((s) => (
                     <button
                       key={s.id}
-                      onClick={() => { if (s.id === "mercadona") { setShowExport(false); setShowMercadonaCart(true); } else { setSelectedSupermarket(s.id); } }}
+                      onClick={() => { if (s.id === "mercadona") { setShowExport(false); setShowMercadonaCart(true); } else if (s.id === "lidl") { setShowExport(false); setShowLidlCart(true); } else { setSelectedSupermarket(s.id); } }}
                       className="flex flex-col items-center gap-2 rounded-2xl border-2 border-gray-100 p-4 hover:border-[#F97316] hover:bg-orange-50 transition-all"
                     >
                       <span className="text-2xl">{s.emoji}</span>
@@ -327,6 +329,18 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
               items={items.map((i: any) => ({ id: i.id, name: i.ingredient?.name ?? i.customName ?? i.name ?? "Producto", qty: String(i.amount ?? i.quantity ?? ""), unit: i.measure?.name ?? i.unit ?? "", isPurchased: i.isPurchased }))}
               onBack={() => { setShowMercadonaCart(false); setShowExport(true); }}
               onClose={() => setShowMercadonaCart(false)}
+            />
+          </div>
+        </div>
+      )}
+      {/* Lidl integrated cart export */}
+      {showLidlCart && (
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowLidlCart(false); }}>
+          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up max-h-[85vh] overflow-y-auto">
+            <LidlCartExport
+              items={items.map((i: any) => ({ id: i.id, name: i.ingredient?.name ?? i.customName ?? i.name ?? "Producto", qty: String(i.amount ?? i.quantity ?? ""), unit: i.measure?.name ?? i.unit ?? "", isPurchased: i.isPurchased }))}
+              onBack={() => { setShowLidlCart(false); setShowExport(true); }}
+              onClose={() => setShowLidlCart(false)}
             />
           </div>
         </div>
