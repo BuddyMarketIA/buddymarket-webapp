@@ -1,16 +1,55 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
+
+// ─── Assets ───────────────────────────────────────────────────────────────────
+
+const LOGO_COLOR = "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/buddymarket-logo-color_856f2d67.jpg";
+const LOGO_ICON  = "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/D0328B43-26CA-43D5-A762-51F7E0C1B4E2_44b3ba71.png";
+
+const FOOD_IMAGES = [
+  "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/salmon_quinoa-GK5uCABZM54kHC6jSfHP9p.webp",
+  "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/ensalada_mediterranea-A94kBrNm9EPozXzzbctf5A.webp",
+  "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/bowl_acai_frutas-VPHcDyWLiwTWng4EtSyWaN.webp",
+  "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/pollo_al_horno_verduras-7EonsjzW4cbvVFKgkiA4g3.webp",
+];
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type AccountType = "user" | "buddymaker" | "buddyexpert" | "business";
 type RegistrationStep = "account_type" | "profile_setup" | "application" | "pending_approval" | "completed";
 
-// ─── Constants ────────────────────────────────────────────────────────────────
+// ─── Left panel data per main step ───────────────────────────────────────────
 
-const LOGO_URL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/D0328B43-26CA-43D5-A762-51F7E0C1B4E2_44b3ba71.png";
+const PANEL_DATA: Record<string, { img: string; headline: string; sub: string; bullets: string[] }> = {
+  account_type: {
+    img: FOOD_IMAGES[0],
+    headline: "Tu nutrición, inteligente y personalizada",
+    sub: "Únete a miles de personas que ya cuidan su alimentación con BuddyMarket",
+    bullets: ["🥗 Recetas y menús personalizados", "🛒 Compra en Mercadona y Carrefour", "🤖 BuddyIA, tu asistente nutricional", "📊 Seguimiento diario de nutrición"],
+  },
+  profile_setup: {
+    img: FOOD_IMAGES[1],
+    headline: "Cuanto más nos cuentes, mejor te ayudamos",
+    sub: "Personalizamos cada receta y menú según tus objetivos y necesidades",
+    bullets: ["🎯 Objetivos adaptados a ti", "⚠️ Alergias e intolerancias controladas", "🏃 Nivel de actividad en cuenta", "📏 Calorías calculadas automáticamente"],
+  },
+  application: {
+    img: FOOD_IMAGES[2],
+    headline: "Forma parte de nuestra comunidad de creadores",
+    sub: "BuddyMakers y BuddyExperts que comparten su pasión por la nutrición",
+    bullets: ["👥 +5.000 usuarios activos", "🌟 Perfil verificado y destacado", "💰 Monetización futura", "📈 Estadísticas de tu contenido"],
+  },
+  pending_approval: {
+    img: FOOD_IMAGES[3],
+    headline: "¡Ya casi estás dentro!",
+    sub: "Mientras revisamos tu solicitud, puedes explorar todo lo que BuddyMarket tiene para ti",
+    bullets: ["🍽️ Miles de recetas disponibles", "📅 Planifica tu menú semanal", "💬 Pregunta a BuddyIA", "🛒 Gestiona tu despensa"],
+  },
+};
+
+// ─── Account type cards ───────────────────────────────────────────────────────
 
 const ACCOUNT_TYPES = [
   {
@@ -18,10 +57,10 @@ const ACCOUNT_TYPES = [
     emoji: "🥗",
     title: "Usuario",
     subtitle: "Quiero mejorar mi alimentación",
-    description: "Accede a recetas personalizadas, planifica menús, controla tu nutrición y haz la compra inteligente.",
+    description: "Accede a recetas, planifica menús, controla tu nutrición y haz la compra inteligente.",
     color: "#10B981",
     gradient: "linear-gradient(135deg, #10B981 0%, #059669 100%)",
-    features: ["Diario nutricional", "Recetas personalizadas", "Menús semanales", "Lista de la compra", "BuddyIA asistente"],
+    features: ["Diario nutricional", "Recetas personalizadas", "Menús semanales", "Lista de la compra"],
     badge: "Gratis",
     badgeColor: "#10B981",
   },
@@ -30,10 +69,10 @@ const ACCOUNT_TYPES = [
     emoji: "👨‍🍳",
     title: "BuddyMaker",
     subtitle: "Soy creador de contenido nutricional",
-    description: "Comparte tus recetas y menús con la comunidad. Monetiza tu conocimiento culinario y nutricional.",
+    description: "Comparte tus recetas y menús con la comunidad. Monetiza tu conocimiento culinario.",
     color: "#F97316",
     gradient: "linear-gradient(135deg, #F97316 0%, #EA580C 100%)",
-    features: ["Publica recetas y menús", "Perfil de creador verificado", "Estadísticas de contenido", "Comunidad de seguidores", "Monetización futura"],
+    features: ["Publica recetas y menús", "Perfil verificado", "Estadísticas", "Monetización futura"],
     badge: "Requiere aprobación",
     badgeColor: "#F97316",
   },
@@ -41,11 +80,11 @@ const ACCOUNT_TYPES = [
     id: "buddyexpert" as AccountType,
     emoji: "🎓",
     title: "BuddyExpert",
-    subtitle: "Soy nutricionista o profesional de la salud",
-    description: "Ofrece planes de nutrición personalizados y asesoramiento profesional a usuarios de BuddyMarket.",
+    subtitle: "Soy nutricionista o profesional",
+    description: "Ofrece planes de nutrición personalizados y asesoramiento profesional.",
     color: "#8B5CF6",
     gradient: "linear-gradient(135deg, #8B5CF6 0%, #7C3AED 100%)",
-    features: ["Perfil profesional verificado", "Publica planes de nutrición", "Consultas con clientes", "Pagos integrados (Stripe)", "Badge de experto certificado"],
+    features: ["Perfil profesional", "Planes de nutrición", "Consultas con clientes", "Badge de experto"],
     badge: "Requiere aprobación",
     badgeColor: "#8B5CF6",
   },
@@ -53,11 +92,11 @@ const ACCOUNT_TYPES = [
     id: "business" as AccountType,
     emoji: "🏢",
     title: "Empresa",
-    subtitle: "Somos una empresa alimentaria o de salud",
-    description: "Conecta tu marca con miles de usuarios interesados en nutrición y alimentación saludable.",
+    subtitle: "Somos una empresa alimentaria",
+    description: "Conecta tu marca con miles de usuarios interesados en nutrición.",
     color: "#3B82F6",
     gradient: "linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)",
-    features: ["Perfil de empresa", "Publicación de productos", "Campañas de nutrición", "Analytics avanzado", "Integración con catálogo"],
+    features: ["Perfil de empresa", "Publicación de productos", "Analytics avanzado", "Integración catálogo"],
     badge: "Próximamente",
     badgeColor: "#6B7280",
     disabled: true,
@@ -78,19 +117,142 @@ const EXPERT_CATEGORIES = [
 ];
 
 const MAKER_SPECIALTIES = [
-  "Cocina mediterránea",
-  "Cocina vegana/vegetariana",
-  "Repostería saludable",
-  "Meal prep y batch cooking",
-  "Cocina fitness y deportiva",
-  "Cocina internacional",
-  "Cocina sin gluten",
-  "Cocina para niños",
-  "Cocina rápida y fácil",
-  "Fermentados y probióticos",
+  "Cocina mediterránea", "Cocina vegana/vegetariana", "Repostería saludable",
+  "Meal prep y batch cooking", "Cocina fitness y deportiva", "Cocina internacional",
+  "Cocina sin gluten", "Cocina para niños", "Cocina rápida y fácil", "Fermentados y probióticos",
 ];
 
-// ─── Step Components ──────────────────────────────────────────────────────────
+// ─── Left Panel ───────────────────────────────────────────────────────────────
+
+function LeftPanel({ step, accountType }: { step: RegistrationStep; accountType: AccountType }) {
+  const key = step === "account_type" ? "account_type"
+    : step === "profile_setup" ? "profile_setup"
+    : step === "application" ? "application"
+    : "pending_approval";
+  const data = PANEL_DATA[key];
+  const accentColor = accountType === "buddymaker" ? "#F97316"
+    : accountType === "buddyexpert" ? "#8B5CF6"
+    : accountType === "business" ? "#3B82F6"
+    : "#10B981";
+
+  return (
+    <div style={{
+      position: "relative", overflow: "hidden",
+      background: "#1a1a1a", height: "100%", minHeight: "100vh",
+    }}>
+      {/* Background image */}
+      <img src={data.img} alt="" style={{
+        position: "absolute", inset: 0, width: "100%", height: "100%",
+        objectFit: "cover", opacity: 0.45,
+        transition: "opacity 0.6s ease",
+      }} />
+
+      {/* Gradient overlay */}
+      <div style={{
+        position: "absolute", inset: 0,
+        background: `linear-gradient(160deg, ${accentColor}99 0%, rgba(0,0,0,0.75) 60%, rgba(0,0,0,0.9) 100%)`,
+        transition: "background 0.6s ease",
+      }} />
+
+      {/* Content */}
+      <div style={{
+        position: "relative", zIndex: 1,
+        display: "flex", flexDirection: "column", height: "100%",
+        padding: "40px 40px 48px",
+        justifyContent: "space-between",
+      }}>
+        {/* Logo */}
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          <img src={LOGO_ICON} alt="BuddyMarket" style={{ width: 44, height: 44, borderRadius: 12 }} />
+          <img src={LOGO_COLOR} alt="BuddyMarket" style={{ height: 28, filter: "brightness(0) invert(1)" }} />
+        </div>
+
+        {/* Main copy */}
+        <div>
+          <h2 style={{
+            fontSize: 32, fontWeight: 900, color: "white",
+            margin: "0 0 12px", lineHeight: 1.2, letterSpacing: "-0.03em",
+          }}>
+            {data.headline}
+          </h2>
+          <p style={{ fontSize: 16, color: "rgba(255,255,255,0.75)", margin: "0 0 32px", lineHeight: 1.6 }}>
+            {data.sub}
+          </p>
+          <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+            {data.bullets.map((b, i) => (
+              <div key={i} style={{
+                display: "flex", alignItems: "center", gap: 12,
+                background: "rgba(255,255,255,0.1)", borderRadius: 12,
+                padding: "12px 16px", backdropFilter: "blur(8px)",
+                border: "1px solid rgba(255,255,255,0.15)",
+              }}>
+                <span style={{ fontSize: 20 }}>{b.split(" ")[0]}</span>
+                <span style={{ fontSize: 14, fontWeight: 600, color: "rgba(255,255,255,0.9)" }}>
+                  {b.split(" ").slice(1).join(" ")}
+                </span>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* Trust badges */}
+        <div style={{ display: "flex", gap: 16, flexWrap: "wrap" }}>
+          {["🔒 Datos seguros", "🇪🇸 Hecho en España", "⭐ 4.9/5 valoración"].map((b, i) => (
+            <div key={i} style={{
+              fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.7)",
+              background: "rgba(255,255,255,0.1)", borderRadius: 20,
+              padding: "6px 14px", border: "1px solid rgba(255,255,255,0.15)",
+            }}>
+              {b}
+            </div>
+          ))}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Progress Bar ─────────────────────────────────────────────────────────────
+
+function ProgressSteps({ steps, current }: { steps: { id: string; label: string }[]; current: string }) {
+  const idx = steps.findIndex(s => s.id === current);
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 0, marginBottom: 36 }}>
+      {steps.map((s, i) => (
+        <div key={s.id} style={{ display: "flex", alignItems: "center", flex: i < steps.length - 1 ? 1 : "none" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 6 }}>
+            <div style={{
+              width: 32, height: 32, borderRadius: "50%",
+              background: i < idx ? "#10B981" : i === idx ? "#F97316" : "#E5E7EB",
+              color: i <= idx ? "white" : "#9CA3AF",
+              display: "flex", alignItems: "center", justifyContent: "center",
+              fontSize: 13, fontWeight: 800,
+              boxShadow: i === idx ? "0 0 0 4px rgba(249,115,22,0.2)" : "none",
+              transition: "all 0.3s ease",
+            }}>
+              {i < idx ? "✓" : i + 1}
+            </div>
+            <span style={{
+              fontSize: 11, fontWeight: 700, whiteSpace: "nowrap",
+              color: i === idx ? "#F97316" : i < idx ? "#10B981" : "#9CA3AF",
+            }}>
+              {s.label}
+            </span>
+          </div>
+          {i < steps.length - 1 && (
+            <div style={{
+              flex: 1, height: 2, margin: "0 8px", marginBottom: 18,
+              background: i < idx ? "#10B981" : "#E5E7EB",
+              transition: "background 0.3s ease",
+            }} />
+          )}
+        </div>
+      ))}
+    </div>
+  );
+}
+
+// ─── Step: Account Type ───────────────────────────────────────────────────────
 
 function StepAccountType({ onSelect }: { onSelect: (type: AccountType) => void }) {
   const [selected, setSelected] = useState<AccountType | null>(null);
@@ -107,17 +269,17 @@ function StepAccountType({ onSelect }: { onSelect: (type: AccountType) => void }
   };
 
   return (
-    <div style={{ maxWidth: 900, margin: "0 auto", padding: "0 16px" }}>
-      <div style={{ textAlign: "center", marginBottom: 32 }}>
+    <div>
+      <div style={{ marginBottom: 28 }}>
         <h2 style={{ fontSize: 26, fontWeight: 900, color: "#1a1a1a", margin: "0 0 8px", letterSpacing: "-0.03em" }}>
           ¿Cómo quieres usar BuddyMarket?
         </h2>
-        <p style={{ fontSize: 16, color: "#6B7280", margin: 0 }}>
+        <p style={{ fontSize: 15, color: "#6B7280", margin: 0 }}>
           Elige el tipo de cuenta que mejor se adapta a ti. Podrás cambiarla más adelante.
         </p>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(200px, 1fr))", gap: 16, marginBottom: 32 }}>
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 28 }}>
         {ACCOUNT_TYPES.map((type) => (
           <button
             key={type.id}
@@ -126,56 +288,52 @@ function StepAccountType({ onSelect }: { onSelect: (type: AccountType) => void }
             style={{
               background: selected === type.id ? type.gradient : "white",
               border: selected === type.id ? "none" : "2px solid #E5E7EB",
-              borderRadius: 20,
-              padding: "24px 20px",
+              borderRadius: 18, padding: "20px 16px",
               cursor: type.disabled ? "not-allowed" : "pointer",
-              textAlign: "left",
-              transition: "all 0.2s ease",
+              textAlign: "left", transition: "all 0.2s ease",
               opacity: type.disabled ? 0.5 : 1,
-              boxShadow: selected === type.id ? `0 8px 32px ${type.color}40` : "0 2px 8px rgba(0,0,0,0.06)",
+              boxShadow: selected === type.id ? `0 8px 28px ${type.color}40` : "0 2px 6px rgba(0,0,0,0.04)",
               transform: selected === type.id ? "translateY(-2px)" : "none",
-              position: "relative",
-              overflow: "hidden",
+              position: "relative", overflow: "hidden",
             }}
           >
             {/* Badge */}
             <div style={{
-              position: "absolute", top: 12, right: 12,
-              background: selected === type.id ? "rgba(255,255,255,0.25)" : `${type.badgeColor}15`,
+              position: "absolute", top: 10, right: 10,
+              background: selected === type.id ? "rgba(255,255,255,0.22)" : `${type.badgeColor}15`,
               color: selected === type.id ? "white" : type.badgeColor,
-              fontSize: 11, fontWeight: 700, borderRadius: 20, padding: "3px 10px",
+              fontSize: 10, fontWeight: 700, borderRadius: 20, padding: "3px 8px",
             }}>
               {type.badge}
             </div>
 
-            <div style={{ fontSize: 36, marginBottom: 12 }}>{type.emoji}</div>
+            <div style={{ fontSize: 32, marginBottom: 10 }}>{type.emoji}</div>
             <h3 style={{
-              fontSize: 18, fontWeight: 900, margin: "0 0 4px",
+              fontSize: 16, fontWeight: 900, margin: "0 0 3px",
               color: selected === type.id ? "white" : "#1a1a1a",
-              letterSpacing: "-0.02em",
             }}>
               {type.title}
             </h3>
             <p style={{
-              fontSize: 13, fontWeight: 600, margin: "0 0 12px",
+              fontSize: 12, fontWeight: 600, margin: "0 0 8px",
               color: selected === type.id ? "rgba(255,255,255,0.85)" : type.color,
             }}>
               {type.subtitle}
             </p>
             <p style={{
-              fontSize: 13, margin: "0 0 16px", lineHeight: 1.5,
-              color: selected === type.id ? "rgba(255,255,255,0.8)" : "#6B7280",
+              fontSize: 12, margin: "0 0 12px", lineHeight: 1.5,
+              color: selected === type.id ? "rgba(255,255,255,0.75)" : "#6B7280",
             }}>
               {type.description}
             </p>
             <ul style={{ listStyle: "none", padding: 0, margin: 0 }}>
               {type.features.map((f) => (
                 <li key={f} style={{
-                  fontSize: 13, fontWeight: 600, padding: "3px 0",
+                  fontSize: 12, fontWeight: 600, padding: "2px 0",
                   color: selected === type.id ? "rgba(255,255,255,0.9)" : "#374151",
-                  display: "flex", alignItems: "center", gap: 6,
+                  display: "flex", alignItems: "center", gap: 5,
                 }}>
-                  <span style={{ color: selected === type.id ? "rgba(255,255,255,0.7)" : type.color, fontSize: 14 }}>✓</span>
+                  <span style={{ color: selected === type.id ? "rgba(255,255,255,0.7)" : type.color }}>✓</span>
                   {f}
                 </li>
               ))}
@@ -184,27 +342,26 @@ function StepAccountType({ onSelect }: { onSelect: (type: AccountType) => void }
         ))}
       </div>
 
-      <div style={{ display: "flex", justifyContent: "center" }}>
-        <button
-          onClick={handleContinue}
-          disabled={!selected || setAccountType.isPending}
-          style={{
-            background: selected ? "linear-gradient(135deg, #F97316 0%, #EA580C 100%)" : "#E5E7EB",
-            color: selected ? "white" : "#9CA3AF",
-            border: "none", borderRadius: 16, padding: "16px 48px",
-            fontSize: 16, fontWeight: 800, cursor: selected ? "pointer" : "not-allowed",
-            boxShadow: selected ? "0 4px 20px rgba(249,115,22,0.4)" : "none",
-            transition: "all 0.2s ease",
-          }}
-        >
-          {setAccountType.isPending ? "Guardando..." : "Continuar →"}
-        </button>
-      </div>
+      <button
+        onClick={handleContinue}
+        disabled={!selected || setAccountType.isPending}
+        style={{
+          ...btnPrimary,
+          width: "100%",
+          opacity: !selected || setAccountType.isPending ? 0.5 : 1,
+          cursor: !selected || setAccountType.isPending ? "not-allowed" : "pointer",
+        }}
+      >
+        {setAccountType.isPending ? "Guardando..." : "Continuar →"}
+      </button>
     </div>
   );
 }
 
+// ─── Step: Profile Setup ──────────────────────────────────────────────────────
+
 function StepProfileSetup({ accountType, onNext }: { accountType: AccountType; onNext: () => void }) {
+  const [subStep, setSubStep] = useState(0);
   const [form, setForm] = useState({
     name: "", gender: "", birthYear: "", height: "", weight: "", mainGoal: "",
     activityLevel: "", allergies: [] as number[], dietRestrictions: [] as number[],
@@ -220,15 +377,21 @@ function StepProfileSetup({ accountType, onNext }: { accountType: AccountType; o
   const updatePreferences = trpc.profile.updatePreferences.useMutation();
   const advanceStep = trpc.profile.advanceRegistrationStep.useMutation();
 
-  const [step, setStep] = useState(0); // sub-steps within profile setup
-  const totalSubSteps = accountType === "user" ? 4 : 3;
+  const totalSubSteps = 4;
+  const isLoading = updateBasic.isPending || updateProfile.isPending || advanceStep.isPending;
+
+  const SUB_STEPS = [
+    { icon: "👤", title: "Datos personales", desc: "Cuéntanos un poco sobre ti" },
+    { icon: "🎯", title: "Tu objetivo", desc: "¿Qué quieres conseguir con BuddyMarket?" },
+    { icon: "⚠️", title: "Alergias y dieta", desc: "Para personalizar tus recetas" },
+    { icon: "✅", title: "Últimos detalles", desc: "Casi listo, solo un momento más" },
+  ];
 
   const handleNext = async () => {
-    if (step < totalSubSteps - 1) {
-      setStep(step + 1);
+    if (subStep < totalSubSteps - 1) {
+      setSubStep(s => s + 1);
       return;
     }
-    // Final step - save everything
     try {
       if (form.name) await updateBasic.mutateAsync({ name: form.name });
       await updateProfile.mutateAsync({
@@ -242,7 +405,6 @@ function StepProfileSetup({ accountType, onNext }: { accountType: AccountType; o
       if (form.allergies.length > 0) await setAllergies.mutateAsync({ allergyIds: form.allergies });
       if (form.dietRestrictions.length > 0) await setDietRestrictions.mutateAsync({ restrictionIds: form.dietRestrictions });
       await updatePreferences.mutateAsync({ acceptTerms: form.acceptTerms, newsletter: form.newsletter });
-      // Advance step
       const nextStep = (accountType === "buddymaker" || accountType === "buddyexpert") ? "application" : "completed";
       await advanceStep.mutateAsync({ step: nextStep as any });
       onNext();
@@ -251,32 +413,54 @@ function StepProfileSetup({ accountType, onNext }: { accountType: AccountType; o
     }
   };
 
-  const isLoading = updateBasic.isPending || updateProfile.isPending || advanceStep.isPending;
-
-  const subStepTitles = ["Datos personales", "Objetivos", "Alergias y dieta", "Preferencias"];
+  const canProceed = subStep === 3 ? form.acceptTerms : true;
 
   return (
-    <div style={{ maxWidth: 560, margin: "0 auto", padding: "0 16px" }}>
-      {/* Sub-step progress */}
-      <div style={{ display: "flex", gap: 8, marginBottom: 32, justifyContent: "center" }}>
-        {Array.from({ length: totalSubSteps }).map((_, i) => (
+    <div>
+      {/* Sub-step tabs */}
+      <div style={{ display: "flex", gap: 6, marginBottom: 28, overflowX: "auto", paddingBottom: 4 }}>
+        {SUB_STEPS.map((s, i) => (
           <div key={i} style={{
-            height: 6, flex: 1, maxWidth: 80, borderRadius: 3,
-            background: i <= step ? "#F97316" : "#E5E7EB",
-            transition: "background 0.3s ease",
-          }} />
+            display: "flex", alignItems: "center", gap: 6,
+            padding: "8px 14px", borderRadius: 12, whiteSpace: "nowrap",
+            background: i === subStep ? "#FFF7ED" : i < subStep ? "#F0FDF4" : "#F9FAFB",
+            border: `2px solid ${i === subStep ? "#F97316" : i < subStep ? "#10B981" : "#E5E7EB"}`,
+            cursor: i < subStep ? "pointer" : "default",
+            transition: "all 0.2s ease",
+          }}
+          onClick={() => i < subStep && setSubStep(i)}
+          >
+            <span style={{ fontSize: 16 }}>{i < subStep ? "✓" : s.icon}</span>
+            <span style={{
+              fontSize: 12, fontWeight: 700,
+              color: i === subStep ? "#F97316" : i < subStep ? "#10B981" : "#9CA3AF",
+            }}>
+              {s.title}
+            </span>
+          </div>
         ))}
       </div>
 
-      <div style={{ textAlign: "center", marginBottom: 28 }}>
-        <h3 style={{ fontSize: 22, fontWeight: 900, color: "#1a1a1a", margin: "0 0 6px", letterSpacing: "-0.02em" }}>
-          {subStepTitles[step]}
+      {/* Sub-step header */}
+      <div style={{ marginBottom: 24 }}>
+        <div style={{
+          display: "inline-flex", alignItems: "center", gap: 8,
+          background: "#FFF7ED", borderRadius: 20, padding: "6px 14px",
+          marginBottom: 10,
+        }}>
+          <span style={{ fontSize: 18 }}>{SUB_STEPS[subStep].icon}</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: "#F97316" }}>
+            Paso {subStep + 1} de {totalSubSteps}
+          </span>
+        </div>
+        <h3 style={{ fontSize: 22, fontWeight: 900, color: "#1a1a1a", margin: "0 0 4px", letterSpacing: "-0.02em" }}>
+          {SUB_STEPS[subStep].title}
         </h3>
-        <p style={{ fontSize: 14, color: "#6B7280", margin: 0 }}>Paso {step + 1} de {totalSubSteps}</p>
+        <p style={{ fontSize: 14, color: "#6B7280", margin: 0 }}>{SUB_STEPS[subStep].desc}</p>
       </div>
 
       {/* Sub-step 0: Personal data */}
-      {step === 0 && (
+      {subStep === 0 && (
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
           <div>
             <label style={labelStyle}>Nombre completo</label>
@@ -315,21 +499,25 @@ function StepProfileSetup({ accountType, onNext }: { accountType: AccountType; o
       )}
 
       {/* Sub-step 1: Goals */}
-      {step === 1 && (
+      {subStep === 1 && (
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           <div>
             <label style={labelStyle}>Objetivo principal</label>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
               {[
-                { v: "lose_weight", l: "⬇️ Perder peso" },
-                { v: "gain_muscle", l: "💪 Ganar músculo" },
-                { v: "maintain", l: "⚖️ Mantenerme" },
-                { v: "improve_health", l: "❤️ Mejorar salud" },
-                { v: "eat_healthier", l: "🥗 Comer mejor" },
+                { v: "lose_weight", l: "⬇️ Perder peso", d: "Déficit calórico controlado" },
+                { v: "gain_muscle", l: "💪 Ganar músculo", d: "Superávit con proteínas" },
+                { v: "maintain", l: "⚖️ Mantenerme", d: "Equilibrio nutricional" },
+                { v: "improve_health", l: "❤️ Mejorar salud", d: "Hábitos saludables" },
+                { v: "eat_healthier", l: "🥗 Comer mejor", d: "Más variedad y nutrición" },
               ].map(g => (
                 <button key={g.v} onClick={() => setForm(f => ({ ...f, mainGoal: g.v }))}
-                  style={{ ...chipStyle, ...(form.mainGoal === g.v ? chipActiveStyle : {}), padding: "12px 16px", borderRadius: 14 }}>
-                  {g.l}
+                  style={{
+                    ...chipStyle, ...(form.mainGoal === g.v ? chipActiveStyle : {}),
+                    padding: "14px 16px", borderRadius: 14, textAlign: "left",
+                  }}>
+                  <div style={{ fontWeight: 800, fontSize: 14 }}>{g.l}</div>
+                  <div style={{ fontSize: 11, opacity: 0.75, marginTop: 2 }}>{g.d}</div>
                 </button>
               ))}
             </div>
@@ -346,8 +534,7 @@ function StepProfileSetup({ accountType, onNext }: { accountType: AccountType; o
               ].map(g => (
                 <button key={g.v} onClick={() => setForm(f => ({ ...f, activityLevel: g.v }))}
                   style={{
-                    ...chipStyle,
-                    ...(form.activityLevel === g.v ? chipActiveStyle : {}),
+                    ...chipStyle, ...(form.activityLevel === g.v ? chipActiveStyle : {}),
                     padding: "12px 16px", borderRadius: 14, textAlign: "left",
                     display: "flex", alignItems: "center", justifyContent: "space-between",
                   }}>
@@ -361,12 +548,14 @@ function StepProfileSetup({ accountType, onNext }: { accountType: AccountType; o
       )}
 
       {/* Sub-step 2: Allergies & Diet */}
-      {step === 2 && (
+      {subStep === 2 && (
         <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
           <div>
             <label style={labelStyle}>Alergias e intolerancias</label>
-            <p style={{ fontSize: 13, color: "#6B7280", margin: "0 0 12px" }}>Selecciona todas las que apliquen</p>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, maxHeight: 200, overflowY: "auto", padding: "4px 0" }}>
+            <p style={{ fontSize: 13, color: "#6B7280", margin: "0 0 12px" }}>
+              Selecciona todas las que apliquen (opcional)
+            </p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, maxHeight: 180, overflowY: "auto" }}>
               {(catalogData ?? []).map((a: any) => (
                 <button key={a.id}
                   onClick={() => setForm(f => ({
@@ -375,11 +564,7 @@ function StepProfileSetup({ accountType, onNext }: { accountType: AccountType; o
                       ? f.allergies.filter(id => id !== a.id)
                       : [...f.allergies, a.id],
                   }))}
-                  style={{
-                    ...chipStyle,
-                    ...(form.allergies.includes(a.id) ? chipActiveStyle : {}),
-                    fontSize: 13, padding: "8px 14px",
-                  }}>
+                  style={{ ...chipStyle, ...(form.allergies.includes(a.id) ? chipActiveStyle : {}), fontSize: 13, padding: "8px 14px" }}>
                   {a.nameEs}
                 </button>
               ))}
@@ -387,7 +572,10 @@ function StepProfileSetup({ accountType, onNext }: { accountType: AccountType; o
           </div>
           <div>
             <label style={labelStyle}>Restricciones dietéticas</label>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, maxHeight: 200, overflowY: "auto", padding: "4px 0" }}>
+            <p style={{ fontSize: 13, color: "#6B7280", margin: "0 0 12px" }}>
+              Selecciona todas las que apliquen (opcional)
+            </p>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: 8, maxHeight: 180, overflowY: "auto" }}>
               {(restrictionsData ?? []).map((r: any) => (
                 <button key={r.id}
                   onClick={() => setForm(f => ({
@@ -396,11 +584,7 @@ function StepProfileSetup({ accountType, onNext }: { accountType: AccountType; o
                       ? f.dietRestrictions.filter(id => id !== r.id)
                       : [...f.dietRestrictions, r.id],
                   }))}
-                  style={{
-                    ...chipStyle,
-                    ...(form.dietRestrictions.includes(r.id) ? chipActiveStyle : {}),
-                    fontSize: 13, padding: "8px 14px",
-                  }}>
+                  style={{ ...chipStyle, ...(form.dietRestrictions.includes(r.id) ? chipActiveStyle : {}), fontSize: 13, padding: "8px 14px" }}>
                   {r.nameEs}
                 </button>
               ))}
@@ -409,24 +593,48 @@ function StepProfileSetup({ accountType, onNext }: { accountType: AccountType; o
         </div>
       )}
 
-      {/* Sub-step 3: Preferences & Terms */}
-      {step === 3 && (
-        <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
-          <div style={{ background: "#FFF7ED", borderRadius: 16, padding: 20, border: "1px solid #FED7AA" }}>
-            <h4 style={{ fontSize: 16, fontWeight: 800, color: "#92400E", margin: "0 0 12px" }}>📋 Términos y condiciones</h4>
-            <p style={{ fontSize: 13, color: "#92400E", lineHeight: 1.6, margin: "0 0 16px" }}>
-              Al usar BuddyMarket, aceptas que el contenido nutricional es orientativo y no sustituye el consejo de un profesional de la salud. Consulta siempre con un dietista o médico para decisiones importantes sobre tu alimentación.
-            </p>
+      {/* Sub-step 3: Terms & Newsletter */}
+      {subStep === 3 && (
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+          {/* Summary card */}
+          <div style={{
+            background: "linear-gradient(135deg, #FFF7ED 0%, #FFFBF5 100%)",
+            borderRadius: 16, padding: 20, border: "1px solid #FED7AA",
+          }}>
+            <h4 style={{ fontSize: 15, fontWeight: 800, color: "#92400E", margin: "0 0 12px" }}>
+              🎉 ¡Tu perfil está casi listo!
+            </h4>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8 }}>
+              {[
+                { l: "Nombre", v: form.name || "—" },
+                { l: "Género", v: form.gender === "male" ? "Hombre" : form.gender === "female" ? "Mujer" : form.gender || "—" },
+                { l: "Objetivo", v: form.mainGoal?.replace("_", " ") || "—" },
+                { l: "Actividad", v: form.activityLevel || "—" },
+                { l: "Alergias", v: form.allergies.length > 0 ? `${form.allergies.length} seleccionadas` : "Ninguna" },
+                { l: "Dieta", v: form.dietRestrictions.length > 0 ? `${form.dietRestrictions.length} restricciones` : "Sin restricciones" },
+              ].map(item => (
+                <div key={item.l} style={{ fontSize: 13 }}>
+                  <span style={{ color: "#9CA3AF", fontWeight: 600 }}>{item.l}: </span>
+                  <span style={{ color: "#374151", fontWeight: 700 }}>{item.v}</span>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Terms */}
+          <div style={{ background: "#FFFBF5", borderRadius: 16, padding: 18, border: "1px solid #FED7AA" }}>
             <label style={{ display: "flex", alignItems: "flex-start", gap: 12, cursor: "pointer" }}>
               <input type="checkbox" checked={form.acceptTerms}
                 onChange={e => setForm(f => ({ ...f, acceptTerms: e.target.checked }))}
                 style={{ marginTop: 2, width: 18, height: 18, accentColor: "#F97316" }} />
-              <span style={{ fontSize: 14, fontWeight: 600, color: "#92400E" }}>
-                Acepto los términos y condiciones y la política de privacidad *
+              <span style={{ fontSize: 14, fontWeight: 600, color: "#92400E", lineHeight: 1.5 }}>
+                Acepto los <a href="/legal/terminos" target="_blank" style={{ color: "#F97316" }}>términos y condiciones</a> y la <a href="/legal/privacidad" target="_blank" style={{ color: "#F97316" }}>política de privacidad</a>. El contenido nutricional es orientativo y no sustituye el consejo médico. *
               </span>
             </label>
           </div>
-          <div style={{ background: "#F0FDF4", borderRadius: 16, padding: 20, border: "1px solid #BBF7D0" }}>
+
+          {/* Newsletter */}
+          <div style={{ background: "#F0FDF4", borderRadius: 16, padding: 18, border: "1px solid #BBF7D0" }}>
             <label style={{ display: "flex", alignItems: "flex-start", gap: 12, cursor: "pointer" }}>
               <input type="checkbox" checked={form.newsletter}
                 onChange={e => setForm(f => ({ ...f, newsletter: e.target.checked }))}
@@ -445,240 +653,240 @@ function StepProfileSetup({ accountType, onNext }: { accountType: AccountType; o
       )}
 
       {/* Navigation */}
-      <div style={{ display: "flex", gap: 12, marginTop: 32, justifyContent: "space-between" }}>
-        {step > 0 ? (
-          <button onClick={() => setStep(s => s - 1)} style={backBtnStyle}>← Atrás</button>
-        ) : <div />}
+      <div style={{ display: "flex", gap: 12, marginTop: 28 }}>
+        {subStep > 0 && (
+          <button onClick={() => setSubStep(s => s - 1)} style={{ ...btnSecondary, flex: "0 0 auto" }}>
+            ← Atrás
+          </button>
+        )}
         <button
           onClick={handleNext}
-          disabled={step === 3 && !form.acceptTerms || isLoading}
+          disabled={!canProceed || isLoading}
           style={{
-            ...continueBtnStyle,
-            opacity: (step === 3 && !form.acceptTerms) || isLoading ? 0.5 : 1,
-            cursor: (step === 3 && !form.acceptTerms) || isLoading ? "not-allowed" : "pointer",
-          }}>
-          {isLoading ? "Guardando..." : step < totalSubSteps - 1 ? "Siguiente →" : "Finalizar perfil →"}
+            ...btnPrimary, flex: 1,
+            opacity: !canProceed || isLoading ? 0.5 : 1,
+            cursor: !canProceed || isLoading ? "not-allowed" : "pointer",
+          }}
+        >
+          {isLoading ? "Guardando..." : subStep < totalSubSteps - 1 ? "Siguiente →" : "¡Completar perfil! 🎉"}
         </button>
       </div>
+
+      <p style={{ textAlign: "center", fontSize: 12, color: "#9CA3AF", marginTop: 12 }}>
+        Todos los campos son opcionales excepto los marcados con *
+      </p>
     </div>
   );
 }
 
+// ─── Step: Application ────────────────────────────────────────────────────────
+
 function StepApplication({ accountType, onNext }: { accountType: AccountType; onNext: () => void }) {
   const [form, setForm] = useState({
-    displayName: "", bio: "", specialty: "", expertCategory: "",
+    displayName: "", bio: "", expertCategory: "", specialty: "",
+    certifications: "", experience: "", motivation: "",
     instagramHandle: "", youtubeHandle: "", tiktokHandle: "", websiteUrl: "",
-    motivation: "", experience: "", certifications: "",
   });
-  const submitApp = trpc.profile.submitRegistrationApplication.useMutation();
+  const submitApp = trpc.buddyApplications.submitApplication.useMutation();
+  const isMaker = accountType === "buddymaker";
+  const isExpert = accountType === "buddyexpert";
 
   const handleSubmit = async () => {
     if (!form.displayName || !form.motivation) {
-      toast.error("Completa los campos obligatorios");
+      toast.error("Rellena los campos obligatorios");
       return;
     }
     try {
       await submitApp.mutateAsync({
-        type: accountType === "buddyexpert" ? "expert" : "maker",
+        type: accountType === "buddymaker" ? "maker" : "expert",
         displayName: form.displayName,
-        bio: form.bio || undefined,
-        specialty: form.specialty || undefined,
+        bio: form.bio,
         expertCategory: form.expertCategory || undefined,
+        specialty: form.specialty || undefined,
+        certifications: form.certifications || undefined,
+        experience: form.experience || undefined,
+        motivation: form.motivation,
         instagramHandle: form.instagramHandle || undefined,
         youtubeHandle: form.youtubeHandle || undefined,
         tiktokHandle: form.tiktokHandle || undefined,
         websiteUrl: form.websiteUrl || undefined,
-        motivation: form.motivation || undefined,
-        experience: form.experience || undefined,
-        certifications: form.certifications || undefined,
       });
-      toast.success("¡Solicitud enviada! Te avisaremos cuando sea revisada.");
       onNext();
-    } catch (e: any) {
-      toast.error(e?.message ?? "Error al enviar la solicitud");
+    } catch {
+      toast.error("Error al enviar la solicitud");
     }
   };
 
-  const isMaker = accountType === "buddymaker";
-  const isExpert = accountType === "buddyexpert";
-
   return (
-    <div style={{ maxWidth: 600, margin: "0 auto", padding: "0 16px" }}>
-      <div style={{ textAlign: "center", marginBottom: 28 }}>
-        <div style={{ fontSize: 48, marginBottom: 12 }}>{isMaker ? "👨‍🍳" : "🎓"}</div>
-        <h3 style={{ fontSize: 22, fontWeight: 900, color: "#1a1a1a", margin: "0 0 8px", letterSpacing: "-0.02em" }}>
-          Solicitud de {isMaker ? "BuddyMaker" : "BuddyExpert"}
+    <div>
+      <div style={{ marginBottom: 24 }}>
+        <div style={{
+          display: "inline-flex", alignItems: "center", gap: 8,
+          background: isMaker ? "#FFF7ED" : "#F5F3FF", borderRadius: 20,
+          padding: "6px 14px", marginBottom: 10,
+        }}>
+          <span style={{ fontSize: 18 }}>{isMaker ? "👨‍🍳" : "🎓"}</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: isMaker ? "#F97316" : "#8B5CF6" }}>
+            Solicitud de {isMaker ? "BuddyMaker" : "BuddyExpert"}
+          </span>
+        </div>
+        <h3 style={{ fontSize: 22, fontWeight: 900, color: "#1a1a1a", margin: "0 0 6px", letterSpacing: "-0.02em" }}>
+          Cuéntanos sobre ti
         </h3>
         <p style={{ fontSize: 14, color: "#6B7280", margin: 0, lineHeight: 1.5 }}>
           {isMaker
-            ? "Cuéntanos sobre tu experiencia culinaria y por qué quieres compartir tus recetas con la comunidad."
-            : "Comparte tu formación y experiencia profesional para que podamos verificar tu perfil."}
+            ? "Cuéntanos sobre tu experiencia culinaria y por qué quieres compartir tus recetas."
+            : "Comparte tu formación y experiencia para que podamos verificar tu perfil."}
         </p>
       </div>
 
-      <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+      <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
         <div>
           <label style={labelStyle}>Nombre de perfil público *</label>
           <input style={inputStyle} placeholder={isMaker ? "Chef María García" : "Dra. Ana López, Nutricionista"}
             value={form.displayName} onChange={e => setForm(f => ({ ...f, displayName: e.target.value }))} />
         </div>
-
         <div>
           <label style={labelStyle}>Descripción / Bio</label>
-          <textarea style={{ ...inputStyle, minHeight: 100, resize: "vertical" }}
-            placeholder={isMaker ? "Cuéntanos sobre tu estilo culinario, experiencia y qué tipo de contenido crearás..." : "Describe tu formación, especialización y enfoque profesional..."}
+          <textarea style={{ ...inputStyle, minHeight: 90, resize: "vertical" }}
+            placeholder={isMaker ? "Tu estilo culinario, experiencia y qué tipo de contenido crearás..." : "Tu formación, especialización y enfoque profesional..."}
             value={form.bio} onChange={e => setForm(f => ({ ...f, bio: e.target.value }))} />
         </div>
-
         {isExpert && (
           <div>
             <label style={labelStyle}>Categoría de especialización</label>
             <select style={inputStyle} value={form.expertCategory}
               onChange={e => setForm(f => ({ ...f, expertCategory: e.target.value }))}>
               <option value="">Selecciona una categoría</option>
-              {EXPERT_CATEGORIES.map(c => (
-                <option key={c.value} value={c.value}>{c.label}</option>
-              ))}
+              {EXPERT_CATEGORIES.map(c => <option key={c.value} value={c.value}>{c.label}</option>)}
             </select>
           </div>
         )}
-
         {isMaker && (
           <div>
             <label style={labelStyle}>Especialidad culinaria</label>
             <select style={inputStyle} value={form.specialty}
               onChange={e => setForm(f => ({ ...f, specialty: e.target.value }))}>
               <option value="">Selecciona tu especialidad</option>
-              {MAKER_SPECIALTIES.map(s => (
-                <option key={s} value={s}>{s}</option>
-              ))}
+              {MAKER_SPECIALTIES.map(s => <option key={s} value={s}>{s}</option>)}
             </select>
           </div>
         )}
-
         {isExpert && (
           <div>
             <label style={labelStyle}>Certificaciones y titulaciones</label>
             <textarea style={{ ...inputStyle, minHeight: 80, resize: "vertical" }}
-              placeholder="Grado en Nutrición Humana y Dietética, Universidad de Barcelona (2018). Máster en Nutrición Deportiva (2020)..."
+              placeholder="Grado en Nutrición Humana y Dietética, Universidad de Barcelona (2018)..."
               value={form.certifications} onChange={e => setForm(f => ({ ...f, certifications: e.target.value }))} />
           </div>
         )}
-
-        <div>
-          <label style={labelStyle}>Experiencia previa</label>
-          <textarea style={{ ...inputStyle, minHeight: 80, resize: "vertical" }}
-            placeholder={isMaker ? "Llevo 5 años publicando recetas en Instagram con +10k seguidores..." : "3 años de consulta privada, colaboración con clínicas de nutrición..."}
-            value={form.experience} onChange={e => setForm(f => ({ ...f, experience: e.target.value }))} />
-        </div>
-
         <div>
           <label style={labelStyle}>¿Por qué quieres ser {isMaker ? "BuddyMaker" : "BuddyExpert"}? *</label>
-          <textarea style={{ ...inputStyle, minHeight: 100, resize: "vertical" }}
-            placeholder="Cuéntanos tu motivación y qué aportarás a la comunidad de BuddyMarket..."
+          <textarea style={{ ...inputStyle, minHeight: 90, resize: "vertical" }}
+            placeholder="Tu motivación y qué aportarás a la comunidad de BuddyMarket..."
             value={form.motivation} onChange={e => setForm(f => ({ ...f, motivation: e.target.value }))} />
         </div>
-
         <div>
           <label style={labelStyle}>Redes sociales (opcional)</label>
-          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ fontSize: 20, width: 28 }}>📸</span>
-              <input style={{ ...inputStyle, flex: 1 }} placeholder="@tuinstagram"
-                value={form.instagramHandle} onChange={e => setForm(f => ({ ...f, instagramHandle: e.target.value }))} />
-            </div>
-            {isMaker && (
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <span style={{ fontSize: 20, width: 28 }}>▶️</span>
-                <input style={{ ...inputStyle, flex: 1 }} placeholder="@tuyoutube"
-                  value={form.youtubeHandle} onChange={e => setForm(f => ({ ...f, youtubeHandle: e.target.value }))} />
+          <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+            {[
+              { icon: "📸", placeholder: "@tuinstagram", field: "instagramHandle" },
+              ...(isMaker ? [
+                { icon: "▶️", placeholder: "@tuyoutube", field: "youtubeHandle" },
+                { icon: "🎵", placeholder: "@tutiktok", field: "tiktokHandle" },
+              ] : []),
+              { icon: "🌐", placeholder: "https://tuweb.com", field: "websiteUrl" },
+            ].map(({ icon, placeholder, field }) => (
+              <div key={field} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                <span style={{ fontSize: 20, width: 28 }}>{icon}</span>
+                <input style={{ ...inputStyle, flex: 1 }} placeholder={placeholder}
+                  value={(form as any)[field]}
+                  onChange={e => setForm(f => ({ ...f, [field]: e.target.value }))} />
               </div>
-            )}
-            {isMaker && (
-              <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <span style={{ fontSize: 20, width: 28 }}>🎵</span>
-                <input style={{ ...inputStyle, flex: 1 }} placeholder="@tutiktok"
-                  value={form.tiktokHandle} onChange={e => setForm(f => ({ ...f, tiktokHandle: e.target.value }))} />
-              </div>
-            )}
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-              <span style={{ fontSize: 20, width: 28 }}>🌐</span>
-              <input style={{ ...inputStyle, flex: 1 }} placeholder="https://tuweb.com"
-                value={form.websiteUrl} onChange={e => setForm(f => ({ ...f, websiteUrl: e.target.value }))} />
-            </div>
+            ))}
           </div>
         </div>
       </div>
 
-      <div style={{ display: "flex", justifyContent: "center", marginTop: 32 }}>
-        <button onClick={handleSubmit} disabled={submitApp.isPending || !form.displayName || !form.motivation}
-          style={{
-            ...continueBtnStyle,
-            opacity: submitApp.isPending || !form.displayName || !form.motivation ? 0.5 : 1,
-            cursor: submitApp.isPending || !form.displayName || !form.motivation ? "not-allowed" : "pointer",
-          }}>
-          {submitApp.isPending ? "Enviando solicitud..." : "📨 Enviar solicitud"}
-        </button>
-      </div>
+      <button
+        onClick={handleSubmit}
+        disabled={submitApp.isPending || !form.displayName || !form.motivation}
+        style={{
+          ...btnPrimary, width: "100%", marginTop: 28,
+          opacity: submitApp.isPending || !form.displayName || !form.motivation ? 0.5 : 1,
+          cursor: submitApp.isPending || !form.displayName || !form.motivation ? "not-allowed" : "pointer",
+        }}
+      >
+        {submitApp.isPending ? "Enviando solicitud..." : "📨 Enviar solicitud"}
+      </button>
     </div>
   );
 }
 
+// ─── Step: Pending Approval ───────────────────────────────────────────────────
+
 function StepPendingApproval({ accountType, application }: { accountType: AccountType; application: any }) {
   const [, navigate] = useLocation();
-  const statusColor = application?.status === "approved" ? "#10B981" : application?.status === "rejected" ? "#EF4444" : "#F97316";
-  const statusLabel = application?.status === "approved" ? "✅ Aprobada" : application?.status === "rejected" ? "❌ Rechazada" : "⏳ En revisión";
+  const isApproved = application?.status === "approved";
+  const isRejected = application?.status === "rejected";
+  const statusColor = isApproved ? "#10B981" : isRejected ? "#EF4444" : "#F97316";
 
   return (
-    <div style={{ maxWidth: 500, margin: "0 auto", padding: "0 16px", textAlign: "center" }}>
-      <div style={{ fontSize: 64, marginBottom: 20 }}>
-        {application?.status === "approved" ? "🎉" : application?.status === "rejected" ? "😔" : "⏳"}
+    <div style={{ textAlign: "center" }}>
+      <div style={{ fontSize: 72, marginBottom: 20, lineHeight: 1 }}>
+        {isApproved ? "🎉" : isRejected ? "😔" : "⏳"}
       </div>
-      <h3 style={{ fontSize: 24, fontWeight: 900, color: "#1a1a1a", margin: "0 0 12px", letterSpacing: "-0.02em" }}>
-        {application?.status === "approved"
-          ? "¡Solicitud aprobada!"
-          : application?.status === "rejected"
-          ? "Solicitud no aprobada"
-          : "Solicitud en revisión"}
+      <h3 style={{ fontSize: 26, fontWeight: 900, color: "#1a1a1a", margin: "0 0 10px", letterSpacing: "-0.03em" }}>
+        {isApproved ? "¡Solicitud aprobada!" : isRejected ? "Solicitud no aprobada" : "¡Ya casi estás dentro!"}
       </h3>
+      <p style={{ fontSize: 15, color: "#6B7280", margin: "0 0 28px", lineHeight: 1.6 }}>
+        {isApproved
+          ? `¡Bienvenido/a a la familia ${accountType === "buddymaker" ? "BuddyMaker" : "BuddyExpert"}!`
+          : isRejected
+          ? "Nuestro equipo ha revisado tu solicitud y no ha podido aprobarse en este momento."
+          : "Tu solicitud está en revisión. Normalmente tardamos 24-48 horas laborables."}
+      </p>
 
       <div style={{
         background: `${statusColor}10`, border: `2px solid ${statusColor}30`,
-        borderRadius: 16, padding: 20, marginBottom: 24,
+        borderRadius: 18, padding: 20, marginBottom: 28, textAlign: "left",
       }}>
-        <div style={{ fontSize: 16, fontWeight: 800, color: statusColor, marginBottom: 8 }}>{statusLabel}</div>
-        {application?.status === "pending" && (
-          <p style={{ fontSize: 14, color: "#6B7280", margin: 0, lineHeight: 1.6 }}>
-            Nuestro equipo está revisando tu solicitud. Normalmente tarda entre 24-48 horas laborables.
-            Te notificaremos por email cuando tengamos una respuesta.
-          </p>
-        )}
-        {application?.status === "approved" && (
-          <p style={{ fontSize: 14, color: "#166534", margin: 0, lineHeight: 1.6 }}>
-            ¡Bienvenido/a a la familia {accountType === "buddymaker" ? "BuddyMaker" : "BuddyExpert"}!
-            Ya puedes acceder a todas las funciones de tu cuenta.
-          </p>
-        )}
-        {application?.status === "rejected" && application?.adminNote && (
-          <p style={{ fontSize: 14, color: "#991B1B", margin: 0, lineHeight: 1.6 }}>
+        <div style={{ fontSize: 15, fontWeight: 800, color: statusColor, marginBottom: 8 }}>
+          {isApproved ? "✅ Aprobada" : isRejected ? "❌ No aprobada" : "⏳ En revisión"}
+        </div>
+        {isRejected && application?.adminNote && (
+          <p style={{ fontSize: 14, color: "#991B1B", margin: 0 }}>
             <strong>Motivo:</strong> {application.adminNote}
+          </p>
+        )}
+        {!isApproved && !isRejected && (
+          <p style={{ fontSize: 14, color: "#6B7280", margin: 0, lineHeight: 1.6 }}>
+            Te notificaremos por email cuando tengamos una respuesta. Mientras tanto, ya puedes explorar todas las funciones de BuddyMarket.
           </p>
         )}
       </div>
 
-      {application?.status === "pending" && (
-        <div style={{ background: "#F9FAFB", borderRadius: 16, padding: 20, marginBottom: 24, textAlign: "left" }}>
-          <h4 style={{ fontSize: 15, fontWeight: 800, color: "#374151", margin: "0 0 12px" }}>Mientras esperas...</h4>
-          {["Completa tu perfil nutricional", "Explora recetas de la comunidad", "Prueba los menús especializados con IA", "Configura tu diario nutricional"].map((item, i) => (
-            <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "6px 0", fontSize: 14, color: "#6B7280" }}>
-              <span style={{ color: "#F97316", fontWeight: 800 }}>→</span> {item}
+      {/* While waiting */}
+      {!isApproved && !isRejected && (
+        <div style={{ background: "#F9FAFB", borderRadius: 16, padding: 20, marginBottom: 28, textAlign: "left" }}>
+          <h4 style={{ fontSize: 14, fontWeight: 800, color: "#374151", margin: "0 0 12px" }}>
+            Mientras esperas, puedes:
+          </h4>
+          {[
+            "🥗 Explorar miles de recetas de la comunidad",
+            "📅 Planificar tu menú semanal",
+            "🤖 Chatear con BuddyIA",
+            "🛒 Gestionar tu despensa e inventario",
+          ].map((item, i) => (
+            <div key={i} style={{ display: "flex", alignItems: "center", gap: 10, padding: "5px 0", fontSize: 14, color: "#6B7280" }}>
+              <span>{item}</span>
             </div>
           ))}
         </div>
       )}
 
-      <button onClick={() => navigate("/app/dashboard")} style={continueBtnStyle}>
-        {application?.status === "approved" ? "Ir a mi panel →" : "Ir al inicio →"}
+      <button onClick={() => navigate("/app/dashboard")} style={{ ...btnPrimary, width: "100%" }}>
+        {isApproved ? "Ir a mi panel →" : "Empezar a explorar BuddyMarket →"}
       </button>
     </div>
   );
@@ -694,7 +902,6 @@ export default function Registration() {
 
   useEffect(() => {
     if (regStatus) {
-      // If already completed, redirect to dashboard
       if (regStatus.registrationStep === "completed" && regStatus.onboardingCompleted) {
         navigate("/app/dashboard");
         return;
@@ -716,13 +923,11 @@ export default function Registration() {
     { id: "pending_approval", label: "Confirmación" },
   ];
 
-  const currentStepIndex = WIZARD_STEPS.findIndex(s => s.id === currentStep);
-
   if (isLoading) {
     return (
       <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#FFF7ED" }}>
         <div style={{ textAlign: "center" }}>
-          <img src={LOGO_URL} alt="BuddyMarket" style={{ width: 64, height: 64, borderRadius: 16, marginBottom: 16 }} />
+          <img src={LOGO_ICON} alt="BuddyMarket" style={{ width: 64, height: 64, borderRadius: 16, marginBottom: 16 }} />
           <p style={{ color: "#9CA3AF", fontSize: 16 }}>Cargando...</p>
         </div>
       </div>
@@ -730,81 +935,100 @@ export default function Registration() {
   }
 
   return (
-    <div style={{ minHeight: "100vh", background: "linear-gradient(180deg, #FFF7ED 0%, #FFFBF5 100%)" }}>
-      {/* Header */}
+    <div style={{ minHeight: "100vh", display: "flex" }}>
+      {/* ── Left panel (hidden on mobile) ── */}
       <div style={{
-        background: "white", borderBottom: "1px solid #F3F4F6",
-        padding: "16px 24px", display: "flex", alignItems: "center", justifyContent: "space-between",
-        position: "sticky", top: 0, zIndex: 100,
+        flex: "0 0 42%", display: "none",
+        // Show on desktop via media query workaround
+      }} className="registration-left-panel">
+        <LeftPanel step={currentStep as RegistrationStep} accountType={currentAccountType} />
+      </div>
+
+      {/* ── Right panel ── */}
+      <div style={{
+        flex: 1, overflowY: "auto",
+        background: "white",
+        display: "flex", flexDirection: "column",
       }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <img src={LOGO_URL} alt="BuddyMarket" style={{ width: 40, height: 40, borderRadius: 12 }} />
-          <div>
-            <div style={{ fontSize: 17, fontWeight: 900, color: "#1a1a1a", letterSpacing: "-0.02em" }}>BuddyMarket</div>
-            <div style={{ fontSize: 12, color: "#F97316", fontWeight: 700 }}>Configuración de cuenta</div>
+        {/* Top bar */}
+        <div style={{
+          padding: "20px 32px", display: "flex", alignItems: "center",
+          justifyContent: "space-between", borderBottom: "1px solid #F3F4F6",
+          position: "sticky", top: 0, background: "white", zIndex: 10,
+        }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            <img src={LOGO_ICON} alt="" style={{ width: 36, height: 36, borderRadius: 10 }} />
+            <span style={{ fontSize: 16, fontWeight: 900, color: "#1a1a1a", letterSpacing: "-0.02em" }}>
+              BuddyMarket
+            </span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+            {WIZARD_STEPS.map((s, i) => {
+              const idx = WIZARD_STEPS.findIndex(ws => ws.id === currentStep);
+              return (
+                <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                  <div style={{
+                    width: 26, height: 26, borderRadius: "50%",
+                    background: i < idx ? "#10B981" : i === idx ? "#F97316" : "#E5E7EB",
+                    color: i <= idx ? "white" : "#9CA3AF",
+                    display: "flex", alignItems: "center", justifyContent: "center",
+                    fontSize: 11, fontWeight: 800, transition: "all 0.3s ease",
+                    boxShadow: i === idx ? "0 0 0 3px rgba(249,115,22,0.2)" : "none",
+                  }}>
+                    {i < idx ? "✓" : i + 1}
+                  </div>
+                  {i < WIZARD_STEPS.length - 1 && (
+                    <div style={{
+                      width: 16, height: 2, borderRadius: 1,
+                      background: i < idx ? "#10B981" : "#E5E7EB",
+                    }} />
+                  )}
+                </div>
+              );
+            })}
           </div>
         </div>
 
-        {/* Step indicator */}
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
-          {WIZARD_STEPS.map((s, i) => (
-            <div key={s.id} style={{ display: "flex", alignItems: "center", gap: 6 }}>
-              <div style={{
-                width: 28, height: 28, borderRadius: "50%",
-                background: i < currentStepIndex ? "#10B981" : i === currentStepIndex ? "#F97316" : "#E5E7EB",
-                color: i <= currentStepIndex ? "white" : "#9CA3AF",
-                display: "flex", alignItems: "center", justifyContent: "center",
-                fontSize: 12, fontWeight: 800, transition: "all 0.3s ease",
-              }}>
-                {i < currentStepIndex ? "✓" : i + 1}
-              </div>
-              <span style={{
-                fontSize: 12, fontWeight: 600, display: "none",
-                color: i === currentStepIndex ? "#F97316" : "#9CA3AF",
-              }} className="sm:block">
-                {s.label}
-              </span>
-              {i < WIZARD_STEPS.length - 1 && (
-                <div style={{ width: 20, height: 2, background: i < currentStepIndex ? "#10B981" : "#E5E7EB", borderRadius: 1 }} />
-              )}
-            </div>
-          ))}
+        {/* Step content */}
+        <div style={{ flex: 1, padding: "40px 32px 60px", maxWidth: 580, width: "100%", margin: "0 auto" }}>
+          {currentStep === "account_type" && (
+            <StepAccountType onSelect={(type) => {
+              setLocalAccountType(type);
+              setLocalStep("profile_setup");
+              refetch();
+            }} />
+          )}
+          {currentStep === "profile_setup" && (
+            <StepProfileSetup accountType={currentAccountType} onNext={() => {
+              const nextStep = (currentAccountType === "buddymaker" || currentAccountType === "buddyexpert")
+                ? "application" : "pending_approval";
+              setLocalStep(nextStep);
+              refetch();
+            }} />
+          )}
+          {currentStep === "application" && (
+            <StepApplication accountType={currentAccountType} onNext={() => {
+              setLocalStep("pending_approval");
+              refetch();
+            }} />
+          )}
+          {(currentStep === "pending_approval" || currentStep === "completed") && (
+            <StepPendingApproval accountType={currentAccountType} application={regStatus?.application} />
+          )}
         </div>
       </div>
 
-      {/* Content */}
-      <div style={{ padding: "40px 16px 80px" }}>
-        {currentStep === "account_type" && (
-          <StepAccountType onSelect={(type) => {
-            setLocalAccountType(type);
-            setLocalStep("profile_setup");
-            refetch();
-          }} />
-        )}
-
-        {currentStep === "profile_setup" && (
-          <StepProfileSetup accountType={currentAccountType} onNext={() => {
-            const nextStep = (currentAccountType === "buddymaker" || currentAccountType === "buddyexpert")
-              ? "application" : "pending_approval";
-            setLocalStep(nextStep);
-            refetch();
-          }} />
-        )}
-
-        {currentStep === "application" && (
-          <StepApplication accountType={currentAccountType} onNext={() => {
-            setLocalStep("pending_approval");
-            refetch();
-          }} />
-        )}
-
-        {(currentStep === "pending_approval" || currentStep === "completed") && (
-          <StepPendingApproval
-            accountType={currentAccountType}
-            application={regStatus?.application}
-          />
-        )}
-      </div>
+      <style>{`
+        @media (min-width: 900px) {
+          .registration-left-panel {
+            display: block !important;
+          }
+        }
+        @keyframes fadeSlideIn {
+          from { opacity: 0; transform: translateX(20px); }
+          to { opacity: 1; transform: translateX(0); }
+        }
+      `}</style>
     </div>
   );
 }
@@ -812,12 +1036,12 @@ export default function Registration() {
 // ─── Shared Styles ────────────────────────────────────────────────────────────
 
 const labelStyle: React.CSSProperties = {
-  display: "block", fontSize: 14, fontWeight: 700, color: "#374151", marginBottom: 8,
+  display: "block", fontSize: 13, fontWeight: 700, color: "#374151", marginBottom: 7,
 };
 
 const inputStyle: React.CSSProperties = {
-  width: "100%", padding: "12px 16px", borderRadius: 12, border: "2px solid #E5E7EB",
-  fontSize: 15, fontWeight: 500, color: "#1a1a1a", background: "white",
+  width: "100%", padding: "11px 14px", borderRadius: 12, border: "2px solid #E5E7EB",
+  fontSize: 14, fontWeight: 500, color: "#1a1a1a", background: "white",
   outline: "none", boxSizing: "border-box", fontFamily: "inherit",
   transition: "border-color 0.2s ease",
 };
@@ -834,16 +1058,16 @@ const chipActiveStyle: React.CSSProperties = {
   boxShadow: "0 4px 12px rgba(249,115,22,0.35)",
 };
 
-const continueBtnStyle: React.CSSProperties = {
+const btnPrimary: React.CSSProperties = {
   background: "linear-gradient(135deg, #F97316 0%, #EA580C 100%)",
-  color: "white", border: "none", borderRadius: 16, padding: "16px 40px",
-  fontSize: 16, fontWeight: 800, cursor: "pointer",
-  boxShadow: "0 4px 20px rgba(249,115,22,0.4)",
+  color: "white", border: "none", borderRadius: 14, padding: "15px 32px",
+  fontSize: 15, fontWeight: 800, cursor: "pointer",
+  boxShadow: "0 4px 18px rgba(249,115,22,0.4)",
   transition: "all 0.2s ease",
 };
 
-const backBtnStyle: React.CSSProperties = {
+const btnSecondary: React.CSSProperties = {
   background: "white", color: "#6B7280", border: "2px solid #E5E7EB",
-  borderRadius: 16, padding: "14px 28px", fontSize: 15, fontWeight: 700,
+  borderRadius: 14, padding: "13px 24px", fontSize: 14, fontWeight: 700,
   cursor: "pointer", transition: "all 0.2s ease",
 };
