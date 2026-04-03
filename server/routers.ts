@@ -1609,6 +1609,70 @@ Si no puedes detectar productos, devuelve {"products": []}. No incluyas texto ad
           totalMenus: menus.length,
         };
       }),
+    // ── Admin: list all recipes with pagination + search ──────────────────────
+    recipes: protectedProcedure
+      .input(z.object({
+        limit: z.number().optional().default(50),
+        offset: z.number().optional().default(0),
+        search: z.string().optional(),
+      }))
+      .query(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return { recipes: [], total: 0 };
+        const { recipes: recipesTable, users: usersTable } = await import("../drizzle/schema");
+        const { like, or, count, eq: eqFn } = await import("drizzle-orm");
+        const whereClause = input.search
+          ? or(like(recipesTable.name, `%${input.search}%`), like(recipesTable.description, `%${input.search}%`))
+          : undefined;
+        const [rows, countRows] = await Promise.all([
+          drizzleDb
+            .select({ id: recipesTable.id, name: recipesTable.name, description: recipesTable.description, imageUrl: recipesTable.imageUrl, isPublic: recipesTable.isPublic, createdAt: recipesTable.createdAt, userName: usersTable.name })
+            .from(recipesTable)
+            .leftJoin(usersTable, eqFn(usersTable.id, recipesTable.userId))
+            .where(whereClause)
+            .orderBy(recipesTable.id)
+            .limit(input.limit)
+            .offset(input.offset),
+          drizzleDb.select({ total: count() }).from(recipesTable).where(whereClause),
+        ]);
+        return { recipes: rows, total: countRows[0]?.total ?? 0 };
+      }),
+    // ── Admin: upload recipe image to S3 ──────────────────────────────────────
+    uploadRecipeImage: protectedProcedure
+      .input(z.object({
+        recipeId: z.number(),
+        imageBase64: z.string(),
+        mimeType: z.string().default("image/jpeg"),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        const imageBuffer = Buffer.from(input.imageBase64, "base64");
+        const ext = input.mimeType.split("/")[1] ?? "jpg";
+        const fileKey = `recipe-images/${input.recipeId}-${Date.now()}.${ext}`;
+        const { url } = await storagePut(fileKey, imageBuffer, input.mimeType);
+        await db.updateRecipe(input.recipeId, { imageUrl: url });
+        return { url };
+      }),
+    // ── Admin: update any recipe field ───────────────────────────────────────
+    updateRecipe: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        name: z.string().optional(),
+        description: z.string().optional(),
+        imageUrl: z.string().optional(),
+        preparationTime: z.number().optional(),
+        cookTime: z.number().optional(),
+        servings: z.number().optional(),
+        difficulty: z.enum(["easy", "medium", "hard"]).optional(),
+        isPublic: z.boolean().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        const { id, ...data } = input;
+        await db.updateRecipe(id, data);
+        return { success: true };
+      }),
   }),
 
   // Mercadona integration — proxy to tienda.mercadona.es unofficial API

@@ -1,5 +1,5 @@
 import { trpc } from "@/lib/trpc";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { toast } from "sonner";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Link } from "wouter";
@@ -11,10 +11,17 @@ import {
   ExclamationCircleIcon,
   PlusIcon,
   TrashIcon,
+  PhotoIcon,
+  MagnifyingGlassIcon,
+  PencilSquareIcon,
+  CheckIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
+import { RECIPE_PLACEHOLDER_IMAGE as RECIPE_PLACEHOLDER } from "@/lib/constants";
 
 const TABS = [
   { key: "overview", label: "Resumen", icon: ShieldCheckIcon },
+  { key: "recipes", label: "Recetas", icon: BookOpenIcon },
   { key: "applications", label: "Solicitudes", icon: UsersIcon },
   { key: "allergies", label: "Alergias", icon: ExclamationCircleIcon },
   { key: "diets", label: "Dietas", icon: TagIcon },
@@ -107,6 +114,129 @@ function CatalogSection({
   );
 }
 
+// ── Recipe row with inline image upload and edit ──────────────────────────────
+function RecipeRow({ recipe, onUpdated }: { recipe: any; onUpdated: () => void }) {
+  const [editing, setEditing] = useState(false);
+  const [editName, setEditName] = useState(recipe.name ?? "");
+  const [editDesc, setEditDesc] = useState(recipe.description ?? "");
+  const [uploading, setUploading] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const uploadImage = trpc.admin.uploadRecipeImage.useMutation({
+    onSuccess: () => { toast.success("Foto actualizada"); onUpdated(); },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const updateRecipe = trpc.admin.updateRecipe.useMutation({
+    onSuccess: () => { toast.success("Receta actualizada"); setEditing(false); onUpdated(); },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 8 * 1024 * 1024) { toast.error("La imagen no puede superar 8 MB"); return; }
+    setUploading(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = () => {
+        const base64 = (reader.result as string).split(",")[1];
+        uploadImage.mutate({ recipeId: recipe.id, imageBase64: base64, mimeType: file.type });
+        setUploading(false);
+      };
+      reader.readAsDataURL(file);
+    } catch {
+      setUploading(false);
+      toast.error("Error al leer el archivo");
+    }
+  };
+
+  return (
+    <div className="rounded-2xl border border-gray-100 bg-white p-3 shadow-sm">
+      <div className="flex gap-3">
+        {/* Image */}
+        <div className="relative shrink-0">
+          <img
+            src={recipe.imageUrl || RECIPE_PLACEHOLDER}
+            alt={recipe.name}
+            className="h-16 w-16 rounded-xl object-cover"
+          />
+          <button
+            onClick={() => fileInputRef.current?.click()}
+            disabled={uploading}
+            title="Cambiar foto"
+            className="absolute -bottom-1 -right-1 flex h-6 w-6 items-center justify-center rounded-full bg-[#F97316] text-white shadow hover:bg-orange-600 disabled:opacity-50"
+          >
+            {uploading ? (
+              <div className="h-3 w-3 animate-spin rounded-full border-b border-white" />
+            ) : (
+              <PhotoIcon className="h-3 w-3" />
+            )}
+          </button>
+          <input
+            ref={fileInputRef}
+            type="file"
+            accept="image/jpeg,image/png,image/webp"
+            className="hidden"
+            onChange={handleFileChange}
+          />
+        </div>
+
+        {/* Info / edit */}
+        <div className="flex-1 min-w-0">
+          {editing ? (
+            <div className="space-y-1.5">
+              <input
+                value={editName}
+                onChange={(e) => setEditName(e.target.value)}
+                className="vively-input w-full text-sm py-1"
+                placeholder="Nombre de la receta"
+              />
+              <textarea
+                value={editDesc}
+                onChange={(e) => setEditDesc(e.target.value)}
+                className="vively-input w-full text-xs py-1 resize-none"
+                rows={2}
+                placeholder="Descripción"
+              />
+              <div className="flex gap-1.5">
+                <button
+                  onClick={() => updateRecipe.mutate({ id: recipe.id, name: editName, description: editDesc })}
+                  disabled={updateRecipe.isPending}
+                  className="flex items-center gap-1 rounded-lg bg-green-500 px-2.5 py-1 text-xs font-semibold text-white hover:bg-green-600 disabled:opacity-50"
+                >
+                  <CheckIcon className="h-3 w-3" /> Guardar
+                </button>
+                <button
+                  onClick={() => { setEditing(false); setEditName(recipe.name ?? ""); setEditDesc(recipe.description ?? ""); }}
+                  className="flex items-center gap-1 rounded-lg bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-600 hover:bg-gray-200"
+                >
+                  <XMarkIcon className="h-3 w-3" /> Cancelar
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="flex items-start justify-between gap-1">
+              <div className="min-w-0">
+                <p className="truncate text-sm font-semibold text-gray-800">{recipe.name}</p>
+                <p className="line-clamp-2 text-xs text-gray-400">{recipe.description || "Sin descripción"}</p>
+                <p className="mt-0.5 text-xs text-gray-300">ID #{recipe.id} · {recipe.userName ?? "—"}</p>
+              </div>
+              <button
+                onClick={() => setEditing(true)}
+                className="shrink-0 flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100"
+                title="Editar"
+              >
+                <PencilSquareIcon className="h-4 w-4" />
+              </button>
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Admin() {
   const [activeTab, setActiveTab] = useState("overview");
   const { user } = useAuth();
@@ -122,6 +252,16 @@ export default function Admin() {
     { status: appFilter },
     { enabled: activeTab === "applications" }
   );
+
+  // Recipes tab state
+  const [recipeSearch, setRecipeSearch] = useState("");
+  const [recipeOffset, setRecipeOffset] = useState(0);
+  const RECIPE_LIMIT = 30;
+  const { data: recipesData, refetch: refetchRecipes } = trpc.admin.recipes.useQuery(
+    { limit: RECIPE_LIMIT, offset: recipeOffset, search: recipeSearch || undefined },
+    { enabled: activeTab === "recipes" }
+  );
+
   const utils = trpc.useUtils();
 
   const addAllergy = trpc.admin.createAllergy.useMutation({
@@ -199,7 +339,7 @@ export default function Admin() {
         </div>
         <div>
           <h1 className="text-xl font-extrabold text-gray-900">Panel Admin</h1>
-          <p className="text-xs text-gray-400">Gestión de VIVELY</p>
+          <p className="text-xs text-gray-400">Gestión de BuddyMarket</p>
         </div>
       </div>
 
@@ -242,6 +382,7 @@ export default function Admin() {
             <h3 className="mb-2 text-sm font-bold text-gray-700">Accesos rápidos</h3>
             <div className="space-y-2">
               {[
+                { label: "Gestionar recetas y fotos", tab: "recipes" },
                 { label: "Gestionar alergias", tab: "allergies" },
                 { label: "Gestionar dietas", tab: "diets" },
                 { label: "Gestionar categorías", tab: "categories" },
@@ -261,10 +402,73 @@ export default function Admin() {
         </div>
       )}
 
+      {/* Recipes */}
+      {activeTab === "recipes" && (
+        <div className="space-y-3">
+          <div className="vively-card">
+            <div className="flex items-center justify-between mb-3">
+              <h3 className="text-sm font-bold text-gray-700">
+                Recetas
+                <span className="ml-2 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-500">
+                  {recipesData?.total ?? "…"}
+                </span>
+              </h3>
+              <p className="text-xs text-gray-400">Toca 📷 para añadir foto · ✏️ para editar</p>
+            </div>
+            {/* Search */}
+            <div className="relative mb-3">
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <input
+                value={recipeSearch}
+                onChange={(e) => { setRecipeSearch(e.target.value); setRecipeOffset(0); }}
+                placeholder="Buscar receta por nombre…"
+                className="vively-input w-full pl-9 text-sm"
+              />
+            </div>
+            {/* List */}
+            <div className="space-y-2 max-h-[65vh] overflow-y-auto">
+              {!recipesData ? (
+                <div className="flex justify-center py-8">
+                  <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900" />
+                </div>
+              ) : recipesData.recipes.length === 0 ? (
+                <p className="py-6 text-center text-sm text-gray-400">No se encontraron recetas</p>
+              ) : (
+                recipesData.recipes.map((r: any) => (
+                  <RecipeRow key={r.id} recipe={r} onUpdated={() => refetchRecipes()} />
+                ))
+              )}
+            </div>
+            {/* Pagination */}
+            {recipesData && recipesData.total > RECIPE_LIMIT && (
+              <div className="mt-3 flex items-center justify-between">
+                <button
+                  onClick={() => setRecipeOffset(Math.max(0, recipeOffset - RECIPE_LIMIT))}
+                  disabled={recipeOffset === 0}
+                  className="rounded-xl bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-600 disabled:opacity-40 hover:bg-gray-200"
+                >
+                  ← Anterior
+                </button>
+                <span className="text-xs text-gray-400">
+                  {recipeOffset + 1}–{Math.min(recipeOffset + RECIPE_LIMIT, recipesData.total)} de {recipesData.total}
+                </span>
+                <button
+                  onClick={() => setRecipeOffset(recipeOffset + RECIPE_LIMIT)}
+                  disabled={recipeOffset + RECIPE_LIMIT >= recipesData.total}
+                  className="rounded-xl bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-600 disabled:opacity-40 hover:bg-gray-200"
+                >
+                  Siguiente →
+                </button>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
+
       {/* Allergies */}
       {activeTab === "allergies" && (
         <CatalogSection
-          title="Alergias alimentarias"
+          title="Alergias"
           items={allergies}
           onAdd={(nameEs, nameEn) => addAllergy.mutate({ apiParam: nameEs.toLowerCase().replace(/\s+/g, '_'), nameEs, nameEn })}
           onDelete={(id) => deleteAllergy.mutate({ id })}
@@ -412,9 +616,6 @@ export default function Admin() {
               const planColor = u.subscription?.status === "active"
                 ? (u.subscription?.plan === "pro_max" ? "bg-purple-100 text-purple-700" : "bg-orange-100 text-orange-700")
                 : "bg-gray-100 text-gray-500";
-              const accountTypeLabel: Record<string, string> = {
-                user: "Usuario", buddymaker: "BuddyMaker", buddyexpert: "BuddyExpert", business: "Empresa"
-              };
               return (
                 <div key={u.id} className="rounded-2xl border border-gray-100 bg-white p-3 shadow-sm space-y-3">
                   {/* User info row */}
