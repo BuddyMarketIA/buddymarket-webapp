@@ -70,6 +70,8 @@ export default function Inventory() {
   const [, navigate] = useLocation();
   const [search, setSearch] = useState("");
   const [activeLocation, setActiveLocation] = useState("all");
+  const [sortBy, setSortBy] = useState<"expiry" | "name" | "added">("expiry");
+  const [sortDir, setSortDir] = useState<"asc" | "desc">("asc");
 
   // Add modal state
   const [showAdd, setShowAdd] = useState(false);
@@ -160,6 +162,24 @@ export default function Inventory() {
     const locKey = ((item.storageLocation as any)?.key ?? "").toLowerCase();
     const locName = ((item.storageLocation as any)?.nameEs ?? "").toLowerCase();
     return locKey === activeLocation || locName === activeLocation;
+  });
+
+  // ── sort items ───────────────────────────────────────────────────────────
+  const sorted = [...filtered].sort((a, b) => {
+    let cmp = 0;
+    if (sortBy === "expiry") {
+      const da = a.item.expirationDate ? new Date(a.item.expirationDate).getTime() : Infinity;
+      const db = b.item.expirationDate ? new Date(b.item.expirationDate).getTime() : Infinity;
+      cmp = da - db;
+    } else if (sortBy === "name") {
+      const na = (a.item.customName || a.ingredient?.nameEs || "").toLowerCase();
+      const nb = (b.item.customName || b.ingredient?.nameEs || "").toLowerCase();
+      cmp = na.localeCompare(nb, "es");
+    } else {
+      // added: sort by item id (higher id = more recently added)
+      cmp = a.item.id - b.item.id;
+    }
+    return sortDir === "asc" ? cmp : -cmp;
   });
 
   const expiringCount = (items ?? []).filter((item) => {
@@ -453,12 +473,47 @@ export default function Inventory() {
         ))}
       </div>
 
+      {/* Sort controls */}
+      {(items ?? []).length > 1 && (
+        <div className="mb-4 flex items-center gap-2">
+          <span className="shrink-0 text-xs font-semibold text-gray-400">Ordenar:</span>
+          <div className="flex flex-1 gap-1.5 overflow-x-auto pb-0.5">
+            {([
+              { key: "expiry", label: "Caducidad", icon: "📅" },
+              { key: "name", label: "Nombre", icon: "🔤" },
+              { key: "added", label: "Añadido", icon: "🕐" },
+            ] as const).map((opt) => (
+              <button
+                key={opt.key}
+                onClick={() => {
+                  if (sortBy === opt.key) {
+                    setSortDir((d) => (d === "asc" ? "desc" : "asc"));
+                  } else {
+                    setSortBy(opt.key);
+                    setSortDir("asc");
+                  }
+                }}
+                className={`flex shrink-0 items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-semibold transition-colors ${
+                  sortBy === opt.key
+                    ? "bg-[#F97316] text-white shadow-sm"
+                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                }`}
+              >
+                {opt.icon} {opt.label}
+                {sortBy === opt.key && (
+                  <span className="ml-0.5 opacity-80">{sortDir === "asc" ? "↑" : "↓"}</span>
+                )}
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
       {/* Items */}
       {isLoading ? (
         <div className="space-y-2">
           {[1, 2, 3, 4].map((i) => <div key={i} className="vively-card animate-pulse h-16" />)}
         </div>
-      ) : filtered.length === 0 ? (
+      ) : sorted.length === 0 ? (
         <div className="empty-state">
           {search ? (
             <>
@@ -486,7 +541,7 @@ export default function Inventory() {
         </div>
       ) : (
         <div className="space-y-2">
-          {filtered.map((item) => {
+          {sorted.map((item) => {
             const days = daysUntil(item.item.expirationDate);
             const name = item.ingredient?.nameEs ?? item.item.customName ?? "Alimento";
             const emoji = locEmoji(item.storageLocation);
