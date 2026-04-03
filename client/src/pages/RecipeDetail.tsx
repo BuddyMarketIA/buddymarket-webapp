@@ -4,6 +4,7 @@ import ShareRecipeButton from "@/components/ShareRecipeButton";
 import { Link, useLocation, useParams } from "wouter";
 import { toast } from "sonner";
 import { useState, useMemo } from "react";
+import { RECIPE_PLACEHOLDER_IMAGE } from "@/lib/constants";
 import {
   ArrowLeftIcon,
   HeartIcon,
@@ -225,15 +226,14 @@ export default function RecipeDetail() {
       </div>
 
       {/* Recipe image */}
-      {recipe.imageUrl && (
-        <div className="mb-4 -mx-4 overflow-hidden" style={{ height: 220 }}>
-          <img
-            src={recipe.imageUrl}
-            alt={recipe.name}
-            className="w-full h-full object-cover"
-          />
-        </div>
-      )}
+      <div className="mb-4 -mx-4 overflow-hidden" style={{ height: 220 }}>
+        <img
+          src={recipe.imageUrl || RECIPE_PLACEHOLDER_IMAGE}
+          alt={recipe.name}
+          className="w-full h-full object-cover"
+          onError={e => { (e.target as HTMLImageElement).src = RECIPE_PLACEHOLDER_IMAGE; }}
+        />
+      </div>
 
       {/* Title & description */}
       <div className="mb-3 px-1">

@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Link } from "wouter";
+import { RECIPE_PLACEHOLDER_IMAGE } from "@/lib/constants";
 import {
   PlusIcon,
   ChevronLeftIcon,
@@ -303,11 +304,12 @@ export default function Menus() {
                       {items.map((item: any) => (
                         <div key={item.id} className="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2">
                           <div className="flex items-center gap-2 min-w-0">
-                            {item.recipe?.imageUrl ? (
-                              <img src={item.recipe.imageUrl} alt="" className="h-8 w-8 rounded-lg object-cover shrink-0" />
-                            ) : (
-                              <span className="text-lg shrink-0">🍳</span>
-                            )}
+                            <img
+                              src={item.recipe?.imageUrl || RECIPE_PLACEHOLDER_IMAGE}
+                              alt=""
+                              className="h-8 w-8 rounded-lg object-cover shrink-0"
+                              onError={e => { (e.target as HTMLImageElement).src = RECIPE_PLACEHOLDER_IMAGE; }}
+                            />
                             <div className="min-w-0">
                               <p className="text-sm font-medium text-gray-800 truncate">
                                 {item.recipe?.name ?? "Receta eliminada"}
@@ -465,11 +467,12 @@ export default function Menus() {
                     disabled={addRecipeToDayPart.isPending}
                     className="w-full flex items-center gap-3 rounded-2xl border border-gray-100 bg-white p-3 text-left hover:border-[#F97316]/30 hover:bg-orange-50 transition-all"
                   >
-                    {recipe.imageUrl ? (
-                      <img src={recipe.imageUrl} alt="" className="h-10 w-10 rounded-xl object-cover shrink-0" />
-                    ) : (
-                      <div className="h-10 w-10 rounded-xl bg-orange-100 flex items-center justify-center text-lg shrink-0">🍳</div>
-                    )}
+                    <img
+                      src={recipe.imageUrl || RECIPE_PLACEHOLDER_IMAGE}
+                      alt=""
+                      className="h-10 w-10 rounded-xl object-cover shrink-0"
+                      onError={e => { (e.target as HTMLImageElement).src = RECIPE_PLACEHOLDER_IMAGE; }}
+                    />
                     <div className="min-w-0">
                       <p className="text-sm font-semibold text-gray-800 truncate">{recipe.name}</p>
                       <p className="text-xs text-gray-400">{recipe.calories ? `${recipe.calories} kcal · ` : ""}{recipe.prepTime ? `${recipe.prepTime} min` : ""}</p>

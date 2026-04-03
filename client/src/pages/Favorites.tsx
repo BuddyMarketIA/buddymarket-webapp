@@ -2,6 +2,7 @@ import { useState, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { Link, useLocation } from "wouter";
 import { toast } from "sonner";
+import { RECIPE_PLACEHOLDER_IMAGE } from "@/lib/constants";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Recipe = {
@@ -22,15 +23,8 @@ type Recipe = {
 };
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
-const PLACEHOLDER_IMAGES = [
-  "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/pollo_al_horno_verduras-7EonsjzW4cbvVFKgkiA4g3.webp",
-  "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/salmon_quinoa-GK5uCABZM54kHC6jSfHP9p.webp",
-  "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/ensalada_mediterranea-A94kBrNm9EPozXzzbctf5A.webp",
-  "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/acai_bowl_granola-mcBZCMgPadkRDbMhMseJwZ.webp",
-  "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/buddha_bowl_vegano-LbSLY3naX2TfQAWVDygbXL.webp",
-];
-function getPlaceholderImage(id: number) {
-  return PLACEHOLDER_IMAGES[id % PLACEHOLDER_IMAGES.length];
+function getPlaceholderImage(_id: number) {
+  return RECIPE_PLACEHOLDER_IMAGE;
 }
 
 const MEAL_TIME_LABELS: Record<string, string> = {
@@ -136,7 +130,7 @@ function FavoriteRecipeCard({ recipe, onRemove }: { recipe: Recipe; onRemove: ()
             src={imgSrc}
             alt={recipe.name}
             style={{ width: "100%", height: "100%", objectFit: "cover" }}
-            onError={e => { (e.target as HTMLImageElement).src = PLACEHOLDER_IMAGES[0]; }}
+            onError={e => { (e.target as HTMLImageElement).src = RECIPE_PLACEHOLDER_IMAGE; }}
           />
           <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.6) 100%)" }} />
           {/* Meal time badge */}

@@ -3,6 +3,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
 import AppLayout from "@/components/AppLayout";
+import { RECIPE_PLACEHOLDER_IMAGE } from "@/lib/constants";
 
 type Tab = "/app/profile" | "/app/recipes";
 
@@ -431,9 +432,12 @@ export default function BuddyMakerDashboard() {
                     {myRecipes.map((recipe) => (
                       <div key={recipe.id} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
                         <div className="flex items-start gap-3">
-                          {recipe.imageUrl && (
-                            <img src={recipe.imageUrl} alt={recipe.name} className="w-16 h-16 rounded-xl object-cover shrink-0" />
-                          )}
+                          <img
+                            src={recipe.imageUrl || RECIPE_PLACEHOLDER_IMAGE}
+                            alt={recipe.name}
+                            className="w-16 h-16 rounded-xl object-cover shrink-0"
+                            onError={e => { (e.target as HTMLImageElement).src = RECIPE_PLACEHOLDER_IMAGE; }}
+                          />
                           <div className="flex-1 min-w-0">
                             <h3 className="font-bold text-gray-900 text-sm line-clamp-1">{recipe.name}</h3>
                             <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{recipe.description}</p>

@@ -4,6 +4,7 @@ import { Link } from "wouter";
 import { useState, useMemo, useEffect, useRef } from "react";
 import { toast } from "sonner";
 import confetti from "canvas-confetti";
+import { RECIPE_PLACEHOLDER_IMAGE } from "@/lib/constants";
 
 const QUICK_ACCESS = [
   {
@@ -62,12 +63,7 @@ const QUICK_ACCESS = [
   },
 ];
 
-const FOOD_IMAGES = [
-  "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/pollo_al_horno_verduras-7EonsjzW4cbvVFKgkiA4g3.webp",
-  "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/ensalada_mediterranea-A94kBrNm9EPozXzzbctf5A.webp",
-  "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/acai_bowl_granola-mcBZCMgPadkRDbMhMseJwZ.webp",
-  "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/salmon_quinoa-GK5uCABZM54kHC6jSfHP9p.webp",
-];
+const FOOD_IMAGES = [RECIPE_PLACEHOLDER_IMAGE];
 
 function getGreeting() {
   const h = new Date().getHours();
