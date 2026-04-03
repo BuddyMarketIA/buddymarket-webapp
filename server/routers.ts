@@ -20,6 +20,28 @@ function requireOwnership(resourceUserId: number, ctxUserId: number, role: strin
   }
 }
 
+async function createInAppNotif(userId: number, opts: {
+  title: string;
+  body: string;
+  type?: "info" | "success" | "warning" | "update" | "promo";
+  link?: string;
+}) {
+  try {
+    const { inAppNotifications } = await import("../drizzle/schema.js");
+    const drizzleDb = await db.getDb();
+    if (!drizzleDb) return;
+    await drizzleDb.insert(inAppNotifications).values({
+      userId,
+      title: opts.title,
+      body: opts.body,
+      type: opts.type ?? "info",
+      link: opts.link ?? null,
+    });
+  } catch (_e) {
+    // Non-critical - never block the main flow
+  }
+}
+
 // =============================================================================
 // MAIN ROUTER
 // =============================================================================
@@ -232,6 +254,13 @@ export const appRouter = router({
           name: ctx.user.name ?? ctx.user.email,
         }).catch((err) => console.error("[Email] Schedule sequence error:", err));
       }
+      // Welcome in-app notification
+      createInAppNotif(ctx.user.id, {
+        title: `Bienvenido a BuddyMarket, ${ctx.user.name?.split(" ")[0] || "usuario"}!`,
+        body: "Tu perfil esta listo. Explora recetas, genera menus con IA y lleva un seguimiento de tu nutricion diaria.",
+        type: "success",
+        link: "/app/dashboard",
+      });
       return { success: true };
     }),
 
@@ -1036,10 +1065,18 @@ export const appRouter = router({
           }
         }
 
+         // Notify user that the menu has been applied to the diary
+        if (logsCreated > 0) {
+          createInAppNotif(ctx.user.id, {
+            title: "Menu aplicado al diario",
+            body: `El menu "${menu.name}" ha sido aplicado al diario nutricional (${logsCreated} comidas). Puedes verlo en tu Diario.`,
+            type: "success",
+            link: "/app/meal-log",
+          });
+        }
         return { success: true, logsCreated };
       }),
   }),
-
   // ---------------------------------------------------------------------------
   // SHOPPING LISTS
   // ---------------------------------------------------------------------------
@@ -3582,10 +3619,16 @@ Devuelve SOLO JSON válido con esta estructura exacta:
           }
         }
 
+         // Notify user that their AI menu was saved
+        createInAppNotif(ctx.user.id, {
+          title: "Menu guardado con exito",
+          body: `Tu menu "${input.menuName}" ha sido guardado en Mis Menus. Puedes aplicarlo al diario desde la seccion de Menus.`,
+          type: "success",
+          link: "/app/menus",
+        });
         return { menuId, success: true };
       }),
   }),
-
   // ---------------------------------------------------------------------------
   // EVENTS - Asistente de menús para eventos especiales
   // ---------------------------------------------------------------------------
@@ -3872,10 +3915,144 @@ Devuelve EXACTAMENTE este JSON:
         date: today,
       };
     }),
-  }),
 
+    // ── In-App Notifications ──────────────────────────────────────────────────
+    inApp: router({
+      list: protectedProcedure
+        .input(z.object({ limit: z.number().int().min(1).max(100).default(50) }).optional())
+        .query(async ({ ctx, input }) => {
+          const { inAppNotifications } = await import("../drizzle/schema");
+          const { getDb } = await import("./db");
+          const { eq, or, desc, and } = await import("drizzle-orm");
+          const drizzleDb = await getDb();
+          if (!drizzleDb) return [];
+          const limit = input?.limit ?? 50;
+          const rows = await drizzleDb.select()
+            .from(inAppNotifications)
+            .where(or(
+              eq(inAppNotifications.userId, ctx.user.id),
+              eq(inAppNotifications.userId, 0),
+            ))
+            .orderBy(desc(inAppNotifications.createdAt))
+            .limit(limit);
+          return rows;
+        }),
+
+      unreadCount: protectedProcedure.query(async ({ ctx }) => {
+        const { inAppNotifications } = await import("../drizzle/schema");
+        const { getDb } = await import("./db");
+        const { eq, or, and } = await import("drizzle-orm");
+        const { count } = await import("drizzle-orm");
+        const drizzleDb = await getDb();
+        if (!drizzleDb) return 0;
+        const result = await drizzleDb.select({ cnt: count() })
+          .from(inAppNotifications)
+          .where(and(
+            or(
+              eq(inAppNotifications.userId, ctx.user.id),
+              eq(inAppNotifications.userId, 0),
+            ),
+            eq(inAppNotifications.isRead, false),
+          ));
+        return result[0]?.cnt ?? 0;
+      }),
+
+      markRead: protectedProcedure
+        .input(z.object({ id: z.number().int() }))
+        .mutation(async ({ ctx, input }) => {
+          const { inAppNotifications } = await import("../drizzle/schema");
+          const { getDb } = await import("./db");
+          const { eq, and, or } = await import("drizzle-orm");
+          const drizzleDb = await getDb();
+          if (!drizzleDb) return { success: false };
+          await drizzleDb.update(inAppNotifications)
+            .set({ isRead: true, readAt: new Date() })
+            .where(and(
+              eq(inAppNotifications.id, input.id),
+              or(
+                eq(inAppNotifications.userId, ctx.user.id),
+                eq(inAppNotifications.userId, 0),
+              ),
+            ));
+          return { success: true };
+        }),
+
+      markAllRead: protectedProcedure.mutation(async ({ ctx }) => {
+        const { inAppNotifications } = await import("../drizzle/schema");
+        const { getDb } = await import("./db");
+        const { eq, or, and } = await import("drizzle-orm");
+        const drizzleDb = await getDb();
+        if (!drizzleDb) return { success: false };
+        await drizzleDb.update(inAppNotifications)
+          .set({ isRead: true, readAt: new Date() })
+          .where(and(
+            or(
+              eq(inAppNotifications.userId, ctx.user.id),
+              eq(inAppNotifications.userId, 0),
+            ),
+            eq(inAppNotifications.isRead, false),
+          ));
+        return { success: true };
+      }),
+
+      create: protectedProcedure
+        .input(z.object({
+          userId: z.number().int().default(0),
+          title: z.string().min(1).max(255),
+          body: z.string().min(1),
+          type: z.enum(["info", "success", "warning", "update", "promo"]).default("info"),
+          link: z.string().optional(),
+          imageUrl: z.string().optional(),
+        }))
+        .mutation(async ({ ctx, input }) => {
+          if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+          const { inAppNotifications } = await import("../drizzle/schema");
+          const { getDb } = await import("./db");
+          const drizzleDb = await getDb();
+          if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+          const result = await drizzleDb.insert(inAppNotifications).values({
+            userId: input.userId,
+            title: input.title,
+            body: input.body,
+            type: input.type,
+            link: input.link ?? null,
+            imageUrl: input.imageUrl ?? null,
+          });
+          return { success: true, id: Number(result[0].insertId) };
+        }),
+
+      createWelcome: protectedProcedure.mutation(async ({ ctx }) => {
+        const { inAppNotifications } = await import("../drizzle/schema");
+        const { getDb } = await import("./db");
+        const { eq, count } = await import("drizzle-orm");
+        const drizzleDb = await getDb();
+        if (!drizzleDb) return { success: false };
+        const existing = await drizzleDb.select({ cnt: count() })
+          .from(inAppNotifications)
+          .where(eq(inAppNotifications.userId, ctx.user.id));
+        if ((existing[0]?.cnt ?? 0) > 0) return { success: false, reason: "already_has_notifications" };
+        await drizzleDb.insert(inAppNotifications).values([
+          {
+            userId: ctx.user.id,
+            title: "¡Bienvenid@ a BuddyMarket! 🎉",
+            body: "Estamos muy contentos de tenerte aquí. Completa tu perfil para obtener recomendaciones personalizadas y empieza a disfrutar de tu gestor nutricional inteligente.",
+            type: "success",
+            link: "/app/profile",
+          },
+          {
+            userId: ctx.user.id,
+            title: "Genera tu primer menú con IA 🤖",
+            body: "BuddyIA puede crear un menú semanal personalizado según tus objetivos, preferencias y restricciones alimentarias. ¡Pruébalo ahora!",
+            type: "info",
+            link: "/app/buddy-ia",
+          },
+        ]);
+        return { success: true };
+      }),
+    }),
+  }),
   // ---------------------------------------------------------------------------
-  // ACHIEVEMENTS
+  // ACHIEVEMENTSS
   // ---------------------------------------------------------------------------
   achievements: router({
     getAll: protectedProcedure.query(async ({ ctx }) => {

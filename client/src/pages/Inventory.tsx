@@ -431,7 +431,7 @@ export default function Inventory() {
         </div>
       )}
 
-      {/* ── Add manually modal ─────────────────────────────────────────────── */}
+      {/* Add manually modal */}
       {showAdd && (
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowAdd(false); }}>
           <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up">
@@ -529,7 +529,7 @@ export default function Inventory() {
         </div>
       )}
 
-      {/* ── Photo AI modal ─────────────────────────────────────────────────── */}
+ {/* Photo AI modal */}
       {showPhotoModal && (
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) { setShowPhotoModal(false); setPhotoPreview(null); setPhotoFile(null); setDetectedProducts([]); } }}>
           <div className="w-full max-w-sm rounded-3xl bg-white shadow-2xl animate-slide-up overflow-hidden">
@@ -679,7 +679,7 @@ export default function Inventory() {
         <p>VIVELY no constituye recomendaciones profesionales de nutrición.</p>
       </div>
 
-      {/* ─── Barcode Scanner ─────────────────────────────────────────────── */}
+ {/* Barcode Scanner */}
       {showBarcodeScanner && (
         <BarcodeScanner
           onProductFound={(product) => {
@@ -693,7 +693,7 @@ export default function Inventory() {
         />
       )}
 
-      {/* ─── Barcode Product Confirmation Modal ──────────────────────────── */}
+ {/* Barcode Product Confirmation Modal */}
       {barcodeProduct && (
         <div
           className="modal-overlay"

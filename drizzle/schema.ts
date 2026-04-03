@@ -1133,3 +1133,23 @@ export const emailSequenceQueue = mysqlTable("email_sequence_queue", {
 }));
 export type EmailSequenceQueue = typeof emailSequenceQueue.$inferSelect;
 export type InsertEmailSequenceQueue = typeof emailSequenceQueue.$inferInsert;
+
+// ─── In-App Notifications ─────────────────────────────────────────────────────
+export const inAppNotifications = mysqlTable("in_app_notifications", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),                          // target user id (0 = broadcast to all)
+  title: varchar("title", { length: 255 }).notNull(),
+  body: text("body").notNull(),
+  type: mysqlEnum("type", ["info", "success", "warning", "update", "promo"]).default("info").notNull(),
+  isRead: boolean("isRead").default(false).notNull(),
+  link: varchar("link", { length: 500 }),                   // optional deep-link inside app
+  imageUrl: varchar("imageUrl", { length: 500 }),           // optional icon/image
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  readAt: timestamp("readAt"),
+}, (t) => ({
+  userIdx: index("notif_user_idx").on(t.userId),
+  readIdx: index("notif_read_idx").on(t.isRead),
+  createdIdx: index("notif_created_idx").on(t.createdAt),
+}));
+export type InAppNotification = typeof inAppNotifications.$inferSelect;
+export type InsertInAppNotification = typeof inAppNotifications.$inferInsert;

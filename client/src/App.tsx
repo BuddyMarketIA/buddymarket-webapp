@@ -36,6 +36,7 @@ import Metrics from "./pages/Metrics";
 import BuddyApplication from "./pages/BuddyApplication";
 import NutritionalStats from "./pages/NutritionalStats";
 import MealNotifications from "./pages/MealNotifications";
+import Notifications from "./pages/Notifications";
 import Achievements from "./pages/Achievements";
 import EventMenuPlanner from "./pages/EventMenuPlanner";
 import SavedEvents from "./pages/SavedEvents";
@@ -126,7 +127,8 @@ function Router() {
       <Route path="/app/buddy-maker-dashboard">{() => <ProtectedPage><BuddyMakerDashboard /></ProtectedPage>}</Route>
       <Route path="/app/metrics">{() => <ProtectedRoute component={Metrics} />}</Route>
       <Route path="/app/stats">{() => <ProtectedRoute component={NutritionalStats} />}</Route>
-      <Route path="/app/notifications">{() => <ProtectedRoute component={MealNotifications} />}</Route>
+      <Route path="/app/notifications">{() => <ProtectedRoute component={Notifications} />}</Route>
+      <Route path="/app/meal-notifications">{() => <ProtectedRoute component={MealNotifications} />}</Route>
       <Route path="/app/achievements">{() => <ProtectedRoute component={Achievements} />}</Route>
       <Route path="/app/buddy-application">{() => <ProtectedRoute component={BuddyApplication} />}</Route>
       <Route path="/app/event-menu">{() => <ProtectedPage><EventMenuPlanner /></ProtectedPage>}</Route>

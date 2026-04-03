@@ -6,6 +6,31 @@ import { trpc } from "@/lib/trpc";
 import { usePlan } from "@/hooks/usePlan";
 import { PLAN_DISPLAY } from "@shared/plans";
 
+function NotificationBell() {
+  const [, navigate] = useLocation();
+  const { data: unreadCount = 0 } = trpc.notifications.inApp.unreadCount.useQuery(undefined, {
+    refetchInterval: 30000,
+    staleTime: 15000,
+  });
+  const count = typeof unreadCount === "number" ? unreadCount : 0;
+  return (
+    <button
+      onClick={() => navigate("/app/notifications")}
+      style={{ width: "40px", height: "40px", borderRadius: "12px", background: "white", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", flexShrink: 0, position: "relative" }}
+      aria-label="Notificaciones"
+    >
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+      </svg>
+      {count > 0 && (
+        <div style={{ position: "absolute", top: "6px", right: "6px", minWidth: "16px", height: "16px", borderRadius: "8px", background: "#F97316", border: "2px solid white", display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px" }}>
+          <span style={{ fontSize: "9px", fontWeight: 800, color: "white", lineHeight: 1 }}>{count > 99 ? "99+" : count}</span>
+        </div>
+      )}
+    </button>
+  );
+}
+
 interface AppLayoutProps {
   children: React.ReactNode;
   title?: string;
@@ -81,7 +106,7 @@ const SIDEBAR_GROUPS = [
       { key: "/app/favorites", label: "Mis Favoritas", to: "/app/favorites", emoji: "❤️" },
       { key: "/app/menu-library", label: "Biblioteca de Menús", to: "/app/menu-library", emoji: "📚" },
       { key: "/app/specialized-menus", label: "Menús Especializados", to: "/app/specialized-menus", emoji: "🏥" },
-      { key: "/app/notifications", label: "Recordatorios", to: "/app/notifications", emoji: "🔔" },
+      { key: "/app/meal-notifications", label: "Recordatorios", to: "/app/meal-notifications", emoji: "🔔" },
       { key: "/app/achievements", label: "Mis Logros", to: "/app/achievements", emoji: "🏆" },
     ],
   },
@@ -395,12 +420,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
         {headerRight ? (
           <div style={{ flexShrink: 0 }}>{headerRight}</div>
         ) : (
-          <button style={{ width: "40px", height: "40px", borderRadius: "12px", background: "white", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", flexShrink: 0, position: "relative" }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-            </svg>
-            <div style={{ position: "absolute", top: "8px", right: "8px", width: "8px", height: "8px", borderRadius: "50%", background: "#F97316", border: "2px solid white" }} />
-          </button>
+          <NotificationBell />
         )}
       </div>
 

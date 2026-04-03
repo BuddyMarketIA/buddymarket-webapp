@@ -183,6 +183,13 @@
       "when": 1775211380269,
       "tag": "0025_luxuriant_zarda",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "5",
+      "when": 1775226174511,
+      "tag": "0026_rich_edwin_jarvis",
+      "breakpoints": true
     }
   ]
 }

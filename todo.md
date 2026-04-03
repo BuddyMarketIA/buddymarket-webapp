@@ -993,3 +993,23 @@
 - [x] Añadir touch-action pan-y y overflow-x hidden a nivel global en index.css
 - [x] Corregir AppLayout outer wrapper: overflowX clip en lugar de hidden para no bloquear fixed children
 - [x] Añadir img/video/iframe max-width 100% en index.html para evitar overflow de medios
+
+## Feature: Sistema de notificaciones in-app (03/04/2026)
+- [ ] Tabla `notifications` en BD: id, userId, title, body, type, isRead, link, createdAt
+- [ ] Procedimiento tRPC `notifications.list` para listar notificaciones del usuario
+- [ ] Procedimiento tRPC `notifications.markRead` para marcar una notificación como leída
+- [ ] Procedimiento tRPC `notifications.markAllRead` para marcar todas como leídas
+- [ ] Procedimiento tRPC `notifications.create` (solo admin) para crear notificaciones globales
+- [ ] Panel de notificaciones: página /app/notifications con lista de notificaciones
+- [ ] Badge con número de no leídas en el icono de campana del header
+- [ ] Notificaciones automáticas: bienvenida al registrarse, recordatorio de diario, etc.
+
+## Sistema de Notificaciones In-App (completado)
+- [x] Backend: tabla in_app_notifications en schema.ts
+- [x] Backend: procedimientos tRPC (list, unreadCount, markRead, markAllRead, create)
+- [x] Frontend: componente NotificationBell con badge de no leidas en AppLayout header
+- [x] Frontend: pagina /app/notifications con lista, filtros (todas/no leidas), marcar como leidas
+- [x] Notificaciones automaticas: guardar menu IA, aplicar al calendario, completar onboarding
+- [x] Ruta /app/notifications registrada en App.tsx (nueva pagina de notificaciones in-app)
+- [x] Ruta /app/meal-notifications para recordatorios de comidas (antigua /app/notifications)
+- [x] Error en Inventory.tsx linea 434 corregido (caracteres box-drawing en comentario JSX)
