@@ -1421,7 +1421,42 @@ export const appRouter = router({
 
     toggleItem: protectedProcedure
       .input(z.object({ id: z.number() }))
-      .mutation(({ input }) => db.toggleShoppingListItem(input.id)),
+      .mutation(async ({ input, ctx }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { shoppingListItems } = await import("../drizzle/schema.js");
+        const { eq } = await import("drizzle-orm");
+        // Get current state + item details for pantry upsert
+        const [item] = await drizzleDb
+          .select()
+          .from(shoppingListItems)
+          .where(eq(shoppingListItems.id, input.id))
+          .limit(1);
+        if (!item) throw new TRPCError({ code: "NOT_FOUND" });
+        const newChecked = !item.checked;
+        await drizzleDb
+          .update(shoppingListItems)
+          .set({ checked: newChecked })
+          .where(eq(shoppingListItems.id, input.id));
+        // When marking as purchased, register in pantry stock
+        if (newChecked && item.customName) {
+          try {
+            const { normalizeToCommercialUnit } = await import("../shared/supermarketUnits.js");
+            const normalized = normalizeToCommercialUnit(item.customName, item.amount ?? 1, "ud");
+            await db.upsertPantryStock(
+              ctx.user.id,
+              item.customName,
+              normalized.label,
+              item.amount ?? 1,
+              normalized.hasCommercialUnit ? normalized.originalQty : null,
+              item.category
+            );
+          } catch {
+            // Non-critical: pantry update failure should not block the toggle
+          }
+        }
+        return { success: true, checked: newChecked };
+      }),
     togglePantry: protectedProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ input }) => {
@@ -1638,6 +1673,26 @@ export const appRouter = router({
         await drizzleDb.delete(shoppingListTemplates)
           .where(and(eq(shoppingListTemplates.id, input.id), eq(shoppingListTemplates.userId, ctx.user.id)));
         return { success: true };
+      }),
+    // ── Pantry Stock (Despensa Inteligente) ────────────────────────────────
+    getPantryStock: protectedProcedure
+      .query(({ ctx }) => db.getPantryStock(ctx.user.id)),
+    clearExpiredPantry: protectedProcedure
+      .mutation(async ({ ctx }) => {
+        await db.clearExpiredPantryStock(ctx.user.id);
+        return { success: true };
+      }),
+    removePantryItem: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.removePantryStockItem(input.id, ctx.user.id);
+        return { success: true };
+      }),
+    checkPantryAvailability: protectedProcedure
+      .input(z.object({ ingredientNames: z.array(z.string()) }))
+      .query(async ({ ctx, input }) => {
+        const available = await db.checkPantryAvailability(ctx.user.id, input.ingredientNames);
+        return { availableKeys: Array.from(available) };
       }),
   }),
   // ---------------------------------------------------------------------------

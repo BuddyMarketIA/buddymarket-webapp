@@ -1121,3 +1121,10 @@
 - [ ] Fallback por categoría: si no hay match exacto, asignar unidad mínima de la categoría más cercana
 - [ ] Nunca mostrar "jamón entero" ni cantidades absurdas: garantizar siempre unidad comercial mínima
 - [ ] Mostrar en la lista el nombre normalizado del producto (ej: "Jamón serrano lonchas") junto al original
+
+## Sprint Despensa Inteligente (fase actual)
+- [ ] Tabla pantryStock en BD: userId, ingredientKey, commercialLabel, quantityAvailable, purchasedAt, estimatedExpiresAt
+- [ ] Al marcar item como comprado (checked=true) en lista de la compra → upsert en pantryStock
+- [ ] Al generar nueva lista de la compra → cruzar ingredientes con pantryStock y marcar inStock=true si hay stock disponible
+- [ ] Badge "Ya lo tienes" en items de la lista con stock disponible en despensa
+- [ ] Procedimientos tRPC: getPantryStock, markItemPurchased (con upsert pantry), clearExpiredStock

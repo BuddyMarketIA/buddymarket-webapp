@@ -85,6 +85,33 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
     onError: (err: any) => toast.error(err.message || "Error al guardar la plantilla"),
   });
 
+  // Load pantry stock to auto-detect items already at home
+  const { data: pantryData } = trpc.shoppingLists.getPantryStock.useQuery();
+  const pantryKeys = new Set(
+    (pantryData ?? []).map((p: any) =>
+      p.ingredientKey as string
+    )
+  );
+
+  function normalizeKey(name: string): string {
+    return name
+      .toLowerCase()
+      .normalize("NFD")
+      .replace(/[\u0300-\u036f]/g, "")
+      .trim();
+  }
+
+  function isInPantry(item: any): boolean {
+    const name = item.ingredient?.name ?? item.customName ?? item.name ?? "";
+    return pantryKeys.has(normalizeKey(name));
+  }
+
+  function getPantryEntry(item: any) {
+    const name = item.ingredient?.name ?? item.customName ?? item.name ?? "";
+    const key = normalizeKey(name);
+    return (pantryData ?? []).find((p: any) => p.ingredientKey === key);
+  }
+
   const toggleItem = trpc.shoppingLists.toggleItem.useMutation({
     onMutate: async ({ id }) => {
       await utils.shoppingLists.getById.cancel({ id: listId });
@@ -309,16 +336,25 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
 
                 {/* Item info */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-1.5">
+                  <div className="flex items-center gap-1.5 flex-wrap">
                     <p className={`text-sm font-medium ${
                       item.isPurchased ? "line-through text-gray-400" :
-                      item.inPantry ? "text-green-700" : "text-gray-900"
+                      item.inPantry ? "text-green-700" :
+                      isInPantry(item) ? "text-emerald-700" : "text-gray-900"
                     }`}>
                       {item.ingredient?.name ?? item.customName ?? item.name ?? "Producto"}
                     </p>
                     {item.inPantry && (
                       <span className="rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-semibold text-green-700">despensa</span>
                     )}
+                    {!item.inPantry && !item.isPurchased && isInPantry(item) && (() => {
+                      const entry = getPantryEntry(item);
+                      return (
+                        <span className="rounded-full bg-emerald-50 border border-emerald-200 px-1.5 py-0.5 text-[10px] font-semibold text-emerald-700 flex items-center gap-0.5">
+                          ✓ Ya lo tienes{entry?.commercialLabel ? ` · ${entry.commercialLabel}` : ""}
+                        </span>
+                      );
+                    })()}
                   </div>
                   {(item.amount || item.quantity) && (
                     <p className="text-xs text-gray-400">

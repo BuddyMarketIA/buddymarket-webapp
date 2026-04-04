@@ -57,6 +57,8 @@ import {
   complementLogs,
   recipeLikes,
   menuComplements,
+  pantryStock,
+  InsertPantryStock,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -1920,4 +1922,176 @@ export async function deleteComplementLog(id: number, userId: number) {
   const db = await getDb();
   if (!db) return;
   await db.delete(complementLogs).where(and(eq(complementLogs.id, id), eq(complementLogs.userId, userId)));
+}
+
+// =============================================================================
+// PANTRY STOCK — Despensa Inteligente
+// =============================================================================
+
+/** Normalize ingredient name for cross-list matching (lowercase, no accents) */
+function normalizeIngredientKey(name: string): string {
+  return name
+    .toLowerCase()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g, "")
+    .trim();
+}
+
+/** Estimated shelf life in days by category */
+const SHELF_LIFE_DAYS: Record<string, number> = {
+  "Frutas y verduras": 7,
+  "Carnes y pescados": 5,
+  "Lácteos y huevos": 14,
+  "Pan y cereales": 30,
+  "Bebidas": 365,
+  "Congelados": 90,
+  "Conservas": 365,
+  "Limpieza": 730,
+  "Higiene": 730,
+  "Otros": 30,
+};
+
+function estimateExpiry(category: string | null): Date {
+  const days = SHELF_LIFE_DAYS[category ?? "Otros"] ?? 30;
+  const d = new Date();
+  d.setDate(d.getDate() + days);
+  return d;
+}
+
+/**
+ * Called when a shopping list item is marked as purchased (checked=true).
+ * Upserts the item into pantry_stock for the user.
+ */
+export async function upsertPantryStock(
+  userId: number,
+  ingredientName: string,
+  commercialLabel: string | null,
+  quantityPurchased: number,
+  unitSizeGrams: number | null,
+  category: string | null
+): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+
+  const key = normalizeIngredientKey(ingredientName);
+  const expiresAt = estimateExpiry(category);
+
+  // Check if there's already stock for this ingredient
+  const [existing] = await db
+    .select()
+    .from(pantryStock)
+    .where(and(eq(pantryStock.userId, userId), eq(pantryStock.ingredientKey, key)))
+    .limit(1);
+
+  if (existing) {
+    // Add to existing stock
+    await db
+      .update(pantryStock)
+      .set({
+        quantityAvailable: existing.quantityAvailable + quantityPurchased,
+        quantityPurchased: existing.quantityPurchased + quantityPurchased,
+        estimatedExpiresAt: expiresAt,
+        purchasedAt: new Date(),
+        updatedAt: new Date(),
+      })
+      .where(eq(pantryStock.id, existing.id));
+  } else {
+    await db.insert(pantryStock).values({
+      userId,
+      ingredientKey: key,
+      ingredientName,
+      commercialLabel,
+      quantityPurchased,
+      quantityAvailable: quantityPurchased,
+      unitSizeGrams,
+      estimatedExpiresAt: expiresAt,
+      purchasedAt: new Date(),
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
+  }
+}
+
+/**
+ * Returns all pantry stock for a user (non-expired and with quantity > 0).
+ */
+export async function getPantryStock(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  const now = new Date();
+  return db
+    .select()
+    .from(pantryStock)
+    .where(
+      and(
+        eq(pantryStock.userId, userId),
+        sql`${pantryStock.quantityAvailable} > 0`,
+        or(
+          sql`${pantryStock.estimatedExpiresAt} IS NULL`,
+          sql`${pantryStock.estimatedExpiresAt} > ${now}`
+        )
+      )
+    )
+    .orderBy(pantryStock.ingredientName);
+}
+
+/**
+ * Given a list of ingredient names, returns which ones are already in the pantry.
+ * Returns a Set of normalized ingredient keys that are available.
+ */
+export async function checkPantryAvailability(
+  userId: number,
+  ingredientNames: string[]
+): Promise<Set<string>> {
+  const db = await getDb();
+  if (!db) return new Set();
+
+  const keys = ingredientNames.map(normalizeIngredientKey);
+  const now = new Date();
+
+  const rows = await db
+    .select({ ingredientKey: pantryStock.ingredientKey })
+    .from(pantryStock)
+    .where(
+      and(
+        eq(pantryStock.userId, userId),
+        sql`${pantryStock.quantityAvailable} > 0`,
+        or(
+          sql`${pantryStock.estimatedExpiresAt} IS NULL`,
+          sql`${pantryStock.estimatedExpiresAt} > ${now}`
+        )
+      )
+    );
+
+  const available = new Set(rows.map((r) => r.ingredientKey));
+  return new Set(keys.filter((k) => available.has(k)));
+}
+
+/**
+ * Removes expired or depleted pantry stock entries for a user.
+ */
+export async function clearExpiredPantryStock(userId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  const now = new Date();
+  await db
+    .delete(pantryStock)
+    .where(
+      and(
+        eq(pantryStock.userId, userId),
+        or(
+          sql`${pantryStock.quantityAvailable} <= 0`,
+          sql`${pantryStock.estimatedExpiresAt} < ${now}`
+        )
+      )
+    );
+}
+
+/**
+ * Manually remove a pantry stock entry.
+ */
+export async function removePantryStockItem(id: number, userId: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.delete(pantryStock).where(and(eq(pantryStock.id, id), eq(pantryStock.userId, userId)));
 }

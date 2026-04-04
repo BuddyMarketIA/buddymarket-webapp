@@ -1317,3 +1317,36 @@ export const menuComplements = mysqlTable("menu_complements", {
 }));
 export type MenuComplement = typeof menuComplements.$inferSelect;
 export type InsertMenuComplement = typeof menuComplements.$inferInsert;
+
+// =============================================================================
+// PANTRY STOCK (Despensa Inteligente)
+// Tracks what the user has already purchased so the next shopping list
+// can automatically mark those items as "already available".
+// =============================================================================
+export const pantryStock = mysqlTable("pantry_stock", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  /** Normalized ingredient key used for cross-list matching (lowercase, no accents) */
+  ingredientKey: varchar("ingredientKey", { length: 256 }).notNull(),
+  /** Human-readable ingredient name as it appeared in the shopping list */
+  ingredientName: varchar("ingredientName", { length: 256 }).notNull(),
+  /** Commercial unit label, e.g. "1 botella (750 ml)" */
+  commercialLabel: varchar("commercialLabel", { length: 256 }),
+  /** How many commercial units were purchased */
+  quantityPurchased: float("quantityPurchased").default(1).notNull(),
+  /** Remaining commercial units (decremented when used in a new list) */
+  quantityAvailable: float("quantityAvailable").default(1).notNull(),
+  /** Size in grams/ml of one commercial unit (for smart depletion) */
+  unitSizeGrams: float("unitSizeGrams"),
+  /** Estimated expiry date based on product category */
+  estimatedExpiresAt: timestamp("estimatedExpiresAt"),
+  /** When the item was purchased */
+  purchasedAt: timestamp("purchasedAt").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (t) => ({
+  userIdx: index("ps_user_idx").on(t.userId),
+  userKeyIdx: index("ps_user_key_idx").on(t.userId, t.ingredientKey),
+}));
+export type PantryStock = typeof pantryStock.$inferSelect;
+export type InsertPantryStock = typeof pantryStock.$inferInsert;
