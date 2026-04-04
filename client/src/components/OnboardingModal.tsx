@@ -84,9 +84,11 @@ export function OnboardingModal() {
       await completeOnboarding.mutateAsync(undefined);
       utils.profile.get.invalidate();
       setStep("done");
-      setTimeout(() => setOpen(false), 2000);
+      setTimeout(() => setOpen(false), 2500);
     } catch {
-      // silent fail — user can complete profile later
+      // Fail gracefully — mark onboarding as complete anyway so user isn't stuck
+      try { await completeOnboarding.mutateAsync(undefined); } catch {}
+      utils.profile.get.invalidate();
       setOpen(false);
     } finally {
       setSaving(false);

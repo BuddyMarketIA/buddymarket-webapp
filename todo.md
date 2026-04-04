@@ -1153,3 +1153,11 @@
 
 ## Bugs reportados
 - [x] BuddySetup se queda colgado en el paso de generación de menú (pantalla en blanco/spinner infinito) - el usuario tiene que dar a "Omitir"
+
+## Auditoría de flujos y responsividad (completado)
+- [x] Auditoría completa de mutaciones tRPC: solo BuddySetup tenía el patrón problemático (onSuccess + mutateAsync), ya corregido
+- [x] Dashboard: mejorar legibilidad de tarjetas de comunidad (BuddyExperts/Makers/IA) en mobile
+- [x] LandingPage: tabla comparativa de planes con scroll horizontal en mobile
+- [x] Registration: grids adaptativos (datos físicos 3→2 cols, tarjetas de cuenta 2→1 col en pantallas <480px)
+- [x] ReferralDashboard: pasos "Cómo funciona" cambiados de grid 3 cols a lista vertical legible
+- [x] OnboardingModal: fail-safe mejorado en handleFinish (si falla el updateProfile, completa el onboarding igualmente)

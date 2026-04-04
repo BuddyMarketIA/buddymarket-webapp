@@ -651,7 +651,7 @@ export default function LandingPage() {
             <h3 style={{ textAlign: "center", fontSize: 20, fontWeight: 800, color: "#111827", marginBottom: 24 }}>
               Comparativa completa de planes
             </h3>
-            <div style={{ background: "white", borderRadius: 24, overflow: "hidden", border: "1px solid #e5e7eb", boxShadow: "0 4px 20px rgba(0,0,0,0.04)" }}>
+            <div className="lp-comparison-table" style={{ background: "white", borderRadius: 24, overflow: "hidden", border: "1px solid #e5e7eb", boxShadow: "0 4px 20px rgba(0,0,0,0.04)" }}>
               {/* Table header */}
               <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", background: "#111827" }}>
                 <div style={{ padding: "18px 24px", fontSize: 12, fontWeight: 700, color: "#9ca3af" }}>Funcionalidad</div>
@@ -920,6 +920,8 @@ export default function LandingPage() {
         @media (max-width: 767px) {
           .lp-desktop-nav, .lp-desktop-cta { display: none !important; }
           .lp-hamburger { display: flex !important; }
+          .lp-comparison-table { overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
+          .lp-comparison-table > div { min-width: 520px !important; }
         }
         @media (min-width: 640px) {
           .lp-stats-grid { grid-template-columns: repeat(4, 1fr) !important; }

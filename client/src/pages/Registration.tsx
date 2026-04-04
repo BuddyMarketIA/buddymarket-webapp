@@ -279,7 +279,7 @@ function StepAccountType({ onSelect }: { onSelect: (type: AccountType) => void }
         </p>
       </div>
 
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 28 }}>
+      <div className="reg-account-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 28 }}>
         {ACCOUNT_TYPES.map((type) => (
           <button
             key={type.id}
@@ -478,7 +478,7 @@ function StepProfileSetup({ accountType, onNext }: { accountType: AccountType; o
               ))}
             </div>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+          <div className="reg-physical-grid" style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
             <div>
               <label style={labelStyle}>Año de nacimiento</label>
               <input style={inputStyle} type="number" placeholder="1990" value={form.birthYear}
@@ -951,7 +951,7 @@ export default function Registration() {
         display: "flex", flexDirection: "column",
       }}>
         {/* Top bar */}
-        <div style={{
+        <div className="reg-topbar" style={{
           padding: "20px 32px", display: "flex", alignItems: "center",
           justifyContent: "space-between", borderBottom: "1px solid #F3F4F6",
           position: "sticky", top: 0, background: "white", zIndex: 10,
@@ -990,7 +990,7 @@ export default function Registration() {
         </div>
 
         {/* Step content */}
-        <div style={{ flex: 1, padding: "40px 32px 60px", maxWidth: 580, width: "100%", margin: "0 auto" }}>
+        <div className="reg-content-pad" style={{ flex: 1, padding: "40px 32px 60px", maxWidth: 580, width: "100%", margin: "0 auto" }}>
           {currentStep === "account_type" && (
             <StepAccountType onSelect={(type) => {
               setLocalAccountType(type);
@@ -1023,6 +1023,12 @@ export default function Registration() {
           .registration-left-panel {
             display: block !important;
           }
+        }
+        @media (max-width: 480px) {
+          .reg-physical-grid { grid-template-columns: 1fr 1fr !important; }
+          .reg-account-grid { grid-template-columns: 1fr !important; }
+          .reg-content-pad { padding: 24px 20px 48px !important; }
+          .reg-topbar { padding: 16px 20px !important; }
         }
         @keyframes fadeSlideIn {
           from { opacity: 0; transform: translateX(20px); }

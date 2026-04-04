@@ -92,15 +92,15 @@ export default function ReferralDashboard() {
             <Zap className="w-5 h-5" style={{ color: "#a78bfa" }} />
             <span style={{ color: "white", fontWeight: 700, fontSize: 15 }}>¿Cómo funciona?</span>
           </div>
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
+          <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
             {[
               { step: "1", text: "Comparte tu código con tus seguidores" },
               { step: "2", text: `Ellos obtienen un ${myCode?.discountPercent ?? 15}% de descuento al suscribirse` },
               { step: "3", text: "Tú recibes el 20% de cada pago mensual mientras la suscripción esté activa" },
             ].map((s) => (
-              <div key={s.step} style={{ textAlign: "center" }}>
-                <div style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(99,102,241,0.4)", color: "white", fontWeight: 800, fontSize: 13, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 6px" }}>{s.step}</div>
-                <p style={{ margin: 0, fontSize: 11, color: "rgba(255,255,255,0.65)", lineHeight: 1.4 }}>{s.text}</p>
+              <div key={s.step} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+                <div style={{ width: 28, height: 28, borderRadius: "50%", background: "rgba(99,102,241,0.4)", color: "white", fontWeight: 800, fontSize: 13, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>{s.step}</div>
+                <p style={{ margin: 0, fontSize: 13, color: "rgba(255,255,255,0.75)", lineHeight: 1.5, paddingTop: 4 }}>{s.text}</p>
               </div>
             ))}
           </div>
