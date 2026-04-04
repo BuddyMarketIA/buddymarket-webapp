@@ -25,6 +25,7 @@ import BuddyIA from "./pages/BuddyIA";
 import BuddyShop from "./pages/BuddyShop";
 import MercadonaShop from "./pages/MercadonaShop";
 import CarrefourShop from "./pages/CarrefourShop";
+import LidlShop from "./pages/LidlShop";
 import MenuLibrary from "./pages/MenuLibrary";
 import ActiveMenu from "./pages/ActiveMenu";
 import SpecializedMenus from "./pages/SpecializedMenus";
@@ -132,7 +133,8 @@ function Router() {
       <Route path="/app/buddy-shop">{() => <ProtectedRoute component={BuddyShop} />}</Route>
       <Route path="/app/supermercados">{() => <ProtectedRoute component={MercadonaShop} />}</Route>
       <Route path="/app/supermarkets">{() => <Redirect to="/app/supermercados" />}</Route>
-      <Route path="/app/carrefour">{() => <ProtectedRoute component={MercadonaShop} />}</Route>
+      <Route path="/app/carrefour">{() => <ProtectedRoute component={CarrefourShop} />}</Route>
+      <Route path="/app/lidl">{() => <ProtectedRoute component={LidlShop} />}</Route>
       <Route path="/app/menu-library">{() => <ProtectedRoute component={MenuLibrary} />}</Route>
       <Route path="/app/active-menu">{() => <ProtectedRoute component={ActiveMenu} />}</Route>
       <Route path="/app/specialized-menus">{() => <ProtectedPage><SpecializedMenus /></ProtectedPage>}</Route>

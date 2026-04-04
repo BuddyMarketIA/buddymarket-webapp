@@ -3161,37 +3161,40 @@ Genera 3 recetas que aprovechen estos ingredientes. Para cada receta incluye: no
   // LIDL INTEGRATION
   // ===========================================================================
   lidl: router({
-    // Search products from local DB (fast, no external API calls)
+    // Search products — accepts both `q` (LidlShop) and `query` (legacy)
     searchProducts: publicProcedure
-      .input(z.object({ query: z.string().min(1), limit: z.number().optional().default(30) }))
+      .input(z.object({
+        q: z.string().optional(),
+        query: z.string().optional(),
+        limit: z.number().optional().default(48),
+      }))
       .query(async ({ input }) => {
         const drizzleDb = await db.getDb();
         if (!drizzleDb) return [];
         const { lidlProducts } = await import("../drizzle/schema");
         const { like, or } = await import("drizzle-orm");
-        const q = `%${input.query}%`;
+        const term = (input.q ?? input.query ?? "").trim();
+        if (!term) return [];
+        const q = `%${term}%`;
         const rows = await drizzleDb
           .select()
           .from(lidlProducts)
           .where(or(
             like(lidlProducts.name, q),
             like(lidlProducts.brand, q),
-            like(lidlProducts.category, q)
+            like(lidlProducts.category, q),
+            like(lidlProducts.fullTitle, q)
           ))
           .limit(input.limit);
         return rows.map(p => ({
           id: p.id,
           name: p.name,
-          fullTitle: p.fullTitle ?? p.name,
           brand: p.brand ?? "",
-          thumbnail: p.image ?? "",
-          price: p.price ?? 0,
-          priceStr: p.price ? `${p.price.toFixed(2)}\u20ac` : "\u2014",
+          image: p.image ?? null,
+          price: p.price ?? null,
           packaging: p.packaging ?? "",
           category: p.category ?? "",
-          canonicalPath: p.canonicalPath ?? "",
-          onlineAvailable: p.onlineAvailable ?? false,
-          shareUrl: p.canonicalPath ? `https://www.lidl.es${p.canonicalPath}` : "https://www.lidl.es",
+          productUrl: p.canonicalPath ? `https://www.lidl.es${p.canonicalPath}` : null,
         }));
       }),
     // Get all categories from DB
@@ -3205,6 +3208,33 @@ Genera 3 recetas que aprovechen estos ingredientes. Para cada receta incluye: no
       const result = rows[0] as Array<{ category: string; count: number }>;
       return result;
     }),
+    // Get products by category
+    byCategory: publicProcedure
+      .input(z.object({
+        category: z.string(),
+        limit: z.number().optional().default(48),
+      }))
+      .query(async ({ input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return [];
+        const { lidlProducts } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        const rows = await drizzleDb
+          .select()
+          .from(lidlProducts)
+          .where(eq(lidlProducts.category, input.category))
+          .limit(input.limit);
+        return rows.map(p => ({
+          id: p.id,
+          name: p.name,
+          brand: p.brand ?? "",
+          image: p.image ?? null,
+          price: p.price ?? null,
+          packaging: p.packaging ?? "",
+          category: p.category ?? "",
+          productUrl: p.canonicalPath ? `https://www.lidl.es${p.canonicalPath}` : null,
+        }));
+      }),
   }),
   // ===========================================================================
   // BASKET PRICE COMPARATOR

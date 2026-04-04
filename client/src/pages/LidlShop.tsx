@@ -1,49 +1,49 @@
-import { useState, useEffect, useMemo, useRef } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
-// ── Carrefour brand colors ────────────────────────────────────────────────────
-const CARR_BLUE = "#004A97";
-const CARR_RED = "#E63329";
-const CARR_BG = "#E3F2FD";
+// ── Lidl brand colors ─────────────────────────────────────────────────────────
+const LIDL_BLUE = "#0050AA";
+const LIDL_YELLOW = "#FFD700";
+const LIDL_RED = "#E3000B";
+const LIDL_BG = "#EEF4FB";
 
 const CATEGORY_ICONS: Record<string, string> = {
+  "Frutas y verduras": "🥦",
   "Lácteos y huevos": "🥛",
   "Carnes y aves": "🥩",
   "Pescados y mariscos": "🐟",
-  "Frutas y verduras": "🥦",
-  "Panadería y bollería": "🍞",
+  "Pan y panadería": "🍞",
   "Pasta, arroz y legumbres": "🍝",
-  "Conservas": "🥫",
   "Aceites y condimentos": "🫒",
-  "Condimentos y salsas": "🧂",
-  "Sopas y caldos": "🍲",
-  "Dulces y snacks": "🍫",
-  "Frutos secos y snacks": "🥜",
   "Cereales y desayuno": "🥣",
-  "Mermeladas y untables": "🍯",
-  "Agua y refrescos": "💧",
-  "Zumos y batidos": "🍊",
-  "Café e infusiones": "☕",
-  "Cervezas": "🍺",
-  "Vinos y licores": "🍷",
   "Congelados": "❄️",
-  "Platos preparados": "🍱",
-  "Charcutería": "🥓",
-  "Higiene personal": "🧴",
-  "Droguería": "🧹",
-  "Bebé": "👶",
-  "Mascotas": "🐾",
-  "Parafarmacia": "💊",
+  "Bebidas": "💧",
+  "Snacks y frutos secos": "🥜",
+  "Higiene y limpieza": "🧴",
+  "Food": "🛒",
 };
 
 interface CartItem {
   id: string;
   name: string;
-  price: number | null;
+  price: number;
   image: string | null;
+  brand: string | null;
+  packaging: string | null;
+  shareUrl: string;
   quantity: number;
+}
+
+interface LidlProduct {
+  id: string;
+  name: string;
+  brand: string;
+  image: string | null;
+  price: number | null;
+  packaging: string;
+  category: string;
   productUrl: string | null;
 }
 
@@ -58,60 +58,48 @@ function useDebounce<T>(value: T, delay: number): T {
   return debounced;
 }
 
-export default function CarrefourShop() {
+export default function LidlShop() {
   const [, navigate] = useLocation();
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
-  const [selectedSubcategory, setSelectedSubcategory] = useState<string | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const debouncedQuery = useDebounce(searchQuery, 400);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [showCart, setShowCart] = useState(false);
 
   // ── Data fetching ────────────────────────────────────────────────────────────
-  const { data: categoriesRaw = [], isLoading: loadingCats } = trpc.carrefour.categories.useQuery();
+  const { data: rawCategories, isLoading: loadingCats } = trpc.lidl.categories.useQuery();
 
-  const categoryMap = useMemo(() => {
-    const map: Record<string, string[]> = {};
-    for (const row of categoriesRaw as Array<{ category: string; subcategory: string; count: number }>) {
-      if (!row.category) continue;
-      if (!map[row.category]) map[row.category] = [];
-      if (row.subcategory && !map[row.category].includes(row.subcategory)) {
-        map[row.category].push(row.subcategory);
-      }
-    }
-    return map;
-  }, [categoriesRaw]);
+  const categories = rawCategories ?? [];
 
-  const topCategories = useMemo(() => Object.keys(categoryMap).sort(), [categoryMap]);
-  const subcategories = useMemo(() => selectedCategory ? (categoryMap[selectedCategory] ?? []) : [], [categoryMap, selectedCategory]);
-
-  const isSearching = debouncedQuery.trim().length >= 2;
-
-  const { data: searchResults = [], isLoading: loadingSearch } = trpc.carrefour.searchProducts.useQuery(
-    { q: debouncedQuery, limit: 48 },
-    { enabled: isSearching }
+  const { data: searchResults, isLoading: loadingSearch } = trpc.lidl.searchProducts.useQuery(
+    { q: debouncedQuery, limit: 40 },
+    { enabled: debouncedQuery.length >= 2 }
   );
 
-  const { data: categoryProducts = [], isLoading: loadingCatProducts } = trpc.carrefour.byCategory.useQuery(
-    { category: selectedCategory!, subcategory: selectedSubcategory ?? undefined, limit: 48 },
-    { enabled: !!selectedCategory && !isSearching }
+  const { data: categoryProducts, isLoading: loadingCatProducts } = trpc.lidl.byCategory.useQuery(
+    { category: selectedCategory ?? "", limit: 60 },
+    { enabled: !!selectedCategory && !debouncedQuery }
   );
 
-  const displayedProducts = isSearching ? searchResults : (selectedCategory ? categoryProducts : []);
-  const isLoading = isSearching ? loadingSearch : loadingCatProducts;
+  const displayedProducts: LidlProduct[] = debouncedQuery.length >= 2
+    ? (searchResults ?? [])
+    : (categoryProducts ?? []);
+  const isLoading = debouncedQuery.length >= 2 ? loadingSearch : loadingCatProducts;
 
   // ── Cart helpers ─────────────────────────────────────────────────────────────
-  const addToCart = (product: any) => {
+  const addToCart = (product: LidlProduct) => {
     setCart((prev) => {
       const existing = prev.find((c) => c.id === product.id);
       if (existing) return prev.map((c) => c.id === product.id ? { ...c, quantity: c.quantity + 1 } : c);
       return [...prev, {
         id: product.id,
         name: product.name,
-        price: product.price,
-        image: product.image,
+        price: product.price ?? 0,
+        image: product.image || null,
+        brand: product.brand || null,
+        packaging: product.packaging || null,
+        shareUrl: product.productUrl ?? `https://www.lidl.es/q/search?q=${encodeURIComponent(product.name)}`,
         quantity: 1,
-        productUrl: product.productUrl,
       }];
     });
     toast.success(`${product.name.slice(0, 30)}... añadido`, { duration: 1500 });
@@ -125,26 +113,28 @@ export default function CarrefourShop() {
   };
 
   const cartCount = cart.reduce((sum, c) => sum + c.quantity, 0);
-  const cartTotal = cart.reduce((sum, c) => sum + (c.price ?? 0) * c.quantity, 0);
+  const cartTotal = cart.reduce((sum, c) => sum + c.price * c.quantity, 0);
 
-  const handleGoToCarrefour = () => {
+  // ── Go to Lidl ───────────────────────────────────────────────────────────────
+  const handleGoToLidl = () => {
     if (cart.length === 0) {
-      window.open("https://www.carrefour.es/supermercado", "_blank");
+      window.open("https://www.lidl.es", "_blank");
       return;
     }
+    // Open each product in a new tab with a small delay
     cart.forEach((item, idx) => {
       setTimeout(() => {
-        const url = item.productUrl
-          ? `https://www.carrefour.es${item.productUrl}`
-          : `https://www.carrefour.es/supermercado/buscar?query=${encodeURIComponent(item.name)}`;
+        const url = item.shareUrl.startsWith("http")
+          ? item.shareUrl
+          : `https://www.lidl.es/q/search?q=${encodeURIComponent(item.name)}`;
         window.open(url, "_blank");
       }, idx * 400);
     });
-    toast.success(`Abriendo ${cart.length} producto${cart.length !== 1 ? "s" : ""} en Carrefour`);
+    toast.success(`Abriendo ${cart.length} producto${cart.length !== 1 ? "s" : ""} en Lidl`);
   };
 
   const handleCopyList = () => {
-    const text = cart.map((c) => `• ${c.name} ×${c.quantity} — ${((c.price ?? 0) * c.quantity).toFixed(2)}€`).join("\n")
+    const text = cart.map((c) => `• ${c.name}${c.packaging ? ` (${c.packaging})` : ""} ×${c.quantity} — ${(c.price * c.quantity).toFixed(2)}€`).join("\n")
       + `\n\nTotal estimado: ${cartTotal.toFixed(2)}€`;
     navigator.clipboard.writeText(text).then(() => toast.success("Lista copiada al portapapeles"));
   };
@@ -165,10 +155,14 @@ export default function CarrefourShop() {
           </button>
           <div>
             <div className="flex items-center gap-2">
-              <div className="w-8 h-8 rounded-xl flex items-center justify-center text-sm font-black text-white" style={{ background: CARR_BLUE }}>C</div>
-              <h1 className="text-lg font-black text-gray-900">Carrefour</h1>
+              {/* Lidl logo colors */}
+              <div className="w-8 h-8 rounded-xl flex items-center justify-center text-sm font-black text-white" style={{ background: LIDL_BLUE }}>L</div>
+              <h1 className="text-lg font-black text-gray-900">Lidl</h1>
+              <span className="text-xs font-bold px-2 py-0.5 rounded-full text-white" style={{ background: LIDL_RED }}>
+                Precios bajos
+              </span>
             </div>
-            <p className="text-xs text-gray-400">14.500+ productos disponibles</p>
+            <p className="text-xs text-gray-400">{categories.reduce((s: number, c: any) => s + (c.count ?? 0), 0)} productos disponibles</p>
           </div>
         </div>
         {/* Cart button */}
@@ -180,7 +174,7 @@ export default function CarrefourShop() {
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
           </svg>
           {cartCount > 0 && (
-            <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-white text-xs font-black flex items-center justify-center" style={{ background: CARR_RED }}>
+            <span className="absolute -top-1 -right-1 w-5 h-5 rounded-full text-white text-xs font-black flex items-center justify-center" style={{ background: LIDL_RED }}>
               {cartCount}
             </span>
           )}
@@ -194,10 +188,11 @@ export default function CarrefourShop() {
         </svg>
         <input
           type="text"
-          placeholder="Buscar en Carrefour..."
+          placeholder="Buscar en Lidl..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-10 pr-4 py-3 rounded-2xl bg-white border border-gray-100 shadow-sm text-sm font-medium text-gray-900 placeholder-gray-400 focus:outline-none"
+          className="w-full pl-10 pr-4 py-3 rounded-2xl bg-white border border-gray-100 shadow-sm text-sm font-medium text-gray-900 placeholder-gray-400 focus:outline-none focus:ring-2 focus:border-transparent"
+          style={{ "--tw-ring-color": LIDL_BLUE } as React.CSSProperties}
         />
         {searchQuery && (
           <button
@@ -212,25 +207,30 @@ export default function CarrefourShop() {
       </div>
 
       {/* ── Categories ──────────────────────────────────────────────────────── */}
-      {!isSearching && (
+      {!debouncedQuery && (
         <div className="mb-5">
           {loadingCats ? (
             <div className="grid grid-cols-4 gap-2">
-              {Array.from({ length: 8 }).map((_, i) => <div key={i} className="bg-white rounded-2xl p-3 h-20 animate-pulse" />)}
+              {Array.from({ length: 8 }).map((_, i) => (
+                <div key={i} className="bg-white rounded-2xl p-3 h-20 animate-pulse" />
+              ))}
             </div>
           ) : (
             <div className="grid grid-cols-4 gap-2">
-              {topCategories.map((cat) => (
+              {categories.map((cat: any) => (
                 <button
-                  key={cat}
-                  onClick={() => { setSelectedCategory(selectedCategory === cat ? null : cat); setSelectedSubcategory(null); }}
+                  key={cat.category}
+                  onClick={() => setSelectedCategory(selectedCategory === cat.category ? null : cat.category)}
                   className={`rounded-2xl p-3 flex flex-col items-center gap-1.5 transition-all active:scale-95 ${
-                    selectedCategory === cat ? "text-white shadow-md" : "bg-white text-gray-700 shadow-sm border border-gray-100"
+                    selectedCategory === cat.category
+                      ? "text-white shadow-md"
+                      : "bg-white text-gray-700 shadow-sm border border-gray-100"
                   }`}
-                  style={selectedCategory === cat ? { background: CARR_BLUE } : {}}
+                  style={selectedCategory === cat.category ? { background: LIDL_BLUE } : {}}
                 >
-                  <span className="text-2xl">{CATEGORY_ICONS[cat] ?? "🛍️"}</span>
-                  <span className="text-xs font-bold text-center leading-tight line-clamp-2">{cat}</span>
+                  <span className="text-2xl">{CATEGORY_ICONS[cat.category] ?? "🛍️"}</span>
+                  <span className="text-xs font-bold text-center leading-tight line-clamp-2">{cat.category}</span>
+                  <span className="text-xs opacity-60">{cat.count}</span>
                 </button>
               ))}
             </div>
@@ -238,27 +238,8 @@ export default function CarrefourShop() {
         </div>
       )}
 
-      {/* ── Subcategory tabs ─────────────────────────────────────────────────── */}
-      {!isSearching && selectedCategory && subcategories.length > 0 && (
-        <div className="mb-4 flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
-          <button
-            onClick={() => setSelectedSubcategory(null)}
-            className={`shrink-0 rounded-full px-4 py-2 text-xs font-bold transition-all ${!selectedSubcategory ? "text-white" : "bg-white text-gray-600 border border-gray-200"}`}
-            style={!selectedSubcategory ? { background: CARR_BLUE } : {}}
-          >Todos</button>
-          {subcategories.map((sub) => (
-            <button
-              key={sub}
-              onClick={() => setSelectedSubcategory(sub)}
-              className={`shrink-0 rounded-full px-4 py-2 text-xs font-bold transition-all ${selectedSubcategory === sub ? "text-white" : "bg-white text-gray-600 border border-gray-200"}`}
-              style={selectedSubcategory === sub ? { background: CARR_BLUE } : {}}
-            >{sub}</button>
-          ))}
-        </div>
-      )}
-
       {/* ── Products grid ───────────────────────────────────────────────────── */}
-      {(selectedCategory || isSearching) && (
+      {(selectedCategory || debouncedQuery.length >= 2) && (
         <div>
           {isLoading ? (
             <div className="grid grid-cols-2 gap-3">
@@ -280,36 +261,52 @@ export default function CarrefourShop() {
             <>
               <p className="text-xs text-gray-400 mb-3">{displayedProducts.length} productos</p>
               <div className="grid grid-cols-2 gap-3">
-                {(displayedProducts as any[]).map((product) => {
+                {displayedProducts.map((product) => {
                   const inCart = cart.find((c) => c.id === product.id);
                   return (
                     <div key={product.id} className="bg-white rounded-2xl p-3 shadow-sm border border-gray-100 flex flex-col">
+                      {/* Product image */}
                       <div className="w-full h-28 bg-gray-50 rounded-xl mb-3 flex items-center justify-center overflow-hidden">
                         {product.image
                           ? <img src={product.image} alt={product.name} className="w-full h-full object-contain p-2"
                               onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                          : <span className="text-4xl">{CATEGORY_ICONS[product.category ?? ""] ?? "🛒"}</span>}
+                          : (
+                            <div className="flex flex-col items-center gap-1">
+                              <span className="text-3xl">{CATEGORY_ICONS[product.category] ?? "🛒"}</span>
+                              {product.brand && <span className="text-xs font-bold text-gray-400">{product.brand}</span>}
+                            </div>
+                          )
+                        }
                       </div>
+                      {/* Product info */}
                       <div className="flex-1">
                         <p className="text-xs font-bold text-gray-900 leading-tight line-clamp-2 mb-1">{product.name}</p>
                         {product.brand && <p className="text-xs text-gray-400 mb-0.5">{product.brand}</p>}
                         {product.packaging && <p className="text-xs text-gray-400 mb-1">{product.packaging}</p>}
-                        <p className="text-base font-black mb-3" style={{ color: CARR_BLUE }}>
-                          {product.price != null ? `${product.price.toFixed(2)}€` : "—"}
-                          {product.pricePerUnit && <span className="text-xs font-normal text-gray-400 ml-1">({product.pricePerUnit})</span>}
+                        <p className="text-base font-black mb-3" style={{ color: LIDL_BLUE }}>
+                          {product.price != null && product.price > 0 ? `${product.price.toFixed(2)}€` : "—"}
                         </p>
                       </div>
+                      {/* Add to cart */}
                       {inCart ? (
-                        <div className="flex items-center justify-between rounded-xl px-2 py-1.5" style={{ background: CARR_BG }}>
-                          <button onClick={() => updateQty(product.id, -1)} className="w-7 h-7 rounded-lg bg-white font-black flex items-center justify-center shadow-sm" style={{ color: CARR_BLUE }}>−</button>
-                          <span className="text-sm font-bold" style={{ color: CARR_BLUE }}>{inCart.quantity}</span>
-                          <button onClick={() => updateQty(product.id, 1)} className="w-7 h-7 rounded-lg text-white font-black flex items-center justify-center" style={{ background: CARR_BLUE }}>+</button>
+                        <div className="flex items-center justify-between rounded-xl px-2 py-1.5" style={{ background: LIDL_BG }}>
+                          <button
+                            onClick={() => updateQty(product.id, -1)}
+                            className="w-7 h-7 rounded-lg bg-white font-black flex items-center justify-center shadow-sm"
+                            style={{ color: LIDL_BLUE }}
+                          >−</button>
+                          <span className="text-sm font-bold" style={{ color: LIDL_BLUE }}>{inCart.quantity}</span>
+                          <button
+                            onClick={() => updateQty(product.id, 1)}
+                            className="w-7 h-7 rounded-lg text-white font-black flex items-center justify-center"
+                            style={{ background: LIDL_BLUE }}
+                          >+</button>
                         </div>
                       ) : (
                         <button
                           onClick={() => addToCart(product)}
                           className="w-full rounded-xl py-2 text-xs font-bold text-white transition-all active:scale-95"
-                          style={{ background: CARR_BLUE }}
+                          style={{ background: LIDL_BLUE }}
                         >+ Añadir</button>
                       )}
                     </div>
@@ -322,12 +319,12 @@ export default function CarrefourShop() {
       )}
 
       {/* ── Empty state ─────────────────────────────────────────────────────── */}
-      {!selectedCategory && !isSearching && (
+      {!selectedCategory && debouncedQuery.length < 2 && (
         <div className="flex flex-col items-center justify-center py-12 text-center">
-          <div className="w-20 h-20 rounded-3xl flex items-center justify-center mb-4 shadow-lg" style={{ background: `linear-gradient(135deg, ${CARR_BLUE}, #0066CC)` }}>
+          <div className="w-20 h-20 rounded-3xl flex items-center justify-center mb-4 shadow-lg" style={{ background: `linear-gradient(135deg, ${LIDL_BLUE}, #0066CC)` }}>
             <span className="text-4xl">🛒</span>
           </div>
-          <h2 className="text-lg font-black text-gray-900 mb-2">Compra en Carrefour</h2>
+          <h2 className="text-lg font-black text-gray-900 mb-2">Compra en Lidl</h2>
           <p className="text-sm text-gray-500 max-w-xs">Selecciona una categoría o busca un producto para empezar a añadir al carrito</p>
         </div>
       )}
@@ -338,10 +335,10 @@ export default function CarrefourShop() {
           <button
             onClick={() => setShowCart(true)}
             className="w-full rounded-2xl py-4 text-base font-bold text-white flex items-center justify-between px-5 shadow-2xl"
-            style={{ background: `linear-gradient(135deg, ${CARR_BLUE}, #0066CC)` }}
+            style={{ background: `linear-gradient(135deg, ${LIDL_BLUE}, #0066CC)` }}
           >
             <div className="flex items-center gap-3">
-              <div className="w-7 h-7 rounded-xl bg-white flex items-center justify-center font-black text-sm" style={{ color: CARR_BLUE }}>
+              <div className="w-7 h-7 rounded-xl flex items-center justify-center font-black text-sm" style={{ background: LIDL_YELLOW, color: "#1a1a1a" }}>
                 {cartCount}
               </div>
               <span>Ver carrito</span>
@@ -356,9 +353,10 @@ export default function CarrefourShop() {
         <div className="fixed inset-0 z-50 flex flex-col justify-end">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowCart(false)} />
           <div className="relative bg-white rounded-t-3xl shadow-2xl max-h-[80vh] flex flex-col">
+            {/* Cart header */}
             <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
               <div>
-                <h2 className="text-lg font-black text-gray-900">Mi carrito Carrefour</h2>
+                <h2 className="text-lg font-black text-gray-900">Mi carrito Lidl</h2>
                 <p className="text-xs text-gray-400">{cartCount} artículo{cartCount !== 1 ? "s" : ""}</p>
               </div>
               <button onClick={() => setShowCart(false)} className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center">
@@ -367,6 +365,7 @@ export default function CarrefourShop() {
                 </svg>
               </button>
             </div>
+            {/* Cart items */}
             <div className="flex-1 overflow-y-auto px-5 py-3 divide-y divide-gray-50">
               {cart.map((item) => (
                 <div key={item.id} className="flex items-center gap-3 py-3">
@@ -377,46 +376,48 @@ export default function CarrefourShop() {
                   </div>
                   <div className="flex-1 min-w-0">
                     <p className="text-sm font-bold text-gray-900 line-clamp-1">{item.name}</p>
-                    <p className="text-xs font-bold" style={{ color: CARR_BLUE }}>
-                      {(item.price ?? 0).toFixed(2)}€ × {item.quantity} = {((item.price ?? 0) * item.quantity).toFixed(2)}€
+                    {item.brand && <p className="text-xs text-gray-400">{item.brand}</p>}
+                    <p className="text-xs font-bold" style={{ color: LIDL_BLUE }}>
+                      {item.price.toFixed(2)}€ × {item.quantity} = {(item.price * item.quantity).toFixed(2)}€
                     </p>
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">
                     <button onClick={() => updateQty(item.id, -1)} className="w-7 h-7 rounded-lg bg-gray-100 text-gray-700 font-black flex items-center justify-center text-sm">−</button>
                     <span className="text-sm font-bold w-5 text-center">{item.quantity}</span>
-                    <button onClick={() => updateQty(item.id, 1)} className="w-7 h-7 rounded-lg text-white font-black flex items-center justify-center text-sm" style={{ background: CARR_BLUE }}>+</button>
+                    <button onClick={() => updateQty(item.id, 1)} className="w-7 h-7 rounded-lg text-white font-black flex items-center justify-center text-sm" style={{ background: LIDL_BLUE }}>+</button>
                   </div>
                 </div>
               ))}
             </div>
+            {/* Cart footer */}
             <div className="px-5 pt-4 pb-8 border-t border-gray-100">
               <div className="flex items-center justify-between mb-4">
                 <span className="text-base font-bold text-gray-700">Total estimado</span>
                 <span className="text-xl font-black text-gray-900">{cartTotal.toFixed(2)}€</span>
               </div>
               <button
-                onClick={handleGoToCarrefour}
+                onClick={handleGoToLidl}
                 className="w-full rounded-2xl py-3.5 text-sm font-bold text-white mb-3 flex items-center justify-center gap-2"
-                style={{ background: `linear-gradient(135deg, ${CARR_BLUE}, #0066CC)`, boxShadow: "0 4px 16px rgba(0,74,151,0.4)" }}
+                style={{ background: `linear-gradient(135deg, ${LIDL_BLUE}, #0066CC)`, boxShadow: `0 4px 16px rgba(0,80,170,0.4)` }}
               >
                 <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
                 </svg>
-                Buscar en Carrefour ({cartCount})
+                Buscar en Lidl ({cartCount})
               </button>
               <div className="flex gap-3">
                 <button
                   onClick={handleCopyList}
                   className="flex-1 rounded-2xl py-3 text-sm font-bold border-2"
-                  style={{ color: CARR_BLUE, borderColor: CARR_BLUE }}
+                  style={{ color: LIDL_BLUE, borderColor: LIDL_BLUE }}
                 >
                   Copiar lista
                 </button>
                 <button
-                  onClick={() => window.open("https://www.carrefour.es/supermercado", "_blank")}
+                  onClick={() => window.open("https://www.lidl.es", "_blank")}
                   className="flex-1 rounded-2xl py-3 text-sm font-bold bg-gray-100 text-gray-700"
                 >
-                  Ir a Carrefour
+                  Ir a Lidl
                 </button>
               </div>
             </div>
