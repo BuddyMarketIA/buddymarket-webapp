@@ -128,6 +128,43 @@ export default function MealLog() {
   const goalType = (profileData?.profile as any)?.goal ?? undefined;
   const calPct = Math.min(100, Math.round((totalCals / targetCals) * 100));
 
+  // Macro totals
+  const totalProteins = Math.round((summary as any)?.proteins ?? 0);
+  const totalCarbs = Math.round((summary as any)?.carbohydrates ?? 0);
+  const totalFats = Math.round((summary as any)?.fats ?? 0);
+
+  // Macro targets derived from calorie goal using standard ratios
+  // Protein: 30%, Carbs: 45%, Fat: 25%
+  const targetProteins = Math.round((targetCals * 0.30) / 4);
+  const targetCarbs = Math.round((targetCals * 0.45) / 4);
+  const targetFats = Math.round((targetCals * 0.25) / 9);
+
+  const protPct = Math.min(100, targetProteins > 0 ? Math.round((totalProteins / targetProteins) * 100) : 0);
+  const carbPct = Math.min(100, targetCarbs > 0 ? Math.round((totalCarbs / targetCarbs) * 100) : 0);
+  const fatPct = Math.min(100, targetFats > 0 ? Math.round((totalFats / targetFats) * 100) : 0);
+
+  // SVG donut chart data
+  const macroTotal = totalProteins * 4 + totalCarbs * 4 + totalFats * 9;
+  const protKcal = totalProteins * 4;
+  const carbKcal = totalCarbs * 4;
+  const fatKcal = totalFats * 9;
+  const donutR = 36;
+  const donutCirc = 2 * Math.PI * donutR;
+  const protArc = macroTotal > 0 ? (protKcal / macroTotal) * donutCirc : 0;
+  const carbArc = macroTotal > 0 ? (carbKcal / macroTotal) * donutCirc : 0;
+  const fatArc = macroTotal > 0 ? (fatKcal / macroTotal) * donutCirc : 0;
+
+  // Motivational message
+  const motivMsg = calPct === 0
+    ? "¡Empieza a registrar tus comidas!"
+    : calPct < 50
+    ? "¡Buen comienzo! Sigue añadiendo comidas."
+    : calPct < 80
+    ? "¡Vas muy bien! Casi en tu objetivo."
+    : calPct <= 100
+    ? "¡Objetivo alcanzado! Excelente día."
+    : "¡Has superado tu objetivo calrico hoy.";
+
   // Group by day part
   const grouped: Record<string, any[]> = {};
   (logs ?? []).forEach((log: any) => {
@@ -252,32 +289,112 @@ export default function MealLog() {
         />
       )}
 
-      {/* Calorie summary card */}
-      <div style={{ background: "linear-gradient(135deg, #F97316 0%, #FB923C 60%, #FDBA74 100%)", borderRadius: "20px", padding: "18px", marginBottom: "16px", boxShadow: "0 6px 24px rgba(249,115,22,0.25)" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
-          <span style={{ fontSize: "13px", fontWeight: 700, color: "rgba(255,255,255,0.85)" }}>Calorías del día</span>
-          <span style={{ fontSize: "20px", fontWeight: 900, color: "white" }}>{Math.round(totalCals)} kcal</span>
-        </div>
-        <div style={{ background: "rgba(255,255,255,0.25)", borderRadius: "999px", height: "8px", overflow: "hidden", marginBottom: "6px" }}>
-          <div style={{ background: "white", borderRadius: "999px", height: "100%", width: `${calPct}%`, transition: "width 0.6s ease" }} />
-        </div>
-        <p style={{ margin: 0, fontSize: "14px", color: "rgba(255,255,255,0.7)", textAlign: "right" }}>Objetivo: {targetCals} kcal</p>
-        {(summary as any)?.proteins !== undefined && (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px", marginTop: "12px" }}>
-            <div style={{ textAlign: "center", background: "rgba(255,255,255,0.15)", borderRadius: "12px", padding: "8px 4px" }}>
-              <p style={{ margin: 0, fontSize: "15px", fontWeight: 900, color: "white" }}>{Math.round((summary as any).proteins ?? 0)}g</p>
-              <p style={{ margin: "2px 0 0", fontSize: "13px", color: "rgba(255,255,255,0.75)" }}>Proteína</p>
+      {/* Nutrition summary card */}
+      <div style={{ background: "white", borderRadius: "24px", padding: "18px", marginBottom: "16px", boxShadow: "0 4px 20px rgba(0,0,0,0.07)", border: "1px solid #f3f4f6" }}>
+        {/* Top: calorie progress */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
+          <div>
+            <p style={{ margin: 0, fontSize: "12px", fontWeight: 600, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.06em" }}>Calorías del día</p>
+            <div style={{ display: "flex", alignItems: "baseline", gap: "4px", marginTop: "2px" }}>
+              <span style={{ fontSize: "28px", fontWeight: 900, color: calPct > 100 ? "#ef4444" : "#1a1a1a", lineHeight: 1 }}>{Math.round(totalCals)}</span>
+              <span style={{ fontSize: "13px", fontWeight: 600, color: "#9ca3af" }}>/ {targetCals} kcal</span>
             </div>
-            <div style={{ textAlign: "center", background: "rgba(255,255,255,0.15)", borderRadius: "12px", padding: "8px 4px" }}>
-              <p style={{ margin: 0, fontSize: "15px", fontWeight: 900, color: "white" }}>{Math.round((summary as any).carbohydrates ?? 0)}g</p>
-              <p style={{ margin: "2px 0 0", fontSize: "13px", color: "rgba(255,255,255,0.75)" }}>Carbos</p>
-            </div>
-            <div style={{ textAlign: "center", background: "rgba(255,255,255,0.15)", borderRadius: "12px", padding: "8px 4px" }}>
-              <p style={{ margin: 0, fontSize: "15px", fontWeight: 900, color: "white" }}>{Math.round((summary as any).fats ?? 0)}g</p>
-              <p style={{ margin: "2px 0 0", fontSize: "13px", color: "rgba(255,255,255,0.75)" }}>Grasas</p>
+            <p style={{ margin: "4px 0 0", fontSize: "12px", color: calPct > 100 ? "#ef4444" : calPct >= 80 ? "#22c55e" : "#f97316", fontWeight: 600 }}>{motivMsg}</p>
+          </div>
+          {/* Donut chart */}
+          <div style={{ position: "relative", width: "90px", height: "90px", flexShrink: 0 }}>
+            <svg width="90" height="90" viewBox="0 0 90 90">
+              {/* Background ring */}
+              <circle cx="45" cy="45" r={donutR} fill="none" stroke="#f3f4f6" strokeWidth="10" />
+              {macroTotal === 0 ? (
+                <circle cx="45" cy="45" r={donutR} fill="none" stroke="#e5e7eb" strokeWidth="10" />
+              ) : (
+                <>
+                  {/* Proteins - blue */}
+                  <circle cx="45" cy="45" r={donutR} fill="none" stroke="#3b82f6" strokeWidth="10"
+                    strokeDasharray={`${protArc} ${donutCirc - protArc}`}
+                    strokeDashoffset={donutCirc * 0.25}
+                    strokeLinecap="butt"
+                    style={{ transition: "stroke-dasharray 0.6s ease" }}
+                  />
+                  {/* Carbs - amber */}
+                  <circle cx="45" cy="45" r={donutR} fill="none" stroke="#f59e0b" strokeWidth="10"
+                    strokeDasharray={`${carbArc} ${donutCirc - carbArc}`}
+                    strokeDashoffset={donutCirc * 0.25 - protArc}
+                    strokeLinecap="butt"
+                    style={{ transition: "stroke-dasharray 0.6s ease" }}
+                  />
+                  {/* Fats - rose */}
+                  <circle cx="45" cy="45" r={donutR} fill="none" stroke="#f43f5e" strokeWidth="10"
+                    strokeDasharray={`${fatArc} ${donutCirc - fatArc}`}
+                    strokeDashoffset={donutCirc * 0.25 - protArc - carbArc}
+                    strokeLinecap="butt"
+                    style={{ transition: "stroke-dasharray 0.6s ease" }}
+                  />
+                </>
+              )}
+            </svg>
+            <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ fontSize: "16px", fontWeight: 900, color: "#1a1a1a", lineHeight: 1 }}>{calPct}%</span>
+              <span style={{ fontSize: "9px", color: "#9ca3af", fontWeight: 600, marginTop: "1px" }}>objetivo</span>
             </div>
           </div>
-        )}
+        </div>
+
+        {/* Calorie progress bar */}
+        <div style={{ background: "#f3f4f6", borderRadius: "999px", height: "6px", overflow: "hidden", marginBottom: "14px" }}>
+          <div style={{
+            background: calPct > 100 ? "#ef4444" : calPct >= 80 ? "linear-gradient(90deg,#22c55e,#16a34a)" : "linear-gradient(90deg,#F97316,#FB923C)",
+            borderRadius: "999px", height: "100%", width: `${calPct}%`, transition: "width 0.6s ease"
+          }} />
+        </div>
+
+        {/* Macro bars */}
+        <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+          {/* Proteins */}
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div style={{ width: "10px", height: "10px", borderRadius: "3px", background: "#3b82f6", flexShrink: 0 }} />
+            <span style={{ fontSize: "12px", fontWeight: 600, color: "#374151", width: "60px", flexShrink: 0 }}>Proteína</span>
+            <div style={{ flex: 1, background: "#eff6ff", borderRadius: "999px", height: "6px", overflow: "hidden" }}>
+              <div style={{ background: "#3b82f6", borderRadius: "999px", height: "100%", width: `${protPct}%`, transition: "width 0.6s ease" }} />
+            </div>
+            <span style={{ fontSize: "11px", color: "#6b7280", width: "70px", textAlign: "right", flexShrink: 0 }}>{totalProteins}g / {targetProteins}g</span>
+          </div>
+          {/* Carbs */}
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div style={{ width: "10px", height: "10px", borderRadius: "3px", background: "#f59e0b", flexShrink: 0 }} />
+            <span style={{ fontSize: "12px", fontWeight: 600, color: "#374151", width: "60px", flexShrink: 0 }}>Carbos</span>
+            <div style={{ flex: 1, background: "#fffbeb", borderRadius: "999px", height: "6px", overflow: "hidden" }}>
+              <div style={{ background: "#f59e0b", borderRadius: "999px", height: "100%", width: `${carbPct}%`, transition: "width 0.6s ease" }} />
+            </div>
+            <span style={{ fontSize: "11px", color: "#6b7280", width: "70px", textAlign: "right", flexShrink: 0 }}>{totalCarbs}g / {targetCarbs}g</span>
+          </div>
+          {/* Fats */}
+          <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+            <div style={{ width: "10px", height: "10px", borderRadius: "3px", background: "#f43f5e", flexShrink: 0 }} />
+            <span style={{ fontSize: "12px", fontWeight: 600, color: "#374151", width: "60px", flexShrink: 0 }}>Grasas</span>
+            <div style={{ flex: 1, background: "#fff1f2", borderRadius: "999px", height: "6px", overflow: "hidden" }}>
+              <div style={{ background: "#f43f5e", borderRadius: "999px", height: "100%", width: `${fatPct}%`, transition: "width 0.6s ease" }} />
+            </div>
+            <span style={{ fontSize: "11px", color: "#6b7280", width: "70px", textAlign: "right", flexShrink: 0 }}>{totalFats}g / {targetFats}g</span>
+          </div>
+        </div>
+
+        {/* Legend */}
+        <div style={{ display: "flex", gap: "12px", marginTop: "12px", paddingTop: "12px", borderTop: "1px solid #f3f4f6", justifyContent: "center" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+            <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#3b82f6" }} />
+            <span style={{ fontSize: "11px", color: "#9ca3af" }}>Proteína</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+            <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#f59e0b" }} />
+            <span style={{ fontSize: "11px", color: "#9ca3af" }}>Carbos</span>
+          </div>
+          <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
+            <div style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#f43f5e" }} />
+            <span style={{ fontSize: "11px", color: "#9ca3af" }}>Grasas</span>
+          </div>
+        </div>
       </div>
 
       {/* Quick add photo button */}
