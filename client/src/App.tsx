@@ -54,6 +54,7 @@ import { OnboardingModal } from "./components/OnboardingModal";
 import InstallAppBanner from "./components/InstallAppBanner";
 import Complements from "./pages/Complements";
 import LoginPage from "./pages/LoginPage";
+import BuddySetup from "./pages/BuddySetup";
 
 // Wraps a page component with AppLayout (for pages that don't include it themselves)
 function WithLayout({ component: Component, ...props }: { component: React.ComponentType<any>; [key: string]: any }) {
@@ -67,9 +68,15 @@ function WithLayout({ component: Component, ...props }: { component: React.Compo
 // Protects app routes — redirects to Manus login if not authenticated
 function ProtectedRoute({ component: Component, params }: { component: React.ComponentType<any>; params?: any }) {
   const { user, loading } = useAuth();
+  const [, setLocation] = useLocation();
   if (loading) return null;
   if (!user) {
     window.location.href = getLoginUrl();
+    return null;
+  }
+  // Redirect to onboarding wizard if not completed yet
+  if (!user.onboardingCompleted) {
+    setLocation("/buddy-setup");
     return null;
   }
   return <WithLayout component={Component} params={params} />;
@@ -99,6 +106,8 @@ function Router() {
       <Route path="/cookies" component={Cookies} />
       <Route path="/legal" component={Terms} />
       <Route path="/gdpr" component={Privacy} />
+      {/* Onboarding wizard — requires auth, no AppLayout */}
+      <Route path="/buddy-setup">{() => <ProtectedPage><BuddySetup /></ProtectedPage>}</Route>
       {/* /app → redirect to /app/dashboard */}
       <Route path="/app">{() => <Redirect to="/app/dashboard" />}</Route>
       {/* Protected app routes */}

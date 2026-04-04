@@ -1128,3 +1128,15 @@
 - [ ] Al generar nueva lista de la compra → cruzar ingredientes con pantryStock y marcar inStock=true si hay stock disponible
 - [ ] Badge "Ya lo tienes" en items de la lista con stock disponible en despensa
 - [ ] Procedimientos tRPC: getPantryStock, markItemPurchased (con upsert pantry), clearExpiredStock
+
+## Sprint Recetas Sugeridas por Inventario
+- [ ] Procedimiento tRPC recipes.cookableNow: cruza inventario con ingredientes de recetas
+- [ ] Sección "Puedes cocinar ahora" en Recipes.tsx con cards y % de ingredientes disponibles
+- [ ] Badge de ingredientes faltantes en cada card de receta cookable
+
+## Sprint BuddySetup - Onboarding guiado con IA
+- [ ] Página /buddy-setup con flujo de 5 pasos (objetivo, restricciones, horarios, presupuesto, generación menú)
+- [ ] Redirigir a /buddy-setup si onboardingCompleted = false tras el login
+- [ ] tRPC: completeOnboarding que guarda los datos y genera el primer menú con IA
+- [ ] Animaciones de transición entre pasos
+- [ ] Marcar onboardingCompleted = true al finalizar

@@ -238,8 +238,133 @@ export const appRouter = router({
         return { success: true };
       }),
 
-    completeOnboarding: protectedProcedure.mutation(async ({ ctx }) => {
+    completeOnboarding: protectedProcedure
+      .input(z.object({
+        mainGoal: z.string().optional(),
+        restrictions: z.array(z.string()).optional(),
+        dailyMeals: z.number().int().min(1).max(8).optional(),
+        mealTimes: z.array(z.string()).optional(),
+        mealPrepTime: z.string().optional(),
+        budgetPerWeek: z.number().min(0).optional(),
+        cookingLevel: z.string().optional(),
+        generateMenu: z.boolean().optional(),
+      }).optional())
+      .mutation(async ({ ctx, input }) => {
       await db.updateUser(ctx.user.id, { onboardingCompleted: true });
+
+      // Save profile data from setup wizard
+      if (input) {
+        const drizzleDb = await db.getDb();
+        if (drizzleDb) {
+          const { userProfiles, userDietRestrictions, dietRestrictions } = await import("../drizzle/schema");
+          const { eq } = await import("drizzle-orm");
+          // Upsert user profile
+          const existing = await drizzleDb.select().from(userProfiles).where(eq(userProfiles.userId, ctx.user.id)).limit(1);
+          const profileData: Record<string, unknown> = { userId: ctx.user.id };
+          if (input.mainGoal) profileData.mainGoal = input.mainGoal as any;
+          if (input.dailyMeals) profileData.dailyMeals = input.dailyMeals;
+          if (input.mealPrepTime) profileData.mealPrepTime = input.mealPrepTime as any;
+          if (input.budgetPerWeek !== undefined) profileData.budgetPerWeek = input.budgetPerWeek;
+          if (input.cookingLevel) profileData.cookingLevel = input.cookingLevel as any;
+          if (input.mealTimes) profileData.mealsPerDayDetail = JSON.stringify(input.mealTimes);
+          if (existing.length > 0) {
+            await drizzleDb.update(userProfiles).set(profileData).where(eq(userProfiles.userId, ctx.user.id));
+          } else {
+            await drizzleDb.insert(userProfiles).values(profileData as any);
+          }
+          // Save diet restrictions
+          if (input.restrictions && input.restrictions.length > 0 && !input.restrictions.includes("ninguna")) {
+            const allRestrictions = await drizzleDb.select().from(dietRestrictions);
+            for (const rName of input.restrictions) {
+              const found = allRestrictions.find((r) => r.nameEs.toLowerCase().includes(rName.toLowerCase()) || rName.toLowerCase().includes(r.nameEs.toLowerCase()) || r.apiParam.toLowerCase().includes(rName.toLowerCase()));
+              if (found) {
+                try {
+                  await drizzleDb.insert(userDietRestrictions).values({ userId: ctx.user.id, dietRestrictionId: found.id });
+                } catch (_) { /* ignore duplicate */ }
+              }
+            }
+          }
+          // Generate first menu with AI if requested
+          if (input.generateMenu) {
+            try {
+              const { invokeLLM } = await import("./_core/llm");
+              const goalLabel: Record<string, string> = {
+                lose_weight: "pérdida de peso", gain_muscle: "ganancia muscular",
+                maintain: "mantenimiento", improve_health: "mejorar salud", eat_healthier: "comer más sano"
+              };
+              const prompt = `Eres un nutricionista experto. Genera un menú semanal personalizado en JSON para un usuario con objetivo: ${goalLabel[input.mainGoal ?? ""] ?? input.mainGoal}. Restricciones: ${(input.restrictions ?? []).join(", ") || "ninguna"}. Comidas al día: ${input.dailyMeals ?? 3} (${(input.mealTimes ?? []).join(", ")}). Tiempo de cocina: ${input.mealPrepTime ?? "15_30"} min. Presupuesto: ${input.budgetPerWeek ?? 60}€/semana. Nivel: ${input.cookingLevel ?? "intermediate"}.
+
+Devuelve SOLO JSON válido con esta estructura:
+{
+  "name": "Menú personalizado - [objetivo]",
+  "description": "descripción breve",
+  "days": [
+    { "day": 1, "meals": [{"mealTime": "desayuno", "recipeName": "...", "kcal": 350}, ...] },
+    ...
+  ]
+}`;
+              const aiResp = await invokeLLM({
+                messages: [
+                  { role: "system", content: "Eres un nutricionista experto. Responde SOLO con JSON válido, sin markdown." },
+                  { role: "user", content: prompt },
+                ],
+                response_format: { type: "json_object" },
+              });
+              const rawContent = aiResp?.choices?.[0]?.message?.content;
+              const content = typeof rawContent === "string" ? rawContent : null;
+              if (content) {
+                const parsed = JSON.parse(content);
+                // Save as user menu
+                const { menuOrganizers, menuOrganizerDayParts, menuOrganizerDayPartRecipes, dayParts, recipes: recipesTable } = await import("../drizzle/schema");
+                const allRecipes = await drizzleDb.select({ id: recipesTable.id, name: recipesTable.name }).from(recipesTable).limit(500);
+                const allDayParts = await drizzleDb.select().from(dayParts);
+                const now = new Date();
+                const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+                const menuInsert = await drizzleDb.insert(menuOrganizers).values({
+                  userId: ctx.user.id,
+                  name: parsed.name ?? "Mi primer menú",
+                  startDate: now,
+                  endDate: nextWeek,
+                  type: "weekly",
+                  isActive: true,
+                  generatedByAI: true,
+                  persons: 1,
+                  objective: parsed.description ?? "",
+                });
+                const menuId = (menuInsert as any).insertId;
+                if (menuId && parsed.days) {
+                  for (const dayData of parsed.days) {
+                    if (dayData.meals) {
+                      for (const meal of dayData.meals) {
+                        const mealTimeName = meal.mealTime ?? "comida";
+                        const dayPart = allDayParts.find((dp) => dp.nameEs?.toLowerCase().includes(mealTimeName.toLowerCase()) || mealTimeName.toLowerCase().includes((dp.nameEs ?? "").toLowerCase()) || dp.apiParam?.toLowerCase().includes(mealTimeName.toLowerCase()));
+                        if (!dayPart) continue;
+                        const dpInsert = await drizzleDb.insert(menuOrganizerDayParts).values({
+                          menuOrganizerId: menuId,
+                          dayPartId: dayPart.id,
+                          dayNumber: dayData.day,
+                          name: mealTimeName,
+                        });
+                        const dpId = (dpInsert as any).insertId;
+                        if (dpId) {
+                          const matched = allRecipes.find((r) => r.name.toLowerCase().includes((meal.recipeName ?? "").toLowerCase().slice(0, 10)));
+                          if (matched) {
+                            try {
+                              await drizzleDb.insert(menuOrganizerDayPartRecipes).values({ menuOrganizerDayPartId: dpId, recipeId: matched.id, servings: 1 });
+                            } catch (_) { /* ignore duplicate */ }
+                          }
+                        }
+                      }
+                    }
+                  }
+                }
+              }
+            } catch (err) {
+              console.error("[BuddySetup] Error generating first menu:", err);
+            }
+          }
+        }
+      }
       // Send welcome email asynchronously (don't block the response)
       if (ctx.user.email) {
         const { sendWelcomeEmail, scheduleOnboardingSequence } = await import("./email");
