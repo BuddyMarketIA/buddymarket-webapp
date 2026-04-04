@@ -92,6 +92,9 @@ export default function Dashboard() {
   const [goalCaloriesOverride, setGoalCaloriesOverride] = useState<number | null>(null);
   const [showGoalEdit, setShowGoalEdit] = useState(false);
   const [recipeIdx, setRecipeIdx] = useState(0);
+  const [stepsHidden, setStepsHidden] = useState(() => {
+    try { return localStorage.getItem("bm_steps_hidden") === "true"; } catch { return false; }
+  });
 
   // Auto-rotate recipe carousel every 3 seconds
   useEffect(() => {
@@ -219,6 +222,126 @@ export default function Dashboard() {
           </p>
         </div>
       </div>
+
+      {/* ===== PRIMEROS PASOS ===== */}
+      {!stepsHidden && (
+        <div style={{ marginBottom: "20px" }}>
+          {/* Header */}
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+              <div style={{ width: "28px", height: "28px", borderRadius: "8px", background: "linear-gradient(135deg, #F97316, #FB923C)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px" }}>🚀</div>
+              <h2 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.02em" }}>Primeros pasos</h2>
+            </div>
+            <button
+              onClick={() => { setStepsHidden(true); try { localStorage.setItem("bm_steps_hidden", "true"); } catch {} }}
+              style={{ background: "none", border: "none", fontSize: "18px", color: "#9ca3af", cursor: "pointer", padding: "4px", lineHeight: 1 }}
+              title="Ocultar"
+            >×</button>
+          </div>
+
+          {/* Cards grid */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+            {[
+              {
+                step: "1",
+                emoji: "👤",
+                title: "Configura tu perfil",
+                desc: "Dinos tus objetivos, alergias y preferencias para recibir recomendaciones personalizadas.",
+                cta: "Ir al perfil",
+                to: "/app/profile",
+                color: "linear-gradient(135deg, #6366F1, #818CF8)",
+                bg: "#EEF2FF",
+                border: "#C7D2FE",
+                textColor: "#3730a3",
+              },
+              {
+                step: "2",
+                emoji: "🍽️",
+                title: "Explora recetas",
+                desc: "Más de 1.500 recetas saludables filtradas por calorías, tiempo y tipo de dieta.",
+                cta: "Ver recetas",
+                to: "/app/recipes",
+                color: "linear-gradient(135deg, #F97316, #FB923C)",
+                bg: "#FFF7ED",
+                border: "#FED7AA",
+                textColor: "#9a3412",
+              },
+              {
+                step: "3",
+                emoji: "📅",
+                title: "Crea tu menú semanal",
+                desc: "Planifica tus comidas de la semana con un solo clic y genera la lista de la compra automáticamente.",
+                cta: "Crear menú",
+                to: "/app/menus",
+                color: "linear-gradient(135deg, #6366F1, #8B5CF6)",
+                bg: "#F5F3FF",
+                border: "#DDD6FE",
+                textColor: "#4c1d95",
+              },
+              {
+                step: "4",
+                emoji: "🛒",
+                title: "Compra en tu súper",
+                desc: "Compara precios en Mercadona, Lidl, Carrefour y Alcampo. Exporta tu lista con imágenes y precios.",
+                cta: "Ver supermercados",
+                to: "/app/supermercados",
+                color: "linear-gradient(135deg, #10B981, #059669)",
+                bg: "#ECFDF5",
+                border: "#A7F3D0",
+                textColor: "#065f46",
+              },
+              {
+                step: "5",
+                emoji: "📊",
+                title: "Registra lo que comes",
+                desc: "Lleva un diario nutricional diario y visualiza tus calorías, proteínas, carbos y grasas en tiempo real.",
+                cta: "Abrir diario",
+                to: "/app/meal-log",
+                color: "linear-gradient(135deg, #EF4444, #F97316)",
+                bg: "#FFF1F2",
+                border: "#FECDD3",
+                textColor: "#9f1239",
+              },
+              {
+                step: "6",
+                emoji: "📦",
+                title: "Gestiona tu despensa",
+                desc: "Marca los ingredientes que ya tienes en casa para no comprar lo que no necesitas.",
+                cta: "Ver inventario",
+                to: "/app/inventory",
+                color: "linear-gradient(135deg, #F59E0B, #FBBF24)",
+                bg: "#FFFBEB",
+                border: "#FDE68A",
+                textColor: "#78350f",
+              },
+            ].map((item) => (
+              <Link key={item.step} href={item.to}>
+                <div
+                  style={{ background: item.bg, border: `1.5px solid ${item.border}`, borderRadius: "18px", padding: "14px", cursor: "pointer", height: "100%", boxSizing: "border-box", transition: "transform 0.15s, box-shadow 0.15s", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "scale(1.02)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 6px 20px rgba(0,0,0,0.12)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "scale(1)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 2px 8px rgba(0,0,0,0.06)"; }}
+                >
+                  {/* Step badge + emoji */}
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
+                    <div style={{ width: "28px", height: "28px", borderRadius: "50%", background: item.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", flexShrink: 0, boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}>
+                      {item.emoji}
+                    </div>
+                    <span style={{ fontSize: "10px", fontWeight: 800, color: item.textColor, textTransform: "uppercase", letterSpacing: "0.06em", opacity: 0.7 }}>Paso {item.step}</span>
+                  </div>
+                  {/* Title */}
+                  <p style={{ margin: "0 0 4px", fontSize: "13px", fontWeight: 800, color: item.textColor, lineHeight: 1.3 }}>{item.title}</p>
+                  {/* Description */}
+                  <p style={{ margin: "0 0 10px", fontSize: "11px", color: item.textColor, opacity: 0.75, lineHeight: 1.5 }}>{item.desc}</p>
+                  {/* CTA */}
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: "4px", background: item.color, borderRadius: "8px", padding: "4px 10px" }}>
+                    <span style={{ fontSize: "11px", fontWeight: 700, color: "white" }}>{item.cta} →</span>
+                  </div>
+                </div>
+              </Link>
+            ))}
+          </div>
+        </div>
+      )}
 
       {/* Profile Completion Card */}
       {showProfileCard && (
