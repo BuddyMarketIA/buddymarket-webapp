@@ -28,9 +28,10 @@ function StatPill({ icon, value, label }: { icon: string; value: string | number
   );
 }
 
-// ─── Plan card ────────────────────────────────────────────────────────────────
-function PlanCard({ plan, onCopy, onBuy, alreadyCopied, copying, buying }: {
+// ─── Plan preview modal ───────────────────────────────────────────────────────
+function PlanPreviewModal({ plan, onClose, onCopy, onBuy, alreadyCopied, copying, buying }: {
   plan: any;
+  onClose: () => void;
   onCopy: () => void;
   onBuy?: () => void;
   alreadyCopied?: boolean;
@@ -46,73 +47,282 @@ function PlanCard({ plan, onCopy, onBuy, alreadyCopied, copying, buying }: {
     bienestar: "🌿 Bienestar",
     vegano: "🌱 Vegano",
   };
+  const levelLabel: Record<string, string> = {
+    principiante: "Principiante",
+    intermedio: "Intermedio",
+    avanzado: "Avanzado",
+  };
   const isPaid = (plan.price ?? 0) > 0;
+  let tags: string[] = [];
+  try { tags = plan.tags ? JSON.parse(plan.tags) : []; } catch { tags = []; }
+
   return (
-    <div className="bg-white rounded-2xl overflow-hidden border border-orange-100 shadow-sm hover:shadow-md transition-all">
-      <div className="relative h-28 overflow-hidden">
-        {plan.coverUrl ? (
-          <img src={plan.coverUrl} alt={plan.title} className="w-full h-full object-cover" />
-        ) : (
-          <div className="w-full h-full bg-gradient-to-br from-orange-400 to-red-500" />
-        )}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
-        <div className="absolute bottom-2 left-3 right-3">
-          <p className="text-white font-bold text-sm line-clamp-1">{plan.title}</p>
-        </div>
-        {plan.isFeatured && (
-          <span className="absolute top-2 left-2 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-0.5 rounded-full">⭐ Destacado</span>
-        )}
-      </div>
-      <div className="p-3">
-        <p className="text-xs text-gray-500 mb-2 line-clamp-2">{plan.description}</p>
-        <div className="flex gap-2 mb-3 text-xs text-gray-500">
-          <span className="bg-orange-50 text-orange-700 font-semibold px-2 py-0.5 rounded-full">{plan.durationWeeks} sem</span>
-          <span className="bg-orange-50 text-orange-700 font-semibold px-2 py-0.5 rounded-full">{plan.dailyCalories} kcal/día</span>
-          <span className="bg-orange-50 text-orange-700 font-semibold px-2 py-0.5 rounded-full capitalize">{plan.level}</span>
-        </div>
-        <div className="flex items-center justify-between">
-          <span className="text-xs text-gray-400">{cat[plan.category] ?? plan.category}</span>
-          {isPaid ? (
-            <span className="text-sm font-bold text-orange-600">{plan.price}€</span>
+    <div
+      className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4"
+      onClick={onClose}
+    >
+      {/* Backdrop */}
+      <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+
+      {/* Modal */}
+      <div
+        className="relative bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col"
+        onClick={(e) => e.stopPropagation()}
+      >
+        {/* Cover image */}
+        <div className="relative h-48 flex-shrink-0">
+          {plan.coverUrl ? (
+            <img src={plan.coverUrl} alt={plan.title} className="w-full h-full object-cover" />
           ) : (
-            <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">GRATIS</span>
+            <div className="w-full h-full bg-gradient-to-br from-orange-400 to-red-500" />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/20 to-transparent" />
+          {/* Close button */}
+          <button
+            onClick={onClose}
+            className="absolute top-3 right-3 w-8 h-8 bg-black/40 hover:bg-black/60 text-white rounded-full flex items-center justify-center transition-colors"
+          >
+            <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+            </svg>
+          </button>
+          {plan.isFeatured && (
+            <span className="absolute top-3 left-3 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-1 rounded-full">⭐ Destacado</span>
+          )}
+          <div className="absolute bottom-3 left-4 right-4">
+            <h2 className="text-white font-bold text-xl leading-tight">{plan.title}</h2>
+            <p className="text-white/80 text-sm mt-0.5">{cat[plan.category] ?? plan.category}</p>
+          </div>
+        </div>
+
+        {/* Scrollable content */}
+        <div className="overflow-y-auto flex-1 p-4 space-y-4">
+          {/* Stats grid */}
+          <div className="grid grid-cols-3 gap-2">
+            <div className="bg-orange-50 rounded-2xl p-3 text-center">
+              <p className="text-orange-600 font-bold text-lg">{plan.durationWeeks}</p>
+              <p className="text-gray-500 text-xs">semanas</p>
+            </div>
+            <div className="bg-orange-50 rounded-2xl p-3 text-center">
+              <p className="text-orange-600 font-bold text-lg">{plan.dailyCalories ?? "—"}</p>
+              <p className="text-gray-500 text-xs">kcal/día</p>
+            </div>
+            <div className="bg-orange-50 rounded-2xl p-3 text-center">
+              <p className="text-orange-600 font-bold text-lg">{plan.dailyMeals ?? 3}</p>
+              <p className="text-gray-500 text-xs">comidas/día</p>
+            </div>
+          </div>
+
+          {/* Level + price */}
+          <div className="flex items-center justify-between">
+            <span className="bg-gray-100 text-gray-700 text-sm font-semibold px-3 py-1 rounded-full">
+              {levelLabel[plan.level] ?? plan.level}
+            </span>
+            {isPaid ? (
+              <span className="text-lg font-bold text-orange-600">{plan.price}€</span>
+            ) : (
+              <span className="text-sm font-bold text-green-600 bg-green-50 px-3 py-1 rounded-full">GRATIS</span>
+            )}
+          </div>
+
+          {/* Description */}
+          {plan.description && (
+            <div>
+              <h3 className="font-semibold text-gray-800 text-sm mb-1">Descripción</h3>
+              <p className="text-gray-600 text-sm leading-relaxed">{plan.description}</p>
+            </div>
+          )}
+
+          {/* Tags */}
+          {tags.length > 0 && (
+            <div className="flex flex-wrap gap-2">
+              {tags.map((tag: string, i: number) => (
+                <span key={i} className="bg-orange-50 text-orange-700 text-xs font-medium px-2.5 py-1 rounded-full border border-orange-100">
+                  {tag}
+                </span>
+              ))}
+            </div>
+          )}
+
+          {/* What's included */}
+          <div className="bg-gray-50 rounded-2xl p-4">
+            <h3 className="font-semibold text-gray-800 text-sm mb-3">¿Qué incluye este plan?</h3>
+            <ul className="space-y-2">
+              <li className="flex items-center gap-2 text-sm text-gray-600">
+                <span className="w-5 h-5 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs">✓</span>
+                {plan.durationWeeks} semanas de menús personalizados
+              </li>
+              <li className="flex items-center gap-2 text-sm text-gray-600">
+                <span className="w-5 h-5 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs">✓</span>
+                {plan.dailyMeals ?? 3} comidas diarias estructuradas
+              </li>
+              <li className="flex items-center gap-2 text-sm text-gray-600">
+                <span className="w-5 h-5 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs">✓</span>
+                Recetas con ingredientes y preparación
+              </li>
+              <li className="flex items-center gap-2 text-sm text-gray-600">
+                <span className="w-5 h-5 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs">✓</span>
+                Lista de la compra automática
+              </li>
+              {isPaid && (
+                <li className="flex items-center gap-2 text-sm text-gray-600">
+                  <span className="w-5 h-5 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs">✓</span>
+                  Soporte directo con el experto
+                </li>
+              )}
+            </ul>
+          </div>
+        </div>
+
+        {/* Action buttons */}
+        <div className="p-4 border-t border-gray-100 flex-shrink-0">
+          {isPaid ? (
+            <button
+              onClick={onBuy}
+              disabled={buying}
+              className="w-full text-sm font-bold py-3 rounded-2xl transition-all bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-md disabled:opacity-60"
+            >
+              {buying ? (
+                <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Procesando...</span>
+              ) : (
+                `💳 Obtener por ${plan.price}€`
+              )}
+            </button>
+          ) : (
+            <button
+              onClick={alreadyCopied ? undefined : onCopy}
+              disabled={alreadyCopied || copying}
+              className={`w-full text-sm font-bold py-3 rounded-2xl transition-all ${
+                alreadyCopied
+                  ? "bg-green-50 text-green-700 border border-green-200 cursor-default"
+                  : "bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white shadow-md disabled:opacity-60"
+              }`}
+            >
+              {copying ? (
+                <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Copiando...</span>
+              ) : alreadyCopied ? (
+                "✓ Plan ya copiado"
+              ) : (
+                "📋 Copiar plan al planificador"
+              )}
+            </button>
           )}
         </div>
-        {isPaid ? (
-          // Paid plan: open Stripe checkout
-          <button
-            onClick={onBuy}
-            disabled={buying}
-            className="mt-3 w-full text-xs font-bold py-2 rounded-xl transition-all shadow-sm bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white hover:shadow-md disabled:opacity-60"
-          >
-            {buying ? (
-              <span className="flex items-center justify-center gap-1.5"><span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />Procesando...</span>
-            ) : (
-              `💳 Obtener por ${plan.price}€`
-            )}
-          </button>
-        ) : (
-          // Free plan: copy to planner
-          <button
-            onClick={alreadyCopied ? undefined : onCopy}
-            disabled={alreadyCopied || copying}
-            className={`mt-3 w-full text-xs font-bold py-2 rounded-xl transition-all shadow-sm ${
-              alreadyCopied
-                ? "bg-green-50 text-green-700 border border-green-200 cursor-default"
-                : "bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white hover:shadow-md disabled:opacity-60"
-            }`}
-          >
-            {copying ? (
-              <span className="flex items-center justify-center gap-1.5"><span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />Copiando...</span>
-            ) : alreadyCopied ? (
-              "✓ Plan ya copiado"
-            ) : (
-              "📋 Copiar plan"
-            )}
-          </button>
-        )}
       </div>
     </div>
+  );
+}
+
+// ─── Plan card ────────────────────────────────────────────────────────────────
+function PlanCard({ plan, onCopy, onBuy, alreadyCopied, copying, buying }: {
+  plan: any;
+  onCopy: () => void;
+  onBuy?: () => void;
+  alreadyCopied?: boolean;
+  copying?: boolean;
+  buying?: boolean;
+}) {
+  const [showPreview, setShowPreview] = useState(false);
+  const cat: Record<string, string> = {
+    perdida_peso: "🔥 Pérdida de peso",
+    ganancia_muscular: "💪 Ganancia muscular",
+    definicion: "⚡ Definición",
+    dieta_equilibrada: "🥗 Equilibrada",
+    rendimiento: "🏆 Rendimiento",
+    bienestar: "🌿 Bienestar",
+    vegano: "🌱 Vegano",
+  };
+  const isPaid = (plan.price ?? 0) > 0;
+  return (
+    <>
+      {showPreview && (
+        <PlanPreviewModal
+          plan={plan}
+          onClose={() => setShowPreview(false)}
+          onCopy={() => { onCopy(); setShowPreview(false); }}
+          onBuy={onBuy}
+          alreadyCopied={alreadyCopied}
+          copying={copying}
+          buying={buying}
+        />
+      )}
+      <div className="bg-white rounded-2xl overflow-hidden border border-orange-100 shadow-sm hover:shadow-md transition-all">
+        <div className="relative h-28 overflow-hidden cursor-pointer" onClick={() => setShowPreview(true)}>
+          {plan.coverUrl ? (
+            <img src={plan.coverUrl} alt={plan.title} className="w-full h-full object-cover" />
+          ) : (
+            <div className="w-full h-full bg-gradient-to-br from-orange-400 to-red-500" />
+          )}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
+          {/* Preview hint */}
+          <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/20">
+            <span className="bg-white/90 text-gray-800 text-xs font-bold px-3 py-1.5 rounded-full shadow">👁 Ver plan</span>
+          </div>
+          <div className="absolute bottom-2 left-3 right-3">
+            <p className="text-white font-bold text-sm line-clamp-1">{plan.title}</p>
+          </div>
+          {plan.isFeatured && (
+            <span className="absolute top-2 left-2 bg-yellow-400 text-yellow-900 text-xs font-bold px-2 py-0.5 rounded-full">⭐ Destacado</span>
+          )}
+        </div>
+        <div className="p-3">
+          <p className="text-xs text-gray-500 mb-2 line-clamp-2">{plan.description}</p>
+          <div className="flex gap-2 mb-3 text-xs text-gray-500">
+            <span className="bg-orange-50 text-orange-700 font-semibold px-2 py-0.5 rounded-full">{plan.durationWeeks} sem</span>
+            <span className="bg-orange-50 text-orange-700 font-semibold px-2 py-0.5 rounded-full">{plan.dailyCalories} kcal/día</span>
+            <span className="bg-orange-50 text-orange-700 font-semibold px-2 py-0.5 rounded-full capitalize">{plan.level}</span>
+          </div>
+          <div className="flex items-center justify-between mb-2">
+            <span className="text-xs text-gray-400">{cat[plan.category] ?? plan.category}</span>
+            {isPaid ? (
+              <span className="text-sm font-bold text-orange-600">{plan.price}€</span>
+            ) : (
+              <span className="text-xs font-bold text-green-600 bg-green-50 px-2 py-0.5 rounded-full">GRATIS</span>
+            )}
+          </div>
+          {/* Ver plan button */}
+          <button
+            onClick={() => setShowPreview(true)}
+            className="w-full text-xs font-semibold py-1.5 rounded-xl border border-orange-200 text-orange-600 hover:bg-orange-50 transition-colors mb-2"
+          >
+            👁 Ver plan
+          </button>
+          {isPaid ? (
+            // Paid plan: open Stripe checkout
+            <button
+              onClick={onBuy}
+              disabled={buying}
+              className="w-full text-xs font-bold py-2 rounded-xl transition-all shadow-sm bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white hover:shadow-md disabled:opacity-60"
+            >
+              {buying ? (
+                <span className="flex items-center justify-center gap-1.5"><span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />Procesando...</span>
+              ) : (
+                `💳 Obtener por ${plan.price}€`
+              )}
+            </button>
+          ) : (
+            // Free plan: copy to planner
+            <button
+              onClick={alreadyCopied ? undefined : onCopy}
+              disabled={alreadyCopied || copying}
+              className={`w-full text-xs font-bold py-2 rounded-xl transition-all shadow-sm ${
+                alreadyCopied
+                  ? "bg-green-50 text-green-700 border border-green-200 cursor-default"
+                  : "bg-gradient-to-r from-orange-500 to-orange-600 hover:from-orange-600 hover:to-orange-700 text-white hover:shadow-md disabled:opacity-60"
+              }`}
+            >
+              {copying ? (
+                <span className="flex items-center justify-center gap-1.5"><span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />Copiando...</span>
+              ) : alreadyCopied ? (
+                "✓ Plan ya copiado"
+              ) : (
+                "📋 Copiar plan"
+              )}
+            </button>
+          )}
+        </div>
+      </div>
+    </>
   );
 }
 
