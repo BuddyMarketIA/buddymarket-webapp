@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import confetti from "canvas-confetti";
 import { RECIPE_PLACEHOLDER_IMAGE } from "@/lib/constants";
 import { usePlan } from "@/hooks/usePlan";
+import DidYouKnow from "@/components/DidYouKnow";
 
 const QUICK_ACCESS = [
   {
@@ -754,6 +755,9 @@ export default function Dashboard() {
           </div>
         </div>
       </div>
+
+      {/* Did You Know Section */}
+      <DidYouKnow />
 
       {/* Community Section: BuddyExperts, BuddyMakers, BuddyIA */}
       <div style={{ marginBottom: "20px" }}>
