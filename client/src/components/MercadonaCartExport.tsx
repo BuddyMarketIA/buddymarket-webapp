@@ -7,7 +7,7 @@ interface MercadonaSession { accessToken: string; customerId: string; cartId: st
 interface ShoppingItem { id: number; name: string; qty?: string; unit?: string; isPurchased: boolean; }
 interface MatchedProduct {
   itemId: number; itemName: string;
-  product: { id: number; name: string; thumbnail: string | null; price: number; priceStr: string; unit: string; packaging: string | null; } | null;
+  product: { id: number; slug: string; name: string; thumbnail: string | null; price: number; priceStr: string; unit: string; packaging: string | null; } | null;
   qty: number; confirmed: boolean;
 }
 interface Props { items: ShoppingItem[]; onBack: () => void; onClose: () => void; }
@@ -31,7 +31,7 @@ function ItemSearch({ itemName, onResult }: { itemName: string; onResult: (produ
     if (!isLoading && !reported.current) {
       reported.current = true;
       const p = data?.[0];
-      onResult(p ? { id: p.id, name: p.name, thumbnail: p.thumbnail, price: p.price, priceStr: p.priceStr, unit: p.unit, packaging: p.packaging } : null);
+      onResult(p ? { id: p.id, slug: p.slug, name: p.name, thumbnail: p.thumbnail, price: p.price, priceStr: p.priceStr, unit: p.unit, packaging: p.packaging } : null);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading]);
@@ -89,7 +89,7 @@ export default function MercadonaCartExport({ items, onBack, onClose }: Props) {
     if (!session) { setShowLogin(true); return; }
     if (confirmedItems.length === 0) { toast.error("No hay productos seleccionados"); return; }
     setTransferring(true);
-    addToCartMutation.mutate({ accessToken: session.accessToken, customerId: session.customerId, cartId: session.cartId, items: confirmedItems.map((m) => ({ productId: String(m.product!.id), quantity: m.qty })) });
+    addToCartMutation.mutate({ accessToken: session.accessToken, customerId: session.customerId, cartId: session.cartId, items: confirmedItems.map((m) => ({ productId: m.product!.slug || String(m.product!.id), quantity: m.qty })) });
   };
 
   // ── Login screen ────────────────────────────────────────────────────────────

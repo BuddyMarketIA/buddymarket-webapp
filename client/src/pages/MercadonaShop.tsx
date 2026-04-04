@@ -163,7 +163,7 @@ export default function SupermercadoShop() {
       accessToken: session.accessToken,
       customerId: session.customerId,
       cartId: session.cartId,
-      items: cart.map(c => ({ productId: String(c.id), quantity: c.qty })),
+      items: cart.map(c => ({ productId: c.slug || String(c.id), quantity: c.qty })),
     });
   };
 
