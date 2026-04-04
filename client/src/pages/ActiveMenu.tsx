@@ -15,6 +15,7 @@ import {
 import { CheckCircleIcon as CheckCircleSolid } from "@heroicons/react/24/solid";
 import MercadonaCartExport from "@/components/MercadonaCartExport";
 import LidlCartExport from "@/components/LidlCartExport";
+import CarrefourCartExport from "@/components/CarrefourCartExport";
 
 const SUPERMARKETS = [
   { id: "general", name: "General", emoji: "🛒" },
@@ -217,6 +218,7 @@ export default function ActiveMenu() {
   const [selectedDay, setSelectedDay] = useState<number | null>(null);
   const [showMercadonaModal, setShowMercadonaModal] = useState(false);
   const [showLidlModal, setShowLidlModal] = useState(false);
+  const [showCarrefourModal, setShowCarrefourModal] = useState(false);
   const [showGenericModal, setShowGenericModal] = useState(false);
   const [generatedItems, setGeneratedItems] = useState<GeneratedListItem[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -254,6 +256,8 @@ export default function ActiveMenu() {
             setShowMercadonaModal(true);
           } else if (selectedSupermarket === "lidl") {
             setShowLidlModal(true);
+          } else if (selectedSupermarket === "carrefour") {
+            setShowCarrefourModal(true);
           } else {
             setShowGenericModal(true);
           }
@@ -615,6 +619,22 @@ export default function ActiveMenu() {
               items={generatedItems}
               onBack={() => setShowLidlModal(false)}
               onClose={() => setShowLidlModal(false)}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Carrefour modal */}
+      {showCarrefourModal && generatedItems.length > 0 && (
+        <div
+          className="modal-overlay"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowCarrefourModal(false); }}
+        >
+          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up max-h-[90vh] overflow-y-auto">
+            <CarrefourCartExport
+              items={generatedItems}
+              onBack={() => setShowCarrefourModal(false)}
+              onClose={() => setShowCarrefourModal(false)}
             />
           </div>
         </div>

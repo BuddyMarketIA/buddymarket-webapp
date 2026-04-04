@@ -1093,3 +1093,4 @@
 - [x] Procedimientos tRPC getMyStats y getMyFollowers para buddyMakers y buddyExperts
 - [x] Procedimientos tRPC getConnectStatus y getStripeDashboardLink en stripeConnect
 - [x] Enlace a estadísticas desde los dashboards de BuddyMaker y BuddyExpert
+- [x] Corregir exportación de lista de la compra al supermercado: mostrar productos con imagen igual que en el apartado supermercado (CarrefourCartExport creado para ShoppingLists y ActiveMenu)
