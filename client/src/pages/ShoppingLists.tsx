@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { jsPDF } from "jspdf";
 import MercadonaCartExport from "@/components/MercadonaCartExport";
 import LidlCartExport from "@/components/LidlCartExport";
 import CarrefourCartExport from "@/components/CarrefourCartExport";
@@ -75,6 +76,175 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
   const [showSaveTemplate, setShowSaveTemplate] = useState(false);
   const [templateName, setTemplateName] = useState("");
   const [viewFilter, setViewFilter] = useState<ViewFilter>("all");
+  const [showShare, setShowShare] = useState(false);
+
+  // Generate PDF of the shopping list
+  function generatePDF() {
+    const listName = (listData as any)?.list?.name ?? (listData as any)?.name ?? "Lista de la compra";
+    const items = (listData?.items ?? []) as any[];
+    const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+    const pageW = doc.internal.pageSize.getWidth();
+    let y = 20;
+
+    // Header
+    doc.setFillColor(249, 115, 22);
+    doc.rect(0, 0, pageW, 30, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(18);
+    doc.setFont("helvetica", "bold");
+    doc.text("BuddyMarket", 14, 12);
+    doc.setFontSize(11);
+    doc.setFont("helvetica", "normal");
+    doc.text("Lista de la compra", 14, 20);
+    doc.setFontSize(10);
+    doc.text(new Date().toLocaleDateString("es-ES", { day: "2-digit", month: "long", year: "numeric" }), pageW - 14, 20, { align: "right" });
+
+    y = 40;
+    doc.setTextColor(30, 30, 30);
+    doc.setFontSize(16);
+    doc.setFont("helvetica", "bold");
+    doc.text(listName, 14, y);
+    y += 8;
+
+    // Stats bar
+    const total = items.length;
+    const purchased = items.filter((i) => i.isPurchased || i.inPantry).length;
+    doc.setFontSize(9);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(120, 120, 120);
+    doc.text(`${purchased}/${total} productos listos`, 14, y);
+    y += 8;
+
+    // Separator
+    doc.setDrawColor(230, 230, 230);
+    doc.line(14, y, pageW - 14, y);
+    y += 6;
+
+    // Group by category
+    const grouped: Record<string, any[]> = {};
+    items.forEach((item: any) => {
+      const cat = item.ingredient?.foodCategory?.name ?? item.category ?? "General";
+      if (!grouped[cat]) grouped[cat] = [];
+      grouped[cat].push(item);
+    });
+
+    Object.entries(grouped).forEach(([cat, catItems]) => {
+      if (y > 270) { doc.addPage(); y = 20; }
+      // Category header
+      doc.setFillColor(248, 248, 248);
+      doc.roundedRect(14, y - 4, pageW - 28, 8, 2, 2, "F");
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(100, 100, 100);
+      doc.text(cat.toUpperCase(), 18, y + 1);
+      y += 8;
+
+      catItems.forEach((item: any) => {
+        if (y > 275) { doc.addPage(); y = 20; }
+        const name = item.displayName ?? item.ingredient?.name ?? item.customName ?? item.name ?? "Producto";
+        const done = item.isPurchased || item.inPantry;
+        // Checkbox
+        doc.setDrawColor(done ? 34 : 180, done ? 197 : 180, done ? 94 : 180);
+        doc.setFillColor(done ? 34 : 255, done ? 197 : 255, done ? 94 : 255);
+        doc.roundedRect(14, y - 3.5, 5, 5, 1, 1, done ? "FD" : "D");
+        if (done) {
+          doc.setTextColor(255, 255, 255);
+          doc.setFontSize(7);
+          doc.text("✓", 15.2, y + 0.5);
+        }
+        // Item name
+        doc.setTextColor(done ? 150 : 30, done ? 150 : 30, done ? 150 : 30);
+        doc.setFontSize(10);
+        doc.setFont("helvetica", done ? "normal" : "normal");
+        const displayName = name.length > 55 ? name.substring(0, 52) + "..." : name;
+        doc.text(displayName, 22, y + 0.5);
+        // In pantry badge
+        if (item.inPantry) {
+          doc.setFontSize(7);
+          doc.setTextColor(34, 197, 94);
+          doc.text("Ya lo tienes", pageW - 14, y + 0.5, { align: "right" });
+        }
+        y += 7;
+      });
+      y += 2;
+    });
+
+    // Footer
+    doc.setFontSize(8);
+    doc.setTextColor(180, 180, 180);
+    doc.text("Generado con BuddyMarket • Tu gestor nutricional inteligente", pageW / 2, 290, { align: "center" });
+
+    doc.save(`${listName.replace(/[^a-z0-9]/gi, "_")}_lista_compra.pdf`);
+    toast.success("PDF descargado ✓");
+    setShowShare(false);
+  }
+
+  // Share via WhatsApp
+  function shareWhatsApp() {
+    const listName = (listData as any)?.list?.name ?? (listData as any)?.name ?? "Lista de la compra";
+    const items = (listData?.items ?? []) as any[];
+    const grouped: Record<string, any[]> = {};
+    items.forEach((item: any) => {
+      const cat = item.ingredient?.foodCategory?.name ?? item.category ?? "General";
+      if (!grouped[cat]) grouped[cat] = [];
+      grouped[cat].push(item);
+    });
+    let text = `🛒 *${listName}*\n`;
+    text += `_Generada con BuddyMarket_\n\n`;
+    Object.entries(grouped).forEach(([cat, catItems]) => {
+      text += `*${cat}*\n`;
+      catItems.forEach((item: any) => {
+        const name = item.displayName ?? item.ingredient?.name ?? item.customName ?? item.name ?? "Producto";
+        const done = item.isPurchased || item.inPantry;
+        text += `${done ? "✅" : "□"} ${name}\n`;
+      });
+      text += "\n";
+    });
+    const url = `https://wa.me/?text=${encodeURIComponent(text)}`;
+    window.open(url, "_blank");
+    setShowShare(false);
+  }
+
+  // Share via Telegram
+  function shareTelegram() {
+    const listName = (listData as any)?.list?.name ?? (listData as any)?.name ?? "Lista de la compra";
+    const items = (listData?.items ?? []) as any[];
+    const grouped: Record<string, any[]> = {};
+    items.forEach((item: any) => {
+      const cat = item.ingredient?.foodCategory?.name ?? item.category ?? "General";
+      if (!grouped[cat]) grouped[cat] = [];
+      grouped[cat].push(item);
+    });
+    let text = `🛒 *${listName}*\nGenerada con BuddyMarket\n\n`;
+    Object.entries(grouped).forEach(([cat, catItems]) => {
+      text += `*${cat}*\n`;
+      catItems.forEach((item: any) => {
+        const name = item.displayName ?? item.ingredient?.name ?? item.customName ?? item.name ?? "Producto";
+        const done = item.isPurchased || item.inPantry;
+        text += `${done ? "✅" : "□"} ${name}\n`;
+      });
+      text += "\n";
+    });
+    const url = `https://t.me/share/url?url=${encodeURIComponent("https://buddymarket.app")}&text=${encodeURIComponent(text)}`;
+    window.open(url, "_blank");
+    setShowShare(false);
+  }
+
+  // Copy to clipboard
+  function copyToClipboard() {
+    const listName = (listData as any)?.list?.name ?? (listData as any)?.name ?? "Lista de la compra";
+    const items = (listData?.items ?? []) as any[];
+    let text = `🛒 ${listName}\n\n`;
+    items.forEach((item: any) => {
+      const name = item.displayName ?? item.ingredient?.name ?? item.customName ?? item.name ?? "Producto";
+      const done = item.isPurchased || item.inPantry;
+      text += `${done ? "✅" : "□"} ${name}\n`;
+    });
+    navigator.clipboard.writeText(text).then(() => {
+      toast.success("Lista copiada al portapapeles ✓");
+      setShowShare(false);
+    });
+  }
 
   const saveAsTemplate = trpc.shoppingLists.saveAsTemplate.useMutation({
     onSuccess: () => {
@@ -204,6 +374,13 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
           </h1>
           <p className="text-xs text-gray-500">{purchasedCount + inPantryCount}/{totalCount} listos</p>
         </div>
+        <button
+          onClick={() => setShowShare(true)}
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm mr-1"
+          title="Exportar / Compartir lista"
+        >
+          <ArrowTopRightOnSquareIcon className="h-5 w-5 text-emerald-500" />
+        </button>
         <button
           onClick={() => setShowSaveTemplate(true)}
           className="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm mr-1"
@@ -592,7 +769,58 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
           </div>
         </div>
       )}
-      {/* Save as Template Modal */}
+      {/* Share / Export Modal */}
+      {showShare && (
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowShare(false); }}>
+          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up">
+            <h3 className="mb-1 text-lg font-bold text-gray-900">Exportar lista</h3>
+            <p className="mb-5 text-sm text-gray-500">Elige cómo quieres compartir o guardar tu lista de la compra.</p>
+            <div className="space-y-3">
+              <button
+                onClick={generatePDF}
+                className="flex w-full items-center gap-4 rounded-2xl border-2 border-gray-100 bg-gray-50 px-4 py-3.5 text-left hover:border-orange-200 hover:bg-orange-50 transition-colors"
+              >
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-100 text-xl">📄</span>
+                <div>
+                  <p className="font-semibold text-gray-900">Descargar PDF</p>
+                  <p className="text-xs text-gray-500">Archivo PDF listo para imprimir</p>
+                </div>
+              </button>
+              <button
+                onClick={shareWhatsApp}
+                className="flex w-full items-center gap-4 rounded-2xl border-2 border-gray-100 bg-gray-50 px-4 py-3.5 text-left hover:border-green-200 hover:bg-green-50 transition-colors"
+              >
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-100 text-xl">💬</span>
+                <div>
+                  <p className="font-semibold text-gray-900">Compartir por WhatsApp</p>
+                  <p className="text-xs text-gray-500">Envía la lista a familia o amigos</p>
+                </div>
+              </button>
+              <button
+                onClick={shareTelegram}
+                className="flex w-full items-center gap-4 rounded-2xl border-2 border-gray-100 bg-gray-50 px-4 py-3.5 text-left hover:border-blue-200 hover:bg-blue-50 transition-colors"
+              >
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-xl">✈️</span>
+                <div>
+                  <p className="font-semibold text-gray-900">Compartir por Telegram</p>
+                  <p className="text-xs text-gray-500">Envía la lista por Telegram</p>
+                </div>
+              </button>
+              <button
+                onClick={copyToClipboard}
+                className="flex w-full items-center gap-4 rounded-2xl border-2 border-gray-100 bg-gray-50 px-4 py-3.5 text-left hover:border-violet-200 hover:bg-violet-50 transition-colors"
+              >
+                <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-100 text-xl">📋</span>
+                <div>
+                  <p className="font-semibold text-gray-900">Copiar al portapapeles</p>
+                  <p className="text-xs text-gray-500">Pega la lista donde quieras</p>
+                </div>
+              </button>
+            </div>
+            <button onClick={() => setShowShare(false)} className="mt-4 w-full rounded-2xl border-2 border-gray-100 py-3 text-sm font-semibold text-gray-600">Cancelar</button>
+          </div>
+        </div>
+      )}
       {showSaveTemplate && (
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowSaveTemplate(false); }}>
           <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up">
