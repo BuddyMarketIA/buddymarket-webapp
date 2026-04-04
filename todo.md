@@ -1114,3 +1114,10 @@
 - [ ] Añadir campo packageVariant (JSON) a shoppingListItems en BD y hacer db:push
 - [ ] tRPC: procedimiento updateItemPackage para guardar la variante elegida
 - [ ] UI ShoppingListDetail: selector inline de tamaño de envase por item con variantes disponibles
+
+## Sprint Matching Inteligente de Productos (fase actual)
+- [ ] Tabla de sinónimos/alias en supermarketUnits.ts (ej: "jamón" → "jamón serrano", "aceite" → "aceite de oliva")
+- [ ] Motor de matching por similitud: normalizar tildes/mayúsculas, buscar por alias, luego por categoría
+- [ ] Fallback por categoría: si no hay match exacto, asignar unidad mínima de la categoría más cercana
+- [ ] Nunca mostrar "jamón entero" ni cantidades absurdas: garantizar siempre unidad comercial mínima
+- [ ] Mostrar en la lista el nombre normalizado del producto (ej: "Jamón serrano lonchas") junto al original

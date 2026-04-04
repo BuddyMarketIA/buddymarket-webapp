@@ -1520,12 +1520,21 @@ export async function generateShoppingListFromMenu(
   const items = Array.from(ingredientMap.values());
   for (const item of items) {
     const normalized = normalizeToCommercialUnit(item.name, Math.round(item.amount * 10) / 10, item.unit);
-    // Build the display name:
-    // - If a commercial unit was found: "Jamón serrano — 1 sobre (100 g) [receta: 30 g]"
-    // - Otherwise: "Sal (5 g)"
-    const displayName = normalized.hasCommercialUnit
-      ? `${item.name} — ${normalized.label}`
-      : `${item.name} (${normalized.originalQty} ${normalized.originalUnit})`;
+    // Build the display name with three cases:
+    // 1. Exact match:   "Jamón serrano — 1 sobre (100 g)"
+    // 2. Alias match:   "Jamón (jamon serrano) — 1 sobre (100 g)"
+    // 3. Category fallback: "Polvo de unicornio — 1 unidad (~200 g) ≈similar"
+    let displayName: string;
+    if (normalized.hasCommercialUnit) {
+      const nameDisplay = normalized.normalizedName
+        ? `${item.name} (${normalized.normalizedName})`
+        : item.name;
+      displayName = `${nameDisplay} — ${normalized.label}`;
+    } else if (normalized.isFallback) {
+      displayName = `${item.name} — ${normalized.label} ≈similar`;
+    } else {
+      displayName = `${item.name} (${normalized.originalQty} ${normalized.originalUnit})`;
+    }
     await db.insert(shoppingListItems).values({
       shoppingListId: newListId,
       customName: displayName,
