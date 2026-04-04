@@ -781,43 +781,78 @@ export default function Inventory() {
               {/* Detected products */}
               {detectedProducts.length > 0 && (
                 <div className="mt-4">
-                  <div className="mb-2 flex items-center justify-between">
-                    <p className="text-sm font-bold text-gray-800">{detectedProducts.length} productos detectados</p>
+                  <div className="mb-3 flex items-center justify-between">
+                    <div>
+                      <p className="text-sm font-bold text-gray-800">{detectedProducts.length} productos detectados</p>
+                      <p className="text-xs text-gray-400 mt-0.5">Edita nombre, cantidad o caducidad antes de guardar</p>
+                    </div>
                     <button
                       onClick={() => setDetectedProducts((prev) => prev.map((p) => ({ ...p, selected: !prev.every((x) => x.selected) })))}
                       className="text-xs text-indigo-600 font-semibold"
                     >
-                      {detectedProducts.every((p) => p.selected) ? "Deseleccionar todo" : "Seleccionar todo"}
+                      {detectedProducts.every((p) => p.selected) ? "Deseleccionar" : "Seleccionar todo"}
                     </button>
                   </div>
-                  <div className="max-h-48 overflow-y-auto space-y-2 pr-1">
+                  <div className="max-h-[52vh] overflow-y-auto space-y-3 pr-1">
                     {detectedProducts.map((product, idx) => (
                       <div
                         key={idx}
-                        onClick={() => setDetectedProducts((prev) => prev.map((p, i) => i === idx ? { ...p, selected: !p.selected } : p))}
-                        className={`flex items-center gap-3 rounded-xl border p-3 cursor-pointer transition-colors ${
-                          product.selected ? "border-indigo-300 bg-indigo-50" : "border-gray-200 bg-gray-50"
+                        className={`rounded-xl border p-3 transition-colors ${
+                          product.selected ? "border-indigo-300 bg-indigo-50" : "border-gray-200 bg-gray-50 opacity-60"
                         }`}
                       >
-                        <div className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 ${
-                          product.selected ? "border-indigo-500 bg-indigo-500" : "border-gray-300"
-                        }`}>
-                          {product.selected && <CheckIcon className="h-3.5 w-3.5 text-white" />}
+                        {/* Row 1: checkbox + name editable */}
+                        <div className="flex items-center gap-2 mb-2">
+                          <button
+                            onClick={() => setDetectedProducts((prev) => prev.map((p, i) => i === idx ? { ...p, selected: !p.selected } : p))}
+                            className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
+                              product.selected ? "border-indigo-500 bg-indigo-500" : "border-gray-300 bg-white"
+                            }`}
+                          >
+                            {product.selected && <CheckIcon className="h-3.5 w-3.5 text-white" />}
+                          </button>
+                          <input
+                            type="text"
+                            value={product.name}
+                            onChange={(e) => setDetectedProducts((prev) => prev.map((p, i) => i === idx ? { ...p, name: e.target.value } : p))}
+                            className="flex-1 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-800 outline-none focus:border-indigo-400"
+                            placeholder="Nombre del producto"
+                          />
+                          {/* Delete product */}
+                          <button
+                            onClick={() => setDetectedProducts((prev) => prev.filter((_, i) => i !== idx))}
+                            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                            title="Eliminar"
+                          >
+                            <XMarkIcon className="h-4 w-4" />
+                          </button>
                         </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-semibold text-gray-800 truncate">{product.name}</p>
-                          <p className="text-xs text-gray-400">{product.amount} {product.unit} · {product.category}</p>
+                        {/* Row 2: amount + unit + expiry */}
+                        <div className="flex items-center gap-2 pl-8">
+                          <input
+                            type="number"
+                            value={product.amount}
+                            min="0.1"
+                            step="0.1"
+                            onChange={(e) => setDetectedProducts((prev) => prev.map((p, i) => i === idx ? { ...p, amount: parseFloat(e.target.value) || 1 } : p))}
+                            className="w-16 rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 outline-none focus:border-indigo-400 text-center"
+                          />
+                          <input
+                            type="text"
+                            value={product.unit}
+                            onChange={(e) => setDetectedProducts((prev) => prev.map((p, i) => i === idx ? { ...p, unit: e.target.value } : p))}
+                            className="w-20 rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 outline-none focus:border-indigo-400"
+                            placeholder="unidad"
+                          />
+                          <span className="text-xs text-gray-400">·</span>
+                          <input
+                            type="date"
+                            value={product.expirationDate ?? ""}
+                            onChange={(e) => setDetectedProducts((prev) => prev.map((p, i) => i === idx ? { ...p, expirationDate: e.target.value } : p))}
+                            className="flex-1 rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs text-gray-600 outline-none focus:border-indigo-400"
+                            min={new Date().toISOString().split("T")[0]}
+                          />
                         </div>
-                        {/* Expiry date input per product */}
-                        <input
-                          type="date"
-                          value={product.expirationDate ?? ""}
-                          onClick={(e) => e.stopPropagation()}
-                          onChange={(e) => setDetectedProducts((prev) => prev.map((p, i) => i === idx ? { ...p, expirationDate: e.target.value } : p))}
-                          className="w-28 rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs text-gray-600 outline-none"
-                          placeholder="Caducidad"
-                          min={new Date().toISOString().split("T")[0]}
-                        />
                       </div>
                     ))}
                   </div>

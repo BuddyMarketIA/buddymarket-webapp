@@ -21,6 +21,8 @@ export default function BarcodeScanner({ onProductFound, onClose }: BarcodeScann
   const videoRef = useRef<HTMLVideoElement>(null);
   const codeReaderRef = useRef<any>(null);
   const streamRef = useRef<MediaStream | null>(null);
+  // Guard to prevent the zxing callback from firing multiple times for the same scan
+  const hasScannedRef = useRef(false);
 
   const lookupQuery = trpc.mealLogs.lookupBarcode.useQuery(
     { barcode: scannedCode ?? "" },
@@ -36,14 +38,6 @@ export default function BarcodeScanner({ onProductFound, onClose }: BarcodeScann
       onProductFound(lookupQuery.data);
     }
   }, [lookupQuery.data, onProductFound]);
-
-  // Handle lookup error
-  useEffect(() => {
-    if (lookupQuery.error) {
-      toast.error(lookupQuery.error.message || "Producto no encontrado");
-      setScannedCode(null);
-    }
-  }, [lookupQuery.error]);
 
   const stopCamera = useCallback(() => {
     if (codeReaderRef.current) {
@@ -73,12 +67,12 @@ export default function BarcodeScanner({ onProductFound, onClose }: BarcodeScann
       await videoRef.current.play();
 
       codeReader.decodeFromStream(stream, videoRef.current, (result, err) => {
-        if (result) {
+        if (result && !hasScannedRef.current) {
+          hasScannedRef.current = true; // prevent duplicate callbacks
           const code = result.getText();
           stopCamera();
           setScanning(false);
           setScannedCode(code);
-          toast.info(`Código escaneado: ${code}`);
         }
       });
     } catch (err: any) {
@@ -92,6 +86,19 @@ export default function BarcodeScanner({ onProductFound, onClose }: BarcodeScann
       }
     }
   }, [stopCamera]);
+
+  // Handle lookup error — reset guard so user can scan again
+  useEffect(() => {
+    if (lookupQuery.error) {
+      toast.error("Producto no encontrado en la base de datos. Puedes añadirlo manualmente.");
+      hasScannedRef.current = false;
+      setScannedCode(null);
+      // Restart camera so user can try another barcode
+      if (mode === "camera") {
+        setTimeout(() => startCamera(), 300);
+      }
+    }
+  }, [lookupQuery.error, mode, startCamera]);
 
   useEffect(() => {
     if (mode === "camera") {
