@@ -450,7 +450,15 @@ function ExpertProfile({ id }: { id: number }) {
 function MenuRow({ menu }: { menu: any }) {
   const [expanded, setExpanded] = useState(false);
   let menuData: any = null;
-  try { menuData = menu.menuData ? JSON.parse(menu.menuData) : null; } catch { menuData = null; }
+  try {
+    if (menu.menuData) {
+      // menuData can arrive as string or already-parsed object (Drizzle/superjson)
+      const raw = typeof menu.menuData === "string" ? menu.menuData : JSON.stringify(menu.menuData);
+      const parsed = JSON.parse(raw);
+      // Handle double-encoded JSON (string inside string)
+      menuData = typeof parsed === "string" ? JSON.parse(parsed) : parsed;
+    }
+  } catch { menuData = null; }
 
   return (
     <div className="bg-white rounded-2xl border border-orange-100 overflow-hidden">
@@ -473,7 +481,12 @@ function MenuRow({ menu }: { menu: any }) {
           {expanded ? "▲" : "▼ Ver"}
         </button>
       </div>
-      {expanded && menuData?.days && (
+      {expanded && (
+        !menuData?.days ? (
+          <div className="border-t border-orange-50 px-3 pb-3 pt-2">
+            <p className="text-xs text-gray-400 text-center py-2">No hay datos de menú disponibles</p>
+          </div>
+        ) :
         <div className="border-t border-orange-50 px-3 pb-3 pt-2 space-y-2 max-h-80 overflow-y-auto">
           {menuData.days.map((day: any, i: number) => {
             // Support both array format [{name, food}] and object format {desayuno, comida, ...}
@@ -605,6 +618,14 @@ function ProfileLayout({
   stats, isFollowing, onFollow, followLoading, badge, badgeColor, children
 }: ProfileLayoutProps) {
   const [, navigate] = useLocation();
+  // Determine fallback route based on badge type
+  const goBack = () => {
+    if (window.history.length > 1) {
+      navigate(-1 as any);
+    } else {
+      navigate(badge === "BuddyMaker" ? "/app/buddy-makers" : "/app/buddy-experts");
+    }
+  };
 
   return (
     <div className="min-h-screen bg-[#FFF8F0]">
@@ -619,7 +640,7 @@ function ProfileLayout({
 
         {/* Back button */}
         <button
-          onClick={() => navigate(-1 as any)}
+          onClick={goBack}
           className="absolute top-4 left-4 w-9 h-9 bg-black/30 backdrop-blur-sm rounded-full flex items-center justify-center text-white hover:bg-black/50 transition-colors"
         >
           <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
