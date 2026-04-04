@@ -1103,3 +1103,8 @@
 - [x] tRPC: renameMenu para editar el nombre
 - [x] Sección Complementos en vista de menú con sugerencias predefinidas y campo personalizado
 - [x] Propagar complementos al copiar/duplicar un menú de biblioteca
+
+## Sprint Unidades Mínimas de Supermercado (COMPLETADO)
+- [x] Crear módulo shared/supermarketUnits.ts con mapa de ingredientes → unidad mínima comercial
+- [x] Integrar normalización en generateShoppingListFromMenu en server/db.ts
+- [x] Mostrar en la UI la unidad comercial (ej: "1 sobre 100g") junto a la cantidad original de receta

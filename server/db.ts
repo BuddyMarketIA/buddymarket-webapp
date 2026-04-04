@@ -1515,13 +1515,21 @@ export async function generateShoppingListFromMenu(
   });
   const newListId = (newListResult as any).insertId as number;
 
-  // Insert items
+  // Insert items with commercial unit normalization
+  const { normalizeToCommercialUnit } = await import("../shared/supermarketUnits");
   const items = Array.from(ingredientMap.values());
   for (const item of items) {
+    const normalized = normalizeToCommercialUnit(item.name, Math.round(item.amount * 10) / 10, item.unit);
+    // Build the display name:
+    // - If a commercial unit was found: "Jamón serrano — 1 sobre (100 g) [receta: 30 g]"
+    // - Otherwise: "Sal (5 g)"
+    const displayName = normalized.hasCommercialUnit
+      ? `${item.name} — ${normalized.label}`
+      : `${item.name} (${normalized.originalQty} ${normalized.originalUnit})`;
     await db.insert(shoppingListItems).values({
       shoppingListId: newListId,
-      customName: `${item.name} (${Math.round(item.amount * 10) / 10} ${item.unit})`,
-      amount: Math.round(item.amount * 10) / 10,
+      customName: displayName,
+      amount: normalized.quantity,
       category: item.category,
       checked: false,
       createdAt: new Date(),
