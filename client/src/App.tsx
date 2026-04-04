@@ -39,6 +39,7 @@ import ReferralDashboard from "./pages/ReferralDashboard";
 import Metrics from "./pages/Metrics";
 import BuddyApplication from "./pages/BuddyApplication";
 import NutritionalStats from "./pages/NutritionalStats";
+import Progress from "./pages/Progress";
 import MealNotifications from "./pages/MealNotifications";
 import Notifications from "./pages/Notifications";
 import Achievements from "./pages/Achievements";
@@ -146,6 +147,7 @@ function Router() {
       <Route path="/app/referrals">{() => <ProtectedPage><ReferralDashboard /></ProtectedPage>}</Route>
       <Route path="/app/metrics">{() => <ProtectedRoute component={Metrics} />}</Route>
       <Route path="/app/stats">{() => <ProtectedRoute component={NutritionalStats} />}</Route>
+      <Route path="/app/progress">{() => <ProtectedRoute component={Progress} />}</Route>
       <Route path="/app/notifications">{() => <ProtectedPage><Notifications /></ProtectedPage>}</Route>
       <Route path="/app/meal-notifications">{() => <ProtectedRoute component={MealNotifications} />}</Route>
       <Route path="/app/achievements">{() => <ProtectedRoute component={Achievements} />}</Route>

@@ -6097,5 +6097,140 @@ Devuelve SOLO JSON válido con esta estructura exacta:
         return { success: true };
       }),
   }),
+
+  // ── Progress & Statistics ────────────────────────────────────────────────
+  progress: router({
+    weightHistory: protectedProcedure
+      .input(z.object({ days: z.number().int().min(7).max(365).default(30) }))
+      .query(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return [];
+        const { userMetrics } = await import("../drizzle/schema");
+        const { eq, gte, and } = await import("drizzle-orm");
+        const since = new Date();
+        since.setDate(since.getDate() - input.days);
+        const sinceStr = since.toISOString().split("T")[0];
+        const rows = await drizzleDb.select({
+          date: userMetrics.date,
+          weight: userMetrics.weight,
+          bodyFat: userMetrics.bodyFat,
+          muscleMass: userMetrics.muscleMass,
+          bmi: userMetrics.bmi,
+        })
+          .from(userMetrics)
+          .where(and(eq(userMetrics.userId, ctx.user.id), gte(userMetrics.date as any, sinceStr as any)))
+          .orderBy(userMetrics.date);
+        return rows.map(r => ({
+          date: r.date instanceof Date ? r.date.toISOString().split("T")[0] : String(r.date),
+          weight: r.weight ? Number(r.weight) : null,
+          bodyFat: r.bodyFat ? Number(r.bodyFat) : null,
+          muscleMass: r.muscleMass ? Number(r.muscleMass) : null,
+          bmi: r.bmi ? Number(r.bmi) : null,
+        }));
+      }),
+
+    dailyNutrition: protectedProcedure
+      .input(z.object({ days: z.number().int().min(7).max(90).default(30) }))
+      .query(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return [];
+        const { mealLogs } = await import("../drizzle/schema");
+        const { eq, gte, and, sql } = await import("drizzle-orm");
+        const since = new Date();
+        since.setDate(since.getDate() - input.days);
+        const sinceStr = since.toISOString().split("T")[0];
+        const rows = await drizzleDb
+          .select({
+            date: mealLogs.logDate,
+            calories: sql<number>`COALESCE(SUM(${mealLogs.calories}), 0)`,
+            proteins: sql<number>`COALESCE(SUM(${mealLogs.proteins}), 0)`,
+            carbohydrates: sql<number>`COALESCE(SUM(${mealLogs.carbohydrates}), 0)`,
+            fats: sql<number>`COALESCE(SUM(${mealLogs.fats}), 0)`,
+            mealCount: sql<number>`COUNT(*)`,
+          })
+          .from(mealLogs)
+          .where(and(eq(mealLogs.userId, ctx.user.id), gte(mealLogs.logDate as any, sinceStr as any)))
+          .groupBy(mealLogs.logDate)
+          .orderBy(mealLogs.logDate);
+        return rows.map(r => ({
+          date: r.date instanceof Date ? r.date.toISOString().split("T")[0] : String(r.date),
+          calories: Number(r.calories),
+          proteins: Number(r.proteins),
+          carbohydrates: Number(r.carbohydrates),
+          fats: Number(r.fats),
+          mealCount: Number(r.mealCount),
+        }));
+      }),
+
+    menuAdherence: protectedProcedure
+      .input(z.object({ weeks: z.number().int().min(1).max(8).default(4) }))
+      .query(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return [];
+        const { menuOrganizers, menuOrganizerDayParts } = await import("../drizzle/schema");
+        const { eq, gte, and, sql } = await import("drizzle-orm");
+        const since = new Date();
+        since.setDate(since.getDate() - input.weeks * 7);
+        const sinceStr = since.toISOString().split("T")[0];
+        const menus = await drizzleDb.select({ id: menuOrganizers.id, name: menuOrganizers.name, startDate: menuOrganizers.startDate })
+          .from(menuOrganizers)
+          .where(and(eq(menuOrganizers.userId, ctx.user.id), gte(menuOrganizers.startDate as any, sinceStr as any)))
+          .orderBy(menuOrganizers.startDate);
+        const result = [];
+        for (const menu of menus) {
+          const [stats] = await drizzleDb.select({
+            total: sql<number>`COUNT(*)`,
+            completed: sql<number>`SUM(CASE WHEN ${menuOrganizerDayParts.completed} = 1 THEN 1 ELSE 0 END)`,
+          }).from(menuOrganizerDayParts).where(eq(menuOrganizerDayParts.menuOrganizerId, menu.id));
+          const total = Number(stats?.total ?? 0);
+          const completed = Number(stats?.completed ?? 0);
+          const label = menu.name.replace(/Semana \d+ — /, "");
+          result.push({ menuId: menu.id, name: label, total, completed, adherencePct: total > 0 ? Math.round((completed / total) * 100) : 0 });
+        }
+        return result;
+      }),
+
+    summary: protectedProcedure.query(async ({ ctx }) => {
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) return null;
+      const { mealLogs, userMetrics, recipeFavorites, menuOrganizers, userPoints } = await import("../drizzle/schema");
+      const { eq, desc, sql } = await import("drizzle-orm");
+      const userId = ctx.user.id;
+      const [logsStats] = await drizzleDb.select({
+        totalLogs: sql<number>`COUNT(*)`,
+        avgCalories: sql<number>`ROUND(AVG(${mealLogs.calories}), 0)`,
+        avgProteins: sql<number>`ROUND(AVG(${mealLogs.proteins}), 1)`,
+        avgCarbs: sql<number>`ROUND(AVG(${mealLogs.carbohydrates}), 1)`,
+        avgFats: sql<number>`ROUND(AVG(${mealLogs.fats}), 1)`,
+        daysWithLogs: sql<number>`COUNT(DISTINCT ${mealLogs.logDate})`,
+      }).from(mealLogs).where(eq(mealLogs.userId, userId));
+      const [firstMetric] = await drizzleDb.select({ weight: userMetrics.weight, date: userMetrics.date })
+        .from(userMetrics).where(eq(userMetrics.userId, userId)).orderBy(userMetrics.date).limit(1);
+      const [lastMetric] = await drizzleDb.select({ weight: userMetrics.weight, date: userMetrics.date })
+        .from(userMetrics).where(eq(userMetrics.userId, userId)).orderBy(desc(userMetrics.date)).limit(1);
+      const [favCount] = await drizzleDb.select({ n: sql<number>`COUNT(*)` })
+        .from(recipeFavorites).where(eq(recipeFavorites.userId, userId));
+      const [menuCount] = await drizzleDb.select({ n: sql<number>`COUNT(*)` })
+        .from(menuOrganizers).where(eq(menuOrganizers.userId, userId));
+      const [pts] = await drizzleDb.select().from(userPoints).where(eq(userPoints.userId, userId)).limit(1);
+      const weightLost = firstMetric?.weight && lastMetric?.weight
+        ? parseFloat((Number(firstMetric.weight) - Number(lastMetric.weight)).toFixed(1)) : 0;
+      return {
+        totalLogs: Number(logsStats?.totalLogs ?? 0),
+        daysWithLogs: Number(logsStats?.daysWithLogs ?? 0),
+        avgCalories: Number(logsStats?.avgCalories ?? 0),
+        avgProteins: Number(logsStats?.avgProteins ?? 0),
+        avgCarbs: Number(logsStats?.avgCarbs ?? 0),
+        avgFats: Number(logsStats?.avgFats ?? 0),
+        weightLost,
+        startWeight: firstMetric?.weight ? Number(firstMetric.weight) : null,
+        currentWeight: lastMetric?.weight ? Number(lastMetric.weight) : null,
+        favoritesCount: Number(favCount?.n ?? 0),
+        menusCount: Number(menuCount?.n ?? 0),
+        totalPoints: pts?.totalPoints ?? 0,
+        level: pts?.level ?? 1,
+      };
+    }),
+  }),
 });
 export type AppRouter = typeof appRouter;

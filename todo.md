@@ -1140,3 +1140,10 @@
 - [ ] tRPC: completeOnboarding que guarda los datos y genera el primer menú con IA
 - [ ] Animaciones de transición entre pasos
 - [ ] Marcar onboardingCompleted = true al finalizar
+
+## Sección Progreso y Estadísticas
+- [x] Crear procedimientos tRPC para datos de progreso: peso/métricas, calorías diarias, macros, adherencia al menú, logros
+- [x] Instalar recharts para gráficos interactivos
+- [x] Crear página Progress.tsx con gráfico de evolución de peso, calorías diarias, macros, adherencia al menú y resumen de logros
+- [x] Registrar ruta /app/progress en App.tsx
+- [x] Añadir enlace "Progreso" en el menú de navegación lateral (AppLayout)

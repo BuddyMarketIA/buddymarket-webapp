@@ -151,6 +151,7 @@ const SIDEBAR_GROUPS = [
     label: "Nutrición",
     items: [
       { key: "/app/meal-log", label: "Diario Nutricional", to: "/app/meal-log", emoji: "📊" },
+      { key: "/app/progress", label: "Progreso", to: "/app/progress", emoji: "📉" },
       { key: "/app/stats", label: "Estadísticas", to: "/app/stats", emoji: "📈" },
       { key: "/app/favorites", label: "Mis Favoritas", to: "/app/favorites", emoji: "❤️" },
       { key: "/app/menu-library", label: "Biblioteca de Menús", to: "/app/menu-library", emoji: "📚" },
