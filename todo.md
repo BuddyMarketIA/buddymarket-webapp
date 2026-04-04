@@ -1168,3 +1168,26 @@
 - [ ] Verificar que aparecen correctamente en la app
 - [x] Bug: encabezado duplicado en página Progreso (Progress.tsx tenía su propio h1 además del de AppLayout)
 - [x] Bug: sidebar del AppLayout no cubre bien la pantalla - corregido: header cambiado a position:fixed con background sólido, sidebar usa left:0 en lugar de cálculo relativo
+
+## Sprint Recetas Saludables para Dieta (completado)
+- [x] Generar 85 recetas saludables para dieta de todo tipo (desayunos, media mañana, comidas, meriendas, cenas, postres, bebidas)
+- [x] Total recetas en BD: 1.636 (621 comidas, 372 cenas, 245 desayunos, 187 meriendas, 181 media mañana, 30 cualquiera)
+
+## Revisión de duplicados en BD
+- [x] Detectar y eliminar recetas duplicadas: 73 grupos encontrados, 163 registros eliminados (0 errores)
+- [x] Verificar resultado: 0 grupos duplicados restantes, 1.473 recetas únicas en BD
+
+## Recetas para condiciones médicas
+- [x] Generar e insertar recetas para hipertensión (8 recetas, bajas en sodio)
+- [x] Generar e insertar recetas para diabetes tipo 2 (7 recetas, bajo índice glucémico)
+- [x] Generar e insertar recetas para post-operatorio (8 recetas, blandas, fácil digestión)
+- [x] Generar e insertar recetas para colesterol alto (4 recetas, omega-3 y fibra soluble)
+- [x] Generar e insertar recetas para enfermedad renal (3 recetas, bajas en potasio/fósforo)
+- [x] Generar e insertar recetas para celiaquía (4 recetas, sin gluten)
+- [x] Generar e insertar recetas para síndrome de intestino irritable (3 recetas, dieta FODMAP)
+- [x] Generar e insertar recetas para osteoporosis (3 recetas, alto calcio/vitamina D)
+- [x] Generar e insertar recetas para anemia (3 recetas, alto hierro)
+- [x] Generar e insertar recetas para gota (2 recetas, bajo purinas)
+- [x] Generar e insertar recetas para embarazo (3 recetas, ácido fólico/hierro/calcio)
+- [x] Generar e insertar recetas para menopausia (2 recetas, fitoestrógenos)
+- [x] Generar e insertar recetas para hipotiroidismo (1 receta, yodo/selenio)
