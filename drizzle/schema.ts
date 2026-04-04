@@ -1259,3 +1259,26 @@ export const referralSubscriptions = mysqlTable("referral_subscriptions", {
 }));
 export type ReferralSubscription = typeof referralSubscriptions.$inferSelect;
 export type InsertReferralSubscription = typeof referralSubscriptions.$inferInsert;
+
+// =============================================================================
+// ALCAMPO PRODUCTS
+// =============================================================================
+export const alcampoProducts = mysqlTable("alcampo_products", {
+  id: varchar("id", { length: 128 }).primaryKey(),
+  name: varchar("name", { length: 512 }).notNull(),
+  brand: varchar("brand", { length: 256 }),
+  price: float("price"),
+  pricePerUnit: varchar("price_per_unit", { length: 64 }),
+  image: varchar("image", { length: 512 }),
+  category: varchar("category", { length: 256 }),
+  subcategory: varchar("subcategory", { length: 256 }),
+  packaging: varchar("packaging", { length: 128 }),
+  productUrl: varchar("product_url", { length: 512 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (t) => ({
+  nameIdx: index("alc_name_idx").on(t.name),
+  categoryIdx: index("alc_category_idx").on(t.category),
+}));
+export type AlcampoProduct = typeof alcampoProducts.$inferSelect;
+export type InsertAlcampoProduct = typeof alcampoProducts.$inferInsert;

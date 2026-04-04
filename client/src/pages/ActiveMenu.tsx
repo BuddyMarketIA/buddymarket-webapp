@@ -16,6 +16,7 @@ import { CheckCircleIcon as CheckCircleSolid } from "@heroicons/react/24/solid";
 import MercadonaCartExport from "@/components/MercadonaCartExport";
 import LidlCartExport from "@/components/LidlCartExport";
 import CarrefourCartExport from "@/components/CarrefourCartExport";
+import AlcampoCartExport from "@/components/AlcampoCartExport";
 
 const SUPERMARKETS = [
   { id: "general", name: "General", emoji: "🛒" },
@@ -219,6 +220,7 @@ export default function ActiveMenu() {
   const [showMercadonaModal, setShowMercadonaModal] = useState(false);
   const [showLidlModal, setShowLidlModal] = useState(false);
   const [showCarrefourModal, setShowCarrefourModal] = useState(false);
+  const [showAlcampoModal, setShowAlcampoModal] = useState(false);
   const [showGenericModal, setShowGenericModal] = useState(false);
   const [generatedItems, setGeneratedItems] = useState<GeneratedListItem[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -258,6 +260,8 @@ export default function ActiveMenu() {
             setShowLidlModal(true);
           } else if (selectedSupermarket === "carrefour") {
             setShowCarrefourModal(true);
+          } else if (selectedSupermarket === "alcampo") {
+            setShowAlcampoModal(true);
           } else {
             setShowGenericModal(true);
           }
@@ -635,6 +639,22 @@ export default function ActiveMenu() {
               items={generatedItems}
               onBack={() => setShowCarrefourModal(false)}
               onClose={() => setShowCarrefourModal(false)}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Alcampo modal */}
+      {showAlcampoModal && generatedItems.length > 0 && (
+        <div
+          className="modal-overlay"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowAlcampoModal(false); }}
+        >
+          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up max-h-[90vh] overflow-y-auto">
+            <AlcampoCartExport
+              items={generatedItems}
+              onBack={() => setShowAlcampoModal(false)}
+              onClose={() => setShowAlcampoModal(false)}
             />
           </div>
         </div>

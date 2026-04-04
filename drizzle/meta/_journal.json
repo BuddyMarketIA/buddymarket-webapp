@@ -225,6 +225,13 @@
       "when": 1775256292893,
       "tag": "0031_tense_marauders",
       "breakpoints": true
+    },
+    {
+      "idx": 32,
+      "version": "5",
+      "when": 1775274657397,
+      "tag": "0032_early_scream",
+      "breakpoints": true
     }
   ]
 }

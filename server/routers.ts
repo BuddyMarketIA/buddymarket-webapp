@@ -2717,6 +2717,64 @@ Genera 3 recetas que aprovechen estos ingredientes. Para cada receta incluye: no
   }),
 
   // ===========================================================================
+  // ALCAMPO INTEGRATION
+  // ===========================================================================
+  alcampo: router({
+    searchProducts: publicProcedure
+      .input(z.object({ q: z.string().optional(), category: z.string().optional(), subcategory: z.string().optional(), limit: z.number().optional() }))
+      .query(async ({ input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return [];
+        const { alcampoProducts } = await import("../drizzle/schema.js");
+        const { like, eq, and, or, desc } = await import("drizzle-orm");
+        const q = input.q?.trim();
+        const conditions: any[] = [];
+        if (q && q.length > 0) {
+          conditions.push(or(
+            like(alcampoProducts.name, `%${q}%`),
+            like(alcampoProducts.subcategory, `%${q}%`),
+            like(alcampoProducts.category, `%${q}%`),
+            like(alcampoProducts.brand, `%${q}%`),
+          ));
+        }
+        if (input.category) conditions.push(eq(alcampoProducts.category, input.category));
+        if (input.subcategory) conditions.push(eq(alcampoProducts.subcategory, input.subcategory));
+        const rows = await drizzleDb
+          .select()
+          .from(alcampoProducts)
+          .where(conditions.length > 0 ? and(...conditions) : undefined)
+          .orderBy(desc(alcampoProducts.price))
+          .limit(input.limit ?? 48);
+        return rows;
+      }),
+    categories: publicProcedure.query(async () => {
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) return [];
+      const { sql } = await import("drizzle-orm");
+      const rows = await drizzleDb.execute(
+        sql`SELECT category, subcategory, COUNT(*) as count FROM alcampo_products GROUP BY category, subcategory ORDER BY category, count DESC`
+      ) as any;
+      const result = rows[0] as Array<{ category: string; subcategory: string; count: number }>;
+      return result;
+    }),
+    byCategory: publicProcedure
+      .input(z.object({ category: z.string(), subcategory: z.string().optional(), limit: z.number().optional() }))
+      .query(async ({ input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return [];
+        const { alcampoProducts } = await import("../drizzle/schema.js");
+        const { eq, and, desc } = await import("drizzle-orm");
+        const conditions: any[] = [eq(alcampoProducts.category, input.category)];
+        if (input.subcategory) conditions.push(eq(alcampoProducts.subcategory, input.subcategory));
+        return drizzleDb
+          .select()
+          .from(alcampoProducts)
+          .where(and(...conditions))
+          .orderBy(desc(alcampoProducts.price))
+          .limit(input.limit ?? 48);
+      }),
+  }),
+  // ===========================================================================
   // LIDL INTEGRATION
   // ===========================================================================
   lidl: router({
