@@ -317,13 +317,15 @@ export default function Dashboard() {
             ].map((item) => (
               <Link key={item.step} href={item.to}>
                 <div
-                  style={{ background: item.bg, border: `1.5px solid ${item.border}`, borderRadius: "18px", padding: "14px", cursor: "pointer", height: "100%", boxSizing: "border-box", transition: "transform 0.15s, box-shadow 0.15s", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "scale(1.02)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 6px 20px rgba(0,0,0,0.12)"; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "scale(1)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 2px 8px rgba(0,0,0,0.06)"; }}
+                  className="step-card"
+                  style={{ position: "relative", background: item.bg, border: `1.5px solid ${item.border}`, borderRadius: "18px", padding: "14px", cursor: "pointer", height: "100%", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}
                 >
                   {/* Step badge + emoji */}
                   <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
-                    <div style={{ width: "28px", height: "28px", borderRadius: "50%", background: item.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", flexShrink: 0, boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}>
+                    <div
+                      className="step-icon"
+                      style={{ width: "28px", height: "28px", borderRadius: "50%", background: item.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px", flexShrink: 0, boxShadow: "0 2px 8px rgba(0,0,0,0.15)" }}
+                    >
                       {item.emoji}
                     </div>
                     <span style={{ fontSize: "10px", fontWeight: 800, color: item.textColor, textTransform: "uppercase", letterSpacing: "0.06em", opacity: 0.7 }}>Paso {item.step}</span>
@@ -333,7 +335,10 @@ export default function Dashboard() {
                   {/* Description */}
                   <p style={{ margin: "0 0 10px", fontSize: "11px", color: item.textColor, opacity: 0.75, lineHeight: 1.5 }}>{item.desc}</p>
                   {/* CTA */}
-                  <div style={{ display: "inline-flex", alignItems: "center", gap: "4px", background: item.color, borderRadius: "8px", padding: "4px 10px" }}>
+                  <div
+                    className="step-cta"
+                    style={{ display: "inline-flex", alignItems: "center", gap: "4px", background: item.color, borderRadius: "8px", padding: "4px 10px" }}
+                  >
                     <span style={{ fontSize: "11px", fontWeight: 700, color: "white" }}>{item.cta} →</span>
                   </div>
                 </div>
