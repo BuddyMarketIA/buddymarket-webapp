@@ -9,29 +9,41 @@ interface MatchedProduct {
   itemId: number; itemName: string;
   product: { id: number; slug: string; name: string; thumbnail: string | null; price: number; priceStr: string; unit: string; packaging: string | null; } | null;
   qty: number; confirmed: boolean;
+  manualSearch?: string;
+  alternatives?: { id: number; slug: string; name: string; thumbnail: string | null; price: number; priceStr: string; unit: string; packaging: string | null; }[];
 }
 interface Props { items: ShoppingItem[]; onBack: () => void; onClose: () => void; }
 
 /** Strip quantities, units and parenthetical notes from ingredient names for better Mercadona matching */
 function normalizeSearchTerm(name: string): string {
-  return name
-    .replace(/\([^)]*\)/g, "") // remove (300 g), (ej. fresas...), etc.
-    .replace(/\d+[.,]?\d*\s*(g|kg|ml|l|cl|oz|lb|unidad|unidades|cucharad[ai]ta?|taza|tazas|pizca)?/gi, "") // remove quantities
-    .replace(/\s+/g, " ")
-    .trim()
-    .split(/[,;]/)[0] // take only first part if comma-separated
-    .trim();
+  // Remove parenthetical notes like (300 g), (ej. fresas...)
+  let result = name.replace(/\([^)]*\)/g, "");
+  // Take only first part if comma/semicolon separated (e.g. "tomates, pelados" → "tomates")
+  result = result.split(/[,;]/)[0];
+  // Remove quantities and units
+  result = result.replace(/\d+[.,]?\d*\s*(g|kg|ml|l|cl|oz|lb|unidad|unidades|cucharad[ai]ta?|taza|tazas|pizca|gramo|gramos|litro|litros)?/gi, "");
+  // Remove common cooking adjectives that hurt search
+  result = result.replace(/\b(fresco|fresca|frescos|frescas|cocido|cocida|cocidos|cocidas|crudo|cruda|crudos|crudas|picado|picada|troceado|troceada|rallado|rallada|entero|entera|sin hueso|deshuesado|pelado|pelada|enlatado|enlatada|congelado|congelada|al gusto|opcional|extra|grande|pequeño|mediano)\b/gi, "");
+  // Normalize whitespace
+  result = result.replace(/\s+/g, " ").trim();
+  // If result is too short after cleaning, use original first word
+  if (result.length < 3) {
+    result = name.split(/[\s,;(]/)[0].trim();
+  }
+  return result;
 }
 
-function ItemSearch({ itemName, onResult }: { itemName: string; onResult: (product: MatchedProduct["product"]) => void }) {
+function ItemSearch({ itemName, onResult }: { itemName: string; onResult: (product: MatchedProduct["product"], alternatives: MatchedProduct["alternatives"]) => void }) {
   const searchTerm = normalizeSearchTerm(itemName);
-  const { data, isLoading } = trpc.mercadona.searchProducts.useQuery({ query: searchTerm || itemName, limit: 3 }, { enabled: true });
+  const { data, isLoading } = trpc.mercadona.searchProducts.useQuery({ query: searchTerm || itemName, limit: 5 }, { enabled: true });
   const reported = useRef(false);
   useEffect(() => {
     if (!isLoading && !reported.current) {
       reported.current = true;
-      const p = data?.[0];
-      onResult(p ? { id: p.id, slug: p.slug, name: p.name, thumbnail: p.thumbnail, price: p.price, priceStr: p.priceStr, unit: p.unit, packaging: p.packaging } : null);
+      const products = (data ?? []).map(p => ({ id: p.id, slug: p.slug, name: p.name, thumbnail: p.thumbnail, price: p.price, priceStr: p.priceStr, unit: p.unit, packaging: p.packaging }));
+      const best = products[0] ?? null;
+      const alts = products.slice(1);
+      onResult(best, alts);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading]);
@@ -58,9 +70,13 @@ export default function MercadonaCartExport({ items, onBack, onClose }: Props) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const handleProductResult = (itemId: number, product: MatchedProduct["product"]) => {
-    setMatched((prev) => prev.map((m) => m.itemId === itemId ? { ...m, product, confirmed: product !== null } : m));
+  const handleProductResult = (itemId: number, product: MatchedProduct["product"], alternatives: MatchedProduct["alternatives"]) => {
+    setMatched((prev) => prev.map((m) => m.itemId === itemId ? { ...m, product, alternatives, confirmed: product !== null } : m));
     setResolved((r) => r + 1);
+  };
+
+  const handleSelectAlternative = (itemId: number, alt: NonNullable<MatchedProduct["alternatives"]>[0]) => {
+    setMatched((prev) => prev.map((m) => m.itemId === itemId ? { ...m, product: alt, confirmed: true } : m));
   };
 
   const loginMutation = trpc.mercadona.login.useMutation({
@@ -163,7 +179,7 @@ export default function MercadonaCartExport({ items, onBack, onClose }: Props) {
     <div className="flex flex-col gap-0">
       {/* Hidden search components */}
       {unpurchased.map((item) => (
-        <ItemSearch key={item.id} itemName={item.name} onResult={(p) => handleProductResult(item.id, p)} />
+        <ItemSearch key={item.id} itemName={item.name} onResult={(p, alts) => handleProductResult(item.id, p, alts)} />
       ))}
 
       {/* Header — Mercadona style */}
@@ -251,24 +267,50 @@ export default function MercadonaCartExport({ items, onBack, onClose }: Props) {
               </div>
             ))}
 
-            {/* Not found items */}
+            {/* Not found items with alternatives */}
             {matched.filter((m) => !m.product).map((m) => (
-              <div key={m.itemId} className="flex items-center gap-3 py-3 opacity-40">
-                <div className="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
-                  <span className="text-xl text-gray-300">?</span>
+              <div key={m.itemId} className="py-3 border-t border-dashed border-gray-100 first:border-t-0">
+                <div className="flex items-center gap-3">
+                  <div className="w-10 h-10 rounded-xl bg-amber-50 flex items-center justify-center shrink-0">
+                    <span className="text-base">🔍</span>
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="text-sm font-semibold text-gray-700 truncate">{m.itemName}</p>
+                    <p className="text-xs text-amber-600">No encontrado automáticamente</p>
+                  </div>
+                  <a
+                    href={`https://tienda.mercadona.es/search-results?query=${encodeURIComponent(normalizeSearchTerm(m.itemName))}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-xs font-semibold text-orange-500 underline shrink-0"
+                  >
+                    Ver en web
+                  </a>
                 </div>
-                <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-500 truncate">{m.itemName}</p>
-                  <p className="text-xs text-gray-400 italic">No encontrado en Mercadona</p>
-                </div>
-                <a
-                  href={`https://tienda.mercadona.es/search-results?query=${encodeURIComponent(m.itemName)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="text-xs text-blue-500 underline shrink-0"
-                >
-                  Buscar
-                </a>
+                {/* Show alternatives if any */}
+                {m.alternatives && m.alternatives.length > 0 && (
+                  <div className="mt-2 ml-13 pl-13">
+                    <p className="text-xs text-gray-400 mb-1.5 pl-1">Productos similares:</p>
+                    <div className="flex flex-col gap-1.5">
+                      {m.alternatives.map((alt) => (
+                        <button
+                          key={alt.id}
+                          onClick={() => handleSelectAlternative(m.itemId, alt)}
+                          className="flex items-center gap-2 rounded-xl bg-gray-50 border border-gray-200 px-3 py-2 text-left hover:bg-orange-50 hover:border-orange-200 transition-colors"
+                        >
+                          {alt.thumbnail && (
+                            <img src={alt.thumbnail} alt={alt.name} className="w-8 h-8 object-contain rounded" />
+                          )}
+                          <div className="flex-1 min-w-0">
+                            <p className="text-xs font-medium text-gray-800 truncate">{alt.name}</p>
+                            <p className="text-xs font-bold" style={{ color: "#00A650" }}>{alt.priceStr}</p>
+                          </div>
+                          <span className="text-xs text-orange-500 font-bold shrink-0">+ Añadir</span>
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
               </div>
             ))}
           </div>

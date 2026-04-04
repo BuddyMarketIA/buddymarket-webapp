@@ -2771,25 +2771,120 @@ Genera 3 recetas que aprovechen estos ingredientes. Para cada receta incluye: no
 
   // Mercadona integration — proxy to tienda.mercadona.es unofficial API
   mercadona: router({
-    // Search products from local DB (fast, no external API calls)
+    // Search products from local DB with enhanced matching (tildes, synonyms, multi-word)
     searchProducts: publicProcedure
       .input(z.object({ query: z.string().min(1), limit: z.number().optional().default(30) }))
       .query(async ({ input }) => {
         const drizzleDb = await db.getDb();
         if (!drizzleDb) return [];
         const { mercadonaProducts } = await import("../drizzle/schema");
-        const { like, or } = await import("drizzle-orm");
-        const q = `%${input.query}%`;
+        const { like, or, sql } = await import("drizzle-orm");
+
+        // Normalize: remove accents, lowercase, strip extra whitespace
+        const normalize = (s: string) =>
+          s.toLowerCase()
+           .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+           .replace(/[^a-z0-9\s]/g, " ")
+           .replace(/\s+/g, " ")
+           .trim();
+
+        // Synonym map for common grocery ingredients
+        const SYNONYMS: Record<string, string[]> = {
+          "yogur": ["yogurt", "yogures", "yogur"],
+          "yogurt": ["yogur", "yogures"],
+          "salmon": ["salmón", "salmon"],
+          "salmón": ["salmon", "salmón"],
+          "garbanzo": ["garbanzos", "garbanzo"],
+          "garbanzos": ["garbanzo", "garbanzos"],
+          "lenteja": ["lentejas", "lenteja"],
+          "lentejas": ["lenteja", "lentejas"],
+          "harina": ["harina", "preparado reposteria"],
+          "mantequilla": ["mantequilla", "margarina"],
+          "nata": ["nata", "crema"],
+          "pechuga": ["pechuga", "filete pollo"],
+          "jamon": ["jamón", "jamon"],
+          "jamón": ["jamon", "jamón"],
+          "tomate": ["tomate", "tomates"],
+          "cebolla": ["cebolla", "cebollas"],
+          "zanahoria": ["zanahoria", "zanahorias"],
+          "pimiento": ["pimiento", "pimientos"],
+          "espinaca": ["espinacas", "espinaca"],
+          "espinacas": ["espinaca", "espinacas"],
+          "lechuga": ["lechuga", "ensalada"],
+          "queso": ["queso", "quesos"],
+          "huevo": ["huevo", "huevos"],
+          "huevos": ["huevo", "huevos"],
+          "leche": ["leche", "bebida vegetal"],
+          "arroz": ["arroz"],
+          "pasta": ["pasta", "fideos", "macarrones", "espagueti"],
+          "macarrones": ["pasta", "macarrones"],
+          "espagueti": ["pasta", "espaguetis", "espagueti"],
+          "atun": ["atún", "atun"],
+          "atún": ["atun", "atún"],
+          "bacalao": ["bacalao"],
+          "merluza": ["merluza"],
+          "aceite": ["aceite"],
+          "vinagre": ["vinagre"],
+          "sal": ["sal"],
+          "azucar": ["azúcar", "azucar"],
+          "azúcar": ["azucar", "azúcar"],
+        };
+
+        const rawQuery = input.query.trim();
+        const normQuery = normalize(rawQuery);
+
+        // Build candidate search terms
+        const searchTerms = new Set<string>();
+        searchTerms.add(rawQuery);
+        searchTerms.add(normQuery);
+
+        // Add synonyms
+        const synonymKey = normQuery.split(" ")[0];
+        if (SYNONYMS[synonymKey]) {
+          SYNONYMS[synonymKey].forEach(s => searchTerms.add(s));
+        }
+        // Also check full query as synonym key
+        if (SYNONYMS[normQuery]) {
+          SYNONYMS[normQuery].forEach(s => searchTerms.add(s));
+        }
+
+        // Split multi-word queries and search for each word
+        const words = normQuery.split(" ").filter(w => w.length > 2);
+        words.forEach(w => searchTerms.add(w));
+
+        // Build OR conditions for all search terms
+        const conditions = Array.from(searchTerms).flatMap(term => [
+          like(mercadonaProducts.name, `%${term}%`),
+          like(mercadonaProducts.subcategoryName, `%${term}%`),
+        ]);
+
         const rows = await drizzleDb
           .select()
           .from(mercadonaProducts)
-          .where(or(
-            like(mercadonaProducts.name, q),
-            like(mercadonaProducts.subcategoryName, q),
-            like(mercadonaProducts.categoryName, q)
-          ))
-          .limit(input.limit);
-        return rows.map(p => ({
+          .where(or(...conditions))
+          .limit(input.limit * 3); // fetch more to allow client-side ranking
+
+        // Score and rank results: exact name match > starts with > contains
+        const scored = rows.map(p => {
+          const pName = normalize(p.name);
+          let score = 0;
+          if (pName === normQuery) score = 100;
+          else if (pName.startsWith(normQuery)) score = 80;
+          else if (pName.includes(normQuery)) score = 60;
+          else {
+            // Check if all words match
+            const matchedWords = words.filter(w => pName.includes(w));
+            score = matchedWords.length * 20;
+          }
+          return { ...p, _score: score };
+        });
+
+        const sorted = scored
+          .filter(p => p._score > 0)
+          .sort((a, b) => b._score - a._score)
+          .slice(0, input.limit);
+
+        return sorted.map(p => ({
           id: p.id,
           slug: p.slug,
           name: p.name,
