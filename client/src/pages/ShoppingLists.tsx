@@ -3,6 +3,7 @@ import MercadonaCartExport from "@/components/MercadonaCartExport";
 import LidlCartExport from "@/components/LidlCartExport";
 import CarrefourCartExport from "@/components/CarrefourCartExport";
 import AlcampoCartExport from "@/components/AlcampoCartExport";
+import BasketComparator from "@/components/BasketComparator";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import {
@@ -20,6 +21,7 @@ import {
   DocumentDuplicateIcon,
   HomeIcon,
   FunnelIcon,
+  ScaleIcon,
 } from "@heroicons/react/24/outline";
 
 // Supermarket online search URL builders
@@ -69,6 +71,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
   const [showLidlCart, setShowLidlCart] = useState(false);
   const [showCarrefourCart, setShowCarrefourCart] = useState(false);
   const [showAlcampoCart, setShowAlcampoCart] = useState(false);
+  const [showCompare, setShowCompare] = useState(false);
   const [showSaveTemplate, setShowSaveTemplate] = useState(false);
   const [templateName, setTemplateName] = useState("");
   const [viewFilter, setViewFilter] = useState<ViewFilter>("all");
@@ -180,6 +183,13 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
           title="Guardar como plantilla"
         >
           <BookmarkIcon className="h-5 w-5 text-violet-500" />
+        </button>
+        <button
+          onClick={() => setShowCompare(true)}
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm mr-1"
+          title="Comparar precios entre supermercados"
+        >
+          <ScaleIcon className="h-5 w-5 text-purple-500" />
         </button>
         <button
           onClick={() => { setShowExport(true); setSelectedSupermarket(null); }}
@@ -525,6 +535,23 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
               items={allItems.map((i: any) => ({ id: i.id, name: i.ingredient?.name ?? i.customName ?? i.name ?? "Producto", qty: String(i.amount ?? i.quantity ?? ""), unit: i.measure?.name ?? i.unit ?? "", isPurchased: i.isPurchased || i.inPantry }))}
               onBack={() => { setShowAlcampoCart(false); setShowExport(true); }}
               onClose={() => setShowAlcampoCart(false)}
+            />
+          </div>
+        </div>
+      )}
+      {/* Basket Comparator Modal */}
+      {showCompare && (
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowCompare(false); }}>
+          <div className="w-full max-w-sm rounded-3xl bg-white p-5 shadow-2xl animate-slide-up max-h-[90vh] overflow-y-auto">
+            <BasketComparator
+              items={allItems
+                .filter((i: any) => !i.isPurchased && !i.inPantry)
+                .map((i: any) => ({
+                  name: i.ingredient?.name ?? i.customName ?? i.name ?? "",
+                  qty: String(i.amount ?? i.quantity ?? ""),
+                  unit: i.measure?.name ?? i.unit ?? "",
+                }))}
+              onClose={() => setShowCompare(false)}
             />
           </div>
         </div>

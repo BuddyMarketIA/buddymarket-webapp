@@ -2824,6 +2824,133 @@ Genera 3 recetas que aprovechen estos ingredientes. Para cada receta incluye: no
     }),
   }),
   // ===========================================================================
+  // BASKET PRICE COMPARATOR
+  // ===========================================================================
+  basketComparator: router({
+    compare: publicProcedure
+      .input(z.object({
+        items: z.array(z.object({
+          name: z.string(),
+          qty: z.string().optional(),
+          unit: z.string().optional(),
+        })),
+      }))
+      .query(async ({ input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { mercadonaProducts, carrefourProducts, alcampoProducts, lidlProducts } = await import("../drizzle/schema");
+        const { like, or } = await import("drizzle-orm");
+
+        const searchInTable = async (
+          table: any,
+          nameCol: any,
+          urlFn: (row: any) => string,
+          query: string
+        ) => {
+          const q = `%${query}%`;
+          const rows = await drizzleDb
+            .select()
+            .from(table)
+            .where(like(nameCol, q))
+            .limit(1);
+          if (rows.length === 0) return null;
+          const row = rows[0] as any;
+          const rawPrice = row.unit_price ?? row.price;
+          const price = rawPrice ? parseFloat(String(rawPrice)) : 0;
+          return {
+            productName: row.name ?? "",
+            price: isNaN(price) ? 0 : price,
+            thumbnail: row.thumbnail ?? row.image ?? row.image_url ?? "",
+            url: urlFn(row),
+          };
+        };
+
+        const supermarkets = [
+          {
+            id: "mercadona",
+            name: "Mercadona",
+            emoji: "🟠",
+            color: "#00A650",
+            search: (q: string) => searchInTable(
+              mercadonaProducts,
+              mercadonaProducts.name,
+              (r: any) => r.share_url ?? `https://tienda.mercadona.es`,
+              q
+            ),
+          },
+          {
+            id: "carrefour",
+            name: "Carrefour",
+            emoji: "🔵",
+            color: "#004A96",
+            search: (q: string) => searchInTable(
+              carrefourProducts,
+              carrefourProducts.name,
+              (r: any) => r.product_url ?? `https://www.carrefour.es/supermercado/buscar?query=${encodeURIComponent(q)}`,
+              q
+            ),
+          },
+          {
+            id: "alcampo",
+            name: "Alcampo",
+            emoji: "🟡",
+            color: "#E30613",
+            search: (q: string) => searchInTable(
+              alcampoProducts,
+              alcampoProducts.name,
+              (r: any) => r.product_url ?? `https://www.alcampo.es/compra-online/buscar/?q=${encodeURIComponent(q)}`,
+              q
+            ),
+          },
+          {
+            id: "lidl",
+            name: "Lidl",
+            emoji: "🔴",
+            color: "#0050AA",
+            search: (q: string) => searchInTable(
+              lidlProducts,
+              lidlProducts.name,
+              (r: any) => r.canonical_path ? `https://www.lidl.es${r.canonical_path}` : `https://www.lidl.es`,
+              q
+            ),
+          },
+        ];
+
+        const results = await Promise.all(
+          supermarkets.map(async (sm) => {
+            const itemResults = await Promise.all(
+              input.items.map(async (item) => {
+                const found = await sm.search(item.name);
+                return {
+                  ingredient: item.name,
+                  found: found !== null && found.price > 0,
+                  productName: found?.productName ?? "",
+                  price: found?.price ?? 0,
+                  thumbnail: found?.thumbnail ?? "",
+                  url: found?.url ?? "",
+                };
+              })
+            );
+            const total = itemResults.reduce((sum, i) => sum + (i.found ? i.price : 0), 0);
+            return {
+              supermarket: sm.name,
+              emoji: sm.emoji,
+              color: sm.color,
+              total: Math.round(total * 100) / 100,
+              found: itemResults.filter((i) => i.found).length,
+              notFound: itemResults.filter((i) => !i.found).length,
+              items: itemResults,
+            };
+          })
+        );
+
+        // Sort cheapest first
+        results.sort((a, b) => a.total - b.total);
+        return results;
+      }),
+  }),
+
+  // ===========================================================================
   // USER BODY METRICS
   // ===========================================================================
   metrics: router({

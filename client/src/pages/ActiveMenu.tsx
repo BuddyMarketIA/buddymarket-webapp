@@ -11,12 +11,14 @@ import {
   FireIcon,
   PlayIcon,
   HomeIcon,
+  ScaleIcon,
 } from "@heroicons/react/24/outline";
 import { CheckCircleIcon as CheckCircleSolid } from "@heroicons/react/24/solid";
 import MercadonaCartExport from "@/components/MercadonaCartExport";
 import LidlCartExport from "@/components/LidlCartExport";
 import CarrefourCartExport from "@/components/CarrefourCartExport";
 import AlcampoCartExport from "@/components/AlcampoCartExport";
+import BasketComparator from "@/components/BasketComparator";
 
 const SUPERMARKETS = [
   { id: "general", name: "General", emoji: "🛒" },
@@ -221,6 +223,7 @@ export default function ActiveMenu() {
   const [showLidlModal, setShowLidlModal] = useState(false);
   const [showCarrefourModal, setShowCarrefourModal] = useState(false);
   const [showAlcampoModal, setShowAlcampoModal] = useState(false);
+  const [showCompareModal, setShowCompareModal] = useState(false);
   const [showGenericModal, setShowGenericModal] = useState(false);
   const [generatedItems, setGeneratedItems] = useState<GeneratedListItem[]>([]);
   const [isGenerating, setIsGenerating] = useState(false);
@@ -572,6 +575,15 @@ export default function ActiveMenu() {
               </p>
             </div>
           )}
+          {generatedItems.length > 0 && (
+            <button
+              onClick={() => setShowCompareModal(true)}
+              className="w-full py-3 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2 bg-purple-50 text-purple-700 border border-purple-200 hover:bg-purple-100 transition-colors mb-2"
+            >
+              <ScaleIcon className="h-4 w-4" />
+              Comparar precios entre supermercados
+            </button>
+          )}
           <button
             onClick={() => handleGenerateList(false)}
             disabled={isGenerating || generateShoppingList.isPending}
@@ -655,6 +667,22 @@ export default function ActiveMenu() {
               items={generatedItems}
               onBack={() => setShowAlcampoModal(false)}
               onClose={() => setShowAlcampoModal(false)}
+            />
+          </div>
+        </div>
+      )}
+
+      {/* Basket Comparator modal */}
+      {showCompareModal && generatedItems.length > 0 && (
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowCompareModal(false); }}>
+          <div className="w-full max-w-sm rounded-3xl bg-white p-5 shadow-2xl animate-slide-up max-h-[90vh] overflow-y-auto">
+            <BasketComparator
+              items={generatedItems.map((i) => ({
+                name: i.name,
+                qty: i.qty,
+                unit: i.unit,
+              }))}
+              onClose={() => setShowCompareModal(false)}
             />
           </div>
         </div>
