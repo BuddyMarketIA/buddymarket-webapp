@@ -2,6 +2,7 @@ import "dotenv/config";
 import express from "express";
 import { createServer } from "http";
 import net from "net";
+import multer from "multer";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
 import { appRouter } from "../routers";
@@ -9,6 +10,7 @@ import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
 import { registerStripeWebhook } from "../stripe-webhook";
 import { processPendingEmails } from "../email";
+import { storagePut } from "../storage";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise(resolve => {
@@ -39,6 +41,22 @@ async function startServer() {
   app.use(express.urlencoded({ limit: "50mb", extended: true }));
   // OAuth callback under /api/oauth/callback
   registerOAuthRoutes(app);
+
+  // ─── Upload inventory photo to S3 (multipart) ──────────────────────────────
+  const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 16 * 1024 * 1024 } });
+  app.post("/api/upload-inventory-photo", upload.single("file"), async (req: any, res: any) => {
+    try {
+      if (!req.file) return res.status(400).json({ error: "No file provided" });
+      const ext = (req.file.originalname || "photo.jpg").split(".").pop() ?? "jpg";
+      const key = `inventory-photos/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
+      const { url } = await storagePut(key, req.file.buffer, req.file.mimetype || "image/jpeg");
+      return res.json({ url });
+    } catch (err) {
+      console.error("[upload-inventory-photo] error:", err);
+      return res.status(500).json({ error: "Upload failed" });
+    }
+  });
+
   // tRPC API
   app.use(
     "/api/trpc",
