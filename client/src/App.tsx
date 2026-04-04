@@ -137,7 +137,7 @@ function Router() {
       <Route path="/app/referrals">{() => <ProtectedPage><ReferralDashboard /></ProtectedPage>}</Route>
       <Route path="/app/metrics">{() => <ProtectedRoute component={Metrics} />}</Route>
       <Route path="/app/stats">{() => <ProtectedRoute component={NutritionalStats} />}</Route>
-      <Route path="/app/notifications">{() => <ProtectedRoute component={Notifications} />}</Route>
+      <Route path="/app/notifications">{() => <ProtectedPage><Notifications /></ProtectedPage>}</Route>
       <Route path="/app/meal-notifications">{() => <ProtectedRoute component={MealNotifications} />}</Route>
       <Route path="/app/achievements">{() => <ProtectedRoute component={Achievements} />}</Route>
       <Route path="/app/buddy-application">{() => <ProtectedRoute component={BuddyApplication} />}</Route>

@@ -1108,3 +1108,9 @@
 - [x] Crear módulo shared/supermarketUnits.ts con mapa de ingredientes → unidad mínima comercial
 - [x] Integrar normalización en generateShoppingListFromMenu en server/db.ts
 - [x] Mostrar en la UI la unidad comercial (ej: "1 sobre 100g") junto a la cantidad original de receta
+
+## Sprint Selector de Tamaños de Envase (fase actual)
+- [ ] Ampliar supermarketUnits.ts con array de variantes (múltiples tamaños) por ingrediente
+- [ ] Añadir campo packageVariant (JSON) a shoppingListItems en BD y hacer db:push
+- [ ] tRPC: procedimiento updateItemPackage para guardar la variante elegida
+- [ ] UI ShoppingListDetail: selector inline de tamaño de envase por item con variantes disponibles
