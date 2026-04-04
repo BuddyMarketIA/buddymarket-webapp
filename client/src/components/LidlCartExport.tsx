@@ -6,7 +6,7 @@ import { ShoppingCartIcon, ArrowTopRightOnSquareIcon } from "@heroicons/react/24
 interface ShoppingItem { id: number; name: string; qty?: string; unit?: string; isPurchased: boolean; }
 interface MatchedProduct {
   itemId: number; itemName: string;
-  product: { id: string; name: string; thumbnail: string; price: number; priceStr: string; packaging: string; brand: string; shareUrl: string; } | null;
+  product: { id: string; name: string; image: string | null; price: number | null; packaging: string; brand: string; productUrl: string | null; } | null;
   qty: number; confirmed: boolean;
 }
 interface Props { items: ShoppingItem[]; onBack: () => void; onClose: () => void; }
@@ -30,7 +30,7 @@ function ItemSearch({ itemName, onResult }: { itemName: string; onResult: (produ
     if (!isLoading && !reported.current) {
       reported.current = true;
       const p = data?.[0];
-      onResult(p ? { id: p.id, name: p.name, thumbnail: p.thumbnail, price: p.price, priceStr: p.priceStr, packaging: p.packaging, brand: p.brand, shareUrl: p.shareUrl } : null);
+      onResult(p ? { id: p.id, name: p.name, image: p.image ?? null, price: p.price ?? null, packaging: p.packaging, brand: p.brand, productUrl: p.productUrl ?? null } : null);
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isLoading]);
@@ -61,7 +61,7 @@ export default function LidlCartExport({ items, onBack, onClose }: Props) {
   const updateQty = (itemId: number, delta: number) => setMatched((prev) => prev.map((m) => m.itemId === itemId ? { ...m, qty: Math.max(1, m.qty + delta) } : m));
 
   const confirmedItems = matched.filter((m) => m.confirmed && m.product);
-  const totalPrice = confirmedItems.reduce((sum, m) => sum + m.product!.price * m.qty, 0);
+  const totalPrice = confirmedItems.reduce((sum, m) => sum + (m.product!.price ?? 0) * m.qty, 0);
   const isSearching = resolved < unpurchased.length;
 
   const handleGoToLidl = () => {
@@ -75,7 +75,7 @@ export default function LidlCartExport({ items, onBack, onClose }: Props) {
   };
 
   const handleCopyList = () => {
-    const text = confirmedItems.map((m) => `• ${m.product!.name}${m.product!.packaging ? ` (${m.product!.packaging})` : ""} ×${m.qty} — ${m.product!.priceStr}`).join("\n");
+    const text = confirmedItems.map((m) => `• ${m.product!.name}${m.product!.packaging ? ` (${m.product!.packaging})` : ""} ×${m.qty} — ${m.product!.price != null ? `${(m.product!.price * m.qty).toFixed(2)}€` : "precio no disponible"}`).join("\n");
     navigator.clipboard.writeText(text).then(() => toast.success("Lista copiada al portapapeles"));
   };
 
@@ -137,8 +137,8 @@ export default function LidlCartExport({ items, onBack, onClose }: Props) {
               <div key={m.itemId} className="flex items-center gap-3 py-4">
                 {/* Product image */}
                 <div className="w-14 h-14 rounded-xl bg-gray-50 flex items-center justify-center shrink-0 overflow-hidden border border-gray-100">
-                  {m.product?.thumbnail ? (
-                    <img src={m.product.thumbnail} alt={m.product.name} className="w-full h-full object-contain p-1" />
+                  {m.product?.image ? (
+                    <img src={m.product.image} alt={m.product.name} className="w-full h-full object-contain p-1" />
                   ) : (
                     <span className="text-2xl">🛒</span>
                   )}
@@ -148,7 +148,7 @@ export default function LidlCartExport({ items, onBack, onClose }: Props) {
                   <p className="text-sm font-semibold text-gray-900 leading-tight">{m.product!.name}</p>
                   {m.product!.packaging && <p className="text-xs text-gray-400">{m.product!.packaging}</p>}
                   <p className="text-sm font-bold mt-0.5" style={{ color: LIDL_BLUE }}>
-                    {m.product!.priceStr} × {m.qty} = {(m.product!.price * m.qty).toFixed(2)}€
+                    {m.product!.price != null ? `${m.product!.price.toFixed(2)}€ × ${m.qty} = ${(m.product!.price * m.qty).toFixed(2)}€` : "Precio no disponible"}
                   </p>
                 </div>
                 {/* Quantity controls */}
