@@ -310,7 +310,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
   const userEmail = user?.email || "";
 
   return (
-    <div style={{ width: "100%", maxWidth: "480px", margin: "0 auto", minHeight: "100dvh", background: "#FFF8F0", position: "relative", overflowX: "hidden" }}>
+    <div style={{ width: "100%", maxWidth: "480px", margin: "0 auto", minHeight: "100dvh", background: "#FFF8F0", position: "relative" }}>
 
       {/* Sidebar Overlay */}
       {sidebarOpen && (
@@ -321,7 +321,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       <div className="app-sidebar" style={{
         position: "fixed",
         top: 0,
-        left: sidebarOpen ? "max(0px, calc(50vw - 240px))" : "max(-320px, calc(50vw - 560px))",
+        left: sidebarOpen ? 0 : "-310px",
         width: "300px",
         height: "100dvh",
         zIndex: 300,
@@ -330,6 +330,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
         flexDirection: "column",
         boxShadow: sidebarOpen ? "4px 0 40px rgba(0,0,0,0.15)" : "none",
         overflowY: "auto",
+        background: "white",
       }}>
         {/* Sidebar Header */}
         <div style={{ padding: "20px 20px 16px", borderBottom: "1px solid rgba(0,0,0,0.06)", display: "flex", alignItems: "center", gap: "12px" }}>
@@ -446,8 +447,8 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
         </div>
       )}
 
-      {/* Sticky Header */}
-      <div className="app-header" style={{ position: "sticky", top: 0, zIndex: 100, backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", padding: "12px 16px", display: "flex", alignItems: "center", gap: "12px" }}>
+      {/* Fixed Header */}
+      <div className="app-header" style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", background: "rgba(255,248,240,0.92)", borderBottom: "1px solid rgba(0,0,0,0.06)", padding: "12px 16px", display: "flex", alignItems: "center", gap: "12px", maxWidth: "480px", margin: "0 auto" }}>
         {showBack ? (
           <button onClick={onBack || (() => window.history.back())} style={{ width: "40px", height: "40px", borderRadius: "12px", background: "white", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", flexShrink: 0 }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
@@ -477,7 +478,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       </div>
 
       {/* Content */}
-      <div style={{ paddingBottom: shouldShowNav ? "90px" : "0" }}>
+      <div style={{ paddingTop: "68px", paddingBottom: shouldShowNav ? "90px" : "0" }}>
         {children}
       </div>
 

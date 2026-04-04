@@ -1161,3 +1161,10 @@
 - [x] Registration: grids adaptativos (datos físicos 3→2 cols, tarjetas de cuenta 2→1 col en pantallas <480px)
 - [x] ReferralDashboard: pasos "Cómo funciona" cambiados de grid 3 cols a lista vertical legible
 - [x] OnboardingModal: fail-safe mejorado en handleFinish (si falla el updateProfile, completa el onboarding igualmente)
+
+## Nuevas recetas saludables (lote masivo)
+- [ ] Generar 300+ recetas saludables de todo tipo (desayunos, comidas, cenas, snacks, postres, ensaladas, sopas, batidos)
+- [ ] Insertar recetas en la BD via script seed
+- [ ] Verificar que aparecen correctamente en la app
+- [x] Bug: encabezado duplicado en página Progreso (Progress.tsx tenía su propio h1 además del de AppLayout)
+- [x] Bug: sidebar del AppLayout no cubre bien la pantalla - corregido: header cambiado a position:fixed con background sólido, sidebar usa left:0 en lugar de cálculo relativo

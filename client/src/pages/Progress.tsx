@@ -163,15 +163,6 @@ export default function Progress() {
   return (
     <AppLayout>
       <div style={{ background: C.bg, minHeight: "100vh", padding: "20px 16px 100px" }}>
-        {/* Header */}
-        <div style={{ marginBottom: 24 }}>
-          <h1 style={{ fontSize: 24, fontWeight: 800, color: C.text, margin: 0 }}>
-            📈 Progreso y Estadísticas
-          </h1>
-          <p style={{ fontSize: 14, color: C.muted, margin: "4px 0 0" }}>
-            Tu evolución del último mes de seguimiento
-          </p>
-        </div>
 
         {/* Period selector */}
         <div style={{ display: "flex", gap: 8, marginBottom: 24 }}>
