@@ -172,33 +172,35 @@ export default function Menus() {
   return (
     <div className="vively-page">
       {/* Header */}
-      <div className="mb-5 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Planificador</h1>
-        <div className="flex gap-2">
+      <div className="mb-5">
+        <div className="flex items-center justify-between">
+          <h1 className="text-2xl font-bold text-gray-900">Planificador</h1>
+          <button
+            onClick={() => setShowNewMenu(true)}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F97316] shadow-sm"
+          >
+            <PlusIcon className="h-5 w-5 text-white" />
+          </button>
+        </div>
+        <div className="mt-2 flex items-center gap-2 flex-wrap">
           <Link href="/app/active-menu">
-            <button className="flex items-center gap-1.5 rounded-full bg-green-50 px-3 py-2 text-xs font-semibold text-green-600">
-              <span className="inline-block h-2 w-2 rounded-full bg-green-500" />
+            <button className="flex items-center gap-1.5 rounded-full bg-green-50 px-3 py-1.5 text-xs font-semibold text-green-600 whitespace-nowrap">
+              <span className="inline-block h-2 w-2 shrink-0 rounded-full bg-green-500" />
               En curso
             </button>
           </Link>
           <Link href="/app/menu-library">
-            <button className="flex items-center gap-1.5 rounded-full bg-purple-50 px-3 py-2 text-xs font-semibold text-purple-600">
-              <BookOpenIcon className="h-4 w-4" />
+            <button className="flex items-center gap-1.5 rounded-full bg-purple-50 px-3 py-1.5 text-xs font-semibold text-purple-600 whitespace-nowrap">
+              <BookOpenIcon className="h-4 w-4 shrink-0" />
               Biblioteca
             </button>
           </Link>
           <button
             onClick={() => setShowAI(true)}
-            className="flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-2 text-xs font-semibold text-blue-600"
+            className="flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-600 whitespace-nowrap"
           >
-            <SparklesIcon className="h-4 w-4" />
+            <SparklesIcon className="h-4 w-4 shrink-0" />
             IA
-          </button>
-          <button
-            onClick={() => setShowNewMenu(true)}
-            className="flex h-10 w-10 items-center justify-center rounded-full bg-[#F97316] shadow-sm"
-          >
-            <PlusIcon className="h-5 w-5 text-white" />
           </button>
         </div>
       </div>
