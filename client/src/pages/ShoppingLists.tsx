@@ -52,7 +52,7 @@ const SUPERMARKETS = [
   { id: "general", name: "General", emoji: "🛒" },
   { id: "mercadona", name: "Mercadona", emoji: "🟠" },
   { id: "lidl", name: "Lidl", emoji: "🔵" },
-  { id: "/app/carrefour", name: "Carrefour", emoji: "🔴" },
+  { id: "carrefour", name: "Carrefour", emoji: "🔴" },
   { id: "alcampo", name: "Alcampo", emoji: "🟢" },
   { id: "dia", name: "Dia", emoji: "🔴" },
   { id: "el_corte_ingles", name: "El Corte Inglés", emoji: "🟢" },

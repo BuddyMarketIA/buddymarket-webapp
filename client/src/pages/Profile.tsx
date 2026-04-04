@@ -211,6 +211,17 @@ export default function Profile() {
   const [suggestHealthier, setSuggestHealthier] = useState(false);
   const [suggestCheaper, setSuggestCheaper] = useState(false);
 
+  // Helper seguro para JSON.parse que nunca crashea
+  function safeJsonParse<T>(str: string | null | undefined, fallback: T): T {
+    if (!str) return fallback;
+    try {
+      const parsed = JSON.parse(str);
+      return parsed ?? fallback;
+    } catch {
+      return fallback;
+    }
+  }
+
   useEffect(() => {
     if (!profile) return;
     const u = profile.user;
@@ -235,11 +246,11 @@ export default function Profile() {
       setWeightChangeRate(p.weightChangeRate?.toString() || "");
       setMotivationLevel(p.motivationLevel || "");
       setFitnessGoalDetail(p.fitnessGoalDetail || "");
-      setPreviousDietExperience(p.previousDietExperience ? JSON.parse(p.previousDietExperience) : []);
+      setPreviousDietExperience(safeJsonParse(p.previousDietExperience, []));
       setActivityLevel(p.activityLevel || "");
       setPracticesSports(p.practicesSports ?? false);
       setSportsFrequency(p.sportsFrequency || "");
-      setSportsTypes(p.sportsTypes ? JSON.parse(p.sportsTypes) : []);
+      setSportsTypes(safeJsonParse(p.sportsTypes, []));
       setWorkType(p.workType || "");
       setSleepHours(p.sleepHours?.toString() || "");
       setStressLevel(p.stressLevel || "");
@@ -252,9 +263,9 @@ export default function Profile() {
       setSnackingHabits(p.snackingHabits || "");
       setEatOutFrequency(p.eatOutFrequency || "");
       setBudgetPerWeek(p.budgetPerWeek?.toString() || "");
-      setFavoriteCuisines(p.favoriteCuisines ? JSON.parse(p.favoriteCuisines) : []);
-      setDislikedIngredients(p.dislikedIngredients ? JSON.parse(p.dislikedIngredients).join(", ") : "");
-      setCookingEquipment(p.cookingEquipment ? JSON.parse(p.cookingEquipment) : []);
+      setFavoriteCuisines(safeJsonParse(p.favoriteCuisines, []));
+      setDislikedIngredients(safeJsonParse<string[]>(p.dislikedIngredients, []).join(", "));
+      setCookingEquipment(safeJsonParse(p.cookingEquipment, []));
     }
 
     if (m) {
@@ -273,8 +284,8 @@ export default function Profile() {
       setMedicalFamilyBackground(m.medicalFamilyBackground || "");
       // New fields
       setDietaryPattern(m.dietaryPattern || "");
-      setSelectedLifestyle(m.lifestyle ? JSON.parse(m.lifestyle) : []);
-      setSelectedSpecialNeeds(m.specialNeeds ? JSON.parse(m.specialNeeds) : []);
+      setSelectedLifestyle(safeJsonParse(m.lifestyle, []));
+      setSelectedSpecialNeeds(safeJsonParse(m.specialNeeds, []));
       setPregnancyWeek(m.pregnancyWeek?.toString() || "");
     }
 

@@ -203,7 +203,7 @@ export default function BuddyApplication({ type }: { type?: AppType }) {
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "20px" }}>
         <button
-          onClick={() => step > 0 ? setStep(s => s - 1) : navigate(-1 as any)}
+          onClick={() => step > 0 ? setStep(s => s - 1) : (window.history.length > 1 ? window.history.back() : navigate("/app/buddy-experts"))}
           style={{ width: "36px", height: "36px", borderRadius: "50%", border: "1.5px solid #e5e7eb", background: "white", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}
         >
           <ArrowLeft style={{ width: "16px", height: "16px", color: "#6b7280" }} />
