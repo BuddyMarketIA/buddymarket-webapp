@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -62,6 +62,83 @@ const COOKING_LEVELS = [
   { id: "advanced", emoji: "⭐", label: "Avanzado", desc: "Técnicas complejas" },
 ];
 
+const GENERATING_MESSAGES = [
+  "Analizando tus preferencias nutricionales…",
+  "Calculando tus necesidades calóricas…",
+  "Seleccionando recetas adaptadas a ti…",
+  "Organizando el menú semanal…",
+  "Ajustando porciones y macros…",
+  "Casi listo, finalizando tu menú…",
+];
+
+// ─── Componente GeneratingScreen ──────────────────────────────────────────────
+function GeneratingScreen({ onTimeout }: { onTimeout: () => void }) {
+  const [msgIndex, setMsgIndex] = useState(0);
+  const [elapsed, setElapsed] = useState(0);
+
+  useEffect(() => {
+    const msgTimer = setInterval(() => {
+      setMsgIndex((i) => (i + 1) % GENERATING_MESSAGES.length);
+    }, 3000);
+
+    const elapsedTimer = setInterval(() => {
+      setElapsed((e) => e + 1);
+    }, 1000);
+
+    // Timeout de seguridad: si después de 45s no hay respuesta, redirigir
+    const safetyTimeout = setTimeout(() => {
+      onTimeout();
+    }, 45000);
+
+    return () => {
+      clearInterval(msgTimer);
+      clearInterval(elapsedTimer);
+      clearTimeout(safetyTimeout);
+    };
+  }, [onTimeout]);
+
+  return (
+    <div className="fixed inset-0 flex flex-col items-center justify-center bg-[#fdf8f3] px-6 text-center">
+      <div className="mb-6 relative">
+        <div className="text-6xl">🤖</div>
+        <div className="absolute -bottom-1 -right-1 text-2xl animate-bounce">✨</div>
+      </div>
+
+      <h2 className="mb-2 text-2xl font-bold text-gray-900">Generando tu menú personalizado</h2>
+      <p className="mb-2 text-sm text-orange-500 font-semibold min-h-[20px] transition-all">
+        {GENERATING_MESSAGES[msgIndex]}
+      </p>
+      <p className="mb-8 text-xs text-gray-400">Esto puede tardar hasta 30 segundos</p>
+
+      <div className="w-64 h-2 bg-gray-200 rounded-full overflow-hidden mb-6">
+        <div
+          className="h-full bg-gradient-to-r from-orange-400 to-orange-500 rounded-full transition-all duration-1000"
+          style={{ width: `${Math.min((elapsed / 30) * 100, 95)}%` }}
+        />
+      </div>
+
+      <div className="flex gap-2">
+        {[0, 1, 2].map((i) => (
+          <div
+            key={i}
+            className="h-2.5 w-2.5 rounded-full bg-orange-400"
+            style={{ animation: `bounce 1s ease-in-out ${i * 0.2}s infinite` }}
+          />
+        ))}
+      </div>
+
+      {elapsed >= 15 && (
+        <button
+          onClick={onTimeout}
+          className="mt-8 text-sm text-gray-400 hover:text-gray-600 underline transition-colors"
+        >
+          Ir al dashboard sin esperar →
+        </button>
+      )}
+    </div>
+  );
+}
+
 // ─── Componente principal ──────────────────────────────────────────────────────
 export default function BuddySetup() {
   const [, setLocation] = useLocation();
@@ -83,16 +160,9 @@ export default function BuddySetup() {
     generateMenu: true,
   });
 
-  const completeOnboarding = trpc.profile.completeOnboarding.useMutation({
-    onSuccess: () => {
-      setDone(true);
-      setTimeout(() => setLocation("/app/dashboard"), 2000);
-    },
-    onError: (err: { message: string }) => {
-      toast.error("Error al guardar tu configuración: " + err.message);
-      setGenerating(false);
-    },
-  });
+  // FIX: usar mutate (no mutateAsync) con callbacks inline para evitar que
+  // onSuccess no se dispare al usar await con mutateAsync
+  const completeOnboarding = trpc.profile.completeOnboarding.useMutation();
 
   const totalSteps = 5;
 
@@ -118,18 +188,31 @@ export default function BuddySetup() {
     }
   };
 
-  const handleFinish = async () => {
+  const handleFinish = () => {
     setGenerating(true);
-    await completeOnboarding.mutateAsync({
-      mainGoal: data.mainGoal,
-      restrictions: data.restrictions,
-      dailyMeals: data.dailyMeals,
-      mealTimes: data.mealTimes,
-      mealPrepTime: data.mealPrepTime,
-      budgetPerWeek: data.budgetPerWeek,
-      cookingLevel: data.cookingLevel,
-      generateMenu: data.generateMenu,
-    });
+    completeOnboarding.mutate(
+      {
+        mainGoal: data.mainGoal,
+        restrictions: data.restrictions,
+        dailyMeals: data.dailyMeals,
+        mealTimes: data.mealTimes,
+        mealPrepTime: data.mealPrepTime,
+        budgetPerWeek: data.budgetPerWeek,
+        cookingLevel: data.cookingLevel,
+        generateMenu: data.generateMenu,
+      },
+      {
+        onSuccess: () => {
+          setGenerating(false);
+          setDone(true);
+          setTimeout(() => setLocation("/app/dashboard"), 2000);
+        },
+        onError: (err: { message: string }) => {
+          toast.error("Error al guardar tu configuración: " + err.message);
+          setGenerating(false);
+        },
+      }
+    );
   };
 
   const toggleRestriction = (id: string) => {
@@ -173,22 +256,7 @@ export default function BuddySetup() {
 
   // ── Pantalla de generación ─────────────────────────────────────────────────
   if (generating) {
-    return (
-      <div className="fixed inset-0 flex flex-col items-center justify-center bg-[#fdf8f3] px-6 text-center">
-        <div className="mb-6 text-6xl">🤖</div>
-        <h2 className="mb-3 text-2xl font-bold text-gray-900">Generando tu menú personalizado…</h2>
-        <p className="mb-8 text-gray-500">La IA está creando tu primer menú basado en tus preferencias</p>
-        <div className="flex gap-2">
-          {[0, 1, 2].map((i) => (
-            <div
-              key={i}
-              className="h-3 w-3 rounded-full bg-orange-400"
-              style={{ animation: `bounce 1s ease-in-out ${i * 0.2}s infinite` }}
-            />
-          ))}
-        </div>
-      </div>
-    );
+    return <GeneratingScreen onTimeout={() => setLocation("/app/dashboard")} />;
   }
 
   const animClass = animating

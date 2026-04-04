@@ -20,8 +20,9 @@ import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import { ENV } from "./_core/env";
 
 // ─── Google OAuth2 Client ─────────────────────────────────────────────────────
-// El Client ID debe coincidir con el que uses en la app Expo y en la webapp
+// GOOGLE_CLIENT_ID es el Client ID web principal (también acepta los de iOS/Android)
 const GOOGLE_CLIENT_IDS = [
+  process.env.GOOGLE_CLIENT_ID ?? "",
   process.env.GOOGLE_CLIENT_ID_IOS ?? "",
   process.env.GOOGLE_CLIENT_ID_ANDROID ?? "",
   process.env.GOOGLE_CLIENT_ID_WEB ?? "",

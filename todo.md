@@ -1150,3 +1150,6 @@
 
 - [x] Bug BuddyExperts: menús gratuitos no se abren al hacer clic
 - [x] Bug BuddyExperts: al volver atrás desde un perfil la página queda en blanco/no carga
+
+## Bugs reportados
+- [x] BuddySetup se queda colgado en el paso de generación de menú (pantalla en blanco/spinner infinito) - el usuario tiene que dar a "Omitir"
