@@ -165,12 +165,32 @@ function PlanPreviewModal({ plan, onClose, onCopy, onBuy, alreadyCopied, copying
                 Lista de la compra automática
               </li>
               {isPaid && (
-                <li className="flex items-center gap-2 text-sm text-gray-600">
-                  <span className="w-5 h-5 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs">✓</span>
-                  Soporte directo con el experto
-                </li>
+                <>
+                  <li className="flex items-center gap-2 text-sm text-gray-600">
+                    <span className="w-5 h-5 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs">✓</span>
+                    Sesión online semanal de seguimiento y ajuste
+                  </li>
+                  <li className="flex items-center gap-2 text-sm text-gray-600">
+                    <span className="w-5 h-5 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs">✓</span>
+                    Acceso directo por WhatsApp para dudas
+                  </li>
+                  <li className="flex items-center gap-2 text-sm text-gray-600">
+                    <span className="w-5 h-5 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs">✓</span>
+                    Opciones de sustitución para cada comida
+                  </li>
+                  <li className="flex items-center gap-2 text-sm text-gray-600">
+                    <span className="w-5 h-5 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs">✓</span>
+                    Adaptado a tus gustos e intolerancias
+                  </li>
+                </>
               )}
             </ul>
+            {isPaid && (
+              <div className="mt-3 bg-orange-50 border border-orange-100 rounded-xl p-3">
+                <p className="text-xs text-orange-700 font-semibold">💳 Suscripción mensual · Cancela cuando quieras</p>
+                <p className="text-xs text-gray-500 mt-0.5">Pago seguro con Stripe. Sin permanencia.</p>
+              </div>
+            )}
           </div>
         </div>
 
@@ -185,7 +205,7 @@ function PlanPreviewModal({ plan, onClose, onCopy, onBuy, alreadyCopied, copying
               {buying ? (
                 <span className="flex items-center justify-center gap-2"><span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Procesando...</span>
               ) : (
-                `💳 Obtener por ${plan.price}€`
+                `💳 Suscribirme · ${plan.price}€/mes`
               )}
             </button>
           ) : (
@@ -297,7 +317,7 @@ function PlanCard({ plan, onCopy, onBuy, alreadyCopied, copying, buying }: {
               {buying ? (
                 <span className="flex items-center justify-center gap-1.5"><span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />Procesando...</span>
               ) : (
-                `💳 Obtener por ${plan.price}€`
+                `💳 Suscribirme · ${plan.price}€/mes`
               )}
             </button>
           ) : (
@@ -454,15 +474,35 @@ function MenuRow({ menu }: { menu: any }) {
         </button>
       </div>
       {expanded && menuData?.days && (
-        <div className="border-t border-orange-50 px-3 pb-3 pt-2 space-y-2 max-h-64 overflow-y-auto">
-          {menuData.days.map((day: any, i: number) => (
-            <div key={i} className="bg-orange-50 rounded-xl p-2">
-              <p className="text-xs font-bold text-orange-700 mb-1">{day.day}</p>
-              {day.meals?.map((meal: any, j: number) => (
-                <p key={j} className="text-xs text-gray-600"><span className="font-semibold text-gray-700">{meal.name}:</span> {meal.food}</p>
-              ))}
+        <div className="border-t border-orange-50 px-3 pb-3 pt-2 space-y-2 max-h-80 overflow-y-auto">
+          {menuData.days.map((day: any, i: number) => {
+            // Support both array format [{name, food}] and object format {desayuno, comida, ...}
+            const mealLabels: Record<string, string> = {
+              desayuno: "Desayuno",
+              media_manana: "Media mañana",
+              comida: "Comida",
+              merienda: "Merienda",
+              cena: "Cena",
+            };
+            const mealsArray: { name: string; food: string }[] = Array.isArray(day.meals)
+              ? day.meals
+              : Object.entries(day.meals || {}).map(([k, v]) => ({ name: mealLabels[k] ?? k, food: v as string }));
+            return (
+              <div key={i} className="bg-orange-50 rounded-xl p-2.5">
+                <p className="text-xs font-bold text-orange-700 mb-1.5">{day.day}</p>
+                <div className="space-y-1">
+                  {mealsArray.map((meal, j) => (
+                    <p key={j} className="text-xs text-gray-600"><span className="font-semibold text-gray-700">{meal.name}:</span> {meal.food}</p>
+                  ))}
+                </div>
+              </div>
+            );
+          })}
+          {menuData.notes && (
+            <div className="bg-amber-50 border border-amber-100 rounded-xl p-2.5 mt-1">
+              <p className="text-xs text-amber-700">💡 {menuData.notes}</p>
             </div>
-          ))}
+          )}
         </div>
       )}
     </div>
