@@ -12,6 +12,14 @@ import {
   PlayIcon,
   HomeIcon,
   ScaleIcon,
+  PencilIcon,
+  CheckIcon,
+  XMarkIcon,
+  PlusIcon,
+  TrashIcon,
+  ChevronDownIcon,
+  ChevronUpIcon,
+  BeakerIcon,
 } from "@heroicons/react/24/outline";
 import { CheckCircleIcon as CheckCircleSolid } from "@heroicons/react/24/solid";
 import MercadonaCartExport from "@/components/MercadonaCartExport";
@@ -215,6 +223,30 @@ function GenericListModal({ items, supermarket, supermarketName, onClose }: Gene
 }
 
 // ── Main component ────────────────────────────────────────────────────────────
+// ── MEAL TIME LABELS ─────────────────────────────────────────────────────────
+const MEAL_TIME_LABELS: Record<string, string> = {
+  desayuno: "Desayuno", media_manana: "Media mañana", comida: "Comida",
+  merienda: "Merienda", cena: "Cena", otro: "Otro",
+};
+const MEAL_TIME_EMOJIS: Record<string, string> = {
+  desayuno: "☀️", media_manana: "🥐", comida: "🍽️",
+  merienda: "🍎", cena: "🌙", otro: "✨",
+};
+
+// ── PREDEFINED COMPLEMENTS ────────────────────────────────────────────────────
+const PRESET_COMPLEMENTS = [
+  { emoji: "☕", name: "Café solo", mealTime: "media_manana", calories: 5, unit: "taza" },
+  { emoji: "☕", name: "Café con leche", mealTime: "desayuno", calories: 60, unit: "taza" },
+  { emoji: "🍵", name: "Infusión", mealTime: "cena", calories: 2, unit: "taza" },
+  { emoji: "🥛", name: "Vaso de leche", mealTime: "desayuno", calories: 120, unit: "vaso" },
+  { emoji: "💪", name: "Batido de proteínas", mealTime: "otro", calories: 150, unit: "toma" },
+  { emoji: "🍌", name: "Plátano", mealTime: "media_manana", calories: 90, unit: "ud" },
+  { emoji: "🥜", name: "Puñado de frutos secos", mealTime: "merienda", calories: 170, unit: "puñado" },
+  { emoji: "🍫", name: "Onza de chocolate negro", mealTime: "merienda", calories: 50, unit: "onza" },
+  { emoji: "🧃", name: "Zumo natural", mealTime: "desayuno", calories: 80, unit: "vaso" },
+  { emoji: "💊", name: "Suplemento vitamínico", mealTime: "desayuno", calories: 0, unit: "toma" },
+];
+
 export default function ActiveMenu() {
   const [, navigate] = useLocation();
   const [selectedSupermarket, setSelectedSupermarket] = useState<string>("mercadona");
@@ -229,9 +261,39 @@ export default function ActiveMenu() {
   const [isGenerating, setIsGenerating] = useState(false);
   const [showDuplicateDialog, setShowDuplicateDialog] = useState(false);
   const [existingListInfo, setExistingListInfo] = useState<{ id: number; name: string } | null>(null);
+  // ── Name editing ──────────────────────────────────────────────────────────
+  const [isEditingName, setIsEditingName] = useState(false);
+  const [editNameValue, setEditNameValue] = useState("");
+  // ── Recipe detail expansion ───────────────────────────────────────────────
+  const [expandedRecipeId, setExpandedRecipeId] = useState<number | null>(null);
+  // ── Complements panel ─────────────────────────────────────────────────────
+  const [showComplements, setShowComplements] = useState(false);
+  const [showAddComplement, setShowAddComplement] = useState(false);
+  const [newComplement, setNewComplement] = useState({ name: "", emoji: "☕", mealTime: "media_manana" as string, quantity: 1, unit: "ud", calories: 0, notes: "", isDefault: false });
   const utils = trpc.useUtils();
 
   const { data: activeMenu, isLoading } = trpc.menus.getActive.useQuery();
+
+  // ── Rename mutation ──────────────────────────────────────────────────────────
+  const renameMenu = trpc.menus.rename.useMutation({
+    onSuccess: () => { toast.success("Nombre actualizado"); utils.menus.getActive.invalidate(); setIsEditingName(false); },
+    onError: (e) => toast.error("Error: " + e.message),
+  });
+
+  // ── Complements queries & mutations ──────────────────────────────────────────
+  const menuId = activeMenu?.id ?? 0;
+  const { data: menuComplements = [] } = trpc.menus.listComplements.useQuery(
+    { menuId },
+    { enabled: !!activeMenu?.id },
+  );
+  const addComplement = trpc.menus.addComplement.useMutation({
+    onSuccess: () => { toast.success("Complemento añadido"); utils.menus.listComplements.invalidate({ menuId }); setShowAddComplement(false); setNewComplement({ name: "", emoji: "☕", mealTime: "media_manana", quantity: 1, unit: "ud", calories: 0, notes: "", isDefault: false }); },
+    onError: (e) => toast.error("Error: " + e.message),
+  });
+  const removeComplement = trpc.menus.removeComplement.useMutation({
+    onSuccess: () => { toast.success("Complemento eliminado"); utils.menus.listComplements.invalidate({ menuId }); },
+    onError: (e) => toast.error("Error: " + e.message),
+  });
 
   const generateShoppingList = trpc.shoppingLists.generateFromMenu.useMutation({
     onSuccess: async (data) => {
@@ -379,7 +441,37 @@ export default function ActiveMenu() {
               <span className="text-xs font-bold text-[#FF6B35] uppercase tracking-wide">Menú en curso</span>
               <span className="h-2 w-2 rounded-full bg-green-500 animate-pulse" />
             </div>
-            <h1 className="text-lg font-bold text-gray-900 truncate">{activeMenu.name}</h1>
+            {isEditingName ? (
+              <div className="flex items-center gap-2 mt-0.5">
+                <input
+                  autoFocus
+                  value={editNameValue}
+                  onChange={(e) => setEditNameValue(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter") renameMenu.mutate({ id: activeMenu.id, name: editNameValue.trim() || activeMenu.name });
+                    if (e.key === "Escape") setIsEditingName(false);
+                  }}
+                  className="flex-1 min-w-0 rounded-xl border border-[#FF6B35] px-3 py-1.5 text-sm font-bold text-gray-900 outline-none focus:ring-2 focus:ring-[#FF6B35]/30"
+                />
+                <button onClick={() => renameMenu.mutate({ id: activeMenu.id, name: editNameValue.trim() || activeMenu.name })} className="flex h-7 w-7 items-center justify-center rounded-full bg-[#FF6B35] text-white">
+                  <CheckIcon className="h-4 w-4" />
+                </button>
+                <button onClick={() => setIsEditingName(false)} className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 text-gray-500">
+                  <XMarkIcon className="h-4 w-4" />
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center gap-2">
+                <h1 className="text-lg font-bold text-gray-900 truncate">{activeMenu.name}</h1>
+                <button
+                  onClick={() => { setEditNameValue(activeMenu.name); setIsEditingName(true); }}
+                  className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-orange-50 hover:text-[#FF6B35] transition-colors"
+                  title="Editar nombre"
+                >
+                  <PencilIcon className="h-3.5 w-3.5" />
+                </button>
+              </div>
+            )}
           </div>
         </div>
 
@@ -491,39 +583,279 @@ export default function ActiveMenu() {
               </div>
               {dp.recipes?.length > 0 ? (
                 <div className="space-y-2">
-                  {dp.recipes.map((r: any) => (
-                    <div key={r.id} className="flex items-center gap-3 py-1">
-                      {r.recipe?.imageUrl ? (
-                        <img src={r.recipe.imageUrl} alt={r.recipe.name} className="h-10 w-10 rounded-xl object-cover flex-shrink-0" />
-                      ) : (
-                        <div className="h-10 w-10 rounded-xl bg-gray-100 flex items-center justify-center flex-shrink-0 text-lg">🍽️</div>
-                      )}
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-gray-800 truncate">{r.recipe?.name ?? "Receta"}</p>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          {r.recipe?.preparationTime ? (
-                            <span className="text-xs text-gray-400 flex items-center gap-0.5">
-                              <ClockIcon className="h-3 w-3" />{r.recipe.preparationTime}min
-                            </span>
-                          ) : null}
-                          {r.recipe?.caloriesPerServing ? (
-                            <span className="text-xs text-gray-400 flex items-center gap-0.5">
-                              <FireIcon className="h-3 w-3" />{r.recipe.caloriesPerServing}kcal
-                            </span>
-                          ) : null}
-                          {r.servings && r.servings !== 1 && (
-                            <span className="text-xs text-gray-400">×{r.servings}</span>
+                  {dp.recipes.map((r: any) => {
+                    const isExpanded = expandedRecipeId === r.recipe?.id;
+                    const ingredients = r.recipe?.ingredientsJson ? (() => { try { return JSON.parse(r.recipe.ingredientsJson); } catch { return []; } })() : [];
+                    const steps = r.recipe?.stepsJson ? (() => { try { return JSON.parse(r.recipe.stepsJson); } catch { return []; } })() : [];
+                    return (
+                      <div key={r.id} className="rounded-2xl border border-gray-100 overflow-hidden bg-white">
+                        {/* Recipe header — always visible */}
+                        <button
+                          className="w-full flex items-center gap-3 p-3 text-left hover:bg-orange-50/50 transition-colors"
+                          onClick={() => setExpandedRecipeId(isExpanded ? null : (r.recipe?.id ?? null))}
+                        >
+                          {r.recipe?.imageUrl ? (
+                            <img src={r.recipe.imageUrl} alt={r.recipe.name} className="h-14 w-14 rounded-xl object-cover flex-shrink-0" />
+                          ) : (
+                            <div className="h-14 w-14 rounded-xl bg-orange-50 flex items-center justify-center flex-shrink-0 text-2xl">🍽️</div>
                           )}
-                        </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-bold text-gray-800">{r.recipe?.name ?? "Receta"}</p>
+                            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                              {r.recipe?.preparationTime && (
+                                <span className="text-xs text-gray-400 flex items-center gap-0.5">
+                                  <ClockIcon className="h-3 w-3" />{r.recipe.preparationTime}min
+                                </span>
+                              )}
+                              {r.recipe?.caloriesPerServing && (
+                                <span className="text-xs text-orange-500 flex items-center gap-0.5 font-semibold">
+                                  <FireIcon className="h-3 w-3" />{r.recipe.caloriesPerServing}kcal
+                                </span>
+                              )}
+                              {r.recipe?.difficulty && (
+                                <span className="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">{r.recipe.difficulty}</span>
+                              )}
+                              {r.servings && r.servings !== 1 && (
+                                <span className="text-xs text-gray-400">×{r.servings} raciones</span>
+                              )}
+                            </div>
+                          </div>
+                          <div className="flex-shrink-0 text-gray-400">
+                            {isExpanded ? <ChevronUpIcon className="h-4 w-4" /> : <ChevronDownIcon className="h-4 w-4" />}
+                          </div>
+                        </button>
+
+                        {/* Expanded detail */}
+                        {isExpanded && (
+                          <div className="border-t border-gray-100 px-3 pb-3 pt-2 space-y-3">
+                            {/* Ingredients */}
+                            {ingredients.length > 0 && (
+                              <div>
+                                <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">🫙 Ingredientes</p>
+                                <div className="space-y-1">
+                                  {ingredients.map((ing: any, idx: number) => (
+                                    <div key={idx} className="flex items-center gap-2 text-sm">
+                                      <span className="h-1.5 w-1.5 rounded-full bg-[#FF6B35] flex-shrink-0" />
+                                      <span className="text-gray-700">
+                                        {ing.amount && <span className="font-semibold text-gray-900">{ing.amount} {ing.unit} </span>}
+                                        {ing.name ?? ing.ingredient?.name ?? JSON.stringify(ing)}
+                                      </span>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            {/* Instructions */}
+                            {steps.length > 0 && (
+                              <div>
+                                <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">👨‍🍳 Preparación</p>
+                                <ol className="space-y-2">
+                                  {steps.map((step: any, idx: number) => (
+                                    <li key={idx} className="flex gap-2 text-sm">
+                                      <span className="flex-shrink-0 h-5 w-5 rounded-full bg-[#FF6B35] text-white text-xs font-bold flex items-center justify-center">{idx + 1}</span>
+                                      <span className="text-gray-700 leading-relaxed">{step.description ?? step.instruction ?? step.step ?? JSON.stringify(step)}</span>
+                                    </li>
+                                  ))}
+                                </ol>
+                              </div>
+                            )}
+                            {/* Nutrition */}
+                            {(r.recipe?.caloriesPerServing || r.recipe?.proteinPerServing || r.recipe?.carbsPerServing || r.recipe?.fatPerServing) && (
+                              <div>
+                                <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">📊 Valores nutricionales (por ración)</p>
+                                <div className="grid grid-cols-4 gap-2">
+                                  {[{label:"Kcal",val:r.recipe.caloriesPerServing,color:"#FF6B35"},{label:"Prot.",val:r.recipe.proteinPerServing ? r.recipe.proteinPerServing+"g" : null,color:"#3b82f6"},{label:"Carbs",val:r.recipe.carbsPerServing ? r.recipe.carbsPerServing+"g" : null,color:"#f59e0b"},{label:"Grasa",val:r.recipe.fatPerServing ? r.recipe.fatPerServing+"g" : null,color:"#10b981"}].filter(n=>n.val).map(n=>(
+                                    <div key={n.label} className="rounded-xl bg-gray-50 p-2 text-center">
+                                      <p className="text-xs font-bold" style={{color:n.color}}>{n.val}</p>
+                                      <p className="text-[10px] text-gray-400">{n.label}</p>
+                                    </div>
+                                  ))}
+                                </div>
+                              </div>
+                            )}
+                            {/* Fallback if no structured data */}
+                            {ingredients.length === 0 && steps.length === 0 && (
+                              <p className="text-xs text-gray-400 italic text-center py-2">No hay detalles disponibles para esta receta</p>
+                            )}
+                          </div>
+                        )}
                       </div>
-                    </div>
-                  ))}
+                    );
+                  })}
                 </div>
               ) : (
                 <p className="text-xs text-gray-400 italic">Sin recetas asignadas</p>
               )}
             </div>
           ))
+        )}
+      </div>
+
+      {/* ── COMPLEMENTS SECTION ───────────────────────────────────────────────────────────── */}
+      <div className="vively-card p-4 mb-4">
+        {/* Header */}
+        <button
+          className="w-full flex items-center justify-between"
+          onClick={() => setShowComplements(!showComplements)}
+        >
+          <div className="flex items-center gap-2">
+            <div className="h-8 w-8 rounded-xl bg-purple-100 flex items-center justify-center">
+              <BeakerIcon className="h-4 w-4 text-purple-600" />
+            </div>
+            <div className="text-left">
+              <p className="text-sm font-bold text-gray-800">Complementos</p>
+              <p className="text-xs text-gray-400">{menuComplements.length} extras • café, batidos, snacks…</p>
+            </div>
+          </div>
+          <div className="flex items-center gap-2">
+            {menuComplements.length > 0 && (
+              <span className="text-xs font-bold text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full">{menuComplements.length}</span>
+            )}
+            {showComplements ? <ChevronUpIcon className="h-4 w-4 text-gray-400" /> : <ChevronDownIcon className="h-4 w-4 text-gray-400" />}
+          </div>
+        </button>
+
+        {showComplements && (
+          <div className="mt-3 space-y-3">
+            {/* Existing complements grouped by meal time */}
+            {menuComplements.length > 0 ? (
+              <div className="space-y-2">
+                {Object.entries(
+                  menuComplements.reduce((acc: Record<string, any[]>, c: any) => {
+                    const key = c.mealTime ?? "otro";
+                    if (!acc[key]) acc[key] = [];
+                    acc[key].push(c);
+                    return acc;
+                  }, {})
+                ).map(([mealTime, items]) => (
+                  <div key={mealTime}>
+                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1.5">
+                      {MEAL_TIME_EMOJIS[mealTime]} {MEAL_TIME_LABELS[mealTime] ?? mealTime}
+                    </p>
+                    <div className="space-y-1.5">
+                      {(items as any[]).map((c: any) => (
+                        <div key={c.id} className="flex items-center gap-3 rounded-xl bg-gray-50 px-3 py-2">
+                          <span className="text-xl flex-shrink-0">{c.emoji ?? "☕"}</span>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-gray-800 truncate">
+                              {c.customName ?? c.complement?.nameEs ?? c.complement?.name ?? "Complemento"}
+                            </p>
+                            <p className="text-xs text-gray-400">
+                              {c.quantity} {c.unit}{c.calories ? ` • ${c.calories} kcal` : ""}
+                              {c.isDefault && <span className="ml-1 text-purple-500">• siempre</span>}
+                            </p>
+                          </div>
+                          <button
+                            onClick={() => removeComplement.mutate({ id: c.id })}
+                            className="flex-shrink-0 h-7 w-7 flex items-center justify-center rounded-full text-gray-300 hover:text-red-400 hover:bg-red-50 transition-colors"
+                          >
+                            <TrashIcon className="h-3.5 w-3.5" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : (
+              <p className="text-xs text-gray-400 text-center py-2">Aún no tienes complementos en este menú</p>
+            )}
+
+            {/* Quick-add presets */}
+            {!showAddComplement && (
+              <div>
+                <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Añadir rápido</p>
+                <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+                  {PRESET_COMPLEMENTS.map((p) => (
+                    <button
+                      key={p.name}
+                      onClick={() => addComplement.mutate({ menuId: activeMenu.id, customName: p.name, emoji: p.emoji, mealTime: p.mealTime as any, quantity: 1, unit: p.unit, calories: p.calories })}
+                      disabled={addComplement.isPending}
+                      className="flex-shrink-0 flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:border-purple-300 hover:bg-purple-50 transition-colors"
+                    >
+                      <span>{p.emoji}</span>
+                      <span>{p.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Custom complement form */}
+            {showAddComplement ? (
+              <div className="rounded-2xl border border-purple-200 bg-purple-50 p-3 space-y-2">
+                <p className="text-xs font-bold text-purple-700">Complemento personalizado</p>
+                <div className="flex gap-2">
+                  <input
+                    value={newComplement.emoji}
+                    onChange={(e) => setNewComplement(p => ({ ...p, emoji: e.target.value }))}
+                    className="w-14 rounded-xl border border-purple-200 bg-white px-2 py-2 text-center text-lg outline-none"
+                    placeholder="☕"
+                    maxLength={2}
+                  />
+                  <input
+                    value={newComplement.name}
+                    onChange={(e) => setNewComplement(p => ({ ...p, name: e.target.value }))}
+                    className="flex-1 rounded-xl border border-purple-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-purple-300"
+                    placeholder="Nombre (ej: Café solo)"
+                  />
+                </div>
+                <div className="grid grid-cols-2 gap-2">
+                  <select
+                    value={newComplement.mealTime}
+                    onChange={(e) => setNewComplement(p => ({ ...p, mealTime: e.target.value }))}
+                    className="rounded-xl border border-purple-200 bg-white px-3 py-2 text-sm outline-none"
+                  >
+                    {Object.entries(MEAL_TIME_LABELS).map(([k, v]) => (
+                      <option key={k} value={k}>{MEAL_TIME_EMOJIS[k]} {v}</option>
+                    ))}
+                  </select>
+                  <input
+                    type="number"
+                    value={newComplement.calories}
+                    onChange={(e) => setNewComplement(p => ({ ...p, calories: Number(e.target.value) }))}
+                    className="rounded-xl border border-purple-200 bg-white px-3 py-2 text-sm outline-none"
+                    placeholder="Kcal (opcional)"
+                    min={0}
+                  />
+                </div>
+                <div className="flex items-center gap-2">
+                  <label className="flex items-center gap-1.5 text-xs text-purple-700 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={newComplement.isDefault}
+                      onChange={(e) => setNewComplement(p => ({ ...p, isDefault: e.target.checked }))}
+                      className="rounded"
+                    />
+                    Siempre incluir al copiar este menú
+                  </label>
+                </div>
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => {
+                      if (!newComplement.name.trim()) { toast.error("Escribe un nombre"); return; }
+                      addComplement.mutate({ menuId: activeMenu.id, customName: newComplement.name.trim(), emoji: newComplement.emoji, mealTime: newComplement.mealTime as any, quantity: newComplement.quantity, unit: newComplement.unit, calories: newComplement.calories || undefined, isDefault: newComplement.isDefault });
+                    }}
+                    disabled={addComplement.isPending}
+                    className="flex-1 py-2 rounded-xl bg-purple-600 text-white text-sm font-bold hover:bg-purple-700 transition-colors"
+                  >
+                    Guardar
+                  </button>
+                  <button onClick={() => setShowAddComplement(false)} className="px-4 py-2 rounded-xl bg-white border border-gray-200 text-sm text-gray-500">
+                    Cancelar
+                  </button>
+                </div>
+              </div>
+            ) : (
+              <button
+                onClick={() => setShowAddComplement(true)}
+                className="w-full flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-200 py-2.5 text-sm font-semibold text-gray-400 hover:border-purple-300 hover:text-purple-600 transition-colors"
+              >
+                <PlusIcon className="h-4 w-4" />
+                Añadir complemento personalizado
+              </button>
+            )}
+          </div>
         )}
       </div>
 

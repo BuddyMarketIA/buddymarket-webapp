@@ -232,6 +232,13 @@
       "when": 1775274657397,
       "tag": "0032_early_scream",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "5",
+      "when": 1775287663758,
+      "tag": "0033_abandoned_ender_wiggin",
+      "breakpoints": true
     }
   ]
 }

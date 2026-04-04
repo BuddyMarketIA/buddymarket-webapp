@@ -1094,3 +1094,12 @@
 - [x] Procedimientos tRPC getConnectStatus y getStripeDashboardLink en stripeConnect
 - [x] Enlace a estadísticas desde los dashboards de BuddyMaker y BuddyExpert
 - [x] Corregir exportación de lista de la compra al supermercado: mostrar productos con imagen igual que en el apartado supermercado (CarrefourCartExport creado para ShoppingLists y ActiveMenu)
+
+## Sprint Mejoras Módulo Menús (COMPLETADO)
+- [x] Edición de nombre de menú (inline o modal)
+- [x] Vista de recetas del menú como cards expandibles con ingredientes, instrucciones y valores nutricionales
+- [x] Tabla menuComplements en BD para complementos por menú (café, batido, snack, etc.)
+- [x] tRPC: addComplement, removeComplement, updateComplement, listComplements
+- [x] tRPC: renameMenu para editar el nombre
+- [x] Sección Complementos en vista de menú con sugerencias predefinidas y campo personalizado
+- [x] Propagar complementos al copiar/duplicar un menú de biblioteca

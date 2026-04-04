@@ -1282,3 +1282,38 @@ export const alcampoProducts = mysqlTable("alcampo_products", {
 }));
 export type AlcampoProduct = typeof alcampoProducts.$inferSelect;
 export type InsertAlcampoProduct = typeof alcampoProducts.$inferInsert;
+
+// =============================================================================
+// MENU COMPLEMENTS  (pequeños extras por menú: café, batido, snack, etc.)
+// =============================================================================
+export const menuComplements = mysqlTable("menu_complements", {
+  id: int("id").autoincrement().primaryKey(),
+  menuOrganizerId: int("menuOrganizerId").notNull(),
+  userId: int("userId").notNull(),
+  // Si está vinculado a un complemento del catálogo
+  complementId: int("complementId"),
+  // O es un complemento personalizado (texto libre)
+  customName: varchar("customName", { length: 256 }),
+  emoji: varchar("emoji", { length: 8 }).default("☕"),
+  mealTime: mysqlEnum("mealTime", [
+    "desayuno",
+    "media_manana",
+    "comida",
+    "merienda",
+    "cena",
+    "otro",
+  ]).default("otro").notNull(),
+  quantity: float("quantity").default(1).notNull(),
+  unit: varchar("unit", { length: 32 }).default("ud"),
+  calories: int("calories"),
+  notes: text("notes"),
+  // Para que al copiar un menú se repliquen automáticamente
+  isDefault: boolean("isDefault").default(false).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+}, (t) => ({
+  menuIdx: index("mc_menu_idx").on(t.menuOrganizerId),
+  userIdx: index("mc_user_idx").on(t.userId),
+}));
+export type MenuComplement = typeof menuComplements.$inferSelect;
+export type InsertMenuComplement = typeof menuComplements.$inferInsert;

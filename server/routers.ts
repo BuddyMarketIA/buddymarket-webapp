@@ -1226,6 +1226,114 @@ export const appRouter = router({
         await drizzleDb.update(menuOrganizerDayParts).set({ completed: true }).where(eq(menuOrganizerDayParts.id, input.dayPartId));
         return { success: true, logsCreated };
       }),
+
+    // ── Rename menu ─────────────────────────────────────────────────────────────
+    rename: protectedProcedure
+      .input(z.object({ id: z.number(), name: z.string().min(1).max(256) }))
+      .mutation(async ({ ctx, input }) => {
+        const menu = await db.getMenuOrganizerById(input.id);
+        if (!menu) throw new TRPCError({ code: "NOT_FOUND" });
+        requireOwnership(menu.userId, ctx.user.id, ctx.user.role);
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { menuOrganizers } = await import("../drizzle/schema.js");
+        const { eq } = await import("drizzle-orm");
+        await drizzleDb.update(menuOrganizers).set({ name: input.name }).where(eq(menuOrganizers.id, input.id));
+        return { success: true };
+      }),
+
+    // ── Menu Complements CRUD ────────────────────────────────────────────────────
+    listComplements: protectedProcedure
+      .input(z.object({ menuId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return [];
+        const { menuComplements, complements } = await import("../drizzle/schema.js");
+        const { eq, and } = await import("drizzle-orm");
+        // Verify ownership
+        const menu = await db.getMenuOrganizerById(input.menuId);
+        if (!menu) throw new TRPCError({ code: "NOT_FOUND" });
+        requireOwnership(menu.userId, ctx.user.id, ctx.user.role);
+        const rows = await drizzleDb
+          .select({ mc: menuComplements, c: complements })
+          .from(menuComplements)
+          .leftJoin(complements, eq(menuComplements.complementId, complements.id))
+          .where(and(eq(menuComplements.menuOrganizerId, input.menuId), eq(menuComplements.userId, ctx.user.id)));
+        return rows.map(({ mc, c }) => ({ ...mc, complement: c ?? null }));
+      }),
+
+    addComplement: protectedProcedure
+      .input(z.object({
+        menuId: z.number(),
+        complementId: z.number().optional(),
+        customName: z.string().max(256).optional(),
+        emoji: z.string().max(8).optional(),
+        mealTime: z.enum(["desayuno", "media_manana", "comida", "merienda", "cena", "otro"]).default("otro"),
+        quantity: z.number().min(0.1).default(1),
+        unit: z.string().max(32).optional(),
+        calories: z.number().optional(),
+        notes: z.string().optional(),
+        isDefault: z.boolean().default(false),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const menu = await db.getMenuOrganizerById(input.menuId);
+        if (!menu) throw new TRPCError({ code: "NOT_FOUND" });
+        requireOwnership(menu.userId, ctx.user.id, ctx.user.role);
+        const { menuComplements } = await import("../drizzle/schema.js");
+        const [row] = await drizzleDb.insert(menuComplements).values({
+          menuOrganizerId: input.menuId,
+          userId: ctx.user.id,
+          complementId: input.complementId ?? null,
+          customName: input.customName ?? null,
+          emoji: input.emoji ?? "☕",
+          mealTime: input.mealTime,
+          quantity: input.quantity,
+          unit: input.unit ?? "ud",
+          calories: input.calories ?? null,
+          notes: input.notes ?? null,
+          isDefault: input.isDefault,
+        } as any).$returningId();
+        return { success: true, id: (row as any)?.id };
+      }),
+
+    updateComplement: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        mealTime: z.enum(["desayuno", "media_manana", "comida", "merienda", "cena", "otro"]).optional(),
+        quantity: z.number().min(0.1).optional(),
+        unit: z.string().max(32).optional(),
+        calories: z.number().optional(),
+        notes: z.string().optional(),
+        isDefault: z.boolean().optional(),
+        emoji: z.string().max(8).optional(),
+        customName: z.string().max(256).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { menuComplements } = await import("../drizzle/schema.js");
+        const { eq, and } = await import("drizzle-orm");
+        const [existing] = await drizzleDb.select().from(menuComplements).where(and(eq(menuComplements.id, input.id), eq(menuComplements.userId, ctx.user.id))).limit(1);
+        if (!existing) throw new TRPCError({ code: "NOT_FOUND" });
+        const { id, ...data } = input;
+        await drizzleDb.update(menuComplements).set(data as any).where(eq(menuComplements.id, id));
+        return { success: true };
+      }),
+
+    removeComplement: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { menuComplements } = await import("../drizzle/schema.js");
+        const { eq, and } = await import("drizzle-orm");
+        const [existing] = await drizzleDb.select().from(menuComplements).where(and(eq(menuComplements.id, input.id), eq(menuComplements.userId, ctx.user.id))).limit(1);
+        if (!existing) throw new TRPCError({ code: "NOT_FOUND" });
+        await drizzleDb.delete(menuComplements).where(eq(menuComplements.id, input.id));
+        return { success: true };
+      }),
   }),
   // ---------------------------------------------------------------------------
   // SHOPPING LISTS

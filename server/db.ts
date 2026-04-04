@@ -56,6 +56,7 @@ import {
   complements,
   complementLogs,
   recipeLikes,
+  menuComplements,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -1364,6 +1365,35 @@ export async function copyMenuForUser(
         createdAt: new Date(),
       }).onDuplicateKeyUpdate({ set: { servings: r.servings ?? 1 } });
     }
+  }
+
+  // Copy default complements (isDefault = true) from source menu
+  const sourceComplements = await db
+    .select()
+    .from(menuComplements)
+    .where(
+      and(
+        eq(menuComplements.menuOrganizerId, sourceMenuId),
+        eq(menuComplements.isDefault, true)
+      )
+    );
+
+  for (const c of sourceComplements) {
+    await db.insert(menuComplements).values({
+      menuOrganizerId: newMenuId,
+      userId,
+      complementId: c.complementId ?? undefined,
+      customName: c.customName ?? undefined,
+      emoji: c.emoji ?? "\u2615",
+      mealTime: c.mealTime,
+      quantity: c.quantity,
+      unit: c.unit ?? "ud",
+      calories: c.calories ?? undefined,
+      notes: c.notes ?? undefined,
+      isDefault: true,
+      createdAt: new Date(),
+      updatedAt: new Date(),
+    });
   }
 
   return { success: true, menuId: newMenuId };
