@@ -1395,3 +1395,4 @@
 - [x] Template de email OTP con código grande y aviso de seguridad (sendOTPEmail en email.ts)
 - [x] UI en LoginPage: botón "Acceder con código por email", paso 1 (email), paso 2 (6 inputs individuales con auto-avance y paste)
 - [x] Añadir barra de progreso en la parte inferior del OnboardingTour
+- [x] Ampliar restricciones en BuddySetup: más opciones + botón "Otras" con campo de texto libre

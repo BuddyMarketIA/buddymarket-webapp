@@ -16,6 +16,7 @@ interface SetupData {
   activityLevel: string;
   // Paso 3: Restricciones alimentarias
   restrictions: string[];
+  customRestrictions: string;
   // Paso 4: Horarios y comidas
   dailyMeals: number;
   mealTimes: string[];
@@ -72,6 +73,17 @@ const RESTRICTIONS = [
   { id: "sin_lactosa", emoji: "🥛", label: "Sin lactosa" },
   { id: "sin_frutos_secos", emoji: "🥜", label: "Sin frutos secos" },
   { id: "sin_mariscos", emoji: "🦐", label: "Sin mariscos" },
+  { id: "sin_huevo", emoji: "🥚", label: "Sin huevo" },
+  { id: "sin_soja", emoji: "🫘", label: "Sin soja" },
+  { id: "sin_pescado", emoji: "🐟", label: "Sin pescado" },
+  { id: "sin_cerdo", emoji: "🐷", label: "Sin cerdo" },
+  { id: "sin_ternera", emoji: "🐄", label: "Sin ternera" },
+  { id: "sin_azucar", emoji: "🍬", label: "Sin azúcar" },
+  { id: "bajo_sal", emoji: "🧂", label: "Bajo en sal" },
+  { id: "sin_picante", emoji: "🌶️", label: "Sin picante" },
+  { id: "mediterranea", emoji: "🫒", label: "Mediterránea" },
+  { id: "paleo", emoji: "🦴", label: "Paleo" },
+  { id: "keto", emoji: "🥑", label: "Keto" },
   { id: "halal", emoji: "☪️", label: "Halal" },
   { id: "kosher", emoji: "✡️", label: "Kosher" },
   { id: "ninguna", emoji: "✅", label: "Ninguna" },
@@ -200,6 +212,7 @@ export default function BuddySetup() {
     weightKg: 70,
     activityLevel: "moderate",
     restrictions: [],
+    customRestrictions: "",
     dailyMeals: 3,
     mealTimes: ["desayuno", "comida", "cena"],
     mealPrepTime: "15_30",
@@ -362,7 +375,7 @@ export default function BuddySetup() {
       >
         {step === 1 && <StepGoal data={data} setData={setData} />}
         {step === 2 && <StepPhysical data={data} setData={setData} />}
-        {step === 3 && <StepRestrictions data={data} toggleRestriction={toggleRestriction} />}
+        {step === 3 && <StepRestrictions data={data} toggleRestriction={toggleRestriction} setData={setData} />}
         {step === 4 && <StepMealTimes data={data} setData={setData} toggleMealTime={toggleMealTime} />}
         {step === 5 && <StepBudget data={data} setData={setData} />}
         {step === 6 && <StepConfirm data={data} setData={setData} />}
@@ -555,7 +568,17 @@ function StepPhysical({ data, setData }: { data: SetupData; setData: React.Dispa
 }
 
 // ─── Paso 3: Restricciones ────────────────────────────────────────────────────
-function StepRestrictions({ data, toggleRestriction }: { data: SetupData; toggleRestriction: (id: string) => void }) {
+function StepRestrictions({
+  data,
+  toggleRestriction,
+  setData,
+}: {
+  data: SetupData;
+  toggleRestriction: (id: string) => void;
+  setData: React.Dispatch<React.SetStateAction<SetupData>>;
+}) {
+  const [showOtras, setShowOtras] = useState(false);
+
   return (
     <div>
       <h1 className="mb-1 text-2xl font-extrabold text-gray-900">¿Tienes restricciones?</h1>
@@ -578,7 +601,35 @@ function StepRestrictions({ data, toggleRestriction }: { data: SetupData; toggle
             )}
           </button>
         ))}
+        {/* Botón Otras */}
+        <button
+          onClick={() => setShowOtras((v) => !v)}
+          className={`flex flex-col items-center gap-2 rounded-2xl border-2 py-4 px-2 transition-all col-span-2 ${
+            showOtras || (data.customRestrictions && data.customRestrictions.trim().length > 0)
+              ? "border-orange-400 bg-orange-50 shadow-sm"
+              : "border-gray-100 bg-white hover:border-gray-200"
+          }`}
+        >
+          <span className="text-2xl">✍️</span>
+          <span className="text-xs font-semibold text-gray-700 text-center">Otras restricciones</span>
+        </button>
       </div>
+      {/* Campo de texto para restricciones personalizadas */}
+      {showOtras && (
+        <div className="mt-4">
+          <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+            Describe tus restricciones o alergias específicas
+          </label>
+          <textarea
+            value={data.customRestrictions || ""}
+            onChange={(e) => setData((d) => ({ ...d, customRestrictions: e.target.value }))}
+            placeholder="Ej: alérgico al apio, intolerante al sorbitol, dieta baja en FODMAP, sin sulfitos..."
+            rows={3}
+            className="w-full rounded-2xl border-2 border-gray-200 bg-white px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:border-orange-400 focus:outline-none resize-none transition-colors"
+          />
+          <p className="mt-1.5 text-xs text-gray-400">La IA tendrá en cuenta estas restricciones al generar tu menú.</p>
+        </div>
+      )}
     </div>
   );
 }
