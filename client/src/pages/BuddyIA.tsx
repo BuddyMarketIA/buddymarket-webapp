@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { usePlan } from "@/hooks/usePlan";
@@ -310,9 +310,33 @@ function QuestionnaireView({
     kitchenEquipment: [],
     allergies: [],
     mealTimings: {},
-  });  
+  });
+  const [prefsLoaded, setPrefsLoaded] = useState(false);
+  const { data: savedPrefs } = trpc.profile.getMenuPreferences.useQuery();
   const [allergyInput, setAllergyInput] = useState("");
   const [dislikedInput, setDislikedInput] = useState("");
+
+  // Load saved preferences once when they arrive
+  useEffect(() => {
+    if (!savedPrefs || prefsLoaded) return;
+    setPrefsLoaded(true);
+    const updates: Partial<QuestionnaireData> = {};
+    if (savedPrefs.dietType) updates.dietType = savedPrefs.dietType as any;
+    if (savedPrefs.allergies?.length) updates.allergies = savedPrefs.allergies;
+    if (savedPrefs.restrictions?.length) updates.restrictions = savedPrefs.restrictions;
+    if (savedPrefs.dislikedFoods) updates.dislikedFoods = savedPrefs.dislikedFoods;
+    if (savedPrefs.proteinSource) updates.proteinSource = savedPrefs.proteinSource as any;
+    if (savedPrefs.cookingTime) updates.cookingTime = savedPrefs.cookingTime as any;
+    if (savedPrefs.cookingSkill) updates.cookingSkill = savedPrefs.cookingSkill as any;
+    if (savedPrefs.kitchenEquipment?.length) updates.kitchenEquipment = savedPrefs.kitchenEquipment;
+    if (savedPrefs.supplementsUsed) updates.supplementsUsed = savedPrefs.supplementsUsed;
+    if (savedPrefs.specialNotes) updates.specialNotes = savedPrefs.specialNotes;
+    if (savedPrefs.persons) updates.persons = savedPrefs.persons;
+    if (savedPrefs.mealsPerDay) updates.mealsPerDay = savedPrefs.mealsPerDay;
+    if (Object.keys(updates).length > 0) {
+      setData(prev => ({ ...prev, ...updates }));
+    }
+  }, [savedPrefs, prefsLoaded]);
 
   const updateData = (updates: Partial<QuestionnaireData>) => {
     const newData = { ...data, ...updates };
@@ -432,6 +456,17 @@ function QuestionnaireView({
           <h2 className="text-lg font-bold">{steps[step].title}</h2>
           <p className="text-sm text-muted-foreground">{steps[step].subtitle}</p>
         </div>
+
+        {/* Banner: saved preferences loaded */}
+        {step === 0 && prefsLoaded && savedPrefs && Object.keys(savedPrefs).some(k => k !== "updatedAt" && k !== "persons" && k !== "mealsPerDay" && (savedPrefs as any)[k] && (Array.isArray((savedPrefs as any)[k]) ? (savedPrefs as any)[k].length > 0 : true)) && (
+          <div className="mb-4 p-3 rounded-xl bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 flex items-start gap-2">
+            <span className="text-green-600 text-base mt-0.5">✅</span>
+            <div>
+              <p className="text-sm font-semibold text-green-800 dark:text-green-300">Preferencias cargadas desde tu perfil</p>
+              <p className="text-xs text-green-700 dark:text-green-400 mt-0.5">Hemos rellenado el cuestionario con tus preferencias guardadas. Puedes modificar cualquier campo.</p>
+            </div>
+          </div>
+        )}
 
         {/* Step 0: Date & duration */}
         {step === 0 && (

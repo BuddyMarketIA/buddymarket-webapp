@@ -1322,3 +1322,11 @@
 - [x] Añadir paso de equipo de cocina disponible (horno, freidora de aire, thermomix, etc.)
 - [x] Añadir disclaimer visual en el último paso y en el botón de generar
 - [x] Mejorar el prompt de IA con todos los nuevos campos
+
+## Sprint: Preferencias Nutricionales en Perfil
+- [x] Ampliar esquema BD: tabla userNutritionPreferences con dietType, allergies, restrictions, dislikedFoods, activityLevel, proteinSource, cookingTime, cookingSkill, kitchenEquipment, budgetPerWeek, waterIntake, mealsPerDay, calories
+- [x] Migrar BD con pnpm db:push
+- [x] Crear procedimientos tRPC: profile.getNutritionPreferences y profile.saveNutritionPreferences
+- [x] Añadir sección "Preferencias Nutricionales" en la página de Perfil con formulario completo
+- [x] Cargar automáticamente las preferencias del perfil como valores iniciales en el cuestionario de generación de menú
+- [x] Mostrar indicador visual en el cuestionario cuando se han cargado preferencias guardadas

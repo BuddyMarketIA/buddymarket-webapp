@@ -571,6 +571,70 @@ Devuelve SOLO JSON válido con esta estructura:
         }
         return { url };
       }),
+
+    getMenuPreferences: protectedProcedure.query(async ({ ctx }) => {
+      const profile = await db.getUserProfile(ctx.user.id);
+      if (!profile) return null;
+      return {
+        dietType: profile.menuDietType ?? undefined,
+        allergies: profile.menuAllergies ? JSON.parse(profile.menuAllergies) : [],
+        restrictions: profile.menuRestrictions ? JSON.parse(profile.menuRestrictions) : [],
+        dislikedFoods: profile.menuDislikedFoods ?? "",
+        proteinSource: profile.menuProteinSource ?? undefined,
+        cookingTime: profile.menuCookingTime ?? undefined,
+        cookingSkill: profile.menuCookingSkill ?? undefined,
+        kitchenEquipment: profile.menuKitchenEquipment ? JSON.parse(profile.menuKitchenEquipment) : [],
+        supplementsUsed: profile.menuSupplements ?? "",
+        specialNotes: profile.menuSpecialNotes ?? "",
+        persons: profile.menuPersons ?? 1,
+        mealsPerDay: profile.menuMealsPerDay ?? 3,
+        updatedAt: profile.menuPreferencesUpdatedAt ?? null,
+      };
+    }),
+
+    saveMenuPreferences: protectedProcedure
+      .input(z.object({
+        dietType: z.string().max(32).optional(),
+        allergies: z.array(z.string()).optional(),
+        restrictions: z.array(z.string()).optional(),
+        dislikedFoods: z.string().max(1000).optional(),
+        proteinSource: z.string().max(32).optional(),
+        cookingTime: z.string().max(32).optional(),
+        cookingSkill: z.string().max(32).optional(),
+        kitchenEquipment: z.array(z.string()).optional(),
+        supplementsUsed: z.string().max(500).optional(),
+        specialNotes: z.string().max(1000).optional(),
+        persons: z.number().int().min(1).max(20).optional(),
+        mealsPerDay: z.number().int().min(1).max(8).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new Error("DB not available");
+        const { userProfiles } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        const existing = await drizzleDb.select({ id: userProfiles.id }).from(userProfiles).where(eq(userProfiles.userId, ctx.user.id)).limit(1);
+        const profileData: Record<string, unknown> = {
+          menuPreferencesUpdatedAt: new Date(),
+        };
+        if (input.dietType !== undefined) profileData.menuDietType = input.dietType || null;
+        if (input.allergies !== undefined) profileData.menuAllergies = JSON.stringify(input.allergies);
+        if (input.restrictions !== undefined) profileData.menuRestrictions = JSON.stringify(input.restrictions);
+        if (input.dislikedFoods !== undefined) profileData.menuDislikedFoods = input.dislikedFoods;
+        if (input.proteinSource !== undefined) profileData.menuProteinSource = input.proteinSource || null;
+        if (input.cookingTime !== undefined) profileData.menuCookingTime = input.cookingTime || null;
+        if (input.cookingSkill !== undefined) profileData.menuCookingSkill = input.cookingSkill || null;
+        if (input.kitchenEquipment !== undefined) profileData.menuKitchenEquipment = JSON.stringify(input.kitchenEquipment);
+        if (input.supplementsUsed !== undefined) profileData.menuSupplements = input.supplementsUsed;
+        if (input.specialNotes !== undefined) profileData.menuSpecialNotes = input.specialNotes;
+        if (input.persons !== undefined) profileData.menuPersons = input.persons;
+        if (input.mealsPerDay !== undefined) profileData.menuMealsPerDay = input.mealsPerDay;
+        if (existing.length > 0) {
+          await drizzleDb.update(userProfiles).set(profileData).where(eq(userProfiles.userId, ctx.user.id));
+        } else {
+          await drizzleDb.insert(userProfiles).values({ userId: ctx.user.id, ...profileData } as any);
+        }
+        return { success: true };
+      }),
   }),
 
   // ---------------------------------------------------------------------------

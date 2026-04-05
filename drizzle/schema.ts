@@ -98,6 +98,20 @@ export const userProfiles = mysqlTable("user_profiles", {
   fitnessGoalDetail: text("fitnessGoalDetail"),
   motivationLevel: mysqlEnum("motivationLevel", ["low", "medium", "high", "very_high"]),
   previousDietExperience: text("previousDietExperience"), // JSON array of past diets tried
+  // Menu questionnaire saved preferences
+  menuDietType: varchar("menuDietType", { length: 32 }), // omnivore, mediterranean, vegan, keto, paleo, dash, vegetarian, pescatarian, flexitarian
+  menuAllergies: text("menuAllergies"), // JSON array of specific allergens
+  menuRestrictions: text("menuRestrictions"), // JSON array of dietary restrictions
+  menuDislikedFoods: text("menuDislikedFoods"), // comma-separated list
+  menuProteinSource: varchar("menuProteinSource", { length: 32 }), // meat, fish, legumes, eggs, mixed, plant
+  menuCookingTime: varchar("menuCookingTime", { length: 32 }), // under_15, 15_30, 30_60, over_60
+  menuCookingSkill: varchar("menuCookingSkill", { length: 32 }), // beginner, intermediate, advanced
+  menuKitchenEquipment: text("menuKitchenEquipment"), // JSON array
+  menuSupplements: text("menuSupplements"), // free text
+  menuSpecialNotes: text("menuSpecialNotes"), // free text
+  menuPersons: int("menuPersons"), // default number of persons
+  menuMealsPerDay: int("menuMealsPerDay"), // default meals per day
+  menuPreferencesUpdatedAt: timestamp("menuPreferencesUpdatedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

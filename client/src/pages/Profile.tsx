@@ -13,6 +13,7 @@ import {
   BeakerIcon,
   CakeIcon,
   TrashIcon,
+  BookmarkIcon,
 } from "@heroicons/react/24/outline";
 
 const TABS = [
@@ -22,6 +23,7 @@ const TABS = [
   { key: "culinary", label: "Cocina", icon: CakeIcon },
   { key: "medical", label: "Salud", icon: HeartIcon },
   { key: "allergies", label: "Alergias", icon: ExclamationCircleIcon },
+  { key: "menu_prefs", label: "Menú IA", icon: BookmarkIcon },
   { key: "prefs", label: "Preferencias", icon: BeakerIcon },
   { key: "shopping", label: "Compras", icon: ShoppingBagIcon },
   { key: "account", label: "Cuenta", icon: TrashIcon },
@@ -211,6 +213,28 @@ export default function Profile() {
   const [suggestHealthier, setSuggestHealthier] = useState(false);
   const [suggestCheaper, setSuggestCheaper] = useState(false);
 
+  // Menu IA Preferences
+  const { data: menuPrefs } = trpc.profile.getMenuPreferences.useQuery();
+  const [mpDietType, setMpDietType] = useState("");
+  const [mpAllergies, setMpAllergies] = useState<string[]>([]);
+  const [mpRestrictions, setMpRestrictions] = useState<string[]>([]);
+  const [mpDislikedFoods, setMpDislikedFoods] = useState("");
+  const [mpProteinSource, setMpProteinSource] = useState("");
+  const [mpCookingTime, setMpCookingTime] = useState("");
+  const [mpCookingSkill, setMpCookingSkill] = useState("");
+  const [mpKitchenEquipment, setMpKitchenEquipment] = useState<string[]>([]);
+  const [mpSupplements, setMpSupplements] = useState("");
+  const [mpSpecialNotes, setMpSpecialNotes] = useState("");
+  const [mpPersons, setMpPersons] = useState(1);
+  const [mpMealsPerDay, setMpMealsPerDay] = useState(3);
+  const saveMenuPrefs = trpc.profile.saveMenuPreferences.useMutation({
+    onSuccess: () => {
+      utils.profile.getMenuPreferences.invalidate();
+      toast.success("✅ Preferencias de menú guardadas");
+    },
+    onError: () => toast.error("Error al guardar las preferencias"),
+  });
+
   // Helper seguro para JSON.parse que nunca crashea
   function safeJsonParse<T>(str: string | null | undefined, fallback: T): T {
     if (!str) return fallback;
@@ -312,6 +336,22 @@ export default function Profile() {
     setSelectedAllergies(profile.allergies.map((a) => a.id));
     setSelectedRestrictions(profile.dietRestrictions.map((r) => r.id));
   }, [profile]);
+
+  useEffect(() => {
+    if (!menuPrefs) return;
+    setMpDietType(menuPrefs.dietType || "");
+    setMpAllergies(menuPrefs.allergies || []);
+    setMpRestrictions(menuPrefs.restrictions || []);
+    setMpDislikedFoods(menuPrefs.dislikedFoods || "");
+    setMpProteinSource(menuPrefs.proteinSource || "");
+    setMpCookingTime(menuPrefs.cookingTime || "");
+    setMpCookingSkill(menuPrefs.cookingSkill || "");
+    setMpKitchenEquipment(menuPrefs.kitchenEquipment || []);
+    setMpSupplements(menuPrefs.supplementsUsed || "");
+    setMpSpecialNotes(menuPrefs.specialNotes || "");
+    setMpPersons(menuPrefs.persons ?? 1);
+    setMpMealsPerDay(menuPrefs.mealsPerDay ?? 3);
+  }, [menuPrefs]);
 
   // Photo upload with crop
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -979,6 +1019,160 @@ export default function Profile() {
             </div>
           </Field>
           <SaveButton onClick={handleSaveAllergies} loading={setAllergiesMut.isPending || setDietRestrictionsMut.isPending} />
+        </div>
+      )}
+
+      {/* MENU IA PREFERENCES */}
+      {activeTab === "menu_prefs" && (
+        <div style={card}>
+          <div style={{ marginBottom: "20px", padding: "14px 16px", background: "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)", borderRadius: "12px", border: "1px solid #bbf7d0" }}>
+            <p style={{ margin: 0, fontSize: "13px", color: "#166534", fontWeight: 600 }}>💡 Tus preferencias guardadas aquí se cargarán automáticamente cada vez que generes un menú con IA, ahorrando tiempo en el cuestionario.</p>
+          </div>
+          <SectionTitle>Preferencias por defecto para menús IA</SectionTitle>
+
+          <Field label="Tipo de dieta" hint="Se usará como punto de partida en el cuestionario.">
+            <Select value={mpDietType} onChange={setMpDietType} options={[
+              { value: "", label: "Sin preferencia" },
+              { value: "omnivore", label: "🥩 Omnívoro — como de todo" },
+              { value: "mediterranean", label: "🫔 Mediterráneo" },
+              { value: "vegetarian", label: "🥦 Vegetariano" },
+              { value: "vegan", label: "🌱 Vegano" },
+              { value: "pescatarian", label: "🐟 Pescetariano" },
+              { value: "flexitarian", label: "🌿 Flexitariano" },
+              { value: "keto", label: "🥑 Cetogénico (Keto)" },
+              { value: "paleo", label: "🦴 Paleo" },
+              { value: "dash", label: "❤️ DASH (hipertensión)" },
+              { value: "gluten_free", label: "🌾 Sin gluten" },
+              { value: "lactose_free", label: "🥛 Sin lácteos" },
+            ]} />
+          </Field>
+
+          <Field label="Fuente de proteína preferida">
+            <Select value={mpProteinSource} onChange={setMpProteinSource} options={[
+              { value: "", label: "Sin preferencia" },
+              { value: "meat", label: "🥩 Carne (ternera, pollo, cerdo...)" },
+              { value: "fish", label: "🐟 Pescado y mariscos" },
+              { value: "eggs", label: "🥚 Huevos" },
+              { value: "legumes", label: "🫘 Legumbres (lentejas, garbanzos...)" },
+              { value: "plant", label: "🌿 Vegetal (tofu, tempeh, seitán)" },
+              { value: "mixed", label: "🔄 Mixto — combino varias fuentes" },
+            ]} />
+          </Field>
+
+          <Field label="Alergias e intolerancias" hint="Selecciona las que apliquen.">
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+              {["gluten", "lactosa", "huevo", "frutos secos", "cacahuete", "soja", "pescado", "marisco", "sésamo", "mostaza", "apio", "sulfitos", "altramuces", "moluscos"].map((a) => {
+                const sel = mpAllergies.includes(a);
+                return (
+                  <button key={a} onClick={() => setMpAllergies(sel ? mpAllergies.filter((x) => x !== a) : [...mpAllergies, a])}
+                    style={{ padding: "8px 14px", borderRadius: "20px", border: sel ? "2px solid #ef4444" : "1.5px solid #e5e7eb", background: sel ? "rgba(239,68,68,0.1)" : "white", color: sel ? "#ef4444" : "#374151", fontSize: "13px", fontWeight: sel ? 700 : 500, cursor: "pointer" }}>
+                    {a}
+                  </button>
+                );
+              })}
+            </div>
+          </Field>
+
+          <Field label="Restricciones dietéticas" hint="Selecciona las que apliquen.">
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+              {["sin gluten", "sin lácteos", "sin cerdo", "sin mariscos", "halal", "kosher", "sin azúcar añadido", "bajo en sodio", "bajo en grasas", "sin alcohol", "sin café"].map((r) => {
+                const sel = mpRestrictions.includes(r);
+                return (
+                  <button key={r} onClick={() => setMpRestrictions(sel ? mpRestrictions.filter((x) => x !== r) : [...mpRestrictions, r])}
+                    style={{ padding: "8px 14px", borderRadius: "20px", border: sel ? "2px solid #6366f1" : "1.5px solid #e5e7eb", background: sel ? "rgba(99,102,241,0.1)" : "white", color: sel ? "#6366f1" : "#374151", fontSize: "13px", fontWeight: sel ? 700 : 500, cursor: "pointer" }}>
+                    {r}
+                  </button>
+                );
+              })}
+            </div>
+          </Field>
+
+          <Field label="Alimentos que no te gustan" hint="Escribe ingredientes o platos separados por comas.">
+            <input value={mpDislikedFoods} onChange={(e) => setMpDislikedFoods(e.target.value)}
+              placeholder="ej: hígado, col, pimiento verde..."
+              style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1.5px solid #e5e7eb", fontSize: "14px", boxSizing: "border-box" }} />
+          </Field>
+
+          <Field label="Tiempo disponible para cocinar">
+            <Select value={mpCookingTime} onChange={setMpCookingTime} options={[
+              { value: "", label: "Sin preferencia" },
+              { value: "under_15", label: "⏰ Menos de 15 min — rápido y fácil" },
+              { value: "15_30", label: "🍳 15-30 min — recetas ágiles" },
+              { value: "30_60", label: "🕒 30-60 min — cocina tranquila" },
+              { value: "over_60", label: "🍷 Más de 1 hora — me encanta cocinar" },
+            ]} />
+          </Field>
+
+          <Field label="Nivel de habilidad en cocina">
+            <Select value={mpCookingSkill} onChange={setMpCookingSkill} options={[
+              { value: "", label: "Sin preferencia" },
+              { value: "beginner", label: "👶 Principiante — recetas básicas" },
+              { value: "intermediate", label: "👨‍🍳 Intermedio — me defiendo bien" },
+              { value: "advanced", label: "🏆 Avanzado — técnicas complejas" },
+            ]} />
+          </Field>
+
+          <Field label="Equipo de cocina disponible" hint="Selecciona el que tengas.">
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+              {["horno", "freidora de aire", "microondas", "thermomix", "olla a presión", "plancha", "barbacoa", "vaporera", "batidora", "robot de cocina"].map((eq) => {
+                const sel = mpKitchenEquipment.includes(eq);
+                return (
+                  <button key={eq} onClick={() => setMpKitchenEquipment(sel ? mpKitchenEquipment.filter((x) => x !== eq) : [...mpKitchenEquipment, eq])}
+                    style={{ padding: "8px 14px", borderRadius: "20px", border: sel ? "2px solid #f59e0b" : "1.5px solid #e5e7eb", background: sel ? "rgba(245,158,11,0.1)" : "white", color: sel ? "#92400e" : "#374151", fontSize: "13px", fontWeight: sel ? 700 : 500, cursor: "pointer" }}>
+                    {eq}
+                  </button>
+                );
+              })}
+            </div>
+          </Field>
+
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "18px" }}>
+            <Field label="Número de personas">
+              <input type="number" min={1} max={20} value={mpPersons} onChange={(e) => setMpPersons(Number(e.target.value))}
+                style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1.5px solid #e5e7eb", fontSize: "14px", boxSizing: "border-box" }} />
+            </Field>
+            <Field label="Comidas al día">
+              <input type="number" min={1} max={8} value={mpMealsPerDay} onChange={(e) => setMpMealsPerDay(Number(e.target.value))}
+                style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1.5px solid #e5e7eb", fontSize: "14px", boxSizing: "border-box" }} />
+            </Field>
+          </div>
+
+          <Field label="Suplementos que tomas" hint="Opcional. Se incluirán en las notas del menú.">
+            <input value={mpSupplements} onChange={(e) => setMpSupplements(e.target.value)}
+              placeholder="ej: proteína whey, creatina, omega-3..."
+              style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1.5px solid #e5e7eb", fontSize: "14px", boxSizing: "border-box" }} />
+          </Field>
+
+          <Field label="Notas especiales para la IA" hint="Cualquier información adicional que quieras que tenga en cuenta.">
+            <textarea value={mpSpecialNotes} onChange={(e) => setMpSpecialNotes(e.target.value)}
+              placeholder="ej: soy deportista y entreno por las mañanas, prefiero desayunos abundantes..."
+              rows={3}
+              style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1.5px solid #e5e7eb", fontSize: "14px", boxSizing: "border-box", resize: "vertical" }} />
+          </Field>
+
+          {menuPrefs?.updatedAt && (
+            <p style={{ fontSize: "12px", color: "#9ca3af", marginBottom: "12px" }}>
+              Última actualización: {new Date(menuPrefs.updatedAt).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+            </p>
+          )}
+
+          <SaveButton
+            onClick={() => saveMenuPrefs.mutate({
+              dietType: mpDietType || undefined,
+              allergies: mpAllergies,
+              restrictions: mpRestrictions,
+              dislikedFoods: mpDislikedFoods,
+              proteinSource: mpProteinSource || undefined,
+              cookingTime: mpCookingTime || undefined,
+              cookingSkill: mpCookingSkill || undefined,
+              kitchenEquipment: mpKitchenEquipment,
+              supplementsUsed: mpSupplements,
+              specialNotes: mpSpecialNotes,
+              persons: mpPersons,
+              mealsPerDay: mpMealsPerDay,
+            })}
+            loading={saveMenuPrefs.isPending}
+          />
         </div>
       )}
 
