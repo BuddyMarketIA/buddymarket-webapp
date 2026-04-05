@@ -1356,3 +1356,8 @@
 - [ ] Añadir secrets: GOOGLE_PLAY_SERVICE_ACCOUNT_JSON, GOOGLE_PLAY_PACKAGE_NAME (pendiente: el usuario los añadirá más tarde)
 - [x] Actualizar PAYMENTS.md con checklist completo para Apple y Google
 - [x] Escribir tests unitarios para los servicios de verificación IAP
+
+## Sprint: Fix Layout iOS
+- [x] Reducir padding-top del header para que no quede demasiado arriba en iOS
+- [x] Cambiar la barra de navegación inferior de flotante a fija (position: fixed, sin border-radius, pegada al borde inferior)
+- [x] Añadir padding-bottom al contenido principal para que no quede tapado por la barra fija

@@ -449,7 +449,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       )}
 
       {/* Fixed Header */}
-      <div className="app-header" style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", background: "rgba(255,248,240,0.92)", borderBottom: "1px solid rgba(0,0,0,0.06)", padding: "12px 16px", display: "flex", alignItems: "center", gap: "12px", maxWidth: "480px", margin: "0 auto" }}>
+      <div className="app-header" style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", background: "rgba(255,248,240,0.92)", borderBottom: "1px solid rgba(0,0,0,0.06)", paddingTop: "max(12px, env(safe-area-inset-top))", paddingBottom: "12px", paddingLeft: "16px", paddingRight: "16px", display: "flex", alignItems: "center", gap: "12px" }}>
         {showBack ? (
           <button onClick={onBack || (() => window.history.back())} style={{ width: "40px", height: "40px", borderRadius: "12px", background: "white", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", flexShrink: 0 }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
@@ -479,21 +479,21 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       </div>
 
       {/* Content */}
-      <div style={{ paddingTop: "68px", paddingBottom: shouldShowNav ? "90px" : "0" }}>
+      <div style={{ paddingTop: "68px", paddingBottom: shouldShowNav ? "calc(64px + env(safe-area-inset-bottom))" : "0" }}>
         {children}
       </div>
 
-      {/* Bottom Navigation */}
+      {/* Bottom Navigation — fija, sin border-radius, pegada al borde inferior */}
       {shouldShowNav && (
-        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100, padding: "0 12px", paddingBottom: "max(8px, env(safe-area-inset-bottom))", display: "flex", justifyContent: "center" }}>
-          <div className="app-nav-bar" style={{ backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", borderRadius: "24px", padding: "8px 4px", boxShadow: "0 -2px 20px rgba(0,0,0,0.08), 0 4px 24px rgba(0,0,0,0.06)", border: "1px solid rgba(255,255,255,0.1)", display: "flex", alignItems: "center", justifyContent: "space-around", width: "100%", maxWidth: "540px" }}>
+        <div style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100, background: "rgba(255,248,240,0.97)", backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", borderTop: "1px solid rgba(0,0,0,0.08)", paddingBottom: "env(safe-area-inset-bottom)", boxShadow: "0 -2px 16px rgba(0,0,0,0.06)" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-around", padding: "6px 0" }}>
             {NAV_ITEMS.map((item) => {
               const active = matchesPath(location, item.matches);
               return (
                 <Link key={item.key} href={item.to}>
-                  <button style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "3px", padding: "6px 10px", borderRadius: "16px", border: "none", background: active ? "rgba(249,115,22,0.08)" : "transparent", cursor: "pointer", transition: "all 0.2s", minWidth: "52px" }}>
+                  <button style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "3px", padding: "6px 16px", border: "none", background: "transparent", cursor: "pointer", transition: "all 0.2s", minWidth: "52px" }}>
                     {item.icon(active)}
-                    <span style={{ fontSize: "13px", fontWeight: active ? 800 : 500, color: active ? "#F97316" : "#9ca3af", transition: "color 0.2s" }}>{item.label}</span>
+                    <span style={{ fontSize: "11px", fontWeight: active ? 700 : 500, color: active ? "#F97316" : "#9ca3af", transition: "color 0.2s" }}>{item.label}</span>
                   </button>
                 </Link>
               );
