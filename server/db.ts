@@ -1244,6 +1244,7 @@ export async function getSeededMenus() {
       difficulty: menuOrganizers.difficulty,
       dailyMealsCount: menuOrganizers.dailyMealsCount,
       persons: menuOrganizers.persons,
+      coverImage: menuOrganizers.coverImage,
     })
     .from(menuOrganizers)
     .where(eq(menuOrganizers.isSeeded, true))

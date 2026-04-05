@@ -554,6 +554,7 @@ export const menuOrganizers = pgTable("menu_organizers", {
   persons: integer("persons").default(1),
   difficulty: difficultyEnum("difficulty").default("easy"),
   isSeeded: boolean("isSeeded").default(false),
+  coverImage: text("coverImage"),
   dailyMealsCount: integer("dailyMealsCount").default(3),
    generatedByAI: boolean("generatedByAI").default(false),
   isActive: boolean("isActive").default(false),

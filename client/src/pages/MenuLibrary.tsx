@@ -61,13 +61,13 @@ const GOAL_GRADIENTS: Record<string, string> = {
 };
 
 const GOAL_IMAGES: Record<string, string> = {
-  perdida_peso: "https://d2xsxph8kpxj0f.cloudfront.net/webdev/buddymarket-webapp/assets/meal-prep-1743693022.jpg",
-  ganancia_muscular: "https://d2xsxph8kpxj0f.cloudfront.net/webdev/buddymarket-webapp/assets/meal-prep-1743693022.jpg",
-  tonificacion: "https://d2xsxph8kpxj0f.cloudfront.net/webdev/buddymarket-webapp/assets/meal-prep-1743693022.jpg",
-  perdida_grasa: "https://d2xsxph8kpxj0f.cloudfront.net/webdev/buddymarket-webapp/assets/meal-prep-1743693022.jpg",
-  mantenimiento: "https://d2xsxph8kpxj0f.cloudfront.net/webdev/buddymarket-webapp/assets/vegetables-1743693022.jpg",
-  bienestar: "https://d2xsxph8kpxj0f.cloudfront.net/webdev/buddymarket-webapp/assets/vegetables-1743693022.jpg",
-  vegano: "https://d2xsxph8kpxj0f.cloudfront.net/webdev/buddymarket-webapp/assets/vegetables-1743693022.jpg",
+  perdida_peso: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/perdida-peso_fc448d8e.jpg",
+  ganancia_muscular: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/ganancia-muscular_34529480.jpg",
+  tonificacion: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/definicion_9729d51a.jpg",
+  perdida_grasa: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/perdida-grasa_6d7bf7fe.jpg",
+  mantenimiento: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/mantenimiento_1070987f.jpg",
+  bienestar: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/mediterraneo_302bfcb5.jpg",
+  vegano: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/vegano_2aac20d3.jpg",
 };
 
 const DIFF_LABELS: Record<string, string> = {
@@ -170,7 +170,8 @@ function MenuCard({
   onSave: (menu: { id: number; name: string }) => void;
 }) {
   const gradient = GOAL_GRADIENTS[menu.goal] || "from-gray-500 to-gray-400";
-  const image = GOAL_IMAGES[menu.goal];
+  // Priorizar imagen de la BD, luego fallback por objetivo
+  const image = menu.coverImage || GOAL_IMAGES[menu.goal];
 
   return (
     <motion.div
@@ -178,14 +179,16 @@ function MenuCard({
       className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300 border border-gray-100 group"
     >
       {/* Visual header */}
-      <div className={`relative h-36 bg-gradient-to-br ${gradient} overflow-hidden`}>
+      <div className={`relative h-44 bg-gradient-to-br ${gradient} overflow-hidden`}>
         {image && (
           <img
             src={image}
             alt={menu.name}
-            className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-50 transition-opacity duration-300"
+            className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-90 transition-opacity duration-300"
           />
         )}
+        {/* Dark overlay for text readability */}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
         <div className="absolute inset-0 p-4 flex flex-col justify-between">
           <div className="flex items-start justify-between">
             {isRecommended && (
