@@ -1406,3 +1406,10 @@
 - [x] Modo "Explorar todos" con filtros por objetivo y dificultad
 - [x] Banner CTA para crear menú personalizado con IA
 - [x] Procedimiento tRPC menus.recommended: filtra por objetivo, restricciones y calorías del perfil
+
+## Sprint: Animación de carga en MenuLibrary
+- [x] Skeleton loader para cards de menús recomendados
+- [x] Skeleton loader para sección "Recomendados para ti"
+- [x] Skeleton loader para la sección "Explorar todos"
+- [x] Animación de entrada (fade-in) al cargar los menús
+- [x] Shimmer effect en los skeletons

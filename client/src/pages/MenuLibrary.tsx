@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
@@ -75,6 +76,84 @@ const DIFF_LABELS: Record<string, string> = {
   dificil: "Difícil",
 };
 
+// ─── Animation variants ───────────────────────────────────────────────────────
+
+const containerVariants = {
+  hidden: {},
+  visible: {
+    transition: { staggerChildren: 0.08 },
+  },
+};
+
+const cardVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
+};
+
+const sectionVariants = {
+  hidden: { opacity: 0, y: 12 },
+  visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: "easeOut" } },
+};
+
+// ─── Skeleton Card ────────────────────────────────────────────────────────────
+
+function MenuCardSkeleton() {
+  return (
+    <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
+      {/* Header skeleton */}
+      <div className="h-36 skeleton" />
+      {/* Body skeleton */}
+      <div className="p-4 space-y-3">
+        <div className="flex gap-2">
+          <div className="h-5 w-24 rounded-full skeleton" />
+          <div className="h-5 w-20 rounded-full skeleton" />
+        </div>
+        <div className="flex gap-2 mt-2">
+          <div className="h-9 flex-1 rounded-lg skeleton" />
+          <div className="h-9 flex-1 rounded-lg skeleton" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Skeleton Section (Recommended) ──────────────────────────────────────────
+
+function RecommendedSkeleton() {
+  return (
+    <motion.section
+      variants={sectionVariants}
+      initial="hidden"
+      animate="visible"
+    >
+      {/* Header skeleton */}
+      <div className="flex items-center justify-between mb-4">
+        <div className="space-y-2">
+          <div className="h-6 w-48 rounded-lg skeleton" />
+          <div className="h-4 w-36 rounded-lg skeleton" />
+        </div>
+        <div className="h-4 w-16 rounded-lg skeleton" />
+      </div>
+
+      {/* Pulsing label */}
+      <div className="flex items-center gap-2 mb-4 px-1">
+        <span className="relative flex h-2.5 w-2.5">
+          <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-orange-400 opacity-75" />
+          <span className="relative inline-flex rounded-full h-2.5 w-2.5 bg-orange-500" />
+        </span>
+        <span className="text-xs text-orange-500 font-medium">Buscando menús para tu perfil...</span>
+      </div>
+
+      {/* Cards grid skeleton */}
+      <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        {[...Array(4)].map((_, i) => (
+          <MenuCardSkeleton key={i} />
+        ))}
+      </div>
+    </motion.section>
+  );
+}
+
 // ─── Menu Card ────────────────────────────────────────────────────────────────
 
 function MenuCard({
@@ -94,7 +173,10 @@ function MenuCard({
   const image = GOAL_IMAGES[menu.goal];
 
   return (
-    <div className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-all duration-300 border border-gray-100 group">
+    <motion.div
+      variants={cardVariants}
+      className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300 border border-gray-100 group"
+    >
       {/* Visual header */}
       <div className={`relative h-36 bg-gradient-to-br ${gradient} overflow-hidden`}>
         {image && (
@@ -104,7 +186,6 @@ function MenuCard({
             className="absolute inset-0 w-full h-full object-cover opacity-40 group-hover:opacity-50 transition-opacity duration-300"
           />
         )}
-        {/* Overlay content */}
         <div className="absolute inset-0 p-4 flex flex-col justify-between">
           <div className="flex items-start justify-between">
             {isRecommended && (
@@ -145,14 +226,8 @@ function MenuCard({
             </span>
           )}
         </div>
-
         <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            className="flex-1 text-xs h-9"
-            onClick={() => onDetail(menu.id)}
-          >
+          <Button variant="outline" size="sm" className="flex-1 text-xs h-9" onClick={() => onDetail(menu.id)}>
             Ver menú
           </Button>
           {user ? (
@@ -172,7 +247,7 @@ function MenuCard({
           )}
         </div>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -180,7 +255,12 @@ function MenuCard({
 
 function EmptyState({ onExplore, onCreateAI }: { onExplore: () => void; onCreateAI: () => void }) {
   return (
-    <div className="flex flex-col items-center justify-center py-16 px-6 text-center">
+    <motion.div
+      variants={sectionVariants}
+      initial="hidden"
+      animate="visible"
+      className="flex flex-col items-center justify-center py-16 px-6 text-center"
+    >
       <div className="w-24 h-24 bg-gradient-to-br from-orange-100 to-orange-50 rounded-full flex items-center justify-center mb-6 shadow-inner">
         <span className="text-4xl">🍽️</span>
       </div>
@@ -205,7 +285,7 @@ function EmptyState({ onExplore, onCreateAI }: { onExplore: () => void; onCreate
           🔍 Explorar todos los menús disponibles
         </Button>
       </div>
-    </div>
+    </motion.div>
   );
 }
 
@@ -324,7 +404,11 @@ function MenuDetailDialog({
           )}
         </DialogHeader>
         {isLoading ? (
-          <div className="py-8 text-center text-muted-foreground">Cargando menú...</div>
+          <div className="py-8 space-y-3">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="h-20 rounded-lg skeleton" />
+            ))}
+          </div>
         ) : menu ? (
           <div className="space-y-4 pt-2">
             {Object.entries(dayGroups).slice(0, 7).map(([dayNum, dayParts]) => (
@@ -373,12 +457,18 @@ export default function MenuLibrary() {
   const [, navigate] = useLocation();
 
   // Recommended (personalized, only if logged in)
-  const { data: recommendedData } = trpc.menus.recommended.useQuery(undefined, {
+  const {
+    data: recommendedData,
+    isLoading: isLoadingRecommended,
+  } = trpc.menus.recommended.useQuery(undefined, {
     enabled: !!user,
   });
 
   // All menus (for explore mode)
-  const { data: allMenus = [], isLoading } = trpc.menus.library.useQuery({
+  const {
+    data: allMenus = [],
+    isLoading: isLoadingAll,
+  } = trpc.menus.library.useQuery({
     goal: selectedGoal as any,
     difficulty: selectedDifficulty as any,
     limit: 50,
@@ -390,8 +480,13 @@ export default function MenuLibrary() {
 
   const recommendedMenus = recommendedData?.recommended ?? [];
   const totalMenus = recommendedData?.totalMenus ?? allMenus.length;
-  const hasNoMenusForProfile = user && !isLoading && totalMenus === 0;
-  const hasMenusButNoneRecommended = user && !isLoading && totalMenus > 0 && recommendedMenus.length === 0;
+
+  // Show skeleton while loading recommended (for logged-in users)
+  const showRecommendedSkeleton = !!user && isLoadingRecommended && !showAll;
+  // Show empty state only after loading is complete
+  const hasNoMenusForProfile = user && !isLoadingRecommended && totalMenus === 0;
+  const hasMenusButNoneRecommended =
+    user && !isLoadingRecommended && totalMenus > 0 && recommendedMenus.length === 0;
 
   return (
     <div className="min-h-screen bg-[#FFF8F5]">
@@ -402,186 +497,264 @@ export default function MenuLibrary() {
             <button className="text-muted-foreground hover:text-foreground">← Volver</button>
           </Link>
           <h1 className="text-xl font-bold">Biblioteca de Menús</h1>
-          <span className="ml-auto text-sm text-muted-foreground">{totalMenus} menús</span>
+          <span className="ml-auto text-sm text-muted-foreground">
+            {isLoadingRecommended && user ? (
+              <span className="inline-flex items-center gap-1.5 text-orange-500">
+                <span className="h-1.5 w-1.5 rounded-full bg-orange-400 animate-bounce [animation-delay:0ms]" />
+                <span className="h-1.5 w-1.5 rounded-full bg-orange-400 animate-bounce [animation-delay:150ms]" />
+                <span className="h-1.5 w-1.5 rounded-full bg-orange-400 animate-bounce [animation-delay:300ms]" />
+              </span>
+            ) : (
+              `${totalMenus} menús`
+            )}
+          </span>
         </div>
       </div>
 
       <div className="max-w-4xl mx-auto px-4 py-6 space-y-8">
 
+        {/* ── SKELETON: loading recommended ── */}
+        <AnimatePresence mode="wait">
+          {showRecommendedSkeleton && (
+            <motion.div
+              key="skeleton"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0, transition: { duration: 0.2 } }}
+            >
+              <RecommendedSkeleton />
+            </motion.div>
+          )}
+        </AnimatePresence>
+
         {/* ── EMPTY STATE: no menus at all ── */}
-        {hasNoMenusForProfile && (
-          <EmptyState
-            onExplore={() => setShowAll(true)}
-            onCreateAI={() => navigate("/app/ai-menu")}
-          />
-        )}
+        <AnimatePresence>
+          {hasNoMenusForProfile && (
+            <motion.div
+              key="empty"
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              exit={{ opacity: 0 }}
+            >
+              <EmptyState
+                onExplore={() => setShowAll(true)}
+                onCreateAI={() => navigate("/app/ai-menu")}
+              />
+            </motion.div>
+          )}
+        </AnimatePresence>
 
-        {/* ── PERSONALIZED SECTION (logged in) ── */}
-        {user && !showAll && recommendedMenus.length > 0 && (
-          <section>
-            <div className="flex items-center justify-between mb-4">
-              <div>
-                <h2 className="text-lg font-bold text-gray-900">✨ Recomendados para ti</h2>
-                <p className="text-sm text-gray-500">Basados en tu objetivo y preferencias</p>
-              </div>
-              <button
-                className="text-sm text-[#FF6B35] font-medium hover:underline"
-                onClick={() => setShowAll(true)}
-              >
-                Ver todos →
-              </button>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-              {recommendedMenus.map((menu: any) => (
-                <MenuCard
-                  key={menu.id}
-                  menu={menu}
-                  isRecommended
-                  user={user}
-                  onDetail={setDetailMenuId}
-                  onSave={setSaveMenu}
-                />
-              ))}
-            </div>
-
-            {/* Prompt to explore more */}
-            <div className="mt-6 bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-100 rounded-2xl p-5 flex flex-col sm:flex-row items-center gap-4">
-              <div className="flex-1">
-                <p className="font-semibold text-gray-900 text-sm">¿Quieres un menú 100% personalizado?</p>
-                <p className="text-xs text-gray-500 mt-0.5">Crea tu menú con IA basado en tus restricciones y objetivos nutricionales</p>
-              </div>
-              <Button
-                className="bg-[#FF6B35] hover:bg-[#e55a25] text-white rounded-xl shrink-0"
-                onClick={() => navigate("/app/ai-menu")}
-              >
-                🤖 Crear con IA
-              </Button>
-            </div>
-          </section>
-        )}
-
-        {/* ── NO RECOMMENDATIONS BUT MENUS EXIST ── */}
-        {hasMenusButNoneRecommended && !showAll && (
-          <div className="text-center py-10 px-6">
-            <div className="text-4xl mb-3">🍽️</div>
-            <h3 className="text-lg font-bold text-gray-900 mb-2">
-              Actualmente no hay menús adaptados para ti
-            </h3>
-            <p className="text-gray-500 text-sm max-w-xs mx-auto mb-6">
-              No encontramos menús que coincidan con tu perfil. ¿Quieres explorar todos o crear uno con IA?
-            </p>
-            <div className="flex flex-col sm:flex-row gap-3 justify-center">
-              <Button
-                className="bg-[#FF6B35] hover:bg-[#e55a25] text-white rounded-xl"
-                onClick={() => navigate("/app/ai-menu")}
-              >
-                🤖 Crear con IA según mis preferencias
-              </Button>
-              <Button variant="outline" className="rounded-xl" onClick={() => setShowAll(true)}>
-                🔍 Explorar todos los menús
-              </Button>
-            </div>
-          </div>
-        )}
-
-        {/* ── ALL MENUS (explore mode or not logged in) ── */}
-        {(showAll || !user) && (
-          <section>
-            {showAll && (
-              <div className="flex items-center gap-3 mb-4">
+        {/* ── PERSONALIZED SECTION (logged in, data ready) ── */}
+        <AnimatePresence>
+          {user && !showAll && !isLoadingRecommended && recommendedMenus.length > 0 && (
+            <motion.section
+              key="recommended"
+              variants={sectionVariants}
+              initial="hidden"
+              animate="visible"
+              exit={{ opacity: 0, y: -8, transition: { duration: 0.2 } }}
+            >
+              <div className="flex items-center justify-between mb-4">
+                <div>
+                  <h2 className="text-lg font-bold text-gray-900">✨ Recomendados para ti</h2>
+                  <p className="text-sm text-gray-500">Basados en tu objetivo y preferencias</p>
+                </div>
                 <button
                   className="text-sm text-[#FF6B35] font-medium hover:underline"
-                  onClick={() => setShowAll(false)}
+                  onClick={() => setShowAll(true)}
                 >
-                  ← Volver a mis recomendados
+                  Ver todos →
                 </button>
-                <h2 className="text-lg font-bold text-gray-900">Todos los menús</h2>
               </div>
-            )}
 
-            {/* Search */}
-            <Input
-              placeholder="Buscar un menú..."
-              value={search}
-              onChange={(e) => setSearch(e.target.value)}
-              className="bg-white mb-4"
-            />
-
-            {/* Goal filter */}
-            <div className="mb-3">
-              <p className="text-sm font-medium mb-2 text-muted-foreground">Objetivo</p>
-              <div className="flex gap-2 flex-wrap">
-                {GOALS.map((g) => (
-                  <button
-                    key={String(g.id)}
-                    onClick={() => setSelectedGoal(g.id as any)}
-                    className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all border ${
-                      selectedGoal === g.id
-                        ? "bg-[#FF6B35] text-white border-[#FF6B35]"
-                        : "bg-white text-gray-700 border-gray-200 hover:border-[#FF6B35]"
-                    }`}
-                  >
-                    {g.emoji} {g.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Difficulty filter */}
-            <div className="mb-6">
-              <p className="text-sm font-medium mb-2 text-muted-foreground">Dificultad</p>
-              <div className="flex gap-2">
-                {DIFFICULTIES.map((d) => (
-                  <button
-                    key={String(d.id)}
-                    onClick={() => setSelectedDifficulty(d.id as any)}
-                    className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all border ${
-                      selectedDifficulty === d.id
-                        ? "bg-[#FF6B35] text-white border-[#FF6B35]"
-                        : "bg-white text-gray-700 border-gray-200 hover:border-[#FF6B35]"
-                    }`}
-                  >
-                    {d.label}
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Menu grid */}
-            {isLoading ? (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {[...Array(6)].map((_, i) => (
-                  <div key={i} className="bg-white rounded-2xl h-52 animate-pulse" />
-                ))}
-              </div>
-            ) : filtered.length === 0 ? (
-              <div className="text-center py-12 text-muted-foreground">
-                <p className="text-4xl mb-3">🍽️</p>
-                <p>No se encontraron menús con estos filtros.</p>
-                {user && (
-                  <Button
-                    className="mt-4 bg-[#FF6B35] hover:bg-[#e55a25] text-white rounded-xl"
-                    onClick={() => navigate("/app/ai-menu")}
-                  >
-                    🤖 Crear menú con IA
-                  </Button>
-                )}
-              </div>
-            ) : (
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {filtered.map((menu) => (
+              <motion.div
+                className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+                variants={containerVariants}
+                initial="hidden"
+                animate="visible"
+              >
+                {recommendedMenus.map((menu: any) => (
                   <MenuCard
                     key={menu.id}
                     menu={menu}
+                    isRecommended
                     user={user}
                     onDetail={setDetailMenuId}
                     onSave={setSaveMenu}
                   />
                 ))}
+              </motion.div>
+
+              {/* CTA Banner */}
+              <motion.div
+                className="mt-6 bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-100 rounded-2xl p-5 flex flex-col sm:flex-row items-center gap-4"
+                initial={{ opacity: 0, y: 10 }}
+                animate={{ opacity: 1, y: 0, transition: { delay: 0.4, duration: 0.35 } }}
+              >
+                <div className="flex-1">
+                  <p className="font-semibold text-gray-900 text-sm">¿Quieres un menú 100% personalizado?</p>
+                  <p className="text-xs text-gray-500 mt-0.5">Crea tu menú con IA basado en tus restricciones y objetivos nutricionales</p>
+                </div>
+                <Button
+                  className="bg-[#FF6B35] hover:bg-[#e55a25] text-white rounded-xl shrink-0"
+                  onClick={() => navigate("/app/ai-menu")}
+                >
+                  🤖 Crear con IA
+                </Button>
+              </motion.div>
+            </motion.section>
+          )}
+        </AnimatePresence>
+
+        {/* ── NO RECOMMENDATIONS BUT MENUS EXIST ── */}
+        <AnimatePresence>
+          {hasMenusButNoneRecommended && !showAll && (
+            <motion.div
+              key="no-match"
+              variants={sectionVariants}
+              initial="hidden"
+              animate="visible"
+              exit={{ opacity: 0 }}
+              className="text-center py-10 px-6"
+            >
+              <div className="text-4xl mb-3">🍽️</div>
+              <h3 className="text-lg font-bold text-gray-900 mb-2">
+                Actualmente no hay menús adaptados para ti
+              </h3>
+              <p className="text-gray-500 text-sm max-w-xs mx-auto mb-6">
+                No encontramos menús que coincidan con tu perfil. ¿Quieres explorar todos o crear uno con IA?
+              </p>
+              <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                <Button
+                  className="bg-[#FF6B35] hover:bg-[#e55a25] text-white rounded-xl"
+                  onClick={() => navigate("/app/ai-menu")}
+                >
+                  🤖 Crear con IA según mis preferencias
+                </Button>
+                <Button variant="outline" className="rounded-xl" onClick={() => setShowAll(true)}>
+                  🔍 Explorar todos los menús
+                </Button>
               </div>
-            )}
-          </section>
-        )}
+            </motion.div>
+          )}
+        </AnimatePresence>
+
+        {/* ── ALL MENUS (explore mode or not logged in) ── */}
+        <AnimatePresence>
+          {(showAll || !user) && (
+            <motion.section
+              key="all-menus"
+              variants={sectionVariants}
+              initial="hidden"
+              animate="visible"
+              exit={{ opacity: 0 }}
+            >
+              {showAll && (
+                <div className="flex items-center gap-3 mb-4">
+                  <button
+                    className="text-sm text-[#FF6B35] font-medium hover:underline"
+                    onClick={() => setShowAll(false)}
+                  >
+                    ← Volver a mis recomendados
+                  </button>
+                  <h2 className="text-lg font-bold text-gray-900">Todos los menús</h2>
+                </div>
+              )}
+
+              {/* Search */}
+              <Input
+                placeholder="Buscar un menú..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="bg-white mb-4"
+              />
+
+              {/* Goal filter */}
+              <div className="mb-3">
+                <p className="text-sm font-medium mb-2 text-muted-foreground">Objetivo</p>
+                <div className="flex gap-2 flex-wrap">
+                  {GOALS.map((g) => (
+                    <button
+                      key={String(g.id)}
+                      onClick={() => setSelectedGoal(g.id as any)}
+                      className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all border ${
+                        selectedGoal === g.id
+                          ? "bg-[#FF6B35] text-white border-[#FF6B35]"
+                          : "bg-white text-gray-700 border-gray-200 hover:border-[#FF6B35]"
+                      }`}
+                    >
+                      {g.emoji} {g.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Difficulty filter */}
+              <div className="mb-6">
+                <p className="text-sm font-medium mb-2 text-muted-foreground">Dificultad</p>
+                <div className="flex gap-2">
+                  {DIFFICULTIES.map((d) => (
+                    <button
+                      key={String(d.id)}
+                      onClick={() => setSelectedDifficulty(d.id as any)}
+                      className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all border ${
+                        selectedDifficulty === d.id
+                          ? "bg-[#FF6B35] text-white border-[#FF6B35]"
+                          : "bg-white text-gray-700 border-gray-200 hover:border-[#FF6B35]"
+                      }`}
+                    >
+                      {d.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Menu grid */}
+              {isLoadingAll ? (
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  {[...Array(6)].map((_, i) => (
+                    <MenuCardSkeleton key={i} />
+                  ))}
+                </div>
+              ) : filtered.length === 0 ? (
+                <motion.div
+                  variants={sectionVariants}
+                  initial="hidden"
+                  animate="visible"
+                  className="text-center py-12 text-muted-foreground"
+                >
+                  <p className="text-4xl mb-3">🍽️</p>
+                  <p>No se encontraron menús con estos filtros.</p>
+                  {user && (
+                    <Button
+                      className="mt-4 bg-[#FF6B35] hover:bg-[#e55a25] text-white rounded-xl"
+                      onClick={() => navigate("/app/ai-menu")}
+                    >
+                      🤖 Crear menú con IA
+                    </Button>
+                  )}
+                </motion.div>
+              ) : (
+                <motion.div
+                  className="grid grid-cols-1 sm:grid-cols-2 gap-4"
+                  variants={containerVariants}
+                  initial="hidden"
+                  animate="visible"
+                >
+                  {filtered.map((menu) => (
+                    <MenuCard
+                      key={menu.id}
+                      menu={menu}
+                      user={user}
+                      onDetail={setDetailMenuId}
+                      onSave={setSaveMenu}
+                    />
+                  ))}
+                </motion.div>
+              )}
+            </motion.section>
+          )}
+        </AnimatePresence>
 
         {/* Disclaimer */}
         <p className="text-xs text-muted-foreground text-center pb-4">
