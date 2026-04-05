@@ -1416,7 +1416,7 @@ Devuelve SOLO JSON válido con esta estructura:
       .input(
         z.object({
           goal: z.enum(["perdida_peso", "ganancia_muscular", "tonificacion", "perdida_grasa", "mantenimiento", "bienestar", "vegano"]).optional(),
-          difficulty: z.enum(["facil", "medio", "dificil"]).optional(),
+          difficulty: z.enum(["easy", "medium", "hard", "facil", "medio", "dificil"]).optional(),
           limit: z.number().optional().default(50),
         })
       )
@@ -1424,7 +1424,12 @@ Devuelve SOLO JSON válido con esta estructura:
         const allMenus = await db.getSeededMenus();
         let filtered = allMenus;
         if (input.goal) filtered = filtered.filter((m: any) => m.goal === input.goal);
-        if (input.difficulty) filtered = filtered.filter((m: any) => m.difficulty === input.difficulty);
+        // Map frontend difficulty labels to DB values
+        if (input.difficulty) {
+          const diffMap: Record<string, string> = { facil: "easy", medio: "medium", dificil: "hard" };
+          const dbDiff = diffMap[input.difficulty] ?? input.difficulty;
+          filtered = filtered.filter((m: any) => m.difficulty === dbDiff);
+        }
         return filtered.slice(0, input.limit ?? 50);
       }),
     libraryDetail: publicProcedure
