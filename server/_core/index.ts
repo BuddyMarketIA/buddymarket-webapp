@@ -145,7 +145,54 @@ async function startServer() {
     }
   });
 
-  // ─── Metrics endpoints ───────────────────────────────────────────────
+  // ─── Health check endpoint ──────────────────────────────────────
+  const startTime = Date.now();
+  app.get("/api/health", async (_req: any, res: any) => {
+    const uptimeMs = Date.now() - startTime;
+    const uptimeSec = Math.floor(uptimeMs / 1000);
+    const uptimeFormatted = `${Math.floor(uptimeSec / 3600)}h ${Math.floor((uptimeSec % 3600) / 60)}m ${uptimeSec % 60}s`;
+
+    // Quick DB ping
+    let dbStatus: "ok" | "error" = "ok";
+    let dbLatencyMs: number | null = null;
+    try {
+      const dbStart = Date.now();
+      const { getDb } = await import("../db");
+      const db = await getDb();
+      if (!db) throw new Error("DB not available");
+      await db.execute("SELECT 1");
+      dbLatencyMs = Date.now() - dbStart;
+    } catch {
+      dbStatus = "error";
+    }
+
+    const pkg = JSON.parse(
+      (await import("fs")).readFileSync(new URL("../../package.json", import.meta.url), "utf8")
+    );
+
+    const health = {
+      ok: dbStatus === "ok",
+      version: pkg.version ?? "1.0.0",
+      environment: process.env.NODE_ENV ?? "development",
+      uptime: uptimeFormatted,
+      uptimeMs,
+      timestamp: new Date().toISOString(),
+      db: {
+        status: dbStatus,
+        latencyMs: dbLatencyMs,
+      },
+      memory: {
+        heapUsedMb: Math.round(process.memoryUsage().heapUsed / 1024 / 1024),
+        heapTotalMb: Math.round(process.memoryUsage().heapTotal / 1024 / 1024),
+        rssMb: Math.round(process.memoryUsage().rss / 1024 / 1024),
+      },
+    };
+
+    const statusCode = health.ok ? 200 : 503;
+    return res.status(statusCode).json(health);
+  });
+
+  // ─── Metrics endpoints ───────────────────────────────────
   registerMetricsRoutes(app);
 
   // ─── tRPC API ─────────────────────────────────────────────────────────────
@@ -233,3 +280,64 @@ function scheduleNextBackup() {
 if (process.env.NODE_ENV === "production") {
   scheduleNextBackup();
 }
+
+// ─── Graceful Shutdown ────────────────────────────────────────────────────────
+// Exported so startServer() can register the HTTP server for draining
+let _httpServer: ReturnType<typeof import("http").createServer> | null = null;
+
+export function registerServerForShutdown(srv: ReturnType<typeof import("http").createServer>) {
+  _httpServer = srv;
+}
+
+async function gracefulShutdown(signal: string) {
+  logger.info(`[Shutdown] Received ${signal} — starting graceful shutdown...`);
+
+  // 1. Stop accepting new connections
+  if (_httpServer) {
+    await new Promise<void>((resolve) => {
+      _httpServer!.close(() => {
+        logger.info("[Shutdown] HTTP server closed — no more new connections");
+        resolve();
+      });
+      // Force close after 15s
+      setTimeout(() => {
+        logger.warn("[Shutdown] Forcing close after 15s timeout");
+        resolve();
+      }, 15_000);
+    });
+  }
+
+  // 2. Notify Slack
+  try {
+    const { alert: sendAlert } = await import("./alerts");
+    await sendAlert("info", `BuddyMarket server shutting down (${signal})`, {
+      message: `Graceful shutdown initiated. Signal: ${signal}`,
+    });
+  } catch { /* ignore */ }
+
+  // 3. Flush Sentry events
+  try {
+    const SentryModule = await import("@sentry/node");
+    await SentryModule.flush(2000).catch(() => {});
+  } catch { /* ignore */ }
+
+  logger.info("[Shutdown] Graceful shutdown complete. Exiting.");
+  process.exit(0);
+}
+
+process.on("SIGTERM", () => gracefulShutdown("SIGTERM"));
+process.on("SIGINT",  () => gracefulShutdown("SIGINT"));
+
+// Handle uncaught exceptions — log + alert before crashing
+process.on("uncaughtException", (err) => {
+  logger.error("[Process] Uncaught exception:", err);
+  try {
+    const { captureException } = require("./sentry");
+    captureException(err);
+  } catch { /* ignore */ }
+  process.exit(1);
+});
+
+process.on("unhandledRejection", (reason) => {
+  logger.error("[Process] Unhandled promise rejection:", reason);
+});
