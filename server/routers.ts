@@ -2314,39 +2314,70 @@ Genera 3 recetas que aprovechen estos ingredientes. Para cada receta incluye: no
         mimeType: z.string().default("image/jpeg"),
       }))
       .mutation(async ({ ctx, input }) => {
-        // 1. Upload image to S3
-        const imageBuffer = Buffer.from(input.imageBase64, "base64");
-        const fileKey = `meal-photos/${ctx.user.id}-${Date.now()}.jpg`;
-        const { url: photoUrl } = await storagePut(fileKey, imageBuffer, input.mimeType);
-        // 2. Analyze with vision AI
-        const response = await invokeLLM({
-          messages: [
-            {
-              role: "system",
-              content: `Eres un nutricionista experto. Analiza la imagen de comida y devuelve SOLO un JSON válido con los alimentos detectados y sus valores nutricionales estimados.`,
-            },
-            {
-              role: "user",
-              content: [
-                { type: "image_url", image_url: { url: photoUrl, detail: "high" } },
-                {
-                  type: "text",
-                  text: `Analiza esta imagen y devuelve SOLO este JSON (sin texto adicional, sin markdown):
-{"mealName":"nombre del plato","foods":[{"name":"alimento","quantity":"cantidad estimada","calories":0,"proteins":0,"carbs":0,"fats":0}],"totalCalories":0,"totalProteins":0,"totalCarbs":0,"totalFats":0,"confidence":"alta","notes":"observaciones"}`,
-                },
-              ],
-            },
-          ],
-        });
-        // 3. Parse AI response
+        // 1. Upload image to S3 (non-critical — for display purposes only)
+        let photoUrl: string | null = null;
+        try {
+          const imageBuffer = Buffer.from(input.imageBase64, "base64");
+          const fileKey = `meal-photos/${ctx.user.id}-${Date.now()}.jpg`;
+          const result = await storagePut(fileKey, imageBuffer, input.mimeType);
+          photoUrl = result.url;
+        } catch {
+          // S3 failure is non-critical; analysis can still proceed
+        }
+        // 2. Analyze with vision AI — pass image as base64 data URL directly
+        // Using data URL avoids issues with S3 URLs not being accessible by the LLM
+        const dataUrl = `data:${input.mimeType};base64,${input.imageBase64}`;
         let analysis: { mealName: string; foods: Array<{ name: string; quantity: string; calories: number; proteins: number; carbs: number; fats: number }>; totalCalories: number; totalProteins: number; totalCarbs: number; totalFats: number; confidence: string; notes: string };
         try {
+          const response = await invokeLLM({
+            messages: [
+              {
+                role: "system",
+                content: `Eres un nutricionista experto en análisis visual de alimentos. Analiza la imagen de comida y devuelve SOLO un JSON válido con los alimentos detectados y sus valores nutricionales estimados por porción visible. Sé específico con los alimentos identificados.`,
+              },
+              {
+                role: "user",
+                content: [
+                  { type: "image_url", image_url: { url: dataUrl, detail: "high" } },
+                  {
+                    type: "text",
+                    text: `Analiza esta imagen de comida y devuelve SOLO este JSON (sin texto adicional, sin markdown, sin explicaciones):
+{"mealName":"nombre descriptivo del plato","foods":[{"name":"nombre del alimento","quantity":"cantidad estimada (ej: 150g, 1 unidad)","calories":0,"proteins":0,"carbs":0,"fats":0}],"totalCalories":0,"totalProteins":0,"totalCarbs":0,"totalFats":0,"confidence":"alta|media|baja","notes":"observaciones nutricionales relevantes"}
+
+IMPORTANTE: Estima los valores nutricionales basándote en las porciones visibles. Si no puedes identificar la comida con certeza, indica confidence "baja".`,
+                  },
+                ],
+              },
+            ],
+          });
           const content = response.choices[0]?.message?.content ?? "{}";
           const jsonStr = typeof content === "string" ? content : JSON.stringify(content);
-          const cleaned = jsonStr.replace(/```json\n?/g, "").replace(/```\n?/g, "").trim();
-          analysis = JSON.parse(cleaned);
+          // Strip markdown code blocks if present
+          const cleaned = jsonStr
+            .replace(/^```(?:json)?\s*/i, "")
+            .replace(/\s*```$/i, "")
+            .trim();
+          // Extract JSON object even if there's surrounding text
+          const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
+          analysis = JSON.parse(jsonMatch ? jsonMatch[0] : cleaned);
+          // Ensure required fields exist with fallback calculations
+          if (!analysis.foods) analysis.foods = [];
+          if (!analysis.totalCalories) analysis.totalCalories = analysis.foods.reduce((s: number, f: any) => s + (f.calories || 0), 0);
+          if (!analysis.totalProteins) analysis.totalProteins = analysis.foods.reduce((s: number, f: any) => s + (f.proteins || 0), 0);
+          if (!analysis.totalCarbs) analysis.totalCarbs = analysis.foods.reduce((s: number, f: any) => s + (f.carbs || 0), 0);
+          if (!analysis.totalFats) analysis.totalFats = analysis.foods.reduce((s: number, f: any) => s + (f.fats || 0), 0);
         } catch {
-          analysis = { mealName: "Comida detectada", foods: [], totalCalories: 0, totalProteins: 0, totalCarbs: 0, totalFats: 0, confidence: "baja", notes: "No se pudo analizar la imagen" };
+          // Return graceful fallback instead of crashing with INTERNAL_SERVER_ERROR
+          analysis = {
+            mealName: "Comida detectada",
+            foods: [],
+            totalCalories: 0,
+            totalProteins: 0,
+            totalCarbs: 0,
+            totalFats: 0,
+            confidence: "baja",
+            notes: "No se pudo analizar la imagen automáticamente. Por favor, introduce los valores manualmente.",
+          };
         }
         return { photoUrl, analysis };
       }),
@@ -2422,13 +2453,27 @@ Genera 3 recetas que aprovechen estos ingredientes. Para cada receta incluye: no
     lookupBarcode: protectedProcedure
       .input(z.object({ barcode: z.string().min(4).max(30) }))
       .query(async ({ input }) => {
+        const OFF_URL = `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(input.barcode)}.json?fields=product_name,product_name_es,nutriments,image_front_small_url,image_front_url,brands,quantity,serving_size,nutriscore_grade,nova_group,ecoscore_grade`;
+        // Retry helper: try up to 2 times with 10s timeout each
+        const fetchWithRetry = async (url: string, attempts = 2): Promise<Response> => {
+          for (let i = 0; i < attempts; i++) {
+            try {
+              const res = await fetch(url, {
+                headers: { "User-Agent": "BuddyMarket/1.0 (contact@buddymarket.app)" },
+                signal: AbortSignal.timeout(10000),
+              });
+              if (res.ok) return res;
+              if (res.status === 404) throw new TRPCError({ code: "NOT_FOUND", message: "Producto no encontrado" });
+            } catch (e: any) {
+              if (e instanceof TRPCError) throw e;
+              if (i === attempts - 1) throw e; // last attempt: propagate
+              await new Promise(r => setTimeout(r, 1500)); // wait before retry
+            }
+          }
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "No se pudo conectar con la base de datos de productos" });
+        };
         try {
-          const url = `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(input.barcode)}.json?fields=product_name,product_name_es,nutriments,image_front_small_url,image_front_url,brands,quantity,serving_size,nutriscore_grade,nova_group,ecoscore_grade`;
-          const response = await fetch(url, {
-            headers: { "User-Agent": "BuddyMarket/1.0 (contact@buddymarket.app)" },
-            signal: AbortSignal.timeout(8000),
-          });
-          if (!response.ok) throw new TRPCError({ code: "NOT_FOUND", message: "Producto no encontrado" });
+          const response = await fetchWithRetry(OFF_URL);
           const data = await response.json() as any;
           if (data.status !== 1 || !data.product) {
             throw new TRPCError({ code: "NOT_FOUND", message: "Producto no encontrado en la base de datos" });
