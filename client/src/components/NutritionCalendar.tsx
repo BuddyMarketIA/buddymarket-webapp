@@ -99,8 +99,8 @@ export default function NutritionCalendar({ onClose, calorieGoal = 2000, goalTyp
 
   return (
     <div
-      className="fixed inset-0 z-50 flex items-end justify-center"
-      style={{ background: "rgba(0,0,0,0.75)" }}
+      className="fixed inset-0 flex items-end justify-center"
+      style={{ background: "rgba(0,0,0,0.75)", zIndex: 500 }}
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
       <div
