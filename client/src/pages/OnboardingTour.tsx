@@ -15,7 +15,7 @@ const CARDS = [
     description:
       "BuddyMarket analiza tus objetivos, metabolismo y preferencias para crear planes nutricionales completamente personalizados. La IA aprende contigo cada día.",
     features: ["Planes 100% personalizados", "Ajuste automático de calorías", "Aprende de tus hábitos"],
-    img: "https://images.unsplash.com/photo-1551288049-bebda4e38f71?w=600&q=80&auto=format&fit=crop",
+    img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/mealprep_eb5fda9a.jpg",
   },
   {
     id: 2,
@@ -28,7 +28,7 @@ const CARDS = [
     description:
       "Genera menús semanales completos en segundos. Desayuno, comida, merienda y cena adaptados a tus macros, con lista de la compra automática incluida.",
     features: ["Menús en 1 clic", "Lista de la compra automática", "Variedad garantizada"],
-    img: "https://images.unsplash.com/photo-1547592180-85f173990554?w=600&q=80&auto=format&fit=crop",
+    img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/menu_semanal_banner-bJvcZL6L7JygtVy2QeuafW.webp",
   },
   {
     id: 3,
@@ -41,7 +41,7 @@ const CARDS = [
     description:
       "Accede a un catálogo enorme de recetas filtradas por tus objetivos, alergias e ingredientes disponibles. Crea y comparte tus propias recetas con la comunidad.",
     features: ["Filtros por alergia e intolerancia", "Crea tus propias recetas", "Comparte con la comunidad"],
-    img: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=600&q=80&auto=format&fit=crop",
+    img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/recipes_afa44a0e.jpg",
   },
   {
     id: 4,
@@ -54,7 +54,7 @@ const CARDS = [
     description:
       "Registra tus comidas con un escáner de código de barras o búsqueda inteligente. Visualiza tus macros, calorías y micronutrientes con gráficas detalladas.",
     features: ["Escáner de código de barras", "Gráficas de progreso", "Seguimiento de macros"],
-    img: "https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=600&q=80&auto=format&fit=crop",
+    img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/vegetables_0f947a56.jpg",
   },
   {
     id: 5,
@@ -67,7 +67,7 @@ const CARDS = [
     description:
       "Gestiona tu despensa y nevera de forma inteligente. BuddyMarket sabe lo que tienes y genera recetas con los ingredientes disponibles, reduciendo el desperdicio.",
     features: ["Control de despensa", "Alertas de caducidad", "Recetas con lo que tienes"],
-    img: "https://images.unsplash.com/photo-1542838132-92c53300491e?w=600&q=80&auto=format&fit=crop",
+    img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/pantry_3fcf0a1f.jpg",
   },
   {
     id: 6,
@@ -80,7 +80,7 @@ const CARDS = [
     description:
       "Conecta con expertos en nutrición, sigue a otros usuarios, participa en retos y comparte tu progreso. La motivación es más fácil cuando no estás solo.",
     features: ["Retos y desafíos", "Buddy Experts certificados", "Comparte tu progreso"],
-    img: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=600&q=80&auto=format&fit=crop",
+    img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/shopping_d2c9f4e5.jpg",
   },
 ];
 
