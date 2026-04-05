@@ -590,11 +590,10 @@ Devuelve SOLO JSON válido con esta estructura:
   // ---------------------------------------------------------------------------
   ingredients: router({
     search: publicProcedure
-      .input(z.object({ query: z.string(), limit: z.number().optional() }))
+       .input(z.object({ query: z.string().min(1).max(100).trim(), limit: z.number().int().min(1).max(50).optional() }))
       .query(({ input }) => db.searchIngredients(input.query, input.limit)),
-
     getAll: publicProcedure
-      .input(z.object({ limit: z.number().optional(), offset: z.number().optional() }))
+      .input(z.object({ limit: z.number().int().min(1).max(200).optional(), offset: z.number().int().min(0).optional() }))
       .query(({ input }) => db.getAllIngredients(input.limit, input.offset)),
 
     getById: publicProcedure
@@ -692,10 +691,10 @@ Devuelve SOLO JSON válido con esta estructura:
       }),
 
     searchSuggestions: publicProcedure
-      .input(z.object({ query: z.string(), limit: z.number().optional() }))
+      .input(z.object({ query: z.string().min(1).max(100).trim(), limit: z.number().int().min(1).max(50).optional() }))
       .query(({ input }) => db.searchRecipeSuggestions(input.query, input.limit ?? 8)),
     myRecipes: protectedProcedure
-      .input(z.object({ limit: z.number().optional(), offset: z.number().optional() }))
+      .input(z.object({ limit: z.number().int().min(1).max(200).optional(), offset: z.number().int().min(0).optional() }))
       .query(({ ctx, input }) => db.getRecipes({ userId: ctx.user.id, ...input })),
 
     favorites: protectedProcedure.query(async ({ ctx }) => {
@@ -719,17 +718,17 @@ Devuelve SOLO JSON válido con esta estructura:
     create: protectedProcedure
       .input(
         z.object({
-          name: z.string(),
-          description: z.string().optional(),
-          imageUrl: z.string().optional(),
-          preparationTime: z.number().optional(),
-          cookTime: z.number().optional(),
-          servings: z.number().optional(),
+          name: z.string().min(2, "El nombre debe tener al menos 2 caracteres").max(100, "El nombre no puede superar 100 caracteres").trim(),
+          description: z.string().max(2000, "La descripción no puede superar 2000 caracteres").optional(),
+          imageUrl: z.string().url("URL de imagen inválida").optional().or(z.literal("")),
+          preparationTime: z.number().int().min(0).max(1440, "El tiempo de preparación no puede superar 24 horas").optional(),
+          cookTime: z.number().int().min(0).max(1440, "El tiempo de cocción no puede superar 24 horas").optional(),
+          servings: z.number().int().min(1, "Mínimo 1 ración").max(100, "Máximo 100 raciones").optional(),
           difficulty: z.enum(["easy", "medium", "hard"]).optional(),
           isPublic: z.boolean().optional(),
-          categoryIds: z.array(z.number()).optional(),
-          allergyIds: z.array(z.number()).optional(),
-          restrictionIds: z.array(z.number()).optional(),
+          categoryIds: z.array(z.number().int().positive()).max(10, "Máximo 10 categorías").optional(),
+          allergyIds: z.array(z.number().int().positive()).max(20, "Máximo 20 alergias").optional(),
+          restrictionIds: z.array(z.number().int().positive()).max(20, "Máximo 20 restricciones").optional(),
         })
       )
       .mutation(async ({ ctx, input }) => {
@@ -750,18 +749,18 @@ Devuelve SOLO JSON válido con esta estructura:
     update: protectedProcedure
       .input(
         z.object({
-          id: z.number(),
-          name: z.string().optional(),
-          description: z.string().optional(),
-          imageUrl: z.string().optional(),
-          preparationTime: z.number().optional(),
-          cookTime: z.number().optional(),
-          servings: z.number().optional(),
+          id: z.number().int().positive(),
+          name: z.string().min(2).max(100).trim().optional(),
+          description: z.string().max(2000).optional(),
+          imageUrl: z.string().url().optional().or(z.literal("")),
+          preparationTime: z.number().int().min(0).max(1440).optional(),
+          cookTime: z.number().int().min(0).max(1440).optional(),
+          servings: z.number().int().min(1).max(100).optional(),
           difficulty: z.enum(["easy", "medium", "hard"]).optional(),
           isPublic: z.boolean().optional(),
-          categoryIds: z.array(z.number()).optional(),
-          allergyIds: z.array(z.number()).optional(),
-          restrictionIds: z.array(z.number()).optional(),
+          categoryIds: z.array(z.number().int().positive()).max(10).optional(),
+          allergyIds: z.array(z.number().int().positive()).max(20).optional(),
+          restrictionIds: z.array(z.number().int().positive()).max(20).optional(),
         })
       )
       .mutation(async ({ ctx, input }) => {
@@ -819,11 +818,11 @@ Devuelve SOLO JSON válido con esta estructura:
     addStep: protectedProcedure
       .input(
         z.object({
-          recipeId: z.number(),
-          stepNumber: z.number(),
-          instruction: z.string(),
-          imageUrl: z.string().optional(),
-          timing: z.number().optional(),
+          recipeId: z.number().int().positive(),
+          stepNumber: z.number().int().min(1).max(50, "Máximo 50 pasos por receta"),
+          instruction: z.string().min(5, "La instrucción debe tener al menos 5 caracteres").max(1000, "La instrucción no puede superar 1000 caracteres").trim(),
+          imageUrl: z.string().url().optional().or(z.literal("")),
+          timing: z.number().int().min(0).max(480).optional(),
         })
       )
       .mutation(async ({ ctx, input }) => {
@@ -847,10 +846,10 @@ Devuelve SOLO JSON válido con esta estructura:
     generateWithAI: protectedProcedure
       .input(
         z.object({
-          prompt: z.string(),
-          servings: z.number().optional(),
-          difficulty: z.string().optional(),
-          maxTime: z.number().optional(),
+          prompt: z.string().min(10, "El prompt debe tener al menos 10 caracteres").max(500, "El prompt no puede superar 500 caracteres").trim(),
+          servings: z.number().int().min(1).max(100).optional(),
+          difficulty: z.enum(["easy", "medium", "hard"]).optional(),
+          maxTime: z.number().int().min(5).max(480).optional(),
         })
       )
       .mutation(async ({ ctx, input }) => {
@@ -938,12 +937,12 @@ Devuelve SOLO JSON válido con esta estructura:
     create: protectedProcedure
       .input(
         z.object({
-          name: z.string(),
-          startDate: z.string(),
-          endDate: z.string(),
+          name: z.string().min(2, "El nombre debe tener al menos 2 caracteres").max(80, "El nombre no puede superar 80 caracteres").trim(),
+          startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Formato de fecha inválido, usa YYYY-MM-DD"),
+          endDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Formato de fecha inválido, usa YYYY-MM-DD"),
           type: z.enum(["weekly", "monthly", "custom"]).optional(),
-          objective: z.string().optional(),
-          dailyMealsCount: z.number().optional(),
+          objective: z.string().max(200).optional(),
+          dailyMealsCount: z.number().int().min(1).max(10).optional(),
         })
       )
       .mutation(({ ctx, input }) =>
@@ -953,10 +952,10 @@ Devuelve SOLO JSON válido con esta estructura:
     update: protectedProcedure
       .input(
         z.object({
-          id: z.number(),
-          name: z.string().optional(),
-          objective: z.string().optional(),
-          dailyMealsCount: z.number().optional(),
+          id: z.number().int().positive(),
+          name: z.string().min(2).max(80).trim().optional(),
+          objective: z.string().max(200).optional(),
+          dailyMealsCount: z.number().int().min(1).max(10).optional(),
           isPublic: z.boolean().optional(),
         })
       )
@@ -1014,7 +1013,11 @@ Devuelve SOLO JSON válido con esta estructura:
 
     // Ensure a day part exists for a date+mealType, return its id
     ensureDayPart: protectedProcedure
-      .input(z.object({ menuId: z.number(), date: z.string(), mealType: z.string() }))
+      .input(z.object({
+        menuId: z.number().int().positive(),
+        date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Formato de fecha inválido, usa YYYY-MM-DD"),
+        mealType: z.string().min(1).max(50).trim(),
+      }))
       .mutation(async ({ ctx, input }) => {
         const menu = await db.getMenuOrganizerById(input.menuId);
         if (!menu) throw new TRPCError({ code: "NOT_FOUND" });
@@ -2538,17 +2541,16 @@ Genera 3 recetas que aprovechen estos ingredientes. Para cada receta incluye: no
   // ---------------------------------------------------------------------------
   healthMetrics: router({
     list: protectedProcedure
-      .input(z.object({ limit: z.number().optional() }))
+       .input(z.object({ limit: z.number().int().min(1).max(365).optional() }))
       .query(({ ctx, input }) => db.getHealthMetrics(ctx.user.id, input.limit)),
-
     add: protectedProcedure
       .input(
         z.object({
-          weight: z.number().optional(),
-          bodyFatPercentage: z.number().optional(),
-          muscleMass: z.number().optional(),
-          recordedAt: z.string(),
-          notes: z.string().optional(),
+          weight: z.number().min(20, "Peso mínimo 20 kg").max(500, "Peso máximo 500 kg").optional(),
+          bodyFatPercentage: z.number().min(1).max(70).optional(),
+          muscleMass: z.number().min(10).max(200).optional(),
+          recordedAt: z.string().regex(/^\d{4}-\d{2}-\d{2}/, "Formato de fecha inválido"),
+          notes: z.string().max(500).optional(),
         })
       )
       .mutation(({ ctx, input }) => db.addHealthMetric({ ...input, userId: ctx.user.id, recordedAt: new Date(input.recordedAt) } as any)),
@@ -2559,7 +2561,7 @@ Genera 3 recetas que aprovechen estos ingredientes. Para cada receta incluye: no
   // ---------------------------------------------------------------------------
   admin: router({
     users: protectedProcedure
-      .input(z.object({ limit: z.number().optional(), offset: z.number().optional() }))
+      .input(z.object({ limit: z.number().int().min(1).max(200).optional(), offset: z.number().int().min(0).optional() }))
       .query(async ({ ctx, input }) => {
         if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
         const userList = await db.getAllUsers(input.limit, input.offset);
@@ -3105,7 +3107,7 @@ Genera 3 recetas que aprovechen estos ingredientes. Para cada receta incluye: no
   // ===========================================================================
   carrefour: router({
     searchProducts: publicProcedure
-      .input(z.object({ q: z.string().optional(), category: z.string().optional(), subcategory: z.string().optional(), limit: z.number().optional() }))
+      .input(z.object({ q: z.string().max(100).trim().optional(), category: z.string().max(50).trim().optional(), subcategory: z.string().max(50).trim().optional(), limit: z.number().int().min(1).max(100).optional() }))
       .query(async ({ input }) => {
         const drizzleDb = await db.getDb();
         if (!drizzleDb) return [];
@@ -3164,7 +3166,7 @@ Genera 3 recetas que aprovechen estos ingredientes. Para cada receta incluye: no
   // ===========================================================================
   alcampo: router({
     searchProducts: publicProcedure
-      .input(z.object({ q: z.string().optional(), category: z.string().optional(), subcategory: z.string().optional(), limit: z.number().optional() }))
+      .input(z.object({ q: z.string().max(100).trim().optional(), category: z.string().max(50).trim().optional(), subcategory: z.string().max(50).trim().optional(), limit: z.number().int().min(1).max(100).optional() }))
       .query(async ({ input }) => {
         const drizzleDb = await db.getDb();
         if (!drizzleDb) return [];
@@ -3723,7 +3725,7 @@ Genera 3 recetas que aprovechen estos ingredientes. Para cada receta incluye: no
   // ===========================================================================
   buddyExperts: router({
     list: publicProcedure
-      .input(z.object({ category: z.string().optional(), search: z.string().optional(), featured: z.boolean().optional() }).optional())
+      .input(z.object({ category: z.string().max(50).trim().optional(), search: z.string().max(100).trim().optional(), featured: z.boolean().optional() }).optional())
       .query(async ({ input }) => {
         const drizzleDb = await db.getDb();
         if (!drizzleDb) return [];
@@ -3755,7 +3757,7 @@ Genera 3 recetas que aprovechen estos ingredientes. Para cada receta incluye: no
       }),
 
     getAllPlans: publicProcedure
-      .input(z.object({ category: z.string().optional(), search: z.string().optional() }).optional())
+      .input(z.object({ category: z.string().max(50).trim().optional(), search: z.string().max(100).trim().optional() }).optional())
       .query(async ({ input }) => {
         const drizzleDb = await db.getDb();
         if (!drizzleDb) return [];
@@ -5246,30 +5248,30 @@ Devuelve SOLO JSON válido con esta estructura exacta:
     saveGeneratedMenu: protectedProcedure
       .input(
         z.object({
-          menuName: z.string(),
-          startDate: z.string(),
-          goal: z.string(),
-          persons: z.number().min(1).max(20),
-          targetCalories: z.number(),
+          menuName: z.string().min(2).max(80).trim(),
+          startDate: z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Formato de fecha inválido"),
+          goal: z.string().min(1).max(100).trim(),
+          persons: z.number().int().min(1).max(20),
+          targetCalories: z.number().min(0).max(10000),
           days: z.array(
             z.object({
-              day: z.string(),
-              date: z.string().optional(),
-              totalCalories: z.number().optional(),
+              day: z.string().min(1).max(20),
+              date: z.string().regex(/^\d{4}-\d{2}-\d{2}$/).optional(),
+              totalCalories: z.number().min(0).max(10000).optional(),
               meals: z.array(
                 z.object({
-                  name: z.string(),
-                  food: z.string(),
-                  calories: z.number().optional(),
-                  protein: z.number().optional(),
-                  carbs: z.number().optional(),
-                  fat: z.number().optional(),
-                  prepTime: z.string().optional(),
-                  ingredients: z.array(z.string()).optional(),
+                  name: z.string().min(1).max(50).trim(),
+                  food: z.string().min(1).max(200).trim(),
+                  calories: z.number().min(0).max(5000).optional(),
+                  protein: z.number().min(0).max(500).optional(),
+                  carbs: z.number().min(0).max(500).optional(),
+                  fat: z.number().min(0).max(500).optional(),
+                  prepTime: z.string().max(20).optional(),
+                  ingredients: z.array(z.string().max(100)).max(30).optional(),
                 })
-              ),
+              ).max(10, "Máximo 10 comidas por día"),
             })
-          ),
+          ).min(1).max(14, "Máximo 14 días por menú"),
         })
       )
       .mutation(async ({ input, ctx }) => {
@@ -5418,13 +5420,13 @@ Devuelve SOLO JSON válido con esta estructura exacta:
   events: router({
     generateMenu: protectedProcedure
       .input(z.object({
-        eventType: z.string(),
-        eventName: z.string().optional(),
-        persons: z.number().min(1).max(500),
+        eventType: z.string().min(1).max(50).trim(),
+        eventName: z.string().max(100).trim().optional(),
+        persons: z.number().int().min(1).max(500),
         hasChildren: z.boolean().optional(),
-        intolerances: z.array(z.string()).optional(),
+        intolerances: z.array(z.string().max(50)).max(20).optional(),
         servesAlcohol: z.boolean().optional(),
-        alcoholTypes: z.array(z.string()).optional(),
+        alcoholTypes: z.array(z.string().max(50)).max(10).optional(),
         courses: z.object({
           aperitivo: z.boolean().optional(),
           primero: z.boolean().optional(),
@@ -5432,10 +5434,10 @@ Devuelve SOLO JSON válido con esta estructura exacta:
           postre: z.boolean().optional(),
           cafe: z.boolean().optional(),
         }).optional(),
-        cuisineStyle: z.string().optional(),
-        budget: z.string().optional(),
-        season: z.string().optional(),
-        extraNotes: z.string().optional(),
+        cuisineStyle: z.string().max(50).trim().optional(),
+        budget: z.string().max(50).trim().optional(),
+        season: z.string().max(30).trim().optional(),
+        extraNotes: z.string().max(500).trim().optional(),
       }))
       .mutation(async ({ input }) => {
         const eventLabels: Record<string, string> = {
@@ -5544,11 +5546,11 @@ Devuelve EXACTAMENTE este JSON:
   savedEvents: router({
     save: protectedProcedure
       .input(z.object({
-        eventType: z.string(),
-        eventName: z.string(),
-        persons: z.number().int().min(1).default(4),
-        categories: z.string().optional(),
-        menuData: z.string(),
+        eventType: z.string().min(1).max(50).trim(),
+        eventName: z.string().min(1).max(100).trim(),
+        persons: z.number().int().min(1).max(500).default(4),
+        categories: z.string().max(200).optional(),
+        menuData: z.string().min(2).max(100000, "Los datos del menú son demasiado grandes"),
       }))
       .mutation(async ({ ctx, input }) => {
         const { savedEvents } = await import("../drizzle/schema");
@@ -6198,7 +6200,7 @@ Devuelve SOLO JSON válido con esta estructura exacta:
   // ---------------------------------------------------------------------------
   complements: router({
     list: publicProcedure
-      .input(z.object({ search: z.string().optional(), category: z.string().optional(), limit: z.number().default(100), offset: z.number().default(0) }).optional())
+      .input(z.object({ search: z.string().max(100).trim().optional(), category: z.string().max(50).trim().optional(), limit: z.number().int().min(1).max(200).default(100), offset: z.number().int().min(0).default(0) }).optional())
       .query(async ({ ctx, input }) => {
         return db.listComplements({ ...(input ?? {}), userId: ctx.user?.id });
       }),
