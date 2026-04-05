@@ -260,7 +260,9 @@ export default function BuddySetup() {
         onSuccess: () => {
           setGenerating(false);
           setDone(true);
-          setTimeout(() => setLocation("/app/dashboard"), 2000);
+          // Redirect to tour if not seen yet, otherwise to dashboard
+          const tourDone = localStorage.getItem("bm_tour_completed");
+          setTimeout(() => setLocation(tourDone ? "/app/dashboard" : "/app/tour"), 2000);
         },
         onError: (err: { message: string }) => {
           toast.error("Error al guardar tu configuración: " + err.message);

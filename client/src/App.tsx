@@ -19,6 +19,7 @@ const Cookies = lazy(() => import("./pages/Cookies"));
 const Registration = lazy(() => import("./pages/Registration"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const BuddySetup = lazy(() => import("./pages/BuddySetup"));
+const OnboardingTour = lazy(() => import("./pages/OnboardingTour"));
 const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
 
 // App pages (protected)
@@ -130,6 +131,7 @@ function Router() {
       <Route path="/gdpr" component={Privacy} />
       {/* Onboarding wizard — requires auth, no AppLayout */}
       <Route path="/buddy-setup">{() => <ProtectedPage><BuddySetup /></ProtectedPage>}</Route>
+      <Route path="/app/tour">{() => <ProtectedPage><OnboardingTour /></ProtectedPage>}</Route>
       {/* /app → redirect to /app/dashboard */}
       <Route path="/app">{() => <Redirect to="/app/dashboard" />}</Route>
       {/* Protected app routes */}
