@@ -1,7 +1,6 @@
 import { and, desc, eq, gte, ilike, inArray, like, lte, or, sql } from "drizzle-orm";
-import { drizzle } from "drizzle-orm/mysql2";
-import { createPool as mysqlCreatePool } from "mysql2/promise";
-import type { Pool as MySQLPool } from "mysql2/promise";
+import { drizzle } from "drizzle-orm/node-postgres";
+import { Pool } from "pg";
 import {
   allergies,
   buddyMakers,
@@ -65,37 +64,29 @@ import {
 import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
-let _pool: MySQLPool | null = null;
-
-function buildPool(): MySQLPool {
-  const pool = mysqlCreatePool({
-    uri: process.env.DATABASE_URL!,
-    waitForConnections: true,
-    connectionLimit: 10,
-    enableKeepAlive: true,
-    keepAliveInitialDelay: 10000,
+let _pool: Pool | null = null;
+function buildPool(): Pool {
+  const pool = new Pool({
+    connectionString: process.env.DATABASE_URL!,
+    max: 10,
+    idleTimeoutMillis: 30000,
+    connectionTimeoutMillis: 10000,
+    ssl: { rejectUnauthorized: false },
   });
-  // When a connection in the pool dies, reset so next call recreates the pool
-  pool.on("connection", (conn) => {
-    conn.on("error", (err: NodeJS.ErrnoException) => {
-      if (err.code === "ECONNRESET" || err.code === "PROTOCOL_CONNECTION_LOST") {
-        console.warn("[Database] Connection lost, will reconnect on next request:", err.code);
-        _db = null;
-        _pool = null;
-      }
-    });
+  pool.on("error", (err) => {
+    console.warn("[Database] Pool error, will reconnect on next request:", err.message);
+    _db = null;
+    _pool = null;
   });
   return pool;
 }
-
 export async function getDb() {
   if (!_db && process.env.DATABASE_URL) {
     try {
       if (!_pool) {
         _pool = buildPool();
       }
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      _db = drizzle(_pool as any);
+      _db = drizzle(_pool);
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;
@@ -141,7 +132,7 @@ export async function upsertUser(user: InsertUser): Promise<void> {
   if (!values.lastSignedIn) values.lastSignedIn = new Date();
   if (Object.keys(updateSet).length === 0) updateSet.lastSignedIn = new Date();
 
-  await db.insert(users).values(values).onDuplicateKeyUpdate({ set: updateSet });
+  await db.insert(users).values(values).onConflictDoUpdate({ target: users.openId, set: updateSet });
 }
 
 export async function getUserByOpenId(openId: string) {
@@ -187,7 +178,7 @@ export async function upsertUserProfile(userId: number, data: Omit<typeof userPr
   await db
     .insert(userProfiles)
     .values({ ...data, userId })
-    .onDuplicateKeyUpdate({ set: data });
+    .onConflictDoUpdate({ target: userProfiles.userId, set: data });
 }
 
 export async function getUserMedicalProfile(userId: number) {
@@ -203,7 +194,7 @@ export async function upsertUserMedicalProfile(userId: number, data: Omit<typeof
   await db
     .insert(userMedicalProfiles)
     .values({ ...data, userId })
-    .onDuplicateKeyUpdate({ set: data });
+    .onConflictDoUpdate({ target: userMedicalProfiles.userId, set: data });
 }
 
 export async function getUserPreferences(userId: number) {
@@ -219,7 +210,7 @@ export async function upsertUserPreferences(userId: number, data: Omit<typeof us
   await db
     .insert(userPreferences)
     .values({ ...data, userId })
-    .onDuplicateKeyUpdate({ set: data });
+    .onConflictDoUpdate({ target: userPreferences.userId, set: data });
 }
 
 // =============================================================================
@@ -269,7 +260,7 @@ export async function createMenuDayPart(menuOrganizerId: number, dayPartId: numb
   const db = await getDb();
   if (!db) return 0;
   const result = await db.insert(menuOrganizerDayParts).values({ menuOrganizerId, dayPartId, date: new Date(date) } as any);
-  return (result as any).insertId ?? 0;
+  return result[0]?.id ?? 0;
 }
 
 export async function getAllStorageLocations() {
@@ -562,8 +553,8 @@ export async function getRecipeAllergies(recipeId: number) {
 export async function createRecipe(data: InsertRecipe) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(recipes).values(data);
-  return { id: Number(result[0].insertId) };
+  const result = await db.insert(recipes).values(data).returning({ id: recipes.id }).returning({ id: recipes.id });
+  return { id: result[0]?.id ?? 0 };
 }
 
 export async function updateRecipe(id: number, data: Partial<InsertRecipe>) {
@@ -581,7 +572,7 @@ export async function deleteRecipe(id: number) {
 export async function addRecipeIngredient(data: InsertRecipeIngredient) {
   const db = await getDb();
   if (!db) return;
-  await db.insert(recipeIngredients).values(data).onDuplicateKeyUpdate({ set: data });
+  await db.insert(recipeIngredients).values(data).onConflictDoNothing();
 }
 
 export async function deleteRecipeIngredient(id: number) {
@@ -593,7 +584,7 @@ export async function deleteRecipeIngredient(id: number) {
 export async function addRecipeStep(data: InsertRecipeStep) {
   const db = await getDb();
   if (!db) return;
-  await db.insert(recipeSteps).values(data).onDuplicateKeyUpdate({ set: data });
+  await db.insert(recipeSteps).values(data).onConflictDoNothing();
 }
 
 export async function deleteRecipeStep(id: number) {
@@ -688,8 +679,8 @@ export async function getMenuOrganizerById(id: number) {
 export async function createMenuOrganizer(data: InsertMenuOrganizer) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(menuOrganizers).values(data);
-  return { id: Number(result[0].insertId) };
+  const result = await db.insert(menuOrganizers).values(data).returning({ id: menuOrganizers.id }).returning({ id: menuOrganizers.id });
+  return { id: result[0]?.id ?? 0 };
 }
 
 export async function updateMenuOrganizer(id: number, data: Partial<InsertMenuOrganizer>) {
@@ -724,7 +715,7 @@ export async function addRecipeToMenuDayPart(menuOrganizerDayPartId: number, rec
   await db
     .insert(menuOrganizerDayPartRecipes)
     .values({ menuOrganizerDayPartId, recipeId, servings })
-    .onDuplicateKeyUpdate({ set: { servings } });
+    .onConflictDoNothing();
 }
 
 export async function removeRecipeFromMenuDayPart(menuOrganizerDayPartId: number, recipeId: number) {
@@ -765,8 +756,8 @@ export async function getShoppingListById(id: number) {
 export async function createShoppingList(data: InsertShoppingList) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(shoppingLists).values(data);
-  return { id: Number(result[0].insertId) };
+  const result = await db.insert(shoppingLists).values(data).returning({ id: shoppingLists.id }).returning({ id: shoppingLists.id });
+  return { id: result[0]?.id ?? 0 };
 }
 
 export async function deleteShoppingList(id: number) {
@@ -794,8 +785,8 @@ export async function getShoppingListItems(shoppingListId: number) {
 export async function addShoppingListItem(data: InsertShoppingListItem) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(shoppingListItems).values(data);
-  return { id: Number(result[0].insertId) };
+  const result = await db.insert(shoppingListItems).values(data).returning({ id: shoppingListItems.id }).returning({ id: shoppingListItems.id });
+  return { id: result[0]?.id ?? 0 };
 }
 
 export async function updateShoppingListItem(id: number, data: Partial<InsertShoppingListItem>) {
@@ -844,8 +835,8 @@ export async function getInventoryItems(userId: number) {
 export async function addInventoryItem(data: InsertUserInventoryItem) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(userInventoryItems).values(data);
-  return { id: Number(result[0].insertId) };
+  const result = await db.insert(userInventoryItems).values(data).returning({ id: userInventoryItems.id }).returning({ id: userInventoryItems.id });
+  return { id: result[0]?.id ?? 0 };
 }
 
 export async function updateInventoryItem(id: number, data: Partial<InsertUserInventoryItem>) {
@@ -886,8 +877,8 @@ export async function getMealLogs(userId: number, startDate?: string, endDate?: 
 export async function addMealLog(data: InsertMealLog) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(mealLogs).values(data);
-  return { id: Number(result[0].insertId) };
+  const result = await db.insert(mealLogs).values(data).returning({ id: mealLogs.id }).returning({ id: mealLogs.id });
+  return { id: result[0]?.id ?? 0 };
 }
 
 export async function deleteMealLog(id: number) {
@@ -961,8 +952,8 @@ export async function getHealthMetrics(userId: number, limit = 30) {
 export async function addHealthMetric(data: InsertUserHealthMetric) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(userHealthMetrics).values(data);
-  return { id: Number(result[0].insertId) };
+  const result = await db.insert(userHealthMetrics).values(data).returning({ id: userHealthMetrics.id }).returning({ id: userHealthMetrics.id });
+  return { id: result[0]?.id ?? 0 };
 }
 
 // =============================================================================
@@ -999,8 +990,8 @@ export async function upsertUserSubscription(userId: number, data: Partial<typeo
 export async function createAllergy(data: typeof allergies.$inferInsert) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(allergies).values(data);
-  return { id: Number(result[0].insertId) };
+  const result = await db.insert(allergies).values(data).returning({ id: allergies.id }).returning({ id: allergies.id });
+  return { id: result[0]?.id ?? 0 };
 }
 
 export async function updateAllergy(id: number, data: Partial<typeof allergies.$inferInsert>) {
@@ -1018,8 +1009,8 @@ export async function deleteAllergy(id: number) {
 export async function createDietRestriction(data: typeof dietRestrictions.$inferInsert) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(dietRestrictions).values(data);
-  return { id: Number(result[0].insertId) };
+  const result = await db.insert(dietRestrictions).values(data).returning({ id: dietRestrictions.id }).returning({ id: dietRestrictions.id });
+  return { id: result[0]?.id ?? 0 };
 }
 
 export async function updateDietRestriction(id: number, data: Partial<typeof dietRestrictions.$inferInsert>) {
@@ -1031,8 +1022,8 @@ export async function updateDietRestriction(id: number, data: Partial<typeof die
 export async function createFoodCategory(data: typeof foodCategories.$inferInsert) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(foodCategories).values(data);
-  return { id: Number(result[0].insertId) };
+  const result = await db.insert(foodCategories).values(data).returning({ id: foodCategories.id }).returning({ id: foodCategories.id });
+  return { id: result[0]?.id ?? 0 };
 }
 
 export async function updateFoodCategory(id: number, data: Partial<typeof foodCategories.$inferInsert>) {
@@ -1044,15 +1035,15 @@ export async function updateFoodCategory(id: number, data: Partial<typeof foodCa
 export async function createMeasure(data: typeof measures.$inferInsert) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(measures).values(data);
-  return { id: Number(result[0].insertId) };
+  const result = await db.insert(measures).values(data).returning({ id: measures.id }).returning({ id: measures.id });
+  return { id: result[0]?.id ?? 0 };
 }
 
 export async function createIngredientWithAllergies(data: InsertIngredient, allergyIds: number[]) {
   const db = await getDb();
   if (!db) return null;
   const result = await db.insert(ingredients).values(data);
-  const ingredientId = Number(result[0].insertId);
+  const ingredientId = result[0]?.id ?? 0;
   if (allergyIds.length > 0) {
     await db.insert(ingredientAllergies).values(allergyIds.map((allergyId) => ({ ingredientId, allergyId })));
   }
@@ -1103,7 +1094,7 @@ export async function seedCatalogs() {
     { apiParam: "latex_fruit", nameEs: "Síndrome látex-fruta (aguacate, kiwi, plátano)", nameEn: "Latex-fruit syndrome" },
   ];
   for (const a of allergyData) {
-    await db.insert(allergies).values(a).onDuplicateKeyUpdate({ set: { nameEs: a.nameEs } });
+    await db.insert(allergies).values(a).onConflictDoNothing();
   }
 
   // Seed diet restrictions (expanded)
@@ -1134,7 +1125,7 @@ export async function seedCatalogs() {
     { apiParam: "intermittent_fasting", nameEs: "Ayuno intermitente", nameEn: "Intermittent fasting" },
   ];
   for (const r of restrictionData) {
-    await db.insert(dietRestrictions).values(r).onDuplicateKeyUpdate({ set: { nameEs: r.nameEs } });
+    await db.insert(dietRestrictions).values(r).onConflictDoNothing();
   }
 
   // Seed food categories
@@ -1159,7 +1150,7 @@ export async function seedCatalogs() {
     { apiParam: "smoothies", nameEs: "Batidos", nameEn: "Smoothies" },
   ];
   for (const c of categoryData) {
-    await db.insert(foodCategories).values(c).onDuplicateKeyUpdate({ set: { nameEs: c.nameEs } });
+    await db.insert(foodCategories).values(c).onConflictDoNothing();
   }
 
   // Seed measures
@@ -1178,7 +1169,7 @@ export async function seedCatalogs() {
     { apiParam: "cloves", nameEs: "Dientes", nameEn: "Cloves", abbreviation: "dientes" },
   ];
   for (const m of measureData) {
-    await db.insert(measures).values(m).onDuplicateKeyUpdate({ set: { nameEs: m.nameEs } });
+    await db.insert(measures).values(m).onConflictDoNothing();
   }
 
   // Seed day parts
@@ -1190,7 +1181,7 @@ export async function seedCatalogs() {
     { apiParam: "dinner", nameEs: "Cena", nameEn: "Dinner", order: 5 },
   ];
   for (const d of dayPartData) {
-    await db.insert(dayParts).values(d).onDuplicateKeyUpdate({ set: { nameEs: d.nameEs } });
+    await db.insert(dayParts).values(d).onConflictDoNothing();
   }
 
   // Seed storage locations
@@ -1202,7 +1193,7 @@ export async function seedCatalogs() {
     { apiParam: "cellar", nameEs: "Bodega", nameEn: "Cellar" },
   ];
   for (const s of storageData) {
-    await db.insert(storageLocations).values(s).onDuplicateKeyUpdate({ set: { nameEs: s.nameEs } });
+    await db.insert(storageLocations).values(s).onConflictDoNothing();
   }
 }
 
@@ -1334,7 +1325,7 @@ export async function copyMenuForUser(
     endDate: endDate,
   };
   const [newMenuResult] = await db.insert(menuOrganizers).values(newMenuInsert);
-  const newMenuId = (newMenuResult as any).insertId as number;
+  const newMenuId = newMenuResult[0]?.id as number;
 
   // Copy day parts and their recipes
   const sourceDayParts = await db
@@ -1354,7 +1345,7 @@ export async function copyMenuForUser(
       createdAt: new Date(),
       updatedAt: new Date(),
     });
-    const newDpId = (newDpResult as any).insertId as number;
+    const newDpId = newDpResult[0]?.id as number;
 
     const sourceRecipes = await db
       .select()
@@ -1367,7 +1358,7 @@ export async function copyMenuForUser(
         recipeId: r.recipeId,
         servings: r.servings ?? 1,
         createdAt: new Date(),
-      }).onDuplicateKeyUpdate({ set: { servings: r.servings ?? 1 } });
+      }).onConflictDoNothing();
     }
   }
 
@@ -1517,7 +1508,7 @@ export async function generateShoppingListFromMenu(
     createdAt: new Date(),
     updatedAt: new Date(),
   });
-  const newListId = (newListResult as any).insertId as number;
+  const newListId = newListResult[0]?.id as number;
 
   // Insert items with commercial unit normalization
   const { normalizeToCommercialUnit } = await import("../shared/supermarketUnits");
@@ -1774,7 +1765,7 @@ export async function createRoleRequest(data: InsertRoleRequest): Promise<number
   const db = await getDb();
   if (!db) throw new Error("DB unavailable");
   const [result] = await db.insert(roleRequests).values(data);
-  return (result as any).insertId as number;
+  return result[0]?.id as number;
 }
 
 export async function getRoleRequestByUserAndType(userId: number, roleType: "buddymaker" | "buddyexpert"): Promise<RoleRequest | undefined> {
@@ -1896,15 +1887,15 @@ export async function getComplementById(id: number) {
 export async function createComplement(data: typeof complements.$inferInsert) {
   const db = await getDb();
   if (!db) return 0;
-  const result = await db.insert(complements).values(data);
-  return (result as any).insertId as number;
+  const result = await db.insert(complements).values(data).returning({ id: complements.id });
+  return result[0]?.id as number;
 }
 
 export async function logComplement(data: typeof complementLogs.$inferInsert) {
   const db = await getDb();
   if (!db) return 0;
-  const result = await db.insert(complementLogs).values(data);
-  return (result as any).insertId as number;
+  const result = await db.insert(complementLogs).values(data).returning({ id: complementLogs.id });
+  return result[0]?.id as number;
 }
 
 export async function getComplementLogsByDate(userId: number, date: string) {

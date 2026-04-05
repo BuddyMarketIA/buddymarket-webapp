@@ -1,1 +1,0 @@
-ALTER TABLE `meal_logs` ADD `photoUrl` varchar(1024);
