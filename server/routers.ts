@@ -1208,7 +1208,14 @@ Devuelve SOLO JSON válido con esta estructura:
   // MENU ORGANIZERS
   // ---------------------------------------------------------------------------
   menus: router({
-    list: protectedProcedure.query(({ ctx }) => db.getMenuOrganizers(ctx.user.id)),
+    list: protectedProcedure.query(async ({ ctx }) => {
+      const userMenus = await db.getMenuOrganizers(ctx.user.id);
+      const seededMenus = await db.getSeededMenus();
+      // Merge: user menus first, then seeded menus not already in user menus
+      const userMenuIds = new Set(userMenus.map((m: any) => m.id));
+      const extraSeeded = seededMenus.filter((m: any) => !userMenuIds.has(m.id));
+      return [...userMenus, ...extraSeeded];
+    }),
 
     getById: protectedProcedure
       .input(z.object({ id: z.number() }))

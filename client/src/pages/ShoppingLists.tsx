@@ -1193,28 +1193,63 @@ export default function ShoppingLists() {
                 Selecciona un menú
               </label>
               {myMenus && myMenus.length > 0 ? (
-                <div className="space-y-2 max-h-48 overflow-y-auto">
-                  {myMenus.map((menu: any) => (
-                    <button
-                      key={menu.id}
-                      onClick={() => setSelectedMenuId(menu.id)}
-                      className={`w-full rounded-2xl border-2 p-3 text-left transition-all ${
-                        selectedMenuId === menu.id
-                          ? "border-[#F97316] bg-orange-50"
-                          : "border-gray-100 bg-white"
-                      }`}
-                    >
-                      <p className="text-sm font-semibold text-gray-900">{menu.name}</p>
-                      <p className="text-xs text-gray-400">
-                        {menu.startDate ? new Date(menu.startDate).toLocaleDateString("es-ES") : "Sin fecha"}
-                      </p>
-                    </button>
-                  ))}
+                <div className="space-y-2 max-h-56 overflow-y-auto pr-1">
+                  {myMenus.map((menu: any) => {
+                    const isSelected = selectedMenuId === menu.id;
+                    const GOAL_COLORS: Record<string, string> = {
+                      perdida_peso: "from-blue-500 to-cyan-400",
+                      ganancia_muscular: "from-red-500 to-orange-400",
+                      tonificacion: "from-purple-500 to-pink-400",
+                      perdida_grasa: "from-orange-500 to-amber-400",
+                      mantenimiento: "from-green-500 to-emerald-400",
+                      bienestar: "from-teal-500 to-green-400",
+                      vegano: "from-lime-500 to-green-400",
+                      mediterraneo: "from-yellow-500 to-orange-400",
+                    };
+                    const gradient = GOAL_COLORS[(menu as any).goal] || "from-gray-400 to-gray-500";
+                    return (
+                      <button
+                        key={menu.id}
+                        onClick={() => setSelectedMenuId(menu.id)}
+                        className={`w-full rounded-2xl border-2 overflow-hidden text-left transition-all ${
+                          isSelected ? "border-[#F97316] shadow-md" : "border-gray-100"
+                        }`}
+                      >
+                        <div className={`flex items-center gap-3 p-3 ${
+                          isSelected ? "bg-orange-50" : "bg-white"
+                        }`}>
+                          <div className={`h-12 w-12 flex-shrink-0 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center overflow-hidden`}>
+                            {(menu as any).coverImage ? (
+                              <img src={(menu as any).coverImage} alt={menu.name} className="h-full w-full object-cover" />
+                            ) : (
+                              <span className="text-xl">🥗</span>
+                            )}
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <p className="text-sm font-semibold text-gray-900 truncate">{menu.name}</p>
+                            <div className="flex items-center gap-2 mt-0.5 flex-wrap">
+                              {(menu as any).dailyCalories && (
+                                <span className="text-xs text-gray-400">🔥 {(menu as any).dailyCalories} kcal/día</span>
+                              )}
+                              {(menu as any).isSeeded && (
+                                <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full font-medium">Biblioteca</span>
+                              )}
+                            </div>
+                          </div>
+                          {isSelected && (
+                            <div className="flex-shrink-0 h-5 w-5 rounded-full bg-[#F97316] flex items-center justify-center">
+                              <CheckIcon className="h-3 w-3 text-white" />
+                            </div>
+                          )}
+                        </div>
+                      </button>
+                    );
+                  })}
                 </div>
               ) : (
                 <div className="rounded-2xl bg-gray-50 p-4 text-center">
                   <p className="text-sm text-gray-500">No tienes menús guardados.</p>
-                  <p className="text-xs text-gray-400 mt-1">Ve a Menús para crear uno o guarda un menú de la biblioteca.</p>
+                  <p className="text-xs text-gray-400 mt-1">Ve a Menús para crear uno o explora la biblioteca.</p>
                 </div>
               )}
             </div>

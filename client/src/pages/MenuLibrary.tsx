@@ -318,12 +318,14 @@ function MenuCard({
   user,
   onDetail,
   onSave,
+  onShoppingList,
 }: {
   menu: any;
   isRecommended?: boolean;
   user: any;
   onDetail: (id: number) => void;
   onSave: (menu: { id: number; name: string }) => void;
+  onShoppingList?: (menu: { id: number; name: string }) => void;
 }) {
   const gradient = GOAL_GRADIENTS[menu.goal] || "from-gray-500 to-gray-400";
   // Priorizar imagen de la BD, luego fallback por objetivo
@@ -398,13 +400,26 @@ function MenuCard({
                 Ver menú
               </Button>
               {user ? (
-                <Button
-                  size="sm"
-                  className="flex-1 text-xs h-9 bg-[#FF6B35] hover:bg-[#e55a25] text-white"
-                  onClick={() => onSave({ id: menu.id, name: menu.name })}
-                >
-                  Usar menú
-                </Button>
+                <>
+                  <Button
+                    size="sm"
+                    className="flex-1 text-xs h-9 bg-[#FF6B35] hover:bg-[#e55a25] text-white"
+                    onClick={() => onSave({ id: menu.id, name: menu.name })}
+                  >
+                    Usar menú
+                  </Button>
+                  {onShoppingList && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      className="h-9 w-9 p-0 border-gray-200 hover:border-[#FF6B35] hover:text-[#FF6B35]"
+                      title="Generar lista de la compra"
+                      onClick={() => onShoppingList({ id: menu.id, name: menu.name })}
+                    >
+                      🛒
+                    </Button>
+                  )}
+                </>
               ) : (
                 <Link href="/login">
                   <Button size="sm" className="flex-1 text-xs h-9 bg-[#FF6B35] hover:bg-[#e55a25] text-white">
@@ -798,6 +813,24 @@ export default function MenuLibrary() {
   const [saveMenu, setSaveMenu] = useState<{ id: number; name: string } | null>(null);
   const [showAll, setShowAll] = useState(false);
   const [, navigate] = useLocation();
+  // Quick shopping list generation
+  const [shoppingMenu, setShoppingMenu] = useState<{ id: number; name: string } | null>(null);
+  const [shoppingPersons, setShoppingPersons] = useState(2);
+  const [shoppingPending, setShoppingPending] = useState(false);
+  const generateFromMenu = trpc.shoppingLists.generateFromMenu.useMutation({
+    onSuccess: () => {
+      setShoppingMenu(null);
+      toast.success("Lista de la compra generada", {
+        description: "Puedes verla en tu sección de Listas de la Compra",
+        action: { label: "Ver lista", onClick: () => navigate("/app/shopping") },
+      });
+      setShoppingPending(false);
+    },
+    onError: (err) => {
+      toast.error("Error al generar la lista", { description: err.message });
+      setShoppingPending(false);
+    },
+  });
 
   // Recommended (personalized, only if logged in)
   const {
@@ -924,6 +957,7 @@ export default function MenuLibrary() {
                     user={user}
                     onDetail={setDetailMenuId}
                     onSave={setSaveMenu}
+                    onShoppingList={setShoppingMenu}
                   />
                 ))}
               </motion.div>
@@ -1091,6 +1125,7 @@ export default function MenuLibrary() {
                       user={user}
                       onDetail={setDetailMenuId}
                       onSave={setSaveMenu}
+                      onShoppingList={setShoppingMenu}
                     />
                   ))}
                 </motion.div>
@@ -1117,6 +1152,67 @@ export default function MenuLibrary() {
         open={!!saveMenu}
         onClose={() => setSaveMenu(null)}
       />
+
+      {/* Quick Shopping List Modal */}
+      {shoppingMenu && (
+        <div
+          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+          onClick={(e) => { if (e.target === e.currentTarget) setShoppingMenu(null); }}
+        >
+          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl">
+            <div className="flex items-center gap-3 mb-4">
+              <div className="h-10 w-10 rounded-2xl bg-orange-100 flex items-center justify-center text-xl">🛒</div>
+              <div>
+                <h3 className="text-base font-bold text-gray-900">Generar lista de la compra</h3>
+                <p className="text-xs text-gray-500 truncate max-w-[200px]">{shoppingMenu.name}</p>
+              </div>
+            </div>
+
+            <div className="mb-5">
+              <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-400">
+                Número de personas
+              </label>
+              <div className="flex items-center gap-4 rounded-2xl bg-gray-50 p-3">
+                <button
+                  onClick={() => setShoppingPersons(Math.max(1, shoppingPersons - 1))}
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm text-lg font-bold text-gray-600"
+                >
+                  −
+                </button>
+                <div className="flex-1 text-center">
+                  <span className="text-2xl font-bold text-gray-900">{shoppingPersons}</span>
+                  <p className="text-xs text-gray-400">{shoppingPersons === 1 ? "persona" : "personas"}</p>
+                </div>
+                <button
+                  onClick={() => setShoppingPersons(Math.min(12, shoppingPersons + 1))}
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F97316] shadow-sm text-lg font-bold text-white"
+                >
+                  +
+                </button>
+              </div>
+            </div>
+
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShoppingMenu(null)}
+                className="flex-1 rounded-2xl border border-gray-200 py-3 text-sm font-semibold text-gray-600"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => {
+                  setShoppingPending(true);
+                  generateFromMenu.mutate({ menuId: shoppingMenu.id, persons: shoppingPersons });
+                }}
+                disabled={shoppingPending || generateFromMenu.isPending}
+                className="flex-1 rounded-2xl bg-[#F97316] py-3 text-sm font-semibold text-white disabled:opacity-60"
+              >
+                {generateFromMenu.isPending ? "Generando..." : "Generar lista"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
