@@ -3,6 +3,9 @@ import { toast } from "sonner";
 import { SparklesIcon, BoltIcon, StarIcon, CheckIcon, MinusIcon } from "@heroicons/react/24/solid";
 import { CheckCircleIcon } from "@heroicons/react/24/outline";
 import { usePlan } from "@/hooks/usePlan";
+import { usePayment, type PaymentPlan } from "@/hooks/usePayment";
+import { isIOSNative } from "@/hooks/usePlatform";
+import { IOSPaymentBanner } from "@/components/IAPSubscriptionButton";
 
 // ─── Plan definitions (aligned with shared/plans.ts) ─────────────────────────
 const PLANS = [
@@ -156,15 +159,8 @@ export default function Subscription() {
     ? new URLSearchParams(window.location.search).get("plan")
     : null;
 
-  const createCheckout = trpc.subscriptions.createCheckout.useMutation({
-    onSuccess: (data) => {
-      if (data.url) {
-        toast.info("Redirigiendo al pago seguro...");
-        window.open(data.url, "_blank");
-      }
-    },
-    onError: (err) => toast.error(err.message),
-  });
+  const { purchase, isPending: checkoutLoading } = usePayment();
+  const iosNative = isIOSNative();
   const currentPlan = (subscription as any)?.plan ?? null;
   const isActive = (subscription as any)?.status === "active";
 
@@ -190,8 +186,8 @@ export default function Subscription() {
   }
   function handleSubscribe(planKey: string) {
     if (planKey === "free") return;
-    const stripeKey = planKey === "premium" ? "premium" : "basic";
-    createCheckout.mutate({ plan: stripeKey as "basic" | "premium" | "pro_max", origin: window.location.origin });
+    const planMap: Record<string, PaymentPlan> = { basic: "basic", premium: "premium", pro_max: "pro_max" };
+    purchase(planMap[planKey] ?? "basic", window.location.origin);
   }
 
   return (
@@ -306,7 +302,7 @@ export default function Subscription() {
               ) : (
                 <button
                   onClick={() => handleSubscribe(plan.key)}
-                  disabled={current || isProMax || createCheckout.isPending}
+                  disabled={current || isProMax || checkoutLoading}
                   className={`w-full rounded-2xl py-3 text-sm font-bold transition-all ${
                     current || isProMax
                       ? "bg-gray-100 text-gray-400 cursor-not-allowed"
@@ -389,7 +385,7 @@ export default function Subscription() {
                 ) : (
                   <button
                     onClick={() => handleSubscribe(p.key)}
-                    disabled={isCurrent(p.key) || createCheckout.isPending}
+                    disabled={isCurrent(p.key) || checkoutLoading}
                     className="w-full rounded-xl py-2 text-xs font-bold transition-all"
                     style={{
                       background: isCurrent(p.key) ? "#f3f4f6" : (p.key === "basic" ? p.accent : "transparent"),

@@ -1,8 +1,8 @@
 import { useState } from "react";
-import { trpc } from "@/lib/trpc";
 import { PLAN_DISPLAY, PLAN_LIMITS, FEATURE_DESCRIPTIONS, getUpgradePlan, type PlanTier, type PlanLimits } from "@shared/plans";
 import { usePlan } from "@/hooks/usePlan";
-import { toast } from "sonner";
+import { usePayment, type PaymentPlan } from "@/hooks/usePayment";
+import { isIOSNative } from "@/hooks/usePlatform";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Upgrade Modal
@@ -14,42 +14,19 @@ interface UpgradeModalProps {
 }
 
 export function UpgradeModal({ feature, currentTier, onClose }: UpgradeModalProps) {
-  const [loading, setLoading] = useState(false);
-  const createCheckout = trpc.subscriptions.createCheckout.useMutation();
+  const { purchase, isPending } = usePayment({ onSuccess: onClose });
+  const iosNative = isIOSNative();
 
   const featureInfo = FEATURE_DESCRIPTIONS[feature];
   const requiredPlan = featureInfo?.requiredPlan ?? getUpgradePlan(currentTier) ?? "basic";
   const planInfo = PLAN_DISPLAY[requiredPlan];
 
-  // Show two upgrade options: required plan and next tier
   const nextPlan = getUpgradePlan(requiredPlan);
   const nextPlanInfo = nextPlan ? PLAN_DISPLAY[nextPlan] : null;
 
-  const handleUpgrade = async (plan: PlanTier) => {
+  const handleUpgrade = (plan: PlanTier) => {
     if (plan === "free") return;
-    setLoading(true);
-    try {
-      // Map plan tier to stripe plan key
-      const stripeMap: Record<string, "basic" | "premium" | "pro_max"> = {
-        basic: "basic",
-        premium: "premium",
-        pro_max: "pro_max",
-      };
-      const stripePlan = stripeMap[plan] ?? "basic";
-      const result = await createCheckout.mutateAsync({
-        plan: stripePlan,
-        origin: window.location.origin,
-      });
-      if (result.url) {
-        toast.info("Redirigiendo al pago...");
-        window.open(result.url, "_blank");
-        onClose();
-      }
-    } catch {
-      toast.error("Error al iniciar el pago. Inténtalo de nuevo.");
-    } finally {
-      setLoading(false);
-    }
+    purchase(plan as PaymentPlan, window.location.origin);
   };
 
   const features: string[] = PLAN_LIMITS[requiredPlan]
@@ -136,6 +113,25 @@ export function UpgradeModal({ feature, currentTier, onClose }: UpgradeModalProp
             Desbloquea esta y muchas más funcionalidades con el plan <strong>{planInfo.name}</strong>
           </p>
 
+          {/* iOS IAP notice */}
+          {iosNative && (
+            <div style={{
+              background: "linear-gradient(135deg, #f0f9ff, #e0f2fe)",
+              border: "1px solid #bae6fd",
+              borderRadius: 12,
+              padding: "12px 14px",
+              marginBottom: 16,
+              display: "flex",
+              alignItems: "flex-start",
+              gap: 10,
+            }}>
+              <span style={{ fontSize: 20, flexShrink: 0 }}></span>
+              <p style={{ margin: 0, fontSize: 13, color: "#075985", lineHeight: 1.5 }}>
+                La suscripción se procesará a través de la <strong>App Store de Apple</strong>. El importe se cargará en tu cuenta de Apple ID.
+              </p>
+            </div>
+          )}
+
           {/* Feature list */}
           <div style={{
             background: "#F9FAFB",
@@ -148,40 +144,46 @@ export function UpgradeModal({ feature, currentTier, onClose }: UpgradeModalProp
             ))}
           </div>
 
-          {/* Price */}
-          <div style={{ textAlign: "center", marginBottom: 20 }}>
-            <span style={{ fontSize: 32, fontWeight: 900, color: planInfo.color }}>{planInfo.price}</span>
-            {planInfo.priceMonthly > 0 && (
-              <span style={{ fontSize: 13, color: "#9CA3AF", marginLeft: 4 }}>· cancela cuando quieras</span>
-            )}
-          </div>
+          {/* Price — only show on web (on iOS, App Store shows the price) */}
+          {!iosNative && (
+            <div style={{ textAlign: "center", marginBottom: 20 }}>
+              <span style={{ fontSize: 32, fontWeight: 900, color: planInfo.color }}>{planInfo.price}</span>
+              {planInfo.priceMonthly > 0 && (
+                <span style={{ fontSize: 13, color: "#9CA3AF", marginLeft: 4 }}>· cancela cuando quieras</span>
+              )}
+            </div>
+          )}
 
           {/* CTA Button */}
           <button
             onClick={() => handleUpgrade(requiredPlan)}
-            disabled={loading}
+            disabled={isPending}
             style={{
               width: "100%",
               padding: "16px",
               borderRadius: 14,
               border: "none",
-              background: loading ? "#D1D5DB" : `linear-gradient(135deg, ${planInfo.color}, ${planInfo.color}cc)`,
+              background: isPending ? "#D1D5DB" : `linear-gradient(135deg, ${planInfo.color}, ${planInfo.color}cc)`,
               color: "white",
               fontSize: 16,
               fontWeight: 800,
-              cursor: loading ? "not-allowed" : "pointer",
-              boxShadow: loading ? "none" : `0 6px 20px ${planInfo.color}44`,
+              cursor: isPending ? "not-allowed" : "pointer",
+              boxShadow: isPending ? "none" : `0 6px 20px ${planInfo.color}44`,
               transition: "all 0.2s",
               marginBottom: 10,
             }}
           >
-            {loading ? "Procesando..." : `Actualizar a ${planInfo.name} — ${planInfo.price}`}
+            {isPending
+              ? (iosNative ? "Abriendo App Store..." : "Procesando...")
+              : iosNative
+                ? `Suscribirse — ${planInfo.name}`
+                : `Actualizar a ${planInfo.name} — ${planInfo.price}`}
           </button>
 
           {nextPlanInfo && nextPlan && (
             <button
               onClick={() => handleUpgrade(nextPlan)}
-              disabled={loading}
+              disabled={isPending}
               style={{
                 width: "100%",
                 padding: "12px",
@@ -191,12 +193,12 @@ export function UpgradeModal({ feature, currentTier, onClose }: UpgradeModalProp
                 color: nextPlanInfo.color,
                 fontSize: 14,
                 fontWeight: 700,
-                cursor: loading ? "not-allowed" : "pointer",
+                cursor: isPending ? "not-allowed" : "pointer",
                 transition: "all 0.2s",
                 marginBottom: 10,
               }}
             >
-              Ver {nextPlanInfo.name} — {nextPlanInfo.price}
+              Ver {nextPlanInfo.name}{!iosNative ? ` — ${nextPlanInfo.price}` : ""}
             </button>
           )}
 
@@ -235,9 +237,7 @@ export function UpgradeModal({ feature, currentTier, onClose }: UpgradeModalProp
 interface UpgradeGateProps {
   feature: keyof PlanLimits;
   children: React.ReactNode;
-  /** If true, renders children but adds a lock overlay on click */
   overlay?: boolean;
-  /** Custom message to show in the gate */
   message?: string;
 }
 
@@ -289,7 +289,6 @@ export function UpgradeGate({ feature, children, overlay = false }: UpgradeGateP
     );
   }
 
-  // Full block — show upgrade card instead of children
   return (
     <>
       <div

@@ -1330,3 +1330,14 @@
 - [x] Añadir sección "Preferencias Nutricionales" en la página de Perfil con formulario completo
 - [x] Cargar automáticamente las preferencias del perfil como valores iniciales en el cuestionario de generación de menú
 - [x] Mostrar indicador visual en el cuestionario cuando se han cargado preferencias guardadas
+
+## Sprint: Pasarela de Pagos Apple IAP vs Stripe
+- [x] Auditar todos los flujos de pago actuales con Stripe (usuarios normales vs experts/makers)
+- [x] Crear hook usePlatform() para detectar si la app corre en iOS nativo, Android o web
+- [x] Crear capa de abstracción usePayment() que enruta a IAP o Stripe según plataforma y tipo de usuario
+- [x] Crear componente IAPSubscriptionButton para usuarios normales en iOS (muestra precio de App Store)
+- [ ] Crear endpoint /api/iap/verify para validar recibos de Apple StoreKit 2 en el servidor (pendiente: requiere cuenta Apple Developer)
+- [x] Ocultar botones de Stripe en flujos de suscripción de usuarios normales cuando platform === 'ios'
+- [x] Mantener Stripe activo en flujos de BuddyExperts y BuddyMakers (B2B, siempre web)
+- [x] Añadir banner informativo en web para usuarios iOS indicando que deben gestionar su suscripción desde la app
+- [x] Documentar la arquitectura de pagos en un archivo PAYMENTS.md para el equipo
