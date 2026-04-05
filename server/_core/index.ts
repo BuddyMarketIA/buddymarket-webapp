@@ -1,4 +1,8 @@
 import "dotenv/config";
+// Sentry MUST be initialised before any other imports that may throw
+import { initSentry, attachSentryRequestHandler, attachSentryErrorHandler, captureException } from "./sentry";
+initSentry();
+
 import express from "express";
 import { createServer } from "http";
 import net from "net";
@@ -15,6 +19,8 @@ import { registerStripeWebhook } from "../stripe-webhook";
 import { processPendingEmails } from "../email";
 import { storagePut } from "../storage";
 import logger from "./logger";
+import { registerMetricsRoutes } from "./metrics";
+import { startPerformanceWatchdog, sendStartupAlert } from "./alerts";
 
 // ─── Allowed origins ─────────────────────────────────────────────────────────
 const ALLOWED_ORIGINS = [
@@ -52,6 +58,9 @@ async function startServer() {
 
   // Trust proxy (needed for rate limiting behind load balancers / Manus proxy)
   app.set("trust proxy", 1);
+
+  // ─── Sentry request context ───────────────────────────────────────────────
+  attachSentryRequestHandler(app);
 
   // ─── CORS ─────────────────────────────────────────────────────────────────
   app.use(cors({
@@ -136,6 +145,9 @@ async function startServer() {
     }
   });
 
+  // ─── Metrics endpoints ───────────────────────────────────────────────
+  registerMetricsRoutes(app);
+
   // ─── tRPC API ─────────────────────────────────────────────────────────────
   app.use(
     "/api/trpc",
@@ -145,10 +157,14 @@ async function startServer() {
       onError: ({ path, error }) => {
         if (error.code === "INTERNAL_SERVER_ERROR") {
           logger.error(`[tRPC] Error in procedure ${path}:`, error);
+          captureException(error, { tags: { "trpc.path": path ?? "unknown" } });
         }
       },
     })
   );
+
+  // ─── Sentry error handler (MUST be after all routes) ────────────────────
+  attachSentryErrorHandler(app);
 
   // ─── Frontend ─────────────────────────────────────────────────────────────
   if (process.env.NODE_ENV === "development") {
@@ -166,11 +182,15 @@ async function startServer() {
 
   server.listen(port, () => {
     logger.info(`Server running on http://localhost:${port}/`);
+    // Start performance watchdog after server is up
+    startPerformanceWatchdog();
+    sendStartupAlert().catch(() => {});
   });
 }
 
 startServer().catch((err) => {
   logger.error("Failed to start server:", err);
+  captureException(err);
   process.exit(1);
 });
 
