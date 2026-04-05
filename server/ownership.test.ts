@@ -392,14 +392,14 @@ describe("Ownership: Inventory — remove verifies ownership via userId filter",
     ).rejects.toMatchObject({ code: "NOT_FOUND" });
   });
 
-  it("inventory.update does not require ownership (uses userId from context implicitly)", async () => {
-    // inventory.update is a simple update without ownership check
-    // This documents the current behavior
-    const owner = makeUser(OWNER_ID);
-    const caller = appRouter.createCaller(makeCtx(owner));
-    // Should succeed since updateInventoryItem mock returns { id: 1 }
-    const result = await caller.inventory.update({ id: 40, amount: 10 });
-    expect(result).toBeDefined();
+  it("inventory.update requires ownership (rejects if item not found for user)", async () => {
+    // inventory.update now verifies ownership via userId filter in the query
+    // The mock returns empty array for select, so NOT_FOUND is thrown
+    const attacker = makeUser(ATTACKER_ID);
+    const caller = appRouter.createCaller(makeCtx(attacker));
+    await expect(
+      caller.inventory.update({ id: 40, amount: 10 })
+    ).rejects.toMatchObject({ code: "NOT_FOUND" });
   });
 
   it("inventory.list only returns items for the authenticated user", async () => {

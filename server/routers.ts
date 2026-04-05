@@ -1044,11 +1044,39 @@ Devuelve SOLO JSON válido con esta estructura:
 
     addRecipeToDayPart: protectedProcedure
       .input(z.object({ menuOrganizerDayPartId: z.number(), recipeId: z.number(), servings: z.number().optional() }))
-      .mutation(({ input }) => db.addRecipeToMenuDayPart(input.menuOrganizerDayPartId, input.recipeId, input.servings)),
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { menuOrganizerDayParts, menuOrganizers } = await import("../drizzle/schema.js");
+        const { eq } = await import("drizzle-orm");
+        // Verify ownership: dayPart → menuOrganizer → userId
+        const [dp] = await drizzleDb.select({ menuOrganizerId: menuOrganizerDayParts.menuOrganizerId })
+          .from(menuOrganizerDayParts).where(eq(menuOrganizerDayParts.id, input.menuOrganizerDayPartId)).limit(1);
+        if (!dp) throw new TRPCError({ code: "NOT_FOUND" });
+        const [menu] = await drizzleDb.select({ userId: menuOrganizers.userId })
+          .from(menuOrganizers).where(eq(menuOrganizers.id, dp.menuOrganizerId)).limit(1);
+        if (!menu) throw new TRPCError({ code: "NOT_FOUND" });
+        requireOwnership(menu.userId, ctx.user.id, ctx.user.role);
+        return db.addRecipeToMenuDayPart(input.menuOrganizerDayPartId, input.recipeId, input.servings);
+      }),
 
     removeRecipeFromDayPart: protectedProcedure
       .input(z.object({ menuOrganizerDayPartId: z.number(), recipeId: z.number() }))
-      .mutation(({ input }) => db.removeRecipeFromMenuDayPart(input.menuOrganizerDayPartId, input.recipeId)),
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { menuOrganizerDayParts, menuOrganizers } = await import("../drizzle/schema.js");
+        const { eq } = await import("drizzle-orm");
+        // Verify ownership: dayPart → menuOrganizer → userId
+        const [dp] = await drizzleDb.select({ menuOrganizerId: menuOrganizerDayParts.menuOrganizerId })
+          .from(menuOrganizerDayParts).where(eq(menuOrganizerDayParts.id, input.menuOrganizerDayPartId)).limit(1);
+        if (!dp) throw new TRPCError({ code: "NOT_FOUND" });
+        const [menu] = await drizzleDb.select({ userId: menuOrganizers.userId })
+          .from(menuOrganizers).where(eq(menuOrganizers.id, dp.menuOrganizerId)).limit(1);
+        if (!menu) throw new TRPCError({ code: "NOT_FOUND" });
+        requireOwnership(menu.userId, ctx.user.id, ctx.user.role);
+        return db.removeRecipeFromMenuDayPart(input.menuOrganizerDayPartId, input.recipeId);
+      }),
 
     // Get all items for a specific date across all user menus
     getItemsByDate: protectedProcedure
@@ -1655,7 +1683,13 @@ Devuelve SOLO JSON válido con esta estructura:
           category: z.string().optional(),
         })
       )
-      .mutation(({ input }) => db.addShoppingListItem(input)),
+      .mutation(async ({ ctx, input }) => {
+        // Verify ownership of the shopping list before adding items
+        const list = await db.getShoppingListById(input.shoppingListId);
+        if (!list) throw new TRPCError({ code: "NOT_FOUND" });
+        requireOwnership(list.userId, ctx.user.id, ctx.user.role);
+        return db.addShoppingListItem(input);
+      }),
 
     updateItem: protectedProcedure
       .input(
@@ -1666,7 +1700,19 @@ Devuelve SOLO JSON válido con esta estructura:
           customName: z.string().optional(),
         })
       )
-      .mutation(({ input }) => {
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { shoppingListItems, shoppingLists } = await import("../drizzle/schema.js");
+        const { eq } = await import("drizzle-orm");
+        // Verify ownership via the parent shopping list
+        const [item] = await drizzleDb.select({ shoppingListId: shoppingListItems.shoppingListId })
+          .from(shoppingListItems).where(eq(shoppingListItems.id, input.id)).limit(1);
+        if (!item) throw new TRPCError({ code: "NOT_FOUND" });
+        const [list] = await drizzleDb.select({ userId: shoppingLists.userId })
+          .from(shoppingLists).where(eq(shoppingLists.id, item.shoppingListId)).limit(1);
+        if (!list) throw new TRPCError({ code: "NOT_FOUND" });
+        requireOwnership(list.userId, ctx.user.id, ctx.user.role);
         const { id, ...data } = input;
         return db.updateShoppingListItem(id, data);
       }),
@@ -1676,7 +1722,7 @@ Devuelve SOLO JSON válido con esta estructura:
       .mutation(async ({ input, ctx }) => {
         const drizzleDb = await db.getDb();
         if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-        const { shoppingListItems } = await import("../drizzle/schema.js");
+        const { shoppingListItems, shoppingLists } = await import("../drizzle/schema.js");
         const { eq } = await import("drizzle-orm");
         // Get current state + item details for pantry upsert
         const [item] = await drizzleDb
@@ -1685,6 +1731,11 @@ Devuelve SOLO JSON válido con esta estructura:
           .where(eq(shoppingListItems.id, input.id))
           .limit(1);
         if (!item) throw new TRPCError({ code: "NOT_FOUND" });
+        // Verify ownership via the parent shopping list
+        const [list] = await drizzleDb.select({ userId: shoppingLists.userId })
+          .from(shoppingLists).where(eq(shoppingLists.id, item.shoppingListId)).limit(1);
+        if (!list) throw new TRPCError({ code: "NOT_FOUND" });
+        requireOwnership(list.userId, ctx.user.id, ctx.user.role);
         const newChecked = !item.checked;
         await drizzleDb
           .update(shoppingListItems)
@@ -1711,15 +1762,20 @@ Devuelve SOLO JSON válido con esta estructura:
       }),
     togglePantry: protectedProcedure
       .input(z.object({ id: z.number() }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ input, ctx }) => {
         const drizzleDb = await db.getDb();
         if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-        const { shoppingListItems } = await import("../drizzle/schema.js");
+        const { shoppingListItems, shoppingLists } = await import("../drizzle/schema.js");
         const { eq } = await import("drizzle-orm");
-        const [current] = await drizzleDb.select({ inPantry: shoppingListItems.inPantry })
+        const [current] = await drizzleDb.select({ inPantry: shoppingListItems.inPantry, shoppingListId: shoppingListItems.shoppingListId })
           .from(shoppingListItems)
           .where(eq(shoppingListItems.id, input.id));
         if (!current) throw new TRPCError({ code: "NOT_FOUND" });
+        // Verify ownership via the parent shopping list
+        const [list] = await drizzleDb.select({ userId: shoppingLists.userId })
+          .from(shoppingLists).where(eq(shoppingLists.id, current.shoppingListId)).limit(1);
+        if (!list) throw new TRPCError({ code: "NOT_FOUND" });
+        requireOwnership(list.userId, ctx.user.id, ctx.user.role);
         await drizzleDb.update(shoppingListItems)
           .set({ inPantry: !current.inPantry })
           .where(eq(shoppingListItems.id, input.id));
@@ -1728,7 +1784,20 @@ Devuelve SOLO JSON válido con esta estructura:
 
     removeItem: protectedProcedure
       .input(z.object({ id: z.number() }))
-      .mutation(({ input }) => db.deleteShoppingListItem(input.id)),
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { shoppingListItems, shoppingLists } = await import("../drizzle/schema.js");
+        const { eq } = await import("drizzle-orm");
+        const [item] = await drizzleDb.select({ shoppingListId: shoppingListItems.shoppingListId })
+          .from(shoppingListItems).where(eq(shoppingListItems.id, input.id)).limit(1);
+        if (!item) throw new TRPCError({ code: "NOT_FOUND" });
+        const [list] = await drizzleDb.select({ userId: shoppingLists.userId })
+          .from(shoppingLists).where(eq(shoppingLists.id, item.shoppingListId)).limit(1);
+        if (!list) throw new TRPCError({ code: "NOT_FOUND" });
+        requireOwnership(list.userId, ctx.user.id, ctx.user.role);
+        return db.deleteShoppingListItem(input.id);
+      }),
     // ── OCR: parse shopping list from photo ────────────────────────────────
     parseFromPhoto: protectedProcedure
       .input(z.object({ imageBase64: z.string().min(10) }))
@@ -1983,7 +2052,17 @@ Devuelve SOLO JSON válido con esta estructura:
           notes: z.string().max(200, "Notas máximo 200 caracteres").optional(),
         })
       )
-      .mutation(({ input }) => {
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { userInventoryItems } = await import("../drizzle/schema.js");
+        const { eq, and } = await import("drizzle-orm");
+        // Verify ownership before updating
+        const [existing] = await drizzleDb.select({ id: userInventoryItems.id })
+          .from(userInventoryItems)
+          .where(and(eq(userInventoryItems.id, input.id), eq(userInventoryItems.userId, ctx.user.id)))
+          .limit(1);
+        if (!existing) throw new TRPCError({ code: "NOT_FOUND", message: "Producto no encontrado" });
         const { id, ...data } = input;
         return db.updateInventoryItem(id, data as any);
       }),

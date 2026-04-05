@@ -1380,3 +1380,9 @@
 - [ ] Crear procedimiento tRPC mealLogs.submitAIFeedback
 - [ ] Añadir UI de feedback al resultado del análisis IA: thumbs up/down + estrellas + comentario opcional
 - [ ] Mostrar confirmación visual tras enviar el feedback
+
+## Sprint: Auditoría y corrección de ownership en endpoints tRPC
+- [ ] Auditar todos los endpoints que acceden a recursos por ID y detectar los que no validan ctx.user.id === resource.userId
+- [ ] Corregir endpoints sin ownership check en mealLogs, menus, inventory, shoppingLists
+- [ ] Corregir endpoints sin ownership check en recipes, buddyExperts, buddyMakers y resto
+- [ ] Verificar TypeScript y tests tras los cambios

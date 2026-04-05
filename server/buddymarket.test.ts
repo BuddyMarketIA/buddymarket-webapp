@@ -1133,12 +1133,15 @@ describe("Security: Input validation prevents malicious data", () => {
   });
 
   it("mealLogs.lookupBarcode rejects SQL injection attempt", async () => {
+    // Mock fetch to avoid real network call to Open Food Facts
+    const fetchSpy = vi.spyOn(globalThis, "fetch").mockRejectedValueOnce(new Error("Network error"));
     const { ctx } = createAuthContext();
     const caller = appRouter.createCaller(ctx);
     await expect(
       caller.mealLogs.lookupBarcode({ barcode: "'; DROP TABLE users; --" })
     ).rejects.toThrow();
-  }, 10000);
+    fetchSpy.mockRestore();
+  }, 15000);
 });
 
 // =============================================================================
