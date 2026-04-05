@@ -1191,3 +1191,6 @@
 - [x] Generar e insertar recetas para embarazo (3 recetas, ácido fólico/hierro/calcio)
 - [x] Generar e insertar recetas para menopausia (2 recetas, fitoestrógenos)
 - [x] Generar e insertar recetas para hipotiroidismo (1 receta, yodo/selenio)
+
+## Bugs - Biblioteca de Menús
+- [x] Bug: Biblioteca de Menús mostraba "0 menús" - corregido: 10 menús de biblioteca creados con isSeeded=true y 196 recetas asignadas
