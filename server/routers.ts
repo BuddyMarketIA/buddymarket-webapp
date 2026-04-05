@@ -6498,7 +6498,7 @@ Devuelve EXACTAMENTE este JSON:
             link: input.link ?? null,
             imageUrl: input.imageUrl ?? null,
           });
-          return { success: true, id: Number(result[0].insertId) };
+          return { success: true, id: Number((result as any)[0]?.insertId ?? 0) };
         }),
 
       createWelcome: protectedProcedure.mutation(async ({ ctx }) => {
@@ -6977,7 +6977,7 @@ Devuelve SOLO JSON válido con esta estructura exacta:
           .where(and(eq(userMetrics.userId, ctx.user.id), gte(userMetrics.date as any, sinceStr as any)))
           .orderBy(userMetrics.date);
         return rows.map(r => ({
-          date: r.date instanceof Date ? r.date.toISOString().split("T")[0] : String(r.date),
+          date: (r.date as any) instanceof Date ? (r.date as any).toISOString().split("T")[0] : String(r.date),
           weight: r.weight ? Number(r.weight) : null,
           bodyFat: r.bodyFat ? Number(r.bodyFat) : null,
           muscleMass: r.muscleMass ? Number(r.muscleMass) : null,
@@ -7009,7 +7009,7 @@ Devuelve SOLO JSON válido con esta estructura exacta:
           .groupBy(mealLogs.logDate)
           .orderBy(mealLogs.logDate);
         return rows.map(r => ({
-          date: r.date instanceof Date ? r.date.toISOString().split("T")[0] : String(r.date),
+          date: (r.date as any) instanceof Date ? (r.date as any).toISOString().split("T")[0] : String(r.date),
           calories: Number(r.calories),
           proteins: Number(r.proteins),
           carbohydrates: Number(r.carbohydrates),
