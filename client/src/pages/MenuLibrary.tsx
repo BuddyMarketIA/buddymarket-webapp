@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { HoverCard, HoverCardTrigger, HoverCardContent } from "@/components/ui/hover-card";
 
 // ─── Constants ────────────────────────────────────────────────────────────────
 
@@ -154,6 +155,161 @@ function RecommendedSkeleton() {
   );
 }
 
+// ─── Quick View Popup Content ─────────────────────────────────────────────────
+
+function MenuQuickView({
+  menu,
+  user,
+  onDetail,
+  onSave,
+}: {
+  menu: any;
+  user: any;
+  onDetail: (id: number) => void;
+  onSave: (menu: { id: number; name: string }) => void;
+}) {
+  const image = menu.coverImage || GOAL_IMAGES[menu.goal];
+  const gradient = GOAL_GRADIENTS[menu.goal] || "from-gray-500 to-gray-400";
+
+  // Nutrition highlights based on goal
+  const goalHighlights: Record<string, { icon: string; text: string }[]> = {
+    perdida_peso: [
+      { icon: "🔥", text: "Déficit calórico controlado" },
+      { icon: "🥗", text: "Alto en fibra y proteína" },
+      { icon: "💧", text: "Bajo en grasas saturadas" },
+    ],
+    ganancia_muscular: [
+      { icon: "💪", text: "Alto en proteína" },
+      { icon: "🍚", text: "Carbohidratos de calidad" },
+      { icon: "⚡", text: "Superávit calórico moderado" },
+    ],
+    tonificacion: [
+      { icon: "🏋️", text: "Balance proteína/carbohidratos" },
+      { icon: "🔥", text: "Calorías de mantenimiento" },
+      { icon: "🥦", text: "Micronutrientes esenciales" },
+    ],
+    perdida_grasa: [
+      { icon: "🔥", text: "Quema de grasa activa" },
+      { icon: "💪", text: "Preserva masa muscular" },
+      { icon: "🥗", text: "Bajo índice glucémico" },
+    ],
+    mantenimiento: [
+      { icon: "⚖️", text: "Calorías equilibradas" },
+      { icon: "🌈", text: "Variedad nutricional" },
+      { icon: "✅", text: "Fácil de seguir" },
+    ],
+    bienestar: [
+      { icon: "🌿", text: "Alimentos antiinflamatorios" },
+      { icon: "🫀", text: "Salud cardiovascular" },
+      { icon: "🧠", text: "Nutrientes para el cerebro" },
+    ],
+    vegano: [
+      { icon: "🌱", text: "100% origen vegetal" },
+      { icon: "💊", text: "Proteína completa" },
+      { icon: "🌍", text: "Sostenible y ético" },
+    ],
+  };
+  const highlights = goalHighlights[menu.goal] || [
+    { icon: "🍽️", text: "Menú equilibrado" },
+    { icon: "✅", text: "Nutricionalmente completo" },
+  ];
+
+  return (
+    <div className="w-80 overflow-hidden rounded-xl shadow-2xl border-0 bg-white">
+      {/* Image header */}
+      <div className={`relative h-40 bg-gradient-to-br ${gradient} overflow-hidden`}>
+        {image && (
+          <img
+            src={image}
+            alt={menu.name}
+            className="absolute inset-0 w-full h-full object-cover opacity-85"
+          />
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+        <div className="absolute bottom-0 left-0 right-0 p-3">
+          <h3 className="text-white font-bold text-sm leading-tight drop-shadow">{menu.name}</h3>
+          <div className="flex gap-1.5 mt-1.5 flex-wrap">
+            {menu.goal && (
+              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${GOAL_COLORS[menu.goal] || "bg-gray-100 text-gray-800"}`}>
+                {GOAL_LABELS[menu.goal] || menu.goal}
+              </span>
+            )}
+            {menu.difficulty && (
+              <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-black/30 text-white backdrop-blur-sm">
+                {DIFF_LABELS[menu.difficulty] || menu.difficulty}
+              </span>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Stats row */}
+      <div className="flex divide-x divide-gray-100 border-b border-gray-100">
+        {menu.dailyCalories && (
+          <div className="flex-1 text-center py-2.5">
+            <p className="text-base font-bold text-[#FF6B35]">{menu.dailyCalories}</p>
+            <p className="text-xs text-gray-500">kcal/día</p>
+          </div>
+        )}
+        {menu.dailyMealsCount && (
+          <div className="flex-1 text-center py-2.5">
+            <p className="text-base font-bold text-gray-800">{menu.dailyMealsCount}</p>
+            <p className="text-xs text-gray-500">comidas</p>
+          </div>
+        )}
+        <div className="flex-1 text-center py-2.5">
+          <p className="text-base font-bold text-gray-800">7</p>
+          <p className="text-xs text-gray-500">días</p>
+        </div>
+        {menu.persons && (
+          <div className="flex-1 text-center py-2.5">
+            <p className="text-base font-bold text-gray-800">{menu.persons}</p>
+            <p className="text-xs text-gray-500">{menu.persons === 1 ? "persona" : "personas"}</p>
+          </div>
+        )}
+      </div>
+
+      {/* Highlights */}
+      <div className="p-3 space-y-1.5">
+        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Características</p>
+        {highlights.map((h, i) => (
+          <div key={i} className="flex items-center gap-2 text-sm">
+            <span className="text-base">{h.icon}</span>
+            <span className="text-gray-700">{h.text}</span>
+          </div>
+        ))}
+      </div>
+
+      {/* Actions */}
+      <div className="p-3 pt-0 flex gap-2">
+        <Button
+          variant="outline"
+          size="sm"
+          className="flex-1 text-xs h-9 border-gray-200"
+          onClick={() => onDetail(menu.id)}
+        >
+          Ver detalles
+        </Button>
+        {user ? (
+          <Button
+            size="sm"
+            className="flex-1 text-xs h-9 bg-[#FF6B35] hover:bg-[#e55a25] text-white"
+            onClick={() => onSave({ id: menu.id, name: menu.name })}
+          >
+            Usar menú
+          </Button>
+        ) : (
+          <Link href="/login">
+            <Button size="sm" className="flex-1 text-xs h-9 bg-[#FF6B35] hover:bg-[#e55a25] text-white">
+              Usar menú
+            </Button>
+          </Link>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Menu Card ────────────────────────────────────────────────────────────────
 
 function MenuCard({
@@ -174,83 +330,101 @@ function MenuCard({
   const image = menu.coverImage || GOAL_IMAGES[menu.goal];
 
   return (
-    <motion.div
-      variants={cardVariants}
-      className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300 border border-gray-100 group"
-    >
-      {/* Visual header */}
-      <div className={`relative h-44 bg-gradient-to-br ${gradient} overflow-hidden`}>
-        {image && (
-          <img
-            src={image}
-            alt={menu.name}
-            className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-90 transition-opacity duration-300"
-          />
-        )}
-        {/* Dark overlay for text readability */}
-        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
-        <div className="absolute inset-0 p-4 flex flex-col justify-between">
-          <div className="flex items-start justify-between">
-            {isRecommended && (
-              <span className="bg-white/20 backdrop-blur-sm text-white text-xs font-semibold px-2.5 py-1 rounded-full border border-white/30">
-                ✨ Para ti
-              </span>
+    <HoverCard openDelay={400} closeDelay={150}>
+      <HoverCardTrigger asChild>
+        <motion.div
+          variants={cardVariants}
+          className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300 border border-gray-100 group cursor-pointer"
+        >
+          {/* Visual header */}
+          <div className={`relative h-44 bg-gradient-to-br ${gradient} overflow-hidden`}>
+            {image && (
+              <img
+                src={image}
+                alt={menu.name}
+                className="absolute inset-0 w-full h-full object-cover opacity-80 group-hover:opacity-90 transition-opacity duration-300"
+              />
             )}
-            {menu.difficulty && (
-              <span className="ml-auto bg-black/20 backdrop-blur-sm text-white text-xs px-2 py-0.5 rounded-full">
-                {DIFF_LABELS[menu.difficulty] || menu.difficulty}
+            {/* Dark overlay for text readability */}
+            <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
+            {/* Quick view hint on hover */}
+            <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+              <span className="bg-white/20 backdrop-blur-sm text-white text-xs font-medium px-3 py-1.5 rounded-full border border-white/30">
+                Vista rápida
               </span>
-            )}
+            </div>
+            <div className="absolute inset-0 p-4 flex flex-col justify-between">
+              <div className="flex items-start justify-between">
+                {isRecommended && (
+                  <span className="bg-white/20 backdrop-blur-sm text-white text-xs font-semibold px-2.5 py-1 rounded-full border border-white/30">
+                    ✨ Para ti
+                  </span>
+                )}
+                {menu.difficulty && (
+                  <span className="ml-auto bg-black/20 backdrop-blur-sm text-white text-xs px-2 py-0.5 rounded-full">
+                    {DIFF_LABELS[menu.difficulty] || menu.difficulty}
+                  </span>
+                )}
+              </div>
+              <div>
+                <h3 className="text-white font-bold text-base leading-tight drop-shadow-sm line-clamp-2">
+                  {menu.name}
+                </h3>
+              </div>
+            </div>
           </div>
-          <div>
-            <h3 className="text-white font-bold text-base leading-tight drop-shadow-sm line-clamp-2">
-              {menu.name}
-            </h3>
-          </div>
-        </div>
-      </div>
 
-      {/* Body */}
-      <div className="p-4">
-        <div className="flex flex-wrap gap-1.5 mb-3">
-          {menu.goal && (
-            <Badge className={`text-xs ${GOAL_COLORS[menu.goal] || "bg-gray-100 text-gray-800"}`}>
-              {GOAL_LABELS[menu.goal] || menu.goal}
-            </Badge>
-          )}
-          {menu.dailyCalories && (
-            <span className="text-xs text-muted-foreground bg-gray-50 px-2 py-0.5 rounded-full">
-              🔥 {menu.dailyCalories} kcal
-            </span>
-          )}
-          {menu.dailyMealsCount && (
-            <span className="text-xs text-muted-foreground bg-gray-50 px-2 py-0.5 rounded-full">
-              🍽️ {menu.dailyMealsCount} comidas
-            </span>
-          )}
-        </div>
-        <div className="flex gap-2">
-          <Button variant="outline" size="sm" className="flex-1 text-xs h-9" onClick={() => onDetail(menu.id)}>
-            Ver menú
-          </Button>
-          {user ? (
-            <Button
-              size="sm"
-              className="flex-1 text-xs h-9 bg-[#FF6B35] hover:bg-[#e55a25] text-white"
-              onClick={() => onSave({ id: menu.id, name: menu.name })}
-            >
-              Usar menú
-            </Button>
-          ) : (
-            <Link href="/login">
-              <Button size="sm" className="flex-1 text-xs h-9 bg-[#FF6B35] hover:bg-[#e55a25] text-white">
-                Usar menú
+          {/* Body */}
+          <div className="p-4">
+            <div className="flex flex-wrap gap-1.5 mb-3">
+              {menu.goal && (
+                <Badge className={`text-xs ${GOAL_COLORS[menu.goal] || "bg-gray-100 text-gray-800"}`}>
+                  {GOAL_LABELS[menu.goal] || menu.goal}
+                </Badge>
+              )}
+              {menu.dailyCalories && (
+                <span className="text-xs text-muted-foreground bg-gray-50 px-2 py-0.5 rounded-full">
+                  🔥 {menu.dailyCalories} kcal
+                </span>
+              )}
+              {menu.dailyMealsCount && (
+                <span className="text-xs text-muted-foreground bg-gray-50 px-2 py-0.5 rounded-full">
+                  🍽️ {menu.dailyMealsCount} comidas
+                </span>
+              )}
+            </div>
+            <div className="flex gap-2">
+              <Button variant="outline" size="sm" className="flex-1 text-xs h-9" onClick={() => onDetail(menu.id)}>
+                Ver menú
               </Button>
-            </Link>
-          )}
-        </div>
-      </div>
-    </motion.div>
+              {user ? (
+                <Button
+                  size="sm"
+                  className="flex-1 text-xs h-9 bg-[#FF6B35] hover:bg-[#e55a25] text-white"
+                  onClick={() => onSave({ id: menu.id, name: menu.name })}
+                >
+                  Usar menú
+                </Button>
+              ) : (
+                <Link href="/login">
+                  <Button size="sm" className="flex-1 text-xs h-9 bg-[#FF6B35] hover:bg-[#e55a25] text-white">
+                    Usar menú
+                  </Button>
+                </Link>
+              )}
+            </div>
+          </div>
+        </motion.div>
+      </HoverCardTrigger>
+      <HoverCardContent
+        side="right"
+        align="start"
+        sideOffset={12}
+        className="w-80 p-0 border-0 shadow-2xl rounded-xl overflow-hidden"
+      >
+        <MenuQuickView menu={menu} user={user} onDetail={onDetail} onSave={onSave} />
+      </HoverCardContent>
+    </HoverCard>
   );
 }
 

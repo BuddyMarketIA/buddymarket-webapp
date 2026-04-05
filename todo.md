@@ -1413,3 +1413,4 @@
 - [x] Skeleton loader para la sección "Explorar todos"
 - [x] Animación de entrada (fade-in) al cargar los menús
 - [x] Shimmer effect en los skeletons
+- [x] Vista rápida modal con hover en cards de menú (QuickView)
