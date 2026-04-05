@@ -1,4 +1,4 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useEffect, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 import { useLocation } from "wouter";
 
@@ -21,6 +21,23 @@ export default function NutritionCalendar({ onClose, calorieGoal = 2000, goalTyp
   const [year, setYear] = useState(today.getFullYear());
   const [month, setMonth] = useState(today.getMonth() + 1); // 1-12
   const [, navigate] = useLocation();
+
+  // Animation state: mount → visible (slide-up), close → hidden (slide-down) → unmount
+  const [visible, setVisible] = useState(false);
+  const [closing, setClosing] = useState(false);
+
+  useEffect(() => {
+    // Trigger entrance animation on next frame
+    const raf = requestAnimationFrame(() => setVisible(true));
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  const handleClose = useCallback(() => {
+    setClosing(true);
+    setVisible(false);
+    // Wait for CSS transition (300ms) before calling onClose
+    setTimeout(() => onClose(), 320);
+  }, [onClose]);
 
   const { data, isLoading } = trpc.mealLogs.monthlySummary.useQuery({
     year,
@@ -100,15 +117,27 @@ export default function NutritionCalendar({ onClose, calorieGoal = 2000, goalTyp
   return (
     <div
       className="fixed inset-0 flex items-end justify-center"
-      style={{ background: "rgba(0,0,0,0.75)", zIndex: 500 }}
-      onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
+      style={{
+        background: visible ? "rgba(0,0,0,0.75)" : "rgba(0,0,0,0)",
+        zIndex: 500,
+        transition: "background 0.3s ease",
+        pointerEvents: closing ? "none" : "auto",
+      }}
+      onClick={(e) => { if (e.target === e.currentTarget) handleClose(); }}
     >
       <div
         className="w-full max-w-md rounded-t-3xl overflow-hidden"
-        style={{ background: "#1a1a2e", maxHeight: "92vh", overflowY: "auto" }}
+        style={{
+          background: "#1a1a2e",
+          maxHeight: "92vh",
+          overflowY: "auto",
+          transform: visible ? "translateY(0)" : "translateY(100%)",
+          transition: "transform 0.35s cubic-bezier(0.32, 0.72, 0, 1)",
+          willChange: "transform",
+        }}
       >
         {/* Drag handle */}
-        <div className="flex justify-center pt-3 pb-1">
+        <div className="flex justify-center pt-3 pb-1" style={{ cursor: "grab" }}>
           <div className="w-10 h-1 rounded-full" style={{ background: "rgba(255,255,255,0.2)" }} />
         </div>
 
@@ -254,7 +283,7 @@ export default function NutritionCalendar({ onClose, calorieGoal = 2000, goalTyp
         {/* Close button */}
         <div className="px-4 pb-8">
           <button
-            onClick={onClose}
+            onClick={handleClose}
             className="w-full rounded-2xl py-3.5 text-sm font-bold transition-colors"
             style={{ background: "rgba(255,255,255,0.08)", color: "rgba(255,255,255,0.6)" }}
           >
