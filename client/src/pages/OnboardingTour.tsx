@@ -266,8 +266,25 @@ export default function OnboardingTour() {
                 ))}
               </div>
 
+              {/* Progress bar */}
+              <div className="mt-auto mb-3">
+                <div className="flex items-center justify-between mb-1.5">
+                  <span className="text-xs text-white/40 font-medium">{current + 1} de {CARDS.length} pasos</span>
+                  <span className="text-xs font-semibold" style={{ color: card.accent }}>{Math.round(((current + 1) / CARDS.length) * 100)}%</span>
+                </div>
+                <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
+                  <div
+                    className="h-full rounded-full transition-all duration-500 ease-out"
+                    style={{
+                      width: `${((current + 1) / CARDS.length) * 100}%`,
+                      background: `linear-gradient(90deg, ${card.accent}99, ${card.accent})`,
+                      boxShadow: `0 0 8px ${card.accent}66`,
+                    }}
+                  />
+                </div>
+              </div>
               {/* Navigation buttons */}
-              <div className="mt-auto flex gap-3">
+              <div className="flex gap-3">
                 {current > 0 && (
                   <button
                     onClick={goPrev}
