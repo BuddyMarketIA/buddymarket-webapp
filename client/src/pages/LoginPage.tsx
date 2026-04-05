@@ -5,6 +5,7 @@ import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Eye, EyeOff, Mail, Lock, ArrowRight, Loader2, ChevronLeft, User } from "lucide-react";
+import WebSSOButtons from "@/components/WebSSOButtons";
 
 // ─── Carousel images ──────────────────────────────────────────────────────────
 const SLIDES = [
@@ -311,6 +312,14 @@ export default function LoginPage() {
                   {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <span className="flex items-center gap-2">Crear cuenta <ArrowRight className="w-4 h-4" /></span>}
                 </Button>
               </form>
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-px bg-white/10" />
+                <span className="text-white/25 text-xs">o regístrate con</span>
+                <div className="flex-1 h-px bg-white/10" />
+              </div>
+              <div className="[&_button]:rounded-2xl [&_button]:h-12 [&_button]:text-sm [&_button]:font-semibold [&_button]:border-white/[0.12] [&_button]:bg-white/[0.05] [&_button]:text-white [&_button:hover]:bg-white/[0.10]">
+                <WebSSOButtons onSuccess={() => { window.location.href = "/app/dashboard"; }} />
+              </div>
               <p className="text-center text-white/40 text-xs">
                 ¿Ya tienes cuenta?{" "}
                 <button onClick={() => setMode("login")} className="text-[#F97316] font-semibold hover:text-[#fb923c] transition-colors">
