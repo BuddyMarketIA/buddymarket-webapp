@@ -1271,3 +1271,28 @@
 - [x] Mejorar estrategia de caché del Service Worker (stale-while-revalidate para assets)
 - [x] Añadir prefetch de rutas críticas en el HTML principal
 - [x] Actualizar Capacitor a v7+ si es compatible
+
+## Sprint Testing Crítico (48h)
+- [ ] Instalar @playwright/test y vitest-coverage-v8
+- [ ] Configurar Playwright (playwright.config.ts)
+- [ ] Configurar cobertura de código en vitest.config.ts
+- [ ] Tests Auth Flow: login exitoso redirige al dashboard
+- [ ] Tests Auth Flow: logout limpia sesión y redirige a /
+- [ ] Tests Auth Flow: sesión persistente entre recargas
+- [ ] Tests Auth Flow: acceso a ruta protegida sin sesión redirige a login
+- [ ] Tests Auth Flow: token inválido/expirado rechazado
+- [ ] Tests Plan Enforcement: free no puede acceder a BuddyIA (generateMenu)
+- [ ] Tests Plan Enforcement: free no puede acceder a menús especializados
+- [ ] Tests Plan Enforcement: free no puede acceder a BuddyExperts premium
+- [ ] Tests Plan Enforcement: basic puede acceder a BuddyIA
+- [ ] Tests Plan Enforcement: basic no puede acceder a Pro Max features
+- [ ] Tests Plan Enforcement: pro_max puede acceder a todas las features
+- [ ] Tests Stripe Webhook: rechaza petición sin firma
+- [ ] Tests Stripe Webhook: rechaza firma inválida
+- [ ] Tests Stripe Webhook: acepta y procesa checkout.session.completed
+- [ ] Tests Stripe Webhook: acepta y procesa customer.subscription.updated
+- [ ] Tests Stripe Webhook: devuelve {verified:true} para eventos de test (evt_test_*)
+- [ ] Tests Ownership: usuario no puede editar receta de otro usuario
+- [ ] Tests Ownership: usuario no puede eliminar menú de otro usuario
+- [ ] Tests Ownership: usuario no puede ver lista de compra de otro usuario
+- [ ] Tests Ownership: usuario no puede modificar inventario de otro usuario
