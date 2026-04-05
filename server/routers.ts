@@ -3941,30 +3941,150 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
       }))
       .query(async ({ input }) => {
         const drizzleDb = await db.getDb();
-        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+         if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
         const { mercadonaProducts, carrefourProducts, alcampoProducts, lidlProducts } = await import("../drizzle/schema");
-        const { like, or } = await import("drizzle-orm");
+        const { ilike, or } = await import("drizzle-orm");
+
+        // Normalize text: remove accents, lowercase
+        const normalize = (s: string) =>
+          s.toLowerCase()
+           .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+           .replace(/[^a-z0-9\s]/g, " ")
+           .replace(/\s+/g, " ")
+           .trim();
+
+        // Synonym map for common grocery ingredients
+        const SYNONYMS: Record<string, string[]> = {
+          "pollo": ["pollo", "pechuga", "contramuslo", "muslo"],
+          "pechuga": ["pechuga", "pollo"],
+          "salmon": ["salmon", "salmón"],
+          "salmón": ["salmón", "salmon"],
+          "atun": ["atun", "atún"],
+          "atún": ["atún", "atun"],
+          "garbanzo": ["garbanzo", "garbanzos"],
+          "garbanzos": ["garbanzos", "garbanzo"],
+          "lenteja": ["lenteja", "lentejas"],
+          "lentejas": ["lentejas", "lenteja"],
+          "huevo": ["huevo", "huevos"],
+          "huevos": ["huevos", "huevo"],
+          "espinaca": ["espinaca", "espinacas"],
+          "espinacas": ["espinacas", "espinaca"],
+          "tomate": ["tomate", "tomates"],
+          "zanahoria": ["zanahoria", "zanahorias"],
+          "pimiento": ["pimiento", "pimientos"],
+          "cebolla": ["cebolla", "cebollas"],
+          "jamon": ["jamon", "jamón"],
+          "jamón": ["jamón", "jamon"],
+          "yogur": ["yogur", "yogurt"],
+          "yogurt": ["yogurt", "yogur"],
+          "pasta": ["pasta", "macarron", "espagueti", "fideo"],
+          "macarrones": ["macarron", "pasta"],
+          "espaguetis": ["espagueti", "pasta"],
+          "azucar": ["azucar", "azúcar"],
+          "azúcar": ["azúcar", "azucar"],
+          "aceite de oliva": ["aceite oliva", "aceite virgen"],
+          "aceite": ["aceite"],
+          "leche": ["leche"],
+          "queso": ["queso"],
+          "arroz": ["arroz"],
+          "harina": ["harina"],
+          "mantequilla": ["mantequilla"],
+          "nata": ["nata", "crema"],
+          "lechuga": ["lechuga", "ensalada"],
+          "aguacate": ["aguacate"],
+          "brocoli": ["brocoli", "brócoli"],
+          "brócoli": ["brócoli", "brocoli"],
+          "quinoa": ["quinoa", "quinua"],
+          "avena": ["avena"],
+          "platano": ["platano", "plátano"],
+          "plátano": ["plátano", "platano"],
+          "manzana": ["manzana"],
+          "naranja": ["naranja"],
+          "limon": ["limon", "limón"],
+          "limón": ["limón", "limon"],
+          "ajo": ["ajo", "ajos"],
+          "pepino": ["pepino"],
+          "calabacin": ["calabacin", "calabacín"],
+          "calabacín": ["calabacín", "calabacin"],
+          "berberecho": ["berberecho", "berberechos"],
+          "mejillon": ["mejillon", "mejillón"],
+          "mejillón": ["mejillón", "mejillon"],
+          "gambas": ["gambas", "gamba"],
+          "merluza": ["merluza"],
+          "bacalao": ["bacalao"],
+          "sardina": ["sardina", "sardinas"],
+          "ternera": ["ternera", "vaca", "res"],
+          "cerdo": ["cerdo", "lomo", "costilla"],
+          "cordero": ["cordero"],
+          "tofu": ["tofu"],
+          "tempeh": ["tempeh"],
+          "almendra": ["almendra", "almendras"],
+          "nuez": ["nuez", "nueces"],
+          "nueces": ["nueces", "nuez"],
+          "cacahuete": ["cacahuete", "cacahuetes", "mani"],
+          "anacardo": ["anacardo", "anacardos"],
+          "semilla": ["semilla", "semillas"],
+          "chia": ["chia", "chía"],
+          "linaza": ["linaza", "lino"],
+        };
 
         const searchInTable = async (
           table: any,
           nameCol: any,
+          extraCols: any[],
           urlFn: (row: any) => string,
           query: string
         ) => {
-          const q = `%${query}%`;
+          const normQ = normalize(query);
+          const searchTerms = new Set<string>();
+          searchTerms.add(query);
+          searchTerms.add(normQ);
+          // Add synonyms
+          const firstWord = normQ.split(" ")[0];
+          if (SYNONYMS[firstWord]) SYNONYMS[firstWord].forEach(s => searchTerms.add(s));
+          if (SYNONYMS[normQ]) SYNONYMS[normQ].forEach(s => searchTerms.add(s));
+          // Split multi-word and search each word > 2 chars
+          normQ.split(" ").filter((w: string) => w.length > 2).forEach((w: string) => searchTerms.add(w));
+
+          const conditions = Array.from(searchTerms).flatMap(term => [
+            ilike(nameCol, `%${term}%`),
+            ...extraCols.map(col => ilike(col, `%${term}%`)),
+          ]);
           const rows = await drizzleDb
             .select()
             .from(table)
-            .where(like(nameCol, q))
-            .limit(1);
+            .where(or(...conditions))
+            .limit(5);
           if (rows.length === 0) return null;
-          const row = rows[0] as any;
-          const rawPrice = row.unit_price ?? row.price;
+          // Pick the row whose name best matches the query
+          const queryWords = normQ.split(" ").filter((w: string) => w.length > 2);
+          const scored = rows.map((r: any) => {
+            const rName = normalize(r.name ?? "");
+            let score = 0;
+            if (rName === normQ) score = 100;
+            else if (rName.startsWith(normQ)) score = 80;
+            else if (rName.includes(normQ)) score = 60;
+            else {
+              // Count how many query words appear in the product name
+              const matchedWords = queryWords.filter((w: string) => rName.includes(w));
+              const matchRatio = queryWords.length > 0 ? matchedWords.length / queryWords.length : 0;
+              // Require at least 50% of query words to match to avoid false positives
+              if (matchRatio >= 0.5) score = Math.round(40 * matchRatio);
+              else score = 0; // Too weak a match
+            }
+            return { r, score };
+          });
+          scored.sort((a: any, b: any) => b.score - a.score);
+          // Reject if best match has score 0 (no meaningful match)
+          if (scored[0].score === 0) return null;
+          const row = scored[0].r as any;
+          // Drizzle returns camelCase; fallback to snake_case for raw queries
+          const rawPrice = row.unitPrice ?? row.unit_price ?? row.price ?? row.bulkPrice ?? row.bulk_price;
           const price = rawPrice ? parseFloat(String(rawPrice)) : 0;
           return {
             productName: row.name ?? "",
             price: isNaN(price) ? 0 : price,
-            thumbnail: row.thumbnail ?? row.image ?? row.image_url ?? "",
+            thumbnail: row.thumbnail ?? row.image ?? row.imageUrl ?? row.image_url ?? "",
             url: urlFn(row),
           };
         };
@@ -3978,6 +4098,7 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
             search: (q: string) => searchInTable(
               mercadonaProducts,
               mercadonaProducts.name,
+              [mercadonaProducts.subcategoryName, mercadonaProducts.categoryName],
               (r: any) => r.share_url ?? `https://tienda.mercadona.es`,
               q
             ),
@@ -3990,6 +4111,7 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
             search: (q: string) => searchInTable(
               carrefourProducts,
               carrefourProducts.name,
+              [carrefourProducts.category, carrefourProducts.subcategory],
               (r: any) => r.product_url ?? `https://www.carrefour.es/supermercado/buscar?query=${encodeURIComponent(q)}`,
               q
             ),
@@ -4002,6 +4124,7 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
             search: (q: string) => searchInTable(
               alcampoProducts,
               alcampoProducts.name,
+              [alcampoProducts.category, alcampoProducts.subcategory],
               (r: any) => r.product_url ?? `https://www.alcampo.es/compra-online/buscar/?q=${encodeURIComponent(q)}`,
               q
             ),
@@ -4014,6 +4137,7 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
             search: (q: string) => searchInTable(
               lidlProducts,
               lidlProducts.name,
+              [lidlProducts.category, lidlProducts.fullTitle],
               (r: any) => r.canonical_path ? `https://www.lidl.es${r.canonical_path}` : `https://www.lidl.es`,
               q
             ),
