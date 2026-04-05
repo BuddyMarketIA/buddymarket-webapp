@@ -101,10 +101,10 @@ export const appRouter = router({
     updateBasic: protectedProcedure
       .input(
         z.object({
-          name: z.string().optional(),
-          phone: z.string().optional(),
-          description: z.string().optional(),
-          locale: z.string().optional(),
+          name: z.string().min(1).max(100).trim().optional(),
+          phone: z.string().max(20).trim().optional(),
+          description: z.string().max(500).trim().optional(),
+          locale: z.string().max(10).trim().optional(),
         })
       )
       .mutation(async ({ ctx, input }) => {
@@ -115,10 +115,10 @@ export const appRouter = router({
     updateProfile: protectedProcedure
       .input(
         z.object({
-          age: z.number().optional(),
-          height: z.number().optional(),
-          weight: z.number().optional(),
-          targetWeight: z.number().optional(),
+          age: z.number().int().min(1).max(120).optional(),
+          height: z.number().min(50).max(300).optional(),
+          weight: z.number().min(20).max(500).optional(),
+          targetWeight: z.number().min(20).max(500).optional(),
           gender: z.enum(["male", "female", "other"]).optional(),
           cookingLevel: z.enum(["beginner", "intermediate", "advanced"]).optional(),
           activityLevel: z.enum(["sedentary", "light", "moderate", "active", "very_active"]).optional(),
@@ -127,8 +127,8 @@ export const appRouter = router({
           dailyProteinGoal: z.number().optional(),
           dailyCarbsGoal: z.number().optional(),
           dailyFatGoal: z.number().optional(),
-          sleepHours: z.number().optional(),
-          dailyMeals: z.number().optional(),
+          sleepHours: z.number().min(0).max(24).optional(),
+          dailyMeals: z.number().int().min(1).max(10).optional(),
           practicesSports: z.boolean().optional(),
           heightUnit: z.enum(["cm", "ft"]).optional(),
           weightUnit: z.enum(["kg", "lb"]).optional(),
@@ -137,23 +137,23 @@ export const appRouter = router({
           sportsTypes: z.string().optional(),
           workType: z.enum(["sedentary_desk", "light_standing", "moderate_physical", "heavy_physical"]).optional(),
           stressLevel: z.enum(["low", "moderate", "high", "very_high"]).optional(),
-          waterIntake: z.number().optional(),
+          waterIntake: z.number().min(0).max(20).optional(),
           alcoholConsumption: z.enum(["none", "occasional", "moderate", "frequent"]).optional(),
           smokingStatus: z.enum(["non_smoker", "ex_smoker", "smoker"]).optional(),
-          weightChangeRate: z.number().optional(),
+          weightChangeRate: z.number().min(0).max(5).optional(),
           mealPrepTime: z.enum(["under_15", "15_30", "30_60", "over_60"]).optional(),
-          budgetPerWeek: z.number().optional(),
-          favoriteCuisines: z.string().optional(),
-          dislikedIngredients: z.string().optional(),
-          cookingEquipment: z.string().optional(),
-          mealsPerDayDetail: z.string().optional(),
+          budgetPerWeek: z.number().min(0).max(10000).optional(),
+          favoriteCuisines: z.string().max(500).trim().optional(),
+          dislikedIngredients: z.string().max(500).trim().optional(),
+          cookingEquipment: z.string().max(500).trim().optional(),
+          mealsPerDayDetail: z.string().max(200).trim().optional(),
           snackingHabits: z.enum(["never", "rarely", "sometimes", "often"]).optional(),
           eatOutFrequency: z.enum(["never", "1_2_month", "1_2_week", "3_plus_week"]).optional(),
-          fitnessGoalDetail: z.string().optional(),
+          fitnessGoalDetail: z.string().max(500).trim().optional(),
           motivationLevel: z.enum(["low", "medium", "high", "very_high"]).optional(),
-          previousDietExperience: z.string().optional(),
-          birthYear: z.number().optional(),
-          bodyFatPercentage: z.number().optional(),
+          previousDietExperience: z.string().max(1000).trim().optional(),
+          birthYear: z.number().int().min(1900).max(2025).optional(),
+          bodyFatPercentage: z.number().min(1).max(70).optional(),
         })
       )
       .mutation(async ({ ctx, input }) => {
@@ -164,23 +164,23 @@ export const appRouter = router({
     updateMedical: protectedProcedure
       .input(
         z.object({
-          nutritionalSupplements: z.string().optional(),
+          nutritionalSupplements: z.string().max(500).trim().optional(),
           useNutritionalSupplements: z.boolean().optional(),
-          medicalDiet: z.string().optional(),
+          medicalDiet: z.string().max(500).trim().optional(),
           hasMedicalDiet: z.boolean().optional(),
-          surgery: z.string().optional(),
+          surgery: z.string().max(500).trim().optional(),
           hasSurgery: z.boolean().optional(),
-          medicalFamilyBackground: z.string().optional(),
+          medicalFamilyBackground: z.string().max(1000).trim().optional(),
           hasMedicalFamilyBackground: z.boolean().optional(),
-          metabolismMedication: z.string().optional(),
+          metabolismMedication: z.string().max(500).trim().optional(),
           useMetabolismMedication: z.boolean().optional(),
-          medicalConditions: z.string().optional(),
+          medicalConditions: z.string().max(1000).trim().optional(),
           hasMedicalConditions: z.boolean().optional(),
           // New health profile fields
-          dietaryPattern: z.string().optional(),
-          lifestyle: z.string().optional(), // JSON array
-          specialNeeds: z.string().optional(), // JSON array
-          pregnancyWeek: z.number().optional(),
+          dietaryPattern: z.string().max(100).trim().optional(),
+          lifestyle: z.string().max(2000).trim().optional(), // JSON array
+          specialNeeds: z.string().max(2000).trim().optional(), // JSON array
+          pregnancyWeek: z.number().int().min(1).max(42).optional(),
         })
       )
       .mutation(async ({ ctx, input }) => {
@@ -597,24 +597,24 @@ Devuelve SOLO JSON válido con esta estructura:
       .query(({ input }) => db.getAllIngredients(input.limit, input.offset)),
 
     getById: publicProcedure
-      .input(z.object({ id: z.number() }))
+      .input(z.object({ id: z.number().int().positive() }))
       .query(({ input }) => db.getIngredientById(input.id)),
 
     create: protectedProcedure
       .input(
         z.object({
-          apiParam: z.string(),
-          nameEs: z.string(),
-          nameEn: z.string().optional(),
-          imageUrl: z.string().optional(),
-          calories: z.number().optional(),
-          proteins: z.number().optional(),
-          carbohydrates: z.number().optional(),
-          fats: z.number().optional(),
-          fiber: z.number().optional(),
-          sugars: z.number().optional(),
-          sodium: z.number().optional(),
-          allergyIds: z.array(z.number()).optional(),
+          apiParam: z.string().min(1).max(100).trim(),
+          nameEs: z.string().min(1).max(150).trim(),
+          nameEn: z.string().max(150).trim().optional(),
+          imageUrl: z.string().url().optional(),
+          calories: z.number().min(0).max(9000).optional(),
+          proteins: z.number().min(0).max(500).optional(),
+          carbohydrates: z.number().min(0).max(500).optional(),
+          fats: z.number().min(0).max(500).optional(),
+          fiber: z.number().min(0).max(200).optional(),
+          sugars: z.number().min(0).max(500).optional(),
+          sodium: z.number().min(0).max(50000).optional(),
+          allergyIds: z.array(z.number().int().positive()).max(20).optional(),
         })
       )
       .mutation(async ({ ctx, input }) => {
@@ -624,7 +624,7 @@ Devuelve SOLO JSON válido con esta estructura:
       }),
 
     update: protectedProcedure
-      .input(z.object({ id: z.number(), data: z.record(z.string(), z.unknown()) }))
+      .input(z.object({ id: z.number().int().positive(), data: z.record(z.string().max(50), z.unknown()) }))
       .mutation(async ({ ctx, input }) => {
         if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
         await db.updateIngredient(input.id, input.data as any);
@@ -647,23 +647,23 @@ Devuelve SOLO JSON válido con esta estructura:
     list: publicProcedure
       .input(
         z.object({
-          search: z.string().optional(),
-          userId: z.number().optional(),
-          categoryIds: z.array(z.number()).optional(),
-          allergyIds: z.array(z.number()).optional(),
-          restrictionIds: z.array(z.number()).optional(),
-          difficulty: z.string().optional(),
-          maxTime: z.number().optional(),
+          search: z.string().max(200).trim().optional(),
+          userId: z.number().int().positive().optional(),
+          categoryIds: z.array(z.number().int().positive()).max(20).optional(),
+          allergyIds: z.array(z.number().int().positive()).max(20).optional(),
+          restrictionIds: z.array(z.number().int().positive()).max(20).optional(),
+          difficulty: z.enum(["facil", "medio", "dificil"]).optional(),
+          maxTime: z.number().int().min(0).max(1440).optional(),
           isPublic: z.boolean().optional(),
-          mealTime: z.string().optional(),
-          tag: z.string().optional(),
-          buddyMakerId: z.number().optional(),
+          mealTime: z.string().max(50).trim().optional(),
+          tag: z.string().max(50).trim().optional(),
+          buddyMakerId: z.number().int().positive().optional(),
           isSeeded: z.boolean().optional(),
           excludeUserAllergens: z.boolean().optional(),
-          cuisineType: z.string().optional(),
-          cookingMethod: z.string().optional(),
-          limit: z.number().optional(),
-          cursor: z.number().optional(), // offset cursor for infinite scroll
+          cuisineType: z.string().max(50).trim().optional(),
+          cookingMethod: z.string().max(50).trim().optional(),
+          limit: z.number().int().min(1).max(100).optional(),
+          cursor: z.number().int().min(0).optional(), // offset cursor for infinite scroll
         })
       )
       .query(async ({ input, ctx }) => {
@@ -677,7 +677,7 @@ Devuelve SOLO JSON válido con esta estructura:
       }),
 
     getById: publicProcedure
-      .input(z.object({ id: z.number() }))
+      .input(z.object({ id: z.number().int().positive() }))
       .query(async ({ input }) => {
         const recipe = await db.getRecipeById(input.id);
         if (!recipe) throw new TRPCError({ code: "NOT_FOUND" });
@@ -3305,10 +3305,10 @@ Genera 3 recetas que aprovechen estos ingredientes. Para cada receta incluye: no
     compare: publicProcedure
       .input(z.object({
         items: z.array(z.object({
-          name: z.string(),
-          qty: z.string().optional(),
-          unit: z.string().optional(),
-        })),
+          name: z.string().min(1).max(100).trim(),
+          qty: z.string().max(20).trim().optional(),
+          unit: z.string().max(20).trim().optional(),
+        })).min(1).max(50),
       }))
       .query(async ({ input }) => {
         const drizzleDb = await db.getDb();
