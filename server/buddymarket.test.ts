@@ -521,7 +521,7 @@ describe("mealLogs.lookupBarcode", () => {
     ).rejects.toThrow();
   });
 
-  it("accepts valid barcode format (13 digits) and returns product shape", async () => {
+  it("accepts valid barcode format (13 digits) and returns full nutritional shape", async () => {
     const { ctx } = createAuthContext();
     const caller = appRouter.createCaller(ctx);
     // Mock fetch to avoid real network call
@@ -531,7 +531,13 @@ describe("mealLogs.lookupBarcode", () => {
         status: 1,
         product: {
           product_name: "Nutella",
-          image_url: "https://example.com/nutella.jpg",
+          product_name_es: "Nutella",
+          brands: "Ferrero",
+          quantity: "400g",
+          image_front_url: "https://example.com/nutella.jpg",
+          image_front_small_url: "https://example.com/nutella_small.jpg",
+          nutriscore_grade: "e",
+          nova_group: 4,
           nutriments: {
             "energy-kcal_100g": 539,
             proteins_100g: 6.3,
@@ -539,7 +545,9 @@ describe("mealLogs.lookupBarcode", () => {
             fat_100g: 30.9,
             fiber_100g: 3.0,
             sugars_100g: 56.3,
-            sodium_100g: 0.107,
+            "saturated-fat_100g": 10.6,
+            salt_100g: 0.107,
+            sodium_100g: 0.042,
           },
           serving_size: "15g",
         },
@@ -551,11 +559,52 @@ describe("mealLogs.lookupBarcode", () => {
       const result = await caller.mealLogs.lookupBarcode({ barcode: "3017620422003" });
       expect(result).toHaveProperty("barcode", "3017620422003");
       expect(result).toHaveProperty("name", "Nutella");
+      expect(result).toHaveProperty("brand", "Ferrero");
+      expect(result).toHaveProperty("quantity", "400g");
+      expect(result).toHaveProperty("nutriScore", "e");
+      expect(result).toHaveProperty("novaGroup", 4);
       expect(result).toHaveProperty("per100g");
       expect(result.per100g).toHaveProperty("calories", 539);
       expect(result.per100g).toHaveProperty("proteins", 6.3);
       expect(result.per100g).toHaveProperty("carbohydrates", 57.5);
       expect(result.per100g).toHaveProperty("fats", 30.9);
+      expect(result.per100g).toHaveProperty("fiber", 3.0);
+      expect(result.per100g).toHaveProperty("sugars", 56.3);
+      expect(result.per100g).toHaveProperty("saturatedFat", 10.6);
+      expect(result.per100g).toHaveProperty("salt", 0.11);
+    } finally {
+      global.fetch = originalFetch;
+    }
+  });
+
+  it("returns null for nutriScore and novaGroup when not available", async () => {
+    const { ctx } = createAuthContext();
+    const caller = appRouter.createCaller(ctx);
+    const mockFetch = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => ({
+        status: 1,
+        product: {
+          product_name: "Producto sin datos",
+          nutriments: {
+            "energy-kcal_100g": 100,
+            proteins_100g: 5,
+            carbohydrates_100g: 10,
+            fat_100g: 3,
+          },
+        },
+      }),
+    });
+    const originalFetch = global.fetch;
+    global.fetch = mockFetch as any;
+    try {
+      const result = await caller.mealLogs.lookupBarcode({ barcode: "1234567890123" });
+      expect(result.nutriScore).toBeNull();
+      expect(result.novaGroup).toBeNull();
+      expect(result.per100g.fiber).toBe(0);
+      expect(result.per100g.sugars).toBe(0);
+      expect(result.per100g.saturatedFat).toBe(0);
+      expect(result.per100g.salt).toBe(0);
     } finally {
       global.fetch = originalFetch;
     }

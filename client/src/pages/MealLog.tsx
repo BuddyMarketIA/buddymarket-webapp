@@ -3,6 +3,7 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import BarcodeScanner from "@/components/BarcodeScanner";
 import NutritionCalendar from "@/components/NutritionCalendar";
+import ProductNutritionCard from "@/components/ProductNutritionCard";
 
 export default function MealLog() {
   const [dateOffset, setDateOffset] = useState(0);
@@ -675,7 +676,8 @@ export default function MealLog() {
             setFats(String(product.per100g.fats));
             setAddMode("manual");
             setShowBarcodeScanner(false);
-            toast.success(`✓ Producto encontrado: ${product.name}`);
+            // Show a brief toast with the product name
+            toast.success(`✓ ${product.name} — ${product.per100g.calories} kcal/100g`);
           }}
           onClose={() => {
             setShowBarcodeScanner(false);

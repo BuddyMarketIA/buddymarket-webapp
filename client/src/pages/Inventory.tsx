@@ -3,6 +3,7 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
 import BarcodeScanner from "@/components/BarcodeScanner";
+import ProductNutritionCard from "@/components/ProductNutritionCard";
 import {
   PlusIcon,
   TrashIcon,
@@ -98,7 +99,9 @@ export default function Inventory() {
     brand: string | null;
     imageUrl: string | null;
     quantity: string | null;
-    per100g: { calories: number; proteins: number; carbohydrates: number; fats: number };
+    nutriScore: string | null;
+    novaGroup: number | null;
+    per100g: { calories: number; proteins: number; carbohydrates: number; fats: number; fiber?: number; sugars?: number; saturatedFat?: number; salt?: number };
   } | null>(null);
   const [barcodeAmount, setBarcodeAmount] = useState("1");
   const [barcodeExpiry, setBarcodeExpiry] = useState("");
@@ -896,7 +899,7 @@ export default function Inventory() {
         <BarcodeScanner
           onProductFound={(product) => {
             setShowBarcodeScanner(false);
-            setBarcodeProduct({ ...product, quantity: null });
+            setBarcodeProduct(product);
             setBarcodeAmount("1");
             setBarcodeExpiry("");
             setBarcodeLocation("1");
@@ -910,70 +913,87 @@ export default function Inventory() {
         <div
           className="modal-overlay"
           onClick={(e) => { if (e.target === e.currentTarget) setBarcodeProduct(null); }}
+          style={{ overflowY: "auto" }}
         >
-          <div style={{ background: "white", borderRadius: "24px", width: "100%", maxWidth: 480, padding: "24px 24px 32px", boxShadow: "0 8px 40px rgba(0,0,0,0.2)" }}>
-            <div style={{ display: "flex", alignItems: "flex-start", gap: 16, marginBottom: 20 }}>
-              {barcodeProduct.imageUrl && (
-                <img src={barcodeProduct.imageUrl} alt={barcodeProduct.name} style={{ width: 72, height: 72, borderRadius: 12, objectFit: "cover", flexShrink: 0 }} />
-              )}
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <h3 style={{ margin: "0 0 4px", fontSize: 17, fontWeight: 800, color: "#1a1a1a", lineHeight: 1.3 }}>{barcodeProduct.name}</h3>
-                {barcodeProduct.brand && <p style={{ margin: "0 0 6px", fontSize: 13, color: "#6b7280", fontWeight: 600 }}>{barcodeProduct.brand}</p>}
-                <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
-                  <span style={{ fontSize: 12, fontWeight: 700, background: "#fff7ed", color: "#ea580c", padding: "3px 8px", borderRadius: 8 }}>🔥 {barcodeProduct.per100g.calories} kcal/100g</span>
-                  <span style={{ fontSize: 12, fontWeight: 700, background: "#f0fdf4", color: "#16a34a", padding: "3px 8px", borderRadius: 8 }}>💪 {barcodeProduct.per100g.proteins}g prot</span>
-                  <span style={{ fontSize: 12, fontWeight: 700, background: "#eff6ff", color: "#2563eb", padding: "3px 8px", borderRadius: 8 }}>🌾 {barcodeProduct.per100g.carbohydrates}g carb</span>
+          <div style={{ background: "white", borderRadius: "24px", width: "100%", maxWidth: 500, padding: "0", boxShadow: "0 8px 40px rgba(0,0,0,0.2)", overflow: "hidden", maxHeight: "90vh", overflowY: "auto" }}>
+            {/* Modal header */}
+            <div style={{ background: "linear-gradient(135deg, #F97316, #FB923C)", padding: "16px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 1 }}>
+              <div>
+                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 900, color: "white" }}>🥗 Información Nutricional</h3>
+                <p style={{ margin: "2px 0 0", fontSize: 12, color: "rgba(255,255,255,0.85)" }}>Confirma y añade al inventario</p>
+              </div>
+              <button onClick={() => setBarcodeProduct(null)}
+                style={{ background: "rgba(255,255,255,0.25)", border: "none", borderRadius: "50%", width: 30, height: 30, cursor: "pointer", color: "white", fontSize: 18, fontWeight: 700, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                ×
+              </button>
+            </div>
+
+            {/* Nutrition card */}
+            <div style={{ padding: "20px 20px 0" }}>
+              <ProductNutritionCard
+                name={barcodeProduct.name}
+                brand={barcodeProduct.brand}
+                quantity={barcodeProduct.quantity}
+                imageUrl={barcodeProduct.imageUrl}
+                nutriScore={barcodeProduct.nutriScore}
+                novaGroup={barcodeProduct.novaGroup}
+                per100g={barcodeProduct.per100g}
+                compact
+              />
+            </div>
+
+            {/* Inventory fields */}
+            <div style={{ padding: "16px 20px 24px" }}>
+              <div style={{ borderTop: "1px solid #F3F4F6", paddingTop: 16, marginBottom: 14 }}>
+                <p style={{ margin: "0 0 12px", fontSize: 12, fontWeight: 800, color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.06em" }}>Añadir al inventario</p>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 12 }}>
+                  <div>
+                    <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#374151", marginBottom: 6 }}>Cantidad</label>
+                    <input type="number" value={barcodeAmount} onChange={e => setBarcodeAmount(e.target.value)} min="0.1" step="0.1"
+                      style={{ width: "100%", padding: "10px 12px", border: "2px solid #e5e7eb", borderRadius: 10, fontSize: 15, fontWeight: 600, boxSizing: "border-box" }} />
+                  </div>
+                  <div>
+                    <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#374151", marginBottom: 6 }}>Ubicación</label>
+                    <select value={barcodeLocation} onChange={e => setBarcodeLocation(e.target.value)}
+                      style={{ width: "100%", padding: "10px 12px", border: "2px solid #e5e7eb", borderRadius: 10, fontSize: 14, fontWeight: 600, boxSizing: "border-box" }}>
+                      <option value="1">🧊 Nevera</option>
+                      <option value="2">❄️ Congelador</option>
+                      <option value="3">🏠 Despensa</option>
+                    </select>
+                  </div>
+                </div>
+                <div>
+                  <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#374151", marginBottom: 6 }}>Fecha de caducidad (opcional)</label>
+                  <input type="date" value={barcodeExpiry} onChange={e => setBarcodeExpiry(e.target.value)}
+                    style={{ width: "100%", padding: "10px 12px", border: "2px solid #e5e7eb", borderRadius: 10, fontSize: 14, boxSizing: "border-box" }} />
                 </div>
               </div>
-            </div>
 
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, marginBottom: 16 }}>
-              <div>
-                <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#374151", marginBottom: 6 }}>Cantidad</label>
-                <input type="number" value={barcodeAmount} onChange={e => setBarcodeAmount(e.target.value)} min="0.1" step="0.1"
-                  style={{ width: "100%", padding: "10px 12px", border: "2px solid #e5e7eb", borderRadius: 10, fontSize: 15, fontWeight: 600, boxSizing: "border-box" }} />
+              <div style={{ display: "flex", gap: 10 }}>
+                <button onClick={() => setBarcodeProduct(null)}
+                  style={{ flex: 1, padding: "13px", background: "#f3f4f6", border: "none", borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: "pointer", color: "#374151" }}>
+                  Cancelar
+                </button>
+                <button
+                  onClick={async () => {
+                    try {
+                      await addItem.mutateAsync({
+                        customName: barcodeProduct.name,
+                        amount: parseFloat(barcodeAmount) || 1,
+                        storageLocationId: parseInt(barcodeLocation),
+                        expirationDate: barcodeExpiry || undefined,
+                      });
+                      toast.success(`"${barcodeProduct.name}" añadido al inventario`);
+                      setBarcodeProduct(null);
+                    } catch {
+                      toast.error("Error al añadir el producto");
+                    }
+                  }}
+                  style={{ flex: 2, padding: "13px", background: "linear-gradient(135deg, #F97316, #FB923C)", border: "none", borderRadius: 14, fontSize: 14, fontWeight: 800, cursor: "pointer", color: "white", display: "flex", alignItems: "center", justifyContent: "center", gap: 8, boxShadow: "0 4px 12px rgba(249,115,22,0.35)" }}>
+                  <CheckIcon className="h-4 w-4" />
+                  Añadir al inventario
+                </button>
               </div>
-              <div>
-                <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#374151", marginBottom: 6 }}>Ubicación</label>
-                <select value={barcodeLocation} onChange={e => setBarcodeLocation(e.target.value)}
-                  style={{ width: "100%", padding: "10px 12px", border: "2px solid #e5e7eb", borderRadius: 10, fontSize: 14, fontWeight: 600, boxSizing: "border-box" }}>
-                  <option value="1">🧊 Nevera</option>
-                  <option value="2">❄️ Congelador</option>
-                  <option value="3">🏠 Despensa</option>
-                </select>
-              </div>
-            </div>
-
-            <div style={{ marginBottom: 20 }}>
-              <label style={{ display: "block", fontSize: 12, fontWeight: 700, color: "#374151", marginBottom: 6 }}>Fecha de caducidad (opcional)</label>
-              <input type="date" value={barcodeExpiry} onChange={e => setBarcodeExpiry(e.target.value)}
-                style={{ width: "100%", padding: "10px 12px", border: "2px solid #e5e7eb", borderRadius: 10, fontSize: 14, boxSizing: "border-box" }} />
-            </div>
-
-            <div style={{ display: "flex", gap: 10 }}>
-              <button onClick={() => setBarcodeProduct(null)}
-                style={{ flex: 1, padding: "13px", background: "#f3f4f6", border: "none", borderRadius: 14, fontSize: 14, fontWeight: 700, cursor: "pointer", color: "#374151" }}>
-                Cancelar
-              </button>
-              <button
-                onClick={async () => {
-                  try {
-                    await addItem.mutateAsync({
-                      customName: barcodeProduct.name,
-                      amount: parseFloat(barcodeAmount) || 1,
-                      storageLocationId: parseInt(barcodeLocation),
-                      expirationDate: barcodeExpiry || undefined,
-                    });
-                    toast.success(`"${barcodeProduct.name}" añadido al inventario`);
-                    setBarcodeProduct(null);
-                  } catch {
-                    toast.error("Error al añadir el producto");
-                  }
-                }}
-                style={{ flex: 2, padding: "13px", background: "#16a34a", border: "none", borderRadius: 14, fontSize: 14, fontWeight: 800, cursor: "pointer", color: "white", display: "flex", alignItems: "center", justifyContent: "center", gap: 8 }}>
-                <CheckIcon className="h-4 w-4" />
-                Añadir al inventario
-              </button>
             </div>
           </div>
         </div>

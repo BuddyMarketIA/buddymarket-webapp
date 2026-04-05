@@ -1305,3 +1305,10 @@
 - [ ] Crear script de backup diario automatizado (mysqldump)
 - [ ] Crear script de análisis de queries lentas
 - [ ] Añadir scheduler de backup en el servidor
+
+## Sprint: Mejora Visualización Nutricional en Escáner de Barras
+- [x] Ampliar lookupBarcode para devolver fibra, azúcares, grasas saturadas, sal y Nutri-Score
+- [x] Crear componente ProductNutritionCard con visualización completa de macronutrientes y barras de progreso
+- [x] Mejorar modal de confirmación en Inventory con tabla nutricional visual completa
+- [x] Añadir previsualización del producto en BarcodeScanner antes de cerrar el modal
+- [x] Actualizar MealLog para mostrar todos los macros del producto escaneado

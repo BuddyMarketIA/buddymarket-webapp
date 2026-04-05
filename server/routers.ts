@@ -2359,7 +2359,7 @@ Genera 3 recetas que aprovechen estos ingredientes. Para cada receta incluye: no
       .input(z.object({ barcode: z.string().min(4).max(30) }))
       .query(async ({ input }) => {
         try {
-          const url = `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(input.barcode)}.json?fields=product_name,product_name_es,nutriments,image_front_small_url,brands,quantity,serving_size`;
+          const url = `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(input.barcode)}.json?fields=product_name,product_name_es,nutriments,image_front_small_url,image_front_url,brands,quantity,serving_size,nutriscore_grade,nova_group,ecoscore_grade`;
           const response = await fetch(url, {
             headers: { "User-Agent": "BuddyMarket/1.0 (contact@buddymarket.app)" },
             signal: AbortSignal.timeout(8000),
@@ -2374,14 +2374,20 @@ Genera 3 recetas que aprovechen estos ingredientes. Para cada receta incluye: no
           return {
             barcode: input.barcode,
             name: (p.product_name_es || p.product_name || "Producto desconocido").trim(),
-            brand: p.brands || null,
+            brand: p.brands ? p.brands.split(",")[0].trim() : null,
             quantity: p.quantity || null,
-            imageUrl: p.image_front_small_url || null,
+            imageUrl: p.image_front_url || p.image_front_small_url || null,
+            nutriScore: (p.nutriscore_grade as string | null) || null,
+            novaGroup: p.nova_group ? Number(p.nova_group) : null,
             per100g: {
               calories: Math.round(Number(n["energy-kcal_100g"]) || 0),
               proteins: Math.round((Number(n["proteins_100g"]) || 0) * 10) / 10,
               carbohydrates: Math.round((Number(n["carbohydrates_100g"]) || 0) * 10) / 10,
               fats: Math.round((Number(n["fat_100g"]) || 0) * 10) / 10,
+              fiber: Math.round((Number(n["fiber_100g"]) || 0) * 10) / 10,
+              sugars: Math.round((Number(n["sugars_100g"]) || 0) * 10) / 10,
+              saturatedFat: Math.round((Number(n["saturated-fat_100g"]) || 0) * 10) / 10,
+              salt: Math.round((Number(n["salt_100g"]) || 0) * 100) / 100,
             },
           };
         } catch (err: any) {
