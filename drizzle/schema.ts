@@ -397,6 +397,7 @@ export const recipes = mysqlTable("recipes", {
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 }, (t) => ({
   userIdx: index("recipe_user_idx").on(t.userId),
+  userCreatedAtIdx: index("recipe_user_created_idx").on(t.userId, t.createdAt),
   mealTimeIdx: index("recipe_meal_time_idx").on(t.mealTime),
   buddyMakerIdx: index("recipe_buddy_maker_idx").on(t.buddyMakerId),
   nameIdx: index("recipe_name_idx").on(t.name),
@@ -493,6 +494,8 @@ export const menuOrganizers = mysqlTable("menu_organizers", {
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 }, (t) => ({
   userIdx: index("menu_user_idx").on(t.userId),
+  userCreatedAtIdx: index("menu_user_created_idx").on(t.userId, t.createdAt),
+  userActiveIdx: index("menu_user_active_idx").on(t.userId, t.isActive),
 }));
 export type MenuOrganizer = typeof menuOrganizers.$inferSelect;
 export type InsertMenuOrganizer = typeof menuOrganizers.$inferInsert;
@@ -509,7 +512,10 @@ export const menuOrganizerDayParts = mysqlTable("menu_organizer_day_parts", {
   completed: boolean("completed").default(false),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
-});
+}, (t) => ({
+  menuIdIdx: index("menu_dp_menu_idx").on(t.menuOrganizerId),
+  menuIdDateIdx: index("menu_dp_menu_date_idx").on(t.menuOrganizerId, t.date),
+}));
 
 export type MenuOrganizerDayPart = typeof menuOrganizerDayParts.$inferSelect;
 

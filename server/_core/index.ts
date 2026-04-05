@@ -202,3 +202,34 @@ setTimeout(() => {
   }, 15 * 60 * 1000);
   logger.info("[Email] Sequence scheduler started (every 15 min)");
 }, 5000);
+
+// ─── Database Backup Scheduler (daily at 03:00 UTC) ──────────────────────────
+function scheduleNextBackup() {
+  const now = new Date();
+  const next = new Date(now);
+  next.setUTCHours(3, 0, 0, 0); // 03:00 UTC
+  if (next <= now) next.setUTCDate(next.getUTCDate() + 1); // tomorrow if past
+  const msUntilNext = next.getTime() - now.getTime();
+  const hoursUntil = (msUntilNext / 3600000).toFixed(1);
+  logger.info(`[Backup] Next backup scheduled in ${hoursUntil}h (${next.toISOString()})`);
+  setTimeout(async () => {
+    logger.info("[Backup] Starting scheduled database backup...");
+    try {
+      const { execFileSync } = await import("child_process");
+      execFileSync("node", ["scripts/db-backup.mjs"], {
+        cwd: process.cwd(),
+        stdio: "pipe",
+        timeout: 5 * 60 * 1000, // 5 min timeout
+      });
+      logger.info("[Backup] Scheduled backup completed successfully");
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : String(err);
+      logger.error("[Backup] Scheduled backup failed:", message);
+    }
+    scheduleNextBackup(); // schedule next day
+  }, msUntilNext);
+}
+
+if (process.env.NODE_ENV === "production") {
+  scheduleNextBackup();
+}

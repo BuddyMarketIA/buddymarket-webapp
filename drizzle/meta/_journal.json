@@ -253,6 +253,13 @@
       "when": 1775376887359,
       "tag": "0035_public_living_lightning",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "5",
+      "when": 1775380763928,
+      "tag": "0036_massive_talos",
+      "breakpoints": true
     }
   ]
 }

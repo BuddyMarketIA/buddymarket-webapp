@@ -1296,3 +1296,12 @@
 - [ ] Tests Ownership: usuario no puede eliminar menú de otro usuario
 - [ ] Tests Ownership: usuario no puede ver lista de compra de otro usuario
 - [ ] Tests Ownership: usuario no puede modificar inventario de otro usuario
+
+## Sprint Optimización BD + Backup
+
+- [ ] Auditar queries lentas con EXPLAIN ANALYZE (recipes, menus, shoppingLists, mealLogs)
+- [ ] Añadir índices compuestos en Drizzle schema para queries frecuentes
+- [ ] Aplicar índices con pnpm db:push
+- [ ] Crear script de backup diario automatizado (mysqldump)
+- [ ] Crear script de análisis de queries lentas
+- [ ] Añadir scheduler de backup en el servidor

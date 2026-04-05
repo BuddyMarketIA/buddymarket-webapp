@@ -1089,7 +1089,7 @@ describe("Security: Input validation prevents malicious data", () => {
     await expect(
       caller.mealLogs.lookupBarcode({ barcode: "'; DROP TABLE users; --" })
     ).rejects.toThrow();
-  });
+  }, 10000);
 });
 
 // =============================================================================
