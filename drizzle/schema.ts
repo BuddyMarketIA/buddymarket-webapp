@@ -38,7 +38,11 @@ export const users = mysqlTable("users", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
-});
+}, (t) => ({
+  emailIdx: index("users_email_idx").on(t.email),
+  roleIdx: index("users_role_idx").on(t.role),
+  activeIdx: index("users_active_idx").on(t.active),
+}));
 
 export type User = typeof users.$inferSelect;
 export type InsertUser = typeof users.$inferInsert;
@@ -395,6 +399,9 @@ export const recipes = mysqlTable("recipes", {
   userIdx: index("recipe_user_idx").on(t.userId),
   mealTimeIdx: index("recipe_meal_time_idx").on(t.mealTime),
   buddyMakerIdx: index("recipe_buddy_maker_idx").on(t.buddyMakerId),
+  nameIdx: index("recipe_name_idx").on(t.name),
+  cuisineIdx: index("recipe_cuisine_idx").on(t.cuisineType),
+  cookingMethodIdx: index("recipe_cooking_method_idx").on(t.cookingMethod),
 }));
 
 export type Recipe = typeof recipes.$inferSelect;

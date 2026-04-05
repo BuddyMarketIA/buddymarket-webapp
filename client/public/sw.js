@@ -1,5 +1,8 @@
-// BuddyMarket Service Worker — v3.0 (with caloric summary in push notifications)
-const CACHE_NAME = 'buddymarket-v3';
+// BuddyMarket Service Worker — v4.0
+// Strategies: Shell (cache-first) | Static assets (stale-while-revalidate) | Navigation (network-first)
+const SHELL_CACHE = 'buddymarket-shell-v4';
+const STATIC_CACHE = 'buddymarket-static-v4';
+const CACHE_NAME = SHELL_CACHE; // keep backward-compat reference
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
@@ -11,16 +14,17 @@ const STATIC_ASSETS = [
 // Install: cache static shell
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(STATIC_ASSETS))
+    caches.open(SHELL_CACHE).then((cache) => cache.addAll(STATIC_ASSETS))
   );
   self.skipWaiting();
 });
 
 // Activate: clean old caches
 self.addEventListener('activate', (event) => {
+  const CURRENT_CACHES = [SHELL_CACHE, STATIC_CACHE];
   event.waitUntil(
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k)))
+      Promise.all(keys.filter((k) => !CURRENT_CACHES.includes(k)).map((k) => caches.delete(k)))
     )
   );
   self.clients.claim();
@@ -45,9 +49,25 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // For static assets: cache-first
+  // JS/CSS bundles — stale-while-revalidate (serve cached, update in background)
+  if (url.pathname.match(/\.(js|css|woff2?|ttf|eot)$/)) {
+    event.respondWith(
+      caches.open(STATIC_CACHE).then((cache) =>
+        cache.match(request).then((cached) => {
+          const fetchPromise = fetch(request).then((response) => {
+            if (response.ok) cache.put(request, response.clone());
+            return response;
+          }).catch(() => cached);
+          return cached || fetchPromise;
+        })
+      )
+    );
+    return;
+  }
+
+  // Images & icons — cache-first
   if (
-    url.pathname.match(/\.(png|jpg|jpeg|svg|gif|webp|ico|woff2?|ttf|eot)$/) ||
+    url.pathname.match(/\.(png|jpg|jpeg|svg|gif|webp|ico)$/) ||
     url.pathname === '/manifest.json'
   ) {
     event.respondWith(
@@ -56,7 +76,7 @@ self.addEventListener('fetch', (event) => {
         return fetch(request).then((response) => {
           if (response.ok) {
             const clone = response.clone();
-            caches.open(CACHE_NAME).then((cache) => cache.put(request, clone));
+            caches.open(STATIC_CACHE).then((cache) => cache.put(request, clone));
           }
           return response;
         });
@@ -197,6 +217,12 @@ self.addEventListener('notificationclick', (event) => {
 
 // Handle messages from the main thread (schedule local notifications with caloric summary)
 self.addEventListener('message', (event) => {
+  // SW update: skip waiting when new version is ready
+  if (event.data?.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+    return;
+  }
+
   if (event.data?.type === 'SCHEDULE_REMINDER') {
     const { title, mealType, summary, delay } = event.data;
 

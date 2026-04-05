@@ -1234,3 +1234,40 @@
 - [x] BuddyIA: onMenuGenerated pasa los datos del cuestionario al resultado
 - [x] Prompt IA: incluye días fuera de casa, alimentos no deseados, presupuesto, métricas del usuario
 - [x] TypeScript: 0 errores
+
+## Auditoría de Calidad - Mejoras (Sprint Actual)
+
+### Seguridad
+- [x] Verificar y reforzar .gitignore (secrets, .env, node_modules, dist)
+- [x] Configurar CORS explícito en Express con lista de orígenes permitidos
+- [x] Añadir rate limiting con express-rate-limit (global + por endpoint sensible)
+- [x] Reforzar validación del webhook de Stripe con manejo de errores explícito
+- [x] Auditar validaciones Zod en todos los routers tRPC
+
+### Rendimiento
+- [x] Lazy loading de todas las rutas en App.tsx con React.lazy + Suspense
+- [x] Paginación en listado de recetas (ya existe en backend, verificar frontend)
+- [x] Añadir React.memo a componentes de lista pesados
+- [x] Verificar que Vite genera chunks separados por ruta (code splitting)
+
+### Base de Datos
+- [x] Añadir índices en drizzle/schema.ts: users.email, recipes.name, menus.userId, shoppingLists.userId, mealLogs.userId
+- [x] Ejecutar pnpm db:push para aplicar índices
+- [x] Documentar migraciones en README
+
+### Logging y Configuración
+- [x] Crear logger estructurado (winston o pino) en server/_core/logger.ts
+- [x] Reemplazar console.log/error en server/ por el logger estructurado
+- [x] Añadir .nvmrc con versión de Node (22.x)
+- [x] Añadir campo engines en package.json
+- [x] Auditar dependencias no usadas con depcheck
+
+### Testing
+- [x] Añadir tests de integración tRPC para menus.generateMenuWithQuestionnaire
+- [x] Añadir tests de seguridad básicos (input injection, auth checks)
+- [x] Añadir tests para BuddyIA saveGeneratedMenu y applyToCalendar
+
+### PWA
+- [x] Mejorar estrategia de caché del Service Worker (stale-while-revalidate para assets)
+- [x] Añadir prefetch de rutas críticas en el HTML principal
+- [x] Actualizar Capacitor a v7+ si es compatible

@@ -1,63 +1,80 @@
+import { lazy, Suspense } from "react";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
-import NotFound from "@/pages/NotFound";
 import { Route, Switch, Redirect, useLocation } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import AppLayout from "./components/AppLayout";
 import { useAuth } from "./_core/hooks/useAuth";
 import { getLoginUrl } from "./const";
-import Home from "./pages/Home";
-import Dashboard from "./pages/Dashboard";
-import Recipes from "./pages/Recipes";
-import RecipeDetail from "./pages/RecipeDetail";
-import RecipeForm from "./pages/RecipeForm";
-import Menus from "./pages/Menus";
-import ShoppingLists from "./pages/ShoppingLists";
-import Inventory from "./pages/Inventory";
-import MealLog from "./pages/MealLog";
-import Profile from "./pages/Profile";
-import Admin from "./pages/Admin";
-import Subscription from "./pages/Subscription";
-import BuddyExperts from "./pages/BuddyExperts";
-import BuddyMakers from "./pages/BuddyMakers";
-import BuddyIA from "./pages/BuddyIA";
-import BuddyShop from "./pages/BuddyShop";
-import MercadonaShop from "./pages/MercadonaShop";
-import CarrefourShop from "./pages/CarrefourShop";
-import LidlShop from "./pages/LidlShop";
-import MenuLibrary from "./pages/MenuLibrary";
-import ActiveMenu from "./pages/ActiveMenu";
-import SpecializedMenus from "./pages/SpecializedMenus";
-import Favorites from "./pages/Favorites";
-import BuddyProfile from "./pages/BuddyProfile";
-import Following from "./pages/Following";
-import BuddyExpertDashboard from "./pages/BuddyExpertDashboard";
-import BuddyMakerDashboard from "./pages/BuddyMakerDashboard";
-import BuddyMakerStats from "./pages/BuddyMakerStats";
-import BuddyExpertStats from "./pages/BuddyExpertStats";
-import ReferralDashboard from "./pages/ReferralDashboard";
-import Metrics from "./pages/Metrics";
-import BuddyApplication from "./pages/BuddyApplication";
-import NutritionalStats from "./pages/NutritionalStats";
-import Progress from "./pages/Progress";
-import MealNotifications from "./pages/MealNotifications";
-import Notifications from "./pages/Notifications";
-import Achievements from "./pages/Achievements";
-import EventMenuPlanner from "./pages/EventMenuPlanner";
-import SavedEvents from "./pages/SavedEvents";
-import Registration from "./pages/Registration";
-import LandingPage from "./pages/LandingPage";
-import Blog from "./pages/Blog";
-import Terms from "./pages/Terms";
-import Privacy from "./pages/Privacy";
-import Cookies from "./pages/Cookies";
-import { OnboardingModal } from "./components/OnboardingModal";
-import InstallAppBanner from "./components/InstallAppBanner";
-import Complements from "./pages/Complements";
-import LoginPage from "./pages/LoginPage";
-import BuddySetup from "./pages/BuddySetup";
-import MyMenus from "./pages/MyMenus";
+
+// ─── Lazy-loaded pages (code splitting per route) ─────────────────────────────
+const Home = lazy(() => import("./pages/Home"));
+const LandingPage = lazy(() => import("./pages/LandingPage"));
+const LoginPage = lazy(() => import("./pages/LoginPage"));
+const Blog = lazy(() => import("./pages/Blog"));
+const Terms = lazy(() => import("./pages/Terms"));
+const Privacy = lazy(() => import("./pages/Privacy"));
+const Cookies = lazy(() => import("./pages/Cookies"));
+const Registration = lazy(() => import("./pages/Registration"));
+const NotFound = lazy(() => import("./pages/NotFound"));
+const BuddySetup = lazy(() => import("./pages/BuddySetup"));
+
+// App pages (protected)
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Recipes = lazy(() => import("./pages/Recipes"));
+const RecipeDetail = lazy(() => import("./pages/RecipeDetail"));
+const RecipeForm = lazy(() => import("./pages/RecipeForm"));
+const Menus = lazy(() => import("./pages/Menus"));
+const MyMenus = lazy(() => import("./pages/MyMenus"));
+const ShoppingLists = lazy(() => import("./pages/ShoppingLists"));
+const Inventory = lazy(() => import("./pages/Inventory"));
+const MealLog = lazy(() => import("./pages/MealLog"));
+const Profile = lazy(() => import("./pages/Profile"));
+const Admin = lazy(() => import("./pages/Admin"));
+const Subscription = lazy(() => import("./pages/Subscription"));
+const BuddyExperts = lazy(() => import("./pages/BuddyExperts"));
+const BuddyMakers = lazy(() => import("./pages/BuddyMakers"));
+const BuddyIA = lazy(() => import("./pages/BuddyIA"));
+const BuddyShop = lazy(() => import("./pages/BuddyShop"));
+const MercadonaShop = lazy(() => import("./pages/MercadonaShop"));
+const CarrefourShop = lazy(() => import("./pages/CarrefourShop"));
+const LidlShop = lazy(() => import("./pages/LidlShop"));
+const MenuLibrary = lazy(() => import("./pages/MenuLibrary"));
+const ActiveMenu = lazy(() => import("./pages/ActiveMenu"));
+const SpecializedMenus = lazy(() => import("./pages/SpecializedMenus"));
+const Favorites = lazy(() => import("./pages/Favorites"));
+const BuddyProfile = lazy(() => import("./pages/BuddyProfile"));
+const Following = lazy(() => import("./pages/Following"));
+const BuddyExpertDashboard = lazy(() => import("./pages/BuddyExpertDashboard"));
+const BuddyMakerDashboard = lazy(() => import("./pages/BuddyMakerDashboard"));
+const BuddyMakerStats = lazy(() => import("./pages/BuddyMakerStats"));
+const BuddyExpertStats = lazy(() => import("./pages/BuddyExpertStats"));
+const ReferralDashboard = lazy(() => import("./pages/ReferralDashboard"));
+const Metrics = lazy(() => import("./pages/Metrics"));
+const NutritionalStats = lazy(() => import("./pages/NutritionalStats"));
+const Progress = lazy(() => import("./pages/Progress"));
+const Notifications = lazy(() => import("./pages/Notifications"));
+const MealNotifications = lazy(() => import("./pages/MealNotifications"));
+const Achievements = lazy(() => import("./pages/Achievements"));
+const BuddyApplication = lazy(() => import("./pages/BuddyApplication"));
+const EventMenuPlanner = lazy(() => import("./pages/EventMenuPlanner"));
+const SavedEvents = lazy(() => import("./pages/SavedEvents"));
+const Complements = lazy(() => import("./pages/Complements"));
+const OnboardingModal = lazy(() => import("./components/OnboardingModal").then(m => ({ default: m.OnboardingModal })));
+const InstallAppBanner = lazy(() => import("./components/InstallAppBanner"));
+
+// ─── Page loading fallback ────────────────────────────────────────────────────
+function PageLoader() {
+  return (
+    <div className="min-h-screen flex items-center justify-center bg-[#FAF8F5]">
+      <div className="flex flex-col items-center gap-3">
+        <div className="w-10 h-10 border-4 border-[#F97316] border-t-transparent rounded-full animate-spin" />
+        <p className="text-sm text-gray-500">Cargando...</p>
+      </div>
+    </div>
+  );
+}
 
 // Wraps a page component with AppLayout (for pages that don't include it themselves)
 function WithLayout({ component: Component, ...props }: { component: React.ComponentType<any>; [key: string]: any }) {
@@ -72,7 +89,7 @@ function WithLayout({ component: Component, ...props }: { component: React.Compo
 function ProtectedRoute({ component: Component, params }: { component: React.ComponentType<any>; params?: any }) {
   const { user, loading } = useAuth();
   const [, setLocation] = useLocation();
-  if (loading) return null;
+  if (loading) return <PageLoader />;
   if (!user) {
     window.location.href = getLoginUrl();
     return null;
@@ -87,7 +104,7 @@ function ProtectedRoute({ component: Component, params }: { component: React.Com
 
 function ProtectedPage({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
-  if (loading) return null;
+  if (loading) return <PageLoader />;
   if (!user) {
     window.location.href = getLoginUrl();
     return null;
@@ -178,9 +195,15 @@ function App() {
       <ThemeProvider defaultTheme="light" switchable={true}>
         <TooltipProvider>
           <Toaster />
-          <OnboardingModal />
-          <AppBanners />
-          <Router />
+          <Suspense fallback={null}>
+            <OnboardingModal />
+          </Suspense>
+          <Suspense fallback={null}>
+            <AppBanners />
+          </Suspense>
+          <Suspense fallback={<PageLoader />}>
+            <Router />
+          </Suspense>
         </TooltipProvider>
       </ThemeProvider>
     </ErrorBoundary>

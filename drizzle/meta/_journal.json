@@ -246,6 +246,13 @@
       "when": 1775292256661,
       "tag": "0034_sticky_barracuda",
       "breakpoints": true
+    },
+    {
+      "idx": 35,
+      "version": "5",
+      "when": 1775376887359,
+      "tag": "0035_public_living_lightning",
+      "breakpoints": true
     }
   ]
 }
