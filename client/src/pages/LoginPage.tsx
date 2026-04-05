@@ -1,14 +1,36 @@
-import { useState } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
-import { Eye, EyeOff, Mail, Lock, ArrowRight, Loader2, ChevronLeft } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, ArrowRight, Loader2, ChevronLeft, User } from "lucide-react";
 
-const LOGO_COLOR = "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/buddymarket-logo-color_856f2d67.jpg";
-const FOOD_BG = "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=1200&q=80&auto=format&fit=crop";
+// ─── Carousel images ──────────────────────────────────────────────────────────
+const SLIDES = [
+  {
+    img: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=900&q=80&auto=format&fit=crop",
+    title: "Tu nutrición,\ninteligente",
+    sub: "Planificación personalizada con IA",
+  },
+  {
+    img: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=900&q=80&auto=format&fit=crop",
+    title: "Recetas que\nte inspiran",
+    sub: "Miles de recetas adaptadas a tus objetivos",
+  },
+  {
+    img: "https://images.unsplash.com/photo-1547592180-85f173990554?w=900&q=80&auto=format&fit=crop",
+    title: "Alcanza tus\nmetas",
+    sub: "Seguimiento de progreso en tiempo real",
+  },
+  {
+    img: "https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=900&q=80&auto=format&fit=crop",
+    title: "Come bien,\nvive mejor",
+    sub: "Menús semanales listos en segundos",
+  },
+];
+
+const LOGO = "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/buddymarket-logo-color_856f2d67.jpg";
 
 type AuthMode = "login" | "register" | "otp-email" | "otp-code" | "forgot" | "forgot-sent";
 
@@ -17,14 +39,17 @@ export default function LoginPage() {
   const [mode, setMode] = useState<AuthMode>("login");
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirm, setShowConfirm] = useState(false);
+  const [slide, setSlide] = useState(0);
+  const [transitioning, setTransitioning] = useState(false);
 
   // Form fields
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
-  const [otpCode, setOtpCode] = useState(["", "", "", "", "", ""]);
   const [forgotEmail, setForgotEmail] = useState("");
+  const [otpCode, setOtpCode] = useState(["", "", "", "", "", ""]);
+  const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
 
   // tRPC mutations
   const loginMut = trpc.auth.login.useMutation();
@@ -33,6 +58,18 @@ export default function LoginPage() {
   const verifyOTPMut = trpc.auth.verifyOTP.useMutation();
   const forgotMut = trpc.auth.forgotPassword.useMutation();
   const utils = trpc.useUtils();
+
+  // Auto-advance carousel
+  useEffect(() => {
+    const id = setInterval(() => {
+      setTransitioning(true);
+      setTimeout(() => {
+        setSlide(s => (s + 1) % SLIDES.length);
+        setTransitioning(false);
+      }, 400);
+    }, 4000);
+    return () => clearInterval(id);
+  }, []);
 
   const afterAuth = async () => {
     await utils.auth.me.invalidate();
@@ -51,10 +88,7 @@ export default function LoginPage() {
 
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (password !== confirmPassword) {
-      toast.error("Las contraseñas no coinciden");
-      return;
-    }
+    if (password !== confirmPassword) { toast.error("Las contraseñas no coinciden"); return; }
     try {
       await registerMut.mutateAsync({ name, email, password });
       await afterAuth();
@@ -88,24 +122,24 @@ export default function LoginPage() {
 
   const handleOtpInput = (idx: number, val: string) => {
     if (!/^\d*$/.test(val)) return;
+    if (val.length > 1) {
+      // Handle paste
+      const digits = val.replace(/\D/g, "").slice(0, 6).split("");
+      const next = [...otpCode];
+      digits.forEach((d, i) => { if (idx + i < 6) next[idx + i] = d; });
+      setOtpCode(next);
+      const focusIdx = Math.min(idx + digits.length, 5);
+      otpRefs.current[focusIdx]?.focus();
+      return;
+    }
     const next = [...otpCode];
-    next[idx] = val.slice(-1);
+    next[idx] = val;
     setOtpCode(next);
-    if (val && idx < 5) document.getElementById(`otp-${idx + 1}`)?.focus();
+    if (val && idx < 5) otpRefs.current[idx + 1]?.focus();
   };
 
-  const handleOtpKeyDown = (idx: number, e: React.KeyboardEvent) => {
-    if (e.key === "Backspace" && !otpCode[idx] && idx > 0) {
-      document.getElementById(`otp-${idx - 1}`)?.focus();
-    }
-  };
-
-  const handleOtpPaste = (e: React.ClipboardEvent) => {
-    const text = e.clipboardData.getData("text").replace(/\D/g, "").slice(0, 6);
-    if (text.length === 6) {
-      setOtpCode(text.split(""));
-      document.getElementById("otp-5")?.focus();
-    }
+  const handleOtpKey = (idx: number, e: React.KeyboardEvent) => {
+    if (e.key === "Backspace" && !otpCode[idx] && idx > 0) otpRefs.current[idx - 1]?.focus();
   };
 
   const handleForgot = async (e: React.FormEvent) => {
@@ -120,284 +154,276 @@ export default function LoginPage() {
 
   const isLoading = loginMut.isPending || registerMut.isPending || sendOTPMut.isPending || verifyOTPMut.isPending || forgotMut.isPending;
 
-  const inputCls = "bg-white/[0.06] border-white/[0.12] text-white placeholder:text-white/25 focus-visible:border-[#F97316] focus-visible:ring-[#F97316]/20 rounded-xl h-12";
+  const inp = "bg-white/[0.08] border border-white/[0.14] text-white placeholder:text-white/30 focus-visible:border-[#F97316] focus-visible:ring-0 focus-visible:ring-offset-0 rounded-2xl h-13 text-sm transition-colors";
+
+  const currentSlide = SLIDES[slide];
 
   return (
-    <div className="min-h-screen flex bg-[#0F0D0B] font-sans">
-      {/* ── Left panel ─────────────────────────────────────────────────────── */}
-      <div className="flex-1 flex flex-col min-h-screen px-8 py-10 md:px-14 lg:px-20 max-w-[520px] w-full">
-        {/* Logo */}
-        <a href="/" className="inline-block shrink-0">
-          <img src={LOGO_COLOR} alt="BuddyMarket" className="h-9 w-auto object-contain" />
-        </a>
+    <div className="relative min-h-screen w-full overflow-hidden bg-[#0a0a0a] flex flex-col">
 
-        {/* Form area */}
-        <div className="flex-1 flex flex-col justify-center py-10 space-y-7">
+      {/* ── Background carousel ── */}
+      <div className="absolute inset-0 z-0">
+        {SLIDES.map((s, i) => (
+          <div
+            key={i}
+            className="absolute inset-0 transition-opacity duration-700"
+            style={{ opacity: i === slide ? 1 : 0 }}
+          >
+            <img src={s.img} alt="" className="w-full h-full object-cover" />
+          </div>
+        ))}
+        {/* Dark gradient overlay */}
+        <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/90" />
+        <div className="absolute inset-0 bg-gradient-to-t from-[#0a0a0a] via-[#0a0a0a]/70 to-transparent" style={{ top: "45%" }} />
+      </div>
 
-          {/* LOGIN */}
+      {/* ── Top: Logo + slide text ── */}
+      <div className="relative z-10 flex flex-col items-center pt-14 pb-6 px-6 text-center">
+        <img src={LOGO} alt="BuddyMarket" className="h-9 w-auto object-contain mb-8 drop-shadow-lg" />
+
+        <div className={`transition-all duration-400 ${transitioning ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"}`}>
+          <h1 className="text-[2.1rem] font-extrabold text-white leading-tight tracking-tight whitespace-pre-line drop-shadow-md">
+            {currentSlide.title}
+          </h1>
+          <p className="mt-2 text-white/70 text-sm font-medium drop-shadow">
+            {currentSlide.sub}
+          </p>
+        </div>
+
+        {/* Dots */}
+        <div className="flex gap-1.5 mt-5">
+          {SLIDES.map((_, i) => (
+            <button
+              key={i}
+              onClick={() => setSlide(i)}
+              className={`rounded-full transition-all duration-300 ${i === slide ? "w-5 h-1.5 bg-[#F97316]" : "w-1.5 h-1.5 bg-white/30"}`}
+            />
+          ))}
+        </div>
+      </div>
+
+      {/* ── Bottom: Form card ── */}
+      <div className="relative z-10 flex-1 flex flex-col justify-end">
+        <div className="bg-[#111110] rounded-t-[2rem] px-6 pt-7 pb-10 shadow-2xl min-h-[420px]">
+
+          {/* Back button for sub-modes */}
+          {(mode !== "login") && (
+            <button
+              onClick={() => setMode(mode === "otp-code" ? "otp-email" : "login")}
+              className="flex items-center gap-1 text-white/50 hover:text-white text-sm mb-5 transition-colors"
+            >
+              <ChevronLeft className="w-4 h-4" /> Volver
+            </button>
+          )}
+
+          {/* ── LOGIN ── */}
           {mode === "login" && (
-            <>
+            <div className="space-y-5">
               <div>
-                <h1 className="text-[2rem] font-bold text-white tracking-tight leading-tight">Bienvenido de nuevo</h1>
-                <p className="mt-2 text-sm text-white/50">Accede a tu cuenta BuddyMarket</p>
+                <h2 className="text-xl font-bold text-white">Bienvenido de nuevo</h2>
+                <p className="text-white/40 text-xs mt-0.5">Accede a tu cuenta BuddyMarket</p>
               </div>
-              <form onSubmit={handleLogin} className="space-y-4">
-                <div className="space-y-1.5">
-                  <Label className="text-white/60 text-[11px] font-semibold uppercase tracking-widest">Email</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
-                    <Input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="tu@email.com" className={`${inputCls} pl-10`} />
-                  </div>
+              <form onSubmit={handleLogin} className="space-y-3">
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
+                  <Input type="email" required value={email} onChange={e => setEmail(e.target.value)}
+                    placeholder="tu@email.com" className={`${inp} pl-10`} />
                 </div>
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between">
-                    <Label className="text-white/60 text-[11px] font-semibold uppercase tracking-widest">Contraseña</Label>
-                    <button type="button" onClick={() => setMode("forgot")} className="text-xs text-[#F97316] hover:text-[#fb923c] transition-colors font-medium">
-                      ¿Olvidaste tu contraseña?
-                    </button>
-                  </div>
-                  <div className="relative">
-                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
-                    <Input type={showPassword ? "text" : "password"} required value={password} onChange={e => setPassword(e.target.value)} placeholder="••••••••" className={`${inputCls} pl-10 pr-10`} />
-                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors">
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
+                  <Input type={showPassword ? "text" : "password"} required value={password} onChange={e => setPassword(e.target.value)}
+                    placeholder="Contraseña" className={`${inp} pl-10 pr-10`} />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors">
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
-                <Button type="submit" disabled={isLoading} className="w-full h-12 bg-[#F97316] hover:bg-[#ea6c0f] text-white font-semibold rounded-xl text-sm tracking-wide shadow-[0_6px_24px_rgba(249,115,22,0.35)] hover:shadow-[0_8px_28px_rgba(249,115,22,0.45)] transition-all">
+                <div className="flex justify-end">
+                  <button type="button" onClick={() => setMode("forgot")}
+                    className="text-[#F97316] text-xs hover:text-[#fb923c] transition-colors">
+                    ¿Olvidaste tu contraseña?
+                  </button>
+                </div>
+                <Button type="submit" disabled={isLoading}
+                  className="w-full h-12 bg-[#F97316] hover:bg-[#ea6c0f] text-white font-semibold rounded-2xl text-sm shadow-[0_4px_20px_rgba(249,115,22,0.4)] transition-all active:scale-[0.98]">
                   {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <span className="flex items-center gap-2">Iniciar sesión <ArrowRight className="w-4 h-4" /></span>}
                 </Button>
               </form>
 
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center"><div className="w-full border-t border-white/[0.08]" /></div>
-                <div className="relative flex justify-center text-xs"><span className="bg-[#0F0D0B] px-3 text-white/25">o continúa con</span></div>
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-px bg-white/10" />
+                <span className="text-white/25 text-xs">o continúa con</span>
+                <div className="flex-1 h-px bg-white/10" />
               </div>
 
-              <Button type="button" variant="outline" onClick={() => setMode("otp-email")}
-                className="w-full h-12 bg-white/[0.04] border-white/[0.10] text-white/80 hover:bg-white/[0.08] hover:text-white rounded-xl text-sm font-medium transition-all">
-                <Mail className="w-4 h-4 mr-2 text-[#F97316]" />
-                Acceder con código por email
+              <Button type="button" onClick={() => setMode("otp-email")} variant="outline"
+                className="w-full h-12 bg-white/[0.05] border-white/[0.12] text-white hover:bg-white/[0.10] rounded-2xl text-sm transition-all active:scale-[0.98]">
+                <Mail className="w-4 h-4 mr-2 text-[#F97316]" /> Acceder con código por email
               </Button>
 
-              <p className="text-center text-sm text-white/35">
+              <p className="text-center text-white/40 text-xs">
                 ¿No tienes cuenta?{" "}
-                <button onClick={() => setMode("register")} className="text-[#F97316] hover:text-[#fb923c] font-semibold transition-colors">
+                <button onClick={() => setMode("register")} className="text-[#F97316] font-semibold hover:text-[#fb923c] transition-colors">
                   Regístrate gratis
                 </button>
               </p>
-            </>
+            </div>
           )}
 
-          {/* REGISTER */}
+          {/* ── REGISTER ── */}
           {mode === "register" && (
-            <>
+            <div className="space-y-5">
               <div>
-                <button onClick={() => setMode("login")} className="flex items-center gap-1 text-white/35 hover:text-white/60 text-sm mb-5 transition-colors">
-                  <ChevronLeft className="w-4 h-4" /> Volver
-                </button>
-                <h1 className="text-[2rem] font-bold text-white tracking-tight leading-tight">Crea tu cuenta</h1>
-                <p className="mt-2 text-sm text-white/50">Empieza tu camino hacia una alimentación mejor</p>
+                <h2 className="text-xl font-bold text-white">Crea tu cuenta</h2>
+                <p className="text-white/40 text-xs mt-0.5">Únete a la comunidad BuddyMarket</p>
               </div>
-              <form onSubmit={handleRegister} className="space-y-4">
-                <div className="space-y-1.5">
-                  <Label className="text-white/60 text-[11px] font-semibold uppercase tracking-widest">Nombre completo</Label>
-                  <Input type="text" required minLength={2} value={name} onChange={e => setName(e.target.value)} placeholder="Tu nombre" className={`${inputCls} px-4`} />
+              <form onSubmit={handleRegister} className="space-y-3">
+                <div className="relative">
+                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
+                  <Input type="text" required value={name} onChange={e => setName(e.target.value)}
+                    placeholder="Tu nombre" className={`${inp} pl-10`} />
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-white/60 text-[11px] font-semibold uppercase tracking-widest">Email</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
-                    <Input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="tu@email.com" className={`${inputCls} pl-10`} />
-                  </div>
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
+                  <Input type="email" required value={email} onChange={e => setEmail(e.target.value)}
+                    placeholder="tu@email.com" className={`${inp} pl-10`} />
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-white/60 text-[11px] font-semibold uppercase tracking-widest">Contraseña</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
-                    <Input type={showPassword ? "text" : "password"} required minLength={8} value={password} onChange={e => setPassword(e.target.value)} placeholder="Mínimo 8 caracteres" className={`${inputCls} pl-10 pr-10`} />
-                    <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors">
-                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
+                  <Input type={showPassword ? "text" : "password"} required minLength={8} value={password} onChange={e => setPassword(e.target.value)}
+                    placeholder="Contraseña (mín. 8 caracteres)" className={`${inp} pl-10 pr-10`} />
+                  <button type="button" onClick={() => setShowPassword(!showPassword)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors">
+                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
-                <div className="space-y-1.5">
-                  <Label className="text-white/60 text-[11px] font-semibold uppercase tracking-widest">Confirmar contraseña</Label>
-                  <div className="relative">
-                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
-                    <Input type={showConfirm ? "text" : "password"} required value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Repite tu contraseña" className={`${inputCls} pl-10 pr-10`} />
-                    <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors">
-                      {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                    </button>
-                  </div>
+                <div className="relative">
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
+                  <Input type={showConfirm ? "text" : "password"} required value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
+                    placeholder="Confirmar contraseña" className={`${inp} pl-10 pr-10`} />
+                  <button type="button" onClick={() => setShowConfirm(!showConfirm)}
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors">
+                    {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                  </button>
                 </div>
-                <Button type="submit" disabled={isLoading} className="w-full h-12 bg-[#F97316] hover:bg-[#ea6c0f] text-white font-semibold rounded-xl text-sm tracking-wide shadow-[0_6px_24px_rgba(249,115,22,0.35)] transition-all">
+                <Button type="submit" disabled={isLoading}
+                  className="w-full h-12 bg-[#F97316] hover:bg-[#ea6c0f] text-white font-semibold rounded-2xl text-sm shadow-[0_4px_20px_rgba(249,115,22,0.4)] transition-all active:scale-[0.98]">
                   {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <span className="flex items-center gap-2">Crear cuenta <ArrowRight className="w-4 h-4" /></span>}
                 </Button>
               </form>
-              <p className="text-center text-xs text-white/25">
-                Al registrarte aceptas nuestros{" "}
-                <a href="/terms" className="text-[#F97316]/80 hover:text-[#F97316] transition-colors">Términos</a>{" "}
-                y{" "}
-                <a href="/privacy" className="text-[#F97316]/80 hover:text-[#F97316] transition-colors">Privacidad</a>
-              </p>
-              <p className="text-center text-sm text-white/35">
+              <p className="text-center text-white/40 text-xs">
                 ¿Ya tienes cuenta?{" "}
-                <button onClick={() => setMode("login")} className="text-[#F97316] hover:text-[#fb923c] font-semibold transition-colors">
+                <button onClick={() => setMode("login")} className="text-[#F97316] font-semibold hover:text-[#fb923c] transition-colors">
                   Inicia sesión
                 </button>
               </p>
-            </>
+              <p className="text-center text-white/20 text-[10px] leading-relaxed">
+                Al registrarte aceptas nuestros <a href="/terms" className="underline">Términos</a> y <a href="/privacy" className="underline">Privacidad</a>.<br />
+                El contenido no constituye asesoramiento profesional.
+              </p>
+            </div>
           )}
 
-          {/* OTP EMAIL */}
+          {/* ── OTP EMAIL ── */}
           {mode === "otp-email" && (
-            <>
+            <div className="space-y-5">
               <div>
-                <button onClick={() => setMode("login")} className="flex items-center gap-1 text-white/35 hover:text-white/60 text-sm mb-5 transition-colors">
-                  <ChevronLeft className="w-4 h-4" /> Volver
-                </button>
-                <h1 className="text-[2rem] font-bold text-white tracking-tight leading-tight">Acceso sin contraseña</h1>
-                <p className="mt-2 text-sm text-white/50">Te enviaremos un código de 6 dígitos a tu email</p>
+                <h2 className="text-xl font-bold text-white">Acceso sin contraseña</h2>
+                <p className="text-white/40 text-xs mt-0.5">Te enviaremos un código de 6 dígitos</p>
               </div>
-              <form onSubmit={handleSendOTP} className="space-y-4">
-                <div className="space-y-1.5">
-                  <Label className="text-white/60 text-[11px] font-semibold uppercase tracking-widest">Email</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
-                    <Input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="tu@email.com" className={`${inputCls} pl-10`} />
-                  </div>
+              <form onSubmit={handleSendOTP} className="space-y-3">
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
+                  <Input type="email" required value={email} onChange={e => setEmail(e.target.value)}
+                    placeholder="tu@email.com" className={`${inp} pl-10`} />
                 </div>
-                <Button type="submit" disabled={isLoading} className="w-full h-12 bg-[#F97316] hover:bg-[#ea6c0f] text-white font-semibold rounded-xl text-sm tracking-wide shadow-[0_6px_24px_rgba(249,115,22,0.35)] transition-all">
+                <Button type="submit" disabled={isLoading}
+                  className="w-full h-12 bg-[#F97316] hover:bg-[#ea6c0f] text-white font-semibold rounded-2xl text-sm shadow-[0_4px_20px_rgba(249,115,22,0.4)] transition-all active:scale-[0.98]">
                   {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <span className="flex items-center gap-2">Enviar código <ArrowRight className="w-4 h-4" /></span>}
                 </Button>
               </form>
-            </>
+            </div>
           )}
 
-          {/* OTP CODE */}
+          {/* ── OTP CODE ── */}
           {mode === "otp-code" && (
-            <>
+            <div className="space-y-5">
               <div>
-                <button onClick={() => setMode("otp-email")} className="flex items-center gap-1 text-white/35 hover:text-white/60 text-sm mb-5 transition-colors">
-                  <ChevronLeft className="w-4 h-4" /> Cambiar email
-                </button>
-                <h1 className="text-[2rem] font-bold text-white tracking-tight leading-tight">Introduce el código</h1>
-                <p className="mt-2 text-sm text-white/50">
-                  Enviado a <span className="text-[#F97316] font-medium">{email}</span>. Válido 10 minutos.
-                </p>
+                <h2 className="text-xl font-bold text-white">Introduce el código</h2>
+                <p className="text-white/40 text-xs mt-0.5">Enviado a <span className="text-white/70">{email}</span></p>
               </div>
-              <form onSubmit={handleVerifyOTP} className="space-y-6">
-                <div className="flex gap-2.5 justify-center" onPaste={handleOtpPaste}>
+              <form onSubmit={handleVerifyOTP} className="space-y-5">
+                <div className="flex gap-2 justify-center">
                   {otpCode.map((digit, idx) => (
                     <input
                       key={idx}
-                      id={`otp-${idx}`}
-                      type="text"
-                      inputMode="numeric"
-                      maxLength={1}
+                      ref={el => { otpRefs.current[idx] = el; }}
+                      type="text" inputMode="numeric" maxLength={6}
                       value={digit}
                       onChange={e => handleOtpInput(idx, e.target.value)}
-                      onKeyDown={e => handleOtpKeyDown(idx, e)}
-                      autoFocus={idx === 0}
-                      className="w-12 h-14 text-center text-2xl font-bold bg-white/[0.06] border border-white/[0.12] text-white rounded-xl focus:border-[#F97316] focus:outline-none focus:ring-2 focus:ring-[#F97316]/20 transition-all"
-                      style={{ fontVariantNumeric: "tabular-nums" }}
+                      onKeyDown={e => handleOtpKey(idx, e)}
+                      className="w-11 h-14 text-center text-xl font-bold text-white bg-white/[0.08] border border-white/[0.14] rounded-xl focus:border-[#F97316] focus:outline-none transition-colors"
                     />
                   ))}
                 </div>
                 <Button type="submit" disabled={isLoading || otpCode.join("").length < 6}
-                  className="w-full h-12 bg-[#F97316] hover:bg-[#ea6c0f] text-white font-semibold rounded-xl text-sm tracking-wide shadow-[0_6px_24px_rgba(249,115,22,0.35)] transition-all disabled:opacity-40 disabled:shadow-none">
+                  className="w-full h-12 bg-[#F97316] hover:bg-[#ea6c0f] text-white font-semibold rounded-2xl text-sm shadow-[0_4px_20px_rgba(249,115,22,0.4)] transition-all active:scale-[0.98] disabled:opacity-40">
                   {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <span className="flex items-center gap-2">Verificar código <ArrowRight className="w-4 h-4" /></span>}
                 </Button>
               </form>
-              <p className="text-center text-sm text-white/35">
+              <p className="text-center text-white/40 text-xs">
                 ¿No recibiste el código?{" "}
-                <button onClick={() => handleSendOTP()} disabled={sendOTPMut.isPending} className="text-[#F97316] hover:text-[#fb923c] font-semibold transition-colors disabled:opacity-50">
+                <button onClick={() => handleSendOTP()} className="text-[#F97316] font-semibold hover:text-[#fb923c] transition-colors">
                   Reenviar
                 </button>
               </p>
-            </>
+            </div>
           )}
 
-          {/* FORGOT PASSWORD */}
+          {/* ── FORGOT ── */}
           {mode === "forgot" && (
-            <>
+            <div className="space-y-5">
               <div>
-                <button onClick={() => setMode("login")} className="flex items-center gap-1 text-white/35 hover:text-white/60 text-sm mb-5 transition-colors">
-                  <ChevronLeft className="w-4 h-4" /> Volver al login
-                </button>
-                <h1 className="text-[2rem] font-bold text-white tracking-tight leading-tight">Recupera tu acceso</h1>
-                <p className="mt-2 text-sm text-white/50">Te enviaremos un enlace para restablecer tu contraseña</p>
+                <h2 className="text-xl font-bold text-white">Recuperar contraseña</h2>
+                <p className="text-white/40 text-xs mt-0.5">Te enviaremos un enlace de recuperación</p>
               </div>
-              <form onSubmit={handleForgot} className="space-y-4">
-                <div className="space-y-1.5">
-                  <Label className="text-white/60 text-[11px] font-semibold uppercase tracking-widest">Email de tu cuenta</Label>
-                  <div className="relative">
-                    <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
-                    <Input type="email" required value={forgotEmail} onChange={e => setForgotEmail(e.target.value)} placeholder="tu@email.com" className={`${inputCls} pl-10`} />
-                  </div>
+              <form onSubmit={handleForgot} className="space-y-3">
+                <div className="relative">
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
+                  <Input type="email" required value={forgotEmail} onChange={e => setForgotEmail(e.target.value)}
+                    placeholder="tu@email.com" className={`${inp} pl-10`} />
                 </div>
-                <Button type="submit" disabled={isLoading} className="w-full h-12 bg-[#F97316] hover:bg-[#ea6c0f] text-white font-semibold rounded-xl text-sm tracking-wide shadow-[0_6px_24px_rgba(249,115,22,0.35)] transition-all">
+                <Button type="submit" disabled={isLoading}
+                  className="w-full h-12 bg-[#F97316] hover:bg-[#ea6c0f] text-white font-semibold rounded-2xl text-sm shadow-[0_4px_20px_rgba(249,115,22,0.4)] transition-all active:scale-[0.98]">
                   {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <span className="flex items-center gap-2">Enviar enlace <ArrowRight className="w-4 h-4" /></span>}
                 </Button>
               </form>
-            </>
+            </div>
           )}
 
-          {/* FORGOT SENT */}
+          {/* ── FORGOT SENT ── */}
           {mode === "forgot-sent" && (
-            <div className="space-y-6 text-center">
-              <div className="w-16 h-16 rounded-2xl bg-[#F97316]/15 border border-[#F97316]/20 flex items-center justify-center mx-auto">
-                <Mail className="w-7 h-7 text-[#F97316]" />
+            <div className="space-y-5 text-center py-4">
+              <div className="w-16 h-16 rounded-2xl bg-green-500/15 border border-green-500/20 flex items-center justify-center mx-auto">
+                <Mail className="w-7 h-7 text-green-400" />
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-white">Revisa tu email</h1>
-                <p className="mt-2 text-sm text-white/50 leading-relaxed">
-                  Si existe una cuenta con <span className="text-[#F97316] font-medium">{forgotEmail}</span>, recibirás un enlace en los próximos minutos.
+                <h2 className="text-xl font-bold text-white">¡Revisa tu email!</h2>
+                <p className="text-white/40 text-sm mt-1 leading-relaxed">
+                  Hemos enviado un enlace de recuperación a <span className="text-white/70">{forgotEmail}</span>
                 </p>
               </div>
-              <Button onClick={() => setMode("login")} variant="outline"
-                className="bg-white/[0.05] border-white/[0.10] text-white hover:bg-white/[0.09] rounded-xl h-12 px-8 transition-all">
-                Volver al inicio de sesión
+              <Button onClick={() => setMode("login")}
+                className="w-full h-12 bg-[#F97316] hover:bg-[#ea6c0f] text-white font-semibold rounded-2xl text-sm shadow-[0_4px_20px_rgba(249,115,22,0.4)]">
+                Volver al login
               </Button>
             </div>
           )}
-        </div>
 
-        {/* Footer */}
-        <p className="text-[11px] text-white/20 text-center shrink-0">
-          © {new Date().getFullYear()} BuddyMarket · El contenido no constituye asesoramiento profesional.
-        </p>
-      </div>
-
-      {/* ── Right panel: image ───────────────────────────────────────────────── */}
-      <div className="hidden lg:flex flex-1 relative overflow-hidden">
-        <img src={FOOD_BG} alt="" className="absolute inset-0 w-full h-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-r from-[#0F0D0B] via-[#0F0D0B]/30 to-transparent" />
-        <div className="absolute inset-0 bg-gradient-to-t from-[#0F0D0B]/70 via-transparent to-transparent" />
-        {/* Feature pills */}
-        <div className="absolute top-10 right-10 flex flex-col gap-2.5">
-          {["Planificación nutricional IA", "Recetas personalizadas", "Seguimiento de objetivos"].map((feat) => (
-            <div key={feat} className="bg-black/35 backdrop-blur-md border border-white/10 rounded-full px-4 py-2 text-white/80 text-xs font-medium flex items-center gap-2">
-              <span className="w-1.5 h-1.5 rounded-full bg-[#F97316] shrink-0" />
-              {feat}
-            </div>
-          ))}
-        </div>
-        {/* Quote card */}
-        <div className="absolute bottom-12 left-10 right-10">
-          <div className="bg-black/40 backdrop-blur-md border border-white/10 rounded-2xl p-6 max-w-sm">
-            <p className="text-white/85 text-sm leading-relaxed italic">
-              "BuddyMarket transformó mi relación con la alimentación. Nunca había sido tan fácil comer bien y alcanzar mis objetivos."
-            </p>
-            <div className="mt-4 flex items-center gap-3">
-              <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#F97316] to-[#ea580c] flex items-center justify-center text-white text-sm font-bold shrink-0">M</div>
-              <div>
-                <p className="text-white text-xs font-semibold">María G.</p>
-                <p className="text-white/40 text-xs">Usuario Premium · -8 kg en 3 meses</p>
-              </div>
-            </div>
-          </div>
+          {/* Disclaimer */}
+          <p className="text-center text-white/15 text-[10px] mt-6 leading-relaxed">
+            © {new Date().getFullYear()} BuddyMarket · El contenido no constituye asesoramiento profesional.
+          </p>
         </div>
       </div>
     </div>
