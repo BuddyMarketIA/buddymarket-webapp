@@ -230,6 +230,21 @@ export default function MealLog() {
     onError: (err) => toast.error(err.message),
   });
 
+  // AI Feedback state
+  const [feedbackRating, setFeedbackRating] = useState<number>(0);
+  const [feedbackAccurate, setFeedbackAccurate] = useState<boolean | null>(null);
+  const [feedbackComment, setFeedbackComment] = useState("");
+  const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
+  const [savedMealLogId, setSavedMealLogId] = useState<number | null>(null);
+
+  const submitAIFeedback = trpc.mealLogs.submitAIFeedback.useMutation({
+    onSuccess: () => {
+      setFeedbackSubmitted(true);
+      toast.success("¡Gracias por tu feedback! Nos ayuda a mejorar 🙏");
+    },
+    onError: () => toast.error("No se pudo enviar el feedback"),
+  });
+
   const analyzeFood = trpc.mealLogs.analyzeFood.useMutation({
     onSuccess: (data) => {
       setAiResult({ ...data.analysis, photoUrl: data.photoUrl, detectedUserAllergens: data.analysis.detectedUserAllergens ?? [] });
@@ -266,6 +281,11 @@ export default function MealLog() {
     setPhotoBase64(null);
     setAiResult(null);
     setAddMode("manual");
+    setFeedbackRating(0);
+    setFeedbackAccurate(null);
+    setFeedbackComment("");
+    setFeedbackSubmitted(false);
+    setSavedMealLogId(null);
   };
 
   const isToday = dateOffset === 0;
@@ -865,6 +885,128 @@ export default function MealLog() {
                               {aiResult.notes && (
                                 <p style={{ margin: 0, fontSize: 12, color: "#6b7280", fontStyle: "italic", padding: "0 4px" }}>{aiResult.notes}</p>
                               )}
+
+                              {/* AI Feedback block */}
+                              <div style={{
+                                background: feedbackSubmitted ? "linear-gradient(135deg, #F0FDF4, #DCFCE7)" : "linear-gradient(135deg, #F8FAFC, #F1F5F9)",
+                                border: feedbackSubmitted ? "1.5px solid #86EFAC" : "1.5px solid #E2E8F0",
+                                borderRadius: 14,
+                                padding: "14px 16px",
+                                marginTop: 4,
+                              }}>
+                                {feedbackSubmitted ? (
+                                  <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                                    <span style={{ fontSize: 22 }}>✅</span>
+                                    <div>
+                                      <p style={{ margin: 0, fontSize: 14, fontWeight: 800, color: "#166534" }}>¡Gracias por tu feedback!</p>
+                                      <p style={{ margin: "2px 0 0", fontSize: 12, color: "#15803D" }}>Nos ayuda a mejorar el análisis de platos.</p>
+                                    </div>
+                                  </div>
+                                ) : (
+                                  <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+                                    <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                                      <span style={{ fontSize: 16 }}>🤔</span>
+                                      <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#374151" }}>¿Ha sido preciso el análisis?</p>
+                                    </div>
+
+                                    {/* Thumbs up/down */}
+                                    <div style={{ display: "flex", gap: 8 }}>
+                                      <button
+                                        onClick={() => setFeedbackAccurate(true)}
+                                        style={{
+                                          flex: 1, padding: "9px 12px", borderRadius: 10, border: "2px solid",
+                                          borderColor: feedbackAccurate === true ? "#22C55E" : "#E2E8F0",
+                                          background: feedbackAccurate === true ? "#F0FDF4" : "white",
+                                          fontSize: 13, fontWeight: 700,
+                                          color: feedbackAccurate === true ? "#166534" : "#6B7280",
+                                          cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                                        }}
+                                      >
+                                        👍 Sí, preciso
+                                      </button>
+                                      <button
+                                        onClick={() => setFeedbackAccurate(false)}
+                                        style={{
+                                          flex: 1, padding: "9px 12px", borderRadius: 10, border: "2px solid",
+                                          borderColor: feedbackAccurate === false ? "#EF4444" : "#E2E8F0",
+                                          background: feedbackAccurate === false ? "#FEF2F2" : "white",
+                                          fontSize: 13, fontWeight: 700,
+                                          color: feedbackAccurate === false ? "#991B1B" : "#6B7280",
+                                          cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6,
+                                        }}
+                                      >
+                                        👎 No del todo
+                                      </button>
+                                    </div>
+
+                                    {/* Star rating */}
+                                    <div>
+                                      <p style={{ margin: "0 0 6px", fontSize: 11, fontWeight: 700, color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>Valoración general</p>
+                                      <div style={{ display: "flex", gap: 6 }}>
+                                        {[1, 2, 3, 4, 5].map(star => (
+                                          <button
+                                            key={star}
+                                            onClick={() => setFeedbackRating(star)}
+                                            style={{
+                                              background: "none", border: "none", cursor: "pointer", padding: "2px",
+                                              fontSize: 24, lineHeight: 1,
+                                              filter: feedbackRating >= star ? "none" : "grayscale(1) opacity(0.35)",
+                                              transform: feedbackRating >= star ? "scale(1.1)" : "scale(1)",
+                                              transition: "all 0.15s ease",
+                                            }}
+                                          >
+                                            ⭐
+                                          </button>
+                                        ))}
+                                      </div>
+                                    </div>
+
+                                    {/* Optional comment */}
+                                    <textarea
+                                      value={feedbackComment}
+                                      onChange={e => setFeedbackComment(e.target.value)}
+                                      placeholder="Comentario opcional (ej: faltó identificar el arroz)"
+                                      rows={2}
+                                      style={{
+                                        width: "100%", padding: "9px 12px", borderRadius: 10,
+                                        border: "1.5px solid #E2E8F0", fontSize: 12, resize: "none",
+                                        outline: "none", boxSizing: "border-box", color: "#374151",
+                                        fontFamily: "inherit",
+                                      }}
+                                    />
+
+                                    {/* Submit button */}
+                                    <button
+                                      onClick={() => {
+                                        if (feedbackAccurate === null || feedbackRating === 0) {
+                                          toast.error("Selecciona si fue preciso y una valoración");
+                                          return;
+                                        }
+                                        submitAIFeedback.mutate({
+                                          mealLogId: savedMealLogId ?? undefined,
+                                          rating: feedbackRating,
+                                          accurate: feedbackAccurate,
+                                          comment: feedbackComment || undefined,
+                                          detectedDishName: aiResult.mealName,
+                                          detectedCalories: aiResult.totalCalories,
+                                        });
+                                      }}
+                                      disabled={submitAIFeedback.isPending || feedbackAccurate === null || feedbackRating === 0}
+                                      style={{
+                                        width: "100%", padding: "10px", borderRadius: 10,
+                                        background: feedbackAccurate === null || feedbackRating === 0
+                                          ? "#F3F4F6" : "linear-gradient(135deg, #F97316, #FB923C)",
+                                        border: "none",
+                                        color: feedbackAccurate === null || feedbackRating === 0 ? "#9CA3AF" : "white",
+                                        fontSize: 13, fontWeight: 800, cursor: "pointer",
+                                        transition: "all 0.2s ease",
+                                      }}
+                                    >
+                                      {submitAIFeedback.isPending ? "Enviando..." : "Enviar feedback"}
+                                    </button>
+                                  </div>
+                                )}
+                              </div>
                             </>
                           );
                         })()}

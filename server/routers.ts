@@ -2583,6 +2583,36 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
           return { data: [] };
         }
       }),
+
+    submitAIFeedback: protectedProcedure
+      .input(z.object({
+        mealLogId: z.number().optional(),
+        rating: z.number().min(1).max(5),
+        accurate: z.boolean(),
+        comment: z.string().max(500).optional(),
+        detectedDishName: z.string().max(256).optional(),
+        detectedCalories: z.number().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        try {
+          const drizzleDb = await db.getDb();
+          if (!drizzleDb) throw new Error("DB not available");
+          const { aiFeedback } = await import("../drizzle/schema");
+          await drizzleDb.insert(aiFeedback).values({
+            userId: ctx.user.id,
+            mealLogId: input.mealLogId ?? null,
+            rating: input.rating,
+            accurate: input.accurate,
+            comment: input.comment ?? null,
+            detectedDishName: input.detectedDishName ?? null,
+            detectedCalories: input.detectedCalories ?? null,
+          });
+          return { success: true };
+        } catch (e) {
+          console.error("[AIFeedback] error:", e);
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "No se pudo guardar el feedback" });
+        }
+      }),
   }),
 
   // ---------------------------------------------------------------------------

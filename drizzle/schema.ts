@@ -1385,3 +1385,30 @@ export const pantryStock = mysqlTable("pantry_stock", {
 }));
 export type PantryStock = typeof pantryStock.$inferSelect;
 export type InsertPantryStock = typeof pantryStock.$inferInsert;
+
+// =============================================================================
+// AI FEEDBACK
+// Stores user feedback on the accuracy of AI food analysis results.
+// =============================================================================
+export const aiFeedback = mysqlTable("ai_feedback", {
+  id: int("id").autoincrement().primaryKey(),
+  userId: int("userId").notNull(),
+  /** The meal log entry that was created from this AI analysis */
+  mealLogId: int("mealLogId"),
+  /** Overall accuracy rating: 1 (very inaccurate) to 5 (very accurate) */
+  rating: int("rating").notNull(),
+  /** Quick boolean: did the AI correctly identify the dish? */
+  accurate: boolean("accurate").notNull(),
+  /** Optional free-text comment from the user */
+  comment: text("comment"),
+  /** The dish name the AI detected */
+  detectedDishName: varchar("detectedDishName", { length: 256 }),
+  /** Calories the AI estimated */
+  detectedCalories: int("detectedCalories"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  userIdx: index("ai_fb_user_idx").on(t.userId),
+  ratingIdx: index("ai_fb_rating_idx").on(t.rating),
+}));
+export type AIFeedback = typeof aiFeedback.$inferSelect;
+export type InsertAIFeedback = typeof aiFeedback.$inferInsert;

@@ -1373,3 +1373,10 @@
 - [ ] Corregir JSX roto del banner de alérgenos en MealLog (error de paréntesis)
 - [ ] Eliminar scroll horizontal del menú de pestañas Manual/Foto IA/Código en MealLog
 - [ ] Mejorar visualización de macronutrientes en resultado del análisis IA al estilo ProductNutritionCard (barras de progreso, colores, layout)
+
+## Sprint: Feedback Análisis IA
+- [ ] Crear tabla aiFeedback en BD (userId, mealLogId, rating 1-5, accurate boolean, comment, createdAt)
+- [ ] Migrar BD con pnpm db:push
+- [ ] Crear procedimiento tRPC mealLogs.submitAIFeedback
+- [ ] Añadir UI de feedback al resultado del análisis IA: thumbs up/down + estrellas + comentario opcional
+- [ ] Mostrar confirmación visual tras enviar el feedback

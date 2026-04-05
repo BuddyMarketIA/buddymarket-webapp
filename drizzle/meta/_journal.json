@@ -274,6 +274,13 @@
       "when": 1775394977962,
       "tag": "0038_romantic_scarlet_witch",
       "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "5",
+      "when": 1775403213541,
+      "tag": "0039_serious_scalphunter",
+      "breakpoints": true
     }
   ]
 }
