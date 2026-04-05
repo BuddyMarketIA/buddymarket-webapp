@@ -1361,3 +1361,15 @@
 - [x] Reducir padding-top del header para que no quede demasiado arriba en iOS
 - [x] Cambiar la barra de navegación inferior de flotante a fija (position: fixed, sin border-radius, pegada al borde inferior)
 - [x] Añadir padding-bottom al contenido principal para que no quede tapado por la barra fija
+
+## Sprint: Advertencia de Alérgenos en Análisis IA
+- [ ] Ampliar analyzeFood en el backend para que lea las alergias del perfil del usuario y detecte alérgenos en los ingredientes identificados
+- [ ] Devolver lista de alérgenos detectados en la respuesta de analyzeFood
+- [ ] Mostrar advertencia visual clara (banner rojo/naranja) en MealLog cuando se detectan alérgenos del perfil
+- [ ] Listar los alérgenos detectados con iconos y nombres en la advertencia
+- [ ] Añadir advertencia también en el escáner de barras (BarcodeScanner) cuando el producto contiene alérgenos del perfil
+
+## Sprint: Fix MealLog Foto IA
+- [ ] Corregir JSX roto del banner de alérgenos en MealLog (error de paréntesis)
+- [ ] Eliminar scroll horizontal del menú de pestañas Manual/Foto IA/Código en MealLog
+- [ ] Mejorar visualización de macronutrientes en resultado del análisis IA al estilo ProductNutritionCard (barras de progreso, colores, layout)

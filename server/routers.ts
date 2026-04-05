@@ -2314,6 +2314,24 @@ Genera 3 recetas que aprovechen estos ingredientes. Para cada receta incluye: no
         mimeType: z.string().default("image/jpeg"),
       }))
       .mutation(async ({ ctx, input }) => {
+        // 0. Load user allergies from profile (for allergen detection)
+        const userAllergyRows = await db.getUserAllergies(ctx.user.id);
+        const userAllergyNames = userAllergyRows.map((r) => r.allergy.nameEs.toLowerCase());
+        // Also load menuAllergies (free-text from questionnaire preferences)
+        let menuAllergyNames: string[] = [];
+        try {
+          const drizzleDb = await db.getDb();
+          if (drizzleDb) {
+            const { userProfiles } = await import("../drizzle/schema");
+            const { eq } = await import("drizzle-orm");
+            const profileRow = await drizzleDb.select({ menuAllergies: userProfiles.menuAllergies }).from(userProfiles).where(eq(userProfiles.userId, ctx.user.id)).limit(1);
+            if (profileRow[0]?.menuAllergies) {
+              menuAllergyNames = (JSON.parse(profileRow[0].menuAllergies) as string[]).map((a) => a.toLowerCase());
+            }
+          }
+        } catch { /* non-critical */ }
+        const allUserAllergyNames = Array.from(new Set([...userAllergyNames, ...menuAllergyNames]));
+
         // 1. Upload image to S3 (non-critical — for display purposes only)
         let photoUrl: string | null = null;
         try {
@@ -2324,10 +2342,15 @@ Genera 3 recetas que aprovechen estos ingredientes. Para cada receta incluye: no
         } catch {
           // S3 failure is non-critical; analysis can still proceed
         }
+
         // 2. Analyze with vision AI — pass image as base64 data URL directly
-        // Using data URL avoids issues with S3 URLs not being accessible by the LLM
         const dataUrl = `data:${input.mimeType};base64,${input.imageBase64}`;
-        let analysis: { mealName: string; foods: Array<{ name: string; quantity: string; calories: number; proteins: number; carbs: number; fats: number }>; totalCalories: number; totalProteins: number; totalCarbs: number; totalFats: number; confidence: string; notes: string };
+        // Build allergen context for the prompt if user has allergies
+        const allergenContext = allUserAllergyNames.length > 0
+          ? `\n\nIMPORTANTE - ALERGIAS DEL USUARIO: El usuario es alérgico a: ${allUserAllergyNames.join(", ")}. Para cada alimento identificado, añade el campo "allergens" con un array de los alérgenos de esa lista que contiene ese alimento (puede estar vacío []). También añade al JSON raíz el campo "detectedUserAllergens" con los alérgenos del usuario que hayas detectado en el plato.`
+          : "";
+
+        let analysis: { mealName: string; foods: Array<{ name: string; quantity: string; calories: number; proteins: number; carbs: number; fats: number; allergens?: string[] }>; totalCalories: number; totalProteins: number; totalCarbs: number; totalFats: number; confidence: string; notes: string; detectedUserAllergens?: string[] };
         try {
           const response = await invokeLLM({
             messages: [
@@ -2342,9 +2365,9 @@ Genera 3 recetas que aprovechen estos ingredientes. Para cada receta incluye: no
                   {
                     type: "text",
                     text: `Analiza esta imagen de comida y devuelve SOLO este JSON (sin texto adicional, sin markdown, sin explicaciones):
-{"mealName":"nombre descriptivo del plato","foods":[{"name":"nombre del alimento","quantity":"cantidad estimada (ej: 150g, 1 unidad)","calories":0,"proteins":0,"carbs":0,"fats":0}],"totalCalories":0,"totalProteins":0,"totalCarbs":0,"totalFats":0,"confidence":"alta|media|baja","notes":"observaciones nutricionales relevantes"}
+{"mealName":"nombre descriptivo del plato","foods":[{"name":"nombre del alimento","quantity":"cantidad estimada (ej: 150g, 1 unidad)","calories":0,"proteins":0,"carbs":0,"fats":0,"allergens":[]}],"totalCalories":0,"totalProteins":0,"totalCarbs":0,"totalFats":0,"confidence":"alta|media|baja","notes":"observaciones nutricionales relevantes","detectedUserAllergens":[]}
 
-IMPORTANTE: Estima los valores nutricionales basándote en las porciones visibles. Si no puedes identificar la comida con certeza, indica confidence "baja".`,
+IMPORTANTE: Estima los valores nutricionales basándote en las porciones visibles. Si no puedes identificar la comida con certeza, indica confidence "baja".${allergenContext}`,
                   },
                 ],
               },
@@ -2352,22 +2375,33 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
           });
           const content = response.choices[0]?.message?.content ?? "{}";
           const jsonStr = typeof content === "string" ? content : JSON.stringify(content);
-          // Strip markdown code blocks if present
           const cleaned = jsonStr
             .replace(/^```(?:json)?\s*/i, "")
             .replace(/\s*```$/i, "")
             .trim();
-          // Extract JSON object even if there's surrounding text
           const jsonMatch = cleaned.match(/\{[\s\S]*\}/);
           analysis = JSON.parse(jsonMatch ? jsonMatch[0] : cleaned);
-          // Ensure required fields exist with fallback calculations
           if (!analysis.foods) analysis.foods = [];
           if (!analysis.totalCalories) analysis.totalCalories = analysis.foods.reduce((s: number, f: any) => s + (f.calories || 0), 0);
           if (!analysis.totalProteins) analysis.totalProteins = analysis.foods.reduce((s: number, f: any) => s + (f.proteins || 0), 0);
           if (!analysis.totalCarbs) analysis.totalCarbs = analysis.foods.reduce((s: number, f: any) => s + (f.carbs || 0), 0);
           if (!analysis.totalFats) analysis.totalFats = analysis.foods.reduce((s: number, f: any) => s + (f.fats || 0), 0);
+          // Fallback allergen detection: cross-check food names against user allergy list
+          // in case the LLM didn't fill detectedUserAllergens
+          if (!analysis.detectedUserAllergens || analysis.detectedUserAllergens.length === 0) {
+            const detected = new Set<string>();
+            for (const allergyName of allUserAllergyNames) {
+              const allergyKeywords = allergyName.split(/[\s,/]+/);
+              for (const food of analysis.foods) {
+                const foodLower = food.name.toLowerCase();
+                if (allergyKeywords.some((kw: string) => kw.length > 3 && foodLower.includes(kw))) {
+                  detected.add(allergyName);
+                }
+              }
+            }
+            analysis.detectedUserAllergens = Array.from(detected);
+          }
         } catch {
-          // Return graceful fallback instead of crashing with INTERNAL_SERVER_ERROR
           analysis = {
             mealName: "Comida detectada",
             foods: [],
@@ -2377,6 +2411,7 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
             totalFats: 0,
             confidence: "baja",
             notes: "No se pudo analizar la imagen automáticamente. Por favor, introduce los valores manualmente.",
+            detectedUserAllergens: [],
           };
         }
         return { photoUrl, analysis };

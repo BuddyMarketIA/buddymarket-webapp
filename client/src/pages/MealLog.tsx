@@ -25,14 +25,15 @@ export default function MealLog() {
   const [photoBase64, setPhotoBase64] = useState<string | null>(null);
   const [aiResult, setAiResult] = useState<{
     mealName: string;
-    foods: Array<{ name: string; quantity: string; calories: number; proteins: number; carbs: number; fats: number }>;
+    foods: Array<{ name: string; quantity: string; calories: number; proteins: number; carbs: number; fats: number; allergens?: string[] }>;
     totalCalories: number;
     totalProteins: number;
     totalCarbs: number;
     totalFats: number;
     confidence: string;
     notes: string;
-    photoUrl: string;
+    photoUrl: string | null;
+    detectedUserAllergens?: string[];
   } | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const cameraInputRef = useRef<HTMLInputElement>(null);
@@ -81,7 +82,7 @@ export default function MealLog() {
 
   const analyzeFood = trpc.mealLogs.analyzeFood.useMutation({
     onSuccess: (data) => {
-      setAiResult({ ...data.analysis, photoUrl: data.photoUrl });
+      setAiResult({ ...data.analysis, photoUrl: data.photoUrl, detectedUserAllergens: data.analysis.detectedUserAllergens ?? [] });
       setMealName(data.analysis.mealName || "");
       setCalories(String(data.analysis.totalCalories || ""));
       setProteins(String(data.analysis.totalProteins || ""));
@@ -478,22 +479,22 @@ export default function MealLog() {
             </div>
 
             {/* Mode selector */}
-            <div style={{ display: "flex", gap: "8px", marginBottom: "16px" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px", marginBottom: "16px", width: "100%" }}>
               <button
                 onClick={() => setAddMode("manual")}
-                style={{ flex: 1, padding: "10px", borderRadius: "14px", border: "none", cursor: "pointer", fontSize: "14px", fontWeight: 700, background: addMode === "manual" ? "#F97316" : "#f3f4f6", color: addMode === "manual" ? "white" : "#6b7280", transition: "all 0.2s" }}
+                style={{ padding: "10px 4px", borderRadius: "14px", border: "none", cursor: "pointer", fontSize: "13px", fontWeight: 700, background: addMode === "manual" ? "#F97316" : "#f3f4f6", color: addMode === "manual" ? "white" : "#6b7280", transition: "all 0.2s", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
               >
                 ✏️ Manual
               </button>
               <button
                 onClick={() => setAddMode("photo")}
-                style={{ flex: 1, padding: "10px", borderRadius: "14px", border: "none", cursor: "pointer", fontSize: "14px", fontWeight: 700, background: addMode === "photo" ? "#F97316" : "#f3f4f6", color: addMode === "photo" ? "white" : "#6b7280", transition: "all 0.2s" }}
+                style={{ padding: "10px 4px", borderRadius: "14px", border: "none", cursor: "pointer", fontSize: "13px", fontWeight: 700, background: addMode === "photo" ? "#F97316" : "#f3f4f6", color: addMode === "photo" ? "white" : "#6b7280", transition: "all 0.2s", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
               >
                 📸 Foto IA
               </button>
               <button
                 onClick={() => { setAddMode("barcode"); setShowBarcodeScanner(true); }}
-                style={{ flex: 1, padding: "10px", borderRadius: "14px", border: "none", cursor: "pointer", fontSize: "14px", fontWeight: 700, background: addMode === "barcode" ? "#F97316" : "#f3f4f6", color: addMode === "barcode" ? "white" : "#6b7280", transition: "all 0.2s" }}
+                style={{ padding: "10px 4px", borderRadius: "14px", border: "none", cursor: "pointer", fontSize: "13px", fontWeight: 700, background: addMode === "barcode" ? "#F97316" : "#f3f4f6", color: addMode === "barcode" ? "white" : "#6b7280", transition: "all 0.2s", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
               >
                 🔍 Código
               </button>
@@ -559,43 +560,170 @@ export default function MealLog() {
 
                     {/* AI Result */}
                     {aiResult && (
-                      <div style={{ background: "linear-gradient(135deg, #FFF7ED, #FFEDD5)", borderRadius: "14px", padding: "14px", marginBottom: "12px", border: "1px solid #FED7AA" }}>
-                        <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "10px" }}>
-                          <span style={{ fontSize: "18px" }}>🤖</span>
-                          <p style={{ margin: 0, fontSize: "13px", fontWeight: 800, color: "#9a3412" }}>Análisis IA completado</p>
-                          <span style={{ fontSize: "14px", color: "#ea580c", background: "rgba(249,115,22,0.15)", borderRadius: "6px", padding: "2px 6px", fontWeight: 700, marginLeft: "auto" }}>
-                            Confianza: {aiResult.confidence}
-                          </span>
-                        </div>
-                        {aiResult.foods.length > 0 && (
-                          <div style={{ display: "flex", flexDirection: "column", gap: "4px", marginBottom: "8px" }}>
-                            {aiResult.foods.map((food, i) => (
-                              <div key={i} style={{ display: "flex", justifyContent: "space-between", fontSize: "14px" }}>
-                                <span style={{ color: "#374151", fontWeight: 600 }}>{food.name} ({food.quantity})</span>
-                                <span style={{ color: "#F97316", fontWeight: 700 }}>{food.calories} kcal</span>
-                              </div>
-                            ))}
+                      <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
+                        {/* Allergen warning banner — shown FIRST so user sees it immediately */}
+                        {aiResult.detectedUserAllergens && aiResult.detectedUserAllergens.length > 0 && (
+                          <div style={{
+                            background: "linear-gradient(135deg, #FEF2F2, #FEE2E2)",
+                            border: "2px solid #F87171",
+                            borderRadius: "14px",
+                            padding: "14px",
+                            display: "flex",
+                            flexDirection: "column",
+                            gap: "8px",
+                          }}>
+                            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                              <span style={{ fontSize: "22px" }}>⚠️</span>
+                              <p style={{ margin: 0, fontSize: "14px", fontWeight: 800, color: "#991B1B" }}>
+                                Alérgenos detectados en tu perfil
+                              </p>
+                            </div>
+                            <p style={{ margin: 0, fontSize: "13px", color: "#B91C1C", lineHeight: 1.4 }}>
+                              Este plato puede contener alérgenos que has indicado en tu perfil. Revisa los ingredientes antes de consumirlo.
+                            </p>
+                            <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "2px" }}>
+                              {aiResult.detectedUserAllergens.map((allergen, i) => (
+                                <span key={i} style={{
+                                  background: "#FCA5A5",
+                                  color: "#7F1D1D",
+                                  borderRadius: "20px",
+                                  padding: "4px 10px",
+                                  fontSize: "12px",
+                                  fontWeight: 700,
+                                  textTransform: "capitalize",
+                                }}>
+                                  {allergen}
+                                </span>
+                              ))}
+                            </div>
                           </div>
                         )}
-                        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "6px", marginTop: "8px" }}>
-                          <div style={{ textAlign: "center", background: "white", borderRadius: "8px", padding: "6px" }}>
-                            <p style={{ margin: 0, fontSize: "13px", fontWeight: 900, color: "#F97316" }}>{aiResult.totalCalories}</p>
-                            <p style={{ margin: 0, fontSize: "13px", color: "#9ca3af" }}>kcal</p>
-                          </div>
-                          <div style={{ textAlign: "center", background: "white", borderRadius: "8px", padding: "6px" }}>
-                            <p style={{ margin: 0, fontSize: "13px", fontWeight: 900, color: "#3b82f6" }}>{aiResult.totalProteins}g</p>
-                            <p style={{ margin: 0, fontSize: "13px", color: "#9ca3af" }}>prot</p>
-                          </div>
-                          <div style={{ textAlign: "center", background: "white", borderRadius: "8px", padding: "6px" }}>
-                            <p style={{ margin: 0, fontSize: "13px", fontWeight: 900, color: "#f59e0b" }}>{aiResult.totalCarbs}g</p>
-                            <p style={{ margin: 0, fontSize: "13px", color: "#9ca3af" }}>carbs</p>
-                          </div>
-                          <div style={{ textAlign: "center", background: "white", borderRadius: "8px", padding: "6px" }}>
-                            <p style={{ margin: 0, fontSize: "13px", fontWeight: 900, color: "#eab308" }}>{aiResult.totalFats}g</p>
-                            <p style={{ margin: 0, fontSize: "13px", color: "#9ca3af" }}>grasas</p>
-                          </div>
+
+                        {/* Header: meal name + confidence */}
+                        <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                          <span style={{ fontSize: "18px" }}>🤖</span>
+                          <p style={{ margin: 0, fontSize: "14px", fontWeight: 800, color: "#1a1a1a", flex: 1 }}>{aiResult.mealName}</p>
+                          <span style={{
+                            fontSize: "11px",
+                            color: aiResult.confidence === "alta" ? "#059669" : aiResult.confidence === "media" ? "#D97706" : "#DC2626",
+                            background: aiResult.confidence === "alta" ? "#D1FAE5" : aiResult.confidence === "media" ? "#FEF3C7" : "#FEE2E2",
+                            borderRadius: "6px",
+                            padding: "2px 8px",
+                            fontWeight: 700,
+                          }}>
+                            Confianza {aiResult.confidence}
+                          </span>
                         </div>
-                        {aiResult.notes && <p style={{ margin: "8px 0 0", fontSize: "14px", color: "#6b7280", fontStyle: "italic" }}>{aiResult.notes}</p>}
+
+                        {/* Calorie hero */}
+                        {(() => {
+                          const totalKcal = aiResult.totalCalories || 0;
+                          const prot = aiResult.totalProteins || 0;
+                          const carbs = aiResult.totalCarbs || 0;
+                          const fats = aiResult.totalFats || 0;
+                          const totalMacroKcal = prot * 4 + carbs * 4 + fats * 9;
+                          const protPct = totalMacroKcal > 0 ? Math.round((prot * 4 / totalMacroKcal) * 100) : 0;
+                          const carbPct = totalMacroKcal > 0 ? Math.round((carbs * 4 / totalMacroKcal) * 100) : 0;
+                          const fatPct = totalMacroKcal > 0 ? Math.round((fats * 9 / totalMacroKcal) * 100) : 0;
+                          const maxProt = 60, maxCarbs = 150, maxFats = 80;
+                          return (
+                            <>
+                              {/* Calorie hero card */}
+                              <div style={{
+                                background: "linear-gradient(135deg, #FFF7ED, #FEF3C7)",
+                                border: "1.5px solid #FED7AA",
+                                borderRadius: 14,
+                                padding: "14px 16px",
+                                display: "flex",
+                                alignItems: "center",
+                                justifyContent: "space-between",
+                              }}>
+                                <div>
+                                  <p style={{ margin: 0, fontSize: 10, fontWeight: 700, color: "#92400E", textTransform: "uppercase", letterSpacing: "0.06em" }}>Energía total</p>
+                                  <p style={{ margin: "2px 0 0", fontSize: 32, fontWeight: 900, color: "#C2410C", lineHeight: 1 }}>
+                                    {totalKcal}<span style={{ fontSize: 13, fontWeight: 700, marginLeft: 3 }}>kcal</span>
+                                  </p>
+                                </div>
+                                <div style={{ display: "flex", flexDirection: "column", gap: 4, alignItems: "flex-end" }}>
+                                  <div style={{ display: "flex", gap: 4 }}>
+                                    <span style={{ fontSize: 11, background: "#10B981", color: "#fff", padding: "2px 7px", borderRadius: 20, fontWeight: 700 }}>P {protPct}%</span>
+                                    <span style={{ fontSize: 11, background: "#F97316", color: "#fff", padding: "2px 7px", borderRadius: 20, fontWeight: 700 }}>HC {carbPct}%</span>
+                                    <span style={{ fontSize: 11, background: "#3B82F6", color: "#fff", padding: "2px 7px", borderRadius: 20, fontWeight: 700 }}>G {fatPct}%</span>
+                                  </div>
+                                  <p style={{ margin: 0, fontSize: 10, color: "#92400E", fontWeight: 600 }}>% de calorías totales</p>
+                                </div>
+                              </div>
+
+                              {/* Macro bars */}
+                              <div style={{ background: "#FAFAFA", border: "1px solid #F3F4F6", borderRadius: 14, padding: "14px 16px" }}>
+                                <p style={{ margin: "0 0 10px", fontSize: 10, fontWeight: 800, color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.06em" }}>Macronutrientes</p>
+                                {/* Proteins */}
+                                <div style={{ marginBottom: 10 }}>
+                                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                      <span style={{ fontSize: 14 }}>💪</span>
+                                      <span style={{ fontSize: 13, fontWeight: 700, color: "#374151" }}>Proteínas</span>
+                                      <span style={{ fontSize: 11, color: "#9CA3AF" }}>(músculo)</span>
+                                    </div>
+                                    <span style={{ fontSize: 13, fontWeight: 800, color: "#10B981" }}>{prot}g</span>
+                                  </div>
+                                  <div style={{ height: 6, background: "#F3F4F6", borderRadius: 99, overflow: "hidden" }}>
+                                    <div style={{ height: "100%", width: `${Math.min(100, Math.round((prot / maxProt) * 100))}%`, background: "#10B981", borderRadius: 99, transition: "width 0.6s ease" }} />
+                                  </div>
+                                </div>
+                                {/* Carbs */}
+                                <div style={{ marginBottom: 10 }}>
+                                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                      <span style={{ fontSize: 14 }}>🌾</span>
+                                      <span style={{ fontSize: 13, fontWeight: 700, color: "#374151" }}>Hidratos</span>
+                                      <span style={{ fontSize: 11, color: "#9CA3AF" }}>(energía)</span>
+                                    </div>
+                                    <span style={{ fontSize: 13, fontWeight: 800, color: "#F97316" }}>{carbs}g</span>
+                                  </div>
+                                  <div style={{ height: 6, background: "#F3F4F6", borderRadius: 99, overflow: "hidden" }}>
+                                    <div style={{ height: "100%", width: `${Math.min(100, Math.round((carbs / maxCarbs) * 100))}%`, background: "#F97316", borderRadius: 99, transition: "width 0.6s ease" }} />
+                                  </div>
+                                </div>
+                                {/* Fats */}
+                                <div style={{ marginBottom: 0 }}>
+                                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
+                                    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+                                      <span style={{ fontSize: 14 }}>🥑</span>
+                                      <span style={{ fontSize: 13, fontWeight: 700, color: "#374151" }}>Grasas</span>
+                                      <span style={{ fontSize: 11, color: "#9CA3AF" }}>(hormonas)</span>
+                                    </div>
+                                    <span style={{ fontSize: 13, fontWeight: 800, color: "#3B82F6" }}>{fats}g</span>
+                                  </div>
+                                  <div style={{ height: 6, background: "#F3F4F6", borderRadius: 99, overflow: "hidden" }}>
+                                    <div style={{ height: "100%", width: `${Math.min(100, Math.round((fats / maxFats) * 100))}%`, background: "#3B82F6", borderRadius: 99, transition: "width 0.6s ease" }} />
+                                  </div>
+                                </div>
+                              </div>
+
+                              {/* Food list */}
+                              {aiResult.foods.length > 0 && (
+                                <div style={{ background: "white", border: "1px solid #F3F4F6", borderRadius: 14, padding: "12px 14px" }}>
+                                  <p style={{ margin: "0 0 8px", fontSize: 10, fontWeight: 800, color: "#6B7280", textTransform: "uppercase", letterSpacing: "0.06em" }}>Alimentos detectados</p>
+                                  {aiResult.foods.map((food, i) => (
+                                    <div key={i} style={{ display: "flex", justifyContent: "space-between", alignItems: "center", padding: "5px 0", borderBottom: i < aiResult.foods.length - 1 ? "1px solid #F9FAFB" : "none" }}>
+                                      <div>
+                                        <span style={{ fontSize: 13, fontWeight: 600, color: "#374151" }}>{food.name}</span>
+                                        <span style={{ fontSize: 12, color: "#9CA3AF", marginLeft: 6 }}>{food.quantity}</span>
+                                      </div>
+                                      <span style={{ fontSize: 13, fontWeight: 700, color: "#F97316" }}>{food.calories} kcal</span>
+                                    </div>
+                                  ))}
+                                </div>
+                              )}
+
+                              {/* Notes */}
+                              {aiResult.notes && (
+                                <p style={{ margin: 0, fontSize: 12, color: "#6b7280", fontStyle: "italic", padding: "0 4px" }}>{aiResult.notes}</p>
+                              )}
+                            </>
+                          );
+                        })()}
                       </div>
                     )}
                   </div>
