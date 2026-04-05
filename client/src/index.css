@@ -479,6 +479,27 @@
 .animate-slide-up { animation: slide-up 0.3s cubic-bezier(0.32, 0.72, 0, 1); }
 .animate-fade-in  { animation: fade-in 0.25s ease; }
 .animate-bounce-in { animation: bounce-in 0.35s ease; }
+
+/* AI Loading animation */
+@keyframes ai-spin {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
+}
+@keyframes ai-pulse-ring {
+  0%   { transform: scale(0.8); opacity: 1; }
+  100% { transform: scale(1.8); opacity: 0; }
+}
+@keyframes ai-step-in {
+  from { opacity: 0; transform: translateX(-12px); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes ai-progress {
+  from { width: 0%; }
+}
+.ai-spin { animation: ai-spin 1s linear infinite; }
+.ai-pulse-ring { animation: ai-pulse-ring 1.4s ease-out infinite; }
+.ai-step-in { animation: ai-step-in 0.4s ease; }
+.ai-progress-bar { animation: ai-progress 1s ease-out; }
 .skeleton {
   background: linear-gradient(90deg, oklch(0.94 0.01 65) 25%, oklch(0.97 0.01 65) 50%, oklch(0.94 0.01 65) 75%);
   background-size: 200% 100%;

@@ -1,9 +1,159 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import BarcodeScanner from "@/components/BarcodeScanner";
 import NutritionCalendar from "@/components/NutritionCalendar";
 import ProductNutritionCard from "@/components/ProductNutritionCard";
+
+// ─── AI Loading Animation ───────────────────────────────────────────────────
+const AI_STEPS = [
+  { icon: "📷", label: "Procesando imagen", detail: "Preparando la foto para el análisis..." },
+  { icon: "🔍", label: "Identificando alimentos", detail: "Reconociendo ingredientes y platos..." },
+  { icon: "🧮", label: "Calculando macronutrientes", detail: "Estimando proteínas, hidratos y grasas..." },
+  { icon: "✨", label: "Generando análisis completo", detail: "Preparando tu informe nutricional..." },
+];
+
+function AILoadingAnimation() {
+  const [step, setStep] = useState(0);
+  const [progress, setProgress] = useState(0);
+
+  useEffect(() => {
+    // Advance steps every ~2.5 seconds
+    const stepInterval = setInterval(() => {
+      setStep(prev => Math.min(prev + 1, AI_STEPS.length - 1));
+    }, 2500);
+
+    // Smooth progress bar
+    const progressInterval = setInterval(() => {
+      setProgress(prev => {
+        if (prev >= 92) return prev; // hold near end until real result arrives
+        return prev + 1;
+      });
+    }, 120);
+
+    return () => {
+      clearInterval(stepInterval);
+      clearInterval(progressInterval);
+    };
+  }, []);
+
+  const currentStep = AI_STEPS[step];
+
+  return (
+    <div style={{
+      background: "linear-gradient(135deg, #FFF7ED, #FFEDD5)",
+      border: "1.5px solid #FED7AA",
+      borderRadius: 18,
+      padding: "20px 18px",
+      marginBottom: 12,
+      display: "flex",
+      flexDirection: "column",
+      gap: 16,
+    }}>
+      {/* Spinner + title */}
+      <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
+        {/* Pulsing ring + spinner */}
+        <div style={{ position: "relative", width: 48, height: 48, flexShrink: 0 }}>
+          {/* Outer pulse ring */}
+          <div className="ai-pulse-ring" style={{
+            position: "absolute",
+            inset: 0,
+            borderRadius: "50%",
+            border: "2px solid #F97316",
+          }} />
+          {/* Spinning circle */}
+          <div className="ai-spin" style={{
+            position: "absolute",
+            inset: 4,
+            borderRadius: "50%",
+            border: "3px solid #FED7AA",
+            borderTopColor: "#F97316",
+          }} />
+          {/* Center icon */}
+          <div style={{
+            position: "absolute",
+            inset: 0,
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: 18,
+          }}>
+            {currentStep.icon}
+          </div>
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ margin: 0, fontSize: 14, fontWeight: 800, color: "#9a3412" }} className="ai-step-in" key={step}>
+            {currentStep.label}
+          </p>
+          <p style={{ margin: "2px 0 0", fontSize: 12, color: "#C2410C", lineHeight: 1.4 }} className="ai-step-in" key={`d-${step}`}>
+            {currentStep.detail}
+          </p>
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      <div>
+        <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 6 }}>
+          <span style={{ fontSize: 11, fontWeight: 700, color: "#92400E", textTransform: "uppercase", letterSpacing: "0.05em" }}>Progreso del análisis</span>
+          <span style={{ fontSize: 11, fontWeight: 800, color: "#F97316" }}>{progress}%</span>
+        </div>
+        <div style={{ height: 8, background: "#FEF3C7", borderRadius: 99, overflow: "hidden" }}>
+          <div style={{
+            height: "100%",
+            width: `${progress}%`,
+            background: "linear-gradient(90deg, #F97316, #FB923C)",
+            borderRadius: 99,
+            transition: "width 0.12s linear",
+          }} />
+        </div>
+      </div>
+
+      {/* Steps list */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {AI_STEPS.map((s, i) => (
+          <div key={i} style={{
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            opacity: i > step ? 0.35 : 1,
+            transition: "opacity 0.4s ease",
+          }}>
+            {/* Status icon */}
+            <div style={{
+              width: 22,
+              height: 22,
+              borderRadius: "50%",
+              background: i < step ? "#10B981" : i === step ? "#F97316" : "#E5E7EB",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              flexShrink: 0,
+              transition: "background 0.3s ease",
+            }}>
+              {i < step ? (
+                <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round">
+                  <polyline points="20 6 9 17 4 12" />
+                </svg>
+              ) : i === step ? (
+                <div className="ai-spin" style={{ width: 10, height: 10, borderRadius: "50%", border: "2px solid rgba(255,255,255,0.4)", borderTopColor: "white" }} />
+              ) : (
+                <div style={{ width: 6, height: 6, borderRadius: "50%", background: "#9CA3AF" }} />
+              )}
+            </div>
+            <span style={{ fontSize: 13, fontWeight: i === step ? 700 : 500, color: i === step ? "#9a3412" : i < step ? "#374151" : "#9CA3AF" }}>
+              {s.label}
+            </span>
+          </div>
+        ))}
+      </div>
+
+      <p style={{ margin: 0, fontSize: 11, color: "#C2410C", textAlign: "center", fontStyle: "italic" }}>
+        El análisis puede tardar entre 5 y 15 segundos
+      </p>
+    </div>
+  );
+}
+// ────────────────────────────────────────────────────────────────────────────
 
 export default function MealLog() {
   const [dateOffset, setDateOffset] = useState(0);
@@ -537,25 +687,19 @@ export default function MealLog() {
                       </button>
                     </div>
 
-                    {/* Analyze button */}
+                    {/* Analyze button / AI loading animation */}
                     {!aiResult && (
-                      <button
-                        onClick={handleAnalyze}
-                        disabled={analyzeFood.isPending}
-                        style={{ width: "100%", background: analyzeFood.isPending ? "#f3f4f6" : "linear-gradient(135deg, #F97316, #FB923C)", border: "none", borderRadius: "14px", padding: "14px", cursor: analyzeFood.isPending ? "not-allowed" : "pointer", color: analyzeFood.isPending ? "#9ca3af" : "white", fontWeight: 700, fontSize: "14px", marginBottom: "12px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
-                      >
-                        {analyzeFood.isPending ? (
-                          <>
-                            <span style={{ animation: "spin 1s linear infinite", display: "inline-block" }}>⏳</span>
-                            <span>Analizando con IA...</span>
-                          </>
-                        ) : (
-                          <>
-                            <span>🤖</span>
-                            <span>Analizar con IA</span>
-                          </>
-                        )}
-                      </button>
+                      analyzeFood.isPending ? (
+                        <AILoadingAnimation />
+                      ) : (
+                        <button
+                          onClick={handleAnalyze}
+                          style={{ width: "100%", background: "linear-gradient(135deg, #F97316, #FB923C)", border: "none", borderRadius: "14px", padding: "14px", cursor: "pointer", color: "white", fontWeight: 700, fontSize: "14px", marginBottom: "12px", display: "flex", alignItems: "center", justifyContent: "center", gap: "8px" }}
+                        >
+                          <span>🤖</span>
+                          <span>Analizar con IA</span>
+                        </button>
+                      )
                     )}
 
                     {/* AI Result */}
