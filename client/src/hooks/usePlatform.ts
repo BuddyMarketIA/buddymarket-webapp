@@ -93,8 +93,25 @@ export function isIOSNative(): boolean {
 }
 
 /**
- * Returns true if IAP is available (iOS native with StoreKit bridge).
+ * Returns true if the app is running inside an Android native shell.
+ * Use this to gate Stripe UI and show Google Play Billing buttons instead.
+ */
+export function isAndroidNative(): boolean {
+  return getPlatform() === "android";
+}
+
+/**
+ * Returns true if the app is running inside any native shell (iOS or Android).
+ */
+export function isNativeApp(): boolean {
+  return getPlatform() !== "web";
+}
+
+/**
+ * Returns true if IAP is available:
+ *   - iOS: native shell with StoreKit 2 bridge injected
+ *   - Android: native shell with Google Play Billing bridge injected
  */
 export function isIAPAvailable(): boolean {
-  return isIOSNative() && typeof window !== "undefined" && !!window.BuddyMarketIAP;
+  return isNativeApp() && typeof window !== "undefined" && !!window.BuddyMarketIAP;
 }

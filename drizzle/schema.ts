@@ -190,6 +190,14 @@ export const userSubscriptions = mysqlTable("user_subscriptions", {
   cancelAtPeriodEnd: boolean("cancelAtPeriodEnd").default(false),
   manualPlan: mysqlEnum("manualPlan", ["free", "basic", "premium", "pro_max"]).default("free"),
   manualPlanNote: varchar("manualPlanNote", { length: 255 }),
+  // ── IAP fields (Apple StoreKit 2 / Google Play Billing) ──────────────────
+  iapPlatform: mysqlEnum("iapPlatform", ["apple", "google"]),
+  iapOriginalTransactionId: varchar("iapOriginalTransactionId", { length: 256 }),
+  iapTransactionId: varchar("iapTransactionId", { length: 256 }),
+  iapProductId: varchar("iapProductId", { length: 128 }),
+  iapEnvironment: mysqlEnum("iapEnvironment", ["sandbox", "production"]),
+  iapExpiresAt: timestamp("iapExpiresAt"),
+  iapLastVerifiedAt: timestamp("iapLastVerifiedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
 });

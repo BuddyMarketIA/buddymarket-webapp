@@ -2605,6 +2605,106 @@ Genera 3 recetas que aprovechen estos ingredientes. Para cada receta incluye: no
       const { getPlanTier } = await import("../shared/plans");
       return { ...sub, tier: getPlanTier(sub.plan) };
     }),
+
+    // ── Apple StoreKit 2 IAP verification ────────────────────────────────────────
+    verifyAppleIAP: protectedProcedure
+      .input(z.object({
+        transactionId: z.string().min(1, "transactionId is required"),
+        productId: z.string().min(1, "productId is required"),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { verifyAppleTransaction } = await import("./_core/iap/appleIAP");
+        const result = await verifyAppleTransaction(input.transactionId);
+
+        if (!result.valid || !result.plan) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: result.error ?? "Apple IAP verification failed",
+          });
+        }
+
+        // Prevent replay attacks: check if this transaction is already used
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { userSubscriptions } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        const existing = await drizzleDb
+          .select()
+          .from(userSubscriptions)
+          .where(eq(userSubscriptions.iapTransactionId, result.transactionId))
+          .limit(1);
+        if (existing.length > 0 && existing[0].userId !== ctx.user.id) {
+          throw new TRPCError({ code: "CONFLICT", message: "Transaction already used by another account" });
+        }
+
+        // Activate subscription in DB
+        await db.upsertUserSubscription(ctx.user.id, {
+          status: "active",
+          plan: result.plan,
+          currentPeriodStart: new Date(),
+          currentPeriodEnd: result.expiresAt ?? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          iapPlatform: "apple",
+          iapTransactionId: result.transactionId,
+          iapOriginalTransactionId: result.originalTransactionId,
+          iapProductId: result.productId,
+          iapEnvironment: result.environment,
+          iapExpiresAt: result.expiresAt ?? undefined,
+          iapLastVerifiedAt: new Date(),
+        } as any);
+
+        console.log(`[Apple IAP] Activated plan=${result.plan} env=${result.environment} for user=${ctx.user.id} txId=${result.transactionId}`);
+        return { success: true, plan: result.plan, environment: result.environment, expiresAt: result.expiresAt };
+      }),
+
+    // ── Google Play Billing verification ───────────────────────────────────────
+    verifyGoogleIAP: protectedProcedure
+      .input(z.object({
+        productId: z.string().min(1, "productId is required"),
+        purchaseToken: z.string().min(1, "purchaseToken is required"),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { verifyGooglePurchase } = await import("./_core/iap/googleIAP");
+        const result = await verifyGooglePurchase(input.productId, input.purchaseToken);
+
+        if (!result.valid || !result.plan) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: result.error ?? "Google Play IAP verification failed",
+          });
+        }
+
+        // Prevent replay attacks
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { userSubscriptions } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        const existing = await drizzleDb
+          .select()
+          .from(userSubscriptions)
+          .where(eq(userSubscriptions.iapTransactionId, result.purchaseToken))
+          .limit(1);
+        if (existing.length > 0 && existing[0].userId !== ctx.user.id) {
+          throw new TRPCError({ code: "CONFLICT", message: "Purchase token already used by another account" });
+        }
+
+        // Activate subscription in DB
+        await db.upsertUserSubscription(ctx.user.id, {
+          status: "active",
+          plan: result.plan,
+          currentPeriodStart: new Date(),
+          currentPeriodEnd: result.expiresAt ?? new Date(Date.now() + 30 * 24 * 60 * 60 * 1000),
+          iapPlatform: "google",
+          iapTransactionId: result.purchaseToken,
+          iapOriginalTransactionId: result.orderId,
+          iapProductId: result.productId,
+          iapEnvironment: result.environment,
+          iapExpiresAt: result.expiresAt ?? undefined,
+          iapLastVerifiedAt: new Date(),
+        } as any);
+
+        console.log(`[Google IAP] Activated plan=${result.plan} env=${result.environment} for user=${ctx.user.id} orderId=${result.orderId}`);
+        return { success: true, plan: result.plan, environment: result.environment, expiresAt: result.expiresAt };
+      }),
   }),
   // ---------------------------------------------------------------------------
   // HEALTH METRICS

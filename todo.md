@@ -1341,3 +1341,18 @@
 - [x] Mantener Stripe activo en flujos de BuddyExperts y BuddyMakers (B2B, siempre web)
 - [x] Añadir banner informativo en web para usuarios iOS indicando que deben gestionar su suscripción desde la app
 - [x] Documentar la arquitectura de pagos en un archivo PAYMENTS.md para el equipo
+
+## Sprint: Verificación de Recibos IAP (Apple + Google)
+- [x] Añadir campos IAP al esquema BD: iapTransactionId, iapPlatform, iapProductId, iapExpiresAt, iapOriginalTransactionId
+- [x] Migrar BD con pnpm db:push
+- [x] Crear server/_core/iap/appleIAP.ts: verificación con App Store Server API (JWT + ES256)
+- [x] Crear server/_core/iap/googleIAP.ts: verificación con Google Play Developer API (OAuth2)
+- [x] Crear procedimiento tRPC subscriptions.verifyAppleIAP
+- [x] Crear procedimiento tRPC subscriptions.verifyGoogleIAP
+- [ ] Crear webhook /api/iap/apple/notifications para Server Notifications V2 (pendiente: requiere URL pública)
+- [ ] Crear webhook /api/iap/google/notifications para Google Play RTDN (pendiente: requiere URL pública)
+- [x] Actualizar usePayment.ts para llamar a verifyAppleIAP/verifyGoogleIAP tras la compra nativa
+- [ ] Añadir secrets: APPLE_IAP_KEY_ID, APPLE_IAP_ISSUER_ID, APPLE_IAP_PRIVATE_KEY, APPLE_BUNDLE_ID (pendiente: el usuario los añadirá más tarde)
+- [ ] Añadir secrets: GOOGLE_PLAY_SERVICE_ACCOUNT_JSON, GOOGLE_PLAY_PACKAGE_NAME (pendiente: el usuario los añadirá más tarde)
+- [x] Actualizar PAYMENTS.md con checklist completo para Apple y Google
+- [x] Escribir tests unitarios para los servicios de verificación IAP
