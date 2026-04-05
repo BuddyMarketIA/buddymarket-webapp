@@ -549,6 +549,7 @@ function MenuDetailDialog({
   onClose: () => void;
   onSave: (menu: { id: number; name: string }) => void;
 }) {
+  const [selectedDay, setSelectedDay] = useState(1);
   const { data: menu, isLoading } = trpc.menus.libraryDetail.useQuery(
     { id: menuId! },
     { enabled: !!menuId && open }
@@ -556,6 +557,25 @@ function MenuDetailDialog({
 
   if (!open || !menuId) return null;
 
+  const MEAL_ICONS: Record<string, string> = {
+    breakfast: "☀️",
+    morning_snack: "🍎",
+    lunch: "🍽️",
+    afternoon_snack: "☕",
+    dinner: "🌙",
+    snack: "🥜",
+  };
+  const MEAL_LABELS: Record<string, string> = {
+    breakfast: "Desayuno",
+    morning_snack: "Media mañana",
+    lunch: "Comida",
+    afternoon_snack: "Merienda",
+    dinner: "Cena",
+    snack: "Snack",
+  };
+  const DAY_NAMES = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+
+  // Group day parts by day number
   const dayGroups: Record<number, any[]> = {};
   if (menu?.dayParts) {
     for (const dp of menu.dayParts) {
@@ -565,55 +585,157 @@ function MenuDetailDialog({
     }
   }
 
-  const DAY_NAMES = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+  const totalDays = Object.keys(dayGroups).length;
+  const currentDayParts = dayGroups[selectedDay] || [];
+  const dayKcal = currentDayParts.reduce((sum: number, dp: any) =>
+    sum + dp.recipes.reduce((s: number, r: any) => s + (r.caloriesPerServing || 0), 0), 0
+  );
+
+  const image = menu?.coverImage || (menu?.goal ? GOAL_IMAGES[menu.goal] : undefined);
+  const gradient = menu?.goal ? (GOAL_GRADIENTS[menu.goal] || "from-gray-500 to-gray-400") : "from-gray-500 to-gray-400";
 
   return (
     <Dialog open={open} onOpenChange={onClose}>
-      <DialogContent className="max-w-2xl max-h-[80vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>{menu?.name || "Cargando..."}</DialogTitle>
-          {menu && (
-            <div className="flex gap-2 flex-wrap mt-1">
-              {menu.goal && <Badge className={GOAL_COLORS[menu.goal] || "bg-gray-100 text-gray-800"}>{GOAL_LABELS[menu.goal] || menu.goal}</Badge>}
-              {menu.dailyCalories && <Badge variant="outline">🔥 {menu.dailyCalories} kcal/día</Badge>}
-              {menu.difficulty && <Badge variant="outline">📊 {DIFF_LABELS[menu.difficulty] || menu.difficulty}</Badge>}
-            </div>
+      <DialogContent className="max-w-2xl p-0 overflow-hidden max-h-[90vh] flex flex-col">
+        {/* Hero header */}
+        <div className={`relative h-32 bg-gradient-to-br ${gradient} shrink-0`}>
+          {image && (
+            <img src={image} alt={menu?.name} className="absolute inset-0 w-full h-full object-cover opacity-70" />
           )}
-        </DialogHeader>
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
+          <div className="absolute bottom-0 left-0 right-0 p-4">
+            <DialogTitle className="text-white text-lg font-bold drop-shadow sr-only">{menu?.name || ""}</DialogTitle>
+            <p className="text-white text-lg font-bold drop-shadow leading-tight">{menu?.name || "Cargando..."}</p>
+            {menu && (
+              <div className="flex gap-2 flex-wrap mt-1.5">
+                {menu.goal && (
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${GOAL_COLORS[menu.goal] || "bg-gray-100 text-gray-800"}`}>
+                    {GOAL_LABELS[menu.goal] || menu.goal}
+                  </span>
+                )}
+                {menu.dailyCalories && (
+                  <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-white/20 text-white backdrop-blur-sm">
+                    🔥 {menu.dailyCalories} kcal/día
+                  </span>
+                )}
+                {menu.difficulty && (
+                  <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-white/20 text-white backdrop-blur-sm">
+                    {DIFF_LABELS[menu.difficulty] || menu.difficulty}
+                  </span>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
         {isLoading ? (
-          <div className="py-8 space-y-3">
-            {[...Array(3)].map((_, i) => (
-              <div key={i} className="h-20 rounded-lg skeleton" />
+          <div className="p-6 space-y-3 flex-1">
+            {[...Array(4)].map((_, i) => (
+              <div key={i} className="h-16 rounded-xl skeleton" />
             ))}
           </div>
         ) : menu ? (
-          <div className="space-y-4 pt-2">
-            {Object.entries(dayGroups).slice(0, 7).map(([dayNum, dayParts]) => (
-              <div key={dayNum} className="border rounded-lg p-3">
-                <h4 className="font-semibold text-sm mb-2 text-[#FF6B35]">
-                  {DAY_NAMES[parseInt(dayNum) - 1] || `Día ${dayNum}`}
-                </h4>
-                <div className="space-y-1">
-                  {dayParts.map((dp) => (
-                    <div key={dp.id}>
-                      {dp.recipes.map((r: any) => (
-                        <div key={r.id} className="flex items-center gap-2 text-sm py-1">
-                          <span className="text-muted-foreground w-24 text-xs">{dp.name || "Comida"}</span>
-                          <span className="font-medium flex-1">{r.name}</span>
-                          {r.caloriesPerServing && <span className="text-xs text-muted-foreground">{r.caloriesPerServing} kcal</span>}
-                        </div>
-                      ))}
-                    </div>
-                  ))}
-                </div>
+          <div className="flex flex-col flex-1 overflow-hidden">
+            {/* Day selector tabs */}
+            <div className="px-4 pt-3 pb-0 shrink-0">
+              <div className="flex gap-1.5 overflow-x-auto pb-2">
+                {Array.from({ length: totalDays }, (_, i) => i + 1).map((day) => (
+                  <button
+                    key={day}
+                    onClick={() => setSelectedDay(day)}
+                    className={`shrink-0 flex flex-col items-center px-3 py-1.5 rounded-xl text-xs font-medium transition-all border ${
+                      selectedDay === day
+                        ? "bg-[#FF6B35] text-white border-[#FF6B35] shadow-sm"
+                        : "bg-gray-50 text-gray-600 border-gray-100 hover:border-[#FF6B35] hover:text-[#FF6B35]"
+                    }`}
+                  >
+                    <span className="text-[10px] opacity-70">{DAY_NAMES[day - 1]?.slice(0, 3) || `D${day}`}</span>
+                    <span className="font-bold">{day}</span>
+                  </button>
+                ))}
               </div>
-            ))}
-            <Button
-              className="w-full bg-[#FF6B35] hover:bg-[#e55a25] text-white"
-              onClick={() => { onClose(); onSave({ id: menu.id, name: menu.name }); }}
-            >
-              Usar este menú
-            </Button>
+            </div>
+
+            {/* Day content */}
+            <div className="flex-1 overflow-y-auto px-4 pb-4">
+              {/* Day header */}
+              <div className="flex items-center justify-between py-3">
+                <h3 className="font-bold text-gray-900">
+                  {DAY_NAMES[selectedDay - 1] || `Día ${selectedDay}`}
+                </h3>
+                {dayKcal > 0 && (
+                  <span className="text-sm font-semibold text-[#FF6B35]">
+                    🔥 {dayKcal} kcal totales
+                  </span>
+                )}
+              </div>
+
+              {/* Meals */}
+              <div className="space-y-3">
+                {currentDayParts
+                  .sort((a: any, b: any) => (a.mealNumber || 0) - (b.mealNumber || 0))
+                  .map((dp: any) => {
+                    const mealIcon = MEAL_ICONS[dp.name] || "🍽️";
+                    const mealLabel = MEAL_LABELS[dp.name] || dp.name;
+                    const mealKcal = dp.recipes.reduce((s: number, r: any) => s + (r.caloriesPerServing || 0), 0);
+                    return (
+                      <div key={dp.id} className="bg-gray-50 rounded-xl overflow-hidden border border-gray-100">
+                        <div className="flex items-center justify-between px-3 py-2 bg-white border-b border-gray-100">
+                          <div className="flex items-center gap-2">
+                            <span className="text-base">{mealIcon}</span>
+                            <span className="text-sm font-semibold text-gray-800">{mealLabel}</span>
+                          </div>
+                          {mealKcal > 0 && (
+                            <span className="text-xs text-[#FF6B35] font-medium">{mealKcal} kcal</span>
+                          )}
+                        </div>
+                        {dp.recipes.length === 0 ? (
+                          <div className="px-3 py-3 text-xs text-gray-400 italic">Sin receta asignada</div>
+                        ) : (
+                          dp.recipes.map((r: any) => (
+                            <div key={r.id} className="px-3 py-2.5">
+                              <div className="flex items-start justify-between gap-3">
+                                <div className="flex-1 min-w-0">
+                                  <p className="text-sm font-medium text-gray-900 leading-tight">{r.name}</p>
+                                  {r.description && (
+                                    <p className="text-xs text-gray-500 mt-0.5 line-clamp-2 leading-relaxed">{r.description}</p>
+                                  )}
+                                </div>
+                                <div className="shrink-0 text-right">
+                                  {r.caloriesPerServing && (
+                                    <span className="text-xs font-semibold text-gray-700">{r.caloriesPerServing} kcal</span>
+                                  )}
+                                  <div className="flex gap-2 mt-0.5 justify-end">
+                                    {r.proteinsPerServing && (
+                                      <span className="text-[10px] text-blue-600">{Math.round(r.proteinsPerServing)}g P</span>
+                                    )}
+                                    {r.carbsPerServing && (
+                                      <span className="text-[10px] text-amber-600">{Math.round(r.carbsPerServing)}g C</span>
+                                    )}
+                                    {r.fatsPerServing && (
+                                      <span className="text-[10px] text-red-500">{Math.round(r.fatsPerServing)}g G</span>
+                                    )}
+                                  </div>
+                                </div>
+                              </div>
+                            </div>
+                          ))
+                        )}
+                      </div>
+                    );
+                  })}
+              </div>
+            </div>
+
+            {/* Footer CTA */}
+            <div className="px-4 pb-4 pt-2 border-t border-gray-100 shrink-0 bg-white">
+              <Button
+                className="w-full bg-[#FF6B35] hover:bg-[#e55a25] text-white h-11 rounded-xl font-semibold"
+                onClick={() => { onClose(); onSave({ id: menu.id, name: menu.name }); }}
+              >
+                Usar este menú
+              </Button>
+            </div>
           </div>
         ) : null}
       </DialogContent>
