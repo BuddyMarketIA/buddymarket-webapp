@@ -1312,3 +1312,13 @@
 - [x] Mejorar modal de confirmación en Inventory con tabla nutricional visual completa
 - [x] Añadir previsualización del producto en BarcodeScanner antes de cerrar el modal
 - [x] Actualizar MealLog para mostrar todos los macros del producto escaneado
+
+## Sprint: Cuestionario Avanzado Generación Menú IA
+- [x] Ampliar backend generateMenuWithQuestionnaire con nuevos parámetros opcionales (nivel actividad, tipo dieta, alergias específicas, horarios comidas, equipo cocina, tiempo cocina, nivel habilidad, tipo proteína preferida, notas especiales extendidas)
+- [x] Rediseñar cuestionario frontend con pasos adicionales y disclaimer de calidad
+- [x] Añadir paso de nivel de actividad física y horarios habituales
+- [x] Añadir paso de tipo de proteína preferida (carne, pescado, legumbres, huevos, mixto)
+- [x] Añadir paso de tiempo disponible para cocinar y nivel de habilidad
+- [x] Añadir paso de equipo de cocina disponible (horno, freidora de aire, thermomix, etc.)
+- [x] Añadir disclaimer visual en el último paso y en el botón de generar
+- [x] Mejorar el prompt de IA con todos los nuevos campos

@@ -5084,12 +5084,29 @@ Formato JSON estricto:
           calories: z.number().min(1000).max(5000).optional(),
           restrictions: z.array(z.string()).optional(),
           preferences: z.string().optional(),
-          daysCount: z.number().min(1).max(7).default(7),
-          // New fields for richer personalization
-          eatOutDays: z.array(z.string()).optional(), // days eating out e.g. ["Lunes", "Miércoles"]
-          dislikedFoods: z.string().optional(), // foods the user dislikes
-          budgetPerWeek: z.number().min(0).max(500).optional(), // euros per week
-          specialNotes: z.string().optional(), // any extra context
+          daysCount: z.number().min(1).max(14).default(7),
+          // Existing optional fields
+          eatOutDays: z.array(z.string()).optional(),
+          dislikedFoods: z.string().optional(),
+          budgetPerWeek: z.number().min(0).max(500).optional(),
+          specialNotes: z.string().optional(),
+          // New extended optional fields
+          activityLevel: z.enum(["sedentario", "ligero", "moderado", "activo", "muy_activo"]).optional(),
+          proteinSource: z.enum(["carne", "pescado", "legumbres", "huevos", "mixto", "vegetal"]).optional(),
+          cookingTime: z.enum(["menos_15", "15_30", "30_60", "mas_60"]).optional(),
+          cookingSkill: z.enum(["principiante", "intermedio", "avanzado"]).optional(),
+          kitchenEquipment: z.array(z.string()).optional(), // ["horno", "freidora_aire", "thermomix", ...]
+          mealTimings: z.object({
+            breakfast: z.string().optional(), // "08:00"
+            morningSnack: z.string().optional(),
+            lunch: z.string().optional(),
+            afternoonSnack: z.string().optional(),
+            dinner: z.string().optional(),
+          }).optional(),
+          dietType: z.enum(["omnivoro", "flexitariano", "pescetariano", "vegetariano", "vegano", "cetogenico", "paleo", "mediterraneo", "dash"]).optional(),
+          allergies: z.array(z.string()).optional(), // specific allergens beyond restrictions
+          waterIntake: z.number().min(0).max(5).optional(), // litres per day goal
+          supplementsUsed: z.string().optional(), // e.g. "proteína whey, creatina"
         })
       )
       .mutation(async ({ input, ctx }) => {
@@ -5184,6 +5201,52 @@ Formato JSON estricto:
             dietaryRules.push('SIN LACTOSA: Usar bebidas vegetales (avena, soja, almendras). Evitar lácteos convencionales.');
           }
         }
+        // Build extended personalization context
+        const activityLabels: Record<string, string> = {
+          sedentario: "sedentario (oficina, sin ejercicio)",
+          ligero: "ligeramente activo (1-2 días/semana de ejercicio)",
+          moderado: "moderadamente activo (3-4 días/semana)",
+          activo: "muy activo (5-6 días/semana)",
+          muy_activo: "extremadamente activo (atleta, entrenamiento diario)",
+        };
+        const proteinLabels: Record<string, string> = {
+          carne: "carne (pollo, ternera, cerdo)",
+          pescado: "pescado y marisco",
+          legumbres: "legumbres y proteína vegetal",
+          huevos: "huevos y lácteos",
+          mixto: "variado (carne, pescado, huevos)",
+          vegetal: "100% proteína vegetal",
+        };
+        const cookingTimeLabels: Record<string, string> = {
+          menos_15: "menos de 15 minutos por comida",
+          "15_30": "15-30 minutos por comida",
+          "30_60": "30-60 minutos por comida",
+          mas_60: "más de 60 minutos (cocina elaborada)",
+        };
+        const cookingSkillLabels: Record<string, string> = {
+          principiante: "principiante (recetas muy sencillas, pocos pasos)",
+          intermedio: "intermedio (técnicas básicas, recetas variadas)",
+          avanzado: "avanzado (técnicas complejas, presentación cuidada)",
+        };
+        const dietTypeLabels: Record<string, string> = {
+          omnivoro: "omnívoro",
+          flexitariano: "flexitariano (mayormente vegetal, algo de carne/pescado)",
+          pescetariano: "pescetariano (pescado pero no carne)",
+          vegetariano: "vegetariano",
+          vegano: "vegano",
+          cetogenico: "cetogénico (muy bajo en carbohidratos, alto en grasas)",
+          paleo: "paleo (sin cereales, sin lácteos, sin legumbres)",
+          mediterraneo: "mediterráneo",
+          dash: "DASH (bajo en sodio, para hipertensión)",
+        };
+        const mealTimingsStr = input.mealTimings ? [
+          input.mealTimings.breakfast ? `Desayuno: ${input.mealTimings.breakfast}` : null,
+          input.mealTimings.morningSnack ? `Media mañana: ${input.mealTimings.morningSnack}` : null,
+          input.mealTimings.lunch ? `Comida: ${input.mealTimings.lunch}` : null,
+          input.mealTimings.afternoonSnack ? `Merienda: ${input.mealTimings.afternoonSnack}` : null,
+          input.mealTimings.dinner ? `Cena: ${input.mealTimings.dinner}` : null,
+        ].filter(Boolean).join(', ') : null;
+
         const prompt = `Eres un nutricionista experto. Crea un menú personalizado de ${input.daysCount} días COMPLETAMENTE ADAPTADO al perfil real del usuario.
 
 === PERFIL FÍSICO Y MÉTRICAS DEL USUARIO ===
@@ -5197,15 +5260,25 @@ ${prefsContext || 'No especificadas'}
 
 === PARÁMETROS DEL MENÚ SOLICITADO ===
 - Objetivo: ${goalLabels[input.goal]}
+- Tipo de dieta: ${input.dietType ? dietTypeLabels[input.dietType] : 'No especificado'}
 - Estilo de cocina: ${cookingStyleLabels[input.cookingStyle]}
 - Número de personas: ${input.persons}
 - Comidas al día: ${input.mealsPerDay} (${mealNames.join(", ")})
 - Calorías objetivo: ${Math.round(targetCalories)} kcal/día por persona
 - Días del menú: ${input.daysCount}
+${input.activityLevel ? `- Nivel de actividad: ${activityLabels[input.activityLevel]}` : ''}
+${input.proteinSource ? `- Fuente de proteína preferida: ${proteinLabels[input.proteinSource]}` : ''}
+${input.cookingTime ? `- Tiempo disponible para cocinar: ${cookingTimeLabels[input.cookingTime]}` : ''}
+${input.cookingSkill ? `- Nivel de habilidad en cocina: ${cookingSkillLabels[input.cookingSkill]}` : ''}
+${input.kitchenEquipment?.length ? `- Equipo de cocina disponible: ${input.kitchenEquipment.join(", ")}` : ''}
+${mealTimingsStr ? `- Horarios habituales de comidas: ${mealTimingsStr}` : ''}
 ${allRestrictions.length ? `- Restricciones/alergias: ${allRestrictions.join(", ")}` : ""}
+${input.allergies?.length ? `- Alergias específicas adicionales: ${input.allergies.join(", ")}` : ''}
 ${allDislikedFoods ? `- Alimentos que NO le gustan: ${allDislikedFoods}` : ""}
 ${input.eatOutDays?.length ? `- Días que come FUERA de casa: ${input.eatOutDays.join(", ")} (para esos días propón opciones de restaurante o menú del día saludable, no recetas para cocinar en casa)` : ""}
 ${effectiveBudget ? `- Presupuesto semanal: ${effectiveBudget}€ (ajusta las recetas a este presupuesto)` : ""}
+${input.waterIntake ? `- Objetivo de hidratación: ${input.waterIntake}L de agua al día` : ''}
+${input.supplementsUsed ? `- Suplementos que usa: ${input.supplementsUsed} (ten en cuenta para no duplicar nutrientes)` : ''}
 ${input.preferences ? `- Preferencias adicionales: ${input.preferences}` : ""}
 ${input.specialNotes ? `- Notas especiales: ${input.specialNotes}` : ""}
 ${dietaryRules.length > 0 ? `\n⚠️ RESTRICCIONES DIETÉTICAS OBLIGATORIAS (INCUMPLIRLAS ES UN ERROR GRAVE):\n${dietaryRules.join('\n')}` : ""}

@@ -12,6 +12,11 @@ import { Link, useLocation } from "wouter";
 // ─── Types ────────────────────────────────────────────────────────────────────
 type GoalType = "perdida_peso" | "ganancia_muscular" | "tonificacion" | "perdida_grasa" | "mantenimiento" | "definicion" | "salud";
 type CookingStyle = "batch_cooking" | "tuppers" | "rapido" | "trabajo" | "restaurante" | "mixto";
+type ActivityLevel = "sedentario" | "ligero" | "moderado" | "activo" | "muy_activo";
+type ProteinSource = "carne" | "pescado" | "legumbres" | "huevos" | "mixto" | "vegetal";
+type CookingTime = "menos_15" | "15_30" | "30_60" | "mas_60";
+type CookingSkill = "principiante" | "intermedio" | "avanzado";
+type DietType = "omnivoro" | "flexitariano" | "pescetariano" | "vegetariano" | "vegano" | "cetogenico" | "paleo" | "mediterraneo" | "dash";
 type AppMode = "home" | "chat" | "questionnaire" | "menu_result";
 
 interface QuestionnaireData {
@@ -27,6 +32,24 @@ interface QuestionnaireData {
   eatOutDays: string[];
   dislikedFoods: string;
   budgetPerWeek?: number;
+  // New extended fields
+  activityLevel?: ActivityLevel;
+  proteinSource?: ProteinSource;
+  cookingTime?: CookingTime;
+  cookingSkill?: CookingSkill;
+  kitchenEquipment?: string[];
+  mealTimings?: {
+    breakfast?: string;
+    morningSnack?: string;
+    lunch?: string;
+    afternoonSnack?: string;
+    dinner?: string;
+  };
+  dietType?: DietType;
+  allergies?: string[];
+  waterIntake?: number;
+  supplementsUsed?: string;
+  specialNotes?: string;
 }
 
 interface GeneratedMeal {
@@ -87,6 +110,65 @@ const COMMON_DISLIKES = [
   "Hígado", "Morcilla", "Sardinas", "Anchoas", "Cebolla cruda", "Pimiento",
   "Berenjena", "Coliflor", "Brócoli", "Espinacas", "Remolacha", "Tofu",
   "Cilantro", "Picante", "Vinagre", "Mostaza",
+];
+
+const ACTIVITY_LEVELS: { id: ActivityLevel; label: string; emoji: string; desc: string }[] = [
+  { id: "sedentario", label: "Sedentario", emoji: "🪑", desc: "Trabajo de oficina, sin ejercicio regular" },
+  { id: "ligero", label: "Ligeramente activo", emoji: "🚶", desc: "1-2 días/semana de ejercicio o caminatas" },
+  { id: "moderado", label: "Moderadamente activo", emoji: "🏃", desc: "3-4 días/semana de ejercicio" },
+  { id: "activo", label: "Muy activo", emoji: "💪", desc: "5-6 días/semana de ejercicio intenso" },
+  { id: "muy_activo", label: "Atleta / Extremo", emoji: "🏆", desc: "Entrenamiento diario o trabajo físico intenso" },
+];
+
+const PROTEIN_SOURCES: { id: ProteinSource; label: string; emoji: string; desc: string }[] = [
+  { id: "mixto", label: "Variado", emoji: "🍽️", desc: "Carne, pescado, huevos y legumbres" },
+  { id: "carne", label: "Carne", emoji: "🥩", desc: "Pollo, ternera, cerdo, pavo" },
+  { id: "pescado", label: "Pescado y marisco", emoji: "🐟", desc: "Preferencia por proteína marina" },
+  { id: "legumbres", label: "Legumbres", emoji: "🫘", desc: "Lentejas, garbanzos, alubias" },
+  { id: "huevos", label: "Huevos y lácteos", emoji: "🥚", desc: "Proteína de huevo y derivados lácteos" },
+  { id: "vegetal", label: "100% Vegetal", emoji: "🌱", desc: "Tofu, tempeh, seitán, proteína vegetal" },
+];
+
+const COOKING_TIMES: { id: CookingTime; label: string; emoji: string; desc: string }[] = [
+  { id: "menos_15", label: "Menos de 15 min", emoji: "⚡", desc: "Recetas ultrarrápidas, mínima preparación" },
+  { id: "15_30", label: "15-30 minutos", emoji: "🕐", desc: "Recetas rápidas y sencillas" },
+  { id: "30_60", label: "30-60 minutos", emoji: "🕑", desc: "Recetas estándar con algo de elaboración" },
+  { id: "mas_60", label: "Más de 1 hora", emoji: "👨‍🍳", desc: "Cocina elaborada, guisos lentos, recetas complejas" },
+];
+
+const COOKING_SKILLS: { id: CookingSkill; label: string; emoji: string; desc: string }[] = [
+  { id: "principiante", label: "Principiante", emoji: "🌱", desc: "Recetas muy sencillas, pocos pasos" },
+  { id: "intermedio", label: "Intermedio", emoji: "🍳", desc: "Técnicas básicas, recetas variadas" },
+  { id: "avanzado", label: "Avanzado", emoji: "⭐", desc: "Técnicas complejas, presentación cuidada" },
+];
+
+const DIET_TYPES: { id: DietType; label: string; emoji: string; desc: string }[] = [
+  { id: "omnivoro", label: "Omnívoro", emoji: "🍖", desc: "Como de todo" },
+  { id: "mediterraneo", label: "Mediterráneo", emoji: "🫒", desc: "Aceite de oliva, verduras, legumbres, pescado" },
+  { id: "flexitariano", label: "Flexitariano", emoji: "🥗", desc: "Mayormente vegetal, algo de carne/pescado" },
+  { id: "pescetariano", label: "Pescetariano", emoji: "🐟", desc: "Pescado pero no carne" },
+  { id: "vegetariano", label: "Vegetariano", emoji: "🥦", desc: "Sin carne ni pescado" },
+  { id: "vegano", label: "Vegano", emoji: "🌿", desc: "Sin ningún producto de origen animal" },
+  { id: "cetogenico", label: "Cetogénico", emoji: "🥑", desc: "Muy bajo en carbohidratos, alto en grasas" },
+  { id: "paleo", label: "Paleo", emoji: "🦴", desc: "Sin cereales, sin lácteos, sin legumbres" },
+  { id: "dash", label: "DASH", emoji: "❤️", desc: "Bajo en sodio, para hipertensión" },
+];
+
+const KITCHEN_EQUIPMENT = [
+  { id: "horno", label: "Horno", emoji: "🔥" },
+  { id: "freidora_aire", label: "Freidora de aire", emoji: "💨" },
+  { id: "thermomix", label: "Thermomix", emoji: "⚙️" },
+  { id: "olla_presion", label: "Olla a presión", emoji: "🫕" },
+  { id: "barbacoa", label: "Barbacoa/Grill", emoji: "🔥" },
+  { id: "vaporera", label: "Vaporera", emoji: "💧" },
+  { id: "microondas", label: "Microondas", emoji: "📡" },
+  { id: "batidora", label: "Batidora/Licuadora", emoji: "🌀" },
+];
+
+const SPECIFIC_ALLERGIES = [
+  "Cacahuetes", "Frutos secos", "Leche", "Huevos", "Trigo", "Soja",
+  "Pescado", "Marisco", "Sésamo", "Mostaza", "Apio", "Sulfitos",
+  "Moluscos", "Altramuces",
 ];
 
 const SUGGESTED_PROMPTS = [
@@ -225,7 +307,11 @@ function QuestionnaireView({
     eatOutDays: [],
     dislikedFoods: "",
     budgetPerWeek: undefined,
-  });
+    kitchenEquipment: [],
+    allergies: [],
+    mealTimings: {},
+  });  
+  const [allergyInput, setAllergyInput] = useState("");
   const [dislikedInput, setDislikedInput] = useState("");
 
   const updateData = (updates: Partial<QuestionnaireData>) => {
@@ -266,25 +352,30 @@ function QuestionnaireView({
     onError: () => toast.error("Error al generar el menú. Inténtalo de nuevo."),
   });
 
-  // 9 steps total
+  // 14 steps total
   const steps = [
     { title: "¿Cuándo empieza tu menú?", subtitle: "Elige la fecha de inicio y duración" },
     { title: "¿Cuál es tu objetivo?", subtitle: "Personalizamos las calorías y macros para ti" },
+    { title: "¿Qué tipo de dieta sigues?", subtitle: "Opcional — adaptamos el menú a tu estilo alimentario" },
     { title: "¿Cómo vas a cocinar esta semana?", subtitle: "Tu estilo de vida determina el tipo de recetas" },
     { title: "¿Para cuántas personas?", subtitle: "Ajustamos las cantidades de la lista de la compra" },
     { title: "¿Cuántas comidas al día?", subtitle: "Distribuimos las calorías según tus hábitos" },
-    { title: "¿Qué días comes fuera de casa?", subtitle: "Para esos días te proponemos opciones de restaurante" },
+    { title: "¿Cuál es tu nivel de actividad?", subtitle: "Opcional — ajustamos las calorías a tu gasto energético" },
+    { title: "¿Qué proteína prefieres?", subtitle: "Opcional — priorizamos tu fuente de proteína favorita" },
+    { title: "¿Cuánto tiempo tienes para cocinar?", subtitle: "Opcional — recetas adaptadas a tu disponibilidad" },
+    { title: "¿Qué días comes fuera de casa?", subtitle: "Opcional — para esos días te proponemos opciones de restaurante" },
     { title: "¿Hay alimentos que no te gusten?", subtitle: "Opcional — los excluimos del menú" },
-    { title: "¿Tienes restricciones alimentarias?", subtitle: "Opcional — excluimos lo que no puedes comer" },
-    { title: "Últimos detalles", subtitle: "Presupuesto y preferencias adicionales" },
+    { title: "¿Tienes restricciones o alergias?", subtitle: "Opcional — excluimos lo que no puedes comer" },
+    { title: "¿Qué equipo de cocina tienes?", subtitle: "Opcional — aprovechamos tus herramientas" },
+    { title: "Presupuesto y detalles finales", subtitle: "Opcional — cuanto más nos cuentes, mejor será tu menú" },
   ];
 
   const canProceed = () => {
     if (step === 0) return !!data.startDate;
     if (step === 1) return !!data.goal;
-    if (step === 2) return !!data.cookingStyle;
-    if (step === 3) return !!data.persons && data.persons >= 1;
-    if (step === 4) return !!data.mealsPerDay;
+    if (step === 3) return !!data.cookingStyle;
+    if (step === 4) return !!data.persons && data.persons >= 1;
+    if (step === 5) return !!data.mealsPerDay;
     return true;
   };
 
@@ -306,6 +397,17 @@ function QuestionnaireView({
       eatOutDays: data.eatOutDays || [],
       dislikedFoods: data.dislikedFoods || "",
       budgetPerWeek: data.budgetPerWeek,
+      activityLevel: data.activityLevel,
+      proteinSource: data.proteinSource,
+      cookingTime: data.cookingTime,
+      cookingSkill: data.cookingSkill,
+      kitchenEquipment: data.kitchenEquipment || [],
+      mealTimings: data.mealTimings,
+      dietType: data.dietType,
+      allergies: data.allergies || [],
+      waterIntake: data.waterIntake,
+      supplementsUsed: data.supplementsUsed,
+      specialNotes: data.specialNotes,
     });
   };
 
@@ -342,8 +444,8 @@ function QuestionnaireView({
             </div>
             <div>
               <label className="text-sm font-medium mb-2 block">¿Cuántos días?</label>
-              <div className="grid grid-cols-3 gap-2">
-                {[3, 5, 7].map(d => (
+              <div className="grid grid-cols-4 gap-2">
+                {[3, 5, 7, 14].map(d => (
                   <button key={d} onClick={() => updateData({ daysCount: d })}
                     className={`py-3 rounded-xl border text-sm font-medium transition-all ${data.daysCount === d ? "bg-orange-500 text-white border-orange-500" : "border-border hover:border-orange-300"}`}>
                     {d} días
@@ -380,8 +482,28 @@ function QuestionnaireView({
           </div>
         )}
 
-        {/* Step 2: Cooking style */}
+        {/* Step 2: Diet type (NEW) */}
         {step === 2 && (
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">Opcional — si no lo seleccionas, generaremos un menú omnívoro equilibrado.</p>
+            {DIET_TYPES.map(dt => (
+              <button key={dt.id} onClick={() => updateData({ dietType: data.dietType === dt.id ? undefined : dt.id })}
+                className={`w-full flex items-center gap-4 p-4 rounded-2xl border text-left transition-all ${
+                  data.dietType === dt.id ? "bg-orange-50 dark:bg-orange-950/30 border-orange-500" : "border-border hover:border-orange-300"
+                }`}>
+                <span className="text-2xl">{dt.emoji}</span>
+                <div className="flex-1">
+                  <p className="font-semibold text-sm">{dt.label}</p>
+                  <p className="text-xs text-muted-foreground">{dt.desc}</p>
+                </div>
+                {data.dietType === dt.id && <span className="text-orange-500 font-bold">✓</span>}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Step 3: Cooking style */}
+        {step === 3 && (
           <div className="space-y-3">
             {COOKING_STYLES.map(style => (
               <button key={style.id} onClick={() => updateData({ cookingStyle: style.id })}
@@ -399,8 +521,8 @@ function QuestionnaireView({
           </div>
         )}
 
-        {/* Step 3: Persons */}
-        {step === 3 && (
+        {/* Step 4: Persons */}
+        {step === 4 && (
           <div className="space-y-6">
             <div className="flex items-center justify-center gap-6 py-4">
               <button onClick={() => updateData({ persons: Math.max(1, (data.persons || 1) - 1) })}
@@ -418,8 +540,8 @@ function QuestionnaireView({
           </div>
         )}
 
-        {/* Step 4: Meals per day */}
-        {step === 4 && (
+        {/* Step 5: Meals per day */}
+        {step === 5 && (
           <div className="space-y-3">
             {[
               { n: 2, label: "2 comidas", desc: "Desayuno + Cena (ayuno intermitente)" },
@@ -443,8 +565,90 @@ function QuestionnaireView({
           </div>
         )}
 
-        {/* Step 5: Eat out days */}
-        {step === 5 && (
+        {/* Step 6: Activity level (NEW) */}
+        {step === 6 && (
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">Opcional — ajustamos las calorías según tu gasto energético real.</p>
+            {ACTIVITY_LEVELS.map(al => (
+              <button key={al.id} onClick={() => updateData({ activityLevel: data.activityLevel === al.id ? undefined : al.id })}
+                className={`w-full flex items-center gap-4 p-4 rounded-2xl border text-left transition-all ${
+                  data.activityLevel === al.id ? "bg-orange-50 dark:bg-orange-950/30 border-orange-500" : "border-border hover:border-orange-300"
+                }`}>
+                <span className="text-2xl">{al.emoji}</span>
+                <div className="flex-1">
+                  <p className="font-semibold text-sm">{al.label}</p>
+                  <p className="text-xs text-muted-foreground">{al.desc}</p>
+                </div>
+                {data.activityLevel === al.id && <span className="text-orange-500 font-bold">✓</span>}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Step 7: Protein source (NEW) */}
+        {step === 7 && (
+          <div className="space-y-3">
+            <p className="text-sm text-muted-foreground">Opcional — priorizaremos tu fuente de proteína favorita en las recetas.</p>
+            {PROTEIN_SOURCES.map(ps => (
+              <button key={ps.id} onClick={() => updateData({ proteinSource: data.proteinSource === ps.id ? undefined : ps.id })}
+                className={`w-full flex items-center gap-4 p-4 rounded-2xl border text-left transition-all ${
+                  data.proteinSource === ps.id ? "bg-orange-50 dark:bg-orange-950/30 border-orange-500" : "border-border hover:border-orange-300"
+                }`}>
+                <span className="text-2xl">{ps.emoji}</span>
+                <div className="flex-1">
+                  <p className="font-semibold text-sm">{ps.label}</p>
+                  <p className="text-xs text-muted-foreground">{ps.desc}</p>
+                </div>
+                {data.proteinSource === ps.id && <span className="text-orange-500 font-bold">✓</span>}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Step 8: Cooking time & skill (NEW) */}
+        {step === 8 && (
+          <div className="space-y-5">
+            <div>
+              <p className="text-sm font-medium mb-3">Tiempo disponible para cocinar</p>
+              <div className="space-y-2">
+                {COOKING_TIMES.map(ct => (
+                  <button key={ct.id} onClick={() => updateData({ cookingTime: data.cookingTime === ct.id ? undefined : ct.id })}
+                    className={`w-full flex items-center gap-4 p-3 rounded-xl border text-left transition-all ${
+                      data.cookingTime === ct.id ? "bg-orange-50 dark:bg-orange-950/30 border-orange-500" : "border-border hover:border-orange-300"
+                    }`}>
+                    <span className="text-xl">{ct.emoji}</span>
+                    <div className="flex-1">
+                      <p className="font-semibold text-sm">{ct.label}</p>
+                      <p className="text-xs text-muted-foreground">{ct.desc}</p>
+                    </div>
+                    {data.cookingTime === ct.id && <span className="text-orange-500 font-bold">✓</span>}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p className="text-sm font-medium mb-3">Nivel de habilidad en cocina</p>
+              <div className="space-y-2">
+                {COOKING_SKILLS.map(cs => (
+                  <button key={cs.id} onClick={() => updateData({ cookingSkill: data.cookingSkill === cs.id ? undefined : cs.id })}
+                    className={`w-full flex items-center gap-4 p-3 rounded-xl border text-left transition-all ${
+                      data.cookingSkill === cs.id ? "bg-orange-50 dark:bg-orange-950/30 border-orange-500" : "border-border hover:border-orange-300"
+                    }`}>
+                    <span className="text-xl">{cs.emoji}</span>
+                    <div className="flex-1">
+                      <p className="font-semibold text-sm">{cs.label}</p>
+                      <p className="text-xs text-muted-foreground">{cs.desc}</p>
+                    </div>
+                    {data.cookingSkill === cs.id && <span className="text-orange-500 font-bold">✓</span>}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Step 9: Eat out days */}
+        {step === 9 && (
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
               Para los días que marques, la IA propondrá opciones de restaurante o menú del día saludable en lugar de recetas para cocinar.
@@ -474,8 +678,8 @@ function QuestionnaireView({
           </div>
         )}
 
-        {/* Step 6: Disliked foods */}
-        {step === 6 && (
+        {/* Step 10: Disliked foods */}
+        {step === 10 && (
           <div className="space-y-4">
             <p className="text-sm text-muted-foreground">
               Selecciona o escribe los alimentos que no te gustan. La IA los evitará al crear tu menú.
@@ -502,17 +706,14 @@ function QuestionnaireView({
                 placeholder="Añadir otro alimento..."
                 className="flex-1 rounded-xl border border-border bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
-              <Button onClick={addCustomDislike} variant="outline" className="px-3">
-                +
-              </Button>
+              <Button onClick={addCustomDislike} variant="outline" className="px-3">+</Button>
             </div>
             {dislikedList.length > 0 && (
               <div>
                 <p className="text-xs font-medium text-muted-foreground mb-2">No me gustan:</p>
                 <div className="flex flex-wrap gap-1.5">
                   {dislikedList.map(food => (
-                    <span key={food}
-                      onClick={() => toggleDislike(food)}
+                    <span key={food} onClick={() => toggleDislike(food)}
                       className="px-2.5 py-1 rounded-full bg-red-100 text-red-700 text-xs font-medium cursor-pointer hover:bg-red-200 transition-colors">
                       {food} ✕
                     </span>
@@ -524,43 +725,97 @@ function QuestionnaireView({
           </div>
         )}
 
-        {/* Step 7: Restrictions */}
-        {step === 7 && (
-          <div className="space-y-4">
-            <div className="flex flex-wrap gap-2">
-              {RESTRICTIONS.map(r => (
-                <button key={r}
-                  onClick={() => updateData({ restrictions: data.restrictions?.includes(r) ? data.restrictions.filter(x => x !== r) : [...(data.restrictions || []), r] })}
-                  className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${
-                    data.restrictions?.includes(r) ? "bg-orange-500 text-white border-orange-500" : "border-border hover:border-orange-300"
-                  }`}>
-                  {r}
-                </button>
-              ))}
+        {/* Step 11: Restrictions & allergies */}
+        {step === 11 && (
+          <div className="space-y-5">
+            <div>
+              <p className="text-sm font-medium mb-2">Restricciones alimentarias</p>
+              <div className="flex flex-wrap gap-2">
+                {RESTRICTIONS.map(r => (
+                  <button key={r}
+                    onClick={() => updateData({ restrictions: data.restrictions?.includes(r) ? data.restrictions.filter(x => x !== r) : [...(data.restrictions || []), r] })}
+                    className={`px-4 py-2 rounded-full border text-sm font-medium transition-all ${
+                      data.restrictions?.includes(r) ? "bg-orange-500 text-white border-orange-500" : "border-border hover:border-orange-300"
+                    }`}>
+                    {r}
+                  </button>
+                ))}
+              </div>
             </div>
-            {data.restrictions && data.restrictions.length > 0 && (
-              <p className="text-sm text-muted-foreground">Seleccionadas: {data.restrictions.join(", ")}</p>
-            )}
-            <p className="text-xs text-muted-foreground">Si no tienes restricciones, puedes saltar este paso</p>
+            <div>
+              <p className="text-sm font-medium mb-2">Alergias específicas (14 alérgenos principales)</p>
+              <div className="flex flex-wrap gap-2">
+                {SPECIFIC_ALLERGIES.map(a => (
+                  <button key={a}
+                    onClick={() => updateData({ allergies: data.allergies?.includes(a) ? data.allergies.filter(x => x !== a) : [...(data.allergies || []), a] })}
+                    className={`px-3 py-1.5 rounded-full border text-xs font-medium transition-all ${
+                      data.allergies?.includes(a) ? "bg-red-500 text-white border-red-500" : "border-border hover:border-red-300"
+                    }`}>
+                    {a}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <div className="flex gap-2">
+              <input
+                type="text"
+                value={allergyInput}
+                onChange={(e) => setAllergyInput(e.target.value)}
+                onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault();
+                  if (allergyInput.trim() && !(data.allergies || []).includes(allergyInput.trim())) {
+                    updateData({ allergies: [...(data.allergies || []), allergyInput.trim()] });
+                  }
+                  setAllergyInput("");
+                }}}
+                placeholder="Otra alergia..."
+                className="flex-1 rounded-xl border border-border bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
+              />
+              <Button onClick={() => {
+                if (allergyInput.trim() && !(data.allergies || []).includes(allergyInput.trim())) {
+                  updateData({ allergies: [...(data.allergies || []), allergyInput.trim()] });
+                }
+                setAllergyInput("");
+              }} variant="outline" className="px-3">+</Button>
+            </div>
+            <p className="text-xs text-muted-foreground">Si no tienes restricciones ni alergias, puedes saltar este paso.</p>
           </div>
         )}
 
-        {/* Step 8: Budget & preferences + summary */}
-        {step === 8 && (
+        {/* Step 12: Kitchen equipment (NEW) */}
+        {step === 12 && (
+          <div className="space-y-4">
+            <p className="text-sm text-muted-foreground">Opcional — adaptamos las recetas al equipo que tienes disponible.</p>
+            <div className="grid grid-cols-2 gap-2">
+              {KITCHEN_EQUIPMENT.map(eq => (
+                <button key={eq.id}
+                  onClick={() => updateData({ kitchenEquipment: (data.kitchenEquipment || []).includes(eq.id)
+                    ? (data.kitchenEquipment || []).filter(e => e !== eq.id)
+                    : [...(data.kitchenEquipment || []), eq.id] })}
+                  className={`flex items-center gap-3 p-3 rounded-xl border text-left transition-all ${
+                    (data.kitchenEquipment || []).includes(eq.id)
+                      ? "bg-orange-50 dark:bg-orange-950/30 border-orange-500"
+                      : "border-border hover:border-orange-300"
+                  }`}>
+                  <span className="text-xl">{eq.emoji}</span>
+                  <span className="text-sm font-medium">{eq.label}</span>
+                  {(data.kitchenEquipment || []).includes(eq.id) && <span className="ml-auto text-orange-500 text-xs font-bold">✓</span>}
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Step 13: Budget, supplements, notes + summary + disclaimer */}
+        {step === 13 && (
           <div className="space-y-4">
             {/* Budget */}
             <div>
               <label className="text-sm font-medium mb-2 block">💶 Presupuesto semanal (opcional)</label>
               <div className="flex items-center gap-2">
-                <input
-                  type="number"
-                  value={data.budgetPerWeek || ""}
-                  min={20}
-                  max={500}
+                <input type="number" value={data.budgetPerWeek || ""} min={20} max={500}
                   onChange={(e) => updateData({ budgetPerWeek: e.target.value ? parseInt(e.target.value) : undefined })}
                   placeholder="Ej: 80"
-                  className="flex-1 rounded-xl border border-border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
-                />
+                  className="flex-1 rounded-xl border border-border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
                 <span className="text-sm font-medium text-muted-foreground">€/semana</span>
               </div>
               <div className="flex gap-2 mt-2">
@@ -568,37 +823,68 @@ function QuestionnaireView({
                   <button key={b} onClick={() => updateData({ budgetPerWeek: b })}
                     className={`flex-1 py-2 rounded-xl border text-xs font-medium transition-all ${
                       data.budgetPerWeek === b ? "bg-orange-500 text-white border-orange-500" : "border-border hover:border-orange-300"
-                    }`}>
-                    {b}€
-                  </button>
+                    }`}>{b}€</button>
                 ))}
               </div>
             </div>
-
+            {/* Supplements */}
+            <div>
+              <label className="text-sm font-medium mb-2 block">💪 Suplementos que usas (opcional)</label>
+              <input type="text" value={data.supplementsUsed || ""}
+                onChange={(e) => updateData({ supplementsUsed: e.target.value })}
+                placeholder="Ej: proteína whey, creatina, omega-3..."
+                className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
+            </div>
+            {/* Water intake */}
+            <div>
+              <label className="text-sm font-medium mb-2 block">💧 Objetivo de hidratación (opcional)</label>
+              <div className="flex gap-2">
+                {[1.5, 2, 2.5, 3].map(l => (
+                  <button key={l} onClick={() => updateData({ waterIntake: data.waterIntake === l ? undefined : l })}
+                    className={`flex-1 py-2 rounded-xl border text-xs font-medium transition-all ${
+                      data.waterIntake === l ? "bg-blue-500 text-white border-blue-500" : "border-border hover:border-blue-300"
+                    }`}>{l}L</button>
+                ))}
+              </div>
+            </div>
             {/* Preferences */}
             <div>
-              <label className="text-sm font-medium mb-2 block">💬 Preferencias adicionales (opcional)</label>
+              <label className="text-sm font-medium mb-2 block">💬 Notas adicionales (opcional)</label>
               <Textarea value={data.preferences || ""}
                 onChange={(e) => updateData({ preferences: e.target.value })}
-                placeholder="Ej: Me gusta la cocina mediterránea, no me gusta el picante, prefiero recetas sencillas..."
-                className="min-h-[80px] resize-none" />
+                placeholder="Ej: Me gusta la cocina mediterránea, prefiero recetas sencillas, tengo poco tiempo los lunes..."
+                className="min-h-[70px] resize-none" />
             </div>
-
             {/* Summary */}
             <div className="bg-orange-50 dark:bg-orange-950/20 rounded-xl p-4 border border-orange-200 dark:border-orange-800">
               <p className="text-sm font-semibold text-orange-700 dark:text-orange-300 mb-2">📋 Resumen de tu menú:</p>
               <div className="space-y-1 text-xs text-muted-foreground">
                 <p>📅 Inicio: {data.startDate} · {data.daysCount} días</p>
                 <p>🎯 Objetivo: {GOALS.find(g => g.id === data.goal)?.label}</p>
+                {data.dietType && <p>🌿 Dieta: {DIET_TYPES.find(d => d.id === data.dietType)?.label}</p>}
                 <p>🍳 Estilo: {COOKING_STYLES.find(c => c.id === data.cookingStyle)?.label}</p>
-                <p>👥 Personas: {data.persons}</p>
-                <p>🍽️ Comidas/día: {data.mealsPerDay}</p>
+                <p>👥 Personas: {data.persons} · 🍽️ {data.mealsPerDay} comidas/día</p>
+                {data.activityLevel && <p>🏃 Actividad: {ACTIVITY_LEVELS.find(a => a.id === data.activityLevel)?.label}</p>}
+                {data.proteinSource && <p>🥩 Proteína: {PROTEIN_SOURCES.find(p => p.id === data.proteinSource)?.label}</p>}
+                {data.cookingTime && <p>⏱️ Tiempo: {COOKING_TIMES.find(t => t.id === data.cookingTime)?.label}</p>}
                 {(data.eatOutDays || []).length > 0 && <p>🍽️ Fuera de casa: {(data.eatOutDays || []).join(", ")}</p>}
-                {dislikedList.length > 0 && <p>🚫 No me gustan: {dislikedList.slice(0, 4).join(", ")}{dislikedList.length > 4 ? ` +${dislikedList.length - 4}` : ""}</p>}
-                {data.calories && <p>🔥 Calorías: {data.calories} kcal/día</p>}
+                {dislikedList.length > 0 && <p>🚫 No me gustan: {dislikedList.slice(0, 3).join(", ")}{dislikedList.length > 3 ? ` +${dislikedList.length - 3}` : ""}</p>}
+                {data.restrictions?.length ? <p>⚠️ Restricciones: {data.restrictions.join(", ")}</p> : null}
+                {data.allergies?.length ? <p>🚨 Alergias: {data.allergies.join(", ")}</p> : null}
+                {(data.kitchenEquipment || []).length > 0 && <p>🍳 Equipo: {(data.kitchenEquipment || []).map(e => KITCHEN_EQUIPMENT.find(k => k.id === e)?.label).join(", ")}</p>}
                 {data.budgetPerWeek && <p>💶 Presupuesto: {data.budgetPerWeek}€/semana</p>}
-                {data.restrictions?.length ? <p>⚠️ Sin: {data.restrictions.join(", ")}</p> : null}
+                {data.waterIntake && <p>💧 Hidratación: {data.waterIntake}L/día</p>}
               </div>
+            </div>
+            {/* Disclaimer */}
+            <div className="bg-amber-50 dark:bg-amber-950/20 rounded-xl p-4 border border-amber-200 dark:border-amber-800">
+              <p className="text-xs font-semibold text-amber-700 dark:text-amber-400 mb-1">⚠️ Aviso importante</p>
+              <p className="text-xs text-amber-700 dark:text-amber-400 leading-relaxed">
+                El menú generado por BuddyIA es una propuesta orientativa basada en los datos que has proporcionado. <strong>No sustituye el consejo de un nutricionista o profesional de la salud.</strong> Si tienes condiciones médicas, embarazo, o necesidades dietéticas especiales, consulta siempre con un especialista antes de seguir cualquier plan nutricional.
+              </p>
+              <p className="text-xs text-amber-600 dark:text-amber-500 mt-2 font-medium">
+                💡 Cuantos más datos hayas completado, más personalizado y preciso será tu menú.
+              </p>
             </div>
           </div>
         )}
