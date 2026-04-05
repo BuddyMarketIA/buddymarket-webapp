@@ -1434,6 +1434,42 @@ Devuelve SOLO JSON válido con esta estructura:
         if (!menu) throw new TRPCError({ code: "NOT_FOUND" });
         return menu;
       }),
+    // ── Recommended menus based on user profile ──────────────────────────────
+    recommended: protectedProcedure.query(async ({ ctx }) => {
+      const allMenus = await db.getSeededMenus();
+      const profile = await db.getUserProfile(ctx.user.id);
+      const restrictions = await db.getUserDietRestrictions(ctx.user.id);
+      const restrictionIds = restrictions.map((r: any) => r.restriction);
+      const goalMap: Record<string, string> = {
+        lose_weight: "perdida_peso",
+        gain_muscle: "ganancia_muscular",
+        maintain: "mantenimiento",
+        improve_health: "bienestar",
+        eat_healthier: "bienestar",
+      };
+      const userGoal = profile?.mainGoal ? goalMap[profile.mainGoal] : null;
+      const scored = allMenus.map((m: any) => {
+        let score = 0;
+        if (userGoal && m.goal === userGoal) score += 10;
+        if (restrictionIds.includes("vegano") && m.goal === "vegano") score += 8;
+        if (restrictionIds.includes("vegetariano") && m.goal === "vegano") score += 4;
+        if (profile?.dailyCalorieGoal && m.dailyCalories) {
+          const diff = Math.abs(m.dailyCalories - profile.dailyCalorieGoal);
+          if (diff < 200) score += 5;
+          else if (diff < 400) score += 3;
+          else if (diff < 600) score += 1;
+        }
+        return { ...m, score };
+      });
+      scored.sort((a: any, b: any) => b.score - a.score);
+      return {
+        recommended: scored.slice(0, 6),
+        all: allMenus,
+        hasProfile: !!profile,
+        userGoal,
+        totalMenus: allMenus.length,
+      };
+    }),
     saveFromLibrary: protectedProcedure
       .input(
         z.object({

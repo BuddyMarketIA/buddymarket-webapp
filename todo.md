@@ -1396,3 +1396,13 @@
 - [x] UI en LoginPage: botón "Acceder con código por email", paso 1 (email), paso 2 (6 inputs individuales con auto-avance y paste)
 - [x] Añadir barra de progreso en la parte inferior del OnboardingTour
 - [x] Ampliar restricciones en BuddySetup: más opciones + botón "Otras" con campo de texto libre
+- [ ] Biblioteca de menús: cards visuales con imagen, recomendaciones personalizadas por perfil
+- [ ] Biblioteca de menús: mensaje estado vacío con opciones "Explorar otros menús" o "Crear con IA"
+
+## Sprint: Rediseño MenuLibrary con recomendaciones personalizadas
+- [x] Rediseñar MenuLibrary con cards visuales premium (gradiente, imagen de fondo, badges)
+- [x] Sección "Recomendados para ti" usando procedimiento tRPC menus.recommended
+- [x] Estado vacío con mensaje claro y dos botones: "Crear con IA" y "Explorar todos los menús"
+- [x] Modo "Explorar todos" con filtros por objetivo y dificultad
+- [x] Banner CTA para crear menú personalizado con IA
+- [x] Procedimiento tRPC menus.recommended: filtra por objetivo, restricciones y calorías del perfil
