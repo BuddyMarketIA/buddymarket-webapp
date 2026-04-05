@@ -59,6 +59,8 @@ import {
   menuComplements,
   pantryStock,
   InsertPantryStock,
+  otpTokens,
+  InsertOtpToken,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -2094,4 +2096,116 @@ export async function removePantryStockItem(id: number, userId: number): Promise
   const db = await getDb();
   if (!db) return;
   await db.delete(pantryStock).where(and(eq(pantryStock.id, id), eq(pantryStock.userId, userId)));
+}
+
+// =============================================================================
+// OTP TOKENS
+// =============================================================================
+
+export async function createOtpToken(data: InsertOtpToken) {
+  const db = await getDb();
+  if (!db) return;
+  await db.insert(otpTokens).values(data);
+}
+
+export async function getActiveOtpTokenByHash(email: string, codeHash: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const now = new Date();
+  const result = await db
+    .select()
+    .from(otpTokens)
+    .where(
+      and(
+        eq(otpTokens.email, email.toLowerCase()),
+        eq(otpTokens.codeHash, codeHash),
+        eq(otpTokens.used, false),
+        gte(otpTokens.expiresAt, now)
+      )
+    )
+    .orderBy(desc(otpTokens.createdAt))
+    .limit(1);
+  return result[0];
+}
+
+export async function getLatestActiveOtpToken(email: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const now = new Date();
+  const result = await db
+    .select()
+    .from(otpTokens)
+    .where(
+      and(
+        eq(otpTokens.email, email.toLowerCase()),
+        eq(otpTokens.used, false),
+        gte(otpTokens.expiresAt, now)
+      )
+    )
+    .orderBy(desc(otpTokens.createdAt))
+    .limit(1);
+  return result[0];
+}
+
+export async function getOtpTokenById(id: number) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(otpTokens).where(eq(otpTokens.id, id)).limit(1);
+  return result[0];
+}
+
+export async function markOtpTokenUsed(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(otpTokens).set({ used: true }).where(eq(otpTokens.id, id));
+}
+
+export async function incrementOtpAttempts(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(otpTokens).set({ attempts: sql`${otpTokens.attempts} + 1` }).where(eq(otpTokens.id, id));
+}
+
+/**
+ * Count how many OTP tokens were created for an email in the last hour.
+ * Used for rate limiting.
+ */
+export async function countRecentOtpRequests(email: string, windowMs = 3600000): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const since = new Date(Date.now() - windowMs);
+  const result = await db
+    .select({ count: sql<number>`COUNT(*)` })
+    .from(otpTokens)
+    .where(
+      and(
+        eq(otpTokens.email, email.toLowerCase()),
+        gte(otpTokens.createdAt, since)
+      )
+    );
+  return Number(result[0]?.count ?? 0);
+}
+
+/**
+ * Delete expired OTP tokens (cleanup).
+ */
+export async function deleteExpiredOtpTokens(): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  const now = new Date();
+  await db.delete(otpTokens).where(lte(otpTokens.expiresAt, now));
+}
+
+/**
+ * Get user by email (for OTP login).
+ */
+export async function getUserByEmail(email: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db
+    .select()
+    .from(users)
+    .where(eq(users.email, email.toLowerCase()))
+    .limit(1);
+  return result[0];
 }

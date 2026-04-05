@@ -1386,3 +1386,11 @@
 - [ ] Corregir endpoints sin ownership check en mealLogs, menus, inventory, shoppingLists
 - [ ] Corregir endpoints sin ownership check en recipes, buddyExperts, buddyMakers y resto
 - [ ] Verificar TypeScript y tests tras los cambios
+
+## Autenticación OTP (login sin contraseña)
+- [x] Tabla `otp_tokens` en BD con codeHash SHA-256, expiresAt, attempts, used
+- [x] Funciones de BD: createOtpToken, getActiveOtpTokenByHash, getLatestActiveOtpToken, markOtpTokenUsed, incrementOtpAttempts, countRecentOtpRequests, getUserByEmail
+- [x] Procedimiento tRPC `auth.sendOTP`: genera código 6 dígitos, hashea con SHA-256, envía email, rate limit 5/hora
+- [x] Procedimiento tRPC `auth.verifyOTP`: verifica hash, crea sesión JWT, upsert usuario
+- [x] Template de email OTP con código grande y aviso de seguridad (sendOTPEmail en email.ts)
+- [x] UI en LoginPage: botón "Acceder con código por email", paso 1 (email), paso 2 (6 inputs individuales con auto-avance y paste)

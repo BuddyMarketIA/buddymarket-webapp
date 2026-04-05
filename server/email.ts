@@ -567,3 +567,61 @@ export async function processPendingEmails(): Promise<void> {
     console.error("[Email] Error processing pending emails:", err);
   }
 }
+
+// ─── OTP Login Email ──────────────────────────────────────────────────────────
+
+function otpEmailHtml(otpCode: string): string {
+  const body = `
+  ${emailHeader("🔐", "Tu código de acceso", "Usa este código para iniciar sesión en BuddyMarket")}
+  <tr>
+    <td style="padding:40px 40px 32px;">
+      <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 24px;">
+        Hemos recibido una solicitud para iniciar sesión en tu cuenta de BuddyMarket. 
+        Introduce el siguiente código en la app para acceder:
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 28px;">
+        <tr>
+          <td align="center">
+            <table cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#FFF7ED,#FFEDD5);border:2px solid #F97316;border-radius:16px;padding:28px 40px;">
+              <tr>
+                <td align="center">
+                  <p style="color:#9A3412;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:2px;margin:0 0 12px;">Código de verificación</p>
+                  <p style="color:#F97316;font-size:48px;font-weight:900;letter-spacing:12px;margin:0;font-family:'Courier New',Courier,monospace;">${otpCode}</p>
+                  <p style="color:#9A3412;font-size:12px;margin:12px 0 0;">Válido durante <strong>10 minutos</strong></p>
+                </td>
+              </tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#FEF2F2;border-radius:12px;padding:20px;margin-bottom:24px;">
+        <tr>
+          <td>
+            <p style="color:#991B1B;font-size:14px;font-weight:700;margin:0 0 8px;">⚠️ Aviso de seguridad</p>
+            <p style="color:#7F1D1D;font-size:13px;margin:0 0 6px;">• Este código expira en 10 minutos.</p>
+            <p style="color:#7F1D1D;font-size:13px;margin:0 0 6px;">• Si no has solicitado este código, ignora este email.</p>
+            <p style="color:#7F1D1D;font-size:13px;margin:0;">• Nunca compartas este código con nadie.</p>
+          </td>
+        </tr>
+      </table>
+      <p style="color:#999;font-size:13px;line-height:1.6;margin:0;text-align:center;">
+        Si no reconoces esta solicitud, tu cuenta está segura. No es necesario tomar ninguna acción.
+      </p>
+    </td>
+  </tr>`;
+
+  return emailWrapper(body);
+}
+
+export async function sendOTPEmail(email: string, otpCode: string): Promise<void> {
+  const { error } = await resend.emails.send({
+    from: FROM_EMAIL,
+    to: email,
+    subject: `${otpCode} es tu código de acceso a BuddyMarket`,
+    html: otpEmailHtml(otpCode),
+  });
+  if (error) {
+    console.error("[Email] Error sending OTP email:", error);
+    throw new Error(`Failed to send OTP email: ${(error as any).message ?? String(error)}`);
+  }
+}

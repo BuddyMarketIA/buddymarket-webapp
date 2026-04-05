@@ -281,6 +281,13 @@
       "when": 1775403213541,
       "tag": "0039_serious_scalphunter",
       "breakpoints": true
+    },
+    {
+      "idx": 40,
+      "version": "5",
+      "when": 1775404978556,
+      "tag": "0040_powerful_logan",
+      "breakpoints": true
     }
   ]
 }

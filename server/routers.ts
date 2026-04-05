@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { COOKIE_NAME } from "@shared/const";
+import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import { createCheckoutSession } from "./stripe-webhook";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
@@ -9,6 +9,13 @@ import { invokeLLM } from "./_core/llm";
 import { storagePut } from "./storage";
 import * as db from "./db";
 import { getUserPlanTier, requirePlanFeature, requireUnderLimit } from "./planGuard";
+import { sendOTPEmail } from "./email";
+import { sdk } from "./_core/sdk";
+import { createHash } from "crypto";
+
+function hashOtpCode(code: string): string {
+  return createHash("sha256").update(code).digest("hex");
+}
 
 // =============================================================================
 // HELPERS
@@ -59,6 +66,84 @@ export const appRouter = router({
       ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
       return { success: true } as const;
     }),
+    // ── OTP Login ─────────────────────────────────────────────────────────
+    sendOTP: publicProcedure
+      .input(z.object({ email: z.string().email() }))
+      .mutation(async ({ input }) => {
+        const email = input.email.toLowerCase().trim();
+        // Rate limit: max 5 OTP requests per hour per email
+        const recentCount = await db.countRecentOtpRequests(email, 3600000);
+        if (recentCount >= 5) {
+          throw new TRPCError({
+            code: "TOO_MANY_REQUESTS",
+            message: "Has solicitado demasiados códigos. Espera un momento antes de intentarlo de nuevo.",
+          });
+        }
+        // Generate 6-digit OTP
+        const otpCode = String(Math.floor(100000 + Math.random() * 900000));
+        const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+        const codeHash = hashOtpCode(otpCode);
+        await db.createOtpToken({ email, codeHash, expiresAt });
+        await sendOTPEmail(email, otpCode);
+        return { success: true, message: "Código enviado. Revisa tu email." };
+      }),
+    verifyOTP: publicProcedure
+      .input(z.object({ email: z.string().email(), code: z.string().length(6) }))
+      .mutation(async ({ input, ctx }) => {
+        const email = input.email.toLowerCase().trim();
+        const inputHash = hashOtpCode(input.code);
+        // First get the latest active token for this email to check attempts
+        const latestToken = await db.getLatestActiveOtpToken(email);
+        if (!latestToken) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Código no válido o expirado. Solicita uno nuevo.",
+          });
+        }
+        // Check max attempts (5)
+        if (latestToken.attempts >= 5) {
+          throw new TRPCError({
+            code: "TOO_MANY_REQUESTS",
+            message: "Demasiados intentos fallidos. Solicita un nuevo código.",
+          });
+        }
+        // Verify hash matches
+        const token = await db.getActiveOtpTokenByHash(email, inputHash);
+        if (!token) {
+          await db.incrementOtpAttempts(latestToken.id);
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Código incorrecto. Inténtalo de nuevo.",
+          });
+        }
+        // Mark token as used
+        await db.markOtpTokenUsed(token.id);
+        // Upsert user (create if not exists)
+        const openId = `otp:${email}`;
+        let user = await db.getUserByEmail(email);
+        if (!user) {
+          await db.upsertUser({
+            openId,
+            email,
+            loginMethod: "otp",
+            lastSignedIn: new Date(),
+          });
+          user = await db.getUserByEmail(email);
+        } else {
+          await db.updateUser(user.id, { lastSignedIn: new Date(), loginMethod: "otp" });
+        }
+        if (!user) {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Error al crear la sesión." });
+        }
+        // Create session cookie
+        const sessionToken = await sdk.createSessionToken(user.openId ?? openId, {
+          name: user.name ?? email,
+          expiresInMs: ONE_YEAR_MS,
+        });
+        const cookieOptions = getSessionCookieOptions(ctx.req);
+        ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+        return { success: true, user: { id: user.id, email: user.email, name: user.name } };
+      }),
   }),
 
   // ---------------------------------------------------------------------------

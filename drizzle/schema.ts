@@ -1412,3 +1412,28 @@ export const aiFeedback = mysqlTable("ai_feedback", {
 }));
 export type AIFeedback = typeof aiFeedback.$inferSelect;
 export type InsertAIFeedback = typeof aiFeedback.$inferInsert;
+
+// =============================================================================
+// OTP TOKENS (One-Time Password para login por email)
+// =============================================================================
+export const otpTokens = mysqlTable("otp_tokens", {
+  id: int("id").autoincrement().primaryKey(),
+  /** Email al que se envió el código */
+  email: varchar("email", { length: 320 }).notNull(),
+  /** Código OTP de 6 dígitos (almacenado como hash SHA-256) */
+  codeHash: varchar("codeHash", { length: 64 }).notNull(),
+  /** Cuándo expira el código (10 minutos desde la creación) */
+  expiresAt: timestamp("expiresAt").notNull(),
+  /** Si el código ya fue usado */
+  used: boolean("used").default(false).notNull(),
+  /** Número de intentos fallidos de verificación */
+  attempts: int("attempts").default(0).notNull(),
+  /** IP del solicitante para rate limiting */
+  ipAddress: varchar("ipAddress", { length: 45 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  emailIdx: index("otp_email_idx").on(t.email),
+  expiresIdx: index("otp_expires_idx").on(t.expiresAt),
+}));
+export type OtpToken = typeof otpTokens.$inferSelect;
+export type InsertOtpToken = typeof otpTokens.$inferInsert;
