@@ -1194,3 +1194,11 @@
 
 ## Bugs - Biblioteca de Menús
 - [x] Bug: Biblioteca de Menús mostraba "0 menús" - corregido: 10 menús de biblioteca creados con isSeeded=true y 196 recetas asignadas
+
+## Hallazgos Críticos Auditoría Nutricional (completados)
+- [x] CRÍTICO 1: Implementado botón ✨ Generar foto con IA en RecipeCard (endpoint recipes.generateAIImage)
+- [x] CRÍTICO 2: Implementado cálculo TMB/TDEE con Mifflin-St Jeor en BuddySetup (nuevo paso de datos físicos)
+- [x] CRÍTICO 3: 227 recetas corregidas con fórmula kcal=(prot×4)+(carbs×4)+(grasas×9) - 0 incoherencias restantes
+- [x] CRÍTICO 4: 21 snacks/meriendas con >400 kcal reclasificados como "comida"
+- [x] IMPORTANTE 5: BuddySetup ahora recoge peso/altura/edad/sexo/actividad (nuevo paso 3 de 6)
+- [x] IMPORTANTE 6: Prompt de IA del onboarding incluye calorías calculadas, perfil físico y objetivo nutricional

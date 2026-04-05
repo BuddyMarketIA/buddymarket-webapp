@@ -248,6 +248,14 @@ export const appRouter = router({
         budgetPerWeek: z.number().min(0).optional(),
         cookingLevel: z.string().optional(),
         generateMenu: z.boolean().optional(),
+        // Datos físicos para cálculo TMB/TDEE (Mifflin-St Jeor)
+        gender: z.enum(["male", "female"]).optional(),
+        age: z.number().int().min(15).max(100).optional(),
+        heightCm: z.number().min(100).max(250).optional(),
+        weightKg: z.number().min(30).max(300).optional(),
+        activityLevel: z.string().optional(),
+        dailyCalorieGoal: z.number().optional(),
+        basalMetabolicRate: z.number().optional(),
       }).optional())
       .mutation(async ({ ctx, input }) => {
       await db.updateUser(ctx.user.id, { onboardingCompleted: true });
@@ -267,6 +275,14 @@ export const appRouter = router({
           if (input.budgetPerWeek !== undefined) profileData.budgetPerWeek = input.budgetPerWeek;
           if (input.cookingLevel) profileData.cookingLevel = input.cookingLevel as any;
           if (input.mealTimes) profileData.mealsPerDayDetail = JSON.stringify(input.mealTimes);
+          // Datos físicos y calorías calculadas
+          if (input.gender) profileData.gender = input.gender as any;
+          if (input.age) profileData.age = input.age;
+          if (input.heightCm) profileData.height = input.heightCm;
+          if (input.weightKg) profileData.weight = input.weightKg;
+          if (input.activityLevel) profileData.activityLevel = input.activityLevel as any;
+          if (input.dailyCalorieGoal) profileData.dailyCalorieGoal = input.dailyCalorieGoal;
+          if (input.basalMetabolicRate) profileData.basalMetabolicRate = input.basalMetabolicRate;
           if (existing.length > 0) {
             await drizzleDb.update(userProfiles).set(profileData).where(eq(userProfiles.userId, ctx.user.id));
           } else {
@@ -292,7 +308,23 @@ export const appRouter = router({
                 lose_weight: "pérdida de peso", gain_muscle: "ganancia muscular",
                 maintain: "mantenimiento", improve_health: "mejorar salud", eat_healthier: "comer más sano"
               };
-              const prompt = `Eres un nutricionista experto. Genera un menú semanal personalizado en JSON para un usuario con objetivo: ${goalLabel[input.mainGoal ?? ""] ?? input.mainGoal}. Restricciones: ${(input.restrictions ?? []).join(", ") || "ninguna"}. Comidas al día: ${input.dailyMeals ?? 3} (${(input.mealTimes ?? []).join(", ")}). Tiempo de cocina: ${input.mealPrepTime ?? "15_30"} min. Presupuesto: ${input.budgetPerWeek ?? 60}€/semana. Nivel: ${input.cookingLevel ?? "intermediate"}.
+              // Calcular calorías en servidor si no vienen del cliente
+              let serverCalorieGoal = input.dailyCalorieGoal;
+              if (!serverCalorieGoal && input.gender && input.age && input.heightCm && input.weightKg) {
+                const tmb = 10 * input.weightKg + 6.25 * input.heightCm - 5 * input.age + (input.gender === 'male' ? 5 : -161);
+                const activityFactors: Record<string, number> = { sedentary: 1.2, light: 1.375, moderate: 1.55, active: 1.725, very_active: 1.9 };
+                const tdee = Math.round(tmb * (activityFactors[input.activityLevel ?? 'moderate'] ?? 1.375));
+                if (input.mainGoal === 'lose_weight') serverCalorieGoal = tdee - 400;
+                else if (input.mainGoal === 'gain_muscle') serverCalorieGoal = tdee + 250;
+                else serverCalorieGoal = tdee;
+              }
+              const calorieInfo = serverCalorieGoal
+                ? `Calorías objetivo diarias: ${serverCalorieGoal} kcal (calculadas con Mifflin-St Jeor). Distribuye las calorías entre las comidas del día de forma equilibrada.`
+                : 'Calorías: ajusta según el objetivo declarado.';
+              const physicalInfo = (input.gender && input.age && input.heightCm && input.weightKg)
+                ? `Perfil físico: ${input.gender === 'male' ? 'hombre' : 'mujer'}, ${input.age} años, ${input.heightCm} cm, ${input.weightKg} kg, actividad: ${input.activityLevel ?? 'moderada'}.`
+                : '';
+              const prompt = `Eres un nutricionista experto. Genera un menú semanal personalizado en JSON para un usuario con objetivo: ${goalLabel[input.mainGoal ?? ""] ?? input.mainGoal}. ${physicalInfo} ${calorieInfo} Restricciones: ${(input.restrictions ?? []).join(", ") || "ninguna"}. Comidas al día: ${input.dailyMeals ?? 3} (${(input.mealTimes ?? []).join(", ")}). Tiempo de cocina: ${input.mealPrepTime ?? "15_30"} min. Presupuesto: ${input.budgetPerWeek ?? 60}€/semana. Nivel: ${input.cookingLevel ?? "intermediate"}.
 
 Devuelve SOLO JSON válido con esta estructura:
 {
@@ -856,6 +888,34 @@ Devuelve SOLO JSON válido con esta estructura:
           return JSON.parse(content);
         } catch {
           throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "La IA devolvió una respuesta inválida. Inténtalo de nuevo." });
+        }
+      }),
+
+    // ── Generar imagen de receta con IA (auto, para recetas sin foto) ──────────
+    generateAIImage: protectedProcedure
+      .input(z.object({ recipeId: z.number() }))
+      .mutation(async ({ input }) => {
+        const recipe = await db.getRecipeById(input.recipeId);
+        if (!recipe) throw new TRPCError({ code: "NOT_FOUND" });
+        if (recipe.imageUrl && !recipe.imageUrl.includes('placeholder')) {
+          return { url: recipe.imageUrl, cached: true };
+        }
+        try {
+          const { generateImage } = await import("./_core/imageGeneration");
+          const prompt = `Professional food photography of "${recipe.name}". ${recipe.description ? recipe.description + '.' : ''} Plated beautifully on a clean white plate, natural lighting, top-down or 45-degree angle shot, vibrant colors, appetizing, restaurant quality, no text, no watermarks.`;
+          const { url: generatedUrl } = await generateImage({ prompt });
+          if (!generatedUrl) throw new Error('No se obtuvo URL de imagen generada');
+          const response = await fetch(generatedUrl as string);
+          const arrayBuffer = await response.arrayBuffer();
+          const imageBuffer = Buffer.from(arrayBuffer);
+          const fileKey = `recipe-images/ai-${input.recipeId}-${Date.now()}.jpg`;
+          const { storagePut } = await import("./storage");
+          const { url: s3Url } = await storagePut(fileKey, imageBuffer, "image/jpeg");
+          await db.updateRecipe(input.recipeId, { imageUrl: s3Url });
+          return { url: s3Url, cached: false };
+        } catch (err) {
+          console.error(`[generateAIImage] Error for recipe ${input.recipeId}:`, err);
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Error generando imagen" });
         }
       }),
   }),

@@ -8,17 +8,53 @@ import { useAuth } from "@/_core/hooks/useAuth";
 interface SetupData {
   // Paso 1: Objetivo principal
   mainGoal: string;
-  // Paso 2: Restricciones alimentarias
+  // Paso 2: Datos físicos
+  gender: "male" | "female" | "";
+  age: number;
+  heightCm: number;
+  weightKg: number;
+  activityLevel: string;
+  // Paso 3: Restricciones alimentarias
   restrictions: string[];
-  // Paso 3: Horarios y comidas
+  // Paso 4: Horarios y comidas
   dailyMeals: number;
   mealTimes: string[];
   mealPrepTime: string;
-  // Paso 4: Presupuesto y nivel
+  // Paso 5: Presupuesto y nivel
   budgetPerWeek: number;
   cookingLevel: string;
-  // Paso 5: Generación del menú
+  // Paso 6: Confirmación
   generateMenu: boolean;
+}
+
+// ─── Fórmula Mifflin-St Jeor ──────────────────────────────────────────────────
+function calculateTDEE(data: SetupData): { tmb: number; tdee: number; goal: number } | null {
+  if (!data.gender || !data.age || !data.heightCm || !data.weightKg) return null;
+
+  // TMB = 10×peso + 6.25×altura − 5×edad + (5 hombre / −161 mujer)
+  const tmb =
+    10 * data.weightKg +
+    6.25 * data.heightCm -
+    5 * data.age +
+    (data.gender === "male" ? 5 : -161);
+
+  const activityFactors: Record<string, number> = {
+    sedentary: 1.2,
+    light: 1.375,
+    moderate: 1.55,
+    active: 1.725,
+    very_active: 1.9,
+  };
+  const factor = activityFactors[data.activityLevel] ?? 1.375;
+  const tdee = Math.round(tmb * factor);
+
+  // Ajuste según objetivo
+  let goal = tdee;
+  if (data.mainGoal === "lose_weight") goal = Math.round(tdee - 400);
+  else if (data.mainGoal === "gain_muscle") goal = Math.round(tdee + 250);
+  else if (data.mainGoal === "lose_fat") goal = Math.round(tdee - 300);
+
+  return { tmb: Math.round(tmb), tdee, goal };
 }
 
 const GOALS = [
@@ -62,9 +98,17 @@ const COOKING_LEVELS = [
   { id: "advanced", emoji: "⭐", label: "Avanzado", desc: "Técnicas complejas" },
 ];
 
+const ACTIVITY_LEVELS = [
+  { id: "sedentary", emoji: "🛋️", label: "Sedentario", desc: "Poco o nada de ejercicio" },
+  { id: "light", emoji: "🚶", label: "Ligero", desc: "1–3 días/semana" },
+  { id: "moderate", emoji: "🏃", label: "Moderado", desc: "3–5 días/semana" },
+  { id: "active", emoji: "💪", label: "Activo", desc: "6–7 días/semana" },
+  { id: "very_active", emoji: "🏋️", label: "Muy activo", desc: "Doble sesión diaria" },
+];
+
 const GENERATING_MESSAGES = [
   "Analizando tus preferencias nutricionales…",
-  "Calculando tus necesidades calóricas…",
+  "Calculando tus necesidades calóricas personalizadas…",
   "Seleccionando recetas adaptadas a ti…",
   "Organizando el menú semanal…",
   "Ajustando porciones y macros…",
@@ -85,7 +129,6 @@ function GeneratingScreen({ onTimeout }: { onTimeout: () => void }) {
       setElapsed((e) => e + 1);
     }, 1000);
 
-    // Timeout de seguridad: si después de 45s no hay respuesta, redirigir
     const safetyTimeout = setTimeout(() => {
       onTimeout();
     }, 45000);
@@ -151,6 +194,11 @@ export default function BuddySetup() {
 
   const [data, setData] = useState<SetupData>({
     mainGoal: "",
+    gender: "",
+    age: 30,
+    heightCm: 170,
+    weightKg: 70,
+    activityLevel: "moderate",
     restrictions: [],
     dailyMeals: 3,
     mealTimes: ["desayuno", "comida", "cena"],
@@ -160,11 +208,9 @@ export default function BuddySetup() {
     generateMenu: true,
   });
 
-  // FIX: usar mutate (no mutateAsync) con callbacks inline para evitar que
-  // onSuccess no se dispare al usar await con mutateAsync
   const completeOnboarding = trpc.profile.completeOnboarding.useMutation();
 
-  const totalSteps = 5;
+  const totalSteps = 6;
 
   const goNext = () => {
     if (step < totalSteps) {
@@ -189,6 +235,7 @@ export default function BuddySetup() {
   };
 
   const handleFinish = () => {
+    const tdeeResult = calculateTDEE(data);
     setGenerating(true);
     completeOnboarding.mutate(
       {
@@ -200,6 +247,14 @@ export default function BuddySetup() {
         budgetPerWeek: data.budgetPerWeek,
         cookingLevel: data.cookingLevel,
         generateMenu: data.generateMenu,
+        // Datos físicos para cálculo TMB/TDEE
+        gender: data.gender || undefined,
+        age: data.age || undefined,
+        heightCm: data.heightCm || undefined,
+        weightKg: data.weightKg || undefined,
+        activityLevel: data.activityLevel || undefined,
+        dailyCalorieGoal: tdeeResult?.goal || undefined,
+        basalMetabolicRate: tdeeResult?.tmb || undefined,
       },
       {
         onSuccess: () => {
@@ -265,6 +320,13 @@ export default function BuddySetup() {
       : "opacity-0 -translate-x-4"
     : "opacity-100 translate-x-0";
 
+  // Validación por paso
+  const canContinue = () => {
+    if (step === 1) return !!data.mainGoal;
+    if (step === 2) return !!data.gender && data.age > 0 && data.heightCm > 0 && data.weightKg > 0;
+    return true;
+  };
+
   return (
     <div className="fixed inset-0 flex flex-col bg-[#fdf8f3]">
       {/* Header */}
@@ -297,10 +359,11 @@ export default function BuddySetup() {
         className={`flex-1 overflow-y-auto px-5 transition-all duration-200 ${animClass}`}
       >
         {step === 1 && <StepGoal data={data} setData={setData} />}
-        {step === 2 && <StepRestrictions data={data} toggleRestriction={toggleRestriction} />}
-        {step === 3 && <StepMealTimes data={data} setData={setData} toggleMealTime={toggleMealTime} />}
-        {step === 4 && <StepBudget data={data} setData={setData} />}
-        {step === 5 && <StepConfirm data={data} setData={setData} />}
+        {step === 2 && <StepPhysical data={data} setData={setData} />}
+        {step === 3 && <StepRestrictions data={data} toggleRestriction={toggleRestriction} />}
+        {step === 4 && <StepMealTimes data={data} setData={setData} toggleMealTime={toggleMealTime} />}
+        {step === 5 && <StepBudget data={data} setData={setData} />}
+        {step === 6 && <StepConfirm data={data} setData={setData} />}
       </div>
 
       {/* Botón de acción */}
@@ -308,7 +371,7 @@ export default function BuddySetup() {
         {step < totalSteps ? (
           <button
             onClick={goNext}
-            disabled={step === 1 && !data.mainGoal}
+            disabled={!canContinue()}
             className="w-full rounded-2xl bg-orange-500 py-4 text-base font-bold text-white shadow-lg shadow-orange-200 disabled:opacity-40 transition-all active:scale-95"
           >
             Continuar →
@@ -358,7 +421,138 @@ function StepGoal({ data, setData }: { data: SetupData; setData: React.Dispatch<
   );
 }
 
-// ─── Paso 2: Restricciones ────────────────────────────────────────────────────
+// ─── Paso 2: Datos físicos (NUEVO) ────────────────────────────────────────────
+function StepPhysical({ data, setData }: { data: SetupData; setData: React.Dispatch<React.SetStateAction<SetupData>> }) {
+  const tdee = calculateTDEE(data);
+
+  return (
+    <div>
+      <h1 className="mb-1 text-2xl font-extrabold text-gray-900">Tus datos físicos</h1>
+      <p className="mb-6 text-sm text-gray-500">Calculamos tus calorías reales con la fórmula Mifflin-St Jeor.</p>
+
+      {/* Sexo */}
+      <div className="mb-5">
+        <p className="mb-2 font-bold text-gray-900 text-sm">Sexo biológico</p>
+        <div className="grid grid-cols-2 gap-3">
+          {[
+            { id: "male", emoji: "♂️", label: "Hombre" },
+            { id: "female", emoji: "♀️", label: "Mujer" },
+          ].map((g) => (
+            <button
+              key={g.id}
+              onClick={() => setData((d) => ({ ...d, gender: g.id as "male" | "female" }))}
+              className={`flex flex-col items-center gap-2 rounded-2xl border-2 py-4 transition-all ${
+                data.gender === g.id
+                  ? "border-orange-400 bg-orange-50"
+                  : "border-gray-100 bg-white"
+              }`}
+            >
+              <span className="text-2xl">{g.emoji}</span>
+              <span className="text-sm font-semibold text-gray-700">{g.label}</span>
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Edad */}
+      <div className="mb-5 rounded-2xl bg-white p-4 shadow-sm">
+        <div className="flex items-center justify-between mb-2">
+          <span className="font-bold text-gray-900 text-sm">Edad</span>
+          <span className="text-xl font-extrabold text-orange-500">{data.age} años</span>
+        </div>
+        <input
+          type="range" min={15} max={80} step={1} value={data.age}
+          onChange={(e) => setData((d) => ({ ...d, age: Number(e.target.value) }))}
+          className="w-full accent-orange-500"
+        />
+        <div className="flex justify-between text-xs text-gray-400 mt-1"><span>15</span><span>80</span></div>
+      </div>
+
+      {/* Altura */}
+      <div className="mb-5 rounded-2xl bg-white p-4 shadow-sm">
+        <div className="flex items-center justify-between mb-2">
+          <span className="font-bold text-gray-900 text-sm">Altura</span>
+          <span className="text-xl font-extrabold text-orange-500">{data.heightCm} cm</span>
+        </div>
+        <input
+          type="range" min={140} max={220} step={1} value={data.heightCm}
+          onChange={(e) => setData((d) => ({ ...d, heightCm: Number(e.target.value) }))}
+          className="w-full accent-orange-500"
+        />
+        <div className="flex justify-between text-xs text-gray-400 mt-1"><span>140 cm</span><span>220 cm</span></div>
+      </div>
+
+      {/* Peso */}
+      <div className="mb-5 rounded-2xl bg-white p-4 shadow-sm">
+        <div className="flex items-center justify-between mb-2">
+          <span className="font-bold text-gray-900 text-sm">Peso actual</span>
+          <span className="text-xl font-extrabold text-orange-500">{data.weightKg} kg</span>
+        </div>
+        <input
+          type="range" min={40} max={180} step={0.5} value={data.weightKg}
+          onChange={(e) => setData((d) => ({ ...d, weightKg: Number(e.target.value) }))}
+          className="w-full accent-orange-500"
+        />
+        <div className="flex justify-between text-xs text-gray-400 mt-1"><span>40 kg</span><span>180 kg</span></div>
+      </div>
+
+      {/* Nivel de actividad */}
+      <div className="mb-5">
+        <p className="mb-2 font-bold text-gray-900 text-sm">Nivel de actividad física</p>
+        <div className="space-y-2">
+          {ACTIVITY_LEVELS.map((a) => (
+            <button
+              key={a.id}
+              onClick={() => setData((d) => ({ ...d, activityLevel: a.id }))}
+              className={`flex w-full items-center gap-3 rounded-2xl border-2 px-4 py-3 text-left transition-all ${
+                data.activityLevel === a.id
+                  ? "border-orange-400 bg-orange-50"
+                  : "border-gray-100 bg-white"
+              }`}
+            >
+              <span className="text-xl">{a.emoji}</span>
+              <div className="flex-1">
+                <p className="font-bold text-gray-900 text-sm">{a.label}</p>
+                <p className="text-xs text-gray-500">{a.desc}</p>
+              </div>
+              {data.activityLevel === a.id && <span className="text-orange-500">✓</span>}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      {/* Resultado TDEE en tiempo real */}
+      {tdee && data.gender && (
+        <div className="rounded-2xl bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-200 p-4 mb-4">
+          <p className="text-xs text-gray-500 mb-2 font-semibold uppercase tracking-wide">Tu metabolismo estimado</p>
+          <div className="grid grid-cols-3 gap-2 text-center">
+            <div>
+              <p className="text-lg font-extrabold text-gray-900">{tdee.tmb}</p>
+              <p className="text-xs text-gray-500">TMB (kcal)</p>
+            </div>
+            <div>
+              <p className="text-lg font-extrabold text-gray-900">{tdee.tdee}</p>
+              <p className="text-xs text-gray-500">TDEE (kcal)</p>
+            </div>
+            <div>
+              <p className="text-lg font-extrabold text-orange-500">{tdee.goal}</p>
+              <p className="text-xs text-gray-500">Objetivo (kcal)</p>
+            </div>
+          </div>
+          <p className="text-xs text-gray-400 mt-2 text-center">
+            {tdee.goal < tdee.tdee
+              ? `Déficit de ${tdee.tdee - tdee.goal} kcal/día para tu objetivo`
+              : tdee.goal > tdee.tdee
+              ? `Superávit de ${tdee.goal - tdee.tdee} kcal/día para tu objetivo`
+              : "Mantenimiento calórico"}
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Paso 3: Restricciones ────────────────────────────────────────────────────
 function StepRestrictions({ data, toggleRestriction }: { data: SetupData; toggleRestriction: (id: string) => void }) {
   return (
     <div>
@@ -387,7 +581,7 @@ function StepRestrictions({ data, toggleRestriction }: { data: SetupData; toggle
   );
 }
 
-// ─── Paso 3: Horarios ─────────────────────────────────────────────────────────
+// ─── Paso 4: Horarios ─────────────────────────────────────────────────────────
 function StepMealTimes({
   data,
   setData,
@@ -440,31 +634,25 @@ function StepMealTimes({
   );
 }
 
-// ─── Paso 4: Presupuesto ──────────────────────────────────────────────────────
+// ─── Paso 5: Presupuesto ──────────────────────────────────────────────────────
 function StepBudget({ data, setData }: { data: SetupData; setData: React.Dispatch<React.SetStateAction<SetupData>> }) {
   return (
     <div>
       <h1 className="mb-1 text-2xl font-extrabold text-gray-900">Presupuesto y nivel</h1>
       <p className="mb-6 text-sm text-gray-500">Ajustaremos las recetas a tu bolsillo y habilidades.</p>
 
-      {/* Presupuesto semanal */}
       <div className="mb-6 rounded-2xl bg-white p-5 shadow-sm">
         <div className="mb-3 flex items-center justify-between">
           <span className="font-bold text-gray-900">Presupuesto semanal</span>
           <span className="text-xl font-extrabold text-orange-500">{data.budgetPerWeek}€</span>
         </div>
         <input
-          type="range"
-          min={20}
-          max={200}
-          step={5}
-          value={data.budgetPerWeek}
+          type="range" min={20} max={200} step={5} value={data.budgetPerWeek}
           onChange={(e) => setData((d) => ({ ...d, budgetPerWeek: Number(e.target.value) }))}
           className="w-full accent-orange-500"
         />
         <div className="mt-1 flex justify-between text-xs text-gray-400">
-          <span>20€</span>
-          <span>200€</span>
+          <span>20€</span><span>200€</span>
         </div>
         <p className="mt-2 text-xs text-gray-500">
           {data.budgetPerWeek < 40
@@ -475,7 +663,6 @@ function StepBudget({ data, setData }: { data: SetupData; setData: React.Dispatc
         </p>
       </div>
 
-      {/* Nivel de cocina */}
       <h2 className="mb-3 font-bold text-gray-900">Nivel de cocina</h2>
       <div className="space-y-3">
         {COOKING_LEVELS.map((c) => (
@@ -501,10 +688,11 @@ function StepBudget({ data, setData }: { data: SetupData; setData: React.Dispatc
   );
 }
 
-// ─── Paso 5: Confirmación ─────────────────────────────────────────────────────
+// ─── Paso 6: Confirmación ─────────────────────────────────────────────────────
 function StepConfirm({ data, setData }: { data: SetupData; setData: React.Dispatch<React.SetStateAction<SetupData>> }) {
   const goalLabel = GOALS.find((g) => g.id === data.mainGoal)?.label ?? data.mainGoal;
   const goalEmoji = GOALS.find((g) => g.id === data.mainGoal)?.emoji ?? "🎯";
+  const tdee = calculateTDEE(data);
 
   return (
     <div>
@@ -513,6 +701,18 @@ function StepConfirm({ data, setData }: { data: SetupData; setData: React.Dispat
 
       <div className="space-y-3">
         <SummaryRow emoji={goalEmoji} label="Objetivo" value={goalLabel} />
+        {tdee && (
+          <SummaryRow
+            emoji="🔥"
+            label="Calorías objetivo/día"
+            value={`${tdee.goal} kcal (TDEE: ${tdee.tdee} kcal)`}
+          />
+        )}
+        <SummaryRow
+          emoji="👤"
+          label="Perfil físico"
+          value={`${data.gender === "male" ? "Hombre" : "Mujer"}, ${data.age} años, ${data.heightCm} cm, ${data.weightKg} kg`}
+        />
         <SummaryRow
           emoji="🚫"
           label="Restricciones"

@@ -162,12 +162,33 @@ function HeartButton({ isFav, onToggle }: { isFav: boolean; onToggle: () => void
   );
 }
 
-// ─── Recipe Card ──────────────────────────────────────────────────────────────
+// ─── Recipe Card ────────────────────────────────────────────
 function RecipeCard({ recipe, searchQuery, isFav, onToggleFav }: { recipe: Recipe; searchQuery?: string; isFav?: boolean; onToggleFav?: () => void }) {
   const totalTime = (recipe.preparationTime || 0) + (recipe.cookTime || 0);
-  const imgSrc = recipe.imageUrl || getPlaceholderImage(recipe.id);
+  const hasRealImage = !!(recipe.imageUrl && !recipe.imageUrl.includes('placeholder'));
+  const [localImageUrl, setLocalImageUrl] = useState<string | null>(recipe.imageUrl || null);
+  const [generatingImg, setGeneratingImg] = useState(false);
+  const imgSrc = localImageUrl || getPlaceholderImage(recipe.id);
   const mealTime = recipe.mealTime || "cualquiera";
   const methodBadge = COOKING_METHOD_OPTIONS.find(m => m.value === recipe.cookingMethod);
+  const { user } = useAuth();
+  const generateAIImage = trpc.recipes.generateAIImage.useMutation();
+
+  const handleGenerateImage = async (e: React.MouseEvent) => {
+    e.preventDefault();
+    e.stopPropagation();
+    if (generatingImg) return;
+    setGeneratingImg(true);
+    try {
+      const result = await generateAIImage.mutateAsync({ recipeId: recipe.id });
+      setLocalImageUrl(result.url);
+      toast.success('Imagen generada correctamente');
+    } catch {
+      toast.error('Error al generar la imagen');
+    } finally {
+      setGeneratingImg(false);
+    }
+  };
 
   return (
     <Link href={`/app/recipes/${recipe.id}`}>
@@ -197,6 +218,29 @@ function RecipeCard({ recipe, searchQuery, isFav, onToggleFav }: { recipe: Recip
             <span style={{ fontSize: "14px" }}>{MEAL_TIME_EMOJI[mealTime] || "🕐"}</span>
             <span style={{ fontSize: "13px", color: "white", fontWeight: 700 }}>{MEAL_TIME_LABELS[mealTime] || mealTime}</span>
           </div>
+          {/* Generar imagen IA — solo si no tiene foto real y el usuario está logueado */}
+          {user && !hasRealImage && !localImageUrl && (
+            <button
+              onClick={handleGenerateImage}
+              disabled={generatingImg}
+              style={{
+                position: "absolute", bottom: "8px", right: "8px",
+                background: generatingImg ? "rgba(0,0,0,0.5)" : "rgba(249,115,22,0.9)",
+                backdropFilter: "blur(4px)",
+                border: "none", borderRadius: "10px", padding: "4px 8px",
+                cursor: generatingImg ? "wait" : "pointer",
+                color: "white", fontSize: "12px", fontWeight: 700,
+                display: "flex", alignItems: "center", gap: "4px",
+                transition: "all 0.2s",
+              }}
+            >
+              {generatingImg ? (
+                <><span style={{ animation: "spin 1s linear infinite", display: "inline-block" }}>⟳</span> Generando...</>
+              ) : (
+                <>✨ Generar foto</>
+              )}
+            </button>
+          )}
           {/* Heart button — only shown when user is logged in */}
           {onToggleFav !== undefined && (
             <HeartButton isFav={!!isFav} onToggle={onToggleFav} />
