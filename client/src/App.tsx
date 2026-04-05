@@ -57,6 +57,7 @@ import InstallAppBanner from "./components/InstallAppBanner";
 import Complements from "./pages/Complements";
 import LoginPage from "./pages/LoginPage";
 import BuddySetup from "./pages/BuddySetup";
+import MyMenus from "./pages/MyMenus";
 
 // Wraps a page component with AppLayout (for pages that don't include it themselves)
 function WithLayout({ component: Component, ...props }: { component: React.ComponentType<any>; [key: string]: any }) {
@@ -119,6 +120,7 @@ function Router() {
       <Route path="/app/recipes/:id">{(params) => <ProtectedRoute component={RecipeDetail} params={params} />}</Route>
       <Route path="/app/recipes">{() => <ProtectedRoute component={Recipes} />}</Route>
       <Route path="/app/menus">{() => <ProtectedRoute component={Menus} />}</Route>
+      <Route path="/app/my-menus">{() => <ProtectedRoute component={MyMenus} />}</Route>
       <Route path="/app/shopping-lists">{() => <ProtectedRoute component={ShoppingLists} />}</Route>
       <Route path="/app/inventory">{() => <ProtectedRoute component={Inventory} />}</Route>
       <Route path="/app/meal-log">{() => <ProtectedRoute component={MealLog} />}</Route>

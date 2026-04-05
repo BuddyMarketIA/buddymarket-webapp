@@ -1202,3 +1202,35 @@
 - [x] CRÍTICO 4: 21 snacks/meriendas con >400 kcal reclasificados como "comida"
 - [x] IMPORTANTE 5: BuddySetup ahora recoge peso/altura/edad/sexo/actividad (nuevo paso 3 de 6)
 - [x] IMPORTANTE 6: Prompt de IA del onboarding incluye calorías calculadas, perfil físico y objetivo nutricional
+
+## Rediseño flujo de Menús con IA
+- [ ] Cuestionario IA mejorado: nº comidas/día, días que come fuera, nº personas, estilo cocina, presupuesto, alimentos que no le gustan
+- [ ] Pasar automáticamente métricas del usuario (peso, altura, edad, TMB, TDEE, objetivo, restricciones, alergias) a la IA
+- [ ] Menú generado por IA → guardar automáticamente en "Mis Menús" con categoría (ej: "Menú IA - Pérdida de peso")
+- [ ] Sección "Mis Menús": listado de todos los menús del usuario (IA + manuales + biblioteca)
+- [ ] Mis Menús: editar nombre del menú
+- [ ] Mis Menús: asignar fecha de inicio para activarlo en el calendario/diario
+- [ ] Mis Menús: ver todas las recetas del menú (cards estilo biblioteca)
+- [ ] Mis Menús: duplicar/reutilizar un menú existente
+- [ ] Mis Menús: eliminar menú
+
+## Sprint Mis Menús + BuddyIA Cuestionario Mejorado (COMPLETADO)
+- [x] Página Mis Menús (/app/my-menus): listado de menús del usuario con filtros por objetivo
+- [x] Mis Menús: banner de menú activo con acceso rápido
+- [x] Mis Menús: acciones por menú (renombrar, cambiar fecha de inicio, activar, eliminar)
+- [x] Mis Menús: modal de renombrar menú
+- [x] Mis Menús: modal de cambiar fecha de inicio (desplaza todas las comidas)
+- [x] Mis Menús: estadísticas resumen (total, activos, objetivos)
+- [x] AppLayout sidebar: añadir Mis Menús al menú lateral
+- [x] App.tsx: ruta /app/my-menus
+- [x] BuddyIA: cuestionario ampliado a 9 pasos (antes 7)
+- [x] BuddyIA paso 5: días que come fuera de casa (selección por día de la semana)
+- [x] BuddyIA paso 6: alimentos que no le gustan (chips predefinidos + campo personalizado)
+- [x] BuddyIA paso 7: restricciones alimentarias
+- [x] BuddyIA paso 8: presupuesto semanal con atajos (40/60/80/120€) + preferencias adicionales + resumen
+- [x] BuddyIA: resumen completo del menú antes de generar (paso 8)
+- [x] BuddyIA: modal post-guardado con opciones (Ver Mis Menús, Ver activo, Seguir revisando)
+- [x] BuddyIA: botón "Mis Menús" en la pantalla de inicio de BuddyIA
+- [x] BuddyIA: onMenuGenerated pasa los datos del cuestionario al resultado
+- [x] Prompt IA: incluye días fuera de casa, alimentos no deseados, presupuesto, métricas del usuario
+- [x] TypeScript: 0 errores

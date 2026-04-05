@@ -5077,9 +5077,58 @@ Formato JSON estricto:
           restrictions: z.array(z.string()).optional(),
           preferences: z.string().optional(),
           daysCount: z.number().min(1).max(7).default(7),
+          // New fields for richer personalization
+          eatOutDays: z.array(z.string()).optional(), // days eating out e.g. ["Lunes", "Miércoles"]
+          dislikedFoods: z.string().optional(), // foods the user dislikes
+          budgetPerWeek: z.number().min(0).max(500).optional(), // euros per week
+          specialNotes: z.string().optional(), // any extra context
         })
       )
       .mutation(async ({ input, ctx }) => {
+        // Auto-load user profile for personalization
+        const [userProfile, medicalProfile, userPrefs, userRestrictions] = await Promise.all([
+          db.getUserProfile(ctx.user.id),
+          db.getUserMedicalProfile(ctx.user.id),
+          db.getUserPreferences(ctx.user.id),
+          db.getUserDietRestrictions(ctx.user.id),
+        ]);
+        // Build user metrics string for the AI prompt
+        const profileMetrics = userProfile ? [
+          userProfile.weight ? `Peso: ${userProfile.weight}kg` : null,
+          userProfile.height ? `Altura: ${userProfile.height}cm` : null,
+          userProfile.age ? `Edad: ${userProfile.age} años` : null,
+          userProfile.gender ? `Sexo: ${userProfile.gender === 'male' ? 'Hombre' : userProfile.gender === 'female' ? 'Mujer' : 'Otro'}` : null,
+          userProfile.basalMetabolicRate ? `TMB: ${Math.round(userProfile.basalMetabolicRate)} kcal` : null,
+          userProfile.dailyCalorieGoal ? `TDEE/Objetivo calorías: ${Math.round(userProfile.dailyCalorieGoal)} kcal/día` : null,
+          userProfile.activityLevel ? `Nivel de actividad: ${userProfile.activityLevel}` : null,
+          userProfile.practicesSports ? `Practica deporte: sí` : null,
+          userProfile.dislikedIngredients ? `Ingredientes que no le gustan: ${userProfile.dislikedIngredients}` : null,
+          userProfile.favoriteCuisines ? `Cocinas favoritas: ${userProfile.favoriteCuisines}` : null,
+          userProfile.budgetPerWeek ? `Presupuesto semanal: ${userProfile.budgetPerWeek}€` : null,
+        ].filter(Boolean).join('\n') : '';
+        // Merge restrictions from profile + questionnaire
+        const allRestrictions = [
+          ...(input.restrictions || []),
+          ...(userRestrictions.map((r: any) => r.restriction) || []),
+        ].filter((v, i, a) => a.indexOf(v) === i); // deduplicate
+        // Merge disliked foods
+        const allDislikedFoods = [input.dislikedFoods, userProfile?.dislikedIngredients].filter(Boolean).join(', ');
+        // Effective budget
+        const effectiveBudget = input.budgetPerWeek || userProfile?.budgetPerWeek || null;
+        // Medical context
+        const medicalContext = medicalProfile ? [
+          medicalProfile.hasMedicalConditions && medicalProfile.medicalConditions ? `Condiciones médicas: ${medicalProfile.medicalConditions}` : null,
+          medicalProfile.hasMedicalDiet && medicalProfile.medicalDiet ? `Dieta médica: ${medicalProfile.medicalDiet}` : null,
+          medicalProfile.hasSurgery && medicalProfile.surgery ? `Cirugía reciente: ${medicalProfile.surgery}` : null,
+        ].filter(Boolean).join('\n') : '';
+        // Preferences context
+        const prefsContext = userPrefs ? [
+          userPrefs.avoidProcessedFood ? 'Evitar alimentos procesados' : null,
+          userPrefs.preferSeasonalIngredients ? 'Preferir ingredientes de temporada' : null,
+          userPrefs.portionSize ? `Tamaño de porciones: ${userPrefs.portionSize}` : null,
+        ].filter(Boolean).join(', ') : '';
+        // Replace input.restrictions with merged restrictions for the rest of the procedure
+        const mergedInput = { ...input, restrictions: allRestrictions };
         const goalLabels: Record<string, string> = {
           perdida_peso: "pérdida de peso",
           ganancia_muscular: "ganancia muscular",
@@ -5107,11 +5156,14 @@ Formato JSON estricto:
           input.mealsPerDay >= 6 ? "Recena" : null,
         ].filter(Boolean) as string[];
 
-        const targetCalories = input.calories || (input.goal === "perdida_peso" || input.goal === "perdida_grasa" ? 1600 : input.goal === "ganancia_muscular" ? 2800 : 2000);
+        // Use TDEE from profile if available, otherwise estimate from goal
+        const targetCalories = input.calories || userProfile?.dailyCalorieGoal ||
+          (input.goal === "perdida_peso" || input.goal === "perdida_grasa" ? 1600 :
+           input.goal === "ganancia_muscular" ? 2800 : 2000);
         // Build strict dietary restriction enforcement rules
         const dietaryRules: string[] = [];
-        if (input.restrictions?.length) {
-          const lowerR = input.restrictions.map((r: string) => r.toLowerCase());
+        if (allRestrictions.length) {
+          const lowerR = allRestrictions.map((r: string) => r.toLowerCase());
           if (lowerR.some((r: string) => r.includes('vegan') || r.includes('vegano'))) {
             dietaryRules.push('DIETA VEGANA ESTRICTA: ABSOLUTAMENTE PROHIBIDO incluir cualquier producto de origen animal. Esto incluye: carne (pollo, ternera, cerdo, cordero, pavo), pescado, marisco, huevos, leche, queso, yogur, mantequilla, nata, miel, gelatina. SOLO alimentos 100% de origen vegetal. Verifica CADA plato.');
           } else if (lowerR.some((r: string) => r.includes('vegetar'))) {
@@ -5124,20 +5176,37 @@ Formato JSON estricto:
             dietaryRules.push('SIN LACTOSA: Usar bebidas vegetales (avena, soja, almendras). Evitar lácteos convencionales.');
           }
         }
-        const prompt = `Eres un nutricionista experto. Crea un menú semanal personalizado de ${input.daysCount} días.
-Perfil del usuario:
+        const prompt = `Eres un nutricionista experto. Crea un menú personalizado de ${input.daysCount} días COMPLETAMENTE ADAPTADO al perfil real del usuario.
+
+=== PERFIL FÍSICO Y MÉTRICAS DEL USUARIO ===
+${profileMetrics || 'No disponible'}
+
+=== CONDICIONES MÉDICAS Y DIETA ESPECIAL ===
+${medicalContext || 'Ninguna'}
+
+=== PREFERENCIAS PERSONALES ===
+${prefsContext || 'No especificadas'}
+
+=== PARÁMETROS DEL MENÚ SOLICITADO ===
 - Objetivo: ${goalLabels[input.goal]}
 - Estilo de cocina: ${cookingStyleLabels[input.cookingStyle]}
 - Número de personas: ${input.persons}
 - Comidas al día: ${input.mealsPerDay} (${mealNames.join(", ")})
-- Calorías objetivo: ${targetCalories} kcal/día por persona
-${input.restrictions?.length ? `- Restricciones/alergias: ${input.restrictions.join(", ")}` : ""}
+- Calorías objetivo: ${Math.round(targetCalories)} kcal/día por persona
+- Días del menú: ${input.daysCount}
+${allRestrictions.length ? `- Restricciones/alergias: ${allRestrictions.join(", ")}` : ""}
+${allDislikedFoods ? `- Alimentos que NO le gustan: ${allDislikedFoods}` : ""}
+${input.eatOutDays?.length ? `- Días que come FUERA de casa: ${input.eatOutDays.join(", ")} (para esos días propón opciones de restaurante o menú del día saludable, no recetas para cocinar en casa)` : ""}
+${effectiveBudget ? `- Presupuesto semanal: ${effectiveBudget}€ (ajusta las recetas a este presupuesto)` : ""}
 ${input.preferences ? `- Preferencias adicionales: ${input.preferences}` : ""}
+${input.specialNotes ? `- Notas especiales: ${input.specialNotes}` : ""}
 ${dietaryRules.length > 0 ? `\n⚠️ RESTRICCIONES DIETÉTICAS OBLIGATORIAS (INCUMPLIRLAS ES UN ERROR GRAVE):\n${dietaryRules.join('\n')}` : ""}
+
 IMPORTANTE para el estilo "${cookingStyleLabels[input.cookingStyle]}":
 ${input.cookingStyle === "batch_cooking" ? "- Agrupa ingredientes para cocinar en grandes cantidades el domingo\n- Reutiliza preparaciones base durante la semana (arroz, legumbres, proteínas)" : ""}
 ${input.cookingStyle === "tuppers" ? "- Todas las comidas deben ser aptas para tupper y microondas\n- Evita ensaladas que se pongan malas, prioriza guisos y platos calientes" : ""}
 ${input.cookingStyle === "rapido" ? "- Tiempo máximo de preparación: 20 minutos\n- Usa ingredientes fáciles de encontrar y preparar" : ""}
+${input.cookingStyle === "restaurante" ? "- Los días de restaurante: sugiere qué pedir en un menú del día típico español (primer plato, segundo, postre) que sea saludable y se ajuste al objetivo" : ""}
 
 Devuelve SOLO JSON válido con esta estructura exacta:
 {

@@ -144,6 +144,7 @@ const SIDEBAR_GROUPS = [
       { key: "/app/metrics", label: "Mis Métricas", to: "/app/metrics", emoji: "⚖️" },
       { key: "/app/recipes", label: "Recetas", to: "/app/recipes", emoji: "📖" },
       { key: "/app/menus", label: "Menús", to: "/app/menus", emoji: "📅" },
+      { key: "/app/my-menus", label: "Mis Menús", to: "/app/my-menus", emoji: "🗂️" },
       { key: "/app/inventory", label: "Inventario", to: "/app/inventory", emoji: "📦" },
     ],
   },
