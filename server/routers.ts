@@ -11,7 +11,8 @@ import * as db from "./db";
 import { getUserPlanTier, requirePlanFeature, requireUnderLimit } from "./planGuard";
 import { sendOTPEmail } from "./email";
 import { sdk } from "./_core/sdk";
-import { createHash } from "crypto";
+import { createHash, randomBytes } from "crypto";
+import bcrypt from "bcryptjs";
 
 function hashOtpCode(code: string): string {
   return createHash("sha256").update(code).digest("hex");
@@ -143,6 +144,142 @@ export const appRouter = router({
         const cookieOptions = getSessionCookieOptions(ctx.req);
         ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
         return { success: true, user: { id: user.id, email: user.email, name: user.name } };
+      }),
+
+    // ── Email/Password Register ───────────────────────────────────────────
+    register: publicProcedure
+      .input(z.object({
+        name: z.string().min(2).max(100).trim(),
+        email: z.string().email(),
+        password: z.string().min(8).max(128),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const email = input.email.toLowerCase().trim();
+        const existing = await db.getUserByEmail(email);
+        if (existing) {
+          throw new TRPCError({
+            code: "CONFLICT",
+            message: "Ya existe una cuenta con este email. Inicia sesión.",
+          });
+        }
+        const passwordHash = await bcrypt.hash(input.password, 12);
+        const openId = `email:${email}`;
+        await db.upsertUser({
+          openId,
+          email,
+          name: input.name,
+          loginMethod: "email",
+          lastSignedIn: new Date(),
+        });
+        const newUser = await db.getUserByEmail(email);
+        if (!newUser) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Error al crear la cuenta." });
+        const drizzleDb = await db.getDb();
+        if (drizzleDb) {
+          const { users } = await import("../drizzle/schema.js");
+          const { eq } = await import("drizzle-orm");
+          await drizzleDb.update(users).set({ passwordHash }).where(eq(users.id, newUser.id));
+        }
+        const sessionToken = await sdk.createSessionToken(openId, {
+          name: input.name,
+          expiresInMs: ONE_YEAR_MS,
+        });
+        const cookieOptions = getSessionCookieOptions(ctx.req);
+        ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+        return { success: true, user: { id: newUser.id, email: newUser.email, name: newUser.name } };
+      }),
+
+    // ── Email/Password Login ──────────────────────────────────────────────
+    login: publicProcedure
+      .input(z.object({
+        email: z.string().email(),
+        password: z.string().min(1),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const email = input.email.toLowerCase().trim();
+        const user = await db.getUserByEmail(email);
+        if (!user) {
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "Email o contraseña incorrectos." });
+        }
+        if (!user.passwordHash) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Esta cuenta usa acceso por código OTP. Usa esa opción para entrar.",
+          });
+        }
+        const valid = await bcrypt.compare(input.password, user.passwordHash);
+        if (!valid) {
+          throw new TRPCError({ code: "UNAUTHORIZED", message: "Email o contraseña incorrectos." });
+        }
+        await db.updateUser(user.id, { lastSignedIn: new Date() });
+        const sessionToken = await sdk.createSessionToken(user.openId, {
+          name: user.name ?? email,
+          expiresInMs: ONE_YEAR_MS,
+        });
+        const cookieOptions = getSessionCookieOptions(ctx.req);
+        ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+        return { success: true, user: { id: user.id, email: user.email, name: user.name } };
+      }),
+
+    // ── Forgot Password ───────────────────────────────────────────────────
+    forgotPassword: publicProcedure
+      .input(z.object({ email: z.string().email(), origin: z.string().url() }))
+      .mutation(async ({ input }) => {
+        const email = input.email.toLowerCase().trim();
+        const user = await db.getUserByEmail(email);
+        if (!user) return { success: true };
+        const token = randomBytes(32).toString("hex");
+        const expiresAt = new Date(Date.now() + 60 * 60 * 1000);
+        const drizzleDb = await db.getDb();
+        if (drizzleDb) {
+          const { users } = await import("../drizzle/schema.js");
+          const { eq } = await import("drizzle-orm");
+          await drizzleDb.update(users).set({
+            passwordResetToken: token,
+            passwordResetExpiresAt: expiresAt,
+          }).where(eq(users.id, user.id));
+        }
+        const resetUrl = `${input.origin}/reset-password?token=${token}`;
+        const { sendPasswordResetEmail } = await import("./email.js");
+        await sendPasswordResetEmail(email, user.name ?? email, resetUrl);
+        return { success: true };
+      }),
+
+    // ── Reset Password ────────────────────────────────────────────────────
+    resetPassword: publicProcedure
+      .input(z.object({
+        token: z.string().min(1),
+        password: z.string().min(8).max(128),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { users } = await import("../drizzle/schema.js");
+        const { eq, and, gt } = await import("drizzle-orm");
+        const [user] = await drizzleDb.select().from(users).where(
+          and(
+            eq(users.passwordResetToken, input.token),
+            gt(users.passwordResetExpiresAt, new Date()),
+          )
+        ).limit(1);
+        if (!user) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "El enlace de recuperación no es válido o ha expirado.",
+          });
+        }
+        const passwordHash = await bcrypt.hash(input.password, 12);
+        await drizzleDb.update(users).set({
+          passwordHash,
+          passwordResetToken: null,
+          passwordResetExpiresAt: null,
+        }).where(eq(users.id, user.id));
+        const sessionToken = await sdk.createSessionToken(user.openId, {
+          name: user.name ?? user.email ?? "",
+          expiresInMs: ONE_YEAR_MS,
+        });
+        const cookieOptions = getSessionCookieOptions(ctx.req);
+        ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+        return { success: true };
       }),
   }),
 

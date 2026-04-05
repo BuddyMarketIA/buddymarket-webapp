@@ -19,6 +19,7 @@ const Cookies = lazy(() => import("./pages/Cookies"));
 const Registration = lazy(() => import("./pages/Registration"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const BuddySetup = lazy(() => import("./pages/BuddySetup"));
+const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
 
 // App pages (protected)
 const Dashboard = lazy(() => import("./pages/Dashboard"));
@@ -120,6 +121,7 @@ function Router() {
       {/* Public landing — on appbuddymarket.com show LoginPage */}
       <Route path="/">{() => isAppDomain ? <LoginPage /> : <LandingPage />}</Route>
       <Route path="/login" component={LoginPage} />
+      <Route path="/reset-password" component={ResetPasswordPage} />
       <Route path="/blog" component={Blog} />
       <Route path="/terms" component={Terms} />
       <Route path="/privacy" component={Privacy} />

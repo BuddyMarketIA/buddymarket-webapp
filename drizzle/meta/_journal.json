@@ -15,6 +15,13 @@
       "when": 1775410407197,
       "tag": "0001_happy_wildside",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1775411520935,
+      "tag": "0002_uneven_shadowcat",
+      "breakpoints": true
     }
   ]
 }
