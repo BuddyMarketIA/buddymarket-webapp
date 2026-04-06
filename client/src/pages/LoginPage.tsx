@@ -35,6 +35,34 @@ const LOGO = "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7Px
 
 type AuthMode = "login" | "register" | "otp-email" | "otp-code" | "forgot" | "forgot-sent";
 
+// ─── Password strength indicator ─────────────────────────────────────────────
+function PasswordStrength({ password }: { password: string }) {
+  if (!password) return null;
+  const checks = [
+    password.length >= 8,
+    /[A-Z]/.test(password),
+    /[0-9]/.test(password),
+    /[^A-Za-z0-9]/.test(password),
+  ];
+  const score = checks.filter(Boolean).length;
+  const colors = ["bg-red-400", "bg-orange-400", "bg-yellow-400", "bg-green-400"];
+  const labels = ["Muy débil", "Débil", "Buena", "Fuerte"];
+  return (
+    <div className="space-y-1 mt-1">
+      <div className="flex gap-1">
+        {[0, 1, 2, 3].map(i => (
+          <div key={i} className={`h-1 flex-1 rounded-full transition-all duration-300 ${i < score ? colors[score - 1] : "bg-gray-200"}`} />
+        ))}
+      </div>
+      {score > 0 && (
+        <p className={`text-[10px] font-medium ${score <= 1 ? "text-red-400" : score === 2 ? "text-orange-400" : score === 3 ? "text-yellow-500" : "text-green-500"}`}>
+          {labels[score - 1]}
+        </p>
+      )}
+    </div>
+  );
+}
+
 export default function LoginPage() {
   const [, setLocation] = useLocation();
   const [mode, setMode] = useState<AuthMode>("login");
@@ -90,8 +118,10 @@ export default function LoginPage() {
   const handleRegister = async (e: React.FormEvent) => {
     e.preventDefault();
     if (password !== confirmPassword) { toast.error("Las contraseñas no coinciden"); return; }
+    if (password.length < 8) { toast.error("La contraseña debe tener al menos 8 caracteres"); return; }
     try {
       await registerMut.mutateAsync({ name, email, password });
+      toast.success("¡Cuenta creada!", { description: `Bienvenido a BuddyMarket, ${name.split(" ")[0]}` });
       await afterAuth();
     } catch (err: any) {
       toast.error("Error al registrarse", { description: err.message });
@@ -156,6 +186,7 @@ export default function LoginPage() {
   const isLoading = loginMut.isPending || registerMut.isPending || sendOTPMut.isPending || verifyOTPMut.isPending || forgotMut.isPending;
 
   const inp = "bg-gray-50 border border-gray-200 text-gray-900 placeholder:text-gray-400 focus-visible:border-[#F97316] focus-visible:ring-0 focus-visible:ring-offset-0 rounded-2xl h-13 text-sm transition-colors";
+  const ssoWrapper = "[&_button]:rounded-2xl [&_button]:h-12 [&_button]:text-sm [&_button]:font-semibold [&_button]:border-gray-200 [&_button]:bg-gray-50 [&_button]:text-gray-700 [&_button:hover]:bg-gray-100";
 
   const currentSlide = SLIDES[slide];
 
@@ -225,10 +256,19 @@ export default function LoginPage() {
 
           {/* ── LOGIN ── */}
           {mode === "login" && (
-            <div className="space-y-5">
+            <div className="space-y-4">
               <div>
                 <h2 className="text-xl font-bold text-gray-900">Bienvenido de nuevo</h2>
                 <p className="text-gray-400 text-xs mt-0.5">Accede a tu cuenta BuddyMarket</p>
+              </div>
+              {/* SSO buttons — Google + Apple */}
+              <div className={ssoWrapper}>
+                <WebSSOButtons onSuccess={() => { window.location.href = "/app/dashboard"; }} />
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-px bg-gray-200" />
+                <span className="text-gray-400 text-xs">o con email y contraseña</span>
+                <div className="flex-1 h-px bg-gray-200" />
               </div>
               <form onSubmit={handleLogin} className="space-y-3">
                 <div className="relative">
@@ -257,12 +297,6 @@ export default function LoginPage() {
                 </Button>
               </form>
 
-              <div className="flex items-center gap-3">
-                <div className="flex-1 h-px bg-gray-200" />
-                <span className="text-gray-400 text-xs">o continúa con</span>
-                <div className="flex-1 h-px bg-gray-200" />
-              </div>
-
               <Button type="button" onClick={() => setMode("otp-email")} variant="outline"
                 className="w-full h-12 bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100 rounded-2xl text-sm transition-all active:scale-[0.98]">
                 <Mail className="w-4 h-4 mr-2 text-[#F97316]" /> Acceder con código por email
@@ -279,53 +313,61 @@ export default function LoginPage() {
 
           {/* ── REGISTER ── */}
           {mode === "register" && (
-            <div className="space-y-5">
+            <div className="space-y-4">
               <div>
                 <h2 className="text-xl font-bold text-gray-900">Crea tu cuenta</h2>
-                <p className="text-gray-400 text-xs mt-0.5">Únete a la comunidad BuddyMarket</p>
+                <p className="text-gray-400 text-xs mt-0.5">Únete a la comunidad BuddyMarket — es gratis</p>
+              </div>
+              {/* SSO buttons — Google + Apple */}
+              <div className={ssoWrapper}>
+                <WebSSOButtons onSuccess={() => { window.location.href = "/app/dashboard"; }} />
+              </div>
+              <div className="flex items-center gap-3">
+                <div className="flex-1 h-px bg-gray-200" />
+                <span className="text-gray-400 text-xs">o regístrate con email</span>
+                <div className="flex-1 h-px bg-gray-200" />
               </div>
               <form onSubmit={handleRegister} className="space-y-3">
                 <div className="relative">
                   <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                  <Input type="text" required value={name} onChange={e => setName(e.target.value)}
-                    placeholder="Tu nombre" className={`${inp} pl-10`} />
+                  <Input type="text" required autoComplete="name" minLength={2} maxLength={100} value={name} onChange={e => setName(e.target.value)}
+                    placeholder="Tu nombre completo" className={`${inp} pl-10`} />
                 </div>
                 <div className="relative">
                   <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                  <Input type="email" required value={email} onChange={e => setEmail(e.target.value)}
+                  <Input type="email" required autoComplete="email" value={email} onChange={e => setEmail(e.target.value)}
                     placeholder="tu@email.com" className={`${inp} pl-10`} />
                 </div>
-                <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                  <Input type={showPassword ? "text" : "password"} required minLength={8} value={password} onChange={e => setPassword(e.target.value)}
-                    placeholder="Contraseña (mín. 8 caracteres)" className={`${inp} pl-10 pr-10`} />
-                  <button type="button" onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
-                    {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
-                  </button>
+                <div>
+                  <div className="relative">
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                    <Input type={showPassword ? "text" : "password"} required autoComplete="new-password" minLength={8} value={password} onChange={e => setPassword(e.target.value)}
+                      placeholder="Contraseña (mín. 8 caracteres)" className={`${inp} pl-10 pr-10`} />
+                    <button type="button" onClick={() => setShowPassword(!showPassword)}
+                      className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
+                      {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
+                    </button>
+                  </div>
+                  <PasswordStrength password={password} />
                 </div>
                 <div className="relative">
                   <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
-                  <Input type={showConfirm ? "text" : "password"} required value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
-                    placeholder="Confirmar contraseña" className={`${inp} pl-10 pr-10`} />
+                  <Input type={showConfirm ? "text" : "password"} required autoComplete="new-password" value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
+                    placeholder="Confirmar contraseña"
+                    className={`${inp} pl-10 pr-10 ${confirmPassword && confirmPassword !== password ? "border-red-400" : confirmPassword && confirmPassword === password ? "border-green-400" : ""}`} />
                   <button type="button" onClick={() => setShowConfirm(!showConfirm)}
                     className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
                     {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
-                <Button type="submit" disabled={isLoading}
-                  className="w-full h-12 bg-[#F97316] hover:bg-[#ea6c0f] text-white font-semibold rounded-2xl text-sm shadow-[0_4px_20px_rgba(249,115,22,0.4)] transition-all active:scale-[0.98]">
-                  {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <span className="flex items-center gap-2">Crear cuenta <ArrowRight className="w-4 h-4" /></span>}
+                {confirmPassword && confirmPassword !== password && (
+                  <p className="text-[10px] text-red-400 -mt-1">Las contraseñas no coinciden</p>
+                )}
+                <Button type="submit" disabled={isLoading || (!!confirmPassword && confirmPassword !== password)}
+                  className="w-full h-12 bg-[#F97316] hover:bg-[#ea6c0f] text-white font-semibold rounded-2xl text-sm shadow-[0_4px_20px_rgba(249,115,22,0.4)] transition-all active:scale-[0.98] disabled:opacity-50">
+                  {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <span className="flex items-center gap-2">Crear cuenta gratis <ArrowRight className="w-4 h-4" /></span>}
                 </Button>
               </form>
-              <div className="flex items-center gap-3">
-                <div className="flex-1 h-px bg-gray-200" />
-                <span className="text-gray-400 text-xs">o regístrate con</span>
-                <div className="flex-1 h-px bg-gray-200" />
-              </div>
-              <div className="[&_button]:rounded-2xl [&_button]:h-12 [&_button]:text-sm [&_button]:font-semibold [&_button]:border-gray-200 [&_button]:bg-gray-50 [&_button]:text-gray-700 [&_button:hover]:bg-gray-100">
-                <WebSSOButtons onSuccess={() => { window.location.href = "/app/dashboard"; }} />
-              </div>
               <p className="text-center text-gray-400 text-xs">
                 ¿Ya tienes cuenta?{" "}
                 <button onClick={() => setMode("login")} className="text-[#F97316] font-semibold hover:text-[#fb923c] transition-colors">
