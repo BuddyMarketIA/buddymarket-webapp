@@ -5,7 +5,7 @@ import { toast } from "sonner";
 
 // ─── Assets ───────────────────────────────────────────────────────────────────
 
-const LOGO_COLOR = "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/buddymarket-logo-color_856f2d67.jpg";
+const LOGO_COLOR = "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/logo-horizontal-orange_0dcbe0a8.png";
 const LOGO_ICON  = "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/D0328B43-26CA-43D5-A762-51F7E0C1B4E2_44b3ba71.png";
 
 const FOOD_IMAGES = [
@@ -164,7 +164,7 @@ function LeftPanel({ step, accountType }: { step: RegistrationStep; accountType:
         {/* Logo */}
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
           <img src={LOGO_ICON} alt="BuddyMarket" style={{ width: 44, height: 44, borderRadius: 12 }} />
-          <img src={LOGO_COLOR} alt="BuddyMarket" style={{ height: 28, filter: "brightness(0) invert(1)" }} />
+          <img src={LOGO_COLOR} alt="BuddyMarket" style={{ height: 28,  }} />
         </div>
 
         {/* Main copy */}

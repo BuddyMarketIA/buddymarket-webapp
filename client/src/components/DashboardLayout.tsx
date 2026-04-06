@@ -166,13 +166,23 @@ function DashboardLayoutContent({
                 className="h-8 w-8 flex items-center justify-center hover:bg-accent rounded-lg transition-colors focus:outline-none focus-visible:ring-2 focus-visible:ring-ring shrink-0"
                 aria-label="Toggle navigation"
               >
-                <PanelLeft className="h-4 w-4 text-muted-foreground" />
+                {isCollapsed ? (
+                  <img
+                    src="https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/logo-icon-orange_2cf889cb.png"
+                    alt="BuddyMarket"
+                    className="h-6 w-6 object-contain"
+                  />
+                ) : (
+                  <PanelLeft className="h-4 w-4 text-muted-foreground" />
+                )}
               </button>
               {!isCollapsed ? (
                 <div className="flex items-center gap-2 min-w-0">
-                  <span className="font-semibold tracking-tight truncate">
-                    Navigation
-                  </span>
+                  <img
+                    src="https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/logo-horizontal-orange_0dcbe0a8.png"
+                    alt="BuddyMarket"
+                    className="h-7 w-auto object-contain"
+                  />
                 </div>
               ) : null}
             </div>

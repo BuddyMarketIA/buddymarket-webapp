@@ -31,7 +31,7 @@ const SLIDES = [
   },
 ];
 
-const LOGO = "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/buddymarket-logo_bcd5af5e.png";
+const LOGO = "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/logo-icon-orange_2cf889cb.png";
 
 type AuthMode = "login" | "register" | "otp-email" | "otp-code" | "forgot" | "forgot-sent";
 

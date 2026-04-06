@@ -6,7 +6,8 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
 
-const LOGO_COLOR = "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/buddymarket-logo-color_856f2d67.jpg";
+const LOGO_HORIZONTAL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/logo-horizontal-orange_0dcbe0a8.png";
+const LOGO_ICON = "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/logo-icon-orange_2cf889cb.png";
 
 const FOOD = {
   salmon:   "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/salmon_quinoa-GK5uCABZM54kHC6jSfHP9p.webp",
@@ -230,7 +231,7 @@ export default function LandingPage() {
       }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", height: 72, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
           <a href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none", flexShrink: 0 }}>
-            <img src={LOGO_COLOR} alt="BuddyMarket" style={{ height: 52, width: "auto", objectFit: "contain" }} />
+            <img src={LOGO_HORIZONTAL} alt="BuddyMarket" style={{ height: 40, width: "auto", objectFit: "contain" }} />
           </a>
 
           {/* Desktop links */}
@@ -818,7 +819,7 @@ export default function LandingPage() {
         <div style={{ position: "absolute", top: "20%", left: "10%", width: 300, height: 300, borderRadius: "50%", background: "rgba(255,255,255,0.06)", pointerEvents: "none" }} />
         <div style={{ position: "absolute", bottom: "10%", right: "5%", width: 200, height: 200, borderRadius: "50%", background: "rgba(255,255,255,0.05)", pointerEvents: "none" }} />
         <div style={{ maxWidth: 680, margin: "0 auto", position: "relative" }}>
-          <img src={LOGO_COLOR} alt="BuddyMarket" style={{ height: 72, objectFit: "contain", marginBottom: 28, filter: "brightness(0) invert(1)" }} />
+          <img src={LOGO_ICON} alt="BuddyMarket" style={{ height: 72, width: "auto", objectFit: "contain", marginBottom: 28 }} />
           <h2 style={{ fontSize: "clamp(28px, 6vw, 56px)", fontWeight: 900, color: "white", margin: "0 0 16px", letterSpacing: "-0.03em", lineHeight: 1.05 }}>
             Empieza hoy a comer<br />de forma inteligente
           </h2>
@@ -840,7 +841,7 @@ export default function LandingPage() {
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <div className="lp-footer-grid" style={{ display: "grid", gridTemplateColumns: "1fr", gap: 36, marginBottom: 44 }}>
             <div>
-              <img src={LOGO_COLOR} alt="BuddyMarket" style={{ height: 56, objectFit: "contain", marginBottom: 16, filter: "brightness(0) invert(1)" }} />
+              <img src={LOGO_ICON} alt="BuddyMarket" style={{ height: 56, width: "auto", objectFit: "contain", marginBottom: 16 }} />
               <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.75, maxWidth: 280, marginBottom: 12 }}>El gestor nutricional inteligente que se adapta a ti. Planifica, cocina y come bien cada día.</p>
               <p style={{ fontSize: 12, color: "#4b5563", lineHeight: 1.6 }}>⚠️ El contenido de BuddyMarket es orientativo y no sustituye el consejo de un profesional de la salud.</p>
             </div>
