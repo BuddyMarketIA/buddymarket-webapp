@@ -242,6 +242,7 @@ export default function LandingPage() {
               { label: "Menús Especiales", href: "#special" },
               { label: "Precios", href: "#pricing" },
               { label: "Blog", href: "/blog" },
+              { label: "FAQ", href: "/faq" },
               { label: "BuddyCoach ↗", href: "https://buddycoach.io" },
             ].map(item => (
               <a key={item.label} href={item.href}
@@ -286,6 +287,7 @@ export default function LandingPage() {
               { label: "Menús Especiales", href: "#special", emoji: "🥗" },
               { label: "Precios", href: "#pricing", emoji: "💎" },
               { label: "Blog", href: "/blog", emoji: "📝" },
+              { label: "FAQ", href: "/faq", emoji: "❓" },
               { label: "BuddyCoach ↗", href: "https://buddycoach.io", emoji: "💪", external: true },
             ].map(item => (
               <a key={item.label} href={item.href}
@@ -859,7 +861,7 @@ export default function LandingPage() {
 
             <div>
               <h4 style={{ fontSize: 12, fontWeight: 700, color: "white", marginBottom: 16, letterSpacing: "0.08em", textTransform: "uppercase" }}>Recursos</h4>
-              {[{ label: "Blog", href: "/blog" }, { label: "Centro de ayuda", href: "#" }, { label: "Comunidad", href: "#" }].map(l => (
+              {[{ label: "Blog", href: "/blog" }, { label: "Preguntas Frecuentes", href: "/faq" }, { label: "Centro de ayuda", href: "#" }, { label: "Comunidad", href: "#" }].map(l => (
                 <div key={l.label} style={{ marginBottom: 10 }}><a href={l.href} style={{ fontSize: 14, color: "#6b7280", textDecoration: "none" }}
                   onMouseEnter={e => (e.target as HTMLElement).style.color = "#F97316"}
                   onMouseLeave={e => (e.target as HTMLElement).style.color = "#6b7280"}>{l.label}</a></div>

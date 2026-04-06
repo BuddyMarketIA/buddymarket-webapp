@@ -16,6 +16,7 @@ const Blog = lazy(() => import("./pages/Blog"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
 const ExpertPlansManager = lazy(() => import("./pages/ExpertPlansManager"));
 const ClientPlanView = lazy(() => import("./pages/ClientPlanView"));
+const FAQ = lazy(() => import("./pages/FAQ"));
 const Terms = lazy(() => import("./pages/Terms"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const Cookies = lazy(() => import("./pages/Cookies"));
@@ -131,6 +132,7 @@ function Router() {
       <Route path="/terms" component={Terms} />
       <Route path="/privacy" component={Privacy} />
       <Route path="/cookies" component={Cookies} />
+      <Route path="/faq" component={FAQ} />
       <Route path="/legal" component={Terms} />
       <Route path="/gdpr" component={Privacy} />
       {/* Onboarding wizard — requires auth, no AppLayout */}
