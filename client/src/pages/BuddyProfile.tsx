@@ -522,6 +522,55 @@ function MenuRow({ menu }: { menu: any }) {
   );
 }
 
+// ─── Recipe mini card for maker profile ──────────────────────────────────────
+function MakerRecipeCard({ recipe }: { recipe: any }) {
+  const mealTimeLabel: Record<string, string> = {
+    desayuno: "Desayuno", comida: "Comida", cena: "Cena",
+    merienda: "Merienda", snack: "Snack", cualquiera: "",
+  };
+  const diffLabel: Record<string, string> = { easy: "Fácil", facil: "Fácil", medium: "Media", medio: "Media", hard: "Difícil", dificil: "Difícil" };
+  const totalTime = (recipe.preparationTime ?? 0) + (recipe.cookTime ?? 0);
+  return (
+    <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-orange-50 hover:shadow-md transition-shadow">
+      <div className="relative h-32 overflow-hidden bg-gradient-to-br from-orange-100 to-pink-100">
+        {recipe.imageUrl ? (
+          <img src={recipe.imageUrl} alt={recipe.name} className="w-full h-full object-cover" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-4xl">🍽️</div>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+        {recipe.mealTime && recipe.mealTime !== "cualquiera" && (
+          <span className="absolute top-2 right-2 bg-orange-500 text-white text-[11px] font-bold px-2 py-0.5 rounded-full">
+            {mealTimeLabel[recipe.mealTime] ?? recipe.mealTime}
+          </span>
+        )}
+        <p className="absolute bottom-2 left-2 right-2 text-white font-bold text-[13px] line-clamp-2 leading-tight">{recipe.name}</p>
+      </div>
+      <div className="p-2.5">
+        <div className="flex items-center justify-between text-[12px] text-gray-500 font-medium">
+          <span className="flex items-center gap-1">
+            <span>🔥</span>
+            <span>{recipe.caloriesPerServing ?? "—"} kcal</span>
+          </span>
+          {totalTime > 0 && (
+            <span className="flex items-center gap-1">
+              <span>⏱</span>
+              <span>{totalTime}m</span>
+            </span>
+          )}
+          {recipe.difficulty && (
+            <span className={`text-[11px] font-bold px-1.5 py-0.5 rounded-full ${
+              recipe.difficulty === "easy" || recipe.difficulty === "facil" ? "bg-green-100 text-green-700" :
+              recipe.difficulty === "hard" || recipe.difficulty === "dificil" ? "bg-red-100 text-red-700" :
+              "bg-yellow-100 text-yellow-700"
+            }`}>{diffLabel[recipe.difficulty] ?? recipe.difficulty}</span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Maker profile ────────────────────────────────────────────────────────────
 function MakerProfile({ id }: { id: number }) {
   const { user } = useAuth();
@@ -531,6 +580,10 @@ function MakerProfile({ id }: { id: number }) {
   const { data: followData } = trpc.buddyMakers.isFollowing.useQuery(
     { makerId: id },
     { enabled: !!user }
+  );
+  const { data: recipesData } = trpc.recipes.list.useQuery(
+    { buddyMakerId: id, isPublic: true, limit: 20 },
+    { enabled: !!id }
   );
 
   const followMut = trpc.buddyMakers.follow.useMutation({
@@ -545,8 +598,9 @@ function MakerProfile({ id }: { id: number }) {
   if (isLoading) return <ProfileSkeleton />;
   if (!data) return <NotFound type="maker" />;
 
-  const { maker, user: makerUser } = data;
+  const { maker } = data;
   const isFollowing = followData?.following ?? false;
+  const recipes = recipesData?.recipes ?? [];
 
   return (
     <ProfileLayout
@@ -561,7 +615,7 @@ function MakerProfile({ id }: { id: number }) {
       reviewsCount={0}
       stats={[
         { icon: "👥", value: maker.followersCount >= 1000 ? `${(maker.followersCount / 1000).toFixed(1)}k` : maker.followersCount, label: "seguidores" },
-        { icon: "🍽️", value: maker.recipesCount, label: "recetas" },
+        { icon: "🍽️", value: recipes.length > 0 ? recipes.length : (maker.recipesCount ?? 0), label: "recetas" },
         { icon: "⭐", value: maker.rating?.toFixed(1) ?? "—", label: "valoración" },
       ]}
       isFollowing={isFollowing}
@@ -570,6 +624,7 @@ function MakerProfile({ id }: { id: number }) {
       badge="BuddyMaker"
       badgeColor="from-pink-500 to-orange-500"
     >
+      {/* Instagram link */}
       {maker.instagramHandle && (
         <a
           href={`https://instagram.com/${maker.instagramHandle}`}
@@ -589,6 +644,28 @@ function MakerProfile({ id }: { id: number }) {
           </svg>
         </a>
       )}
+
+      {/* Recipes section */}
+      <section>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-bold text-gray-900 text-base">Recetas publicadas</h3>
+          {recipes.length > 0 && (
+            <span className="text-xs text-orange-500 font-bold bg-orange-50 px-2.5 py-1 rounded-full">{recipes.length} recetas</span>
+          )}
+        </div>
+        {recipes.length === 0 ? (
+          <div className="bg-white rounded-2xl border border-dashed border-orange-200 p-6 text-center">
+            <p className="text-3xl mb-2">🍳</p>
+            <p className="text-sm text-gray-500">Este maker aún no ha publicado recetas</p>
+          </div>
+        ) : (
+          <div className="grid grid-cols-2 gap-3">
+            {recipes.map((r: any) => (
+              <MakerRecipeCard key={r.id} recipe={r} />
+            ))}
+          </div>
+        )}
+      </section>
     </ProfileLayout>
   );
 }
@@ -620,8 +697,9 @@ function ProfileLayout({
   const [, navigate] = useLocation();
   // Determine fallback route based on badge type
   const goBack = () => {
-    if (window.history.length > 1) {
-      navigate(-1 as any);
+    // Use native browser history.back() for reliable back navigation
+    if (window.history.length > 2) {
+      window.history.back();
     } else {
       navigate(badge === "BuddyMaker" ? "/app/buddy-makers" : "/app/buddy-experts");
     }
@@ -750,7 +828,7 @@ function NotFound({ type }: { type: string }) {
       <div className="text-6xl">🔍</div>
       <h2 className="text-xl font-bold text-gray-800">No encontrado</h2>
       <p className="text-gray-500 text-center">Este {type} no existe o ya no está disponible.</p>
-      <button onClick={() => navigate(-1 as any)} className="bg-orange-500 text-white font-semibold px-6 py-2.5 rounded-xl">Volver</button>
+      <button onClick={() => window.history.length > 2 ? window.history.back() : navigate("/app/buddy-makers")} className="bg-orange-500 text-white font-semibold px-6 py-2.5 rounded-xl">Volver</button>
     </div>
   );
 }
