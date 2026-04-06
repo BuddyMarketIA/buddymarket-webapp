@@ -46,6 +46,7 @@ const BuddyShop = lazy(() => import("./pages/BuddyShop"));
 const MercadonaShop = lazy(() => import("./pages/MercadonaShop"));
 const CarrefourShop = lazy(() => import("./pages/CarrefourShop"));
 const LidlShop = lazy(() => import("./pages/LidlShop"));
+const HiperdinoShop = lazy(() => import("./pages/HiperdinoShop"));
 const MenuLibrary = lazy(() => import("./pages/MenuLibrary"));
 const ActiveMenu = lazy(() => import("./pages/ActiveMenu"));
 const SpecializedMenus = lazy(() => import("./pages/SpecializedMenus"));
@@ -164,6 +165,7 @@ function Router() {
       <Route path="/app/supermarkets">{() => <Redirect to="/app/supermercados" />}</Route>
       <Route path="/app/carrefour">{() => <ProtectedRoute component={CarrefourShop} />}</Route>
       <Route path="/app/lidl">{() => <ProtectedRoute component={LidlShop} />}</Route>
+      <Route path="/app/hiperdino">{() => <ProtectedRoute component={HiperdinoShop} />}</Route>
       <Route path="/app/menu-library">{() => <ProtectedRoute component={MenuLibrary} />}</Route>
       <Route path="/app/active-menu">{() => <ProtectedRoute component={ActiveMenu} />}</Route>
       <Route path="/app/specialized-menus">{() => <ProtectedPage><SpecializedMenus /></ProtectedPage>}</Route>

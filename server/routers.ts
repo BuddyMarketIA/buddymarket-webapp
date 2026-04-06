@@ -4002,6 +4002,81 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
       }),
   }),
   // ===========================================================================
+  // HIPERDINO
+  // ===========================================================================
+  hiperdino: router({
+    searchProducts: publicProcedure
+      .input(z.object({
+        q: z.string().optional(),
+        query: z.string().optional(),
+        limit: z.number().optional().default(48),
+      }))
+      .query(async ({ input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return [];
+        const { hiperdinoProducts } = await import("../drizzle/schema.js");
+        const { like, or } = await import("drizzle-orm");
+        const term = (input.q ?? input.query ?? "").trim();
+        if (!term) return [];
+        const q = `%${term}%`;
+        const rows = await drizzleDb
+          .select()
+          .from(hiperdinoProducts)
+          .where(or(
+            like(hiperdinoProducts.name, q),
+            like(hiperdinoProducts.brand, q),
+            like(hiperdinoProducts.category, q),
+          ))
+          .limit(input.limit);
+        return rows.map(p => ({
+          id: p.id,
+          name: p.name,
+          brand: p.brand ?? "",
+          image: p.image ?? null,
+          price: p.price ?? null,
+          packaging: p.packaging ?? "",
+          category: p.category ?? "",
+          productUrl: p.shareUrl ?? null,
+        }));
+      }),
+    categories: publicProcedure.query(async () => {
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) return [];
+      const { sql } = await import("drizzle-orm");
+      const result = await drizzleDb.execute(
+        sql`SELECT category, COUNT(*) as count FROM hiperdino_products GROUP BY category ORDER BY count DESC`
+      );
+      const rows = Array.isArray(result) ? result : (result as any).rows ?? [];
+      return rows as Array<{ category: string; count: number }>;
+    }),
+    byCategory: publicProcedure
+      .input(z.object({
+        category: z.string(),
+        limit: z.number().optional().default(48),
+      }))
+      .query(async ({ input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return [];
+        const { hiperdinoProducts } = await import("../drizzle/schema.js");
+        const { eq } = await import("drizzle-orm");
+        const rows = await drizzleDb
+          .select()
+          .from(hiperdinoProducts)
+          .where(eq(hiperdinoProducts.category, input.category))
+          .limit(input.limit);
+        return rows.map(p => ({
+          id: p.id,
+          name: p.name,
+          brand: p.brand ?? "",
+          image: p.image ?? null,
+          price: p.price ?? null,
+          packaging: p.packaging ?? "",
+          category: p.category ?? "",
+          productUrl: p.shareUrl ?? null,
+        }));
+      }),
+  }),
+  // ===========================================================================
   // BASKET PRICE COMPARATOR
   // ===========================================================================
   basketComparator: router({

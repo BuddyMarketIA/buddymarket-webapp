@@ -31,6 +31,7 @@ const SUPERMARKETS = [
   { id: "mercadona", name: "Mercadona", color: "#00A650", bg: "#E8F5E9", available: true, desc: "La cadena de supermercados más grande de España" },
   { id: "/app/carrefour", name: "Carrefour", color: "#004A97", bg: "#E3F2FD", available: true, desc: "Más de 14.000 productos disponibles" },
   { id: "/app/lidl", name: "Lidl", color: "#0050AA", bg: "#E8F0FB", available: true, desc: "150 productos en todas las categorías" },
+  { id: "/app/hiperdino", name: "Hiperdino", color: "#E30613", bg: "#FFF5F5", available: true, desc: "Tu supermercado canario de confianza" },
   { id: "alcampo", name: "Alcampo", color: "#E53935", bg: "#FFEBEE", available: false, desc: "Próximamente disponible" },
   { id: "dia", name: "Dia", color: "#C62828", bg: "#FFEBEE", available: false, desc: "Próximamente disponible" },
   { id: "elcorteingles", name: "El Corte Inglés", color: "#1B5E20", bg: "#E8F5E9", available: false, desc: "Próximamente disponible" },
@@ -226,6 +227,7 @@ export default function SupermercadoShop() {
               if (!sm.available) { toast.info(`${sm.name} estará disponible próximamente`); return; }
               if (sm.id === "/app/carrefour") { navigate("/app/carrefour"); return; }
               if (sm.id === "/app/lidl") { navigate("/app/lidl"); return; }
+              if (sm.id === "/app/hiperdino") { navigate("/app/hiperdino"); return; }
               setSelectedSupermarket(sm.id);
             }}
               className={`flex items-center gap-4 rounded-3xl p-4 text-left transition-all active:scale-[0.98] ${sm.available ? "bg-white shadow-sm border border-gray-100" : "bg-gray-50 border border-gray-100 opacity-70"}`}

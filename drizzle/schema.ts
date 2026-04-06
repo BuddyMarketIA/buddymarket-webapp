@@ -1571,3 +1571,24 @@ export const apiHealthLogs = pgTable("api_health_logs", {
 }));
 export type ApiHealthLog = typeof apiHealthLogs.$inferSelect;
 export type InsertApiHealthLog = typeof apiHealthLogs.$inferInsert;
+
+// =============================================================================
+// HIPERDINO PRODUCTS
+// =============================================================================
+export const hiperdinoProducts = pgTable("hiperdino_products", {
+  id: varchar("id", { length: 64 }).primaryKey(),
+  name: varchar("name", { length: 512 }).notNull(),
+  brand: varchar("brand", { length: 256 }),
+  image: varchar("image", { length: 512 }),
+  price: real("price"),
+  packaging: varchar("packaging", { length: 128 }),
+  category: varchar("category", { length: 256 }),
+  shareUrl: varchar("share_url", { length: 512 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  hdNameIdx: index("hd_name_idx").on(t.name),
+  hdCatIdx: index("hd_cat_idx").on(t.category),
+}));
+export type HiperdinoProduct = typeof hiperdinoProducts.$inferSelect;
+export type InsertHiperdinoProduct = typeof hiperdinoProducts.$inferInsert;
