@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
@@ -251,6 +252,7 @@ const PRESET_COMPLEMENTS = [
 ];
 
 export default function ActiveMenu() {
+  const { t } = useTranslation();
   const [, navigate] = useLocation();
   const [selectedSupermarket, setSelectedSupermarket] = useState<string>("mercadona");
   const [selectedDay, setSelectedDay] = useState<number | null>(null);

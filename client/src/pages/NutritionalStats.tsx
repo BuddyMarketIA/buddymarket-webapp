@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { trpc } from "@/lib/trpc";
 import { useState, useMemo } from "react";
 import { Link } from "wouter";
@@ -105,6 +106,7 @@ function StatCard({
 }
 
 export default function NutritionalStats() {
+  const { t } = useTranslation();
   const [days, setDays] = useState(30);
   const { data, isLoading } = trpc.mealLogs.nutritionalHistory.useQuery({ days });
   const metricsData = trpc.metrics.getAll.useQuery();

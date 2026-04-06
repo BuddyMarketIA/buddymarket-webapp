@@ -1,4 +1,5 @@
 import { useState, useMemo, useRef, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import BarcodeScanner from "@/components/BarcodeScanner";
@@ -156,6 +157,7 @@ function AILoadingAnimation() {
 // ────────────────────────────────────────────────────────────────────────────
 
 export default function MealLog() {
+  const { t } = useTranslation();
   const [dateOffset, setDateOffset] = useState(0);
   const [showCalendar, setShowCalendar] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
@@ -392,8 +394,8 @@ export default function MealLog() {
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: "22px", fontWeight: 900, color: "#1a1a1a", letterSpacing: "-0.03em" }}>Diario</h1>
-          <p style={{ margin: "2px 0 0", fontSize: "14px", color: "#9ca3af" }}>Seguimiento nutricional</p>
+          <h1 style={{ margin: 0, fontSize: "22px", fontWeight: 900, color: "#1a1a1a", letterSpacing: "-0.03em" }}>{t("mealLog.title", "Diary")}</h1>
+          <p style={{ margin: "2px 0 0", fontSize: "14px", color: "#9ca3af" }}>{t("mealLog.subtitle", "Nutritional tracking")}</p>
         </div>
         <div style={{ display: "flex", gap: "8px" }}>
           <a
@@ -544,7 +546,7 @@ export default function MealLog() {
           {/* Fats */}
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
             <div style={{ width: "10px", height: "10px", borderRadius: "3px", background: "#f43f5e", flexShrink: 0 }} />
-            <span style={{ fontSize: "12px", fontWeight: 600, color: "#374151", width: "60px", flexShrink: 0 }}>Grasas</span>
+            <span style={{ fontSize: "12px", fontWeight: 600, color: "#374151", width: "60px", flexShrink: 0 }}>{t("mealLog.fat", "Fat")}</span>
             <div style={{ flex: 1, background: "#fff1f2", borderRadius: "999px", height: "6px", overflow: "hidden" }}>
               <div style={{ background: "#f43f5e", borderRadius: "999px", height: "100%", width: `${fatPct}%`, transition: "width 0.6s ease" }} />
             </div>
@@ -577,7 +579,7 @@ export default function MealLog() {
         onMouseLeave={e => { e.currentTarget.style.background = "white"; }}
       >
         <span style={{ fontSize: "22px" }}>📸</span>
-        <span>Fotografía tu comida → Análisis IA</span>
+        <span>{t("mealLog.photoAnalysis", "Photo your food → AI Analysis")}</span>
       </button>
 
       {/* Meal logs by type */}
@@ -610,7 +612,7 @@ export default function MealLog() {
                     )}
                     <div style={{ flex: 1, minWidth: 0 }}>
                       <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#1a1a1a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>
-                        {log.recipe?.name ?? log.log.customMealName ?? "Comida"}
+                        {log.recipe?.name ?? log.log.customMealName ?? t("mealLog.meal", "Meal")}
                       </p>
                       <div style={{ display: "flex", gap: "8px", marginTop: "2px" }}>
                         {log.log.calories && <span style={{ fontSize: "14px", color: "#F97316", fontWeight: 700 }}>{Math.round(log.log.calories)} kcal</span>}
@@ -618,7 +620,7 @@ export default function MealLog() {
                       </div>
                     </div>
                     <button
-                      onClick={() => handleRemoveLog(log.log.id, log.recipe?.name ?? log.log.customMealName ?? "Comida")}
+                      onClick={() => handleRemoveLog(log.log.id, log.recipe?.name ?? log.log.customMealName ?? t("mealLog.meal", "Meal"))}
                       style={{ width: "30px", height: "30px", borderRadius: "8px", background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#d1d5db" }}
                       onMouseEnter={e => { e.currentTarget.style.background = "#fee2e2"; e.currentTarget.style.color = "#ef4444"; }}
                       onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#d1d5db"; }}
@@ -642,7 +644,7 @@ export default function MealLog() {
 
             {/* Modal header */}
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
-              <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 900, color: "#1a1a1a" }}>Registrar comida</h3>
+              <h3 style={{ margin: 0, fontSize: "18px", fontWeight: 900, color: "#1a1a1a" }}>{t("mealLog.logMeal", "Log meal")}</h3>
               <button onClick={() => { setShowAdd(false); resetForm(); }} style={{ width: "32px", height: "32px", borderRadius: "10px", background: "#f3f4f6", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>
               </button>
@@ -684,14 +686,14 @@ export default function MealLog() {
                       style={{ width: "100%", background: "linear-gradient(135deg, #F97316, #FB923C)", border: "none", borderRadius: "16px", padding: "16px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", color: "white", fontWeight: 700, fontSize: "15px" }}
                     >
                       <span style={{ fontSize: "24px" }}>📷</span>
-                      <span>Tomar foto</span>
+                      <span>{t("mealLog.takePhoto", "Take photo")}</span>
                     </button>
                     <button
                       onClick={() => fileInputRef.current?.click()}
                       style={{ width: "100%", background: "white", border: "2px dashed #FED7AA", borderRadius: "16px", padding: "14px", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "10px", color: "#F97316", fontWeight: 700, fontSize: "14px" }}
                     >
                       <span style={{ fontSize: "20px" }}>🖼️</span>
-                      <span>Elegir de galería</span>
+                      <span>{t("mealLog.chooseGallery", "Choose from gallery")}</span>
                     </button>
                   </div>
                 ) : (
@@ -739,11 +741,11 @@ export default function MealLog() {
                             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
                               <span style={{ fontSize: "22px" }}>⚠️</span>
                               <p style={{ margin: 0, fontSize: "14px", fontWeight: 800, color: "#991B1B" }}>
-                                Alérgenos detectados en tu perfil
+                                {t("mealLog.allergensDetected", "Allergens detected in your profile")}
                               </p>
                             </div>
                             <p style={{ margin: 0, fontSize: "13px", color: "#B91C1C", lineHeight: 1.4 }}>
-                              Este plato puede contener alérgenos que has indicado en tu perfil. Revisa los ingredientes antes de consumirlo.
+                              {t("mealLog.allergensWarning", "This dish may contain allergens you indicated in your profile. Check ingredients before consuming.")}
                             </p>
                             <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginTop: "2px" }}>
                               {aiResult.detectedUserAllergens.map((allergen, i) => (
@@ -826,7 +828,7 @@ export default function MealLog() {
                                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 4 }}>
                                     <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
                                       <span style={{ fontSize: 14 }}>💪</span>
-                                      <span style={{ fontSize: 13, fontWeight: 700, color: "#374151" }}>Proteínas</span>
+                                      <span style={{ fontSize: 13, fontWeight: 700, color: "#374151" }}>{t("mealLog.protein", "Protein")}</span>
                                       <span style={{ fontSize: 11, color: "#9CA3AF" }}>(músculo)</span>
                                     </div>
                                     <span style={{ fontSize: 13, fontWeight: 800, color: "#10B981" }}>{prot}g</span>
@@ -965,7 +967,7 @@ export default function MealLog() {
                                     <textarea
                                       value={feedbackComment}
                                       onChange={e => setFeedbackComment(e.target.value)}
-                                      placeholder="Comentario opcional (ej: faltó identificar el arroz)"
+                                      placeholder={t("mealLog.feedbackPlaceholder", "Optional comment (e.g.: missed identifying the rice)")}
                                       rows={2}
                                       style={{
                                         width: "100%", padding: "9px 12px", borderRadius: 10,
@@ -979,7 +981,7 @@ export default function MealLog() {
                                     <button
                                       onClick={() => {
                                         if (feedbackAccurate === null || feedbackRating === 0) {
-                                          toast.error("Selecciona si fue preciso y una valoración");
+                                          toast.error(t("mealLog.selectRating", "Select whether it was accurate and a rating"));
                                           return;
                                         }
                                         submitAIFeedback.mutate({
@@ -1002,7 +1004,7 @@ export default function MealLog() {
                                         transition: "all 0.2s ease",
                                       }}
                                     >
-                                      {submitAIFeedback.isPending ? "Enviando..." : "Enviar feedback"}
+                                      {submitAIFeedback.isPending ? t("common.sending", "Sending...") : t("mealLog.sendFeedback", "Send feedback")}
                                     </button>
                                   </div>
                                 )}
@@ -1023,7 +1025,7 @@ export default function MealLog() {
                 <input
                   value={mealName}
                   onChange={e => setMealName(e.target.value)}
-                  placeholder="¿Qué comiste? (ej: Ensalada de pollo)"
+                  placeholder={t("mealLog.whatDidYouEat", "What did you eat? (e.g.: Chicken salad)")}
                   style={{ width: "100%", padding: "12px 14px", borderRadius: "14px", border: "2px solid #f3f4f6", fontSize: "14px", outline: "none", boxSizing: "border-box", fontWeight: 600 }}
                 />
                 <select
@@ -1035,10 +1037,10 @@ export default function MealLog() {
                     <option key={dp.id} value={String(dp.id)}>{dp.nameEs}</option>
                   )) ?? (
                     <>
-                      <option value="1">Desayuno</option>
-                      <option value="2">Almuerzo</option>
-                      <option value="3">Merienda</option>
-                      <option value="4">Cena</option>
+                      <option value="1">{t("mealLog.breakfast", "Breakfast")}</option>
+                      <option value="2">{t("mealLog.lunch", "Lunch")}</option>
+                      <option value="3">{t("mealLog.snack", "Snack")}</option>
+                      <option value="4">{t("mealLog.dinner", "Dinner")}</option>
                     </>
                   )}
                 </select>
@@ -1077,7 +1079,7 @@ export default function MealLog() {
                   disabled={addLog.isPending}
                   style={{ flex: 2, padding: "13px", borderRadius: "14px", border: "none", background: addLog.isPending ? "#f3f4f6" : "#F97316", color: addLog.isPending ? "#9ca3af" : "white", fontSize: "14px", fontWeight: 700, cursor: addLog.isPending ? "not-allowed" : "pointer", boxShadow: addLog.isPending ? "none" : "0 4px 12px rgba(249,115,22,0.35)" }}
                 >
-                  {addLog.isPending ? "Guardando..." : (aiResult ? "✓ Confirmar y guardar" : "Registrar")}
+                  {addLog.isPending ? t("common.saving", "Saving...") : (aiResult ? `✓ ${t("mealLog.confirmSave", "Confirm and save")}` : t("mealLog.register", "Register"))}
                 </button>
               </div>
             )}
@@ -1087,7 +1089,7 @@ export default function MealLog() {
 
       {/* Disclaimer */}
       <p style={{ fontSize: "13px", color: "#d1d5db", textAlign: "center", margin: "24px 0 0", lineHeight: 1.5 }}>
-        BuddyMarket no constituye recomendaciones profesionales de nutrición. Consulta a un dietista.
+        {t("mealLog.disclaimer", "BuddyMarket does not constitute professional nutritional recommendations. Consult a dietitian.")}
       </p>
 
       {/* Barcode Scanner Modal */}

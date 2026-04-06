@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import { useTranslation } from "react-i18next";
 import { jsPDF } from "jspdf";
 import MercadonaCartExport from "@/components/MercadonaCartExport";
 import LidlCartExport from "@/components/LidlCartExport";
@@ -64,6 +65,7 @@ const SUPERMARKETS = [
 type ViewFilter = "all" | "to_buy" | "in_pantry" | "purchased";
 
 function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => void }) {
+  const { t } = useTranslation();
   const { data: listData, isLoading } = trpc.shoppingLists.getById.useQuery({ id: listId });
   const utils = trpc.useUtils();
   const [newItem, setNewItem] = useState("");
@@ -82,7 +84,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
 
   // Generate PDF of the shopping list
   function generatePDF() {
-    const listName = (listData as any)?.list?.name ?? (listData as any)?.name ?? "Lista de la compra";
+    const listName = (listData as any)?.list?.name ?? (listData as any)?.name ?? t("shoppingList.title", "Shopping list");
     const items = (listData?.items ?? []) as any[];
     const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
     const pageW = doc.internal.pageSize.getWidth();
@@ -243,7 +245,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
       text += `${done ? "✅" : "□"} ${name}\n`;
     });
     navigator.clipboard.writeText(text).then(() => {
-      toast.success("Lista copiada al portapapeles ✓");
+      toast.success(t("shoppingList.listCopied", "List copied to clipboard ✓"));
       setShowShare(false);
     });
   }
@@ -254,7 +256,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
       setShowSaveTemplate(false);
       setTemplateName("");
     },
-    onError: (err: any) => toast.error(err.message || "Error al guardar la plantilla"),
+    onError: (err: any) => toast.error(err.message || t("shoppingList.errorSaveTemplate", "Error saving template")),
   });
 
   // Load pantry stock to auto-detect items already at home
@@ -324,7 +326,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
       utils.shoppingLists.getById.invalidate({ id: listId });
       setNewItem("");
       setShowAdd(false);
-      toast.success("Producto añadido");
+      toast.success(t("shoppingList.productAdded", "Product added"));
     },
   });
 
@@ -587,7 +589,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
           <span className="mb-4 text-5xl">🛒</span>
           <h3 className="mb-2 text-base font-bold text-gray-900">Lista vacía</h3>
           <p className="mb-6 text-sm text-gray-500">Añade productos a tu lista</p>
-          <button onClick={() => setShowAdd(true)} className="btn-vively">Añadir producto</button>
+          <button onClick={() => setShowAdd(true)} className="btn-vively">{t("shoppingList.addProduct", "Add product")}</button>
         </div>
       )}
 
@@ -600,7 +602,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
               value={newItem}
               onChange={(e) => setNewItem(e.target.value)}
               onKeyDown={(e) => e.key === "Enter" && addItem.mutate({ shoppingListId: listId, customName: newItem })}
-              placeholder="Nombre del producto"
+              placeholder={t("shoppingList.productName", "Product name")}
               className="vively-input mb-4"
               autoFocus
             />
@@ -627,7 +629,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
             {!selectedSupermarket ? (
               <>
                 <div className="mb-5 flex items-center justify-between">
-                  <h3 className="text-lg font-bold text-gray-900">Comprar online</h3>
+                  <h3 className="text-lg font-bold text-gray-900">{t("shoppingList.buyOnlineBtn", "Buy online")}</h3>
                   <button onClick={() => setShowExport(false)} className="text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
                 </div>
                 <p className="mb-5 text-sm text-gray-500">Elige tu supermercado y abriremos la búsqueda de cada producto en su tienda online.</p>
@@ -788,7 +790,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
       {showShare && (
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowShare(false); }}>
           <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up">
-            <h3 className="mb-1 text-lg font-bold text-gray-900">Exportar lista</h3>
+            <h3 className="mb-1 text-lg font-bold text-gray-900">{t("shoppingList.exportList", "Export list")}</h3>
             <p className="mb-5 text-sm text-gray-500">Elige cómo quieres compartir o guardar tu lista de la compra.</p>
             <div className="space-y-3">
               <button
@@ -832,7 +834,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
                 </div>
               </button>
             </div>
-            <button onClick={() => setShowShare(false)} className="mt-4 w-full rounded-2xl border-2 border-gray-100 py-3 text-sm font-semibold text-gray-600">Cancelar</button>
+            <button onClick={() => setShowShare(false)} className="mt-4 w-full rounded-2xl border-2 border-gray-100 py-3 text-sm font-semibold text-gray-600">{t("common.cancel", "Cancel")}</button>
           </div>
         </div>
       )}
@@ -859,7 +861,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
                 disabled={saveAsTemplate.isPending}
                 className="flex-1 rounded-2xl bg-violet-600 py-3 text-sm font-bold text-white disabled:opacity-60"
               >
-                {saveAsTemplate.isPending ? "Guardando..." : "Guardar plantilla"}
+                {saveAsTemplate.isPending ? t("common.saving", "Saving...") : t("shoppingList.saveTemplate", "Save template")}
               </button>
             </div>
           </div>
@@ -872,6 +874,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
   );
 }
 export default function ShoppingLists() {
+  const { t } = useTranslation();
   const [selectedListId, setSelectedListId] = useState<number | null>(null);
   const [showNew, setShowNew] = useState(false);
   const [showFromMenu, setShowFromMenu] = useState(false);
@@ -894,7 +897,7 @@ export default function ShoppingLists() {
       refetch();
       toast.success(`Lista "${data.name}" creada`);
     },
-    onError: (err: any) => toast.error(err.message || "Error al crear la lista"),
+    onError: (err: any) => toast.error(err.message || t("shoppingList.errorCreate", "Error creating list")),
   });
   const deleteTemplate = trpc.shoppingLists.deleteTemplate.useMutation({
     onSuccess: () => { refetchTemplates(); toast.success("Plantilla eliminada"); },
@@ -906,7 +909,7 @@ export default function ShoppingLists() {
       refetch();
       setShowNew(false);
       setNewName("");
-      toast.success("Lista creada");
+      toast.success(t("shoppingList.listCreated", "List created"));
     },
   });
 
@@ -918,12 +921,12 @@ export default function ShoppingLists() {
       toast.success(`Lista "${data.name}" creada con ${data.itemCount} productos`);
     },
     onError: (err: any) => {
-      toast.error(err.message || "Error al generar la lista");
+      toast.error(err.message || t("shoppingList.errorGenerate", "Error generating list"));
     },
   });
 
   const deleteList = trpc.shoppingLists.delete.useMutation({
-    onSuccess: () => { refetch(); toast.success("Lista eliminada"); },
+    onSuccess: () => { refetch(); toast.success(t("shoppingList.listDeleted", "List deleted")); },
   });
 
   const parseFromPhoto = trpc.shoppingLists.parseFromPhoto.useMutation({
@@ -967,7 +970,7 @@ export default function ShoppingLists() {
       setOcrItems([]);
       setOcrListName("");
     } catch {
-      toast.error("Error al crear la lista");
+      toast.error(t("shoppingList.errorCreate", "Error creating list"));
     } finally {
       setOcrAdding(false);
     }
@@ -1121,7 +1124,7 @@ export default function ShoppingLists() {
       {showNew && (
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowNew(false); }}>
           <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up">
-            <h3 className="mb-4 text-lg font-bold text-gray-900">Nueva lista</h3>
+            <h3 className="mb-4 text-lg font-bold text-gray-900">{t("shoppingList.newList", "New list")}</h3>
             <input
               value={newName}
               onChange={(e) => setNewName(e.target.value)}

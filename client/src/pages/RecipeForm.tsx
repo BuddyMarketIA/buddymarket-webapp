@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -12,6 +13,7 @@ import { Link, useLocation, useParams } from "wouter";
 import { toast } from "sonner";
 
 export default function RecipeForm() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id?: string }>();
   const [, navigate] = useLocation();
   const isEditing = !!id;
@@ -36,7 +38,7 @@ export default function RecipeForm() {
 
   const createRecipe = trpc.recipes.create.useMutation({
     onSuccess: (data) => {
-      toast.success("Receta creada correctamente");
+      toast.success(t("recipes.created", "Recipe created successfully"));
       navigate(`/app/recipes/${data?.id}`);
     },
     onError: (err) => toast.error(err.message),
@@ -57,7 +59,7 @@ export default function RecipeForm() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     if (!name.trim()) {
-      toast.error("El nombre es obligatorio");
+      toast.error(t("recipes.nameRequired", "Name is required"));
       return;
     }
     createRecipe.mutate({
@@ -82,10 +84,10 @@ export default function RecipeForm() {
 
         <div>
           <h1 className="text-2xl font-bold text-foreground" style={{ fontFamily: "'Plus Jakarta Sans', sans-serif" }}>
-            {isEditing ? "Editar receta" : "Nueva receta"}
+            {isEditing ? t("recipes.editRecipe", "Edit recipe") : t("recipes.newRecipe", "New recipe")}
           </h1>
           <p className="text-muted-foreground text-sm mt-1">
-            {isEditing ? "Modifica los datos de tu receta" : "Crea una nueva receta para tu colección"}
+            {isEditing ? t("recipes.editSubtitle", "Modify your recipe data") : t("recipes.newSubtitle", "Create a new recipe for your collection")}
           </p>
         </div>
 
@@ -93,7 +95,7 @@ export default function RecipeForm() {
           {/* Basic info */}
           <Card className="border-border">
             <CardHeader className="pb-3">
-              <CardTitle className="text-base">Información básica</CardTitle>
+              <CardTitle className="text-base">{t("recipes.basicInfo", "Basic information")}</CardTitle>
             </CardHeader>
             <CardContent className="space-y-4">
               <div className="space-y-1.5">

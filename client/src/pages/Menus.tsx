@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Link } from "wouter";
@@ -13,11 +14,11 @@ import {
   CalendarDaysIcon,
 } from "@heroicons/react/24/outline";
 
-const MEAL_TYPES = [
-  { key: "breakfast", label: "Desayuno", emoji: "🌅", apiParam: "breakfast" },
-  { key: "lunch", label: "Almuerzo", emoji: "☀️", apiParam: "lunch" },
-  { key: "snack", label: "Merienda", emoji: "🍎", apiParam: "snack" },
-  { key: "dinner", label: "Cena", emoji: "🌙", apiParam: "dinner" },
+const MEAL_TYPE_KEYS = [
+  { key: "breakfast", tKey: "mealLog.breakfast", emoji: "🌅", apiParam: "breakfast" },
+  { key: "lunch", tKey: "mealLog.lunch", emoji: "☀️", apiParam: "lunch" },
+  { key: "snack", tKey: "mealLog.snack", emoji: "🍎", apiParam: "snack" },
+  { key: "dinner", tKey: "mealLog.dinner", emoji: "🌙", apiParam: "dinner" },
 ];
 
 const DAYS_ES = ["Dom", "Lun", "Mar", "Mié", "Jue", "Vie", "Sáb"];
@@ -38,6 +39,8 @@ function getWeekDates(baseDate: Date) {
 }
 
 export default function Menus() {
+  const { t } = useTranslation();
+  const MEAL_TYPES = MEAL_TYPE_KEYS.map(m => ({ ...m, label: t(m.tKey, m.key) }));
   const [weekOffset, setWeekOffset] = useState(0);
   const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
   const [showNewMenu, setShowNewMenu] = useState(false);
@@ -78,7 +81,7 @@ export default function Menus() {
       refetchMenus();
       setShowNewMenu(false);
       setMenuName("");
-      toast.success("Menú creado");
+      toast.success(t("menus.menuCreated", "Menu created"));
     },
   });
 
@@ -89,15 +92,15 @@ export default function Menus() {
       refetchDayItems();
       setShowAddRecipe(null);
       setRecipeSearch("");
-      toast.success("Receta añadida al menú");
+      toast.success(t("menus.recipeAdded", "Recipe added to menu"));
     },
-    onError: (err: any) => toast.error(err.message || "Error al añadir receta"),
+    onError: (err: any) => toast.error(err.message || t("menus.errorAddRecipe", "Error adding recipe")),
   });
 
   const removeRecipeFromDayPart = trpc.menus.removeRecipeFromDayPart.useMutation({
     onSuccess: () => {
       refetchDayItems();
-      toast.success("Receta eliminada del menú");
+      toast.success(t("menus.recipeRemoved", "Recipe removed from menu"));
     },
   });
 
@@ -105,9 +108,9 @@ export default function Menus() {
     onSuccess: (data) => {
       utils.mealLogs.list.invalidate();
       setShowApplyModal(null);
-      toast.success(`✅ ${data.logsCreated} comidas añadidas al diario desde ${applyStartDate}`);
+      toast.success(`✅ ${data.logsCreated} ${t("menus.mealsAddedToDiary", "meals added to diary from")} ${applyStartDate}`);
     },
-    onError: () => toast.error("Error al aplicar el menú al diario."),
+    onError: () => toast.error(t("menus.errorApplyDiary", "Error applying menu to diary")),
   });
 
   const generateAI = trpc.menus.generateWithAI.useMutation({
@@ -115,14 +118,14 @@ export default function Menus() {
       refetchDayItems();
       setGenerating(false);
       setShowAI(false);
-      toast.success("¡Menú generado con IA!");
+      toast.success(t("menus.aiGenerated", "Menu generated with AI!"));
     },
-    onError: () => { setGenerating(false); toast.error("Error al generar el menú"); },
+    onError: () => { setGenerating(false); toast.error(t("menus.errorGenerate", "Error generating menu")); },
   });
 
   const handleGenerateAI = () => {
     if (!menus || menus.length === 0) {
-      toast.error("Crea un menú primero");
+      toast.error(t("menus.createFirst", "Create a menu first"));
       return;
     }
     setGenerating(true);
@@ -135,7 +138,7 @@ export default function Menus() {
 
   const handleAddRecipeToMeal = async (mealType: string) => {
     if (!menus || menus.length === 0) {
-      toast.error("Crea un menú primero para añadir recetas");
+      toast.error(t("menus.createFirstRecipes", "Create a menu first to add recipes"));
       setShowNewMenu(true);
       return;
     }
@@ -144,7 +147,7 @@ export default function Menus() {
       const result = await ensureDayPart.mutateAsync({ menuId, date: selectedDateStr, mealType });
       setShowAddRecipe({ dayPartId: result.id, mealType });
     } catch (e: any) {
-      toast.error("Error al preparar el menú");
+      toast.error(t("menus.errorPrepare", "Error preparing menu"));
     }
   };
 
@@ -236,7 +239,7 @@ export default function Menus() {
                 className="flex items-center gap-2 rounded-2xl bg-orange-50 border border-orange-200 px-3 py-2 text-xs font-semibold text-orange-600 w-full justify-center"
               >
                 <CalendarDaysIcon className="h-4 w-4" />
-                Aplicar "{activeMenu.name}" al diario de comidas
+                {t("menus.applyMenuToDiary", "Apply \"{{name}}\" to food diary").replace("{{name}}", activeMenu.name)}
               </button>
             ) : null;
           })()}
@@ -294,12 +297,12 @@ export default function Menus() {
           <h3 className="mb-2 text-base font-bold text-gray-900">Sin planificador activo</h3>
           <p className="mb-4 text-sm text-gray-500">Crea tu primer menú semanal o importa uno de la biblioteca de menús predefinidos.</p>
           <div className="flex flex-col gap-2 w-full max-w-xs">
-            <button onClick={() => setShowNewMenu(true)} className="btn-vively w-full">➕ Crear menú nuevo</button>
+            <button onClick={() => setShowNewMenu(true)} className="btn-vively w-full">➕ {t("menus.createNewMenu", "Create new menu")}</button>
             <Link href="/app/menu-library">
-              <button className="btn-vively-outline w-full">📚 Explorar biblioteca</button>
+              <button className="btn-vively-outline w-full">📚 {t("menus.exploreLibrary", "Explore library")}</button>
             </Link>
             <button onClick={() => setShowAI(true)} className="flex items-center justify-center gap-2 rounded-2xl border border-blue-200 bg-blue-50 py-3 text-sm font-semibold text-blue-600 w-full">
-              ✨ Generar con IA
+              ✨ {t("menus.generateWithAI", "Generate with AI")}
             </button>
           </div>
         </div>
@@ -333,7 +336,7 @@ export default function Menus() {
                       onClick={() => handleAddRecipeToMeal(mealType.apiParam)}
                       className="w-full rounded-xl border-2 border-dashed border-gray-200 py-3 text-xs text-gray-400 hover:border-[#F97316]/40 hover:text-[#F97316] transition-all"
                     >
-                      + Añadir receta
+                      + {t("menus.addRecipe", "Add recipe")}
                     </button>
                   ) : (
                     <div className="space-y-2">
@@ -348,7 +351,7 @@ export default function Menus() {
                             />
                             <div className="min-w-0">
                               <p className="text-sm font-medium text-gray-800 truncate">
-                                {item.recipe?.name ?? "Receta eliminada"}
+                                {item.recipe?.name ?? t("menus.deletedRecipe", "Deleted recipe")}
                               </p>
                               {item.recipe?.calories && (
                                 <p className="text-xs text-gray-400">{item.recipe.calories} kcal</p>
@@ -378,12 +381,12 @@ export default function Menus() {
             <div className="flex items-center gap-3">
               <CalendarDaysIcon className="h-5 w-5 text-[#F97316] shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-gray-800">Genera tu lista de la compra</p>
-                <p className="text-xs text-gray-500">Basada en las recetas de este menú</p>
+                <p className="text-sm font-bold text-gray-800">{t("menus.generateShoppingList", "Generate your shopping list")}</p>
+                <p className="text-xs text-gray-500">{t("menus.basedOnRecipes", "Based on this menu's recipes")}</p>
               </div>
               <Link href="/app/shopping-lists">
                 <button className="shrink-0 rounded-xl bg-[#F97316] px-3 py-1.5 text-xs font-bold text-white">
-                  Crear lista
+                  {t("menus.createList", "Create list")}
                 </button>
               </Link>
             </div>
@@ -407,7 +410,7 @@ export default function Menus() {
                   createMenu.mutate({ name: menuName || "Mi menú", startDate: today, endDate: nextWeek });
                 }
               }}
-              placeholder="Ej: Semana saludable, Dieta mediterránea..."
+              placeholder={t("menus.menuNamePlaceholder", "E.g.: Healthy week, Mediterranean diet...")}
               className="vively-input mb-4"
               autoFocus
             />
@@ -416,7 +419,7 @@ export default function Menus() {
                 onClick={() => setShowNewMenu(false)}
                 className="flex-1 rounded-2xl border border-gray-200 py-3 text-sm font-semibold text-gray-600"
               >
-                Cancelar
+                {t("common.cancel", "Cancel")}
               </button>
               <button
                 onClick={() => {
@@ -427,7 +430,7 @@ export default function Menus() {
                 disabled={createMenu.isPending}
                 className="flex-1 btn-vively"
               >
-                {createMenu.isPending ? "Creando..." : "Crear"}
+                {createMenu.isPending ? t("common.creating", "Creating...") : t("common.create", "Create")}
               </button>
             </div>
           </div>
@@ -443,19 +446,19 @@ export default function Menus() {
                 <SparklesIcon className="h-5 w-5 text-blue-600" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Generar con IA</h3>
-                <p className="text-xs text-gray-500">La IA creará un menú personalizado</p>
+                <h3 className="text-lg font-bold text-gray-900">{t("menus.generateWithAI", "Generate with AI")}</h3>
+                <p className="text-xs text-gray-500">{t("menus.aiWillCreate", "AI will create a personalised menu")}</p>
               </div>
             </div>
             {!hasMenus && (
               <div className="mb-4 rounded-2xl bg-amber-50 p-3 text-xs text-amber-700">
-                ⚠️ Necesitas crear un menú primero. Se creará uno automáticamente.
+                ⚠️ {t("menus.needMenuFirst", "You need to create a menu first. One will be created automatically.")}
               </div>
             )}
             <input
               value={aiObjective}
               onChange={(e) => setAiObjective(e.target.value)}
-              placeholder="Objetivo (ej: perder peso, dieta mediterránea, vegano...)"
+              placeholder={t("menus.aiObjectivePlaceholder", "Objective (e.g.: lose weight, Mediterranean diet, vegan...)")}
               className="vively-input mb-4"
             />
             <div className="flex gap-3">
@@ -463,14 +466,14 @@ export default function Menus() {
                 onClick={() => setShowAI(false)}
                 className="flex-1 rounded-2xl border border-gray-200 py-3 text-sm font-semibold text-gray-600"
               >
-                Cancelar
+                {t("common.cancel", "Cancel")}
               </button>
               <button
                 onClick={handleGenerateAI}
                 disabled={generating}
                 className="flex-1 btn-vively"
               >
-                {generating ? "Generando..." : "✨ Generar"}
+                {generating ? t("common.generating", "Generating...") : `✨ ${t("common.generate", "Generate")}`}
               </button>
             </div>
           </div>
@@ -481,20 +484,20 @@ export default function Menus() {
       {showAddRecipe && (
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) { setShowAddRecipe(null); setRecipeSearch(""); } }}>
           <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up max-h-[80vh] flex flex-col">
-            <h3 className="mb-1 text-lg font-bold text-gray-900">Añadir receta</h3>
-            <p className="mb-4 text-xs text-gray-500">Busca una receta para añadir al menú</p>
+            <h3 className="mb-1 text-lg font-bold text-gray-900">{t("menus.addRecipe", "Add recipe")}</h3>
+            <p className="mb-4 text-xs text-gray-500">{t("menus.searchRecipeDesc", "Search for a recipe to add to the menu")}</p>
             <input
               value={recipeSearch}
               onChange={(e) => setRecipeSearch(e.target.value)}
-              placeholder="Buscar receta..."
+              placeholder={t("menus.searchRecipe", "Search recipe...")}
               className="vively-input mb-3"
               autoFocus
             />
             <div className="flex-1 overflow-y-auto space-y-2">
               {recipeSearch.length < 2 ? (
-                <p className="text-center text-sm text-gray-400 py-4">Escribe al menos 2 letras para buscar</p>
+                <p className="text-center text-sm text-gray-400 py-4">{t("menus.typeToSearch", "Type at least 2 letters to search")}</p>
               ) : !recipeResults || (recipeResults as any).recipes?.length === 0 ? (
-                <p className="text-center text-sm text-gray-400 py-4">Sin resultados para "{recipeSearch}"</p>
+                <p className="text-center text-sm text-gray-400 py-4">{t("menus.noResults", "No results for")} "{recipeSearch}"</p>
               ) : (
                 ((recipeResults as any).recipes ?? []).map((recipe: any) => (
                   <button
@@ -521,12 +524,11 @@ export default function Menus() {
               onClick={() => { setShowAddRecipe(null); setRecipeSearch(""); }}
               className="mt-4 w-full rounded-2xl border border-gray-200 py-3 text-sm font-semibold text-gray-600"
             >
-              Cancelar
+              {t("common.cancel", "Cancel")}
             </button>
           </div>
         </div>
       )}
-
       {/* Apply to Calendar modal */}
       {showApplyModal !== null && (
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowApplyModal(null); }}>
@@ -536,12 +538,12 @@ export default function Menus() {
                 <CalendarDaysIcon className="h-5 w-5 text-orange-500" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Aplicar al diario</h3>
-                <p className="text-xs text-gray-500">Las comidas del menú se añadirán a tu diario</p>
+                <h3 className="text-lg font-bold text-gray-900">{t("menus.applyToDiary", "Apply to diary")}</h3>
+                <p className="text-xs text-gray-500">{t("menus.applyToDiaryDesc", "Menu meals will be added to your diary")}</p>
               </div>
             </div>
             <div className="mb-4">
-              <label className="block text-xs font-semibold text-gray-700 mb-1">Fecha de inicio</label>
+              <label className="block text-xs font-semibold text-gray-700 mb-1">{t("menus.startDate", "Start date")}</label>
               <input
                 type="date"
                 value={applyStartDate}
@@ -549,7 +551,7 @@ export default function Menus() {
                 className="vively-input"
               />
               <p className="text-xs text-gray-400 mt-1">
-                Las comidas se distribuirán a partir de esta fecha según los días del menú.
+                {t("menus.startDateDesc", "Meals will be distributed from this date according to the menu days.")}
               </p>
             </div>
             <div className="flex gap-3">
@@ -557,14 +559,14 @@ export default function Menus() {
                 onClick={() => setShowApplyModal(null)}
                 className="flex-1 rounded-2xl border border-gray-200 py-3 text-sm font-semibold text-gray-600"
               >
-                Cancelar
+                {t("common.cancel", "Cancel")}
               </button>
               <button
                 onClick={() => applyToCalendar.mutate({ menuId: showApplyModal, startDate: applyStartDate, overwrite: false })}
                 disabled={applyToCalendar.isPending}
                 className="flex-1 btn-vively"
               >
-                {applyToCalendar.isPending ? "⏳ Aplicando..." : "✅ Aplicar"}
+                {applyToCalendar.isPending ? `⏳ ${t("common.applying", "Applying...")}` : `✅ ${t("common.apply", "Apply")}`}
               </button>
             </div>
           </div>
@@ -572,7 +574,7 @@ export default function Menus() {
       )}
 
       <div className="vively-disclaimer">
-        <p>Los menús generados por IA son orientativos. Consulta con un nutricionista.</p>
+        <p>{t("menus.disclaimer", "AI-generated menus are for guidance only. Consult a nutritionist.")}</p>
       </div>
     </div>
   );

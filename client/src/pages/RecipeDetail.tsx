@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import ShareRecipeButton from "@/components/ShareRecipeButton";
@@ -18,6 +19,7 @@ import { HeartIcon as HeartSolid } from "@heroicons/react/24/solid";
 type Tab = "ingredients" | "instructions" | "nutrition";
 
 export default function RecipeDetail() {
+  const { t } = useTranslation();
   const { id } = useParams<{ id: string }>();
   const [, navigate] = useLocation();
   const { user } = useAuth();
@@ -45,13 +47,13 @@ export default function RecipeDetail() {
   const toggleFav = trpc.recipes.toggleFavorite.useMutation({
     onSuccess: () => {
       utils.recipes.getById.invalidate({ id: Number(id) });
-      toast.success("Favoritos actualizados");
+      toast.success(t("recipes.favoritesUpdated", "Favorites updated"));
     },
   });
 
   const deleteRecipe = trpc.recipes.delete.useMutation({
     onSuccess: () => {
-      toast.success("Receta eliminada");
+      toast.success(t("recipes.deleted", "Recipe deleted"));
       navigate("/app/recipes");
     },
   });
@@ -155,7 +157,7 @@ export default function RecipeDetail() {
   if (!recipe) {
     return (
       <div className="vively-page container text-center">
-        <p className="text-gray-500">Receta no encontrada</p>
+        <p className="text-gray-500">{t("recipes.notFound", "Recipe not found")}</p>
         <Link href="/app/recipes" className="btn-vively mt-4 inline-block">
           Volver a recetas
         </Link>

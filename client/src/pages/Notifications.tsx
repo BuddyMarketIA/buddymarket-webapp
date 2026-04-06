@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useTranslation } from "react-i18next";
 import { trpc } from "@/lib/trpc";
 import AppLayout from "@/components/AppLayout";
 
@@ -13,18 +14,18 @@ const TYPE_CONFIG: Record<NotifType, { icon: string; color: string; bg: string }
   promo:   { icon: "🎁", color: "#F97316", bg: "rgba(249,115,22,0.08)" },
 };
 
-function timeAgo(date: Date | string): string {
-  const d = new Date(date);
-  const now = new Date();
-  const diff = Math.floor((now.getTime() - d.getTime()) / 1000);
-  if (diff < 60) return "Ahora mismo";
-  if (diff < 3600) return `Hace ${Math.floor(diff / 60)} min`;
-  if (diff < 86400) return `Hace ${Math.floor(diff / 3600)} h`;
-  if (diff < 604800) return `Hace ${Math.floor(diff / 86400)} días`;
-  return d.toLocaleDateString("es-ES", { day: "numeric", month: "short" });
-}
-
 export default function Notifications() {
+  const { t } = useTranslation();
+  function timeAgo(date: Date | string): string {
+    const d = new Date(date);
+    const now = new Date();
+    const diff = Math.floor((now.getTime() - d.getTime()) / 1000);
+    if (diff < 60) return t("notifications.justNow", "Just now");
+    if (diff < 3600) return `${Math.floor(diff / 60)} ${t("notifications.minAgo", "min ago")}`;
+    if (diff < 86400) return `${Math.floor(diff / 3600)} ${t("notifications.hAgo", "h ago")}`;
+    if (diff < 604800) return `${Math.floor(diff / 86400)} ${t("notifications.daysAgoShort", "days ago")}`;
+    return d.toLocaleDateString(undefined, { day: "numeric", month: "short" });
+  }
   const [filter, setFilter] = useState<FilterType>("all");
   const utils = trpc.useUtils();
 
@@ -60,7 +61,7 @@ export default function Notifications() {
   };
 
   return (
-    <AppLayout title="Notificaciones" showBack>
+    <AppLayout title={t("notifications.title", "Notifications")} showBack>
       <div style={{ padding: "16px", maxWidth: "480px", margin: "0 auto" }}>
 
         {/* Header row */}
@@ -84,7 +85,7 @@ export default function Notifications() {
                   transition: "all 0.2s",
                 }}
               >
-                {f === "all" ? "Todas" : `No leídas${unreadCount > 0 ? ` (${unreadCount})` : ""}`}
+                {f === "all" ? t("notifications.all", "All") : `${t("notifications.unread", "Unread")}${unreadCount > 0 ? ` (${unreadCount})` : ""}`}
               </button>
             ))}
           </div>
@@ -106,7 +107,7 @@ export default function Notifications() {
                 opacity: markAllRead.isPending ? 0.6 : 1,
               }}
             >
-              {markAllRead.isPending ? "..." : "Marcar todas"}
+              {markAllRead.isPending ? "..." : t("notifications.markAll", "Mark all")}
             </button>
           )}
         </div>
@@ -122,12 +123,12 @@ export default function Notifications() {
           <div style={{ textAlign: "center", padding: "60px 20px" }}>
             <div style={{ fontSize: "56px", marginBottom: "16px" }}>🔔</div>
             <p style={{ fontSize: "18px", fontWeight: 800, color: "#1a1a1a", margin: "0 0 8px" }}>
-              {filter === "unread" ? "Todo al día" : "Sin notificaciones"}
+              {filter === "unread" ? t("notifications.upToDate", "All up to date") : t("notifications.empty", "No notifications")}
             </p>
             <p style={{ fontSize: "14px", color: "#9ca3af", margin: 0 }}>
               {filter === "unread"
-                ? "No tienes notificaciones pendientes de leer."
-                : "Aquí aparecerán tus notificaciones cuando las haya."}
+                ? t("notifications.noPending", "You have no pending notifications to read.")
+                : t("notifications.willAppear", "Your notifications will appear here when available.")}
             </p>
           </div>
         ) : (
@@ -209,7 +210,7 @@ export default function Notifications() {
         {/* Footer disclaimer */}
         <div style={{ marginTop: "32px", textAlign: "center" }}>
           <p style={{ fontSize: "11px", color: "#d1d5db", margin: 0 }}>
-            BuddyMarket · Las notificaciones no constituyen recomendaciones profesionales
+            {t("notifications.disclaimer", "BuddyMarket · Notifications do not constitute professional recommendations")}
           </p>
         </div>
       </div>

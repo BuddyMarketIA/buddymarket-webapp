@@ -1,20 +1,21 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 
 type AchievementCategory = "racha" | "cantidad" | "variedad" | "nutricion" | "explorador";
 
-const CATEGORY_LABELS: Record<AchievementCategory, { label: string; emoji: string; color: string }> = {
-  racha:      { label: "Racha",      emoji: "🔥", color: "#f97316" },
-  cantidad:   { label: "Cantidad",   emoji: "📊", color: "#3b82f6" },
-  variedad:   { label: "Variedad",   emoji: "🌈", color: "#8b5cf6" },
-  nutricion:  { label: "Nutrición",  emoji: "⚖️", color: "#22c55e" },
-  explorador: { label: "Explorador", emoji: "🔍", color: "#f59e0b" },
-};
-
 const ALL_CATEGORIES: AchievementCategory[] = ["racha", "cantidad", "variedad", "nutricion", "explorador"];
 
 export default function Achievements() {
+  const { t } = useTranslation();
+  const CATEGORY_LABELS: Record<AchievementCategory, { label: string; emoji: string; color: string }> = {
+    racha:      { label: t("achievements.streak", "Streak"),      emoji: "🔥", color: "#f97316" },
+    cantidad:   { label: t("achievements.quantity", "Quantity"),   emoji: "📊", color: "#3b82f6" },
+    variedad:   { label: t("achievements.variety", "Variety"),   emoji: "🌈", color: "#8b5cf6" },
+    nutricion:  { label: t("achievements.nutrition", "Nutrition"),  emoji: "⚖️", color: "#22c55e" },
+    explorador: { label: t("achievements.explorer", "Explorer"), emoji: "🔍", color: "#f59e0b" },
+  };
   const { data, isLoading } = trpc.achievements.getAll.useQuery();
   const [activeCategory, setActiveCategory] = useState<AchievementCategory | "all">("all");
   const [justUnlocked, setJustUnlocked] = useState<string | null>(null);
@@ -39,7 +40,7 @@ export default function Achievements() {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "center", minHeight: "60vh" }}>
         <div style={{ textAlign: "center" }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>🏆</div>
-          <p style={{ color: "#9ca3af" }}>Cargando logros...</p>
+          <p style={{ color: "#9ca3af" }}>{t("achievements.loading", "Loading achievements...")}</p>
         </div>
       </div>
     );
@@ -137,7 +138,7 @@ export default function Achievements() {
           <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
             <div style={{ textAlign: "center" }}>
               <div style={{ fontSize: 26, fontWeight: 800 }}>{data?.unlockedCount ?? 0}</div>
-              <div style={{ fontSize: 11, opacity: 0.7 }}>Desbloqueados</div>
+              <div style={{ fontSize: 11, opacity: 0.7 }}>{t("achievements.unlocked", "Unlocked")}</div>
             </div>
             <div style={{ textAlign: "center" }}>
               <div style={{ fontSize: 26, fontWeight: 800 }}>{data?.totalCount ?? 0}</div>
@@ -316,7 +317,7 @@ export default function Achievements() {
       {filtered.length === 0 && (
         <div style={{ textAlign: "center", padding: "60px 20px", color: "#9ca3af" }}>
           <div style={{ fontSize: 48, marginBottom: 12 }}>🔍</div>
-          <p>No hay logros en esta categoría</p>
+          <p>{t("achievements.noAchievements", "No achievements in this category")}</p>
         </div>
       )}
 

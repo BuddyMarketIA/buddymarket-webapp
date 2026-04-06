@@ -1,4 +1,5 @@
 import { useState, useMemo } from "react";
+import { useTranslation } from "react-i18next";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -14,14 +15,23 @@ const GRADIENTS = [
   "from-violet-600 via-purple-600 to-indigo-700",
 ];
 
-const CATEGORY_LABELS: Record<string, string> = {
-  perdida_peso: "Pérdida de peso",
-  ganancia_muscular: "Ganancia muscular",
-  definicion: "Definición",
-  dieta_equilibrada: "Dieta equilibrada",
-  rendimiento: "Rendimiento",
-  bienestar: "Bienestar",
-  vegano: "Vegano",
+const CATEGORY_LABELS_KEYS: Record<string, string> = {
+  perdida_peso: "buddyExperts.weightLoss",
+  ganancia_muscular: "buddyExperts.muscleGain",
+  definicion: "buddyExperts.definition",
+  dieta_equilibrada: "buddyExperts.balancedDiet",
+  rendimiento: "buddyExperts.performance",
+  bienestar: "buddyExperts.wellness",
+  vegano: "buddyExperts.vegan",
+};
+const CATEGORY_LABELS_DEFAULTS: Record<string, string> = {
+  perdida_peso: "Weight loss",
+  ganancia_muscular: "Muscle gain",
+  definicion: "Definition",
+  dieta_equilibrada: "Balanced diet",
+  rendimiento: "Performance",
+  bienestar: "Wellness",
+  vegano: "Vegan",
 };
 
 const CATEGORY_EMOJIS: Record<string, string> = {
@@ -48,6 +58,10 @@ function ExpertCard({
   index: number;
   isFollowing: boolean;
 }) {
+  const { t } = useTranslation();
+  const CATEGORY_LABELS: Record<string, string> = Object.fromEntries(
+    Object.entries(CATEGORY_LABELS_KEYS).map(([k, tKey]) => [k, t(tKey, CATEGORY_LABELS_DEFAULTS[k])])
+  );
   const [, navigate] = useLocation();
   const expert = row.expert;
   const gradient = GRADIENTS[index % GRADIENTS.length];
@@ -114,7 +128,7 @@ function ExpertCard({
           {expert.displayName}
         </h3>
         <p className="text-[11px] text-indigo-500 font-bold line-clamp-1 w-full">
-          {expert.specialty ?? CATEGORY_LABELS[expert.category] ?? "Nutricionista"}
+          {expert.specialty ?? CATEGORY_LABELS[expert.category] ?? t("buddyExperts.nutritionist", "Nutritionist")}
         </p>
 
         {/* Stats — compact row */}
@@ -193,6 +207,10 @@ function SkeletonCard() {
 
 // ─── Main page ────────────────────────────────────────────────────────────────
 export default function BuddyExperts() {
+  const { t } = useTranslation();
+  const CATEGORY_LABELS: Record<string, string> = Object.fromEntries(
+    Object.entries(CATEGORY_LABELS_KEYS).map(([k, tKey]) => [k, t(tKey, CATEGORY_LABELS_DEFAULTS[k])])
+  );
   const [tab, setTab] = useState<Tab>("experts");
   const [search, setSearch] = useState("");
   const [selectedCategory, setSelectedCategory] = useState<string | null>(null);
@@ -209,9 +227,9 @@ export default function BuddyExperts() {
   const followMutation = trpc.buddyExperts.follow.useMutation({
     onSuccess: (data) => {
       followingQuery.refetch();
-      toast.success(data.following ? "¡Ahora sigues a este BuddyExpert! 🎉" : "Has dejado de seguir al experto");
+      toast.success(data.following ? t("buddyExperts.nowFollowing", "You are now following this BuddyExpert! 🎉") : t("buddyExperts.unfollowed", "You stopped following the expert"));
     },
-    onError: () => toast.error("Error al seguir"),
+    onError: () => toast.error(t("buddyExperts.followError", "Error following")),
   });
 
   const followingIds = useMemo(
@@ -233,7 +251,7 @@ export default function BuddyExperts() {
 
   const handleFollow = (id: number) => {
     if (!user) {
-      toast.error("Inicia sesión para seguir a expertos");
+      toast.error(t("buddyExperts.loginToFollow", "Log in to follow experts"));
       return;
     }
     followMutation.mutate({ expertId: id });
@@ -245,8 +263,8 @@ export default function BuddyExperts() {
       <div className="bg-white/80 backdrop-blur-xl border-b border-gray-100/80 px-4 pt-4 pb-3 sticky top-0 z-10">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h1 className="text-[22px] font-black text-gray-900 tracking-tight">BuddyExperts</h1>
-            <p className="text-sm text-gray-400 font-medium">Nutricionistas y dietistas certificados</p>
+            <h1 className="text-[22px] font-black text-gray-900 tracking-tight">{t("buddyExperts.title", "BuddyExperts")}</h1>
+            <p className="text-sm text-gray-400 font-medium">{t("buddyExperts.subtitle", "Certified nutritionists and dietitians")}</p>
           </div>
           <span className="bg-indigo-50 text-indigo-600 text-[13px] font-black px-3 py-1.5 rounded-full border border-indigo-100">
             {experts.length} expertos
@@ -270,7 +288,7 @@ export default function BuddyExperts() {
           </svg>
           <input
             type="text"
-            placeholder="Buscar expertos..."
+            placeholder={t("buddyExperts.searchPlaceholder", "Search experts...")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
             className="w-full pl-9 pr-4 py-2.5 bg-gray-100 rounded-2xl text-[13px] text-gray-800 placeholder-gray-400 outline-none focus:ring-2 focus:ring-indigo-300 transition"
@@ -341,14 +359,14 @@ export default function BuddyExperts() {
               <div className="text-center py-16 space-y-4">
                 <div className="text-6xl">{search || selectedCategory ? "🔍" : "🎓"}</div>
                 <h3 className="text-lg font-black text-gray-800">
-                  {search || selectedCategory ? "Sin resultados" : "Aún no hay BuddyExperts"}
+                  {search || selectedCategory ? t("buddyExperts.noResults", "No results") : t("buddyExperts.noExperts", "No BuddyExperts yet")}
                 </h3>
                 <p className="text-sm text-gray-500 max-w-xs mx-auto">
                   {search
                     ? `No se encontraron expertos para "${search}"`
                     : selectedCategory
-                    ? "No hay expertos en esta categoría todavía."
-                    : "Sé el primero en unirte como experto nutricional. Comparte tus conocimientos con la comunidad."}
+                    ? t("buddyExperts.noExpertsCategory", "No experts in this category yet.")
+                    : t("buddyExperts.beFirst", "Be the first to join as a nutritional expert. Share your knowledge with the community.")}
                 </p>
                 {!search && !selectedCategory && (
                   <a
@@ -388,9 +406,9 @@ export default function BuddyExperts() {
             {/* Testimonials are community-generated; show placeholder until real reviews exist */}
             <div className="text-center py-12 space-y-3">
               <div className="text-5xl">💬</div>
-              <h3 className="text-base font-black text-gray-800">Testimonios de la comunidad</h3>
+              <h3 className="text-base font-black text-gray-800">{t("buddyExperts.testimonials", "Community testimonials")}</h3>
               <p className="text-sm text-gray-500 max-w-xs mx-auto">
-                Los testimonios aparecerán aquí cuando los usuarios valoren los planes de los expertos.
+                {t("buddyExperts.testimonialsEmpty", "Testimonials will appear here when users rate the experts' plans.")}
               </p>
               <button
                 onClick={() => setTab("experts")}

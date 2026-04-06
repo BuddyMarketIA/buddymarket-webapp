@@ -1,3 +1,4 @@
+import { useTranslation } from "react-i18next";
 import { useState, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import AppLayout from "@/components/AppLayout";
@@ -103,6 +104,7 @@ function ChartCard({ children, style }: { children: React.ReactNode; style?: Rea
 
 // ─── Main component ───────────────────────────────────────────────────────────
 export default function Progress() {
+  const { t } = useTranslation();
   const [days, setDays] = useState(30);
 
   const summaryQ = trpc.progress.summary.useQuery();
@@ -192,35 +194,35 @@ export default function Progress() {
             {/* ── Summary KPI cards ── */}
             <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 12, marginBottom: 28 }}>
               <StatCard
-                label="Peso perdido"
+                label={t("progress.weightLost", "Weight lost")}
                 value={weightDeltaStr}
                 sub={`${summary?.startWeight ?? "—"}kg → ${summary?.currentWeight ?? "—"}kg`}
                 color={C.green}
                 icon="⚖️"
               />
               <StatCard
-                label="Días registrados"
+                label={t("progress.daysLogged", "Days logged")}
                 value={summary?.daysWithLogs ?? 0}
                 sub={`de ${days} días`}
                 color={C.orange}
                 icon="📅"
               />
               <StatCard
-                label="Kcal media/día"
+                label={t("progress.avgKcal", "Avg kcal/day")}
                 value={summary?.avgCalories ?? 0}
                 sub={`objetivo: ${profile?.dailyCalorieGoal ?? 2200} kcal`}
                 color={C.blue}
                 icon="🔥"
               />
               <StatCard
-                label="Proteína media"
+                label={t("progress.avgProtein", "Avg protein")}
                 value={`${summary?.avgProteins ?? 0}g`}
                 sub={`objetivo: ${profile?.dailyProteinGoal ?? 165}g`}
                 color={C.yellow}
                 icon="💪"
               />
               <StatCard
-                label="Comidas totales"
+                label={t("progress.totalMeals", "Total meals")}
                 value={summary?.totalLogs ?? 0}
                 sub="registradas en el diario"
                 color={C.green}

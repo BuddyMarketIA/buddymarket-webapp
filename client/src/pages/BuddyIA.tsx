@@ -1,4 +1,5 @@
 import { useState, useCallback, useEffect } from "react";
+import { useTranslation } from "react-i18next";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { usePlan } from "@/hooks/usePlan";
@@ -209,8 +210,8 @@ function ChatView({ onBack }: { onBack: () => void }) {
         <div className="flex items-center gap-2">
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white text-sm font-bold">B</div>
           <div>
-            <p className="font-semibold text-sm">BuddyIA</p>
-            <p className="text-xs text-muted-foreground">Asistente nutricional</p>
+            <p className="font-semibold text-sm">{"BuddyIA"}</p>
+            <p className="text-xs text-muted-foreground">{"Nutritional assistant"}</p>
           </div>
         </div>
       </div>
@@ -220,7 +221,7 @@ function ChatView({ onBack }: { onBack: () => void }) {
           <div className="space-y-4">
             <div className="text-center py-6">
               <div className="w-14 h-14 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white text-2xl mx-auto mb-3">🤖</div>
-              <p className="font-semibold">Hola, soy BuddyIA</p>
+              <p className="font-semibold">{"Hi, I'm BuddyIA"}</p>
               <p className="text-sm text-muted-foreground mt-1">¿En qué puedo ayudarte hoy?</p>
             </div>
             <div className="space-y-2">
@@ -269,7 +270,7 @@ function ChatView({ onBack }: { onBack: () => void }) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(input); } }}
-            placeholder="Escribe tu pregunta..."
+            placeholder={"Type your question..."}
             className="resize-none min-h-[44px] max-h-[120px]"
             rows={1}
           />
@@ -405,7 +406,7 @@ function QuestionnaireView({
 
   const handleGenerate = () => {
     if (!data.startDate || !data.cookingStyle || !data.persons || !data.mealsPerDay || !data.goal) {
-      toast.error("Por favor completa todos los campos obligatorios");
+      toast.error("Please complete all required fields");
       return;
     }
     generateMutation.mutate({
@@ -442,7 +443,7 @@ function QuestionnaireView({
       <div className="flex items-center gap-3 p-4 border-b border-border bg-background">
         <button onClick={onBack} className="text-muted-foreground hover:text-foreground text-sm">← Volver</button>
         <div>
-          <p className="font-semibold text-sm">Crear menú personalizado</p>
+          <p className="font-semibold text-sm">{"Create personalised menu"}</p>
           <p className="text-xs text-muted-foreground">Paso {step + 1} de {steps.length}</p>
         </div>
       </div>
@@ -462,7 +463,7 @@ function QuestionnaireView({
           <div className="mb-4 p-3 rounded-xl bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 flex items-start gap-2">
             <span className="text-green-600 text-base mt-0.5">✅</span>
             <div>
-              <p className="text-sm font-semibold text-green-800 dark:text-green-300">Preferencias cargadas desde tu perfil</p>
+              <p className="text-sm font-semibold text-green-800 dark:text-green-300">{"Preferences loaded from your profile"}</p>
               <p className="text-xs text-green-700 dark:text-green-400 mt-0.5">Hemos rellenado el cuestionario con tus preferencias guardadas. Puedes modificar cualquier campo.</p>
             </div>
           </div>
@@ -472,7 +473,7 @@ function QuestionnaireView({
         {step === 0 && (
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium mb-2 block">Fecha de inicio</label>
+              <label className="text-sm font-medium mb-2 block">{"Start date"}</label>
               <input type="date" value={data.startDate || ""} min={new Date().toISOString().split("T")[0]}
                 onChange={(e) => updateData({ startDate: e.target.value })}
                 className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
@@ -511,7 +512,7 @@ function QuestionnaireView({
               <label className="text-sm font-medium mb-2 block">Calorías diarias objetivo (opcional)</label>
               <input type="number" value={data.calories || ""} min={1000} max={5000}
                 onChange={(e) => updateData({ calories: e.target.value ? parseInt(e.target.value) : undefined })}
-                placeholder="Ej: 2000 kcal (si lo dejas vacío, lo calculamos)"
+                placeholder={"E.g.: 2000 kcal (if left empty, we calculate it)"}
                 className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
             </div>
           </div>
@@ -738,7 +739,7 @@ function QuestionnaireView({
                 value={dislikedInput}
                 onChange={(e) => setDislikedInput(e.target.value)}
                 onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addCustomDislike(); } }}
-                placeholder="Añadir otro alimento..."
+                placeholder={"Add another food..."}
                 className="flex-1 rounded-xl border border-border bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
               <Button onClick={addCustomDislike} variant="outline" className="px-3">+</Button>
@@ -802,7 +803,7 @@ function QuestionnaireView({
                   }
                   setAllergyInput("");
                 }}}
-                placeholder="Otra alergia..."
+                placeholder={"Another allergy..."}
                 className="flex-1 rounded-xl border border-border bg-background px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500"
               />
               <Button onClick={() => {
@@ -849,7 +850,7 @@ function QuestionnaireView({
               <div className="flex items-center gap-2">
                 <input type="number" value={data.budgetPerWeek || ""} min={20} max={500}
                   onChange={(e) => updateData({ budgetPerWeek: e.target.value ? parseInt(e.target.value) : undefined })}
-                  placeholder="Ej: 80"
+                  placeholder={"E.g.: 80"}
                   className="flex-1 rounded-xl border border-border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
                 <span className="text-sm font-medium text-muted-foreground">€/semana</span>
               </div>
@@ -867,7 +868,7 @@ function QuestionnaireView({
               <label className="text-sm font-medium mb-2 block">💪 Suplementos que usas (opcional)</label>
               <input type="text" value={data.supplementsUsed || ""}
                 onChange={(e) => updateData({ supplementsUsed: e.target.value })}
-                placeholder="Ej: proteína whey, creatina, omega-3..."
+                placeholder={"E.g.: whey protein, creatine, omega-3..."}
                 className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
             </div>
             {/* Water intake */}
@@ -887,7 +888,7 @@ function QuestionnaireView({
               <label className="text-sm font-medium mb-2 block">💬 Notas adicionales (opcional)</label>
               <Textarea value={data.preferences || ""}
                 onChange={(e) => updateData({ preferences: e.target.value })}
-                placeholder="Ej: Me gusta la cocina mediterránea, prefiero recetas sencillas, tengo poco tiempo los lunes..."
+                placeholder={"E.g.: I like Mediterranean cuisine, I prefer simple recipes, I have little time on Mondays..."}
                 className="min-h-[70px] resize-none" />
             </div>
             {/* Summary */}
@@ -918,7 +919,7 @@ function QuestionnaireView({
                 El menú generado por BuddyIA es una propuesta orientativa basada en los datos que has proporcionado. <strong>No sustituye el consejo de un nutricionista o profesional de la salud.</strong> Si tienes condiciones médicas, embarazo, o necesidades dietéticas especiales, consulta siempre con un especialista antes de seguir cualquier plan nutricional.
               </p>
               <p className="text-xs text-amber-600 dark:text-amber-500 mt-2 font-medium">
-                💡 Cuantos más datos hayas completado, más personalizado y preciso será tu menú.
+                {"💡 The more data you complete, the more personalised and accurate your menu will be."}
               </p>
             </div>
           </div>
@@ -943,7 +944,7 @@ function QuestionnaireView({
                   <span className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
                   Generando menú...
                 </span>
-              ) : "✨ Generar mi menú"}
+              ) : `✨ ${"Generate my menu"}`}
             </Button>
           )}
         </div>
@@ -964,6 +965,7 @@ function MenuResultView({
   onBack: () => void;
   onSaved: (menuId: number) => void;
 }) {
+  const { t } = useTranslation();
   const [, navigate] = useLocation();
   const [activeDay, setActiveDay] = useState(0);
   const [saved, setSaved] = useState(false);
@@ -982,7 +984,7 @@ function MenuResultView({
     },
     onError: () => {
       setApplying(false);
-      toast.error("Error al aplicar el menú al diario.");
+      toast.error("Error applying menu to diary.");
     },
   });
 
@@ -1000,7 +1002,7 @@ function MenuResultView({
     },
     onError: () => {
       setCreatingList(false);
-      toast.error("No se pudo crear la lista. Inténtalo desde Lista de la Compra.");
+      toast.error("Could not create the list. Try from Shopping List.");
     },
   });
 
@@ -1009,11 +1011,11 @@ function MenuResultView({
       setSaved(true);
       setSavedMenuId(data.menuId);
       setShowSaveModal(true);
-      toast.success("¡Menú guardado en Mis Menús!");
+      toast.success("Menu saved in My Menus!");
       onSaved(data.menuId);
       utils.menus.list.invalidate();
     },
-    onError: () => toast.error("Error al guardar el menú. Asegúrate de estar conectado."),
+    onError: () => toast.error("Error saving menu. Make sure you are connected."),
   });
 
   const handleCreateShoppingList = () => {
@@ -1136,7 +1138,7 @@ function MenuResultView({
                   size="sm"
                   className="bg-orange-500 hover:bg-orange-600 text-white text-xs"
                 >
-                  {applying ? "⏳" : applyToCalendarMutation.isSuccess ? "✅ Aplicado" : "Aplicar"}
+                  {applying ? "⏳" : applyToCalendarMutation.isSuccess ? `✅ ${"Applied"}` : "Apply"}
                 </Button>
               </div>
               {applyToCalendarMutation.isSuccess && (
@@ -1178,7 +1180,7 @@ function MenuResultView({
               <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center text-3xl mx-auto mb-3">✅</div>
               <h3 className="text-lg font-bold">¡Menú guardado!</h3>
               <p className="text-sm text-muted-foreground mt-1">
-                Tu menú <strong>{menu.menuName}</strong> se ha guardado en "Mis Menús".
+                {"Your menu"} <strong>{menu.menuName}</strong> {t("buddyIA.savedInMyMenus", "has been saved in \"My Menus\"")}
               </p>
             </div>
             <div className="space-y-2">
@@ -1212,6 +1214,7 @@ function MenuResultView({
 
 // ─── Main BuddyIA Page ────────────────────────────────────────────────────────
 export default function BuddyIA() {
+  const { t } = useTranslation();
   const { can } = usePlan();
   const [mode, setMode] = useState<AppMode>("home");
   const [generatedMenu, setGeneratedMenu] = useState<GeneratedMenu | null>(null);

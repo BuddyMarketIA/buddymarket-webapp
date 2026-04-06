@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { trpc } from "@/lib/trpc";
 import { Link } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -35,53 +36,53 @@ type Recipe = {
 // ─── Filter categories ────────────────────────────────────────────────────────
 type FilterCategory = "momento" | "cocina" | "metodo";
 
-const FILTER_CATEGORIES: { id: FilterCategory; label: string; emoji: string }[] = [
-  { id: "momento", label: "Momento del día", emoji: "🕐" },
-  { id: "cocina", label: "Tipo de cocina", emoji: "🌍" },
-  { id: "metodo", label: "Método de cocción", emoji: "🍳" },
+const FILTER_CATEGORY_KEYS: { id: FilterCategory; key: string; emoji: string }[] = [
+  { id: "momento", key: "mealTime", emoji: "🕐" },
+  { id: "cocina", key: "cuisineType", emoji: "🌍" },
+  { id: "metodo", key: "cookingMethod", emoji: "🍳" },
 ];
 
-const MEAL_TIME_OPTIONS = [
-  { value: "", label: "Todos", emoji: "🍽️" },
-  { value: "desayuno", label: "Desayuno", emoji: "☀️" },
-  { value: "media_manana", label: "Media mañana", emoji: "🍎" },
-  { value: "comida", label: "Comida", emoji: "🥗" },
-  { value: "merienda", label: "Merienda", emoji: "🫐" },
-  { value: "cena", label: "Cena", emoji: "🌙" },
+const MEAL_TIME_OPTIONS_KEYS = [
+  { value: "", key: "all", emoji: "🍽️" },
+  { value: "desayuno", key: "breakfast", emoji: "☀️" },
+  { value: "media_manana", key: "midMorning", emoji: "🍎" },
+  { value: "comida", key: "lunch", emoji: "🥗" },
+  { value: "merienda", key: "snack", emoji: "🫐" },
+  { value: "cena", key: "dinner", emoji: "🌙" },
 ];
 
-const CUISINE_OPTIONS = [
-  { value: "", label: "Todas", emoji: "🌍" },
-  { value: "española", label: "Española", emoji: "🇪🇸" },
-  { value: "italiana", label: "Italiana", emoji: "🇮🇹" },
-  { value: "asiatica", label: "Asiática", emoji: "🥢" },
-  { value: "mexicana", label: "Mexicana", emoji: "🌮" },
-  { value: "americana", label: "Americana", emoji: "🍔" },
-  { value: "arabe", label: "Árabe", emoji: "🧆" },
-  { value: "francesa", label: "Francesa", emoji: "🥐" },
-  { value: "mediterranea", label: "Mediterránea", emoji: "🫒" },
-  { value: "latinoamericana", label: "Latinoamericana", emoji: "🌶️" },
+const CUISINE_OPTIONS_KEYS = [
+  { value: "", key: "allCuisines", emoji: "🌍" },
+  { value: "española", key: "spanish", emoji: "🇪🇸" },
+  { value: "italiana", key: "italian", emoji: "🇮🇹" },
+  { value: "asiatica", key: "asian", emoji: "🥢" },
+  { value: "mexicana", key: "mexican", emoji: "🌮" },
+  { value: "americana", key: "american", emoji: "🍔" },
+  { value: "arabe", key: "arabic", emoji: "🧆" },
+  { value: "francesa", key: "french", emoji: "🥐" },
+  { value: "mediterranea", key: "mediterranean", emoji: "🫒" },
+  { value: "latinoamericana", key: "latinAmerican", emoji: "🌶️" },
 ];
 
-const COOKING_METHOD_OPTIONS = [
-  { value: "", label: "Todos", emoji: "🍳" },
-  { value: "airfryer", label: "Air Fryer", emoji: "💨" },
-  { value: "horno", label: "Horno", emoji: "🔥" },
-  { value: "plancha", label: "Plancha/Sartén", emoji: "🥘" },
-  { value: "olla", label: "Olla/Cocido", emoji: "🫕" },
-  { value: "sin_coccion", label: "Sin cocción", emoji: "🥗" },
-  { value: "microondas", label: "Microondas", emoji: "📡" },
-  { value: "vaporizador", label: "Al vapor", emoji: "♨️" },
-  { value: "wok", label: "Wok", emoji: "🥡" },
+const COOKING_METHOD_OPTIONS_KEYS = [
+  { value: "", key: "all", emoji: "🍳" },
+  { value: "airfryer", key: "airFryer", emoji: "💨" },
+  { value: "horno", key: "oven", emoji: "🔥" },
+  { value: "plancha", key: "grill", emoji: "🥘" },
+  { value: "olla", key: "pot", emoji: "🫕" },
+  { value: "sin_coccion", key: "noCooking", emoji: "🥗" },
+  { value: "microondas", key: "microwave", emoji: "📡" },
+  { value: "vaporizador", key: "steam", emoji: "♨️" },
+  { value: "wok", key: "wok", emoji: "🥡" },
 ];
 
-const MEAL_TIME_LABELS: Record<string, string> = {
-  desayuno: "Desayuno",
-  media_manana: "Media mañana",
-  comida: "Comida",
-  merienda: "Merienda",
-  cena: "Cena",
-  cualquiera: "Cualquier momento",
+const MEAL_TIME_LABEL_KEYS: Record<string, string> = {
+  desayuno: "breakfast",
+  media_manana: "midMorning",
+  comida: "lunch",
+  merienda: "snack",
+  cena: "dinner",
+  cualquiera: "anyTime",
 };
 
 const MEAL_TIME_EMOJI: Record<string, string> = {
@@ -164,13 +165,14 @@ function HeartButton({ isFav, onToggle }: { isFav: boolean; onToggle: () => void
 
 // ─── Recipe Card ────────────────────────────────────────────
 function RecipeCard({ recipe, searchQuery, isFav, onToggleFav }: { recipe: Recipe; searchQuery?: string; isFav?: boolean; onToggleFav?: () => void }) {
+  const { t } = useTranslation();
   const totalTime = (recipe.preparationTime || 0) + (recipe.cookTime || 0);
   const hasRealImage = !!(recipe.imageUrl && !recipe.imageUrl.includes('placeholder'));
   const [localImageUrl, setLocalImageUrl] = useState<string | null>(recipe.imageUrl || null);
   const [generatingImg, setGeneratingImg] = useState(false);
   const imgSrc = localImageUrl || getPlaceholderImage(recipe.id);
   const mealTime = recipe.mealTime || "cualquiera";
-  const methodBadge = COOKING_METHOD_OPTIONS.find(m => m.value === recipe.cookingMethod);
+  const methodBadge = COOKING_METHOD_OPTIONS_KEYS.find((m: { value: string; key: string; emoji: string }) => m.value === recipe.cookingMethod);
   const { user } = useAuth();
   const generateAIImage = trpc.recipes.generateAIImage.useMutation();
 
@@ -182,9 +184,9 @@ function RecipeCard({ recipe, searchQuery, isFav, onToggleFav }: { recipe: Recip
     try {
       const result = await generateAIImage.mutateAsync({ recipeId: recipe.id });
       setLocalImageUrl(result.url);
-      toast.success('Imagen generada correctamente');
+      toast.success(t('recipes.imageGenerated', 'Image generated successfully'));
     } catch {
-      toast.error('Error al generar la imagen');
+      toast.error(t('recipes.imageError', 'Error generating image'));
     } finally {
       setGeneratingImg(false);
     }
@@ -216,7 +218,7 @@ function RecipeCard({ recipe, searchQuery, isFav, onToggleFav }: { recipe: Recip
           {/* Meal time badge */}
           <div style={{ position: "absolute", top: "10px", left: "10px", background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)", borderRadius: "10px", padding: "4px 8px", display: "flex", alignItems: "center", gap: "4px" }}>
             <span style={{ fontSize: "14px" }}>{MEAL_TIME_EMOJI[mealTime] || "🕐"}</span>
-            <span style={{ fontSize: "13px", color: "white", fontWeight: 700 }}>{MEAL_TIME_LABELS[mealTime] || mealTime}</span>
+            <span style={{ fontSize: "13px", color: "white", fontWeight: 700 }}>{t(`recipes.mealTime.${MEAL_TIME_LABEL_KEYS[mealTime] || "anyTime"}`, mealTime) || mealTime}</span>
           </div>
           {/* Generar imagen IA — solo si no tiene foto real y el usuario está logueado */}
           {user && !hasRealImage && !localImageUrl && (
@@ -294,7 +296,7 @@ function RecipeCard({ recipe, searchQuery, isFav, onToggleFav }: { recipe: Recip
           {recipe.cuisineType && (
             <div style={{ marginTop: "6px" }}>
               <span style={{ fontSize: "13px", fontWeight: 700, color: "#F97316", background: "rgba(249,115,22,0.1)", borderRadius: "6px", padding: "2px 6px" }}>
-                {CUISINE_OPTIONS.find(c => c.value === recipe.cuisineType)?.emoji || "🌍"} {recipe.cuisineType}
+                {CUISINE_OPTIONS_KEYS.find((c: { value: string; key: string; emoji: string }) => c.value === recipe.cuisineType)?.emoji || "🌍"} {recipe.cuisineType}
               </span>
             </div>
           )}
@@ -408,7 +410,13 @@ function FilterPill({ emoji, label, active, onClick }: { emoji: string; label: s
 
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function Recipes() {
+  const { t } = useTranslation();
   const { user, isAuthenticated } = useAuth();
+  // Build translated options
+  const MEAL_TIME_OPTIONS = MEAL_TIME_OPTIONS_KEYS.map(o => ({ ...o, label: t(`recipes.mealTime.${o.key}`, o.key) }));
+  const CUISINE_OPTIONS = CUISINE_OPTIONS_KEYS.map(o => ({ ...o, label: t(`recipes.cuisine.${o.key}`, o.key) }));
+  const COOKING_METHOD_OPTIONS = COOKING_METHOD_OPTIONS_KEYS.map(o => ({ ...o, label: t(`recipes.cookingMethod.${o.key}`, o.key) }));
+  const FILTER_CATEGORIES = FILTER_CATEGORY_KEYS.map(o => ({ ...o, label: t(`recipes.filterCat.${o.key}`, o.key) }));
 
   // Search state
   const [inputValue, setInputValue] = useState("");
@@ -569,8 +577,8 @@ export default function Recipes() {
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
         <div>
-          <h1 style={{ margin: 0, fontSize: "22px", fontWeight: 900, color: "#1a1a1a", letterSpacing: "-0.03em" }}>Recetas</h1>
-          <p style={{ margin: "2px 0 0", fontSize: "14px", color: "#9ca3af" }}>427 recetas disponibles</p>
+          <h1 style={{ margin: 0, fontSize: "22px", fontWeight: 900, color: "#1a1a1a", letterSpacing: "-0.03em" }}>{t("recipes.title")}</h1>
+          <p style={{ margin: "2px 0 0", fontSize: "14px", color: "#9ca3af" }}>{t("recipes.available", "427 recipes available")}</p>
         </div>
         {isAuthenticated && (
           <Link href="/app/recipes/new">
@@ -603,7 +611,7 @@ export default function Recipes() {
           <input
             ref={searchRef}
             type="text"
-            placeholder="Buscar por nombre o ingrediente..."
+            placeholder={t("recipes.searchPlaceholder")}
             value={inputValue}
             onChange={e => setInputValue(e.target.value)}
             onFocus={() => setSearchFocused(true)}
@@ -639,12 +647,12 @@ export default function Recipes() {
             {inputValue.trim().length === 0 && recentSearches.length > 0 && (
               <div>
                 <div style={{ padding: "8px 14px 4px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-                  <span style={{ fontSize: "14px", fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em" }}>Búsquedas recientes</span>
+                  <span style={{ fontSize: "14px", fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em" }}>{t("recipes.recentSearches")}</span>
                   <button
                     onClick={() => { localStorage.removeItem(RECENT_SEARCHES_KEY); setRecentSearches([]); }}
                     style={{ fontSize: "14px", color: "#F97316", background: "none", border: "none", cursor: "pointer", fontWeight: 600 }}
                   >
-                    Limpiar
+                    {t("common.clear", "Clear")}
                   </button>
                 </div>
                 {recentSearches.map(s => (
@@ -666,7 +674,7 @@ export default function Recipes() {
             {inputValue.trim().length >= 2 && (suggestionsQuery.data?.length ?? 0) > 0 && (
               <div>
                 <div style={{ padding: "8px 14px 4px" }}>
-                  <span style={{ fontSize: "14px", fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em" }}>Sugerencias</span>
+                  <span style={{ fontSize: "14px", fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em" }}>{t("recipes.suggestions")}</span>
                 </div>
                 {suggestionsQuery.data?.map((s: any) => (
                   <button
@@ -703,10 +711,10 @@ export default function Recipes() {
         <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "12px", background: "rgba(249,115,22,0.06)", borderRadius: "12px", padding: "8px 12px" }}>
           <span style={{ fontSize: "14px" }}>🔍</span>
           <span style={{ fontSize: "13px", color: "#374151", fontWeight: 600, flex: 1 }}>
-            Resultados para <strong style={{ color: "#F97316" }}>"{debouncedSearch}"</strong>
+            {t("recipes.resultsFor", "Results for")} <strong style={{ color: "#F97316" }}>"{debouncedSearch}"</strong>
           </span>
           <button onClick={clearSearch} style={{ fontSize: "14px", color: "#F97316", fontWeight: 700, background: "none", border: "none", cursor: "pointer" }}>
-            ✕ Limpiar
+            ✕ {t("common.clear", "Clear")}
           </button>
         </div>
       )}
@@ -718,13 +726,13 @@ export default function Recipes() {
             onClick={() => setShowMyRecipes(false)}
             style={{ flex: 1, padding: "9px", borderRadius: "14px", border: "none", cursor: "pointer", fontSize: "13px", fontWeight: 700, background: !showMyRecipes ? "#F97316" : "white", color: !showMyRecipes ? "white" : "#6b7280", boxShadow: !showMyRecipes ? "0 4px 12px rgba(249,115,22,0.35)" : "0 1px 4px rgba(0,0,0,0.06)", transition: "all 0.2s" }}
           >
-            Todas las recetas
+            {t("recipes.catalog", "All recipes")}
           </button>
           <button
             onClick={() => setShowMyRecipes(true)}
             style={{ flex: 1, padding: "9px", borderRadius: "14px", border: "none", cursor: "pointer", fontSize: "13px", fontWeight: 700, background: showMyRecipes ? "#F97316" : "white", color: showMyRecipes ? "white" : "#6b7280", boxShadow: showMyRecipes ? "0 4px 12px rgba(249,115,22,0.35)" : "0 1px 4px rgba(0,0,0,0.06)", transition: "all 0.2s" }}
           >
-            Mis recetas
+            {t("recipes.myRecipes", "My recipes")}
           </button>
         </div>
       )}
@@ -774,10 +782,10 @@ export default function Recipes() {
           {activeFiltersCount > 0 && (
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px", background: "rgba(249,115,22,0.06)", borderRadius: "12px", padding: "8px 12px" }}>
               <span style={{ fontSize: "14px", color: "#F97316", fontWeight: 700 }}>
-                {activeFiltersCount} filtro{activeFiltersCount > 1 ? "s" : ""} activo{activeFiltersCount > 1 ? "s" : ""}
+                {activeFiltersCount} {t("recipes.activeFilters", "active filter")}{activeFiltersCount > 1 ? "s" : ""}
               </span>
               <button onClick={clearFilters} style={{ fontSize: "14px", color: "#F97316", fontWeight: 700, background: "none", border: "none", cursor: "pointer" }}>
-                Limpiar ✕
+                {t("common.clear", "Clear")} ✕
               </button>
             </div>
           )}
@@ -789,18 +797,18 @@ export default function Recipes() {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
           <h2 style={{ margin: 0, fontSize: "16px", fontWeight: 800, color: "#1a1a1a" }}>
             {debouncedSearch
-              ? `Resultados`
+              ? t("recipes.results", "Results")
               : showMyRecipes
-              ? "Mis recetas"
+              ? t("recipes.myRecipes", "My recipes")
               : mealTimeFilter ? MEAL_TIME_OPTIONS.find(m => m.value === mealTimeFilter)?.label
               : cuisineFilter ? `Cocina ${CUISINE_OPTIONS.find(c => c.value === cuisineFilter)?.label}`
               : cookingMethodFilter ? `${COOKING_METHOD_OPTIONS.find(m => m.value === cookingMethodFilter)?.label}`
-              : "Todas las recetas"
+              : t("recipes.allRecipes", "All recipes")
             }
           </h2>
           {recipes && (
             <span style={{ fontSize: "14px", color: "#9ca3af" }}>
-              {isFetching ? "Cargando..." : `${recipes.length}${hasNextPage ? "+" : ""} recetas`}
+              {isFetching ? t("common.loading", "Loading...") : `${recipes.length}${hasNextPage ? "+" : ""} ${t("recipes.recipesCount", "recipes")}`}
             </span>
           )}
         </div>
@@ -834,32 +842,32 @@ export default function Recipes() {
             </p>
             <p style={{ margin: "0 0 4px", fontSize: "15px", fontWeight: 700, color: "#1a1a1a" }}>
               {debouncedSearch
-                ? `Sin resultados para "${debouncedSearch}"`
+                ? `${t("recipes.noResultsFor", "No results for")} "${debouncedSearch}"`
                 : showMyRecipes
-                ? "Aún no tienes recetas"
-                : "No hay recetas con estos filtros"}
+                ? t("recipes.noMyRecipes", "You have no recipes yet")
+                : t("recipes.noRecipesFilter", "No recipes with these filters")}
             </p>
             <p style={{ margin: "0 0 16px", fontSize: "13px", color: "#9ca3af" }}>
               {debouncedSearch
-                ? "Prueba con otro nombre o ingrediente"
+                ? t("recipes.tryOtherSearch", "Try another name or ingredient")
                 : showMyRecipes
-                ? "Crea tu primera receta"
-                : "Prueba cambiando los filtros"}
+                ? t("recipes.createFirst", "Create your first recipe")
+                : t("recipes.tryFilters", "Try changing the filters")}
             </p>
             {debouncedSearch && (
               <button onClick={clearSearch} style={{ background: "#F97316", border: "none", borderRadius: "12px", padding: "10px 20px", fontSize: "13px", fontWeight: 700, color: "white", cursor: "pointer", marginRight: "8px" }}>
-                Limpiar búsqueda
+                {t("recipes.clearSearch", "Clear search")}
               </button>
             )}
             {activeFiltersCount > 0 && !debouncedSearch && (
               <button onClick={clearFilters} style={{ background: "#F97316", border: "none", borderRadius: "12px", padding: "10px 20px", fontSize: "13px", fontWeight: 700, color: "white", cursor: "pointer" }}>
-                Limpiar filtros
+                {t("recipes.clearFilters", "Clear filters")}
               </button>
             )}
             {showMyRecipes && isAuthenticated && !debouncedSearch && (
               <Link href="/app/recipes/new">
                 <button style={{ background: "#F97316", border: "none", borderRadius: "12px", padding: "10px 20px", fontSize: "13px", fontWeight: 700, color: "white", cursor: "pointer" }}>
-                  Crear receta
+                  {t("recipes.create", "Create recipe")}
                 </button>
               </Link>
             )}
@@ -873,18 +881,18 @@ export default function Recipes() {
           {isFetchingNextPage && (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
               <div style={{ width: "28px", height: "28px", border: "3px solid #f3f4f6", borderTop: "3px solid #F97316", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-              <span style={{ fontSize: "14px", color: "#9ca3af", fontWeight: 600 }}>Cargando más recetas...</span>
+              <span style={{ fontSize: "14px", color: "#9ca3af", fontWeight: 600 }}>{t("recipes.loadingMore", "Loading more recipes...")}</span>
             </div>
           )}
           {!hasNextPage && recipes.length > 0 && !isFetchingNextPage && (
-            <p style={{ fontSize: "14px", color: "#d1d5db", fontWeight: 600, margin: 0 }}>✅ Has visto todas las recetas ({recipes.length})</p>
+            <p style={{ fontSize: "14px", color: "#d1d5db", fontWeight: 600, margin: 0 }}>✅ {t("recipes.allSeen", "All recipes seen")} ({recipes.length})</p>
           )}
         </div>
       )}
 
       {/* Disclaimer */}
       <p style={{ fontSize: "13px", color: "#d1d5db", textAlign: "center", margin: "8px 0 0", lineHeight: 1.5 }}>
-        Las recetas de BuddyMarket son orientativas. Consulta a un profesional de la nutrición.
+        {t("recipes.disclaimer", "BuddyMarket recipes are for guidance only. Consult a nutrition professional.")}
       </p>
 
       {/* Animations */}

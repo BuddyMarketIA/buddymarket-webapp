@@ -1,4 +1,5 @@
 import { useState, useRef, useCallback } from "react";
+import { useTranslation } from "react-i18next";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { useLocation } from "wouter";
@@ -68,6 +69,7 @@ type DetectedProduct = {
 // ─── main component ───────────────────────────────────────────────────────────
 
 export default function Inventory() {
+  const { t } = useTranslation();
   const [, navigate] = useLocation();
   const [search, setSearch] = useState("");
   const [activeLocation, setActiveLocation] = useState("all");
@@ -282,7 +284,7 @@ export default function Inventory() {
       {/* Header */}
       <div className="mb-4 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">Inventario</h1>
+          <h1 className="text-2xl font-bold text-gray-900">{t("inventory.title", "Inventory")}</h1>
           {expiringCount > 0 && (
             <div className="mt-0.5 flex items-center gap-1 text-xs text-orange-500">
               <ExclamationTriangleIcon className="h-3.5 w-3.5" />
@@ -354,7 +356,7 @@ export default function Inventory() {
             <div className="flex items-center gap-2">
               <span className="text-lg">♻️</span>
               <div>
-                <p className="text-sm font-bold text-green-800">Anti-desperdicio</p>
+                <p className="text-sm font-bold text-green-800">{t("inventory.antiWaste", "Anti-waste")}</p>
                 <p className="text-xs text-green-600">{(expiringItems ?? []).length} producto{(expiringItems ?? []).length !== 1 ? "s" : ""} próximo{(expiringItems ?? []).length !== 1 ? "s" : ""} a caducar</p>
               </div>
             </div>
@@ -453,7 +455,7 @@ export default function Inventory() {
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
-          placeholder="Buscar en inventario..."
+          placeholder={t("inventory.searchPlaceholder", "Search inventory...")}
           className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
         />
       </div>
@@ -521,14 +523,14 @@ export default function Inventory() {
           {search ? (
             <>
               <span className="mb-4 text-5xl">🔍</span>
-              <h3 className="mb-2 text-base font-bold text-gray-900">Sin resultados</h3>
+              <h3 className="mb-2 text-base font-bold text-gray-900">{t("inventory.noResults", "No results")}</h3>
               <p className="mb-6 text-sm text-gray-500">No encontramos "{search}" en tu inventario</p>
               <button onClick={() => setSearch("")} className="btn-vively-outline">Limpiar búsqueda</button>
             </>
           ) : (
             <>
               <span className="mb-3 text-6xl">📦</span>
-              <h3 className="mb-1 text-lg font-bold text-gray-900">Tu inventario está vacío</h3>
+              <h3 className="mb-1 text-lg font-bold text-gray-900">{t("inventory.empty", "Your inventory is empty")}</h3>
               <p className="mb-2 text-sm text-gray-500 max-w-xs text-center">Añade los alimentos que tienes en casa para recibir alertas de caducidad y sugerencias de recetas</p>
               <div className="mb-6 flex flex-col gap-2 text-xs text-gray-400">
                 <span>💡 Tip: Usa la cámara para añadir varios productos a la vez con IA</span>
@@ -654,9 +656,9 @@ export default function Inventory() {
                   <option key={loc.id} value={String(loc.id)}>{loc.nameEs}</option>
                 )) ?? (
                   <>
-                    <option value="1">Despensa</option>
-                    <option value="2">Nevera</option>
-                    <option value="3">Congelador</option>
+                    <option value="1">{t("inventory.title", "Inventory")}</option>
+                    <option value="2">{t("inventory.fridge", "Fridge")}</option>
+                    <option value="3">{t("inventory.freezer", "Freezer")}</option>
                   </>
                 )}
               </select>
