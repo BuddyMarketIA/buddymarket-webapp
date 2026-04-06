@@ -236,6 +236,30 @@ export default function ConsumShop() {
   const totalItems = cart.reduce((s, i) => s + i.qty, 0);
   const totalPrice = cart.reduce((s, i) => s + (i.price ?? 0) * i.qty, 0);
 
+  // Export cart to tienda.consum.es
+  const exportCartMutation = trpc.consum.exportCart.useMutation({
+    onSuccess: (data) => {
+      if (!data.exportUrl) {
+        toast.error("No se pudo generar el enlace de exportación");
+        return;
+      }
+      if (data.truncated) {
+        toast.warning(`Solo se exportarán los primeros 50 productos (tienes ${data.totalCount})`);
+      }
+      if (data.notExportable.length > 0) {
+        toast.info(`${data.notExportable.length} producto(s) no disponibles en tienda online`);
+      }
+      toast.success(`Abriendo Consum.es con ${data.exportedCount} producto(s)...`);
+      window.open(data.exportUrl, "_blank");
+    },
+    onError: () => toast.error("Error al exportar el carrito"),
+  });
+
+  const handleExportCart = () => {
+    if (cart.length === 0) return;
+    exportCartMutation.mutate({ productIds: cart.map(i => i.id) });
+  };
+
   // ── Render ─────────────────────────────────────────────────────────────────
   return (
     <div className="min-h-screen pb-24" style={{ background: CS_BG }}>
@@ -470,16 +494,19 @@ export default function ConsumShop() {
                   <span className="font-semibold text-gray-700">Total estimado</span>
                   <span className="text-xl font-bold" style={{ color: CS_GREEN }}>{totalPrice.toFixed(2)}€</span>
                 </div>
-                <a
-                  href={`https://www.consum.es/buscar?q=${encodeURIComponent(cart[0]?.name ?? "")}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className="block w-full py-3 rounded-xl text-white font-semibold text-sm text-center"
+                <button
+                  onClick={handleExportCart}
+                  disabled={exportCartMutation.isPending}
+                  className="block w-full py-3 rounded-xl text-white font-semibold text-sm text-center disabled:opacity-60 disabled:cursor-not-allowed transition-opacity"
                   style={{ background: CS_GREEN }}
-                  onClick={() => toast.success("Abriendo Consum.es para finalizar la compra")}
                 >
-                  Ir a Consum.es →
-                </a>
+                  {exportCartMutation.isPending
+                    ? "Generando enlace..."
+                    : "🛒 Comprar en Consum.es →"}
+                </button>
+                <p className="text-xs text-gray-400 text-center mt-2">
+                  Se abrirá tienda.consum.es con todos tus productos
+                </p>
               </div>
             )}
           </div>

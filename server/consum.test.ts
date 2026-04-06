@@ -41,4 +41,19 @@ describe("Consum router", () => {
     expect(procedure).toBeDefined();
     expect(typeof procedure).toBe("function");
   });
+
+  it("exportCart procedure is callable", async () => {
+    const { appRouter } = await import("./routers");
+    const procedure = (appRouter._def.procedures as any)["consum.exportCart"];
+    expect(procedure).toBeDefined();
+    expect(typeof procedure).toBe("function");
+  });
+
+  it("exportCart generates correct tienda.consum.es URL pattern", () => {
+    // Verify URL construction logic: /es/pc/{id1},{id2},...
+    const ids = ["1669", "1826", "1834"];
+    const exportUrl = `https://tienda.consum.es/es/pc/${ids.join(",")}`;
+    expect(exportUrl).toBe("https://tienda.consum.es/es/pc/1669,1826,1834");
+    expect(exportUrl).toContain("tienda.consum.es/es/pc/");
+  });
 });

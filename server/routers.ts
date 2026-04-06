@@ -8451,6 +8451,53 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
           .orderBy(orderClause)
           .limit(input.limit ?? 48);
       }),
+
+    /**
+     * exportCart — Genera la URL de tienda.consum.es/es/pc/{ids} con los
+     * productos del carrito. Máximo 50 productos por limitación de URL.
+     * Devuelve también los productos sin product_url (no exportables).
+     */
+    exportCart: publicProcedure
+      .input(
+        z.object({
+          /** IDs de los productos en nuestra BD (coinciden con IDs de tienda.consum.es) */
+          productIds: z.array(z.string()).min(1).max(100),
+        })
+      )
+      .mutation(async ({ input }) => {
+        const { consumProducts } = await import("../drizzle/schema");
+        const { inArray: inArrayFn } = await import("drizzle-orm");
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB no disponible" });
+        const products = await drizzleDb
+          .select({
+            id: consumProducts.id,
+            name: consumProducts.name,
+            productUrl: consumProducts.productUrl,
+          })
+          .from(consumProducts)
+          .where(inArrayFn(consumProducts.id, input.productIds));
+
+        type ProductRow = { id: string; name: string; productUrl: string | null };
+        const rows = products as ProductRow[];
+        const exportable = rows.filter((p: ProductRow) => p.productUrl);
+        const notExportable = rows.filter((p: ProductRow) => !p.productUrl);
+
+        // Consum URL pattern: tienda.consum.es/es/pc/{id1},{id2},...
+        // Limit to 50 products to keep URL manageable
+        const ids = exportable.slice(0, 50).map((p: ProductRow) => p.id).join(",");
+        const exportUrl = ids
+          ? `https://tienda.consum.es/es/pc/${ids}`
+          : null;
+
+        return {
+          exportUrl,
+          exportedCount: exportable.slice(0, 50).length,
+          totalCount: input.productIds.length,
+          notExportable: notExportable.map((p: ProductRow) => ({ id: p.id, name: p.name })),
+          truncated: exportable.length > 50,
+        };
+      }),
   }),
 });
 export type AppRouter = typeof appRouter;
