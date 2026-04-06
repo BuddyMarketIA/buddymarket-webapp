@@ -20,7 +20,7 @@ import { processPendingEmails } from "../email";
 import { storagePut } from "../storage";
 import logger from "./logger";
 import { registerMetricsRoutes } from "./metrics";
-import { startPerformanceWatchdog, sendStartupAlert } from "./alerts";
+import { startPerformanceWatchdog, sendStartupAlert, startSupabaseMonitor } from "./alerts";
 
 // ─── Allowed origins ─────────────────────────────────────────────────────────
 const ALLOWED_ORIGINS = [
@@ -231,6 +231,7 @@ async function startServer() {
     logger.info(`Server running on http://localhost:${port}/`);
     // Start performance watchdog after server is up
     startPerformanceWatchdog();
+    startSupabaseMonitor();
     sendStartupAlert().catch(() => {});
     // Start API health monitor job (every 5 min)
     import("../apiMonitor").then(({ startMonitorJob }) => {

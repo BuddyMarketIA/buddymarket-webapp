@@ -167,6 +167,112 @@ export function startPerformanceWatchdog(): void {
   logger.info("[Alerts] Performance watchdog started (interval: 5 min)");
 }
 
+// ─── Supabase connection monitor ────────────────────────────────────────────────
+
+/**
+ * Checks Supabase connection pool usage and notifies the owner when
+ * approaching the plan limit (60 connections on free tier).
+ *
+ * Thresholds:
+ *   ≥ 70% used  → warning notification
+ *   ≥ 90% used  → critical notification + notifyOwner push
+ *
+ * Call startSupabaseMonitor() once after server start.
+ */
+
+const SUPABASE_FREE_TIER_MAX = 60;
+const SUPABASE_WARNING_THRESHOLD = 0.70;  // 70%
+const SUPABASE_CRITICAL_THRESHOLD = 0.90; // 90%
+
+// Avoid spamming: only send one alert per severity per hour
+const _lastAlertSent: Record<string, number> = {};
+function shouldSendAlert(key: string, cooldownMs = 60 * 60 * 1000): boolean {
+  const now = Date.now();
+  if (!_lastAlertSent[key] || now - _lastAlertSent[key] > cooldownMs) {
+    _lastAlertSent[key] = now;
+    return true;
+  }
+  return false;
+}
+
+export function startSupabaseMonitor(): void {
+  const intervalMs = 30 * 60 * 1000; // check every 30 minutes
+
+  const checkConnections = async () => {
+    try {
+      const { getDb } = await import("../db");
+      const db = await getDb();
+      if (!db) return;
+
+      // Query pg_stat_activity to count active connections to our database
+      const { sql } = await import("drizzle-orm");
+      const result = await db.execute(
+        sql`SELECT count(*) as total,
+            sum(CASE WHEN state = 'active' THEN 1 ELSE 0 END) as active,
+            sum(CASE WHEN state = 'idle' THEN 1 ELSE 0 END) as idle
+            FROM pg_stat_activity
+            WHERE datname = current_database()`
+      );
+
+      const row = (result as any).rows?.[0] ?? (result as any)[0];
+      if (!row) return;
+
+      const total = parseInt(String(row.total ?? 0), 10);
+      const active = parseInt(String(row.active ?? 0), 10);
+      const idle = parseInt(String(row.idle ?? 0), 10);
+      const usagePercent = (total / SUPABASE_FREE_TIER_MAX) * 100;
+
+      logger.info(`[SupabaseMonitor] Connections: ${total}/${SUPABASE_FREE_TIER_MAX} (${usagePercent.toFixed(1)}%) — active: ${active}, idle: ${idle}`);
+
+      if (usagePercent >= SUPABASE_CRITICAL_THRESHOLD * 100) {
+        if (shouldSendAlert('supabase_critical')) {
+          await alert("critical", `Supabase: conexiones al límite (${usagePercent.toFixed(1)}%)`, {
+            message: `Se están usando ${total} de ${SUPABASE_FREE_TIER_MAX} conexiones disponibles en el plan gratuito de Supabase. Es necesario ampliar el plan URGENTEMENTE para evitar caídas.`,
+            total, active, idle,
+            usagePercent: `${usagePercent.toFixed(1)}%`,
+            planLimit: SUPABASE_FREE_TIER_MAX,
+            upgradeUrl: "https://supabase.com/dashboard/project/ncgkjyozcxcekjztdadv/settings/billing",
+          });
+          // Also push in-app notification to owner
+          try {
+            const { notifyOwner } = await import("./notification");
+            await notifyOwner({
+              title: "🚨 Supabase al límite — Ampliar plan",
+              content: `Se están usando ${total}/${SUPABASE_FREE_TIER_MAX} conexiones (${usagePercent.toFixed(1)}%). El plan gratuito está casi agotado. Ve a https://supabase.com/dashboard/project/ncgkjyozcxcekjztdadv/settings/billing para ampliar el plan y evitar caídas de la app.`,
+            });
+          } catch { /* ignore notification errors */ }
+        }
+      } else if (usagePercent >= SUPABASE_WARNING_THRESHOLD * 100) {
+        if (shouldSendAlert('supabase_warning')) {
+          await alert("warning", `Supabase: uso elevado de conexiones (${usagePercent.toFixed(1)}%)`, {
+            message: `Se están usando ${total} de ${SUPABASE_FREE_TIER_MAX} conexiones. Considera ampliar el plan de Supabase pronto.`,
+            total, active, idle,
+            usagePercent: `${usagePercent.toFixed(1)}%`,
+            planLimit: SUPABASE_FREE_TIER_MAX,
+            upgradeUrl: "https://supabase.com/dashboard/project/ncgkjyozcxcekjztdadv/settings/billing",
+          });
+          try {
+            const { notifyOwner } = await import("./notification");
+            await notifyOwner({
+              title: "⚠️ Supabase: uso elevado de conexiones",
+              content: `Se están usando ${total}/${SUPABASE_FREE_TIER_MAX} conexiones de Supabase (${usagePercent.toFixed(1)}%). Considera ampliar el plan en https://supabase.com/dashboard/project/ncgkjyozcxcekjztdadv/settings/billing`,
+            });
+          } catch { /* ignore */ }
+        }
+      }
+    } catch (err) {
+      logger.warn("[SupabaseMonitor] Check failed:", err);
+    }
+  };
+
+  // Run once immediately after server start (with a small delay)
+  setTimeout(checkConnections, 10_000);
+  // Then every 30 minutes
+  setInterval(checkConnections, intervalMs);
+
+  logger.info("[SupabaseMonitor] Started — checking every 30 min (thresholds: warn 70%, critical 90%)");
+}
+
 // ─── Startup alert ────────────────────────────────────────────────────────────
 
 export async function sendStartupAlert(): Promise<void> {
