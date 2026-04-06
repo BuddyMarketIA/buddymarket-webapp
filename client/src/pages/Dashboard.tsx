@@ -79,11 +79,11 @@ function getDay() {
 }
 
 const RECIPE_OF_DAY = [
-  { name: "Ensalada mediterránea", kcal: 320, time: "15 min", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/ensalada_mediterranea-A94kBrNm9EPozXzzbctf5A.webp", tag: "Ligero" },
-  { name: "Pollo al horno con verduras", kcal: 480, time: "40 min", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/pollo_al_horno_verduras-7EonsjzW4cbvVFKgkiA4g3.webp", tag: "Proteínas" },
-  { name: "Pasta con pesto y tomates", kcal: 540, time: "20 min", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/pasta_pesto_tomates-ShvKafyUPxQbbjm5oqKBmm.webp", tag: "Energético" },
-  { name: "Salmón con quinoa", kcal: 420, time: "25 min", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/salmon_quinoa-GK5uCABZM54kHC6jSfHP9p.webp", tag: "Omega-3" },
-  { name: "Bowl de açaí con frutas", kcal: 290, time: "10 min", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/bowl_acai_frutas-VPHcDyWLiwTWng4EtSyWaN.webp", tag: "Antioxidante" },
+  { id: 81, name: "Ensalada mediterránea", kcal: 320, time: "15 min", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/ensalada_mediterranea-A94kBrNm9EPozXzzbctf5A.webp", tag: "Ligero" },
+  { id: 141, name: "Pollo al horno con verduras", kcal: 480, time: "40 min", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/pollo_al_horno_verduras-7EonsjzW4cbvVFKgkiA4g3.webp", tag: "Proteínas" },
+  { id: 135, name: "Pasta con pesto y tomates", kcal: 540, time: "20 min", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/pasta_pesto_tomates-ShvKafyUPxQbbjm5oqKBmm.webp", tag: "Energético" },
+  { id: 43, name: "Salmón con quinoa", kcal: 420, time: "25 min", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/salmon_quinoa-GK5uCABZM54kHC6jSfHP9p.webp", tag: "Omega-3" },
+  { id: 85, name: "Bowl de açaí con frutas", kcal: 290, time: "10 min", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/bowl_acai_frutas-VPHcDyWLiwTWng4EtSyWaN.webp", tag: "Antioxidante" },
 ];
 
 export default function Dashboard() {
@@ -853,14 +853,15 @@ export default function Dashboard() {
         </div>
         <div style={{ position: "relative", borderRadius: "22px", overflow: "hidden", height: "180px", boxShadow: "0 8px 24px rgba(0,0,0,0.15)" }}>
           {RECIPE_OF_DAY.map((recipe, idx) => (
+            <Link key={idx} href={`/app/recipes/${recipe.id}`} style={{ display: "block", position: "absolute", inset: 0, pointerEvents: idx === recipeIdx ? "auto" : "none" }}>
             <div
-              key={idx}
               style={{
                 position: "absolute", inset: 0,
                 background: `linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.75) 100%), url(${recipe.img}) center/cover`,
                 opacity: idx === recipeIdx ? 1 : 0,
                 transition: "opacity 0.7s ease",
                 display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "16px",
+                cursor: "pointer",
               }}
             >
               <span style={{ display: "inline-block", background: "#F97316", color: "white", fontSize: "13px", fontWeight: 800, borderRadius: "8px", padding: "3px 8px", marginBottom: "6px", width: "fit-content" }}>{recipe.tag}</span>
@@ -870,6 +871,7 @@ export default function Dashboard() {
                 <span style={{ fontSize: "14px", color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>⏱ {recipe.time}</span>
               </div>
             </div>
+            </Link>
           ))}
           {/* Dots indicator */}
           <div style={{ position: "absolute", bottom: "12px", right: "12px", display: "flex", gap: "5px" }}>
