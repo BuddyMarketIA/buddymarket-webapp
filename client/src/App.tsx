@@ -14,6 +14,8 @@ const LandingPage = lazy(() => import("./pages/LandingPage"));
 const LoginPage = lazy(() => import("./pages/LoginPage"));
 const Blog = lazy(() => import("./pages/Blog"));
 const BlogPost = lazy(() => import("./pages/BlogPost"));
+const ExpertPlansManager = lazy(() => import("./pages/ExpertPlansManager"));
+const ClientPlanView = lazy(() => import("./pages/ClientPlanView"));
 const Terms = lazy(() => import("./pages/Terms"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const Cookies = lazy(() => import("./pages/Cookies"));
@@ -181,6 +183,8 @@ function Router() {
       <Route path="/app/buddy-application">{() => <ProtectedRoute component={BuddyApplication} />}</Route>
       <Route path="/app/event-menu">{() => <ProtectedPage><EventMenuPlanner /></ProtectedPage>}</Route>
       <Route path="/app/saved-events">{() => <ProtectedPage><SavedEvents /></ProtectedPage>}</Route>
+      <Route path="/app/expert-plans">{() => <ProtectedPage><ExpertPlansManager /></ProtectedPage>}</Route>
+      <Route path="/app/my-plans">{() => <ProtectedPage><ClientPlanView /></ProtectedPage>}</Route>
       <Route path="/register">{() => <Registration />}</Route>
       {/* Fallback */}
       <Route path="/404" component={NotFound} />

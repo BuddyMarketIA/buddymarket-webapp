@@ -4,7 +4,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
 import AppLayout from "@/components/AppLayout";
 
-type Tab = "/app/profile" | "plans" | "/app/menus" | "blog";
+type Tab = "/app/profile" | "plans" | "pdf-plans" | "/app/menus" | "blog";
 
 const CATEGORIES = [
   { value: "perdida_peso", label: "Pérdida de peso" },
@@ -322,13 +322,13 @@ export default function BuddyExpertDashboard() {
 
         {/* Tabs */}
         <div className="flex gap-1 mb-6 bg-gray-100 rounded-2xl p-1">
-          {(["/app/profile", "plans", "/app/menus", "blog"] as Tab[]).map((tab) => (
+          {(["/app/profile", "plans", "pdf-plans", "/app/menus", "blog"] as Tab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === tab ? "bg-white text-orange-600 shadow-sm" : "text-gray-500"}`}
+              className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${activeTab === tab ? "bg-white text-orange-600 shadow-sm" : "text-gray-500"}`}
             >
-              {tab === "/app/profile" ? "👤 Perfil" : tab === "plans" ? "📊 Planes" : tab === "/app/menus" ? "📋 Menús" : "✍️ Blog"}
+              {tab === "/app/profile" ? "👤 Perfil" : tab === "plans" ? "📊 Planes" : tab === "pdf-plans" ? "📄 PDF" : tab === "/app/menus" ? "📋 Menús" : "✍️ Blog"}
             </button>
           ))}
         </div>
@@ -830,6 +830,10 @@ export default function BuddyExpertDashboard() {
             )}
           </div>
         )}
+        {/* PDF Plans Tab */}
+        {activeTab === "pdf-plans" && (
+          <PdfPlansTab expertProfile={myProfile} />
+        )}
         {/* Blog Tab */}
         {activeTab === "blog" && (
           <BlogTab expertProfile={myProfile} />
@@ -1065,6 +1069,176 @@ function BlogTab({ expertProfile }: { expertProfile: any }) {
                 </button>
                 <button onClick={() => { if (confirm("¿Eliminar este artículo?")) deleteMutation.mutate({ id: post.id }); }} className="py-1.5 px-3 rounded-xl text-xs font-semibold bg-red-50 text-red-500 hover:bg-red-100 transition-colors">🗑️</button>
               </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── PDF Plans Tab Component ─────────────────────────────────────────────────
+function PdfPlansTab({ expertProfile }: { expertProfile: any }) {
+  const [showForm, setShowForm] = useState(false);
+  const [editingPlan, setEditingPlan] = useState<any | null>(null);
+  const [form, setForm] = useState({ title: "", description: "", notes: "", weekNumber: "", year: new Date().getFullYear().toString() });
+  const [uploadingPdf, setUploadingPdf] = useState<number | null>(null);
+  const pdfRef = useRef<HTMLInputElement>(null);
+
+  const { data: myPlans, refetch } = trpc.expertPlans.myPlans.useQuery({ status: "all" }, { enabled: !!expertProfile });
+  const createMutation = trpc.expertPlans.create.useMutation({
+    onSuccess: (plan) => { toast.success("Plan creado"); setShowForm(false); resetForm(); refetch(); setEditingPlan(plan); },
+    onError: (e) => toast.error(e.message),
+  });
+  const uploadPdfMutation = trpc.expertPlans.uploadPdf.useMutation({
+    onSuccess: () => { toast.success("PDF subido correctamente"); setUploadingPdf(null); refetch(); },
+    onError: (e) => { toast.error(e.message); setUploadingPdf(null); },
+  });
+  const deleteMutation = trpc.expertPlans.delete.useMutation({
+    onSuccess: () => { toast.success("Plan eliminado"); refetch(); },
+    onError: (e) => toast.error(e.message),
+  });
+
+  function resetForm() { setForm({ title: "", description: "", notes: "", weekNumber: "", year: new Date().getFullYear().toString() }); setEditingPlan(null); }
+
+  function handleCreate(e: React.FormEvent) {
+    e.preventDefault();
+    createMutation.mutate({
+      title: form.title,
+      description: form.description || undefined,
+      notes: form.notes || undefined,
+      weekNumber: form.weekNumber ? parseInt(form.weekNumber) : undefined,
+      year: form.year ? parseInt(form.year) : undefined,
+    });
+  }
+
+  async function handlePdfUpload(planId: number, file: File) {
+    if (file.size > 16 * 1024 * 1024) { toast.error("El PDF no puede superar 16 MB"); return; }
+    setUploadingPdf(planId);
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = (reader.result as string).split(",")[1];
+      uploadPdfMutation.mutate({ planId, base64, fileName: file.name });
+    };
+    reader.readAsDataURL(file);
+  }
+
+  if (!expertProfile) {
+    return (
+      <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4 text-sm text-orange-800 text-center">
+        Primero debes crear tu perfil de experto en la pestaña "Mi Perfil".
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-100 rounded-2xl p-4">
+        <h3 className="font-black text-gray-900 text-sm mb-1">📄 Planes PDF personalizados</h3>
+        <p className="text-xs text-gray-600">Sube planes nutricionales en PDF para tus clientes. La IA leerá el PDF y generará un menú semanal + lista de la compra adaptado a las preferencias de cada cliente.</p>
+      </div>
+
+      {!showForm ? (
+        <button
+          onClick={() => { resetForm(); setShowForm(true); }}
+          className="w-full py-3.5 rounded-2xl text-sm font-bold text-white flex items-center justify-center gap-2"
+          style={{ background: "linear-gradient(135deg, #F97316, #FB923C)" }}
+        >
+          + Crear nuevo plan PDF
+        </button>
+      ) : (
+        <form onSubmit={handleCreate} className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 space-y-4">
+          <div className="flex items-center justify-between mb-1">
+            <h3 className="font-black text-gray-900 text-sm">Nuevo plan PDF</h3>
+            <button type="button" onClick={() => { setShowForm(false); resetForm(); }} className="text-gray-400 hover:text-gray-600 text-lg">✕</button>
+          </div>
+          <div>
+            <label className="text-xs font-bold text-gray-600 mb-1 block">Título del plan *</label>
+            <input value={form.title} onChange={(e) => setForm(p => ({ ...p, title: e.target.value }))} required placeholder="Ej: Plan Pérdida de Peso — Semana 1" className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
+          </div>
+          <div>
+            <label className="text-xs font-bold text-gray-600 mb-1 block">Descripción</label>
+            <textarea value={form.description} onChange={(e) => setForm(p => ({ ...p, description: e.target.value }))} rows={2} placeholder="Breve descripción del plan..." className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none" />
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <label className="text-xs font-bold text-gray-600 mb-1 block">Semana nº</label>
+              <input value={form.weekNumber} onChange={(e) => setForm(p => ({ ...p, weekNumber: e.target.value }))} type="number" min="1" max="52" placeholder="Ej: 1" className="w-full rounded-xl border border-gray-200 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
+            </div>
+            <div>
+              <label className="text-xs font-bold text-gray-600 mb-1 block">Año</label>
+              <input value={form.year} onChange={(e) => setForm(p => ({ ...p, year: e.target.value }))} type="number" min="2024" max="2030" className="w-full rounded-xl border border-gray-200 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
+            </div>
+          </div>
+          <div>
+            <label className="text-xs font-bold text-gray-600 mb-1 block">Notas internas (solo tú las ves)</label>
+            <textarea value={form.notes} onChange={(e) => setForm(p => ({ ...p, notes: e.target.value }))} rows={2} placeholder="Observaciones sobre el cliente, ajustes especiales..." className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none" />
+          </div>
+          <button type="submit" disabled={createMutation.isPending} className="w-full py-3.5 rounded-2xl text-sm font-bold text-white flex items-center justify-center gap-2 disabled:opacity-60" style={{ background: "linear-gradient(135deg, #F97316, #FB923C)" }}>
+            {createMutation.isPending ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Creando...</> : "✓ Crear plan"}
+          </button>
+        </form>
+      )}
+
+      {(!myPlans || myPlans.length === 0) ? (
+        <div className="text-center py-12 text-gray-400">
+          <div className="text-5xl mb-3">📄</div>
+          <p className="font-semibold">Aún no tienes planes PDF</p>
+          <p className="text-sm mt-1">Crea un plan y sube el PDF con el menú nutricional</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {myPlans.map((plan: any) => (
+            <div key={plan.id} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+              <div className="flex items-start justify-between gap-2 mb-3">
+                <div>
+                  <h3 className="font-bold text-gray-900 text-sm">{plan.title}</h3>
+                  {plan.description && <p className="text-xs text-gray-500 mt-0.5">{plan.description}</p>}
+                  <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                    {plan.weekNumber && <span className="text-xs bg-blue-50 text-blue-600 rounded-full px-2 py-0.5 font-semibold">Semana {plan.weekNumber}</span>}
+                    <span className={`text-xs rounded-full px-2 py-0.5 font-semibold ${plan.status === "active" ? "bg-green-100 text-green-700" : plan.status === "archived" ? "bg-gray-100 text-gray-500" : "bg-yellow-100 text-yellow-700"}`}>
+                      {plan.status === "active" ? "✓ Activo" : plan.status === "archived" ? "Archivado" : "Borrador"}
+                    </span>
+                    {plan.pdfFileName && <span className="text-xs bg-orange-50 text-orange-600 rounded-full px-2 py-0.5 font-semibold">📎 {plan.pdfFileName}</span>}
+                    {plan.aiGeneratedAt && <span className="text-xs bg-purple-50 text-purple-600 rounded-full px-2 py-0.5 font-semibold">✨ IA generada</span>}
+                  </div>
+                </div>
+                <button onClick={() => { if (confirm("¿Eliminar este plan?")) deleteMutation.mutate({ id: plan.id }); }} className="text-red-400 hover:text-red-600 text-sm shrink-0">🗑️</button>
+              </div>
+
+              {/* PDF Upload */}
+              <div className="border-t border-gray-100 pt-3">
+                <input ref={pdfRef} type="file" accept=".pdf" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handlePdfUpload(plan.id, f); e.target.value = ""; }} />
+                {plan.pdfUrl ? (
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <a href={plan.pdfUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-orange-600 font-semibold hover:underline flex items-center gap-1">
+                      📄 Ver PDF actual
+                    </a>
+                    <button
+                      onClick={() => { pdfRef.current?.click(); pdfRef.current!.onchange = (e: any) => { const f = e.target.files?.[0]; if (f) handlePdfUpload(plan.id, f); e.target.value = ""; }; }}
+                      disabled={uploadingPdf === plan.id}
+                      className="text-xs text-gray-500 hover:text-gray-700 font-semibold"
+                    >
+                      {uploadingPdf === plan.id ? "⏳ Subiendo..." : "↻ Reemplazar PDF"}
+                    </button>
+                  </div>
+                ) : (
+                  <button
+                    onClick={() => { const input = document.createElement("input"); input.type = "file"; input.accept = ".pdf"; input.onchange = (e: any) => { const f = e.target.files?.[0]; if (f) handlePdfUpload(plan.id, f); }; input.click(); }}
+                    disabled={uploadingPdf === plan.id}
+                    className="w-full py-2.5 rounded-xl text-xs font-bold border-2 border-dashed border-orange-300 text-orange-600 hover:bg-orange-50 transition-colors disabled:opacity-60"
+                  >
+                    {uploadingPdf === plan.id ? "⏳ Subiendo PDF..." : "📤 Subir PDF del plan nutricional"}
+                  </button>
+                )}
+              </div>
+
+              {/* Client info */}
+              {plan.clientUserId && (
+                <div className="border-t border-gray-100 pt-2 mt-2">
+                  <p className="text-xs text-gray-500">👤 Asignado a cliente ID: {plan.clientUserId}</p>
+                </div>
+              )}
             </div>
           ))}
         </div>

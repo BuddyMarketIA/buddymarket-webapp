@@ -1497,3 +1497,35 @@ export const blogPosts = pgTable("blog_posts", {
 }));
 export type BlogPost = typeof blogPosts.$inferSelect;
 export type InsertBlogPost = typeof blogPosts.$inferInsert;
+
+// =============================================================================
+// EXPERT CLIENT PLANS — Planes personalizados con PDF subido por BuddyExperts
+// =============================================================================
+export const expertClientPlanStatusEnum = pgEnum("expertClientPlanStatus", ["draft", "active", "archived"]);
+
+export const expertClientPlans = pgTable("expert_client_plans", {
+  id: serial("id").primaryKey(),
+  expertId: integer("expertId").notNull(),
+  clientUserId: integer("clientUserId"),
+  title: varchar("title", { length: 256 }).notNull(),
+  description: text("description"),
+  pdfUrl: text("pdfUrl"),
+  pdfKey: text("pdfKey"),
+  pdfFileName: varchar("pdfFileName", { length: 256 }),
+  status: expertClientPlanStatusEnum("status").default("draft").notNull(),
+  isTemplate: boolean("isTemplate").default(false).notNull(),
+  aiGeneratedMenu: text("aiGeneratedMenu"),
+  aiGeneratedShoppingList: text("aiGeneratedShoppingList"),
+  aiGeneratedAt: timestamp("aiGeneratedAt"),
+  weekNumber: integer("weekNumber"),
+  year: integer("year"),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  expertIdx: index("ecp_expert_idx").on(t.expertId),
+  clientIdx: index("ecp_client_idx").on(t.clientUserId),
+  statusIdx: index("ecp_status_idx").on(t.status),
+}));
+export type ExpertClientPlan = typeof expertClientPlans.$inferSelect;
+export type InsertExpertClientPlan = typeof expertClientPlans.$inferInsert;

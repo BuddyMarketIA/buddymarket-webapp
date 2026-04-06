@@ -7466,5 +7466,191 @@ Devuelve SOLO JSON válido con esta estructura exacta:
         return { url };
       }),
   }),
+
+  // ---------------------------------------------------------------------------
+  // EXPERT CLIENT PLANS — PDFs personalizados + generación IA de menú
+  // ---------------------------------------------------------------------------
+  expertPlans: router({
+    myPlans: protectedProcedure
+      .input(z.object({ status: z.enum(["draft", "active", "archived", "all"]).default("all") }))
+      .query(async ({ ctx, input }) => {
+        const { expertClientPlans, buddyExperts } = await import("../drizzle/schema.js");
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return [];
+        const { eq, desc, and } = await import("drizzle-orm");
+        const [expert] = await drizzleDb.select().from(buddyExperts).where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+        if (!expert) throw new TRPCError({ code: "FORBIDDEN", message: "Solo los BuddyExperts pueden acceder" });
+        const conditions: any[] = [eq(expertClientPlans.expertId, expert.id)];
+        if (input.status !== "all") conditions.push(eq(expertClientPlans.status, input.status as "draft" | "active" | "archived"));
+        return drizzleDb.select().from(expertClientPlans).where(and(...conditions)).orderBy(desc(expertClientPlans.updatedAt));
+      }),
+
+    myClientPlans: protectedProcedure
+      .query(async ({ ctx }) => {
+        const { expertClientPlans, buddyExperts } = await import("../drizzle/schema.js");
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return [];
+        const { eq } = await import("drizzle-orm");
+        return drizzleDb.select({
+          id: expertClientPlans.id,
+          title: expertClientPlans.title,
+          description: expertClientPlans.description,
+          pdfUrl: expertClientPlans.pdfUrl,
+          pdfFileName: expertClientPlans.pdfFileName,
+          status: expertClientPlans.status,
+          aiGeneratedMenu: expertClientPlans.aiGeneratedMenu,
+          aiGeneratedShoppingList: expertClientPlans.aiGeneratedShoppingList,
+          aiGeneratedAt: expertClientPlans.aiGeneratedAt,
+          notes: expertClientPlans.notes,
+          weekNumber: expertClientPlans.weekNumber,
+          year: expertClientPlans.year,
+          createdAt: expertClientPlans.createdAt,
+          expertName: buddyExperts.displayName,
+          expertAvatar: buddyExperts.avatarUrl,
+          expertSpecialty: buddyExperts.specialty,
+        }).from(expertClientPlans)
+          .leftJoin(buddyExperts, eq(expertClientPlans.expertId, buddyExperts.id))
+          .where(eq(expertClientPlans.clientUserId, ctx.user.id));
+      }),
+
+    create: protectedProcedure
+      .input(z.object({
+        title: z.string().min(3).max(256),
+        description: z.string().optional(),
+        clientUserId: z.number().optional(),
+        isTemplate: z.boolean().default(false),
+        weekNumber: z.number().optional(),
+        year: z.number().optional(),
+        notes: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { expertClientPlans, buddyExperts } = await import("../drizzle/schema.js");
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { eq } = await import("drizzle-orm");
+        const [expert] = await drizzleDb.select().from(buddyExperts).where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+        if (!expert) throw new TRPCError({ code: "FORBIDDEN" });
+        const [plan] = await drizzleDb.insert(expertClientPlans).values({
+          expertId: expert.id,
+          title: input.title,
+          description: input.description,
+          clientUserId: input.clientUserId,
+          isTemplate: input.isTemplate,
+          weekNumber: input.weekNumber,
+          year: input.year,
+          notes: input.notes,
+          status: "draft",
+        }).returning();
+        return plan;
+      }),
+
+    uploadPdf: protectedProcedure
+      .input(z.object({ planId: z.number(), base64: z.string(), fileName: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+        const { expertClientPlans, buddyExperts } = await import("../drizzle/schema.js");
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { eq, and } = await import("drizzle-orm");
+        const [expert] = await drizzleDb.select().from(buddyExperts).where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+        if (!expert) throw new TRPCError({ code: "FORBIDDEN" });
+        const [plan] = await drizzleDb.select().from(expertClientPlans)
+          .where(and(eq(expertClientPlans.id, input.planId), eq(expertClientPlans.expertId, expert.id))).limit(1);
+        if (!plan) throw new TRPCError({ code: "NOT_FOUND" });
+        const buffer = Buffer.from(input.base64, "base64");
+        const key = `expert-plans/${expert.id}/${input.planId}-${Date.now()}.pdf`;
+        const { url } = await storagePut(key, buffer, "application/pdf");
+        const [updated] = await drizzleDb.update(expertClientPlans)
+          .set({ pdfUrl: url, pdfKey: key, pdfFileName: input.fileName, updatedAt: new Date() })
+          .where(eq(expertClientPlans.id, input.planId)).returning();
+        return updated;
+      }),
+
+    assignToClient: protectedProcedure
+      .input(z.object({ planId: z.number(), clientUserId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const { expertClientPlans, buddyExperts } = await import("../drizzle/schema.js");
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { eq, and } = await import("drizzle-orm");
+        const [expert] = await drizzleDb.select().from(buddyExperts).where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+        if (!expert) throw new TRPCError({ code: "FORBIDDEN" });
+        const [plan] = await drizzleDb.select().from(expertClientPlans)
+          .where(and(eq(expertClientPlans.id, input.planId), eq(expertClientPlans.expertId, expert.id))).limit(1);
+        if (!plan) throw new TRPCError({ code: "NOT_FOUND" });
+        const [updated] = await drizzleDb.update(expertClientPlans)
+          .set({ clientUserId: input.clientUserId, status: "active", updatedAt: new Date() })
+          .where(eq(expertClientPlans.id, input.planId)).returning();
+        return updated;
+      }),
+
+    generateAiMenu: protectedProcedure
+      .input(z.object({
+        planId: z.number(),
+        userPreferences: z.object({
+          allergies: z.string().optional(),
+          restrictions: z.string().optional(),
+          dislikedFoods: z.string().optional(),
+          cookingTime: z.string().optional(),
+          persons: z.number().default(1),
+          notes: z.string().optional(),
+        }).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { expertClientPlans, buddyExperts, userProfiles } = await import("../drizzle/schema.js");
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { eq } = await import("drizzle-orm");
+        const plan = await drizzleDb.select().from(expertClientPlans)
+          .where(eq(expertClientPlans.id, input.planId)).limit(1).then(r => r[0]);
+        if (!plan) throw new TRPCError({ code: "NOT_FOUND" });
+        const [expert] = await drizzleDb.select().from(buddyExperts).where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+        const isExpertOwner = expert && expert.id === plan.expertId;
+        const isAssignedClient = plan.clientUserId === ctx.user.id;
+        if (!isExpertOwner && !isAssignedClient) throw new TRPCError({ code: "FORBIDDEN" });
+        if (!plan.pdfUrl) throw new TRPCError({ code: "BAD_REQUEST", message: "Sube el PDF del plan primero." });
+        const [profile] = await drizzleDb.select().from(userProfiles).where(eq(userProfiles.userId, ctx.user.id)).limit(1);
+        const prefs = input.userPreferences;
+        const profileCtx = profile ? `Objetivo: ${profile.mainGoal ?? "no especificado"}, Calorías/día: ${profile.dailyCalorieGoal ?? "no especificado"} kcal, Alergias: ${profile.menuAllergies ?? "ninguna"}, Dieta: ${profile.menuDietType ?? "omnívora"}, Personas: ${profile.menuPersons ?? 1}` : "";
+        const extraCtx = prefs ? `Alergias extra: ${prefs.allergies ?? "ninguna"}, Restricciones: ${prefs.restrictions ?? "ninguna"}, No le gusta: ${prefs.dislikedFoods ?? "ninguno"}, Tiempo cocina: ${prefs.cookingTime ?? "no especificado"}, Personas: ${prefs.persons ?? 1}, Notas: ${prefs.notes ?? "ninguna"}` : "";
+        const systemPrompt = `Eres un nutricionista experto. Lee el plan nutricional en PDF adjunto y genera basándote en sus directrices y las preferencias del usuario:
+1. Un menú semanal completo (7 días: desayuno, media_manana, comida, merienda, cena) con nombres de platos REALES y DETALLADOS en español (ej: "Tortilla de espinacas con queso fresco y tomate cherry" en lugar de solo "tortilla").
+2. Una lista de la compra organizada por categorías.
+
+Devuelve ÚNICAMENTE JSON válido con esta estructura:
+{"menu":{"lunes":{"desayuno":"...","media_manana":"...","comida":"...","merienda":"...","cena":"..."},"martes":{...},"miercoles":{...},"jueves":{...},"viernes":{...},"sabado":{...},"domingo":{...}},"shopping_list":{"frutas_verduras":["..."],"proteinas":["..."],"lacteos":["..."],"cereales_pasta":["..."],"legumbres":["..."],"otros":["..."]},"notes":"..."}`;
+        const response = await invokeLLM({
+          messages: [
+            { role: "system", content: systemPrompt },
+            { role: "user", content: [
+              { type: "text", text: `Perfil del usuario: ${profileCtx}\n${extraCtx}\nPDF del plan: ${plan.pdfUrl}` },
+              { type: "file_url", file_url: { url: plan.pdfUrl, mime_type: "application/pdf" } }
+            ] as any}
+          ],
+        });
+        const content = response?.choices?.[0]?.message?.content;
+        if (!content) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "La IA no generó respuesta" });
+        let parsed: any;
+        try { parsed = typeof content === "string" ? JSON.parse(content) : content; }
+        catch { throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Error al procesar la respuesta de la IA" }); }
+        const [updated] = await drizzleDb.update(expertClientPlans)
+          .set({ aiGeneratedMenu: JSON.stringify(parsed.menu), aiGeneratedShoppingList: JSON.stringify(parsed.shopping_list), aiGeneratedAt: new Date(), updatedAt: new Date() })
+          .where(eq(expertClientPlans.id, input.planId)).returning();
+        return { menu: parsed.menu, shoppingList: parsed.shopping_list, notes: parsed.notes, plan: updated };
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const { expertClientPlans, buddyExperts } = await import("../drizzle/schema.js");
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { eq, and } = await import("drizzle-orm");
+        const [expert] = await drizzleDb.select().from(buddyExperts).where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+        if (!expert) throw new TRPCError({ code: "FORBIDDEN" });
+        await drizzleDb.delete(expertClientPlans)
+          .where(and(eq(expertClientPlans.id, input.id), eq(expertClientPlans.expertId, expert.id)));
+        return { success: true };
+      }),
+  }),
 });
 export type AppRouter = typeof appRouter;
