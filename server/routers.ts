@@ -7568,7 +7568,7 @@ Devuelve SOLO JSON válido con esta estructura exacta:
     assignToClient: protectedProcedure
       .input(z.object({ planId: z.number(), clientUserId: z.number() }))
       .mutation(async ({ ctx, input }) => {
-        const { expertClientPlans, buddyExperts } = await import("../drizzle/schema.js");
+        const { expertClientPlans, buddyExperts, users } = await import("../drizzle/schema.js");
         const drizzleDb = await db.getDb();
         if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
         const { eq, and } = await import("drizzle-orm");
@@ -7580,6 +7580,29 @@ Devuelve SOLO JSON válido con esta estructura exacta:
         const [updated] = await drizzleDb.update(expertClientPlans)
           .set({ clientUserId: input.clientUserId, status: "active", updatedAt: new Date() })
           .where(eq(expertClientPlans.id, input.planId)).returning();
+        // ── Send notification email to the assigned client ──────────────────
+        try {
+          const [clientUser] = await drizzleDb.select({ id: users.id, name: users.name, email: users.email })
+            .from(users).where(eq(users.id, input.clientUserId)).limit(1);
+          if (clientUser?.email) {
+            const { sendPlanAssignedEmail } = await import("./email.js");
+            await sendPlanAssignedEmail({
+              clientEmail: clientUser.email,
+              clientName: clientUser.name ?? clientUser.email,
+              expertName: expert.displayName ?? ctx.user.name ?? "Tu BuddyExpert",
+              expertSpecialty: expert.specialty ?? null,
+              planTitle: plan.title,
+              planDescription: plan.description ?? null,
+              planWeekNumber: plan.weekNumber ?? null,
+              planYear: plan.year ?? null,
+              planNotes: plan.notes ?? null,
+              pdfUrl: plan.pdfUrl ?? null,
+            });
+          }
+        } catch (emailErr) {
+          // Email failure must not block the assignment
+          console.error("[Email] Failed to send plan assignment notification:", emailErr);
+        }
         return updated;
       }),
 

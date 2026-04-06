@@ -625,3 +625,124 @@ export async function sendOTPEmail(email: string, otpCode: string): Promise<void
     throw new Error(`Failed to send OTP email: ${(error as any).message ?? String(error)}`);
   }
 }
+
+// ─── Plan PDF Assigned Email ──────────────────────────────────────────────────
+function planAssignedEmailHtml(params: {
+  clientName: string;
+  expertName: string;
+  expertSpecialty: string | null;
+  planTitle: string;
+  planDescription: string | null;
+  planWeekNumber: number | null;
+  planYear: number | null;
+  planNotes: string | null;
+  pdfUrl: string | null;
+  appUrl: string;
+}): string {
+  const firstName = params.clientName?.split(" ")[0] || "amigo";
+
+  const weekBadge = params.planWeekNumber
+    ? `<span style="background:#FFF7ED;border:1px solid #FED7AA;color:#C2410C;font-size:12px;font-weight:700;padding:4px 12px;border-radius:50px;">Semana ${params.planWeekNumber}${params.planYear ? ` · ${params.planYear}` : ""}</span>`
+    : "";
+
+  const pdfButton = params.pdfUrl
+    ? `<table width="100%" cellpadding="0" cellspacing="0" style="margin:12px 0 0;">
+        <tr><td align="center">
+          <a href="${params.pdfUrl}" style="display:inline-block;background:#ffffff;color:#F97316;text-decoration:none;font-size:14px;font-weight:700;padding:12px 28px;border-radius:50px;border:2px solid #F97316;">📄 Descargar PDF del plan</a>
+        </td></tr>
+      </table>`
+    : "";
+
+  const notesBlock = params.planNotes
+    ? `<table width="100%" cellpadding="0" cellspacing="0" style="background:#FFFBEB;border-left:4px solid #F59E0B;border-radius:0 12px 12px 0;padding:16px 20px;margin:20px 0;">
+        <tr><td>
+          <p style="color:#92400E;font-size:13px;font-weight:700;margin:0 0 6px;">📝 Notas de tu experto</p>
+          <p style="color:#78350F;font-size:14px;line-height:1.6;margin:0;">${params.planNotes}</p>
+        </td></tr>
+      </table>`
+    : "";
+
+  const body = `
+  ${emailHeader("📄", "¡Tienes un nuevo plan nutricional!", "Tu BuddyExpert te ha asignado un plan personalizado")}
+  <tr>
+    <td style="padding:40px 40px 0;">
+      <p style="color:#374151;font-size:16px;line-height:1.7;margin:0 0 20px;">
+        Hola <strong>${firstName}</strong>,
+      </p>
+      <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 24px;">
+        Tu BuddyExpert <strong style="color:#F97316;">${params.expertName}</strong>${params.expertSpecialty ? ` (${params.expertSpecialty})` : ""} te ha asignado un nuevo plan nutricional personalizado. Ya puedes acceder a él desde tu panel de BuddyMarket.
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#FFF7ED,#FFEDD5);border:1px solid #FED7AA;border-radius:16px;padding:24px;margin:0 0 24px;">
+        <tr><td>
+          ${weekBadge ? `<p style="margin:0 0 10px;">${weekBadge}</p>` : ""}
+          <h2 style="color:#C2410C;font-size:20px;font-weight:800;margin:0 0 8px;line-height:1.3;">${params.planTitle}</h2>
+          ${params.planDescription ? `<p style="color:#92400E;font-size:14px;line-height:1.6;margin:0 0 12px;">${params.planDescription}</p>` : ""}
+          ${pdfButton}
+        </td></tr>
+      </table>
+      ${notesBlock}
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:16px;padding:20px 24px;margin:0 0 24px;">
+        <tr><td>
+          <p style="color:#166534;font-size:14px;font-weight:700;margin:0 0 12px;">✨ ¿Qué puedes hacer con tu plan?</p>
+          <p style="color:#15803D;font-size:13px;margin:0 0 8px;">🤖 <strong>Generar tu menú semanal con IA</strong> — La IA leerá el PDF y creará un menú personalizado según tus preferencias.</p>
+          <p style="color:#15803D;font-size:13px;margin:0 0 8px;">🛒 <strong>Obtener tu lista de la compra</strong> — Organizada por categorías y lista para llevar al supermercado.</p>
+          <p style="color:#15803D;font-size:13px;margin:0;">📄 <strong>Descargar el PDF</strong> — Accede al plan completo elaborado por tu experto.</p>
+        </td></tr>
+      </table>
+      ${ctaButton("Ver mi plan en BuddyMarket →", `${params.appUrl}/app/my-plans`)}
+      <p style="color:#9CA3AF;font-size:13px;line-height:1.6;margin:24px 0 0;text-align:center;">
+        Si tienes dudas sobre tu plan, contacta directamente con tu BuddyExpert a través de la app.
+      </p>
+    </td>
+  </tr>
+  <tr><td style="padding:0 40px 40px;"></td></tr>`;
+
+  return emailWrapper(body);
+}
+
+export async function sendPlanAssignedEmail(params: {
+  clientEmail: string;
+  clientName: string;
+  expertName: string;
+  expertSpecialty?: string | null;
+  planTitle: string;
+  planDescription?: string | null;
+  planWeekNumber?: number | null;
+  planYear?: number | null;
+  planNotes?: string | null;
+  pdfUrl?: string | null;
+}): Promise<boolean> {
+  if (!process.env.RESEND_API_KEY) {
+    console.warn("[Email] RESEND_API_KEY not set, skipping plan assigned email");
+    return false;
+  }
+  try {
+    const firstName = params.clientName?.split(" ")[0] || "amigo";
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: params.clientEmail,
+      subject: `📄 ${params.expertName} te ha asignado un nuevo plan nutricional, ${firstName}`,
+      html: planAssignedEmailHtml({
+        clientName: params.clientName,
+        expertName: params.expertName,
+        expertSpecialty: params.expertSpecialty ?? null,
+        planTitle: params.planTitle,
+        planDescription: params.planDescription ?? null,
+        planWeekNumber: params.planWeekNumber ?? null,
+        planYear: params.planYear ?? null,
+        planNotes: params.planNotes ?? null,
+        pdfUrl: params.pdfUrl ?? null,
+        appUrl: APP_URL,
+      }),
+    });
+    if (error) {
+      console.error("[Email] Failed to send plan assigned email:", error);
+      return false;
+    }
+    console.log("[Email] Plan assigned email sent:", data?.id, "→", params.clientEmail);
+    return true;
+  } catch (err) {
+    console.error("[Email] Error sending plan assigned email:", err);
+    return false;
+  }
+}
