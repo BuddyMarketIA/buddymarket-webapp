@@ -230,8 +230,9 @@ export default function LandingPage() {
         transition: "all 0.3s ease",
       }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", height: 72, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
-          <a href="/" style={{ display: "flex", alignItems: "center", textDecoration: "none", flexShrink: 0 }}>
-            <img src={LOGO_HORIZONTAL} alt="BuddyMarket" style={{ height: 40, width: "auto", objectFit: "contain" }} />
+          <a href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", flexShrink: 0 }}>
+            <img src={LOGO_ICON} alt="BuddyMarket" style={{ height: 52, width: "auto", objectFit: "contain" }} />
+            <span style={{ fontSize: 20, fontWeight: 900, color: "#F97316", letterSpacing: "-0.03em", lineHeight: 1 }}>BuddyMarket</span>
           </a>
 
           {/* Desktop links */}

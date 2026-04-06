@@ -182,7 +182,7 @@ export default function LoginPage() {
       <div className="relative z-10 flex flex-col items-center pt-14 pb-6 px-6 text-center">
         {/* Logo + Brand name */}
         <div className="flex flex-col items-center gap-3 mb-8">
-          <img src={LOGO} alt="BuddyMarket" className="h-20 w-20 object-contain drop-shadow-2xl" />
+          <img src={LOGO} alt="BuddyMarket" className="h-36 w-36 object-contain drop-shadow-2xl" />
           <span className="text-white text-3xl font-extrabold tracking-tight drop-shadow-lg">
             Buddy<span className="text-[#F97316]">Market</span>
           </span>
