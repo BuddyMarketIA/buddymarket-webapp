@@ -489,23 +489,41 @@ export default function ConsumShop() {
               )}
             </div>
             {cart.length > 0 && (
-              <div className="p-4 border-t">
-                <div className="flex justify-between items-center mb-3">
+              <div className="p-4 border-t space-y-3">
+                {/* Total */}
+                <div className="flex justify-between items-center">
                   <span className="font-semibold text-gray-700">Total estimado</span>
                   <span className="text-xl font-bold" style={{ color: CS_GREEN }}>{totalPrice.toFixed(2)}€</span>
                 </div>
+
+                {/* Informative notice */}
+                <div className="rounded-xl border border-amber-200 bg-amber-50 p-3 flex gap-2.5">
+                  <span className="text-amber-500 text-lg shrink-0 leading-tight">ℹ️</span>
+                  <div>
+                    <p className="text-xs font-semibold text-amber-800 mb-1">Proceso en dos pasos</p>
+                    <p className="text-xs text-amber-700 leading-relaxed">
+                      Al pulsar el botón se abrirá <strong>tienda.consum.es</strong> con tu lista.
+                      Deberás añadir cada producto al carrito de Consum manualmente, ya que
+                      su tienda no permite integraciones automáticas con apps externas.
+                    </p>
+                  </div>
+                </div>
+
+                {/* Export button */}
                 <button
                   onClick={handleExportCart}
                   disabled={exportCartMutation.isPending}
-                  className="block w-full py-3 rounded-xl text-white font-semibold text-sm text-center disabled:opacity-60 disabled:cursor-not-allowed transition-opacity"
+                  className="w-full py-3 rounded-xl text-white font-semibold text-sm text-center disabled:opacity-60 disabled:cursor-not-allowed transition-opacity flex items-center justify-center gap-2"
                   style={{ background: CS_GREEN }}
                 >
-                  {exportCartMutation.isPending
-                    ? "Generando enlace..."
-                    : "🛒 Comprar en Consum.es →"}
+                  {exportCartMutation.isPending ? (
+                    <><span className="animate-spin inline-block">⏳</span> Generando enlace...</>
+                  ) : (
+                    <>🛒 Ver productos en Consum.es →</>
+                  )}
                 </button>
-                <p className="text-xs text-gray-400 text-center mt-2">
-                  Se abrirá tienda.consum.es con todos tus productos
+                <p className="text-xs text-gray-400 text-center">
+                  Abre una nueva pestaña con {cart.length} producto{cart.length !== 1 ? "s" : ""} de tu lista
                 </p>
               </div>
             )}
