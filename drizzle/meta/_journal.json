@@ -92,6 +92,13 @@
       "when": 1775507994748,
       "tag": "0012_empty_sprite",
       "breakpoints": true
+    },
+    {
+      "idx": 13,
+      "version": "7",
+      "when": 1775509616118,
+      "tag": "0013_secret_molten_man",
+      "breakpoints": true
     }
   ]
 }

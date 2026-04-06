@@ -1762,3 +1762,28 @@ export const consumProducts = pgTable("consum_products", {
 }));
 export type ConsumProduct = typeof consumProducts.$inferSelect;
 export type InsertConsumProduct = typeof consumProducts.$inferInsert;
+
+// ===========================================================================
+// CONSUM CART HISTORY — Historial de productos añadidos al carrito por usuario
+// ===========================================================================
+export const consumCartHistory = pgTable("consum_cart_history", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull(),
+  productId: varchar("productId", { length: 128 }).notNull(),
+  productName: varchar("productName", { length: 512 }).notNull(),
+  productBrand: varchar("productBrand", { length: 256 }),
+  productImage: varchar("productImage", { length: 512 }),
+  productPrice: real("productPrice"),
+  productCategory: varchar("productCategory", { length: 256 }),
+  productPackaging: varchar("productPackaging", { length: 128 }),
+  addCount: integer("addCount").default(1).notNull(),
+  lastAddedAt: timestamp("lastAddedAt").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  cchUserIdx: index("cch_user_idx").on(t.userId),
+  cchProductIdx: index("cch_product_idx").on(t.productId),
+  cchUserProductIdx: index("cch_user_product_idx").on(t.userId, t.productId),
+  cchLastAddedIdx: index("cch_last_added_idx").on(t.lastAddedAt),
+}));
+export type ConsumCartHistory = typeof consumCartHistory.$inferSelect;
+export type InsertConsumCartHistory = typeof consumCartHistory.$inferInsert;

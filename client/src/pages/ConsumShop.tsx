@@ -243,14 +243,18 @@ export default function ConsumShop() {
       <div style={{ background: CS_GREEN }} className="sticky top-0 z-30 shadow-md">
         <div className="max-w-2xl mx-auto px-4 py-3 flex items-center justify-between gap-3">
           <div className="flex items-center gap-2">
-            {view !== "home" && (
-              <button
-                onClick={() => { setView("home"); setSelectedCategory(null); setSearchQuery(""); }}
-                className="text-white/80 hover:text-white text-xl font-bold leading-none"
-              >
-                ←
-              </button>
-            )}
+            <button
+              onClick={() => {
+                if (view !== "home") {
+                  setView("home"); setSelectedCategory(null); setSearchQuery("");
+                } else {
+                  navigate("/app/supermercados");
+                }
+              }}
+              className="text-white/80 hover:text-white text-xl font-bold leading-none px-1"
+            >
+              ←
+            </button>
             <div>
               <h1 className="text-lg font-bold text-white leading-tight">Consum</h1>
               {view === "category" && selectedCategory && (
