@@ -8350,5 +8350,60 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
       }));
     }),
   }),
+
+  // ===========================================================================
+  // CONSUM INTEGRATION
+  // ===========================================================================
+  consum: router({
+    searchProducts: publicProcedure
+      .input(z.object({ q: z.string().max(100).trim().optional(), category: z.string().max(50).trim().optional(), limit: z.number().int().min(1).max(100).optional() }))
+      .query(async ({ input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return [];
+        const { consumProducts } = await import("../drizzle/schema");
+        const { like, eq, and, or, desc } = await import("drizzle-orm");
+        const q = input.q?.trim();
+        const conditions: any[] = [];
+        if (q && q.length > 0) {
+          conditions.push(or(
+            like(consumProducts.name, `%${q}%`),
+            like(consumProducts.category, `%${q}%`),
+            like(consumProducts.brand, `%${q}%`),
+          ));
+        }
+        if (input.category) conditions.push(eq(consumProducts.category, input.category));
+        const rows = await drizzleDb
+          .select()
+          .from(consumProducts)
+          .where(conditions.length > 0 ? and(...conditions) : undefined)
+          .orderBy(desc(consumProducts.price))
+          .limit(input.limit ?? 48);
+        return rows;
+      }),
+    categories: publicProcedure.query(async () => {
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) return [];
+      const { sql } = await import("drizzle-orm");
+      const result = await drizzleDb.execute(
+        sql`SELECT category, COUNT(*) as count FROM consum_products WHERE category IS NOT NULL GROUP BY category ORDER BY count DESC LIMIT 30`
+      );
+      const rows = Array.isArray(result) ? result : (result as any).rows ?? [];
+      return rows as Array<{ category: string; count: number }>;
+    }),
+    byCategory: publicProcedure
+      .input(z.object({ category: z.string(), limit: z.number().optional() }))
+      .query(async ({ input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return [];
+        const { consumProducts } = await import("../drizzle/schema");
+        const { eq, desc } = await import("drizzle-orm");
+        return drizzleDb
+          .select()
+          .from(consumProducts)
+          .where(eq(consumProducts.category, input.category))
+          .orderBy(desc(consumProducts.price))
+          .limit(input.limit ?? 48);
+      }),
+  }),
 });
 export type AppRouter = typeof appRouter;

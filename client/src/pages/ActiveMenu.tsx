@@ -29,17 +29,20 @@ import AlcampoCartExport from "@/components/AlcampoCartExport";
 import BasketComparator from "@/components/BasketComparator";
 
 const SUPERMARKETS = [
-  { id: "general", name: "General", emoji: "🛒" },
-  { id: "mercadona", name: "Mercadona", emoji: "🟠" },
-  { id: "lidl", name: "Lidl", emoji: "🔵" },
-  { id: "carrefour", name: "Carrefour", emoji: "🔴" },
-  { id: "alcampo", name: "Alcampo", emoji: "🟡" },
-  { id: "dia", name: "Día", emoji: "🟢" },
-  { id: "el_corte_ingles", name: "El Corte Inglés", emoji: "🟤" },
-] as const;
+  { id: "general", name: "General", emoji: "🛒", available: true },
+  { id: "mercadona", name: "Mercadona", emoji: "🟠", available: true },
+  { id: "consum", name: "Consum", emoji: "🟢", available: true },
+  { id: "lidl", name: "Lidl", emoji: "🔵", available: false },
+  { id: "carrefour", name: "Carrefour", emoji: "🔴", available: false },
+  { id: "alcampo", name: "Alcampo", emoji: "🟡", available: false },
+  { id: "hiperdino", name: "Hiperdino", emoji: "🟤", available: false },
+  { id: "dia", name: "Día", emoji: "🟢", available: false },
+  { id: "el_corte_ingles", name: "El Corte Inglés", emoji: "🟤", available: false },
+];
 
 const SUPERMARKET_SEARCH_URLS: Record<string, (q: string) => string> = {
   general: (q) => `https://www.google.com/search?q=${encodeURIComponent(q + " comprar supermercado")}`,
+  consum: (q) => `https://www.consum.es/buscar?q=${encodeURIComponent(q)}`,
   lidl: (q) => `https://www.lidl.es/es/buscar.htm?query=${encodeURIComponent(q)}`,
   carrefour: (q) => `https://www.carrefour.es/supermercado/buscar?query=${encodeURIComponent(q)}`,
   alcampo: (q) => `https://www.alcampo.es/compra-online/buscar/?q=${encodeURIComponent(q)}`,
@@ -321,6 +324,8 @@ export default function ActiveMenu() {
           setGeneratedItems(items);
           if (selectedSupermarket === "mercadona") {
             setShowMercadonaModal(true);
+          } else if (selectedSupermarket === "consum") {
+            setShowGenericModal(true);
           } else if (selectedSupermarket === "lidl") {
             setShowLidlModal(true);
           } else if (selectedSupermarket === "carrefour") {
@@ -879,19 +884,24 @@ export default function ActiveMenu() {
           <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Elige tu supermercado</p>
           <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
             {SUPERMARKETS.map((s) => (
-              <button
-                key={s.id}
-                onClick={() => setSelectedSupermarket(s.id)}
-                className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all border-2"
-                style={{
-                  background: selectedSupermarket === s.id ? "#FF6B35" : "white",
-                  color: selectedSupermarket === s.id ? "white" : "#6b7280",
-                  borderColor: selectedSupermarket === s.id ? "#FF6B35" : "#f3f4f6",
-                }}
-              >
-                <span>{s.emoji}</span>
-                <span>{s.name}</span>
-              </button>
+              <div key={s.id} className="relative flex-shrink-0">
+                <button
+                  onClick={() => s.available ? setSelectedSupermarket(s.id) : undefined}
+                  disabled={!s.available}
+                  className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold transition-all border-2 ${!s.available ? "opacity-50 cursor-not-allowed" : ""}`}
+                  style={{
+                    background: selectedSupermarket === s.id ? "#FF6B35" : "white",
+                    color: selectedSupermarket === s.id ? "white" : "#6b7280",
+                    borderColor: selectedSupermarket === s.id ? "#FF6B35" : "#f3f4f6",
+                  }}
+                >
+                  <span>{s.emoji}</span>
+                  <span>{s.name}</span>
+                </button>
+                {!s.available && (
+                  <span className="absolute -top-2 -right-1 bg-gray-400 text-white text-[8px] font-bold px-1 py-0.5 rounded-full leading-none">Pronto</span>
+                )}
+              </div>
             ))}
           </div>
         </div>
@@ -904,6 +914,15 @@ export default function ActiveMenu() {
               <span className="text-green-600 text-sm">🟢</span>
               <p className="text-xs text-green-700 font-semibold">
                 Integración directa con Mercadona — verás productos reales con foto y precio
+              </p>
+            </div>
+          )}
+          {/* Consum badge */}
+          {selectedSupermarket === "consum" && (
+            <div className="mb-3 flex items-center gap-2 rounded-2xl bg-green-50 border border-green-100 px-3 py-2">
+              <span className="text-green-600 text-sm">🟢</span>
+              <p className="text-xs text-green-700 font-semibold">
+                Búsqueda de productos Consum — encuentra productos con foto y precio
               </p>
             </div>
           )}

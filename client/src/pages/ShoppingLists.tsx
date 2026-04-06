@@ -38,24 +38,26 @@ const SUPERMARKET_SEARCH_URLS: Record<string, (q: string) => string> = {
 };
 
 const SUPERMARKET_OPTIONS = [
-  { id: "mercadona", name: "Mercadona", emoji: "🟠" },
-  { id: "carrefour", name: "Carrefour", emoji: "🔵" },
-  { id: "lidl", name: "Lidl", emoji: "🟡" },
-  { id: "alcampo", name: "Alcampo", emoji: "🟢" },
-  { id: "dia", name: "Dia", emoji: "🔴" },
-  { id: "el_corte_ingles", name: "El Corte Inglés", emoji: "🟢" },
-  { id: "consum", name: "Consum", emoji: "🟠" },
-  { id: "eroski", name: "Eroski", emoji: "🔴" },
+  { id: "mercadona", name: "Mercadona", emoji: "🟠", available: true },
+  { id: "consum", name: "Consum", emoji: "🟢", available: true },
+  { id: "lidl", name: "Lidl", emoji: "🔵", available: false },
+  { id: "carrefour", name: "Carrefour", emoji: "🔴", available: false },
+  { id: "alcampo", name: "Alcampo", emoji: "🟡", available: false },
+  { id: "hiperdino", name: "Hiperdino", emoji: "🟤", available: false },
+  { id: "dia", name: "Día", emoji: "🟢", available: false },
+  { id: "el_corte_ingles", name: "El Corte Inglés", emoji: "🟤", available: false },
 ];
 
 const SUPERMARKETS = [
-  { id: "general", name: "General", emoji: "🛒" },
-  { id: "mercadona", name: "Mercadona", emoji: "🟠" },
-  { id: "lidl", name: "Lidl", emoji: "🔵" },
-  { id: "carrefour", name: "Carrefour", emoji: "🔴" },
-  { id: "alcampo", name: "Alcampo", emoji: "🟢" },
-  { id: "dia", name: "Dia", emoji: "🔴" },
-  { id: "el_corte_ingles", name: "El Corte Inglés", emoji: "🟢" },
+  { id: "general", name: "General", emoji: "🛒", available: true },
+  { id: "mercadona", name: "Mercadona", emoji: "🟠", available: true },
+  { id: "consum", name: "Consum", emoji: "🟢", available: true },
+  { id: "lidl", name: "Lidl", emoji: "🔵", available: false },
+  { id: "carrefour", name: "Carrefour", emoji: "🔴", available: false },
+  { id: "alcampo", name: "Alcampo", emoji: "🟡", available: false },
+  { id: "hiperdino", name: "Hiperdino", emoji: "🟤", available: false },
+  { id: "dia", name: "Día", emoji: "🟢", available: false },
+  { id: "el_corte_ingles", name: "El Corte Inglés", emoji: "🟤", available: false },
 ];
 
 // View filter types
@@ -631,14 +633,27 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
                 <p className="mb-5 text-sm text-gray-500">Elige tu supermercado y abriremos la búsqueda de cada producto en su tienda online.</p>
                 <div className="grid grid-cols-2 gap-3">
                   {SUPERMARKET_OPTIONS.map((s) => (
-                    <button
-                      key={s.id}
-                      onClick={() => { if (s.id === "mercadona") { setShowExport(false); setShowMercadonaCart(true); } else if (s.id === "lidl") { setShowExport(false); setShowLidlCart(true); } else if (s.id === "carrefour") { setShowExport(false); setShowCarrefourCart(true); } else if (s.id === "alcampo") { setShowExport(false); setShowAlcampoCart(true); } else { setSelectedSupermarket(s.id); } }}
-                      className="flex flex-col items-center gap-2 rounded-2xl border-2 border-gray-100 p-4 hover:border-[#F97316] hover:bg-orange-50 transition-all"
-                    >
-                      <span className="text-2xl">{s.emoji}</span>
-                      <span className="text-sm font-semibold text-gray-700">{s.name}</span>
-                    </button>
+                    <div key={s.id} className="relative">
+                      <button
+                        disabled={!s.available}
+                        onClick={() => {
+                          if (!s.available) return;
+                          if (s.id === "mercadona") { setShowExport(false); setShowMercadonaCart(true); }
+                          else if (s.id === "consum") { setSelectedSupermarket(s.id); }
+                          else if (s.id === "lidl") { setShowExport(false); setShowLidlCart(true); }
+                          else if (s.id === "carrefour") { setShowExport(false); setShowCarrefourCart(true); }
+                          else if (s.id === "alcampo") { setShowExport(false); setShowAlcampoCart(true); }
+                          else { setSelectedSupermarket(s.id); }
+                        }}
+                        className={`w-full flex flex-col items-center gap-2 rounded-2xl border-2 border-gray-100 p-4 transition-all ${s.available ? "hover:border-[#F97316] hover:bg-orange-50" : "opacity-50 cursor-not-allowed"}`}
+                      >
+                        <span className="text-2xl">{s.emoji}</span>
+                        <span className="text-sm font-semibold text-gray-700">{s.name}</span>
+                      </button>
+                      {!s.available && (
+                        <span className="absolute top-1 right-1 bg-gray-400 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full leading-none">Pronto</span>
+                      )}
+                    </div>
                   ))}
                 </div>
               </>

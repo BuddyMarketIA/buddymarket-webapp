@@ -1737,3 +1737,28 @@ export const featureEvents = pgTable("feature_events", {
 }));
 export type FeatureEvent = typeof featureEvents.$inferSelect;
 export type InsertFeatureEvent = typeof featureEvents.$inferInsert;
+
+// ===========================================================================
+// CONSUM PRODUCTS
+// ===========================================================================
+export const consumProducts = pgTable("consum_products", {
+  id: varchar("id", { length: 128 }).primaryKey(),
+  name: varchar("name", { length: 512 }).notNull(),
+  brand: varchar("brand", { length: 256 }),
+  price: real("price"),
+  pricePerUnit: varchar("price_per_unit", { length: 64 }),
+  image: varchar("image", { length: 512 }),
+  category: varchar("category", { length: 256 }),
+  subcategory: varchar("subcategory", { length: 256 }),
+  packaging: varchar("packaging", { length: 128 }),
+  productUrl: varchar("product_url", { length: 512 }),
+  ean: varchar("ean", { length: 64 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  nameIdx: index("consum_name_idx").on(t.name),
+  categoryIdx: index("consum_category_idx").on(t.category),
+  eanIdx: index("consum_ean_idx").on(t.ean),
+}));
+export type ConsumProduct = typeof consumProducts.$inferSelect;
+export type InsertConsumProduct = typeof consumProducts.$inferInsert;
