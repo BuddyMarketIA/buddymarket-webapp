@@ -7651,6 +7651,35 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
           .where(and(eq(expertClientPlans.id, input.id), eq(expertClientPlans.expertId, expert.id)));
         return { success: true };
       }),
+    searchClientByEmail: protectedProcedure
+      .input(z.object({ email: z.string().email() }))
+      .query(async ({ ctx, input }) => {
+        const { buddyExperts, users } = await import("../drizzle/schema.js");
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { eq } = await import("drizzle-orm");
+        const [expert] = await drizzleDb.select().from(buddyExperts).where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+        if (!expert) throw new TRPCError({ code: "FORBIDDEN", message: "Solo los BuddyExperts pueden buscar clientes" });
+        const [user] = await drizzleDb.select({ id: users.id, name: users.name, email: users.email, avatarUrl: users.imageUrl })
+          .from(users).where(eq(users.email, input.email)).limit(1);
+        return user ?? null;
+      }),
+    updateStatus: protectedProcedure
+      .input(z.object({ planId: z.number(), status: z.enum(["draft", "active", "archived"]) }))
+      .mutation(async ({ ctx, input }) => {
+        const { expertClientPlans, buddyExperts } = await import("../drizzle/schema.js");
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { eq, and } = await import("drizzle-orm");
+        const [expert] = await drizzleDb.select().from(buddyExperts).where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+        if (!expert) throw new TRPCError({ code: "FORBIDDEN" });
+        const [updated] = await drizzleDb.update(expertClientPlans)
+          .set({ status: input.status, updatedAt: new Date() })
+          .where(and(eq(expertClientPlans.id, input.planId), eq(expertClientPlans.expertId, expert.id)))
+          .returning();
+        if (!updated) throw new TRPCError({ code: "NOT_FOUND" });
+        return updated;
+      }),
   }),
 });
 export type AppRouter = typeof appRouter;

@@ -1076,31 +1076,58 @@ function BlogTab({ expertProfile }: { expertProfile: any }) {
     </div>
   );
 }
-
 // ─── PDF Plans Tab Component ─────────────────────────────────────────────────
 function PdfPlansTab({ expertProfile }: { expertProfile: any }) {
   const [showForm, setShowForm] = useState(false);
-  const [editingPlan, setEditingPlan] = useState<any | null>(null);
   const [form, setForm] = useState({ title: "", description: "", notes: "", weekNumber: "", year: new Date().getFullYear().toString() });
   const [uploadingPdf, setUploadingPdf] = useState<number | null>(null);
-  const pdfRef = useRef<HTMLInputElement>(null);
+  const [dragOverPlan, setDragOverPlan] = useState<number | null>(null);
+  const [expandedPlan, setExpandedPlan] = useState<number | null>(null);
+  const [assigningPlan, setAssigningPlan] = useState<number | null>(null);
+  const [clientEmail, setClientEmail] = useState("");
+  const [clientSearchEnabled, setClientSearchEnabled] = useState(false);
+  const [generatingMenu, setGeneratingMenu] = useState<number | null>(null);
+  const [menuPrefs, setMenuPrefs] = useState({ allergies: "", restrictions: "", dislikedFoods: "", cookingTime: "", persons: "1", notes: "" });
+  const [showPrefsFor, setShowPrefsFor] = useState<number | null>(null);
 
-  const { data: myPlans, refetch } = trpc.expertPlans.myPlans.useQuery({ status: "all" }, { enabled: !!expertProfile });
+  const { data: myPlans, refetch } = trpc.expertPlans.myPlans.useQuery(
+    { status: "all" },
+    { enabled: !!expertProfile }
+  );
+
+  const { data: foundClient } = trpc.expertPlans.searchClientByEmail.useQuery(
+    { email: clientEmail },
+    { enabled: clientSearchEnabled && clientEmail.includes("@") && clientEmail.includes(".") }
+  );
+
   const createMutation = trpc.expertPlans.create.useMutation({
-    onSuccess: (plan) => { toast.success("Plan creado"); setShowForm(false); resetForm(); refetch(); setEditingPlan(plan); },
+    onSuccess: () => { toast.success("Plan creado"); setShowForm(false); resetForm(); refetch(); },
     onError: (e) => toast.error(e.message),
   });
   const uploadPdfMutation = trpc.expertPlans.uploadPdf.useMutation({
-    onSuccess: () => { toast.success("PDF subido correctamente"); setUploadingPdf(null); refetch(); },
+    onSuccess: () => { toast.success("PDF subido correctamente ✓"); setUploadingPdf(null); refetch(); },
     onError: (e) => { toast.error(e.message); setUploadingPdf(null); },
+  });
+  const assignMutation = trpc.expertPlans.assignToClient.useMutation({
+    onSuccess: () => { toast.success("Plan asignado al cliente ✓"); setAssigningPlan(null); setClientEmail(""); setClientSearchEnabled(false); refetch(); },
+    onError: (e) => toast.error(e.message),
+  });
+  const updateStatusMutation = trpc.expertPlans.updateStatus.useMutation({
+    onSuccess: (updated) => { toast.success(`Estado actualizado a "${updated.status}"`); refetch(); },
+    onError: (e) => toast.error(e.message),
+  });
+  const generateMenuMutation = trpc.expertPlans.generateAiMenu.useMutation({
+    onSuccess: () => { toast.success("Menú generado con IA ✨"); setGeneratingMenu(null); setShowPrefsFor(null); refetch(); },
+    onError: (e) => { toast.error(e.message); setGeneratingMenu(null); },
   });
   const deleteMutation = trpc.expertPlans.delete.useMutation({
     onSuccess: () => { toast.success("Plan eliminado"); refetch(); },
     onError: (e) => toast.error(e.message),
   });
 
-  function resetForm() { setForm({ title: "", description: "", notes: "", weekNumber: "", year: new Date().getFullYear().toString() }); setEditingPlan(null); }
-
+  function resetForm() {
+    setForm({ title: "", description: "", notes: "", weekNumber: "", year: new Date().getFullYear().toString() });
+  }
   function handleCreate(e: React.FormEvent) {
     e.preventDefault();
     createMutation.mutate({
@@ -1111,16 +1138,53 @@ function PdfPlansTab({ expertProfile }: { expertProfile: any }) {
       year: form.year ? parseInt(form.year) : undefined,
     });
   }
-
   async function handlePdfUpload(planId: number, file: File) {
-    if (file.size > 16 * 1024 * 1024) { toast.error("El PDF no puede superar 16 MB"); return; }
+    if (!file.name.toLowerCase().endsWith(".pdf") && file.type !== "application/pdf") {
+      toast.error("Solo se permiten archivos PDF");
+      return;
+    }
+    if (file.size > 16 * 1024 * 1024) {
+      toast.error("El PDF no puede superar 16 MB");
+      return;
+    }
     setUploadingPdf(planId);
     const reader = new FileReader();
     reader.onload = () => {
       const base64 = (reader.result as string).split(",")[1];
       uploadPdfMutation.mutate({ planId, base64, fileName: file.name });
     };
+    reader.onerror = () => { toast.error("Error al leer el archivo"); setUploadingPdf(null); };
     reader.readAsDataURL(file);
+  }
+  function handleDrop(planId: number, e: React.DragEvent) {
+    e.preventDefault();
+    setDragOverPlan(null);
+    const file = e.dataTransfer.files?.[0];
+    if (file) handlePdfUpload(planId, file);
+  }
+  function handleFileInput(planId: number) {
+    const input = document.createElement("input");
+    input.type = "file";
+    input.accept = ".pdf,application/pdf";
+    input.onchange = (e: any) => {
+      const file = e.target.files?.[0];
+      if (file) handlePdfUpload(planId, file);
+    };
+    input.click();
+  }
+  function handleGenerateMenu(planId: number) {
+    setGeneratingMenu(planId);
+    generateMenuMutation.mutate({
+      planId,
+      userPreferences: {
+        allergies: menuPrefs.allergies || undefined,
+        restrictions: menuPrefs.restrictions || undefined,
+        dislikedFoods: menuPrefs.dislikedFoods || undefined,
+        cookingTime: menuPrefs.cookingTime || undefined,
+        persons: parseInt(menuPrefs.persons) || 1,
+        notes: menuPrefs.notes || undefined,
+      },
+    });
   }
 
   if (!expertProfile) {
@@ -1131,13 +1195,19 @@ function PdfPlansTab({ expertProfile }: { expertProfile: any }) {
     );
   }
 
+  const DAYS_ES: Record<string, string> = { lunes: "Lunes", martes: "Martes", miercoles: "Miércoles", jueves: "Jueves", viernes: "Viernes", sabado: "Sábado", domingo: "Domingo" };
+  const MEALS_ES: Record<string, string> = { desayuno: "🌅 Desayuno", media_manana: "🍎 Media mañana", comida: "🍽️ Comida", merienda: "☕ Merienda", cena: "🌙 Cena" };
+  const SHOPPING_ES: Record<string, string> = { frutas_verduras: "🥦 Frutas y verduras", proteinas: "🥩 Proteínas", lacteos: "🥛 Lácteos", cereales_pasta: "🌾 Cereales y pasta", legumbres: "🫘 Legumbres", otros: "🛒 Otros" };
+
   return (
     <div className="space-y-4">
+      {/* Header */}
       <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-100 rounded-2xl p-4">
         <h3 className="font-black text-gray-900 text-sm mb-1">📄 Planes PDF personalizados</h3>
         <p className="text-xs text-gray-600">Sube planes nutricionales en PDF para tus clientes. La IA leerá el PDF y generará un menú semanal + lista de la compra adaptado a las preferencias de cada cliente.</p>
       </div>
 
+      {/* Create button / form */}
       {!showForm ? (
         <button
           onClick={() => { resetForm(); setShowForm(true); }}
@@ -1163,16 +1233,16 @@ function PdfPlansTab({ expertProfile }: { expertProfile: any }) {
           <div className="grid grid-cols-2 gap-3">
             <div>
               <label className="text-xs font-bold text-gray-600 mb-1 block">Semana nº</label>
-              <input value={form.weekNumber} onChange={(e) => setForm(p => ({ ...p, weekNumber: e.target.value }))} type="number" min="1" max="52" placeholder="Ej: 1" className="w-full rounded-xl border border-gray-200 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
+              <input type="number" min="1" max="52" value={form.weekNumber} onChange={(e) => setForm(p => ({ ...p, weekNumber: e.target.value }))} placeholder="Ej: 1" className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
             </div>
             <div>
               <label className="text-xs font-bold text-gray-600 mb-1 block">Año</label>
-              <input value={form.year} onChange={(e) => setForm(p => ({ ...p, year: e.target.value }))} type="number" min="2024" max="2030" className="w-full rounded-xl border border-gray-200 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
+              <input type="number" min="2024" max="2030" value={form.year} onChange={(e) => setForm(p => ({ ...p, year: e.target.value }))} className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
             </div>
           </div>
           <div>
-            <label className="text-xs font-bold text-gray-600 mb-1 block">Notas internas (solo tú las ves)</label>
-            <textarea value={form.notes} onChange={(e) => setForm(p => ({ ...p, notes: e.target.value }))} rows={2} placeholder="Observaciones sobre el cliente, ajustes especiales..." className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none" />
+            <label className="text-xs font-bold text-gray-600 mb-1 block">Notas internas</label>
+            <textarea value={form.notes} onChange={(e) => setForm(p => ({ ...p, notes: e.target.value }))} rows={2} placeholder="Notas para el cliente, ajustes especiales..." className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none" />
           </div>
           <button type="submit" disabled={createMutation.isPending} className="w-full py-3.5 rounded-2xl text-sm font-bold text-white flex items-center justify-center gap-2 disabled:opacity-60" style={{ background: "linear-gradient(135deg, #F97316, #FB923C)" }}>
             {createMutation.isPending ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Creando...</> : "✓ Crear plan"}
@@ -1180,6 +1250,7 @@ function PdfPlansTab({ expertProfile }: { expertProfile: any }) {
         </form>
       )}
 
+      {/* Plans list */}
       {(!myPlans || myPlans.length === 0) ? (
         <div className="text-center py-12 text-gray-400">
           <div className="text-5xl mb-3">📄</div>
@@ -1188,59 +1259,263 @@ function PdfPlansTab({ expertProfile }: { expertProfile: any }) {
         </div>
       ) : (
         <div className="space-y-3">
-          {myPlans.map((plan: any) => (
-            <div key={plan.id} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
-              <div className="flex items-start justify-between gap-2 mb-3">
-                <div>
-                  <h3 className="font-bold text-gray-900 text-sm">{plan.title}</h3>
-                  {plan.description && <p className="text-xs text-gray-500 mt-0.5">{plan.description}</p>}
-                  <div className="flex items-center gap-2 mt-1.5 flex-wrap">
-                    {plan.weekNumber && <span className="text-xs bg-blue-50 text-blue-600 rounded-full px-2 py-0.5 font-semibold">Semana {plan.weekNumber}</span>}
-                    <span className={`text-xs rounded-full px-2 py-0.5 font-semibold ${plan.status === "active" ? "bg-green-100 text-green-700" : plan.status === "archived" ? "bg-gray-100 text-gray-500" : "bg-yellow-100 text-yellow-700"}`}>
-                      {plan.status === "active" ? "✓ Activo" : plan.status === "archived" ? "Archivado" : "Borrador"}
-                    </span>
-                    {plan.pdfFileName && <span className="text-xs bg-orange-50 text-orange-600 rounded-full px-2 py-0.5 font-semibold">📎 {plan.pdfFileName}</span>}
-                    {plan.aiGeneratedAt && <span className="text-xs bg-purple-50 text-purple-600 rounded-full px-2 py-0.5 font-semibold">✨ IA generada</span>}
-                  </div>
-                </div>
-                <button onClick={() => { if (confirm("¿Eliminar este plan?")) deleteMutation.mutate({ id: plan.id }); }} className="text-red-400 hover:text-red-600 text-sm shrink-0">🗑️</button>
-              </div>
+          {myPlans.map((plan: any) => {
+            const isExpanded = expandedPlan === plan.id;
+            const isAssigning = assigningPlan === plan.id;
+            const isUploadingThis = uploadingPdf === plan.id;
+            const isDragOver = dragOverPlan === plan.id;
+            const isGeneratingThis = generatingMenu === plan.id;
+            const showPrefsModal = showPrefsFor === plan.id;
+            let parsedMenu: any = null;
+            let parsedShopping: any = null;
+            try { if (plan.aiGeneratedMenu) parsedMenu = JSON.parse(plan.aiGeneratedMenu); } catch {}
+            try { if (plan.aiGeneratedShoppingList) parsedShopping = JSON.parse(plan.aiGeneratedShoppingList); } catch {}
 
-              {/* PDF Upload */}
-              <div className="border-t border-gray-100 pt-3">
-                <input ref={pdfRef} type="file" accept=".pdf" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) handlePdfUpload(plan.id, f); e.target.value = ""; }} />
-                {plan.pdfUrl ? (
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <a href={plan.pdfUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-orange-600 font-semibold hover:underline flex items-center gap-1">
-                      📄 Ver PDF actual
-                    </a>
+            return (
+              <div key={plan.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+                {/* Plan header */}
+                <div className="p-4">
+                  <div className="flex items-start justify-between gap-2 mb-3">
+                    <div className="flex-1 min-w-0">
+                      <h3 className="font-bold text-gray-900 text-sm truncate">{plan.title}</h3>
+                      {plan.description && <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{plan.description}</p>}
+                      <div className="flex items-center gap-2 mt-1.5 flex-wrap">
+                        {plan.weekNumber && <span className="text-xs bg-blue-50 text-blue-600 rounded-full px-2 py-0.5 font-semibold">Semana {plan.weekNumber}</span>}
+                        <select
+                          value={plan.status}
+                          onChange={(e) => updateStatusMutation.mutate({ planId: plan.id, status: e.target.value as any })}
+                          className={`text-xs rounded-full px-2 py-0.5 font-semibold border-0 cursor-pointer focus:outline-none focus:ring-1 focus:ring-orange-400 ${plan.status === "active" ? "bg-green-100 text-green-700" : plan.status === "archived" ? "bg-gray-100 text-gray-500" : "bg-yellow-100 text-yellow-700"}`}
+                        >
+                          <option value="draft">Borrador</option>
+                          <option value="active">✓ Activo</option>
+                          <option value="archived">Archivado</option>
+                        </select>
+                        {plan.pdfFileName && <span className="text-xs bg-orange-50 text-orange-600 rounded-full px-2 py-0.5 font-semibold">📎 PDF</span>}
+                        {plan.aiGeneratedAt && <span className="text-xs bg-purple-50 text-purple-600 rounded-full px-2 py-0.5 font-semibold">✨ IA</span>}
+                        {plan.clientUserId && <span className="text-xs bg-teal-50 text-teal-600 rounded-full px-2 py-0.5 font-semibold">👤 Asignado</span>}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 shrink-0">
+                      <button onClick={() => setExpandedPlan(isExpanded ? null : plan.id)} className="text-gray-400 hover:text-gray-600 text-sm p-1" title={isExpanded ? "Colapsar" : "Expandir"}>
+                        {isExpanded ? "▲" : "▼"}
+                      </button>
+                      <button onClick={() => { if (confirm("¿Eliminar este plan?")) deleteMutation.mutate({ id: plan.id }); }} className="text-red-400 hover:text-red-600 text-sm p-1" title="Eliminar">🗑️</button>
+                    </div>
+                  </div>
+
+                  {/* PDF Upload Zone */}
+                  <div
+                    className={`border-2 border-dashed rounded-xl p-3 transition-all ${isDragOver ? "border-orange-400 bg-orange-50" : "border-gray-200 hover:border-orange-300"} ${isUploadingThis ? "opacity-60" : ""}`}
+                    onDragOver={(e) => { e.preventDefault(); setDragOverPlan(plan.id); }}
+                    onDragLeave={() => setDragOverPlan(null)}
+                    onDrop={(e) => handleDrop(plan.id, e)}
+                  >
+                    {isUploadingThis ? (
+                      <div className="flex items-center justify-center gap-2 py-1">
+                        <div className="w-4 h-4 border-2 border-orange-500 border-t-transparent rounded-full animate-spin" />
+                        <span className="text-xs text-orange-600 font-semibold">Subiendo PDF...</span>
+                      </div>
+                    ) : plan.pdfUrl ? (
+                      <div className="flex items-center justify-between gap-2">
+                        <a href={plan.pdfUrl} target="_blank" rel="noopener noreferrer" className="text-xs text-orange-600 font-semibold hover:underline flex items-center gap-1 min-w-0">
+                          <span>📄</span>
+                          <span className="truncate">{plan.pdfFileName ?? "Ver PDF"}</span>
+                        </a>
+                        <button onClick={() => handleFileInput(plan.id)} className="text-xs text-gray-500 hover:text-orange-600 font-semibold shrink-0 whitespace-nowrap">
+                          ↻ Reemplazar
+                        </button>
+                      </div>
+                    ) : (
+                      <button onClick={() => handleFileInput(plan.id)} className="w-full text-center">
+                        <div className="text-2xl mb-1">📤</div>
+                        <p className="text-xs font-bold text-orange-600">Subir PDF del plan nutricional</p>
+                        <p className="text-xs text-gray-400 mt-0.5">Arrastra aquí o haz clic · Máx. 16 MB</p>
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Action buttons */}
+                  <div className="flex gap-2 mt-3">
+                    {plan.pdfUrl && (
+                      <button
+                        onClick={() => { setShowPrefsFor(showPrefsModal ? null : plan.id); setMenuPrefs({ allergies: "", restrictions: "", dislikedFoods: "", cookingTime: "", persons: "1", notes: "" }); }}
+                        className="flex-1 py-2 rounded-xl text-xs font-bold bg-purple-50 text-purple-700 hover:bg-purple-100 transition-colors"
+                      >
+                        ✨ {parsedMenu ? "Regenerar menú IA" : "Generar menú con IA"}
+                      </button>
+                    )}
                     <button
-                      onClick={() => { pdfRef.current?.click(); pdfRef.current!.onchange = (e: any) => { const f = e.target.files?.[0]; if (f) handlePdfUpload(plan.id, f); e.target.value = ""; }; }}
-                      disabled={uploadingPdf === plan.id}
-                      className="text-xs text-gray-500 hover:text-gray-700 font-semibold"
+                      onClick={() => { setAssigningPlan(isAssigning ? null : plan.id); setClientEmail(""); setClientSearchEnabled(false); }}
+                      className="flex-1 py-2 rounded-xl text-xs font-bold bg-teal-50 text-teal-700 hover:bg-teal-100 transition-colors"
                     >
-                      {uploadingPdf === plan.id ? "⏳ Subiendo..." : "↻ Reemplazar PDF"}
+                      👤 {plan.clientUserId ? "Reasignar cliente" : "Asignar a cliente"}
                     </button>
                   </div>
-                ) : (
-                  <button
-                    onClick={() => { const input = document.createElement("input"); input.type = "file"; input.accept = ".pdf"; input.onchange = (e: any) => { const f = e.target.files?.[0]; if (f) handlePdfUpload(plan.id, f); }; input.click(); }}
-                    disabled={uploadingPdf === plan.id}
-                    className="w-full py-2.5 rounded-xl text-xs font-bold border-2 border-dashed border-orange-300 text-orange-600 hover:bg-orange-50 transition-colors disabled:opacity-60"
-                  >
-                    {uploadingPdf === plan.id ? "⏳ Subiendo PDF..." : "📤 Subir PDF del plan nutricional"}
-                  </button>
+
+                  {/* AI Menu preferences panel */}
+                  {showPrefsModal && (
+                    <div className="mt-3 bg-purple-50 rounded-xl p-3 border border-purple-100 space-y-2">
+                      <p className="text-xs font-bold text-purple-700 mb-2">Preferencias para generar el menú</p>
+                      <div className="grid grid-cols-2 gap-2">
+                        <div>
+                          <label className="text-xs text-gray-600 font-semibold block mb-1">Alergias</label>
+                          <input value={menuPrefs.allergies} onChange={(e) => setMenuPrefs(p => ({ ...p, allergies: e.target.value }))} placeholder="Ej: gluten, lactosa" className="w-full rounded-lg border border-purple-200 px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-purple-400" />
+                        </div>
+                        <div>
+                          <label className="text-xs text-gray-600 font-semibold block mb-1">Restricciones</label>
+                          <input value={menuPrefs.restrictions} onChange={(e) => setMenuPrefs(p => ({ ...p, restrictions: e.target.value }))} placeholder="Ej: vegetariano" className="w-full rounded-lg border border-purple-200 px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-purple-400" />
+                        </div>
+                        <div>
+                          <label className="text-xs text-gray-600 font-semibold block mb-1">No le gusta</label>
+                          <input value={menuPrefs.dislikedFoods} onChange={(e) => setMenuPrefs(p => ({ ...p, dislikedFoods: e.target.value }))} placeholder="Ej: brócoli, hígado" className="w-full rounded-lg border border-purple-200 px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-purple-400" />
+                        </div>
+                        <div>
+                          <label className="text-xs text-gray-600 font-semibold block mb-1">Personas</label>
+                          <input type="number" min="1" max="10" value={menuPrefs.persons} onChange={(e) => setMenuPrefs(p => ({ ...p, persons: e.target.value }))} className="w-full rounded-lg border border-purple-200 px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-purple-400" />
+                        </div>
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-600 font-semibold block mb-1">Tiempo de cocina</label>
+                        <select value={menuPrefs.cookingTime} onChange={(e) => setMenuPrefs(p => ({ ...p, cookingTime: e.target.value }))} className="w-full rounded-lg border border-purple-200 px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-purple-400">
+                          <option value="">Sin restricción</option>
+                          <option value="rapido">Rápido (&lt;20 min)</option>
+                          <option value="medio">Medio (20-45 min)</option>
+                          <option value="elaborado">Elaborado (&gt;45 min)</option>
+                        </select>
+                      </div>
+                      <div>
+                        <label className="text-xs text-gray-600 font-semibold block mb-1">Notas adicionales</label>
+                        <textarea value={menuPrefs.notes} onChange={(e) => setMenuPrefs(p => ({ ...p, notes: e.target.value }))} rows={2} placeholder="Cualquier indicación adicional..." className="w-full rounded-lg border border-purple-200 px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-purple-400 resize-none" />
+                      </div>
+                      <button
+                        onClick={() => handleGenerateMenu(plan.id)}
+                        disabled={isGeneratingThis}
+                        className="w-full py-2.5 rounded-xl text-xs font-bold text-white disabled:opacity-60 flex items-center justify-center gap-2"
+                        style={{ background: "linear-gradient(135deg, #7C3AED, #A855F7)" }}
+                      >
+                        {isGeneratingThis ? <><div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />Generando menú...</> : "✨ Generar menú semanal con IA"}
+                      </button>
+                    </div>
+                  )}
+
+                  {/* Assign to client panel */}
+                  {isAssigning && (
+                    <div className="mt-3 bg-teal-50 rounded-xl p-3 border border-teal-100 space-y-2">
+                      <p className="text-xs font-bold text-teal-700 mb-2">Asignar plan a un cliente</p>
+                      <div className="flex gap-2">
+                        <input
+                          type="email"
+                          value={clientEmail}
+                          onChange={(e) => { setClientEmail(e.target.value); setClientSearchEnabled(false); }}
+                          placeholder="Email del cliente..."
+                          className="flex-1 rounded-lg border border-teal-200 px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-teal-400"
+                        />
+                        <button
+                          onClick={() => setClientSearchEnabled(true)}
+                          className="px-3 py-1.5 rounded-lg text-xs font-bold bg-teal-600 text-white hover:bg-teal-700"
+                        >
+                          Buscar
+                        </button>
+                      </div>
+                      {clientSearchEnabled && foundClient === null && (
+                        <p className="text-xs text-red-500">No se encontró ningún usuario con ese email.</p>
+                      )}
+                      {clientSearchEnabled && foundClient && (
+                        <div className="flex items-center justify-between bg-white rounded-lg p-2 border border-teal-200">
+                          <div className="flex items-center gap-2">
+                            {foundClient.avatarUrl ? (
+                              <img src={foundClient.avatarUrl} alt="" className="w-7 h-7 rounded-full object-cover" />
+                            ) : (
+                              <div className="w-7 h-7 rounded-full bg-teal-100 flex items-center justify-center text-teal-700 font-bold text-xs">
+                                {(foundClient.name ?? foundClient.email ?? "?")[0].toUpperCase()}
+                              </div>
+                            )}
+                            <div>
+                              <p className="text-xs font-bold text-gray-800">{foundClient.name ?? "Sin nombre"}</p>
+                              <p className="text-xs text-gray-500">{foundClient.email}</p>
+                            </div>
+                          </div>
+                          <button
+                            onClick={() => assignMutation.mutate({ planId: plan.id, clientUserId: foundClient.id })}
+                            disabled={assignMutation.isPending}
+                            className="px-3 py-1.5 rounded-lg text-xs font-bold bg-teal-600 text-white hover:bg-teal-700 disabled:opacity-60"
+                          >
+                            {assignMutation.isPending ? "..." : "Asignar"}
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  )}
+                </div>
+
+                {/* Expanded: AI Generated Menu */}
+                {isExpanded && parsedMenu && (
+                  <div className="border-t border-gray-100 bg-gray-50 p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-bold text-gray-800 text-sm">✨ Menú semanal generado por IA</h4>
+                      {plan.aiGeneratedAt && (
+                        <span className="text-xs text-gray-400">
+                          {new Date(plan.aiGeneratedAt).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
+                        </span>
+                      )}
+                    </div>
+                    <div className="space-y-3">
+                      {Object.entries(DAYS_ES).map(([dayKey, dayLabel]) => {
+                        const dayMenu = parsedMenu[dayKey];
+                        if (!dayMenu) return null;
+                        return (
+                          <div key={dayKey} className="bg-white rounded-xl p-3 border border-gray-100">
+                            <h5 className="font-bold text-orange-600 text-xs uppercase tracking-wide mb-2">{dayLabel}</h5>
+                            <div className="space-y-1">
+                              {Object.entries(MEALS_ES).map(([mealKey, mealLabel]) => {
+                                const meal = dayMenu[mealKey];
+                                if (!meal) return null;
+                                return (
+                                  <div key={mealKey} className="flex gap-2 text-xs">
+                                    <span className="text-gray-500 w-28 shrink-0">{mealLabel}</span>
+                                    <span className="text-gray-700">{meal}</span>
+                                  </div>
+                                );
+                              })}
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    {parsedShopping && (
+                      <div className="mt-4">
+                        <h4 className="font-bold text-gray-800 text-sm mb-3">🛒 Lista de la compra</h4>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                          {Object.entries(SHOPPING_ES).map(([catKey, catLabel]) => {
+                            const items: string[] = parsedShopping[catKey];
+                            if (!items || items.length === 0) return null;
+                            return (
+                              <div key={catKey} className="bg-white rounded-xl p-3 border border-gray-100">
+                                <h5 className="font-bold text-gray-700 text-xs mb-2">{catLabel}</h5>
+                                <ul className="space-y-0.5">
+                                  {items.map((item, i) => (
+                                    <li key={i} className="text-xs text-gray-600 flex items-center gap-1.5">
+                                      <span className="w-1.5 h-1.5 rounded-full bg-orange-400 shrink-0" />
+                                      {item}
+                                    </li>
+                                  ))}
+                                </ul>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    )}
+                  </div>
+                )}
+                {isExpanded && !parsedMenu && (
+                  <div className="border-t border-gray-100 bg-gray-50 p-4 text-center text-xs text-gray-400">
+                    {plan.pdfUrl ? "Genera el menú con IA usando el botón de arriba." : "Sube el PDF primero para poder generar el menú con IA."}
+                  </div>
                 )}
               </div>
-
-              {/* Client info */}
-              {plan.clientUserId && (
-                <div className="border-t border-gray-100 pt-2 mt-2">
-                  <p className="text-xs text-gray-500">👤 Asignado a cliente ID: {plan.clientUserId}</p>
-                </div>
-              )}
-            </div>
-          ))}
+            );
+          })}
         </div>
       )}
     </div>
