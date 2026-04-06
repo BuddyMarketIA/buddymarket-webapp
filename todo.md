@@ -1455,3 +1455,10 @@
 - [ ] Integración de métricas de salud en el dashboard principal
 - [ ] Ruta /app/health en App.tsx
 - [ ] Tests Vitest para endpoints de salud
+
+## Filtros y ordenación en búsqueda Consum
+- [ ] Extender endpoint consum.searchProducts con priceMin, priceMax, sortBy (relevance/price_asc/price_desc)
+- [ ] Extender endpoint consum.byCategory con priceMin, priceMax, sortBy
+- [ ] UI ConsumShop: panel de filtros con rango de precio (inputs min/max) y selector de ordenación
+- [ ] UI ConsumShop: badge de filtros activos con botón de limpiar
+- [ ] UI ConsumShop: contador de resultados filtrados

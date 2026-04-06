@@ -8356,12 +8356,19 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
   // ===========================================================================
   consum: router({
     searchProducts: publicProcedure
-      .input(z.object({ q: z.string().max(100).trim().optional(), category: z.string().max(50).trim().optional(), limit: z.number().int().min(1).max(100).optional() }))
+      .input(z.object({
+        q: z.string().max(100).trim().optional(),
+        category: z.string().max(50).trim().optional(),
+        limit: z.number().int().min(1).max(100).optional(),
+        priceMin: z.number().min(0).optional(),
+        priceMax: z.number().min(0).optional(),
+        sortBy: z.enum(["relevance", "price_asc", "price_desc"]).optional(),
+      }))
       .query(async ({ input }) => {
         const drizzleDb = await db.getDb();
         if (!drizzleDb) return [];
         const { consumProducts } = await import("../drizzle/schema");
-        const { like, eq, and, or, desc } = await import("drizzle-orm");
+        const { like, eq, and, or, desc, asc, gte, lte, isNotNull, sql: sqlExpr } = await import("drizzle-orm");
         const q = input.q?.trim();
         const conditions: any[] = [];
         if (q && q.length > 0) {
@@ -8372,11 +8379,19 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
           ));
         }
         if (input.category) conditions.push(eq(consumProducts.category, input.category));
+        if (input.priceMin !== undefined) conditions.push(and(isNotNull(consumProducts.price), gte(consumProducts.price, input.priceMin)));
+        if (input.priceMax !== undefined) conditions.push(and(isNotNull(consumProducts.price), lte(consumProducts.price, input.priceMax)));
+        const sortBy = input.sortBy ?? "relevance";
+        const orderClause = sortBy === "price_asc"
+          ? asc(consumProducts.price)
+          : sortBy === "price_desc"
+          ? desc(consumProducts.price)
+          : desc(consumProducts.name); // relevance: alphabetical as proxy
         const rows = await drizzleDb
           .select()
           .from(consumProducts)
           .where(conditions.length > 0 ? and(...conditions) : undefined)
-          .orderBy(desc(consumProducts.price))
+          .orderBy(orderClause)
           .limit(input.limit ?? 48);
         return rows;
       }),
@@ -8390,18 +8405,50 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
       const rows = Array.isArray(result) ? result : (result as any).rows ?? [];
       return rows as Array<{ category: string; count: number }>;
     }),
+    priceRange: publicProcedure
+      .input(z.object({ category: z.string().optional() }))
+      .query(async ({ input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return { min: 0, max: 50 };
+        const { sql } = await import("drizzle-orm");
+        const catClause = input.category ? `AND category = '${input.category.replace(/'/g, "''")}'` : "";
+        const result = await drizzleDb.execute(
+          sql`SELECT MIN(price) as min_price, MAX(price) as max_price FROM consum_products WHERE price IS NOT NULL ${sql.raw(catClause)}`
+        );
+        const rows = Array.isArray(result) ? result : (result as any).rows ?? [];
+        const row = rows[0] ?? {};
+        return {
+          min: Math.floor(Number(row.min_price ?? 0)),
+          max: Math.ceil(Number(row.max_price ?? 50)),
+        };
+      }),
     byCategory: publicProcedure
-      .input(z.object({ category: z.string(), limit: z.number().optional() }))
+      .input(z.object({
+        category: z.string(),
+        limit: z.number().optional(),
+        priceMin: z.number().min(0).optional(),
+        priceMax: z.number().min(0).optional(),
+        sortBy: z.enum(["relevance", "price_asc", "price_desc"]).optional(),
+      }))
       .query(async ({ input }) => {
         const drizzleDb = await db.getDb();
         if (!drizzleDb) return [];
         const { consumProducts } = await import("../drizzle/schema");
-        const { eq, desc } = await import("drizzle-orm");
+        const { eq, and, desc, asc, gte, lte, isNotNull } = await import("drizzle-orm");
+        const conditions: any[] = [eq(consumProducts.category, input.category)];
+        if (input.priceMin !== undefined) conditions.push(and(isNotNull(consumProducts.price), gte(consumProducts.price, input.priceMin)));
+        if (input.priceMax !== undefined) conditions.push(and(isNotNull(consumProducts.price), lte(consumProducts.price, input.priceMax)));
+        const sortBy = input.sortBy ?? "relevance";
+        const orderClause = sortBy === "price_asc"
+          ? asc(consumProducts.price)
+          : sortBy === "price_desc"
+          ? desc(consumProducts.price)
+          : asc(consumProducts.name);
         return drizzleDb
           .select()
           .from(consumProducts)
-          .where(eq(consumProducts.category, input.category))
-          .orderBy(desc(consumProducts.price))
+          .where(and(...conditions))
+          .orderBy(orderClause)
           .limit(input.limit ?? 48);
       }),
   }),
