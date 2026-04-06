@@ -155,7 +155,7 @@ export default function LoginPage() {
 
   const isLoading = loginMut.isPending || registerMut.isPending || sendOTPMut.isPending || verifyOTPMut.isPending || forgotMut.isPending;
 
-  const inp = "bg-white/[0.08] border border-white/[0.14] text-white placeholder:text-white/30 focus-visible:border-[#F97316] focus-visible:ring-0 focus-visible:ring-offset-0 rounded-2xl h-13 text-sm transition-colors";
+  const inp = "bg-gray-50 border border-gray-200 text-gray-900 placeholder:text-gray-400 focus-visible:border-[#F97316] focus-visible:ring-0 focus-visible:ring-offset-0 rounded-2xl h-13 text-sm transition-colors";
 
   const currentSlide = SLIDES[slide];
 
@@ -211,13 +211,13 @@ export default function LoginPage() {
 
       {/* ── Bottom: Form card ── */}
       <div className="relative z-10 flex-1 flex flex-col justify-end">
-        <div className="bg-[#111110] rounded-t-[2rem] px-6 pt-7 pb-10 shadow-2xl min-h-[420px]">
+        <div className="bg-white rounded-t-[2rem] px-6 pt-7 pb-10 shadow-2xl min-h-[420px]">
 
           {/* Back button for sub-modes */}
           {(mode !== "login") && (
             <button
               onClick={() => setMode(mode === "otp-code" ? "otp-email" : "login")}
-              className="flex items-center gap-1 text-white/50 hover:text-white text-sm mb-5 transition-colors"
+              className="flex items-center gap-1 text-gray-400 hover:text-gray-700 text-sm mb-5 transition-colors"
             >
               <ChevronLeft className="w-4 h-4" /> Volver
             </button>
@@ -227,21 +227,21 @@ export default function LoginPage() {
           {mode === "login" && (
             <div className="space-y-5">
               <div>
-                <h2 className="text-xl font-bold text-white">Bienvenido de nuevo</h2>
-                <p className="text-white/40 text-xs mt-0.5">Accede a tu cuenta BuddyMarket</p>
+                <h2 className="text-xl font-bold text-gray-900">Bienvenido de nuevo</h2>
+                <p className="text-gray-400 text-xs mt-0.5">Accede a tu cuenta BuddyMarket</p>
               </div>
               <form onSubmit={handleLogin} className="space-y-3">
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                   <Input type="email" required value={email} onChange={e => setEmail(e.target.value)}
                     placeholder="tu@email.com" className={`${inp} pl-10`} />
                 </div>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                   <Input type={showPassword ? "text" : "password"} required value={password} onChange={e => setPassword(e.target.value)}
                     placeholder="Contraseña" className={`${inp} pl-10 pr-10`} />
                   <button type="button" onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors">
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
@@ -258,17 +258,17 @@ export default function LoginPage() {
               </form>
 
               <div className="flex items-center gap-3">
-                <div className="flex-1 h-px bg-white/10" />
-                <span className="text-white/25 text-xs">o continúa con</span>
-                <div className="flex-1 h-px bg-white/10" />
+                <div className="flex-1 h-px bg-gray-200" />
+                <span className="text-gray-400 text-xs">o continúa con</span>
+                <div className="flex-1 h-px bg-gray-200" />
               </div>
 
               <Button type="button" onClick={() => setMode("otp-email")} variant="outline"
-                className="w-full h-12 bg-white/[0.05] border-white/[0.12] text-white hover:bg-white/[0.10] rounded-2xl text-sm transition-all active:scale-[0.98]">
+                className="w-full h-12 bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100 rounded-2xl text-sm transition-all active:scale-[0.98]">
                 <Mail className="w-4 h-4 mr-2 text-[#F97316]" /> Acceder con código por email
               </Button>
 
-              <p className="text-center text-white/40 text-xs">
+              <p className="text-center text-gray-400 text-xs">
                 ¿No tienes cuenta?{" "}
                 <button onClick={() => setMode("register")} className="text-[#F97316] font-semibold hover:text-[#fb923c] transition-colors">
                   Regístrate gratis
@@ -281,35 +281,35 @@ export default function LoginPage() {
           {mode === "register" && (
             <div className="space-y-5">
               <div>
-                <h2 className="text-xl font-bold text-white">Crea tu cuenta</h2>
-                <p className="text-white/40 text-xs mt-0.5">Únete a la comunidad BuddyMarket</p>
+                <h2 className="text-xl font-bold text-gray-900">Crea tu cuenta</h2>
+                <p className="text-gray-400 text-xs mt-0.5">Únete a la comunidad BuddyMarket</p>
               </div>
               <form onSubmit={handleRegister} className="space-y-3">
                 <div className="relative">
-                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
+                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                   <Input type="text" required value={name} onChange={e => setName(e.target.value)}
                     placeholder="Tu nombre" className={`${inp} pl-10`} />
                 </div>
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                   <Input type="email" required value={email} onChange={e => setEmail(e.target.value)}
                     placeholder="tu@email.com" className={`${inp} pl-10`} />
                 </div>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                   <Input type={showPassword ? "text" : "password"} required minLength={8} value={password} onChange={e => setPassword(e.target.value)}
                     placeholder="Contraseña (mín. 8 caracteres)" className={`${inp} pl-10 pr-10`} />
                   <button type="button" onClick={() => setShowPassword(!showPassword)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors">
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                   <Input type={showConfirm ? "text" : "password"} required value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)}
                     placeholder="Confirmar contraseña" className={`${inp} pl-10 pr-10`} />
                   <button type="button" onClick={() => setShowConfirm(!showConfirm)}
-                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-white/30 hover:text-white/60 transition-colors">
+                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors">
                     {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
@@ -319,20 +319,20 @@ export default function LoginPage() {
                 </Button>
               </form>
               <div className="flex items-center gap-3">
-                <div className="flex-1 h-px bg-white/10" />
-                <span className="text-white/25 text-xs">o regístrate con</span>
-                <div className="flex-1 h-px bg-white/10" />
+                <div className="flex-1 h-px bg-gray-200" />
+                <span className="text-gray-400 text-xs">o regístrate con</span>
+                <div className="flex-1 h-px bg-gray-200" />
               </div>
-              <div className="[&_button]:rounded-2xl [&_button]:h-12 [&_button]:text-sm [&_button]:font-semibold [&_button]:border-white/[0.12] [&_button]:bg-white/[0.05] [&_button]:text-white [&_button:hover]:bg-white/[0.10]">
+              <div className="[&_button]:rounded-2xl [&_button]:h-12 [&_button]:text-sm [&_button]:font-semibold [&_button]:border-gray-200 [&_button]:bg-gray-50 [&_button]:text-gray-700 [&_button:hover]:bg-gray-100">
                 <WebSSOButtons onSuccess={() => { window.location.href = "/app/dashboard"; }} />
               </div>
-              <p className="text-center text-white/40 text-xs">
+              <p className="text-center text-gray-400 text-xs">
                 ¿Ya tienes cuenta?{" "}
                 <button onClick={() => setMode("login")} className="text-[#F97316] font-semibold hover:text-[#fb923c] transition-colors">
                   Inicia sesión
                 </button>
               </p>
-              <p className="text-center text-white/20 text-[10px] leading-relaxed">
+              <p className="text-center text-gray-300 text-[10px] leading-relaxed">
                 Al registrarte aceptas nuestros <a href="/terms" className="underline">Términos</a> y <a href="/privacy" className="underline">Privacidad</a>.<br />
                 El contenido no constituye asesoramiento profesional.
               </p>
@@ -343,12 +343,12 @@ export default function LoginPage() {
           {mode === "otp-email" && (
             <div className="space-y-5">
               <div>
-                <h2 className="text-xl font-bold text-white">Acceso sin contraseña</h2>
-                <p className="text-white/40 text-xs mt-0.5">Te enviaremos un código de 6 dígitos</p>
+                <h2 className="text-xl font-bold text-gray-900">Acceso sin contraseña</h2>
+                <p className="text-gray-400 text-xs mt-0.5">Te enviaremos un código de 6 dígitos</p>
               </div>
               <form onSubmit={handleSendOTP} className="space-y-3">
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                   <Input type="email" required value={email} onChange={e => setEmail(e.target.value)}
                     placeholder="tu@email.com" className={`${inp} pl-10`} />
                 </div>
@@ -364,8 +364,8 @@ export default function LoginPage() {
           {mode === "otp-code" && (
             <div className="space-y-5">
               <div>
-                <h2 className="text-xl font-bold text-white">Introduce el código</h2>
-                <p className="text-white/40 text-xs mt-0.5">Enviado a <span className="text-white/70">{email}</span></p>
+                <h2 className="text-xl font-bold text-gray-900">Introduce el código</h2>
+                <p className="text-gray-400 text-xs mt-0.5">Enviado a <span className="text-white/70">{email}</span></p>
               </div>
               <form onSubmit={handleVerifyOTP} className="space-y-5">
                 <div className="flex gap-2 justify-center">
@@ -386,7 +386,7 @@ export default function LoginPage() {
                   {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <span className="flex items-center gap-2">Verificar código <ArrowRight className="w-4 h-4" /></span>}
                 </Button>
               </form>
-              <p className="text-center text-white/40 text-xs">
+              <p className="text-center text-gray-400 text-xs">
                 ¿No recibiste el código?{" "}
                 <button onClick={() => handleSendOTP()} className="text-[#F97316] font-semibold hover:text-[#fb923c] transition-colors">
                   Reenviar
@@ -400,11 +400,11 @@ export default function LoginPage() {
             <div className="space-y-5">
               <div>
                 <h2 className="text-xl font-bold text-white">Recuperar contraseña</h2>
-                <p className="text-white/40 text-xs mt-0.5">Te enviaremos un enlace de recuperación</p>
+                <p className="text-gray-400 text-xs mt-0.5">Te enviaremos un enlace de recuperación</p>
               </div>
               <form onSubmit={handleForgot} className="space-y-3">
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-white/30 pointer-events-none" />
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
                   <Input type="email" required value={forgotEmail} onChange={e => setForgotEmail(e.target.value)}
                     placeholder="tu@email.com" className={`${inp} pl-10`} />
                 </div>
