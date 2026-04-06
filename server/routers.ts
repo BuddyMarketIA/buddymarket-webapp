@@ -3600,9 +3600,10 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
       if (!drizzleDb) return [];
       const { mercadonaProducts } = await import("../drizzle/schema");
       const { sql } = await import("drizzle-orm");
-      const [rows] = await drizzleDb.execute(
+      const result = await drizzleDb.execute(
         sql`SELECT category_name, subcategory_name, COUNT(*) as count FROM mercadona_products GROUP BY category_name, subcategory_name ORDER BY category_name, count DESC`
-      ) as any;
+      );
+      const rows = Array.isArray(result) ? result : (result as any).rows ?? [];
       return (rows as any[]).map((r: any) => ({
         categoryName: r.category_name as string,
         subcategoryName: r.subcategory_name as string,
@@ -3770,11 +3771,11 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
       const drizzleDb = await db.getDb();
       if (!drizzleDb) return [];
       const { sql } = await import("drizzle-orm");
-      const rows = await drizzleDb.execute(
+      const result = await drizzleDb.execute(
         sql`SELECT category, subcategory, COUNT(*) as count FROM carrefour_products GROUP BY category, subcategory ORDER BY category, count DESC`
-      ) as any;
-      const result = rows[0] as Array<{ category: string; subcategory: string; count: number }>;
-      return result;
+      );
+      const rows = Array.isArray(result) ? result : (result as any).rows ?? [];
+      return rows as Array<{ category: string; subcategory: string; count: number }>;
     }),
     byCategory: publicProcedure
       .input(z.object({ category: z.string(), subcategory: z.string().optional(), limit: z.number().optional() }))
@@ -3829,11 +3830,11 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
       const drizzleDb = await db.getDb();
       if (!drizzleDb) return [];
       const { sql } = await import("drizzle-orm");
-      const rows = await drizzleDb.execute(
+      const result = await drizzleDb.execute(
         sql`SELECT category, subcategory, COUNT(*) as count FROM alcampo_products GROUP BY category, subcategory ORDER BY category, count DESC`
-      ) as any;
-      const result = rows[0] as Array<{ category: string; subcategory: string; count: number }>;
-      return result;
+      );
+      const rows = Array.isArray(result) ? result : (result as any).rows ?? [];
+      return rows as Array<{ category: string; subcategory: string; count: number }>;
     }),
     byCategory: publicProcedure
       .input(z.object({ category: z.string(), subcategory: z.string().optional(), limit: z.number().optional() }))
@@ -3897,11 +3898,11 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
       const drizzleDb = await db.getDb();
       if (!drizzleDb) return [];
       const { sql } = await import("drizzle-orm");
-      const rows = await drizzleDb.execute(
+      const result = await drizzleDb.execute(
         sql`SELECT category, COUNT(*) as count FROM lidl_products GROUP BY category ORDER BY count DESC`
-      ) as any;
-      const result = rows[0] as Array<{ category: string; count: number }>;
-      return result;
+      );
+      const rows = Array.isArray(result) ? result : (result as any).rows ?? [];
+      return rows as Array<{ category: string; count: number }>;
     }),
     // Get products by category
     byCategory: publicProcedure
