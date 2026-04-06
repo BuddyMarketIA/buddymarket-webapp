@@ -746,3 +746,108 @@ export async function sendPlanAssignedEmail(params: {
     return false;
   }
 }
+
+// ─── Payment Confirmation Emails ──────────────────────────────────────────────
+
+const PLAN_LABELS: Record<string, { name: string; emoji: string; color: string }> = {
+  basic:   { name: "BuddyMarket Basic",   emoji: "🌱", color: "#22C55E" },
+  premium: { name: "BuddyMarket Premium", emoji: "⭐", color: "#F97316" },
+  pro_max: { name: "BuddyMarket Pro Max", emoji: "🚀", color: "#8B5CF6" },
+};
+
+function paymentConfirmationHtml(params: {
+  userName: string; userEmail: string; plan: string;
+  amount: number; currency: string; invoiceId: string; periodEnd: Date;
+}): string {
+  const planInfo = PLAN_LABELS[params.plan] ?? { name: params.plan, emoji: "💳", color: "#F97316" };
+  const formattedAmount = new Intl.NumberFormat("es-ES", { style: "currency", currency: params.currency.toUpperCase() }).format(params.amount / 100);
+  const formattedDate = new Intl.DateTimeFormat("es-ES", { day: "numeric", month: "long", year: "numeric" }).format(params.periodEnd);
+  const firstName = params.userName?.split(" ")[0] || "amigo";
+  return emailWrapper(`
+    ${emailHeader(planInfo.emoji, "¡Pago confirmado!", "Tu suscripción " + planInfo.name + " está activa")}
+    <tr><td style="padding:40px 40px 0;">
+      <p style="color:#1a1a1a;font-size:16px;margin:0 0 8px;font-weight:700;">Hola, ${firstName} 👋</p>
+      <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 32px;">Hemos recibido tu pago correctamente. Tu suscripción <strong>${planInfo.name}</strong> ya está activa.</p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#FFF8F0;border-radius:16px;border:1px solid #FFE4CC;margin-bottom:32px;">
+        <tr><td style="padding:24px 28px;">
+          <p style="color:#F97316;font-size:11px;font-weight:800;letter-spacing:1px;text-transform:uppercase;margin:0 0 16px;">Resumen del pago</p>
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr><td style="color:#888;font-size:14px;padding:6px 0;">Plan</td><td style="text-align:right;padding:6px 0;"><span style="background:${planInfo.color};color:#fff;padding:2px 10px;border-radius:20px;font-size:12px;">${planInfo.emoji} ${planInfo.name}</span></td></tr>
+            <tr><td style="color:#888;font-size:14px;padding:6px 0;">Importe</td><td style="color:#1a1a1a;font-size:16px;font-weight:800;text-align:right;padding:6px 0;">${formattedAmount}</td></tr>
+            <tr><td style="color:#888;font-size:14px;padding:6px 0;">Próxima renovación</td><td style="color:#1a1a1a;font-size:14px;font-weight:600;text-align:right;padding:6px 0;">${formattedDate}</td></tr>
+            <tr><td style="color:#888;font-size:14px;padding:6px 0;">Referencia</td><td style="color:#aaa;font-size:12px;font-family:monospace;text-align:right;padding:6px 0;">${params.invoiceId}</td></tr>
+          </table>
+        </td></tr>
+      </table>
+      <table cellpadding="0" cellspacing="0" style="margin:0 auto 32px;"><tr><td style="background:linear-gradient(135deg,#F97316,#EA580C);border-radius:14px;padding:14px 32px;text-align:center;"><a href="https://buddymarketapp.com/app/dashboard" style="color:#ffffff;font-size:15px;font-weight:800;text-decoration:none;">Ir a mi panel →</a></td></tr></table>
+      <p style="color:#888;font-size:13px;line-height:1.7;margin:0 0 40px;">Si tienes alguna pregunta sobre tu suscripción, responde a este email.</p>
+    </td></tr>
+  `);
+}
+
+function paymentAdminNotificationHtml(params: {
+  userName: string; userEmail: string; plan: string;
+  amount: number; currency: string; invoiceId: string;
+  userId: number; stripeCustomerId: string;
+}): string {
+  const planInfo = PLAN_LABELS[params.plan] ?? { name: params.plan, emoji: "💳", color: "#F97316" };
+  const formattedAmount = new Intl.NumberFormat("es-ES", { style: "currency", currency: params.currency.toUpperCase() }).format(params.amount / 100);
+  const now = new Intl.DateTimeFormat("es-ES", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" }).format(new Date());
+  return emailWrapper(`
+    ${emailHeader("💰", "Nuevo pago recibido", formattedAmount + " · " + planInfo.name, "linear-gradient(135deg,#1a1a2e 0%,#16213e 100%)")}
+    <tr><td style="padding:40px 40px 0;">
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8f9fa;border-radius:12px;border:1px solid #e9ecef;margin-bottom:24px;">
+        <tr><td style="padding:20px 24px;">
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr><td style="color:#666;font-size:13px;padding:5px 0;width:140px;">Usuario</td><td style="color:#1a1a1a;font-size:13px;font-weight:700;padding:5px 0;">${params.userName} (ID: ${params.userId})</td></tr>
+            <tr><td style="color:#666;font-size:13px;padding:5px 0;">Email</td><td style="color:#1a1a1a;font-size:13px;padding:5px 0;">${params.userEmail}</td></tr>
+            <tr><td style="color:#666;font-size:13px;padding:5px 0;">Plan</td><td style="padding:5px 0;"><span style="background:${planInfo.color};color:#fff;padding:2px 10px;border-radius:20px;font-size:12px;font-weight:700;">${planInfo.emoji} ${planInfo.name}</span></td></tr>
+            <tr><td style="color:#666;font-size:13px;padding:5px 0;">Importe</td><td style="color:#22C55E;font-size:16px;font-weight:800;padding:5px 0;">${formattedAmount}</td></tr>
+            <tr><td style="color:#666;font-size:13px;padding:5px 0;">Fecha</td><td style="color:#1a1a1a;font-size:13px;padding:5px 0;">${now}</td></tr>
+            <tr><td style="color:#666;font-size:13px;padding:5px 0;">Stripe Customer</td><td style="color:#888;font-size:12px;font-family:monospace;padding:5px 0;">${params.stripeCustomerId}</td></tr>
+            <tr><td style="color:#666;font-size:13px;padding:5px 0;">Invoice ID</td><td style="color:#888;font-size:12px;font-family:monospace;padding:5px 0;">${params.invoiceId}</td></tr>
+          </table>
+        </td></tr>
+      </table>
+      <table cellpadding="0" cellspacing="0" style="margin:0 auto 32px;"><tr><td style="background:#1a1a2e;border-radius:12px;padding:12px 24px;text-align:center;"><a href="https://dashboard.stripe.com/payments" style="color:#ffffff;font-size:14px;font-weight:700;text-decoration:none;">Ver en Stripe Dashboard →</a></td></tr></table>
+    </td></tr>
+  `);
+}
+
+export async function sendPaymentConfirmationEmail(params: {
+  userName: string; userEmail: string; plan: string;
+  amount: number; currency: string; invoiceId: string; periodEnd: Date;
+}): Promise<boolean> {
+  try {
+    const planInfo = PLAN_LABELS[params.plan] ?? { name: params.plan, emoji: "💳", color: "#F97316" };
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: params.userEmail,
+      subject: `${planInfo.emoji} Pago confirmado — ${planInfo.name} activado`,
+      html: paymentConfirmationHtml(params),
+    });
+    if (error) { console.error("[Email] Failed to send payment confirmation:", error); return false; }
+    console.log("[Email] Payment confirmation sent:", data?.id, "→", params.userEmail);
+    return true;
+  } catch (err) { console.error("[Email] Error sending payment confirmation:", err); return false; }
+}
+
+export async function sendPaymentAdminNotification(params: {
+  userName: string; userEmail: string; plan: string;
+  amount: number; currency: string; invoiceId: string;
+  userId: number; stripeCustomerId: string; adminEmail: string;
+}): Promise<boolean> {
+  try {
+    const planInfo = PLAN_LABELS[params.plan] ?? { name: params.plan, emoji: "💳", color: "#F97316" };
+    const formattedAmount = new Intl.NumberFormat("es-ES", { style: "currency", currency: params.currency.toUpperCase() }).format(params.amount / 100);
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: params.adminEmail,
+      subject: `💰 Nuevo pago: ${formattedAmount} · ${planInfo.name} · ${params.userName}`,
+      html: paymentAdminNotificationHtml(params),
+    });
+    if (error) { console.error("[Email] Failed to send admin payment notification:", error); return false; }
+    console.log("[Email] Admin payment notification sent:", data?.id, "→", params.adminEmail);
+    return true;
+  } catch (err) { console.error("[Email] Error sending admin payment notification:", err); return false; }
+}

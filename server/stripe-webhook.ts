@@ -1,6 +1,9 @@
 import Stripe from "stripe";
 import type { Express, Request, Response } from "express";
 import * as db from "./db";
+import { sendPaymentConfirmationEmail, sendPaymentAdminNotification } from "./email";
+
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "hola@buddymarketapp.com";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
 
@@ -60,6 +63,38 @@ export function registerStripeWebhook(app: Express) {
                 plan,
                 session,
               });
+              // ── Send payment confirmation emails ──
+              try {
+                const userRecord = await db.getUserById(userId);
+                const amount = session.amount_total ?? 0;
+                const currency = session.currency ?? "eur";
+                const invoiceId = (session.invoice as string) ?? session.id;
+                const periodEnd = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+                if (userRecord?.email) {
+                  await sendPaymentConfirmationEmail({
+                    userName: userRecord.name ?? userRecord.email,
+                    userEmail: userRecord.email,
+                    plan,
+                    amount,
+                    currency,
+                    invoiceId,
+                    periodEnd,
+                  });
+                }
+                await sendPaymentAdminNotification({
+                  userName: userRecord?.name ?? session.metadata?.customer_name ?? "Usuario",
+                  userEmail: userRecord?.email ?? session.metadata?.customer_email ?? "",
+                  plan,
+                  amount,
+                  currency,
+                  invoiceId,
+                  userId,
+                  stripeCustomerId: session.customer as string,
+                  adminEmail: ADMIN_EMAIL,
+                });
+              } catch (emailErr: any) {
+                console.error("[Stripe] Error sending payment emails:", emailErr?.message);
+              }
             }
             break;
           }
