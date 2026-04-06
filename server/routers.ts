@@ -2658,7 +2658,9 @@ Genera 3 recetas que aprovechen estos ingredientes. Para cada receta incluye: no
         if (!input.recipeId && !input.customMealName?.trim()) {
           throw new TRPCError({ code: "BAD_REQUEST", message: "Debes indicar el nombre de la comida" });
         }
-        return db.addMealLog({ ...input, userId: ctx.user.id, logDate: new Date(input.logDate) } as any);
+        // Pass logDate as plain string (YYYY-MM-DD) to avoid UTC midnight timezone shift
+        // new Date('2026-04-06') creates UTC midnight which PostgreSQL converts to the previous day in some timezones
+        return db.addMealLog({ ...input, userId: ctx.user.id, logDate: input.logDate } as any);
       }),
 
     analyzeFood: protectedProcedure

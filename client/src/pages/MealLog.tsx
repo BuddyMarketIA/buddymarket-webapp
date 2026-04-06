@@ -1042,11 +1042,23 @@ export default function MealLog() {
                     </>
                   )}
                 </select>
-                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
-                  <input type="number" value={calories} onChange={e => setCalories(e.target.value)} placeholder="Calorías (kcal)" style={{ padding: "10px 12px", borderRadius: "12px", border: "2px solid #f3f4f6", fontSize: "13px", outline: "none" }} />
-                  <input type="number" value={proteins} onChange={e => setProteins(e.target.value)} placeholder="Proteínas (g)" style={{ padding: "10px 12px", borderRadius: "12px", border: "2px solid #f3f4f6", fontSize: "13px", outline: "none" }} />
-                  <input type="number" value={carbs} onChange={e => setCarbs(e.target.value)} placeholder="Carbohidratos (g)" style={{ padding: "10px 12px", borderRadius: "12px", border: "2px solid #f3f4f6", fontSize: "13px", outline: "none" }} />
-                  <input type="number" value={fats} onChange={e => setFats(e.target.value)} placeholder="Grasas (g)" style={{ padding: "10px 12px", borderRadius: "12px", border: "2px solid #f3f4f6", fontSize: "13px", outline: "none" }} />
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+                  <label style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                    <span style={{ fontSize: "11px", fontWeight: 700, color: "#F97316", textTransform: "uppercase", letterSpacing: "0.05em", paddingLeft: "2px" }}>🔥 Calorías (kcal)</span>
+                    <input type="number" value={calories} onChange={e => setCalories(e.target.value)} placeholder="ej. 350" style={{ padding: "10px 12px", borderRadius: "12px", border: "2px solid #FED7AA", fontSize: "14px", outline: "none", fontWeight: 600, width: "100%", boxSizing: "border-box" }} />
+                  </label>
+                  <label style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                    <span style={{ fontSize: "11px", fontWeight: 700, color: "#3B82F6", textTransform: "uppercase", letterSpacing: "0.05em", paddingLeft: "2px" }}>💪 Proteínas (g)</span>
+                    <input type="number" value={proteins} onChange={e => setProteins(e.target.value)} placeholder="ej. 25" style={{ padding: "10px 12px", borderRadius: "12px", border: "2px solid #BFDBFE", fontSize: "14px", outline: "none", fontWeight: 600, width: "100%", boxSizing: "border-box" }} />
+                  </label>
+                  <label style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                    <span style={{ fontSize: "11px", fontWeight: 700, color: "#10B981", textTransform: "uppercase", letterSpacing: "0.05em", paddingLeft: "2px" }}>🌾 Carbohidratos (g)</span>
+                    <input type="number" value={carbs} onChange={e => setCarbs(e.target.value)} placeholder="ej. 40" style={{ padding: "10px 12px", borderRadius: "12px", border: "2px solid #A7F3D0", fontSize: "14px", outline: "none", fontWeight: 600, width: "100%", boxSizing: "border-box" }} />
+                  </label>
+                  <label style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                    <span style={{ fontSize: "11px", fontWeight: 700, color: "#F43F5E", textTransform: "uppercase", letterSpacing: "0.05em", paddingLeft: "2px" }}>🥑 Grasas (g)</span>
+                    <input type="number" value={fats} onChange={e => setFats(e.target.value)} placeholder="ej. 12" style={{ padding: "10px 12px", borderRadius: "12px", border: "2px solid #FECDD3", fontSize: "14px", outline: "none", fontWeight: 600, width: "100%", boxSizing: "border-box" }} />
+                  </label>
                 </div>
               </div>
             )}
