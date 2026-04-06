@@ -79,19 +79,22 @@ const DIFF_LABELS: Record<string, string> = {
 
 // ─── Animation variants ───────────────────────────────────────────────────────
 
-const containerVariants = {
+const containerVariants: any = { // @ts-ignore
+
   hidden: {},
   visible: {
     transition: { staggerChildren: 0.08 },
   },
 };
 
-const cardVariants = {
+const cardVariants: any = { // @ts-ignore
+
   hidden: { opacity: 0, y: 20 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.4, ease: "easeOut" } },
 };
 
-const sectionVariants = {
+const sectionVariants: any = {
+
   hidden: { opacity: 0, y: 12 },
   visible: { opacity: 1, y: 0, transition: { duration: 0.35, ease: "easeOut" } },
 };

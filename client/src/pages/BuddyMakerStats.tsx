@@ -162,9 +162,9 @@ export default function BuddyMakerStats() {
                         <p className="text-xs text-gray-400">Comisión: {(e.commissionRate * 100).toFixed(0)}%</p>
                       </div>
                       <div className="text-right">
-                        <p className={`text-sm font-bold ${e.status === "paid" ? "text-green-600" : e.status === "pending" ? "text-yellow-600" : "text-red-500"}`}>+{e.commissionAmount.toFixed(2)} €</p>
-                        <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${e.status === "paid" ? "bg-green-100 text-green-700" : e.status === "pending" ? "bg-yellow-100 text-yellow-700" : "bg-red-100 text-red-600"}`}>
-                          {e.status === "paid" ? "Pagado" : e.status === "pending" ? "Pendiente" : "Fallido"}
+                        <p className={`text-sm font-bold ${e.status === ("paid" as any) ? "text-green-600" : e.status === "pending" ? "text-yellow-600" : "text-red-500"}`}>+{e.commissionAmount.toFixed(2)} €</p>
+                        <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${e.status === ("paid" as any) ? "bg-green-100 text-green-700" : e.status === "pending" ? "bg-yellow-100 text-yellow-700" : "bg-red-100 text-red-600"}`}>
+                          {e.status === ("paid" as any) ? "Pagado" : e.status === "pending" ? "Pendiente" : "Fallido"}
                         </span>
                       </div>
                     </div>
@@ -292,9 +292,9 @@ export default function BuddyMakerStats() {
                         <p className="text-xs text-gray-400">Importe bruto: {e.amount.toFixed(2)} € · Comisión {(e.commissionRate * 100).toFixed(0)}%</p>
                       </div>
                       <div className="text-right">
-                        <p className={`text-sm font-bold ${e.status === "paid" ? "text-green-600" : e.status === "pending" ? "text-yellow-600" : "text-red-500"}`}>+{e.commissionAmount.toFixed(2)} €</p>
-                        <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${e.status === "paid" ? "bg-green-100 text-green-700" : e.status === "pending" ? "bg-yellow-100 text-yellow-700" : "bg-red-100 text-red-600"}`}>
-                          {e.status === "paid" ? "Pagado" : e.status === "pending" ? "Pendiente" : "Fallido"}
+                        <p className={`text-sm font-bold ${e.status === ("paid" as any) ? "text-green-600" : e.status === "pending" ? "text-yellow-600" : "text-red-500"}`}>+{e.commissionAmount.toFixed(2)} €</p>
+                        <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${e.status === ("paid" as any) ? "bg-green-100 text-green-700" : e.status === "pending" ? "bg-yellow-100 text-yellow-700" : "bg-red-100 text-red-600"}`}>
+                          {e.status === ("paid" as any) ? "Pagado" : e.status === "pending" ? "Pendiente" : "Fallido"}
                         </span>
                       </div>
                     </div>

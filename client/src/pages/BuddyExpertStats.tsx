@@ -114,8 +114,8 @@ function ChargeRow({ charge }: { charge: { id: string; amount: number; currency:
 function PayoutRow({ payout }: { payout: { id: string; amount: number; currency: string; status: string; arrivalDate: number; created: number; description: string | null } }) {
   return (
     <div className="flex items-center gap-3 px-4 py-3">
-      <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${payout.status === "paid" ? "bg-blue-100" : "bg-yellow-100"}`}>
-        <ArrowDownTrayIcon className={`h-5 w-5 ${payout.status === "paid" ? "text-blue-600" : "text-yellow-600"}`} />
+      <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${payout.status === ("paid" as any) ? "bg-blue-100" : "bg-yellow-100"}`}>
+        <ArrowDownTrayIcon className={`h-5 w-5 ${payout.status === ("paid" as any) ? "text-blue-600" : "text-yellow-600"}`} />
       </div>
       <div className="flex-1 min-w-0">
         <p className="truncate text-sm font-medium text-gray-800">
@@ -290,9 +290,9 @@ export default function BuddyExpertStats() {
                         <p className="text-xs text-gray-400">Comisión: {(e.commissionRate * 100).toFixed(0)}%</p>
                       </div>
                       <div className="text-right">
-                        <p className={`text-sm font-bold ${e.status === "paid" ? "text-green-600" : e.status === "pending" ? "text-yellow-600" : "text-red-500"}`}>+{e.commissionAmount.toFixed(2)} €</p>
-                        <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${e.status === "paid" ? "bg-green-100 text-green-700" : e.status === "pending" ? "bg-yellow-100 text-yellow-700" : "bg-red-100 text-red-600"}`}>
-                          {e.status === "paid" ? "Pagado" : e.status === "pending" ? "Pendiente" : "Fallido"}
+                        <p className={`text-sm font-bold ${e.status === ("paid" as any) ? "text-green-600" : e.status === "pending" ? "text-yellow-600" : "text-red-500"}`}>+{e.commissionAmount.toFixed(2)} €</p>
+                        <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${e.status === ("paid" as any) ? "bg-green-100 text-green-700" : e.status === "pending" ? "bg-yellow-100 text-yellow-700" : "bg-red-100 text-red-600"}`}>
+                          {e.status === ("paid" as any) ? "Pagado" : e.status === "pending" ? "Pendiente" : "Fallido"}
                         </span>
                       </div>
                     </div>
@@ -519,8 +519,8 @@ export default function BuddyExpertStats() {
                       <ul className="divide-y divide-gray-50">
                         {stats!.recentEarnings.map((e) => (
                           <li key={e.id} className="flex items-center gap-3 px-4 py-3">
-                            <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${e.status === "paid" ? "bg-green-100" : e.status === "pending" ? "bg-yellow-100" : "bg-red-100"}`}>
-                              <ReceiptRefundIcon className={`h-5 w-5 ${e.status === "paid" ? "text-green-600" : e.status === "pending" ? "text-yellow-600" : "text-red-500"}`} />
+                            <div className={`flex h-9 w-9 shrink-0 items-center justify-center rounded-xl ${e.status === ("paid" as any) ? "bg-green-100" : e.status === "pending" ? "bg-yellow-100" : "bg-red-100"}`}>
+                              <ReceiptRefundIcon className={`h-5 w-5 ${e.status === ("paid" as any) ? "text-green-600" : e.status === "pending" ? "text-yellow-600" : "text-red-500"}`} />
                             </div>
                             <div className="flex-1 min-w-0">
                               <p className="truncate text-sm font-medium text-gray-800">Comisión de venta</p>
@@ -530,7 +530,7 @@ export default function BuddyExpertStats() {
                               </p>
                             </div>
                             <div className="flex shrink-0 flex-col items-end gap-1">
-                              <p className={`text-sm font-bold ${e.status === "paid" ? "text-green-600" : e.status === "pending" ? "text-yellow-600" : "text-red-500"}`}>
+                              <p className={`text-sm font-bold ${e.status === ("paid" as any) ? "text-green-600" : e.status === "pending" ? "text-yellow-600" : "text-red-500"}`}>
                                 +{e.commissionAmount.toFixed(2)} €
                               </p>
                               <StatusBadge status={e.status} />

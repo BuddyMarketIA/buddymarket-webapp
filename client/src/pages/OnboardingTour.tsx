@@ -144,7 +144,7 @@ export default function OnboardingTour() {
     startX.current = null;
   };
 
-  const variants = {
+  const variants: any = {
     enter: (dir: number) => ({
       x: dir > 0 ? "100%" : "-100%",
       opacity: 0,
