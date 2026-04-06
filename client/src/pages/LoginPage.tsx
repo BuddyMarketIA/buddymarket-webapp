@@ -31,7 +31,7 @@ const SLIDES = [
   },
 ];
 
-const LOGO = "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/buddymarket-logo-color_856f2d67.jpg";
+const LOGO = "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/buddymarket-logo_bcd5af5e.png";
 
 type AuthMode = "login" | "register" | "otp-email" | "otp-code" | "forgot" | "forgot-sent";
 
@@ -180,7 +180,13 @@ export default function LoginPage() {
 
       {/* ── Top: Logo + slide text ── */}
       <div className="relative z-10 flex flex-col items-center pt-14 pb-6 px-6 text-center">
-        <img src={LOGO} alt="BuddyMarket" className="h-9 w-auto object-contain mb-8 drop-shadow-lg" />
+        {/* Logo + Brand name */}
+        <div className="flex flex-col items-center gap-3 mb-8">
+          <img src={LOGO} alt="BuddyMarket" className="h-20 w-20 object-contain drop-shadow-2xl" />
+          <span className="text-white text-3xl font-extrabold tracking-tight drop-shadow-lg">
+            Buddy<span className="text-[#F97316]">Market</span>
+          </span>
+        </div>
 
         <div className={`transition-all duration-400 ${transitioning ? "opacity-0 translate-y-2" : "opacity-100 translate-y-0"}`}>
           <h1 className="text-[2.1rem] font-extrabold text-white leading-tight tracking-tight whitespace-pre-line drop-shadow-md">
