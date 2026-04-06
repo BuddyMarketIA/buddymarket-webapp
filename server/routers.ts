@@ -7849,5 +7849,277 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
         return updated;
       }),
   }),
+
+  // ===========================================================================
+  // HEALTH DATA — Apple Health & Google Health Connect Integration
+  // ===========================================================================
+  health: router({
+    // Get user's health integration settings
+    getIntegration: protectedProcedure.query(async ({ ctx }) => {
+      const { healthIntegrations } = await import("../drizzle/schema.js");
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { eq } = await import("drizzle-orm");
+      const [integration] = await drizzleDb.select().from(healthIntegrations).where(eq(healthIntegrations.userId, ctx.user.id)).limit(1);
+      return integration ?? null;
+    }),
+
+    // Update health integration settings
+    updateIntegration: protectedProcedure
+      .input(z.object({
+        appleHealthEnabled: z.boolean().optional(),
+        googleHealthConnectEnabled: z.boolean().optional(),
+        garminEnabled: z.boolean().optional(),
+        fitbitEnabled: z.boolean().optional(),
+        samsungHealthEnabled: z.boolean().optional(),
+        syncSteps: z.boolean().optional(),
+        syncCalories: z.boolean().optional(),
+        syncWeight: z.boolean().optional(),
+        syncHeartRate: z.boolean().optional(),
+        syncSleep: z.boolean().optional(),
+        syncBloodGlucose: z.boolean().optional(),
+        syncOxygen: z.boolean().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { healthIntegrations } = await import("../drizzle/schema.js");
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { eq } = await import("drizzle-orm");
+        const [existing] = await drizzleDb.select().from(healthIntegrations).where(eq(healthIntegrations.userId, ctx.user.id)).limit(1);
+        if (existing) {
+          const [updated] = await drizzleDb.update(healthIntegrations)
+            .set({ ...input, updatedAt: new Date() })
+            .where(eq(healthIntegrations.userId, ctx.user.id))
+            .returning();
+          return updated;
+        } else {
+          const [created] = await drizzleDb.insert(healthIntegrations)
+            .values({ userId: ctx.user.id, ...input })
+            .returning();
+          return created;
+        }
+      }),
+
+    // Sync daily health data from mobile app
+    syncDailyData: protectedProcedure
+      .input(z.object({
+        date: z.string(),
+        source: z.enum(["apple_health", "google_health_connect", "manual", "garmin", "fitbit", "samsung_health", "other"]).default("manual"),
+        steps: z.number().int().optional(),
+        caloriesBurned: z.number().int().optional(),
+        activeMinutes: z.number().int().optional(),
+        distanceKm: z.number().optional(),
+        floorsClimbed: z.number().int().optional(),
+        weightKg: z.number().optional(),
+        heartRateAvg: z.number().int().optional(),
+        heartRateResting: z.number().int().optional(),
+        heartRateMax: z.number().int().optional(),
+        heartRateMin: z.number().int().optional(),
+        hrv: z.number().optional(),
+        sleepDurationMin: z.number().int().optional(),
+        sleepDeepMin: z.number().int().optional(),
+        sleepRemMin: z.number().int().optional(),
+        sleepLightMin: z.number().int().optional(),
+        sleepScore: z.number().int().optional(),
+        caloriesConsumed: z.number().int().optional(),
+        waterMl: z.number().int().optional(),
+        bloodGlucose: z.number().optional(),
+        oxygenSaturation: z.number().optional(),
+        stressLevel: z.number().int().optional(),
+        vo2Max: z.number().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { healthDailyData, healthIntegrations } = await import("../drizzle/schema.js");
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { eq, and } = await import("drizzle-orm");
+        const { date, ...data } = input;
+        const [existing] = await drizzleDb.select({ id: healthDailyData.id })
+          .from(healthDailyData)
+          .where(and(eq(healthDailyData.userId, ctx.user.id), eq(healthDailyData.date, date)))
+          .limit(1);
+        let result;
+        if (existing) {
+          const [updated] = await drizzleDb.update(healthDailyData)
+            .set({ ...data, syncedAt: new Date(), updatedAt: new Date() })
+            .where(eq(healthDailyData.id, existing.id))
+            .returning();
+          result = updated;
+        } else {
+          const [created] = await drizzleDb.insert(healthDailyData)
+            .values({ userId: ctx.user.id, date, ...data, syncedAt: new Date() })
+            .returning();
+          result = created;
+        }
+        // Update lastSyncAt
+        await drizzleDb.update(healthIntegrations).set({ lastSyncAt: new Date() }).where(eq(healthIntegrations.userId, ctx.user.id)).catch(() => {});
+        return result;
+      }),
+
+    // Batch sync multiple days
+    syncBatch: protectedProcedure
+      .input(z.object({
+        records: z.array(z.object({
+          date: z.string(),
+          source: z.enum(["apple_health", "google_health_connect", "manual", "garmin", "fitbit", "samsung_health", "other"]).default("manual"),
+          steps: z.number().int().optional(),
+          caloriesBurned: z.number().int().optional(),
+          activeMinutes: z.number().int().optional(),
+          distanceKm: z.number().optional(),
+          floorsClimbed: z.number().int().optional(),
+          weightKg: z.number().optional(),
+          heartRateAvg: z.number().int().optional(),
+          heartRateResting: z.number().int().optional(),
+          heartRateMax: z.number().int().optional(),
+          heartRateMin: z.number().int().optional(),
+          hrv: z.number().optional(),
+          sleepDurationMin: z.number().int().optional(),
+          sleepDeepMin: z.number().int().optional(),
+          sleepRemMin: z.number().int().optional(),
+          sleepLightMin: z.number().int().optional(),
+          sleepScore: z.number().int().optional(),
+          caloriesConsumed: z.number().int().optional(),
+          waterMl: z.number().int().optional(),
+          bloodGlucose: z.number().optional(),
+          oxygenSaturation: z.number().optional(),
+          stressLevel: z.number().int().optional(),
+          vo2Max: z.number().optional(),
+        })).max(90),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { healthDailyData, healthIntegrations } = await import("../drizzle/schema.js");
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { eq, and, inArray } = await import("drizzle-orm");
+        const dates = input.records.map(r => r.date);
+        const existing = await drizzleDb.select({ id: healthDailyData.id, date: healthDailyData.date })
+          .from(healthDailyData)
+          .where(and(eq(healthDailyData.userId, ctx.user.id), inArray(healthDailyData.date, dates)));
+        const existingDates = new Set(existing.map(e => e.date));
+        const toInsert = input.records.filter(r => !existingDates.has(r.date)).map(r => ({ userId: ctx.user.id, ...r, syncedAt: new Date() }));
+        const toUpdate = input.records.filter(r => existingDates.has(r.date));
+        let inserted = 0, updated = 0;
+        if (toInsert.length > 0) {
+          await drizzleDb.insert(healthDailyData).values(toInsert);
+          inserted = toInsert.length;
+        }
+        for (const record of toUpdate) {
+          const { date, ...data } = record;
+          await drizzleDb.update(healthDailyData)
+            .set({ ...data, syncedAt: new Date(), updatedAt: new Date() })
+            .where(and(eq(healthDailyData.userId, ctx.user.id), eq(healthDailyData.date, date)));
+          updated++;
+        }
+        await drizzleDb.update(healthIntegrations).set({ lastSyncAt: new Date() }).where(eq(healthIntegrations.userId, ctx.user.id)).catch(() => {});
+        return { inserted, updated, total: inserted + updated };
+      }),
+
+    // Get daily health data for a date range
+    getDailyData: protectedProcedure
+      .input(z.object({
+        startDate: z.string(),
+        endDate: z.string(),
+      }))
+      .query(async ({ ctx, input }) => {
+        const { healthDailyData } = await import("../drizzle/schema.js");
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return [];
+        const { eq, and, gte, lte, desc } = await import("drizzle-orm");
+        return drizzleDb.select().from(healthDailyData)
+          .where(and(
+            eq(healthDailyData.userId, ctx.user.id),
+            gte(healthDailyData.date, input.startDate),
+            lte(healthDailyData.date, input.endDate)
+          ))
+          .orderBy(desc(healthDailyData.date));
+      }),
+
+    // Get today's health summary
+    getTodaySummary: protectedProcedure.query(async ({ ctx }) => {
+      const { healthDailyData } = await import("../drizzle/schema.js");
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) return null;
+      const { eq, and } = await import("drizzle-orm");
+      const today = new Date().toISOString().split("T")[0];
+      const [record] = await drizzleDb.select().from(healthDailyData)
+        .where(and(eq(healthDailyData.userId, ctx.user.id), eq(healthDailyData.date, today)))
+        .limit(1);
+      return record ?? null;
+    }),
+
+    // Get weekly health summary (last 7 days averages)
+    getWeeklySummary: protectedProcedure.query(async ({ ctx }) => {
+      const { healthDailyData } = await import("../drizzle/schema.js");
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) return null;
+      const { eq, and, gte, desc } = await import("drizzle-orm");
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+      const startDate = sevenDaysAgo.toISOString().split("T")[0];
+      const records = await drizzleDb.select().from(healthDailyData)
+        .where(and(eq(healthDailyData.userId, ctx.user.id), gte(healthDailyData.date, startDate)))
+        .orderBy(desc(healthDailyData.date));
+      if (records.length === 0) return null;
+      const avg = (arr: (number | null | undefined)[]) => {
+        const valid = arr.filter(v => v != null) as number[];
+        return valid.length > 0 ? Math.round(valid.reduce((a, b) => a + b, 0) / valid.length) : null;
+      };
+      return {
+        days: records.length,
+        avgSteps: avg(records.map(r => r.steps)),
+        avgCaloriesBurned: avg(records.map(r => r.caloriesBurned)),
+        avgActiveMinutes: avg(records.map(r => r.activeMinutes)),
+        avgHeartRate: avg(records.map(r => r.heartRateAvg)),
+        avgSleepMin: avg(records.map(r => r.sleepDurationMin)),
+        avgSleepScore: avg(records.map(r => r.sleepScore)),
+        avgWaterMl: avg(records.map(r => r.waterMl)),
+        totalDistanceKm: records.reduce((sum, r) => sum + (r.distanceKm ?? 0), 0),
+        records,
+      };
+    }),
+
+    // Add individual metric reading
+    addMetricReading: protectedProcedure
+      .input(z.object({
+        metricType: z.enum(["steps", "calories_burned", "calories_consumed", "weight", "heart_rate", "heart_rate_resting", "sleep_duration", "sleep_deep", "sleep_rem", "sleep_light", "blood_pressure_systolic", "blood_pressure_diastolic", "blood_glucose", "oxygen_saturation", "body_temperature", "respiratory_rate", "active_minutes", "distance_km", "floors_climbed", "water_ml", "stress_level", "vo2_max", "hrv"]),
+        value: z.number(),
+        unit: z.string().max(32),
+        source: z.enum(["apple_health", "google_health_connect", "manual", "garmin", "fitbit", "samsung_health", "other"]).default("manual"),
+        recordedAt: z.string(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { healthMetricReadings } = await import("../drizzle/schema.js");
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const [created] = await drizzleDb.insert(healthMetricReadings)
+          .values({ userId: ctx.user.id, ...input, recordedAt: new Date(input.recordedAt) })
+          .returning();
+        return created;
+      }),
+
+    // Get metric readings for a specific type and date range
+    getMetricReadings: protectedProcedure
+      .input(z.object({
+        metricType: z.enum(["steps", "calories_burned", "calories_consumed", "weight", "heart_rate", "heart_rate_resting", "sleep_duration", "sleep_deep", "sleep_rem", "sleep_light", "blood_pressure_systolic", "blood_pressure_diastolic", "blood_glucose", "oxygen_saturation", "body_temperature", "respiratory_rate", "active_minutes", "distance_km", "floors_climbed", "water_ml", "stress_level", "vo2_max", "hrv"]),
+        startDate: z.string(),
+        endDate: z.string(),
+        limit: z.number().int().max(500).default(100),
+      }))
+      .query(async ({ ctx, input }) => {
+        const { healthMetricReadings } = await import("../drizzle/schema.js");
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return [];
+        const { eq, and, gte, lte, desc } = await import("drizzle-orm");
+        return drizzleDb.select().from(healthMetricReadings)
+          .where(and(
+            eq(healthMetricReadings.userId, ctx.user.id),
+            eq(healthMetricReadings.metricType, input.metricType),
+            gte(healthMetricReadings.recordedAt, new Date(input.startDate)),
+            lte(healthMetricReadings.recordedAt, new Date(input.endDate))
+          ))
+          .orderBy(desc(healthMetricReadings.recordedAt))
+          .limit(input.limit);
+      }),
+  }),
 });
 export type AppRouter = typeof appRouter;

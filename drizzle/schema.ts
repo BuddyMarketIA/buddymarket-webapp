@@ -1592,3 +1592,129 @@ export const hiperdinoProducts = pgTable("hiperdino_products", {
 }));
 export type HiperdinoProduct = typeof hiperdinoProducts.$inferSelect;
 export type InsertHiperdinoProduct = typeof hiperdinoProducts.$inferInsert;
+
+// =============================================================================
+// HEALTH DATA INTEGRATION — Apple Health & Google Health Connect (Mobile App)
+// =============================================================================
+
+// Source of the health data
+export const healthDataSourceEnum = pgEnum("healthDataSource", [
+  "apple_health",
+  "google_health_connect",
+  "manual",
+  "garmin",
+  "fitbit",
+  "samsung_health",
+  "other",
+]);
+
+// Type of health metric
+export const healthMetricTypeEnum = pgEnum("healthMetricType", [
+  "steps",
+  "calories_burned",
+  "calories_consumed",
+  "weight",
+  "heart_rate",
+  "heart_rate_resting",
+  "sleep_duration",
+  "sleep_deep",
+  "sleep_rem",
+  "sleep_light",
+  "blood_pressure_systolic",
+  "blood_pressure_diastolic",
+  "blood_glucose",
+  "oxygen_saturation",
+  "body_temperature",
+  "respiratory_rate",
+  "active_minutes",
+  "distance_km",
+  "floors_climbed",
+  "water_ml",
+  "stress_level",
+  "vo2_max",
+  "hrv",
+]);
+
+// Daily health data synced from mobile apps
+export const healthDailyData = pgTable("health_daily_data", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull(),
+  date: date("date").notNull(),
+  source: healthDataSourceEnum("source").notNull().default("manual"),
+  steps: integer("steps"),
+  caloriesBurned: integer("caloriesBurned"),
+  activeMinutes: integer("activeMinutes"),
+  distanceKm: real("distanceKm"),
+  floorsClimbed: integer("floorsClimbed"),
+  weightKg: real("weightKg"),
+  heartRateAvg: integer("heartRateAvg"),
+  heartRateResting: integer("heartRateResting"),
+  heartRateMax: integer("heartRateMax"),
+  heartRateMin: integer("heartRateMin"),
+  hrv: real("hrv"),
+  sleepDurationMin: integer("sleepDurationMin"),
+  sleepDeepMin: integer("sleepDeepMin"),
+  sleepRemMin: integer("sleepRemMin"),
+  sleepLightMin: integer("sleepLightMin"),
+  sleepScore: integer("sleepScore"),
+  caloriesConsumed: integer("caloriesConsumed"),
+  waterMl: integer("waterMl"),
+  bloodGlucose: real("bloodGlucose"),
+  oxygenSaturation: real("oxygenSaturation"),
+  stressLevel: integer("stressLevel"),
+  vo2Max: real("vo2Max"),
+  syncedAt: timestamp("syncedAt").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  hddUserIdx: index("hdd_user_idx").on(t.userId),
+  hddDateIdx: index("hdd_date_idx").on(t.date),
+  hddUserDateIdx: index("hdd_user_date_idx").on(t.userId, t.date),
+  hddSourceIdx: index("hdd_source_idx").on(t.source),
+}));
+export type HealthDailyData = typeof healthDailyData.$inferSelect;
+export type InsertHealthDailyData = typeof healthDailyData.$inferInsert;
+
+// Individual health metric readings (granular, for charts)
+export const healthMetricReadings = pgTable("health_metric_readings", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull(),
+  metricType: healthMetricTypeEnum("metricType").notNull(),
+  value: real("value").notNull(),
+  unit: varchar("unit", { length: 32 }).notNull(),
+  source: healthDataSourceEnum("source").notNull().default("manual"),
+  recordedAt: timestamp("recordedAt").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  hmrUserIdx: index("hmr_user_idx").on(t.userId),
+  hmrTypeIdx: index("hmr_type_idx").on(t.metricType),
+  hmrRecordedIdx: index("hmr_recorded_idx").on(t.recordedAt),
+  hmrUserTypeIdx: index("hmr_user_type_idx").on(t.userId, t.metricType),
+}));
+export type HealthMetricReading = typeof healthMetricReadings.$inferSelect;
+export type InsertHealthMetricReading = typeof healthMetricReadings.$inferInsert;
+
+// Health integration settings per user
+export const healthIntegrations = pgTable("health_integrations", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().unique(),
+  appleHealthEnabled: boolean("appleHealthEnabled").default(false).notNull(),
+  googleHealthConnectEnabled: boolean("googleHealthConnectEnabled").default(false).notNull(),
+  garminEnabled: boolean("garminEnabled").default(false).notNull(),
+  fitbitEnabled: boolean("fitbitEnabled").default(false).notNull(),
+  samsungHealthEnabled: boolean("samsungHealthEnabled").default(false).notNull(),
+  syncSteps: boolean("syncSteps").default(true).notNull(),
+  syncCalories: boolean("syncCalories").default(true).notNull(),
+  syncWeight: boolean("syncWeight").default(true).notNull(),
+  syncHeartRate: boolean("syncHeartRate").default(true).notNull(),
+  syncSleep: boolean("syncSleep").default(true).notNull(),
+  syncBloodGlucose: boolean("syncBloodGlucose").default(false).notNull(),
+  syncOxygen: boolean("syncOxygen").default(false).notNull(),
+  lastSyncAt: timestamp("lastSyncAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  hiUserIdx: index("hi_user_idx").on(t.userId),
+}));
+export type HealthIntegration = typeof healthIntegrations.$inferSelect;
+export type InsertHealthIntegration = typeof healthIntegrations.$inferInsert;

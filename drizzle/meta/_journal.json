@@ -71,6 +71,13 @@
       "when": 1775484485730,
       "tag": "0009_known_roughhouse",
       "breakpoints": true
+    },
+    {
+      "idx": 10,
+      "version": "7",
+      "when": 1775490658450,
+      "tag": "0010_lyrical_switch",
+      "breakpoints": true
     }
   ]
 }

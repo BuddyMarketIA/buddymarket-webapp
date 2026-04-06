@@ -1436,3 +1436,22 @@
 - [ ] Frontend: botón "Recheck ahora" para forzar verificación manual
 - [ ] Frontend: badge de alerta en el sidebar del admin cuando hay fallos activos
 - [ ] Tests vitest para el sistema de monitorización
+
+## Integración Apple Health & Google Health Connect
+
+- [ ] Tabla health_connections en BD (proveedor, estado, token, userId)
+- [ ] Tabla health_metrics en BD (tipo, valor, unidad, fecha, fuente, userId)
+- [ ] Endpoint tRPC health.getConnections
+- [ ] Endpoint tRPC health.syncMetrics (recibe datos desde app nativa)
+- [ ] Endpoint tRPC health.getMetrics (historial de métricas por tipo y rango de fechas)
+- [ ] Endpoint tRPC health.getSummary (resumen diario: pasos, calorías, sueño, peso)
+- [ ] Endpoint tRPC health.disconnectProvider
+- [ ] Endpoint REST POST /api/health/sync (para la app nativa, con token de autenticación)
+- [ ] Página HealthConnect.tsx con panel de conexiones
+- [ ] Tarjeta Apple Health con instrucciones para app móvil
+- [ ] Tarjeta Google Health Connect con instrucciones para app móvil
+- [ ] Panel de métricas diarias (pasos, calorías, sueño, peso, frecuencia cardíaca)
+- [ ] Gráficas de evolución de métricas (últimos 7/30 días)
+- [ ] Integración de métricas de salud en el dashboard principal
+- [ ] Ruta /app/health en App.tsx
+- [ ] Tests Vitest para endpoints de salud

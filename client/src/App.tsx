@@ -59,6 +59,7 @@ const BuddyMakerStats = lazy(() => import("./pages/BuddyMakerStats"));
 const BuddyExpertStats = lazy(() => import("./pages/BuddyExpertStats"));
 const ReferralDashboard = lazy(() => import("./pages/ReferralDashboard"));
 const Metrics = lazy(() => import("./pages/Metrics"));
+const ConnectedHealth = lazy(() => import("./pages/ConnectedHealth"));
 const NutritionalStats = lazy(() => import("./pages/NutritionalStats"));
 const Progress = lazy(() => import("./pages/Progress"));
 const Notifications = lazy(() => import("./pages/Notifications"));
@@ -179,6 +180,7 @@ function Router() {
       <Route path="/app/buddy-expert-stats">{() => <ProtectedPage><BuddyExpertStats /></ProtectedPage>}</Route>
       <Route path="/app/referrals">{() => <ProtectedPage><ReferralDashboard /></ProtectedPage>}</Route>
       <Route path="/app/metrics">{() => <ProtectedRoute component={Metrics} />}</Route>
+      <Route path="/app/connected-health">{() => <ProtectedRoute component={ConnectedHealth} />}</Route>
       <Route path="/app/stats">{() => <ProtectedRoute component={NutritionalStats} />}</Route>
       <Route path="/app/progress">{() => <ProtectedRoute component={Progress} />}</Route>
       <Route path="/app/notifications">{() => <ProtectedPage><Notifications /></ProtectedPage>}</Route>

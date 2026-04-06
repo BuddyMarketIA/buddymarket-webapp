@@ -142,6 +142,7 @@ const SIDEBAR_GROUPS = [
       { key: "/app/dashboard", label: "Dashboard", to: "/app/dashboard", emoji: "🏠" },
       { key: "/app/profile", label: "Mi Perfil", to: "/app/profile", emoji: "👤" },
       { key: "/app/metrics", label: "Mis Métricas", to: "/app/metrics", emoji: "⚖️" },
+      { key: "/app/connected-health", label: "Salud Conectada", to: "/app/connected-health", emoji: "❤️" },
       { key: "/app/recipes", label: "Recetas", to: "/app/recipes", emoji: "📖" },
       { key: "/app/menus", label: "Menús", to: "/app/menus", emoji: "📅" },
       { key: "/app/my-menus", label: "Mis Menús", to: "/app/my-menus", emoji: "🗂️" },
