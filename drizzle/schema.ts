@@ -1718,3 +1718,22 @@ export const healthIntegrations = pgTable("health_integrations", {
 }));
 export type HealthIntegration = typeof healthIntegrations.$inferSelect;
 export type InsertHealthIntegration = typeof healthIntegrations.$inferInsert;
+
+// =============================================================================
+// FEATURE EVENTS — Tracking de uso de funcionalidades específicas
+// =============================================================================
+export const featureEvents = pgTable("feature_events", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull(),
+  /** Feature identifier: barcode_scan, ai_photo_analysis, ai_menu_gen, ai_shopping_gen, etc. */
+  feature: varchar("feature", { length: 64 }).notNull(),
+  /** Optional metadata (e.g., barcode value, result status) */
+  metadata: text("metadata"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  feIdx: index("fe_feature_idx").on(t.feature),
+  feUserIdx: index("fe_user_idx").on(t.userId),
+  feCreatedIdx: index("fe_created_idx").on(t.createdAt),
+}));
+export type FeatureEvent = typeof featureEvents.$inferSelect;
+export type InsertFeatureEvent = typeof featureEvents.$inferInsert;

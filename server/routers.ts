@@ -2842,7 +2842,7 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
 
     lookupBarcode: protectedProcedure
       .input(z.object({ barcode: z.string().min(4).max(30) }))
-      .query(async ({ input }) => {
+      .query(async ({ ctx, input }) => {
         const OFF_URL = `https://world.openfoodfacts.org/api/v2/product/${encodeURIComponent(input.barcode)}.json?fields=product_name,product_name_es,nutriments,image_front_small_url,image_front_url,brands,quantity,serving_size,nutriscore_grade,nova_group,ecoscore_grade`;
         // Retry helper: try up to 2 times with 10s timeout each
         const fetchWithRetry = async (url: string, attempts = 2): Promise<Response> => {
@@ -2870,6 +2870,16 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
           }
           const p = data.product;
           const n = p.nutriments || {};
+          // Track barcode scan usage (fire-and-forget, non-blocking)
+          const drizzleDb = await db.getDb();
+          if (drizzleDb) {
+            const { featureEvents } = await import("../drizzle/schema.js");
+            drizzleDb.insert(featureEvents).values({
+              userId: ctx.user.id,
+              feature: "barcode_scan",
+              metadata: JSON.stringify({ barcode: input.barcode, found: true }),
+            }).catch(() => {});
+          }
           return {
             barcode: input.barcode,
             name: (p.product_name_es || p.product_name || "Producto desconocido").trim(),
@@ -8122,6 +8132,223 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
           .orderBy(desc(healthMetricReadings.recordedAt))
           .limit(input.limit);
       }),
+  }),
+
+  // ===========================================================================
+  // USAGE ANALYTICS — Admin panel usage statistics and heatmap
+  // ===========================================================================
+  usageAnalytics: router({
+    // Overview: key metrics counts
+    getOverview: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { sql: sqlTag, count, gte, and } = await import("drizzle-orm");
+      const { users, menuOrganizers, mealLogs, shoppingLists, aiFeedback,
+        userFavoriteRecipes, complementLogs, userMetrics, recipeLikes,
+        userExpertPlanCopies, buddyApplications } = await import("../drizzle/schema.js");
+
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const sevenDaysAgo = new Date();
+      sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+
+      const [totalUsers] = await drizzleDb.select({ count: count() }).from(users);
+      const [newUsers30d] = await drizzleDb.select({ count: count() }).from(users)
+        .where(gte(users.createdAt, thirtyDaysAgo));
+      const [totalMenus] = await drizzleDb.select({ count: count() }).from(menuOrganizers);
+      const [aiMenus] = await drizzleDb.select({ count: count() }).from(menuOrganizers)
+        .where(sqlTag`${menuOrganizers.generatedByAI} = true`);
+      const [totalMealLogs] = await drizzleDb.select({ count: count() }).from(mealLogs);
+      const [aiPhotoLogs] = await drizzleDb.select({ count: count() }).from(mealLogs)
+        .where(sqlTag`${mealLogs.photoUrl} IS NOT NULL`);
+      const [totalShoppingLists] = await drizzleDb.select({ count: count() }).from(shoppingLists);
+      const [aiShoppingLists] = await drizzleDb.select({ count: count() }).from(shoppingLists)
+        .where(sqlTag`${shoppingLists.generatedByAI} = true`);
+      const [totalAiFeedback] = await drizzleDb.select({ count: count() }).from(aiFeedback);
+      const [totalFavorites] = await drizzleDb.select({ count: count() }).from(userFavoriteRecipes);
+      const [totalComplements] = await drizzleDb.select({ count: count() }).from(complementLogs);
+      const [totalBodyMetrics] = await drizzleDb.select({ count: count() }).from(userMetrics);
+      const [totalRecipeLikes] = await drizzleDb.select({ count: count() }).from(recipeLikes);
+      const [totalExpertCopies] = await drizzleDb.select({ count: count() }).from(userExpertPlanCopies);
+      const [pendingApplications] = await drizzleDb.select({ count: count() }).from(buddyApplications)
+        .where(sqlTag`${buddyApplications.status} = 'pending'`);
+
+      return {
+        users: { total: Number(totalUsers.count), new30d: Number(newUsers30d.count) },
+        menus: { total: Number(totalMenus.count), aiGenerated: Number(aiMenus.count) },
+        mealLogs: { total: Number(totalMealLogs.count), aiPhoto: Number(aiPhotoLogs.count) },
+        shoppingLists: { total: Number(totalShoppingLists.count), aiGenerated: Number(aiShoppingLists.count) },
+        aiFeedback: { total: Number(totalAiFeedback.count) },
+        favorites: Number(totalFavorites.count),
+        complements: Number(totalComplements.count),
+        bodyMetrics: Number(totalBodyMetrics.count),
+        recipeLikes: Number(totalRecipeLikes.count),
+        expertCopies: Number(totalExpertCopies.count),
+        pendingApplications: Number(pendingApplications.count),
+      };
+    }),
+
+    // Feature heatmap: usage counts per feature
+    getFeatureHeatmap: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { sql: sqlTag, count, eq } = await import("drizzle-orm");
+      const { menuOrganizers, mealLogs, shoppingLists, aiFeedback,
+        userFavoriteRecipes, complementLogs, userMetrics, recipeLikes,
+        userExpertPlanCopies, menuComplements, pantryStock, featureEvents } = await import("../drizzle/schema.js");
+
+      const [manualMenus] = await drizzleDb.select({ count: count() }).from(menuOrganizers)
+        .where(sqlTag`${menuOrganizers.generatedByAI} = false OR ${menuOrganizers.generatedByAI} IS NULL`);
+      const [aiMenus] = await drizzleDb.select({ count: count() }).from(menuOrganizers)
+        .where(sqlTag`${menuOrganizers.generatedByAI} = true`);
+      const [manualFoodLog] = await drizzleDb.select({ count: count() }).from(mealLogs)
+        .where(sqlTag`${mealLogs.photoUrl} IS NULL`);
+      const [aiPhotoLog] = await drizzleDb.select({ count: count() }).from(mealLogs)
+        .where(sqlTag`${mealLogs.photoUrl} IS NOT NULL`);
+      const [shoppingListCount] = await drizzleDb.select({ count: count() }).from(shoppingLists);
+      const [aiShoppingCount] = await drizzleDb.select({ count: count() }).from(shoppingLists)
+        .where(sqlTag`${shoppingLists.generatedByAI} = true`);
+      const [favRecipes] = await drizzleDb.select({ count: count() }).from(userFavoriteRecipes);
+      const [complementCount] = await drizzleDb.select({ count: count() }).from(complementLogs);
+      const [bodyMetricsCount] = await drizzleDb.select({ count: count() }).from(userMetrics);
+      const [recipeLikesCount] = await drizzleDb.select({ count: count() }).from(recipeLikes);
+      const [expertCopiesCount] = await drizzleDb.select({ count: count() }).from(userExpertPlanCopies);
+      const [pantryCount] = await drizzleDb.select({ count: count() }).from(pantryStock);
+      const [menuComplementCount] = await drizzleDb.select({ count: count() }).from(menuComplements);
+      const [aiFeedbackCount] = await drizzleDb.select({ count: count() }).from(aiFeedback);
+      const [barcodeCount] = await drizzleDb.select({ count: count() }).from(featureEvents)
+        .where(eq(featureEvents.feature, "barcode_scan"));
+
+      return [
+        { feature: "Diario alimentario (manual)", category: "Diario", count: Number(manualFoodLog.count), icon: "📝" },
+        { feature: "Análisis IA de foto", category: "IA", count: Number(aiPhotoLog.count), icon: "📷" },
+        { feature: "Escáner código de barras", category: "Escáner", count: Number(barcodeCount.count), icon: "📷" },
+        { feature: "Menú manual", category: "Menús", count: Number(manualMenus.count), icon: "📅" },
+        { feature: "Menú generado por IA", category: "IA", count: Number(aiMenus.count), icon: "🤖" },
+        { feature: "Lista de compra", category: "Compras", count: Number(shoppingListCount.count), icon: "🛒" },
+        { feature: "Lista de compra con IA", category: "IA", count: Number(aiShoppingCount.count), icon: "🛒" },
+        { feature: "Recetas favoritas", category: "Recetas", count: Number(favRecipes.count), icon: "❤️" },
+        { feature: "Me gusta en recetas", category: "Recetas", count: Number(recipeLikesCount.count), icon: "👍" },
+        { feature: "Complementos diarios", category: "Diario", count: Number(complementCount.count), icon: "☕" },
+        { feature: "Métricas corporales", category: "Salud", count: Number(bodyMetricsCount.count), icon: "⚖️" },
+        { feature: "Planes de expertos copiados", category: "Expertos", count: Number(expertCopiesCount.count), icon: "👨‍⚕️" },
+        { feature: "Inventario/Despensa", category: "Inventario", count: Number(pantryCount.count), icon: "🏪" },
+        { feature: "Complementos en menús", category: "Menús", count: Number(menuComplementCount.count), icon: "🍵" },
+        { feature: "Feedback IA (valoraciones)", category: "IA", count: Number(aiFeedbackCount.count), icon: "⭐" },
+      ];
+    }),
+
+    // Daily activity: registrations and meal logs per day (last 30 days)
+    getDailyActivity: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { sql: sqlTag, gte, count } = await import("drizzle-orm");
+      const { users, mealLogs, menuOrganizers } = await import("../drizzle/schema.js");
+
+      const thirtyDaysAgo = new Date();
+      thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+
+      const usersByDay = await drizzleDb
+        .select({
+          date: sqlTag<string>`DATE(${users.createdAt})`,
+          count: count(),
+        })
+        .from(users)
+        .where(gte(users.createdAt, thirtyDaysAgo))
+        .groupBy(sqlTag`DATE(${users.createdAt})`)
+        .orderBy(sqlTag`DATE(${users.createdAt})`);
+
+      const mealLogsByDay = await drizzleDb
+        .select({
+          date: sqlTag<string>`${mealLogs.logDate}`,
+          count: count(),
+        })
+        .from(mealLogs)
+        .where(gte(mealLogs.createdAt, thirtyDaysAgo))
+        .groupBy(mealLogs.logDate)
+        .orderBy(mealLogs.logDate);
+
+      const menusByDay = await drizzleDb
+        .select({
+          date: sqlTag<string>`DATE(${menuOrganizers.createdAt})`,
+          count: count(),
+        })
+        .from(menuOrganizers)
+        .where(gte(menuOrganizers.createdAt, thirtyDaysAgo))
+        .groupBy(sqlTag`DATE(${menuOrganizers.createdAt})`)
+        .orderBy(sqlTag`DATE(${menuOrganizers.createdAt})`);
+
+      return { usersByDay, mealLogsByDay, menusByDay };
+    }),
+
+    // AI usage breakdown
+    getAIUsage: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { sql: sqlTag, count, avg } = await import("drizzle-orm");
+      const { aiFeedback, menuOrganizers, mealLogs, shoppingLists } = await import("../drizzle/schema.js");
+
+      const [feedbackStats] = await drizzleDb.select({
+        total: count(),
+        avgRating: avg(aiFeedback.rating),
+        accurate: count(sqlTag`CASE WHEN ${aiFeedback.accurate} = true THEN 1 END`),
+      }).from(aiFeedback);
+
+      const [aiMenuTotal] = await drizzleDb.select({ count: count() }).from(menuOrganizers)
+        .where(sqlTag`${menuOrganizers.generatedByAI} = true`);
+      const [aiPhotoTotal] = await drizzleDb.select({ count: count() }).from(mealLogs)
+        .where(sqlTag`${mealLogs.photoUrl} IS NOT NULL`);
+      const [aiShoppingTotal] = await drizzleDb.select({ count: count() }).from(shoppingLists)
+        .where(sqlTag`${shoppingLists.generatedByAI} = true`);
+
+      return {
+        feedback: {
+          total: Number(feedbackStats.total),
+          avgRating: feedbackStats.avgRating ? Number(Number(feedbackStats.avgRating).toFixed(1)) : 0,
+          accurateCount: Number(feedbackStats.accurate),
+          accuracyPct: feedbackStats.total > 0
+            ? Math.round((Number(feedbackStats.accurate) / Number(feedbackStats.total)) * 100)
+            : 0,
+        },
+        aiMenus: Number(aiMenuTotal.count),
+        aiPhotoAnalysis: Number(aiPhotoTotal.count),
+        aiShoppingLists: Number(aiShoppingTotal.count),
+        totalAIActions: Number(aiMenuTotal.count) + Number(aiPhotoTotal.count) + Number(aiShoppingTotal.count),
+      };
+    }),
+
+    // Top users by activity
+    getTopUsers: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { sql: sqlTag, count, desc, eq } = await import("drizzle-orm");
+      const { mealLogs, users } = await import("../drizzle/schema.js");
+
+      const topUsers = await drizzleDb
+        .select({
+          userId: mealLogs.userId,
+          name: users.name,
+          email: users.email,
+          logCount: count(),
+        })
+        .from(mealLogs)
+        .leftJoin(users, eq(mealLogs.userId, users.id))
+        .groupBy(mealLogs.userId, users.name, users.email)
+        .orderBy(desc(count()))
+        .limit(10);
+
+      return topUsers.map(u => ({
+        userId: u.userId,
+        name: u.name ?? "Sin nombre",
+        email: u.email ?? "",
+        logCount: Number(u.logCount),
+      }));
+    }),
   }),
 });
 export type AppRouter = typeof appRouter;

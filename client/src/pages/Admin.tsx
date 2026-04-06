@@ -19,11 +19,14 @@ import {
   SignalIcon,
   ArrowPathIcon,
   ClockIcon,
+  ChartBarIcon,
 } from "@heroicons/react/24/outline";
 import { RECIPE_PLACEHOLDER_IMAGE as RECIPE_PLACEHOLDER } from "@/lib/constants";
+import UsageAnalyticsPanel from "@/components/UsageAnalyticsPanel";
 
 const TABS = [
   { key: "overview", label: "Resumen", icon: ShieldCheckIcon },
+  { key: "analytics", label: "Analíticas", icon: ChartBarIcon },
   { key: "monitor", label: "Monitor APIs", icon: SignalIcon },
   { key: "recipes", label: "Recetas", icon: BookOpenIcon },
   { key: "applications", label: "Solicitudes", icon: UsersIcon },
@@ -404,6 +407,11 @@ export default function Admin() {
             </div>
           </div>
         </div>
+      )}
+
+      {/* Analytics */}
+      {activeTab === "analytics" && (
+        <UsageAnalyticsPanel />
       )}
 
       {/* API Monitor */}
