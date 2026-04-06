@@ -1415,3 +1415,8 @@
 - [x] Shimmer effect en los skeletons
 - [x] Vista rápida modal con hover en cards de menú (QuickView)
 - [ ] Comparación de precios entre supermercados en lista de la compra
+
+- [x] Imágenes de productos de supermercados: actualizar thumbnails con URLs de Unsplash (87/88 Mercadona, 63/69 Carrefour, 56/67 Alcampo, 68/71 Lidl)
+- [x] Iconos de categorías de supermercados: ampliar CATEGORY_ICONS para cubrir todos los nombres de la BD en MercadonaShop, CarrefourShop y LidlShop
+- [x] Componente ProductImage con fallback visual (emoji por categoría) en lugar de carrito roto
+- [x] Corregir bug de imagen rota: onError ahora muestra emoji en lugar de imagen invisible

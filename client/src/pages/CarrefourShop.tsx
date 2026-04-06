@@ -9,34 +9,45 @@ const CARR_RED = "#E63329";
 const CARR_BG = "#E3F2FD";
 
 const CATEGORY_ICONS: Record<string, string> = {
-  "Lácteos y huevos": "🥛",
-  "Carnes y aves": "🥩",
-  "Pescados y mariscos": "🐟",
-  "Frutas y verduras": "🥦",
-  "Panadería y bollería": "🍞",
-  "Pasta, arroz y legumbres": "🍝",
-  "Conservas": "🥫",
-  "Aceites y condimentos": "🫒",
-  "Condimentos y salsas": "🧂",
-  "Sopas y caldos": "🍲",
-  "Dulces y snacks": "🍫",
-  "Frutos secos y snacks": "🥜",
-  "Cereales y desayuno": "🥣",
-  "Mermeladas y untables": "🍯",
-  "Agua y refrescos": "💧",
-  "Zumos y batidos": "🍊",
-  "Café e infusiones": "☕",
-  "Cervezas": "🍺",
-  "Vinos y licores": "🍷",
-  "Congelados": "❄️",
-  "Platos preparados": "🍱",
-  "Charcutería": "🥓",
-  "Higiene personal": "🧴",
-  "Droguería": "🧹",
-  "Bebé": "👶",
-  "Mascotas": "🐾",
-  "Parafarmacia": "💊",
+  "Lácteos y huevos": "🥛", "Carnes y aves": "🥩", "Pescados y mariscos": "🐟",
+  "Frutas y verduras": "🥦", "Panadería y bollería": "🍞", "Pasta, arroz y legumbres": "🍝",
+  "Conservas": "🥫", "Aceites y condimentos": "🫒", "Condimentos y salsas": "🧂",
+  "Sopas y caldos": "🍲", "Dulces y snacks": "🍫", "Frutos secos y snacks": "🥜",
+  "Cereales y desayuno": "🥣", "Mermeladas y untables": "🍯", "Agua y refrescos": "💧",
+  "Zumos y batidos": "🍊", "Café e infusiones": "☕", "Cervezas": "🍺",
+  "Vinos y licores": "🍷", "Congelados": "🧊", "Platos preparados": "🍱",
+  "Charcutería": "🥓", "Higiene personal": "🧴", "Droguería": "🧹",
+  "Bebé": "👶", "Mascotas": "🐾", "Parafarmacia": "💊",
+  // Nombres adicionales de la BD
+  "Bebidas": "💧", "Carne y pescado": "🥩",
+  "Carnes": "🥩", "Cereales y pan": "🍞", "Cereales y legumbres": "🍝",
+  "Conservas y legumbres": "🥫", "Endulzantes": "🍯", "Frutos secos": "🥜",
+  "Lácteos": "🥛", "Huevos": "🥚", "Nutrición deportiva": "💪",
+  "Panadería": "🍞", "Suplementos": "💊", "Pan y panadería": "🍞",
+  "Snacks y frutos secos": "🥜", "Higiene y limpieza": "🧴",
+  "Quesos y charcutería": "🧀", "Embutidos": "🧀",
 };
+
+// Componente de imagen de producto con fallback visual
+function ProductImage({ src, name, category }: { src: string | null; name: string; category?: string | null }) {
+  const [imgError, setImgError] = useState(false);
+  const emoji = CATEGORY_ICONS[category ?? ""] ?? "🥬";
+  if (!src || imgError) {
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        <span className="text-4xl">{emoji}</span>
+      </div>
+    );
+  }
+  return (
+    <img
+      src={src}
+      alt={name}
+      className="w-full h-full object-contain p-2"
+      onError={() => setImgError(true)}
+    />
+  );
+}
 
 interface CartItem {
   id: string;
@@ -285,10 +296,7 @@ export default function CarrefourShop() {
                   return (
                     <div key={product.id} className="bg-white rounded-2xl p-3 shadow-sm border border-gray-100 flex flex-col">
                       <div className="w-full h-28 bg-gray-50 rounded-xl mb-3 flex items-center justify-center overflow-hidden">
-                        {product.image
-                          ? <img src={product.image} alt={product.name} className="w-full h-full object-contain p-2"
-                              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                          : <span className="text-4xl">{CATEGORY_ICONS[product.category ?? ""] ?? "🛒"}</span>}
+                        <ProductImage src={product.image} name={product.name} category={product.category} />
                       </div>
                       <div className="flex-1">
                         <p className="text-xs font-bold text-gray-900 leading-tight line-clamp-2 mb-1">{product.name}</p>

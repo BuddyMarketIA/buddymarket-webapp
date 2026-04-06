@@ -37,6 +37,7 @@ const SUPERMARKETS = [
 ];
 
 const CATEGORY_ICONS: Record<string, string> = {
+  // Mercadona originales
   "Aceite, especias y salsas": "🫒", "Agua y refrescos": "💧", "Aperitivos": "🍿",
   "Arroz, legumbres y pasta": "🍝", "Azúcar, caramelos y chocolate": "🍫", "Bebé": "👶",
   "Bodega": "🍷", "Cacao, café e infusiones": "☕", "Carne": "🥩", "Cereales y galletas": "🥣",
@@ -45,7 +46,44 @@ const CATEGORY_ICONS: Record<string, string> = {
   "Frutas y verduras": "🥦", "Higiene bucal": "🦷", "Huevos, leche y mantequilla": "🥛",
   "Limpieza y hogar": "🏠", "Marisco, pescado y sushi": "🐟", "Mascotas": "🐾",
   "Pan y bollería": "🍞", "Parafarmacia": "💊", "Postres y yogures": "🍦", "Zumos": "🍊",
+  // Nombres de la BD
+  "Aceites y condimentos": "🫒", "Bebidas": "💧", "Carne y pescado": "🥩",
+  "Carnes y aves": "🥩", "Carnes": "🥩", "Cereales y pan": "🍞",
+  "Cereales y legumbres": "🍝", "Conservas y legumbres": "🥫",
+  "Endulzantes": "🍯", "Frutos secos": "🥜", "Frutos secos y snacks": "🥜",
+  "Lácteos y huevos": "🥛", "Lácteos": "🥛", "Huevos": "🥚",
+  "Nutrición deportiva": "💪", "Panadería": "🍞",
+  "Pescados y mariscos": "🐟", "Suplementos": "💊",
+  "Pasta, arroz y legumbres": "🍝", "Condimentos y salsas": "🧂",
+  "Sopas y caldos": "🍲", "Dulces y snacks": "🍫",
+  "Cereales y desayuno": "🥣", "Mermeladas y untables": "🍯",
+  "Zumos y batidos": "🍊", "Café e infusiones": "☕",
+  "Cervezas": "🍺", "Vinos y licores": "🍷",
+  "Panadería y bollería": "🍞", "Pan y panadería": "🍞",
+  "Snacks y frutos secos": "🥜", "Higiene y limpieza": "🧴",
+  "Quesos y charcutería": "🧀", "Embutidos": "🧀",
 };
+
+// Componente de imagen de producto con fallback visual
+function ProductImage({ src, name, category }: { src: string | null; name: string; category?: string | null }) {
+  const [imgError, setImgError] = useState(false);
+  const emoji = CATEGORY_ICONS[category ?? ""] ?? "🥬";
+  if (!src || imgError) {
+    return (
+      <div className="w-full h-full flex flex-col items-center justify-center gap-1">
+        <span className="text-4xl">{emoji}</span>
+      </div>
+    );
+  }
+  return (
+    <img
+      src={src}
+      alt={name}
+      className="w-full h-full object-contain p-2"
+      onError={() => setImgError(true)}
+    />
+  );
+}
 
 export default function SupermercadoShop() {
   const [, navigate] = useLocation();
@@ -339,9 +377,7 @@ export default function SupermercadoShop() {
                   return (
                     <div key={product.id} className="bg-white rounded-2xl p-3 shadow-sm border border-gray-100 flex flex-col">
                       <div className="w-full h-28 bg-gray-50 rounded-xl mb-3 flex items-center justify-center overflow-hidden">
-                        {product.thumbnail
-                          ? <img src={product.thumbnail} alt={product.name} className="w-full h-full object-contain p-2" onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                          : <span className="text-4xl">🛒</span>}
+                        <ProductImage src={product.thumbnail} name={product.name} category={product.category} />
                       </div>
                       <div className="flex-1">
                         <p className="text-xs font-bold text-gray-900 leading-tight line-clamp-2 mb-1">{product.name}</p>

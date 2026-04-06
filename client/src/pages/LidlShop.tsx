@@ -10,20 +10,43 @@ const LIDL_RED = "#E3000B";
 const LIDL_BG = "#EEF4FB";
 
 const CATEGORY_ICONS: Record<string, string> = {
-  "Frutas y verduras": "🥦",
-  "Lácteos y huevos": "🥛",
-  "Carnes y aves": "🥩",
-  "Pescados y mariscos": "🐟",
-  "Pan y panadería": "🍞",
-  "Pasta, arroz y legumbres": "🍝",
-  "Aceites y condimentos": "🫒",
-  "Cereales y desayuno": "🥣",
-  "Congelados": "❄️",
-  "Bebidas": "💧",
-  "Snacks y frutos secos": "🥜",
-  "Higiene y limpieza": "🧴",
-  "Food": "🛒",
+  "Frutas y verduras": "🥦", "Lácteos y huevos": "🥛", "Carnes y aves": "🥩",
+  "Pescados y mariscos": "🐟", "Pan y panadería": "🍞", "Pasta, arroz y legumbres": "🍝",
+  "Aceites y condimentos": "🫒", "Cereales y desayuno": "🥣", "Congelados": "🧊",
+  "Bebidas": "💧", "Snacks y frutos secos": "🥜", "Higiene y limpieza": "🧴",
+  "Food": "🥬",
+  // Nombres adicionales de la BD
+  "Carne y pescado": "🥩", "Carnes": "🥩",
+  "Cereales y pan": "🍞", "Cereales y legumbres": "🍝", "Conservas y legumbres": "🥫",
+  "Endulzantes": "🍯", "Frutos secos": "🥜", "Lácteos": "🥛",
+  "Huevos": "🥚", "Nutrición deportiva": "💪", "Panadería": "🍞",
+  "Suplementos": "💊", "Panadería y bollería": "🍞",
+  "Conservas": "🥫", "Condimentos y salsas": "🧂",
+  "Sopas y caldos": "🍲", "Dulces y snacks": "🍫",
+  "Mermeladas y untables": "🍯", "Zumos y batidos": "🍊",
+  "Café e infusiones": "☕", "Cervezas": "🍺", "Vinos y licores": "🍷",
 };
+
+// Componente de imagen de producto con fallback visual
+function ProductImage({ src, name, category }: { src: string | null; name: string; category?: string | null }) {
+  const [imgError, setImgError] = useState(false);
+  const emoji = CATEGORY_ICONS[category ?? ""] ?? "🥬";
+  if (!src || imgError) {
+    return (
+      <div className="w-full h-full flex items-center justify-center">
+        <span className="text-4xl">{emoji}</span>
+      </div>
+    );
+  }
+  return (
+    <img
+      src={src}
+      alt={name}
+      className="w-full h-full object-contain p-2"
+      onError={() => setImgError(true)}
+    />
+  );
+}
 
 interface CartItem {
   id: string;
@@ -267,16 +290,7 @@ export default function LidlShop() {
                     <div key={product.id} className="bg-white rounded-2xl p-3 shadow-sm border border-gray-100 flex flex-col">
                       {/* Product image */}
                       <div className="w-full h-28 bg-gray-50 rounded-xl mb-3 flex items-center justify-center overflow-hidden">
-                        {product.image
-                          ? <img src={product.image} alt={product.name} className="w-full h-full object-contain p-2"
-                              onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }} />
-                          : (
-                            <div className="flex flex-col items-center gap-1">
-                              <span className="text-3xl">{CATEGORY_ICONS[product.category] ?? "🛒"}</span>
-                              {product.brand && <span className="text-xs font-bold text-gray-400">{product.brand}</span>}
-                            </div>
-                          )
-                        }
+                        <ProductImage src={product.image} name={product.name} category={product.category} />
                       </div>
                       {/* Product info */}
                       <div className="flex-1">
