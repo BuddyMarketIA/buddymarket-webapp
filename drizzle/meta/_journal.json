@@ -43,6 +43,13 @@
       "when": 1775421586577,
       "tag": "0005_silky_bloodscream",
       "breakpoints": true
+    },
+    {
+      "idx": 6,
+      "version": "7",
+      "when": 1775464904999,
+      "tag": "0006_loose_doorman",
+      "breakpoints": true
     }
   ]
 }

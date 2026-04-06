@@ -1,10 +1,10 @@
-import { useState } from "react";
+import { useState, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
 import AppLayout from "@/components/AppLayout";
 
-type Tab = "/app/profile" | "plans" | "/app/menus";
+type Tab = "/app/profile" | "plans" | "/app/menus" | "blog";
 
 const CATEGORIES = [
   { value: "perdida_peso", label: "Pérdida de peso" },
@@ -322,13 +322,13 @@ export default function BuddyExpertDashboard() {
 
         {/* Tabs */}
         <div className="flex gap-1 mb-6 bg-gray-100 rounded-2xl p-1">
-          {(["/app/profile", "plans", "/app/menus"] as Tab[]).map((tab) => (
+          {(["/app/profile", "plans", "/app/menus", "blog"] as Tab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`flex-1 py-2.5 rounded-xl text-xs font-bold transition-all ${activeTab === tab ? "bg-white text-orange-600 shadow-sm" : "text-gray-500"}`}
             >
-              {tab === "/app/profile" ? "👤 Perfil" : tab === "plans" ? "📊 Planes" : "📋 Menús"}
+              {tab === "/app/profile" ? "👤 Perfil" : tab === "plans" ? "📊 Planes" : tab === "/app/menus" ? "📋 Menús" : "✍️ Blog"}
             </button>
           ))}
         </div>
@@ -830,7 +830,245 @@ export default function BuddyExpertDashboard() {
             )}
           </div>
         )}
+        {/* Blog Tab */}
+        {activeTab === "blog" && (
+          <BlogTab expertProfile={myProfile} />
+        )}
       </div>
     </AppLayout>
+  );
+}
+
+// ─── Blog Tab Component ──────────────────────────────────────────────────────
+const BLOG_CATEGORIES = ["Nutrición", "Recetas", "Salud", "Bienestar", "Guías", "Ciencia", "Deporte"];
+
+function BlogTab({ expertProfile }: { expertProfile: any }) {
+  const [showForm, setShowForm] = useState(false);
+  const [editingPost, setEditingPost] = useState<any | null>(null);
+  const [form, setForm] = useState({
+    title: "",
+    excerpt: "",
+    content: "",
+    coverImageUrl: "",
+    category: "Nutrición",
+    tags: "",
+    readTimeMinutes: 5,
+  });
+  const fileRef = useRef<HTMLInputElement>(null);
+
+  const { data: myPosts, refetch } = trpc.blog.myPosts.useQuery({ status: "all" }, { enabled: !!expertProfile });
+
+  const createMutation = trpc.blog.create.useMutation({
+    onSuccess: () => { toast.success("Artículo guardado como borrador"); setShowForm(false); resetForm(); refetch(); },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const updateMutation = trpc.blog.update.useMutation({
+    onSuccess: () => { toast.success("Artículo actualizado"); setShowForm(false); setEditingPost(null); refetch(); },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const publishMutation = trpc.blog.publish.useMutation({
+    onSuccess: (post) => { toast.success(post.status === "published" ? "✅ Artículo publicado" : "Artículo vuelto a borrador"); refetch(); },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const deleteMutation = trpc.blog.delete.useMutation({
+    onSuccess: () => { toast.success("Artículo eliminado"); refetch(); },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const uploadCoverMutation = trpc.blog.uploadCover.useMutation({
+    onSuccess: ({ url }) => { setForm((f) => ({ ...f, coverImageUrl: url })); toast.success("Imagen subida"); },
+    onError: (e) => toast.error(e.message),
+  });
+
+  function resetForm() {
+    setForm({ title: "", excerpt: "", content: "", coverImageUrl: "", category: "Nutrición", tags: "", readTimeMinutes: 5 });
+  }
+
+  function openEdit(post: any) {
+    setForm({
+      title: post.title ?? "",
+      excerpt: post.excerpt ?? "",
+      content: post.content ?? "",
+      coverImageUrl: post.coverImageUrl ?? "",
+      category: post.category ?? "Nutrición",
+      tags: post.tags ?? "",
+      readTimeMinutes: post.readTimeMinutes ?? 5,
+    });
+    setEditingPost(post);
+    setShowForm(true);
+  }
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    const payload = {
+      title: form.title,
+      excerpt: form.excerpt || undefined,
+      content: form.content,
+      coverImageUrl: form.coverImageUrl || undefined,
+      category: form.category,
+      tags: form.tags || undefined,
+      readTimeMinutes: form.readTimeMinutes,
+    };
+    if (editingPost) {
+      updateMutation.mutate({ id: editingPost.id, ...payload });
+    } else {
+      createMutation.mutate(payload);
+    }
+  }
+
+  function handleFileChange(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { toast.error("La imagen no puede superar 5 MB"); return; }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = (reader.result as string).split(",")[1];
+      uploadCoverMutation.mutate({ base64, mimeType: file.type });
+    };
+    reader.readAsDataURL(file);
+  }
+
+  if (!expertProfile) {
+    return (
+      <div className="bg-orange-50 border border-orange-200 rounded-2xl p-5 text-sm text-orange-800 text-center">
+        Primero debes crear tu perfil de experto en la pestaña "👤 Perfil".
+      </div>
+    );
+  }
+
+  if (showForm) {
+    return (
+      <form onSubmit={handleSubmit} className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-4">
+        <div className="flex items-center justify-between mb-1">
+          <h2 className="text-base font-black text-gray-900">{editingPost ? "Editar artículo" : "Nuevo artículo"}</h2>
+          <button type="button" onClick={() => { setShowForm(false); setEditingPost(null); resetForm(); }} className="text-gray-400 hover:text-gray-600 text-sm">✕ Cancelar</button>
+        </div>
+
+        {/* Cover image */}
+        <div>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">Imagen de portada</label>
+          {form.coverImageUrl ? (
+            <div className="relative">
+              <img src={form.coverImageUrl} alt="Portada" className="w-full h-40 object-cover rounded-2xl" />
+              <button type="button" onClick={() => setForm((f) => ({ ...f, coverImageUrl: "" }))} className="absolute top-2 right-2 bg-black/50 text-white rounded-full w-7 h-7 flex items-center justify-center text-xs hover:bg-black/70">✕</button>
+            </div>
+          ) : (
+            <button type="button" onClick={() => fileRef.current?.click()} className="w-full h-32 border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center gap-2 text-gray-400 hover:border-orange-300 hover:text-orange-400 transition-colors">
+              {uploadCoverMutation.isPending ? <div className="w-5 h-5 border-2 border-orange-400 border-t-transparent rounded-full animate-spin" /> : <>🖼️<span className="text-xs">Subir imagen de portada</span></>}
+            </button>
+          )}
+          <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
+        </div>
+
+        {/* Title */}
+        <div>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">Título *</label>
+          <input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} required minLength={5} maxLength={256} placeholder="Escribe un título atractivo..." className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300" />
+        </div>
+
+        {/* Excerpt */}
+        <div>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">Resumen (opcional)</label>
+          <textarea value={form.excerpt} onChange={(e) => setForm((f) => ({ ...f, excerpt: e.target.value }))} maxLength={500} rows={2} placeholder="Breve descripción del artículo (aparece en la lista del blog)..." className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 resize-none" />
+        </div>
+
+        {/* Content */}
+        <div>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">Contenido *</label>
+          <textarea value={form.content} onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))} required minLength={10} rows={12} placeholder="Escribe aquí el contenido completo del artículo. Puedes usar Markdown: **negrita**, *cursiva*, ## Títulos, - listas..." className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 resize-y font-mono" />
+          <p className="text-xs text-gray-400 mt-1">Soporta formato Markdown básico</p>
+        </div>
+
+        {/* Category + Read time */}
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Categoría</label>
+            <select value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))} className="w-full px-3 py-2.5 rounded-2xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 bg-white">
+              {BLOG_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Tiempo de lectura (min)</label>
+            <input type="number" min={1} max={60} value={form.readTimeMinutes} onChange={(e) => setForm((f) => ({ ...f, readTimeMinutes: parseInt(e.target.value) || 5 }))} className="w-full px-3 py-2.5 rounded-2xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300" />
+          </div>
+        </div>
+
+        {/* Tags */}
+        <div>
+          <label className="block text-xs font-semibold text-gray-600 mb-1.5">Etiquetas (separadas por coma)</label>
+          <input value={form.tags} onChange={(e) => setForm((f) => ({ ...f, tags: e.target.value }))} placeholder="nutrición, proteinas, dieta..." className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300" />
+        </div>
+
+        <div className="flex gap-3 pt-2">
+          <button type="submit" disabled={createMutation.isPending || updateMutation.isPending} className="flex-1 flex items-center justify-center gap-2 py-3 rounded-2xl text-sm font-bold text-white transition-all" style={{ background: "linear-gradient(135deg, #F97316, #FB923C)" }}>
+            {(createMutation.isPending || updateMutation.isPending) ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Guardando...</> : editingPost ? "✓ Guardar cambios" : "💾 Guardar borrador"}
+          </button>
+        </div>
+        <p className="text-xs text-gray-400 text-center">* Este contenido no constituye recomendación profesional. Consulta a un profesional de la salud.</p>
+      </form>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h2 className="text-base font-black text-gray-900">✍️ Mis artículos</h2>
+        <button onClick={() => { resetForm(); setEditingPost(null); setShowForm(true); }} className="flex items-center gap-1.5 px-4 py-2 rounded-2xl text-sm font-bold text-white" style={{ background: "linear-gradient(135deg, #F97316, #FB923C)" }}>
+          + Nuevo artículo
+        </button>
+      </div>
+
+      {!myPosts || myPosts.length === 0 ? (
+        <div className="bg-gray-50 rounded-3xl p-8 text-center space-y-3">
+          <div className="text-4xl">📝</div>
+          <p className="text-sm font-semibold text-gray-700">Aún no has escrito ningún artículo</p>
+          <p className="text-xs text-gray-400">Comparte tu conocimiento con la comunidad BuddyMarket</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {myPosts.map((post) => (
+            <div key={post.id} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+              <div className="flex gap-3">
+                {post.coverImageUrl && (
+                  <img src={post.coverImageUrl} alt={post.title} className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
+                )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-start justify-between gap-2">
+                    <h3 className="text-sm font-bold text-gray-900 line-clamp-2">{post.title}</h3>
+                    <span className={`flex-shrink-0 text-xs px-2 py-0.5 rounded-full font-semibold ${
+                      post.status === "published" ? "bg-green-100 text-green-700" :
+                      post.status === "archived" ? "bg-gray-100 text-gray-500" :
+                      "bg-yellow-100 text-yellow-700"
+                    }`}>
+                      {post.status === "published" ? "✅ Publicado" : post.status === "archived" ? "Archivado" : "📝 Borrador"}
+                    </span>
+                  </div>
+                  <p className="text-xs text-gray-500 mt-1">{post.category} · {post.readTimeMinutes} min lectura</p>
+                  {post.publishedAt && (
+                    <p className="text-xs text-gray-400">{new Date(post.publishedAt).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}</p>
+                  )}
+                </div>
+              </div>
+              <div className="flex gap-2 mt-3">
+                <button onClick={() => openEdit(post)} className="flex-1 py-1.5 rounded-xl text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors">✏️ Editar</button>
+                <button
+                  onClick={() => publishMutation.mutate({ id: post.id, publish: post.status !== "published" })}
+                  disabled={publishMutation.isPending}
+                  className={`flex-1 py-1.5 rounded-xl text-xs font-semibold transition-colors ${
+                    post.status === "published" ? "bg-yellow-100 text-yellow-700 hover:bg-yellow-200" : "bg-green-100 text-green-700 hover:bg-green-200"
+                  }`}
+                >
+                  {post.status === "published" ? "⏸ Despublicar" : "🚀 Publicar"}
+                </button>
+                <button onClick={() => { if (confirm("¿Eliminar este artículo?")) deleteMutation.mutate({ id: post.id }); }} className="py-1.5 px-3 rounded-xl text-xs font-semibold bg-red-50 text-red-500 hover:bg-red-100 transition-colors">🗑️</button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }

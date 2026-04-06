@@ -7219,5 +7219,252 @@ Devuelve SOLO JSON válido con esta estructura exacta:
       };
     }),
   }),
+
+  // ---------------------------------------------------------------------------
+  // BLOG — Artículos escritos por BuddyExperts
+  // ---------------------------------------------------------------------------
+  blog: router({
+    // Listar posts publicados (público)
+    list: publicProcedure
+      .input(z.object({
+        category: z.string().optional(),
+        limit: z.number().min(1).max(50).default(20),
+        offset: z.number().min(0).default(0),
+      }))
+      .query(async ({ input }) => {
+        const { blogPosts, buddyExperts } = await import("../drizzle/schema.js");
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return { posts: [], total: 0 };
+        const { eq, desc, and, sql } = await import("drizzle-orm");
+        const conditions: any[] = [eq(blogPosts.status, "published")];
+        if (input.category && input.category !== "Todos") {
+          conditions.push(eq(blogPosts.category, input.category));
+        }
+        const posts = await drizzleDb
+          .select({
+            id: blogPosts.id,
+            title: blogPosts.title,
+            slug: blogPosts.slug,
+            excerpt: blogPosts.excerpt,
+            coverImageUrl: blogPosts.coverImageUrl,
+            category: blogPosts.category,
+            tags: blogPosts.tags,
+            readTimeMinutes: blogPosts.readTimeMinutes,
+            viewsCount: blogPosts.viewsCount,
+            likesCount: blogPosts.likesCount,
+            publishedAt: blogPosts.publishedAt,
+            expertId: blogPosts.expertId,
+            expertName: buddyExperts.displayName,
+            expertAvatar: buddyExperts.avatarUrl,
+            expertSpecialty: buddyExperts.specialty,
+            expertVerified: buddyExperts.verified,
+          })
+          .from(blogPosts)
+          .leftJoin(buddyExperts, eq(blogPosts.expertId, buddyExperts.id))
+          .where(and(...conditions))
+          .orderBy(desc(blogPosts.publishedAt))
+          .limit(input.limit)
+          .offset(input.offset);
+        const [{ total }] = await drizzleDb
+          .select({ total: sql<number>`COUNT(*)` })
+          .from(blogPosts)
+          .where(and(...conditions));
+        return { posts, total: Number(total) };
+      }),
+
+    // Ver un post por slug (público, incrementa vistas)
+    getBySlug: publicProcedure
+      .input(z.object({ slug: z.string() }))
+      .query(async ({ input }) => {
+        const { blogPosts, buddyExperts } = await import("../drizzle/schema.js");
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return null;
+        const { eq, sql } = await import("drizzle-orm");
+        const [post] = await drizzleDb
+          .select({
+            id: blogPosts.id,
+            title: blogPosts.title,
+            slug: blogPosts.slug,
+            excerpt: blogPosts.excerpt,
+            content: blogPosts.content,
+            coverImageUrl: blogPosts.coverImageUrl,
+            category: blogPosts.category,
+            tags: blogPosts.tags,
+            readTimeMinutes: blogPosts.readTimeMinutes,
+            viewsCount: blogPosts.viewsCount,
+            likesCount: blogPosts.likesCount,
+            publishedAt: blogPosts.publishedAt,
+            expertId: blogPosts.expertId,
+            expertName: buddyExperts.displayName,
+            expertAvatar: buddyExperts.avatarUrl,
+            expertSpecialty: buddyExperts.specialty,
+            expertVerified: buddyExperts.verified,
+            expertBio: buddyExperts.bio,
+          })
+          .from(blogPosts)
+          .leftJoin(buddyExperts, eq(blogPosts.expertId, buddyExperts.id))
+          .where(eq(blogPosts.slug, input.slug))
+          .limit(1);
+        if (!post) return null;
+        // Increment view count async
+        drizzleDb.update(blogPosts)
+          .set({ viewsCount: sql`${blogPosts.viewsCount} + 1` })
+          .where(eq(blogPosts.id, post.id)).catch(() => {});
+        return post;
+      }),
+
+    // Mis posts (BuddyExpert autenticado)
+    myPosts: protectedProcedure
+      .input(z.object({
+        status: z.enum(["draft", "published", "archived", "all"]).default("all"),
+      }))
+      .query(async ({ ctx, input }) => {
+        const { blogPosts, buddyExperts } = await import("../drizzle/schema.js");
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return [];
+        const { eq, desc, and } = await import("drizzle-orm");
+        const [expert] = await drizzleDb.select().from(buddyExperts)
+          .where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+        if (!expert) throw new TRPCError({ code: "FORBIDDEN", message: "Solo los BuddyExperts pueden acceder a esta sección" });
+        const conditions: any[] = [eq(blogPosts.expertId, expert.id)];
+        if (input.status !== "all") {
+          conditions.push(eq(blogPosts.status, input.status as "draft" | "published" | "archived"));
+        }
+        return drizzleDb.select().from(blogPosts)
+          .where(and(...conditions))
+          .orderBy(desc(blogPosts.updatedAt));
+      }),
+
+    // Crear borrador (BuddyExpert)
+    create: protectedProcedure
+      .input(z.object({
+        title: z.string().min(5).max(256),
+        excerpt: z.string().max(500).optional(),
+        content: z.string().min(10),
+        coverImageUrl: z.string().url().optional(),
+        category: z.string().default("Nutrición"),
+        tags: z.string().optional(),
+        readTimeMinutes: z.number().min(1).max(60).default(5),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { blogPosts, buddyExperts } = await import("../drizzle/schema.js");
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { eq } = await import("drizzle-orm");
+        const [expert] = await drizzleDb.select().from(buddyExperts)
+          .where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+        if (!expert) throw new TRPCError({ code: "FORBIDDEN", message: "Solo los BuddyExperts pueden escribir artículos" });
+        const baseSlug = input.title.toLowerCase()
+          .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+          .replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 200);
+        const slug = `${baseSlug}-${Date.now().toString(36)}`;
+        const [post] = await drizzleDb.insert(blogPosts).values({
+          expertId: expert.id,
+          title: input.title,
+          slug,
+          excerpt: input.excerpt,
+          content: input.content,
+          coverImageUrl: input.coverImageUrl,
+          category: input.category,
+          tags: input.tags,
+          readTimeMinutes: input.readTimeMinutes,
+          status: "draft",
+        }).returning();
+        return post;
+      }),
+
+    // Actualizar post (BuddyExpert, solo sus posts)
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        title: z.string().min(5).max(256).optional(),
+        excerpt: z.string().max(500).optional(),
+        content: z.string().min(10).optional(),
+        coverImageUrl: z.string().url().optional().nullable(),
+        category: z.string().optional(),
+        tags: z.string().optional(),
+        readTimeMinutes: z.number().min(1).max(60).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { blogPosts, buddyExperts } = await import("../drizzle/schema.js");
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { eq, and } = await import("drizzle-orm");
+        const [expert] = await drizzleDb.select().from(buddyExperts)
+          .where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+        if (!expert) throw new TRPCError({ code: "FORBIDDEN" });
+        const [post] = await drizzleDb.select().from(blogPosts)
+          .where(and(eq(blogPosts.id, input.id), eq(blogPosts.expertId, expert.id))).limit(1);
+        if (!post) throw new TRPCError({ code: "NOT_FOUND", message: "Artículo no encontrado" });
+        const { id, ...updates } = input;
+        const [updated] = await drizzleDb.update(blogPosts)
+          .set({ ...updates, updatedAt: new Date() })
+          .where(eq(blogPosts.id, id))
+          .returning();
+        return updated;
+      }),
+
+    // Publicar / despublicar post
+    publish: protectedProcedure
+      .input(z.object({ id: z.number(), publish: z.boolean() }))
+      .mutation(async ({ ctx, input }) => {
+        const { blogPosts, buddyExperts } = await import("../drizzle/schema.js");
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { eq, and } = await import("drizzle-orm");
+        const [expert] = await drizzleDb.select().from(buddyExperts)
+          .where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+        if (!expert) throw new TRPCError({ code: "FORBIDDEN" });
+        const [post] = await drizzleDb.select().from(blogPosts)
+          .where(and(eq(blogPosts.id, input.id), eq(blogPosts.expertId, expert.id))).limit(1);
+        if (!post) throw new TRPCError({ code: "NOT_FOUND" });
+        const [updated] = await drizzleDb.update(blogPosts)
+          .set({
+            status: input.publish ? "published" : "draft",
+            publishedAt: input.publish ? new Date() : null,
+            updatedAt: new Date(),
+          })
+          .where(eq(blogPosts.id, input.id))
+          .returning();
+        return updated;
+      }),
+
+    // Eliminar post
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const { blogPosts, buddyExperts } = await import("../drizzle/schema.js");
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { eq, and } = await import("drizzle-orm");
+        const [expert] = await drizzleDb.select().from(buddyExperts)
+          .where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+        if (!expert) throw new TRPCError({ code: "FORBIDDEN" });
+        await drizzleDb.delete(blogPosts)
+          .where(and(eq(blogPosts.id, input.id), eq(blogPosts.expertId, expert.id)));
+        return { success: true };
+      }),
+
+    // Subir imagen de portada
+    uploadCover: protectedProcedure
+      .input(z.object({
+        base64: z.string(),
+        mimeType: z.string().default("image/jpeg"),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { buddyExperts } = await import("../drizzle/schema.js");
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { eq } = await import("drizzle-orm");
+        const [expert] = await drizzleDb.select().from(buddyExperts)
+          .where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+        if (!expert) throw new TRPCError({ code: "FORBIDDEN" });
+        const buffer = Buffer.from(input.base64, "base64");
+        const ext = input.mimeType.split("/")[1] || "jpg";
+        const key = `blog-covers/${expert.id}-${Date.now()}.${ext}`;
+        const { url } = await storagePut(key, buffer, input.mimeType);
+        return { url };
+      }),
+  }),
 });
 export type AppRouter = typeof appRouter;

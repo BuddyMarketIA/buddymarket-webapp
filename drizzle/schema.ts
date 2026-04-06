@@ -1467,3 +1467,33 @@ export const otpTokens = pgTable("otp_tokens", {
 }));
 export type OtpToken = typeof otpTokens.$inferSelect;
 export type InsertOtpToken = typeof otpTokens.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BLOG POSTS — Artículos escritos por BuddyExperts
+// ─────────────────────────────────────────────────────────────────────────────
+export const blogPostStatusEnum = pgEnum("blogPostStatus", ["draft", "published", "archived"]);
+
+export const blogPosts = pgTable("blog_posts", {
+  id: serial("id").primaryKey(),
+  expertId: integer("expertId").notNull(),
+  title: varchar("title", { length: 256 }).notNull(),
+  slug: varchar("slug", { length: 256 }).notNull().unique(),
+  excerpt: text("excerpt"),
+  content: text("content").notNull(),
+  coverImageUrl: text("coverImageUrl"),
+  category: varchar("category", { length: 64 }).default("Nutrición"),
+  tags: text("tags"),
+  status: blogPostStatusEnum("status").default("draft").notNull(),
+  readTimeMinutes: integer("readTimeMinutes").default(5),
+  viewsCount: integer("viewsCount").default(0).notNull(),
+  likesCount: integer("likesCount").default(0).notNull(),
+  publishedAt: timestamp("publishedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  expertIdx: index("blog_posts_expert_idx").on(t.expertId),
+  statusIdx: index("blog_posts_status_idx").on(t.status),
+  slugIdx: index("blog_posts_slug_idx").on(t.slug),
+}));
+export type BlogPost = typeof blogPosts.$inferSelect;
+export type InsertBlogPost = typeof blogPosts.$inferInsert;
