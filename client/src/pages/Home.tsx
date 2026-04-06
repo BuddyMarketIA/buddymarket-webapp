@@ -1,6 +1,7 @@
 import { useAuth } from "@/_core/hooks/useAuth";
 import { useEffect } from "react";
 import { useLocation, Link } from "wouter";
+import LanguageSelector from "@/components/LanguageSelector";
 
 const FEATURES = [
   { emoji: "🥗", title: "Recetas inteligentes", desc: "Miles de recetas con información nutricional completa y filtros avanzados por objetivo." },
@@ -79,6 +80,7 @@ export default function Home() {
           </div>
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <LanguageSelector variant="compact" />
           <a href="https://appbuddymarket.com" style={{ padding: "10px 20px", borderRadius: "12px", background: "linear-gradient(135deg, #F97316, #FB923C)", color: "white", fontSize: "14px", fontWeight: 700, textDecoration: "none", boxShadow: "0 4px 12px rgba(249,115,22,0.30)" }}>
             Entrar →
           </a>
@@ -234,6 +236,9 @@ export default function Home() {
         <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "8px", marginBottom: "8px" }}>
           <div style={{ width: "24px", height: "24px", borderRadius: "8px", background: "#F97316", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px" }}>🛒</div>
           <span style={{ fontSize: "14px", fontWeight: 800, color: "white" }}>BuddyMarket</span>
+        </div>
+        <div style={{ display: "flex", justifyContent: "center", marginBottom: "12px" }}>
+          <LanguageSelector variant="footer" className="text-white/50 hover:text-white/80" />
         </div>
         <p style={{ margin: 0, fontSize: "14px", color: "rgba(255,255,255,0.3)", lineHeight: 1.5 }}>
           © 2026 BuddyMarket. El contenido no constituye asesoramiento médico o nutricional profesional. Consulta a un profesional.

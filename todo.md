@@ -1493,3 +1493,6 @@
 - [ ] i18n: integrar traducciones en componentes principales
 - [ ] i18n: selector de idioma en navbar y ajustes de usuario
 - [ ] i18n: persistir preferencia de idioma en BD
+- [ ] Detección automática del idioma del navegador en primera visita
+- [ ] Selector de idioma en sección dedicada del sidebar
+- [ ] Selector de idioma en la landing page (navbar y/o footer)

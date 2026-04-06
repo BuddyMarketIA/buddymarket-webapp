@@ -213,9 +213,14 @@ function DashboardLayoutContent({
           </SidebarContent>
 
           <SidebarFooter className="p-3">
-            {!isCollapsed && (
-              <div className="px-1 pb-2">
+            {!isCollapsed ? (
+              <div className="px-1 pb-3 border-t pt-3">
+                <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-2 px-1">Idioma / Language</p>
                 <LanguageSelector variant="full" className="w-full justify-start" />
+              </div>
+            ) : (
+              <div className="flex justify-center pb-2 border-t pt-2">
+                <LanguageSelector variant="icon" />
               </div>
             )}
             <DropdownMenu>

@@ -13,7 +13,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 
 interface LanguageSelectorProps {
-  variant?: "icon" | "full";
+  variant?: "icon" | "full" | "compact" | "footer";
   className?: string;
 }
 
@@ -60,6 +60,16 @@ export default function LanguageSelector({
               <span className="text-sm font-medium">
                 {currentLang.flag} {currentLang.name}
               </span>
+            </>
+          ) : variant === "compact" ? (
+            <>
+              <span className="text-base">{currentLang.flag}</span>
+              <span className="text-sm font-medium hidden sm:inline">{currentLang.name}</span>
+            </>
+          ) : variant === "footer" ? (
+            <>
+              <Globe className="h-3.5 w-3.5 opacity-60" />
+              <span className="text-xs opacity-70">{currentLang.flag} {currentLang.name}</span>
             </>
           ) : (
             <>
