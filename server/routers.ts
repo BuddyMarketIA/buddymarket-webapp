@@ -1905,7 +1905,7 @@ Devuelve SOLO JSON válido con esta estructura:
         const rows = await drizzleDb
           .select({
             total: count(),
-            purchased: sql<number>`SUM(CASE WHEN ${shoppingListItems.checked} = 1 THEN 1 ELSE 0 END)`,
+            purchased: sql<number>`SUM(CASE WHEN ${shoppingListItems.checked} = true THEN 1 ELSE 0 END)`,
           })
           .from(shoppingListItems)
           .where(eq(shoppingListItems.shoppingListId, list.id));
@@ -7324,7 +7324,7 @@ Devuelve SOLO JSON válido con esta estructura exacta:
         for (const menu of menus) {
           const [stats] = await drizzleDb.select({
             total: sql<number>`COUNT(*)`,
-            completed: sql<number>`SUM(CASE WHEN ${menuOrganizerDayParts.completed} = 1 THEN 1 ELSE 0 END)`,
+            completed: sql<number>`SUM(CASE WHEN ${menuOrganizerDayParts.completed} = true THEN 1 ELSE 0 END)`,
           }).from(menuOrganizerDayParts).where(eq(menuOrganizerDayParts.menuOrganizerId, menu.id));
           const total = Number(stats?.total ?? 0);
           const completed = Number(stats?.completed ?? 0);
