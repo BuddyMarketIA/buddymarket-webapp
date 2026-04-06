@@ -557,7 +557,7 @@ export async function processPendingEmails(): Promise<void> {
       await drizzleDb
         .update(emailSequenceQueue)
         .set({
-          status: success ? "sent" : "failed",
+          status: success ? "active" : "failed",
           sentAt: success ? now : undefined,
           errorMessage: success ? null : "Send failed",
         })

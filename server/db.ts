@@ -259,8 +259,8 @@ export async function getDayPartIdByName(name: string): Promise<number> {
 export async function createMenuDayPart(menuOrganizerId: number, dayPartId: number, date: string): Promise<number> {
   const db = await getDb();
   if (!db) return 0;
-  const result = await db.insert(menuOrganizerDayParts).values({ menuOrganizerId, dayPartId, date: new Date(date) } as any);
-  return result[0]?.id ?? 0;
+  const [result] = await db.insert(menuOrganizerDayParts).values({ menuOrganizerId, dayPartId, date: new Date(date) } as any).returning({ id: menuOrganizerDayParts.id });
+  return result?.id ?? 0;
 }
 
 export async function getAllStorageLocations() {
@@ -352,8 +352,8 @@ export async function getIngredientById(id: number) {
 export async function createIngredient(data: InsertIngredient) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(ingredients).values(data);
-  return result[0];
+  const [result] = await db.insert(ingredients).values(data).returning({ id: ingredients.id });
+  return result;
 }
 
 export async function updateIngredient(id: number, data: Partial<InsertIngredient>) {
@@ -553,7 +553,7 @@ export async function getRecipeAllergies(recipeId: number) {
 export async function createRecipe(data: InsertRecipe) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(recipes).values(data).returning({ id: recipes.id }).returning({ id: recipes.id });
+  const result = await db.insert(recipes).values(data).returning({ id: recipes.id });
   return { id: result[0]?.id ?? 0 };
 }
 
@@ -679,7 +679,7 @@ export async function getMenuOrganizerById(id: number) {
 export async function createMenuOrganizer(data: InsertMenuOrganizer) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(menuOrganizers).values(data).returning({ id: menuOrganizers.id }).returning({ id: menuOrganizers.id });
+  const result = await db.insert(menuOrganizers).values(data).returning({ id: menuOrganizers.id });
   return { id: result[0]?.id ?? 0 };
 }
 
@@ -756,7 +756,7 @@ export async function getShoppingListById(id: number) {
 export async function createShoppingList(data: InsertShoppingList) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(shoppingLists).values(data).returning({ id: shoppingLists.id }).returning({ id: shoppingLists.id });
+  const result = await db.insert(shoppingLists).values(data).returning({ id: shoppingLists.id });
   return { id: result[0]?.id ?? 0 };
 }
 
@@ -785,7 +785,7 @@ export async function getShoppingListItems(shoppingListId: number) {
 export async function addShoppingListItem(data: InsertShoppingListItem) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(shoppingListItems).values(data).returning({ id: shoppingListItems.id }).returning({ id: shoppingListItems.id });
+  const result = await db.insert(shoppingListItems).values(data).returning({ id: shoppingListItems.id });
   return { id: result[0]?.id ?? 0 };
 }
 
@@ -835,7 +835,7 @@ export async function getInventoryItems(userId: number) {
 export async function addInventoryItem(data: InsertUserInventoryItem) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(userInventoryItems).values(data).returning({ id: userInventoryItems.id }).returning({ id: userInventoryItems.id });
+  const result = await db.insert(userInventoryItems).values(data).returning({ id: userInventoryItems.id });
   return { id: result[0]?.id ?? 0 };
 }
 
@@ -877,7 +877,7 @@ export async function getMealLogs(userId: number, startDate?: string, endDate?: 
 export async function addMealLog(data: InsertMealLog) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(mealLogs).values(data).returning({ id: mealLogs.id }).returning({ id: mealLogs.id });
+  const result = await db.insert(mealLogs).values(data).returning({ id: mealLogs.id });
   return { id: result[0]?.id ?? 0 };
 }
 
@@ -952,7 +952,7 @@ export async function getHealthMetrics(userId: number, limit = 30) {
 export async function addHealthMetric(data: InsertUserHealthMetric) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(userHealthMetrics).values(data).returning({ id: userHealthMetrics.id }).returning({ id: userHealthMetrics.id });
+  const result = await db.insert(userHealthMetrics).values(data).returning({ id: userHealthMetrics.id });
   return { id: result[0]?.id ?? 0 };
 }
 
@@ -990,7 +990,7 @@ export async function upsertUserSubscription(userId: number, data: Partial<typeo
 export async function createAllergy(data: typeof allergies.$inferInsert) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(allergies).values(data).returning({ id: allergies.id }).returning({ id: allergies.id });
+  const result = await db.insert(allergies).values(data).returning({ id: allergies.id });
   return { id: result[0]?.id ?? 0 };
 }
 
@@ -1009,7 +1009,7 @@ export async function deleteAllergy(id: number) {
 export async function createDietRestriction(data: typeof dietRestrictions.$inferInsert) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(dietRestrictions).values(data).returning({ id: dietRestrictions.id }).returning({ id: dietRestrictions.id });
+  const result = await db.insert(dietRestrictions).values(data).returning({ id: dietRestrictions.id });
   return { id: result[0]?.id ?? 0 };
 }
 
@@ -1022,7 +1022,7 @@ export async function updateDietRestriction(id: number, data: Partial<typeof die
 export async function createFoodCategory(data: typeof foodCategories.$inferInsert) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(foodCategories).values(data).returning({ id: foodCategories.id }).returning({ id: foodCategories.id });
+  const result = await db.insert(foodCategories).values(data).returning({ id: foodCategories.id });
   return { id: result[0]?.id ?? 0 };
 }
 
@@ -1035,15 +1035,15 @@ export async function updateFoodCategory(id: number, data: Partial<typeof foodCa
 export async function createMeasure(data: typeof measures.$inferInsert) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(measures).values(data).returning({ id: measures.id }).returning({ id: measures.id });
+  const result = await db.insert(measures).values(data).returning({ id: measures.id });
   return { id: result[0]?.id ?? 0 };
 }
 
 export async function createIngredientWithAllergies(data: InsertIngredient, allergyIds: number[]) {
   const db = await getDb();
   if (!db) return null;
-  const result = await db.insert(ingredients).values(data);
-  const ingredientId = result[0]?.id ?? 0;
+  const [ingResult] = await db.insert(ingredients).values(data).returning({ id: ingredients.id });
+  const ingredientId = ingResult?.id ?? 0;
   if (allergyIds.length > 0) {
     await db.insert(ingredientAllergies).values(allergyIds.map((allergyId) => ({ ingredientId, allergyId })));
   }
@@ -1322,11 +1322,11 @@ export async function copyMenuForUser(
     isPublic: false,
     type: "weekly",
     dailyMealsCount: sourceMenu.dailyMealsCount ?? 5,
-    startDate: startDate,
-    endDate: endDate,
+    startDate: startDate instanceof Date ? startDate.toISOString().split("T")[0] : startDate,
+    endDate: endDate instanceof Date ? endDate.toISOString().split("T")[0] : endDate,
   };
-  const [newMenuResult] = await db.insert(menuOrganizers).values(newMenuInsert);
-  const newMenuId = newMenuResult[0]?.id as number;
+  const [newMenuResult] = await db.insert(menuOrganizers).values(newMenuInsert).returning({ id: menuOrganizers.id });
+  const newMenuId = newMenuResult?.id ?? 0;
 
   // Copy day parts and their recipes
   const sourceDayParts = await db
@@ -1345,8 +1345,8 @@ export async function copyMenuForUser(
       completed: false,
       createdAt: new Date(),
       updatedAt: new Date(),
-    });
-    const newDpId = newDpResult[0]?.id as number;
+    }).returning({ id: menuOrganizerDayParts.id });
+    const newDpId = newDpResult?.id ?? 0;
 
     const sourceRecipes = await db
       .select()
@@ -1508,8 +1508,8 @@ export async function generateShoppingListFromMenu(
     persons,
     createdAt: new Date(),
     updatedAt: new Date(),
-  });
-  const newListId = newListResult[0]?.id as number;
+  }).returning({ id: shoppingLists.id });
+  const newListId = newListResult?.id ?? 0;
 
   // Insert items with commercial unit normalization
   const { normalizeToCommercialUnit } = await import("../shared/supermarketUnits");
@@ -1722,7 +1722,7 @@ export async function getMealTypesLoggedToday(userId: number): Promise<number[]>
   const rows = await db
     .select({ dayPartId: mealLogs.dayPartId })
     .from(mealLogs)
-    .where(and(eq(mealLogs.userId, userId), sql`DATE(${mealLogs.logDate}) = ${today}`));
+    .where(and(eq(mealLogs.userId, userId), sql`${mealLogs.logDate}::date = ${today}::date`));
   const ids = rows.map((r) => r.dayPartId).filter((id): id is number => id !== null && id !== undefined);
   return Array.from(new Set(ids));
 }
@@ -1765,8 +1765,8 @@ export async function getMealStreak(userId: number): Promise<number> {
 export async function createRoleRequest(data: InsertRoleRequest): Promise<number> {
   const db = await getDb();
   if (!db) throw new Error("DB unavailable");
-  const [result] = await db.insert(roleRequests).values(data);
-  return result[0]?.id as number;
+  const [result] = await db.insert(roleRequests).values(data).returning({ id: roleRequests.id });
+  return result?.id ?? 0;
 }
 
 export async function getRoleRequestByUserAndType(userId: number, roleType: "buddymaker" | "buddyexpert"): Promise<RoleRequest | undefined> {

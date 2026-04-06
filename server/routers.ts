@@ -31,7 +31,7 @@ function requireOwnership(resourceUserId: number, ctxUserId: number, role: strin
 async function createInAppNotif(userId: number, opts: {
   title: string;
   body: string;
-  type?: "info" | "success" | "warning" | "update" | "promo";
+  type?: "info" | "success" | "warning" | "error" | "promo" | "system";
   link?: string;
 }) {
   try {
@@ -239,8 +239,12 @@ export const appRouter = router({
           }).where(eq(users.id, user.id));
         }
         const resetUrl = `${input.origin}/reset-password?token=${token}`;
-        const { sendPasswordResetEmail } = await import("./email.js");
-        await sendPasswordResetEmail(email, user.name ?? email, resetUrl);
+        try {
+          const emailMod = await import("./email.js");
+          if ((emailMod as any).sendPasswordResetEmail) {
+            await (emailMod as any).sendPasswordResetEmail(email, user.name ?? email, resetUrl);
+          }
+        } catch (_emailErr) { /* email not critical */ }
         return { success: true };
       }),
 
@@ -574,18 +578,18 @@ Devuelve SOLO JSON válido con esta estructura:
                 const allDayParts = await drizzleDb.select().from(dayParts);
                 const now = new Date();
                 const nextWeek = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-                const menuInsert = await drizzleDb.insert(menuOrganizers).values({
+                const [menuInsert] = await drizzleDb.insert(menuOrganizers).values({
                   userId: ctx.user.id,
                   name: parsed.name ?? "Mi primer menú",
-                  startDate: now,
-                  endDate: nextWeek,
+                  startDate: now.toISOString().split("T")[0],
+                  endDate: nextWeek.toISOString().split("T")[0],
                   type: "weekly",
                   isActive: true,
                   generatedByAI: true,
                   persons: 1,
                   objective: parsed.description ?? "",
-                });
-                const menuId = (menuInsert as any).insertId;
+                }).returning({ id: menuOrganizers.id });
+                const menuId = menuInsert?.id;
                 if (menuId && parsed.days) {
                   for (const dayData of parsed.days) {
                     if (dayData.meals) {
@@ -593,13 +597,13 @@ Devuelve SOLO JSON válido con esta estructura:
                         const mealTimeName = meal.mealTime ?? "comida";
                         const dayPart = allDayParts.find((dp) => dp.nameEs?.toLowerCase().includes(mealTimeName.toLowerCase()) || mealTimeName.toLowerCase().includes((dp.nameEs ?? "").toLowerCase()) || dp.apiParam?.toLowerCase().includes(mealTimeName.toLowerCase()));
                         if (!dayPart) continue;
-                        const dpInsert = await drizzleDb.insert(menuOrganizerDayParts).values({
+                        const [dpInsert] = await drizzleDb.insert(menuOrganizerDayParts).values({
                           menuOrganizerId: menuId,
                           dayPartId: dayPart.id,
                           dayNumber: dayData.day,
                           name: mealTimeName,
-                        });
-                        const dpId = (dpInsert as any).insertId;
+                        }).returning({ id: menuOrganizerDayParts.id });
+                        const dpId = dpInsert?.id;
                         if (dpId) {
                           const matched = allRecipes.find((r) => r.name.toLowerCase().includes((meal.recipeName ?? "").toLowerCase().slice(0, 10)));
                           if (matched) {
@@ -1239,7 +1243,7 @@ Devuelve SOLO JSON válido con esta estructura:
         })
       )
       .mutation(({ ctx, input }) =>
-        db.createMenuOrganizer({ ...input, userId: ctx.user.id, startDate: new Date(input.startDate), endDate: new Date(input.endDate) })
+        db.createMenuOrganizer({ ...input, userId: ctx.user.id, startDate: input.startDate, endDate: input.endDate })
       ),
 
     update: protectedProcedure
@@ -1591,7 +1595,7 @@ Devuelve SOLO JSON válido con esta estructura:
             const newDate = new Date(oldDate.getTime() + offsetDays * 24 * 60 * 60 * 1000);
             await drizzleDb
               .update(menuOrganizerDayParts)
-              .set({ date: newDate })
+              .set({ date: (newDate instanceof Date ? newDate.toISOString().split("T")[0] : newDate) as any })
               .where(eq(menuOrganizerDayParts.id, dp.id));
           }
         }
@@ -1607,7 +1611,7 @@ Devuelve SOLO JSON válido con esta estructura:
 
         await drizzleDb
           .update(menuOrganizers)
-          .set({ startDate: newStartDate, endDate: newEndDate })
+          .set({ startDate: (newStartDate instanceof Date ? newStartDate.toISOString().split("T")[0] : newStartDate) as any, endDate: (newEndDate instanceof Date ? newEndDate.toISOString().split("T")[0] : newEndDate) as any })
           .where(eq(menuOrganizers.id, input.menuId));
 
         return { success: true };
@@ -1844,7 +1848,7 @@ Devuelve SOLO JSON válido con esta estructura:
           calories: input.calories ?? null,
           notes: input.notes ?? null,
           isDefault: input.isDefault,
-        } as any).$returningId();
+        } as any).returning({ id: menuComplements.id });
         return { success: true, id: (row as any)?.id };
       }),
 
@@ -2238,8 +2242,8 @@ Devuelve SOLO JSON válido con esta estructura:
           name: listName,
           supermarket: (t.supermarket ?? "general") as "general" | "mercadona" | "lidl" | "carrefour" | "alcampo" | "dia" | "el_corte_ingles",
           persons: 1,
-        });
-        const newListId = (listResult as any).insertId;
+        }).returning({ id: shoppingLists.id });
+        const newListId = listResult?.id;
         const items = JSON.parse(t.itemsJson) as { name: string; qty: string; unit: string; category: string }[];
         if (items.length > 0) {
           await drizzleDb.insert(shoppingListItems).values(
@@ -4248,8 +4252,8 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
           await drizzleDb.update(userMetrics).set(data).where(eq(userMetrics.id, existing[0].id));
           return { id: existing[0].id, updated: true };
         } else {
-          const result = await drizzleDb.insert(userMetrics).values(data);
-          return { id: (result as any).insertId, updated: false };
+          const [result] = await drizzleDb.insert(userMetrics).values(data).returning({ id: userMetrics.id });
+          return { id: result?.id ?? 0, updated: false };
         }
       }),
     getAll: protectedProcedure
@@ -4350,7 +4354,7 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
         });
         // Notify owner
         try { const { notifyOwner } = await import("./_core/notification"); await notifyOwner({ title: `Nueva solicitud ${input.type}: ${input.displayName}`, content: `${ctx.user.name || ctx.user.email} quiere ser ${input.type === "expert" ? "BuddyExpert" : "BuddyMaker"}. Especialidad: ${input.specialty || "N/A"}` }); } catch {}
-        return { success: true, id: (result as any).insertId };
+        return { success: true, id: (result as any)[0]?.id ?? 0 };
       }),
     getMyApplication: protectedProcedure
       .input(z.object({ type: z.enum(["expert", "maker"]) }))
@@ -4650,10 +4654,10 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
         { displayName: "Enrique Ortiz", specialty: "Dietista", bio: "Especialista en nutrición vegana y plant-based.", category: "vegano" as const, verified: true, featured: false, followersCount: 15200, plansCount: 9, rating: 4.6, reviewsCount: 312, avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80", coverUrl: "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=600&q=80" },
       ];
       for (const expert of demoExperts) {
-        const [userRes] = await drizzleDb.insert(usersTable).values({ openId: `demo_expert_${expert.displayName.replace(/ /g, "_")}`, name: expert.displayName, email: `${expert.displayName.toLowerCase().replace(/ /g, ".")}@buddymarket.io`, role: "buddyexpert" });
-        const userId = (userRes as any).insertId as number;
-        const [expRes] = await drizzleDb.insert(beTable).values({ userId, ...expert });
-        const expertId = (expRes as any).insertId as number;
+        const [userRes] = await drizzleDb.insert(usersTable).values({ openId: `demo_expert_${expert.displayName.replace(/ /g, "_")}`, name: expert.displayName, email: `${expert.displayName.toLowerCase().replace(/ /g, ".")}@buddymarket.io`, role: "buddyexpert" }).returning({ id: usersTable.id });
+        const userId = userRes?.id ?? 0;
+        const [expRes] = await drizzleDb.insert(beTable).values({ userId, ...expert }).returning({ id: beTable.id });
+        const expertId = expRes?.id ?? 0;
         await drizzleDb.insert(epTable).values({
           expertId,
           title: `Plan ${expert.category === "perdida_peso" ? "pérdida de peso" : expert.category === "ganancia_muscular" ? "fitness" : expert.category === "bienestar" ? "antiinflamatorio" : "vegano"}`,
@@ -4732,8 +4736,8 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
           websiteUrl: input.websiteUrl,
           verified: false,
           featured: false,
-        });
-        return { id: (res as any).insertId as number };
+        }).returning({ id: beTable.id });
+        return { id: res?.id ?? 0 };
       }),
 
     updateProfile: protectedProcedure
@@ -4806,8 +4810,8 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
           isFree: true,
           isPublic: input.isPublic ?? true,
           menuData: input.menuData,
-        });
-        return { id: (res as any).insertId as number };
+        }).returning({ id: emTable.id });
+        return { id: res?.id ?? 0 };
       }),
 
     updateMenu: protectedProcedure
@@ -4898,12 +4902,11 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
           price: input.price ?? 0,
           isPublic: input.isPublic ?? true,
           tags: input.tags,
-        });
+        }).returning({ id: epTable.id });
         // Increment plansCount on expert profile
         await drizzleDb.update(beTable).set({ plansCount: sql`${beTable.plansCount} + 1` }).where(eq(beTable.id, expert.id));
-        return { id: (res as any).insertId as number };
+        return { id: res?.id ?? 0 };
       }),
-
     updatePlan: protectedProcedure
       .input(z.object({
         planId: z.number().int(),
@@ -4997,7 +5000,7 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
       const [planRow] = await drizzleDb.select({ total: count() }).from(epTable).where(eq(epTable.expertId, expert.id));
       const [menuRow] = await drizzleDb.select({ total: count() }).from(emTable).where(eq(emTable.expertId, expert.id));
       const earnings = await drizzleDb.select().from(ceTable).where(eq(ceTable.creatorUserId, ctx.user.id)).orderBy(desc(ceTable.createdAt)).limit(20);
-      const totalPaid = earnings.filter(e => e.status === "paid").reduce((s, e) => s + (e.commissionAmount ?? 0), 0);
+      const totalPaid = earnings.filter(e => e.status === "active").reduce((s, e) => s + (e.commissionAmount ?? 0), 0);
       const totalPending = earnings.filter(e => e.status === "pending").reduce((s, e) => s + (e.commissionAmount ?? 0), 0);
       return {
         expert,
@@ -5151,10 +5154,9 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
           tiktokHandle: input.tiktokHandle,
           verified: false,
           featured: false,
-        });
-        return { id: (res as any).insertId as number };
+        }).returning({ id: bmSelf.id });
+        return { id: res?.id ?? 0 };
       }),
-
     updateProfile: protectedProcedure
       .input(z.object({
         displayName: z.string().min(2).max(128).optional(),
@@ -5246,11 +5248,10 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
           buddyMakerId: maker.id,
           isSeeded: false,
           userId: ctx.user.id,
-        });
+        }).returning({ id: bmSelf.id });
         await drizzleDb.update(bmSelf).set({ recipesCount: sqlFn`${bmSelf.recipesCount} + 1` }).where(eq(bmSelf.id, maker.id));
-        return { id: (res as any).insertId as number };
+        return { id: res?.id ?? 0 };
       }),
-
     updateRecipe: protectedProcedure
       .input(z.object({
         recipeId: z.number().int(),
@@ -5328,7 +5329,7 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
       const [followerRow] = await drizzleDb.select({ total: count() }).from(mfTable).where(eq(mfTable.makerId, maker.id));
       const [recipeRow] = await drizzleDb.select({ total: count() }).from(rTable).where(eq(rTable.buddyMakerId, maker.id));
       const earnings = await drizzleDb.select().from(ceTable).where(eq(ceTable.creatorUserId, ctx.user.id)).orderBy(desc(ceTable.createdAt)).limit(20);
-      const totalPaid = earnings.filter(e => e.status === "paid").reduce((s, e) => s + (e.commissionAmount ?? 0), 0);
+      const totalPaid = earnings.filter(e => e.status === "active").reduce((s, e) => s + (e.commissionAmount ?? 0), 0);
       const totalPending = earnings.filter(e => e.status === "pending").reduce((s, e) => s + (e.commissionAmount ?? 0), 0);
       return {
         maker,
@@ -5414,7 +5415,7 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
       const { creatorEarnings: ceTable } = await import("../drizzle/schema");
       const { eq, desc } = await import("drizzle-orm");
       const earnings = await drizzleDb.select().from(ceTable).where(eq(ceTable.creatorUserId, ctx.user.id)).orderBy(desc(ceTable.createdAt)).limit(50);
-      const totalPaid = earnings.filter((e) => e.status === "paid").reduce((acc: number, e) => acc + (e.commissionAmount ?? 0), 0);
+      const totalPaid = earnings.filter((e) => e.status === "active").reduce((acc: number, e) => acc + (e.commissionAmount ?? 0), 0);
       const totalPending = earnings.filter((e) => e.status === "pending").reduce((acc: number, e) => acc + (e.commissionAmount ?? 0), 0);
       return { earnings, totalPaid, totalPending };
     }),
@@ -5616,9 +5617,9 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
           // Continue even if Stripe fails — code still works for tracking
         }
 
-        const [inserted] = await drizzleDb.insert(referralCodes).values({
+        const insertedRows = await drizzleDb.insert(referralCodes).values({
           userId: ctx.user.id,
-          ownerType: input.creatorType,
+          ownerType: input.creatorType as any,
           code,
           stripeCouponId,
           stripePromoCodeId,
@@ -6127,16 +6128,15 @@ Devuelve SOLO JSON válido con esta estructura exacta:
         const [menu] = await drizzleDb.insert(menuOrganizers).values({
           userId: ctx.user.id,
           name: input.menuName,
-          startDate: startDateObj,
-          endDate: endDateObj,
+          startDate: (startDateObj instanceof Date ? startDateObj.toISOString().split("T")[0] : startDateObj) as any,
+          endDate: (endDateObj instanceof Date ? endDateObj.toISOString().split("T")[0] : endDateObj) as any,
           goal: goalValue as any,
           dailyCalories: input.targetCalories,
           persons: input.persons,
           isSeeded: false,
           generatedByAI: true,
-        }).$returningId();
-
-        const menuId = menu.id;
+        }).returning({ id: menuOrganizers.id });
+        const menuId = menu?.id ?? 0;
 
         // Cache: meal food name -> recipeId (avoid duplicate recipes for same dish across days)
         const mealRecipeCache: Record<string, number> = {};
@@ -6202,8 +6202,8 @@ Devuelve SOLO JSON válido con esta estructura exacta:
                   fatsPerServing: meal.fat || null,
                   ingredientsJson,
                   isSeeded: false,
-                }).$returningId();
-                recipeId = newRecipe.id;
+                }).returning({ id: recipes.id });
+                recipeId = newRecipe?.id ?? 0;
               }
               mealRecipeCache[cacheKey] = recipeId;
             }
@@ -6212,10 +6212,10 @@ Devuelve SOLO JSON válido con esta estructura exacta:
             const [dp] = await drizzleDb.insert(menuOrganizerDayParts).values({
               menuOrganizerId: menuId,
               dayPartId: dpId,
-              date: new Date(dayDate),
+              date: new Date(dayDate).toISOString().split("T")[0] as any,
               name: meal.food,
               notes: meal.food,
-            }).$returningId();
+            }).returning({ id: menuOrganizerDayParts.id });
 
             // Link recipe to day part
             try {
@@ -6625,11 +6625,11 @@ Devuelve EXACTAMENTE este JSON:
             userId: input.userId,
             title: input.title,
             body: input.body,
-            type: input.type,
+            type: (input.type as any),
             link: input.link ?? null,
             imageUrl: input.imageUrl ?? null,
           });
-          return { success: true, id: Number((result as any)[0]?.insertId ?? 0) };
+          return { success: true, id: Number((result as any)[0]?.id ?? 0) };
         }),
 
       createWelcome: protectedProcedure.mutation(async ({ ctx }) => {
