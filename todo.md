@@ -1496,3 +1496,4 @@
 - [ ] Detección automática del idioma del navegador en primera visita
 - [ ] Selector de idioma en sección dedicada del sidebar
 - [ ] Selector de idioma en la landing page (navbar y/o footer)
+- [ ] Modal de bienvenida en primera visita para confirmar/cambiar idioma detectado

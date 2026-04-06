@@ -1,4 +1,5 @@
 import { lazy, Suspense } from "react";
+import WelcomeLanguageModal from "@/components/WelcomeLanguageModal";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Route, Switch, Redirect, useLocation } from "wouter";
@@ -213,6 +214,7 @@ function App() {
       <ThemeProvider defaultTheme="light" switchable={true}>
         <TooltipProvider>
           <Toaster />
+          <WelcomeLanguageModal />
           <Suspense fallback={null}>
             <OnboardingModal />
           </Suspense>
