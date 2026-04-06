@@ -1529,3 +1529,45 @@ export const expertClientPlans = pgTable("expert_client_plans", {
 }));
 export type ExpertClientPlan = typeof expertClientPlans.$inferSelect;
 export type InsertExpertClientPlan = typeof expertClientPlans.$inferInsert;
+
+// =============================================================================
+// API HEALTH MONITORING — Sistema de monitorización de APIs
+// =============================================================================
+export const apiHealthStatusEnum = pgEnum("apiHealthStatus", ["ok", "degraded", "down", "unknown"]);
+
+export const apiMonitors = pgTable("api_monitors", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 128 }).notNull(),
+  endpoint: varchar("endpoint", { length: 512 }).notNull(),
+  method: varchar("method", { length: 8 }).default("GET").notNull(),
+  expectedStatus: integer("expectedStatus").default(200).notNull(),
+  isActive: boolean("isActive").default(true).notNull(),
+  lastStatus: apiHealthStatusEnum("lastStatus").default("unknown").notNull(),
+  lastLatencyMs: integer("lastLatencyMs"),
+  lastCheckedAt: timestamp("lastCheckedAt"),
+  lastErrorMessage: text("lastErrorMessage"),
+  failCount: integer("failCount").default(0).notNull(),
+  notifiedAt: timestamp("notifiedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  amNameIdx: index("am_name_idx").on(t.name),
+  amStatusIdx: index("am_status_idx").on(t.lastStatus),
+}));
+export type ApiMonitor = typeof apiMonitors.$inferSelect;
+export type InsertApiMonitor = typeof apiMonitors.$inferInsert;
+
+export const apiHealthLogs = pgTable("api_health_logs", {
+  id: serial("id").primaryKey(),
+  monitorId: integer("monitorId").notNull(),
+  status: apiHealthStatusEnum("status").notNull(),
+  latencyMs: integer("latencyMs"),
+  httpStatus: integer("httpStatus"),
+  errorMessage: text("errorMessage"),
+  checkedAt: timestamp("checkedAt").defaultNow().notNull(),
+}, (t) => ({
+  ahlMonitorIdx: index("ahl_monitor_idx").on(t.monitorId),
+  ahlCheckedIdx: index("ahl_checked_idx").on(t.checkedAt),
+}));
+export type ApiHealthLog = typeof apiHealthLogs.$inferSelect;
+export type InsertApiHealthLog = typeof apiHealthLogs.$inferInsert;

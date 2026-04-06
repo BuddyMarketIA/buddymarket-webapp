@@ -232,6 +232,10 @@ async function startServer() {
     // Start performance watchdog after server is up
     startPerformanceWatchdog();
     sendStartupAlert().catch(() => {});
+    // Start API health monitor job (every 5 min)
+    import("../apiMonitor").then(({ startMonitorJob }) => {
+      startMonitorJob(`http://localhost:${port}`);
+    }).catch((e) => logger.warn("[Monitor] Failed to start monitor job:", e));
   });
 }
 

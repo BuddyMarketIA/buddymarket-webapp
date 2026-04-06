@@ -3462,9 +3462,78 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
         await db.updateRecipe(id, data);
         return { success: true };
       }),
-  }),
 
-  // Mercadona integration — proxy to tienda.mercadona.es unofficial API
+    // ── API Health Monitor ────────────────────────────────────────────────────
+    getApiMonitors: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) return [];
+      const { apiMonitors } = await import("../drizzle/schema");
+      const { desc } = await import("drizzle-orm");
+      return drizzleDb.select().from(apiMonitors).orderBy(desc(apiMonitors.lastCheckedAt));
+    }),
+
+    getApiLogs: protectedProcedure
+      .input(z.object({ monitorId: z.number(), limit: z.number().optional().default(50) }))
+      .query(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return [];
+        const { apiHealthLogs } = await import("../drizzle/schema");
+        const { eq, desc } = await import("drizzle-orm");
+        return drizzleDb
+          .select()
+          .from(apiHealthLogs)
+          .where(eq(apiHealthLogs.monitorId, input.monitorId))
+          .orderBy(desc(apiHealthLogs.checkedAt))
+          .limit(input.limit);
+      }),
+
+    recheckApi: protectedProcedure
+      .input(z.object({ monitorId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { apiMonitors, apiHealthLogs } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        const monitors = await drizzleDb.select().from(apiMonitors).where(eq(apiMonitors.id, input.monitorId)).limit(1);
+        const monitor = monitors[0];
+        if (!monitor) throw new TRPCError({ code: "NOT_FOUND" });
+        const { checkEndpoint } = await import("./apiMonitor");
+        const result = await checkEndpoint(monitor.endpoint, monitor.method, monitor.expectedStatus, "http://localhost:3000");
+        await drizzleDb.insert(apiHealthLogs).values({
+          monitorId: monitor.id,
+          status: result.status,
+          latencyMs: result.latencyMs,
+          httpStatus: result.httpStatus ?? undefined,
+          errorMessage: result.errorMessage,
+        });
+        const newFailCount = result.status === "ok" ? 0 : (monitor.failCount ?? 0) + 1;
+        await drizzleDb.update(apiMonitors).set({
+          lastStatus: result.status,
+          lastLatencyMs: result.latencyMs,
+          lastCheckedAt: new Date(),
+          lastErrorMessage: result.errorMessage,
+          failCount: newFailCount,
+          updatedAt: new Date(),
+        }).where(eq(apiMonitors.id, monitor.id));
+        return { success: true, result };
+      }),
+
+    toggleMonitor: protectedProcedure
+      .input(z.object({ monitorId: z.number(), isActive: z.boolean() }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { apiMonitors } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        await drizzleDb.update(apiMonitors).set({ isActive: input.isActive, updatedAt: new Date() }).where(eq(apiMonitors.id, input.monitorId));
+        return { success: true };
+      }),
+  }),
+  // Mercadona integrationn — proxy to tienda.mercadona.es unofficial API
   mercadona: router({
     // Search products from local DB with enhanced matching (tildes, synonyms, multi-word)
     searchProducts: publicProcedure

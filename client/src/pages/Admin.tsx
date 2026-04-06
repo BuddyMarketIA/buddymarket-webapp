@@ -16,11 +16,15 @@ import {
   PencilSquareIcon,
   CheckIcon,
   XMarkIcon,
+  SignalIcon,
+  ArrowPathIcon,
+  ClockIcon,
 } from "@heroicons/react/24/outline";
 import { RECIPE_PLACEHOLDER_IMAGE as RECIPE_PLACEHOLDER } from "@/lib/constants";
 
 const TABS = [
   { key: "overview", label: "Resumen", icon: ShieldCheckIcon },
+  { key: "monitor", label: "Monitor APIs", icon: SignalIcon },
   { key: "recipes", label: "Recetas", icon: BookOpenIcon },
   { key: "applications", label: "Solicitudes", icon: UsersIcon },
   { key: "allergies", label: "Alergias", icon: ExclamationCircleIcon },
@@ -402,6 +406,10 @@ export default function Admin() {
         </div>
       )}
 
+      {/* API Monitor */}
+      {activeTab === "monitor" && (
+        <ApiMonitorPanel />
+      )}
       {/* Recipes */}
       {activeTab === "recipes" && (
         <div className="space-y-3">
@@ -685,6 +693,186 @@ export default function Admin() {
           </div>
         </div>
       )}
+    </div>
+  );
+}
+
+// ── API Monitor Panel ─────────────────────────────────────────────────────────
+function ApiMonitorPanel() {
+  const { data: monitors, refetch: refetchMonitors, isLoading } = trpc.admin.getApiMonitors.useQuery();
+  const [selectedMonitorId, setSelectedMonitorId] = useState<number | null>(null);
+  const { data: logs } = trpc.admin.getApiLogs.useQuery(
+    { monitorId: selectedMonitorId! },
+    { enabled: selectedMonitorId !== null }
+  );
+
+  const recheckMutation = trpc.admin.recheckApi.useMutation({
+    onSuccess: () => { toast.success("Recheck completado"); refetchMonitors(); },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const toggleMutation = trpc.admin.toggleMonitor.useMutation({
+    onSuccess: () => { refetchMonitors(); },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const statusColor = (status: string | null) => {
+    if (status === "ok") return "bg-green-100 text-green-700";
+    if (status === "down") return "bg-red-100 text-red-700";
+    if (status === "degraded") return "bg-yellow-100 text-yellow-700";
+    return "bg-gray-100 text-gray-500";
+  };
+
+  const statusDot = (status: string | null) => {
+    if (status === "ok") return "bg-green-500";
+    if (status === "down") return "bg-red-500";
+    if (status === "degraded") return "bg-yellow-500";
+    return "bg-gray-300";
+  };
+
+  const statusLabel = (status: string | null) => {
+    if (status === "ok") return "OK";
+    if (status === "down") return "ERROR";
+    if (status === "degraded") return "DEGRADADO";
+    return "Sin datos";
+  };
+
+  const okCount = monitors?.filter((m) => m.lastStatus === "ok").length ?? 0;
+  const errorCount = monitors?.filter((m) => m.lastStatus === "down" || m.lastStatus === "degraded").length ?? 0;
+  const pendingCount = monitors?.filter((m) => !m.lastStatus).length ?? 0;
+
+  return (
+    <div className="space-y-4">
+      {/* Summary bar */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="vively-card text-center">
+          <p className="text-2xl font-extrabold text-green-600">{okCount}</p>
+          <p className="text-xs text-gray-500">Operativos</p>
+        </div>
+        <div className="vively-card text-center">
+          <p className="text-2xl font-extrabold text-red-500">{errorCount}</p>
+          <p className="text-xs text-gray-500">Con fallos</p>
+        </div>
+        <div className="vively-card text-center">
+          <p className="text-2xl font-extrabold text-gray-400">{pendingCount}</p>
+          <p className="text-xs text-gray-500">Sin comprobar</p>
+        </div>
+      </div>
+
+      {/* Monitors list */}
+      <div className="vively-card space-y-2">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="text-sm font-bold text-gray-700 flex items-center gap-1.5">
+            <SignalIcon className="h-4 w-4 text-[#F97316]" />
+            Monitores de API
+          </h3>
+          <button
+            onClick={() => refetchMonitors()}
+            className="flex items-center gap-1 rounded-lg bg-gray-100 px-2.5 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-200"
+          >
+            <ArrowPathIcon className="h-3.5 w-3.5" />
+            Actualizar
+          </button>
+        </div>
+
+        {isLoading && (
+          <div className="flex justify-center py-6">
+            <div className="h-6 w-6 animate-spin rounded-full border-2 border-[#F97316] border-t-transparent" />
+          </div>
+        )}
+
+        {!isLoading && (!monitors || monitors.length === 0) && (
+          <p className="py-4 text-center text-xs text-gray-400">No hay monitores configurados.</p>
+        )}
+
+        {monitors?.map((monitor) => (
+          <div
+            key={monitor.id}
+            className={`rounded-xl border p-3 transition-all ${
+              selectedMonitorId === monitor.id ? "border-[#F97316] bg-orange-50" : "border-gray-100 bg-gray-50"
+            }`}
+          >
+            <div className="flex items-start justify-between gap-2">
+              <div className="flex items-start gap-2 min-w-0">
+                <span className={`mt-1 h-2.5 w-2.5 shrink-0 rounded-full ${statusDot(monitor.lastStatus)}`} />
+                <div className="min-w-0">
+                  <p className="truncate text-sm font-semibold text-gray-800">{monitor.name}</p>
+                  <p className="truncate text-xs text-gray-400">{monitor.endpoint}</p>
+                  {monitor.lastCheckedAt && (
+                    <p className="mt-0.5 flex items-center gap-1 text-xs text-gray-300">
+                      <ClockIcon className="h-3 w-3" />
+                      {new Date(monitor.lastCheckedAt).toLocaleString("es-ES")}
+                      {monitor.lastLatencyMs != null && ` · ${monitor.lastLatencyMs}ms`}
+                    </p>
+                  )}
+                  {monitor.lastErrorMessage && (
+                    <p className="mt-0.5 text-xs text-red-500 line-clamp-1">{monitor.lastErrorMessage}</p>
+                  )}
+                </div>
+              </div>
+              <div className="flex shrink-0 items-center gap-1.5">
+                <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${statusColor(monitor.lastStatus)}`}>
+                  {statusLabel(monitor.lastStatus)}
+                </span>
+                <button
+                  onClick={() => recheckMutation.mutate({ monitorId: monitor.id })}
+                  disabled={recheckMutation.isPending}
+                  title="Recheck ahora"
+                  className="flex h-7 w-7 items-center justify-center rounded-lg bg-white text-gray-500 shadow-sm hover:bg-gray-100 disabled:opacity-50"
+                >
+                  <ArrowPathIcon className={`h-3.5 w-3.5 ${recheckMutation.isPending ? "animate-spin" : ""}`} />
+                </button>
+                <button
+                  onClick={() => setSelectedMonitorId(selectedMonitorId === monitor.id ? null : monitor.id)}
+                  title="Ver historial"
+                  className="flex h-7 w-7 items-center justify-center rounded-lg bg-white text-gray-500 shadow-sm hover:bg-gray-100"
+                >
+                  <ClockIcon className="h-3.5 w-3.5" />
+                </button>
+                <button
+                  onClick={() => toggleMutation.mutate({ monitorId: monitor.id, isActive: !monitor.isActive })}
+                  title={monitor.isActive ? "Pausar monitor" : "Activar monitor"}
+                  className={`flex h-7 w-7 items-center justify-center rounded-lg shadow-sm ${
+                    monitor.isActive ? "bg-green-100 text-green-600 hover:bg-green-200" : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+                  }`}
+                >
+                  {monitor.isActive ? <CheckIcon className="h-3.5 w-3.5" /> : <XMarkIcon className="h-3.5 w-3.5" />}
+                </button>
+              </div>
+            </div>
+
+            {/* Logs panel */}
+            {selectedMonitorId === monitor.id && (
+              <div className="mt-3 border-t border-orange-100 pt-3">
+                <p className="mb-2 text-xs font-semibold text-gray-500">Últimas comprobaciones</p>
+                {!logs || logs.length === 0 ? (
+                  <p className="text-xs text-gray-400">Sin historial todavía.</p>
+                ) : (
+                  <div className="max-h-40 overflow-y-auto space-y-1">
+                    {logs.map((log) => (
+                      <div key={log.id} className="flex items-center justify-between rounded-lg bg-white px-2.5 py-1.5 text-xs">
+                        <div className="flex items-center gap-2">
+                          <span className={`h-2 w-2 rounded-full ${statusDot(log.status)}`} />
+                          <span className="font-semibold text-gray-700">{statusLabel(log.status)}</span>
+                          {log.httpStatus && <span className="text-gray-400">HTTP {log.httpStatus}</span>}
+                          {log.latencyMs != null && <span className="text-gray-400">{log.latencyMs}ms</span>}
+                        </div>
+                        <span className="text-gray-300">
+                          {new Date(log.checkedAt!).toLocaleTimeString("es-ES")}
+                        </span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
+        ))}
+      </div>
+
+      <p className="text-center text-xs text-gray-400">
+        Los monitores se comprueban automáticamente cada 5 minutos. Recibirás una notificación cuando falle un endpoint.
+      </p>
     </div>
   );
 }

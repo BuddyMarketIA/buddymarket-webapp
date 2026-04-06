@@ -1420,3 +1420,19 @@
 - [x] Iconos de categorías de supermercados: ampliar CATEGORY_ICONS para cubrir todos los nombres de la BD en MercadonaShop, CarrefourShop y LidlShop
 - [x] Componente ProductImage con fallback visual (emoji por categoría) en lugar de carrito roto
 - [x] Corregir bug de imagen rota: onError ahora muestra emoji en lugar de imagen invisible
+
+## Sistema de Monitorización de APIs (Sprint actual)
+- [ ] Schema DB: tabla api_health_logs (endpoint, status, latencyMs, errorMessage, checkedAt)
+- [ ] Schema DB: tabla api_monitors (name, endpoint, method, expectedStatus, isActive, lastStatus, lastCheckedAt, failCount)
+- [ ] Backend: endpoint REST GET /api/health con estado de todos los servicios críticos
+- [ ] Backend: middleware tRPC que captura errores y los registra en api_health_logs
+- [ ] Backend: job periódico (cada 5 min) que hace health-check de todos los endpoints críticos
+- [ ] Backend: notificación por email al propietario cuando un endpoint falla 3 veces seguidas
+- [ ] Backend: endpoint tRPC admin.getApiHealth para leer logs y estado de monitores
+- [ ] Backend: endpoint tRPC admin.recheckApi para forzar un recheck manual
+- [ ] Frontend: panel /admin/api-monitor con tabla de estado de todos los endpoints
+- [ ] Frontend: indicador de estado (verde/amarillo/rojo) por endpoint con latencia
+- [ ] Frontend: historial de fallos de las últimas 24h con gráfico de disponibilidad
+- [ ] Frontend: botón "Recheck ahora" para forzar verificación manual
+- [ ] Frontend: badge de alerta en el sidebar del admin cuando hay fallos activos
+- [ ] Tests vitest para el sistema de monitorización
