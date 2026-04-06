@@ -801,6 +801,8 @@ export const buddyExperts = pgTable("buddy_experts", {
   reviewsCount: integer("reviewsCount").default(0).notNull(),
   stripeAccountId: varchar("stripeAccountId", { length: 128 }), // Stripe Connect account
   stripeOnboardingCompleted: boolean("stripeOnboardingCompleted").default(false).notNull(),
+  chargesEnabled: boolean("chargesEnabled").default(false).notNull(),
+  payoutsEnabled: boolean("payoutsEnabled").default(false).notNull(),
   commissionRate: real("commissionRate").default(0.20).notNull(), // 20% por defecto
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
@@ -883,6 +885,8 @@ export const buddyMakers = pgTable("buddy_makers", {
   rating: real("rating").default(0),
   stripeAccountId: varchar("stripeAccountId", { length: 128 }),
   stripeOnboardingCompleted: boolean("stripeOnboardingCompleted").default(false).notNull(),
+  chargesEnabled: boolean("chargesEnabled").default(false).notNull(),
+  payoutsEnabled: boolean("payoutsEnabled").default(false).notNull(),
   commissionRate: real("commissionRate").default(0.20).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),

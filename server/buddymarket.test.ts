@@ -79,6 +79,7 @@ vi.mock("./db", () => ({
   setRecipeIngredients: vi.fn().mockResolvedValue(true),
   setRecipeSteps: vi.fn().mockResolvedValue(true),
   getMenuById: vi.fn().mockResolvedValue(null),
+  getSeededMenus: vi.fn().mockResolvedValue([]),
   getMenuOrganizers: vi.fn().mockResolvedValue([]),
   createMenuOrganizer: vi.fn().mockResolvedValue({ id: 1, name: "Test Menu" }),
   updateMenuOrganizer: vi.fn().mockResolvedValue({ id: 1 }),

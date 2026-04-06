@@ -92,6 +92,31 @@ export function registerStripeWebhook(app: Express) {
             break;
           }
 
+          case "account.updated": {
+            // Sync Stripe Connect account status for BuddyExperts and BuddyMakers
+            const account = event.data.object as any;
+            const accountId = account.id as string;
+            if (accountId) {
+              try {
+                const { buddyExperts, buddyMakers } = await import("../drizzle/schema");
+                const { eq } = await import("drizzle-orm");
+                const drizzleDb = await db.getDb();
+                if (drizzleDb) {
+                  const updates = {
+                    stripeOnboardingCompleted: account.details_submitted ?? false,
+                    chargesEnabled: account.charges_enabled ?? false,
+                    payoutsEnabled: account.payouts_enabled ?? false,
+                  };
+                  await drizzleDb.update(buddyExperts).set(updates).where(eq(buddyExperts.stripeAccountId, accountId));
+                  await drizzleDb.update(buddyMakers).set(updates).where(eq(buddyMakers.stripeAccountId, accountId));
+                  console.log(`[Stripe Connect] account.updated synced for ${accountId}: charges=${updates.chargesEnabled}, payouts=${updates.payoutsEnabled}`);
+                }
+              } catch (err: any) {
+                console.error("[Stripe Connect] account.updated sync error:", err?.message);
+              }
+            }
+            break;
+          }
           default:
             console.log(`[Stripe Webhook] Unhandled event type: ${event.type}`);
         }

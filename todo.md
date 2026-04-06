@@ -1462,3 +1462,28 @@
 - [ ] UI ConsumShop: panel de filtros con rango de precio (inputs min/max) y selector de ordenación
 - [ ] UI ConsumShop: badge de filtros activos con botón de limpiar
 - [ ] UI ConsumShop: contador de resultados filtrados
+
+## Stripe Connect para BuddyExperts y BuddyMakers
+- [ ] Stripe Connect: añadir campos stripeAccountId, onboardingComplete, chargesEnabled, payoutsEnabled a buddyExperts y buddyMakers en schema
+- [ ] Stripe Connect: migración de BD (pnpm db:push)
+- [ ] Stripe Connect: endpoint tRPC createConnectAccount (crea cuenta Express y devuelve onboarding URL)
+- [ ] Stripe Connect: endpoint tRPC getConnectAccountStatus (verifica estado de la cuenta conectada)
+- [ ] Stripe Connect: endpoint tRPC createLoginLink (acceso al dashboard de Stripe del buddy)
+- [ ] Stripe Connect: webhook account.updated (sincronizar chargesEnabled/payoutsEnabled)
+- [ ] Stripe Connect: UI onboarding en BuddyExpertDashboard (banner + botón conectar cuenta)
+- [ ] Stripe Connect: UI onboarding en BuddyMakerDashboard (banner + botón conectar cuenta)
+- [ ] Stripe Connect: badge de estado de cuenta en perfiles públicos de BuddyExpert/BuddyMaker
+- [ ] Stripe Connect: transferencias automáticas al pagar un plan de expert (application_fee_amount)
+
+## Stripe Connect BuddyExperts/Makers - 06/04/2026
+- [x] Schema BD: añadir chargesEnabled y payoutsEnabled a buddyExperts y buddyMakers
+- [x] Migración BD aplicada
+- [x] Endpoint getConnectStatus sincroniza chargesEnabled/payoutsEnabled con Stripe API
+- [x] Webhook account.updated actualiza estado de cuenta Connect en BD
+- [x] Banner Stripe Connect en BuddyExpertDashboard (3 estados: sin cuenta, verificando, activo)
+- [x] Banner Stripe Connect en BuddyMakerDashboard (3 estados: sin cuenta, verificando, activo)
+- [x] Corregir TS: createConnectAccount → getOnboardingLink en ambos dashboards
+- [x] Corregir TS: tipos implícitos any en callbacks de error
+- [x] Corregir bug: .returning() incompatible con MySQL en userMetrics.add
+- [x] Corregir bug: getSeededMenus faltaba en mock de buddymarket.test.ts
+- [x] Tests: 580/580 pasando, 0 errores TypeScript

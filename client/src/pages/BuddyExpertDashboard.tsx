@@ -78,6 +78,19 @@ export default function BuddyExpertDashboard() {
     { type: "expert" },
     { enabled: !!user }
   );
+  // Stripe Connect
+  const { data: connectStatus, refetch: refetchConnect } = trpc.stripeConnect.getConnectStatus.useQuery(
+    { creatorType: "buddyexpert" },
+    { enabled: !!user && !!myProfile }
+  );
+  const startOnboarding = trpc.stripeConnect.getOnboardingLink.useMutation({
+    onSuccess: (data) => { window.open(data.url, "_blank"); },
+    onError: (e: any) => { toast.error("Error al iniciar el proceso: " + e.message); },
+  });
+  const getDashboardLink = trpc.stripeConnect.getStripeDashboardLink.useMutation({
+    onSuccess: (data) => { window.open(data.url, "_blank"); },
+    onError: (e) => { toast.error("Error al abrir el dashboard: " + e.message); },
+  });
 
   // Populate form when profile loads
   const [profileLoaded, setProfileLoaded] = useState(false);
@@ -320,6 +333,65 @@ export default function BuddyExpertDashboard() {
           </a>
         </div>
 
+        {/* Stripe Connect Banner */}
+        {myProfile && (
+          <div className={`mb-4 rounded-2xl p-4 border ${connectStatus?.chargesEnabled ? "bg-green-50 border-green-200" : "bg-gradient-to-r from-purple-50 to-indigo-50 border-purple-200"}`}>
+            {connectStatus?.chargesEnabled ? (
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">✅</span>
+                  <div>
+                    <p className="text-sm font-bold text-green-800">Cuenta Stripe Connect activa</p>
+                    <p className="text-xs text-green-600">
+                      {connectStatus.payoutsEnabled ? "Cobros y pagos habilitados" : "Cobros habilitados — pagos pendientes de verificación"}
+                    </p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => getDashboardLink.mutate({ creatorType: "buddyexpert" })}
+                  disabled={getDashboardLink.isPending}
+                  className="shrink-0 rounded-xl bg-green-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-green-700 transition-colors disabled:opacity-50"
+                >
+                  {getDashboardLink.isPending ? "Abriendo..." : "Ver dashboard Stripe"}
+                </button>
+              </div>
+            ) : connectStatus?.connected ? (
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">⏳</span>
+                  <div>
+                    <p className="text-sm font-bold text-purple-800">Verificación en curso</p>
+                    <p className="text-xs text-purple-600">Completa el proceso de verificación en Stripe para empezar a cobrar</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => startOnboarding.mutate({ creatorType: "buddyexpert" })}
+                  disabled={startOnboarding.isPending}
+                  className="shrink-0 rounded-xl bg-purple-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-purple-700 transition-colors disabled:opacity-50"
+                >
+                  {startOnboarding.isPending ? "Cargando..." : "Continuar verificación"}
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between gap-3">
+                <div className="flex items-center gap-3">
+                  <span className="text-2xl">💳</span>
+                  <div>
+                    <p className="text-sm font-bold text-purple-800">Conecta tu cuenta de pagos</p>
+                    <p className="text-xs text-purple-600">Activa Stripe Connect para cobrar por tus planes y menús premium</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => startOnboarding.mutate({ creatorType: "buddyexpert" })}
+                  disabled={startOnboarding.isPending}
+                  className="shrink-0 rounded-xl bg-purple-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-purple-700 transition-colors disabled:opacity-50"
+                >
+                  {startOnboarding.isPending ? "Cargando..." : "Conectar Stripe"}
+                </button>
+              </div>
+            )}
+          </div>
+        )}
         {/* Tabs */}
         <div className="flex gap-1 mb-6 bg-gray-100 rounded-2xl p-1">
           {(["/app/profile", "plans", "pdf-plans", "/app/menus", "blog"] as Tab[]).map((tab) => (

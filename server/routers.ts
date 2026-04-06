@@ -4409,8 +4409,9 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
           await drizzleDb.update(userMetrics).set(data).where(eq(userMetrics.id, existing[0].id));
           return { id: existing[0].id, updated: true };
         } else {
-          const [result] = await drizzleDb.insert(userMetrics).values(data).returning({ id: userMetrics.id });
-          return { id: result?.id ?? 0, updated: false };
+          const insertResult = await drizzleDb.insert(userMetrics).values(data);
+          const insertId = (insertResult as any).insertId ?? (insertResult as any)[0]?.insertId ?? 0;
+          return { id: Number(insertId), updated: false };
         }
       }),
     getAll: protectedProcedure
@@ -5580,40 +5581,63 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
       .input(z.object({ creatorType: z.enum(["buddyexpert", "buddymaker"]) }))
       .query(async ({ ctx, input }) => {
         const drizzleDb = await db.getDb();
-        if (!drizzleDb) return { connected: false, onboardingCompleted: false, stripeAccountId: null };
+        if (!drizzleDb) return { connected: false, onboardingCompleted: false, chargesEnabled: false, payoutsEnabled: false, stripeAccountId: null };
         const { buddyExperts: beTable, buddyMakers: bmTable } = await import("../drizzle/schema");
         const { eq } = await import("drizzle-orm");
+
+        const syncAccountStatus = async (accountId: string) => {
+          try {
+            const Stripe = (await import("stripe")).default;
+            const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+            const account = await stripe.accounts.retrieve(accountId);
+            return {
+              onboardingCompleted: account.details_submitted ?? false,
+              chargesEnabled: account.charges_enabled ?? false,
+              payoutsEnabled: account.payouts_enabled ?? false,
+            };
+          } catch (_e) { return null; }
+        };
+
         if (input.creatorType === "buddyexpert") {
-          const [expert] = await drizzleDb.select({ stripeAccountId: beTable.stripeAccountId, stripeOnboardingCompleted: beTable.stripeOnboardingCompleted }).from(beTable).where(eq(beTable.userId, ctx.user.id)).limit(1);
-          if (!expert) return { connected: false, onboardingCompleted: false, stripeAccountId: null };
-          // If we have an account ID, check with Stripe if onboarding is complete
-          if (expert.stripeAccountId && !expert.stripeOnboardingCompleted) {
-            try {
-              const Stripe = (await import("stripe")).default;
-              const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-              const account = await stripe.accounts.retrieve(expert.stripeAccountId);
-              if (account.details_submitted) {
-                await drizzleDb.update(beTable).set({ stripeOnboardingCompleted: true }).where(eq(beTable.userId, ctx.user.id));
-                return { connected: true, onboardingCompleted: true, stripeAccountId: expert.stripeAccountId };
-              }
-            } catch (_e) { /* ignore */ }
+          const [expert] = await drizzleDb.select({
+            stripeAccountId: beTable.stripeAccountId,
+            stripeOnboardingCompleted: beTable.stripeOnboardingCompleted,
+            chargesEnabled: beTable.chargesEnabled,
+            payoutsEnabled: beTable.payoutsEnabled,
+          }).from(beTable).where(eq(beTable.userId, ctx.user.id)).limit(1);
+          if (!expert) return { connected: false, onboardingCompleted: false, chargesEnabled: false, payoutsEnabled: false, stripeAccountId: null };
+          if (expert.stripeAccountId) {
+            const live = await syncAccountStatus(expert.stripeAccountId);
+            if (live) {
+              await drizzleDb.update(beTable).set({
+                stripeOnboardingCompleted: live.onboardingCompleted,
+                chargesEnabled: live.chargesEnabled,
+                payoutsEnabled: live.payoutsEnabled,
+              }).where(eq(beTable.userId, ctx.user.id));
+              return { connected: true, ...live, stripeAccountId: expert.stripeAccountId };
+            }
           }
-          return { connected: !!expert.stripeAccountId, onboardingCompleted: expert.stripeOnboardingCompleted, stripeAccountId: expert.stripeAccountId };
+          return { connected: !!expert.stripeAccountId, onboardingCompleted: expert.stripeOnboardingCompleted, chargesEnabled: expert.chargesEnabled, payoutsEnabled: expert.payoutsEnabled, stripeAccountId: expert.stripeAccountId };
         } else {
-          const [maker] = await drizzleDb.select({ stripeAccountId: bmTable.stripeAccountId, stripeOnboardingCompleted: bmTable.stripeOnboardingCompleted }).from(bmTable).where(eq(bmTable.userId, ctx.user.id)).limit(1);
-          if (!maker) return { connected: false, onboardingCompleted: false, stripeAccountId: null };
-          if (maker.stripeAccountId && !maker.stripeOnboardingCompleted) {
-            try {
-              const Stripe = (await import("stripe")).default;
-              const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-              const account = await stripe.accounts.retrieve(maker.stripeAccountId);
-              if (account.details_submitted) {
-                await drizzleDb.update(bmTable).set({ stripeOnboardingCompleted: true }).where(eq(bmTable.userId, ctx.user.id));
-                return { connected: true, onboardingCompleted: true, stripeAccountId: maker.stripeAccountId };
-              }
-            } catch (_e) { /* ignore */ }
+          const [maker] = await drizzleDb.select({
+            stripeAccountId: bmTable.stripeAccountId,
+            stripeOnboardingCompleted: bmTable.stripeOnboardingCompleted,
+            chargesEnabled: bmTable.chargesEnabled,
+            payoutsEnabled: bmTable.payoutsEnabled,
+          }).from(bmTable).where(eq(bmTable.userId, ctx.user.id)).limit(1);
+          if (!maker) return { connected: false, onboardingCompleted: false, chargesEnabled: false, payoutsEnabled: false, stripeAccountId: null };
+          if (maker.stripeAccountId) {
+            const live = await syncAccountStatus(maker.stripeAccountId);
+            if (live) {
+              await drizzleDb.update(bmTable).set({
+                stripeOnboardingCompleted: live.onboardingCompleted,
+                chargesEnabled: live.chargesEnabled,
+                payoutsEnabled: live.payoutsEnabled,
+              }).where(eq(bmTable.userId, ctx.user.id));
+              return { connected: true, ...live, stripeAccountId: maker.stripeAccountId };
+            }
           }
-          return { connected: !!maker.stripeAccountId, onboardingCompleted: maker.stripeOnboardingCompleted, stripeAccountId: maker.stripeAccountId };
+          return { connected: !!maker.stripeAccountId, onboardingCompleted: maker.stripeOnboardingCompleted, chargesEnabled: maker.chargesEnabled, payoutsEnabled: maker.payoutsEnabled, stripeAccountId: maker.stripeAccountId };
         }
       }),
     getPaymentHistory: protectedProcedure
