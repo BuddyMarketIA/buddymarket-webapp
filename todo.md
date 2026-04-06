@@ -1487,3 +1487,9 @@
 - [x] Corregir bug: .returning() incompatible con MySQL en userMetrics.add
 - [x] Corregir bug: getSeededMenus faltaba en mock de buddymarket.test.ts
 - [x] Tests: 580/580 pasando, 0 errores TypeScript
+
+- [ ] i18n: instalar react-i18next y configurar sistema base
+- [ ] i18n: crear archivos de traducción ES, EN, FR, IT
+- [ ] i18n: integrar traducciones en componentes principales
+- [ ] i18n: selector de idioma en navbar y ajustes de usuario
+- [ ] i18n: persistir preferencia de idioma en BD

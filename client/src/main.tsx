@@ -17,6 +17,7 @@ import superjson from "superjson";
 import App from "./App";
 import { getLoginUrl } from "./const";
 import "./index.css";
+import "@/lib/i18n"; // i18n must be initialized before App renders
 
 const queryClient = new QueryClient();
 

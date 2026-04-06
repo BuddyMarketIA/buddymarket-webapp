@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useTranslation } from "react-i18next";
+import { SUPPORTED_LANGUAGES, type LanguageCode } from "@/lib/i18n";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import ImageCropModal from "@/components/ImageCropModal";
@@ -28,6 +30,52 @@ const TABS = [
   { key: "shopping", label: "Compras", icon: ShoppingBagIcon },
   { key: "account", label: "Cuenta", icon: TrashIcon },
 ];
+
+function LanguageSelectorInProfile() {
+  const { i18n } = useTranslation();
+  const updateBasic = trpc.profile.updateBasic.useMutation();
+  const { user } = useAuth();
+
+  useEffect(() => {
+    if (user?.locale && user.locale !== i18n.language) {
+      i18n.changeLanguage(user.locale);
+    }
+  }, [user?.locale]);
+
+  const handleChange = (code: LanguageCode) => {
+    i18n.changeLanguage(code);
+    localStorage.setItem("buddymarket_language", code);
+    if (user) updateBasic.mutate({ locale: code });
+  };
+
+  return (
+    <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+      {SUPPORTED_LANGUAGES.map((lang) => (
+        <button
+          key={lang.code}
+          onClick={() => handleChange(lang.code as LanguageCode)}
+          style={{
+            padding: "10px 18px",
+            borderRadius: "20px",
+            border: i18n.language === lang.code ? "2px solid #F97316" : "1.5px solid #e5e7eb",
+            background: i18n.language === lang.code ? "rgba(249,115,22,0.1)" : "white",
+            color: i18n.language === lang.code ? "#F97316" : "#374151",
+            fontSize: "14px",
+            fontWeight: i18n.language === lang.code ? 700 : 500,
+            cursor: "pointer",
+            display: "flex",
+            alignItems: "center",
+            gap: "6px",
+          }}
+        >
+          <span style={{ fontSize: "18px" }}>{lang.flag}</span>
+          <span>{lang.name}</span>
+          {i18n.language === lang.code && <span style={{ color: "#F97316" }}>✓</span>}
+        </button>
+      ))}
+    </div>
+  );
+}
 
 function SectionTitle({ children }: { children: React.ReactNode }) {
   return (
@@ -1180,6 +1228,9 @@ export default function Profile() {
       {activeTab === "prefs" && (
         <div style={card}>
           <SectionTitle>Preferencias de la app</SectionTitle>
+          <Field label="Idioma de la app">
+            <LanguageSelectorInProfile />
+          </Field>
           <Field label="Complejidad de recetas preferida">
             <Select value={preferredMealComplexity} onChange={setPreferredMealComplexity} options={[
               { value: "simple", label: "Simple — pocas instrucciones, rápido" },
