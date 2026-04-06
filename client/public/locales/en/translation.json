@@ -61,7 +61,9 @@
     "new": "New",
     "recommended": "Recommended",
     "noResults": "No results found",
-    "tryAgain": "Try again"
+    "tryAgain": "Try again",
+    "pending": "Under review",
+    "nutritionalManager": "Nutritional Manager"
   },
   "auth": {
     "login": "Log in",
@@ -92,7 +94,16 @@
     "achievements": "Achievements",
     "reminders": "Reminders",
     "shoppingList": "Shopping list",
-    "buddyExpertsMenu": "BuddyExperts Menus"
+    "buddyExpertsMenu": "BuddyExperts Menus",
+    "recipeSubtitle": "Explore recipes",
+    "menuSubtitle": "Weekly plan",
+    "supermarketsSubtitle": "Go shopping",
+    "inventorySubtitle": "Your pantry",
+    "scanSubtitle": "Scan ingredients with AI",
+    "diarySubtitle": "Nutritional log",
+    "morningGreeting": "Good morning",
+    "afternoonGreeting": "Good afternoon",
+    "eveningGreeting": "Good evening"
   },
   "supermarkets": {
     "title": "Supermarkets",
@@ -217,8 +228,8 @@
   },
   "home": {
     "hero": "Your intelligent nutritional assistant",
-    "heroDesc": "Plan your menus, discover healthy recipes and shop at your favourite supermarkets, all from one app.",
-    "getStarted": "Get started for free",
+    "heroDesc": "BuddyMarket connects your menu planning, pantry management and shopping list into one intelligent ecosystem.",
+    "getStarted": "Get started for free →",
     "learnMore": "Learn more",
     "stats": {
       "activeUsers": "Active users",
@@ -235,7 +246,82 @@
       "shopping": "Shopping list",
       "shoppingDesc": "Automatically generate your shopping list from the weekly menu.",
       "supermarkets": "Integrated supermarkets",
-      "supermarketsDesc": "Shop directly at Mercadona, Consum and more from the app."
+      "supermarketsDesc": "Shop directly at Mercadona, Consum and more from the app.",
+      "subtitle": "A complete ecosystem for your nutrition",
+      "inventory": "Inventory control",
+      "inventoryDesc": "Manage your pantry and receive expiry alerts to avoid waste.",
+      "tracking": "Nutritional tracking",
+      "trackingDesc": "Log your meals and track your daily macronutrients with detailed charts.",
+      "scan": "BuddyScan AI",
+      "scanDesc": "Generate recipes based on the ingredients you have at home using artificial intelligence."
+    },
+    "heroTitle1": "Plan, shop and",
+    "heroTitle2": "eat better",
+    "noCard": "No credit card · Cancel anytime",
+    "enter": "Sign in →",
+    "nutritionalManager": "Nutritional Manager",
+    "howItWorks": {
+      "title": "How it works",
+      "subtitle": "Three steps to transform your diet",
+      "step1Title": "Set up your profile",
+      "step1Desc": "Enter your goals, allergies and food preferences to personalise your experience.",
+      "step2Title": "Plan your week",
+      "step2Desc": "Generate weekly menus with AI or create your own. BuddyMarket creates your shopping list automatically.",
+      "step3Title": "Shop and cook",
+      "step3Desc": "Follow your optimised shopping list, manage your pantry and log your meals to track your nutrition."
+    },
+    "pricing": {
+      "title": "Plans and pricing",
+      "subtitle": "Choose the plan that suits you best",
+      "popular": "POPULAR",
+      "basicName": "Basic",
+      "basicPrice": "Free",
+      "basicCta": "Start free",
+      "premiumName": "Premium",
+      "premiumCta": "Try Premium",
+      "proName": "Pro Max",
+      "proCta": "Contact us"
+    },
+    "cta": {
+      "title": "Start today",
+      "desc": "Join thousands of people who have already transformed their relationship with food and shopping.",
+      "button": "Get started for free →"
+    },
+    "footer": {
+      "disclaimer": "© 2026 BuddyMarket. Content does not constitute professional medical or nutritional advice. Consult a professional."
     }
+  },
+  "sidebar": {
+    "principal": "Main",
+    "nutrition": "Nutrition",
+    "shopping": "Shopping",
+    "aiAssistants": "AI Assistants",
+    "community": "Community",
+    "communityVively": "Vively Community",
+    "administration": "Administration",
+    "myProfile": "My Profile",
+    "myMetrics": "My Metrics",
+    "connectedHealth": "Connected Health",
+    "myMenus": "My Menus",
+    "nutritionalDiary": "Nutritional Diary",
+    "stats": "Statistics",
+    "myFavorites": "My Favourites",
+    "menuLibrary": "Menu Library",
+    "specializedMenus": "Specialised Menus",
+    "reminders": "Reminders",
+    "myAchievements": "My Achievements",
+    "shoppingList": "Shopping List",
+    "supermarkets": "Supermarkets",
+    "buddyShop": "BuddyShop",
+    "eventMenu": "Event Menu",
+    "following": "Following",
+    "expertPanel": "My Expert Panel",
+    "makerPanel": "My Creator Panel",
+    "requestAccess": "Request Access",
+    "installApp": "Install BuddyMarket",
+    "installAppDesc": "Quick access from your home screen",
+    "install": "Install",
+    "loggingOut": "Logging out...",
+    "logout": "Log out"
   }
 }

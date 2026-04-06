@@ -7,8 +7,10 @@ import confetti from "canvas-confetti";
 import { RECIPE_PLACEHOLDER_IMAGE } from "@/lib/constants";
 import { usePlan } from "@/hooks/usePlan";
 import DidYouKnow from "@/components/DidYouKnow";
+import { useTranslation } from "react-i18next";
 
-const QUICK_ACCESS = [
+// QUICK_ACCESS built inside component
+const _QUICK_ACCESS_PLACEHOLDER = [
   {
     label: "Recetas",
     emoji: "🍽️",
@@ -67,15 +69,15 @@ const QUICK_ACCESS = [
 
 const FOOD_IMAGES = [RECIPE_PLACEHOLDER_IMAGE];
 
-function getGreeting() {
+function getGreetingKey() {
   const h = new Date().getHours();
-  if (h < 12) return "¡Buenos días";
-  if (h < 20) return "¡Buenas tardes";
-  return "¡Buenas noches";
+  if (h < 12) return "morningGreeting";
+  if (h < 20) return "afternoonGreeting";
+  return "eveningGreeting";
 }
 
-function getDay() {
-  return new Date().toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "short" });
+function getDay(lang?: string) {
+  return new Date().toLocaleDateString(lang || "es-ES", { weekday: "long", day: "numeric", month: "short" });
 }
 
 const RECIPE_OF_DAY = [
@@ -88,6 +90,15 @@ const RECIPE_OF_DAY = [
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const { t, i18n } = useTranslation();
+  const QUICK_ACCESS = [
+    { label: t("nav.recipes"), emoji: "🍽️", to: "/app/recipes", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/recipes_afa44a0e.jpg", accent: "#F97316", size: "large", subtitle: t("dashboard.recipeSubtitle") },
+    { label: t("nav.menus"), emoji: "📅", to: "/app/menus", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/mealprep_eb5fda9a.jpg", accent: "#6366F1", size: "small", subtitle: t("dashboard.menuSubtitle") },
+    { label: t("nav.supermarkets"), emoji: "🛒", to: "/app/supermercados", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/shopping_d2c9f4e5.jpg", accent: "#10B981", size: "small", subtitle: t("dashboard.supermarketsSubtitle") },
+    { label: t("nav.inventory"), emoji: "📦", to: "/app/inventory", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/pantry_3fcf0a1f.jpg", accent: "#F59E0B", size: "small", subtitle: t("dashboard.inventorySubtitle") },
+    { label: t("nav.scan"), emoji: "🤖", to: "/app/menus", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/buddyscan_dd3e1e08.jpg", accent: "#8B5CF6", size: "wide", subtitle: t("dashboard.scanSubtitle") },
+    { label: t("nav.diary"), emoji: "📊", to: "/app/meal-log", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/vegetables_0f947a56.jpg", accent: "#EF4444", size: "small", subtitle: t("dashboard.diarySubtitle") },
+  ];
   const [today] = useState(() => new Date().toISOString().split("T")[0]);
   const [goalCaloriesOverride, setGoalCaloriesOverride] = useState<number | null>(null);
   const [showGoalEdit, setShowGoalEdit] = useState(false);
@@ -212,10 +223,10 @@ export default function Dashboard() {
         </div>
         <div style={{ flex: 1 }}>
           <p style={{ margin: 0, fontSize: "22px", fontWeight: 900, color: "#1a1a1a", letterSpacing: "-0.03em" }}>
-            {getGreeting()}, {firstName}! 👋
+            {t(`dashboard.${getGreetingKey()}`)}, {firstName}! 👋
           </p>
           <p style={{ margin: "2px 0 0", fontSize: "13px", color: "#9ca3af", fontWeight: 500 }}>
-            {getDay().charAt(0).toUpperCase() + getDay().slice(1)}
+            {getDay(i18n.language).charAt(0).toUpperCase() + getDay(i18n.language).slice(1)}
           </p>
           <p style={{ margin: "4px 0 0", fontSize: "14px", color: "#F97316", fontWeight: 600 }}>
             🎯 ¡Sigue así, estás en racha!
@@ -230,8 +241,7 @@ export default function Dashboard() {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <div style={{ width: "28px", height: "28px", borderRadius: "8px", background: "linear-gradient(135deg, #F97316, #FB923C)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px" }}>🚀</div>
-              <h2 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.02em" }}>Primeros pasos</h2>
-            </div>
+              <h2 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.02em" }}>{t("dashboard.quickAccess")}</h2>            </div>
             <button
               onClick={() => { setStepsHidden(true); try { localStorage.setItem("bm_steps_hidden", "true"); } catch {} }}
               style={{ background: "none", border: "none", fontSize: "18px", color: "#9ca3af", cursor: "pointer", padding: "4px", lineHeight: 1 }}
@@ -573,10 +583,10 @@ export default function Dashboard() {
       {/* 4 Quick Access Cards: Lista compra, Menús BuddyExperts, BuddyIA, Biblioteca Menús */}
       <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "20px" }}>
         {[
-          { href: "/app/shopping-lists", emoji: "🛒", label: "Lista de la compra" },
-          { href: "/app/buddy-experts", emoji: "🧑‍🍳", label: "Menús BuddyExperts" },
-          { href: "/app/notifications", emoji: "🔔", label: "Recordatorios" },
-          { href: "/app/achievements", emoji: "🏆", label: "Mis Logros" },
+          { href: "/app/shopping-lists", emoji: "🛒", label: t("dashboard.shoppingList") },
+          { href: "/app/buddy-experts", emoji: "🧑‍🍳", label: t("dashboard.buddyExpertsMenu") },
+          { href: "/app/notifications", emoji: "🔔", label: t("dashboard.reminders") },
+          { href: "/app/achievements", emoji: "🏆", label: t("dashboard.achievements") },
         ].map((item) => (
           <Link key={item.href} href={item.href}>
             <div style={{ background: "white", borderRadius: "18px", padding: "18px 10px", textAlign: "center", boxShadow: "0 2px 10px rgba(0,0,0,0.07)", cursor: "pointer", transition: "transform 0.2s", border: "none", minHeight: "110px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "6px" }}
@@ -848,8 +858,8 @@ export default function Dashboard() {
       {/* Recipe of the Day Carousel */}
       <div style={{ marginBottom: "20px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
-          <h2 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.02em" }}>Receta del día</h2>
-          <Link href="/app/recipes"><span style={{ fontSize: "13px", fontWeight: 600, color: "#F97316" }}>Ver más →</span></Link>
+          <h2 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.02em" }}>{t("dashboard.recipeOfDay")}</h2>
+          <Link href="/app/recipes"><span style={{ fontSize: "13px", fontWeight: 600, color: "#F97316" }}>{t("common.seeMore")} →</span></Link>
         </div>
         <div style={{ position: "relative", borderRadius: "22px", overflow: "hidden", height: "180px", boxShadow: "0 8px 24px rgba(0,0,0,0.15)" }}>
           {RECIPE_OF_DAY.map((recipe, idx) => (

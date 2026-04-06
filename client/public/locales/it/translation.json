@@ -61,7 +61,9 @@
     "new": "Nuovo",
     "recommended": "Consigliato",
     "noResults": "Nessun risultato trovato",
-    "tryAgain": "Riprova"
+    "tryAgain": "Riprova",
+    "pending": "In revisione",
+    "nutritionalManager": "Gestore Nutrizionale"
   },
   "auth": {
     "login": "Accedi",
@@ -92,7 +94,16 @@
     "achievements": "Obiettivi",
     "reminders": "Promemoria",
     "shoppingList": "Lista della spesa",
-    "buddyExpertsMenu": "Menu BuddyExperts"
+    "buddyExpertsMenu": "Menu BuddyExperts",
+    "recipeSubtitle": "Esplora le ricette",
+    "menuSubtitle": "Piano settimanale",
+    "supermarketsSubtitle": "Fare la spesa",
+    "inventorySubtitle": "La tua dispensa",
+    "scanSubtitle": "Scansiona ingredienti con l'IA",
+    "diarySubtitle": "Registro nutrizionale",
+    "morningGreeting": "Buongiorno",
+    "afternoonGreeting": "Buon pomeriggio",
+    "eveningGreeting": "Buonasera"
   },
   "supermarkets": {
     "title": "Supermercati",
@@ -217,8 +228,8 @@
   },
   "home": {
     "hero": "Il tuo assistente nutrizionale intelligente",
-    "heroDesc": "Pianifica i tuoi menu, scopri ricette salutari e fai la spesa nei tuoi supermercati preferiti, tutto da un'unica app.",
-    "getStarted": "Inizia gratis",
+    "heroDesc": "BuddyMarket connette la pianificazione dei menu, la gestione della dispensa e la lista della spesa in un unico ecosistema intelligente.",
+    "getStarted": "Inizia gratis →",
     "learnMore": "Scopri di più",
     "stats": {
       "activeUsers": "Utenti attivi",
@@ -235,7 +246,82 @@
       "shopping": "Lista della spesa",
       "shoppingDesc": "Genera automaticamente la tua lista della spesa dal menu settimanale.",
       "supermarkets": "Supermercati integrati",
-      "supermarketsDesc": "Fai la spesa direttamente da Mercadona, Consum e altro dall'app."
+      "supermarketsDesc": "Fai la spesa direttamente da Mercadona, Consum e altro dall'app.",
+      "subtitle": "Un ecosistema completo per la tua alimentazione",
+      "inventory": "Controllo inventario",
+      "inventoryDesc": "Gestisci la tua dispensa e ricevi avvisi di scadenza per evitare sprechi.",
+      "tracking": "Monitoraggio nutrizionale",
+      "trackingDesc": "Registra i tuoi pasti e controlla i tuoi macronutrienti giornalieri con grafici dettagliati.",
+      "scan": "BuddyScan IA",
+      "scanDesc": "Genera ricette basate sugli ingredienti che hai in casa con l'intelligenza artificiale."
+    },
+    "heroTitle1": "Pianifica, fai la spesa e",
+    "heroTitle2": "mangia meglio",
+    "noCard": "Senza carta di credito · Annulla quando vuoi",
+    "enter": "Accedi →",
+    "nutritionalManager": "Gestore Nutrizionale",
+    "howItWorks": {
+      "title": "Come funziona",
+      "subtitle": "Tre passi per trasformare la tua alimentazione",
+      "step1Title": "Configura il tuo profilo",
+      "step1Desc": "Indica i tuoi obiettivi, allergie e preferenze alimentari per personalizzare la tua esperienza.",
+      "step2Title": "Pianifica la tua settimana",
+      "step2Desc": "Genera menu settimanali con l'IA o crea i tuoi. BuddyMarket crea automaticamente la tua lista della spesa.",
+      "step3Title": "Fai la spesa e cucina",
+      "step3Desc": "Segui la tua lista della spesa ottimizzata, gestisci la tua dispensa e registra i tuoi pasti per controllare la tua nutrizione."
+    },
+    "pricing": {
+      "title": "Piani e prezzi",
+      "subtitle": "Scegli il piano più adatto a te",
+      "popular": "POPOLARE",
+      "basicName": "Base",
+      "basicPrice": "Gratis",
+      "basicCta": "Inizia gratis",
+      "premiumName": "Premium",
+      "premiumCta": "Prova Premium",
+      "proName": "Pro Max",
+      "proCta": "Contattaci"
+    },
+    "cta": {
+      "title": "Inizia oggi",
+      "desc": "Unisciti a migliaia di persone che hanno già trasformato il loro rapporto con il cibo e la spesa.",
+      "button": "Inizia gratis →"
+    },
+    "footer": {
+      "disclaimer": "© 2026 BuddyMarket. Il contenuto non costituisce consulenza medica o nutrizionale professionale. Consulta un professionista."
     }
+  },
+  "sidebar": {
+    "principal": "Principale",
+    "nutrition": "Nutrizione",
+    "shopping": "Acquisti",
+    "aiAssistants": "Assistenti IA",
+    "community": "Comunità",
+    "communityVively": "Comunità Vively",
+    "administration": "Amministrazione",
+    "myProfile": "Il Mio Profilo",
+    "myMetrics": "Le Mie Metriche",
+    "connectedHealth": "Salute Connessa",
+    "myMenus": "I Miei Menu",
+    "nutritionalDiary": "Diario Nutrizionale",
+    "stats": "Statistiche",
+    "myFavorites": "I Miei Preferiti",
+    "menuLibrary": "Libreria Menu",
+    "specializedMenus": "Menu Specializzati",
+    "reminders": "Promemoria",
+    "myAchievements": "I Miei Traguardi",
+    "shoppingList": "Lista della Spesa",
+    "supermarkets": "Supermercati",
+    "buddyShop": "BuddyShop",
+    "eventMenu": "Menu per Eventi",
+    "following": "Seguiti",
+    "expertPanel": "Il Mio Pannello Esperto",
+    "makerPanel": "Il Mio Pannello Creatore",
+    "requestAccess": "Richiedi Accesso",
+    "installApp": "Installa BuddyMarket",
+    "installAppDesc": "Accesso rapido dalla schermata principale",
+    "install": "Installa",
+    "loggingOut": "Disconnessione...",
+    "logout": "Disconnetti"
   }
 }

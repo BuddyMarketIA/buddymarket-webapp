@@ -61,7 +61,9 @@
     "new": "Nouveau",
     "recommended": "Recommandé",
     "noResults": "Aucun résultat trouvé",
-    "tryAgain": "Réessayer"
+    "tryAgain": "Réessayer",
+    "pending": "En cours d'examen",
+    "nutritionalManager": "Gestionnaire Nutritionnel"
   },
   "auth": {
     "login": "Se connecter",
@@ -92,7 +94,16 @@
     "achievements": "Récompenses",
     "reminders": "Rappels",
     "shoppingList": "Liste de courses",
-    "buddyExpertsMenu": "Menus BuddyExperts"
+    "buddyExpertsMenu": "Menus BuddyExperts",
+    "recipeSubtitle": "Explorer les recettes",
+    "menuSubtitle": "Plan hebdomadaire",
+    "supermarketsSubtitle": "Faire les courses",
+    "inventorySubtitle": "Votre garde-manger",
+    "scanSubtitle": "Scanner les ingrédients avec l'IA",
+    "diarySubtitle": "Journal nutritionnel",
+    "morningGreeting": "Bonjour",
+    "afternoonGreeting": "Bon après-midi",
+    "eveningGreeting": "Bonsoir"
   },
   "supermarkets": {
     "title": "Supermarchés",
@@ -217,8 +228,8 @@
   },
   "home": {
     "hero": "Votre assistant nutritionnel intelligent",
-    "heroDesc": "Planifiez vos menus, découvrez des recettes saines et faites vos courses dans vos supermarchés préférés, le tout depuis une seule application.",
-    "getStarted": "Commencer gratuitement",
+    "heroDesc": "BuddyMarket connecte votre planification de menus, gestion du garde-manger et liste de courses en un seul écosystème intelligent.",
+    "getStarted": "Commencer gratuitement →",
     "learnMore": "En savoir plus",
     "stats": {
       "activeUsers": "Utilisateurs actifs",
@@ -235,7 +246,82 @@
       "shopping": "Liste de courses",
       "shoppingDesc": "Générez automatiquement votre liste de courses à partir du menu hebdomadaire.",
       "supermarkets": "Supermarchés intégrés",
-      "supermarketsDesc": "Faites vos courses directement chez Mercadona, Consum et plus depuis l'application."
+      "supermarketsDesc": "Faites vos courses directement chez Mercadona, Consum et plus depuis l'application.",
+      "subtitle": "Un écosystème complet pour votre alimentation",
+      "inventory": "Contrôle des stocks",
+      "inventoryDesc": "Gérez votre garde-manger et recevez des alertes d'expiration pour éviter le gaspillage.",
+      "tracking": "Suivi nutritionnel",
+      "trackingDesc": "Enregistrez vos repas et suivez vos macronutriments quotidiens avec des graphiques détaillés.",
+      "scan": "BuddyScan IA",
+      "scanDesc": "Générez des recettes basées sur les ingrédients que vous avez chez vous grâce à l'intelligence artificielle."
+    },
+    "heroTitle1": "Planifiez, faites vos courses et",
+    "heroTitle2": "mangez mieux",
+    "noCard": "Sans carte de crédit · Annulez quand vous voulez",
+    "enter": "Se connecter →",
+    "nutritionalManager": "Gestionnaire Nutritionnel",
+    "howItWorks": {
+      "title": "Comment ça marche",
+      "subtitle": "Trois étapes pour transformer votre alimentation",
+      "step1Title": "Configurez votre profil",
+      "step1Desc": "Indiquez vos objectifs, allergies et préférences alimentaires pour personnaliser votre expérience.",
+      "step2Title": "Planifiez votre semaine",
+      "step2Desc": "Générez des menus hebdomadaires avec l'IA ou créez les vôtres. BuddyMarket crée votre liste de courses automatiquement.",
+      "step3Title": "Faites vos courses et cuisinez",
+      "step3Desc": "Suivez votre liste de courses optimisée, gérez votre garde-manger et enregistrez vos repas pour contrôler votre nutrition."
+    },
+    "pricing": {
+      "title": "Plans et tarifs",
+      "subtitle": "Choisissez le plan qui vous convient le mieux",
+      "popular": "POPULAIRE",
+      "basicName": "Basique",
+      "basicPrice": "Gratuit",
+      "basicCta": "Commencer gratuitement",
+      "premiumName": "Premium",
+      "premiumCta": "Essayer Premium",
+      "proName": "Pro Max",
+      "proCta": "Nous contacter"
+    },
+    "cta": {
+      "title": "Commencez aujourd'hui",
+      "desc": "Rejoignez des milliers de personnes qui ont déjà transformé leur relation avec la nourriture et les courses.",
+      "button": "Commencer gratuitement →"
+    },
+    "footer": {
+      "disclaimer": "© 2026 BuddyMarket. Le contenu ne constitue pas un conseil médical ou nutritionnel professionnel. Consultez un professionnel."
     }
+  },
+  "sidebar": {
+    "principal": "Principal",
+    "nutrition": "Nutrition",
+    "shopping": "Courses",
+    "aiAssistants": "Assistants IA",
+    "community": "Communauté",
+    "communityVively": "Communauté Vively",
+    "administration": "Administration",
+    "myProfile": "Mon Profil",
+    "myMetrics": "Mes Métriques",
+    "connectedHealth": "Santé Connectée",
+    "myMenus": "Mes Menus",
+    "nutritionalDiary": "Journal Nutritionnel",
+    "stats": "Statistiques",
+    "myFavorites": "Mes Favoris",
+    "menuLibrary": "Bibliothèque de Menus",
+    "specializedMenus": "Menus Spécialisés",
+    "reminders": "Rappels",
+    "myAchievements": "Mes Succès",
+    "shoppingList": "Liste de Courses",
+    "supermarkets": "Supermarchés",
+    "buddyShop": "BuddyShop",
+    "eventMenu": "Menu pour Événements",
+    "following": "Abonnements",
+    "expertPanel": "Mon Panneau Expert",
+    "makerPanel": "Mon Panneau Créateur",
+    "requestAccess": "Demander l'Accès",
+    "installApp": "Installer BuddyMarket",
+    "installAppDesc": "Accès rapide depuis votre écran d'accueil",
+    "install": "Installer",
+    "loggingOut": "Déconnexion...",
+    "logout": "Se déconnecter"
   }
 }
