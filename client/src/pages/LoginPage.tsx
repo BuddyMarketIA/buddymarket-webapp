@@ -47,32 +47,52 @@ function SSOTermsModal({ provider, onAccept, onClose }: {
         </div>
         {/* Checkboxes */}
         <div className="space-y-3">
-          <label className="flex items-start gap-3 cursor-pointer group" onClick={() => setAcceptTerms(v => !v)}>
-            <div className={`mt-0.5 w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-              acceptTerms ? "bg-[#F97316] border-[#F97316]" : "border-gray-300 group-hover:border-[#F97316]"
-            }`}>
+          <div className="flex items-start gap-3">
+            <button
+              type="button"
+              onClick={() => setAcceptTerms(v => !v)}
+              className={`mt-0.5 w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all cursor-pointer ${
+                acceptTerms ? "bg-[#F97316] border-[#F97316]" : "border-gray-300 hover:border-[#F97316]"
+              }`}
+            >
               {acceptTerms && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
-            </div>
+            </button>
             <span className="text-sm text-gray-600 leading-relaxed">
               He leído y acepto los{" "}
-              <a href="/terms" target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="text-[#F97316] underline font-medium">
+              <a
+                href="/terms"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#F97316] underline font-medium"
+                onClick={e => e.stopPropagation()}
+              >
                 Términos y Condiciones
               </a>
             </span>
-          </label>
-          <label className="flex items-start gap-3 cursor-pointer group" onClick={() => setAcceptPrivacy(v => !v)}>
-            <div className={`mt-0.5 w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all ${
-              acceptPrivacy ? "bg-[#F97316] border-[#F97316]" : "border-gray-300 group-hover:border-[#F97316]"
-            }`}>
+          </div>
+          <div className="flex items-start gap-3">
+            <button
+              type="button"
+              onClick={() => setAcceptPrivacy(v => !v)}
+              className={`mt-0.5 w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all cursor-pointer ${
+                acceptPrivacy ? "bg-[#F97316] border-[#F97316]" : "border-gray-300 hover:border-[#F97316]"
+              }`}
+            >
               {acceptPrivacy && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
-            </div>
+            </button>
             <span className="text-sm text-gray-600 leading-relaxed">
               He leído y acepto la{" "}
-              <a href="/privacy" target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="text-[#F97316] underline font-medium">
+              <a
+                href="/privacy"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="text-[#F97316] underline font-medium"
+                onClick={e => e.stopPropagation()}
+              >
                 Política de Privacidad
               </a>
             </span>
-          </label>
+          </div>
         </div>
         {/* Actions */}
         <div className="space-y-2 pt-1">

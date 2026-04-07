@@ -1694,3 +1694,8 @@
 - [x] Corregir "Menu saved in My Menus!" en inglés → español en BuddyIA.tsx
 - [x] Corregir contador de recetas en header: mostrar número real en vez de "427 recipes available"
 - [x] Añadir claves de traducción faltantes en todos los idiomas (es, en, fr, it): menus.createList, menus.disclaimer, recipes.disclaimer, common.create, common.creating, common.generating, common.generate, common.applying, recipes.available
+
+## Bug: SSO no funciona (login con Google/Apple)
+- [x] Diagnosticar por qué el SSO falla al iniciar sesión: el modal TyC usaba `<label onClick>` que causaba navegación a /terms al hacer clic en el checkbox
+- [x] Corregir el flujo OAuth para SSO: reemplazados labels con botones independientes para los checkboxes
+- [x] Verificar que el login funciona correctamente en dev (flujo Google OAuth redirect 302 OK)
