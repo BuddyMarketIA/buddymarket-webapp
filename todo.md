@@ -1497,3 +1497,9 @@
 - [ ] Selector de idioma en sección dedicada del sidebar
 - [ ] Selector de idioma en la landing page (navbar y/o footer)
 - [ ] Modal de bienvenida en primera visita para confirmar/cambiar idioma detectado
+
+## Auditoría de Producción — P0 Fixes
+- [ ] Configurar variables de entorno Apple IAP (APPLE_IAP_KEY_ID, APPLE_IAP_ISSUER_ID, APPLE_IAP_PRIVATE_KEY, APPLE_BUNDLE_ID, APPLE_SHARED_SECRET)
+- [ ] Configurar SENTRY_DSN para monitoreo de errores en producción
+- [x] Instalar Helmet.js y configurar headers HTTP de seguridad en server/_core/index.ts
+- [ ] Corregir success_url de Stripe (/dashboard → /app/dashboard)

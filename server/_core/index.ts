@@ -8,6 +8,7 @@ import { createServer } from "http";
 import net from "net";
 import multer from "multer";
 import cors from "cors";
+import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerOAuthRoutes } from "./oauth";
@@ -58,6 +59,45 @@ async function startServer() {
 
   // Trust proxy (needed for rate limiting behind load balancers / Manus proxy)
   app.set("trust proxy", 1);
+
+  // ─── Security headers (Helmet) ────────────────────────────────────────────
+  app.use(helmet({
+    contentSecurityPolicy: {
+      directives: {
+        defaultSrc: ["'self'"],
+        scriptSrc: [
+          "'self'",
+          "'unsafe-inline'",
+          "'unsafe-eval'",
+          "https://js.stripe.com",
+          "https://maps.googleapis.com",
+          "https://maps.gstatic.com",
+        ],
+        styleSrc: ["'self'", "'unsafe-inline'", "https://fonts.googleapis.com"],
+        fontSrc: ["'self'", "https://fonts.gstatic.com"],
+        imgSrc: ["'self'", "data:", "blob:", "https:"],
+        connectSrc: [
+          "'self'",
+          "https://api.stripe.com",
+          "https://maps.googleapis.com",
+          "https://maps.gstatic.com",
+          "wss:",
+          "ws:",
+        ],
+        frameSrc: ["'self'", "https://js.stripe.com", "https://hooks.stripe.com"],
+        objectSrc: ["'none'"],
+        upgradeInsecureRequests: [],
+      },
+    },
+    // Disable COEP to allow Google Maps and Stripe iframes
+    crossOriginEmbedderPolicy: false,
+    // HSTS: enforce HTTPS for 1 year
+    hsts: {
+      maxAge: 31536000,
+      includeSubDomains: true,
+      preload: true,
+    },
+  }));
 
   // ─── Sentry request context ───────────────────────────────────────────────
   attachSentryRequestHandler(app);
