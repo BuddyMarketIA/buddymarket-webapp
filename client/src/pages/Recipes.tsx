@@ -6,6 +6,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
 import ShareRecipeButton from "@/components/ShareRecipeButton";
 import { RECIPE_PLACEHOLDER_IMAGE } from "@/lib/constants";
+import { useRecipeAllergyCheck } from "@/hooks/useRecipeAllergyCheck";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Recipe = {
@@ -175,6 +176,8 @@ function RecipeCard({ recipe, searchQuery, isFav, onToggleFav }: { recipe: Recip
   const methodBadge = COOKING_METHOD_OPTIONS_KEYS.find((m: { value: string; key: string; emoji: string }) => m.value === recipe.cookingMethod);
   const { user } = useAuth();
   const generateAIImage = trpc.recipes.generateAIImage.useMutation();
+  // SAFETY: Check if this recipe contains ingredients the user is allergic to
+  const { hasViolation, violatingIngredients } = useRecipeAllergyCheck(recipe);
 
   const handleGenerateImage = async (e: React.MouseEvent) => {
     e.preventDefault();
@@ -199,12 +202,14 @@ function RecipeCard({ recipe, searchQuery, isFav, onToggleFav }: { recipe: Recip
           background: "white",
           borderRadius: "18px",
           overflow: "hidden",
-          boxShadow: "0 2px 12px rgba(0,0,0,0.08)",
+          boxShadow: hasViolation ? "0 2px 16px rgba(239,68,68,0.35)" : "0 2px 12px rgba(0,0,0,0.08)",
           cursor: "pointer",
           transition: "transform 0.2s, box-shadow 0.2s",
+          border: hasViolation ? "1.5px solid rgba(239,68,68,0.5)" : "none",
+          position: "relative",
         }}
-        onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = "0 8px 24px rgba(0,0,0,0.15)"; }}
-        onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = "0 2px 12px rgba(0,0,0,0.08)"; }}
+        onMouseEnter={e => { e.currentTarget.style.transform = "translateY(-2px)"; e.currentTarget.style.boxShadow = hasViolation ? "0 8px 24px rgba(239,68,68,0.4)" : "0 8px 24px rgba(0,0,0,0.15)"; }}
+        onMouseLeave={e => { e.currentTarget.style.transform = "translateY(0)"; e.currentTarget.style.boxShadow = hasViolation ? "0 2px 16px rgba(239,68,68,0.35)" : "0 2px 12px rgba(0,0,0,0.08)"; }}
       >
         {/* Image */}
         <div style={{ position: "relative", height: "160px", overflow: "hidden" }}>
@@ -263,6 +268,43 @@ function RecipeCard({ recipe, searchQuery, isFav, onToggleFav }: { recipe: Recip
           {methodBadge && methodBadge.value && onToggleFav === undefined && (
             <div style={{ position: "absolute", top: "10px", right: "10px", background: "rgba(249,115,22,0.85)", backdropFilter: "blur(4px)", borderRadius: "10px", padding: "4px 8px" }}>
               <span style={{ fontSize: "14px" }}>{methodBadge.emoji}</span>
+            </div>
+          )}
+          {/* ALLERGY WARNING OVERLAY — blur + red tint when recipe contains forbidden ingredients */}
+          {hasViolation && (
+            <div
+              style={{
+                position: "absolute",
+                inset: 0,
+                background: "rgba(239,68,68,0.18)",
+                backdropFilter: "blur(2px)",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                justifyContent: "center",
+                gap: "6px",
+                zIndex: 5,
+              }}
+            >
+              <div style={{
+                background: "rgba(220,38,38,0.92)",
+                backdropFilter: "blur(8px)",
+                borderRadius: "12px",
+                padding: "8px 12px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: "4px",
+                maxWidth: "90%",
+              }}>
+                <span style={{ fontSize: "20px" }}>⚠️</span>
+                <span style={{ fontSize: "11px", fontWeight: 800, color: "white", textAlign: "center", lineHeight: 1.3 }}>
+                  Contiene ingredientes que debes evitar
+                </span>
+                <span style={{ fontSize: "10px", color: "rgba(255,255,255,0.9)", textAlign: "center", lineHeight: 1.3 }}>
+                  {violatingIngredients.slice(0, 3).join(" · ")}{violatingIngredients.length > 3 ? " · ..." : ""}
+                </span>
+              </div>
             </div>
           )}
           {/* Time + kcal overlay */}

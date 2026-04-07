@@ -1380,6 +1380,110 @@ Devuelve SOLO JSON válido con esta estructura:
           throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Error generando imagen" });
         }
       }),
+
+    // ── Adapt recipe for user — replaces forbidden ingredients with safe alternatives ──
+    adaptForUser: protectedProcedure
+      .input(z.object({
+        recipeId: z.number(),
+        forbiddenIngredients: z.array(z.string()).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const [recipe, userAllergies, userRestrictions, userProfile] = await Promise.all([
+          db.getRecipeById(input.recipeId),
+          db.getUserAllergies(ctx.user.id),
+          db.getUserDietRestrictions(ctx.user.id),
+          db.getUserProfile(ctx.user.id),
+        ]);
+        if (!recipe) throw new TRPCError({ code: "NOT_FOUND" });
+
+        // Build the complete forbidden list
+        const allergyNames = userAllergies.map((a: any) => a.allergy.nameEs).filter(Boolean);
+        const restrictionNames = userRestrictions.map((r: any) => r.restriction.nameEs).filter(Boolean);
+        const extraForbidden = input.forbiddenIngredients || [];
+        const allForbidden = [...allergyNames, ...restrictionNames, ...extraForbidden]
+          .filter((v, i, a) => a.indexOf(v) === i);
+
+        if (allForbidden.length === 0) {
+          throw new TRPCError({ code: "BAD_REQUEST", message: "No hay restricciones configuradas en tu perfil" });
+        }
+
+        // Build ingredients text for the prompt
+        const recipeIngredientRows = await db.getRecipeIngredients(recipe.id).catch(() => []);
+        let ingredientsText = "";
+        if (recipeIngredientRows.length > 0) {
+          ingredientsText = recipeIngredientRows
+            .map((ing: any) => `- ${ing.ingredient?.nameEs || ing.customName || "Ingrediente"}: ${ing.amount || ""} ${ing.measure?.nameEs || "g"}`)
+            .join("\n");
+        } else if (recipe.ingredientsJson) {
+          try {
+            const parsed = JSON.parse(recipe.ingredientsJson as string);
+            if (Array.isArray(parsed)) {
+              ingredientsText = parsed.map((i: any) => `- ${i.name || i.ingredient}: ${i.amount || ""} ${i.unit || "g"}`).join("\n");
+            }
+          } catch {}
+        }
+
+        const systemPrompt = `Eres un chef nutricionista experto. Tu tarea es adaptar recetas sustituyendo ingredientes que el usuario no puede comer por alternativas seguras y deliciosas.
+
+⚠️ RESTRICCIONES ABSOLUTAS DEL USUARIO (NUNCA uses estos ingredientes):
+${allForbidden.map((f) => `- ${f}`).join("\n")}
+
+Responde SIEMPRE en JSON con este formato exacto:
+{
+  "adaptedName": "nombre de la receta adaptada",
+  "description": "descripción breve de los cambios realizados",
+  "substitutions": [
+    { "original": "ingrediente original", "replacement": "ingrediente sustituto", "reason": "por qué es una buena alternativa" }
+  ],
+  "adaptedIngredients": "lista completa de ingredientes adaptados con cantidades",
+  "adaptedInstructions": "instrucciones adaptadas si es necesario",
+  "nutritionalNote": "nota sobre el impacto nutricional de los cambios"
+}`;
+
+        const userMessage = `Receta original: "${recipe.name}"
+
+Ingredientes:
+${ingredientsText || "(no disponibles)"}
+
+Descripción: ${recipe.description || ""}
+
+Adapta esta receta eliminando los ingredientes prohibidos y sustituyéndolos por alternativas seguras y sabrosas.`;
+
+        try {
+          const response = await invokeLLM({
+            messages: [
+              { role: "system" as const, content: systemPrompt },
+              { role: "user" as const, content: userMessage },
+            ],
+            response_format: { type: "json_object" },
+          });
+
+          const rawContent = response.choices?.[0]?.message?.content;
+          if (!rawContent) throw new Error("No response from LLM");
+          const content = typeof rawContent === "string" ? rawContent : JSON.stringify(rawContent);
+          let adaptedData: any;
+          try {
+            adaptedData = JSON.parse(content);;
+          } catch {
+            throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Error procesando la respuesta de la IA" });
+          }
+
+          return {
+            success: true,
+            originalName: recipe.name,
+            adaptedName: adaptedData.adaptedName || `${recipe.name} (adaptada)`,
+            description: adaptedData.description || "",
+            substitutions: (adaptedData.substitutions || []) as Array<{ original: string; replacement: string; reason: string }>,
+            adaptedIngredients: adaptedData.adaptedIngredients || "",
+            adaptedInstructions: adaptedData.adaptedInstructions || "",
+            nutritionalNote: adaptedData.nutritionalNote || "",
+            forbiddenRemoved: allForbidden,
+          };
+        } catch (err) {
+          console.error(`[adaptForUser] Error adapting recipe ${input.recipeId}:`, err);
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Error al adaptar la receta" });
+        }
+      }),
   }),
   // ---------------------------------------------------------------------------
   // MENU ORGANIZERS

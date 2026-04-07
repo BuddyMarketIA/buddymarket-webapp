@@ -6,6 +6,7 @@ import { Link, useLocation, useParams } from "wouter";
 import { toast } from "sonner";
 import { useState, useMemo } from "react";
 import { RECIPE_PLACEHOLDER_IMAGE } from "@/lib/constants";
+import { useRecipeAllergyCheck } from "@/hooks/useRecipeAllergyCheck";
 import {
   ArrowLeftIcon,
   HeartIcon,
@@ -13,6 +14,8 @@ import {
   TrashIcon,
   ShoppingCartIcon,
   CheckCircleIcon,
+  ExclamationTriangleIcon,
+  SparklesIcon,
 } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartSolid } from "@heroicons/react/24/solid";
 
@@ -31,12 +34,33 @@ export default function RecipeDetail() {
   const [showLogDialog, setShowLogDialog] = useState(false);
   const [logDate, setLogDate] = useState(() => new Date().toISOString().slice(0, 10));
   const [logDayPartId, setLogDayPartId] = useState("1");
+  const [showAdaptModal, setShowAdaptModal] = useState(false);
+  const [adaptResult, setAdaptResult] = useState<{
+    adaptedName: string;
+    description: string;
+    substitutions: Array<{ original: string; replacement: string; reason: string }>;
+    adaptedIngredients: string;
+    adaptedInstructions: string;
+    nutritionalNote: string;
+  } | null>(null);
+
+  const adaptRecipe = trpc.recipes.adaptForUser.useMutation({
+    onSuccess: (data) => {
+      setAdaptResult(data);
+      setShowAdaptModal(true);
+    },
+    onError: (err) => {
+      toast.error(err.message || "Error al adaptar la receta");
+    },
+  });
   const { data: dayParts } = trpc.catalogs.dayParts.useQuery();
 
   const { data: recipe, isLoading } = trpc.recipes.getById.useQuery(
     { id: Number(id) },
     { enabled: !!id }
   );
+  // SAFETY: Must be called unconditionally (before any early return)
+  const { hasViolation, violatingIngredients } = useRecipeAllergyCheck(recipe);
 
   const { data: inventoryItems } = trpc.inventory.list.useQuery(undefined, {
     enabled: !!user,
@@ -255,6 +279,106 @@ export default function RecipeDetail() {
           <p className="text-sm text-gray-500 leading-relaxed">{recipe.description}</p>
         )}
       </div>
+
+      {/* ALLERGY ALERT BANNER — shown when recipe contains forbidden ingredients */}
+      {hasViolation && user && (
+        <div
+          style={{
+            background: "linear-gradient(135deg, #fef2f2 0%, #fee2e2 100%)",
+            border: "1.5px solid #fca5a5",
+            borderRadius: "16px",
+            padding: "16px",
+            marginBottom: "16px",
+            display: "flex",
+            flexDirection: "column",
+            gap: "12px",
+          }}
+        >
+          {/* Header */}
+          <div style={{ display: "flex", alignItems: "flex-start", gap: "10px" }}>
+            <div style={{
+              background: "#dc2626",
+              borderRadius: "10px",
+              padding: "8px",
+              flexShrink: 0,
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+            }}>
+              <ExclamationTriangleIcon style={{ width: "20px", height: "20px", color: "white" }} />
+            </div>
+            <div style={{ flex: 1 }}>
+              <p style={{ margin: 0, fontSize: "14px", fontWeight: 800, color: "#991b1b", lineHeight: 1.3 }}>
+                Esta receta no está pensada para ti
+              </p>
+              <p style={{ margin: "4px 0 0", fontSize: "13px", color: "#b91c1c", lineHeight: 1.4 }}>
+                Contiene ingredientes que debes evitar según tu perfil:
+              </p>
+            </div>
+          </div>
+          {/* Violating ingredients pills */}
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", paddingLeft: "38px" }}>
+            {violatingIngredients.map((ing) => (
+              <span
+                key={ing}
+                style={{
+                  background: "#dc2626",
+                  color: "white",
+                  borderRadius: "20px",
+                  padding: "4px 10px",
+                  fontSize: "12px",
+                  fontWeight: 700,
+                  display: "flex",
+                  alignItems: "center",
+                  gap: "4px",
+                }}
+              >
+                ⚠️ {ing}
+              </span>
+            ))}
+          </div>
+          {/* Adapt button */}
+          <button
+            onClick={() => {
+              if (adaptRecipe.isPending) return;
+              adaptRecipe.mutate({
+                recipeId: recipe.id,
+                forbiddenIngredients: violatingIngredients,
+              });
+            }}
+            disabled={adaptRecipe.isPending}
+            style={{
+              background: "linear-gradient(135deg, #F97316 0%, #ea580c 100%)",
+              color: "white",
+              border: "none",
+              borderRadius: "12px",
+              padding: "12px 16px",
+              fontSize: "14px",
+              fontWeight: 700,
+              cursor: "pointer",
+              display: "flex",
+              alignItems: "center",
+              justifyContent: "center",
+              gap: "8px",
+              width: "100%",
+              boxShadow: "0 4px 12px rgba(249,115,22,0.3)",
+              transition: "transform 0.15s, box-shadow 0.15s",
+            }}
+            onMouseEnter={e => { (e.currentTarget as HTMLButtonElement).style.transform = "translateY(-1px)"; (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 6px 16px rgba(249,115,22,0.4)"; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLButtonElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLButtonElement).style.boxShadow = "0 4px 12px rgba(249,115,22,0.3)"; }}
+          >
+            {adaptRecipe.isPending ? (
+              <><span style={{ animation: "spin 1s linear infinite", display: "inline-block" }}>⟳</span> Adaptando con IA...</>
+            ) : (
+              <><SparklesIcon style={{ width: "18px", height: "18px" }} /> Adaptar esta receta para mí con IA</>
+            )}
+          </button>
+          {/* Disclaimer */}
+          <p style={{ margin: 0, fontSize: "11px", color: "#9ca3af", textAlign: "center", lineHeight: 1.4 }}>
+            BuddyMarket te cuida. La IA sustituirá los ingredientes problemáticos manteniendo el sabor y los valores nutricionales.
+          </p>
+        </div>
+      )}
 
       {/* Meal-time tags */}
       {recipe.mealTime && recipe.mealTime !== "cualquiera" && (
@@ -594,6 +718,112 @@ export default function RecipeDetail() {
                 {logMeal.isPending ? "Guardando..." : "Guardar en el diario"}
               </button>
             </div>
+          </div>
+        </div>
+      )}
+
+      {/* ADAPT RECIPE RESULT MODAL */}
+      {showAdaptModal && adaptResult && (
+        <div
+          className="modal-overlay"
+          onClick={(e) => { if (e.target === e.currentTarget) setShowAdaptModal(false); }}
+        >
+          <div
+            style={{
+              width: "100%",
+              maxWidth: "480px",
+              maxHeight: "90vh",
+              overflowY: "auto",
+              borderRadius: "24px",
+              background: "white",
+              padding: "24px",
+              boxShadow: "0 25px 50px rgba(0,0,0,0.25)",
+            }}
+          >
+            {/* Header */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "20px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <div style={{ background: "linear-gradient(135deg, #F97316, #ea580c)", borderRadius: "12px", padding: "8px", display: "flex" }}>
+                  <SparklesIcon style={{ width: "20px", height: "20px", color: "white" }} />
+                </div>
+                <div>
+                  <p style={{ margin: 0, fontSize: "16px", fontWeight: 800, color: "#1a1a1a" }}>Receta adaptada para ti</p>
+                  <p style={{ margin: 0, fontSize: "12px", color: "#6b7280" }}>BuddyMarket IA</p>
+                </div>
+              </div>
+              <button
+                onClick={() => setShowAdaptModal(false)}
+                style={{ background: "#f3f4f6", border: "none", borderRadius: "50%", width: "32px", height: "32px", cursor: "pointer", fontSize: "16px", display: "flex", alignItems: "center", justifyContent: "center" }}
+              >
+                ×
+              </button>
+            </div>
+
+            {/* New name */}
+            <div style={{ background: "linear-gradient(135deg, #fff7ed, #ffedd5)", borderRadius: "16px", padding: "16px", marginBottom: "16px", border: "1px solid #fed7aa" }}>
+              <p style={{ margin: "0 0 4px", fontSize: "11px", fontWeight: 700, color: "#ea580c", textTransform: "uppercase", letterSpacing: "0.05em" }}>Versión adaptada</p>
+              <p style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: "#1a1a1a" }}>{adaptResult.adaptedName}</p>
+              {adaptResult.description && (
+                <p style={{ margin: "8px 0 0", fontSize: "13px", color: "#4b5563", lineHeight: 1.5 }}>{adaptResult.description}</p>
+              )}
+            </div>
+
+            {/* Substitutions */}
+            {adaptResult.substitutions.length > 0 && (
+              <div style={{ marginBottom: "16px" }}>
+                <p style={{ margin: "0 0 10px", fontSize: "13px", fontWeight: 700, color: "#374151" }}>Sustituciones realizadas</p>
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                  {adaptResult.substitutions.map((sub, i) => (
+                    <div key={i} style={{ background: "#f9fafb", borderRadius: "12px", padding: "12px", border: "1px solid #e5e7eb" }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px" }}>
+                        <span style={{ background: "#fee2e2", color: "#dc2626", borderRadius: "8px", padding: "2px 8px", fontSize: "12px", fontWeight: 700 }}>{sub.original}</span>
+                        <span style={{ color: "#9ca3af", fontSize: "14px" }}>→</span>
+                        <span style={{ background: "#dcfce7", color: "#16a34a", borderRadius: "8px", padding: "2px 8px", fontSize: "12px", fontWeight: 700 }}>{sub.replacement}</span>
+                      </div>
+                      {sub.reason && (
+                        <p style={{ margin: 0, fontSize: "12px", color: "#6b7280", lineHeight: 1.4 }}>{sub.reason}</p>
+                      )}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
+            {/* Adapted ingredients */}
+            {adaptResult.adaptedIngredients && (
+              <div style={{ marginBottom: "16px" }}>
+                <p style={{ margin: "0 0 8px", fontSize: "13px", fontWeight: 700, color: "#374151" }}>Ingredientes adaptados</p>
+                <div style={{ background: "#f9fafb", borderRadius: "12px", padding: "12px", border: "1px solid #e5e7eb" }}>
+                  <pre style={{ margin: 0, fontSize: "12px", color: "#374151", whiteSpace: "pre-wrap", fontFamily: "inherit", lineHeight: 1.6 }}>{adaptResult.adaptedIngredients}</pre>
+                </div>
+              </div>
+            )}
+
+            {/* Nutritional note */}
+            {adaptResult.nutritionalNote && (
+              <div style={{ background: "#eff6ff", borderRadius: "12px", padding: "12px", marginBottom: "16px", border: "1px solid #bfdbfe" }}>
+                <p style={{ margin: "0 0 4px", fontSize: "11px", fontWeight: 700, color: "#1d4ed8", textTransform: "uppercase", letterSpacing: "0.05em" }}>Nota nutricional</p>
+                <p style={{ margin: 0, fontSize: "12px", color: "#1e40af", lineHeight: 1.5 }}>{adaptResult.nutritionalNote}</p>
+              </div>
+            )}
+
+            {/* Close button */}
+            <button
+              onClick={() => setShowAdaptModal(false)}
+              style={{
+                width: "100%",
+                background: "linear-gradient(135deg, #F97316, #ea580c)",
+                color: "white",
+                border: "none",
+                borderRadius: "14px",
+                padding: "14px",
+                fontSize: "14px",
+                fontWeight: 700,
+                cursor: "pointer",
+              }}
+            >
+              Entendido — gracias BuddyMarket ❤️
+            </button>
           </div>
         </div>
       )}
