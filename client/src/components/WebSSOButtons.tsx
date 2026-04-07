@@ -74,12 +74,17 @@ interface WebSSOButtonsProps {
   onSuccess?: () => void;
   className?: string;
   showApple?: boolean;
+  /** Interceptor: si se pasa, se llama antes de iniciar el OAuth.
+   *  Recibe el proveedor y la función que inicia el OAuth.
+   *  El interceptor decide si llamar a la acción directamente o mostrar un modal. */
+  onBeforeSSO?: (provider: "google" | "apple", action: () => void) => void;
 }
 
 export default function WebSSOButtons({
   onSuccess,
   className = "",
   showApple = true,
+  onBeforeSSO,
 }: WebSSOButtonsProps) {
   const [googleReady, setGoogleReady] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
@@ -182,18 +187,26 @@ export default function WebSSOButtons({
     }
   };
 
-  const handleGoogleClick = () => {
+  const _doGoogleRedirect = () => {
     if (!GOOGLE_CLIENT_ID) {
       toast.error("Google SSO no configurado", { description: "Añade VITE_GOOGLE_CLIENT_ID en los secretos" });
       return;
     }
-    // Flujo OAuth redirect: más robusto que el popup GSI (funciona sin cookies de terceros)
     const origin = window.location.origin;
     const returnPath = window.location.pathname !== "/login" ? window.location.pathname : "/";
-    window.location.href = `/api/auth/google/login?origin=${encodeURIComponent(origin)}&returnPath=${encodeURIComponent(returnPath)}`;
+    const url = `/api/auth/google/login?origin=${encodeURIComponent(origin)}&returnPath=${encodeURIComponent(returnPath)}`;
+    window.location.assign(url);
   };
 
-  const handleAppleSignIn = async () => {
+  const handleGoogleClick = () => {
+    if (onBeforeSSO) {
+      onBeforeSSO("google", _doGoogleRedirect);
+    } else {
+      _doGoogleRedirect();
+    }
+  };
+
+  const _doAppleSignIn = async () => {
     setAppleLoading(true);
     try {
       let identityToken: string;
@@ -244,8 +257,15 @@ export default function WebSSOButtons({
     }
   };
 
-  // ── Render ──────────────────────────────────────────────────────────────────
+  const handleAppleSignIn = () => {
+    if (onBeforeSSO) {
+      onBeforeSSO("apple", () => { _doAppleSignIn(); });
+    } else {
+      _doAppleSignIn();
+    }
+  };
 
+  // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <div className={`flex flex-col gap-3 w-full ${className}`}>
       {/* ── Botón de Google — siempre visible, nativo ── */}

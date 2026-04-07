@@ -4,8 +4,100 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Eye, EyeOff, Mail, Lock, ArrowRight, Loader2, ChevronLeft, User, Phone } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, ArrowRight, Loader2, ChevronLeft, User, Phone, Shield, CheckCircle2, X } from "lucide-react";
 import WebSSOButtons from "@/components/WebSSOButtons";
+
+// ─── TyC Modal para SSO ───────────────────────────────────────────────────────
+const SSO_TYC_ACCEPTED_KEY = "buddymarket_sso_tyc_v2";
+
+function hasSSOTyCAccepted(): boolean {
+  try {
+    const stored = localStorage.getItem(SSO_TYC_ACCEPTED_KEY);
+    if (!stored) return false;
+    const data = JSON.parse(stored) as { at: number; v: string };
+    return data.v === "2.0";
+  } catch { return false; }
+}
+
+function SSOTermsModal({ provider, onAccept, onClose }: {
+  provider: "google" | "apple";
+  onAccept: () => void;
+  onClose: () => void;
+}) {
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [acceptPrivacy, setAcceptPrivacy] = useState(false);
+  const providerName = provider === "google" ? "Google" : "Apple";
+  return (
+    <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/70 backdrop-blur-sm p-4">
+      <div className="bg-white rounded-3xl shadow-2xl w-full max-w-md p-6 space-y-5">
+        {/* Header */}
+        <div className="flex items-start justify-between">
+          <div className="flex items-center gap-3">
+            <div className="w-10 h-10 rounded-2xl bg-orange-50 flex items-center justify-center flex-shrink-0">
+              <Shield className="w-5 h-5 text-[#F97316]" />
+            </div>
+            <div>
+              <h3 className="font-bold text-gray-900 text-base">Antes de continuar con {providerName}</h3>
+              <p className="text-gray-400 text-xs mt-0.5">Acepta los términos para crear tu cuenta</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="text-gray-400 hover:text-gray-600 transition-colors p-1 ml-2 flex-shrink-0">
+            <X className="w-5 h-5" />
+          </button>
+        </div>
+        {/* Checkboxes */}
+        <div className="space-y-3">
+          <label className="flex items-start gap-3 cursor-pointer group" onClick={() => setAcceptTerms(v => !v)}>
+            <div className={`mt-0.5 w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+              acceptTerms ? "bg-[#F97316] border-[#F97316]" : "border-gray-300 group-hover:border-[#F97316]"
+            }`}>
+              {acceptTerms && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
+            </div>
+            <span className="text-sm text-gray-600 leading-relaxed">
+              He leído y acepto los{" "}
+              <a href="/terms" target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="text-[#F97316] underline font-medium">
+                Términos y Condiciones
+              </a>
+            </span>
+          </label>
+          <label className="flex items-start gap-3 cursor-pointer group" onClick={() => setAcceptPrivacy(v => !v)}>
+            <div className={`mt-0.5 w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+              acceptPrivacy ? "bg-[#F97316] border-[#F97316]" : "border-gray-300 group-hover:border-[#F97316]"
+            }`}>
+              {acceptPrivacy && <CheckCircle2 className="w-3.5 h-3.5 text-white" />}
+            </div>
+            <span className="text-sm text-gray-600 leading-relaxed">
+              He leído y acepto la{" "}
+              <a href="/privacy" target="_blank" rel="noopener noreferrer" onClick={e => e.stopPropagation()} className="text-[#F97316] underline font-medium">
+                Política de Privacidad
+              </a>
+            </span>
+          </label>
+        </div>
+        {/* Actions */}
+        <div className="space-y-2 pt-1">
+          <Button
+            onClick={() => {
+              if (!acceptTerms || !acceptPrivacy) {
+                toast.error("Debes aceptar ambos documentos para continuar");
+                return;
+              }
+              localStorage.setItem(SSO_TYC_ACCEPTED_KEY, JSON.stringify({ at: Date.now(), v: "2.0" }));
+              onAccept();
+            }}
+            disabled={!acceptTerms || !acceptPrivacy}
+            className="w-full h-12 bg-[#F97316] hover:bg-[#ea6c0f] disabled:opacity-50 text-white font-semibold rounded-2xl text-sm shadow-[0_4px_20px_rgba(249,115,22,0.3)] transition-all"
+          >
+            Continuar con {providerName}
+          </Button>
+          <button onClick={onClose} className="w-full text-center text-gray-400 text-xs py-2 hover:text-gray-600 transition-colors">
+            Cancelar
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // ─── Carousel images ──────────────────────────────────────────────────────────
 const SLIDES = [
@@ -82,10 +174,21 @@ export default function LoginPage() {
   const [phone, setPhone] = useState("");
   const [phoneOtpCode, setPhoneOtpCode] = useState(["", "", "", "", "", ""]);
   const phoneOtpRefs = useRef<(HTMLInputElement | null)[]>([]);
-  // Terms acceptance
+  // Terms acceptance (registro por email)
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [acceptPrivacy, setAcceptPrivacy] = useState(false);
   const [marketingConsent, setMarketingConsent] = useState(false);
+  // TyC modal para SSO (Google/Apple)
+  const [ssoTyCModal, setSsoTyCModal] = useState<{ provider: "google" | "apple"; pendingAction: () => void } | null>(null);
+
+  // Wrapper para SSO: muestra TyC si no han sido aceptados aún
+  const handleSSOWithTyC = (provider: "google" | "apple", action: () => void) => {
+    if (hasSSOTyCAccepted()) {
+      action();
+    } else {
+      setSsoTyCModal({ provider, pendingAction: action });
+    }
+  };
 
   // tRPC mutations
   const loginMut = trpc.auth.login.useMutation();
@@ -328,11 +431,11 @@ export default function LoginPage() {
               </div>
               {/* SSO buttons — Google + Apple */}
               <div className={ssoWrapper}>
-                <WebSSOButtons onSuccess={() => { window.location.href = "/app/dashboard"; }} />
+                <WebSSOButtons onSuccess={() => { window.location.href = "/app/dashboard"; }} onBeforeSSO={handleSSOWithTyC} />
               </div>
-              <div className="flex items-center gap-3">
+              <div className="relative flex items-center gap-3 my-1">
                 <div className="flex-1 h-px bg-gray-200" />
-                <span className="text-gray-400 text-xs">o con email y contraseña</span>
+                <span className="text-xs text-gray-400 font-medium">o con email y contraseña</span>
                 <div className="flex-1 h-px bg-gray-200" />
               </div>
               <form onSubmit={handleLogin} className="space-y-3">
@@ -664,6 +767,18 @@ export default function LoginPage() {
           </p>
         </div>
       </div>
+
+      {/* ─── Modal TyC para SSO ─────────────────────────────────────────────────────── */}
+      {ssoTyCModal && (
+        <SSOTermsModal
+          provider={ssoTyCModal.provider}
+          onAccept={() => {
+            setSsoTyCModal(null);
+            ssoTyCModal.pendingAction();
+          }}
+          onClose={() => setSsoTyCModal(null)}
+        />
+      )}
     </div>
   );
 }

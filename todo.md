@@ -1569,3 +1569,5 @@
 - [x] Script upload_to_appstore.py para subir metadatos y screenshots
 - [x] Guía IAP_SECRETS_GUIDE.md con instrucciones de configuración
 - [x] Autenticación por número de teléfono con OTP SMS (Twilio)
+- [ ] Corregir Google login en Safari/iOS: usar redirect en lugar de popup (cookies de terceros bloqueadas)
+- [ ] Modal de TyC obligatorio para SSO (Google/Apple): mostrar antes de completar el registro
