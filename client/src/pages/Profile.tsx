@@ -499,8 +499,41 @@ export default function Profile() {
     pregnancyWeek: pregnancyWeek ? parseInt(pregnancyWeek) : undefined,
   });
 
+  // Alergias que requieren confirmación explícita por ser potencialmente graves (rec. #6)
+  const SEVERE_ALLERGY_KEYWORDS = ["cacahuete", "frutos secos", "nuez", "almendra", "avellana",
+    "marisco", "pescado", "leche", "huevo", "soja", "trigo", "gluten", "sésamo", "moluscos", "altramuces"];
+  const [showAllergyConfirm, setShowAllergyConfirm] = useState(false);
+  const [pendingAllergyIds, setPendingAllergyIds] = useState<number[]>([]);
+  const [newSevereAllergyNames, setNewSevereAllergyNames] = useState<string[]>([]);
+
   const handleSaveAllergies = () => {
+    // Check if any newly added allergy is severe (rec. #6)
+    const currentIds = new Set((profile?.allergies ?? []).map((a: any) => a.allergy?.id ?? a.id));
+    const newlyAdded = selectedAllergies.filter((id) => !currentIds.has(id));
+    const newSevere = newlyAdded.reduce<{ id: number; name: string }[]>((acc, id) => {
+      const allergy = allergiesCatalog?.find((a: any) => a.id === id);
+      const name = (allergy?.nameEs ?? "").toLowerCase();
+      if (SEVERE_ALLERGY_KEYWORDS.some((s) => name.includes(s))) {
+        acc.push({ id, name: allergy?.nameEs ?? String(id) });
+      }
+      return acc;
+    }, []);
+    if (newSevere.length > 0) {
+      setPendingAllergyIds(selectedAllergies);
+      setNewSevereAllergyNames(newSevere.map((a) => a.name));
+      setShowAllergyConfirm(true);
+      return;
+    }
     setAllergiesMut.mutate({ allergyIds: selectedAllergies });
+    setDietRestrictionsMut.mutate({ restrictionIds: selectedRestrictions });
+  };
+
+  const confirmSaveAllergies = () => {
+    setShowAllergyConfirm(false);
+    setAllergiesMut.mutate({
+      allergyIds: pendingAllergyIds,
+      severities: Object.fromEntries(pendingAllergyIds.map((id) => [String(id), "medical" as const])),
+    });
     setDietRestrictionsMut.mutate({ restrictionIds: selectedRestrictions });
   };
 
@@ -560,6 +593,7 @@ export default function Profile() {
   const card: React.CSSProperties = { background: "white", borderRadius: "18px", padding: "20px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", marginBottom: "16px" };
 
   return (
+    <>
     <div style={{ maxWidth: "600px", margin: "0 auto", padding: "16px" }}>
       {/* Image Crop Modal */}
       {cropImageSrc && (
@@ -1297,6 +1331,43 @@ export default function Profile() {
         <DeleteAccountSection />
       )}
     </div>
+
+    {/* MODAL DE CONFIRMACIÓN PARA ALERGIAS GRAVES (rec. #6) */}
+    {showAllergyConfirm && (
+      <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
+        <div style={{ background: "white", borderRadius: "20px", padding: "28px", maxWidth: "420px", width: "100%", boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
+          <div style={{ width: "56px", height: "56px", borderRadius: "50%", background: "#fee2e2", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", fontSize: "28px" }}>⚠️</div>
+          <h3 style={{ textAlign: "center", fontSize: "18px", fontWeight: 800, color: "#dc2626", margin: "0 0 12px" }}>Alergia grave detectada</h3>
+          <p style={{ textAlign: "center", fontSize: "14px", color: "#374151", margin: "0 0 16px", lineHeight: 1.6 }}>
+            Estás añadiendo una alergia que puede causar <strong>reacciones graves o anafilaxia</strong>:
+          </p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", justifyContent: "center", marginBottom: "16px" }}>
+            {newSevereAllergyNames.map((name) => (
+              <span key={name} style={{ padding: "6px 14px", background: "#fee2e2", color: "#dc2626", borderRadius: "20px", fontSize: "13px", fontWeight: 700, border: "1.5px solid #fca5a5" }}>🚨 {name}</span>
+            ))}
+          </div>
+          <p style={{ textAlign: "center", fontSize: "13px", color: "#6b7280", margin: "0 0 20px", lineHeight: 1.5 }}>
+            BuddyMarket usará esta información para <strong>excluir estos ingredientes de todos tus menús y recetas</strong>.
+            Esta app no sustituye el consejo médico. Consulta a tu médico o alergista ante cualquier duda.
+          </p>
+          <div style={{ display: "flex", gap: "12px" }}>
+            <button
+              onClick={() => setShowAllergyConfirm(false)}
+              style={{ flex: 1, padding: "12px", background: "#f3f4f6", border: "none", borderRadius: "12px", fontSize: "14px", fontWeight: 600, cursor: "pointer", color: "#374151" }}
+            >
+              Cancelar
+            </button>
+            <button
+              onClick={confirmSaveAllergies}
+              style={{ flex: 1, padding: "12px", background: "#dc2626", border: "none", borderRadius: "12px", fontSize: "14px", fontWeight: 700, cursor: "pointer", color: "white" }}
+            >
+              Sí, confirmar alergia grave
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
+    </>
   );
 }
 

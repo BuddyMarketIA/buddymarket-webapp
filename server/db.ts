@@ -60,6 +60,14 @@ import {
   InsertPantryStock,
   otpTokens,
   InsertOtpToken,
+  allergyHistory,
+  InsertAllergyHistory,
+  userAllergySeverity,
+  InsertUserAllergySeverity,
+  allergyViolationLogs,
+  InsertAllergyViolationLog,
+  badges,
+  userBadges,
 } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
@@ -2205,8 +2213,6 @@ export async function getUserByEmail(email: string) {
 // =============================================================================
 // BADGES — Helpers de base de datos
 // =============================================================================
-import { badges, userBadges } from "../drizzle/schema";
-
 /** Obtener todas las insignias activas del catálogo */
 export async function getAllBadges() {
   const db = await getDb();
@@ -2306,5 +2312,123 @@ export async function getBadgeLeaderboard(limit = 20) {
     .innerJoin(users, eq(userBadges.userId, users.id))
     .groupBy(userBadges.userId, users.name, users.imageUrl)
     .orderBy(desc(sql`SUM(${badges.points})`))
+    .limit(limit);
+}
+
+// =============================================================================
+// ALLERGY SECURITY HELPERS — Auditoría, historial, severidad y violaciones
+// =============================================================================
+
+/** Registrar un cambio en las alergias del usuario (historial, rec. #5) */
+export async function logAllergyChange(data: {
+  userId: number;
+  allergyId: number;
+  allergyNameEs: string;
+  action: "added" | "removed";
+  severity?: string;
+  ip?: string;
+  userAgent?: string;
+}) {
+  const db = await getDb();
+  if (!db) return;
+  await db.insert(allergyHistory).values({
+    userId: data.userId,
+    allergyId: data.allergyId,
+    allergyNameEs: data.allergyNameEs,
+    action: data.action,
+    severity: data.severity ?? "medical",
+    changedByIp: data.ip,
+    userAgent: data.userAgent,
+  });
+}
+
+/** Obtener historial de cambios de alergias de un usuario */
+export async function getAllergyHistory(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(allergyHistory)
+    .where(eq(allergyHistory.userId, userId))
+    .orderBy(desc(allergyHistory.changedAt))
+    .limit(100);
+}
+
+/** Guardar o actualizar la severidad de una alergia del usuario (rec. #8) */
+export async function upsertUserAllergySeverity(userId: number, allergyId: number, severity: string) {
+  const db = await getDb();
+  if (!db) return;
+  await db
+    .insert(userAllergySeverity)
+    .values({ userId, allergyId, severity })
+    .onConflictDoUpdate({
+      target: [userAllergySeverity.userId, userAllergySeverity.allergyId],
+      set: { severity, confirmedAt: new Date() },
+    });
+}
+
+/** Obtener severidades de alergias del usuario */
+export async function getUserAllergySeverities(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select()
+    .from(userAllergySeverity)
+    .where(eq(userAllergySeverity.userId, userId));
+}
+
+/** Registrar una violación de alergia detectada (rec. #3) */
+export async function logAllergyViolation(data: {
+  userId: number;
+  generationType: string;
+  forbiddenIngredients: string[];
+  detectedInText?: string;
+  restrictionsSnapshot?: object;
+}) {
+  const db = await getDb();
+  if (!db) return;
+  await db.insert(allergyViolationLogs).values({
+    userId: data.userId,
+    generationType: data.generationType,
+    forbiddenIngredients: JSON.stringify(data.forbiddenIngredients),
+    detectedInText: data.detectedInText?.slice(0, 500),
+    restrictionsSnapshot: data.restrictionsSnapshot ? JSON.stringify(data.restrictionsSnapshot) : undefined,
+  });
+}
+
+/** Contar violaciones recientes de un ingrediente específico (para alerta admin, rec. #4) */
+export async function countRecentViolationsForIngredient(ingredient: string, hoursBack = 24): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const since = new Date(Date.now() - hoursBack * 60 * 60 * 1000);
+  const result = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(allergyViolationLogs)
+    .where(
+      and(
+        gte(allergyViolationLogs.createdAt, since),
+        sql`${allergyViolationLogs.forbiddenIngredients}::text ILIKE ${'%' + ingredient + '%'}`
+      )
+    );
+  return Number(result[0]?.count ?? 0);
+}
+
+/** Obtener todas las violaciones recientes para el panel admin */
+export async function getRecentAllergyViolations(limit = 50) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select({
+      id: allergyViolationLogs.id,
+      userId: allergyViolationLogs.userId,
+      userName: users.name,
+      userEmail: users.email,
+      generationType: allergyViolationLogs.generationType,
+      forbiddenIngredients: allergyViolationLogs.forbiddenIngredients,
+      createdAt: allergyViolationLogs.createdAt,
+    })
+    .from(allergyViolationLogs)
+    .leftJoin(users, eq(allergyViolationLogs.userId, users.id))
+    .orderBy(desc(allergyViolationLogs.createdAt))
     .limit(limit);
 }

@@ -126,9 +126,29 @@ function buildForbiddenIngredientsBlock(params: {
 }
 
 /**
- * Post-generation validator: checks if any ALLERGY ingredient appears in
- * the stringified AI response. Returns a list of violations found.
- * Only flags allergies (health-critical), not dislikes.
+ * Map of common derived/hidden forms of allergenic ingredients (rec. #10).
+ * Key: base allergen name (lowercase), Value: array of derived terms to also check.
+ */
+const ALLERGY_DERIVATIVES: Record<string, string[]> = {
+  "gluten": ["trigo", "cebada", "centeno", "espelta", "kamut", "harina", "pan rallado", "sémola", "bulgur", "farro"],
+  "leche": ["lactosa", "mantequilla", "nata", "queso", "yogur", "crema", "caseína", "suero", "ghee", "requesón"],
+  "huevo": ["clara", "yema", "mayonesa", "merengue", "tortilla"],
+  "cacahuete": ["maní", "mantequilla de cacahuete", "pasta de cacahuete"],
+  "soja": ["tofu", "tempeh", "miso", "edamame", "tamari", "salsa de soja"],
+  "marisco": ["gamba", "langostino", "cangrejo", "langosta", "bogavante", "centollo", "nécora"],
+  "pescado": ["anchoa", "bacalao", "salmón", "atún", "sardina", "boquerón", "merluza", "lubina"],
+  "frutos secos": ["nuez", "almendra", "avellana", "pistacho", "anacardo", "piñón", "nuez de macadamia"],
+  "mostaza": ["semilla de mostaza"],
+  "apio": ["semilla de apio", "sal de apio"],
+  "sésamo": ["tahini", "tahína", "semilla de sésamo"],
+  "sulfitos": ["dióxido de azufre", "metabisulfito"],
+  "moluscos": ["mejillón", "almeja", "ostra", "calamar", "pulpo", "sepia", "caracol"],
+};
+
+/**
+ * Post-generation validator: checks if any ALLERGY ingredient (or its derivatives)
+ * appears in the stringified AI response. Returns a list of violations found.
+ * Only flags allergies (health-critical), not dislikes. (rec. #1, #3, #10)
  */
 function detectAllergyViolations(
   responseText: string,
@@ -138,9 +158,58 @@ function detectAllergyViolations(
   const violations: string[] = [];
   for (const row of allergies) {
     const name = row.allergy.nameEs.toLowerCase();
+    // Check direct match
     if (name.length > 2 && lowerResponse.includes(name)) {
       violations.push(row.allergy.nameEs);
+      continue;
     }
+    // Check derived ingredients (rec. #10)
+    const derivatives = ALLERGY_DERIVATIVES[name] ?? [];
+    for (const derivative of derivatives) {
+      if (lowerResponse.includes(derivative.toLowerCase())) {
+        violations.push(`${row.allergy.nameEs} (derivado: ${derivative})`);
+        break;
+      }
+    }
+  }
+  return violations;
+}
+
+/**
+ * Async version: logs violations to DB and sends admin alert if repeated (rec. #3, #4).
+ */
+async function detectAndLogAllergyViolations(
+  responseText: string,
+  allergies: Array<{ allergy: { nameEs: string } }>,
+  userId: number,
+  generationType: string,
+  restrictionsSnapshot?: object
+): Promise<string[]> {
+  const violations = detectAllergyViolations(responseText, allergies);
+  if (violations.length > 0) {
+    // Log to DB (rec. #3)
+    try {
+      await db.logAllergyViolation({
+        userId,
+        generationType,
+        forbiddenIngredients: violations,
+        detectedInText: responseText.slice(0, 500),
+        restrictionsSnapshot,
+      });
+    } catch (_) {}
+    // Check if this ingredient has been violated multiple times recently (rec. #4)
+    try {
+      const mainIngredient = violations[0].split(' (')[0];
+      const recentCount = await db.countRecentViolationsForIngredient(mainIngredient, 24);
+      if (recentCount >= 3) {
+        // Send admin alert
+        const { notifyOwner } = await import("./_core/notification.js");
+        await notifyOwner({
+          title: `🚨 ALERTA SEGURIDAD: Violación de alergia repetida`,
+          content: `El ingrediente "${mainIngredient}" ha aparecido en ${recentCount} menús/recetas generados en las últimas 24h a pesar de estar marcado como alérgeno. Usuario afectado: ${userId}. Tipo: ${generationType}. Revisar el sistema de prompts urgentemente.`,
+        });
+      }
+    } catch (_) {}
   }
   return violations;
 }
@@ -622,9 +691,50 @@ export const appRouter = router({
       }),
 
     setAllergies: protectedProcedure
-      .input(z.object({ allergyIds: z.array(z.number()) }))
+      .input(z.object({
+        allergyIds: z.array(z.number()),
+        severities: z.record(z.string(), z.enum(["medical", "intolerance", "preference"])).optional(),
+      }))
       .mutation(async ({ ctx, input }) => {
+        // Get current allergies to compute diff for history log (rec. #5)
+        const currentAllergies = await db.getUserAllergies(ctx.user.id);
+        const currentIds = new Set(currentAllergies.map((a) => a.allergy.id));
+        const newIds = new Set(input.allergyIds);
+        const allAllergies = await db.getAllAllergies();
+        const allergyMap = new Map(allAllergies.map((a) => [a.id, a.nameEs]));
+        // Log removed allergies
+        for (const id of Array.from(currentIds)) {
+          if (!newIds.has(id)) {
+            await db.logAllergyChange({
+              userId: ctx.user.id, allergyId: id,
+              allergyNameEs: allergyMap.get(id) ?? String(id),
+              action: "removed",
+              severity: input.severities?.[String(id)] ?? "medical",
+            });
+          }
+        }
+        // Log added allergies
+        for (const id of Array.from(newIds)) {
+          if (!currentIds.has(id)) {
+            await db.logAllergyChange({
+              userId: ctx.user.id, allergyId: id,
+              allergyNameEs: allergyMap.get(id) ?? String(id),
+              action: "added",
+              severity: input.severities?.[String(id)] ?? "medical",
+            });
+          }
+        }
+        // Save allergies
         await db.setUserAllergies(ctx.user.id, input.allergyIds);
+        // Save severity for each allergy (rec. #8)
+        if (input.severities) {
+          for (const [allergyIdStr, severity] of Object.entries(input.severities)) {
+            const allergyId = parseInt(allergyIdStr);
+            if (!isNaN(allergyId) && newIds.has(allergyId)) {
+              await db.upsertUserAllergySeverity(ctx.user.id, allergyId, severity);
+            }
+          }
+        }
         return { success: true };
       }),
 
@@ -6684,24 +6794,28 @@ Devuelve SOLO JSON válido con esta estructura exacta:
           const rawContent = response.choices?.[0]?.message?.content ?? "{}";
           const content = typeof rawContent === "string" ? rawContent : "{}";
           const menu = JSON.parse(content);
-          // CRITICAL SAFETY: post-generation allergy violation check
-          const allergyViolations = detectAllergyViolations(content, userAllergiesData);
+          // CRITICAL SAFETY: post-generation allergy violation check (rec. #1, #3, #4)
+          // Capture restrictions snapshot at generation time (rec. #2)
+          const restrictionsSnapshot = {
+            allergies: userAllergiesData.map((a) => a.allergy.nameEs),
+            restrictions: userRestrictions.map((r: any) => r.restriction?.nameEs ?? ""),
+            capturedAt: new Date().toISOString(),
+          };
+          const allergyViolations = await detectAndLogAllergyViolations(
+            content,
+            userAllergiesData,
+            ctx.user.id,
+            "generateMenuWithQuestionnaire",
+            restrictionsSnapshot
+          );
           if (allergyViolations.length > 0) {
             console.error(`[SAFETY] Allergy violation detected in generated menu for user ${ctx.user.id}. Violations: ${allergyViolations.join(', ')}. Regenerating...`);
-            // Log the violation for admin review
-            try {
-              const { inAppNotifications } = await import("../drizzle/schema.js");
-              const drizzleDb = await db.getDb();
-              if (drizzleDb) {
-                await drizzleDb.insert(inAppNotifications).values({
-                  userId: ctx.user.id,
-                  title: "⚠️ Aviso de seguridad",
-                  body: `Se detectó un posible ingrediente no permitido en tu menú generado. El sistema lo ha corregido automáticamente. Revisa tu menú.`,
-                  type: "warning",
-                  link: "/app/menus",
-                });
-              }
-            } catch (_) {}
+            await createInAppNotif(ctx.user.id, {
+              title: "⚠️ Aviso de seguridad",
+              body: `Se detectó un posible ingrediente no permitido en tu menú generado. El sistema lo ha corregido automáticamente. Revisa tu perfil de alergias.`,
+              type: "warning",
+              link: "/app/menus",
+            });
             return { menu: null, error: "El menú generado contenía ingredientes que no puedes consumir. Por favor, inténtalo de nuevo. Si el problema persiste, revisa tu perfil de alergias.", allergyViolations };
           }
           return { menu, userId: ctx.user.id };

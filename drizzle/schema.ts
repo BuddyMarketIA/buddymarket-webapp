@@ -1855,3 +1855,59 @@ export const userBadges = pgTable("user_badges", {
 }));
 export type UserBadge = typeof userBadges.$inferSelect;
 export type InsertUserBadge = typeof userBadges.$inferInsert;
+
+// =============================================================================
+// ALLERGY SECURITY — Auditoría, historial y severidad (Recomendaciones #3, #5, #8)
+// =============================================================================
+
+// Enum de severidad para alergias del usuario (rec. #8)
+export const allergySeverityEnum = pgEnum("allergy_severity", ["medical", "intolerance", "preference"]);
+
+// Historial de cambios en las alergias del usuario (rec. #5)
+export const allergyHistory = pgTable("allergy_history", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  allergyId: integer("allergy_id").notNull(),
+  allergyNameEs: varchar("allergy_name_es", { length: 128 }).notNull(),
+  action: varchar("action", { length: 16 }).notNull(), // "added" | "removed"
+  severity: varchar("severity", { length: 16 }).notNull().default("medical"), // medical | intolerance | preference
+  changedAt: timestamp("changed_at").defaultNow().notNull(),
+  changedByIp: varchar("changed_by_ip", { length: 64 }),
+  userAgent: varchar("user_agent", { length: 512 }),
+}, (t) => ({
+  ahUserIdx: index("ah_user_idx").on(t.userId),
+  ahChangedAtIdx: index("ah_changed_at_idx").on(t.changedAt),
+}));
+export type AllergyHistory = typeof allergyHistory.$inferSelect;
+export type InsertAllergyHistory = typeof allergyHistory.$inferInsert;
+
+// Severidad de las alergias del usuario (rec. #8) — complementa user_allergies
+export const userAllergySeverity = pgTable("user_allergy_severity", {
+  userId: integer("user_id").notNull(),
+  allergyId: integer("allergy_id").notNull(),
+  severity: varchar("severity", { length: 16 }).notNull().default("medical"), // medical | intolerance | preference
+  confirmedAt: timestamp("confirmed_at").defaultNow().notNull(),
+  notes: varchar("notes", { length: 255 }),
+}, (t) => ({
+  uasPk: unique().on(t.userId, t.allergyId),
+  uasUserIdx: index("uas_user_idx").on(t.userId),
+}));
+export type UserAllergySeverity = typeof userAllergySeverity.$inferSelect;
+export type InsertUserAllergySeverity = typeof userAllergySeverity.$inferInsert;
+
+// Registro de auditoría de violaciones detectadas (rec. #3)
+export const allergyViolationLogs = pgTable("allergy_violation_logs", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  generationType: varchar("generation_type", { length: 64 }).notNull(), // "menu_questionnaire" | "recipe_expiring" | "menu_basic" | "adapt_recipe"
+  forbiddenIngredients: text("forbidden_ingredients").notNull(), // JSON array of detected ingredients
+  detectedInText: text("detected_in_text"), // fragmento del texto que provocó la violación (primeros 500 chars)
+  restrictionsSnapshot: text("restrictions_snapshot"), // JSON snapshot del perfil en el momento
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (t) => ({
+  avlUserIdx: index("avl_user_idx").on(t.userId),
+  avlCreatedIdx: index("avl_created_idx").on(t.createdAt),
+  avlTypeIdx: index("avl_type_idx").on(t.generationType),
+}));
+export type AllergyViolationLog = typeof allergyViolationLogs.$inferSelect;
+export type InsertAllergyViolationLog = typeof allergyViolationLogs.$inferInsert;

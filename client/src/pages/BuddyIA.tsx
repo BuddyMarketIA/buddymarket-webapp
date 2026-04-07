@@ -1066,6 +1066,15 @@ function MenuResultView({
           )}
         </div>
 
+        {/* DISCLAIMER LEGAL DE SEGURIDAD ALIMENTARIA (rec. #9) */}
+        <div className="mx-4 mt-3 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-xl border border-blue-200 dark:border-blue-800">
+          <p className="text-xs text-blue-700 dark:text-blue-300 font-medium mb-1">🛡️ Menú generado respetando tus restricciones</p>
+          <p className="text-xs text-blue-600 dark:text-blue-400">
+            Este menú ha sido generado por IA teniendo en cuenta tus alergias e intolerancias registradas.
+            {" "}<strong>No sustituye el consejo de un médico o dietista.</strong>{" "}
+            Si tienes alergias graves, verifica siempre los ingredientes antes de consumir cualquier alimento.
+          </p>
+        </div>
         {menu.cookingTips && (
           <div className="mx-4 mt-3 p-3 bg-orange-50 dark:bg-orange-950/20 rounded-xl border border-orange-200 dark:border-orange-800">
             <p className="text-xs text-orange-700 dark:text-orange-300">💡 {menu.cookingTips}</p>
