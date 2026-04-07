@@ -308,6 +308,16 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
             </div>
           </Link>
         </div>
+        {/* Legal links */}
+        <div style={{ padding: "0 20px 8px", display: "flex", gap: "12px", justifyContent: "center" }}>
+          <Link href="/terms">
+            <span style={{ fontSize: "11px", color: "#9ca3af", textDecoration: "underline", cursor: "pointer" }}>{t("sidebar.terms")}</span>
+          </Link>
+          <span style={{ fontSize: "11px", color: "#d1d5db" }}>·</span>
+          <Link href="/privacy">
+            <span style={{ fontSize: "11px", color: "#9ca3af", textDecoration: "underline", cursor: "pointer" }}>{t("sidebar.privacy")}</span>
+          </Link>
+        </div>
         {/* Logout button */}
         <div style={{ padding: "0 20px 20px" }}>
           <button

@@ -242,7 +242,18 @@ export default function Home() {
         <div style={{ display: "flex", justifyContent: "center", marginBottom: "12px" }}>
           <LanguageSelector variant="footer" className="text-white/50 hover:text-white/80" />
         </div>
-        <p style={{ margin: 0, fontSize: "14px", color: "rgba(255,255,255,0.3)", lineHeight: 1.5 }}>
+        <div style={{ display: "flex", justifyContent: "center", gap: "20px", marginBottom: "12px", flexWrap: "wrap" }}>
+          <a href="/terms" style={{ fontSize: "12px", color: "rgba(255,255,255,0.45)", textDecoration: "underline", textUnderlineOffset: "2px" }}>
+            {t("home.footer.terms")}
+          </a>
+          <a href="/privacy" style={{ fontSize: "12px", color: "rgba(255,255,255,0.45)", textDecoration: "underline", textUnderlineOffset: "2px" }}>
+            {t("home.footer.privacy")}
+          </a>
+          <a href="mailto:iabuddymarket@gmail.com" style={{ fontSize: "12px", color: "rgba(255,255,255,0.45)", textDecoration: "underline", textUnderlineOffset: "2px" }}>
+            {t("home.footer.contact")}
+          </a>
+        </div>
+        <p style={{ margin: 0, fontSize: "12px", color: "rgba(255,255,255,0.25)", lineHeight: 1.5 }}>
           {t("home.footer.disclaimer")}
         </p>
       </footer>

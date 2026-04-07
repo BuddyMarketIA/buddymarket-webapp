@@ -79,10 +79,15 @@ export default function LoginPage() {
   const [forgotEmail, setForgotEmail] = useState("");
   const [otpCode, setOtpCode] = useState(["", "", "", "", "", ""]);
   const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
+  // Terms acceptance
+  const [acceptTerms, setAcceptTerms] = useState(false);
+  const [acceptPrivacy, setAcceptPrivacy] = useState(false);
+  const [marketingConsent, setMarketingConsent] = useState(false);
 
   // tRPC mutations
   const loginMut = trpc.auth.login.useMutation();
   const registerMut = trpc.auth.register.useMutation();
+  const acceptTermsMut = trpc.auth.acceptTerms.useMutation();
   const sendOTPMut = trpc.auth.sendOTP.useMutation();
   const verifyOTPMut = trpc.auth.verifyOTP.useMutation();
   const forgotMut = trpc.auth.forgotPassword.useMutation();
@@ -119,8 +124,18 @@ export default function LoginPage() {
     e.preventDefault();
     if (password !== confirmPassword) { toast.error("Las contraseñas no coinciden"); return; }
     if (password.length < 8) { toast.error("La contraseña debe tener al menos 8 caracteres"); return; }
+    if (!acceptTerms) { toast.error("Debes aceptar los Términos y Condiciones para continuar"); return; }
+    if (!acceptPrivacy) { toast.error("Debes aceptar la Política de Privacidad para continuar"); return; }
     try {
       await registerMut.mutateAsync({ name, email, password });
+      // Save terms acceptance with timestamp
+      try {
+        await acceptTermsMut.mutateAsync({
+          termsVersion: "2.0",
+          acceptPrivacy,
+          marketingConsent,
+        });
+      } catch (_) { /* non-critical */ }
       toast.success("¡Cuenta creada!", { description: `Bienvenido a BuddyMarket, ${name.split(" ")[0]}` });
       await afterAuth();
     } catch (err: any) {
@@ -363,7 +378,54 @@ export default function LoginPage() {
                 {confirmPassword && confirmPassword !== password && (
                   <p className="text-[10px] text-red-400 -mt-1">Las contraseñas no coinciden</p>
                 )}
-                <Button type="submit" disabled={isLoading || (!!confirmPassword && confirmPassword !== password)}
+                {/* ── Terms & Privacy checkboxes ── */}
+                <div className="space-y-2 pt-1 border-t border-gray-100">
+                  <label className="flex items-start gap-2.5 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={acceptTerms}
+                      onChange={e => setAcceptTerms(e.target.checked)}
+                      className="mt-0.5 w-4 h-4 rounded border-gray-300 accent-[#F97316] cursor-pointer flex-shrink-0"
+                    />
+                    <span className="text-[11px] text-gray-500 leading-relaxed">
+                      He leído y acepto los{" "}
+                      <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-[#F97316] underline font-medium hover:text-[#ea6c0f]">
+                        Términos y Condiciones
+                      </a>
+                      {" "}de BuddyMarket{" "}
+                      <span className="text-red-500">*</span>
+                    </span>
+                  </label>
+                  <label className="flex items-start gap-2.5 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={acceptPrivacy}
+                      onChange={e => setAcceptPrivacy(e.target.checked)}
+                      className="mt-0.5 w-4 h-4 rounded border-gray-300 accent-[#F97316] cursor-pointer flex-shrink-0"
+                    />
+                    <span className="text-[11px] text-gray-500 leading-relaxed">
+                      He leído y acepto la{" "}
+                      <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-[#F97316] underline font-medium hover:text-[#ea6c0f]">
+                        Política de Privacidad
+                      </a>
+                      {" "}y el tratamiento de mis datos{" "}
+                      <span className="text-red-500">*</span>
+                    </span>
+                  </label>
+                  <label className="flex items-start gap-2.5 cursor-pointer group">
+                    <input
+                      type="checkbox"
+                      checked={marketingConsent}
+                      onChange={e => setMarketingConsent(e.target.checked)}
+                      className="mt-0.5 w-4 h-4 rounded border-gray-300 accent-[#F97316] cursor-pointer flex-shrink-0"
+                    />
+                    <span className="text-[11px] text-gray-500 leading-relaxed">
+                      Acepto recibir comunicaciones y novedades de BuddyMarket{" "}
+                      <span className="text-gray-400">(opcional)</span>
+                    </span>
+                  </label>
+                </div>
+                <Button type="submit" disabled={isLoading || !acceptTerms || !acceptPrivacy || (!!confirmPassword && confirmPassword !== password)}
                   className="w-full h-12 bg-[#F97316] hover:bg-[#ea6c0f] text-white font-semibold rounded-2xl text-sm shadow-[0_4px_20px_rgba(249,115,22,0.4)] transition-all active:scale-[0.98] disabled:opacity-50">
                   {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <span className="flex items-center gap-2">Crear cuenta gratis <ArrowRight className="w-4 h-4" /></span>}
                 </Button>
@@ -374,9 +436,8 @@ export default function LoginPage() {
                   Inicia sesión
                 </button>
               </p>
-              <p className="text-center text-gray-300 text-[10px] leading-relaxed">
-                Al registrarte aceptas nuestros <a href="/terms" className="underline">Términos</a> y <a href="/privacy" className="underline">Privacidad</a>.<br />
-                El contenido no constituye asesoramiento profesional.
+              <p className="text-center text-gray-400 text-[10px] leading-relaxed">
+                <span className="text-red-500">*</span> Campos obligatorios · El contenido no constituye asesoramiento profesional.
               </p>
             </div>
           )}

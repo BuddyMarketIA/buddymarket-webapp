@@ -83,6 +83,12 @@ export const users = pgTable("users", {
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
   lastSignedIn: timestamp("lastSignedIn").defaultNow().notNull(),
+  // Terms & Conditions acceptance
+  termsAcceptedAt: timestamp("termsAcceptedAt"),
+  termsVersion: varchar("termsVersion", { length: 16 }),
+  privacyAcceptedAt: timestamp("privacyAcceptedAt"),
+  marketingConsent: boolean("marketingConsent").default(false),
+  marketingConsentAt: timestamp("marketingConsentAt"),
 }, (t) => ({
   emailIdx: index("users_email_idx").on(t.email),
   roleIdx: index("users_role_idx").on(t.role),

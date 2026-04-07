@@ -20,6 +20,7 @@ import {
   ArrowPathIcon,
   ClockIcon,
   ChartBarIcon,
+  DocumentTextIcon,
 } from "@heroicons/react/24/outline";
 import { RECIPE_PLACEHOLDER_IMAGE as RECIPE_PLACEHOLDER } from "@/lib/constants";
 import UsageAnalyticsPanel from "@/components/UsageAnalyticsPanel";
@@ -34,6 +35,7 @@ const TABS = [
   { key: "diets", label: "Dietas", icon: TagIcon },
   { key: "categories", label: "Categorías", icon: BookOpenIcon },
   { key: "users", label: "Usuarios", icon: UsersIcon },
+  { key: "terms", label: "TyC", icon: DocumentTextIcon },
 ];
 
 function CatalogSection({
@@ -615,6 +617,11 @@ export default function Admin() {
         </div>
       )}
 
+      {/* Terms & Conditions */}
+      {activeTab === "terms" && (
+        <TermsAcceptancePanel />
+      )}
+
       {/* Users */}
       {activeTab === "users" && (
         <div className="vively-card space-y-3">
@@ -705,7 +712,104 @@ export default function Admin() {
   );
 }
 
-// ── API Monitor Panel ─────────────────────────────────────────────────────────
+// ── Terms Acceptance Panel ─────────────────────────────────────────────────
+function TermsAcceptancePanel() {
+  const { data: users, isLoading } = trpc.admin.users.useQuery({});
+
+  const accepted = (users ?? []).filter((u: any) => u.termsAcceptedAt);
+  const notAccepted = (users ?? []).filter((u: any) => !u.termsAcceptedAt);
+
+  if (isLoading) {
+    return (
+      <div className="flex justify-center py-12">
+        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900" />
+      </div>
+    );
+  }
+
+  return (
+    <div className="space-y-4">
+      {/* Summary */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="vively-card text-center">
+          <p className="text-2xl font-bold text-gray-900">{users?.length ?? 0}</p>
+          <p className="text-xs text-gray-400 mt-1">Total usuarios</p>
+        </div>
+        <div className="vively-card text-center">
+          <p className="text-2xl font-bold text-green-600">{accepted.length}</p>
+          <p className="text-xs text-gray-400 mt-1">Han aceptado</p>
+        </div>
+        <div className="vively-card text-center">
+          <p className="text-2xl font-bold text-orange-500">{notAccepted.length}</p>
+          <p className="text-xs text-gray-400 mt-1">Sin aceptar</p>
+        </div>
+      </div>
+
+      {/* Users who accepted */}
+      <div className="vively-card space-y-3">
+        <h3 className="text-sm font-bold text-gray-700 flex items-center gap-2">
+          <span className="h-2 w-2 rounded-full bg-green-500" />
+          Usuarios que han aceptado los TyC
+          <span className="ml-auto rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">{accepted.length}</span>
+        </h3>
+        <div className="max-h-72 overflow-y-auto space-y-2">
+          {accepted.length === 0 ? (
+            <p className="text-center text-xs text-gray-400 py-4">Ningún usuario ha aceptado los TyC todavía.</p>
+          ) : (
+            accepted.map((u: any) => (
+              <div key={u.id} className="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-100 text-xs font-bold text-green-700">
+                    {u.name ? u.name[0].toUpperCase() : "?"}
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-gray-800">{u.name || "Sin nombre"}</p>
+                    <p className="text-xs text-gray-400">{u.email || u.openId}</p>
+                  </div>
+                </div>
+                <div className="text-right">
+                  <p className="text-xs font-semibold text-green-600">v{u.termsVersion ?? "1.0"}</p>
+                  <p className="text-xs text-gray-400">
+                    {u.termsAcceptedAt ? new Date(u.termsAcceptedAt).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "—"}
+                  </p>
+                  {u.marketingConsent && (
+                    <span className="text-xs text-purple-500 font-medium">+ Marketing</span>
+                  )}
+                </div>
+              </div>
+            ))
+          )}
+        </div>
+      </div>
+
+      {/* Users who have NOT accepted */}
+      {notAccepted.length > 0 && (
+        <div className="vively-card space-y-3">
+          <h3 className="text-sm font-bold text-gray-700 flex items-center gap-2">
+            <span className="h-2 w-2 rounded-full bg-orange-400" />
+            Usuarios sin aceptar
+            <span className="ml-auto rounded-full bg-orange-100 px-2 py-0.5 text-xs font-semibold text-orange-600">{notAccepted.length}</span>
+          </h3>
+          <div className="max-h-48 overflow-y-auto space-y-2">
+            {notAccepted.map((u: any) => (
+              <div key={u.id} className="flex items-center gap-2 rounded-xl bg-gray-50 px-3 py-2">
+                <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-orange-100 text-xs font-bold text-orange-600">
+                  {u.name ? u.name[0].toUpperCase() : "?"}
+                </div>
+                <div>
+                  <p className="text-sm font-semibold text-gray-800">{u.name || "Sin nombre"}</p>
+                  <p className="text-xs text-gray-400">{u.email || u.openId}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ── API Monitor Panel ─────────────────────────────────────────────────
 function ApiMonitorPanel() {
   const { data: monitors, refetch: refetchMonitors, isLoading } = trpc.admin.getApiMonitors.useQuery();
   const [selectedMonitorId, setSelectedMonitorId] = useState<number | null>(null);

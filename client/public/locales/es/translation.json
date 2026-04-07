@@ -411,7 +411,10 @@
       "button": "Empezar gratis →"
     },
     "footer": {
-      "disclaimer": "© 2026 BuddyMarket. El contenido no constituye asesoramiento médico o nutricional profesional. Consulta a un profesional."
+      "disclaimer": "© 2026 BuddyMarket. El contenido no constituye asesoramiento médico o nutricional profesional. Consulta a un profesional.",
+      "terms": "Términos y Condiciones",
+      "privacy": "Política de Privacidad",
+      "contact": "Contacto"
     }
   },
   "sidebar": {
@@ -445,7 +448,9 @@
     "installAppDesc": "Acceso rápido desde tu pantalla de inicio",
     "install": "Instalar",
     "loggingOut": "Cerrando sesión...",
-    "logout": "Cerrar sesión"
+    "logout": "Cerrar sesión",
+    "terms": "Términos",
+    "privacy": "Privacidad"
   },
   "shoppingList": {
     "title": "Lista de la compra",

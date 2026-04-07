@@ -285,8 +285,43 @@ export const appRouter = router({
         ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
         return { success: true };
       }),
+    // ── Terms & Conditions Acceptance ────────────────────────────────────
+    acceptTerms: protectedProcedure
+      .input(z.object({
+        termsVersion: z.string().default("2.0"),
+        acceptPrivacy: z.boolean(),
+        marketingConsent: z.boolean().optional().default(false),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { users: usersTable } = await import("../drizzle/schema.js");
+        const { eq } = await import("drizzle-orm");
+        const now = new Date();
+        await drizzleDb.update(usersTable).set({
+          termsAcceptedAt: now,
+          termsVersion: input.termsVersion,
+          privacyAcceptedAt: input.acceptPrivacy ? now : undefined,
+          marketingConsent: input.marketingConsent ?? false,
+          marketingConsentAt: input.marketingConsent ? now : undefined,
+        }).where(eq(usersTable.id, ctx.user.id));
+        return { success: true, acceptedAt: now };
+      }),
+    getTermsStatus: protectedProcedure.query(async ({ ctx }) => {
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) return null;
+      const { users: usersTable } = await import("../drizzle/schema.js");
+      const { eq } = await import("drizzle-orm");
+      const rows = await drizzleDb.select({
+        termsAcceptedAt: usersTable.termsAcceptedAt,
+        termsVersion: usersTable.termsVersion,
+        privacyAcceptedAt: usersTable.privacyAcceptedAt,
+        marketingConsent: usersTable.marketingConsent,
+        marketingConsentAt: usersTable.marketingConsentAt,
+      }).from(usersTable).where(eq(usersTable.id, ctx.user.id)).limit(1);
+      return rows[0] ?? null;
+    }),
   }),
-
   // ---------------------------------------------------------------------------
   // SEED (admin only - initialize catalogs)
   // ---------------------------------------------------------------------------
@@ -647,7 +682,7 @@ Devuelve SOLO JSON válido con esta estructura:
       return { success: true };
     }),
 
-    // ── Registration flow ──────────────────────────────────────────────────
+    // ── Registration flow ──────────────────────────────────────────
     getRegistrationStatus: protectedProcedure.query(async ({ ctx }) => {
       const drizzleDb = await db.getDb();
       if (!drizzleDb) return null;
@@ -1888,9 +1923,45 @@ Devuelve SOLO JSON válido con esta estructura:
         await drizzleDb.delete(menuComplements).where(eq(menuComplements.id, input.id));
         return { success: true };
       }),
+    // ── Terms & Conditions Acceptance ────────────────────────────────────
+    acceptTerms: protectedProcedure
+      .input(z.object({
+        termsVersion: z.string().default("2.0"),
+        acceptPrivacy: z.boolean(),
+        marketingConsent: z.boolean().optional().default(false),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { users: usersTable } = await import("../drizzle/schema.js");
+        const { eq } = await import("drizzle-orm");
+        const now = new Date();
+        await drizzleDb.update(usersTable).set({
+          termsAcceptedAt: now,
+          termsVersion: input.termsVersion,
+          privacyAcceptedAt: input.acceptPrivacy ? now : undefined,
+          marketingConsent: input.marketingConsent ?? false,
+          marketingConsentAt: input.marketingConsent ? now : undefined,
+        }).where(eq(usersTable.id, ctx.user.id));
+        return { success: true, acceptedAt: now };
+      }),
+    getTermsStatus: protectedProcedure.query(async ({ ctx }) => {
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) return null;
+      const { users: usersTable } = await import("../drizzle/schema.js");
+      const { eq } = await import("drizzle-orm");
+      const rows = await drizzleDb.select({
+        termsAcceptedAt: usersTable.termsAcceptedAt,
+        termsVersion: usersTable.termsVersion,
+        privacyAcceptedAt: usersTable.privacyAcceptedAt,
+        marketingConsent: usersTable.marketingConsent,
+        marketingConsentAt: usersTable.marketingConsentAt,
+      }).from(usersTable).where(eq(usersTable.id, ctx.user.id)).limit(1);
+      return rows[0] ?? null;
+    }),
   }),
   // ---------------------------------------------------------------------------
-  // SHOPPING LISTS
+  // SEED (admin only - initialize catalogs)
   // ---------------------------------------------------------------------------
   shoppingLists: router({
     list: protectedProcedure.query(async ({ ctx }) => {

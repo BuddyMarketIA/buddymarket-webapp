@@ -1523,3 +1523,24 @@
 
 ## Gestión de cookies en perfil
 - [x] Sección de preferencias de cookies en Profile.tsx con switches individuales y botón de guardar
+
+## Términos y Condiciones (sprint actual)
+- [ ] Redactar TyC completos y actualizados con todos los nuevos servicios
+- [ ] Actualizar página Terms.tsx con el nuevo contenido legal
+- [ ] Checkbox de aceptación de TyC en registro/onboarding con timestamp en BD
+- [ ] Panel de aceptaciones de TyC en Admin (quién aceptó, cuándo, versión)
+- [ ] Hipervínculos a TyC en footer de landing y dentro de la app
+- [ ] Sección de preferencias de cookies en Profile.tsx con switches individuales y botón de guardar
+
+## Sistema TyC — Completado (sprint actual)
+- [x] Redactar TyC v2.0 completos con todos los servicios (IA, BuddyExperts, datos de salud, suscripciones)
+- [x] Página Terms.tsx publicada en /terms con contenido legal completo
+- [x] Campo termsAcceptedAt añadido al schema de BD (drizzle/schema.ts)
+- [x] Migración de BD aplicada para añadir termsAcceptedAt, termsVersion, marketingConsent
+- [x] Procedimientos tRPC: auth.acceptTerms y auth.getTermsStatus
+- [x] Checkboxes explícitos de TyC y Privacidad en formulario de registro (LoginPage.tsx)
+- [x] Panel de aceptaciones de TyC en Admin (TermsAcceptancePanel) con estadísticas y lista
+- [x] Hipervínculos a TyC en footer de landing page (Home.tsx): Términos, Privacidad, Contacto
+- [x] Hipervínculos a TyC en footer del sidebar de la app (AppLayout.tsx): Términos, Privacidad
+- [x] Claves de traducción para footer.terms, footer.privacy, footer.contact en ES/EN/FR/IT
+- [x] Claves de traducción para sidebar.terms, sidebar.privacy en ES/EN/FR/IT
