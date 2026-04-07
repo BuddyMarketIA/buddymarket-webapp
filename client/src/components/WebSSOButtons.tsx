@@ -9,6 +9,7 @@
 
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
+import { isIOSNative } from "@/hooks/usePlatform";
 
 // ─── Tipos globales ────────────────────────────────────────────────────────────
 
@@ -202,25 +203,38 @@ export default function WebSSOButtons({
   };
 
   const handleAppleSignIn = async () => {
-    if (!window.AppleID?.auth) {
-      toast.error("Apple Sign In no disponible", { description: "Usa Safari o un dispositivo Apple" });
-      return;
-    }
-
     setAppleLoading(true);
     try {
-      const data = await window.AppleID.auth.signIn();
-      const identityToken = data.authorization.id_token;
-      const fullName = data.user?.name
-        ? { givenName: data.user.name.firstName, familyName: data.user.name.lastName }
-        : null;
-      const email = data.user?.email ?? null;
+      let identityToken: string;
+      let fullName: { givenName?: string; familyName?: string } | null = null;
+      let email: string | null = null;
+      let nonce: string | undefined;
+
+      if (isIOSNative() && window.BuddyMarketAppleAuth) {
+        // ── iOS native: usa el plugin Capacitor (AuthenticationServices) ──────
+        const data = await window.BuddyMarketAppleAuth.signIn();
+        identityToken = data.identityToken;
+        nonce = data.nonce;
+        email = data.email ?? null;
+        fullName = data.fullName ?? null;
+      } else if (window.AppleID?.auth) {
+        // ── Web: usa Apple Sign In JS SDK (Safari / iOS Safari) ───────────────
+        const data = await window.AppleID.auth.signIn();
+        identityToken = data.authorization.id_token;
+        fullName = data.user?.name
+          ? { givenName: data.user.name.firstName, familyName: data.user.name.lastName }
+          : null;
+        email = data.user?.email ?? null;
+      } else {
+        toast.error("Apple Sign In no disponible", { description: "Usa Safari o un dispositivo Apple" });
+        return;
+      }
 
       const res = await fetch("/api/auth/apple", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: "include",
-        body: JSON.stringify({ identityToken, fullName, email }),
+        body: JSON.stringify({ identityToken, fullName, email, nonce }),
       });
 
       if (!res.ok) {
@@ -232,7 +246,7 @@ export default function WebSSOButtons({
       onSuccess?.();
       setTimeout(() => window.location.reload(), 500);
     } catch (err: any) {
-      if (err?.error === "popup_closed_by_user") return;
+      if (err?.message === "popup_closed_by_user" || err?.error === "popup_closed_by_user") return;
       toast.error("Error con Apple", { description: err.message });
     } finally {
       setAppleLoading(false);

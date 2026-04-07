@@ -1,7 +1,7 @@
 workflows:
   # ── iOS: TestFlight ──────────────────────────────────────────────────────────
   ios-testflight:
-    name: BuddyMarket iOS → TestFlight
+    name: BuddyMarketAI iOS → TestFlight
     max_build_duration: 60
     instance_type: mac_mini_m2
 
@@ -12,11 +12,13 @@ workflows:
       groups:
         - apple_credentials   # APP_STORE_CONNECT_ISSUER_ID, APP_STORE_CONNECT_KEY_IDENTIFIER, APP_STORE_CONNECT_PRIVATE_KEY
         - certificate_credentials  # CERTIFICATE_PRIVATE_KEY
+        - apple_iap_credentials    # APPLE_IAP_KEY_ID, APPLE_IAP_ISSUER_ID, APPLE_IAP_PRIVATE_KEY
       vars:
         BUNDLE_ID: io.buddymarket.app
+        APPLE_BUNDLE_ID: io.buddymarket.app
         XCODE_PROJECT: ios/App/App.xcodeproj
         XCODE_SCHEME: App
-        APP_STORE_APPLE_ID: "6744649860"  # ← Reemplaza con tu Apple ID de la app en App Store Connect
+        APP_STORE_APPLE_ID: "6744649860"  # ← Apple ID de la app en App Store Connect
 
     triggering:
       events:
@@ -74,7 +76,7 @@ workflows:
 
   # ── Android: Google Play Internal Testing ───────────────────────────────────
   android-play:
-    name: BuddyMarket Android → Play Store
+    name: BuddyMarketAI Android → Play Store
     max_build_duration: 60
     instance_type: linux_x2
 

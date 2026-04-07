@@ -35,11 +35,11 @@ import { isIOSNative, isAndroidNative, isIAPAvailable } from "./usePlatform";
 
 /** Maps internal plan keys → Apple App Store product IDs */
 export const APPLE_PRODUCT_IDS: Record<string, string> = {
-  basic: "com.buddymarket.subscription.pro.monthly",
-  premium: "com.buddymarket.subscription.promax.monthly",
-  pro_max: "com.buddymarket.subscription.promax.monthly",
-  basic_annual: "com.buddymarket.subscription.pro.annual",
-  premium_annual: "com.buddymarket.subscription.promax.annual",
+  basic: "io.buddymarket.app.premium.monthly",
+  premium: "io.buddymarket.app.promax.monthly",
+  pro_max: "io.buddymarket.app.promax.monthly",
+  basic_annual: "io.buddymarket.app.premium.annual",
+  premium_annual: "io.buddymarket.app.promax.annual",
 };
 
 /** Maps internal plan keys → Google Play product IDs */

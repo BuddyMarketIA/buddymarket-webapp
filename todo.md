@@ -1560,3 +1560,11 @@
 - [ ] Panel admin con estadísticas de insignias más ganadas y ranking de usuarios
 - [ ] Ruta `/app/badges` registrada en App.tsx y enlace en el sidebar de AppLayout
 - [x] Corregir secuencia banners: cookies primero, idioma después (no simultáneos)
+
+- [x] Sign in with Apple: plugin nativo Swift (BuddyMarketAppleAuthPlugin.swift)
+- [x] StoreKit 2: plugin nativo Swift (BuddyMarketIAPPlugin.swift)
+- [x] App.entitlements con Sign in with Apple + IAP + Associated Domains
+- [x] Unificar Product IDs a io.buddymarket.app.*
+- [x] Actualizar codemagic.yaml con nombre BuddyMarketAI y grupo apple_iap_credentials
+- [x] Script upload_to_appstore.py para subir metadatos y screenshots
+- [x] Guía IAP_SECRETS_GUIDE.md con instrucciones de configuración

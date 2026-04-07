@@ -20,20 +20,25 @@ import {
 // ─── Apple IAP ────────────────────────────────────────────────────────────────
 
 describe("Apple IAP — product map", () => {
-  it("maps monthly pro product to basic plan", () => {
-    expect(APPLE_PRODUCT_MAP["com.buddymarket.subscription.pro.monthly"]).toBe("basic");
+  it("maps monthly premium product to basic plan", () => {
+    expect(APPLE_PRODUCT_MAP["io.buddymarket.app.premium.monthly"]).toBe("basic");
   });
 
-  it("maps annual pro product to basic plan", () => {
-    expect(APPLE_PRODUCT_MAP["com.buddymarket.subscription.pro.annual"]).toBe("basic");
+  it("maps annual premium product to basic plan", () => {
+    expect(APPLE_PRODUCT_MAP["io.buddymarket.app.premium.annual"]).toBe("basic");
   });
 
   it("maps monthly promax product to premium plan", () => {
-    expect(APPLE_PRODUCT_MAP["com.buddymarket.subscription.promax.monthly"]).toBe("premium");
+    expect(APPLE_PRODUCT_MAP["io.buddymarket.app.promax.monthly"]).toBe("premium");
   });
 
   it("maps annual promax product to premium plan", () => {
-    expect(APPLE_PRODUCT_MAP["com.buddymarket.subscription.promax.annual"]).toBe("premium");
+    expect(APPLE_PRODUCT_MAP["io.buddymarket.app.promax.annual"]).toBe("premium");
+  });
+
+  // Legacy product IDs (backward compatibility)
+  it("maps legacy monthly pro product to basic plan", () => {
+    expect(APPLE_PRODUCT_MAP["com.buddymarket.subscription.pro.monthly"]).toBe("basic");
   });
 
   it("returns undefined for unknown product IDs", () => {
@@ -87,7 +92,7 @@ describe("Apple IAP — verifyAppleTransaction (mocked fetch)", () => {
   beforeEach(() => {
     process.env.APPLE_IAP_KEY_ID = "TESTKEY123";
     process.env.APPLE_IAP_ISSUER_ID = "00000000-0000-0000-0000-000000000000";
-    process.env.APPLE_BUNDLE_ID = "com.buddymarket.app";
+    process.env.APPLE_BUNDLE_ID = "io.buddymarket.app";
     // Export the test EC private key as PEM
     process.env.APPLE_IAP_PRIVATE_KEY = TEST_EC_KEY.export({ type: "sec1", format: "pem" }) as string;
   });
@@ -162,8 +167,8 @@ describe("Apple IAP — verifyAppleTransaction (mocked fetch)", () => {
     const payload = {
       transactionId: "tx_valid_123",
       originalTransactionId: "orig_tx_valid_123",
-      bundleId: "com.buddymarket.app",
-      productId: "com.buddymarket.subscription.pro.monthly",
+      bundleId: "io.buddymarket.app",
+      productId: "io.buddymarket.app.premium.monthly",
       purchaseDate: Date.now(),
       originalPurchaseDate: Date.now(),
       expiresDate: futureDate,
@@ -200,8 +205,8 @@ describe("Apple IAP — verifyAppleTransaction (mocked fetch)", () => {
     const payload = {
       transactionId: "tx_expired",
       originalTransactionId: "orig_tx_expired",
-      bundleId: "com.buddymarket.app",
-      productId: "com.buddymarket.subscription.pro.monthly",
+      bundleId: "io.buddymarket.app",
+      productId: "io.buddymarket.app.premium.monthly",
       purchaseDate: Date.now() - 40 * 24 * 60 * 60 * 1000,
       originalPurchaseDate: Date.now() - 40 * 24 * 60 * 60 * 1000,
       expiresDate: pastDate,

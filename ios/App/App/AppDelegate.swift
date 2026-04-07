@@ -1,3 +1,12 @@
+/**
+ * AppDelegate.swift — BuddyMarketAI
+ *
+ * The BuddyMarketIAPPlugin and BuddyMarketAppleAuthPlugin are registered
+ * automatically by Capacitor via their @objc annotations.
+ * Platform bridge injection happens via the capacitor.config.json
+ * server.androidScheme / ios settings.
+ */
+
 import UIKit
 import Capacitor
 

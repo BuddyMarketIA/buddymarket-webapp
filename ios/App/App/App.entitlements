@@ -1,0 +1,37 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+	<!-- Sign in with Apple -->
+	<key>com.apple.developer.applesignin</key>
+	<array>
+		<string>Default</string>
+	</array>
+
+	<!-- In-App Purchases (StoreKit 2) -->
+	<key>com.apple.developer.in-app-payments</key>
+	<array>
+		<string>io.buddymarket.app.premium.monthly</string>
+		<string>io.buddymarket.app.promax.monthly</string>
+		<string>io.buddymarket.app.premium.annual</string>
+		<string>io.buddymarket.app.promax.annual</string>
+	</array>
+
+	<!-- Associated Domains (Universal Links + Shared Web Credentials) -->
+	<key>com.apple.developer.associated-domains</key>
+	<array>
+		<string>applinks:buddymarketapp.com</string>
+		<string>webcredentials:buddymarketapp.com</string>
+	</array>
+
+	<!-- Push Notifications -->
+	<key>aps-environment</key>
+	<string>production</string>
+
+	<!-- Keychain Sharing (for session persistence) -->
+	<key>keychain-access-groups</key>
+	<array>
+		<string>$(AppIdentifierPrefix)io.buddymarket.app</string>
+	</array>
+</dict>
+</plist>

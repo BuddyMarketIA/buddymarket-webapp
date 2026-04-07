@@ -30,6 +30,18 @@ declare global {
       getProducts: (productIds: string[]) => Promise<IAPProduct[]>;
       restorePurchases: () => Promise<void>;
     };
+    /** Sign in with Apple bridge injected by the native iOS shell */
+    BuddyMarketAppleAuth?: {
+      signIn: (options?: { nonce?: string }) => Promise<{
+        identityToken: string;
+        authorizationCode: string;
+        user: string;
+        nonce: string;
+        email?: string;
+        fullName?: { givenName?: string; familyName?: string };
+      }>;
+      isAvailable: () => Promise<{ available: boolean }>;
+    };
   }
 }
 

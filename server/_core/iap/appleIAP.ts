@@ -15,6 +15,12 @@ import * as crypto from "crypto";
 
 // ─── Product ID → internal plan mapping ──────────────────────────────────────
 export const APPLE_PRODUCT_MAP: Record<string, "basic" | "premium" | "pro_max"> = {
+  // Current product IDs (io.buddymarket.app.*)
+  "io.buddymarket.app.premium.monthly": "basic",
+  "io.buddymarket.app.premium.annual": "basic",
+  "io.buddymarket.app.promax.monthly": "premium",
+  "io.buddymarket.app.promax.annual": "premium",
+  // Legacy product IDs (kept for backward compatibility)
   "com.buddymarket.subscription.pro.monthly": "basic",
   "com.buddymarket.subscription.pro.annual": "basic",
   "com.buddymarket.subscription.promax.monthly": "premium",
