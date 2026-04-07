@@ -629,7 +629,7 @@ export default function ActiveMenu() {
                                 </span>
                               )}
                               {r.recipe?.difficulty && (
-                                <span className="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">{r.recipe.difficulty}</span>
+                                <span className="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">{{ easy: "Fácil", facil: "Fácil", medium: "Media", medio: "Media", hard: "Difícil", dificil: "Difícil" }[r.recipe.difficulty as string] ?? r.recipe.difficulty}</span>
                               )}
                               {r.servings && r.servings !== 1 && (
                                 <span className="text-xs text-gray-400">×{r.servings} raciones</span>

@@ -223,7 +223,7 @@ export default function SavedEvents() {
                                   <h4 className="font-semibold text-gray-800">{dish.name}</h4>
                                   <div className="flex gap-2 shrink-0">
                                     <span className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">⏱ {dish.prepTime}</span>
-                                    <span className="text-xs bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full">👨‍🍳 {dish.difficulty}</span>
+                                    <span className="text-xs bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full">👨‍🍳 {{ easy: "Fácil", facil: "Fácil", medium: "Media", medio: "Media", hard: "Difícil", dificil: "Difícil" }[dish.difficulty] ?? dish.difficulty}</span>
                                   </div>
                                 </div>
                                 <p className="text-sm text-gray-600 mb-3">{dish.description}</p>

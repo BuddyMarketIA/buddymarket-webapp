@@ -1705,3 +1705,6 @@
 - [x] BUG-ONBOARD-02: Onboarding (BuddySetup) se repite para usuarios existentes que ya completaron el perfil — CORREGIDO: BuddySetup detecta si el perfil ya tiene datos completos y redirige al dashboard automáticamente
 - [x] BUG-ONBOARD-03: Al rechazar la generación de menú en el onboarding, igual navega como si fuera a generar uno — CORREGIDO: mensaje de éxito diferente según generateMenu true/false
 - [x] BUG-CALORIES-04: El contador de calorías del dashboard no se actualiza al cambiar el déficit calórico en el perfil — CORREGIDO: updateProfile recalcula dailyCalorieGoal con fórmula Mifflin-St Jeor + ajuste por weightChangeRate
+
+## Bug: Etiqueta dificultad en inglés en cards de menús (08/04/2026)
+- [x] BUG-MENU-EASY: La etiqueta de dificultad "easy" aparece en inglés — CORREGIDO: añadidas claves en inglés (easy/medium/hard) a DIFF_LABELS en MenuLibrary.tsx, ActiveMenu.tsx, EventMenuPlanner.tsx, SavedEvents.tsx e Inventory.tsx

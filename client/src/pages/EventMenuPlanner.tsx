@@ -745,7 +745,7 @@ export default function EventMenuPlanner() {
                                     <span className="text-xs bg-white px-2 py-0.5 rounded-full text-gray-500">⏱ {dish.prepTime}</span>
                                   )}
                                   {dish.difficulty && (
-                                    <span className="text-xs bg-white px-2 py-0.5 rounded-full text-gray-500">📊 {dish.difficulty}</span>
+                                    <span className="text-xs bg-white px-2 py-0.5 rounded-full text-gray-500">📊 {{ easy: "Fácil", facil: "Fácil", medium: "Media", medio: "Media", hard: "Difícil", dificil: "Difícil" }[dish.difficulty] ?? dish.difficulty}</span>
                                   )}
                                   {dish.canPrepAhead && (
                                     <span className="text-xs bg-green-100 px-2 py-0.5 rounded-full text-green-700">✓ Preparar antes</span>

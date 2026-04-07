@@ -1034,11 +1034,11 @@ export default function Inventory() {
                           ⏱ {recipe.prepTime} min
                         </span>
                         <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
-                          recipe.difficulty === "Fácil" ? "bg-green-100 text-green-700" :
-                          recipe.difficulty === "Media" ? "bg-yellow-100 text-yellow-700" :
+                          (recipe.difficulty === "Fácil" || recipe.difficulty === "easy" || recipe.difficulty === "facil") ? "bg-green-100 text-green-700" :
+                          (recipe.difficulty === "Media" || recipe.difficulty === "medium" || recipe.difficulty === "medio") ? "bg-yellow-100 text-yellow-700" :
                           "bg-red-100 text-red-700"
                         }`}>
-                          {recipe.difficulty}
+                          {{ easy: "Fácil", facil: "Fácil", medium: "Media", medio: "Media", hard: "Difícil", dificil: "Difícil" }[recipe.difficulty] ?? recipe.difficulty}
                         </span>
                       </div>
                       {recipe.usedIngredients.length > 0 && (

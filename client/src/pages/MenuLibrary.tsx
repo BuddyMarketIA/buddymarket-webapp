@@ -75,6 +75,10 @@ const DIFF_LABELS: Record<string, string> = {
   facil: "Fácil",
   medio: "Medio",
   dificil: "Difícil",
+  // English keys from DB
+  easy: "Fácil",
+  medium: "Medio",
+  hard: "Difícil",
 };
 
 // ─── Animation variants ───────────────────────────────────────────────────────
