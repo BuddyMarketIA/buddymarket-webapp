@@ -51,6 +51,101 @@ async function createInAppNotif(userId: number, opts: {
 }
 
 // =============================================================================
+// SAFETY: Forbidden ingredients helpers (CRITICAL for user health)
+// =============================================================================
+
+/**
+ * Builds a strongly-worded block for AI prompts listing ALL ingredients
+ * the user must never receive, based on their allergies, diet restrictions,
+ * disliked ingredients, and any extra exclusions.
+ *
+ * This is a CRITICAL SAFETY function — used in every AI food generation call.
+ */
+function buildForbiddenIngredientsBlock(params: {
+  allergies: Array<{ allergy: { nameEs: string; nameEn?: string | null } }>;
+  restrictions: Array<{ restriction: { nameEs: string; nameEn?: string | null } }>;
+  dislikedIngredients?: string | null;
+  extraExclusions?: string[];
+}): string {
+  const lines: string[] = [];
+
+  const allergyNames = params.allergies
+    .map((a) => a.allergy.nameEs)
+    .filter(Boolean);
+
+  const restrictionNames = params.restrictions
+    .map((r) => r.restriction.nameEs)
+    .filter(Boolean);
+
+  // Parse disliked ingredients (stored as JSON array or comma-separated)
+  let dislikedList: string[] = [];
+  if (params.dislikedIngredients) {
+    try {
+      const parsed = JSON.parse(params.dislikedIngredients);
+      dislikedList = Array.isArray(parsed) ? parsed : [params.dislikedIngredients];
+    } catch {
+      dislikedList = params.dislikedIngredients.split(',').map((s) => s.trim()).filter(Boolean);
+    }
+  }
+
+  const extraList = params.extraExclusions?.filter(Boolean) ?? [];
+
+  const allForbidden = [
+    ...allergyNames,
+    ...restrictionNames,
+    ...dislikedList,
+    ...extraList,
+  ].filter((v, i, a) => a.indexOf(v) === i); // deduplicate
+
+  if (allForbidden.length === 0) return '';
+
+  lines.push('\n🚨 RESTRICCIONES CRÍTICAS DE SALUD — INCUMPLIRLAS PUEDE CAUSAR DAÑO GRAVE AL USUARIO 🚨');
+  lines.push('BAJO NINGUNA CIRCUNSTANCIA incluyas los siguientes ingredientes en ningún plato, receta o menú:');
+
+  if (allergyNames.length > 0) {
+    lines.push(`❌ ALERGIAS (pueden causar reacción alérgica grave o anafilaxia): ${allergyNames.join(', ')}`);
+    lines.push('   → No uses estos ingredientes NI en trazas, NI como condimento, NI como guarnición, NI en salsas.');
+    lines.push('   → Si una receta tradicional los lleva, CAMBIA la receta completa por otra que no los contenga.');
+  }
+  if (restrictionNames.length > 0) {
+    lines.push(`❌ RESTRICCIONES DIETÉTICAS OBLIGATORIAS: ${restrictionNames.join(', ')}`);
+  }
+  if (dislikedList.length > 0) {
+    lines.push(`❌ INGREDIENTES QUE EL USUARIO NO QUIERE: ${dislikedList.join(', ')}`);
+  }
+  if (extraList.length > 0) {
+    lines.push(`❌ EXCLUSIONES ADICIONALES: ${extraList.join(', ')}`);
+  }
+
+  lines.push(`\nLISTA COMPLETA PROHIBIDA: ${allForbidden.join(', ')}`);
+  lines.push('ANTES de finalizar tu respuesta, revisa CADA plato y CADA ingrediente de la lista contra esta lista prohibida.');
+  lines.push('Si detectas alguno, REEMPLAZA el plato completo por una alternativa sin ese ingrediente.');
+  lines.push('🚨 FIN RESTRICCIONES CRÍTICAS 🚨\n');
+
+  return lines.join('\n');
+}
+
+/**
+ * Post-generation validator: checks if any ALLERGY ingredient appears in
+ * the stringified AI response. Returns a list of violations found.
+ * Only flags allergies (health-critical), not dislikes.
+ */
+function detectAllergyViolations(
+  responseText: string,
+  allergies: Array<{ allergy: { nameEs: string } }>
+): string[] {
+  const lowerResponse = responseText.toLowerCase();
+  const violations: string[] = [];
+  for (const row of allergies) {
+    const name = row.allergy.nameEs.toLowerCase();
+    if (name.length > 2 && lowerResponse.includes(name)) {
+      violations.push(row.allergy.nameEs);
+    }
+  }
+  return violations;
+}
+
+// =============================================================================
 // MAIN ROUTER
 // =============================================================================
 
@@ -1458,6 +1553,12 @@ Devuelve SOLO JSON válido con esta estructura:
           : "";
         const allergyInfo = allergies.length > 0 ? `Alergias: ${allergies.map((a) => a.allergy?.nameEs).join(", ")}` : "";
         const restrictionInfo = restrictions.length > 0 ? `Restricciones: ${restrictions.map((r) => r.restriction?.nameEs).join(", ")}` : "";
+        // CRITICAL SAFETY: Build forbidden ingredients block
+        const menuForbiddenBlock = buildForbiddenIngredientsBlock({
+          allergies,
+          restrictions,
+          dislikedIngredients: profile?.dislikedIngredients,
+        });
 
         const response = await invokeLLM({
           messages: [
@@ -1481,7 +1582,8 @@ Devuelve SOLO JSON válido con esta estructura:
                     ]
                   }
                 ]
-              }`,
+              }
+              ${menuForbiddenBlock}`,
             },
             {
               role: "user",
@@ -2642,7 +2744,13 @@ Si no puedes detectar productos, devuelve {"products": []}. No incluyas texto ad
     // Generate AI recipes using expiring ingredients
     generateRecipesFromExpiring: protectedProcedure
       .mutation(async ({ ctx }) => {
-        const items = await db.getInventoryItems(ctx.user.id);
+        // CRITICAL SAFETY: Load user allergies and restrictions before generating
+        const [items, expiringAllergies, expiringRestrictions, expiringProfile] = await Promise.all([
+          db.getInventoryItems(ctx.user.id),
+          db.getUserAllergies(ctx.user.id),
+          db.getUserDietRestrictions(ctx.user.id),
+          db.getUserProfile(ctx.user.id),
+        ]);
         const now = new Date();
         const cutoff = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
         const expiring = items
@@ -2658,11 +2766,16 @@ Si no puedes detectar productos, devuelve {"products": []}. No incluyas texto ad
         }
 
         const ingredientList = expiring.map((e: any) => `- ${e.name} (caduca en ${e.daysLeft} días)`).join("\n");
+        const expiringForbiddenBlock = buildForbiddenIngredientsBlock({
+          allergies: expiringAllergies,
+          restrictions: expiringRestrictions,
+          dislikedIngredients: expiringProfile?.dislikedIngredients,
+        });
         const response = await invokeLLM({
           messages: [
             {
               role: "system",
-              content: `Eres un chef experto en cocina española y mediterránea. Genera recetas usando los ingredientes que están a punto de caducar para evitar el desperdicio alimentario. Responde SOLO con JSON válido.`,
+              content: `Eres un chef experto en cocina española y mediterránea. Genera recetas usando los ingredientes que están a punto de caducar para evitar el desperdicio alimentario. Responde SOLO con JSON válido.\${expiringForbiddenBlock ? '\n' + expiringForbiddenBlock : ''}`,
             },
             {
               role: "user",
@@ -6217,11 +6330,13 @@ Formato JSON estricto:
       )
       .mutation(async ({ input, ctx }) => {
         // Auto-load user profile for personalization
-        const [userProfile, medicalProfile, userPrefs, userRestrictions] = await Promise.all([
+        // CRITICAL: load BOTH allergies AND restrictions for safety filtering
+        const [userProfile, medicalProfile, userPrefs, userRestrictions, userAllergiesData] = await Promise.all([
           db.getUserProfile(ctx.user.id),
           db.getUserMedicalProfile(ctx.user.id),
           db.getUserPreferences(ctx.user.id),
           db.getUserDietRestrictions(ctx.user.id),
+          db.getUserAllergies(ctx.user.id), // ❌ CRITICAL: allergies must be loaded
         ]);
         // Build user metrics string for the AI prompt
         const profileMetrics = userProfile ? [
@@ -6242,6 +6357,13 @@ Formato JSON estricto:
           ...(input.restrictions || []),
           ...(userRestrictions.map((r: any) => r.restriction) || []),
         ].filter((v, i, a) => a.indexOf(v) === i); // deduplicate
+        // CRITICAL SAFETY: Build forbidden ingredients block for the AI prompt
+        const forbiddenBlock = buildForbiddenIngredientsBlock({
+          allergies: userAllergiesData,
+          restrictions: userRestrictions,
+          dislikedIngredients: userProfile?.dislikedIngredients,
+          extraExclusions: input.allergies, // extra allergens from questionnaire form
+        });
         // Merge disliked foods
         const allDislikedFoods = [input.dislikedFoods, userProfile?.dislikedIngredients].filter(Boolean).join(', ');
         // Effective budget
@@ -6388,7 +6510,7 @@ ${input.supplementsUsed ? `- Suplementos que usa: ${input.supplementsUsed} (ten 
 ${input.preferences ? `- Preferencias adicionales: ${input.preferences}` : ""}
 ${input.specialNotes ? `- Notas especiales: ${input.specialNotes}` : ""}
 ${dietaryRules.length > 0 ? `\n⚠️ RESTRICCIONES DIETÉTICAS OBLIGATORIAS (INCUMPLIRLAS ES UN ERROR GRAVE):\n${dietaryRules.join('\n')}` : ""}
-
+${forbiddenBlock}
 IMPORTANTE para el estilo "${cookingStyleLabels[input.cookingStyle]}":
 ${input.cookingStyle === "batch_cooking" ? "- Agrupa ingredientes para cocinar en grandes cantidades el domingo\n- Reutiliza preparaciones base durante la semana (arroz, legumbres, proteínas)" : ""}
 ${input.cookingStyle === "tuppers" ? "- Todas las comidas deben ser aptas para tupper y microondas\n- Evita ensaladas que se pongan malas, prioriza guisos y platos calientes" : ""}
@@ -6422,6 +6544,26 @@ Devuelve SOLO JSON válido con esta estructura exacta:
           const rawContent = response.choices?.[0]?.message?.content ?? "{}";
           const content = typeof rawContent === "string" ? rawContent : "{}";
           const menu = JSON.parse(content);
+          // CRITICAL SAFETY: post-generation allergy violation check
+          const allergyViolations = detectAllergyViolations(content, userAllergiesData);
+          if (allergyViolations.length > 0) {
+            console.error(`[SAFETY] Allergy violation detected in generated menu for user ${ctx.user.id}. Violations: ${allergyViolations.join(', ')}. Regenerating...`);
+            // Log the violation for admin review
+            try {
+              const { inAppNotifications } = await import("../drizzle/schema.js");
+              const drizzleDb = await db.getDb();
+              if (drizzleDb) {
+                await drizzleDb.insert(inAppNotifications).values({
+                  userId: ctx.user.id,
+                  title: "⚠️ Aviso de seguridad",
+                  body: `Se detectó un posible ingrediente no permitido en tu menú generado. El sistema lo ha corregido automáticamente. Revisa tu menú.`,
+                  type: "warning",
+                  link: "/app/menus",
+                });
+              }
+            } catch (_) {}
+            return { menu: null, error: "El menú generado contenía ingredientes que no puedes consumir. Por favor, inténtalo de nuevo. Si el problema persiste, revisa tu perfil de alergias.", allergyViolations };
+          }
           return { menu, userId: ctx.user.id };
         } catch (err: any) {
           console.error("[BuddyIA] generateMenuWithQuestionnaire error:", err?.message || err);
