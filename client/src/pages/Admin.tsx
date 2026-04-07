@@ -21,6 +21,8 @@ import {
   ClockIcon,
   ChartBarIcon,
   DocumentTextIcon,
+  StarIcon,
+  GiftIcon,
 } from "@heroicons/react/24/outline";
 import { RECIPE_PLACEHOLDER_IMAGE as RECIPE_PLACEHOLDER } from "@/lib/constants";
 import UsageAnalyticsPanel from "@/components/UsageAnalyticsPanel";
@@ -36,6 +38,7 @@ const TABS = [
   { key: "categories", label: "Categorías", icon: BookOpenIcon },
   { key: "users", label: "Usuarios", icon: UsersIcon },
   { key: "terms", label: "TyC", icon: DocumentTextIcon },
+  { key: "founders", label: "Fundadores", icon: StarIcon },
 ];
 
 function CatalogSection({
@@ -622,6 +625,11 @@ export default function Admin() {
         <TermsAcceptancePanel />
       )}
 
+      {/* Founders */}
+      {activeTab === "founders" && (
+        <FoundersPanel />
+      )}
+
       {/* Users */}
       {activeTab === "users" && (
         <div className="vively-card space-y-3">
@@ -809,7 +817,143 @@ function TermsAcceptancePanel() {
   );
 }
 
-// ── API Monitor Panel ─────────────────────────────────────────────────
+// ── Founders Panel ───────────────────────────────────────────────────────────
+function FoundersPanel() {
+  const { data: stats, refetch: refetchStats } = trpc.admin.getFounderStats.useQuery();
+  const { data: founders, refetch: refetchFounders, isLoading } = trpc.admin.getFounderEmails.useQuery();
+  const [newEmail, setNewEmail] = useState("");
+  const [filter, setFilter] = useState<"all" | "claimed" | "pending">("all");
+
+  const addFounder = trpc.admin.addFounderEmail.useMutation({
+    onSuccess: () => { toast.success("Email añadido"); setNewEmail(""); refetchFounders(); refetchStats(); },
+    onError: (err) => toast.error(err.message),
+  });
+  const removeFounder = trpc.admin.removeFounderEmail.useMutation({
+    onSuccess: () => { toast.success("Email eliminado"); refetchFounders(); refetchStats(); },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const filtered = (founders ?? []).filter((f) => {
+    if (filter === "claimed") return !!f.claimedAt;
+    if (filter === "pending") return !f.claimedAt;
+    return true;
+  });
+
+  return (
+    <div className="space-y-4">
+      {/* Stats */}
+      <div className="grid grid-cols-3 gap-3">
+        <div className="vively-card text-center">
+          <p className="text-2xl font-black text-gray-800">{stats?.total ?? 0}</p>
+          <p className="text-xs text-gray-400 mt-1">Total fundadores</p>
+        </div>
+        <div className="vively-card text-center">
+          <p className="text-2xl font-black text-green-600">{stats?.claimed ?? 0}</p>
+          <p className="text-xs text-gray-400 mt-1">PRO activado</p>
+        </div>
+        <div className="vively-card text-center">
+          <p className="text-2xl font-black text-orange-500">{stats?.pending ?? 0}</p>
+          <p className="text-xs text-gray-400 mt-1">Pendientes</p>
+        </div>
+      </div>
+
+      {/* Progress bar */}
+      {stats && stats.total > 0 && (
+        <div className="vively-card">
+          <div className="flex items-center justify-between mb-2">
+            <p className="text-xs font-semibold text-gray-600">Tasa de conversión</p>
+            <p className="text-xs font-bold text-green-600">{Math.round((stats.claimed / stats.total) * 100)}%</p>
+          </div>
+          <div className="h-2 w-full rounded-full bg-gray-100 overflow-hidden">
+            <div
+              className="h-full rounded-full bg-gradient-to-r from-green-400 to-green-500 transition-all duration-500"
+              style={{ width: `${(stats.claimed / stats.total) * 100}%` }}
+            />
+          </div>
+          <p className="text-xs text-gray-400 mt-1">{stats.claimed} de {stats.total} usuarios originales ya se han registrado</p>
+        </div>
+      )}
+
+      {/* Add email */}
+      <div className="vively-card">
+        <p className="text-xs font-semibold text-gray-600 mb-2">Añadir email fundador</p>
+        <div className="flex gap-2">
+          <input
+            value={newEmail}
+            onChange={(e) => setNewEmail(e.target.value)}
+            placeholder="email@ejemplo.com"
+            className="vively-input flex-1"
+            onKeyDown={(e) => { if (e.key === "Enter" && newEmail.trim()) addFounder.mutate({ email: newEmail.trim() }); }}
+          />
+          <button
+            onClick={() => { if (newEmail.trim()) addFounder.mutate({ email: newEmail.trim() }); }}
+            disabled={addFounder.isPending || !newEmail.trim()}
+            className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-[#F97316] text-white disabled:opacity-50"
+          >
+            <PlusIcon className="h-4 w-4" />
+          </button>
+        </div>
+      </div>
+
+      {/* Filter */}
+      <div className="flex gap-2">
+        {(["all", "claimed", "pending"] as const).map((f) => (
+          <button
+            key={f}
+            onClick={() => setFilter(f)}
+            className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
+              filter === f ? "bg-[#F97316] text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+            }`}
+          >
+            {f === "all" ? "Todos" : f === "claimed" ? "✅ Activados" : "⏳ Pendientes"}
+          </button>
+        ))}
+      </div>
+
+      {/* List */}
+      <div className="vively-card space-y-2">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-bold text-gray-700">Lista de emails fundadores</h3>
+          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-500">{filtered.length}</span>
+        </div>
+        {isLoading ? (
+          <p className="text-center text-xs text-gray-400 py-4">Cargando...</p>
+        ) : filtered.length === 0 ? (
+          <p className="text-center text-xs text-gray-400 py-4">No hay emails en esta categoría.</p>
+        ) : (
+          <div className="max-h-[50vh] overflow-y-auto space-y-1.5">
+            {filtered.map((f) => (
+              <div key={f.id} className="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2">
+                <div className="flex items-center gap-2">
+                  <span className={`h-2 w-2 rounded-full ${f.claimedAt ? "bg-green-500" : "bg-orange-400"}`} />
+                  <div>
+                    <p className="text-sm font-medium text-gray-800">{f.email}</p>
+                    {f.claimedAt && (
+                      <p className="text-xs text-green-600">
+                        PRO activado el {new Date(f.claimedAt).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" })}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                {!f.claimedAt && (
+                  <button
+                    onClick={() => removeFounder.mutate({ id: f.id })}
+                    className="flex h-7 w-7 items-center justify-center rounded-lg text-red-400 hover:bg-red-50"
+                    title="Eliminar"
+                  >
+                    <TrashIcon className="h-3.5 w-3.5" />
+                  </button>
+                )}
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── API Monitor Panel ─────────────────────────────────────────────────────────
 function ApiMonitorPanel() {
   const { data: monitors, refetch: refetchMonitors, isLoading } = trpc.admin.getApiMonitors.useQuery();
   const [selectedMonitorId, setSelectedMonitorId] = useState<number | null>(null);

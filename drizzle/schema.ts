@@ -1797,3 +1797,21 @@ export const consumCartHistory = pgTable("consum_cart_history", {
 }));
 export type ConsumCartHistory = typeof consumCartHistory.$inferSelect;
 export type InsertConsumCartHistory = typeof consumCartHistory.$inferInsert;
+
+// =============================================================================
+// FOUNDER EMAILS — Usuarios originales de la antigua BuddyMarket
+// =============================================================================
+export const founderEmails = pgTable("founder_emails", {
+  id: serial("id").primaryKey(),
+  email: varchar("email", { length: 320 }).notNull().unique(),
+  claimedAt: timestamp("claimedAt"),
+  claimedByUserId: integer("claimedByUserId"),
+  addedAt: timestamp("addedAt").defaultNow().notNull(),
+  addedBy: varchar("addedBy", { length: 128 }).default("import").notNull(),
+  notes: varchar("notes", { length: 255 }),
+}, (t) => ({
+  founderEmailIdx: index("founder_emails_email_idx").on(t.email),
+}));
+export type FounderEmail = typeof founderEmails.$inferSelect;
+
+

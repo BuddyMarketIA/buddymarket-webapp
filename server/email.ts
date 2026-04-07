@@ -851,3 +851,79 @@ export async function sendPaymentAdminNotification(params: {
     return true;
   } catch (err) { console.error("[Email] Error sending admin payment notification:", err); return false; }
 }
+
+// =============================================================================
+// FOUNDER WELCOME EMAIL — Bienvenida especial para usuarios fundadores
+// =============================================================================
+function founderWelcomeHtml(params: { userName: string; userEmail: string }): string {
+  const name = params.userName || "amigo/a";
+  const proUntil = new Date(Date.now() + 365 * 24 * 60 * 60 * 1000).toLocaleDateString("es-ES", {
+    day: "numeric", month: "long", year: "numeric",
+  });
+  const features: [string, string, string][] = [
+    ["🤖", "IA Nutricional", "Menús semanales personalizados en segundos"],
+    ["📸", "Diario con fotos", "La IA detecta calorías y macros de tus platos"],
+    ["📖", "500+ recetas", "Filtradas por tus objetivos y alergias"],
+    ["🛒", "Lista de la compra inteligente", "Generada automáticamente desde tu menú"],
+    ["🧑‍⚕️", "BuddyExperts", "Acceso a nutricionistas y expertos reales"],
+  ];
+  const featureRows = features.map(([emoji, title, desc]) => `
+    <tr>
+      <td style="padding:10px 0;border-bottom:1px solid #f3f4f6;vertical-align:top;width:36px;">
+        <span style="font-size:20px;">${emoji}</span>
+      </td>
+      <td style="padding:10px 0 10px 12px;border-bottom:1px solid #f3f4f6;">
+        <strong style="display:block;font-size:14px;color:#1a1a1a;">${title}</strong>
+        <span style="font-size:13px;color:#6b7280;">${desc}</span>
+      </td>
+    </tr>
+  `).join("");
+  return emailWrapper(`
+    ${emailHeader("🎁", "¡Tu año PRO está activado!", "Bienvenido/a de vuelta a BuddyMarket", "linear-gradient(135deg, #F97316, #FB923C)")}
+    <tr><td style="padding:40px 40px 0;">
+      <p style="font-size:17px;color:#374151;line-height:1.7;margin:0 0 20px;">
+        Hola <strong style="color:#1a1a1a;">${name}</strong>,
+      </p>
+      <p style="font-size:17px;color:#374151;line-height:1.7;margin:0 0 20px;">
+        Eres uno de los usuarios originales de BuddyMarket y eso tiene un valor enorme para nosotros.
+        <strong style="color:#1a1a1a;">Confiaste en nosotros desde el principio, y hoy te devolvemos ese favor.</strong>
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#fff8f0,#fef3e8);border-radius:16px;border:2px solid #fde8d0;margin:24px 0;">
+        <tr><td style="padding:24px;text-align:center;">
+          <p style="font-size:40px;margin:0 0 8px;">🎁</p>
+          <p style="font-size:20px;font-weight:900;color:#1a1a1a;margin:0 0 6px;letter-spacing:-0.02em;">1 año de BuddyMarket PRO activado</p>
+          <p style="font-size:14px;color:#6b7280;margin:0;">Tu cuenta PRO está activa hasta el ${proUntil}</p>
+        </td></tr>
+      </table>
+      <p style="font-size:15px;color:#374151;line-height:1.7;margin:0 0 16px;">Con tu plan PRO tienes acceso completo a:</p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+        ${featureRows}
+      </table>
+      <table cellpadding="0" cellspacing="0" style="margin:0 auto 32px;">
+        <tr><td style="background:linear-gradient(135deg,#F97316,#FB923C);border-radius:14px;padding:16px 40px;text-align:center;box-shadow:0 8px 24px rgba(249,115,22,0.35);">
+          <a href="${APP_URL}/app/dashboard" style="color:#ffffff;font-size:16px;font-weight:900;text-decoration:none;letter-spacing:-0.01em;">→ Ir a mi dashboard PRO</a>
+        </td></tr>
+      </table>
+      <p style="font-size:15px;color:#374151;line-height:1.7;margin:0 0 8px;">
+        Gracias por haber esperado. Gracias por haber confiado.
+      </p>
+      <p style="font-size:15px;color:#374151;line-height:1.7;margin:0;">
+        <strong style="color:#1a1a1a;">El equipo de BuddyMarket</strong>
+      </p>
+    </td></tr>
+  `);
+}
+
+export async function sendFounderWelcomeEmail(params: { userName: string; userEmail: string }): Promise<boolean> {
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: params.userEmail,
+      subject: "🎁 ¡Tu año PRO está activado! Bienvenido/a de vuelta a BuddyMarket",
+      html: founderWelcomeHtml(params),
+    });
+    if (error) { console.error("[Email] Failed to send founder welcome:", error); return false; }
+    console.log("[Email] Founder welcome sent:", data?.id, "→", params.userEmail);
+    return true;
+  } catch (err) { console.error("[Email] Error sending founder welcome:", err); return false; }
+}

@@ -179,13 +179,56 @@ export const appRouter = router({
           const { eq } = await import("drizzle-orm");
           await drizzleDb.update(users).set({ passwordHash }).where(eq(users.id, newUser.id));
         }
+        // ── Check if this is a founder email and grant PRO automatically ──────
+        let isFounder = false;
+        try {
+          const drizzleDb2 = await db.getDb();
+          if (drizzleDb2) {
+            const { founderEmails } = await import("../drizzle/schema.js");
+            const { eq: eqF } = await import("drizzle-orm");
+            const founderRecord = await drizzleDb2
+              .select()
+              .from(founderEmails)
+              .where(eqF(founderEmails.email, email))
+              .limit(1);
+            if (founderRecord.length > 0 && !founderRecord[0].claimedAt) {
+              isFounder = true;
+              // Activate PRO for 1 year
+              await db.upsertUserSubscription(newUser.id, {
+                status: "active",
+                plan: "premium",
+                currentPeriodStart: new Date(),
+                currentPeriodEnd: new Date(Date.now() + 365 * 24 * 60 * 60 * 1000),
+              });
+              // Mark as claimed
+              await drizzleDb2
+                .update(founderEmails)
+                .set({ claimedAt: new Date(), claimedByUserId: newUser.id })
+                .where(eqF(founderEmails.email, email));
+              // In-app notification
+              await createInAppNotif(newUser.id, {
+                title: "\uD83C\uDF81 \u00a1Tu a\u00f1o PRO est\u00e1 activado!",
+                body: "Como usuario original de BuddyMarket, tienes 1 a\u00f1o de PRO gratis. \u00a1Bienvenido/a de vuelta!",
+                type: "promo",
+                link: "/app/dashboard",
+              });
+              // Send special founder welcome email (non-blocking)
+              import("./email.js").then(({ sendFounderWelcomeEmail }) => {
+                sendFounderWelcomeEmail({ userName: input.name, userEmail: email }).catch(() => {});
+              }).catch(() => {});
+              console.log(`[Register] Founder PRO activated for ${email}`);
+            }
+          }
+        } catch (founderErr) {
+          console.error("[Register] Error checking founder status:", founderErr);
+        }
         const sessionToken = await sdk.createSessionToken(openId, {
           name: input.name,
           expiresInMs: ONE_YEAR_MS,
         });
         const cookieOptions = getSessionCookieOptions(ctx.req);
         ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
-        return { success: true, user: { id: newUser.id, email: newUser.email, name: newUser.name } };
+        return { success: true, isFounder, user: { id: newUser.id, email: newUser.email, name: newUser.name } };
       }),
 
     // ── Email/Password Login ──────────────────────────────────────────────
@@ -3382,6 +3425,69 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
         return db.getUserSubscription(input.userId);
       }),
 
+    // ── Admin: Founder Emails Management ──────────────────────────────────
+    getFounderEmails: protectedProcedure
+      .query(async ({ ctx }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return [];
+        const { founderEmails } = await import("../drizzle/schema.js");
+        const { desc } = await import("drizzle-orm");
+        const rows = await drizzleDb
+          .select({
+            id: founderEmails.id,
+            email: founderEmails.email,
+            claimedAt: founderEmails.claimedAt,
+            claimedByUserId: founderEmails.claimedByUserId,
+            addedAt: founderEmails.addedAt,
+            addedBy: founderEmails.addedBy,
+            notes: founderEmails.notes,
+          })
+          .from(founderEmails)
+          .orderBy(desc(founderEmails.addedAt));
+        return rows;
+      }),
+    addFounderEmail: protectedProcedure
+      .input(z.object({ email: z.string().email(), notes: z.string().optional() }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { founderEmails } = await import("../drizzle/schema.js");
+        const email = input.email.toLowerCase().trim();
+        await drizzleDb.insert(founderEmails).values({
+          email,
+          addedBy: ctx.user.name ?? "admin",
+          notes: input.notes ?? null,
+        }).onConflictDoNothing();
+        return { success: true };
+      }),
+    removeFounderEmail: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { founderEmails } = await import("../drizzle/schema.js");
+        const { eq } = await import("drizzle-orm");
+        await drizzleDb.delete(founderEmails).where(eq(founderEmails.id, input.id));
+        return { success: true };
+      }),
+    getFounderStats: protectedProcedure
+      .query(async ({ ctx }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return { total: 0, claimed: 0, pending: 0 };
+        const { founderEmails } = await import("../drizzle/schema.js");
+        const { count, isNotNull, isNull } = await import("drizzle-orm");
+        const [totalRow] = await drizzleDb.select({ count: count() }).from(founderEmails);
+        const [claimedRow] = await drizzleDb.select({ count: count() }).from(founderEmails).where(isNotNull(founderEmails.claimedAt));
+        return {
+          total: Number(totalRow.count),
+          claimed: Number(claimedRow.count),
+          pending: Number(totalRow.count) - Number(claimedRow.count),
+        };
+      }),
 
     createAllergy: protectedProcedure
       .input(z.object({ apiParam: z.string(), nameEs: z.string(), nameEn: z.string().optional() }))
