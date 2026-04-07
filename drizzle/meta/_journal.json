@@ -134,6 +134,13 @@
       "when": 1775565640097,
       "tag": "0018_moaning_star_brand",
       "breakpoints": true
+    },
+    {
+      "idx": 19,
+      "version": "7",
+      "when": 1775586951682,
+      "tag": "0019_powerful_quasar",
+      "breakpoints": true
     }
   ]
 }

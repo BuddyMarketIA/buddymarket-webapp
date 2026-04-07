@@ -1911,3 +1911,28 @@ export const allergyViolationLogs = pgTable("allergy_violation_logs", {
 }));
 export type AllergyViolationLog = typeof allergyViolationLogs.$inferSelect;
 export type InsertAllergyViolationLog = typeof allergyViolationLogs.$inferInsert;
+
+// =============================================================================
+// PHONE OTP TOKENS (One-Time Password para login por número de teléfono via SMS)
+// =============================================================================
+export const phoneOtpTokens = pgTable("phone_otp_tokens", {
+  id: serial("id").primaryKey(),
+  /** Número de teléfono al que se envió el código (normalizado E.164) */
+  phone: varchar("phone", { length: 32 }).notNull(),
+  /** Código OTP de 6 dígitos (almacenado como hash SHA-256) */
+  codeHash: varchar("code_hash", { length: 64 }).notNull(),
+  /** Cuándo expira el código (10 minutos desde la creación) */
+  expiresAt: timestamp("expires_at").notNull(),
+  /** Si el código ya fue usado */
+  used: boolean("used").default(false).notNull(),
+  /** Número de intentos fallidos de verificación */
+  attempts: integer("attempts").default(0).notNull(),
+  /** IP del solicitante para rate limiting */
+  ipAddress: varchar("ip_address", { length: 45 }),
+  createdAt: timestamp("created_at").defaultNow().notNull(),
+}, (t) => ({
+  phoneOtpPhoneIdx: index("phone_otp_phone_idx").on(t.phone),
+  phoneOtpExpiresIdx: index("phone_otp_expires_idx").on(t.expiresAt),
+}));
+export type PhoneOtpToken = typeof phoneOtpTokens.$inferSelect;
+export type InsertPhoneOtpToken = typeof phoneOtpTokens.$inferInsert;

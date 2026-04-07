@@ -60,6 +60,8 @@ import {
   InsertPantryStock,
   otpTokens,
   InsertOtpToken,
+  phoneOtpTokens,
+  InsertPhoneOtpToken,
   allergyHistory,
   InsertAllergyHistory,
   userAllergySeverity,
@@ -2431,4 +2433,88 @@ export async function getRecentAllergyViolations(limit = 50) {
     .leftJoin(users, eq(allergyViolationLogs.userId, users.id))
     .orderBy(desc(allergyViolationLogs.createdAt))
     .limit(limit);
+}
+
+// =============================================================================
+// PHONE OTP TOKENS
+// =============================================================================
+
+export async function createPhoneOtpToken(data: InsertPhoneOtpToken) {
+  const db = await getDb();
+  if (!db) return;
+  await db.insert(phoneOtpTokens).values(data);
+}
+
+export async function getActivePhoneOtpTokenByHash(phone: string, codeHash: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const now = new Date();
+  const result = await db
+    .select()
+    .from(phoneOtpTokens)
+    .where(
+      and(
+        eq(phoneOtpTokens.phone, phone),
+        eq(phoneOtpTokens.codeHash, codeHash),
+        eq(phoneOtpTokens.used, false),
+        gte(phoneOtpTokens.expiresAt, now)
+      )
+    )
+    .orderBy(desc(phoneOtpTokens.createdAt))
+    .limit(1);
+  return result[0];
+}
+
+export async function getLatestActivePhoneOtpToken(phone: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const now = new Date();
+  const result = await db
+    .select()
+    .from(phoneOtpTokens)
+    .where(
+      and(
+        eq(phoneOtpTokens.phone, phone),
+        eq(phoneOtpTokens.used, false),
+        gte(phoneOtpTokens.expiresAt, now)
+      )
+    )
+    .orderBy(desc(phoneOtpTokens.createdAt))
+    .limit(1);
+  return result[0];
+}
+
+export async function markPhoneOtpTokenUsed(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(phoneOtpTokens).set({ used: true }).where(eq(phoneOtpTokens.id, id));
+}
+
+export async function incrementPhoneOtpAttempts(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) return;
+  await db.update(phoneOtpTokens).set({ attempts: sql`${phoneOtpTokens.attempts} + 1` }).where(eq(phoneOtpTokens.id, id));
+}
+
+export async function countRecentPhoneOtpRequests(phone: string, windowMs = 3600000): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const since = new Date(Date.now() - windowMs);
+  const result = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(phoneOtpTokens)
+    .where(
+      and(
+        eq(phoneOtpTokens.phone, phone),
+        gte(phoneOtpTokens.createdAt, since)
+      )
+    );
+  return Number(result[0]?.count ?? 0);
+}
+
+export async function getUserByPhone(phone: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(users).where(eq(users.phone, phone)).limit(1);
+  return result[0];
 }

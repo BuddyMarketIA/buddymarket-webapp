@@ -10,6 +10,7 @@ import { storagePut } from "./storage";
 import * as db from "./db";
 import { getUserPlanTier, requirePlanFeature, requireUnderLimit } from "./planGuard";
 import { sendOTPEmail } from "./email";
+import { sendSMSOTP, normalizePhone, isValidPhone } from "./sms";
 import { sdk } from "./_core/sdk";
 import { createHash, randomBytes } from "crypto";
 import bcrypt from "bcryptjs";
@@ -310,6 +311,75 @@ export const appRouter = router({
         return { success: true, user: { id: user.id, email: user.email, name: user.name } };
       }),
 
+    // ── Phone OTP ─────────────────────────────────────────────────────────
+    sendPhoneOTP: publicProcedure
+      .input(z.object({ phone: z.string().min(7).max(20) }))
+      .mutation(async ({ input }) => {
+        const phone = normalizePhone(input.phone);
+        if (!isValidPhone(phone)) {
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Número de teléfono no válido. Usa el formato internacional (ej: +34612345678).",
+          });
+        }
+        const recentCount = await db.countRecentPhoneOtpRequests(phone, 3600000);
+        if (recentCount >= 5) {
+          throw new TRPCError({
+            code: "TOO_MANY_REQUESTS",
+            message: "Has solicitado demasiados códigos. Espera un momento antes de intentarlo de nuevo.",
+          });
+        }
+        const otpCode = String(Math.floor(100000 + Math.random() * 900000));
+        const expiresAt = new Date(Date.now() + 10 * 60 * 1000);
+        const codeHash = hashOtpCode(otpCode);
+        await db.createPhoneOtpToken({ phone, codeHash, expiresAt });
+        await sendSMSOTP(phone, otpCode);
+        return { success: true, message: "Código enviado. Revisa tus SMS.", phone };
+      }),
+    verifyPhoneOTP: publicProcedure
+      .input(z.object({ phone: z.string().min(7).max(20), code: z.string().length(6) }))
+      .mutation(async ({ input, ctx }) => {
+        const phone = normalizePhone(input.phone);
+        const inputHash = hashOtpCode(input.code);
+        const latestToken = await db.getLatestActivePhoneOtpToken(phone);
+        if (!latestToken) {
+          throw new TRPCError({
+            code: "NOT_FOUND",
+            message: "Código no válido o expirado. Solicita uno nuevo.",
+          });
+        }
+        if (latestToken.attempts >= 5) {
+          throw new TRPCError({
+            code: "TOO_MANY_REQUESTS",
+            message: "Demasiados intentos fallidos. Solicita un nuevo código.",
+          });
+        }
+        const token = await db.getActivePhoneOtpTokenByHash(phone, inputHash);
+        if (!token) {
+          await db.incrementPhoneOtpAttempts(latestToken.id);
+          throw new TRPCError({
+            code: "BAD_REQUEST",
+            message: "Código incorrecto. Inténtalo de nuevo.",
+          });
+        }
+        await db.markPhoneOtpTokenUsed(token.id);
+        const openId = `phone:${phone}`;
+        let user = await db.getUserByPhone(phone);
+        if (!user) {
+          await db.upsertUser({ openId, phone, loginMethod: "phone", lastSignedIn: new Date() });
+          user = await db.getUserByPhone(phone);
+        } else {
+          await db.updateUser(user.id, { lastSignedIn: new Date(), loginMethod: "phone" });
+        }
+        if (!user) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Error al crear la sesión." });
+        const sessionToken = await sdk.createSessionToken(user.openId ?? openId, {
+          name: user.name ?? phone,
+          expiresInMs: ONE_YEAR_MS,
+        });
+        const cookieOptions = getSessionCookieOptions(ctx.req);
+        ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
+        return { success: true, user: { id: user.id, phone: user.phone, name: user.name } };
+      }),
     // ── Email/Password Register ───────────────────────────────────────────
     register: publicProcedure
       .input(z.object({

@@ -4,7 +4,7 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Eye, EyeOff, Mail, Lock, ArrowRight, Loader2, ChevronLeft, User } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, ArrowRight, Loader2, ChevronLeft, User, Phone } from "lucide-react";
 import WebSSOButtons from "@/components/WebSSOButtons";
 
 // ─── Carousel images ──────────────────────────────────────────────────────────
@@ -33,7 +33,7 @@ const SLIDES = [
 
 const LOGO = "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/logo-icon-orange_2cf889cb.png";
 
-type AuthMode = "login" | "register" | "otp-email" | "otp-code" | "forgot" | "forgot-sent";
+type AuthMode = "login" | "register" | "otp-email" | "otp-code" | "phone" | "phone-code" | "forgot" | "forgot-sent";
 
 // ─── Password strength indicator ─────────────────────────────────────────────
 function PasswordStrength({ password }: { password: string }) {
@@ -79,6 +79,9 @@ export default function LoginPage() {
   const [forgotEmail, setForgotEmail] = useState("");
   const [otpCode, setOtpCode] = useState(["", "", "", "", "", ""]);
   const otpRefs = useRef<(HTMLInputElement | null)[]>([]);
+  const [phone, setPhone] = useState("");
+  const [phoneOtpCode, setPhoneOtpCode] = useState(["", "", "", "", "", ""]);
+  const phoneOtpRefs = useRef<(HTMLInputElement | null)[]>([]);
   // Terms acceptance
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [acceptPrivacy, setAcceptPrivacy] = useState(false);
@@ -90,6 +93,8 @@ export default function LoginPage() {
   const acceptTermsMut = trpc.auth.acceptTerms.useMutation();
   const sendOTPMut = trpc.auth.sendOTP.useMutation();
   const verifyOTPMut = trpc.auth.verifyOTP.useMutation();
+  const sendPhoneOTPMut = trpc.auth.sendPhoneOTP.useMutation();
+  const verifyPhoneOTPMut = trpc.auth.verifyPhoneOTP.useMutation();
   const forgotMut = trpc.auth.forgotPassword.useMutation();
   const utils = trpc.useUtils();
 
@@ -198,7 +203,52 @@ export default function LoginPage() {
     }
   };
 
-  const isLoading = loginMut.isPending || registerMut.isPending || sendOTPMut.isPending || verifyOTPMut.isPending || forgotMut.isPending;
+  const handleSendPhoneOTP = async (e?: React.FormEvent) => {
+    e?.preventDefault();
+    try {
+      await sendPhoneOTPMut.mutateAsync({ phone });
+      setMode("phone-code");
+      setPhoneOtpCode(["", "", "", "", "", ""]);
+      toast.success("Código enviado", { description: "Revisa tus mensajes SMS." });
+    } catch (err: any) {
+      toast.error("Error", { description: err.message });
+    }
+  };
+
+  const handleVerifyPhoneOTP = async (e: React.FormEvent) => {
+    e.preventDefault();
+    const code = phoneOtpCode.join("");
+    if (code.length < 6) return;
+    try {
+      await verifyPhoneOTPMut.mutateAsync({ phone, code });
+      await afterAuth();
+    } catch (err: any) {
+      toast.error("Código incorrecto", { description: err.message });
+    }
+  };
+
+  const handlePhoneOtpInput = (idx: number, val: string) => {
+    if (!/^\d*$/.test(val)) return;
+    if (val.length > 1) {
+      const digits = val.replace(/\D/g, "").slice(0, 6).split("");
+      const next = [...phoneOtpCode];
+      digits.forEach((d, i) => { if (idx + i < 6) next[idx + i] = d; });
+      setPhoneOtpCode(next);
+      const focusIdx = Math.min(idx + digits.length, 5);
+      phoneOtpRefs.current[focusIdx]?.focus();
+      return;
+    }
+    const next = [...phoneOtpCode];
+    next[idx] = val;
+    setPhoneOtpCode(next);
+    if (val && idx < 5) phoneOtpRefs.current[idx + 1]?.focus();
+  };
+
+  const handlePhoneOtpKey = (idx: number, e: React.KeyboardEvent) => {
+    if (e.key === "Backspace" && !phoneOtpCode[idx] && idx > 0) phoneOtpRefs.current[idx - 1]?.focus();
+  };
+
+  const isLoading = loginMut.isPending || registerMut.isPending || sendOTPMut.isPending || verifyOTPMut.isPending || sendPhoneOTPMut.isPending || verifyPhoneOTPMut.isPending || forgotMut.isPending;
 
   const inp = "bg-gray-50 border border-gray-200 text-gray-900 placeholder:text-gray-400 focus-visible:border-[#F97316] focus-visible:ring-0 focus-visible:ring-offset-0 rounded-2xl h-13 text-sm transition-colors";
   const ssoWrapper = "[&_button]:rounded-2xl [&_button]:h-12 [&_button]:text-sm [&_button]:font-semibold [&_button]:border-gray-200 [&_button]:bg-gray-50 [&_button]:text-gray-700 [&_button:hover]:bg-gray-100";
@@ -262,7 +312,7 @@ export default function LoginPage() {
           {/* Back button for sub-modes */}
           {(mode !== "login") && (
             <button
-              onClick={() => setMode(mode === "otp-code" ? "otp-email" : "login")}
+              onClick={() => setMode(mode === "otp-code" ? "otp-email" : mode === "phone-code" ? "phone" : "login")}
               className="flex items-center gap-1 text-gray-400 hover:text-gray-700 text-sm mb-5 transition-colors"
             >
               <ChevronLeft className="w-4 h-4" /> Volver
@@ -315,6 +365,11 @@ export default function LoginPage() {
               <Button type="button" onClick={() => setMode("otp-email")} variant="outline"
                 className="w-full h-12 bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100 rounded-2xl text-sm transition-all active:scale-[0.98]">
                 <Mail className="w-4 h-4 mr-2 text-[#F97316]" /> Acceder con código por email
+              </Button>
+
+              <Button type="button" onClick={() => setMode("phone")} variant="outline"
+                className="w-full h-12 bg-gray-50 border-gray-200 text-gray-700 hover:bg-gray-100 rounded-2xl text-sm transition-all active:scale-[0.98]">
+                <Phone className="w-4 h-4 mr-2 text-[#F97316]" /> Acceder con número de teléfono
               </Button>
 
               <p className="text-center text-gray-400 text-xs">
@@ -492,6 +547,71 @@ export default function LoginPage() {
               <p className="text-center text-gray-400 text-xs">
                 ¿No recibiste el código?{" "}
                 <button onClick={() => handleSendOTP()} className="text-[#F97316] font-semibold hover:text-[#fb923c] transition-colors">
+                  Reenviar
+                </button>
+              </p>
+            </div>
+          )}
+
+          {/* ── PHONE OTP ── */}
+          {mode === "phone" && (
+            <div className="space-y-5">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Acceso por teléfono</h2>
+                <p className="text-gray-400 text-xs mt-0.5">Te enviaremos un código de 6 dígitos por SMS</p>
+              </div>
+              <form onSubmit={handleSendPhoneOTP} className="space-y-3">
+                <div className="relative">
+                  <Phone className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  <Input
+                    type="tel"
+                    required
+                    value={phone}
+                    onChange={e => setPhone(e.target.value)}
+                    placeholder="+34 612 345 678"
+                    className={`${inp} pl-10`}
+                  />
+                </div>
+                <p className="text-[11px] text-gray-400 leading-relaxed">
+                  Introduce tu número con el prefijo de país (ej: <span className="text-gray-600">+34</span> para España, <span className="text-gray-600">+1</span> para EE.UU.)
+                </p>
+                <Button type="submit" disabled={isLoading}
+                  className="w-full h-12 bg-[#F97316] hover:bg-[#ea6c0f] text-white font-semibold rounded-2xl text-sm shadow-[0_4px_20px_rgba(249,115,22,0.4)] transition-all active:scale-[0.98]">
+                  {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <span className="flex items-center gap-2">Enviar código SMS <ArrowRight className="w-4 h-4" /></span>}
+                </Button>
+              </form>
+            </div>
+          )}
+
+          {/* ── PHONE OTP CODE ── */}
+          {mode === "phone-code" && (
+            <div className="space-y-5">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">Introduce el código</h2>
+                <p className="text-gray-400 text-xs mt-0.5">Enviado por SMS a <span className="font-medium text-gray-700">{phone}</span></p>
+              </div>
+              <form onSubmit={handleVerifyPhoneOTP} className="space-y-5">
+                <div className="flex gap-2 justify-center">
+                  {phoneOtpCode.map((digit, idx) => (
+                    <input
+                      key={idx}
+                      ref={el => { phoneOtpRefs.current[idx] = el; }}
+                      type="text" inputMode="numeric" maxLength={6}
+                      value={digit}
+                      onChange={e => handlePhoneOtpInput(idx, e.target.value)}
+                      onKeyDown={e => handlePhoneOtpKey(idx, e)}
+                      className="w-11 h-14 text-center text-xl font-bold text-gray-900 bg-gray-50 border border-gray-200 rounded-xl focus:border-[#F97316] focus:outline-none transition-colors"
+                    />
+                  ))}
+                </div>
+                <Button type="submit" disabled={isLoading || phoneOtpCode.join("").length < 6}
+                  className="w-full h-12 bg-[#F97316] hover:bg-[#ea6c0f] text-white font-semibold rounded-2xl text-sm shadow-[0_4px_20px_rgba(249,115,22,0.4)] transition-all active:scale-[0.98] disabled:opacity-40">
+                  {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : <span className="flex items-center gap-2">Verificar código <ArrowRight className="w-4 h-4" /></span>}
+                </Button>
+              </form>
+              <p className="text-center text-gray-400 text-xs">
+                ¿No recibiste el SMS?{" "}
+                <button onClick={() => handleSendPhoneOTP()} className="text-[#F97316] font-semibold hover:text-[#fb923c] transition-colors">
                   Reenviar
                 </button>
               </p>

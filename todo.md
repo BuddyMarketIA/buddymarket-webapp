@@ -1568,3 +1568,4 @@
 - [x] Actualizar codemagic.yaml con nombre BuddyMarketAI y grupo apple_iap_credentials
 - [x] Script upload_to_appstore.py para subir metadatos y screenshots
 - [x] Guía IAP_SECRETS_GUIDE.md con instrucciones de configuración
+- [x] Autenticación por número de teléfono con OTP SMS (Twilio)
