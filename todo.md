@@ -1503,3 +1503,13 @@
 - [ ] Configurar SENTRY_DSN para monitoreo de errores en producción
 - [x] Instalar Helmet.js y configurar headers HTTP de seguridad en server/_core/index.ts
 - [ ] Corregir success_url de Stripe (/dashboard → /app/dashboard)
+
+## Auditoría de Producción — Correcciones aplicadas
+- [x] Instalar Helmet.js con headers de seguridad HTTP (CSP, HSTS, X-Frame-Options, etc.)
+- [x] Configurar SENTRY_DSN para monitoreo de errores en producción
+- [x] Corregir alertas de reinicio del servidor (SIGTERM) para que solo se envíen en producción
+- [ ] Configurar APPLE_IAP_KEY_ID = GN3KDDA79S (pendiente confirmar en Settings → Secrets)
+- [ ] Configurar APPLE_IAP_ISSUER_ID = 37eef11b-5683-491d-93ed-e746011bec2d (pendiente confirmar)
+- [ ] Configurar APPLE_SHARED_SECRET = 5e2868319d2e4d9ab4cf254c25f2afe9 (pendiente confirmar)
+- [ ] Configurar APPLE_BUNDLE_ID (pendiente — crear en Apple Developer cuando esté disponible)
+- [ ] Configurar APPLE_IAP_PRIVATE_KEY (pendiente — obtener archivo .p8 de App Store Connect)

@@ -352,13 +352,15 @@ async function gracefulShutdown(signal: string) {
     });
   }
 
-  // 2. Notify Slack
-  try {
-    const { alert: sendAlert } = await import("./alerts");
-    await sendAlert("info", `BuddyMarket server shutting down (${signal})`, {
-      message: `Graceful shutdown initiated. Signal: ${signal}`,
-    });
-  } catch { /* ignore */ }
+  // 2. Notify Slack (only in production to avoid alert spam during development)
+  if (process.env.NODE_ENV === "production") {
+    try {
+      const { alert: sendAlert } = await import("./alerts");
+      await sendAlert("info", `BuddyMarket server shutting down (${signal})`, {
+        message: `Graceful shutdown initiated. Signal: ${signal}`,
+      });
+    } catch { /* ignore */ }
+  }
 
   // 3. Flush Sentry events
   try {
