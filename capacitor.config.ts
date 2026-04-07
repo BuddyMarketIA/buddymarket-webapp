@@ -2,7 +2,7 @@ import type { CapacitorConfig } from "@capacitor/cli";
 
 const config: CapacitorConfig = {
   // ── App Identity ────────────────────────────────────────────────────────────
-  appId: "com.buddymarket.app",
+  appId: "io.buddymarket.app",
   appName: "BuddyMarket",
 
   // ── Web source: point to the built dist ─────────────────────────────────────
