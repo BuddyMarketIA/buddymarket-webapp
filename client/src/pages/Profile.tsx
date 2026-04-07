@@ -1,6 +1,7 @@
 import { useState, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { SUPPORTED_LANGUAGES, type LanguageCode } from "@/lib/i18n";
+import CookiePreferencesPanel from "@/components/CookiePreferencesPanel";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import ImageCropModal from "@/components/ImageCropModal";
@@ -1322,6 +1323,9 @@ function DeleteAccountSection() {
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+      {/* Cookie Preferences section */}
+      <CookiePreferencesPanel />
+
       {/* Privacy & Data section */}
       <div style={{ background: "white", borderRadius: "16px", padding: "24px", border: "1px solid #f3f4f6" }}>
         <p style={{ margin: "0 0 16px", fontSize: "13px", fontWeight: 800, color: "#9ca3af", letterSpacing: "0.08em", textTransform: "uppercase" }}>

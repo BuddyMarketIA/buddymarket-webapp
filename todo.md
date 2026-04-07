@@ -1520,3 +1520,6 @@
 - [x] Persistir preferencias de cookies en localStorage
 - [x] Generar sitemap.xml con todas las rutas públicas
 - [x] Crear robots.txt con reglas de indexación
+
+## Gestión de cookies en perfil
+- [x] Sección de preferencias de cookies en Profile.tsx con switches individuales y botón de guardar
