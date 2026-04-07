@@ -412,8 +412,8 @@ export async function createCheckoutSession({
         quantity: 1,
       },
     ],
-    success_url: `${origin}/dashboard?subscription=success`,
-    cancel_url: `${origin}/subscription?cancelled=true`,
+    success_url: `${origin}/app/dashboard?subscription=success`,
+    cancel_url: `${origin}/app/subscription?cancelled=true`,
   };
 
   // Apply the referral promotion code automatically if provided
