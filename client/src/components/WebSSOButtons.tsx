@@ -187,19 +187,10 @@ export default function WebSSOButtons({
       toast.error("Google SSO no configurado", { description: "Añade VITE_GOOGLE_CLIENT_ID en los secretos" });
       return;
     }
-    if (!googleReady || !window.google?.accounts?.id) {
-      toast.info("Google se está cargando", { description: "Espera un momento e inténtalo de nuevo" });
-      return;
-    }
-    // Abrir el selector de cuenta de Google mediante prompt()
-    window.google.accounts.id.prompt((notification) => {
-      if (notification?.isNotDisplayed() || notification?.isSkippedMoment()) {
-        // El prompt fue bloqueado (cookies de terceros, etc.) — mostrar aviso
-        toast.info("Ventana de Google bloqueada", {
-          description: "Habilita las cookies de terceros o usa el acceso con email",
-        });
-      }
-    });
+    // Flujo OAuth redirect: más robusto que el popup GSI (funciona sin cookies de terceros)
+    const origin = window.location.origin;
+    const returnPath = window.location.pathname !== "/login" ? window.location.pathname : "/";
+    window.location.href = `/api/auth/google/login?origin=${encodeURIComponent(origin)}&returnPath=${encodeURIComponent(returnPath)}`;
   };
 
   const handleAppleSignIn = async () => {

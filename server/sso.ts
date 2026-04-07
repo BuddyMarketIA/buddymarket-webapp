@@ -118,7 +118,94 @@ export function registerSSORoutes(app: Express) {
     }
   });
 
-  // ── Sign in with Google ─────────────────────────────────────────────────────
+  // ── Sign in with Google — OAuth Redirect Flow ────────────────────────────────
+  // GET /api/auth/google/login  → redirige a Google OAuth
+  app.get("/api/auth/google/login", (req: Request, res: Response) => {
+    const clientId = process.env.GOOGLE_CLIENT_ID ?? "";
+    if (!clientId) {
+      res.status(500).json({ error: "GOOGLE_CLIENT_ID not configured" });
+      return;
+    }
+    const origin = (req.query.origin as string) || `${req.protocol}://${req.get("host")}`;
+    const redirectUri = `${origin}/api/auth/google/callback`;
+    const state = Buffer.from(JSON.stringify({ origin, returnPath: req.query.returnPath ?? "/" })).toString("base64url");
+    const params = new URLSearchParams({
+      client_id: clientId,
+      redirect_uri: redirectUri,
+      response_type: "code",
+      scope: "openid email profile",
+      state,
+      access_type: "offline",
+      prompt: "select_account",
+    });
+    res.redirect(`https://accounts.google.com/o/oauth2/v2/auth?${params.toString()}`);
+  });
+
+  // GET /api/auth/google/callback → intercambia code por tokens y crea sesión
+  app.get("/api/auth/google/callback", async (req: Request, res: Response) => {
+    const { code, state, error } = req.query as { code?: string; state?: string; error?: string };
+    let origin = `${req.protocol}://${req.get("host")}`;
+    let returnPath = "/";
+    try {
+      if (state) {
+        const parsed = JSON.parse(Buffer.from(state, "base64url").toString());
+        origin = parsed.origin ?? origin;
+        returnPath = parsed.returnPath ?? "/";
+      }
+    } catch { /* ignore parse errors */ }
+
+    if (error || !code) {
+      res.redirect(`${origin}/login?error=google_cancelled`);
+      return;
+    }
+
+    try {
+      const clientId = process.env.GOOGLE_CLIENT_ID ?? "";
+      const clientSecret = process.env.GOOGLE_CLIENT_SECRET ?? "";
+      const redirectUri = `${origin}/api/auth/google/callback`;
+
+      // Intercambiar code por tokens
+      const tokenRes = await fetch("https://oauth2.googleapis.com/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          code: code as string,
+          client_id: clientId,
+          client_secret: clientSecret,
+          redirect_uri: redirectUri,
+          grant_type: "authorization_code",
+        }).toString(),
+      });
+      const tokens = await tokenRes.json() as { id_token?: string; access_token?: string; error?: string };
+      if (tokens.error || !tokens.id_token) {
+        throw new Error(tokens.error ?? "No id_token in response");
+      }
+
+      // Verificar el ID token
+      const ticket = await googleClient.verifyIdToken({
+        idToken: tokens.id_token,
+        audience: GOOGLE_CLIENT_IDS.length > 0 ? GOOGLE_CLIENT_IDS : undefined,
+      });
+      const payload = ticket.getPayload();
+      if (!payload?.sub) throw new Error("Invalid Google token payload");
+
+      const openId = `google:${payload.sub}`;
+      await createSessionAndSetCookie(req, res, {
+        openId,
+        name: payload.name ?? null,
+        email: payload.email ?? null,
+        imageUrl: payload.picture ?? null,
+        loginMethod: "google",
+      });
+      console.log(`[SSO] Google OAuth redirect login: ${openId} (${payload.email})`);
+      res.redirect(`${origin}${returnPath}`);
+    } catch (err: any) {
+      console.error("[SSO] Google OAuth callback error:", err?.message);
+      res.redirect(`${origin}/login?error=google_failed`);
+    }
+  });
+
+  // ── Sign in with Google — Token Flow (GSI) ─────────────────────────────────
   app.post("/api/auth/google", async (req: Request, res: Response) => {
     const { idToken, accessToken } = req.body as {
       idToken?: string;
