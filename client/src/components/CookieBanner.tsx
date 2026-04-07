@@ -75,7 +75,8 @@ export default function CookieBanner() {
     dismissBanner();
   };
 
-  const lang = i18n.language?.slice(0, 2) || "es";
+  // BuddyMarket is a Spanish-first product — always show cookie banner in Spanish
+  const lang = "es";
 
   const texts: Record<string, {
     title: string; desc: string; acceptAll: string; rejectAll: string; customize: string;

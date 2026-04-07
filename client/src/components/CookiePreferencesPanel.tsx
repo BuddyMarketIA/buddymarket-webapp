@@ -108,9 +108,8 @@ const LABELS: Record<string, {
 
 export default function CookiePreferencesPanel() {
   const { i18n } = useTranslation();
-  const lang = (i18n.language?.slice(0, 2) as keyof typeof LABELS) in LABELS
-    ? (i18n.language.slice(0, 2) as keyof typeof LABELS)
-    : "es";
+  // BuddyMarket is a Spanish-first product — always use Spanish
+  const lang: keyof typeof LABELS = "es";
   const L = LABELS[lang];
 
   const [prefs, setPrefs] = useState<CookiePreferences>({ necessary: true, analytics: false, marketing: false });
