@@ -41,34 +41,17 @@ function mapToSupported(browserLang: string): LanguageCode {
 /**
  * Resolves the initial language for the session:
  * 1. User's saved preference in localStorage (highest priority)
- * 2. Browser/navigator language (first visit)
- * 3. Fallback to Spanish
+ * 2. Default to Spanish — BuddyMarket is a Spanish-first product
  */
 function resolveInitialLanguage(): LanguageCode {
-  // 1. Check localStorage first (returning user)
+  // 1. Check localStorage first (returning user who explicitly changed language)
   const saved = localStorage.getItem("buddymarket_language") as LanguageCode | null;
   if (saved && (SUPPORTED as readonly string[]).includes(saved)) {
     return saved;
   }
 
-  // 2. Detect from browser (first visit)
-  const browserLanguages = navigator.languages?.length
-    ? navigator.languages
-    : [navigator.language];
-
-  for (const lang of browserLanguages) {
-    const mapped = mapToSupported(lang);
-    // Prefer exact matches first
-    const base = lang.split("-")[0].toLowerCase();
-    if ((SUPPORTED as readonly string[]).includes(base)) {
-      return base as LanguageCode;
-    }
-    if (mapped !== "es" || base === "es") {
-      return mapped;
-    }
-  }
-
-  // 3. Fallback
+  // 2. BuddyMarket is a Spanish-first product — always default to Spanish
+  // Users can change language from the sidebar language selector
   return "es";
 }
 
