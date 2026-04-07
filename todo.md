@@ -1513,3 +1513,10 @@
 - [ ] Configurar APPLE_SHARED_SECRET = 5e2868319d2e4d9ab4cf254c25f2afe9 (pendiente confirmar)
 - [ ] Configurar APPLE_BUNDLE_ID (pendiente — crear en Apple Developer cuando esté disponible)
 - [ ] Configurar APPLE_IAP_PRIVATE_KEY (pendiente — obtener archivo .p8 de App Store Connect)
+
+## GDPR y SEO (sprint actual)
+- [x] Componente CookieBanner GDPR con preferencias granulares (necesarias, analíticas, marketing)
+- [x] Integrar CookieBanner en App.tsx (visible en todas las páginas)
+- [x] Persistir preferencias de cookies en localStorage
+- [x] Generar sitemap.xml con todas las rutas públicas
+- [x] Crear robots.txt con reglas de indexación

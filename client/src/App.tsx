@@ -1,5 +1,6 @@
 import { lazy, Suspense } from "react";
 import WelcomeLanguageModal from "@/components/WelcomeLanguageModal";
+import CookieBanner from "./components/CookieBanner";
 import { Toaster } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Route, Switch, Redirect, useLocation } from "wouter";
@@ -221,6 +222,7 @@ function App() {
           <Suspense fallback={null}>
             <AppBanners />
           </Suspense>
+          <CookieBanner />
           <Suspense fallback={<PageLoader />}>
             <Router />
           </Suspense>
