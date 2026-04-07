@@ -48,6 +48,24 @@ export default function RecipeDetail() {
     onSuccess: (data) => {
       setAdaptResult(data);
       setShowAdaptModal(true);
+      // Mostrar toast de insignia si se ha ganado alguna
+      if (data.badgesAwarded && data.badgesAwarded.length > 0) {
+        data.badgesAwarded.forEach((badge: any) => {
+          setTimeout(() => {
+            toast.success(
+              `🎖️ ¡Insignia desbloqueada! ${badge.icon ?? "🎖️"} ${badge.nameEs}`,
+              {
+                description: badge.descriptionEs,
+                duration: 6000,
+                action: {
+                  label: "Ver insignias",
+                  onClick: () => { window.location.href = "/app/badges"; },
+                },
+              }
+            );
+          }, 1500);
+        });
+      }
     },
     onError: (err) => {
       toast.error(err.message || "Error al adaptar la receta");

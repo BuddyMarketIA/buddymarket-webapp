@@ -1815,3 +1815,43 @@ export const founderEmails = pgTable("founder_emails", {
 export type FounderEmail = typeof founderEmails.$inferSelect;
 
 
+
+// =============================================================================
+// BADGES — Sistema de insignias y logros
+// =============================================================================
+export const badgeRarityEnum = pgEnum("badge_rarity", ["common", "rare", "epic", "legendary"]);
+export const badgeCategoryEnum = pgEnum("badge_category", ["ai_adaptation", "community", "consistency", "nutrition", "explorer"]);
+
+export const badges = pgTable("badges", {
+  id: serial("id").primaryKey(),
+  slug: varchar("slug", { length: 64 }).notNull().unique(),
+  nameEs: varchar("name_es", { length: 128 }).notNull(),
+  nameEn: varchar("name_en", { length: 128 }).notNull(),
+  descriptionEs: varchar("description_es", { length: 512 }).notNull(),
+  descriptionEn: varchar("description_en", { length: 512 }).notNull(),
+  icon: varchar("icon", { length: 8 }).notNull(),
+  category: badgeCategoryEnum("category").notNull(),
+  rarity: badgeRarityEnum("rarity").notNull().default("common"),
+  points: integer("points").notNull().default(10),
+  triggerCount: integer("trigger_count").default(1),
+  isActive: boolean("is_active").notNull().default(true),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  badgeSlugIdx: index("badge_slug_idx").on(t.slug),
+  badgeCategoryIdx: index("badge_category_idx").on(t.category),
+}));
+export type Badge = typeof badges.$inferSelect;
+export type InsertBadge = typeof badges.$inferInsert;
+
+export const userBadges = pgTable("user_badges", {
+  id: serial("id").primaryKey(),
+  userId: integer("user_id").notNull(),
+  badgeId: integer("badge_id").notNull().references(() => badges.id),
+  earnedAt: timestamp("earned_at").defaultNow().notNull(),
+  metadata: text("metadata"),
+}, (t) => ({
+  ubUserIdx: index("ub_user_idx").on(t.userId),
+  ubBadgeIdx: index("ub_badge_idx").on(t.badgeId),
+}));
+export type UserBadge = typeof userBadges.$inferSelect;
+export type InsertUserBadge = typeof userBadges.$inferInsert;

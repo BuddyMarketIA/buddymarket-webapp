@@ -72,6 +72,7 @@ const BuddyApplication = lazy(() => import("./pages/BuddyApplication"));
 const EventMenuPlanner = lazy(() => import("./pages/EventMenuPlanner"));
 const SavedEvents = lazy(() => import("./pages/SavedEvents"));
 const Complements = lazy(() => import("./pages/Complements"));
+const Badges = lazy(() => import("./pages/Badges"));
 const OnboardingModal = lazy(() => import("./components/OnboardingModal").then(m => ({ default: m.OnboardingModal })));
 const InstallAppBanner = lazy(() => import("./components/InstallAppBanner"));
 
@@ -159,6 +160,7 @@ function Router() {
       <Route path="/app/diary">{() => <Redirect to="/app/meal-log" />}</Route>
       <Route path="/app/complements">{() => <ProtectedRoute component={Complements} />}</Route>
       <Route path="/app/profile">{() => <ProtectedRoute component={Profile} />}</Route>
+      <Route path="/app/badges">{() => <ProtectedRoute component={Badges} />}</Route>
       <Route path="/app/admin">{() => <ProtectedRoute component={Admin} />}</Route>
       <Route path="/app/subscription">{() => <ProtectedRoute component={Subscription} />}</Route>
       <Route path="/app/buddy-experts">{() => <ProtectedRoute component={BuddyExperts} />}</Route>

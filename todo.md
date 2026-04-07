@@ -1544,3 +1544,18 @@
 - [x] Hipervínculos a TyC en footer del sidebar de la app (AppLayout.tsx): Términos, Privacidad
 - [x] Claves de traducción para footer.terms, footer.privacy, footer.contact en ES/EN/FR/IT
 - [x] Claves de traducción para sidebar.terms, sidebar.privacy en ES/EN/FR/IT
+
+## Sistema de Insignias (Badges) — Sprint actual
+- [ ] Tabla `badges` con catálogo de insignias (id, slug, name, description, icon, category, points, rarity)
+- [ ] Tabla `user_badges` con las insignias ganadas por usuario (userId, badgeId, earnedAt, metadata)
+- [ ] Seed de 20+ insignias organizadas por categorías (adaptación IA, comunidad, constancia, nutrición, explorador)
+- [ ] Función helper `awardBadge(userId, badgeSlug)` reutilizable en cualquier procedimiento
+- [ ] Integrar concesión de insignia en `recipes.adaptForUser` (primera adaptación, 5 adaptaciones, 25 adaptaciones)
+- [ ] Integrar concesión de insignia en `recipes.share` (primera receta compartida, 5 compartidas, 10 compartidas)
+- [ ] Procedimiento tRPC `badges.getMyBadges` — lista de insignias ganadas del usuario
+- [ ] Procedimiento tRPC `badges.getCatalog` — catálogo completo con estado (ganada/bloqueada) para el usuario
+- [ ] Procedimiento tRPC `badges.getLeaderboard` — ranking de usuarios por puntos de insignias
+- [ ] Página `/app/badges` con perfil de insignias del usuario, progreso y leaderboard
+- [ ] Componente `BadgeUnlockedToast` — toast especial animado al ganar una insignia
+- [ ] Panel admin con estadísticas de insignias más ganadas y ranking de usuarios
+- [ ] Ruta `/app/badges` registrada en App.tsx y enlace en el sidebar de AppLayout

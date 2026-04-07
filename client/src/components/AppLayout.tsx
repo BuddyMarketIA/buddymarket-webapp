@@ -157,6 +157,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
         { key: "/app/specialized-menus", label: t("sidebar.specializedMenus"), to: "/app/specialized-menus", emoji: "🏥" },
         { key: "/app/meal-notifications", label: t("sidebar.reminders"), to: "/app/meal-notifications", emoji: "🔔" },
         { key: "/app/achievements", label: t("sidebar.myAchievements"), to: "/app/achievements", emoji: "🏆" },
+        { key: "/app/badges", label: "Mis Insignias", to: "/app/badges", emoji: "🎖️" },
       ],
     },
     {

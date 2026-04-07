@@ -317,6 +317,13 @@ export const appRouter = router({
         } catch (founderErr) {
           console.error("[Register] Error checking founder status:", founderErr);
         }
+        // Conceder insignia de bienvenida y fundador (no bloquea)
+        try {
+          await db.awardBadge(newUser.id, "welcome_buddy");
+          if (isFounder) await db.awardBadge(newUser.id, "founder_badge");
+        } catch (badgeErr) {
+          console.warn("[Register] Error awarding welcome badge:", badgeErr);
+        }
         const sessionToken = await sdk.createSessionToken(openId, {
           name: input.name,
           expiresInMs: ONE_YEAR_MS,
@@ -325,8 +332,7 @@ export const appRouter = router({
         ctx.res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
         return { success: true, isFounder, user: { id: newUser.id, email: newUser.email, name: newUser.name } };
       }),
-
-    // ── Email/Password Login ──────────────────────────────────────────────
+    // ── Email/Password Login ───────────────────────────────────────────────
     login: publicProcedure
       .input(z.object({
         email: z.string().email(),
@@ -1468,6 +1474,35 @@ Adapta esta receta eliminando los ingredientes prohibidos y sustituyéndolos por
             throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Error procesando la respuesta de la IA" });
           }
 
+          // Conceder insignias de adaptación (no bloquea la respuesta)
+          const badgesAwarded: any[] = [];
+          try {
+            // Primera adaptación
+            const firstAdapt = await db.awardBadge(ctx.user.id, "first_adaptation", { recipeId: input.recipeId, recipeName: recipe.name });
+            if (firstAdapt.awarded) badgesAwarded.push(firstAdapt.badge);
+            // Insignia de guardián de alergias (si tiene alergias configuradas)
+            if (allForbidden.length > 0) {
+              const guardianBadge = await db.awardBadge(ctx.user.id, "allergy_guardian");
+              if (guardianBadge.awarded) badgesAwarded.push(guardianBadge.badge);
+            }
+            // Contar adaptaciones totales para insignias de progresión
+            const totalAdaptations = await db.countUserAdaptations(ctx.user.id);
+            if (totalAdaptations >= 5) {
+              const apprentice = await db.awardBadge(ctx.user.id, "adaptation_apprentice");
+              if (apprentice.awarded) badgesAwarded.push(apprentice.badge);
+            }
+            if (totalAdaptations >= 25) {
+              const master = await db.awardBadge(ctx.user.id, "adaptation_master");
+              if (master.awarded) badgesAwarded.push(master.badge);
+            }
+            if (totalAdaptations >= 100) {
+              const legend = await db.awardBadge(ctx.user.id, "adaptation_legend");
+              if (legend.awarded) badgesAwarded.push(legend.badge);
+            }
+          } catch (badgeErr) {
+            console.warn("[adaptForUser] Error awarding badges (non-critical):", badgeErr);
+          }
+
           return {
             success: true,
             originalName: recipe.name,
@@ -1478,6 +1513,7 @@ Adapta esta receta eliminando los ingredientes prohibidos y sustituyéndolos por
             adaptedInstructions: adaptedData.adaptedInstructions || "",
             nutritionalNote: adaptedData.nutritionalNote || "",
             forbiddenRemoved: allForbidden,
+            badgesAwarded,
           };
         } catch (err) {
           console.error(`[adaptForUser] Error adapting recipe ${input.recipeId}:`, err);
@@ -8945,6 +8981,63 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
           truncated: exportable.length > 50,
         };
       }),
+  }),
+
+  // ---------------------------------------------------------------------------
+  // BADGES — Sistema de insignias y logros
+  // ---------------------------------------------------------------------------
+  badges: router({
+    /** Catálogo completo con estado ganado/bloqueado para el usuario autenticado */
+    getCatalog: protectedProcedure.query(async ({ ctx }) => {
+      const [allBadges, myBadges] = await Promise.all([
+        db.getAllBadges(),
+        db.getUserBadges(ctx.user.id),
+      ]);
+      const earnedIds = new Set(myBadges.map((ub: any) => ub.badge.id));
+      const earnedMap = new Map(myBadges.map((ub: any) => [ub.badge.id, ub.userBadge.earnedAt]));
+      return allBadges.map((badge: any) => ({
+        ...badge,
+        earned: earnedIds.has(badge.id),
+        earnedAt: earnedMap.get(badge.id) ?? null,
+      }));
+    }),
+
+    /** Insignias ganadas por el usuario autenticado */
+    getMyBadges: protectedProcedure.query(async ({ ctx }) => {
+      const myBadges = await db.getUserBadges(ctx.user.id);
+      const points = await db.getUserBadgePoints(ctx.user.id);
+      return {
+        badges: myBadges.map((ub: any) => ({
+          ...ub.badge,
+          earnedAt: ub.userBadge.earnedAt,
+          metadata: ub.userBadge.metadata ? JSON.parse(ub.userBadge.metadata) : null,
+        })),
+        totalPoints: points,
+        totalBadges: myBadges.length,
+      };
+    }),
+
+    /** Leaderboard: top 20 usuarios por puntos */
+    getLeaderboard: protectedProcedure.query(async () => {
+      return db.getBadgeLeaderboard(20);
+    }),
+
+    /** Conceder manualmente una insignia (solo admin) */
+    awardManual: protectedProcedure
+      .input(z.object({ userId: z.number(), badgeSlug: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        const result = await db.awardBadge(input.userId, input.badgeSlug);
+        return result;
+      }),
+
+    /** Estadísticas de insignias para el panel admin */
+    getAdminStats: protectedProcedure.query(async ({ ctx }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      const allBadges = await db.getAllBadges();
+      const leaderboard = await db.getBadgeLeaderboard(10);
+      return { badges: allBadges, leaderboard };
+    }),
   }),
 });
 export type AppRouter = typeof appRouter;

@@ -2201,3 +2201,110 @@ export async function getUserByEmail(email: string) {
     .limit(1);
   return result[0];
 }
+
+// =============================================================================
+// BADGES — Helpers de base de datos
+// =============================================================================
+import { badges, userBadges } from "../drizzle/schema";
+
+/** Obtener todas las insignias activas del catálogo */
+export async function getAllBadges() {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(badges).where(eq(badges.isActive, true)).orderBy(badges.category, badges.points);
+}
+
+/** Obtener una insignia por slug */
+export async function getBadgeBySlug(slug: string) {
+  const db = await getDb();
+  if (!db) return undefined;
+  const result = await db.select().from(badges).where(eq(badges.slug, slug)).limit(1);
+  return result[0];
+}
+
+/** Obtener las insignias ganadas por un usuario */
+export async function getUserBadges(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select({ userBadge: userBadges, badge: badges })
+    .from(userBadges)
+    .innerJoin(badges, eq(userBadges.badgeId, badges.id))
+    .where(eq(userBadges.userId, userId))
+    .orderBy(desc(userBadges.earnedAt));
+}
+
+/** Verificar si un usuario ya tiene una insignia concreta */
+export async function userHasBadge(userId: number, badgeId: number): Promise<boolean> {
+  const db = await getDb();
+  if (!db) return false;
+  const result = await db
+    .select({ id: userBadges.id })
+    .from(userBadges)
+    .where(and(eq(userBadges.userId, userId), eq(userBadges.badgeId, badgeId)))
+    .limit(1);
+  return result.length > 0;
+}
+
+/** Conceder una insignia a un usuario (idempotente) */
+export async function awardBadge(userId: number, badgeSlug: string, metadata?: Record<string, unknown>): Promise<{ awarded: boolean; badge?: typeof badges.$inferSelect }> {
+  const db = await getDb();
+  if (!db) return { awarded: false };
+  const badge = await getBadgeBySlug(badgeSlug);
+  if (!badge) return { awarded: false };
+  const alreadyHas = await userHasBadge(userId, badge.id);
+  if (alreadyHas) return { awarded: false, badge };
+  await db.insert(userBadges).values({
+    userId,
+    badgeId: badge.id,
+    earnedAt: new Date(),
+    metadata: metadata ? JSON.stringify(metadata) : null,
+  });
+  return { awarded: true, badge };
+}
+
+/** Contar cuántas veces un usuario ha realizado una acción (para insignias por conteo) */
+export async function countUserAdaptations(userId: number): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  // Contamos las insignias de adaptación como proxy (o podemos usar una tabla de eventos futura)
+  // Por ahora contamos las user_badges de categoría ai_adaptation como indicador
+  const result = await db
+    .select({ count: sql<number>`count(*)` })
+    .from(userBadges)
+    .innerJoin(badges, eq(userBadges.badgeId, badges.id))
+    .where(and(eq(userBadges.userId, userId), eq(badges.category, "ai_adaptation")));
+  return Number(result[0]?.count ?? 0);
+}
+
+/** Obtener puntos totales de un usuario */
+export async function getUserBadgePoints(userId: number): Promise<number> {
+  const db = await getDb();
+  if (!db) return 0;
+  const result = await db
+    .select({ total: sql<number>`COALESCE(SUM(${badges.points}), 0)` })
+    .from(userBadges)
+    .innerJoin(badges, eq(userBadges.badgeId, badges.id))
+    .where(eq(userBadges.userId, userId));
+  return Number(result[0]?.total ?? 0);
+}
+
+/** Leaderboard: top usuarios por puntos de insignias */
+export async function getBadgeLeaderboard(limit = 20) {
+  const db = await getDb();
+  if (!db) return [];
+  return db
+    .select({
+      userId: userBadges.userId,
+      userName: users.name,
+      userImage: users.imageUrl,
+      totalPoints: sql<number>`COALESCE(SUM(${badges.points}), 0)`,
+      badgeCount: sql<number>`COUNT(${userBadges.id})`,
+    })
+    .from(userBadges)
+    .innerJoin(badges, eq(userBadges.badgeId, badges.id))
+    .innerJoin(users, eq(userBadges.userId, users.id))
+    .groupBy(userBadges.userId, users.name, users.imageUrl)
+    .orderBy(desc(sql`SUM(${badges.points})`))
+    .limit(limit);
+}

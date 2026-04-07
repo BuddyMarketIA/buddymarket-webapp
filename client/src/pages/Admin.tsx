@@ -23,6 +23,7 @@ import {
   DocumentTextIcon,
   StarIcon,
   GiftIcon,
+  TrophyIcon,
 } from "@heroicons/react/24/outline";
 import { RECIPE_PLACEHOLDER_IMAGE as RECIPE_PLACEHOLDER } from "@/lib/constants";
 import UsageAnalyticsPanel from "@/components/UsageAnalyticsPanel";
@@ -39,6 +40,7 @@ const TABS = [
   { key: "users", label: "Usuarios", icon: UsersIcon },
   { key: "terms", label: "TyC", icon: DocumentTextIcon },
   { key: "founders", label: "Fundadores", icon: StarIcon },
+  { key: "badges", label: "Insignias", icon: TrophyIcon },
 ];
 
 function CatalogSection({
@@ -625,11 +627,14 @@ export default function Admin() {
         <TermsAcceptancePanel />
       )}
 
-      {/* Founders */}
+       {/* Founders */}
       {activeTab === "founders" && (
         <FoundersPanel />
       )}
-
+      {/* Badges */}
+      {activeTab === "badges" && (
+        <AdminBadgesPanel />
+      )}
       {/* Users */}
       {activeTab === "users" && (
         <div className="vively-card space-y-3">
@@ -1129,6 +1134,123 @@ function ApiMonitorPanel() {
       <p className="text-center text-xs text-gray-400">
         Los monitores se comprueban automáticamente cada 5 minutos. Recibirás una notificación cuando falle un endpoint.
       </p>
+    </div>
+  );
+}
+
+// ── Admin Badges Panel ────────────────────────────────────────────────────────
+function AdminBadgesPanel() {
+  const { data: catalog, isLoading: loadingCatalog } = trpc.badges.getCatalog.useQuery();
+  const { data: leaderboard, isLoading: loadingLeaderboard } = trpc.badges.getLeaderboard.useQuery();
+
+  const RARITY_COLORS: Record<string, string> = {
+    common: "bg-gray-100 text-gray-600",
+    rare: "bg-blue-100 text-blue-700",
+    epic: "bg-purple-100 text-purple-700",
+    legendary: "bg-amber-100 text-amber-700",
+  };
+
+  const totalBadges = catalog?.length ?? 0;
+  const totalEarned = catalog?.filter((b: any) => b.earned).length ?? 0;
+
+  return (
+    <div className="space-y-6">
+      {/* Stats */}
+      <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+        <div className="vively-card text-center">
+          <div className="text-3xl font-bold text-amber-500">{totalBadges}</div>
+          <div className="text-xs text-gray-500 mt-1">Insignias en catálogo</div>
+        </div>
+        <div className="vively-card text-center">
+          <div className="text-3xl font-bold text-violet-600">{leaderboard?.length ?? 0}</div>
+          <div className="text-xs text-gray-500 mt-1">Usuarios con insignias</div>
+        </div>
+        <div className="vively-card text-center">
+          <div className="text-3xl font-bold text-emerald-600">
+            {leaderboard?.reduce((sum: number, u: any) => sum + (u.badgeCount ?? 0), 0) ?? 0}
+          </div>
+          <div className="text-xs text-gray-500 mt-1">Total insignias otorgadas</div>
+        </div>
+        <div className="vively-card text-center">
+          <div className="text-3xl font-bold text-orange-500">
+            {leaderboard?.reduce((sum: number, u: any) => sum + (u.totalPoints ?? 0), 0) ?? 0}
+          </div>
+          <div className="text-xs text-gray-500 mt-1">Puntos totales otorgados</div>
+        </div>
+      </div>
+
+      {/* Catalog overview */}
+      <div className="vively-card">
+        <h3 className="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2">
+          <TrophyIcon className="w-4 h-4 text-amber-500" />
+          Catálogo de insignias ({totalBadges})
+        </h3>
+        {loadingCatalog ? (
+          <div className="space-y-2">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="h-10 bg-gray-100 rounded-lg animate-pulse" />
+            ))}
+          </div>
+        ) : (
+          <div className="space-y-2 max-h-96 overflow-y-auto">
+            {catalog?.map((badge: any) => (
+              <div key={badge.id} className="flex items-center gap-3 rounded-xl bg-gray-50 px-3 py-2">
+                <span className="text-2xl">{badge.icon}</span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-800">{badge.nameEs}</p>
+                  <p className="text-xs text-gray-400 truncate">{badge.descriptionEs}</p>
+                </div>
+                <div className="flex items-center gap-2 shrink-0">
+                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${RARITY_COLORS[badge.rarity] ?? "bg-gray-100 text-gray-600"}`}>
+                    {badge.rarity}
+                  </span>
+                  <span className="text-xs font-bold text-amber-600">+{badge.points}pts</span>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+
+      {/* Leaderboard */}
+      <div className="vively-card">
+        <h3 className="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2">
+          <StarIcon className="w-4 h-4 text-amber-500" />
+          Ranking de usuarios por insignias
+        </h3>
+        {loadingLeaderboard ? (
+          <div className="space-y-2">
+            {Array.from({ length: 5 }).map((_, i) => (
+              <div key={i} className="h-12 bg-gray-100 rounded-lg animate-pulse" />
+            ))}
+          </div>
+        ) : leaderboard?.length === 0 ? (
+          <p className="text-center text-xs text-gray-400 py-6">Aún no hay usuarios con insignias</p>
+        ) : (
+          <div className="space-y-2 max-h-96 overflow-y-auto">
+            {leaderboard?.map((entry: any, index: number) => (
+              <div key={entry.userId} className="flex items-center gap-3 rounded-xl bg-gray-50 px-3 py-2">
+                <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
+                  index === 0 ? "bg-amber-400 text-white" :
+                  index === 1 ? "bg-gray-400 text-white" :
+                  index === 2 ? "bg-orange-400 text-white" :
+                  "bg-gray-200 text-gray-600"
+                }`}>
+                  {index + 1}
+                </span>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-gray-800 truncate">{entry.userName ?? "Usuario"}</p>
+                  <p className="text-xs text-gray-400">{entry.userEmail}</p>
+                </div>
+                <div className="text-right shrink-0">
+                  <p className="text-sm font-bold text-amber-600">{entry.totalPoints} pts</p>
+                  <p className="text-xs text-gray-400">{entry.badgeCount} insignias</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
