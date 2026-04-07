@@ -928,6 +928,10 @@ export default function ShoppingLists() {
   const deleteList = trpc.shoppingLists.delete.useMutation({
     onSuccess: () => { refetch(); toast.success(t("shoppingList.listDeleted", "List deleted")); },
   });
+  const duplicateList = trpc.shoppingLists.duplicate.useMutation({
+    onSuccess: (data: any) => { refetch(); toast.success("Lista duplicada", { description: `"${data.name}" lista para usar` }); },
+    onError: () => toast.error("Error al duplicar la lista"),
+  });
 
   const parseFromPhoto = trpc.shoppingLists.parseFromPhoto.useMutation({
     onSuccess: (data) => {
@@ -1062,15 +1066,29 @@ export default function ShoppingLists() {
                     </p>
                   )}
                 </div>
-                <button
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    handleDeleteList(list.id, list.name ?? "Lista");
-                  }}
-                  className="flex h-8 w-8 items-center justify-center rounded-full text-gray-300 hover:bg-red-50 hover:text-red-400"
-                >
-                  <TrashIcon className="h-4 w-4" />
-                </button>
+                <div className="flex items-center gap-1" onClick={(e) => e.stopPropagation()}>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      duplicateList.mutate({ id: list.id });
+                    }}
+                    disabled={duplicateList.isPending}
+                    className="flex h-8 w-8 items-center justify-center rounded-full text-gray-300 hover:bg-orange-50 hover:text-orange-400 transition-colors"
+                    title="Repetir lista"
+                  >
+                    <DocumentDuplicateIcon className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      handleDeleteList(list.id, list.name ?? "Lista");
+                    }}
+                    className="flex h-8 w-8 items-center justify-center rounded-full text-gray-300 hover:bg-red-50 hover:text-red-400 transition-colors"
+                    title="Eliminar lista"
+                  >
+                    <TrashIcon className="h-4 w-4" />
+                  </button>
+                </div>
               </div>
             );
           })}

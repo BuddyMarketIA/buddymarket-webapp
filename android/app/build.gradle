@@ -1,7 +1,7 @@
 apply plugin: 'com.android.application'
 
 android {
-    namespace = "com.buddymarket.app"
+    namespace = "io.buddymarket.app"
     compileSdk = rootProject.ext.compileSdkVersion
     defaultConfig {
         applicationId "io.buddymarket.app"
@@ -40,6 +40,9 @@ dependencies {
     androidTestImplementation "androidx.test.ext:junit:$androidxJunitVersion"
     androidTestImplementation "androidx.test.espresso:espresso-core:$androidxEspressoCoreVersion"
     implementation project(':capacitor-cordova-android-plugins')
+    // Google Play Billing (obligatorio para suscripciones en Google Play)
+    implementation 'com.android.billingclient:billing:7.1.1'
+    implementation 'com.android.billingclient:billing-ktx:7.1.1'
 }
 
 apply from: 'capacitor.build.gradle'

@@ -128,19 +128,19 @@ export default function BuddyMakerDashboard() {
     onError: (e) => toast.error(e.message),
   });
 
-  const createRecipeMutation = trpc.buddyMakers.createRecipe.useMutation({
+  const createRecipeMutation = trpc.recipes.create.useMutation({
     onSuccess: () => { toast.success("Receta publicada"); setShowRecipeForm(false); refetchRecipes(); resetRecipeForm(); },
-    onError: (e) => toast.error(e.message),
+    onError: (e: any) => toast.error(e.message),
   });
 
-  const updateRecipeMutation = trpc.buddyMakers.updateRecipe.useMutation({
+  const updateRecipeMutation = trpc.recipes.update.useMutation({
     onSuccess: () => { toast.success("Receta actualizada"); setShowRecipeForm(false); setEditingRecipe(null); refetchRecipes(); },
-    onError: (e) => toast.error(e.message),
+    onError: (e: any) => toast.error(e.message),
   });
 
-  const deleteRecipeMutation = trpc.buddyMakers.deleteRecipe.useMutation({
+  const deleteRecipeMutation = trpc.recipes.delete.useMutation({
     onSuccess: () => { toast.success("Receta eliminada"); refetchRecipes(); },
-    onError: (e) => toast.error(e.message),
+    onError: (e: any) => toast.error(e.message),
   });
 
   function resetRecipeForm() {
@@ -217,9 +217,9 @@ export default function BuddyMakerDashboard() {
       isPublic: recipeForm.isPublic,
     };
     if (editingRecipe) {
-      updateRecipeMutation.mutate({ recipeId: editingRecipe.id, ...payload });
+      updateRecipeMutation.mutate({ id: editingRecipe.id, name: payload.name, description: payload.description, imageUrl: payload.imageUrl, preparationTime: payload.prepTime, cookTime: payload.cookTime, servings: payload.servings, difficulty: payload.difficulty as any, isPublic: payload.isPublic });
     } else {
-      createRecipeMutation.mutate(payload);
+      createRecipeMutation.mutate({ name: payload.name, description: payload.description, imageUrl: payload.imageUrl, preparationTime: payload.prepTime, cookTime: payload.cookTime, servings: payload.servings, difficulty: payload.difficulty as any, mealTime: payload.mealTime as any, isPublic: payload.isPublic, calories: payload.calories, protein: payload.protein, carbs: payload.carbs, fat: payload.fat, ingredientsJson: payload.ingredientsJson, instructionsJson: payload.instructionsJson });
     }
   }
 
@@ -541,7 +541,7 @@ export default function BuddyMakerDashboard() {
                               Editar
                             </button>
                             <button
-                              onClick={() => { if (confirm("¿Eliminar esta receta?")) deleteRecipeMutation.mutate({ recipeId: recipe.id }); }}
+                              onClick={() => { if (confirm("¿Eliminar esta receta?")) deleteRecipeMutation.mutate({ id: recipe.id }); }}
                               className="text-xs font-bold text-red-500 bg-red-50 rounded-xl px-3 py-1.5"
                             >
                               Eliminar

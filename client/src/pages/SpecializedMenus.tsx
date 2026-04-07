@@ -140,8 +140,59 @@ export default function SpecializedMenus() {
   if (!can("canAccessSpecializedMenus")) {
     return (
       <AppLayout title="Menús Especializados" showBack>
-        <div style={{ padding: "40px 20px", maxWidth: 600, margin: "0 auto" }}>
-          <UpgradeGate feature="canAccessSpecializedMenus">{null}</UpgradeGate>
+        <div className="max-w-2xl mx-auto px-4 pb-24">
+          {/* Hero */}
+          <div className="py-6 text-center">
+            <div className="text-4xl mb-2">🏥</div>
+            <h1 className="text-2xl font-bold text-gray-900">Menús Especializados</h1>
+            <p className="text-gray-500 text-sm mt-1">
+              Menús generados por IA adaptados a tu condición médica o estilo de vida
+            </p>
+          </div>
+
+          {/* Blurred preview of categories */}
+          <div className="relative mb-6">
+            <div className="blur-sm pointer-events-none select-none opacity-60">
+              {GROUPS.slice(0, 3).map((group) => {
+                const cats = CATEGORIES.filter((c) => c.group === group);
+                return (
+                  <div key={group} className="mb-4">
+                    <h2 className="text-xs font-extrabold uppercase tracking-widest text-gray-400 mb-2 px-1">{group}</h2>
+                    <div className="grid grid-cols-2 gap-2">
+                      {cats.slice(0, 4).map((cat) => (
+                        <div key={cat.key} className={`flex items-center gap-3 rounded-2xl border p-3 ${cat.color}`}>
+                          <span className="text-2xl">{cat.emoji}</span>
+                          <span className="text-sm font-semibold">{cat.label}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            {/* Lock overlay */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <div className="bg-white/95 rounded-3xl shadow-xl border-2 border-orange-200 p-6 mx-4 text-center max-w-xs">
+                <div className="text-4xl mb-3">🔒</div>
+                <h3 className="text-lg font-extrabold text-gray-900 mb-1">Función Pro</h3>
+                <p className="text-sm text-gray-500 mb-4">
+                  Accede a <strong>24 menús especializados</strong> para embarazo, diabetes, celiaquía, deportistas y mucho más
+                </p>
+                <div className="space-y-2 mb-4 text-left">
+                  {["🤰 Embarazo y lactancia", "🩺 Diabetes e hipertensión", "🌱 Vegano y vegetariano", "🏋️ Deportistas", "🎗️ Apoyo oncológico"].map((f, i) => (
+                    <div key={i} className="text-xs text-gray-600 flex items-center gap-2">
+                      <span>{f}</span>
+                    </div>
+                  ))}
+                  <div className="text-xs text-gray-400 italic">...y 19 más</div>
+                </div>
+                <a href="/app/subscription?plan=basic" className="block w-full py-3 rounded-xl bg-[#F97316] text-white text-sm font-extrabold hover:bg-[#ea6c0a] transition-all shadow-md text-center">
+                  Activar Pro por 9,99€/mes →
+                </a>
+                <p className="text-xs text-gray-400 mt-2">Sin permanencia · Cancela cuando quieras</p>
+              </div>
+            </div>
+          </div>
         </div>
       </AppLayout>
     );

@@ -256,6 +256,23 @@ async function startServer() {
     })
   );
 
+  // ─── Universal Links / App Links (iOS + Android) ──────────────────────────
+  import("path").then(({ default: path }) => {
+    const aasaPath = path.resolve(import.meta.dirname, "../../client/public/.well-known/apple-app-site-association");
+    const assetlinksPath = path.resolve(import.meta.dirname, "../../client/public/.well-known/assetlinks.json");
+    app.get("/.well-known/apple-app-site-association", (_req: any, res: any) => {
+      res.setHeader("Content-Type", "application/json");
+      res.sendFile(aasaPath);
+    });
+    app.get("/apple-app-site-association", (_req: any, res: any) => {
+      res.setHeader("Content-Type", "application/json");
+      res.sendFile(aasaPath);
+    });
+    app.get("/.well-known/assetlinks.json", (_req: any, res: any) => {
+      res.setHeader("Content-Type", "application/json");
+      res.sendFile(assetlinksPath);
+    });
+  });
   // ─── Sentry error handler (MUST be after all routes) ────────────────────
   attachSentryErrorHandler(app);
 

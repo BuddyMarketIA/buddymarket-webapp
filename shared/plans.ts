@@ -17,6 +17,10 @@ export interface PlanLimits {
   canGenerateAIMenus: boolean;
   canAccessSpecializedMenus: boolean;
 
+  // Events
+  canAccessEventMenus: boolean;
+  maxEventMenusPerMonth: number; // -1 = unlimited, 1 = 1 free trial
+
   // Nutritional diary
   canAccessDiary: boolean;
   maxDiaryEntriesPerDay: number; // -1 = unlimited
@@ -31,6 +35,7 @@ export interface PlanLimits {
 
   // Shopping
   canGenerateShoppingList: boolean;
+  maxShoppingListsPerMonth: number; // -1 = unlimited
   canConnectSupermarket: boolean;
 
   // Health metrics
@@ -52,33 +57,38 @@ export interface PlanLimits {
 }
 
 export const PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
+  // FREE — 0€ (miel en los labios: todo limitado para que quieran más)
   free: {
-    canCreateRecipes: false,
-    maxSavedRecipes: 10,
+    canCreateRecipes: false,          // ❌ No crear recetas
+    maxSavedRecipes: 5,               // Solo 5 recetas guardadas
 
-    maxMenusPerMonth: 3,
-    canGenerateAIMenus: false,
-    canAccessSpecializedMenus: false,
+    maxMenusPerMonth: 1,              // Solo 1 menú al mes (sin IA)
+    canGenerateAIMenus: false,        // ❌ Sin menús IA
+    canAccessSpecializedMenus: false, // ❌ Sin menús especializados
 
-    canAccessDiary: false,
+    canAccessEventMenus: true,        // ✅ 1 menú de evento gratis para probar
+    maxEventMenusPerMonth: 1,         // Solo 1 de prueba
+
+    canAccessDiary: false,            // ❌ Sin diario nutricional
     maxDiaryEntriesPerDay: 0,
 
-    canAccessInventory: true,
-    maxInventoryItems: 20,
+    canAccessInventory: true,         // ✅ Inventario básico
+    maxInventoryItems: 10,            // Solo 10 productos
 
-    canUseBuddyIA: false,
+    canUseBuddyIA: false,             // ❌ Sin BuddyIA
     maxBuddyIAMessagesPerDay: 0,
 
-    canGenerateShoppingList: true,
-    canConnectSupermarket: false,
+    canGenerateShoppingList: true,    // ✅ Listas básicas
+    maxShoppingListsPerMonth: 2,      // Solo 2 listas al mes
+    canConnectSupermarket: false,     // ❌ Sin supermercado online
 
-    canTrackMetrics: false,
+    canTrackMetrics: false,           // ❌ Sin métricas de salud
     maxMetricsHistory: 0,
 
-    canAccessBuddyMakers: true, // can view
-    canAccessBuddyExperts: false,
-    canBecomeBuddyMaker: true,  // any user can apply — BuddyMarket approves
-    canBecomeBuddyExpert: true, // any user can apply — BuddyMarket approves
+    canAccessBuddyMakers: true,       // ✅ Ver BuddyMakers (canal de monetización)
+    canAccessBuddyExperts: true,      // ✅ Ver BuddyExperts (canal de monetización)
+    canBecomeBuddyMaker: true,        // any user can apply — BuddyMarket approves
+    canBecomeBuddyExpert: true,       // any user can apply — BuddyMarket approves
 
     canExportData: false,
     canManageMultipleProfiles: false,
@@ -89,31 +99,35 @@ export const PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
   // PRO — 9,99€/mes
   basic: {
     canCreateRecipes: true,
-    maxSavedRecipes: -1,          // unlimited
+    maxSavedRecipes: -1,              // unlimited
 
-    maxMenusPerMonth: -1,         // unlimited
+    maxMenusPerMonth: -1,             // unlimited
     canGenerateAIMenus: true,
     canAccessSpecializedMenus: true,
 
+    canAccessEventMenus: true,
+    maxEventMenusPerMonth: -1,        // unlimited
+
     canAccessDiary: true,
-    maxDiaryEntriesPerDay: -1,    // unlimited
+    maxDiaryEntriesPerDay: -1,        // unlimited
 
     canAccessInventory: true,
-    maxInventoryItems: -1,        // unlimited
+    maxInventoryItems: -1,            // unlimited
 
     canUseBuddyIA: true,
     maxBuddyIAMessagesPerDay: 50,
 
     canGenerateShoppingList: true,
+    maxShoppingListsPerMonth: -1,     // unlimited
     canConnectSupermarket: true,
 
     canTrackMetrics: true,
-    maxMetricsHistory: 180,       // 6 months
+    maxMetricsHistory: 180,           // 6 months
 
     canAccessBuddyMakers: true,
-    canAccessBuddyExperts: false,
-    canBecomeBuddyMaker: true,  // any user can apply — BuddyMarket approves
-    canBecomeBuddyExpert: true, // any user can apply — BuddyMarket approves
+    canAccessBuddyExperts: true,
+    canBecomeBuddyMaker: true,
+    canBecomeBuddyExpert: true,
 
     canExportData: false,
     canManageMultipleProfiles: false,
@@ -130,6 +144,9 @@ export const PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
     canGenerateAIMenus: true,
     canAccessSpecializedMenus: true,
 
+    canAccessEventMenus: true,
+    maxEventMenusPerMonth: -1,
+
     canAccessDiary: true,
     maxDiaryEntriesPerDay: -1,
 
@@ -137,13 +154,14 @@ export const PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
     maxInventoryItems: -1,
 
     canUseBuddyIA: true,
-    maxBuddyIAMessagesPerDay: -1, // unlimited
+    maxBuddyIAMessagesPerDay: -1,     // unlimited
 
     canGenerateShoppingList: true,
+    maxShoppingListsPerMonth: -1,
     canConnectSupermarket: true,
 
     canTrackMetrics: true,
-    maxMetricsHistory: -1,        // unlimited
+    maxMetricsHistory: -1,            // unlimited
 
     canAccessBuddyMakers: true,
     canAccessBuddyExperts: true,
@@ -164,6 +182,9 @@ export const PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
     canGenerateAIMenus: true,
     canAccessSpecializedMenus: true,
 
+    canAccessEventMenus: true,
+    maxEventMenusPerMonth: -1,
+
     canAccessDiary: true,
     maxDiaryEntriesPerDay: -1,
 
@@ -174,6 +195,7 @@ export const PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
     maxBuddyIAMessagesPerDay: -1,
 
     canGenerateShoppingList: true,
+    maxShoppingListsPerMonth: -1,
     canConnectSupermarket: true,
 
     canTrackMetrics: true,
@@ -264,11 +286,12 @@ export const FEATURE_DESCRIPTIONS: Partial<Record<keyof PlanLimits, { title: str
   canCreateRecipes: { title: "Crear recetas propias", requiredPlan: "basic" },
   canGenerateAIMenus: { title: "Generar menús con IA", requiredPlan: "basic" },
   canAccessSpecializedMenus: { title: "Menús especializados (embarazo, diabetes...)", requiredPlan: "basic" },
+  canAccessEventMenus: { title: "Menús para eventos especiales", requiredPlan: "free" },
   canAccessDiary: { title: "Diario nutricional", requiredPlan: "basic" },
   canUseBuddyIA: { title: "Asistente BuddyIA", requiredPlan: "basic" },
   canConnectSupermarket: { title: "Conectar supermercado", requiredPlan: "basic" },
   canTrackMetrics: { title: "Seguimiento de métricas", requiredPlan: "basic" },
-  canAccessBuddyExperts: { title: "Acceso a BuddyExperts", requiredPlan: "premium" },
+  canAccessBuddyExperts: { title: "Acceso a BuddyExperts", requiredPlan: "free" },
   canBecomeBuddyMaker: { title: "Convertirte en BuddyMaker", requiredPlan: "free" },
   canBecomeBuddyExpert: { title: "Convertirte en BuddyExpert", requiredPlan: "free" },
   canExportData: { title: "Exportar tus datos", requiredPlan: "premium" },

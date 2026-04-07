@@ -58,6 +58,9 @@ importers:
       '@capacitor/status-bar':
         specifier: ^8.0.2
         version: 8.0.2(@capacitor/core@8.3.0)
+      '@codetrix-studio/capacitor-google-auth':
+        specifier: 3.4.0-rc.4
+        version: 3.4.0-rc.4(@capacitor/core@8.3.0)
       '@heroicons/react':
         specifier: ^2.2.0
         version: 2.2.0(react@19.2.1)
@@ -773,6 +776,11 @@ packages:
 
   '@chevrotain/utils@11.0.3':
     resolution: {integrity: sha512-YslZMgtJUyuMbZ+aKvfF3x1f5liK4mWNxghFRv7jqRR9C3R3fAOGTTKvxXDa2Y1s9zSbcpuO0cAxDYsc9SrXoQ==}
+
+  '@codetrix-studio/capacitor-google-auth@3.4.0-rc.4':
+    resolution: {integrity: sha512-d548/xKrbMHHbzMYSWnlgZCLZYo2zzY7Onrh3x8ujojrb7atkNK68I6su5WgmaBt4E+R4gxBsWams4554aOFjA==}
+    peerDependencies:
+      '@capacitor/core': ^6.0.0
 
   '@colors/colors@1.6.0':
     resolution: {integrity: sha512-Ir+AOibqzrIsL6ajt3Rz3LskB7OiMVHqltZmspbW/TJuTVuyOMirVqAkjfY6JISiLHgyNqicAC8AyHHGzNd/dA==}
@@ -6528,6 +6536,10 @@ snapshots:
   '@chevrotain/types@11.0.3': {}
 
   '@chevrotain/utils@11.0.3': {}
+
+  '@codetrix-studio/capacitor-google-auth@3.4.0-rc.4(@capacitor/core@8.3.0)':
+    dependencies:
+      '@capacitor/core': 8.3.0
 
   '@colors/colors@1.6.0': {}
 

@@ -47,9 +47,9 @@ export default function BuddyMakerStats() {
     onSuccess: (data) => { window.open(data.url, "_blank"); },
     onError: (err) => toast.error(err.message),
   });
-  const deleteRecipe = trpc.buddyMakers.deleteRecipe.useMutation({
+  const deleteRecipe = trpc.recipes.delete.useMutation({
     onSuccess: () => toast.success("Receta eliminada"),
-    onError: (err) => toast.error(err.message),
+    onError: (err: any) => toast.error(err.message),
   });
 
   if (authLoading || statsLoading) {
@@ -246,7 +246,7 @@ export default function BuddyMakerStats() {
                       <p className="text-xs text-gray-400">{recipe.caloriesPerServing ? `${recipe.caloriesPerServing} kcal` : ""}</p>
                       <div className="mt-1.5 flex gap-1.5">
                         <a href={`/app/recipes/${recipe.id}`} className="rounded-lg bg-orange-50 px-2 py-0.5 text-xs font-medium text-[#FF6B35] hover:bg-orange-100">Ver</a>
-                        <button onClick={() => { if (confirm("¿Eliminar receta?")) deleteRecipe.mutate({ recipeId: recipe.id }); }}
+                        <button onClick={() => { if (confirm("¿Eliminar receta?")) deleteRecipe.mutate({ id: recipe.id }); }}
                           className="rounded-lg bg-red-50 px-2 py-0.5 text-xs font-medium text-red-500 hover:bg-red-100">Eliminar</button>
                       </div>
                     </div>

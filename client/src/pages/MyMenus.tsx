@@ -169,6 +169,15 @@ function MenuCard({
     onError: () => toast.error("Error al eliminar el menú"),
   });
 
+  const duplicateMutation = trpc.menus.duplicate.useMutation({
+    onSuccess: () => {
+      toast.success("Menú duplicado", { description: "Puedes encontrarlo en tu lista de menús" });
+      utils.menus.list.invalidate();
+      onRefresh();
+    },
+    onError: () => toast.error("Error al duplicar el menú"),
+  });
+
   const objInfo = menu.objective ? OBJECTIVE_LABELS[menu.objective] : null;
 
   return (
@@ -253,11 +262,21 @@ function MenuCard({
               <button
                 onClick={() => {
                   setShowActions(false);
+                  duplicateMutation.mutate({ id: menu.id });
+                }}
+                disabled={duplicateMutation.isPending}
+                className="flex items-center gap-2 px-4 py-3 text-xs font-medium hover:bg-orange-50 text-orange-600 transition-colors border-t border-border"
+              >
+                <span>🔄</span> {duplicateMutation.isPending ? "Duplicando..." : "Repetir menú"}
+              </button>
+              <button
+                onClick={() => {
+                  setShowActions(false);
                   if (confirm("¿Eliminar este menú? Esta acción no se puede deshacer.")) {
                     deleteMutation.mutate({ id: menu.id });
                   }
                 }}
-                className="flex items-center gap-2 px-4 py-3 text-xs font-medium hover:bg-red-50 text-red-600 transition-colors border-t border-border col-span-2"
+                className="flex items-center gap-2 px-4 py-3 text-xs font-medium hover:bg-red-50 text-red-600 transition-colors border-t border-border"
               >
                 <span>🗑️</span> Eliminar menú
               </button>

@@ -73,7 +73,6 @@ const EventMenuPlanner = lazy(() => import("./pages/EventMenuPlanner"));
 const SavedEvents = lazy(() => import("./pages/SavedEvents"));
 const Complements = lazy(() => import("./pages/Complements"));
 const Badges = lazy(() => import("./pages/Badges"));
-const OnboardingModal = lazy(() => import("./components/OnboardingModal").then(m => ({ default: m.OnboardingModal })));
 const InstallAppBanner = lazy(() => import("./components/InstallAppBanner"));
 
 // ─── Page loading fallback ────────────────────────────────────────────────────
@@ -218,9 +217,6 @@ function App() {
         <TooltipProvider>
           <Toaster />
           <WelcomeLanguageModal />
-          <Suspense fallback={null}>
-            <OnboardingModal />
-          </Suspense>
           <Suspense fallback={null}>
             <AppBanners />
           </Suspense>

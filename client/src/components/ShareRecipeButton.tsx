@@ -25,7 +25,7 @@ export default function ShareRecipeButton({
 
   // WhatsApp message
   const whatsappText = encodeURIComponent(
-    `🍽️ *${recipeName}*\n${recipeDescription ? recipeDescription + "\n" : ""}👉 ${recipeUrl}\n\n_Compartido desde BuddyMarket_`
+    `💚 ¡He encontrado esta receta en BuddyMarket y tenías que verla!\n\n🍽️ *${recipeName}*${recipeDescription ? "\n\n" + recipeDescription : ""}\n\n👉 ${recipeUrl}\n\n_BuddyMarket — Tu asistente nutricional inteligente. Recetas saludables, menús con IA y mucho más 🥗_`
   );
   const whatsappUrl = `https://wa.me/?text=${whatsappText}`;
 
@@ -67,7 +67,7 @@ export default function ShareRecipeButton({
       try {
         await navigator.share({
           title: recipeName,
-          text: recipeDescription ?? `Mira esta receta: ${recipeName}`,
+          text: `¡Mira esta receta que te puede interesar! 🍽️ ${recipeName}${recipeDescription ? " — " + recipeDescription : ""}`,
           url: recipeUrl,
         });
         return;

@@ -10,6 +10,7 @@
 import { useEffect, useRef, useState } from "react";
 import { toast } from "sonner";
 import { isIOSNative } from "@/hooks/usePlatform";
+import { GoogleAuth } from "@codetrix-studio/capacitor-google-auth";
 
 // ─── Tipos globales ────────────────────────────────────────────────────────────
 
@@ -187,11 +188,33 @@ export default function WebSSOButtons({
     }
   };
 
-  const _doGoogleRedirect = () => {
+  const _doGoogleRedirect = async () => {
     if (!GOOGLE_CLIENT_ID) {
       toast.error("Google SSO no configurado", { description: "Añade VITE_GOOGLE_CLIENT_ID en los secretos" });
       return;
     }
+    // ── iOS/Android nativo: usa el plugin Capacitor GoogleAuth ──────────────
+    if (isIOSNative() || (window as any).Capacitor?.isNativePlatform?.()) {
+      setGoogleLoading(true);
+      try {
+        await GoogleAuth.initialize({
+          clientId: GOOGLE_CLIENT_ID,
+          scopes: ["profile", "email"],
+          grantOfflineAccess: true,
+        });
+        const user = await GoogleAuth.signIn();
+        const idToken = user.authentication?.idToken;
+        if (!idToken) throw new Error("No se obtuvo el token de Google");
+        await handleGoogleCredential({ credential: idToken });
+      } catch (err: any) {
+        if (err?.message !== "The user canceled the sign-in flow.") {
+          toast.error("Error con Google", { description: err.message ?? "Error desconocido" });
+        }
+        setGoogleLoading(false);
+      }
+      return;
+    }
+    // ── Web: flujo redirect OAuth estándar ──────────────────────────────────
     const origin = window.location.origin;
     const returnPath = window.location.pathname !== "/login" ? window.location.pathname : "/";
     const url = `/api/auth/google/login?origin=${encodeURIComponent(origin)}&returnPath=${encodeURIComponent(returnPath)}`;

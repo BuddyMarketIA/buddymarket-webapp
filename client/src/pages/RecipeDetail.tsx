@@ -44,6 +44,18 @@ export default function RecipeDetail() {
     nutritionalNote: string;
   } | null>(null);
 
+  const [savedAdapted, setSavedAdapted] = useState(false);
+  const saveAdaptedMutation = trpc.recipes.saveAdaptedAsPublic.useMutation({
+    onSuccess: (data) => {
+      setSavedAdapted(true);
+      toast.success("¡Receta adaptada guardada en la comunidad! 🎉", {
+        description: "Ya está disponible para todos los usuarios de BuddyMarket",
+        action: data.recipeId ? { label: "Ver receta", onClick: () => navigate(`/app/recipes/${data.recipeId}`) } : undefined,
+        duration: 6000,
+      });
+    },
+    onError: (err) => toast.error(err.message || "Error al guardar la receta"),
+  });
   const adaptRecipe = trpc.recipes.adaptForUser.useMutation({
     onSuccess: (data) => {
       setAdaptResult(data);
@@ -825,9 +837,46 @@ export default function RecipeDetail() {
               </div>
             )}
 
+            {/* Save adapted recipe button */}
+            {!savedAdapted ? (
+              <button
+                onClick={() => {
+                  if (!adaptResult) return;
+                  saveAdaptedMutation.mutate({
+                    originalRecipeId: recipe.id,
+                    adaptedName: adaptResult.adaptedName,
+                    description: adaptResult.description,
+                    adaptedIngredients: adaptResult.adaptedIngredients,
+                    adaptedInstructions: adaptResult.adaptedInstructions,
+                    nutritionalNote: adaptResult.nutritionalNote,
+                    substitutions: adaptResult.substitutions,
+                  });
+                }}
+                disabled={saveAdaptedMutation.isPending}
+                style={{
+                  width: "100%",
+                  background: saveAdaptedMutation.isPending ? "#e5e7eb" : "linear-gradient(135deg, #16a34a, #15803d)",
+                  color: saveAdaptedMutation.isPending ? "#9ca3af" : "white",
+                  border: "none",
+                  borderRadius: "14px",
+                  padding: "14px",
+                  fontSize: "14px",
+                  fontWeight: 700,
+                  cursor: saveAdaptedMutation.isPending ? "not-allowed" : "pointer",
+                  marginBottom: "10px",
+                }}
+              >
+                {saveAdaptedMutation.isPending ? "Guardando y generando imagen..." : "💾 Guardar en Mis Recetas"}
+              </button>
+            ) : (
+              <div style={{ textAlign: "center", padding: "12px", marginBottom: "10px", background: "#f0fdf4", borderRadius: "12px", color: "#16a34a", fontWeight: 700, fontSize: "14px" }}>
+                ✅ Receta guardada en la comunidad
+              </div>
+            )}
+
             {/* Close button */}
             <button
-              onClick={() => setShowAdaptModal(false)}
+              onClick={() => { setShowAdaptModal(false); setSavedAdapted(false); }}
               style={{
                 width: "100%",
                 background: "linear-gradient(135deg, #F97316, #ea580c)",

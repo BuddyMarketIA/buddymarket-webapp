@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		39099358D6A54CD9A8D66425 /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = A057A6BC2DFE4BD4887EDEB6 /* PrivacyInfo.xcprivacy */; };
+
 		BM0000002AAAAAAAAAAAAAA2 /* BuddyMarketIAPPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = BM0000001AAAAAAAAAAAAAA1 /* BuddyMarketIAPPlugin.swift */; };
 		BM0000004AAAAAAAAAAAAAA4 /* BuddyMarketAppleAuthPlugin.swift in Sources */ = {isa = PBXBuildFile; fileRef = BM0000003AAAAAAAAAAAAAA3 /* BuddyMarketAppleAuthPlugin.swift */; };
 		2FAD9763203C412B000D30F8 /* config.xml in Resources */ = {isa = PBXBuildFile; fileRef = 2FAD9762203C412B000D30F8 /* config.xml */; };
@@ -20,6 +22,8 @@
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
+		A057A6BC2DFE4BD4887EDEB6 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; lastKnownFileType = text.xml; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+
 		BM0000001AAAAAAAAAAAAAA1 /* BuddyMarketIAPPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuddyMarketIAPPlugin.swift; sourceTree = "<group>"; };
 		BM0000003AAAAAAAAAAAAAA3 /* BuddyMarketAppleAuthPlugin.swift */ = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = BuddyMarketAppleAuthPlugin.swift; sourceTree = "<group>"; };
 		BM0000005AAAAAAAAAAAAAA5 /* App.entitlements */ = {isa = PBXFileReference; lastKnownFileType = text.plist.entitlements; path = App.entitlements; sourceTree = "<group>"; };
@@ -69,6 +73,7 @@
 			children = (
 				50379B222058CBB4000EE86E /* capacitor.config.json */,
 				504EC3071FED79650016851F /* AppDelegate.swift */,
+				A057A6BC2DFE4BD4887EDEB6 /* PrivacyInfo.xcprivacy */,
 				BM0000001AAAAAAAAAAAAAA1 /* BuddyMarketIAPPlugin.swift */,
 				BM0000003AAAAAAAAAAAAAA3 /* BuddyMarketAppleAuthPlugin.swift */,
 				BM0000005AAAAAAAAAAAAAA5 /* App.entitlements */,
@@ -153,7 +158,8 @@
 				50379B232058CBB4000EE86E /* capacitor.config.json in Resources */,
 				504EC30D1FED79650016851F /* Main.storyboard in Resources */,
 				2FAD9763203C412B000D30F8 /* config.xml in Resources */,
-			);
+			
+				39099358D6A54CD9A8D66425 /* PrivacyInfo.xcprivacy in Resources */,);
 			runOnlyForDeploymentPostprocessing = 0;
 		};
 /* End PBXResourcesBuildPhase section */

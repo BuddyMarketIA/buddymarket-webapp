@@ -4,6 +4,8 @@ import AppLayout from "@/components/AppLayout";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
 import { toast } from "sonner";
+import { usePlan } from "@/hooks/usePlan";
+import { useLocation } from "wouter";
 
 // ─── Types ───────────────────────────────────────────────────────────────────
 
@@ -93,6 +95,12 @@ const BUDGETS = [
 
 export default function EventMenuPlanner() {
   const { user, loading } = useAuth();
+  const { limits, isFree } = usePlan();
+  const [, navigate] = useLocation();
+  const usageQuery = trpc.subscriptions.getMonthlyUsage.useQuery(undefined, { enabled: !!user });
+  const eventMenusUsed = usageQuery.data?.eventMenusThisMonth ?? 0;
+  const maxEventMenus = limits.maxEventMenusPerMonth;
+  const eventLimitReached = maxEventMenus !== -1 && eventMenusUsed >= maxEventMenus;
 
   // Wizard state
   const [step, setStep] = useState(0);
@@ -179,6 +187,11 @@ export default function EventMenuPlanner() {
     setAlcoholTypes(prev => prev.includes(a) ? prev.filter(x => x !== a) : [...prev, a]);
 
   const handleGenerate = () => {
+    if (eventLimitReached) {
+      toast.error("Has usado tu menú de evento gratuito. Actualiza a Pro para crear menús ilimitados.");
+      navigate("/app/subscription");
+      return;
+    }
     generateMenu.mutate({
       eventType,
       eventName: eventType === "otro" ? eventName : undefined,
@@ -218,6 +231,33 @@ export default function EventMenuPlanner() {
           <h1 className="text-2xl font-bold text-gray-900">🎉 Asistente de Eventos</h1>
           <p className="text-gray-500 text-sm mt-1">La IA te crea el menú perfecto para ser un anfitrión 10</p>
         </div>
+
+        {/* Plan limit banner */}
+        {isFree && (
+          <div className={`mb-4 rounded-2xl p-4 border-2 ${eventLimitReached ? 'bg-red-50 border-red-200' : 'bg-amber-50 border-amber-200'}`}>
+            {eventLimitReached ? (
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="font-bold text-red-700">🔒 Has usado tu menú de evento gratuito</p>
+                  <p className="text-sm text-red-600 mt-0.5">Actualiza a Pro para crear menús ilimitados para todos tus eventos</p>
+                </div>
+                <button onClick={() => navigate('/app/subscription')} className="shrink-0 bg-orange-500 text-white px-4 py-2 rounded-xl text-sm font-bold whitespace-nowrap">
+                  Ver Pro →
+                </button>
+              </div>
+            ) : (
+              <div className="flex items-center justify-between gap-3">
+                <div>
+                  <p className="font-semibold text-amber-800">✨ Plan gratuito: 1 menú de evento al mes</p>
+                  <p className="text-sm text-amber-700 mt-0.5">Usados: {eventMenusUsed}/{maxEventMenus} · Pro incluye menús ilimitados</p>
+                </div>
+                <button onClick={() => navigate('/app/subscription')} className="shrink-0 border border-amber-400 text-amber-700 px-3 py-1.5 rounded-xl text-sm font-semibold">
+                  Mejorar
+                </button>
+              </div>
+            )}
+          </div>
+        )}
 
         {/* Progress bar (steps 0-5) */}
         {step < 6 && (

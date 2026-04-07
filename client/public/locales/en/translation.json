@@ -118,7 +118,8 @@
     "saving": "Saving...",
     "sending": "Sending...",
     "apply": "Apply",
-    "applied": "Applied"
+    "applied": "Applied",
+    "clear": "Clear"
   },
   "auth": {
     "login": "Log in",
@@ -256,7 +257,57 @@
     "newRecipe": "New recipe",
     "editSubtitle": "Modify your recipe data",
     "newSubtitle": "Create a new recipe for your collection",
-    "basicInfo": "Basic information"
+    "basicInfo": "Basic information",
+    "mealTime": {
+      "all": "All",
+      "breakfast": "Breakfast",
+      "midMorning": "Mid-morning",
+      "lunch": "Lunch",
+      "snack": "Snack",
+      "dinner": "Dinner",
+      "anyTime": "Any time"
+    },
+    "cuisine": {
+      "allCuisines": "All",
+      "spanish": "Spanish",
+      "italian": "Italian",
+      "asian": "Asian",
+      "mexican": "Mexican",
+      "american": "American",
+      "arabic": "Arabic",
+      "french": "French",
+      "mediterranean": "Mediterranean",
+      "latinAmerican": "Latin American"
+    },
+    "cookingMethodOptions": {
+      "all": "All",
+      "airFryer": "Air Fryer",
+      "oven": "Oven",
+      "grill": "Grill",
+      "pot": "Pot",
+      "noCooking": "No cooking",
+      "microwave": "Microwave",
+      "steam": "Steam",
+      "wok": "Wok"
+    },
+    "filterCat": {
+      "mealTime": "Meal time",
+      "cuisineType": "Cuisine type",
+      "cookingMethod": "Cooking method"
+    },
+    "resultsFor": "Results for",
+    "results": "Results",
+    "allRecipes": "All recipes",
+    "recipesCount": "recipes",
+    "noResultsFor": "No results for",
+    "available": "recipes available",
+    "activeFilters": "active filter",
+    "noMyRecipes": "You have no recipes yet",
+    "noRecipesFilter": "No recipes with these filters",
+    "tryOtherSearch": "Try another name or ingredient",
+    "createFirst": "Create your first recipe",
+    "tryFilters": "Try changing the filters",
+    "clearSearch": "Clear search"
   },
   "menus": {
     "title": "Planner",

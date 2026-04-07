@@ -107,7 +107,8 @@
     "saving": "Enregistrement...",
     "sending": "Envoi...",
     "apply": "Appliquer",
-    "applied": "Appliqué"
+    "applied": "Appliqué",
+    "clear": "Effacer"
   },
   "auth": {
     "login": "Se connecter",
@@ -245,7 +246,57 @@
     "newRecipe": "Nouvelle recette",
     "editSubtitle": "Modifiez les données de votre recette",
     "newSubtitle": "Créez une nouvelle recette pour votre collection",
-    "basicInfo": "Informations de base"
+    "basicInfo": "Informations de base",
+    "mealTime": {
+      "all": "Tous",
+      "breakfast": "Petit-déjeuner",
+      "midMorning": "Matinée",
+      "lunch": "Déjeuner",
+      "snack": "Goûter",
+      "dinner": "Dîner",
+      "anyTime": "N'importe quand"
+    },
+    "cuisine": {
+      "allCuisines": "Toutes",
+      "spanish": "Espagnole",
+      "italian": "Italienne",
+      "asian": "Asiatique",
+      "mexican": "Mexicaine",
+      "american": "Américaine",
+      "arabic": "Arabe",
+      "french": "Française",
+      "mediterranean": "Méditerranéenne",
+      "latinAmerican": "Latino-américaine"
+    },
+    "cookingMethodOptions": {
+      "all": "Tous",
+      "airFryer": "Air Fryer",
+      "oven": "Four",
+      "grill": "Grill",
+      "pot": "Casserole",
+      "noCooking": "Sans cuisson",
+      "microwave": "Micro-ondes",
+      "steam": "Vapeur",
+      "wok": "Wok"
+    },
+    "filterCat": {
+      "mealTime": "Moment du repas",
+      "cuisineType": "Type de cuisine",
+      "cookingMethod": "Méthode de cuisson"
+    },
+    "resultsFor": "Résultats pour",
+    "results": "Résultats",
+    "allRecipes": "Toutes les recettes",
+    "recipesCount": "recettes",
+    "noResultsFor": "Aucun résultat pour",
+    "available": "recettes disponibles",
+    "activeFilters": "filtre actif",
+    "noMyRecipes": "Vous n'avez pas encore de recettes",
+    "noRecipesFilter": "Aucune recette avec ces filtres",
+    "tryOtherSearch": "Essayez un autre nom ou ingrédient",
+    "createFirst": "Créez votre première recette",
+    "tryFilters": "Essayez de changer les filtres",
+    "clearSearch": "Effacer la recherche"
   },
   "menus": {
     "title": "Planificateur",

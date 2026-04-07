@@ -1,12 +1,13 @@
 import { useState, useMemo, useEffect, useRef, useCallback } from "react";
 import { useTranslation } from "react-i18next";
 import { trpc } from "@/lib/trpc";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "sonner";
 import ShareRecipeButton from "@/components/ShareRecipeButton";
 import { RECIPE_PLACEHOLDER_IMAGE } from "@/lib/constants";
 import { useRecipeAllergyCheck } from "@/hooks/useRecipeAllergyCheck";
+import { usePlan } from "@/hooks/usePlan";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Recipe = {
@@ -450,14 +451,16 @@ function FilterPill({ emoji, label, active, onClick }: { emoji: string; label: s
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+// ─── Main Component ────────────────────────────────────────────────────────────
 export default function Recipes() {
   const { t } = useTranslation();
   const { user, isAuthenticated } = useAuth();
+  const { can, isFree } = usePlan();
+  const [, navigate] = useLocation();
   // Build translated options
   const MEAL_TIME_OPTIONS = MEAL_TIME_OPTIONS_KEYS.map(o => ({ ...o, label: t(`recipes.mealTime.${o.key}`, o.key) }));
   const CUISINE_OPTIONS = CUISINE_OPTIONS_KEYS.map(o => ({ ...o, label: t(`recipes.cuisine.${o.key}`, o.key) }));
-  const COOKING_METHOD_OPTIONS = COOKING_METHOD_OPTIONS_KEYS.map(o => ({ ...o, label: t(`recipes.cookingMethod.${o.key}`, o.key) }));
+  const COOKING_METHOD_OPTIONS = COOKING_METHOD_OPTIONS_KEYS.map(o => ({ ...o, label: t(`recipes.cookingMethodOptions.${o.key}`, o.key) }));
   const FILTER_CATEGORIES = FILTER_CATEGORY_KEYS.map(o => ({ ...o, label: t(`recipes.filterCat.${o.key}`, o.key) }));
 
   // Search state
@@ -623,13 +626,30 @@ export default function Recipes() {
           <p style={{ margin: "2px 0 0", fontSize: "14px", color: "#9ca3af" }}>{t("recipes.available", "427 recipes available")}</p>
         </div>
         {isAuthenticated && (
-          <Link href="/app/recipes/new">
-            <button style={{ width: "38px", height: "38px", borderRadius: "12px", background: "#F97316", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 4px 12px rgba(249,115,22,0.35)" }}>
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-              </svg>
-            </button>
-          </Link>
+          <button
+            onClick={() => {
+              if (!can("canCreateRecipes")) {
+                toast.error("¡Crea tus propias recetas con el plan Pro! ✨");
+                navigate("/app/subscription");
+                return;
+              }
+              navigate("/app/recipes/new");
+            }}
+            style={{
+              width: "38px", height: "38px", borderRadius: "12px",
+              background: isFree ? "linear-gradient(135deg, #F97316, #EA580C)" : "#F97316",
+              border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+              boxShadow: "0 4px 12px rgba(249,115,22,0.35)",
+              position: "relative",
+            }}
+          >
+            {isFree && (
+              <span style={{ position: "absolute", top: "-4px", right: "-4px", background: "#7c3aed", color: "white", borderRadius: "50%", width: "14px", height: "14px", fontSize: "9px", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900 }}>P</span>
+            )}
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+              <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+            </svg>
+          </button>
         )}
       </div>
 

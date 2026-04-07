@@ -399,14 +399,14 @@ function MenuCard({
               )}
             </div>
             <div className="flex gap-2">
-              <Button variant="outline" size="sm" className="flex-1 text-xs h-9" onClick={() => onDetail(menu.id)}>
+              <Button variant="outline" size="sm" className="text-xs h-9 flex-1" onClick={() => onDetail(menu.id)}>
                 Ver menú
               </Button>
               {user ? (
                 <>
                   <Button
                     size="sm"
-                    className="flex-1 text-xs h-9 bg-[#FF6B35] hover:bg-[#e55a25] text-white"
+                    className="text-xs h-9 flex-1 bg-[#FF6B35] hover:bg-[#e55a25] text-white"
                     onClick={() => onSave({ id: menu.id, name: menu.name })}
                   >
                     Usar menú
@@ -415,7 +415,7 @@ function MenuCard({
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-9 w-9 p-0 border-gray-200 hover:border-[#FF6B35] hover:text-[#FF6B35]"
+                      className="h-9 w-9 shrink-0 p-0 border-gray-200 hover:border-[#FF6B35] hover:text-[#FF6B35]"
                       title="Generar lista de la compra"
                       onClick={() => onShoppingList({ id: menu.id, name: menu.name })}
                     >
@@ -425,7 +425,7 @@ function MenuCard({
                 </>
               ) : (
                 <Link href="/login">
-                  <Button size="sm" className="flex-1 text-xs h-9 bg-[#FF6B35] hover:bg-[#e55a25] text-white">
+                  <Button size="sm" className="text-xs h-9 w-full bg-[#FF6B35] hover:bg-[#e55a25] text-white">
                     Usar menú
                   </Button>
                 </Link>
@@ -825,7 +825,7 @@ export default function MenuLibrary() {
       setShoppingMenu(null);
       toast.success("Lista de la compra generada", {
         description: "Puedes verla en tu sección de Listas de la Compra",
-        action: { label: "Ver lista", onClick: () => navigate("/app/shopping") },
+        action: { label: "Ver lista", onClick: () => navigate("/app/shopping-lists") },
       });
       setShoppingPending(false);
     },

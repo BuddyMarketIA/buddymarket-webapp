@@ -2,7 +2,8 @@ import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
-import { Link } from "wouter";
+import { Link, useLocation } from "wouter";
+import { usePlan } from "@/hooks/usePlan";
 import { RECIPE_PLACEHOLDER_IMAGE } from "@/lib/constants";
 import {
   PlusIcon,
@@ -40,6 +41,8 @@ function getWeekDates(baseDate: Date) {
 
 export default function Menus() {
   const { t } = useTranslation();
+  const { can, isFree } = usePlan();
+  const [, navigate] = useLocation();
   const MEAL_TYPES = MEAL_TYPE_KEYS.map(m => ({ ...m, label: t(m.tKey, m.key) }));
   const [weekOffset, setWeekOffset] = useState(0);
   const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
@@ -199,11 +202,20 @@ export default function Menus() {
             </button>
           </Link>
           <button
-            onClick={() => setShowAI(true)}
-            className="flex items-center gap-1.5 rounded-full bg-blue-50 px-3 py-1.5 text-xs font-semibold text-blue-600 whitespace-nowrap"
+            onClick={() => {
+              if (!can("canGenerateAIMenus")) {
+                toast.error("Genera menús con IA con el plan Pro. ¡Actualiza ahora!");
+                navigate("/app/subscription");
+                return;
+              }
+              setShowAI(true);
+            }}
+            className={`flex items-center gap-1.5 rounded-full px-3 py-1.5 text-xs font-semibold whitespace-nowrap ${
+              isFree ? "bg-gradient-to-r from-orange-50 to-amber-50 text-orange-600 border border-orange-200" : "bg-blue-50 text-blue-600"
+            }`}
           >
             <SparklesIcon className="h-4 w-4 shrink-0" />
-            IA
+            {isFree ? "IA 🔒" : "IA"}
           </button>
         </div>
       </div>

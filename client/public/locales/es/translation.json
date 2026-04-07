@@ -118,7 +118,8 @@
     "saving": "Guardando...",
     "sending": "Enviando...",
     "apply": "Aplicar",
-    "applied": "Aplicado"
+    "applied": "Aplicado",
+    "clear": "Limpiar"
   },
   "auth": {
     "login": "Iniciar sesión",
@@ -256,7 +257,57 @@
     "newRecipe": "Nueva receta",
     "editSubtitle": "Modifica los datos de tu receta",
     "newSubtitle": "Crea una nueva receta para tu colección",
-    "basicInfo": "Información básica"
+    "basicInfo": "Información básica",
+    "mealTime": {
+      "all": "Todos",
+      "breakfast": "Desayuno",
+      "midMorning": "Media mañana",
+      "lunch": "Comida",
+      "snack": "Merienda",
+      "dinner": "Cena",
+      "anyTime": "Cualquier momento"
+    },
+    "cuisine": {
+      "allCuisines": "Todas",
+      "spanish": "Española",
+      "italian": "Italiana",
+      "asian": "Asiática",
+      "mexican": "Mexicana",
+      "american": "Americana",
+      "arabic": "Árabe",
+      "french": "Francesa",
+      "mediterranean": "Mediterránea",
+      "latinAmerican": "Latinoamericana"
+    },
+    "cookingMethodOptions": {
+      "all": "Todos",
+      "airFryer": "Air Fryer",
+      "oven": "Horno",
+      "grill": "Plancha",
+      "pot": "Olla",
+      "noCooking": "Sin cocción",
+      "microwave": "Microondas",
+      "steam": "Vapor",
+      "wok": "Wok"
+    },
+    "filterCat": {
+      "mealTime": "Momento del día",
+      "cuisineType": "Tipo de cocina",
+      "cookingMethod": "Método de cocción"
+    },
+    "resultsFor": "Resultados para",
+    "results": "Resultados",
+    "allRecipes": "Todas las recetas",
+    "recipesCount": "recetas",
+    "noResultsFor": "Sin resultados para",
+    "available": "recetas disponibles",
+    "activeFilters": "filtro activo",
+    "noMyRecipes": "Aún no tienes recetas",
+    "noRecipesFilter": "No hay recetas con estos filtros",
+    "tryOtherSearch": "Prueba con otro nombre o ingrediente",
+    "createFirst": "Crea tu primera receta",
+    "tryFilters": "Prueba cambiando los filtros",
+    "clearSearch": "Limpiar búsqueda"
   },
   "menus": {
     "title": "Planificador",

@@ -192,6 +192,18 @@ export function OnboardingModal() {
                   </div>
                 ))}
               </div>
+              {/* ── Disclaimer médico obligatorio (App Store / Google Play) ── */}
+              <div style={{
+                marginTop: 20, padding: "12px 14px",
+                background: "#FEF3C7", borderRadius: 12,
+                border: "1px solid rgba(245,158,11,0.3)",
+                display: "flex", alignItems: "flex-start", gap: 10, textAlign: "left",
+              }}>
+                <span style={{ fontSize: 18, flexShrink: 0, marginTop: 1 }}>⚠️</span>
+                <p style={{ margin: 0, fontSize: 12, color: "#92400E", lineHeight: 1.5 }}>
+                  <strong>Aviso médico:</strong> BuddyMarket es una herramienta de apoyo nutricional y no sustituye el consejo de un médico, dietista o profesional de la salud. Consulta siempre a un especialista antes de realizar cambios significativos en tu alimentación.
+                </p>
+              </div>
             </div>
           )}
 

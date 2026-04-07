@@ -69,6 +69,13 @@ const config: CapacitorConfig = {
       iconColor: "#F97316",
       sound: "beep.wav",
     },
+    // Google Sign-In nativo (iOS WebView y Android)
+    // El clientId debe coincidir con el OAuth Client ID de tipo "iOS" en Google Cloud Console
+    GoogleAuth: {
+      scopes: ["profile", "email"],
+      serverClientId: "909562975875-l71herhk1vbmv8t6alqpjgr5b110novv.apps.googleusercontent.com",
+      forceCodeForRefreshToken: true,
+    },
   },
 };
 

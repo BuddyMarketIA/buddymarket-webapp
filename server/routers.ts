@@ -1375,6 +1375,13 @@ Devuelve SOLO JSON válido con esta estructura:
           servings: z.number().int().min(1, "Mínimo 1 ración").max(100, "Máximo 100 raciones").optional(),
           difficulty: z.enum(["easy", "medium", "hard"]).optional(),
           isPublic: z.boolean().optional(),
+          mealTime: z.string().optional(),
+          calories: z.number().int().min(0).optional(),
+          protein: z.number().min(0).optional(),
+          carbs: z.number().min(0).optional(),
+          fat: z.number().min(0).optional(),
+          ingredientsJson: z.string().optional(),
+          instructionsJson: z.string().optional(),
           categoryIds: z.array(z.number().int().positive()).max(10, "Máximo 10 categorías").optional(),
           allergyIds: z.array(z.number().int().positive()).max(20, "Máximo 20 alergias").optional(),
           restrictionIds: z.array(z.number().int().positive()).max(20, "Máximo 20 restricciones").optional(),
@@ -1383,8 +1390,16 @@ Devuelve SOLO JSON válido con esta estructura:
       .mutation(async ({ ctx, input }) => {
         const tier = await getUserPlanTier(ctx.user.id, ctx.user.role);
         requirePlanFeature(tier, "canCreateRecipes");
-        const { categoryIds, allergyIds, restrictionIds, ...recipeData } = input;
-        const result = await db.createRecipe({ ...recipeData, userId: ctx.user.id });
+        const { categoryIds, allergyIds, restrictionIds, calories, protein, carbs, fat, ...recipeData } = input;
+        const result = await db.createRecipe({
+          ...recipeData,
+          userId: ctx.user.id,
+          caloriesPerServing: calories,
+          proteinsPerServing: protein,
+          carbsPerServing: carbs,
+          fatsPerServing: fat,
+          mealTime: (recipeData.mealTime as any) ?? "cualquiera",
+        });
         if (result) {
           await Promise.all([
             categoryIds?.length ? db.setRecipeCategories(result.id, categoryIds) : Promise.resolve(),
@@ -1700,6 +1715,142 @@ Adapta esta receta eliminando los ingredientes prohibidos y sustituyéndolos por
           throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Error al adaptar la receta" });
         }
       }),
+
+    // -------------------------------------------------------------------------
+    // SAVE ADAPTED RECIPE AS PUBLIC (with AI image generation)
+    // -------------------------------------------------------------------------
+    saveAdaptedAsPublic: protectedProcedure
+      .input(z.object({
+        originalRecipeId: z.number().int(),
+        adaptedName: z.string().min(2).max(256),
+        description: z.string().optional(),
+        adaptedIngredients: z.string().optional(),
+        adaptedInstructions: z.string().optional(),
+        nutritionalNote: z.string().optional(),
+        substitutions: z.array(z.object({
+          original: z.string(),
+          replacement: z.string(),
+          reason: z.string().optional(),
+        })).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { recipes: recipesTable } = await import("../drizzle/schema.js");
+        const { eq } = await import("drizzle-orm");
+
+        // Get original recipe for context
+        const [original] = await drizzleDb.select().from(recipesTable).where(eq(recipesTable.id, input.originalRecipeId)).limit(1);
+        if (!original) throw new TRPCError({ code: "NOT_FOUND", message: "Receta original no encontrada" });
+
+        // Generate AI image for the adapted recipe
+        let imageUrl: string | undefined;
+        try {
+          const { generateImage } = await import("./_core/imageGeneration.js");
+          const imagePrompt = `Professional food photography of "${input.adaptedName}", a healthy adapted recipe. Beautiful plating, natural lighting, appetizing presentation, white background, high quality.`;
+          const result = await generateImage({ prompt: imagePrompt });
+          imageUrl = result.url;
+        } catch (imgErr) {
+          console.warn("[saveAdaptedAsPublic] Image generation failed (non-critical):", imgErr);
+          imageUrl = original.imageUrl ?? undefined;
+        }
+
+        // Build ingredients JSON from adapted text
+        const ingredientsJson = input.adaptedIngredients
+          ? JSON.stringify([{ name: input.adaptedIngredients, amount: "", unit: "", category: "General" }])
+          : original.ingredientsJson;
+
+        // Build instructions JSON from adapted text
+        const instructionsJson = input.adaptedInstructions
+          ? JSON.stringify([{ step: 1, text: input.adaptedInstructions }])
+          : original.instructionsJson;
+
+        // Insert new public recipe
+        const [newRecipe] = await drizzleDb.insert(recipesTable).values({
+          userId: ctx.user.id,
+          name: input.adaptedName,
+          description: input.description ?? `Versión adaptada de "${original.name}" sin alérgenos. ${input.nutritionalNote ?? ""}`.trim(),
+          imageUrl: imageUrl ?? original.imageUrl,
+          preparationTime: original.preparationTime,
+          cookTime: original.cookTime,
+          servings: original.servings,
+          difficulty: original.difficulty,
+          mealTime: original.mealTime,
+          cuisineType: original.cuisineType,
+          cookingMethod: original.cookingMethod,
+          caloriesPerServing: original.caloriesPerServing,
+          proteinsPerServing: original.proteinsPerServing,
+          carbsPerServing: original.carbsPerServing,
+          fatsPerServing: original.fatsPerServing,
+          ingredientsJson,
+          instructionsJson,
+          tags: JSON.stringify(["adaptada", "sin-alergenos", "ia"]),
+          isPublic: true,
+          isSeeded: false,
+        }).returning({ id: recipesTable.id });
+
+        return { success: true, recipeId: newRecipe?.id ?? 0, imageUrl };
+      }),
+    calculateNutrition: protectedProcedure
+      .input(z.object({
+        ingredients: z.array(z.object({
+          name: z.string(),
+          quantity: z.number(),
+          unit: z.string(),
+        })).min(1).max(50),
+        servings: z.number().int().positive().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { invokeLLM } = await import("./_core/llm");
+        const servings = input.servings ?? 1;
+        const ingredientsList = input.ingredients
+          .map(i => `- ${i.quantity} ${i.unit} de ${i.name}`)
+          .join("\n");
+        const response = await invokeLLM({
+          messages: [
+            {
+              role: "system",
+              content: "Eres un nutricionista experto. Calcula los valores nutricionales totales de una receta y devuelve JSON con los valores por porción. Responde SOLO con JSON válido, sin texto adicional.",
+            },
+            {
+              role: "user",
+              content: `Calcula los valores nutricionales por porción de esta receta (${servings} porciones en total).\n\nIngredientes:\n${ingredientsList}\n\nDevuelve SOLO este JSON:\n{"calories": <número>, "protein": <número>, "carbs": <número>, "fat": <número>}`,
+            },
+          ],
+          response_format: {
+            type: "json_schema",
+            json_schema: {
+              name: "nutrition_values",
+              strict: true,
+              schema: {
+                type: "object",
+                properties: {
+                  calories: { type: "number", description: "Calorías por porción (kcal)" },
+                  protein: { type: "number", description: "Proteínas por porción (g)" },
+                  carbs: { type: "number", description: "Carbohidratos por porción (g)" },
+                  fat: { type: "number", description: "Grasas por porción (g)" },
+                },
+                required: ["calories", "protein", "carbs", "fat"],
+                additionalProperties: false,
+              },
+            },
+          },
+        });
+        const rawContent = response?.choices?.[0]?.message?.content;
+        const raw = typeof rawContent === "string" ? rawContent : null;
+        if (!raw) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "No se pudo calcular la nutrición" });
+        try {
+          const parsed = JSON.parse(raw);
+          return {
+            calories: Math.round(parsed.calories ?? 0),
+            protein: Math.round((parsed.protein ?? 0) * 10) / 10,
+            carbs: Math.round((parsed.carbs ?? 0) * 10) / 10,
+            fat: Math.round((parsed.fat ?? 0) * 10) / 10,
+          };
+        } catch {
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Error al procesar la respuesta de nutrición" });
+        }
+      }),
   }),
   // ---------------------------------------------------------------------------
   // MENU ORGANIZERS
@@ -1766,6 +1917,15 @@ Adapta esta receta eliminando los ingredientes prohibidos y sustituyéndolos por
         requireOwnership(menu.userId, ctx.user.id, ctx.user.role);
         await db.deleteMenuOrganizer(input.id);
         return { success: true };
+      }),
+    duplicate: protectedProcedure
+      .input(z.object({ id: z.number(), startDate: z.string().optional() }))
+      .mutation(async ({ ctx, input }) => {
+        const menu = await db.getMenuOrganizerById(input.id);
+        if (!menu) throw new TRPCError({ code: "NOT_FOUND" });
+        requireOwnership(menu.userId, ctx.user.id, ctx.user.role);
+        const result = await db.copyMenuForUser(input.id, ctx.user.id, menu.persons ?? 1, input.startDate);
+        return result;
       }),
 
     addRecipeToDayPart: protectedProcedure
@@ -2481,6 +2641,43 @@ Adapta esta receta eliminando los ingredientes prohibidos y sustituyéndolos por
         await db.deleteShoppingList(input.id);
         return { success: true };
       }),
+    duplicate: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { shoppingLists, shoppingListItems } = await import("../drizzle/schema.js");
+        const { eq } = await import("drizzle-orm");
+        const list = await db.getShoppingListById(input.id);
+        if (!list) throw new TRPCError({ code: "NOT_FOUND" });
+        requireOwnership(list.userId, ctx.user.id, ctx.user.role);
+        // Create new list
+        const [newList] = await drizzleDb.insert(shoppingLists).values({
+          userId: ctx.user.id,
+          name: `${list.name} (copia)`,
+          menuOrganizerId: null,
+          supermarket: (list as any).supermarket ?? "general",
+          persons: (list as any).persons ?? 1,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }).returning({ id: shoppingLists.id });
+        // Copy items
+        const items = await drizzleDb.select().from(shoppingListItems).where(eq(shoppingListItems.shoppingListId, input.id));
+        for (const item of items) {
+          await drizzleDb.insert(shoppingListItems).values({
+            shoppingListId: newList.id,
+            ingredientId: item.ingredientId,
+            customName: item.customName,
+            amount: item.amount,
+            measureId: item.measureId,
+            category: item.category,
+            checked: false,
+            createdAt: new Date(),
+            updatedAt: new Date(),
+          });
+        }
+        return { success: true, id: newList.id, name: `${list.name} (copia)` };
+      }),
 
     addItem: protectedProcedure
       .input(
@@ -2669,7 +2866,7 @@ Adapta esta receta eliminando los ingredientes prohibidos y sustituyéndolos por
         z.object({
           menuId: z.number(),
           persons: z.number().min(1).max(20).default(1),
-          supermarket: z.enum(["general", "mercadona", "lidl", "carrefour", "alcampo", "dia", "el_corte_ingles"]).default("general"),
+          supermarket: z.enum(["general", "mercadona", "lidl", "carrefour", "alcampo", "dia", "el_corte_ingles", "consum", "hiperdino"]).default("general"),
           name: z.string().optional(),
           replaceExisting: z.boolean().optional().default(false),
         })
@@ -3627,6 +3824,31 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
       const { getPlanTier } = await import("../shared/plans");
       return { ...sub, tier: getPlanTier(sub.plan) };
     }),
+    getMonthlyUsage: protectedProcedure.query(async ({ ctx }) => {
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) return { menusThisMonth: 0, shoppingListsThisMonth: 0, eventMenusThisMonth: 0, savedRecipes: 0, inventoryItems: 0 };
+      const { menuOrganizers, shoppingLists, recipes, userInventoryItems } = await import("../drizzle/schema");
+      const { eq, and, gte, count } = await import("drizzle-orm");
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const [menusCount] = await drizzleDb.select({ count: count() }).from(menuOrganizers)
+        .where(and(eq(menuOrganizers.userId, ctx.user.id), gte(menuOrganizers.createdAt, startOfMonth)));
+      const [listsCount] = await drizzleDb.select({ count: count() }).from(shoppingLists)
+        .where(and(eq(shoppingLists.userId, ctx.user.id), gte(shoppingLists.createdAt, startOfMonth)));
+      const [savedRecipesCount] = await drizzleDb.select({ count: count() }).from(recipes)
+        .where(eq(recipes.userId, ctx.user.id));
+      const [inventoryCount] = await drizzleDb.select({ count: count() }).from(userInventoryItems)
+        .where(eq(userInventoryItems.userId, ctx.user.id));
+      return {
+        menusThisMonth: menusCount?.count ?? 0,
+        shoppingListsThisMonth: listsCount?.count ?? 0,
+        eventMenusThisMonth: 0,
+        savedRecipes: savedRecipesCount?.count ?? 0,
+        inventoryItems: inventoryCount?.count ?? 0,
+      };
+    }),
+
+
 
     // ── Apple StoreKit 2 IAP verification ────────────────────────────────────────
     verifyAppleIAP: protectedProcedure
@@ -5963,129 +6185,6 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
       if (!maker) return [];
       return drizzleDb.select().from(rSelf).where(eq(rSelf.buddyMakerId, maker.id));
     }),
-
-    createRecipe: protectedProcedure
-      .input(z.object({
-        name: z.string().min(2).max(256),
-        description: z.string().optional(),
-        imageUrl: z.string().url().optional().or(z.literal("")),
-        prepTime: z.number().int().positive().optional(),
-        cookTime: z.number().int().positive().optional(),
-        servings: z.number().int().positive().optional(),
-        calories: z.number().int().positive().optional(),
-        protein: z.number().nonnegative().optional(),
-        carbs: z.number().nonnegative().optional(),
-        fat: z.number().nonnegative().optional(),
-        mealTime: z.enum(["desayuno","media_manana","comida","merienda","cena","cualquiera"]).optional(),
-        cookingMethod: z.string().optional(),
-        cuisineType: z.string().optional(),
-        difficulty: z.enum(["easy","medium","hard"]).optional(),
-        ingredientsJson: z.string().optional(),
-        instructionsJson: z.string().optional(),
-        allergens: z.string().optional(),
-        tags: z.string().optional(),
-        isPublic: z.boolean().optional().default(true),
-      }))
-      .mutation(async ({ ctx, input }) => {
-        const drizzleDb = await db.getDb();
-        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-        const { recipes: rSelf, buddyMakers: bmSelf } = await import("../drizzle/schema");
-        const { eq, sql: sqlFn } = await import("drizzle-orm");
-        const [maker] = await drizzleDb.select().from(bmSelf).where(eq(bmSelf.userId, ctx.user.id)).limit(1);
-        if (!maker) throw new TRPCError({ code: "FORBIDDEN", message: "Necesitas un perfil de BuddyMaker para publicar recetas" });
-        const [res] = await drizzleDb.insert(rSelf).values({
-          name: input.name,
-          description: input.description,
-          imageUrl: input.imageUrl,
-          preparationTime: input.prepTime,
-          cookTime: input.cookTime,
-          servings: input.servings ?? 2,
-          caloriesPerServing: input.calories,
-          proteinsPerServing: input.protein,
-          carbsPerServing: input.carbs,
-          fatsPerServing: input.fat,
-          mealTime: input.mealTime,
-          cookingMethod: input.cookingMethod,
-          cuisineType: input.cuisineType,
-          difficulty: input.difficulty ?? "medium",
-          ingredientsJson: input.ingredientsJson,
-          instructionsJson: input.instructionsJson,
-          allergens: input.allergens,
-          tags: input.tags,
-          isPublic: input.isPublic ?? true,
-          buddyMakerId: maker.id,
-          isSeeded: false,
-          userId: ctx.user.id,
-        }).returning({ id: bmSelf.id });
-        await drizzleDb.update(bmSelf).set({ recipesCount: sqlFn`${bmSelf.recipesCount} + 1` }).where(eq(bmSelf.id, maker.id));
-        return { id: res?.id ?? 0 };
-      }),
-    updateRecipe: protectedProcedure
-      .input(z.object({
-        recipeId: z.number().int(),
-        name: z.string().min(2).max(256).optional(),
-        description: z.string().optional(),
-        imageUrl: z.string().url().optional().or(z.literal("")),
-        prepTime: z.number().int().positive().optional(),
-        cookTime: z.number().int().positive().optional(),
-        servings: z.number().int().positive().optional(),
-        calories: z.number().int().positive().optional(),
-        protein: z.number().nonnegative().optional(),
-        carbs: z.number().nonnegative().optional(),
-        fat: z.number().nonnegative().optional(),
-        mealTime: z.enum(["desayuno","media_manana","comida","merienda","cena","cualquiera"]).optional(),
-        cookingMethod: z.string().optional(),
-        cuisineType: z.string().optional(),
-        difficulty: z.enum(["easy","medium","hard"]).optional(),
-        ingredientsJson: z.string().optional(),
-        instructionsJson: z.string().optional(),
-        allergens: z.string().optional(),
-        tags: z.string().optional(),
-        isPublic: z.boolean().optional(),
-      }))
-      .mutation(async ({ ctx, input }) => {
-        const drizzleDb = await db.getDb();
-        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-        const { recipes: rSelf, buddyMakers: bmSelf } = await import("../drizzle/schema");
-        const { eq, and } = await import("drizzle-orm");
-        const [maker] = await drizzleDb.select().from(bmSelf).where(eq(bmSelf.userId, ctx.user.id)).limit(1);
-        if (!maker) throw new TRPCError({ code: "FORBIDDEN" });
-        const updates: Record<string, any> = {};
-        if (input.name !== undefined) updates.name = input.name;
-        if (input.description !== undefined) updates.description = input.description;
-        if (input.imageUrl !== undefined) updates.imageUrl = input.imageUrl;
-        if (input.prepTime !== undefined) updates.preparationTime = input.prepTime;
-        if (input.cookTime !== undefined) updates.cookTime = input.cookTime;
-        if (input.servings !== undefined) updates.servings = input.servings;
-        if (input.calories !== undefined) updates.caloriesPerServing = input.calories;
-        if (input.protein !== undefined) updates.proteinsPerServing = input.protein;
-        if (input.carbs !== undefined) updates.carbsPerServing = input.carbs;
-        if (input.fat !== undefined) updates.fatsPerServing = input.fat;
-        if (input.mealTime !== undefined) updates.mealTime = input.mealTime;
-        if (input.cookingMethod !== undefined) updates.cookingMethod = input.cookingMethod;
-        if (input.cuisineType !== undefined) updates.cuisineType = input.cuisineType;
-        if (input.difficulty !== undefined) updates.difficulty = input.difficulty;
-        if (input.ingredientsJson !== undefined) updates.ingredientsJson = input.ingredientsJson;
-        if (input.instructionsJson !== undefined) updates.instructionsJson = input.instructionsJson;
-        if (input.allergens !== undefined) updates.allergens = input.allergens;
-        if (input.tags !== undefined) updates.tags = input.tags;
-        if (input.isPublic !== undefined) updates.isPublic = input.isPublic;
-        await drizzleDb.update(rSelf).set(updates).where(and(eq(rSelf.id, input.recipeId), eq(rSelf.buddyMakerId, maker.id)));
-        return { success: true };
-      }),
-
-    deleteRecipe: protectedProcedure
-      .input(z.object({ recipeId: z.number().int() }))
-      .mutation(async ({ ctx, input }) => {
-        const drizzleDb = await db.getDb();
-        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-        const { recipes: rSelf, buddyMakers: bmSelf } = await import("../drizzle/schema");
-        const { eq, and } = await import("drizzle-orm");
-         const [maker] = await drizzleDb.select().from(bmSelf).where(eq(bmSelf.userId, ctx.user.id)).limit(1);
-        if (!maker) throw new TRPCError({ code: "FORBIDDEN" });
-        await drizzleDb.delete(rSelf).where(and(eq(rSelf.id, input.recipeId), eq(rSelf.buddyMakerId, maker.id)));
-        return { success: true };
-      }),
     // ── Creator Dashboard Stats ─────────────────────────────────────────────
     getMyStats: protectedProcedure.query(async ({ ctx }) => {
       const drizzleDb = await db.getDb();
@@ -7089,7 +7188,27 @@ Devuelve SOLO JSON válido con esta estructura exacta:
         season: z.string().max(30).trim().optional(),
         extraNotes: z.string().max(500).trim().optional(),
       }))
-      .mutation(async ({ input }) => {
+      .mutation(async ({ ctx, input }) => {
+        // Plan gate: check event menu limit
+        const tier = await getUserPlanTier(ctx.user.id, ctx.user.role);
+        const { PLAN_LIMITS } = await import("../shared/plans.js");
+        const limits = PLAN_LIMITS[tier];
+        if (limits.maxEventMenusPerMonth !== -1) {
+          // Count events generated this month
+          const { savedEvents: seTable } = await import("../drizzle/schema.js");
+          const { count: countFn, gte, eq, and } = await import("drizzle-orm");
+          const drizzleDb = await db.getDb();
+          if (drizzleDb) {
+            const now = new Date();
+            const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+            const [row] = await drizzleDb.select({ cnt: countFn() }).from(seTable)
+              .where(and(eq(seTable.userId, ctx.user.id), gte(seTable.createdAt, startOfMonth)));
+            const used = Number(row?.cnt ?? 0);
+            if (used >= limits.maxEventMenusPerMonth) {
+              throw new TRPCError({ code: "FORBIDDEN", message: `PLAN_LIMIT_REACHED:maxEventMenusPerMonth:basic:Has usado tu menú de evento gratuito este mes. Actualiza a Pro para menús ilimitados.` });
+            }
+          }
+        }
         const eventLabels: Record<string, string> = {
           cena_amigos: "Cena con amigos en casa",
           barbacoa: "Barbacoa",

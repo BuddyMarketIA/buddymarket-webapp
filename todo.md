@@ -1571,3 +1571,98 @@
 - [x] Autenticación por número de teléfono con OTP SMS (Twilio)
 - [ ] Corregir Google login en Safari/iOS: usar redirect en lugar de popup (cookies de terceros bloqueadas)
 - [ ] Modal de TyC obligatorio para SSO (Google/Apple): mostrar antes de completar el registro
+
+## Preparación distribución 10/10
+- [ ] Privacy Manifest iOS (PrivacyInfo.xcprivacy)
+- [ ] Google Play Billing integrado para suscripciones Android
+- [ ] @capacitor/google-auth para Google Sign-In nativo iOS
+- [ ] apple-app-site-association en buddymarketapp.com/.well-known/
+- [ ] targetSdk Android actualizado a 35
+- [ ] Firebase google-services.json para push Android
+- [ ] Keystore de firma Android generado y configurado en Codemagic
+- [ ] Disclaimer médico en primera pantalla post-login
+- [ ] Data Safety metadata para Google Play
+- [ ] Build de producción ejecutado y cap sync actualizado
+
+- [ ] Eliminar formulario duplicado de datos en primer plano al registrarse
+- [ ] Onboarding solo se pide una vez (no repetir si ya completado)
+- [ ] Menú inicial no obligatorio (skip sin bloqueo)
+
+- [ ] Eliminar OnboardingModal duplicado (reemplazado por BuddySetup)
+- [ ] BuddySetup pre-rellena datos ya guardados en BD (género, objetivo, físicos)
+- [ ] Menú inicial no obligatorio en BuddySetup
+- [ ] Datos de perfil unificados en una sola fuente de verdad (BD)
+
+- [ ] CRÍTICO: Alergias/restricciones no se respetan en recetas y menús generados por IA
+
+## Sprint Monetización + Bugs + UX (Abril 2026)
+
+### Bugs críticos
+- [ ] Bug: lista de la compra desde menú da 404 - corregir ruta/endpoint
+- [ ] Bug: filtros de recetas muestran nombres internos de BD (mealTime, cuisineType, cookingMethod)
+- [ ] Bug: opciones de filtro de recetas salen en inglés (breakfast, midMorning) en lugar del idioma seleccionado
+- [ ] Bug: botones "Ver menú / Usar menú / carrito" descentrados en cards de biblioteca de menús
+
+### Estrategia de monetización (hacer como app de 500M)
+- [ ] Rediseñar página de planes con diferencias brutalmente claras entre Free/Pro/Pro Max
+- [ ] Plan Free: mostrar contadores visibles de uso ("1/2 listas usadas este mes", "0/1 menús IA usados")
+- [ ] Plan Free: límites estrictos - 2 listas de la compra/mes, 1 menú IA/mes, no crear recetas propias, no menús especializados, no menús para eventos (1 gratis de prueba), no BuddyIA avanzado
+- [ ] Plan Pro: límites medios - menús IA ilimitados, 10 listas/mes, recetas propias, menús especializados, 3 menús eventos/mes
+- [ ] Plan Pro Max: todo ilimitado + menús para eventos ilimitados + BuddyIA sin límites + soporte prioritario
+- [ ] Mostrar preview borroso (blur + lock overlay) de features Pro/ProMax para usuarios free con CTA irresistible
+- [ ] Menús especializados: mostrar cards con blur para usuarios free (embarazo, diabetes, deportistas...)
+- [ ] BuddyMakers y BuddyExperts: acceso libre para TODOS los planes (canal de monetización de creadores)
+
+### Nuevas features
+- [ ] Guardar receta adaptada por IA como receta pública en el catálogo (con imagen generada por IA)
+- [ ] Formulario de recetas: sección de ingredientes con buscador (nombre + cantidad + unidad)
+- [ ] Formulario de recetas: cálculo automático de valores nutricionales con IA al añadir ingredientes
+- [ ] Menús para eventos: nueva sección (cumpleaños, cena romántica, barbacoa, Navidad, etc.) - 1 gratis, resto Pro/ProMax
+- [ ] Mis Menús: sección con menús pasados, opción de repetir o borrar
+- [ ] Mis Listas de la Compra: sección con listas pasadas, opción de repetir o borrar
+- [ ] Open Graph meta tags dinámicos en RecipeDetail para compartir con imagen BuddyMarket y mensaje personalizado en WhatsApp
+
+## Sprint Abril 2026 - Completado
+
+### Bugs corregidos
+- [x] Bug: lista de la compra desde menú da 404 - añadidos "consum" e "hiperdino" al enum de supermercados
+- [x] Bug: filtros de recetas - traducciones i18n ya correctas en es.json
+- [x] Corregir procedimiento duplicado calculateNutrition en router de buddyMakers
+
+### Monetización y UX
+- [x] Añadir funcionalidad "Repetir" y "Borrar" en Mis Menús (duplicateMenu, deleteMenu)
+- [x] Añadir funcionalidad "Repetir" y "Borrar" en Mis Listas de la Compra (duplicateShoppingList, deleteShoppingList)
+- [x] Menús especializados: preview con blur + lock overlay para usuarios free con CTA a Pro
+- [x] BuddyMakers y BuddyExperts: acceso libre para todos los planes (canAccessBuddyMakers/Experts = true en free)
+- [x] EventMenuPlanner: banner de límite de plan visible para usuarios free (contador de uso + CTA a Pro)
+
+### Sistema de seguridad alimentaria
+- [x] CRÍTICO: Alergias/restricciones ahora se respetan en generateMenuWithQuestionnaire
+- [x] CRÍTICO: Alergias/restricciones ahora se respetan en generateMenu (menús básicos)
+- [x] CRÍTICO: Alergias/restricciones ahora se respetan en generateRecipesFromExpiring
+- [x] Validación post-generación detectAllergyViolations para rechazar respuestas con ingredientes prohibidos
+- [x] Overlay rojo con blur en cards de recetas con ingredientes prohibidos
+- [x] Banner de alerta en RecipeDetail con pills de ingredientes problemáticos
+- [x] Modal de adaptación con IA (recipes.adaptForUser) con sustituciones visuales
+
+### Formulario de recetas
+- [x] Sección de ingredientes con buscador (nombre + cantidad + unidad)
+- [x] Cálculo automático de valores nutricionales con IA al añadir ingredientes (calculateNutrition)
+
+### Nuevas features
+- [x] Menús para eventos: nueva sección con 12 tipos de eventos - 1 gratis para free, ilimitado para Pro/ProMax
+- [x] EventMenuPlanner: banner de límite de plan con contador de uso y CTA a suscripción
+
+## Sprint Abril 2026 - Sesión 2 (07/04/2026)
+### Bugs corregidos
+- [x] Bug: BuddyMakerDashboard usaba trpc.buddyMakers.createRecipe/updateRecipe/deleteRecipe (no existían) → migrado a trpc.recipes.create/update/delete
+- [x] Bug: BuddyMakerStats usaba trpc.buddyMakers.deleteRecipe → migrado a trpc.recipes.delete
+- [x] Bug: RecipeForm usaba campo prepTime → corregido a preparationTime
+- [x] Bug: routers.ts tenía error de sintaxis "Expected } but found ;" → corregido
+### Monetización y UX (app de 500M)
+- [x] Página de suscripción: añadido banner oscuro premium "Las 3 razones por las que Pro vale la pena" con Menús IA, BuddyIA y Crear recetas
+- [x] Recetas públicas: generación automática de imagen IA al crear receta pública (generateAIImage en onSuccess)
+- [x] Botón de crear receta pública muestra "Crear receta pública ✨" y estado "Generando imagen IA..."
+- [x] Menús.tsx: botón de IA bloqueado para usuarios free con redirect a suscripción
+- [x] Recipes.tsx: botón de crear receta bloqueado para usuarios free con redirect a suscripción
+- [x] EventMenuPlanner: 1 evento gratis para usuarios free, bloqueado con CTA a Pro cuando se alcanza el límite

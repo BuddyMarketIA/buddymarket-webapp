@@ -107,7 +107,8 @@
     "saving": "Salvataggio...",
     "sending": "Invio...",
     "apply": "Applica",
-    "applied": "Applicato"
+    "applied": "Applicato",
+    "clear": "Cancella"
   },
   "auth": {
     "login": "Accedi",
@@ -213,7 +214,7 @@
     "searchPlaceholder": "Cerca per nome o ingrediente...",
     "recentSearches": "Ricerche recenti",
     "suggestions": "Suggerimenti",
-    "loadingMore": "Caricamento altre ricette...",
+    "loadingMore": "Caricamento di altre ricette...",
     "noRecipesDesc": "Prova altri filtri o termini di ricerca",
     "clearFilters": "Cancella filtri",
     "filters": "Filtri",
@@ -245,7 +246,57 @@
     "newRecipe": "Nuova ricetta",
     "editSubtitle": "Modifica i dati della tua ricetta",
     "newSubtitle": "Crea una nuova ricetta per la tua collezione",
-    "basicInfo": "Informazioni di base"
+    "basicInfo": "Informazioni di base",
+    "mealTime": {
+      "all": "Tutti",
+      "breakfast": "Colazione",
+      "midMorning": "Metà mattina",
+      "lunch": "Pranzo",
+      "snack": "Spuntino",
+      "dinner": "Cena",
+      "anyTime": "In qualsiasi momento"
+    },
+    "cuisine": {
+      "allCuisines": "Tutte",
+      "spanish": "Spagnola",
+      "italian": "Italiana",
+      "asian": "Asiatica",
+      "mexican": "Messicana",
+      "american": "Americana",
+      "arabic": "Araba",
+      "french": "Francese",
+      "mediterranean": "Mediterranea",
+      "latinAmerican": "Latinoamericana"
+    },
+    "cookingMethodOptions": {
+      "all": "Tutti",
+      "airFryer": "Air Fryer",
+      "oven": "Forno",
+      "grill": "Griglia",
+      "pot": "Pentola",
+      "noCooking": "Senza cottura",
+      "microwave": "Microonde",
+      "steam": "Vapore",
+      "wok": "Wok"
+    },
+    "filterCat": {
+      "mealTime": "Momento del pasto",
+      "cuisineType": "Tipo di cucina",
+      "cookingMethod": "Metodo di cottura"
+    },
+    "resultsFor": "Risultati per",
+    "results": "Risultati",
+    "allRecipes": "Tutte le ricette",
+    "recipesCount": "ricette",
+    "noResultsFor": "Nessun risultato per",
+    "available": "ricette disponibili",
+    "activeFilters": "filtro attivo",
+    "noMyRecipes": "Non hai ancora ricette",
+    "noRecipesFilter": "Nessuna ricetta con questi filtri",
+    "tryOtherSearch": "Prova un altro nome o ingrediente",
+    "createFirst": "Crea la tua prima ricetta",
+    "tryFilters": "Prova a cambiare i filtri",
+    "clearSearch": "Cancella ricerca"
   },
   "menus": {
     "title": "Pianificatore",
