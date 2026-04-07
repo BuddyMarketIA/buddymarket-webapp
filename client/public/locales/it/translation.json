@@ -108,7 +108,12 @@
     "sending": "Invio...",
     "apply": "Applica",
     "applied": "Applicato",
-    "clear": "Cancella"
+    "clear": "Cancella",
+    "create": "Crea",
+    "creating": "Creazione...",
+    "generating": "Generazione...",
+    "generate": "Genera",
+    "applying": "Applicazione..."
   },
   "auth": {
     "login": "Accedi",
@@ -296,7 +301,9 @@
     "tryOtherSearch": "Prova un altro nome o ingrediente",
     "createFirst": "Crea la tua prima ricetta",
     "tryFilters": "Prova a cambiare i filtri",
-    "clearSearch": "Cancella ricerca"
+    "clearSearch": "Cancella ricerca",
+    "disclaimer": "Le ricette di BuddyMarket sono indicative. Consulta un professionista della nutrizione.",
+    "allSeen": "Tutte le ricette viste"
   },
   "menus": {
     "title": "Pianificatore",
@@ -347,7 +354,28 @@
     "exploreLibrary": "Esplora la libreria",
     "inProgress": "In corso",
     "ai": "IA",
-    "applyMenuToDiary": "Applica \"{{name}}\" al diario alimentare"
+    "applyMenuToDiary": "Applica \"{{name}}\" al diario alimentare",
+    "createList": "Crea lista",
+    "disclaimer": "I menu generati dall'IA sono indicativi. Consulta un nutrizionista.",
+    "menuCreated": "Menu creato",
+    "recipeAdded": "Ricetta aggiunta al menu",
+    "recipeRemoved": "Ricetta rimossa dal menu",
+    "basedOnRecipes": "Basata sulle ricette di questo menu",
+    "noResults": "Nessun risultato per",
+    "errorAddRecipe": "Errore nell'aggiunta della ricetta",
+    "errorApplyDiary": "Errore nell'applicazione del menu al diario",
+    "errorGenerate": "Errore nella generazione del menu",
+    "createFirst": "Prima crea un menu",
+    "createFirstRecipes": "Prima crea un menu per aggiungere ricette",
+    "errorPrepare": "Errore nella preparazione del menu",
+    "mealsAddedToDiary": "pasti aggiunti al diario da",
+    "needMenuFirst": "Devi prima creare un menu. Ne verrà creato uno automaticamente.",
+    "aiObjectivePlaceholder": "Obiettivo (es: perdere peso, dieta mediterranea, vegano...)",
+    "applyToDiary": "Applica al diario",
+    "applyToDiaryDesc": "I pasti del menu verranno aggiunti al tuo diario",
+    "startDate": "Data di inizio",
+    "startDateDesc": "I pasti verranno distribuiti da questa data secondo i giorni del menu.",
+    "searchRecipeDesc": "Cerca una ricetta da aggiungere al menu"
   },
   "profile": {
     "title": "Il mio profilo",

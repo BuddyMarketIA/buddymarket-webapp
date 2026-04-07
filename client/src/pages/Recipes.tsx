@@ -627,7 +627,7 @@ export default function Recipes() {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
         <div>
           <h1 style={{ margin: 0, fontSize: "22px", fontWeight: 900, color: "#1a1a1a", letterSpacing: "-0.03em" }}>{t("recipes.title")}</h1>
-          <p style={{ margin: "2px 0 0", fontSize: "14px", color: "#9ca3af" }}>{t("recipes.available", "427 recipes available")}</p>
+          <p style={{ margin: "2px 0 0", fontSize: "14px", color: "#9ca3af" }}>{isFetching ? t("common.loading", "Cargando...") : `${recipes.length}${hasNextPage ? "+" : ""} ${t("recipes.available", "recetas disponibles")}`}</p>
         </div>
         {isAuthenticated && (
           <button
@@ -958,7 +958,7 @@ export default function Recipes() {
 
       {/* Disclaimer */}
       <p style={{ fontSize: "13px", color: "#d1d5db", textAlign: "center", margin: "8px 0 0", lineHeight: 1.5 }}>
-        {t("recipes.disclaimer", "BuddyMarket recipes are for guidance only. Consult a nutrition professional.")}
+        {t("recipes.disclaimer", "Las recetas de BuddyMarket son orientativas. Consulta a un profesional de la nutrición.")}
       </p>
 
       {/* Animations */}

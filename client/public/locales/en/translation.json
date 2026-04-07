@@ -119,7 +119,12 @@
     "sending": "Sending...",
     "apply": "Apply",
     "applied": "Applied",
-    "clear": "Clear"
+    "clear": "Clear",
+    "create": "Create",
+    "creating": "Creating...",
+    "generating": "Generating...",
+    "generate": "Generate",
+    "applying": "Applying..."
   },
   "auth": {
     "login": "Log in",
@@ -307,7 +312,9 @@
     "tryOtherSearch": "Try another name or ingredient",
     "createFirst": "Create your first recipe",
     "tryFilters": "Try changing the filters",
-    "clearSearch": "Clear search"
+    "clearSearch": "Clear search",
+    "disclaimer": "BuddyMarket recipes are for guidance only. Consult a nutrition professional.",
+    "allSeen": "All recipes seen"
   },
   "menus": {
     "title": "Planner",
@@ -358,7 +365,28 @@
     "exploreLibrary": "Explore library",
     "inProgress": "In progress",
     "ai": "AI",
-    "applyMenuToDiary": "Apply \"{{name}}\" to food diary"
+    "applyMenuToDiary": "Apply \"{{name}}\" to food diary",
+    "createList": "Create list",
+    "disclaimer": "AI-generated menus are for guidance only. Consult a nutritionist.",
+    "menuCreated": "Menu created",
+    "recipeAdded": "Recipe added to menu",
+    "recipeRemoved": "Recipe removed from menu",
+    "basedOnRecipes": "Based on this menu's recipes",
+    "noResults": "No results for",
+    "errorAddRecipe": "Error adding recipe",
+    "errorApplyDiary": "Error applying menu to diary",
+    "errorGenerate": "Error generating menu",
+    "createFirst": "Create a menu first",
+    "createFirstRecipes": "Create a menu first to add recipes",
+    "errorPrepare": "Error preparing menu",
+    "mealsAddedToDiary": "meals added to diary from",
+    "needMenuFirst": "You need to create a menu first. One will be created automatically.",
+    "aiObjectivePlaceholder": "Objective (e.g.: lose weight, Mediterranean diet, vegan...)",
+    "applyToDiary": "Apply to diary",
+    "applyToDiaryDesc": "Menu meals will be added to your diary",
+    "startDate": "Start date",
+    "startDateDesc": "Meals will be distributed from this date according to the menu days.",
+    "searchRecipeDesc": "Search for a recipe to add to the menu"
   },
   "profile": {
     "title": "My Profile",

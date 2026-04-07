@@ -108,7 +108,12 @@
     "sending": "Envoi...",
     "apply": "Appliquer",
     "applied": "Appliqué",
-    "clear": "Effacer"
+    "clear": "Effacer",
+    "create": "Créer",
+    "creating": "Création...",
+    "generating": "Génération...",
+    "generate": "Générer",
+    "applying": "Application..."
   },
   "auth": {
     "login": "Se connecter",
@@ -296,7 +301,9 @@
     "tryOtherSearch": "Essayez un autre nom ou ingrédient",
     "createFirst": "Créez votre première recette",
     "tryFilters": "Essayez de changer les filtres",
-    "clearSearch": "Effacer la recherche"
+    "clearSearch": "Effacer la recherche",
+    "disclaimer": "Les recettes BuddyMarket sont indicatives. Consultez un professionnel de la nutrition.",
+    "allSeen": "Toutes les recettes vues"
   },
   "menus": {
     "title": "Planificateur",
@@ -347,7 +354,28 @@
     "exploreLibrary": "Explorer la bibliothèque",
     "inProgress": "En cours",
     "ai": "IA",
-    "applyMenuToDiary": "Appliquer \"{{name}}\" au journal alimentaire"
+    "applyMenuToDiary": "Appliquer \"{{name}}\" au journal alimentaire",
+    "createList": "Créer une liste",
+    "disclaimer": "Les menus générés par IA sont indicatifs. Consultez un nutritionniste.",
+    "menuCreated": "Menu créé",
+    "recipeAdded": "Recette ajoutée au menu",
+    "recipeRemoved": "Recette supprimée du menu",
+    "basedOnRecipes": "Basée sur les recettes de ce menu",
+    "noResults": "Aucun résultat pour",
+    "errorAddRecipe": "Erreur lors de l'ajout de la recette",
+    "errorApplyDiary": "Erreur lors de l'application du menu au journal",
+    "errorGenerate": "Erreur lors de la génération du menu",
+    "createFirst": "Créez d'abord un menu",
+    "createFirstRecipes": "Créez d'abord un menu pour ajouter des recettes",
+    "errorPrepare": "Erreur lors de la préparation du menu",
+    "mealsAddedToDiary": "repas ajoutés au journal depuis",
+    "needMenuFirst": "Vous devez d'abord créer un menu. Un menu sera créé automatiquement.",
+    "aiObjectivePlaceholder": "Objectif (ex: perdre du poids, régime méditerranéen, végétalien...)",
+    "applyToDiary": "Appliquer au journal",
+    "applyToDiaryDesc": "Les repas du menu seront ajoutés à votre journal",
+    "startDate": "Date de début",
+    "startDateDesc": "Les repas seront distribués à partir de cette date selon les jours du menu.",
+    "searchRecipeDesc": "Recherchez une recette à ajouter au menu"
   },
   "profile": {
     "title": "Mon profil",

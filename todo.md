@@ -1683,3 +1683,14 @@
 - [ ] BUG-10: Botones de menús no están bien centrados - pendiente de identificar ubicación exacta del problema
 - [x] FEAT-04: Mis Menús y Mis Listas de la Compra ya tienen opción de repetir y borrar (implementado en sprint anterior)
 - [x] BUG-11: Error 404 corregido en ActiveMenu.tsx - validación de shoppingListId>0, manejo de listas vacías, fallback a /app/shopping-lists
+
+## Revisión QA completa (flujo usuario: registro → menús → lista compra → recetas)
+- [x] Corregir "Create list" en inglés → "Crear lista" en Menus.tsx
+- [x] Corregir disclaimer en inglés en Menus.tsx → español
+- [x] Corregir disclaimer en inglés en Recipes.tsx → español
+- [x] Corregir "Hi, I'm BuddyIA" en inglés → "Hola, soy BuddyIA" en BuddyIA.tsx
+- [x] Corregir "Error applying menu to diary." en inglés → español en BuddyIA.tsx
+- [x] Corregir "Error saving menu. Make sure you are connected." en inglés → español en BuddyIA.tsx
+- [x] Corregir "Menu saved in My Menus!" en inglés → español en BuddyIA.tsx
+- [x] Corregir contador de recetas en header: mostrar número real en vez de "427 recipes available"
+- [x] Añadir claves de traducción faltantes en todos los idiomas (es, en, fr, it): menus.createList, menus.disclaimer, recipes.disclaimer, common.create, common.creating, common.generating, common.generate, common.applying, recipes.available

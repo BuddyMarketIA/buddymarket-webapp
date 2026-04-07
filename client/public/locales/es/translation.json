@@ -119,7 +119,12 @@
     "sending": "Enviando...",
     "apply": "Aplicar",
     "applied": "Aplicado",
-    "clear": "Limpiar"
+    "clear": "Limpiar",
+    "create": "Crear",
+    "creating": "Creando...",
+    "generating": "Generando...",
+    "generate": "Generar",
+    "applying": "Aplicando..."
   },
   "auth": {
     "login": "Iniciar sesión",
@@ -307,7 +312,9 @@
     "tryOtherSearch": "Prueba con otro nombre o ingrediente",
     "createFirst": "Crea tu primera receta",
     "tryFilters": "Prueba cambiando los filtros",
-    "clearSearch": "Limpiar búsqueda"
+    "clearSearch": "Limpiar búsqueda",
+    "disclaimer": "Las recetas de BuddyMarket son orientativas. Consulta a un profesional de la nutrición.",
+    "allSeen": "Todas las recetas vistas"
   },
   "menus": {
     "title": "Planificador",
@@ -358,7 +365,28 @@
     "exploreLibrary": "Explorar biblioteca",
     "inProgress": "En curso",
     "ai": "IA",
-    "applyMenuToDiary": "Aplicar \"{{name}}\" al diario de comidas"
+    "applyMenuToDiary": "Aplicar \"{{name}}\" al diario de comidas",
+    "createList": "Crear lista",
+    "disclaimer": "Los menús generados por IA son orientativos. Consulta a un nutricionista profesional.",
+    "menuCreated": "Menú creado",
+    "recipeAdded": "Receta añadida al menú",
+    "recipeRemoved": "Receta eliminada del menú",
+    "basedOnRecipes": "Basada en las recetas de este menú",
+    "noResults": "Sin resultados para",
+    "errorAddRecipe": "Error al añadir la receta",
+    "errorApplyDiary": "Error al aplicar el menú al diario",
+    "errorGenerate": "Error al generar el menú",
+    "createFirst": "Crea primero un menú",
+    "createFirstRecipes": "Crea primero un menú para añadir recetas",
+    "errorPrepare": "Error al preparar el menú",
+    "mealsAddedToDiary": "comidas añadidas al diario desde",
+    "needMenuFirst": "Necesitas crear un menú primero. Se creará uno automáticamente.",
+    "aiObjectivePlaceholder": "Objetivo (ej: perder peso, dieta mediterránea, vegano...)",
+    "applyToDiary": "Aplicar al diario",
+    "applyToDiaryDesc": "Las comidas del menú se añadirán a tu diario",
+    "startDate": "Fecha de inicio",
+    "startDateDesc": "Las comidas se distribuirán desde esta fecha según los días del menú.",
+    "searchRecipeDesc": "Busca una receta para añadir al menú"
   },
   "profile": {
     "title": "Mi Perfil",

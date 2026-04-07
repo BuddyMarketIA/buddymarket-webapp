@@ -221,7 +221,7 @@ function ChatView({ onBack }: { onBack: () => void }) {
           <div className="space-y-4">
             <div className="text-center py-6">
               <div className="w-14 h-14 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white text-2xl mx-auto mb-3">🤖</div>
-              <p className="font-semibold">{"Hi, I'm BuddyIA"}</p>
+              <p className="font-semibold">{"Hola, soy BuddyIA"}</p>
               <p className="text-sm text-muted-foreground mt-1">¿En qué puedo ayudarte hoy?</p>
             </div>
             <div className="space-y-2">
@@ -984,7 +984,7 @@ function MenuResultView({
     },
     onError: () => {
       setApplying(false);
-      toast.error("Error applying menu to diary.");
+      toast.error("Error al aplicar el menú al diario.");
     },
   });
 
@@ -1011,11 +1011,11 @@ function MenuResultView({
       setSaved(true);
       setSavedMenuId(data.menuId);
       setShowSaveModal(true);
-      toast.success("Menu saved in My Menus!");
+      toast.success("✅ Menú guardado en Mis Menús");
       onSaved(data.menuId);
       utils.menus.list.invalidate();
     },
-    onError: () => toast.error("Error saving menu. Make sure you are connected."),
+    onError: () => toast.error("Error al guardar el menú. Comprueba tu conexión."),
   });
 
   const handleCreateShoppingList = () => {
