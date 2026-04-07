@@ -1699,3 +1699,9 @@
 - [x] Diagnosticar por qué el SSO falla al iniciar sesión: el modal TyC usaba `<label onClick>` que causaba navegación a /terms al hacer clic en el checkbox
 - [x] Corregir el flujo OAuth para SSO: reemplazados labels con botones independientes para los checkboxes
 - [x] Verificar que el login funciona correctamente en dev (flujo Google OAuth redirect 302 OK)
+
+## Bugs Críticos Registro/Perfil (08/04/2026)
+- [x] BUG-PHONE-01: Twilio OTP permite crear múltiples cuentas con el mismo número de teléfono — CORREGIDO: verifyPhoneOTP busca primero por phone y luego por openId antes de crear cuenta nueva
+- [x] BUG-ONBOARD-02: Onboarding (BuddySetup) se repite para usuarios existentes que ya completaron el perfil — CORREGIDO: BuddySetup detecta si el perfil ya tiene datos completos y redirige al dashboard automáticamente
+- [x] BUG-ONBOARD-03: Al rechazar la generación de menú en el onboarding, igual navega como si fuera a generar uno — CORREGIDO: mensaje de éxito diferente según generateMenu true/false
+- [x] BUG-CALORIES-04: El contador de calorías del dashboard no se actualiza al cambiar el déficit calórico en el perfil — CORREGIDO: updateProfile recalcula dailyCalorieGoal con fórmula Mifflin-St Jeor + ajuste por weightChangeRate

@@ -243,7 +243,16 @@ export default function BuddySetup() {
     if (p.gender && p.age && p.height && p.weight) {
       setPhysicalDataPrefilled(true);
     }
-  }, [existingProfile]);
+    // If profile is already complete (has goal + physical data), skip onboarding entirely
+    if (p.mainGoal && p.gender && p.age && p.height && p.weight && p.activityLevel) {
+      // Mark onboarding as completed silently and redirect to dashboard
+      completeOnboarding.mutate(
+        { mainGoal: p.mainGoal as any, gender: p.gender as any, age: p.age, heightCm: p.height, weightKg: p.weight, activityLevel: p.activityLevel as any, generateMenu: false },
+        { onSuccess: () => setLocation("/app/dashboard"), onError: () => setLocation("/app/dashboard") }
+      );
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [existingProfile?.profile?.mainGoal, existingProfile?.profile?.gender, existingProfile?.profile?.age, existingProfile?.profile?.height, existingProfile?.profile?.weight, existingProfile?.profile?.activityLevel]);
 
   const totalSteps = 6;
 
@@ -345,7 +354,11 @@ export default function BuddySetup() {
       <div className="fixed inset-0 flex flex-col items-center justify-center bg-[#fdf8f3] px-6 text-center">
         <div className="mb-6 text-7xl animate-bounce">🎉</div>
         <h1 className="mb-3 text-3xl font-extrabold text-gray-900">¡Todo listo!</h1>
-        <p className="text-gray-500">Tu primer menú personalizado está siendo preparado.<br />Redirigiendo al Dashboard…</p>
+        {data.generateMenu ? (
+          <p className="text-gray-500">Tu primer menú personalizado está siendo preparado.<br />Redirigiendo al Dashboard…</p>
+        ) : (
+          <p className="text-gray-500">Tu perfil ha sido configurado correctamente.<br />Redirigiendo al Dashboard…</p>
+        )}
       </div>
     );
   }

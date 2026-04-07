@@ -364,12 +364,15 @@ export const appRouter = router({
         }
         await db.markPhoneOtpTokenUsed(token.id);
         const openId = `phone:${phone}`;
-        let user = await db.getUserByPhone(phone);
+        // First look up by phone field (covers all login methods that stored the phone)
+        let user = await db.getUserByPhone(phone) ?? await db.getUserByOpenId(openId);
         if (!user) {
+          // New user — create account
           await db.upsertUser({ openId, phone, loginMethod: "phone", lastSignedIn: new Date() });
-          user = await db.getUserByPhone(phone);
+          user = await db.getUserByPhone(phone) ?? await db.getUserByOpenId(openId);
         } else {
-          await db.updateUser(user.id, { lastSignedIn: new Date(), loginMethod: "phone" });
+          // Existing user — update last sign-in and ensure phone is stored
+          await db.updateUser(user.id, { lastSignedIn: new Date(), loginMethod: "phone", phone });
         }
         if (!user) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Error al crear la sesión." });
         const sessionToken = await sdk.createSessionToken(user.openId ?? openId, {
@@ -701,7 +704,39 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ ctx, input }) => {
-        await db.upsertUserProfile(ctx.user.id, input);
+        // Recalculate dailyCalorieGoal when physical data changes
+        const profileData: typeof input & { dailyCalorieGoal?: number } = { ...input };
+        const hasPhysicalData = input.height || input.weight || input.age || input.gender || input.activityLevel || input.mainGoal || input.weightChangeRate;
+        if (hasPhysicalData) {
+          // Get existing profile to fill in missing values
+          const existing = await db.getUserProfile(ctx.user.id);
+          const height = input.height ?? existing?.height;
+          const weight = input.weight ?? existing?.weight;
+          const age = input.age ?? (existing?.birthYear ? new Date().getFullYear() - existing.birthYear : undefined);
+          const gender = input.gender ?? existing?.gender;
+          const activityLevel = input.activityLevel ?? existing?.activityLevel ?? 'moderate';
+          const mainGoal = input.mainGoal ?? existing?.mainGoal;
+          const weightChangeRate = input.weightChangeRate ?? existing?.weightChangeRate ?? 0.5;
+          if (height && weight && age && gender) {
+            // Mifflin-St Jeor formula
+            const tmb = 10 * weight + 6.25 * height - 5 * age + (gender === 'male' ? 5 : -161);
+            const activityFactors: Record<string, number> = {
+              sedentary: 1.2, light: 1.375, moderate: 1.55, active: 1.725, very_active: 1.9
+            };
+            const tdee = Math.round(tmb * (activityFactors[activityLevel] ?? 1.55));
+            // Apply deficit/surplus based on goal and rate
+            const weeklyKcalPerKg = 7700; // ~7700 kcal per kg of body weight
+            const dailyAdjustment = Math.round((weightChangeRate * weeklyKcalPerKg) / 7);
+            if (mainGoal === 'lose_weight') {
+              profileData.dailyCalorieGoal = Math.max(1200, tdee - dailyAdjustment);
+            } else if (mainGoal === 'gain_muscle') {
+              profileData.dailyCalorieGoal = tdee + dailyAdjustment;
+            } else {
+              profileData.dailyCalorieGoal = tdee;
+            }
+          }
+        }
+        await db.upsertUserProfile(ctx.user.id, profileData);
         return { success: true };
       }),
 
