@@ -43,9 +43,22 @@ export default function WelcomeLanguageModal() {
     const detected = detectBrowserLanguage();
     setDetectedLang(detected);
     setSelected(detected);
-    // Small delay for a smoother first-paint experience
-    const timer = setTimeout(() => setOpen(true), 800);
-    return () => clearTimeout(timer);
+
+    const COOKIE_CONSENT_KEY = "buddymarket_cookie_consent";
+    const cookiesAlreadyAccepted = !!localStorage.getItem(COOKIE_CONSENT_KEY);
+
+    if (cookiesAlreadyAccepted) {
+      // Cookies ya aceptadas en visita anterior → mostrar idioma directamente
+      const timer = setTimeout(() => setOpen(true), 600);
+      return () => clearTimeout(timer);
+    } else {
+      // Esperar a que el usuario resuelva el banner de cookies primero
+      const handleCookieDone = () => {
+        setTimeout(() => setOpen(true), 400);
+      };
+      window.addEventListener("cookieConsentDone", handleCookieDone);
+      return () => window.removeEventListener("cookieConsentDone", handleCookieDone);
+    }
   }, []);
 
   const handleConfirm = () => {

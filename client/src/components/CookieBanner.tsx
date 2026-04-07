@@ -52,21 +52,27 @@ export default function CookieBanner() {
 
   if (!visible) return null;
 
+  const dismissBanner = () => {
+    setVisible(false);
+    // Notificar al WelcomeLanguageModal que puede mostrarse ahora
+    window.dispatchEvent(new CustomEvent("cookieConsentDone"));
+  };
+
   const handleAcceptAll = () => {
     const all: CookiePreferences = { necessary: true, analytics: true, marketing: true };
     storeConsent(all);
-    setVisible(false);
+    dismissBanner();
   };
 
   const handleRejectAll = () => {
     const minimal: CookiePreferences = { necessary: true, analytics: false, marketing: false };
     storeConsent(minimal);
-    setVisible(false);
+    dismissBanner();
   };
 
   const handleSavePrefs = () => {
     storeConsent(prefs);
-    setVisible(false);
+    dismissBanner();
   };
 
   const lang = i18n.language?.slice(0, 2) || "es";

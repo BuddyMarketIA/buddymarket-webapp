@@ -1559,3 +1559,4 @@
 - [ ] Componente `BadgeUnlockedToast` — toast especial animado al ganar una insignia
 - [ ] Panel admin con estadísticas de insignias más ganadas y ranking de usuarios
 - [ ] Ruta `/app/badges` registrada en App.tsx y enlace en el sidebar de AppLayout
+- [x] Corregir secuencia banners: cookies primero, idioma después (no simultáneos)
