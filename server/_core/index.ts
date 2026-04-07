@@ -22,6 +22,7 @@ import { storagePut } from "../storage";
 import logger from "./logger";
 import { registerMetricsRoutes } from "./metrics";
 import { startPerformanceWatchdog, sendStartupAlert, startSupabaseMonitor } from "./alerts";
+import { registerOGRoutes } from "../og";
 
 // ─── Allowed origins ─────────────────────────────────────────────────────────
 const ALLOWED_ORIGINS = [
@@ -238,9 +239,10 @@ async function startServer() {
     return res.status(statusCode).json(health);
   });
 
-  // ─── Metrics endpoints ───────────────────────────────────
+   // ─── Metrics endpoints ───────────────────────────────────
   registerMetricsRoutes(app);
-
+  // ─── Open Graph (social media bots) ──────────────────────────────────────
+  registerOGRoutes(app);
   // ─── tRPC API ─────────────────────────────────────────────────────────────
   app.use(
     "/api/trpc",

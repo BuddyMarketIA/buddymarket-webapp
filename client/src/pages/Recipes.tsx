@@ -339,7 +339,10 @@ function RecipeCard({ recipe, searchQuery, isFav, onToggleFav }: { recipe: Recip
           {recipe.cuisineType && (
             <div style={{ marginTop: "6px" }}>
               <span style={{ fontSize: "13px", fontWeight: 700, color: "#F97316", background: "rgba(249,115,22,0.1)", borderRadius: "6px", padding: "2px 6px" }}>
-                {CUISINE_OPTIONS_KEYS.find((c: { value: string; key: string; emoji: string }) => c.value === recipe.cuisineType)?.emoji || "🌍"} {recipe.cuisineType}
+                {(() => {
+                  const opt = CUISINE_OPTIONS_KEYS.find((c: { value: string; key: string; emoji: string }) => c.value === recipe.cuisineType);
+                  return opt ? `${opt.emoji} ${t(`recipes.cuisine.${opt.key}`, opt.key)}` : `🌍 ${recipe.cuisineType}`;
+                })()}
               </span>
             </div>
           )}
@@ -518,8 +521,9 @@ export default function Recipes() {
     mealTime: mealTimeFilter || undefined,
     cuisineType: cuisineFilter || undefined,
     cookingMethod: cookingMethodFilter || undefined,
+    excludeUserAllergens: isAuthenticated ? true : undefined,
     limit: 20,
-  }), [debouncedSearch, showMyRecipes, user?.id, mealTimeFilter, cuisineFilter, cookingMethodFilter]);
+  }), [debouncedSearch, showMyRecipes, user?.id, mealTimeFilter, cuisineFilter, cookingMethodFilter, isAuthenticated]);
 
   // Sentinel ref for IntersectionObserver
   const sentinelRef = useRef<HTMLDivElement>(null);

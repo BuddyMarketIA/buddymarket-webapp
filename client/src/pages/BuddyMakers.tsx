@@ -174,7 +174,7 @@ function MakerCard({ row, onFollow, index }: { row: any; onFollow: (id: number) 
 function RecipeCard({ recipe }: { recipe: any }) {
   const mealTimeLabel: Record<string, string> = {
     desayuno: "Desayuno", comida: "Comida", cena: "Cena",
-    merienda: "Merienda", snack: "Snack", cualquiera: "",
+    merienda: "Merienda", snack: "Merienda", cualquiera: "",
   };
   const totalTime = (recipe.preparationTime ?? 0) + (recipe.cookTime ?? 0);
   return (

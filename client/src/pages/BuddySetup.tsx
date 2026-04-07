@@ -203,6 +203,7 @@ export default function BuddySetup() {
   const [direction, setDirection] = useState<"forward" | "back">("forward");
   const [generating, setGenerating] = useState(false);
   const [done, setDone] = useState(false);
+  const [physicalDataPrefilled, setPhysicalDataPrefilled] = useState(false);
 
   const [data, setData] = useState<SetupData>({
     mainGoal: "",
@@ -222,6 +223,27 @@ export default function BuddySetup() {
   });
 
   const completeOnboarding = trpc.profile.completeOnboarding.useMutation();
+  const { data: existingProfile } = trpc.profile.get.useQuery();
+
+  // Pre-fill data from existing profile (set during Registration)
+  useEffect(() => {
+    if (!existingProfile?.profile) return;
+    const p = existingProfile.profile;
+    setData(prev => ({
+      ...prev,
+      gender: (p.gender as "male" | "female" | "") || prev.gender,
+      age: p.age ?? prev.age,
+      heightCm: p.height ?? prev.heightCm,
+      weightKg: p.weight ?? prev.weightKg,
+      activityLevel: p.activityLevel ?? prev.activityLevel,
+      mainGoal: p.mainGoal ?? prev.mainGoal,
+      cookingLevel: p.cookingLevel ?? prev.cookingLevel,
+    }));
+    // If profile already has physical data, skip step 2
+    if (p.gender && p.age && p.height && p.weight) {
+      setPhysicalDataPrefilled(true);
+    }
+  }, [existingProfile]);
 
   const totalSteps = 6;
 
@@ -230,7 +252,9 @@ export default function BuddySetup() {
       setDirection("forward");
       setAnimating(true);
       setTimeout(() => {
-        setStep((s) => s + 1);
+        // Skip step 2 (physical data) if already prefilled from Registration
+        const nextStep = (step === 1 && physicalDataPrefilled) ? 3 : step + 1;
+        setStep(nextStep);
         setAnimating(false);
       }, 200);
     }
@@ -241,7 +265,9 @@ export default function BuddySetup() {
       setDirection("back");
       setAnimating(true);
       setTimeout(() => {
-        setStep((s) => s - 1);
+        // Skip step 2 (physical data) if already prefilled from Registration
+        const prevStep = (step === 3 && physicalDataPrefilled) ? 1 : step - 1;
+        setStep(prevStep);
         setAnimating(false);
       }, 200);
     }

@@ -1037,10 +1037,10 @@ export default function MealLog() {
                     <option key={dp.id} value={String(dp.id)}>{dp.nameEs}</option>
                   )) ?? (
                     <>
-                      <option value="1">{t("mealLog.breakfast", "Breakfast")}</option>
-                      <option value="2">{t("mealLog.lunch", "Lunch")}</option>
-                      <option value="3">{t("mealLog.snack", "Snack")}</option>
-                      <option value="4">{t("mealLog.dinner", "Dinner")}</option>
+                      <option value="1">{t("mealLog.breakfast", "Desayuno")}</option>
+                      <option value="2">{t("mealLog.lunch", "Almuerzo")}</option>
+                      <option value="3">{t("mealLog.snack", "Merienda")}</option>
+                      <option value="4">{t("mealLog.dinner", "Cena")}</option>
                     </>
                   )}
                 </select>

@@ -526,7 +526,7 @@ function MenuRow({ menu }: { menu: any }) {
 function MakerRecipeCard({ recipe }: { recipe: any }) {
   const mealTimeLabel: Record<string, string> = {
     desayuno: "Desayuno", comida: "Comida", cena: "Cena",
-    merienda: "Merienda", snack: "Snack", cualquiera: "",
+    merienda: "Merienda", snack: "Merienda", cualquiera: "",
   };
   const diffLabel: Record<string, string> = { easy: "Fácil", facil: "Fácil", medium: "Media", medio: "Media", hard: "Difícil", dificil: "Difícil" };
   const totalTime = (recipe.preparationTime ?? 0) + (recipe.cookTime ?? 0);

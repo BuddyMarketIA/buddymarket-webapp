@@ -462,8 +462,22 @@ export async function getRecipes(params: {
   if (userAllergenNames.length > 0) {
     const filtered = rows.filter(r => {
       try {
+        // 1. Check allergens JSON field
         const recipeAllergens: string[] = JSON.parse(r.allergens || '[]');
-        return !recipeAllergens.some(a => userAllergenNames.includes(a.toLowerCase()));
+        if (recipeAllergens.some(a => userAllergenNames.some(u => a.toLowerCase().includes(u) || u.includes(a.toLowerCase())))) {
+          return false;
+        }
+        // 2. Also search in ingredientsJson text for allergen names (covers seeded recipes)
+        const ingredientsText = (r.ingredientsJson || '').toLowerCase();
+        if (userAllergenNames.some(allergen => allergen.length > 2 && ingredientsText.includes(allergen))) {
+          return false;
+        }
+        // 3. Also check recipe name and description
+        const recipeText = `${r.name || ''} ${r.description || ''}`.toLowerCase();
+        if (userAllergenNames.some(allergen => allergen.length > 2 && recipeText.includes(allergen))) {
+          return false;
+        }
+        return true;
       } catch {
         return true;
       }

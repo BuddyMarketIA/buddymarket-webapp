@@ -1666,3 +1666,20 @@
 - [x] Menús.tsx: botón de IA bloqueado para usuarios free con redirect a suscripción
 - [x] Recipes.tsx: botón de crear receta bloqueado para usuarios free con redirect a suscripción
 - [x] EventMenuPlanner: 1 evento gratis para usuarios free, bloqueado con CTA a Pro cuando se alcanza el límite
+
+## Sprint Bugs y Mejoras - Petición 07/04/2026 19:42h
+- [x] BUG-01: SSO Google - flujo OAuth redirect funciona; problema de dominio en Google Console (requiere configuración externa)
+- [x] BUG-02: TyC obligatorio en SSO Google/Apple - SSOTermsModal ya implementado en LoginPage.tsx
+- [x] BUG-03: BuddySetup ahora pre-rellena datos del perfil existente y salta StepPhysical si ya están completos
+- [x] BUG-04: Menú inicial no obligatorio - BuddySetup pre-rellena datos y no repite pasos completados
+- [x] BUG-05: Género pre-rellenado desde perfil en BuddySetup, no se vuelve a pedir si ya está guardado
+- [x] BUG-06: Alergias filtradas en db.getRecipes buscando en allergens + ingredientsJson; Recipes.tsx pasa excludeUserAllergens:true
+- [x] FEAT-01: Botón guardar receta adaptada ya implementado en RecipeDetail.tsx
+- [x] BUG-07: cuisineType en Recipes.tsx ahora muestra emoji + etiqueta traducida de CUISINE_OPTIONS
+- [x] BUG-08: Fallbacks en inglés corregidos en MealLog.tsx, BuddyMakers.tsx, BuddyProfile.tsx, MenuLibrary.tsx
+- [x] FEAT-02: Open Graph dinámico implementado en server/og.ts - detecta bots y devuelve meta tags con imagen de receta o logo BuddyMarket
+- [x] BUG-09: Strings en inglés corregidos (Snack→Merienda, Breakfast→Desayuno, etc.) en múltiples archivos
+- [x] FEAT-03: Formulario de recetas ya tiene ingredientes con cantidades y cálculo nutricional automático con IA (calculateNutrition)
+- [ ] BUG-10: Botones de menús no están bien centrados - pendiente de identificar ubicación exacta del problema
+- [x] FEAT-04: Mis Menús y Mis Listas de la Compra ya tienen opción de repetir y borrar (implementado en sprint anterior)
+- [x] BUG-11: Error 404 corregido en ActiveMenu.tsx - validación de shoppingListId>0, manejo de listas vacías, fallback a /app/shopping-lists

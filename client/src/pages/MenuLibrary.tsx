@@ -590,7 +590,7 @@ function MenuDetailDialog({
     lunch: "Comida",
     afternoon_snack: "Merienda",
     dinner: "Cena",
-    snack: "Snack",
+    snack: "Merienda",
   };
   const DAY_NAMES = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
 

@@ -312,7 +312,7 @@ export default function ActiveMenu() {
       // Fetch the generated list items to show in the modal
       utils.shoppingLists.list.invalidate();
       // Get the list items via getById
-      if (data.shoppingListId) {
+      if (data.shoppingListId && data.shoppingListId > 0) {
         try {
           const listData = await utils.shoppingLists.getById.fetch({ id: data.shoppingListId });
           const items: GeneratedListItem[] = (listData as any)?.items?.map((i: any) => ({
@@ -323,6 +323,12 @@ export default function ActiveMenu() {
             isPurchased: i.isPurchased ?? false,
             inPantry: i.inPantry ?? false,
           })) ?? [];
+          if (items.length === 0) {
+            // Lista vacía: las recetas del menú no tienen ingredientes definidos
+            toast.success("✅ Lista creada. Añade ingredientes a tus recetas para que aparezcan aquí.", { duration: 5000 });
+            navigate("/app/shopping-lists");
+            return;
+          }
           setGeneratedItems(items);
           if (selectedSupermarket === "mercadona") {
             setShowMercadonaModal(true);
@@ -339,9 +345,12 @@ export default function ActiveMenu() {
           }
         } catch {
           // Fallback: navigate to shopping lists
-          toast.success("¡Lista generada! Redirigiendo...");
+          toast.success("¡Lista generada! Ve a Mis Listas para verla.");
           navigate("/app/shopping-lists");
         }
+      } else {
+        toast.success("¡Lista generada! Ve a Mis Listas para verla.");
+        navigate("/app/shopping-lists");
       }
     },
     onError: (err) => {
