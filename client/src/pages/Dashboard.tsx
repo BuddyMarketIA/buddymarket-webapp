@@ -181,6 +181,21 @@ export default function Dashboard() {
     }
     prevAllCompleteRef.current = allMacrosComplete;
   }, [allMacrosComplete]);
+
+  // Handle subscription success redirect from Stripe checkout
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get('subscription') === 'success') {
+      toast.success('\u00a1Suscripci\u00f3n activada! Bienvenido a BuddyMarket Premium.', {
+        duration: 6000,
+        description: 'Ya tienes acceso a todas las funciones premium.',
+      });
+      const url = new URL(window.location.href);
+      url.searchParams.delete('subscription');
+      window.history.replaceState({}, '', url.toString());
+    }
+  }, []);
+
   // Subscription tier for contextual upgrade cardd
   const { tier, isFree, isPro, isProMax } = usePlan();
 

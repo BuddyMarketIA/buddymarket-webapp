@@ -2,7 +2,7 @@
   "applinks": {
     "details": [
       {
-        "appIDs": ["98XKBK9WR7.io.buddymarket.app"],
+        "appIDs": ["66G44X4PZ3.io.buddymarket.app"],
         "components": [
           {
             "/": "/auth/*",
@@ -33,9 +33,9 @@
     ]
   },
   "webcredentials": {
-    "apps": ["98XKBK9WR7.io.buddymarket.app"]
+    "apps": ["66G44X4PZ3.io.buddymarket.app"]
   },
   "activitycontinuation": {
-    "apps": ["98XKBK9WR7.io.buddymarket.app"]
+    "apps": ["66G44X4PZ3.io.buddymarket.app"]
   }
 }

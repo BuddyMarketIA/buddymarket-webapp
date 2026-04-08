@@ -110,13 +110,13 @@
 	<!-- ── URL Schemes (Sign in with Apple, Google OAuth) ─────── -->
 	<key>CFBundleURLTypes</key>
 	<array>
-		<!-- Google OAuth callback -->
+		<!-- Google OAuth callback (URL scheme = reversed Client ID) -->
 		<dict>
 			<key>CFBundleURLName</key>
 			<string>com.buddymarket.app.google</string>
 			<key>CFBundleURLSchemes</key>
 			<array>
-				<string>com.googleusercontent.apps.buddymarket</string>
+				<string>com.googleusercontent.apps.909562975875-l71herhk1vbmv8t6alqpjgr5b110novv</string>
 			</array>
 		</dict>
 		<!-- Deep link scheme -->
