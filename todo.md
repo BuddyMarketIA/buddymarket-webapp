@@ -1723,3 +1723,7 @@
 - [x] Corregir modal TyC del SSO: labels causaban navegación a /terms al hacer clic en checkbox
 - [x] Corregir etiquetas de dificultad "easy/medium/hard" en inglés en todas las páginas
 - [x] 675 tests pasando (28 archivos de test)
+
+## Bug crítico: OAuth Google + Teléfono duplicado
+- [ ] Configurar Google Cloud Console: añadir todos los redirect URIs de BuddyMarket
+- [ ] Corregir bug teléfono duplicado: mismo número no puede crear múltiples cuentas
