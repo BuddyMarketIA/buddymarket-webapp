@@ -1,88 +1,26 @@
 {
   "project_info": {
-    "project_number": "772473047296",
-    "project_id": "buddycoach-8231c",
-    "storage_bucket": "buddycoach-8231c.firebasestorage.app"
+    "project_number": "251375164955",
+    "project_id": "buddymarket-40926",
+    "storage_bucket": "buddymarket-40926.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:772473047296:android:365d2339c23b2188430be5",
-        "android_client_info": {
-          "package_name": "io.buddycoach.app"
-        }
-      },
-      "oauth_client": [
-        {
-          "client_id": "772473047296-of6ob9mvn71jc7je1kmg5jh7rba8k9g5.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
-      "api_key": [
-        {
-          "current_key": "AIzaSyCsNkWiyyyCiIcsYSaAwdwMwqgYopUfm7A"
-        }
-      ],
-      "services": {
-        "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "772473047296-of6ob9mvn71jc7je1kmg5jh7rba8k9g5.apps.googleusercontent.com",
-              "client_type": 3
-            },
-            {
-              "client_id": "772473047296-p1itimm0ijvk1toinjrchda7gatg9cac.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "io.buddymarket.app",
-                "app_store_id": "6761763637"
-              }
-            }
-          ]
-        }
-      }
-    },
-    {
-      "client_info": {
-        "mobilesdk_app_id": "1:772473047296:android:46d36a250f3cb5a7430be5",
+        "mobilesdk_app_id": "1:251375164955:android:a024227009152b09eba2be",
         "android_client_info": {
           "package_name": "io.buddymarket.app"
         }
       },
-      "oauth_client": [
-        {
-          "client_id": "772473047296-7ri0iv5aprsuvu6an4khh9bpvppfjbjh.apps.googleusercontent.com",
-          "client_type": 1,
-          "android_info": {
-            "package_name": "io.buddymarket.app"
-          }
-        },
-        {
-          "client_id": "772473047296-of6ob9mvn71jc7je1kmg5jh7rba8k9g5.apps.googleusercontent.com",
-          "client_type": 3
-        }
-      ],
+      "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCsNkWiyyyCiIcsYSaAwdwMwqgYopUfm7A"
+          "current_key": "AIzaSyDBCTs2wrWHeBq6TzHOf35CessUUdzd-N0"
         }
       ],
       "services": {
         "appinvite_service": {
-          "other_platform_oauth_client": [
-            {
-              "client_id": "772473047296-of6ob9mvn71jc7je1kmg5jh7rba8k9g5.apps.googleusercontent.com",
-              "client_type": 3
-            },
-            {
-              "client_id": "772473047296-p1itimm0ijvk1toinjrchda7gatg9cac.apps.googleusercontent.com",
-              "client_type": 2,
-              "ios_info": {
-                "bundle_id": "io.buddymarket.app",
-                "app_store_id": "6761763637"
-              }
-            }
-          ]
+          "other_platform_oauth_client": []
         }
       }
     }
