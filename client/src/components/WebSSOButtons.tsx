@@ -232,50 +232,39 @@ export default function WebSSOButtons({
   const _doAppleSignIn = async () => {
     setAppleLoading(true);
     try {
-      let identityToken: string;
-      let fullName: { givenName?: string; familyName?: string } | null = null;
-      let email: string | null = null;
-      let nonce: string | undefined;
-
       if (isIOSNative() && window.BuddyMarketAppleAuth) {
         // ── iOS native: usa el plugin Capacitor (AuthenticationServices) ──────
         const data = await window.BuddyMarketAppleAuth.signIn();
-        identityToken = data.identityToken;
-        nonce = data.nonce;
-        email = data.email ?? null;
-        fullName = data.fullName ?? null;
-      } else if (window.AppleID?.auth) {
-        // ── Web: usa Apple Sign In JS SDK (Safari / iOS Safari) ───────────────
-        const data = await window.AppleID.auth.signIn();
-        identityToken = data.authorization.id_token;
-        fullName = data.user?.name
-          ? { givenName: data.user.name.firstName, familyName: data.user.name.lastName }
-          : null;
-        email = data.user?.email ?? null;
+        const identityToken = data.identityToken;
+        const nonce = data.nonce;
+        const email = data.email ?? null;
+        const fullName = data.fullName ?? null;
+
+        const res = await fetch("/api/auth/apple", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          credentials: "include",
+          body: JSON.stringify({ identityToken, fullName, email, nonce }),
+        });
+
+        if (!res.ok) {
+          const err = await res.json() as { error?: string };
+          throw new Error(err.error ?? "Error al iniciar sesión con Apple");
+        }
+
+        toast.success("Sesión iniciada con Apple", { description: "Bienvenido a BuddyMarket" });
+        onSuccess?.();
+        setTimeout(() => window.location.reload(), 500);
       } else {
-        toast.error("Apple Sign In no disponible", { description: "Usa Safari o un dispositivo Apple" });
-        return;
+        // ── Web: flujo redirect OAuth estándar (funciona en todos los navegadores) ───
+        const origin = window.location.origin;
+        const returnPath = window.location.pathname !== "/login" ? window.location.pathname : "/";
+        const url = `/api/auth/apple/login?origin=${encodeURIComponent(origin)}&returnPath=${encodeURIComponent(returnPath)}`;
+        window.location.assign(url);
       }
-
-      const res = await fetch("/api/auth/apple", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        credentials: "include",
-        body: JSON.stringify({ identityToken, fullName, email, nonce }),
-      });
-
-      if (!res.ok) {
-        const err = await res.json() as { error?: string };
-        throw new Error(err.error ?? "Error al iniciar sesión con Apple");
-      }
-
-      toast.success("Sesión iniciada con Apple", { description: "Bienvenido a BuddyMarket" });
-      onSuccess?.();
-      setTimeout(() => window.location.reload(), 500);
     } catch (err: any) {
       if (err?.message === "popup_closed_by_user" || err?.error === "popup_closed_by_user") return;
       toast.error("Error con Apple", { description: err.message });
-    } finally {
       setAppleLoading(false);
     }
   };

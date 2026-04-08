@@ -13,11 +13,41 @@ import type { Express, Request, Response } from "express";
 import { OAuth2Client } from "google-auth-library";
 import appleSignin from "apple-signin-auth";
 import { createHash } from "crypto";
+import { SignJWT, importPKCS8 } from "jose";
 import * as db from "./db";
 import { sdk } from "./_core/sdk";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import { ENV } from "./_core/env";
+
+// ─── Apple OAuth Web Flow helpers ────────────────────────────────────────────
+
+async function generateAppleClientSecret(): Promise<string> {
+  const keyId = process.env.APPLE_KEY_ID ?? "";
+  const teamId = process.env.APPLE_TEAM_ID ?? "";
+  const clientId = process.env.APPLE_CLIENT_ID ?? "com.buddymarket.web";
+  const privateKeyPem = process.env.APPLE_PRIVATE_KEY ?? "";
+
+  if (!keyId || !teamId || !privateKeyPem) {
+    throw new Error("Apple Sign In not configured: missing APPLE_KEY_ID, APPLE_TEAM_ID, or APPLE_PRIVATE_KEY");
+  }
+
+  // Normalise PEM: env vars may use \\n literal instead of real newlines
+  const normalizedKey = privateKeyPem.replace(/\\n/g, "\n");
+  const privateKey = await importPKCS8(normalizedKey, "ES256");
+
+  const now = Math.floor(Date.now() / 1000);
+  const clientSecret = await new SignJWT({})
+    .setProtectedHeader({ alg: "ES256", kid: keyId })
+    .setIssuer(teamId)
+    .setIssuedAt(now)
+    .setExpirationTime(now + 15777000) // ~6 months
+    .setAudience("https://appleid.apple.com")
+    .setSubject(clientId)
+    .sign(privateKey);
+
+  return clientSecret;
+}
 
 // ─── Google OAuth2 Client ─────────────────────────────────────────────────────
 // GOOGLE_CLIENT_ID es el Client ID web principal (también acepta los de iOS/Android)
@@ -115,6 +145,122 @@ export function registerSSORoutes(app: Express) {
     } catch (err: any) {
       console.error("[SSO] Apple token verification failed:", err?.message);
       res.status(401).json({ error: "Token de Apple inválido o expirado" });
+    }
+  });
+
+  // ── Sign in with Apple — OAuth Redirect Flow (Web) ────────────────────────────
+  // GET /api/auth/apple/login  → redirige a Apple OAuth
+  app.get("/api/auth/apple/login", (req: Request, res: Response) => {
+    const clientId = process.env.APPLE_CLIENT_ID ?? "com.buddymarket.web";
+    const keyId = process.env.APPLE_KEY_ID ?? "";
+    const teamId = process.env.APPLE_TEAM_ID ?? "";
+    if (!keyId || !teamId) {
+      res.status(500).json({ error: "Apple Sign In not configured" });
+      return;
+    }
+    const origin = (req.query.origin as string) || `${req.protocol}://${req.get("host")}`;
+    const redirectUri = `${origin}/api/auth/apple/callback`;
+    const state = Buffer.from(JSON.stringify({ origin, returnPath: req.query.returnPath ?? "/" })).toString("base64url");
+    const params = new URLSearchParams({
+      client_id: clientId,
+      redirect_uri: redirectUri,
+      response_type: "code",
+      scope: "name email",
+      state,
+      response_mode: "form_post",
+    });
+    res.redirect(`https://appleid.apple.com/auth/authorize?${params.toString()}`);
+  });
+
+  // POST /api/auth/apple/callback → intercambia code por tokens y crea sesión
+  app.post("/api/auth/apple/callback", async (req: Request, res: Response) => {
+    const { code, state, error, id_token, user: userJson } = req.body as {
+      code?: string;
+      state?: string;
+      error?: string;
+      id_token?: string;
+      user?: string;
+    };
+
+    let origin = `${req.protocol}://${req.get("host")}`;
+    let returnPath = "/";
+    try {
+      if (state) {
+        const parsed = JSON.parse(Buffer.from(state, "base64url").toString());
+        origin = parsed.origin ?? origin;
+        returnPath = parsed.returnPath ?? "/";
+      }
+    } catch { /* ignore parse errors */ }
+
+    if (error || !code) {
+      res.redirect(`${origin}/login?error=apple_cancelled`);
+      return;
+    }
+
+    try {
+      const clientId = process.env.APPLE_CLIENT_ID ?? "com.buddymarket.web";
+      const redirectUri = `${origin}/api/auth/apple/callback`;
+      const clientSecret = await generateAppleClientSecret();
+
+      // Intercambiar code por tokens
+      const tokenRes = await fetch("https://appleid.apple.com/auth/token", {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({
+          code: code as string,
+          client_id: clientId,
+          client_secret: clientSecret,
+          redirect_uri: redirectUri,
+          grant_type: "authorization_code",
+        }).toString(),
+      });
+
+      const tokens = await tokenRes.json() as {
+        id_token?: string;
+        access_token?: string;
+        error?: string;
+        error_description?: string;
+      };
+
+      if (tokens.error || !tokens.id_token) {
+        throw new Error(tokens.error_description ?? tokens.error ?? "No id_token in Apple response");
+      }
+
+      // Verificar el ID token de Apple
+      const applePayload = await appleSignin.verifyIdToken(tokens.id_token, {
+        audience: clientId,
+      });
+
+      const appleUserId = applePayload.sub;
+      const openId = `apple:${appleUserId}`;
+
+      // Apple solo envía nombre en el PRIMER login (via form_post body)
+      let userName: string | null = null;
+      let userEmail: string | null = applePayload.email ?? null;
+      if (userJson) {
+        try {
+          const parsedUser = JSON.parse(userJson) as {
+            name?: { firstName?: string; lastName?: string };
+            email?: string;
+          };
+          const firstName = parsedUser.name?.firstName ?? "";
+          const lastName = parsedUser.name?.lastName ?? "";
+          userName = [firstName, lastName].filter(Boolean).join(" ") || null;
+          userEmail = parsedUser.email ?? userEmail;
+        } catch { /* ignore */ }
+      }
+
+      await createSessionAndSetCookie(req, res, {
+        openId,
+        name: userName,
+        email: userEmail,
+        loginMethod: "apple",
+      });
+      console.log(`[SSO] Apple OAuth redirect login: ${openId} (${userEmail})`);
+      res.redirect(`${origin}${returnPath}`);
+    } catch (err: any) {
+      console.error("[SSO] Apple OAuth callback error:", err?.message);
+      res.redirect(`${origin}/login?error=apple_failed`);
     }
   });
 

@@ -1727,3 +1727,13 @@
 ## Bug crítico: OAuth Google + Teléfono duplicado
 - [ ] Configurar Google Cloud Console: añadir todos los redirect URIs de BuddyMarket
 - [ ] Corregir bug teléfono duplicado: mismo número no puede crear múltiples cuentas
+
+## Feature: Sign in with Apple
+- [ ] Backend: rutas /api/auth/apple/login y /api/auth/apple/callback
+- [ ] Backend: generación de client_secret JWT con clave privada de Apple (ES256)
+- [ ] Backend: intercambio de authorization_code por tokens de Apple
+- [ ] Backend: extracción de user info del id_token JWT de Apple
+- [ ] Backend: upsert de usuario con openId apple:SUB
+- [ ] Frontend: botón "Continuar con Apple" en LoginPage
+- [ ] Frontend: botón "Continuar con Apple" en LandingPage
+- [ ] Verificar flujo completo en dev
