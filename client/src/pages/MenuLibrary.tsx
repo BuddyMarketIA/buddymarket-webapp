@@ -1163,7 +1163,7 @@ export default function MenuLibrary() {
       {/* Quick Shopping List Modal */}
       {shoppingMenu && (
         <div
-          className="fixed inset-0 z-50 flex items-end sm:items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
           onClick={(e) => { if (e.target === e.currentTarget) setShoppingMenu(null); }}
         >
           <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl">
@@ -1182,7 +1182,7 @@ export default function MenuLibrary() {
               <div className="flex items-center gap-4 rounded-2xl bg-gray-50 p-3">
                 <button
                   onClick={() => setShoppingPersons(Math.max(1, shoppingPersons - 1))}
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm text-lg font-bold text-gray-600"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F97316] shadow-sm text-lg font-bold text-white"
                 >
                   −
                 </button>
