@@ -1197,13 +1197,13 @@ Devuelve SOLO JSON válido con esta estructura:
       if (!profile) return null;
       return {
         dietType: profile.menuDietType ?? undefined,
-        allergies: profile.menuAllergies ? JSON.parse(profile.menuAllergies) : [],
-        restrictions: profile.menuRestrictions ? JSON.parse(profile.menuRestrictions) : [],
+        allergies: profile.menuAllergies ? (() => { try { return JSON.parse(profile.menuAllergies!); } catch { return []; } })() : [],
+        restrictions: profile.menuRestrictions ? (() => { try { return JSON.parse(profile.menuRestrictions!); } catch { return []; } })() : [],
         dislikedFoods: profile.menuDislikedFoods ?? "",
         proteinSource: profile.menuProteinSource ?? undefined,
         cookingTime: profile.menuCookingTime ?? undefined,
         cookingSkill: profile.menuCookingSkill ?? undefined,
-        kitchenEquipment: profile.menuKitchenEquipment ? JSON.parse(profile.menuKitchenEquipment) : [],
+        kitchenEquipment: profile.menuKitchenEquipment ? (() => { try { return JSON.parse(profile.menuKitchenEquipment!); } catch { return []; } })() : [],
         supplementsUsed: profile.menuSupplements ?? "",
         specialNotes: profile.menuSpecialNotes ?? "",
         persons: profile.menuPersons ?? 1,
@@ -1552,11 +1552,12 @@ Devuelve SOLO JSON válido con esta estructura:
         })
       )
       .mutation(async ({ ctx, input }) => {
-        const response = await invokeLLM({
-          messages: [
-            {
-              role: "system",
-              content: `Eres un chef experto en nutrición. Genera recetas saludables y deliciosas en formato JSON. 
+        try {
+          const response = await invokeLLM({
+            messages: [
+              {
+                role: "system",
+                content: `Eres un chef experto en nutrición. Genera recetas saludables y deliciosas en formato JSON. 
               Responde SOLO con JSON válido con esta estructura:
               {
                 "name": "nombre de la receta",
@@ -1572,20 +1573,24 @@ Devuelve SOLO JSON válido con esta estructura:
                 "carbsPerServing": número en gramos,
                 "fatsPerServing": número en gramos
               }`,
-            },
-            {
-              role: "user",
-              content: `Genera una receta para: ${input.prompt}. ${input.servings ? `Para ${input.servings} personas.` : ""} ${input.maxTime ? `Tiempo máximo: ${input.maxTime} minutos.` : ""} ${input.difficulty ? `Dificultad: ${input.difficulty}.` : ""}`,
-            },
-          ],
-          response_format: { type: "json_object" },
-        });
-        const content = response.choices[0]?.message?.content as string | undefined;
-        if (!content) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Error generando receta con IA. Inténtalo de nuevo." });
-        try {
-          return JSON.parse(content);
-        } catch {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "La IA devolvió una respuesta inválida. Inténtalo de nuevo." });
+              },
+              {
+                role: "user",
+                content: `Genera una receta para: ${input.prompt}. ${input.servings ? `Para ${input.servings} personas.` : ""} ${input.maxTime ? `Tiempo máximo: ${input.maxTime} minutos.` : ""} ${input.difficulty ? `Dificultad: ${input.difficulty}.` : ""}`,
+              },
+            ],
+            response_format: { type: "json_object" },
+          });
+          const content = response.choices[0]?.message?.content as string | undefined;
+          if (!content) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Error generando receta con IA. Inténtalo de nuevo." });
+          try {
+            return JSON.parse(content);
+          } catch {
+            throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "La IA devolvió una respuesta inválida. Inténtalo de nuevo." });
+          }
+        } catch (err: any) {
+          if (err instanceof TRPCError) throw err;
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Error al generar la receta. El servicio de IA no está disponible en este momento. Inténtalo de nuevo." });
         }
       }),
 
@@ -1841,40 +1846,40 @@ Adapta esta receta eliminando los ingredientes prohibidos y sustituyéndolos por
         const ingredientsList = input.ingredients
           .map(i => `- ${i.quantity} ${i.unit} de ${i.name}`)
           .join("\n");
-        const response = await invokeLLM({
-          messages: [
-            {
-              role: "system",
-              content: "Eres un nutricionista experto. Calcula los valores nutricionales totales de una receta y devuelve JSON con los valores por porción. Responde SOLO con JSON válido, sin texto adicional.",
-            },
-            {
-              role: "user",
-              content: `Calcula los valores nutricionales por porción de esta receta (${servings} porciones en total).\n\nIngredientes:\n${ingredientsList}\n\nDevuelve SOLO este JSON:\n{"calories": <número>, "protein": <número>, "carbs": <número>, "fat": <número>}`,
-            },
-          ],
-          response_format: {
-            type: "json_schema",
-            json_schema: {
-              name: "nutrition_values",
-              strict: true,
-              schema: {
-                type: "object",
-                properties: {
-                  calories: { type: "number", description: "Calorías por porción (kcal)" },
-                  protein: { type: "number", description: "Proteínas por porción (g)" },
-                  carbs: { type: "number", description: "Carbohidratos por porción (g)" },
-                  fat: { type: "number", description: "Grasas por porción (g)" },
+        try {
+          const response = await invokeLLM({
+            messages: [
+              {
+                role: "system",
+                content: "Eres un nutricionista experto. Calcula los valores nutricionales totales de una receta y devuelve JSON con los valores por porción. Responde SOLO con JSON válido, sin texto adicional.",
+              },
+              {
+                role: "user",
+                content: `Calcula los valores nutricionales por porción de esta receta (${servings} porciones en total).\n\nIngredientes:\n${ingredientsList}\n\nDevuelve SOLO este JSON:\n{"calories": <número>, "protein": <número>, "carbs": <número>, "fat": <número>}`,
+              },
+            ],
+            response_format: {
+              type: "json_schema",
+              json_schema: {
+                name: "nutrition_values",
+                strict: true,
+                schema: {
+                  type: "object",
+                  properties: {
+                    calories: { type: "number", description: "Calorías por porción (kcal)" },
+                    protein: { type: "number", description: "Proteínas por porción (g)" },
+                    carbs: { type: "number", description: "Carbohidratos por porción (g)" },
+                    fat: { type: "number", description: "Grasas por porción (g)" },
+                  },
+                  required: ["calories", "protein", "carbs", "fat"],
+                  additionalProperties: false,
                 },
-                required: ["calories", "protein", "carbs", "fat"],
-                additionalProperties: false,
               },
             },
-          },
-        });
-        const rawContent = response?.choices?.[0]?.message?.content;
-        const raw = typeof rawContent === "string" ? rawContent : null;
-        if (!raw) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "No se pudo calcular la nutrición" });
-        try {
+          });
+          const rawContent = response?.choices?.[0]?.message?.content;
+          const raw = typeof rawContent === "string" ? rawContent : null;
+          if (!raw) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "No se pudo calcular la nutrición" });
           const parsed = JSON.parse(raw);
           return {
             calories: Math.round(parsed.calories ?? 0),
@@ -1882,8 +1887,9 @@ Adapta esta receta eliminando los ingredientes prohibidos y sustituyéndolos por
             carbs: Math.round((parsed.carbs ?? 0) * 10) / 10,
             fat: Math.round((parsed.fat ?? 0) * 10) / 10,
           };
-        } catch {
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Error al procesar la respuesta de nutrición" });
+        } catch (err: any) {
+          if (err instanceof TRPCError) throw err;
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Error al calcular la nutrición. Inténtalo de nuevo." });
         }
       }),
   }),
@@ -2075,11 +2081,12 @@ Adapta esta receta eliminando los ingredientes prohibidos y sustituyéndolos por
           dislikedIngredients: profile?.dislikedIngredients,
         });
 
-        const response = await invokeLLM({
-          messages: [
-            {
-              role: "system",
-              content: `Eres un nutricionista experto. Genera planes de menú semanales personalizados en formato JSON.
+        try {
+          const response = await invokeLLM({
+            messages: [
+              {
+                role: "system",
+                content: `Eres un nutricionista experto. Genera planes de menú semanales personalizados en formato JSON.
               Responde SOLO con JSON válido con esta estructura:
               {
                 "menuName": "nombre del menú",
@@ -2099,23 +2106,30 @@ Adapta esta receta eliminando los ingredientes prohibidos y sustituyéndolos por
                 ]
               }
               ${menuForbiddenBlock}`,
-            },
-            {
-              role: "user",
-              content: `Genera un menú para ${input.days} días con ${input.mealsPerDay} comidas por día.
+              },
+              {
+                role: "user",
+                content: `Genera un menú para ${input.days} días con ${input.mealsPerDay} comidas por día.
               ${profileInfo}
               ${allergyInfo}
               ${restrictionInfo}
               ${input.objective ? `Objetivo específico: ${input.objective}` : ""}
               ${input.preferences ? `Preferencias: ${input.preferences}` : ""}`,
-            },
-          ],
-          response_format: { type: "json_object" },
-        });
-
-        const content = response.choices[0]?.message?.content as string | undefined;
-        if (!content) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Error generando menú con IA" });
-        return JSON.parse(content);
+              },
+            ],
+            response_format: { type: "json_object" },
+          });
+          const content = response.choices[0]?.message?.content as string | undefined;
+          if (!content) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Error generando menú con IA" });
+          try {
+            return JSON.parse(content);
+          } catch {
+            throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "La IA devolvió una respuesta inválida. Inténtalo de nuevo." });
+          }
+        } catch (err: any) {
+          if (err instanceof TRPCError) throw err;
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Error al generar el menú con IA. Inténtalo de nuevo." });
+        }
       }),
     // ── Library: predefined seeded menus ─────────────────────────────────────────
     library: publicProcedure
@@ -2986,7 +3000,7 @@ Adapta esta receta eliminando los ingredientes prohibidos y sustituyéndolos por
           .orderBy(desc(shoppingListTemplates.createdAt));
         return templates.map(t => ({
           ...t,
-          items: JSON.parse(t.itemsJson) as { name: string; qty: string; unit: string; category: string }[],
+          items: (() => { try { return JSON.parse(t.itemsJson) as { name: string; qty: string; unit: string; category: string }[]; } catch { return []; } })(),
         }));
       }),
     createFromTemplate: protectedProcedure
@@ -3012,7 +3026,8 @@ Adapta esta receta eliminando los ingredientes prohibidos y sustituyéndolos por
           persons: 1,
         }).returning({ id: shoppingLists.id });
         const newListId = listResult?.id;
-        const items = JSON.parse(t.itemsJson) as { name: string; qty: string; unit: string; category: string }[];
+        let items: { name: string; qty: string; unit: string; category: string }[] = [];
+        try { items = JSON.parse(t.itemsJson); } catch { items = []; }
         if (items.length > 0) {
           await drizzleDb.insert(shoppingListItems).values(
             items.map(item => ({
@@ -3323,54 +3338,55 @@ Si no puedes detectar productos, devuelve {"products": []}. No incluyas texto ad
           restrictions: expiringRestrictions,
           dislikedIngredients: expiringProfile?.dislikedIngredients,
         });
-        const response = await invokeLLM({
-          messages: [
-            {
-              role: "system",
-              content: `Eres un chef experto en cocina española y mediterránea. Genera recetas usando los ingredientes que están a punto de caducar para evitar el desperdicio alimentario. Responde SOLO con JSON válido.\${expiringForbiddenBlock ? '\n' + expiringForbiddenBlock : ''}`,
-            },
-            {
-              role: "user",
-              content: `Tengo estos ingredientes próximos a caducar:
-${ingredientList}
-
-Genera 3 recetas que aprovechen estos ingredientes. Para cada receta incluye: nombre, descripción breve (1 frase), tiempo de preparación en minutos, dificultad (Fácil/Media/Difícil), ingredientes principales usados de la lista, y emoji representativo.`,
-            },
-          ],
-          response_format: {
-            type: "json_schema",
-            json_schema: {
-              name: "expiring_recipes",
-              strict: true,
-              schema: {
-                type: "object",
-                properties: {
-                  recipes: {
-                    type: "array",
-                    items: {
-                      type: "object",
-                      properties: {
-                        name: { type: "string" },
-                        description: { type: "string" },
-                        prepTime: { type: "integer" },
-                        difficulty: { type: "string" },
-                        usedIngredients: { type: "array", items: { type: "string" } },
-                        emoji: { type: "string" },
+        try {
+          const response = await invokeLLM({
+            messages: [
+              {
+                role: "system",
+                content: `Eres un chef experto en cocina española y mediterránea. Genera recetas usando los ingredientes que están a punto de caducar para evitar el desperdicio alimentario. Responde SOLO con JSON válido.${expiringForbiddenBlock ? '\n' + expiringForbiddenBlock : ''}`,
+              },
+              {
+                role: "user",
+                content: `Tengo estos ingredientes próximos a caducar:\n${ingredientList}\n\nGenera 3 recetas que aprovechen estos ingredientes. Para cada receta incluye: nombre, descripción breve (1 frase), tiempo de preparación en minutos, dificultad (Fácil/Media/Difícil), ingredientes principales usados de la lista, y emoji representativo.`,
+              },
+            ],
+            response_format: {
+              type: "json_schema",
+              json_schema: {
+                name: "expiring_recipes",
+                strict: true,
+                schema: {
+                  type: "object",
+                  properties: {
+                    recipes: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          name: { type: "string" },
+                          description: { type: "string" },
+                          prepTime: { type: "integer" },
+                          difficulty: { type: "string" },
+                          usedIngredients: { type: "array", items: { type: "string" } },
+                          emoji: { type: "string" },
+                        },
+                        required: ["name", "description", "prepTime", "difficulty", "usedIngredients", "emoji"],
+                        additionalProperties: false,
                       },
-                      required: ["name", "description", "prepTime", "difficulty", "usedIngredients", "emoji"],
-                      additionalProperties: false,
                     },
                   },
+                  required: ["recipes"],
+                  additionalProperties: false,
                 },
-                required: ["recipes"],
-                additionalProperties: false,
               },
             },
-          },
-        });
-        const content = response?.choices?.[0]?.message?.content;
-        const parsed = JSON.parse(typeof content === "string" ? content : '{"recipes":[]}');
-        return { recipes: parsed.recipes || [], expiringIngredients: expiring };
+          });
+          const content = response?.choices?.[0]?.message?.content;
+          const parsed = JSON.parse(typeof content === "string" ? content : '{"recipes":[]}');
+          return { recipes: parsed.recipes || [], expiringIngredients: expiring };
+        } catch {
+          return { recipes: [], expiringIngredients: expiring, message: "No se pudieron generar recetas en este momento. Inténtalo de nuevo." };
+        }
       }),
   }),
   // ---------------------------------------------------------------------------
@@ -7329,19 +7345,23 @@ Devuelve EXACTAMENTE este JSON:
   ]
 }`;
 
-        const response = await invokeLLM({
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: userPrompt },
-          ],
-          response_format: { type: "json_object" },
-        });
-
-        const content = String(response.choices[0]?.message?.content || "{}");
-        try {
-          return JSON.parse(content) as Record<string, unknown>;
-        } catch {
-          return { error: "No se pudo generar el menú. Inténtalo de nuevo.", raw: content };
+         try {
+          const response = await invokeLLM({
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: userPrompt },
+            ],
+            response_format: { type: "json_object" },
+          });
+          const content = String(response.choices[0]?.message?.content || "{}");
+          try {
+            return JSON.parse(content) as Record<string, unknown>;
+          } catch {
+            return { error: "No se pudo generar el menú. Inténtalo de nuevo.", raw: content };
+          }
+        } catch (err: any) {
+          if (err instanceof TRPCError) throw err;
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Error al generar el menú del evento. Inténtalo de nuevo." });
         }
       }),
   }),
@@ -8619,24 +8639,29 @@ Devuelve SOLO JSON válido con esta estructura exacta:
 
 Devuelve ÚNICAMENTE JSON válido con esta estructura:
 {"menu":{"lunes":{"desayuno":"...","media_manana":"...","comida":"...","merienda":"...","cena":"..."},"martes":{...},"miercoles":{...},"jueves":{...},"viernes":{...},"sabado":{...},"domingo":{...}},"shopping_list":{"frutas_verduras":["..."],"proteinas":["..."],"lacteos":["..."],"cereales_pasta":["..."],"legumbres":["..."],"otros":["..."]},"notes":"..."}`;
-        const response = await invokeLLM({
-          messages: [
-            { role: "system", content: systemPrompt },
-            { role: "user", content: [
-              { type: "text", text: `Perfil del usuario: ${profileCtx}\n${extraCtx}\nPDF del plan: ${plan.pdfUrl}` },
-              { type: "file_url", file_url: { url: plan.pdfUrl, mime_type: "application/pdf" } }
-            ] as any}
-          ],
-        });
-        const content = response?.choices?.[0]?.message?.content;
-        if (!content) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "La IA no generó respuesta" });
-        let parsed: any;
-        try { parsed = typeof content === "string" ? JSON.parse(content) : content; }
-        catch { throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Error al procesar la respuesta de la IA" }); }
-        const [updated] = await drizzleDb.update(expertClientPlans)
-          .set({ aiGeneratedMenu: JSON.stringify(parsed.menu), aiGeneratedShoppingList: JSON.stringify(parsed.shopping_list), aiGeneratedAt: new Date(), updatedAt: new Date() })
-          .where(eq(expertClientPlans.id, input.planId)).returning();
-        return { menu: parsed.menu, shoppingList: parsed.shopping_list, notes: parsed.notes, plan: updated };
+        try {
+          const response = await invokeLLM({
+            messages: [
+              { role: "system", content: systemPrompt },
+              { role: "user", content: [
+                { type: "text", text: `Perfil del usuario: ${profileCtx}\n${extraCtx}\nPDF del plan: ${plan.pdfUrl}` },
+                { type: "file_url", file_url: { url: plan.pdfUrl, mime_type: "application/pdf" } }
+              ] as any}
+            ],
+          });
+          const content = response?.choices?.[0]?.message?.content;
+          if (!content) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "La IA no generó respuesta" });
+          let parsed: any;
+          try { parsed = typeof content === "string" ? JSON.parse(content) : content; }
+          catch { throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Error al procesar la respuesta de la IA" }); }
+          const [updated] = await drizzleDb.update(expertClientPlans)
+            .set({ aiGeneratedMenu: JSON.stringify(parsed.menu), aiGeneratedShoppingList: JSON.stringify(parsed.shopping_list), aiGeneratedAt: new Date(), updatedAt: new Date() })
+            .where(eq(expertClientPlans.id, input.planId)).returning();
+          return { menu: parsed.menu, shoppingList: parsed.shopping_list, notes: parsed.notes, plan: updated };
+        } catch (err: any) {
+          if (err instanceof TRPCError) throw err;
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Error al generar el menú desde el PDF. Inténtalo de nuevo." });
+        }
       }),
 
     delete: protectedProcedure

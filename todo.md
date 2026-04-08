@@ -1708,3 +1708,18 @@
 
 ## Bug: Etiqueta dificultad en inglés en cards de menús (08/04/2026)
 - [x] BUG-MENU-EASY: La etiqueta de dificultad "easy" aparece en inglés — CORREGIDO: añadidas claves en inglés (easy/medium/hard) a DIFF_LABELS en MenuLibrary.tsx, ActiveMenu.tsx, EventMenuPlanner.tsx, SavedEvents.tsx e Inventory.tsx
+
+## Auditoría completa de estabilidad (08/04/2026)
+- [ ] AUDIT-01: Revisar logs de servidor y browser para errores críticos
+- [ ] AUDIT-02: Corregir null/undefined crashes en routers del servidor
+- [ ] AUDIT-03: Corregir null/undefined crashes en componentes del frontend
+- [ ] AUDIT-04: Verificar flujos críticos sin crashes (registro, onboarding, menús, recetas, BuddyIA)
+- [ ] AUDIT-05: Ejecutar tests y verificar 0 errores TypeScript
+
+## Auditoría completa de estabilidad (completada)
+- [x] Proteger todos los invokeLLM sin try/catch en routers.ts (6 corregidos: calculateNutrition, eventMenus.generate, expertClientPlans.generateMenuFromPDF, menus.generateWithAI, recipes.generateWithAI, inventory.generateRecipesFromExpiring)
+- [x] Proteger JSON.parse de datos de perfil (menuAllergies, menuRestrictions, menuKitchenEquipment) con try/catch
+- [x] Proteger JSON.parse de shoppingListTemplates con try/catch
+- [x] Corregir modal TyC del SSO: labels causaban navegación a /terms al hacer clic en checkbox
+- [x] Corregir etiquetas de dificultad "easy/medium/hard" en inglés en todas las páginas
+- [x] 675 tests pasando (28 archivos de test)
