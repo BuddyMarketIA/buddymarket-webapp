@@ -215,7 +215,30 @@ export default function LoginPage() {
   // TyC modal para SSO (Google/Apple)
   const [ssoTyCModal, setSsoTyCModal] = useState<{ provider: "google" | "apple"; pendingAction: () => void } | null>(null);
 
-  // Show loading while checking auth (after all hooks)
+  // tRPC mutations — MUST be declared before any conditional return (React rules of hooks)
+  const loginMut = trpc.auth.login.useMutation();
+  const registerMut = trpc.auth.register.useMutation();
+  const acceptTermsMut = trpc.auth.acceptTerms.useMutation();
+  const sendOTPMut = trpc.auth.sendOTP.useMutation();
+  const verifyOTPMut = trpc.auth.verifyOTP.useMutation();
+  const sendPhoneOTPMut = trpc.auth.sendPhoneOTP.useMutation();
+  const verifyPhoneOTPMut = trpc.auth.verifyPhoneOTP.useMutation();
+  const forgotMut = trpc.auth.forgotPassword.useMutation();
+  const utils = trpc.useUtils();
+
+  // Auto-advance carousel — also before conditional return
+  useEffect(() => {
+    const id = setInterval(() => {
+      setTransitioning(true);
+      setTimeout(() => {
+        setSlide(s => (s + 1) % SLIDES.length);
+        setTransitioning(false);
+      }, 400);
+    }, 4000);
+    return () => clearInterval(id);
+  }, []);
+
+  // Show loading while checking auth
   if (meQuery.isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center bg-[#FAF7F2]">
@@ -235,29 +258,6 @@ export default function LoginPage() {
       setSsoTyCModal({ provider, pendingAction: action });
     }
   };
-
-  // tRPC mutations
-  const loginMut = trpc.auth.login.useMutation();
-  const registerMut = trpc.auth.register.useMutation();
-  const acceptTermsMut = trpc.auth.acceptTerms.useMutation();
-  const sendOTPMut = trpc.auth.sendOTP.useMutation();
-  const verifyOTPMut = trpc.auth.verifyOTP.useMutation();
-  const sendPhoneOTPMut = trpc.auth.sendPhoneOTP.useMutation();
-  const verifyPhoneOTPMut = trpc.auth.verifyPhoneOTP.useMutation();
-  const forgotMut = trpc.auth.forgotPassword.useMutation();
-  const utils = trpc.useUtils();
-
-  // Auto-advance carousel
-  useEffect(() => {
-    const id = setInterval(() => {
-      setTransitioning(true);
-      setTimeout(() => {
-        setSlide(s => (s + 1) % SLIDES.length);
-        setTransitioning(false);
-      }, 400);
-    }, 4000);
-    return () => clearInterval(id);
-  }, []);
 
   const afterAuth = async () => {
     await utils.auth.me.invalidate();
