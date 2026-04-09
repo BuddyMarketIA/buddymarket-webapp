@@ -4894,11 +4894,24 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
           headers: { ...HEADERS, "Authorization": `Bearer ${authData.access_token}` },
         });
         const custData = custRes.ok ? await custRes.json() as any : {};
+        // If no cart_id, try to get/create one via the cart endpoint
+        let cartId = custData.cart_id ?? null;
+        if (!cartId) {
+          try {
+            const cartRes = await fetch(`${MERC_BASE}/customers/${authData.customer_id}/cart/`, {
+              headers: { ...HEADERS, "Authorization": `Bearer ${authData.access_token}` },
+            });
+            if (cartRes.ok) {
+              const cartData = await cartRes.json() as any;
+              cartId = cartData.id ?? cartData.cart_id ?? null;
+            }
+          } catch { /* ignore */ }
+        }
         return {
           accessToken: authData.access_token,
           customerId: authData.customer_id,
-          cartId: custData.cart_id ?? null,
-          customerName: custData.first_name ?? null,
+          cartId,
+          customerName: custData.first_name ?? custData.name ?? null,
         };
       }),
 
@@ -4922,28 +4935,39 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
         };
         // Get current cart to get its version
         const cartRes = await fetch(`${MERC_BASE}/customers/${input.customerId}/cart/`, { headers: HEADERS });
-        const cartData = cartRes.ok ? await cartRes.json() as any : { id: input.cartId, version: 1, lines: [] };
+        if (!cartRes.ok) {
+          const errText = await cartRes.text();
+          throw new TRPCError({ code: "UNAUTHORIZED", message: `Sesión expirada. Por favor vuelve a iniciar sesión en Mercadona. (${cartRes.status})` });
+        }
+        const cartData = await cartRes.json() as any;
         const currentVersion = cartData.version ?? 1;
         const existingLines: any[] = cartData.lines ?? [];
+        // Use the cart id from the response (more reliable than stored one)
+        const actualCartId = cartData.id ?? input.cartId;
         // Merge existing lines with new items
         const newLines = [...existingLines];
         for (const item of input.items) {
+          // Mercadona uses numeric product IDs
+          const productId = isNaN(Number(item.productId)) ? item.productId : Number(item.productId);
           const existingIdx = newLines.findIndex((l: any) => String(l.product_id) === String(item.productId));
           if (existingIdx >= 0) {
             newLines[existingIdx] = { ...newLines[existingIdx], quantity: newLines[existingIdx].quantity + item.quantity };
           } else {
-            newLines.push({ quantity: item.quantity, product_id: String(item.productId), sources: [] });
+            newLines.push({ quantity: item.quantity, product_id: productId, sources: [] });
           }
         }
         // PUT updated cart
         const putRes = await fetch(`${MERC_BASE}/customers/${input.customerId}/cart/`, {
           method: "PUT",
           headers: HEADERS,
-          body: JSON.stringify({ id: input.cartId, version: currentVersion, lines: newLines }),
+          body: JSON.stringify({ id: actualCartId, version: currentVersion, lines: newLines }),
         });
         if (!putRes.ok) {
           const errText = await putRes.text();
-          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: `Error al añadir al carrito: ${errText}` });
+          let userMsg = `Error al añadir al carrito de Mercadona`;
+          if (putRes.status === 401 || putRes.status === 403) userMsg = "Sesión de Mercadona expirada. Por favor vuelve a iniciar sesión.";
+          else if (putRes.status === 400) userMsg = `Datos incorrectos al añadir productos. Intenta de nuevo.`;
+          throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: userMsg });
         }
         const result = await putRes.json() as any;
         return {
@@ -5882,6 +5906,77 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
         await drizzleDb.insert(copiesTable).values({ userId: ctx.user.id, planId: input.planId, expertId: plan[0].expertId });
         await drizzleDb.update(epTable).set({ copiesCount: sql`${epTable.copiesCount} + 1` }).where(eq(epTable.id, input.planId));
         return { success: true };
+      }),
+
+    copyMenu: protectedProcedure
+      .input(z.object({ menuId: z.number(), startDate: z.string().optional() }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { expertMenus: emTable, menuOrganizers, menuOrganizerDayParts } = await import("../drizzle/schema");
+        const { eq, sql } = await import("drizzle-orm");
+        // Load the expert menu
+        const [menu] = await drizzleDb.select().from(emTable).where(eq(emTable.id, input.menuId)).limit(1);
+        if (!menu) throw new TRPCError({ code: "NOT_FOUND", message: "Menú no encontrado" });
+        // Parse menuData to determine number of days
+        let menuData: any = null;
+        try {
+          const raw = typeof menu.menuData === "string" ? menu.menuData : JSON.stringify(menu.menuData);
+          const parsed = JSON.parse(raw);
+          menuData = typeof parsed === "string" ? JSON.parse(parsed) : parsed;
+        } catch { menuData = null; }
+        const days: any[] = menuData?.days ?? [];
+        const numDays = days.length > 0 ? days.length : 7;
+        // Determine start date
+        const start = input.startDate ? new Date(input.startDate) : new Date();
+        const end = new Date(start);
+        end.setDate(end.getDate() + numDays - 1);
+        const fmt = (d: Date) => d.toISOString().split("T")[0];
+        // Create the menu organizer for the user
+        const [newMenu] = await drizzleDb.insert(menuOrganizers).values({
+          userId: ctx.user.id,
+          name: `${menu.title} (Expert)`,
+          startDate: fmt(start),
+          endDate: fmt(end),
+          type: "weekly",
+          dailyCalories: menu.dailyCalories,
+          isActive: false,
+          generatedByAI: false,
+          isSeeded: false,
+        }).returning();
+        if (!newMenu) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Error al crear el menú" });
+        // Create day parts from menuData if available
+        if (days.length > 0) {
+          const mealKeys = ["desayuno", "media_manana", "comida", "merienda", "cena"];
+          const mealNames: Record<string, string> = {
+            desayuno: "Desayuno", media_manana: "Media mañana", comida: "Comida",
+            merienda: "Merienda", cena: "Cena"
+          };
+          for (let i = 0; i < days.length; i++) {
+            const day = days[i];
+            const dayDate = new Date(start);
+            dayDate.setDate(dayDate.getDate() + i);
+            const mealsArray: { name: string; food: string }[] = Array.isArray(day.meals)
+              ? day.meals
+              : Object.entries(day.meals || {}).map(([k, v]) => ({ name: mealNames[k] ?? k, food: v as string }));
+            for (let j = 0; j < mealsArray.length; j++) {
+              const meal = mealsArray[j];
+              await drizzleDb.insert(menuOrganizerDayParts).values({
+                menuOrganizerId: newMenu.id,
+                dayPartId: j + 1,
+                date: fmt(dayDate),
+                dayNumber: i + 1,
+                mealNumber: j + 1,
+                name: `${meal.name}: ${meal.food}`,
+                notes: null,
+                completed: false,
+              });
+            }
+          }
+        }
+        // Increment copies count on the expert menu
+        await drizzleDb.update(emTable).set({ copiesCount: sql`${emTable.copiesCount} + 1` }).where(eq(emTable.id, input.menuId));
+        return { success: true, menuId: newMenu.id, menuName: newMenu.name };
       }),
 
     follow: protectedProcedure

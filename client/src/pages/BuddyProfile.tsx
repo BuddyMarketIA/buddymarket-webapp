@@ -449,6 +449,18 @@ function ExpertProfile({ id }: { id: number }) {
 
 function MenuRow({ menu }: { menu: any }) {
   const [expanded, setExpanded] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
+  const [startDate, setStartDate] = useState(() => new Date().toISOString().split("T")[0]);
+  const { user } = useAuth();
+  const utils = trpc.useUtils();
+  const copyMenuMut = trpc.buddyExperts.copyMenu.useMutation({
+    onSuccess: (data) => {
+      toast.success(`✅ Menú "${data.menuName}" copiado a Mis Menús`);
+      setShowDatePicker(false);
+      utils.menus.list.invalidate();
+    },
+    onError: (err: any) => toast.error(err.message || "Error al copiar el menú"),
+  });
   let menuData: any = null;
   try {
     if (menu.menuData) {
@@ -474,13 +486,51 @@ function MenuRow({ menu }: { menu: any }) {
           <p className="font-bold text-gray-900 text-sm truncate">{menu.title}</p>
           <p className="text-xs text-gray-500">{menu.dailyCalories} kcal/día · <span className="text-green-600 font-semibold">GRATIS</span></p>
         </div>
-        <button
-          onClick={() => setExpanded(!expanded)}
-          className="text-xs text-orange-600 font-semibold border border-orange-200 px-3 py-1.5 rounded-xl hover:bg-orange-50 transition-colors"
-        >
-          {expanded ? "▲" : "▼ Ver"}
-        </button>
+        <div className="flex gap-1.5">
+          {user && (
+            <button
+              onClick={() => setShowDatePicker(!showDatePicker)}
+              disabled={copyMenuMut.isPending}
+              className="text-xs text-white font-semibold bg-gradient-to-r from-orange-500 to-red-500 px-3 py-1.5 rounded-xl hover:opacity-90 transition-opacity disabled:opacity-50"
+            >
+              {copyMenuMut.isPending ? "..." : "📋 Copiar"}
+            </button>
+          )}
+          <button
+            onClick={() => setExpanded(!expanded)}
+            className="text-xs text-orange-600 font-semibold border border-orange-200 px-3 py-1.5 rounded-xl hover:bg-orange-50 transition-colors"
+          >
+            {expanded ? "▲" : "▼ Ver"}
+          </button>
+        </div>
       </div>
+      {showDatePicker && user && (
+        <div className="border-t border-orange-100 px-3 py-3 bg-orange-50">
+          <p className="text-xs font-semibold text-gray-700 mb-2">¿Cuándo quieres empezar este menú?</p>
+          <div className="flex gap-2 items-center">
+            <input
+              type="date"
+              value={startDate}
+              min={new Date().toISOString().split("T")[0]}
+              onChange={(e) => setStartDate(e.target.value)}
+              className="flex-1 text-xs border border-orange-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-orange-300"
+            />
+            <button
+              onClick={() => copyMenuMut.mutate({ menuId: menu.id, startDate })}
+              disabled={copyMenuMut.isPending}
+              className="text-xs text-white font-bold bg-orange-500 px-4 py-2 rounded-xl hover:bg-orange-600 transition-colors disabled:opacity-50"
+            >
+              {copyMenuMut.isPending ? "Copiando..." : "Confirmar"}
+            </button>
+            <button
+              onClick={() => setShowDatePicker(false)}
+              className="text-xs text-gray-500 font-semibold px-3 py-2 rounded-xl hover:bg-gray-100 transition-colors"
+            >
+              ✕
+            </button>
+          </div>
+        </div>
+      )}
       {expanded && (
         !menuData?.days ? (
           <div className="border-t border-orange-50 px-3 pb-3 pt-2">
