@@ -183,7 +183,21 @@ export default function LoginPage() {
   const [slide, setSlide] = useState(0);
   const [transitioning, setTransitioning] = useState(false);
 
-  // Form fields
+  // Auto-redirect if user is already authenticated
+  const meQuery = trpc.auth.me.useQuery(undefined, { retry: false, refetchOnWindowFocus: false });
+  useEffect(() => {
+    if (meQuery.isLoading) return;
+    if (meQuery.data) {
+      // User is already logged in — send to dashboard (or onboarding if not completed)
+      if (!meQuery.data.onboardingCompleted) {
+        setLocation("/buddy-setup");
+      } else {
+        setLocation("/app/dashboard");
+      }
+    }
+  }, [meQuery.data, meQuery.isLoading, setLocation]);
+
+  // Form fields — ALL hooks must be declared before any conditional returns
   const [name, setName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -200,6 +214,18 @@ export default function LoginPage() {
   const [marketingConsent, setMarketingConsent] = useState(false);
   // TyC modal para SSO (Google/Apple)
   const [ssoTyCModal, setSsoTyCModal] = useState<{ provider: "google" | "apple"; pendingAction: () => void } | null>(null);
+
+  // Show loading while checking auth (after all hooks)
+  if (meQuery.isLoading) {
+    return (
+      <div className="min-h-screen flex items-center justify-center bg-[#FAF7F2]">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
+          <p className="text-sm text-gray-500">Verificando sesión...</p>
+        </div>
+      </div>
+    );
+  }
 
   // Wrapper para SSO: muestra TyC si no han sido aceptados aún
   const handleSSOWithTyC = (provider: "google" | "apple", action: () => void) => {
