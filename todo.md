@@ -1747,3 +1747,19 @@
 - [ ] Dashboard: rediseñar sección Comunidad (BuddyIA como asesor, BuddyCoach como app de deporte del grupo)
 - [ ] BuddyScan: redirigir a escáner real (código de barras + foto de plato), no a Menús
 - [x] MenuResultView: función de reemplazo de comida por alternativa IA — endpoint tRPC buddyIA.replaceMeal + UI con botón "Cambiar" en cada tarjeta expandida + modal bottom-sheet con preview de la alternativa, botón aceptar/generar otra/cancelar
+- [ ] BuddyIA Chat: personalizar el sistema prompt con el perfil completo del usuario (peso, altura, edad, objetivo, alergias, restricciones dietéticas, historial médico, actividad física) para que las respuestas sean específicas al usuario y no genéricas
+- [ ] Traducciones: auditar y completar todas las traducciones faltantes en la app (muchos textos hardcodeados en español no usan t() y no se traducen al cambiar de idioma)
+- [x] Perfil: mover sección "Actividad Física" del tab Alimentación al tab "Salud y objetivos"
+- [ ] Menú IA: rediseñar cuestionario con preguntas interactivas paso a paso (días, variedad, facilidad, personas, etc.)
+- [ ] Menú IA: corregir distribución al aplicar al diario (cada día del menú debe ir a su fecha correcta, no todo al mismo día)
+- [ ] Menú IA: corregir toast de confirmación que aparece en la barra de estado del sistema en lugar de dentro de la app
+- [ ] Menú IA: garantizar que alergias y restricciones del perfil se cargan siempre en la generación
+- [ ] MenuResultView: botón "Guardar en Mis Menús" para guardar el menú generado con IA en la biblioteca de menús
+- [ ] MenuResultView: botón "Exportar PDF" que genera un PDF con el menú completo, nutrientes clave, alimentos a evitar y consejos personalizados
+- [ ] BuddyScan IA: corregir error 404 (ruta o endpoint no encontrado)
+- [ ] Dashboard: convertir el primer widget en widget personalizable (el usuario elige qué mostrar entre opciones no duplicadas)
+- [x] Dashboard: corregir botón de dark mode que no funciona
+- [x] Lista de la compra: desbloquear UI cuando se genera desde menús (queda congelada)
+- [x] Lista de la compra: corregir búsqueda que lleva a Google en lugar de buscar dentro de la app
+- [x] Lista de la compra Mercadona: mejorar matching de productos (devuelve productos incorrectos)
+- [x] Lista de la compra Mercadona: reducir falsos negativos "producto no encontrado" cuando sí existe

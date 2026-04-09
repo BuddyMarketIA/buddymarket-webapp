@@ -4460,10 +4460,11 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
           "harina": ["harina", "preparado reposteria"],
           "mantequilla": ["mantequilla", "margarina"],
           "nata": ["nata", "crema"],
-          "pechuga": ["pechuga", "filete pollo"],
-          "jamon": ["jamón", "jamon"],
-          "jamón": ["jamon", "jamón"],
-          "tomate": ["tomate", "tomates"],
+          "pechuga": ["pechuga", "filete pollo", "pollo"],
+          "jamon": ["jamón", "jamon", "jamon serrano", "jamon cocido"],
+          "jamón": ["jamon", "jamón", "jamon serrano", "jamon cocido"],
+          "tomate": ["tomate", "tomates", "tomate triturado", "tomate frito"],
+          "tomates": ["tomate", "tomates"],
           "cebolla": ["cebolla", "cebollas"],
           "zanahoria": ["zanahoria", "zanahorias"],
           "pimiento": ["pimiento", "pimientos"],
@@ -4477,16 +4478,136 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
           "arroz": ["arroz"],
           "pasta": ["pasta", "fideos", "macarrones", "espagueti"],
           "macarrones": ["pasta", "macarrones"],
-          "espagueti": ["pasta", "espaguetis", "espagueti"],
+          "espagueti": ["pasta", "espaguetis", "espagueti", "spaghetti"],
           "atun": ["atún", "atun"],
           "atún": ["atun", "atún"],
           "bacalao": ["bacalao"],
           "merluza": ["merluza"],
-          "aceite": ["aceite"],
+          "aceite": ["aceite", "aceite oliva"],
+          "aceite de oliva": ["aceite oliva", "aceite de oliva virgen"],
           "vinagre": ["vinagre"],
           "sal": ["sal"],
           "azucar": ["azúcar", "azucar"],
           "azúcar": ["azucar", "azúcar"],
+          "pollo": ["pollo", "pechuga", "muslo pollo"],
+          "ternera": ["ternera", "carne ternera", "carne picada"],
+          "cerdo": ["cerdo", "lomo", "costilla"],
+          "pan": ["pan", "barra pan", "pan molde"],
+          "pan de molde": ["pan molde", "pan sandwich"],
+          "limon": ["limón", "limon"],
+          "limón": ["limon", "limón"],
+          "naranja": ["naranja", "naranjas"],
+          "manzana": ["manzana", "manzanas"],
+          "platano": ["plátano", "platano", "bananas"],
+          "plátano": ["platano", "plátano", "bananas"],
+          "fresa": ["fresas", "fresa"],
+          "fresas": ["fresa", "fresas"],
+          "brocoli": ["brócoli", "brocoli"],
+          "brócoli": ["brocoli", "brócoli"],
+          "calabacin": ["calabacín", "calabacin"],
+          "calabacín": ["calabacin", "calabacín"],
+          "berenjenas": ["berenjena", "berenjenas"],
+          "berenjena": ["berenjena", "berenjenas"],
+          "champiñon": ["champiñones", "champiñon", "setas"],
+          "champiñones": ["champiñon", "champiñones", "setas"],
+          "setas": ["setas", "champiñones"],
+          "lenguado": ["lenguado", "pescado blanco"],
+          "dorada": ["dorada", "lubina"],
+          "lubina": ["lubina", "dorada"],
+          "gambas": ["gambas", "langostinos"],
+          "langostinos": ["langostinos", "gambas"],
+          "mejillones": ["mejillones"],
+          "almejas": ["almejas"],
+          "leche de coco": ["leche coco", "crema coco"],
+          "curry": ["curry", "especias"],
+          "comino": ["comino", "especias"],
+          "oregano": ["orégano", "oregano"],
+          "orégano": ["oregano", "orégano"],
+          "pimienta": ["pimienta", "pimienta negra"],
+          "paprika": ["pimentón", "paprika"],
+          "pimenton": ["pimentón", "paprika"],
+          "pimentón": ["pimenton", "pimentón"],
+          "canela": ["canela"],
+          "nuez moscada": ["nuez moscada"],
+          "levadura": ["levadura"],
+          "bicarbonato": ["bicarbonato"],
+          "miel": ["miel"],
+          "mermelada": ["mermelada", "confitura"],
+          "manteca": ["manteca", "mantequilla"],
+          "aceitunas": ["aceitunas", "olivas"],
+          "olivas": ["olivas", "aceitunas"],
+          "pepinillos": ["pepinillos", "pepino"],
+          "alcaparras": ["alcaparras"],
+          "anchoas": ["anchoas", "boquerones"],
+          "boquerones": ["boquerones", "anchoas"],
+          "sardinas": ["sardinas"],
+          "caballa": ["caballa"],
+          "caldo": ["caldo", "caldo de pollo", "caldo de verduras"],
+          "caldo de pollo": ["caldo pollo", "caldo"],
+          "caldo de verduras": ["caldo verduras", "caldo"],
+          "soja": ["soja", "salsa de soja"],
+          "salsa de soja": ["salsa soja", "soja"],
+          "tofu": ["tofu"],
+          "tempeh": ["tempeh"],
+          "avena": ["avena", "copos de avena"],
+          "quinoa": ["quinoa", "quinua"],
+          "bulgur": ["bulgur", "trigo"],
+          "cuscus": ["cuscús", "cuscus"],
+          "cuscús": ["cuscus", "cuscús"],
+          "lentejas rojas": ["lentejas rojas", "lentejas"],
+          "alubias": ["alubias", "judias", "judías"],
+          "judias": ["judías", "alubias"],
+          "judías": ["judias", "alubias"],
+          "guisantes": ["guisantes"],
+          "maiz": ["maíz", "maiz", "mazorca"],
+          "maíz": ["maiz", "maíz"],
+          "pepino": ["pepino", "pepinos"],
+          "apio": ["apio"],
+          "puerro": ["puerro", "puerros"],
+          "ajo": ["ajo", "ajos"],
+          "ajos": ["ajo", "ajos"],
+          "jengibre": ["jengibre"],
+          "aguacate": ["aguacate", "aguacates"],
+          "mango": ["mango"],
+          "pina": ["piña", "pina"],
+          "piña": ["pina", "piña"],
+          "uva": ["uvas", "uva"],
+          "uvas": ["uva", "uvas"],
+          "pera": ["pera", "peras"],
+          "melocoton": ["melocotón", "melocoton"],
+          "melocotón": ["melocoton", "melocotón"],
+          "ciruela": ["ciruela", "ciruelas"],
+          "cereza": ["cerezas", "cereza"],
+          "kiwi": ["kiwi"],
+          "sandia": ["sandía", "sandia"],
+          "sandía": ["sandia", "sandía"],
+          "melon": ["melón", "melon"],
+          "melón": ["melon", "melón"],
+          "nectarina": ["nectarina"],
+          "albaricoque": ["albaricoque"],
+          "higo": ["higos", "higo"],
+          "granada": ["granada"],
+          "frambuesa": ["frambuesas", "frambuesa"],
+          "arandano": ["arándanos", "arandano"],
+          "arándanos": ["arandano", "arándanos"],
+          "moras": ["moras", "mora"],
+          "queso fresco": ["queso fresco", "queso"],
+          "queso rallado": ["queso rallado", "queso"],
+          "queso manchego": ["queso manchego", "queso curado"],
+          "mozzarella": ["mozzarella", "queso mozzarella"],
+          "parmesano": ["parmesano", "queso parmesano"],
+          "ricotta": ["ricotta", "requesón"],
+          "requeson": ["requesón", "ricotta"],
+          "requesón": ["requeson", "ricotta"],
+          "nata para cocinar": ["nata cocinar", "nata"],
+          "nata para montar": ["nata montar", "nata"],
+          "leche evaporada": ["leche evaporada"],
+          "leche condensada": ["leche condensada"],
+          "bebida de avena": ["bebida avena", "leche avena"],
+          "bebida de almendra": ["bebida almendra", "leche almendra"],
+          "bebida de soja": ["bebida soja", "leche soja"],
+          "proteina": ["proteína", "whey"],
+          "proteína": ["proteina", "whey"],
         };
 
         const rawQuery = input.query.trim();
@@ -4528,18 +4649,24 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
           const pName = normalize(p.name);
           let score = 0;
           if (pName === normQuery) score = 100;
-          else if (pName.startsWith(normQuery)) score = 80;
-          else if (pName.includes(normQuery)) score = 60;
+          else if (pName.startsWith(normQuery)) score = 85;
+          else if (pName.includes(normQuery)) score = 65;
           else {
             // Check if all words match
             const matchedWords = words.filter(w => pName.includes(w));
-            score = matchedWords.length * 20;
+            const matchRatio = matchedWords.length / Math.max(words.length, 1);
+            score = matchRatio * 50;
+            // Bonus if first word matches (most important word)
+            if (words.length > 0 && pName.includes(words[0])) score += 15;
           }
+          // Penalty for very long product names (less specific)
+          if (pName.length > 60) score -= 5;
           return { ...p, _score: score };
         });
 
-        const sorted = scored
-          .filter(p => p._score > 0)
+        // Keep results with score > 0, but if nothing found, return top partial matches
+        const withScore = scored.filter(p => p._score > 0);
+        const sorted = (withScore.length > 0 ? withScore : scored.slice(0, 5))
           .sort((a, b) => b._score - a._score)
           .slice(0, input.limit);
 
@@ -6678,6 +6805,101 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
       .mutation(async ({ ctx, input }) => {
         const tier = await getUserPlanTier(ctx.user.id, ctx.user.role);
         requirePlanFeature(tier, "canUseBuddyIA");
+
+        // ── Load full user profile from DB for personalized responses ────────────────
+        const [userProfile, medicalProfile, userAllergiesData, userRestrictionsData, userPrefs] = await Promise.all([
+          db.getUserProfile(ctx.user.id),
+          db.getUserMedicalProfile(ctx.user.id),
+          db.getUserAllergies(ctx.user.id),
+          db.getUserDietRestrictions(ctx.user.id),
+          db.getUserPreferences(ctx.user.id),
+        ]);
+
+        const allergyList = userAllergiesData.map((a: any) => a.allergy?.nameEs).filter(Boolean) as string[];
+        const restrictionList = userRestrictionsData.map((r: any) => r.restriction?.nameEs).filter(Boolean) as string[];
+
+        const goalLabels: Record<string, string> = {
+          perdida_peso: "pérdida de peso",
+          ganancia_muscular: "ganancia muscular",
+          tonificacion: "tonificación",
+          perdida_grasa: "pérdida de grasa",
+          mantenimiento: "mantenimiento",
+          bienestar: "bienestar general",
+          vegano: "alimentación vegana",
+          definicion: "definición corporal",
+          salud: "salud y bienestar",
+        };
+
+        const activityLabels: Record<string, string> = {
+          sedentary: "sedentario",
+          lightly_active: "ligeramente activo",
+          moderately_active: "moderadamente activo",
+          very_active: "muy activo",
+          extra_active: "extremadamente activo",
+        };
+
+        // Build personalized profile block
+        const profileLines: string[] = [];
+        if (ctx.user.name) profileLines.push(`- Nombre: ${ctx.user.name}`);
+        if (userProfile) {
+          if (userProfile.age) profileLines.push(`- Edad: ${userProfile.age} años`);
+          if (userProfile.gender) profileLines.push(`- Sexo: ${userProfile.gender === "male" ? "Hombre" : userProfile.gender === "female" ? "Mujer" : "Otro"}`);
+          if (userProfile.weight) profileLines.push(`- Peso actual: ${userProfile.weight} kg`);
+          if (userProfile.height) profileLines.push(`- Altura: ${userProfile.height} cm`);
+          if (userProfile.targetWeight) profileLines.push(`- Peso objetivo: ${userProfile.targetWeight} kg`);
+          if (userProfile.mainGoal) profileLines.push(`- Objetivo principal: ${goalLabels[userProfile.mainGoal] || userProfile.mainGoal}`);
+          if (userProfile.fitnessGoalDetail) profileLines.push(`- Detalle del objetivo: ${userProfile.fitnessGoalDetail}`);
+          if (userProfile.sportsFrequency) profileLines.push(`- Frecuencia de entrenamiento: ${userProfile.sportsFrequency}`);
+          if (userProfile.sportsTypes) profileLines.push(`- Deportes que practica: ${userProfile.sportsTypes}`);
+          if (userProfile.weightChangeRate) profileLines.push(`- Ritmo de cambio de peso objetivo: ${userProfile.weightChangeRate} kg/semana`);
+          if (userProfile.mealPrepTime) profileLines.push(`- Tiempo disponible para cocinar: ${userProfile.mealPrepTime}`);
+          if (userProfile.cookingLevel) profileLines.push(`- Nivel de cocina: ${userProfile.cookingLevel}`);
+          if (userProfile.dailyMeals) profileLines.push(`- Comidas al día: ${userProfile.dailyMeals}`);
+          if (userProfile.menuDietType) profileLines.push(`- Tipo de dieta preferida: ${userProfile.menuDietType}`);
+          if (userProfile.menuProteinSource) profileLines.push(`- Fuente de proteína preferida: ${userProfile.menuProteinSource}`);
+          if (userProfile.sleepHours) profileLines.push(`- Horas de sueño: ${userProfile.sleepHours}h`);
+          if (userProfile.stressLevel) profileLines.push(`- Nivel de estrés: ${userProfile.stressLevel}`);
+          if (userProfile.waterIntake) profileLines.push(`- Ingesta de agua: ${userProfile.waterIntake}L/día`);
+          if (userProfile.workType) profileLines.push(`- Tipo de trabajo: ${userProfile.workType}`);
+          if (userProfile.dailyProteinGoal) profileLines.push(`- Objetivo de proteína: ${Math.round(userProfile.dailyProteinGoal)}g/día`);
+          if (userProfile.dailyCarbsGoal) profileLines.push(`- Objetivo de carbohidratos: ${Math.round(userProfile.dailyCarbsGoal)}g/día`);
+          if (userProfile.dailyFatGoal) profileLines.push(`- Objetivo de grasas: ${Math.round(userProfile.dailyFatGoal)}g/día`);
+          if (userProfile.activityLevel) profileLines.push(`- Nivel de actividad: ${activityLabels[userProfile.activityLevel] || userProfile.activityLevel}`);
+          if (userProfile.dailyCalorieGoal) profileLines.push(`- Calorías diarias objetivo (TDEE): ${Math.round(userProfile.dailyCalorieGoal)} kcal`);
+          if (userProfile.basalMetabolicRate) profileLines.push(`- Tasa metabólica basal (TMB): ${Math.round(userProfile.basalMetabolicRate)} kcal`);
+          if (userProfile.practicesSports) profileLines.push(`- Practica deporte: sí`);
+          if (userProfile.dislikedIngredients) profileLines.push(`- Ingredientes que NO le gustan: ${userProfile.dislikedIngredients}`);
+          if (userProfile.favoriteCuisines) profileLines.push(`- Cocinas favoritas: ${userProfile.favoriteCuisines}`);
+          if (userProfile.budgetPerWeek) profileLines.push(`- Presupuesto semanal de alimentación: ${userProfile.budgetPerWeek}€`);
+        }
+        if (medicalProfile) {
+          if (medicalProfile.medicalConditions) profileLines.push(`- Condiciones médicas: ${medicalProfile.medicalConditions}`);
+          if (medicalProfile.metabolismMedication) profileLines.push(`- Medicación que afecta al metabolismo: ${medicalProfile.metabolismMedication}`);
+          if (medicalProfile.surgery) profileLines.push(`- Cirugías relevantes: ${medicalProfile.surgery}`);
+          if (medicalProfile.medicalDiet) profileLines.push(`- Dieta médica prescrita: ${medicalProfile.medicalDiet}`);
+          if (medicalProfile.nutritionalSupplements) profileLines.push(`- Suplementos nutricionales: ${medicalProfile.nutritionalSupplements}`);
+          if (medicalProfile.dietaryPattern) profileLines.push(`- Patrón dietético: ${medicalProfile.dietaryPattern}`);
+          if (medicalProfile.medicalFamilyBackground) profileLines.push(`- Antecedentes familiares: ${medicalProfile.medicalFamilyBackground}`);
+        }
+        if (allergyList.length > 0) profileLines.push(`- ALERGIAS E INTOLERANCIAS (NUNCA sugerir): ${allergyList.join(", ")}`);
+        if (restrictionList.length > 0) profileLines.push(`- Restricciones dietéticas: ${restrictionList.join(", ")}`);
+        if (userPrefs) {
+          if (userPrefs.preferredMealComplexity) profileLines.push(`- Complejidad de recetas preferida: ${userPrefs.preferredMealComplexity}`);
+          if (userPrefs.portionSize) profileLines.push(`- Tamaño de porciones: ${userPrefs.portionSize}`);
+          if (userPrefs.avoidProcessedFood) profileLines.push(`- Evita alimentos procesados: sí`);
+          if (userPrefs.preferSeasonalIngredients) profileLines.push(`- Prefiere ingredientes de temporada: sí`);
+          if (userPrefs.wantsCalorieTracking) profileLines.push(`- Quiere seguimiento de calorías: sí`);
+          if (userPrefs.wantsMacroTracking) profileLines.push(`- Quiere seguimiento de macros: sí`);
+        }
+        // Also merge input.userProfile if provided by frontend (legacy support)
+        if (input.userProfile?.goal && !userProfile?.mainGoal) profileLines.push(`- Objetivo (del formulario): ${input.userProfile.goal}`);
+        if (input.userProfile?.calories && !userProfile?.dailyCalorieGoal) profileLines.push(`- Calorías objetivo (del formulario): ${input.userProfile.calories}`);
+        if (input.userProfile?.restrictions?.length && allergyList.length === 0) profileLines.push(`- Restricciones (del formulario): ${input.userProfile.restrictions.join(", ")}`);
+
+        const profileBlock = profileLines.length > 0
+          ? `\n\n══ PERFIL DEL USUARIO (usa SIEMPRE estos datos para personalizar tus respuestas) ══\n${profileLines.join("\n")}\n\nCUANDO el usuario pregunte por cantidades, calorías, macros o recomendaciones, SIEMPRE usa sus datos reales (peso, TDEE, objetivo) en lugar de ejemplos genéricos. Si el usuario pregunta "cuánta proteína necesito", calcula con su peso real. Si pregunta por un menú, adáptalo a sus calorías objetivo y restricciones.`
+          : "";
+
         const systemPrompt = `Eres BuddyIA, el asistente nutricional inteligente de BuddyMarket. Eres un experto en nutrición, dietética y alimentación saludable. Tu objetivo es ayudar a los usuarios a:
 - Crear menús semanales personalizados
 - Calcular calorías y macronutrientes
@@ -6685,14 +6907,9 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
 - Resolver dudas sobre nutrición y dieta
 - Adaptar la alimentación a sus objetivos (pérdida de peso, ganancia muscular, etc.)
 
-Siempre responde en español, de forma amigable, clara y motivadora. Usa emojis ocasionalmente para hacer las respuestas más visuales. Cuando sugiereas menús o recetas, incluye información nutricional aproximada (calorías, proteínas, carbohidratos, grasas).
+Siempre responde en español, de forma amigable, clara y motivadora. Usa emojis ocasionalmente. Cuando sugieras menús o recetas, incluye información nutricional aproximada (calorías, proteínas, carbohidratos, grasas).
 
-IMPORTANTE: No eres un médico. Siempre recomienda consultar con un profesional de la salud para condiciones médicas específicas.${input.userProfile ? `
-
-Perfil del usuario:
-- Objetivo: ${input.userProfile.goal || "no especificado"}
-- Calorías diarias objetivo: ${input.userProfile.calories || "no especificado"}
-- Restricciones alimentarias: ${input.userProfile.restrictions?.join(", ") || "ninguna"}` : ""}`;
+IMPORTANTE: No eres un médico. Siempre recomienda consultar con un profesional de la salud para condiciones médicas específicas.${profileBlock}`;
 
         const messagesWithSystem = [
           { role: "system" as const, content: systemPrompt },
@@ -7215,6 +7432,250 @@ Devuelve SOLO JSON válido con esta estructura exacta (${input.daysCount} elemen
       }),
 
     // ── Replace a meal with an AI-generated alternative ──────────────────────
+    generateMenuPDF: protectedProcedure
+      .input(
+        z.object({
+          menuName: z.string().max(100).optional(),
+          days: z.array(z.object({
+            dayName: z.string(),
+            date: z.string().optional(),
+            meals: z.array(z.object({
+              mealType: z.string(),
+              name: z.string(),
+              calories: z.number().optional(),
+              protein: z.number().optional(),
+              carbs: z.number().optional(),
+              fat: z.number().optional(),
+              ingredients: z.array(z.string()).optional(),
+            })),
+          })),
+          goal: z.string().optional(),
+          daysCount: z.number().optional(),
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        try {
+          const { invokeLLM } = await import("./_core/llm.js");
+          const { storagePut } = await import("./storage.js");
+
+          // Load user profile for personalization
+          const profile = await db.getUserProfile(ctx.user.id);
+          const allergies = await db.getUserAllergies(ctx.user.id);
+          const dietRestrictions = await db.getUserDietRestrictions(ctx.user.id);
+
+          const allergyNames = allergies.map((a: any) => a.allergyName || a.name).filter(Boolean);
+          const restrictionNames = dietRestrictions.map((r: any) => r.restrictionName || r.name).filter(Boolean);
+
+          // Build menu summary for AI
+          const menuSummary = input.days.map(day => {
+            const meals = day.meals.map(m => `  - ${m.mealType}: ${m.name} (${m.calories || '?'} kcal, P:${m.protein || '?'}g C:${m.carbs || '?'}g G:${m.fat || '?'}g)`).join('\n');
+            const dayTotal = day.meals.reduce((sum, m) => sum + (m.calories || 0), 0);
+            return `${day.dayName}${day.date ? ` (${day.date})` : ''} — Total: ${dayTotal} kcal\n${meals}`;
+          }).join('\n\n');
+
+          const aiPrompt = `Eres un nutricionista experto. Analiza este menú semanal y genera un informe nutricional completo en español.
+
+MENÚ:\n${menuSummary}\n
+PERFIL DEL USUARIO:\n- Objetivo: ${input.goal || 'equilibrado'}\n- Alergias: ${allergyNames.length ? allergyNames.join(', ') : 'ninguna'}\n- Restricciones: ${restrictionNames.length ? restrictionNames.join(', ') : 'ninguna'}
+
+Genera un JSON con esta estructura exacta:
+{
+  "nutritionSummary": "Párrafo de 3-4 frases sobre el balance nutricional general del menú, distribución de macros y calidad de los alimentos",
+  "keyNutrients": [
+    { "name": "Proteína", "assessment": "adecuada/alta/baja", "tip": "consejo breve" },
+    { "name": "Carbohidratos", "assessment": "adecuados/altos/bajos", "tip": "consejo breve" },
+    { "name": "Grasas saludables", "assessment": "adecuadas/altas/bajas", "tip": "consejo breve" },
+    { "name": "Fibra", "assessment": "adecuada/alta/baja", "tip": "consejo breve" },
+    { "name": "Vitaminas y minerales", "assessment": "adecuados/insuficientes", "tip": "consejo breve" }
+  ],
+  "foodsToAvoid": [
+    { "food": "nombre del alimento o grupo", "reason": "por qué evitarlo dado el objetivo y perfil" }
+  ],
+  "tips": [
+    "Consejo personalizado 1 basado en el objetivo y el menú",
+    "Consejo personalizado 2",
+    "Consejo personalizado 3",
+    "Consejo personalizado 4",
+    "Consejo personalizado 5"
+  ],
+  "weeklyCaloriesAvg": 0,
+  "weeklyProteinAvg": 0,
+  "weeklyCarbsAvg": 0,
+  "weeklyFatAvg": 0
+}`;
+
+          const aiRes = await invokeLLM({
+            messages: [
+              { role: 'system', content: 'Eres un nutricionista experto. Responde SOLO con JSON válido, sin markdown ni texto adicional.' },
+              { role: 'user', content: aiPrompt },
+            ],
+            response_format: { type: 'json_object' },
+          });
+
+          let analysis: any = {};
+          try {
+            const rawContent = aiRes.choices?.[0]?.message?.content;
+            const content = typeof rawContent === 'string' ? rawContent : '{}';
+            analysis = JSON.parse(content);
+          } catch {
+            analysis = { nutritionSummary: 'Análisis no disponible.', keyNutrients: [], foodsToAvoid: [], tips: [] };
+          }
+
+          // Calculate actual averages from menu data
+          const totalDays = input.days.length || 1;
+          const totalCals = input.days.reduce((s, d) => s + d.meals.reduce((ms, m) => ms + (m.calories || 0), 0), 0);
+          const totalProt = input.days.reduce((s, d) => s + d.meals.reduce((ms, m) => ms + (m.protein || 0), 0), 0);
+          const totalCarbs = input.days.reduce((s, d) => s + d.meals.reduce((ms, m) => ms + (m.carbs || 0), 0), 0);
+          const totalFat = input.days.reduce((s, d) => s + d.meals.reduce((ms, m) => ms + (m.fat || 0), 0), 0);
+          analysis.weeklyCaloriesAvg = Math.round(totalCals / totalDays);
+          analysis.weeklyProteinAvg = Math.round(totalProt / totalDays);
+          analysis.weeklyCarbsAvg = Math.round(totalCarbs / totalDays);
+          analysis.weeklyFatAvg = Math.round(totalFat / totalDays);
+
+          // Generate PDF using PDFKit
+          const PDFDocument = (await import('pdfkit')).default;
+          const { Readable } = await import('stream');
+
+          const doc = new PDFDocument({ margin: 50, size: 'A4' });
+          const chunks: Buffer[] = [];
+          doc.on('data', (chunk: Buffer) => chunks.push(chunk));
+
+          const pdfReady = new Promise<Buffer>((resolve, reject) => {
+            doc.on('end', () => resolve(Buffer.concat(chunks)));
+            doc.on('error', reject);
+          });
+
+          const menuName = input.menuName || 'Menú Personalizado';
+          const today = new Date().toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+
+          // ── COVER PAGE ──
+          doc.rect(0, 0, doc.page.width, 180).fill('#FF6B00');
+          doc.fillColor('white').fontSize(28).font('Helvetica-Bold')
+            .text('BuddyMarket', 50, 40, { align: 'center' });
+          doc.fontSize(14).font('Helvetica')
+            .text('Informe Nutricional Personalizado', 50, 80, { align: 'center' });
+          doc.fontSize(20).font('Helvetica-Bold')
+            .text(menuName, 50, 110, { align: 'center' });
+          doc.fontSize(11).font('Helvetica')
+            .text(`Generado el ${today}`, 50, 148, { align: 'center' });
+
+          doc.fillColor('#333333').moveDown(4);
+
+          // ── NUTRITION SUMMARY ──
+          doc.fontSize(16).font('Helvetica-Bold').fillColor('#FF6B00')
+            .text('Resumen Nutricional', { underline: false });
+          doc.moveDown(0.5);
+          doc.fontSize(10).font('Helvetica').fillColor('#444444')
+            .text(analysis.nutritionSummary || '', { lineGap: 4 });
+          doc.moveDown(1);
+
+          // ── DAILY AVERAGES ──
+          doc.fontSize(14).font('Helvetica-Bold').fillColor('#FF6B00')
+            .text('Medias Diarias');
+          doc.moveDown(0.5);
+          const macroData = [
+            { label: 'Calorías', value: `${analysis.weeklyCaloriesAvg} kcal` },
+            { label: 'Proteínas', value: `${analysis.weeklyProteinAvg} g` },
+            { label: 'Carbohidratos', value: `${analysis.weeklyCarbsAvg} g` },
+            { label: 'Grasas', value: `${analysis.weeklyFatAvg} g` },
+          ];
+          const colW = (doc.page.width - 100) / 4;
+          macroData.forEach((m, i) => {
+            const x = 50 + i * colW;
+            const y = doc.y;
+            doc.rect(x, y, colW - 8, 50).fill('#FFF3E8').stroke('#FF6B00');
+            doc.fillColor('#FF6B00').fontSize(16).font('Helvetica-Bold')
+              .text(m.value, x, y + 8, { width: colW - 8, align: 'center' });
+            doc.fillColor('#666666').fontSize(9).font('Helvetica')
+              .text(m.label, x, y + 30, { width: colW - 8, align: 'center' });
+          });
+          doc.moveDown(4.5);
+
+          // ── KEY NUTRIENTS ──
+          doc.fontSize(14).font('Helvetica-Bold').fillColor('#FF6B00')
+            .text('Nutrientes Clave');
+          doc.moveDown(0.5);
+          (analysis.keyNutrients || []).forEach((n: any) => {
+            const color = n.assessment?.includes('alta') || n.assessment?.includes('altos') ? '#E53E3E'
+              : n.assessment?.includes('baja') || n.assessment?.includes('bajos') || n.assessment?.includes('insuficientes') ? '#DD6B20'
+              : '#38A169';
+            doc.fontSize(10).font('Helvetica-Bold').fillColor(color)
+              .text(`● ${n.name}: `, { continued: true });
+            doc.font('Helvetica').fillColor('#444444')
+              .text(`${n.assessment} — ${n.tip}`, { lineGap: 3 });
+          });
+          doc.moveDown(1);
+
+          // ── FOODS TO AVOID ──
+          if ((analysis.foodsToAvoid || []).length > 0) {
+            doc.fontSize(14).font('Helvetica-Bold').fillColor('#FF6B00')
+              .text('Alimentos a Evitar o Limitar');
+            doc.moveDown(0.5);
+            (analysis.foodsToAvoid || []).forEach((f: any) => {
+              doc.fontSize(10).font('Helvetica-Bold').fillColor('#E53E3E')
+                .text(`✗ ${f.food}: `, { continued: true });
+              doc.font('Helvetica').fillColor('#444444')
+                .text(f.reason, { lineGap: 3 });
+            });
+            doc.moveDown(1);
+          }
+
+          // ── TIPS ──
+          doc.fontSize(14).font('Helvetica-Bold').fillColor('#FF6B00')
+            .text('Consejos Personalizados');
+          doc.moveDown(0.5);
+          (analysis.tips || []).forEach((tip: string, i: number) => {
+            doc.fontSize(10).font('Helvetica-Bold').fillColor('#FF6B00')
+              .text(`${i + 1}. `, { continued: true });
+            doc.font('Helvetica').fillColor('#444444')
+              .text(tip, { lineGap: 4 });
+          });
+          doc.moveDown(1.5);
+
+          // ── MENU BY DAY ──
+          doc.addPage();
+          doc.fontSize(18).font('Helvetica-Bold').fillColor('#FF6B00')
+            .text('Menú Detallado por Día', { align: 'center' });
+          doc.moveDown(1);
+
+          input.days.forEach((day) => {
+            if (doc.y > doc.page.height - 150) doc.addPage();
+            const dayTotal = day.meals.reduce((s, m) => s + (m.calories || 0), 0);
+            doc.fontSize(13).font('Helvetica-Bold').fillColor('#FF6B00')
+              .text(`${day.dayName}${day.date ? ` — ${day.date}` : ''} (${dayTotal} kcal total)`);
+            doc.moveDown(0.3);
+            day.meals.forEach((meal) => {
+              if (doc.y > doc.page.height - 80) doc.addPage();
+              doc.fontSize(10).font('Helvetica-Bold').fillColor('#333333')
+                .text(`  ${meal.mealType}: `, { continued: true });
+              doc.font('Helvetica').fillColor('#555555')
+                .text(`${meal.name} — ${meal.calories || '?'} kcal | P: ${meal.protein || '?'}g | C: ${meal.carbs || '?'}g | G: ${meal.fat || '?'}g`);
+              if (meal.ingredients?.length) {
+                doc.fontSize(9).fillColor('#888888')
+                  .text(`    Ingredientes: ${meal.ingredients.slice(0, 6).join(', ')}${meal.ingredients.length > 6 ? '...' : ''}`, { lineGap: 2 });
+              }
+            });
+            doc.moveDown(0.8);
+          });
+
+          // ── FOOTER ──
+          doc.fontSize(8).fillColor('#AAAAAA')
+            .text('Generado por BuddyMarket — Tu asistente nutricional inteligente', 50, doc.page.height - 40, { align: 'center' });
+
+          doc.end();
+          const pdfBuffer = await pdfReady;
+
+          // Upload to S3
+          const fileKey = `menu-pdfs/${ctx.user.id}-${Date.now()}.pdf`;
+          const { url } = await storagePut(fileKey, pdfBuffer, 'application/pdf');
+
+          return { url, success: true };
+        } catch (err: any) {
+          console.error('[buddyIA.generateMenuPDF] error:', err?.message || err);
+          return { url: null, success: false, error: 'No se pudo generar el PDF. Inténtalo de nuevo.' };
+        }
+      }),
+
     replaceMeal: protectedProcedure
       .input(
         z.object({

@@ -1078,6 +1078,46 @@ function MenuResultView({
     },
   });
 
+  const [exportingPDF, setExportingPDF] = useState(false);
+
+  const generatePDFMutation = trpc.buddyIA.generateMenuPDF.useMutation({
+    onSuccess: (data) => {
+      setExportingPDF(false);
+      if (data.url) {
+        window.open(data.url, '_blank');
+        toast.success("📄 PDF generado correctamente");
+      } else {
+        toast.error(data.error || "No se pudo generar el PDF.");
+      }
+    },
+    onError: () => {
+      setExportingPDF(false);
+      toast.error("Error al generar el PDF. Inténtalo de nuevo.");
+    },
+  });
+
+  const handleExportPDF = () => {
+    setExportingPDF(true);
+    generatePDFMutation.mutate({
+      menuName: localMenu.menuName || "Mi menú personalizado",
+      goal: questionnaireData.goal,
+      daysCount: localMenu.days.length,
+      days: localMenu.days.map(d => ({
+        dayName: d.day,
+        date: d.date,
+        meals: d.meals.map(m => ({
+          mealType: m.name,
+          name: m.food,
+          calories: m.calories,
+          protein: m.protein,
+          carbs: m.carbs,
+          fat: m.fat,
+          ingredients: m.ingredients,
+        })),
+      })),
+    });
+  };
+
   const saveMutation = trpc.buddyIA.saveGeneratedMenu.useMutation({
     onSuccess: (data) => {
       setSaved(true);
@@ -1143,14 +1183,20 @@ function MenuResultView({
             <p className="font-semibold text-sm truncate">{localMenu.menuName}</p>
             <p className="text-xs text-muted-foreground">{localMenu.targetCalories} kcal/día · {localMenu.persons} {localMenu.persons === 1 ? "persona" : "personas"} · {localMenu.days.length} días</p>
           </div>
-          {!saved ? (
-            <Button onClick={handleSave} disabled={saveMutation.isPending} size="sm"
-              className="bg-orange-500 hover:bg-orange-600 text-white text-xs flex-shrink-0">
-              {saveMutation.isPending ? "⏳" : "💾 Guardar"}
+          <div className="flex items-center gap-1.5 flex-shrink-0">
+            <Button onClick={handleExportPDF} disabled={exportingPDF || generatePDFMutation.isPending} size="sm" variant="outline"
+              className="text-xs px-2 py-1 h-7 border-orange-300 text-orange-600 hover:bg-orange-50">
+              {exportingPDF ? "⏳" : "📄 PDF"}
             </Button>
-          ) : (
-            <Badge className="bg-green-100 text-green-700 border-green-200 flex-shrink-0 text-xs">✓ Guardado</Badge>
-          )}
+            {!saved ? (
+              <Button onClick={handleSave} disabled={saveMutation.isPending} size="sm"
+                className="bg-orange-500 hover:bg-orange-600 text-white text-xs h-7 px-2">
+                {saveMutation.isPending ? "⏳" : "💾 Guardar"}
+              </Button>
+            ) : (
+              <Badge className="bg-green-100 text-green-700 border-green-200 text-xs">✓ Guardado</Badge>
+            )}
+          </div>
         </div>
 
         {/* Day selector - visual cards */}

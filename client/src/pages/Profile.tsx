@@ -850,14 +850,8 @@ export default function Profile() {
             </Field>
           )}
 
-          <SaveButton onClick={handleSaveHealth} loading={updateProfile.isPending || updateMedical.isPending} />
-        </div>
-      )}
+          <SectionDivider label="Actividad física" />
 
-      {/* ── TAB: ALIMENTACIÓN Y COCINA ── */}
-      {activeTab === "food" && (
-        <div style={card}>
-          <SectionTitle>Actividad física</SectionTitle>
           <Field label="Nivel de actividad general">
             <Select value={activityLevel} onChange={setActivityLevel} options={[
               { value: "sedentary", label: "Sedentario — poco o nada de ejercicio" },
@@ -909,6 +903,13 @@ export default function Profile() {
             ]} />
           </Field>
 
+          <SaveButton onClick={handleSaveHealth} loading={updateProfile.isPending || updateMedical.isPending} />
+        </div>
+      )}
+
+      {/* ── TAB: ALIMENTACIÓN Y COCINA ── */}
+      {activeTab === "food" && (
+        <div style={card}>
           <SectionDivider label="Hábitos culinarios" />
 
           <Field label="Número de comidas al día">
