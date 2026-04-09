@@ -1737,3 +1737,12 @@
 - [ ] Frontend: botón "Continuar con Apple" en LoginPage
 - [ ] Frontend: botón "Continuar con Apple" en LandingPage
 - [ ] Verificar flujo completo en dev
+- [x] Dashboard: mostrar foto de perfil del usuario en el saludo (en lugar de la inicial cuando hay foto subida)
+- [ ] Dashboard/Diario: corregir zona horaria — la fecha del día debe calcularse en hora local del usuario, no UTC, para que el diario resetee correctamente al pasar medianoche
+- [x] Perfil: reorganizar secciones eliminando preguntas duplicadas (alergias, frecuencia de deporte, etc. deben aparecer solo una vez) y estructurar en bloques lógicos: Datos personales, Objetivos y salud, Actividad física, Preferencias alimentarias
+- [x] Menús IA: corregir distribución por días (no meter todo en un día), eliminar duplicados de comidas, mejorar UI de visualización del menú generado
+- [ ] Dashboard: quitar sección de 4 tarjetas grandes redundantes (Lista compra, BuddyExperts, Recordatorios, Logros) → reemplazar por widget de progreso semanal
+- [ ] Dashboard: quitar sección "Menús para ti" (ya está en Menús)
+- [ ] Dashboard: mover BuddyIA al acceso rápido como asesor nutricional destacado
+- [ ] Dashboard: rediseñar sección Comunidad (BuddyIA como asesor, BuddyCoach como app de deporte del grupo)
+- [ ] BuddyScan: redirigir a escáner real (código de barras + foto de plato), no a Menús

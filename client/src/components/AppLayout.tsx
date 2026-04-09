@@ -134,34 +134,47 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
 
   const SIDEBAR_GROUPS = [
     {
-      label: t("sidebar.principal"),
+      label: "Inicio",
       items: [
         { key: "/app/dashboard", label: t("nav.dashboard"), to: "/app/dashboard", emoji: "🏠" },
-        { key: "/app/profile", label: t("sidebar.myProfile"), to: "/app/profile", emoji: "👤" },
-        { key: "/app/metrics", label: t("sidebar.myMetrics"), to: "/app/metrics", emoji: "⚖️" },
-        { key: "/app/connected-health", label: t("sidebar.connectedHealth"), to: "/app/connected-health", emoji: "❤️" },
-        { key: "/app/recipes", label: t("nav.recipes"), to: "/app/recipes", emoji: "📖" },
-        { key: "/app/menus", label: t("nav.menus"), to: "/app/menus", emoji: "📅" },
-        { key: "/app/my-menus", label: t("sidebar.myMenus"), to: "/app/my-menus", emoji: "🗂️" },
-        { key: "/app/inventory", label: t("nav.inventory"), to: "/app/inventory", emoji: "📦" },
+        { key: "/app/buddy-ia", label: t("nav.buddyIA"), to: "/app/buddy-ia", emoji: "🤖" },
+        { key: "/app/meal-notifications", label: t("sidebar.reminders"), to: "/app/meal-notifications", emoji: "🔔" },
       ],
     },
     {
-      label: t("sidebar.nutrition"),
+      label: "Mi Perfil",
       items: [
-        { key: "/app/meal-log", label: t("sidebar.nutritionalDiary"), to: "/app/meal-log", emoji: "📊" },
+        { key: "/app/profile", label: t("sidebar.myProfile"), to: "/app/profile", emoji: "👤" },
+        { key: "/app/metrics", label: t("sidebar.myMetrics"), to: "/app/metrics", emoji: "⚖️" },
+        { key: "/app/connected-health", label: t("sidebar.connectedHealth"), to: "/app/connected-health", emoji: "❤️" },
         { key: "/app/progress", label: t("nav.progress"), to: "/app/progress", emoji: "📉" },
         { key: "/app/stats", label: t("sidebar.stats"), to: "/app/stats", emoji: "📈" },
-        { key: "/app/favorites", label: t("sidebar.myFavorites"), to: "/app/favorites", emoji: "❤️" },
-        { key: "/app/menu-library", label: t("sidebar.menuLibrary"), to: "/app/menu-library", emoji: "📚" },
-        { key: "/app/specialized-menus", label: t("sidebar.specializedMenus"), to: "/app/specialized-menus", emoji: "🏥" },
-        { key: "/app/meal-notifications", label: t("sidebar.reminders"), to: "/app/meal-notifications", emoji: "🔔" },
         { key: "/app/achievements", label: t("sidebar.myAchievements"), to: "/app/achievements", emoji: "🏆" },
         { key: "/app/badges", label: "Mis Insignias", to: "/app/badges", emoji: "🎖️" },
       ],
     },
     {
-      label: t("sidebar.shopping"),
+      label: "Nutrición",
+      items: [
+        { key: "/app/meal-log", label: t("sidebar.nutritionalDiary"), to: "/app/meal-log", emoji: "📊" },
+        { key: "/app/recipes", label: t("nav.recipes"), to: "/app/recipes", emoji: "📖" },
+        { key: "/app/favorites", label: t("sidebar.myFavorites"), to: "/app/favorites", emoji: "❤️" },
+        { key: "/app/inventory", label: t("nav.inventory"), to: "/app/inventory", emoji: "📦" },
+      ],
+    },
+    {
+      label: "Menús",
+      items: [
+        { key: "/app/menus", label: "Explorar Menús", to: "/app/menus", emoji: "📅" },
+        { key: "/app/my-menus", label: t("sidebar.myMenus"), to: "/app/my-menus", emoji: "🗂️" },
+        { key: "/app/menu-library", label: t("sidebar.menuLibrary"), to: "/app/menu-library", emoji: "📚" },
+        { key: "/app/specialized-menus", label: t("sidebar.specializedMenus"), to: "/app/specialized-menus", emoji: "🏥" },
+        { key: "/app/event-menu", label: t("sidebar.eventMenu"), to: "/app/event-menu", emoji: "🎉" },
+        { key: "/app/saved-events", label: "Mis Eventos Guardados", to: "/app/saved-events", emoji: "⭐" },
+      ],
+    },
+    {
+      label: "Compra",
       items: [
         { key: "shopping", label: t("sidebar.shoppingList"), to: "/app/shopping-lists", emoji: "🛒" },
         { key: "/app/supermercados", label: t("sidebar.supermarkets"), to: "/app/supermercados", emoji: "🏪" },
@@ -169,15 +182,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       ],
     },
     {
-      label: t("sidebar.aiAssistants"),
-      items: [
-        { key: "/app/buddy-ia", label: t("nav.buddyIA"), to: "/app/buddy-ia", emoji: "🤖" },
-        { key: "/app/event-menu", label: t("sidebar.eventMenu"), to: "/app/event-menu", emoji: "🎉" },
-        { key: "/app/saved-events", label: "Mis Eventos Guardados", to: "/app/saved-events", emoji: "⭐" },
-      ],
-    },
-    {
-      label: t("sidebar.community"),
+      label: "Comunidad",
       items: [
         { key: "/app/buddy-experts", label: t("nav.buddyExperts"), to: "/app/buddy-experts", emoji: "🧑‍🍳" },
         { key: "/app/buddy-makers", label: t("nav.buddyMakers"), to: "/app/buddy-makers", emoji: "👨‍🍳" },
@@ -223,6 +228,9 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
   const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : "U";
   const userName = user?.name || "Usuario";
   const userEmail = user?.email || "";
+  const profileData = trpc.profile.get.useQuery(undefined, { enabled: !!user, staleTime: 5 * 60 * 1000 });
+  // Prefer profile photo from BuddyMarket DB, fall back to OAuth imageUrl
+  const userAvatarUrl = profileData.data?.user?.imageUrl || (user as any)?.imageUrl || null;
 
   return (
     <div style={{ width: "100%", maxWidth: "480px", margin: "0 auto", minHeight: "100dvh", background: "#FFF8F0", position: "relative" }}>
@@ -231,7 +239,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       {sidebarOpen && (<div onClick={() => setSidebarOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 200, backdropFilter: "blur(2px)" }} />)}
 
       {/* Sidebar Panel */}
-      <div className="app-sidebar" style={{ position: "fixed", top: 0, left: sidebarOpen ? 0 : "-310px", width: "300px", height: "100dvh", zIndex: 300, transition: "left 0.3s cubic-bezier(0.4,0,0.2,1)", display: "flex", flexDirection: "column", boxShadow: sidebarOpen ? "4px 0 40px rgba(0,0,0,0.15)" : "none", overflowY: "auto", background: "white" }}>
+      <div className="app-sidebar" style={{ position: "fixed", top: 0, left: sidebarOpen ? 0 : "-310px", width: "300px", height: "100dvh", paddingTop: "env(safe-area-inset-top)", zIndex: 300, transition: "left 0.3s cubic-bezier(0.4,0,0.2,1)", display: "flex", flexDirection: "column", boxShadow: sidebarOpen ? "4px 0 40px rgba(0,0,0,0.15)" : "none", overflowY: "auto", background: "white" }}>
 
         {/* Sidebar Header */}
         <div style={{ padding: "20px 20px 16px", borderBottom: "1px solid rgba(0,0,0,0.06)", display: "flex", alignItems: "center", gap: "12px" }}>
@@ -294,8 +302,8 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
 
         {/* Sidebar Footer */}
         <div style={{ padding: "16px 20px", borderTop: "1px solid rgba(0,0,0,0.06)", display: "flex", alignItems: "center", gap: "12px" }}>
-          {user?.imageUrl ? (
-            <img src={user.imageUrl} alt={userName} style={{ width: "42px", height: "42px", borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: "2px solid #F97316" }} />
+          {userAvatarUrl ? (
+            <img src={userAvatarUrl} alt={userName} style={{ width: "42px", height: "42px", borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: "2px solid #F97316" }} />
           ) : (
             <div style={{ width: "42px", height: "42px", borderRadius: "50%", background: "linear-gradient(135deg, #F97316, #FB923C)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px", fontWeight: 800, color: "white", flexShrink: 0 }}>{userInitial}</div>
           )}
@@ -350,7 +358,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       )}
 
       {/* Fixed Header */}
-      <div className="app-header" style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", background: "rgba(255,248,240,0.92)", borderBottom: "1px solid rgba(0,0,0,0.06)", paddingTop: "max(12px, env(safe-area-inset-top))", paddingBottom: "12px", paddingLeft: "16px", paddingRight: "16px", display: "flex", alignItems: "center", gap: "12px" }}>
+      <div className="app-header" style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", background: "rgba(255,248,240,0.92)", borderBottom: "1px solid rgba(0,0,0,0.06)", paddingTop: "calc(env(safe-area-inset-top) + 12px)", paddingBottom: "12px", paddingLeft: "max(16px, env(safe-area-inset-left))", paddingRight: "max(16px, env(safe-area-inset-right))", display: "flex", alignItems: "center", gap: "12px" }}>
         {showBack ? (
           <button onClick={onBack || (() => window.history.back())} style={{ width: "40px", height: "40px", borderRadius: "12px", background: "white", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", flexShrink: 0 }}>
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
@@ -376,7 +384,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       </div>
 
       {/* Content */}
-      <div style={{ paddingTop: "68px", paddingBottom: shouldShowNav ? "calc(64px + env(safe-area-inset-bottom))" : "0" }}>
+      <div style={{ paddingTop: "calc(env(safe-area-inset-top) + 68px)", paddingBottom: shouldShowNav ? "calc(64px + env(safe-area-inset-bottom))" : "0" }}>
         {children}
       </div>
 

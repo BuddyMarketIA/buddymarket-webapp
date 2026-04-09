@@ -6987,7 +6987,9 @@ ${input.cookingStyle === "tuppers" ? "- Todas las comidas deben ser aptas para t
 ${input.cookingStyle === "rapido" ? "- Tiempo máximo de preparación: 20 minutos\n- Usa ingredientes fáciles de encontrar y preparar" : ""}
 ${input.cookingStyle === "restaurante" ? "- Los días de restaurante: sugiere qué pedir en un menú del día típico español (primer plato, segundo, postre) que sea saludable y se ajuste al objetivo" : ""}
 
-Devuelve SOLO JSON válido con esta estructura exacta:
+IMPORTANTE: Debes generar EXACTAMENTE ${input.daysCount} días diferentes, uno por cada día a partir de ${input.startDate}. Cada día debe tener platos DISTINTOS (no repitas el mismo plato en el mismo momento del día en días diferentes). Calcula las fechas sumando 1 día por cada elemento del array.
+
+Devuelve SOLO JSON válido con esta estructura exacta (${input.daysCount} elementos en el array "days"):
 {
   "menuName": "nombre descriptivo del menú",
   "targetCalories": ${targetCalories},
@@ -6995,14 +6997,7 @@ Devuelve SOLO JSON válido con esta estructura exacta:
   "cookingTips": "consejo rápido sobre este estilo de cocina",
   "shoppingListSummary": "resumen de los ingredientes principales a comprar",
   "days": [
-    {
-      "day": "Lunes",
-      "date": "${input.startDate}",
-      "totalCalories": ${targetCalories},
-      "meals": [
-        ${mealNames.map(m => `{ "name": "${m}", "food": "descripción detallada del plato", "calories": 400, "protein": 20, "carbs": 50, "fat": 10, "prepTime": "15 min", "ingredients": ["ingrediente 1 - cantidad", "ingrediente 2 - cantidad"] }`).join(",\n        ")}
-      ]
-    }
+    ${(() => { const startD = new Date(input.startDate); return Array.from({length: input.daysCount}, (_, i) => { const d = new Date(startD); d.setDate(d.getDate() + i); const dateStr = d.toISOString().split('T')[0]; const dayNames = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado']; const dayName = dayNames[d.getDay()]; return `{ "day": "${dayName}", "date": "${dateStr}", "totalCalories": ${targetCalories}, "meals": [${mealNames.map(m => `{ "name": "${m}", "food": "descripción detallada del plato del ${dayName}", "calories": ${Math.round(targetCalories / mealNames.length)}, "protein": 20, "carbs": 50, "fat": 10, "prepTime": "20 min", "ingredients": ["ingrediente 1 - cantidad", "ingrediente 2 - cantidad"] }`).join(', ')}] }`; }).join(',\n    '); })()} 
   ]
 }`;
 
@@ -7127,7 +7122,12 @@ Devuelve SOLO JSON válido con esta estructura exacta:
 
         // Insert day parts and meals, creating recipes for each unique meal
         for (const dayData of input.days) {
-          const dayDate = dayData.date || input.startDate;
+          // Calculate correct date for each day: startDate + dayIndex
+          const startDateObj2 = new Date(input.startDate + 'T12:00:00Z');
+          const dayIndex = input.days.indexOf(dayData);
+          const calculatedDate = new Date(startDateObj2);
+          calculatedDate.setUTCDate(calculatedDate.getUTCDate() + dayIndex);
+          const dayDate = dayData.date || calculatedDate.toISOString().split('T')[0];
           for (const meal of dayData.meals) {
             const dpId = dayPartMap[meal.name.toLowerCase()] || dayPartMap["comida"] || allDayParts[0]?.id;
             if (!dpId) continue;

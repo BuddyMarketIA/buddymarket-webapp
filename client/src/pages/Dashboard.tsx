@@ -96,7 +96,8 @@ export default function Dashboard() {
     { label: t("nav.menus"), emoji: "📅", to: "/app/menus", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/mealprep_eb5fda9a.jpg", accent: "#6366F1", size: "small", subtitle: t("dashboard.menuSubtitle") },
     { label: t("nav.supermarkets"), emoji: "🛒", to: "/app/supermercados", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/shopping_d2c9f4e5.jpg", accent: "#10B981", size: "small", subtitle: t("dashboard.supermarketsSubtitle") },
     { label: t("nav.inventory"), emoji: "📦", to: "/app/inventory", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/pantry_3fcf0a1f.jpg", accent: "#F59E0B", size: "small", subtitle: t("dashboard.inventorySubtitle") },
-    { label: t("nav.scan"), emoji: "🤖", to: "/app/menus", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/buddyscan_dd3e1e08.jpg", accent: "#8B5CF6", size: "wide", subtitle: t("dashboard.scanSubtitle") },
+    { label: t("nav.scan"), emoji: "📷", to: "/app/buddy-scan", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/buddyscan_dd3e1e08.jpg", accent: "#8B5CF6", size: "wide", subtitle: t("dashboard.scanSubtitle") },
+    { label: "BuddyIA", emoji: "🧠", to: "/app/buddy-ia", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/buddyscan_dd3e1e08.jpg", accent: "#8B5CF6", size: "small", subtitle: "Tu asesor nutricional" },
     { label: t("nav.diary"), emoji: "📊", to: "/app/meal-log", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/vegetables_0f947a56.jpg", accent: "#EF4444", size: "small", subtitle: t("dashboard.diarySubtitle") },
   ];
   const [today] = useState(() => new Date().toISOString().split("T")[0]);
@@ -136,6 +137,9 @@ export default function Dashboard() {
 
   const firstName = user?.name?.split(" ")[0] || "Usuario";
   const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : "U";
+  // Prefer profile photo from BuddyMarket DB (updated when user uploads a photo)
+  // Fall back to OAuth imageUrl (from Google/Apple login)
+  const userAvatar = profileData.data?.user?.imageUrl || (user as any)?.imageUrl || null;
 
   const todayMenuItems: any[] = [];
 
@@ -233,8 +237,8 @@ export default function Dashboard() {
 
       {/* Greeting Row */}
       <div style={{ display: "flex", alignItems: "flex-start", gap: "14px", marginBottom: "20px" }}>
-        <div style={{ width: "52px", height: "52px", borderRadius: "50%", background: "linear-gradient(135deg, #F97316, #FB923C)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", fontWeight: 900, color: "white", flexShrink: 0, boxShadow: "0 4px 12px rgba(249,115,22,0.35)" }}>
-          {userInitial}
+        <div style={{ width: "52px", height: "52px", borderRadius: "50%", background: userAvatar ? "transparent" : "linear-gradient(135deg, #F97316, #FB923C)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", fontWeight: 900, color: "white", flexShrink: 0, boxShadow: "0 4px 12px rgba(249,115,22,0.35)", overflow: "hidden" }}>
+          {userAvatar ? <img src={userAvatar} alt={firstName} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : userInitial}
         </div>
         <div style={{ flex: 1 }}>
           <p style={{ margin: 0, fontSize: "22px", fontWeight: 900, color: "#1a1a1a", letterSpacing: "-0.03em" }}>
@@ -595,25 +599,59 @@ export default function Dashboard() {
         </div>
       </Link>
 
-      {/* 4 Quick Access Cards: Lista compra, Menús BuddyExperts, BuddyIA, Biblioteca Menús */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px", marginBottom: "20px" }}>
-        {[
-          { href: "/app/shopping-lists", emoji: "🛒", label: t("dashboard.shoppingList") },
-          { href: "/app/buddy-experts", emoji: "🧑‍🍳", label: t("dashboard.buddyExpertsMenu") },
-          { href: "/app/notifications", emoji: "🔔", label: t("dashboard.reminders") },
-          { href: "/app/achievements", emoji: "🏆", label: t("dashboard.achievements") },
-        ].map((item) => (
-          <Link key={item.href} href={item.href}>
-            <div style={{ background: "white", borderRadius: "18px", padding: "18px 10px", textAlign: "center", boxShadow: "0 2px 10px rgba(0,0,0,0.07)", cursor: "pointer", transition: "transform 0.2s", border: "none", minHeight: "110px", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "6px" }}
-              onMouseEnter={e => { e.currentTarget.style.transform = "scale(1.04)"; }}
-              onMouseLeave={e => { e.currentTarget.style.transform = "scale(1)"; }}
-            >
-              <div style={{ fontSize: "30px" }}>{item.emoji}</div>
-              <p style={{ margin: 0, fontSize: "13px", fontWeight: 800, color: "#1a1a1a", lineHeight: 1.3 }}>{item.label}</p>
+      {/* Weekly Progress Widget */}
+      {dailySummary.data && (() => {
+        const weekGoal = goalCalories * 7;
+        const weekConsumed = consumed; // today only — extend later with weekly query
+        const pct = Math.min(100, Math.round((consumed / goalCalories) * 100));
+        const macros = [
+          { label: "Proteína", val: protein, goal: proteinGoal, color: "#6366F1" },
+          { label: "Carbos", val: carbs, goal: carbsGoal, color: "#F59E0B" },
+          { label: "Grasas", val: fat, goal: fatGoal, color: "#EF4444" },
+        ];
+        return (
+          <div style={{ background: "white", borderRadius: "22px", padding: "18px 18px 16px", marginBottom: "16px", boxShadow: "0 2px 12px rgba(0,0,0,0.07)" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
+              <div>
+                <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em" }}>Progreso de hoy</p>
+                <p style={{ margin: "2px 0 0", fontSize: "22px", fontWeight: 900, color: "#1a1a1a", letterSpacing: "-0.03em" }}>{consumed} <span style={{ fontSize: "14px", fontWeight: 600, color: "#9ca3af" }}>/ {goalCalories} kcal</span></p>
+              </div>
+              <div style={{ width: "52px", height: "52px", position: "relative" }}>
+                <svg width="52" height="52" viewBox="0 0 52 52">
+                  <circle cx="26" cy="26" r="22" fill="none" stroke="#f3f4f6" strokeWidth="5"/>
+                  <circle cx="26" cy="26" r="22" fill="none" stroke="#F97316" strokeWidth="5"
+                    strokeDasharray={`${2 * Math.PI * 22}`}
+                    strokeDashoffset={`${2 * Math.PI * 22 * (1 - pct / 100)}`}
+                    strokeLinecap="round"
+                    transform="rotate(-90 26 26)"
+                  />
+                </svg>
+                <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+                  <span style={{ fontSize: "11px", fontWeight: 900, color: "#F97316" }}>{pct}%</span>
+                </div>
+              </div>
             </div>
-          </Link>
-        ))}
-      </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+              {macros.map(m => (
+                <div key={m.label}>
+                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "3px" }}>
+                    <span style={{ fontSize: "12px", fontWeight: 700, color: "#374151" }}>{m.label}</span>
+                    <span style={{ fontSize: "12px", fontWeight: 600, color: "#9ca3af" }}>{m.val}g / {m.goal}g</span>
+                  </div>
+                  <div style={{ height: "6px", borderRadius: "3px", background: "#f3f4f6", overflow: "hidden" }}>
+                    <div style={{ height: "100%", width: `${Math.min(100, (m.val / m.goal) * 100)}%`, background: m.color, borderRadius: "3px", transition: "width 0.5s" }} />
+                  </div>
+                </div>
+              ))}
+            </div>
+            <Link href="/app/meal-log">
+              <div style={{ marginTop: "12px", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", background: "#FFF7ED", borderRadius: "12px", padding: "8px 14px", cursor: "pointer" }}>
+                <span style={{ fontSize: "13px", fontWeight: 700, color: "#F97316" }}>Ver diario completo →</span>
+              </div>
+            </Link>
+          </div>
+        );
+      })()}
 
       {/* Quick Access — Bento Grid */}
       <div style={{ marginBottom: "20px" }}>
@@ -806,8 +844,8 @@ export default function Dashboard() {
         )}
       </div>
 
-      {/* Suggested Menus Section */}
-      <div style={{ marginBottom: "20px" }}>
+      {/* Suggested Menus Section — REMOVED (already in Menús section) */}
+      {false && <div style={{ marginBottom: "20px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
           <h2 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.02em" }}>📅 Menús para ti</h2>
           <Link href="/app/menu-library"><span style={{ fontSize: "13px", fontWeight: 600, color: "#F97316" }}>Ver todos →</span></Link>
@@ -818,9 +856,9 @@ export default function Dashboard() {
               <div key={i} style={{ height: "120px", borderRadius: "20px", background: "#f3f4f6", animation: "pulse 1.5s infinite" }} />
             ))}
           </div>
-        ) : suggestedMenus.data && suggestedMenus.data.length > 0 ? (
+        ) : (suggestedMenus.data ?? []).length > 0 ? (
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
-            {suggestedMenus.data.slice(0, 2).map((menu: any) => {
+            {(suggestedMenus.data ?? []).slice(0, 2).map((menu: any) => {
               const goalGradients: Record<string, string> = {
                 perdida_peso: "linear-gradient(145deg, #16A34A 0%, #22C55E 100%)",
                 ganancia_muscular: "linear-gradient(145deg, #1D4ED8 0%, #3B82F6 100%)",
@@ -868,7 +906,7 @@ export default function Dashboard() {
             </div>
           </Link>
         )}
-      </div>
+      </div>}
 
       {/* Recipe of the Day Carousel */}
       <div style={{ marginBottom: "20px" }}>
@@ -921,9 +959,9 @@ export default function Dashboard() {
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px" }}>
           {[
-            { label: "BuddyExperts", emoji: "👨‍⚕️", to: "/app/buddy-experts", desc: "Nutricionistas y deportistas", color: "linear-gradient(135deg, #F97316, #EA580C)" },
+            { label: "BuddyIA", emoji: "🧠", to: "/app/buddy-ia", desc: "Tu asesor nutricional IA", color: "linear-gradient(135deg, #8B5CF6, #6366F1)" },
+            { label: "BuddyExperts", emoji: "👨‍⚕️", to: "/app/buddy-experts", desc: "Nutricionistas y expertos", color: "linear-gradient(135deg, #F97316, #EA580C)" },
             { label: "BuddyMakers", emoji: "👨‍🍳", to: "/app/buddy-makers", desc: "Creadores de recetas", color: "linear-gradient(135deg, #EC4899, #F97316)" },
-            { label: "BuddyIA", emoji: "🤖", to: "/app/buddy-ia", desc: "Asistente nutricional IA", color: "linear-gradient(135deg, #8B5CF6, #6366F1)" },
           ].map((card) => (
             <Link key={card.label} href={card.to}>
               <div style={{ borderRadius: "18px", overflow: "hidden", cursor: "pointer", boxShadow: "0 4px 14px rgba(0,0,0,0.15)", transition: "transform 0.2s" }}
@@ -1000,9 +1038,9 @@ export default function Dashboard() {
           <div style={{ flex: 1, position: "relative" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "2px" }}>
               <p style={{ margin: 0, fontSize: "16px", fontWeight: 900, color: "white" }}>BuddyCoach</p>
-              <span style={{ background: "#6366F1", color: "white", fontSize: "9px", fontWeight: 800, borderRadius: "6px", padding: "2px 6px" }}>IA Nutricional</span>
+              <span style={{ background: "#6366F1", color: "white", fontSize: "9px", fontWeight: 800, borderRadius: "6px", padding: "2px 6px" }}>App de Deporte</span>
             </div>
-            <p style={{ margin: 0, fontSize: "14px", color: "rgba(255,255,255,0.6)" }}>Tu entrenador nutricional personal con IA</p>
+            <p style={{ margin: 0, fontSize: "14px", color: "rgba(255,255,255,0.6)" }}>Entrena con IA · Rutinas · Seguimiento deportivo</p>
           </div>
           <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="rgba(255,255,255,0.5)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M9 18l6-6-6-6"/>

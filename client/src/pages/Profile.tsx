@@ -13,25 +13,20 @@ import {
   ExclamationCircleIcon,
   FireIcon,
   SparklesIcon,
-  BeakerIcon,
   CakeIcon,
   TrashIcon,
-  BookmarkIcon,
 } from "@heroicons/react/24/outline";
 
+// ─── 5 tabs consolidados ────────────────────────────────────────────────────
 const TABS = [
-  { key: "personal", label: "Personal", icon: UserIcon },
-  { key: "body", label: "Cuerpo", icon: FireIcon },
-  { key: "lifestyle", label: "Estilo de vida", icon: SparklesIcon },
-  { key: "culinary", label: "Cocina", icon: CakeIcon },
-  { key: "medical", label: "Salud", icon: HeartIcon },
-  { key: "allergies", label: "Alergias", icon: ExclamationCircleIcon },
-  { key: "menu_prefs", label: "Menú IA", icon: BookmarkIcon },
-  { key: "prefs", label: "Preferencias", icon: BeakerIcon },
-  { key: "shopping", label: "Compras", icon: ShoppingBagIcon },
-  { key: "account", label: "Cuenta", icon: TrashIcon },
+  { key: "account",    label: "Cuenta",             icon: UserIcon },
+  { key: "health",     label: "Salud y objetivos",  icon: HeartIcon },
+  { key: "food",       label: "Alimentación",        icon: CakeIcon },
+  { key: "allergies",  label: "Alergias",            icon: ExclamationCircleIcon },
+  { key: "prefs",      label: "Preferencias",        icon: SparklesIcon },
 ];
 
+// ─── Helpers de UI ───────────────────────────────────────────────────────────
 function LanguageSelectorInProfile() {
   const { i18n } = useTranslation();
   const updateBasic = trpc.profile.updateBasic.useMutation();
@@ -56,17 +51,12 @@ function LanguageSelectorInProfile() {
           key={lang.code}
           onClick={() => handleChange(lang.code as LanguageCode)}
           style={{
-            padding: "10px 18px",
-            borderRadius: "20px",
+            padding: "10px 18px", borderRadius: "20px",
             border: i18n.language === lang.code ? "2px solid #F97316" : "1.5px solid #e5e7eb",
             background: i18n.language === lang.code ? "rgba(249,115,22,0.1)" : "white",
             color: i18n.language === lang.code ? "#F97316" : "#374151",
-            fontSize: "14px",
-            fontWeight: i18n.language === lang.code ? 700 : 500,
-            cursor: "pointer",
-            display: "flex",
-            alignItems: "center",
-            gap: "6px",
+            fontSize: "14px", fontWeight: i18n.language === lang.code ? 700 : 500,
+            cursor: "pointer", display: "flex", alignItems: "center", gap: "6px",
           }}
         >
           <span style={{ fontSize: "18px" }}>{lang.flag}</span>
@@ -83,6 +73,16 @@ function SectionTitle({ children }: { children: React.ReactNode }) {
     <p style={{ margin: "0 0 16px", fontSize: "13px", fontWeight: 800, color: "#9ca3af", letterSpacing: "0.08em", textTransform: "uppercase" }}>
       {children}
     </p>
+  );
+}
+
+function SectionDivider({ label }: { label: string }) {
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: "10px", margin: "24px 0 16px" }}>
+      <div style={{ flex: 1, height: "1px", background: "#e5e7eb" }} />
+      <span style={{ fontSize: "12px", fontWeight: 700, color: "#9ca3af", letterSpacing: "0.06em", textTransform: "uppercase", whiteSpace: "nowrap" }}>{label}</span>
+      <div style={{ flex: 1, height: "1px", background: "#e5e7eb" }} />
+    </div>
   );
 }
 
@@ -166,20 +166,21 @@ function SaveButton({ onClick, loading }: { onClick: () => void; loading: boolea
   );
 }
 
+// ─── Componente principal ────────────────────────────────────────────────────
 export default function Profile() {
-  const [activeTab, setActiveTab] = useState("personal");
+  const [activeTab, setActiveTab] = useState("account");
   const { user, logout } = useAuth();
   const { data: profile, isLoading } = trpc.profile.get.useQuery();
   const { data: allergiesCatalog } = trpc.catalogs.allergies.useQuery();
   const { data: restrictionsCatalog } = trpc.catalogs.dietRestrictions.useQuery();
   const utils = trpc.useUtils();
 
-  // Personal
+  // ── Personal / Cuenta ──
   const [name, setName] = useState("");
   const [phone, setPhone] = useState("");
   const [description, setDescription] = useState("");
 
-  // Body
+  // ── Salud y objetivos (body) ──
   const [height, setHeight] = useState("");
   const [weight, setWeight] = useState("");
   const [targetWeight, setTargetWeight] = useState("");
@@ -194,33 +195,19 @@ export default function Profile() {
   const [fitnessGoalDetail, setFitnessGoalDetail] = useState("");
   const [previousDietExperience, setPreviousDietExperience] = useState<string[]>([]);
 
-  // Lifestyle
-  const [activityLevel, setActivityLevel] = useState("");
-  const [practicesSports, setPracticesSports] = useState(false);
-  const [sportsFrequency, setSportsFrequency] = useState("");
-  const [sportsTypes, setSportsTypes] = useState<string[]>([]);
-  const [workType, setWorkType] = useState("");
+  // ── Salud y objetivos (lifestyle health fields) ──
   const [sleepHours, setSleepHours] = useState("");
   const [stressLevel, setStressLevel] = useState("");
   const [waterIntake, setWaterIntake] = useState("");
-  const [alcoholConsumption, setAlcoholConsumption] = useState("");
-  const [smokingStatus, setSmokingStatus] = useState("");
 
-  // Culinary
-  const [cookingLevel, setCookingLevel] = useState("");
-  const [mealPrepTime, setMealPrepTime] = useState("");
-  const [dailyMeals, setDailyMeals] = useState("");
-  const [snackingHabits, setSnackingHabits] = useState("");
-  const [eatOutFrequency, setEatOutFrequency] = useState("");
-  const [budgetPerWeek, setBudgetPerWeek] = useState("");
-  const [favoriteCuisines, setFavoriteCuisines] = useState<string[]>([]);
-  const [dislikedIngredients, setDislikedIngredients] = useState("");
-  const [cookingEquipment, setCookingEquipment] = useState<string[]>([]);
-
-  // Medical
+  // ── Salud y objetivos (medical) ──
+  const [dietaryPattern, setDietaryPattern] = useState("");
+  const [selectedLifestyle, setSelectedLifestyle] = useState<string[]>([]);
+  const [selectedSpecialNeeds, setSelectedSpecialNeeds] = useState<string[]>([]);
+  const [pregnancyWeek, setPregnancyWeek] = useState("");
+  const [selectedMedicalConditions, setSelectedMedicalConditions] = useState<string[]>([]);
   const [hasMedicalConditions, setHasMedicalConditions] = useState(false);
   const [medicalConditions, setMedicalConditions] = useState("");
-  const [selectedMedicalConditions, setSelectedMedicalConditions] = useState<string[]>([]);
   const [hasSurgery, setHasSurgery] = useState(false);
   const [surgery, setSurgery] = useState("");
   const [useMetabolismMedication, setUseMetabolismMedication] = useState(false);
@@ -231,17 +218,30 @@ export default function Profile() {
   const [medicalDiet, setMedicalDiet] = useState("");
   const [hasMedicalFamilyBackground, setHasMedicalFamilyBackground] = useState(false);
   const [medicalFamilyBackground, setMedicalFamilyBackground] = useState("");
-  // New health profile fields
-  const [dietaryPattern, setDietaryPattern] = useState("");
-  const [selectedLifestyle, setSelectedLifestyle] = useState<string[]>([]);
-  const [selectedSpecialNeeds, setSelectedSpecialNeeds] = useState<string[]>([]);
-  const [pregnancyWeek, setPregnancyWeek] = useState("");
 
-  // Allergies
+  // ── Alimentación y cocina ──
+  const [activityLevel, setActivityLevel] = useState("");
+  const [practicesSports, setPracticesSports] = useState(false);
+  const [sportsFrequency, setSportsFrequency] = useState("");
+  const [sportsTypes, setSportsTypes] = useState<string[]>([]);
+  const [workType, setWorkType] = useState("");
+  const [alcoholConsumption, setAlcoholConsumption] = useState("");
+  const [smokingStatus, setSmokingStatus] = useState("");
+  const [cookingLevel, setCookingLevel] = useState("");
+  const [mealPrepTime, setMealPrepTime] = useState("");
+  const [dailyMeals, setDailyMeals] = useState("");
+  const [snackingHabits, setSnackingHabits] = useState("");
+  const [eatOutFrequency, setEatOutFrequency] = useState("");
+  const [budgetPerWeek, setBudgetPerWeek] = useState("");
+  const [favoriteCuisines, setFavoriteCuisines] = useState<string[]>([]);
+  const [dislikedIngredients, setDislikedIngredients] = useState("");
+  const [cookingEquipment, setCookingEquipment] = useState<string[]>([]);
+
+  // ── Alergias ──
   const [selectedAllergies, setSelectedAllergies] = useState<number[]>([]);
   const [selectedRestrictions, setSelectedRestrictions] = useState<number[]>([]);
 
-  // Preferences
+  // ── Preferencias de app ──
   const [preferredMealComplexity, setPreferredMealComplexity] = useState("");
   const [portionSize, setPortionSize] = useState("");
   const [preferSeasonalIngredients, setPreferSeasonalIngredients] = useState(false);
@@ -255,46 +255,35 @@ export default function Profile() {
   const [notifications, setNotifications] = useState(false);
   const [newsletter, setNewsletter] = useState(false);
 
-  // Shopping
+  // ── Hábitos de compra ──
   const [purchaseFrequency, setPurchaseFrequency] = useState("");
   const [purchaseLocation, setPurchaseLocation] = useState("");
   const [organicProducts, setOrganicProducts] = useState(false);
   const [suggestHealthier, setSuggestHealthier] = useState(false);
   const [suggestCheaper, setSuggestCheaper] = useState(false);
 
-  // Menu IA Preferences
+  // ── Preferencias Menú IA ──
   const { data: menuPrefs } = trpc.profile.getMenuPreferences.useQuery();
   const [mpDietType, setMpDietType] = useState("");
-  const [mpAllergies, setMpAllergies] = useState<string[]>([]);
-  const [mpRestrictions, setMpRestrictions] = useState<string[]>([]);
-  const [mpDislikedFoods, setMpDislikedFoods] = useState("");
   const [mpProteinSource, setMpProteinSource] = useState("");
-  const [mpCookingTime, setMpCookingTime] = useState("");
-  const [mpCookingSkill, setMpCookingSkill] = useState("");
-  const [mpKitchenEquipment, setMpKitchenEquipment] = useState<string[]>([]);
+  const [mpDislikedFoods, setMpDislikedFoods] = useState("");
   const [mpSupplements, setMpSupplements] = useState("");
   const [mpSpecialNotes, setMpSpecialNotes] = useState("");
   const [mpPersons, setMpPersons] = useState(1);
   const [mpMealsPerDay, setMpMealsPerDay] = useState(3);
+
   const saveMenuPrefs = trpc.profile.saveMenuPreferences.useMutation({
-    onSuccess: () => {
-      utils.profile.getMenuPreferences.invalidate();
-      toast.success("✅ Preferencias de menú guardadas");
-    },
+    onSuccess: () => { utils.profile.getMenuPreferences.invalidate(); toast.success("✅ Preferencias de menú guardadas"); },
     onError: () => toast.error("Error al guardar las preferencias"),
   });
 
-  // Helper seguro para JSON.parse que nunca crashea
+  // ── safeJsonParse ──
   function safeJsonParse<T>(str: string | null | undefined, fallback: T): T {
     if (!str) return fallback;
-    try {
-      const parsed = JSON.parse(str);
-      return parsed ?? fallback;
-    } catch {
-      return fallback;
-    }
+    try { const p = JSON.parse(str); return p ?? fallback; } catch { return fallback; }
   }
 
+  // ── Cargar datos ──
   useEffect(() => {
     if (!profile) return;
     const u = profile.user;
@@ -342,6 +331,10 @@ export default function Profile() {
     }
 
     if (m) {
+      setDietaryPattern(m.dietaryPattern || "");
+      setSelectedLifestyle(safeJsonParse(m.lifestyle, []));
+      setSelectedSpecialNeeds(safeJsonParse(m.specialNeeds, []));
+      setPregnancyWeek(m.pregnancyWeek?.toString() || "");
       setHasMedicalConditions(m.hasMedicalConditions ?? false);
       setMedicalConditions(m.medicalConditions || "");
       setSelectedMedicalConditions(m.medicalConditions ? m.medicalConditions.split(",").map((s: string) => s.trim()).filter(Boolean) : []);
@@ -355,11 +348,6 @@ export default function Profile() {
       setMedicalDiet(m.medicalDiet || "");
       setHasMedicalFamilyBackground(m.hasMedicalFamilyBackground ?? false);
       setMedicalFamilyBackground(m.medicalFamilyBackground || "");
-      // New fields
-      setDietaryPattern(m.dietaryPattern || "");
-      setSelectedLifestyle(safeJsonParse(m.lifestyle, []));
-      setSelectedSpecialNeeds(safeJsonParse(m.specialNeeds, []));
-      setPregnancyWeek(m.pregnancyWeek?.toString() || "");
     }
 
     if (pr) {
@@ -389,20 +377,15 @@ export default function Profile() {
   useEffect(() => {
     if (!menuPrefs) return;
     setMpDietType(menuPrefs.dietType || "");
-    setMpAllergies(menuPrefs.allergies || []);
-    setMpRestrictions(menuPrefs.restrictions || []);
-    setMpDislikedFoods(menuPrefs.dislikedFoods || "");
     setMpProteinSource(menuPrefs.proteinSource || "");
-    setMpCookingTime(menuPrefs.cookingTime || "");
-    setMpCookingSkill(menuPrefs.cookingSkill || "");
-    setMpKitchenEquipment(menuPrefs.kitchenEquipment || []);
+    setMpDislikedFoods(menuPrefs.dislikedFoods || "");
     setMpSupplements(menuPrefs.supplementsUsed || "");
     setMpSpecialNotes(menuPrefs.specialNotes || "");
     setMpPersons(menuPrefs.persons ?? 1);
     setMpMealsPerDay(menuPrefs.mealsPerDay ?? 3);
   }, [menuPrefs]);
 
-  // Photo upload with crop
+  // ── Foto de perfil ──
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
   const [cropImageSrc, setCropImageSrc] = useState<string | null>(null);
   const uploadProfilePhoto = trpc.profile.uploadProfilePhoto.useMutation({
@@ -412,14 +395,10 @@ export default function Profile() {
   const handlePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    // Reset input so same file can be selected again
     e.target.value = "";
     if (file.size > 10 * 1024 * 1024) { toast.error("La foto no puede superar 10 MB"); return; }
     const reader = new FileReader();
-    reader.onload = (ev) => {
-      const dataUrl = ev.target?.result as string;
-      setCropImageSrc(dataUrl); // open crop modal
-    };
+    reader.onload = (ev) => { const dataUrl = ev.target?.result as string; setCropImageSrc(dataUrl); };
     reader.readAsDataURL(file);
   };
   const handleCropComplete = (blob: Blob) => {
@@ -435,6 +414,7 @@ export default function Profile() {
   };
   const handleCropCancel = () => setCropImageSrc(null);
 
+  // ── Mutaciones ──
   const updateBasic = trpc.profile.updateBasic.useMutation({ onSuccess: () => { utils.profile.get.invalidate(); toast.success("Datos personales guardados"); } });
   const updateProfile = trpc.profile.updateProfile.useMutation({ onSuccess: () => { utils.profile.get.invalidate(); toast.success("Perfil actualizado"); } });
   const updateMedical = trpc.profile.updateMedical.useMutation({ onSuccess: () => { utils.profile.get.invalidate(); toast.success("Datos de salud guardados"); } });
@@ -442,38 +422,52 @@ export default function Profile() {
   const setAllergiesMut = trpc.profile.setAllergies.useMutation({ onSuccess: () => { utils.profile.get.invalidate(); toast.success("Alergias actualizadas"); } });
   const setDietRestrictionsMut = trpc.profile.setDietRestrictions.useMutation({ onSuccess: () => { utils.profile.get.invalidate(); toast.success("Restricciones actualizadas"); } });
 
-  const handleSavePersonal = () => updateBasic.mutate({ name, phone, description });
+  // ── Guardar Salud y objetivos (body + health lifestyle + medical) ──
+  const handleSaveHealth = () => {
+    // Body + lifestyle health fields
+    updateProfile.mutate({
+      height: height ? parseFloat(height) : undefined,
+      weight: weight ? parseFloat(weight) : undefined,
+      targetWeight: targetWeight ? parseFloat(targetWeight) : undefined,
+      gender: (gender as any) || undefined,
+      birthYear: birthYear ? parseInt(birthYear) : undefined,
+      heightUnit: heightUnit as any,
+      weightUnit: weightUnit as any,
+      bodyFatPercentage: bodyFatPercentage ? parseFloat(bodyFatPercentage) : undefined,
+      mainGoal: (mainGoal as any) || undefined,
+      weightChangeRate: weightChangeRate ? parseFloat(weightChangeRate) : undefined,
+      motivationLevel: (motivationLevel as any) || undefined,
+      fitnessGoalDetail: fitnessGoalDetail || undefined,
+      previousDietExperience: previousDietExperience.length ? JSON.stringify(previousDietExperience) : undefined,
+      sleepHours: sleepHours ? parseInt(sleepHours) : undefined,
+      stressLevel: (stressLevel as any) || undefined,
+      waterIntake: waterIntake ? parseFloat(waterIntake) : undefined,
+    });
+    // Medical
+    updateMedical.mutate({
+      hasMedicalConditions,
+      medicalConditions: selectedMedicalConditions.length ? selectedMedicalConditions.join(", ") : (medicalConditions || undefined),
+      hasSurgery, surgery: surgery || undefined,
+      useMetabolismMedication, metabolismMedication: metabolismMedication || undefined,
+      useNutritionalSupplements, nutritionalSupplements: nutritionalSupplements || undefined,
+      hasMedicalDiet, medicalDiet: medicalDiet || undefined,
+      hasMedicalFamilyBackground, medicalFamilyBackground: medicalFamilyBackground || undefined,
+      dietaryPattern: dietaryPattern || undefined,
+      lifestyle: selectedLifestyle.length ? JSON.stringify(selectedLifestyle) : undefined,
+      specialNeeds: selectedSpecialNeeds.length ? JSON.stringify(selectedSpecialNeeds) : undefined,
+      pregnancyWeek: pregnancyWeek ? parseInt(pregnancyWeek) : undefined,
+    });
+  };
 
-  const handleSaveBody = () => updateProfile.mutate({
-    height: height ? parseFloat(height) : undefined,
-    weight: weight ? parseFloat(weight) : undefined,
-    targetWeight: targetWeight ? parseFloat(targetWeight) : undefined,
-    gender: (gender as any) || undefined,
-    birthYear: birthYear ? parseInt(birthYear) : undefined,
-    heightUnit: heightUnit as any,
-    weightUnit: weightUnit as any,
-    bodyFatPercentage: bodyFatPercentage ? parseFloat(bodyFatPercentage) : undefined,
-    mainGoal: (mainGoal as any) || undefined,
-    weightChangeRate: weightChangeRate ? parseFloat(weightChangeRate) : undefined,
-    motivationLevel: (motivationLevel as any) || undefined,
-    fitnessGoalDetail: fitnessGoalDetail || undefined,
-    previousDietExperience: previousDietExperience.length ? JSON.stringify(previousDietExperience) : undefined,
-  });
-
-  const handleSaveLifestyle = () => updateProfile.mutate({
+  // ── Guardar Alimentación y cocina ──
+  const handleSaveFood = () => updateProfile.mutate({
     activityLevel: (activityLevel as any) || undefined,
     practicesSports,
     sportsFrequency: (sportsFrequency as any) || undefined,
     sportsTypes: sportsTypes.length ? JSON.stringify(sportsTypes) : undefined,
     workType: (workType as any) || undefined,
-    sleepHours: sleepHours ? parseInt(sleepHours) : undefined,
-    stressLevel: (stressLevel as any) || undefined,
-    waterIntake: waterIntake ? parseFloat(waterIntake) : undefined,
     alcoholConsumption: (alcoholConsumption as any) || undefined,
     smokingStatus: (smokingStatus as any) || undefined,
-  });
-
-  const handleSaveCulinary = () => updateProfile.mutate({
     cookingLevel: (cookingLevel as any) || undefined,
     mealPrepTime: (mealPrepTime as any) || undefined,
     dailyMeals: dailyMeals ? parseInt(dailyMeals) : undefined,
@@ -485,21 +479,7 @@ export default function Profile() {
     cookingEquipment: cookingEquipment.length ? JSON.stringify(cookingEquipment) : undefined,
   });
 
-  const handleSaveMedical = () => updateMedical.mutate({
-    hasMedicalConditions,
-    medicalConditions: selectedMedicalConditions.length ? selectedMedicalConditions.join(", ") : (medicalConditions || undefined),
-    hasSurgery, surgery: surgery || undefined,
-    useMetabolismMedication, metabolismMedication: metabolismMedication || undefined,
-    useNutritionalSupplements, nutritionalSupplements: nutritionalSupplements || undefined,
-    hasMedicalDiet, medicalDiet: medicalDiet || undefined,
-    hasMedicalFamilyBackground, medicalFamilyBackground: medicalFamilyBackground || undefined,
-    dietaryPattern: dietaryPattern || undefined,
-    lifestyle: selectedLifestyle.length ? JSON.stringify(selectedLifestyle) : undefined,
-    specialNeeds: selectedSpecialNeeds.length ? JSON.stringify(selectedSpecialNeeds) : undefined,
-    pregnancyWeek: pregnancyWeek ? parseInt(pregnancyWeek) : undefined,
-  });
-
-  // Alergias que requieren confirmación explícita por ser potencialmente graves (rec. #6)
+  // ── Alergias con confirmación grave ──
   const SEVERE_ALLERGY_KEYWORDS = ["cacahuete", "frutos secos", "nuez", "almendra", "avellana",
     "marisco", "pescado", "leche", "huevo", "soja", "trigo", "gluten", "sésamo", "moluscos", "altramuces"];
   const [showAllergyConfirm, setShowAllergyConfirm] = useState(false);
@@ -507,15 +487,12 @@ export default function Profile() {
   const [newSevereAllergyNames, setNewSevereAllergyNames] = useState<string[]>([]);
 
   const handleSaveAllergies = () => {
-    // Check if any newly added allergy is severe (rec. #6)
     const currentIds = new Set((profile?.allergies ?? []).map((a: any) => a.allergy?.id ?? a.id));
     const newlyAdded = selectedAllergies.filter((id) => !currentIds.has(id));
     const newSevere = newlyAdded.reduce<{ id: number; name: string }[]>((acc, id) => {
       const allergy = allergiesCatalog?.find((a: any) => a.id === id);
       const name = (allergy?.nameEs ?? "").toLowerCase();
-      if (SEVERE_ALLERGY_KEYWORDS.some((s) => name.includes(s))) {
-        acc.push({ id, name: allergy?.nameEs ?? String(id) });
-      }
+      if (SEVERE_ALLERGY_KEYWORDS.some((s) => name.includes(s))) acc.push({ id, name: allergy?.nameEs ?? String(id) });
       return acc;
     }, []);
     if (newSevere.length > 0) {
@@ -537,19 +514,33 @@ export default function Profile() {
     setDietRestrictionsMut.mutate({ restrictionIds: selectedRestrictions });
   };
 
-  const handleSavePreferences = () => updatePreferences.mutate({
-    preferredMealComplexity: (preferredMealComplexity as any) || undefined,
-    portionSize: (portionSize as any) || undefined,
-    preferSeasonalIngredients, preferLocalProducts, avoidProcessedFood,
-    interestedInMealPrep, wantsShoppingListAutomation, wantsCalorieTracking, wantsMacroTracking,
-    interestedInNutritionalAdvices, notifications, newsletter,
-  });
-
-  const handleSaveShopping = () => updatePreferences.mutate({
-    purchaseFrequency: purchaseFrequency || undefined,
-    purchaseLocation: purchaseLocation || undefined,
-    organicProducts, suggestHealthierProducts: suggestHealthier, suggestCheaperProducts: suggestCheaper,
-  });
+  // ── Guardar Preferencias (app + compras + menú IA) ──
+  const handleSavePreferences = () => {
+    updatePreferences.mutate({
+      preferredMealComplexity: (preferredMealComplexity as any) || undefined,
+      portionSize: (portionSize as any) || undefined,
+      preferSeasonalIngredients, preferLocalProducts, avoidProcessedFood,
+      interestedInMealPrep, wantsShoppingListAutomation, wantsCalorieTracking, wantsMacroTracking,
+      interestedInNutritionalAdvices, notifications, newsletter,
+      purchaseFrequency: purchaseFrequency || undefined,
+      purchaseLocation: purchaseLocation || undefined,
+      organicProducts, suggestHealthierProducts: suggestHealthier, suggestCheaperProducts: suggestCheaper,
+    });
+    saveMenuPrefs.mutate({
+      dietType: mpDietType || undefined,
+      allergies: selectedAllergies.map(String),
+      restrictions: selectedRestrictions.map(String),
+      dislikedFoods: mpDislikedFoods,
+      proteinSource: mpProteinSource || undefined,
+      cookingTime: mealPrepTime || undefined,
+      cookingSkill: cookingLevel || undefined,
+      kitchenEquipment: cookingEquipment,
+      supplementsUsed: mpSupplements,
+      specialNotes: mpSpecialNotes,
+      persons: mpPersons,
+      mealsPerDay: dailyMeals ? parseInt(dailyMeals) : mpMealsPerDay,
+    });
+  };
 
   if (isLoading) {
     return (
@@ -558,37 +549,6 @@ export default function Profile() {
       </div>
     );
   }
-
-  // Calculate profile completion percentage by section
-  // Medical fields are fully optional — they don't count toward required completion
-  const requiredSectionFields = {
-    personal: [name, birthYear, gender],
-    body: [height, weight, mainGoal],
-    lifestyle: [activityLevel, sleepHours],
-    culinary: [cookingLevel, dailyMeals],
-  };
-  // All section fields (for display purposes, showing how much is filled)
-  const sectionFields = {
-    personal: [name, birthYear, gender, description],
-    body: [height, weight, mainGoal, targetWeight, weightChangeRate, motivationLevel, fitnessGoalDetail],
-    lifestyle: [activityLevel, workType, sleepHours, stressLevel, waterIntake],
-    culinary: [cookingLevel, dailyMeals, mealPrepTime, budgetPerWeek],
-    medical: [medicalConditions, medicalFamilyBackground],
-  };
-  
-  const sectionCompletion: Record<string, { filled: number; total: number; percent: number }> = {};
-  Object.entries(sectionFields).forEach(([section, fields]) => {
-    const filled = fields.filter(f => f !== null && f !== undefined && f.toString().trim() !== "").length;
-    const total = fields.length;
-    // Medical section: always show as 100% (fully optional)
-    sectionCompletion[section] = { filled, total, percent: section === "medical" ? 100 : Math.round((filled / total) * 100) };
-  });
-  
-  // Completion % based only on required fields
-  const requiredFields = Object.values(requiredSectionFields).flat();
-  const requiredFilled = requiredFields.filter(f => f !== null && f !== undefined && f.toString().trim() !== "").length;
-  const completionPercent = Math.round((requiredFilled / requiredFields.length) * 100);
-  const incompleteSections = Object.entries(sectionCompletion).filter(([k, v]) => k !== "medical" && v.percent < 100).map(([k]) => TABS.find(t => t.key === k)?.label).filter(Boolean);
 
   const card: React.CSSProperties = { background: "white", borderRadius: "18px", padding: "20px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", marginBottom: "16px" };
 
@@ -603,9 +563,10 @@ export default function Profile() {
           onCancel={handleCropCancel}
         />
       )}
-      {/* Header */}
-      <div style={{ ...card }}>
-        <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: completionPercent < 100 ? "14px" : "0" }}>
+
+      {/* Header con foto y nombre */}
+      <div style={{ ...card, marginBottom: "16px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
           <label htmlFor="profile-photo-input" style={{ position: "relative", width: "64px", height: "64px", borderRadius: "50%", flexShrink: 0, cursor: "pointer", display: "block" }}>
             {(photoPreview || user?.imageUrl) ? (
               <img src={photoPreview || user?.imageUrl!} alt="Foto de perfil" style={{ width: "64px", height: "64px", borderRadius: "50%", objectFit: "cover", border: "2px solid #F97316" }} />
@@ -626,42 +587,14 @@ export default function Profile() {
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ margin: 0, fontSize: "18px", fontWeight: 800, color: "#1a1a1a" }}>{user?.name || "Mi perfil"}</p>
             <p style={{ margin: "2px 0 0", fontSize: "13px", color: "#9ca3af" }}>{user?.email}</p>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px", marginTop: "6px" }}>
-              <div style={{ flex: 1, height: "6px", borderRadius: "3px", background: "#f3f4f6", overflow: "hidden" }}>
-                <div style={{ height: "100%", width: `${completionPercent}%`, borderRadius: "3px", background: completionPercent === 100 ? "#22c55e" : "linear-gradient(90deg, #F97316, #FB923C)", transition: "width 0.5s ease" }} />
-              </div>
-              <span style={{ fontSize: "14px", fontWeight: 700, color: completionPercent === 100 ? "#22c55e" : "#F97316", flexShrink: 0 }}>{completionPercent}%</span>
-            </div>
           </div>
           <button onClick={logout} style={{ padding: "8px 14px", borderRadius: "10px", border: "1.5px solid #fee2e2", background: "white", color: "#ef4444", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>
             Salir
           </button>
         </div>
-        {completionPercent < 100 && (
-          <div style={{ padding: "12px 14px", borderRadius: "12px", background: "rgba(249,115,22,0.06)", border: "1px solid rgba(249,115,22,0.15)" }}>
-            <p style={{ margin: "0 0 10px", fontSize: "14px", color: "#F97316", fontWeight: 700 }}>
-              💡 Completa tu perfil para recibir recomendaciones personalizadas
-            </p>
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-              {Object.entries(sectionCompletion).map(([key, val]) => {
-                const tab = TABS.find(t => t.key === key);
-                const done = val.percent === 100;
-                return (
-                  <button
-                    key={key}
-                    onClick={() => setActiveTab(key)}
-                    style={{ display: "flex", alignItems: "center", gap: "5px", padding: "5px 10px", borderRadius: "20px", border: done ? "1.5px solid #22c55e" : "1.5px solid rgba(249,115,22,0.3)", background: done ? "rgba(34,197,94,0.08)" : "rgba(249,115,22,0.08)", color: done ? "#16a34a" : "#F97316", fontSize: "14px", fontWeight: 700, cursor: done ? "default" : "pointer" }}
-                  >
-                    {done ? "✓" : "○"} {tab?.label} {done ? "" : `(${val.filled}/${val.total})`}
-                  </button>
-                );
-              })}
-            </div>
-          </div>
-        )}
       </div>
 
-      {/* Tab bar */}
+      {/* Tab bar — 5 tabs */}
       <div style={{ display: "flex", gap: "6px", overflowX: "auto", paddingBottom: "4px", marginBottom: "16px" }}>
         {TABS.map((tab) => {
           const Icon = tab.icon;
@@ -679,25 +612,34 @@ export default function Profile() {
         })}
       </div>
 
-      {/* PERSONAL */}
-      {activeTab === "personal" && (
-        <div style={card}>
-          <SectionTitle>Datos personales</SectionTitle>
-          <Field label="Nombre completo">
-            <Input value={name} onChange={setName} placeholder="Tu nombre" />
-          </Field>
-          <Field label="Teléfono" hint="Opcional. Usado para recordatorios y soporte.">
-            <Input value={phone} onChange={setPhone} type="tel" placeholder="+34 600 000 000" />
-          </Field>
-          <Field label="Sobre mí" hint="Cuéntanos algo sobre ti, tus hábitos o motivaciones.">
-            <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Ej: Soy deportista aficionado, busco mejorar mi alimentación..." rows={4} style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid #e5e7eb", fontSize: "15px", background: "white", outline: "none", resize: "vertical", boxSizing: "border-box" }} />
-          </Field>
-          <SaveButton onClick={handleSavePersonal} loading={updateBasic.isPending} />
+      {/* ── TAB: CUENTA ── */}
+      {activeTab === "account" && (
+        <div>
+          <div style={card}>
+            <SectionTitle>Datos personales</SectionTitle>
+            <Field label="Nombre completo">
+              <Input value={name} onChange={setName} placeholder="Tu nombre" />
+            </Field>
+            <Field label="Teléfono" hint="Opcional. Usado para recordatorios y soporte.">
+              <Input value={phone} onChange={setPhone} type="tel" placeholder="+34 600 000 000" />
+            </Field>
+            <Field label="Sobre mí" hint="Cuéntanos algo sobre ti, tus hábitos o motivaciones.">
+              <textarea value={description} onChange={(e) => setDescription(e.target.value)} placeholder="Ej: Soy deportista aficionado, busco mejorar mi alimentación..." rows={3} style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid #e5e7eb", fontSize: "15px", background: "white", outline: "none", resize: "vertical", boxSizing: "border-box" }} />
+            </Field>
+            <SaveButton onClick={() => updateBasic.mutate({ name, phone, description })} loading={updateBasic.isPending} />
+          </div>
+
+          <div style={card}>
+            <SectionTitle>Idioma de la app</SectionTitle>
+            <LanguageSelectorInProfile />
+          </div>
+
+          <DeleteAccountSection />
         </div>
       )}
 
-      {/* BODY */}
-      {activeTab === "body" && (
+      {/* ── TAB: SALUD Y OBJETIVOS ── */}
+      {activeTab === "health" && (
         <div style={card}>
           <SectionTitle>Composición corporal y objetivos</SectionTitle>
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
@@ -727,7 +669,7 @@ export default function Profile() {
               <Select value={weightUnit} onChange={setWeightUnit} options={[{ value: "kg", label: "kg" }, { value: "lb", label: "lb" }]} />
             </Field>
           </div>
-          <Field label="% Grasa corporal (si lo conoces)" hint="Puedes calcularlo con una báscula de bioimpedancia.">
+          <Field label="% Grasa corporal (si lo conoces)">
             <Input value={bodyFatPercentage} onChange={setBodyFatPercentage} type="number" placeholder="20" />
           </Field>
           <Field label="Objetivo principal">
@@ -749,7 +691,7 @@ export default function Profile() {
               { value: "high", label: "Alto — muy comprometido/a" }, { value: "very_high", label: "Muy alto — modo bestia 🔥" },
             ]} />
           </Field>
-          <Field label="Describe tu objetivo con más detalle" hint="Cuanto más específico, mejores recomendaciones recibirás.">
+          <Field label="Describe tu objetivo con más detalle">
             <textarea value={fitnessGoalDetail} onChange={(e) => setFitnessGoalDetail(e.target.value)} placeholder="Ej: Quiero perder 8 kg antes del verano manteniendo músculo..." rows={3} style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid #e5e7eb", fontSize: "15px", background: "white", outline: "none", resize: "vertical", boxSizing: "border-box" }} />
           </Field>
           <Field label="Dietas que has probado antes">
@@ -760,14 +702,162 @@ export default function Profile() {
               { value: "calorie_counting", label: "Conteo de calorías" }, { value: "none", label: "Ninguna" },
             ]} selected={previousDietExperience} onChange={setPreviousDietExperience} />
           </Field>
-          <SaveButton onClick={handleSaveBody} loading={updateProfile.isPending} />
+
+          <SectionDivider label="Sueño, estrés y agua" />
+
+          <Field label="Horas de sueño por noche" hint="El sueño afecta directamente al metabolismo y al apetito.">
+            <Select value={sleepHours} onChange={setSleepHours} options={[
+              { value: "5", label: "Menos de 6 horas" }, { value: "6", label: "6 horas" },
+              { value: "7", label: "7 horas" }, { value: "8", label: "8 horas" }, { value: "9", label: "9 o más horas" },
+            ]} />
+          </Field>
+          <Field label="Nivel de estrés habitual">
+            <Select value={stressLevel} onChange={setStressLevel} options={[
+              { value: "low", label: "Bajo — vivo tranquilo/a" }, { value: "moderate", label: "Moderado — algún estrés puntual" },
+              { value: "high", label: "Alto — bastante estrés diario" }, { value: "very_high", label: "Muy alto — estrés crónico" },
+            ]} />
+          </Field>
+          <Field label="Ingesta de agua diaria (litros)">
+            <Select value={waterIntake} onChange={setWaterIntake} options={[
+              { value: "0.5", label: "Menos de 1 litro" }, { value: "1", label: "1 litro" },
+              { value: "1.5", label: "1.5 litros" }, { value: "2", label: "2 litros" },
+              { value: "2.5", label: "2.5 litros" }, { value: "3", label: "3 o más litros" },
+            ]} />
+          </Field>
+
+          <SectionDivider label="Historial de salud" />
+
+          <Field label="🌱 Patrón alimentario" hint="¿Cómo describes tu forma de comer habitualmente?">
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+              {[
+                { value: "omnivore", label: "🥩 Omnívoro" }, { value: "flexitarian", label: "🥗 Flexitariano" },
+                { value: "vegetarian", label: "🥦 Vegetariano" }, { value: "vegan", label: "🌿 Vegano" },
+                { value: "pescatarian", label: "🐟 Pescetariano" }, { value: "keto", label: "🥑 Keto" },
+                { value: "paleo", label: "🦴 Paleo" }, { value: "mediterranean", label: "🫒 Mediterráneo" },
+                { value: "low_carb", label: "🍞 Bajo en carbos" }, { value: "high_protein", label: "💪 Alto en proteína" },
+                { value: "gluten_free", label: "🌾 Sin gluten" }, { value: "lactose_free", label: "🥛 Sin lactosa" },
+              ].map((opt) => (
+                <button key={opt.value} onClick={() => setDietaryPattern(dietaryPattern === opt.value ? "" : opt.value)}
+                  style={{ padding: "8px 14px", borderRadius: "20px", border: dietaryPattern === opt.value ? "2px solid #10b981" : "1.5px solid #e5e7eb", background: dietaryPattern === opt.value ? "rgba(16,185,129,0.1)" : "white", color: dietaryPattern === opt.value ? "#059669" : "#374151", fontSize: "13px", fontWeight: dietaryPattern === opt.value ? 700 : 500, cursor: "pointer" }}>
+                  {opt.label}
+                </button>
+              ))}
+            </div>
+          </Field>
+
+          <Field label="👩‍👦 Situación vital" hint="Selecciona las que apliquen a tu situación actual.">
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+              {[
+                { value: "pregnant", label: "🤰 Embarazada" }, { value: "breastfeeding", label: "🤱 Lactancia" },
+                { value: "trying_to_conceive", label: "💚 Buscando embarazo" }, { value: "menopause", label: "🌸 Menopausia" },
+                { value: "athlete", label: "🏃 Deportista" }, { value: "elderly", label: "👴 Adulto mayor (+65)" },
+                { value: "child", label: "👶 Niño / Adolescente" }, { value: "student", label: "📚 Estudiante" },
+                { value: "shift_worker", label: "🌙 Trabajo a turnos" }, { value: "high_stress", label: "🧠 Alto estrés" },
+              ].map((opt) => {
+                const sel = selectedLifestyle.includes(opt.value);
+                return (
+                  <button key={opt.value} onClick={() => setSelectedLifestyle(sel ? selectedLifestyle.filter((x) => x !== opt.value) : [...selectedLifestyle, opt.value])}
+                    style={{ padding: "8px 14px", borderRadius: "20px", border: sel ? "2px solid #6366f1" : "1.5px solid #e5e7eb", background: sel ? "rgba(99,102,241,0.1)" : "white", color: sel ? "#6366f1" : "#374151", fontSize: "13px", fontWeight: sel ? 700 : 500, cursor: "pointer" }}>
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+          </Field>
+          {selectedLifestyle.includes("pregnant") && (
+            <Field label="Semana de embarazo">
+              <Input value={pregnancyWeek} onChange={setPregnancyWeek} placeholder="Ej: 20" type="number" />
+            </Field>
+          )}
+
+          <Field label="🏥 Condiciones médicas" hint="Selecciona las condiciones diagnosticadas que tengas.">
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+              {[
+                { value: "diabetes_type1", label: "🩸 Diabetes tipo 1" }, { value: "diabetes_type2", label: "🩸 Diabetes tipo 2" },
+                { value: "prediabetes", label: "⚠️ Prediabetes" }, { value: "hypertension", label: "❤️ Hipertensión" },
+                { value: "hypotension", label: "🟦 Hipotensión" }, { value: "celiac", label: "🌾 Celiaqía" },
+                { value: "crohn", label: "🪴 Crohn" }, { value: "ibs", label: "🟡 Colon irritable" },
+                { value: "hypothyroidism", label: "🦋 Hipotiroidismo" }, { value: "hyperthyroidism", label: "🦋 Hipertiroidismo" },
+                { value: "pcos", label: "🌸 SOP" }, { value: "anemia", label: "🩸 Anemia" },
+                { value: "high_cholesterol", label: "🧠 Colesterol alto" }, { value: "high_triglycerides", label: "🧠 Triglicéridos altos" },
+                { value: "gout", label: "🦛 Gota" }, { value: "kidney_disease", label: "🫘 Enfermedad renal" },
+                { value: "liver_disease", label: "🫘 Enfermedad hepática" }, { value: "heart_disease", label: "❤️ Enfermedad cardíaca" },
+                { value: "osteoporosis", label: "🦴 Osteoporosis" }, { value: "arthritis", label: "🦴 Artritis" },
+                { value: "fibromyalgia", label: "💪 Fibromialgia" }, { value: "eating_disorder", label: "💜 TCA" },
+                { value: "depression", label: "🟣 Depresión" }, { value: "anxiety", label: "🟡 Ansiedad" },
+                { value: "cancer", label: "🎀 Cáncer (en tratamiento)" },
+              ].map((opt) => {
+                const sel = selectedMedicalConditions.includes(opt.value);
+                return (
+                  <button key={opt.value} onClick={() => { setSelectedMedicalConditions(sel ? selectedMedicalConditions.filter((x) => x !== opt.value) : [...selectedMedicalConditions, opt.value]); setHasMedicalConditions(true); }}
+                    style={{ padding: "8px 14px", borderRadius: "20px", border: sel ? "2px solid #ef4444" : "1.5px solid #e5e7eb", background: sel ? "rgba(239,68,68,0.1)" : "white", color: sel ? "#ef4444" : "#374151", fontSize: "13px", fontWeight: sel ? 700 : 500, cursor: "pointer" }}>
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+          </Field>
+
+          <Field label="🤧 Estado actual o necesidades especiales">
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+              {[
+                { value: "cold_flu", label: "🤧 Resfriado / Gripe" }, { value: "stomach_bug", label: "🤢 Gastroenteritis" },
+                { value: "post_surgery", label: "🏥 Post-operatorio" }, { value: "fatigue", label: "🛌 Fatiga crónica" },
+                { value: "muscle_recovery", label: "💪 Recuperación muscular" }, { value: "detox", label: "🍋 Depuración / Detox" },
+                { value: "weight_loss_phase", label: "⬇️ Fase pérdida de peso" }, { value: "muscle_gain_phase", label: "⬆️ Fase ganancia muscular" },
+                { value: "competition_prep", label: "🏆 Preparación competición" }, { value: "exam_period", label: "📚 Época de exámenes" },
+                { value: "travel", label: "✈️ Viaje frecuente" },
+              ].map((opt) => {
+                const sel = selectedSpecialNeeds.includes(opt.value);
+                return (
+                  <button key={opt.value} onClick={() => setSelectedSpecialNeeds(sel ? selectedSpecialNeeds.filter((x) => x !== opt.value) : [...selectedSpecialNeeds, opt.value])}
+                    style={{ padding: "8px 14px", borderRadius: "20px", border: sel ? "2px solid #f59e0b" : "1.5px solid #e5e7eb", background: sel ? "rgba(245,158,11,0.1)" : "white", color: sel ? "#d97706" : "#374151", fontSize: "13px", fontWeight: sel ? 700 : 500, cursor: "pointer" }}>
+                    {opt.label}
+                  </button>
+                );
+              })}
+            </div>
+          </Field>
+
+          <Toggle checked={useMetabolismMedication} onChange={setUseMetabolismMedication} label="¿Tomas medicación que afecte al metabolismo o peso?" />
+          {useMetabolismMedication && (
+            <Field label="Medicación" hint="Ej: corticoides, antidepresivos, insulina...">
+              <Input value={metabolismMedication} onChange={setMetabolismMedication} placeholder="Lista de medicamentos" />
+            </Field>
+          )}
+          <Toggle checked={useNutritionalSupplements} onChange={setUseNutritionalSupplements} label="¿Tomas suplementos nutricionales?" />
+          {useNutritionalSupplements && (
+            <Field label="Suplementos" hint="Ej: proteína whey, creatina, omega-3, vitamina D...">
+              <Input value={nutritionalSupplements} onChange={setNutritionalSupplements} placeholder="Lista de suplementos" />
+            </Field>
+          )}
+          <Toggle checked={hasMedicalDiet} onChange={setHasMedicalDiet} label="¿Sigues alguna dieta prescrita por un médico o nutricionista?" />
+          {hasMedicalDiet && (
+            <Field label="Tipo de dieta médica">
+              <Input value={medicalDiet} onChange={setMedicalDiet} placeholder="Ej: dieta para diabéticos, dieta baja en sodio..." />
+            </Field>
+          )}
+          <Toggle checked={hasSurgery} onChange={setHasSurgery} label="¿Has tenido alguna cirugía relacionada con el peso o digestión?" />
+          {hasSurgery && (
+            <Field label="Tipo de cirugía">
+              <Input value={surgery} onChange={setSurgery} placeholder="Ej: manga gástrica, bypass, vesícula..." />
+            </Field>
+          )}
+          <Toggle checked={hasMedicalFamilyBackground} onChange={setHasMedicalFamilyBackground} label="¿Tienes antecedentes familiares relevantes?" />
+          {hasMedicalFamilyBackground && (
+            <Field label="Antecedentes familiares" hint="Ej: diabetes, enfermedades cardiovasculares, obesidad...">
+              <textarea value={medicalFamilyBackground} onChange={(e) => setMedicalFamilyBackground(e.target.value)} rows={2} style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid #e5e7eb", fontSize: "15px", background: "white", outline: "none", resize: "vertical", boxSizing: "border-box" }} />
+            </Field>
+          )}
+
+          <SaveButton onClick={handleSaveHealth} loading={updateProfile.isPending || updateMedical.isPending} />
         </div>
       )}
 
-      {/* LIFESTYLE */}
-      {activeTab === "lifestyle" && (
+      {/* ── TAB: ALIMENTACIÓN Y COCINA ── */}
+      {activeTab === "food" && (
         <div style={card}>
-          <SectionTitle>Actividad física y estilo de vida</SectionTitle>
+          <SectionTitle>Actividad física</SectionTitle>
           <Field label="Nivel de actividad general">
             <Select value={activityLevel} onChange={setActivityLevel} options={[
               { value: "sedentary", label: "Sedentario — poco o nada de ejercicio" },
@@ -791,9 +881,10 @@ export default function Profile() {
                   { value: "running", label: "Running" }, { value: "cycling", label: "Ciclismo" },
                   { value: "swimming", label: "Natación" }, { value: "gym", label: "Gimnasio/pesas" },
                   { value: "yoga", label: "Yoga/pilates" }, { value: "football", label: "Fútbol" },
-                  { value: "tennis", label: "Tenis/pádel" }, { value: "crossfit", label: "CrossFit" },
-                  { value: "hiking", label: "Senderismo" }, { value: "dance", label: "Baile" },
-                  { value: "martial_arts", label: "Artes marciales" }, { value: "other", label: "Otro" },
+                  { value: "basketball", label: "Baloncesto" }, { value: "tennis", label: "Tenis/pádel" },
+                  { value: "crossfit", label: "CrossFit" }, { value: "hiking", label: "Senderismo" },
+                  { value: "dance", label: "Baile" }, { value: "martial_arts", label: "Artes marciales" },
+                  { value: "other", label: "Otro" },
                 ]} selected={sportsTypes} onChange={setSportsTypes} />
               </Field>
             </>
@@ -804,25 +895,6 @@ export default function Profile() {
               { value: "light_standing", label: "De pie, movimiento ligero" },
               { value: "moderate_physical", label: "Trabajo físico moderado" },
               { value: "heavy_physical", label: "Trabajo físico intenso" },
-            ]} />
-          </Field>
-          <Field label="Horas de sueño por noche" hint="El sueño afecta directamente al metabolismo y al apetito.">
-            <Select value={sleepHours} onChange={setSleepHours} options={[
-              { value: "5", label: "Menos de 6 horas" }, { value: "6", label: "6 horas" },
-              { value: "7", label: "7 horas" }, { value: "8", label: "8 horas" }, { value: "9", label: "9 o más horas" },
-            ]} />
-          </Field>
-          <Field label="Nivel de estrés habitual">
-            <Select value={stressLevel} onChange={setStressLevel} options={[
-              { value: "low", label: "Bajo — vivo tranquilo/a" }, { value: "moderate", label: "Moderado — algún estrés puntual" },
-              { value: "high", label: "Alto — bastante estrés diario" }, { value: "very_high", label: "Muy alto — estrés crónico" },
-            ]} />
-          </Field>
-          <Field label="Ingesta de agua diaria (litros)">
-            <Select value={waterIntake} onChange={setWaterIntake} options={[
-              { value: "0.5", label: "Menos de 1 litro" }, { value: "1", label: "1 litro" },
-              { value: "1.5", label: "1.5 litros" }, { value: "2", label: "2 litros" },
-              { value: "2.5", label: "2.5 litros" }, { value: "3", label: "3 o más litros" },
             ]} />
           </Field>
           <Field label="Consumo de alcohol">
@@ -836,14 +908,15 @@ export default function Profile() {
               { value: "non_smoker", label: "No fumo" }, { value: "ex_smoker", label: "Ex fumador/a" }, { value: "smoker", label: "Fumo actualmente" },
             ]} />
           </Field>
-          <SaveButton onClick={handleSaveLifestyle} loading={updateProfile.isPending} />
-        </div>
-      )}
 
-      {/* CULINARY */}
-      {activeTab === "culinary" && (
-        <div style={card}>
-          <SectionTitle>Hábitos culinarios y preferencias</SectionTitle>
+          <SectionDivider label="Hábitos culinarios" />
+
+          <Field label="Número de comidas al día">
+            <Select value={dailyMeals} onChange={setDailyMeals} options={[
+              { value: "2", label: "2 comidas" }, { value: "3", label: "3 comidas" },
+              { value: "4", label: "4 comidas" }, { value: "5", label: "5 comidas" }, { value: "6", label: "6 o más comidas" },
+            ]} />
+          </Field>
           <Field label="Nivel de cocina">
             <Select value={cookingLevel} onChange={setCookingLevel} options={[
               { value: "beginner", label: "Principiante — recetas sencillas" },
@@ -855,12 +928,6 @@ export default function Profile() {
             <Select value={mealPrepTime} onChange={setMealPrepTime} options={[
               { value: "under_15", label: "Menos de 15 minutos" }, { value: "15_30", label: "15-30 minutos" },
               { value: "30_60", label: "30-60 minutos" }, { value: "over_60", label: "Más de 1 hora" },
-            ]} />
-          </Field>
-          <Field label="Número de comidas al día">
-            <Select value={dailyMeals} onChange={setDailyMeals} options={[
-              { value: "2", label: "2 comidas" }, { value: "3", label: "3 comidas" },
-              { value: "4", label: "4 comidas" }, { value: "5", label: "5 comidas" }, { value: "6", label: "6 o más comidas" },
             ]} />
           </Field>
           <Field label="¿Con qué frecuencia picoteas entre horas?">
@@ -878,6 +945,9 @@ export default function Profile() {
           <Field label="Presupuesto semanal para alimentación (€)">
             <Input value={budgetPerWeek} onChange={setBudgetPerWeek} type="number" placeholder="80" />
           </Field>
+
+          <SectionDivider label="Cocinas y equipamiento" />
+
           <Field label="Tipos de cocina favoritos">
             <ChipGroup options={[
               { value: "spanish", label: "🇪🇸 Española" }, { value: "italian", label: "🇮🇹 Italiana" },
@@ -900,178 +970,12 @@ export default function Profile() {
           <Field label="Ingredientes que no te gustan o evitas" hint="Escríbelos separados por comas.">
             <Input value={dislikedIngredients} onChange={setDislikedIngredients} placeholder="Ej: hígado, coliflor, remolacha" />
           </Field>
-          <SaveButton onClick={handleSaveCulinary} loading={updateProfile.isPending} />
+
+          <SaveButton onClick={handleSaveFood} loading={updateProfile.isPending} />
         </div>
       )}
 
-      {/* MEDICAL */}
-      {activeTab === "medical" && (
-        <div style={card}>
-          <SectionTitle>Historial de salud</SectionTitle>
-
-          {/* Dietary Pattern */}
-          <Field label="🌱 Patrón alimentario" hint="¿Cómo describes tu forma de comer habitualmente?">
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-              {[
-                { value: "omnivore", label: "🥩 Omnívoro" },
-                { value: "flexitarian", label: "🥗 Flexitariano" },
-                { value: "vegetarian", label: "🥦 Vegetariano" },
-                { value: "vegan", label: "🌿 Vegano" },
-                { value: "pescatarian", label: "🐟 Pescetariano" },
-                { value: "keto", label: "🥑 Keto / Cetogénico" },
-                { value: "paleo", label: "🦴 Paleo" },
-                { value: "mediterranean", label: "🫒 Mediterráneo" },
-                { value: "low_carb", label: "🍞 Bajo en carbos" },
-                { value: "high_protein", label: "💪 Alto en proteína" },
-                { value: "gluten_free", label: "🌾 Sin gluten" },
-                { value: "lactose_free", label: "🥛 Sin lactosa" },
-              ].map((opt) => (
-                <button key={opt.value} onClick={() => setDietaryPattern(dietaryPattern === opt.value ? "" : opt.value)}
-                  style={{ padding: "8px 14px", borderRadius: "20px", border: dietaryPattern === opt.value ? "2px solid #10b981" : "1.5px solid #e5e7eb", background: dietaryPattern === opt.value ? "rgba(16,185,129,0.1)" : "white", color: dietaryPattern === opt.value ? "#059669" : "#374151", fontSize: "13px", fontWeight: dietaryPattern === opt.value ? 700 : 500, cursor: "pointer" }}>
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          </Field>
-
-          {/* Lifestyle */}
-          <Field label="👩‍👦 Situación vital" hint="Selecciona las que apliquen a tu situación actual.">
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-              {[
-                { value: "pregnant", label: "🤰 Embarazada" },
-                { value: "breastfeeding", label: "🤱 Lactancia" },
-                { value: "trying_to_conceive", label: "💚 Buscando embarazo" },
-                { value: "menopause", label: "🌸 Menopausia" },
-                { value: "athlete", label: "🏃 Deportista" },
-                { value: "elderly", label: "👴 Adulto mayor (+65)" },
-                { value: "child", label: "👶 Niño / Adolescente" },
-                { value: "student", label: "📚 Estudiante" },
-                { value: "shift_worker", label: "🌙 Trabajo a turnos" },
-                { value: "high_stress", label: "🧠 Alto estrés" },
-              ].map((opt) => {
-                const sel = selectedLifestyle.includes(opt.value);
-                return (
-                  <button key={opt.value} onClick={() => setSelectedLifestyle(sel ? selectedLifestyle.filter((x) => x !== opt.value) : [...selectedLifestyle, opt.value])}
-                    style={{ padding: "8px 14px", borderRadius: "20px", border: sel ? "2px solid #6366f1" : "1.5px solid #e5e7eb", background: sel ? "rgba(99,102,241,0.1)" : "white", color: sel ? "#6366f1" : "#374151", fontSize: "13px", fontWeight: sel ? 700 : 500, cursor: "pointer" }}>
-                    {opt.label}
-                  </button>
-                );
-              })}
-            </div>
-          </Field>
-
-          {/* Pregnancy week if pregnant */}
-          {selectedLifestyle.includes("pregnant") && (
-            <Field label="Semana de embarazo" hint="Opcional, para personalizar mejor las recomendaciones.">
-              <Input value={pregnancyWeek} onChange={setPregnancyWeek} placeholder="Ej: 20" type="number" />
-            </Field>
-          )}
-
-          {/* Medical Conditions — chips */}
-          <Field label="🏥 Condiciones médicas" hint="Selecciona las condiciones diagnosticadas que tengas.">
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-              {[
-                { value: "diabetes_type1", label: "🩸 Diabetes tipo 1" },
-                { value: "diabetes_type2", label: "🩸 Diabetes tipo 2" },
-                { value: "prediabetes", label: "⚠️ Prediabetes" },
-                { value: "hypertension", label: "❤️ Hipertensión" },
-                { value: "hypotension", label: "🟦 Hipotensión" },
-                { value: "celiac", label: "🌾 Celiaqía" },
-                { value: "crohn", label: "🪴 Crohn" },
-                { value: "ibs", label: "🟡 Colon irritable" },
-                { value: "hypothyroidism", label: "🦋 Hipotiroidismo" },
-                { value: "hyperthyroidism", label: "🦋 Hipertiroidismo" },
-                { value: "pcos", label: "🌸 SOP (ovario policístico)" },
-                { value: "anemia", label: "🩸 Anemia" },
-                { value: "high_cholesterol", label: "🧠 Colesterol alto" },
-                { value: "high_triglycerides", label: "🧠 Triglicéridos altos" },
-                { value: "gout", label: "🦛 Gota" },
-                { value: "kidney_disease", label: "🫘 Enfermedad renal" },
-                { value: "liver_disease", label: "🫘 Enfermedad hepática" },
-                { value: "heart_disease", label: "❤️ Enfermedad cardíaca" },
-                { value: "osteoporosis", label: "🦴 Osteoporosis" },
-                { value: "arthritis", label: "🦴 Artritis" },
-                { value: "fibromyalgia", label: "💪 Fibromialgia" },
-                { value: "eating_disorder", label: "💜 TCA (trastorno alimentario)" },
-                { value: "depression", label: "🟣 Depresión" },
-                { value: "anxiety", label: "🟡 Ansiedad" },
-                { value: "cancer", label: "🎀 Cáncer (en tratamiento)" },
-              ].map((opt) => {
-                const sel = selectedMedicalConditions.includes(opt.value);
-                return (
-                  <button key={opt.value} onClick={() => { setSelectedMedicalConditions(sel ? selectedMedicalConditions.filter((x) => x !== opt.value) : [...selectedMedicalConditions, opt.value]); setHasMedicalConditions(true); }}
-                    style={{ padding: "8px 14px", borderRadius: "20px", border: sel ? "2px solid #ef4444" : "1.5px solid #e5e7eb", background: sel ? "rgba(239,68,68,0.1)" : "white", color: sel ? "#ef4444" : "#374151", fontSize: "13px", fontWeight: sel ? 700 : 500, cursor: "pointer" }}>
-                    {opt.label}
-                  </button>
-                );
-              })}
-            </div>
-          </Field>
-
-          {/* Special Needs / Momentary State */}
-          <Field label="🤧 Estado actual o necesidades especiales" hint="Situaciones temporales que afectan tu alimentación.">
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-              {[
-                { value: "cold_flu", label: "🤧 Resfriado / Gripe" },
-                { value: "stomach_bug", label: "🤢 Gastroenteritis" },
-                { value: "post_surgery", label: "🏥 Post-operatorio" },
-                { value: "post_covid", label: "🤡 Post-COVID" },
-                { value: "fatigue", label: "🛌 Fatiga crónica" },
-                { value: "muscle_recovery", label: "💪 Recuperación muscular" },
-                { value: "detox", label: "🍋 Depuración / Detox" },
-                { value: "weight_loss_phase", label: "⬇️ Fase de pérdida de peso" },
-                { value: "muscle_gain_phase", label: "⬆️ Fase de ganancia muscular" },
-                { value: "competition_prep", label: "🏆 Preparación competición" },
-                { value: "exam_period", label: "📚 Época de exámenes" },
-                { value: "travel", label: "✈️ Viaje frecuente" },
-              ].map((opt) => {
-                const sel = selectedSpecialNeeds.includes(opt.value);
-                return (
-                  <button key={opt.value} onClick={() => setSelectedSpecialNeeds(sel ? selectedSpecialNeeds.filter((x) => x !== opt.value) : [...selectedSpecialNeeds, opt.value])}
-                    style={{ padding: "8px 14px", borderRadius: "20px", border: sel ? "2px solid #f59e0b" : "1.5px solid #e5e7eb", background: sel ? "rgba(245,158,11,0.1)" : "white", color: sel ? "#d97706" : "#374151", fontSize: "13px", fontWeight: sel ? 700 : 500, cursor: "pointer" }}>
-                    {opt.label}
-                  </button>
-                );
-              })}
-            </div>
-          </Field>
-
-          {/* Medication & Supplements */}
-          <Toggle checked={useMetabolismMedication} onChange={setUseMetabolismMedication} label="¿Tomas medicación que afecte al metabolismo o peso?" />
-          {useMetabolismMedication && (
-            <Field label="Medicación" hint="Ej: corticoides, antidepresivos, insulina...">
-              <Input value={metabolismMedication} onChange={setMetabolismMedication} placeholder="Nombre del medicamento" />
-            </Field>
-          )}
-          <Toggle checked={useNutritionalSupplements} onChange={setUseNutritionalSupplements} label="¿Tomas suplementos nutricionales?" />
-          {useNutritionalSupplements && (
-            <Field label="Suplementos que tomas" hint="Ej: proteína whey, creatina, omega-3, vitamina D...">
-              <Input value={nutritionalSupplements} onChange={setNutritionalSupplements} placeholder="Lista de suplementos" />
-            </Field>
-          )}
-          <Toggle checked={hasMedicalDiet} onChange={setHasMedicalDiet} label="¿Sigues alguna dieta prescrita por un médico o nutricionista?" />
-          {hasMedicalDiet && (
-            <Field label="Tipo de dieta médica">
-              <Input value={medicalDiet} onChange={setMedicalDiet} placeholder="Ej: dieta para diabéticos, dieta baja en sodio..." />
-            </Field>
-          )}
-          <Toggle checked={hasSurgery} onChange={setHasSurgery} label="¿Has tenido alguna cirugía relacionada con el peso o digestión?" />
-          {hasSurgery && (
-            <Field label="Tipo de cirugía">
-              <Input value={surgery} onChange={setSurgery} placeholder="Ej: manga gástrica, bypass, vesícula..." />
-            </Field>
-          )}
-          <Toggle checked={hasMedicalFamilyBackground} onChange={setHasMedicalFamilyBackground} label="¿Tienes antecedentes familiares relevantes?" />
-          {hasMedicalFamilyBackground && (
-            <Field label="Antecedentes familiares" hint="Ej: diabetes, enfermedades cardiovasculares, obesidad...">
-              <textarea value={medicalFamilyBackground} onChange={(e) => setMedicalFamilyBackground(e.target.value)} rows={2} style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid #e5e7eb", fontSize: "15px", background: "white", outline: "none", resize: "vertical", boxSizing: "border-box" }} />
-            </Field>
-          )}
-          <SaveButton onClick={handleSaveMedical} loading={updateMedical.isPending} />
-        </div>
-      )}
-
-      {/* ALLERGIES */}
+      {/* ── TAB: ALERGIAS Y RESTRICCIONES ── */}
       {activeTab === "allergies" && (
         <div style={card}>
           <SectionTitle>Alergias e intolerancias</SectionTitle>
@@ -1105,262 +1009,157 @@ export default function Profile() {
         </div>
       )}
 
-      {/* MENU IA PREFERENCES */}
-      {activeTab === "menu_prefs" && (
-        <div style={card}>
-          <div style={{ marginBottom: "20px", padding: "14px 16px", background: "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)", borderRadius: "12px", border: "1px solid #bbf7d0" }}>
-            <p style={{ margin: 0, fontSize: "13px", color: "#166534", fontWeight: 600 }}>💡 Tus preferencias guardadas aquí se cargarán automáticamente cada vez que generes un menú con IA, ahorrando tiempo en el cuestionario.</p>
-          </div>
-          <SectionTitle>Preferencias por defecto para menús IA</SectionTitle>
-
-          <Field label="Tipo de dieta" hint="Se usará como punto de partida en el cuestionario.">
-            <Select value={mpDietType} onChange={setMpDietType} options={[
-              { value: "", label: "Sin preferencia" },
-              { value: "omnivore", label: "🥩 Omnívoro — como de todo" },
-              { value: "mediterranean", label: "🫔 Mediterráneo" },
-              { value: "vegetarian", label: "🥦 Vegetariano" },
-              { value: "vegan", label: "🌱 Vegano" },
-              { value: "pescatarian", label: "🐟 Pescetariano" },
-              { value: "flexitarian", label: "🌿 Flexitariano" },
-              { value: "keto", label: "🥑 Cetogénico (Keto)" },
-              { value: "paleo", label: "🦴 Paleo" },
-              { value: "dash", label: "❤️ DASH (hipertensión)" },
-              { value: "gluten_free", label: "🌾 Sin gluten" },
-              { value: "lactose_free", label: "🥛 Sin lácteos" },
-            ]} />
-          </Field>
-
-          <Field label="Fuente de proteína preferida">
-            <Select value={mpProteinSource} onChange={setMpProteinSource} options={[
-              { value: "", label: "Sin preferencia" },
-              { value: "meat", label: "🥩 Carne (ternera, pollo, cerdo...)" },
-              { value: "fish", label: "🐟 Pescado y mariscos" },
-              { value: "eggs", label: "🥚 Huevos" },
-              { value: "legumes", label: "🫘 Legumbres (lentejas, garbanzos...)" },
-              { value: "plant", label: "🌿 Vegetal (tofu, tempeh, seitán)" },
-              { value: "mixed", label: "🔄 Mixto — combino varias fuentes" },
-            ]} />
-          </Field>
-
-          <Field label="Alergias e intolerancias" hint="Selecciona las que apliquen.">
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-              {["gluten", "lactosa", "huevo", "frutos secos", "cacahuete", "soja", "pescado", "marisco", "sésamo", "mostaza", "apio", "sulfitos", "altramuces", "moluscos"].map((a) => {
-                const sel = mpAllergies.includes(a);
-                return (
-                  <button key={a} onClick={() => setMpAllergies(sel ? mpAllergies.filter((x) => x !== a) : [...mpAllergies, a])}
-                    style={{ padding: "8px 14px", borderRadius: "20px", border: sel ? "2px solid #ef4444" : "1.5px solid #e5e7eb", background: sel ? "rgba(239,68,68,0.1)" : "white", color: sel ? "#ef4444" : "#374151", fontSize: "13px", fontWeight: sel ? 700 : 500, cursor: "pointer" }}>
-                    {a}
-                  </button>
-                );
-              })}
-            </div>
-          </Field>
-
-          <Field label="Restricciones dietéticas" hint="Selecciona las que apliquen.">
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-              {["sin gluten", "sin lácteos", "sin cerdo", "sin mariscos", "halal", "kosher", "sin azúcar añadido", "bajo en sodio", "bajo en grasas", "sin alcohol", "sin café"].map((r) => {
-                const sel = mpRestrictions.includes(r);
-                return (
-                  <button key={r} onClick={() => setMpRestrictions(sel ? mpRestrictions.filter((x) => x !== r) : [...mpRestrictions, r])}
-                    style={{ padding: "8px 14px", borderRadius: "20px", border: sel ? "2px solid #6366f1" : "1.5px solid #e5e7eb", background: sel ? "rgba(99,102,241,0.1)" : "white", color: sel ? "#6366f1" : "#374151", fontSize: "13px", fontWeight: sel ? 700 : 500, cursor: "pointer" }}>
-                    {r}
-                  </button>
-                );
-              })}
-            </div>
-          </Field>
-
-          <Field label="Alimentos que no te gustan" hint="Escribe ingredientes o platos separados por comas.">
-            <input value={mpDislikedFoods} onChange={(e) => setMpDislikedFoods(e.target.value)}
-              placeholder="ej: hígado, col, pimiento verde..."
-              style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1.5px solid #e5e7eb", fontSize: "14px", boxSizing: "border-box" }} />
-          </Field>
-
-          <Field label="Tiempo disponible para cocinar">
-            <Select value={mpCookingTime} onChange={setMpCookingTime} options={[
-              { value: "", label: "Sin preferencia" },
-              { value: "under_15", label: "⏰ Menos de 15 min — rápido y fácil" },
-              { value: "15_30", label: "🍳 15-30 min — recetas ágiles" },
-              { value: "30_60", label: "🕒 30-60 min — cocina tranquila" },
-              { value: "over_60", label: "🍷 Más de 1 hora — me encanta cocinar" },
-            ]} />
-          </Field>
-
-          <Field label="Nivel de habilidad en cocina">
-            <Select value={mpCookingSkill} onChange={setMpCookingSkill} options={[
-              { value: "", label: "Sin preferencia" },
-              { value: "beginner", label: "👶 Principiante — recetas básicas" },
-              { value: "intermediate", label: "👨‍🍳 Intermedio — me defiendo bien" },
-              { value: "advanced", label: "🏆 Avanzado — técnicas complejas" },
-            ]} />
-          </Field>
-
-          <Field label="Equipo de cocina disponible" hint="Selecciona el que tengas.">
-            <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
-              {["horno", "freidora de aire", "microondas", "thermomix", "olla a presión", "plancha", "barbacoa", "vaporera", "batidora", "robot de cocina"].map((eq) => {
-                const sel = mpKitchenEquipment.includes(eq);
-                return (
-                  <button key={eq} onClick={() => setMpKitchenEquipment(sel ? mpKitchenEquipment.filter((x) => x !== eq) : [...mpKitchenEquipment, eq])}
-                    style={{ padding: "8px 14px", borderRadius: "20px", border: sel ? "2px solid #f59e0b" : "1.5px solid #e5e7eb", background: sel ? "rgba(245,158,11,0.1)" : "white", color: sel ? "#92400e" : "#374151", fontSize: "13px", fontWeight: sel ? 700 : 500, cursor: "pointer" }}>
-                    {eq}
-                  </button>
-                );
-              })}
-            </div>
-          </Field>
-
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "18px" }}>
-            <Field label="Número de personas">
-              <input type="number" min={1} max={20} value={mpPersons} onChange={(e) => setMpPersons(Number(e.target.value))}
-                style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1.5px solid #e5e7eb", fontSize: "14px", boxSizing: "border-box" }} />
-            </Field>
-            <Field label="Comidas al día">
-              <input type="number" min={1} max={8} value={mpMealsPerDay} onChange={(e) => setMpMealsPerDay(Number(e.target.value))}
-                style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1.5px solid #e5e7eb", fontSize: "14px", boxSizing: "border-box" }} />
-            </Field>
-          </div>
-
-          <Field label="Suplementos que tomas" hint="Opcional. Se incluirán en las notas del menú.">
-            <input value={mpSupplements} onChange={(e) => setMpSupplements(e.target.value)}
-              placeholder="ej: proteína whey, creatina, omega-3..."
-              style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1.5px solid #e5e7eb", fontSize: "14px", boxSizing: "border-box" }} />
-          </Field>
-
-          <Field label="Notas especiales para la IA" hint="Cualquier información adicional que quieras que tenga en cuenta.">
-            <textarea value={mpSpecialNotes} onChange={(e) => setMpSpecialNotes(e.target.value)}
-              placeholder="ej: soy deportista y entreno por las mañanas, prefiero desayunos abundantes..."
-              rows={3}
-              style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1.5px solid #e5e7eb", fontSize: "14px", boxSizing: "border-box", resize: "vertical" }} />
-          </Field>
-
-          {menuPrefs?.updatedAt && (
-            <p style={{ fontSize: "12px", color: "#9ca3af", marginBottom: "12px" }}>
-              Última actualización: {new Date(menuPrefs.updatedAt).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}
-            </p>
-          )}
-
-          <SaveButton
-            onClick={() => saveMenuPrefs.mutate({
-              dietType: mpDietType || undefined,
-              allergies: mpAllergies,
-              restrictions: mpRestrictions,
-              dislikedFoods: mpDislikedFoods,
-              proteinSource: mpProteinSource || undefined,
-              cookingTime: mpCookingTime || undefined,
-              cookingSkill: mpCookingSkill || undefined,
-              kitchenEquipment: mpKitchenEquipment,
-              supplementsUsed: mpSupplements,
-              specialNotes: mpSpecialNotes,
-              persons: mpPersons,
-              mealsPerDay: mpMealsPerDay,
-            })}
-            loading={saveMenuPrefs.isPending}
-          />
-        </div>
-      )}
-
-      {/* PREFERENCES */}
+      {/* ── TAB: PREFERENCIAS ── */}
       {activeTab === "prefs" && (
-        <div style={card}>
-          <SectionTitle>Preferencias de la app</SectionTitle>
-          <Field label="Idioma de la app">
-            <LanguageSelectorInProfile />
-          </Field>
-          <Field label="Complejidad de recetas preferida">
-            <Select value={preferredMealComplexity} onChange={setPreferredMealComplexity} options={[
-              { value: "simple", label: "Simple — pocas instrucciones, rápido" },
-              { value: "moderate", label: "Moderada — equilibrio entre facilidad y variedad" },
-              { value: "complex", label: "Compleja — me gusta cocinar elaborado" },
-            ]} />
-          </Field>
-          <Field label="Tamaño de porciones habitual">
-            <Select value={portionSize} onChange={setPortionSize} options={[
-              { value: "small", label: "Pequeño — como poco" }, { value: "medium", label: "Mediano — normal" }, { value: "large", label: "Grande — como bastante" },
-            ]} />
-          </Field>
-          <div style={{ marginBottom: "16px" }}>
-            <p style={{ margin: "0 0 10px", fontSize: "14px", fontWeight: 600, color: "#374151" }}>Seguimiento y objetivos</p>
-            <Toggle checked={wantsCalorieTracking} onChange={setWantsCalorieTracking} label="Quiero llevar control de calorías" />
-            <Toggle checked={wantsMacroTracking} onChange={setWantsMacroTracking} label="Quiero controlar mis macronutrientes" />
-            <Toggle checked={interestedInMealPrep} onChange={setInterestedInMealPrep} label="Me interesa el meal prep (cocinar en batch)" />
-            <Toggle checked={wantsShoppingListAutomation} onChange={setWantsShoppingListAutomation} label="Quiero listas de la compra automáticas" />
-            <Toggle checked={interestedInNutritionalAdvices} onChange={setInterestedInNutritionalAdvices} label="Quiero recibir consejos nutricionales" />
+        <div>
+          <div style={card}>
+            <SectionTitle>Preferencias de la app</SectionTitle>
+            <Field label="Complejidad de recetas preferida">
+              <Select value={preferredMealComplexity} onChange={setPreferredMealComplexity} options={[
+                { value: "simple", label: "Simple — pocas instrucciones, rápido" },
+                { value: "moderate", label: "Moderada — equilibrio entre facilidad y variedad" },
+                { value: "complex", label: "Compleja — me gusta cocinar elaborado" },
+              ]} />
+            </Field>
+            <Field label="Tamaño de porciones habitual">
+              <Select value={portionSize} onChange={setPortionSize} options={[
+                { value: "small", label: "Pequeño — como poco" }, { value: "medium", label: "Mediano — normal" }, { value: "large", label: "Grande — como bastante" },
+              ]} />
+            </Field>
+            <div style={{ marginBottom: "16px" }}>
+              <p style={{ margin: "0 0 10px", fontSize: "14px", fontWeight: 600, color: "#374151" }}>Seguimiento y objetivos</p>
+              <Toggle checked={wantsCalorieTracking} onChange={setWantsCalorieTracking} label="Quiero llevar control de calorías" />
+              <Toggle checked={wantsMacroTracking} onChange={setWantsMacroTracking} label="Quiero controlar mis macronutrientes" />
+              <Toggle checked={interestedInMealPrep} onChange={setInterestedInMealPrep} label="Me interesa el meal prep (cocinar en batch)" />
+              <Toggle checked={wantsShoppingListAutomation} onChange={setWantsShoppingListAutomation} label="Quiero listas de la compra automáticas" />
+              <Toggle checked={interestedInNutritionalAdvices} onChange={setInterestedInNutritionalAdvices} label="Quiero recibir consejos nutricionales" />
+            </div>
+            <div style={{ marginBottom: "16px" }}>
+              <p style={{ margin: "0 0 10px", fontSize: "14px", fontWeight: 600, color: "#374151" }}>Valores en la alimentación</p>
+              <Toggle checked={preferSeasonalIngredients} onChange={setPreferSeasonalIngredients} label="Prefiero ingredientes de temporada" />
+              <Toggle checked={preferLocalProducts} onChange={setPreferLocalProducts} label="Prefiero productos locales / km 0" />
+              <Toggle checked={avoidProcessedFood} onChange={setAvoidProcessedFood} label="Quiero evitar alimentos ultraprocesados" />
+            </div>
+            <div style={{ marginBottom: "16px" }}>
+              <p style={{ margin: "0 0 10px", fontSize: "14px", fontWeight: 600, color: "#374151" }}>Comunicaciones</p>
+              <Toggle checked={notifications} onChange={setNotifications} label="Notificaciones push" />
+              <Toggle checked={newsletter} onChange={setNewsletter} label="Newsletter con novedades y recetas" />
+            </div>
           </div>
-          <div style={{ marginBottom: "16px" }}>
-            <p style={{ margin: "0 0 10px", fontSize: "14px", fontWeight: 600, color: "#374151" }}>Valores en la alimentación</p>
-            <Toggle checked={preferSeasonalIngredients} onChange={setPreferSeasonalIngredients} label="Prefiero ingredientes de temporada" />
-            <Toggle checked={preferLocalProducts} onChange={setPreferLocalProducts} label="Prefiero productos locales / km 0" />
-            <Toggle checked={avoidProcessedFood} onChange={setAvoidProcessedFood} label="Quiero evitar alimentos ultraprocesados" />
-          </div>
-          <div>
-            <p style={{ margin: "0 0 10px", fontSize: "14px", fontWeight: 600, color: "#374151" }}>Comunicaciones</p>
-            <Toggle checked={notifications} onChange={setNotifications} label="Notificaciones push" />
-            <Toggle checked={newsletter} onChange={setNewsletter} label="Newsletter con novedades y recetas" />
-          </div>
-          <SaveButton onClick={handleSavePreferences} loading={updatePreferences.isPending} />
-        </div>
-      )}
 
-      {/* SHOPPING */}
-      {activeTab === "shopping" && (
-        <div style={card}>
-          <SectionTitle>Hábitos de compra</SectionTitle>
-          <Field label="¿Con qué frecuencia haces la compra?">
-            <Select value={purchaseFrequency} onChange={setPurchaseFrequency} options={[
-              { value: "daily", label: "Todos los días" }, { value: "2_3_week", label: "2-3 veces por semana" },
-              { value: "weekly", label: "Una vez por semana" }, { value: "biweekly", label: "Cada dos semanas" }, { value: "monthly", label: "Una vez al mes" },
-            ]} />
-          </Field>
-          <Field label="¿Dónde sueles comprar principalmente?">
-            <Select value={purchaseLocation} onChange={setPurchaseLocation} options={[
-              { value: "supermarket", label: "Supermercado grande (Mercadona, Carrefour...)" },
-              { value: "local_market", label: "Mercado local / tiendas de barrio" },
-              { value: "online", label: "Online (Amazon Fresh, Ulabox...)" },
-              { value: "mixed", label: "Combinación de varios" },
-            ]} />
-          </Field>
-          <Toggle checked={organicProducts} onChange={setOrganicProducts} label="Prefiero productos ecológicos / bio" />
-          <Toggle checked={suggestHealthier} onChange={setSuggestHealthier} label="Sugerir alternativas más saludables" />
-          <Toggle checked={suggestCheaper} onChange={setSuggestCheaper} label="Sugerir alternativas más económicas" />
-          <SaveButton onClick={handleSaveShopping} loading={updatePreferences.isPending} />
-        </div>
-      )}
+          <div style={card}>
+            <SectionTitle>Hábitos de compra</SectionTitle>
+            <Field label="¿Con qué frecuencia haces la compra?">
+              <Select value={purchaseFrequency} onChange={setPurchaseFrequency} options={[
+                { value: "daily", label: "Todos los días" }, { value: "2_3_week", label: "2-3 veces por semana" },
+                { value: "weekly", label: "Una vez por semana" }, { value: "biweekly", label: "Cada dos semanas" }, { value: "monthly", label: "Una vez al mes" },
+              ]} />
+            </Field>
+            <Field label="¿Dónde sueles comprar principalmente?">
+              <Select value={purchaseLocation} onChange={setPurchaseLocation} options={[
+                { value: "supermarket", label: "Supermercado grande (Mercadona, Carrefour...)" },
+                { value: "local_market", label: "Mercado local / tiendas de barrio" },
+                { value: "online", label: "Online (Amazon Fresh, Ulabox...)" },
+                { value: "mixed", label: "Combinación de varios" },
+              ]} />
+            </Field>
+            <Toggle checked={organicProducts} onChange={setOrganicProducts} label="Prefiero productos ecológicos / bio" />
+            <Toggle checked={suggestHealthier} onChange={setSuggestHealthier} label="Sugerir alternativas más saludables" />
+            <Toggle checked={suggestCheaper} onChange={setSuggestCheaper} label="Sugerir alternativas más económicas" />
+          </div>
 
-      {/* ACCOUNT TAB - Delete account */}
-      {activeTab === "account" && (
-        <DeleteAccountSection />
+          <div style={card}>
+            <div style={{ marginBottom: "16px", padding: "14px 16px", background: "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)", borderRadius: "12px", border: "1px solid #bbf7d0" }}>
+              <p style={{ margin: 0, fontSize: "13px", color: "#166534", fontWeight: 600 }}>💡 Estas preferencias se cargarán automáticamente cada vez que generes un menú con IA.</p>
+            </div>
+            <SectionTitle>Preferencias para menús IA</SectionTitle>
+            <Field label="Tipo de dieta preferida">
+              <Select value={mpDietType} onChange={setMpDietType} options={[
+                { value: "", label: "Sin preferencia" },
+                { value: "omnivore", label: "🥩 Omnívoro — como de todo" },
+                { value: "mediterranean", label: "🫔 Mediterráneo" },
+                { value: "vegetarian", label: "🥦 Vegetariano" },
+                { value: "vegan", label: "🌱 Vegano" },
+                { value: "pescatarian", label: "🐟 Pescetariano" },
+                { value: "flexitarian", label: "🌿 Flexitariano" },
+                { value: "keto", label: "🥑 Cetogénico (Keto)" },
+                { value: "paleo", label: "🦴 Paleo" },
+                { value: "dash", label: "❤️ DASH (hipertensión)" },
+                { value: "gluten_free", label: "🌾 Sin gluten" },
+                { value: "lactose_free", label: "🥛 Sin lácteos" },
+              ]} />
+            </Field>
+            <Field label="Fuente de proteína preferida">
+              <Select value={mpProteinSource} onChange={setMpProteinSource} options={[
+                { value: "", label: "Sin preferencia" },
+                { value: "meat", label: "🥩 Carne (ternera, pollo, cerdo...)" },
+                { value: "fish", label: "🐟 Pescado y mariscos" },
+                { value: "eggs", label: "🥚 Huevos" },
+                { value: "legumes", label: "🫘 Legumbres (lentejas, garbanzos...)" },
+                { value: "plant", label: "🌿 Vegetal (tofu, tempeh, seitán)" },
+                { value: "mixed", label: "🔄 Mixto — combino varias fuentes" },
+              ]} />
+            </Field>
+            <Field label="Alimentos que no te gustan (para el menú IA)" hint="Escribe ingredientes o platos separados por comas.">
+              <input value={mpDislikedFoods} onChange={(e) => setMpDislikedFoods(e.target.value)}
+                placeholder="ej: hígado, col, pimiento verde..."
+                style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1.5px solid #e5e7eb", fontSize: "14px", boxSizing: "border-box" }} />
+            </Field>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px", marginBottom: "18px" }}>
+              <Field label="Número de personas">
+                <input type="number" min={1} max={20} value={mpPersons} onChange={(e) => setMpPersons(Number(e.target.value))}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1.5px solid #e5e7eb", fontSize: "14px", boxSizing: "border-box" }} />
+              </Field>
+              <Field label="Comidas al día (menú IA)">
+                <input type="number" min={1} max={8} value={mpMealsPerDay} onChange={(e) => setMpMealsPerDay(Number(e.target.value))}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1.5px solid #e5e7eb", fontSize: "14px", boxSizing: "border-box" }} />
+              </Field>
+            </div>
+            <Field label="Suplementos que tomas" hint="Opcional. Se incluirán en las notas del menú.">
+              <input value={mpSupplements} onChange={(e) => setMpSupplements(e.target.value)}
+                placeholder="ej: proteína whey, creatina, omega-3..."
+                style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1.5px solid #e5e7eb", fontSize: "14px", boxSizing: "border-box" }} />
+            </Field>
+            <Field label="Notas especiales para la IA" hint="Cualquier información adicional que quieras que tenga en cuenta.">
+              <textarea value={mpSpecialNotes} onChange={(e) => setMpSpecialNotes(e.target.value)}
+                placeholder="ej: soy deportista y entreno por las mañanas, prefiero desayunos abundantes..."
+                rows={3}
+                style={{ width: "100%", padding: "10px 12px", borderRadius: "8px", border: "1.5px solid #e5e7eb", fontSize: "14px", boxSizing: "border-box", resize: "vertical" }} />
+            </Field>
+            {menuPrefs?.updatedAt && (
+              <p style={{ fontSize: "12px", color: "#9ca3af", marginBottom: "12px" }}>
+                Última actualización: {new Date(menuPrefs.updatedAt).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric", hour: "2-digit", minute: "2-digit" })}
+              </p>
+            )}
+          </div>
+
+          <SaveButton onClick={handleSavePreferences} loading={updatePreferences.isPending || saveMenuPrefs.isPending} />
+        </div>
       )}
     </div>
 
-    {/* MODAL DE CONFIRMACIÓN PARA ALERGIAS GRAVES (rec. #6) */}
+    {/* Modal confirmación alergias graves */}
     {showAllergyConfirm && (
       <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.6)", zIndex: 9999, display: "flex", alignItems: "center", justifyContent: "center", padding: "20px" }}>
         <div style={{ background: "white", borderRadius: "20px", padding: "28px", maxWidth: "420px", width: "100%", boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
           <div style={{ width: "56px", height: "56px", borderRadius: "50%", background: "#fee2e2", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 16px", fontSize: "28px" }}>⚠️</div>
           <h3 style={{ textAlign: "center", fontSize: "18px", fontWeight: 800, color: "#dc2626", margin: "0 0 12px" }}>Alergia grave detectada</h3>
           <p style={{ textAlign: "center", fontSize: "14px", color: "#374151", margin: "0 0 16px", lineHeight: 1.6 }}>
-            Estás añadiendo una alergia que puede causar <strong>reacciones graves o anafilaxia</strong>:
+            Estás añadiendo una alergia que puede causar <strong>reacciones graves</strong>:
           </p>
-          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", justifyContent: "center", marginBottom: "16px" }}>
-            {newSevereAllergyNames.map((name) => (
-              <span key={name} style={{ padding: "6px 14px", background: "#fee2e2", color: "#dc2626", borderRadius: "20px", fontSize: "13px", fontWeight: 700, border: "1.5px solid #fca5a5" }}>🚨 {name}</span>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", justifyContent: "center", marginBottom: "16px" }}>
+            {newSevereAllergyNames.map((n) => (
+              <span key={n} style={{ padding: "4px 10px", borderRadius: "12px", background: "#fee2e2", color: "#dc2626", fontSize: "13px", fontWeight: 600 }}>{n}</span>
             ))}
           </div>
           <p style={{ textAlign: "center", fontSize: "13px", color: "#6b7280", margin: "0 0 20px", lineHeight: 1.5 }}>
-            BuddyMarket usará esta información para <strong>excluir estos ingredientes de todos tus menús y recetas</strong>.
             Esta app no sustituye el consejo médico. Consulta a tu médico o alergista ante cualquier duda.
           </p>
           <div style={{ display: "flex", gap: "12px" }}>
-            <button
-              onClick={() => setShowAllergyConfirm(false)}
-              style={{ flex: 1, padding: "12px", background: "#f3f4f6", border: "none", borderRadius: "12px", fontSize: "14px", fontWeight: 600, cursor: "pointer", color: "#374151" }}
-            >
+            <button onClick={() => setShowAllergyConfirm(false)} style={{ flex: 1, padding: "12px", background: "#f3f4f6", border: "none", borderRadius: "12px", fontSize: "14px", fontWeight: 600, cursor: "pointer", color: "#374151" }}>
               Cancelar
             </button>
-            <button
-              onClick={confirmSaveAllergies}
-              style={{ flex: 1, padding: "12px", background: "#dc2626", border: "none", borderRadius: "12px", fontSize: "14px", fontWeight: 700, cursor: "pointer", color: "white" }}
-            >
+            <button onClick={confirmSaveAllergies} style={{ flex: 1, padding: "12px", background: "#dc2626", border: "none", borderRadius: "12px", fontSize: "14px", fontWeight: 700, cursor: "pointer", color: "white" }}>
               Sí, confirmar alergia grave
             </button>
           </div>
@@ -1378,26 +1177,20 @@ function DeleteAccountSection() {
   const deleteAccount = trpc.profile.deleteAccount.useMutation({
     onSuccess: () => {
       toast.success("Cuenta eliminada correctamente");
-      // Clear session and redirect
       setTimeout(() => { window.location.href = "/"; }, 1500);
     },
     onError: (e) => toast.error(e.message || "Error al eliminar la cuenta"),
   });
 
   const handleDelete = () => {
-    if (confirmText !== "DELETE MY ACCOUNT") {
-      toast.error("El texto de confirmación no es correcto");
-      return;
-    }
+    if (confirmText !== "DELETE MY ACCOUNT") { toast.error("El texto de confirmación no es correcto"); return; }
     deleteAccount.mutate({ confirmation: "DELETE MY ACCOUNT" });
   };
 
   return (
     <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
-      {/* Cookie Preferences section */}
       <CookiePreferencesPanel />
 
-      {/* Privacy & Data section */}
       <div style={{ background: "white", borderRadius: "16px", padding: "24px", border: "1px solid #f3f4f6" }}>
         <p style={{ margin: "0 0 16px", fontSize: "13px", fontWeight: 800, color: "#9ca3af", letterSpacing: "0.08em", textTransform: "uppercase" }}>
           Privacidad y datos
@@ -1406,17 +1199,13 @@ function DeleteAccountSection() {
           <div style={{ padding: "14px", background: "#f9fafb", borderRadius: "12px" }}>
             <p style={{ margin: 0, fontWeight: 600, fontSize: "14px", color: "#111827" }}>📊 Exportar mis datos</p>
             <p style={{ margin: "4px 0 0", fontSize: "13px", color: "#6b7280" }}>Descarga una copia de todos tus datos personales y actividad.</p>
-            <button
-              onClick={() => toast.info("Función disponible próximamente")}
-              style={{ marginTop: "10px", padding: "8px 16px", background: "#f3f4f6", border: "none", borderRadius: "8px", fontSize: "13px", fontWeight: 600, cursor: "pointer", color: "#374151" }}
-            >
+            <button onClick={() => toast.info("Función disponible próximamente")} style={{ marginTop: "10px", padding: "8px 16px", background: "#f3f4f6", border: "none", borderRadius: "8px", fontSize: "13px", fontWeight: 600, cursor: "pointer", color: "#374151" }}>
               Solicitar exportación
             </button>
           </div>
         </div>
       </div>
 
-      {/* Danger zone */}
       <div style={{ background: "white", borderRadius: "16px", padding: "24px", border: "1.5px solid #fca5a5" }}>
         <p style={{ margin: "0 0 16px", fontSize: "13px", fontWeight: 800, color: "#ef4444", letterSpacing: "0.08em", textTransform: "uppercase" }}>
           ⚠️ Zona de peligro
@@ -1428,12 +1217,8 @@ function DeleteAccountSection() {
               Esta acción es <strong>permanente e irreversible</strong>. Se eliminarán todos tus datos: perfil, recetas, métricas, listas de compra, diario nutricional y suscripciones.
             </p>
           </div>
-
           {!showConfirm ? (
-            <button
-              onClick={() => setShowConfirm(true)}
-              style={{ padding: "10px 20px", background: "#fee2e2", border: "1px solid #fca5a5", borderRadius: "10px", fontSize: "14px", fontWeight: 600, cursor: "pointer", color: "#dc2626", alignSelf: "flex-start" }}
-            >
+            <button onClick={() => setShowConfirm(true)} style={{ padding: "10px 20px", background: "#fee2e2", border: "1px solid #fca5a5", borderRadius: "10px", fontSize: "14px", fontWeight: 600, cursor: "pointer", color: "#dc2626", alignSelf: "flex-start" }}>
               Eliminar mi cuenta
             </button>
           ) : (
@@ -1441,25 +1226,14 @@ function DeleteAccountSection() {
               <p style={{ margin: 0, fontSize: "13px", color: "#374151", fontWeight: 600 }}>
                 Para confirmar, escribe exactamente: <code style={{ background: "#fee2e2", padding: "2px 6px", borderRadius: "4px", color: "#dc2626" }}>DELETE MY ACCOUNT</code>
               </p>
-              <input
-                type="text"
-                value={confirmText}
-                onChange={(e) => setConfirmText(e.target.value)}
-                placeholder="DELETE MY ACCOUNT"
-                style={{ padding: "10px 14px", border: "1.5px solid #fca5a5", borderRadius: "10px", fontSize: "14px", outline: "none", background: "white" }}
-              />
+              <input type="text" value={confirmText} onChange={(e) => setConfirmText(e.target.value)} placeholder="DELETE MY ACCOUNT"
+                style={{ padding: "10px 14px", border: "1.5px solid #fca5a5", borderRadius: "10px", fontSize: "14px", outline: "none", background: "white" }} />
               <div style={{ display: "flex", gap: "10px" }}>
-                <button
-                  onClick={() => { setShowConfirm(false); setConfirmText(""); }}
-                  style={{ flex: 1, padding: "10px", background: "#f3f4f6", border: "none", borderRadius: "10px", fontSize: "14px", fontWeight: 600, cursor: "pointer", color: "#374151" }}
-                >
+                <button onClick={() => { setShowConfirm(false); setConfirmText(""); }} style={{ flex: 1, padding: "10px", background: "#f3f4f6", border: "none", borderRadius: "10px", fontSize: "14px", fontWeight: 600, cursor: "pointer", color: "#374151" }}>
                   Cancelar
                 </button>
-                <button
-                  onClick={handleDelete}
-                  disabled={confirmText !== "DELETE MY ACCOUNT" || deleteAccount.isPending}
-                  style={{ flex: 1, padding: "10px", background: confirmText === "DELETE MY ACCOUNT" ? "#dc2626" : "#fca5a5", border: "none", borderRadius: "10px", fontSize: "14px", fontWeight: 700, cursor: confirmText === "DELETE MY ACCOUNT" ? "pointer" : "not-allowed", color: "white", transition: "background 0.2s" }}
-                >
+                <button onClick={handleDelete} disabled={confirmText !== "DELETE MY ACCOUNT" || deleteAccount.isPending}
+                  style={{ flex: 1, padding: "10px", background: confirmText === "DELETE MY ACCOUNT" ? "#dc2626" : "#fca5a5", border: "none", borderRadius: "10px", fontSize: "14px", fontWeight: 700, cursor: confirmText === "DELETE MY ACCOUNT" ? "pointer" : "not-allowed", color: "white", transition: "background 0.2s" }}>
                   {deleteAccount.isPending ? "Eliminando..." : "Confirmar eliminación"}
                 </button>
               </div>

@@ -1046,86 +1046,139 @@ function MenuResultView({
   };
 
   const day = menu.days[activeDay];
+  const [expandedMeal, setExpandedMeal] = useState<number | null>(null);
+
+  // Format date for day selector: "Lun\n14 abr"
+  function formatDayLabel(dayName: string, dateStr?: string) {
+    if (!dateStr) return { short: dayName.slice(0, 3), date: "" };
+    const d = new Date(dateStr + "T12:00:00");
+    const months = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+    return { short: dayName.slice(0, 3), date: `${d.getDate()} ${months[d.getMonth()]}` };
+  }
+
+  const MEAL_ICONS: Record<string, string> = {
+    "Desayuno": "☀️", "Almuerzo": "🌤️", "Comida": "🍽️", "Merienda": "🍎", "Cena": "🌙",
+    "Snack": "🥜", "Tentempié": "🥨",
+  };
 
   return (
     <>
       <div className="flex flex-col h-full">
+        {/* Header */}
         <div className="flex items-center gap-3 p-4 border-b border-border bg-background">
-          <button onClick={onBack} className="text-muted-foreground hover:text-foreground text-sm">← Nuevo</button>
+          <button onClick={onBack} className="text-muted-foreground hover:text-foreground text-sm flex-shrink-0">← Nuevo</button>
           <div className="flex-1 min-w-0">
             <p className="font-semibold text-sm truncate">{menu.menuName}</p>
-            <p className="text-xs text-muted-foreground">{menu.targetCalories} kcal/día · {menu.persons} {menu.persons === 1 ? "persona" : "personas"}</p>
+            <p className="text-xs text-muted-foreground">{menu.targetCalories} kcal/día · {menu.persons} {menu.persons === 1 ? "persona" : "personas"} · {menu.days.length} días</p>
           </div>
           {!saved ? (
             <Button onClick={handleSave} disabled={saveMutation.isPending} size="sm"
               className="bg-orange-500 hover:bg-orange-600 text-white text-xs flex-shrink-0">
-              {saveMutation.isPending ? "..." : "💾 Guardar"}
+              {saveMutation.isPending ? "⏳" : "💾 Guardar"}
             </Button>
           ) : (
-            <Badge className="bg-green-100 text-green-700 border-green-200 flex-shrink-0">✓ Guardado</Badge>
+            <Badge className="bg-green-100 text-green-700 border-green-200 flex-shrink-0 text-xs">✓ Guardado</Badge>
           )}
         </div>
 
-        {/* DISCLAIMER LEGAL DE SEGURIDAD ALIMENTARIA (rec. #9) */}
+        {/* Day selector - visual cards */}
+        <div className="flex gap-2 px-3 py-3 overflow-x-auto border-b border-border bg-background" style={{ scrollbarWidth: "none" }}>
+          {menu.days.map((d, i) => {
+            const { short, date } = formatDayLabel(d.day, d.date);
+            const isActive = activeDay === i;
+            return (
+              <button key={i} onClick={() => setActiveDay(i)}
+                style={{
+                  flexShrink: 0, minWidth: "56px", padding: "8px 6px",
+                  borderRadius: "14px", border: isActive ? "2px solid #F97316" : "2px solid transparent",
+                  background: isActive ? "#F97316" : "#f3f4f6",
+                  display: "flex", flexDirection: "column", alignItems: "center", gap: "2px",
+                  cursor: "pointer", transition: "all 0.15s",
+                }}>
+                <span style={{ fontSize: "11px", fontWeight: 700, color: isActive ? "white" : "#6b7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>{short}</span>
+                {date && <span style={{ fontSize: "12px", fontWeight: 800, color: isActive ? "white" : "#1f2937", lineHeight: 1.1 }}>{date}</span>}
+                {d.totalCalories && <span style={{ fontSize: "9px", color: isActive ? "rgba(255,255,255,0.8)" : "#9ca3af", marginTop: "2px" }}>{d.totalCalories} kcal</span>}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Day summary banner */}
+        {day && (
+          <div style={{ margin: "12px 16px 0", padding: "12px 16px", borderRadius: "14px", background: "linear-gradient(135deg, #fff7ed, #ffedd5)", border: "1px solid #fed7aa", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+            <div>
+              <p style={{ margin: 0, fontSize: "15px", fontWeight: 800, color: "#1f2937" }}>{day.day}{day.date ? ` · ${(() => { const d2 = new Date(day.date + "T12:00:00"); return d2.toLocaleDateString("es-ES", { day: "numeric", month: "long" }); })()}` : ""}</p>
+              <p style={{ margin: 0, fontSize: "12px", color: "#9ca3af", marginTop: "2px" }}>{day.meals.length} comidas planificadas</p>
+            </div>
+            <div style={{ textAlign: "right" }}>
+              <p style={{ margin: 0, fontSize: "20px", fontWeight: 900, color: "#F97316" }}>{day.totalCalories ?? day.meals.reduce((s, m) => s + (m.calories ?? 0), 0)}</p>
+              <p style={{ margin: 0, fontSize: "10px", color: "#9ca3af", fontWeight: 600 }}>kcal totales</p>
+            </div>
+          </div>
+        )}
+
+        {/* Disclaimer */}
         <div className="mx-4 mt-3 p-3 bg-blue-50 dark:bg-blue-950/20 rounded-xl border border-blue-200 dark:border-blue-800">
-          <p className="text-xs text-blue-700 dark:text-blue-300 font-medium mb-1">🛡️ Menú generado respetando tus restricciones</p>
           <p className="text-xs text-blue-600 dark:text-blue-400">
-            Este menú ha sido generado por IA teniendo en cuenta tus alergias e intolerancias registradas.
-            {" "}<strong>No sustituye el consejo de un médico o dietista.</strong>{" "}
-            Si tienes alergias graves, verifica siempre los ingredientes antes de consumir cualquier alimento.
+            🛡️ Menú generado respetando tus restricciones. <strong>No sustituye el consejo médico.</strong>
           </p>
         </div>
         {menu.cookingTips && (
-          <div className="mx-4 mt-3 p-3 bg-orange-50 dark:bg-orange-950/20 rounded-xl border border-orange-200 dark:border-orange-800">
+          <div className="mx-4 mt-2 p-3 bg-orange-50 dark:bg-orange-950/20 rounded-xl border border-orange-200 dark:border-orange-800">
             <p className="text-xs text-orange-700 dark:text-orange-300">💡 {menu.cookingTips}</p>
           </div>
         )}
 
-        <div className="flex gap-2 p-3 overflow-x-auto border-b border-border">
-          {menu.days.map((d, i) => (
-            <button key={i} onClick={() => setActiveDay(i)}
-              className={`flex-shrink-0 px-3 py-2 rounded-xl text-xs font-medium transition-all ${
-                activeDay === i ? "bg-orange-500 text-white" : "bg-muted text-muted-foreground hover:bg-orange-100"
-              }`}>
-              {d.day}
-            </button>
-          ))}
-        </div>
-
+        {/* Meal cards */}
         <div className="flex-1 overflow-y-auto px-4 py-3 space-y-3">
-          {day?.meals.map((meal, i) => (
-            <Card key={i} className="border-border">
-              <CardHeader className="pb-2 pt-3 px-4">
-                <div className="flex items-center justify-between">
-                  <CardTitle className="text-sm font-semibold">{meal.name}</CardTitle>
-                  <div className="flex gap-2 text-xs text-muted-foreground">
-                    {meal.calories && <span>🔥 {meal.calories} kcal</span>}
-                    {meal.prepTime && <span>⏱ {meal.prepTime}</span>}
+          {day?.meals.map((meal, i) => {
+            const isExpanded = expandedMeal === i;
+            const mealIcon = MEAL_ICONS[meal.name] || "🍴";
+            return (
+              <div key={i} style={{ borderRadius: "16px", background: "white", border: "1px solid #f3f4f6", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", overflow: "hidden" }}>
+                {/* Meal header - always visible */}
+                <button
+                  onClick={() => setExpandedMeal(isExpanded ? null : i)}
+                  style={{ width: "100%", padding: "14px 16px", display: "flex", alignItems: "flex-start", gap: "12px", background: "none", border: "none", cursor: "pointer", textAlign: "left" }}
+                >
+                  {/* Meal type icon */}
+                  <div style={{ width: "44px", height: "44px", borderRadius: "12px", background: "#fff7ed", border: "1px solid #fed7aa", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "22px", flexShrink: 0 }}>
+                    {mealIcon}
                   </div>
-                </div>
-              </CardHeader>
-              <CardContent className="px-4 pb-3">
-                <p className="text-sm">{meal.food}</p>
-                {meal.ingredients && meal.ingredients.length > 0 && (
-                  <div className="mt-2">
-                    <p className="text-xs font-medium text-muted-foreground mb-1">Ingredientes:</p>
-                    <div className="flex flex-wrap gap-1">
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: "8px" }}>
+                      <p style={{ margin: 0, fontSize: "12px", fontWeight: 700, color: "#F97316", textTransform: "uppercase", letterSpacing: "0.05em" }}>{meal.name}</p>
+                      {meal.calories && (
+                        <span style={{ fontSize: "13px", fontWeight: 800, color: "#F97316", background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: "8px", padding: "2px 8px", flexShrink: 0 }}>🔥 {meal.calories} kcal</span>
+                      )}
+                    </div>
+                    <p style={{ margin: "4px 0 0", fontSize: "14px", fontWeight: 600, color: "#1f2937", lineHeight: 1.3 }}>{meal.food}</p>
+                    {/* Macros pills */}
+                    {(meal.protein || meal.carbs || meal.fat) && (
+                      <div style={{ display: "flex", gap: "6px", marginTop: "8px", flexWrap: "wrap" }}>
+                        {meal.protein && <span style={{ fontSize: "11px", fontWeight: 700, color: "#2563eb", background: "#eff6ff", borderRadius: "6px", padding: "2px 7px" }}>P {meal.protein}g</span>}
+                        {meal.carbs && <span style={{ fontSize: "11px", fontWeight: 700, color: "#d97706", background: "#fffbeb", borderRadius: "6px", padding: "2px 7px" }}>C {meal.carbs}g</span>}
+                        {meal.fat && <span style={{ fontSize: "11px", fontWeight: 700, color: "#7c3aed", background: "#f5f3ff", borderRadius: "6px", padding: "2px 7px" }}>G {meal.fat}g</span>}
+                        {meal.prepTime && <span style={{ fontSize: "11px", fontWeight: 600, color: "#6b7280", background: "#f9fafb", borderRadius: "6px", padding: "2px 7px" }}>⏱ {meal.prepTime}</span>}
+                      </div>
+                    )}
+                  </div>
+                  <span style={{ fontSize: "16px", color: "#9ca3af", flexShrink: 0, marginTop: "2px", transform: isExpanded ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>⌄</span>
+                </button>
+                {/* Expandable ingredients */}
+                {isExpanded && meal.ingredients && meal.ingredients.length > 0 && (
+                  <div style={{ padding: "0 16px 14px", borderTop: "1px solid #f3f4f6" }}>
+                    <p style={{ margin: "10px 0 6px", fontSize: "11px", fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>Ingredientes</p>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
                       {meal.ingredients.map((ing, j) => (
-                        <span key={j} className="text-xs bg-muted px-2 py-0.5 rounded-full">{ing}</span>
+                        <span key={j} style={{ fontSize: "12px", background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: "8px", padding: "3px 10px", color: "#374151" }}>{ing}</span>
                       ))}
                     </div>
                   </div>
                 )}
-                {(meal.protein || meal.carbs || meal.fat) && (
-                  <div className="flex gap-3 mt-2 text-xs text-muted-foreground">
-                    {meal.protein && <span className="text-blue-600">P: {meal.protein}g</span>}
-                    {meal.carbs && <span className="text-orange-600">C: {meal.carbs}g</span>}
-                    {meal.fat && <span className="text-yellow-600">G: {meal.fat}g</span>}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
+              </div>
+            );
+          })}
         </div>
 
         {saved && (
