@@ -188,6 +188,48 @@ function ChatView({ onBack }: { onBack: () => void }) {
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [input, setInput] = useState("");
 
+  // Load user profile to personalize suggested prompts and show profile indicator
+  const profileData = trpc.profile.get.useQuery();
+  const userProfile = profileData.data?.profile;
+  const userName = profileData.data?.user?.name?.split(" ")[0] || "";
+  const hasProfile = !!(userProfile?.mainGoal || userProfile?.weight || userProfile?.dailyCalorieGoal);
+
+  // Build personalized suggested prompts based on user profile
+  const personalizedPrompts = (() => {
+    const prompts: string[] = [];
+    if (userProfile?.mainGoal === "lose_weight") {
+      prompts.push(`¿Qué desayuno bajo en calorías me recomiendas para mi objetivo de pérdida de peso?`);
+      prompts.push(`¿Cuántas calorías debería comer para perder 0.5 kg por semana?`);
+    } else if (userProfile?.mainGoal === "gain_muscle") {
+      prompts.push(`¿Qué alimentos me ayudan a ganar músculo con mi objetivo actual?`);
+      prompts.push(`¿Cuánta proteína necesito al día para ganar músculo?`);
+    } else if (userProfile?.mainGoal === "maintain") {
+      prompts.push(`Dame ideas de comidas equilibradas para mantener mi peso`);
+    } else if (userProfile?.mainGoal === "improve_health" || userProfile?.mainGoal === "eat_healthier") {
+      prompts.push(`¿Qué hábitos alimenticios me ayudan a mejorar mi salud?`);
+      prompts.push(`Dame ideas de comidas nutritivas y equilibradas para cada día`);
+    }
+    if (userProfile?.dailyCalorieGoal) {
+      prompts.push(`Crea un menú de un día con ${Math.round(userProfile.dailyCalorieGoal)} kcal`);
+    }
+    if (userProfile?.dislikedIngredients) {
+      prompts.push(`Dame recetas sin ${userProfile.dislikedIngredients.split(",")[0].trim()}`);
+    }
+    // Fill with generic prompts if not enough personalized ones
+    const generic = [
+      "¿Qué puedo comer antes de entrenar?",
+      "Dame ideas de snacks saludables",
+      "¿Cómo puedo mejorar mi digestión con la dieta?",
+      "¿Qué alimentos tienen más proteína?",
+      "Explícame qué es el batch cooking",
+    ];
+    for (const g of generic) {
+      if (prompts.length >= 4) break;
+      prompts.push(g);
+    }
+    return prompts.slice(0, 4);
+  })();
+
   const chatMutation = trpc.buddyIA.chat.useMutation({
     onSuccess: (data) => {
       setMessages(prev => [...prev, { role: "assistant", content: data.content as string }]);
@@ -221,13 +263,33 @@ function ChatView({ onBack }: { onBack: () => void }) {
           <div className="space-y-4">
             <div className="text-center py-6">
               <div className="w-14 h-14 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white text-2xl mx-auto mb-3">🤖</div>
-              <p className="font-semibold">{"Hola, soy BuddyIA"}</p>
+              <p className="font-semibold">{userName ? `Hola ${userName}, soy BuddyIA` : "Hola, soy BuddyIA"}</p>
               <p className="text-sm text-muted-foreground mt-1">¿En qué puedo ayudarte hoy?</p>
             </div>
+
+            {/* Profile loaded indicator */}
+            {hasProfile && (
+              <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800">
+                <span className="text-green-500 text-sm">✓</span>
+                <p className="text-xs text-green-700 dark:text-green-400 font-medium">
+                  Tu perfil está cargado — respuestas personalizadas a tus objetivos
+                  {userProfile?.dailyCalorieGoal ? ` (${Math.round(userProfile.dailyCalorieGoal)} kcal/día)` : ""}
+                </p>
+              </div>
+            )}
+            {!hasProfile && !profileData.isLoading && (
+              <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-amber-50 dark:bg-amber-950/30 border border-amber-200 dark:border-amber-800">
+                <span className="text-amber-500 text-sm">⚠️</span>
+                <p className="text-xs text-amber-700 dark:text-amber-400">
+                  Completa tu perfil para recibir respuestas más personalizadas
+                </p>
+              </div>
+            )}
+
             <div className="space-y-2">
-              {SUGGESTED_PROMPTS.map((p) => (
+              {personalizedPrompts.map((p) => (
                 <button key={p} onClick={() => sendMessage(p)}
-                  className="w-full text-left text-sm px-4 py-3 rounded-xl border border-border hover:border-orange-300 hover:bg-orange-50 transition-all">
+                  className="w-full text-left text-sm px-4 py-3 rounded-xl border border-border hover:border-orange-300 hover:bg-orange-50 dark:hover:bg-orange-950/20 transition-all">
                   {p}
                 </button>
               ))}

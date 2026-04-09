@@ -107,7 +107,7 @@ export default function Dashboard() {
   const [stepsHidden, setStepsHidden] = useState(() => {
     try { return localStorage.getItem("bm_steps_hidden") === "true"; } catch { return false; }
   });
-  type CustomWidgetType = "racha" | "agua" | "proxima_comida" | "lista_compra" | "buddy_scan" | "macros_resumen";
+  type CustomWidgetType = "racha" | "agua" | "proxima_comida" | "lista_compra" | "buddy_scan";
   const [customWidgetType, setCustomWidgetType] = useState<CustomWidgetType>(() => {
     try { return (localStorage.getItem("bm_custom_widget") as CustomWidgetType) || "racha"; } catch { return "racha"; }
   });
@@ -266,7 +266,8 @@ export default function Dashboard() {
       </div>
 
       {/* ===== PRIMEROS PASOS ===== */}
-      {!stepsHidden && (
+      {/* Only show for new users who haven't completed onboarding and haven't manually hidden it */}
+      {!stepsHidden && !onboardingDone && (
         <div style={{ marginBottom: "20px" }}>
           {/* Header */}
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
@@ -633,7 +634,6 @@ export default function Dashboard() {
               { id: "proxima_comida", emoji: "🍽️", label: "Próxima comida" },
               { id: "lista_compra", emoji: "🛒", label: "Lista compra" },
               { id: "buddy_scan", emoji: "📷", label: "BuddyScan" },
-              { id: "macros_resumen", emoji: "📊", label: "Macros" },
             ] as { id: CustomWidgetType; emoji: string; label: string }[]).map(opt => (
               <button
                 key={opt.id}
@@ -755,30 +755,7 @@ export default function Dashboard() {
           </Link>
         )}
 
-        {customWidgetType === "macros_resumen" && (
-          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-            {[
-              { label: "Proteína", val: protein, goal: proteinGoal, color: "#6366F1", emoji: "💪" },
-              { label: "Carbos", val: carbs, goal: carbsGoal, color: "#F59E0B", emoji: "⚡" },
-              { label: "Grasas", val: fat, goal: fatGoal, color: "#EF4444", emoji: "🥑" },
-            ].map(m => (
-              <div key={m.label}>
-                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "3px" }}>
-                  <span style={{ fontSize: "13px", fontWeight: 700, color: "#374151" }}>{m.emoji} {m.label}</span>
-                  <span style={{ fontSize: "13px", fontWeight: 600, color: "#9ca3af" }}>{m.val}g / {m.goal}g</span>
-                </div>
-                <div style={{ height: "7px", borderRadius: "4px", background: "#f3f4f6", overflow: "hidden" }}>
-                  <div style={{ height: "100%", width: `${Math.min(100, m.goal > 0 ? (m.val / m.goal) * 100 : 0)}%`, background: m.color, borderRadius: "4px", transition: "width 0.5s" }} />
-                </div>
-              </div>
-            ))}
-            <Link href="/app/meal-log">
-              <div style={{ marginTop: "6px", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", background: "#FFF7ED", borderRadius: "10px", padding: "7px 14px", cursor: "pointer" }}>
-                <span style={{ fontSize: "13px", fontWeight: 700, color: "#F97316" }}>Ver diario completo →</span>
-              </div>
-            </Link>
-          </div>
-        )}
+
       </div>
 
       {/* Quick Access — Bento Grid */}
@@ -1080,26 +1057,28 @@ export default function Dashboard() {
       {/* Did You Know Section */}
       <DidYouKnow />
 
-      {/* Community Section: BuddyExperts, BuddyMakers, BuddyIA */}
+      {/* Community Section: BuddyExperts & BuddyMakers (BuddyIA is in bottom nav) */}
       <div style={{ marginBottom: "20px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
-          <h2 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.02em" }}>Comunidad BuddyMarket</h2>
+          <h2 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.02em" }}>Expertos y Creadores</h2>
         </div>
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px" }}>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
           {[
-            { label: "BuddyIA", emoji: "🧠", to: "/app/buddy-ia", desc: "Tu asesor nutricional IA", color: "linear-gradient(135deg, #8B5CF6, #6366F1)" },
-            { label: "BuddyExperts", emoji: "👨‍⚕️", to: "/app/buddy-experts", desc: "Nutricionistas y expertos", color: "linear-gradient(135deg, #F97316, #EA580C)" },
-            { label: "BuddyMakers", emoji: "👨‍🍳", to: "/app/buddy-makers", desc: "Creadores de recetas", color: "linear-gradient(135deg, #EC4899, #F97316)" },
+            { label: "BuddyExperts", emoji: "👨‍⚕️", to: "/app/buddy-experts", desc: "Nutricionistas certificados y expertos en salud", color: "linear-gradient(135deg, #F97316, #EA580C)" },
+            { label: "BuddyMakers", emoji: "👨‍🍳", to: "/app/buddy-makers", desc: "Creadores de recetas saludables", color: "linear-gradient(135deg, #EC4899, #F97316)" },
           ].map((card) => (
             <Link key={card.label} href={card.to}>
-              <div style={{ borderRadius: "18px", overflow: "hidden", cursor: "pointer", boxShadow: "0 4px 14px rgba(0,0,0,0.15)", transition: "transform 0.2s" }}
-                onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.03)")}
+              <div style={{ borderRadius: "18px", overflow: "hidden", cursor: "pointer", boxShadow: "0 4px 14px rgba(0,0,0,0.12)", transition: "transform 0.2s" }}
+                onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.02)")}
                 onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
               >
-                <div style={{ background: card.color, padding: "14px 10px 12px", display: "flex", flexDirection: "column", alignItems: "center", gap: "5px" }}>
-                  <span style={{ fontSize: "24px" }}>{card.emoji}</span>
-                  <p style={{ margin: 0, fontSize: "12px", fontWeight: 900, color: "white", textAlign: "center", letterSpacing: "-0.01em", lineHeight: 1.2 }}>{card.label}</p>
-                  <p style={{ margin: 0, fontSize: "10px", color: "rgba(255,255,255,0.85)", textAlign: "center", lineHeight: 1.3 }}>{card.desc}</p>
+                <div style={{ background: card.color, padding: "18px 14px 16px", display: "flex", flexDirection: "column", alignItems: "flex-start", gap: "6px" }}>
+                  <span style={{ fontSize: "28px" }}>{card.emoji}</span>
+                  <p style={{ margin: 0, fontSize: "14px", fontWeight: 900, color: "white", letterSpacing: "-0.01em", lineHeight: 1.2 }}>{card.label}</p>
+                  <p style={{ margin: 0, fontSize: "11px", color: "rgba(255,255,255,0.85)", lineHeight: 1.4 }}>{card.desc}</p>
+                  <div style={{ marginTop: "4px", display: "inline-flex", alignItems: "center", gap: "4px", background: "rgba(255,255,255,0.2)", borderRadius: "8px", padding: "4px 10px" }}>
+                    <span style={{ fontSize: "12px", fontWeight: 700, color: "white" }}>Ver →</span>
+                  </div>
                 </div>
               </div>
             </Link>
