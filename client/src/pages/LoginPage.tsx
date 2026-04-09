@@ -450,8 +450,9 @@ export default function LoginPage() {
                 <p className="text-gray-400 text-xs mt-0.5">Accede a tu cuenta BuddyMarket</p>
               </div>
               {/* SSO buttons — Google + Apple */}
+              {/* No TyC modal for login mode: existing users should not be asked to accept terms again */}
               <div className={ssoWrapper}>
-                <WebSSOButtons onSuccess={() => { window.location.href = "/app/dashboard"; }} onBeforeSSO={handleSSOWithTyC} />
+                <WebSSOButtons onSuccess={() => { window.location.href = "/app/dashboard"; }} />
               </div>
               <div className="relative flex items-center gap-3 my-1">
                 <div className="flex-1 h-px bg-gray-200" />
@@ -512,8 +513,9 @@ export default function LoginPage() {
                 <p className="text-gray-400 text-xs mt-0.5">Únete a la comunidad BuddyMarket — es gratis</p>
               </div>
               {/* SSO buttons — Google + Apple */}
+              {/* TyC modal for register mode: new users must accept terms before signing up via SSO */}
               <div className={ssoWrapper}>
-                <WebSSOButtons onSuccess={() => { window.location.href = "/app/dashboard"; }} />
+                <WebSSOButtons onSuccess={() => { window.location.href = "/app/dashboard"; }} onBeforeSSO={handleSSOWithTyC} />
               </div>
               <div className="flex items-center gap-3">
                 <div className="flex-1 h-px bg-gray-200" />

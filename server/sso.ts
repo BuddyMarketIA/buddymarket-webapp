@@ -73,6 +73,10 @@ async function createSessionAndSetCookie(
     loginMethod: string;
   }
 ) {
+  // 0. Check if user already exists before upserting
+  const existingUser = await db.getUserByOpenId(params.openId);
+  const isNewUser = !existingUser;
+
   // 1. Crear/actualizar usuario en BD
   await db.upsertUser({
     openId: params.openId,
@@ -96,7 +100,7 @@ async function createSessionAndSetCookie(
   const cookieOptions = getSessionCookieOptions(req);
   res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
 
-  return user;
+  return { user, isNewUser };
 }
 
 // ─── Registro de rutas ────────────────────────────────────────────────────────
@@ -133,7 +137,7 @@ export function registerSSORoutes(app: Express) {
         : null;
       const userEmail = email ?? applePayload.email ?? null;
 
-      const user = await createSessionAndSetCookie(req, res, {
+      const { user, isNewUser } = await createSessionAndSetCookie(req, res, {
         openId,
         name: userName,
         email: userEmail,
@@ -141,7 +145,7 @@ export function registerSSORoutes(app: Express) {
       });
 
       console.log(`[SSO] Apple login: ${openId} (${userEmail})`);
-      res.json({ success: true, user: { id: user?.id, name: user?.name, email: user?.email } });
+      res.json({ success: true, isNewUser, user: { id: user?.id, name: user?.name, email: user?.email } });
     } catch (err: any) {
       console.error("[SSO] Apple token verification failed:", err?.message);
       res.status(401).json({ error: "Token de Apple inválido o expirado" });
@@ -401,7 +405,7 @@ export function registerSSORoutes(app: Express) {
 
       const openId = `google:${googleUserId}`;
 
-      const user = await createSessionAndSetCookie(req, res, {
+      const { user, isNewUser } = await createSessionAndSetCookie(req, res, {
         openId,
         name: userName,
         email: userEmail,
@@ -410,7 +414,7 @@ export function registerSSORoutes(app: Express) {
       });
 
       console.log(`[SSO] Google login: ${openId} (${userEmail})`);
-      res.json({ success: true, user: { id: user?.id, name: user?.name, email: user?.email } });
+      res.json({ success: true, isNewUser, user: { id: user?.id, name: user?.name, email: user?.email } });
     } catch (err: any) {
       console.error("[SSO] Google token verification failed:", err?.message);
       res.status(401).json({ error: "Token de Google inválido o expirado" });

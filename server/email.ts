@@ -2,7 +2,10 @@ import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-const FROM_EMAIL = "BuddyMarket <hola@buddymarketapp.com>";
+// Use verified Resend domain as sender. To use a custom domain (hola@buddymarketapp.com),
+// verify buddymarketapp.com at https://resend.com/domains and update this value.
+const CUSTOM_FROM_EMAIL = process.env.EMAIL_FROM || "BuddyMarket <onboarding@resend.dev>";
+const FROM_EMAIL = CUSTOM_FROM_EMAIL;
 const APP_URL = "https://buddymarketapp.com";
 
 // ─── Shared HTML helpers ──────────────────────────────────────────────────────
