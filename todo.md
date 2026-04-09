@@ -1763,3 +1763,11 @@
 - [x] Lista de la compra: corregir búsqueda que lleva a Google en lugar de buscar dentro de la app
 - [x] Lista de la compra Mercadona: mejorar matching de productos (devuelve productos incorrectos)
 - [x] Lista de la compra Mercadona: reducir falsos negativos "producto no encontrado" cuando sí existe
+
+## Sistema de Notificaciones Push
+- [x] Schema DB: tabla notificationSettings (userId, mealReminders JSON, activityReminder, reminderTime, enabled, pushSubscription)
+- [x] tRPC: endpoints getNotificationSettings, saveNotificationSettings, savePushSubscription
+- [x] Service Worker: registrar SW y suscripción Web Push en el frontend
+- [x] Página de configuración de notificaciones: horarios por comida (desayuno, almuerzo, comida, merienda, cena) + recordatorio de actividad física
+- [x] Backend: cron job que envía notificaciones push a los usuarios según sus preferencias
+- [x] Integrar acceso a configuración de notificaciones desde el perfil y desde el icono de campana

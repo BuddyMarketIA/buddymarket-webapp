@@ -7971,7 +7971,7 @@ Devuelve EXACTAMENTE este JSON:
 
     upsertReminder: protectedProcedure
       .input(z.object({
-        mealType: z.enum(["desayuno", "almuerzo", "merienda", "cena", "snack"]),
+        mealType: z.enum(["desayuno", "almuerzo", "merienda", "cena", "snack", "actividad"]),
         time: z.string().regex(/^([01]\d|2[0-3]):[0-5]\d$/, "Formato HH:MM requerido"),
         enabled: z.boolean().default(true),
         daysMask: z.number().int().min(0).max(127).default(127),
@@ -7989,7 +7989,7 @@ Devuelve EXACTAMENTE este JSON:
       }),
 
     deleteReminder: protectedProcedure
-      .input(z.object({ mealType: z.enum(["desayuno", "almuerzo", "merienda", "cena", "snack"]) }))
+      .input(z.object({ mealType: z.enum(["desayuno", "almuerzo", "merienda", "cena", "snack", "actividad"]) }))
       .mutation(async ({ ctx, input }) => {
         const { deleteMealReminder } = await import("./db");
         await deleteMealReminder(ctx.user.id, input.mealType);

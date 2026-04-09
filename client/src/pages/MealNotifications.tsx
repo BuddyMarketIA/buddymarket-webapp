@@ -3,7 +3,7 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-type MealType = "desayuno" | "almuerzo" | "merienda" | "cena" | "snack";
+type MealType = "desayuno" | "almuerzo" | "merienda" | "cena" | "snack" | "actividad";
 
 interface ReminderConfig {
   mealType: MealType;
@@ -19,6 +19,7 @@ const MEAL_CONFIGS: ReminderConfig[] = [
   { mealType: "merienda", label: "Merienda", emoji: "🍎", defaultTime: "17:00", description: "No olvides tu merienda de la tarde" },
   { mealType: "cena", label: "Cena", emoji: "🌙", defaultTime: "21:00", description: "Cierra el día registrando tu cena" },
   { mealType: "snack", label: "Snack", emoji: "🥜", defaultTime: "11:00", description: "Registra tus tentempiés entre comidas" },
+  { mealType: "actividad", label: "Actividad Física", emoji: "🏃", defaultTime: "18:00", description: "Recuerda registrar tu ejercicio diario" },
 ];
 
 const DAY_LABELS = ["L", "M", "X", "J", "V", "S", "D"];
@@ -93,7 +94,8 @@ export default function MealNotifications() {
     almuerzo: { time: "14:00", enabled: false, days: Array(7).fill(true), dirty: false },
     merienda: { time: "17:00", enabled: false, days: Array(7).fill(true), dirty: false },
     cena:     { time: "21:00", enabled: false, days: Array(7).fill(true), dirty: false },
-    snack:    { time: "11:00", enabled: false, days: Array(7).fill(true), dirty: false },
+    snack:     { time: "11:00", enabled: false, days: Array(7).fill(true), dirty: false },
+    actividad: { time: "18:00", enabled: false, days: Array(7).fill(true), dirty: false },
   });
 
   // tRPC

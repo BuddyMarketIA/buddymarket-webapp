@@ -10,6 +10,8 @@ import LanguageSelector from "@/components/LanguageSelector";
 
 function NotificationBell() {
   const [, navigate] = useLocation();
+  const [open, setOpen] = useState(false);
+  const ref = useRef<HTMLDivElement>(null);
   const { isAuthenticated } = useAuth();
   const { data: unreadCount = 0 } = trpc.notifications.inApp.unreadCount.useQuery(undefined, {
     refetchInterval: isAuthenticated ? 60000 : false,
@@ -18,21 +20,53 @@ function NotificationBell() {
     retry: false,
   });
   const count = typeof unreadCount === "number" ? unreadCount : 0;
+
+  // Close dropdown on outside click
+  useEffect(() => {
+    if (!open) return;
+    const handler = (e: MouseEvent) => {
+      if (ref.current && !ref.current.contains(e.target as Node)) setOpen(false);
+    };
+    document.addEventListener("mousedown", handler);
+    return () => document.removeEventListener("mousedown", handler);
+  }, [open]);
+
   return (
-    <button
-      onClick={() => navigate("/app/notifications")}
-      style={{ width: "40px", height: "40px", borderRadius: "12px", background: "white", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", flexShrink: 0, position: "relative" }}
-      aria-label="Notificaciones"
-    >
-      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-        <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-      </svg>
-      {count > 0 && (
-        <div style={{ position: "absolute", top: "6px", right: "6px", minWidth: "16px", height: "16px", borderRadius: "8px", background: "#F97316", border: "2px solid white", display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px" }}>
-          <span style={{ fontSize: "9px", fontWeight: 800, color: "white", lineHeight: 1 }}>{count > 99 ? "99+" : count}</span>
+    <div ref={ref} style={{ position: "relative", flexShrink: 0 }}>
+      <button
+        onClick={() => setOpen((v) => !v)}
+        style={{ width: "40px", height: "40px", borderRadius: "12px", background: "white", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", position: "relative" }}
+        aria-label="Notificaciones"
+      >
+        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+          <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+        </svg>
+        {count > 0 && (
+          <div style={{ position: "absolute", top: "6px", right: "6px", minWidth: "16px", height: "16px", borderRadius: "8px", background: "#F97316", border: "2px solid white", display: "flex", alignItems: "center", justifyContent: "center", padding: "0 3px" }}>
+            <span style={{ fontSize: "9px", fontWeight: 800, color: "white", lineHeight: 1 }}>{count > 99 ? "99+" : count}</span>
+          </div>
+        )}
+      </button>
+      {open && (
+        <div style={{ position: "absolute", top: "48px", right: 0, background: "white", borderRadius: "14px", boxShadow: "0 8px 32px rgba(0,0,0,0.14)", border: "1px solid #f3f4f6", minWidth: "200px", zIndex: 9999, overflow: "hidden" }}>
+          <button
+            onClick={() => { setOpen(false); navigate("/app/notifications"); }}
+            style={{ width: "100%", padding: "13px 16px", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: "10px", fontSize: "14px", color: "#111827", fontWeight: 600, textAlign: "left" }}
+          >
+            <span style={{ fontSize: "18px" }}>🔔</span>
+            <span>Notificaciones{count > 0 ? ` (${count})` : ""}</span>
+          </button>
+          <div style={{ height: "1px", background: "#f3f4f6", margin: "0 12px" }} />
+          <button
+            onClick={() => { setOpen(false); navigate("/app/meal-notifications"); }}
+            style={{ width: "100%", padding: "13px 16px", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: "10px", fontSize: "14px", color: "#111827", fontWeight: 600, textAlign: "left" }}
+          >
+            <span style={{ fontSize: "18px" }}>⏰</span>
+            <span>Configurar recordatorios</span>
+          </button>
         </div>
       )}
-    </button>
+    </div>
   );
 }
 

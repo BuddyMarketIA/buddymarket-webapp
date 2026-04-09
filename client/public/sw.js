@@ -105,9 +105,15 @@ function buildNotificationBody(summary, mealType) {
     merienda: '🍎',
     cena: '🌙',
     snack: '🥜',
+    actividad: '🏃',
   };
   const emoji = mealEmojis[mealType] || '🍽️';
-  const mealLabel = mealType ? `${emoji} Hora de ${mealType}` : '🍽️ Hora de comer';
+  const isActivity = mealType === 'actividad';
+  const mealLabel = isActivity ? '🏃 ¡Hora de entrenar!' : (mealType ? `${emoji} Hora de ${mealType}` : '🍽️ Hora de comer');
+
+  if (isActivity) {
+    return `${mealLabel}\n💪 Registra tu actividad física de hoy en BuddyMarket.`;
+  }
 
   if (!summary || summary.goal <= 0) {
     return `${mealLabel} — ¡Recuerda registrar tus comidas!`;
