@@ -192,6 +192,17 @@ async function startServer() {
     }
   });
 
+  // ─── Debug headers endpoint (temporal) ──────────────────────────────────────
+  app.get("/api/debug-headers", (req: any, res: any) => {
+    res.json({
+      host: req.get("host"),
+      protocol: req.protocol,
+      xForwardedHost: req.headers["x-forwarded-host"],
+      xForwardedProto: req.headers["x-forwarded-proto"],
+      xForwardedFor: req.headers["x-forwarded-for"],
+    });
+  });
+
   // ─── Health check endpoint ──────────────────────────────────────
   const startTime = Date.now();
   app.get("/api/health", async (_req: any, res: any) => {
