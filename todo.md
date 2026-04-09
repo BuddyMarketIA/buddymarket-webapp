@@ -1746,3 +1746,4 @@
 - [ ] Dashboard: mover BuddyIA al acceso rápido como asesor nutricional destacado
 - [ ] Dashboard: rediseñar sección Comunidad (BuddyIA como asesor, BuddyCoach como app de deporte del grupo)
 - [ ] BuddyScan: redirigir a escáner real (código de barras + foto de plato), no a Menús
+- [x] MenuResultView: función de reemplazo de comida por alternativa IA — endpoint tRPC buddyIA.replaceMeal + UI con botón "Cambiar" en cada tarjeta expandida + modal bottom-sheet con preview de la alternativa, botón aceptar/generar otra/cancelar

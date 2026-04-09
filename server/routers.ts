@@ -7213,6 +7213,85 @@ Devuelve SOLO JSON válido con esta estructura exacta (${input.daysCount} elemen
         });
         return { menuId, success: true };
       }),
+
+    // ── Replace a meal with an AI-generated alternative ──────────────────────
+    replaceMeal: protectedProcedure
+      .input(
+        z.object({
+          mealName: z.string().min(1).max(50).trim(),
+          currentFood: z.string().min(1).max(200).trim(),
+          targetCalories: z.number().min(50).max(2000),
+          dayName: z.string().min(1).max(20).trim(),
+          menuGoal: z.string().min(1).max(100).trim(),
+          persons: z.number().int().min(1).max(20).default(1),
+          previousMealsToday: z.array(z.string().max(100)).max(6).optional(),
+        })
+      )
+      .mutation(async ({ input, ctx }) => {
+        const [userAllergiesData, userRestrictionsData] = await Promise.all([
+          db.getUserAllergies(ctx.user.id),
+          db.getUserDietRestrictions(ctx.user.id),
+        ]);
+
+        const allergyList = userAllergiesData.map((a: any) => a.allergy?.nameEs).filter(Boolean) as string[];
+        const restrictionList = userRestrictionsData.map((r: any) => r.restriction?.nameEs).filter(Boolean) as string[];
+
+        const allergyContext = allergyList.length > 0
+          ? `ALERGIAS E INTOLERANCIAS (OBLIGATORIO EXCLUIR): ${allergyList.join(", ")}.`
+          : "Sin alergias registradas.";
+        const restrictionContext = restrictionList.length > 0
+          ? `RESTRICCIONES DIETÉTICAS: ${restrictionList.join(", ")}.`
+          : "";
+        const prevMealsContext = input.previousMealsToday && input.previousMealsToday.length > 0
+          ? `Otras comidas del mismo día ya planificadas: ${input.previousMealsToday.join(", ")}. Evita repetir ingredientes principales.`
+          : "";
+
+        const prompt = `Eres un nutricionista experto. El usuario quiere reemplazar una comida de su menú semanal por una alternativa diferente.
+
+COMIDA A REEMPLAZAR:
+- Tipo: ${input.mealName} (${input.dayName})
+- Plato actual: "${input.currentFood}"
+- Calorías objetivo: ${input.targetCalories} kcal (±15% de margen)
+- Objetivo nutricional del menú: ${input.menuGoal}
+- Personas: ${input.persons}
+
+${allergyContext}
+${restrictionContext}
+${prevMealsContext}
+
+GENERA UNA ALTERNATIVA completamente diferente al plato actual. Debe ser:
+1. Un plato DISTINTO (no variación del mismo)
+2. Apropiado para el momento del día (${input.mealName})
+3. Con calorías similares (${input.targetCalories} kcal ±15%)
+4. Que respete ESTRICTAMENTE todas las alergias y restricciones
+5. Práctico y fácil de preparar
+
+Devuelve SOLO JSON válido con esta estructura exacta:
+{
+  "food": "nombre y descripción breve del plato alternativo",
+  "calories": 450,
+  "protein": 30,
+  "carbs": 45,
+  "fat": 12,
+  "prepTime": "20 min",
+  "ingredients": ["ingrediente 1 - cantidad", "ingrediente 2 - cantidad"],
+  "reason": "breve explicación de por qué es una buena alternativa (1 frase)"
+}`;
+
+        try {
+          const response = await invokeLLM({
+            messages: [{ role: "user", content: prompt }],
+            response_format: { type: "json_object" },
+          });
+          const rawContent = response.choices?.[0]?.message?.content ?? "{}";
+          const content = typeof rawContent === "string" ? rawContent : "{}";
+          const alternative = JSON.parse(content);
+          return { alternative, error: null };
+        } catch (err: any) {
+          console.error("[buddyIA.replaceMeal] error:", err?.message || err);
+          return { alternative: null, error: "No se pudo generar la alternativa. Inténtalo de nuevo." };
+        }
+      }),
   }),
   // ---------------------------------------------------------------------------
   // EVENTS - Asistente de menús para eventos especiales

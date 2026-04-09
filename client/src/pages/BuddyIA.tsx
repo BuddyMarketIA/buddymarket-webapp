@@ -976,6 +976,78 @@ function MenuResultView({
   const [showSaveModal, setShowSaveModal] = useState(false);
   const utils = trpc.useUtils();
 
+  // ── Mutable local copy of the menu (allows replacing meals) ──────────────
+  const [localMenu, setLocalMenu] = useState<GeneratedMenu>(() => JSON.parse(JSON.stringify(menu)));
+
+  // ── Replace-meal panel state ──────────────────────────────────────────────
+  type ReplaceState = { dayIdx: number; mealIdx: number } | null;
+  const [replacing, setReplacing] = useState<ReplaceState>(null);
+  type AltMeal = { food: string; calories?: number; protein?: number; carbs?: number; fat?: number; prepTime?: string; ingredients?: string[]; reason?: string };
+  const [altMeal, setAltMeal] = useState<AltMeal | null>(null);
+  const [altError, setAltError] = useState<string | null>(null);
+
+  const replaceMealMutation = trpc.buddyIA.replaceMeal.useMutation({
+    onSuccess: (data) => {
+      if (data.error || !data.alternative) {
+        setAltError(data.error || "No se pudo generar la alternativa.");
+        setAltMeal(null);
+      } else {
+        setAltMeal(data.alternative as AltMeal);
+        setAltError(null);
+      }
+    },
+    onError: () => {
+      setAltError("Error de conexión. Inténtalo de nuevo.");
+      setAltMeal(null);
+    },
+  });
+
+  const handleRequestAlternative = (dayIdx: number, mealIdx: number) => {
+    const day = localMenu.days[dayIdx];
+    const meal = day.meals[mealIdx];
+    setReplacing({ dayIdx, mealIdx });
+    setAltMeal(null);
+    setAltError(null);
+    const otherMeals = day.meals.filter((_, i) => i !== mealIdx).map((m) => m.food).slice(0, 5);
+    replaceMealMutation.mutate({
+      mealName: meal.name,
+      currentFood: meal.food,
+      targetCalories: meal.calories ?? Math.round((localMenu.targetCalories || 2000) / Math.max(day.meals.length, 1)),
+      dayName: day.day,
+      menuGoal: questionnaireData.goal || "mantenimiento",
+      persons: localMenu.persons || 1,
+      previousMealsToday: otherMeals,
+    });
+  };
+
+  const handleAcceptAlternative = () => {
+    if (!replacing || !altMeal) return;
+    const { dayIdx, mealIdx } = replacing;
+    setLocalMenu((prev) => {
+      const updated: GeneratedMenu = JSON.parse(JSON.stringify(prev));
+      const meal = updated.days[dayIdx].meals[mealIdx];
+      meal.food = altMeal.food;
+      if (altMeal.calories != null) meal.calories = altMeal.calories;
+      if (altMeal.protein != null) meal.protein = altMeal.protein;
+      if (altMeal.carbs != null) meal.carbs = altMeal.carbs;
+      if (altMeal.fat != null) meal.fat = altMeal.fat;
+      if (altMeal.prepTime) meal.prepTime = altMeal.prepTime;
+      if (altMeal.ingredients) meal.ingredients = altMeal.ingredients;
+      updated.days[dayIdx].totalCalories = updated.days[dayIdx].meals.reduce((s, m) => s + (m.calories ?? 0), 0);
+      return updated;
+    });
+    setReplacing(null);
+    setAltMeal(null);
+    setSaved(false);
+    toast.success("✅ Comida reemplazada. Recuerda guardar el menú actualizado.");
+  };
+
+  const handleCancelReplace = () => {
+    setReplacing(null);
+    setAltMeal(null);
+    setAltError(null);
+  };
+
   const applyToCalendarMutation = trpc.menus.applyToCalendar.useMutation({
     onSuccess: (data) => {
       setApplying(false);
@@ -1031,12 +1103,12 @@ function MenuResultView({
 
   const handleSave = () => {
     saveMutation.mutate({
-      menuName: menu.menuName || "Mi menú personalizado",
+      menuName: localMenu.menuName || "Mi menú personalizado",
       startDate: questionnaireData.startDate || new Date().toISOString().split("T")[0],
       goal: questionnaireData.goal || "mantenimiento",
-      persons: menu.persons || questionnaireData.persons || 1,
-      targetCalories: menu.targetCalories || 2000,
-      days: menu.days.map(d => ({
+      persons: localMenu.persons || questionnaireData.persons || 1,
+      targetCalories: localMenu.targetCalories || 2000,
+      days: localMenu.days.map(d => ({
         day: d.day,
         date: d.date,
         totalCalories: d.totalCalories,
@@ -1045,7 +1117,7 @@ function MenuResultView({
     });
   };
 
-  const day = menu.days[activeDay];
+  const day = localMenu.days[activeDay];
   const [expandedMeal, setExpandedMeal] = useState<number | null>(null);
 
   // Format date for day selector: "Lun\n14 abr"
@@ -1068,8 +1140,8 @@ function MenuResultView({
         <div className="flex items-center gap-3 p-4 border-b border-border bg-background">
           <button onClick={onBack} className="text-muted-foreground hover:text-foreground text-sm flex-shrink-0">← Nuevo</button>
           <div className="flex-1 min-w-0">
-            <p className="font-semibold text-sm truncate">{menu.menuName}</p>
-            <p className="text-xs text-muted-foreground">{menu.targetCalories} kcal/día · {menu.persons} {menu.persons === 1 ? "persona" : "personas"} · {menu.days.length} días</p>
+            <p className="font-semibold text-sm truncate">{localMenu.menuName}</p>
+            <p className="text-xs text-muted-foreground">{localMenu.targetCalories} kcal/día · {localMenu.persons} {localMenu.persons === 1 ? "persona" : "personas"} · {localMenu.days.length} días</p>
           </div>
           {!saved ? (
             <Button onClick={handleSave} disabled={saveMutation.isPending} size="sm"
@@ -1083,7 +1155,7 @@ function MenuResultView({
 
         {/* Day selector - visual cards */}
         <div className="flex gap-2 px-3 py-3 overflow-x-auto border-b border-border bg-background" style={{ scrollbarWidth: "none" }}>
-          {menu.days.map((d, i) => {
+          {localMenu.days.map((d, i) => {
             const { short, date } = formatDayLabel(d.day, d.date);
             const isActive = activeDay === i;
             return (
@@ -1123,9 +1195,9 @@ function MenuResultView({
             🛡️ Menú generado respetando tus restricciones. <strong>No sustituye el consejo médico.</strong>
           </p>
         </div>
-        {menu.cookingTips && (
+        {localMenu.cookingTips && (
           <div className="mx-4 mt-2 p-3 bg-orange-50 dark:bg-orange-950/20 rounded-xl border border-orange-200 dark:border-orange-800">
-            <p className="text-xs text-orange-700 dark:text-orange-300">💡 {menu.cookingTips}</p>
+            <p className="text-xs text-orange-700 dark:text-orange-300">💡 {localMenu.cookingTips}</p>
           </div>
         )}
 
@@ -1165,15 +1237,26 @@ function MenuResultView({
                   </div>
                   <span style={{ fontSize: "16px", color: "#9ca3af", flexShrink: 0, marginTop: "2px", transform: isExpanded ? "rotate(180deg)" : "none", transition: "transform 0.2s" }}>⌄</span>
                 </button>
-                {/* Expandable ingredients */}
-                {isExpanded && meal.ingredients && meal.ingredients.length > 0 && (
+                {/* Expandable ingredients + replace button */}
+                {isExpanded && (
                   <div style={{ padding: "0 16px 14px", borderTop: "1px solid #f3f4f6" }}>
-                    <p style={{ margin: "10px 0 6px", fontSize: "11px", fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>Ingredientes</p>
-                    <div style={{ display: "flex", flexWrap: "wrap", gap: "6px" }}>
-                      {meal.ingredients.map((ing, j) => (
-                        <span key={j} style={{ fontSize: "12px", background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: "8px", padding: "3px 10px", color: "#374151" }}>{ing}</span>
-                      ))}
-                    </div>
+                    {meal.ingredients && meal.ingredients.length > 0 && (
+                      <>
+                        <p style={{ margin: "10px 0 6px", fontSize: "11px", fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>Ingredientes</p>
+                        <div style={{ display: "flex", flexWrap: "wrap", gap: "6px", marginBottom: "12px" }}>
+                          {meal.ingredients.map((ing, j) => (
+                            <span key={j} style={{ fontSize: "12px", background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: "8px", padding: "3px 10px", color: "#374151" }}>{ing}</span>
+                          ))}
+                        </div>
+                      </>
+                    )}
+                    {/* Replace meal button */}
+                    <button
+                      onClick={(e) => { e.stopPropagation(); handleRequestAlternative(activeDay, i); }}
+                      style={{ width: "100%", padding: "10px 16px", background: "#fff7ed", border: "1.5px dashed #fb923c", borderRadius: "10px", color: "#ea580c", fontSize: "13px", fontWeight: 700, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px" }}
+                    >
+                      🔄 Cambiar por alternativa IA
+                    </button>
                   </div>
                 )}
               </div>
@@ -1266,6 +1349,105 @@ function MenuResultView({
               >
                 Seguir revisando el menú
               </Button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Replace Meal Modal ───────────────────────────────────────────────────────────────────────── */}
+      {replacing !== null && (
+        <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.55)", zIndex: 9999, display: "flex", alignItems: "flex-end", justifyContent: "center" }}
+          onClick={handleCancelReplace}
+        >
+          <div
+            onClick={(e) => e.stopPropagation()}
+            style={{ background: "white", borderRadius: "20px 20px 0 0", padding: "24px 20px 32px", width: "100%", maxWidth: 520, maxHeight: "85vh", overflowY: "auto" }}
+          >
+            {/* Handle bar */}
+            <div style={{ width: 40, height: 4, background: "#e5e7eb", borderRadius: 4, margin: "0 auto 20px" }} />
+
+            <h3 style={{ margin: "0 0 4px", fontSize: "17px", fontWeight: 800, color: "#1f2937" }}>Alternativa IA</h3>
+            <p style={{ margin: "0 0 16px", fontSize: "13px", color: "#6b7280" }}>
+              Reemplazando: <strong>{localMenu.days[replacing.dayIdx]?.meals[replacing.mealIdx]?.name}</strong> del {localMenu.days[replacing.dayIdx]?.day}
+            </p>
+
+            {/* Loading state */}
+            {replaceMealMutation.isPending && (
+              <div style={{ textAlign: "center", padding: "32px 0" }}>
+                <div style={{ width: 48, height: 48, border: "4px solid #fed7aa", borderTopColor: "#F97316", borderRadius: "50%", animation: "spin 0.8s linear infinite", margin: "0 auto 12px" }} />
+                <p style={{ color: "#6b7280", fontSize: "14px", fontWeight: 600 }}>Generando alternativa...</p>
+                <p style={{ color: "#9ca3af", fontSize: "12px", marginTop: 4 }}>Respetando tus alergias y restricciones</p>
+              </div>
+            )}
+
+            {/* Error state */}
+            {altError && !replaceMealMutation.isPending && (
+              <div style={{ background: "#fef2f2", border: "1px solid #fecaca", borderRadius: 12, padding: "16px", marginBottom: 16 }}>
+                <p style={{ color: "#dc2626", fontSize: "14px", fontWeight: 600, margin: 0 }}>⚠️ {altError}</p>
+              </div>
+            )}
+
+            {/* Alternative preview */}
+            {altMeal && !replaceMealMutation.isPending && (
+              <div style={{ background: "#f0fdf4", border: "1.5px solid #86efac", borderRadius: 14, padding: "16px", marginBottom: 16 }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 8 }}>
+                  <span style={{ fontSize: "12px", fontWeight: 700, color: "#16a34a", textTransform: "uppercase", letterSpacing: "0.05em" }}>✨ Alternativa sugerida</span>
+                  {altMeal.calories && (
+                    <span style={{ fontSize: "13px", fontWeight: 800, color: "#F97316", background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 8, padding: "2px 8px" }}>🔥 {altMeal.calories} kcal</span>
+                  )}
+                </div>
+                <p style={{ margin: "0 0 8px", fontSize: "15px", fontWeight: 700, color: "#1f2937", lineHeight: 1.3 }}>{altMeal.food}</p>
+                {/* Macros */}
+                {(altMeal.protein || altMeal.carbs || altMeal.fat) && (
+                  <div style={{ display: "flex", gap: 6, flexWrap: "wrap", marginBottom: 8 }}>
+                    {altMeal.protein && <span style={{ fontSize: "11px", fontWeight: 700, color: "#2563eb", background: "#eff6ff", borderRadius: 6, padding: "2px 7px" }}>P {altMeal.protein}g</span>}
+                    {altMeal.carbs && <span style={{ fontSize: "11px", fontWeight: 700, color: "#d97706", background: "#fffbeb", borderRadius: 6, padding: "2px 7px" }}>C {altMeal.carbs}g</span>}
+                    {altMeal.fat && <span style={{ fontSize: "11px", fontWeight: 700, color: "#7c3aed", background: "#f5f3ff", borderRadius: 6, padding: "2px 7px" }}>G {altMeal.fat}g</span>}
+                    {altMeal.prepTime && <span style={{ fontSize: "11px", fontWeight: 600, color: "#6b7280", background: "#f9fafb", borderRadius: 6, padding: "2px 7px" }}>⏱ {altMeal.prepTime}</span>}
+                  </div>
+                )}
+                {/* Ingredients */}
+                {altMeal.ingredients && altMeal.ingredients.length > 0 && (
+                  <div style={{ marginBottom: 8 }}>
+                    <p style={{ margin: "0 0 4px", fontSize: "11px", fontWeight: 700, color: "#6b7280", textTransform: "uppercase" }}>Ingredientes</p>
+                    <div style={{ display: "flex", flexWrap: "wrap", gap: 4 }}>
+                      {altMeal.ingredients.map((ing, j) => (
+                        <span key={j} style={{ fontSize: "11px", background: "white", border: "1px solid #d1fae5", borderRadius: 6, padding: "2px 8px", color: "#374151" }}>{ing}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+                {/* Reason */}
+                {altMeal.reason && (
+                  <p style={{ margin: "8px 0 0", fontSize: "12px", color: "#16a34a", fontStyle: "italic" }}>💡 {altMeal.reason}</p>
+                )}
+              </div>
+            )}
+
+            {/* Action buttons */}
+            <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+              {altMeal && !replaceMealMutation.isPending && (
+                <button
+                  onClick={handleAcceptAlternative}
+                  style={{ padding: "13px", background: "#F97316", color: "white", border: "none", borderRadius: 12, fontSize: "15px", fontWeight: 700, cursor: "pointer" }}
+                >
+                  ✅ Aceptar alternativa
+                </button>
+              )}
+              {!replaceMealMutation.isPending && (
+                <button
+                  onClick={() => replacing && handleRequestAlternative(replacing.dayIdx, replacing.mealIdx)}
+                  style={{ padding: "12px", background: "#f9fafb", color: "#374151", border: "1px solid #e5e7eb", borderRadius: 12, fontSize: "14px", fontWeight: 600, cursor: "pointer" }}
+                >
+                  🔄 Generar otra alternativa
+                </button>
+              )}
+              <button
+                onClick={handleCancelReplace}
+                style={{ padding: "12px", background: "transparent", color: "#9ca3af", border: "none", borderRadius: 12, fontSize: "14px", cursor: "pointer" }}
+              >
+                Cancelar
+              </button>
             </div>
           </div>
         </div>
