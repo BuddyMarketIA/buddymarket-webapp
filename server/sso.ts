@@ -20,6 +20,17 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import { ENV } from "./_core/env";
 
+// ─── Helper: obtener el origin público correcto detrás de proxies ─────────────
+/**
+ * Cuando la app corre detrás de Cloudflare/Manus, req.get("host") devuelve el
+ * host interno del contenedor. Usamos X-Forwarded-Host si está disponible.
+ */
+function getPublicOrigin(req: Request): string {
+  const proto = (req.headers["x-forwarded-proto"] as string)?.split(",")[0]?.trim() ?? req.protocol;
+  const host = (req.headers["x-forwarded-host"] as string)?.split(",")[0]?.trim() ?? req.get("host");
+  return `${proto}://${host}`;
+}
+
 // ─── Apple OAuth Web Flow helpers ────────────────────────────────────────────
 
 async function generateAppleClientSecret(): Promise<string> {
@@ -162,7 +173,7 @@ export function registerSSORoutes(app: Express) {
       res.status(500).json({ error: "Apple Sign In not configured" });
       return;
     }
-    const origin = (req.query.origin as string) || `${req.protocol}://${req.get("host")}`;
+    const origin = (req.query.origin as string) || getPublicOrigin(req);
     const redirectUri = `${origin}/api/auth/apple/callback`;
     const state = Buffer.from(JSON.stringify({ origin, returnPath: req.query.returnPath ?? "/" })).toString("base64url");
     const params = new URLSearchParams({
@@ -186,7 +197,7 @@ export function registerSSORoutes(app: Express) {
       user?: string;
     };
 
-    let origin = `${req.protocol}://${req.get("host")}`;
+    let origin = getPublicOrigin(req);
     let returnPath = "/";
     try {
       if (state) {
@@ -276,7 +287,7 @@ export function registerSSORoutes(app: Express) {
       res.status(500).json({ error: "GOOGLE_CLIENT_ID not configured" });
       return;
     }
-    const origin = (req.query.origin as string) || `${req.protocol}://${req.get("host")}`;
+    const origin = (req.query.origin as string) || getPublicOrigin(req);
     const redirectUri = `${origin}/api/auth/google/callback`;
     const state = Buffer.from(JSON.stringify({ origin, returnPath: req.query.returnPath ?? "/" })).toString("base64url");
     const params = new URLSearchParams({
@@ -294,7 +305,7 @@ export function registerSSORoutes(app: Express) {
   // GET /api/auth/google/callback → intercambia code por tokens y crea sesión
   app.get("/api/auth/google/callback", async (req: Request, res: Response) => {
     const { code, state, error } = req.query as { code?: string; state?: string; error?: string };
-    let origin = `${req.protocol}://${req.get("host")}`;
+    let origin = getPublicOrigin(req);
     let returnPath = "/";
     try {
       if (state) {
