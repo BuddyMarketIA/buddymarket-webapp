@@ -188,12 +188,8 @@ export default function LoginPage() {
   useEffect(() => {
     if (meQuery.isLoading) return;
     if (meQuery.data) {
-      // User is already logged in — send to dashboard (or onboarding if not completed)
-      if (!meQuery.data.onboardingCompleted) {
-        setLocation("/buddy-setup");
-      } else {
-        setLocation("/app/dashboard");
-      }
+      // User is already logged in — always send to dashboard
+      setLocation("/app/dashboard");
     }
   }, [meQuery.data, meQuery.isLoading, setLocation]);
 
