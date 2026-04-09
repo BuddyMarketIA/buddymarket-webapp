@@ -376,30 +376,113 @@ function QuestionnaireView({
   });
   const [prefsLoaded, setPrefsLoaded] = useState(false);
   const { data: savedPrefs } = trpc.profile.getMenuPreferences.useQuery();
+  const { data: fullProfile } = trpc.profile.get.useQuery();
   const [allergyInput, setAllergyInput] = useState("");
   const [dislikedInput, setDislikedInput] = useState("");
 
-  // Load saved preferences once when they arrive
+  // Map profile mainGoal (English) to questionnaire goal (Spanish)
+  const mapMainGoalToQuestionnaire = (mainGoal: string | null | undefined): GoalType | undefined => {
+    const map: Record<string, GoalType> = {
+      lose_weight: "perdida_peso",
+      gain_muscle: "ganancia_muscular",
+      maintain: "mantenimiento",
+      improve_health: "salud",
+      eat_healthier: "salud",
+    };
+    return mainGoal ? map[mainGoal] : undefined;
+  };
+
+  // Map profile activityLevel (English) to questionnaire activityLevel (Spanish)
+  const mapActivityLevel = (level: string | null | undefined): string | undefined => {
+    const map: Record<string, string> = {
+      sedentary: "sedentario",
+      light: "ligero",
+      moderate: "moderado",
+      active: "activo",
+      very_active: "muy_activo",
+    };
+    return level ? map[level] : undefined;
+  };
+
+  // Load saved preferences + full profile once when they arrive
   useEffect(() => {
-    if (!savedPrefs || prefsLoaded) return;
+    if (prefsLoaded) return;
+    // Wait for both queries to resolve
+    if (!savedPrefs && !fullProfile) return;
     setPrefsLoaded(true);
     const updates: Partial<QuestionnaireData> = {};
-    if (savedPrefs.dietType) updates.dietType = savedPrefs.dietType as any;
-    if (savedPrefs.allergies?.length) updates.allergies = savedPrefs.allergies;
-    if (savedPrefs.restrictions?.length) updates.restrictions = savedPrefs.restrictions;
-    if (savedPrefs.dislikedFoods) updates.dislikedFoods = savedPrefs.dislikedFoods;
-    if (savedPrefs.proteinSource) updates.proteinSource = savedPrefs.proteinSource as any;
-    if (savedPrefs.cookingTime) updates.cookingTime = savedPrefs.cookingTime as any;
-    if (savedPrefs.cookingSkill) updates.cookingSkill = savedPrefs.cookingSkill as any;
-    if (savedPrefs.kitchenEquipment?.length) updates.kitchenEquipment = savedPrefs.kitchenEquipment;
-    if (savedPrefs.supplementsUsed) updates.supplementsUsed = savedPrefs.supplementsUsed;
-    if (savedPrefs.specialNotes) updates.specialNotes = savedPrefs.specialNotes;
-    if (savedPrefs.persons) updates.persons = savedPrefs.persons;
-    if (savedPrefs.mealsPerDay) updates.mealsPerDay = savedPrefs.mealsPerDay;
+
+    // 1. Load from full profile (highest priority: real user data)
+    if (fullProfile) {
+      const profile = fullProfile.profile;
+      const userAllergies = fullProfile.allergies || [];
+      const userRestrictions = fullProfile.dietRestrictions || [];
+
+      // Map mainGoal to questionnaire format
+      const mappedGoal = mapMainGoalToQuestionnaire(profile?.mainGoal);
+      if (mappedGoal) updates.goal = mappedGoal;
+
+      // Pre-fill calories from profile
+      if (profile?.dailyCalorieGoal) updates.calories = Math.round(profile.dailyCalorieGoal);
+
+      // Pre-fill activity level
+      const mappedActivity = mapActivityLevel(profile?.activityLevel);
+      if (mappedActivity) updates.activityLevel = mappedActivity as any;
+
+      // Pre-fill meals per day from profile
+      if (profile?.dailyMeals && profile.dailyMeals >= 2 && profile.dailyMeals <= 6) {
+        updates.mealsPerDay = profile.dailyMeals;
+      }
+
+      // Pre-fill budget from profile
+      if (profile?.budgetPerWeek) updates.budgetPerWeek = profile.budgetPerWeek;
+
+      // Pre-fill disliked ingredients from profile
+      if (profile?.dislikedIngredients) updates.dislikedFoods = profile.dislikedIngredients;
+
+      // Pre-fill allergies from real user allergies (nameEs)
+      if (userAllergies.length > 0) {
+        const allergyNames = userAllergies.map((a: any) => a.nameEs || a.name).filter(Boolean);
+        updates.allergies = allergyNames;
+      }
+
+      // Pre-fill restrictions from real user diet restrictions
+      if (userRestrictions.length > 0) {
+        const restrictionNames = userRestrictions.map((r: any) => r.nameEs || r.name).filter(Boolean);
+        updates.restrictions = restrictionNames;
+      }
+    }
+
+    // 2. Overlay with saved menu preferences (more specific, overrides profile defaults)
+    if (savedPrefs) {
+      if (savedPrefs.dietType) updates.dietType = savedPrefs.dietType as any;
+      // Merge allergies: union of profile allergies + saved menu allergies
+      if (savedPrefs.allergies?.length) {
+        const existing = updates.allergies || [];
+        const merged = Array.from(new Set([...existing, ...savedPrefs.allergies]));
+        updates.allergies = merged;
+      }
+      // Merge restrictions: union of profile restrictions + saved menu restrictions
+      if (savedPrefs.restrictions?.length) {
+        const existing = updates.restrictions || [];
+        const merged = Array.from(new Set([...existing, ...savedPrefs.restrictions]));
+        updates.restrictions = merged;
+      }
+      if (savedPrefs.dislikedFoods && !updates.dislikedFoods) updates.dislikedFoods = savedPrefs.dislikedFoods;
+      if (savedPrefs.proteinSource) updates.proteinSource = savedPrefs.proteinSource as any;
+      if (savedPrefs.cookingTime) updates.cookingTime = savedPrefs.cookingTime as any;
+      if (savedPrefs.cookingSkill) updates.cookingSkill = savedPrefs.cookingSkill as any;
+      if (savedPrefs.kitchenEquipment?.length) updates.kitchenEquipment = savedPrefs.kitchenEquipment;
+      if (savedPrefs.supplementsUsed) updates.supplementsUsed = savedPrefs.supplementsUsed;
+      if (savedPrefs.specialNotes) updates.specialNotes = savedPrefs.specialNotes;
+      if (savedPrefs.persons) updates.persons = savedPrefs.persons;
+      if (savedPrefs.mealsPerDay) updates.mealsPerDay = savedPrefs.mealsPerDay;
+    }
+
     if (Object.keys(updates).length > 0) {
       setData(prev => ({ ...prev, ...updates }));
     }
-  }, [savedPrefs, prefsLoaded]);
+  }, [savedPrefs, fullProfile, prefsLoaded]);
 
   const updateData = (updates: Partial<QuestionnaireData>) => {
     const newData = { ...data, ...updates };
@@ -505,7 +588,7 @@ function QuestionnaireView({
       <div className="flex items-center gap-3 p-4 border-b border-border bg-background">
         <button onClick={onBack} className="text-muted-foreground hover:text-foreground text-sm">← Volver</button>
         <div>
-          <p className="font-semibold text-sm">{"Create personalised menu"}</p>
+          <p className="font-semibold text-sm">Crear menú personalizado</p>
           <p className="text-xs text-muted-foreground">Paso {step + 1} de {steps.length}</p>
         </div>
       </div>
@@ -521,12 +604,18 @@ function QuestionnaireView({
         </div>
 
         {/* Banner: saved preferences loaded */}
-        {step === 0 && prefsLoaded && savedPrefs && Object.keys(savedPrefs).some(k => k !== "updatedAt" && k !== "persons" && k !== "mealsPerDay" && (savedPrefs as any)[k] && (Array.isArray((savedPrefs as any)[k]) ? (savedPrefs as any)[k].length > 0 : true)) && (
+        {step === 0 && prefsLoaded && (fullProfile?.profile?.mainGoal || fullProfile?.allergies?.length || fullProfile?.dietRestrictions?.length || savedPrefs?.dietType) && (
           <div className="mb-4 p-3 rounded-xl bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800 flex items-start gap-2">
             <span className="text-green-600 text-base mt-0.5">✅</span>
             <div>
-              <p className="text-sm font-semibold text-green-800 dark:text-green-300">{"Preferences loaded from your profile"}</p>
-              <p className="text-xs text-green-700 dark:text-green-400 mt-0.5">Hemos rellenado el cuestionario con tus preferencias guardadas. Puedes modificar cualquier campo.</p>
+              <p className="text-sm font-semibold text-green-800 dark:text-green-300">Perfil cargado automáticamente</p>
+              <p className="text-xs text-green-700 dark:text-green-400 mt-0.5">
+                Hemos pre-rellenado el cuestionario con tu perfil
+                {fullProfile?.profile?.mainGoal ? ` · Objetivo: ${fullProfile.profile.mainGoal.replace(/_/g, ' ')}` : ''}
+                {fullProfile?.allergies?.length ? ` · ${fullProfile.allergies.length} alergia(s)` : ''}
+                {fullProfile?.dietRestrictions?.length ? ` · ${fullProfile.dietRestrictions.length} restricción(es)` : ''}.
+                Puedes modificar cualquier campo.
+              </p>
             </div>
           </div>
         )}
@@ -535,7 +624,7 @@ function QuestionnaireView({
         {step === 0 && (
           <div className="space-y-4">
             <div>
-              <label className="text-sm font-medium mb-2 block">{"Start date"}</label>
+              <label className="text-sm font-medium mb-2 block">Fecha de inicio</label>
               <input type="date" value={data.startDate || ""} min={new Date().toISOString().split("T")[0]}
                 onChange={(e) => updateData({ startDate: e.target.value })}
                 className="w-full rounded-xl border border-border bg-background px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-500" />
