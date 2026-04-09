@@ -1142,18 +1142,28 @@ function MenuResultView({
   };
 
   const handleSave = () => {
+    const baseDate = questionnaireData.startDate || new Date().toISOString().split("T")[0];
     saveMutation.mutate({
       menuName: localMenu.menuName || "Mi menú personalizado",
-      startDate: questionnaireData.startDate || new Date().toISOString().split("T")[0],
+      startDate: baseDate,
       goal: questionnaireData.goal || "mantenimiento",
       persons: localMenu.persons || questionnaireData.persons || 1,
       targetCalories: localMenu.targetCalories || 2000,
-      days: localMenu.days.map(d => ({
-        day: d.day,
-        date: d.date,
-        totalCalories: d.totalCalories,
-        meals: d.meals,
-      })),
+      days: localMenu.days.map((d, idx) => {
+        // Ensure each day has a date: use the day's own date or calculate from startDate + index
+        let dayDate = d.date;
+        if (!dayDate) {
+          const base = new Date(baseDate + 'T12:00:00Z');
+          base.setUTCDate(base.getUTCDate() + idx);
+          dayDate = base.toISOString().split('T')[0];
+        }
+        return {
+          day: d.day,
+          date: dayDate,
+          totalCalories: d.totalCalories,
+          meals: d.meals,
+        };
+      }),
     });
   };
 

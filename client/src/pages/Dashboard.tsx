@@ -107,7 +107,17 @@ export default function Dashboard() {
   const [stepsHidden, setStepsHidden] = useState(() => {
     try { return localStorage.getItem("bm_steps_hidden") === "true"; } catch { return false; }
   });
-
+  type CustomWidgetType = "racha" | "agua" | "proxima_comida" | "lista_compra" | "buddy_scan" | "macros_resumen";
+  const [customWidgetType, setCustomWidgetType] = useState<CustomWidgetType>(() => {
+    try { return (localStorage.getItem("bm_custom_widget") as CustomWidgetType) || "racha"; } catch { return "racha"; }
+  });
+  const [showWidgetPicker, setShowWidgetPicker] = useState(false);
+  const [waterGlasses, setWaterGlasses] = useState(() => {
+    try {
+      const saved = localStorage.getItem(`bm_water_${new Date().toISOString().split("T")[0]}`);
+      return saved ? parseInt(saved, 10) : 0;
+    } catch { return 0; }
+  });
   // Auto-rotate recipe carousel every 3 seconds
   useEffect(() => {
     const timer = setInterval(() => {
@@ -129,6 +139,8 @@ export default function Dashboard() {
   // goalCalories: use profile's dailyCalorieGoal if set, else manual override, else default 2000
   const profileCalorieGoal = profileData.data?.profile?.dailyCalorieGoal;
   const goalCalories = goalCaloriesOverride ?? profileCalorieGoal ?? 2000;
+  const waterGoal = 8; // default 8 glasses/day
+  const shoppingLists = trpc.shoppingLists.list.useQuery(undefined, { enabled: customWidgetType === "lista_compra" });
   const remaining = Math.max(0, goalCalories - consumed);
   const progress = Math.min(100, (consumed / goalCalories) * 100);
   const protein = dailySummary.data?.proteins ?? 0;
@@ -599,59 +611,175 @@ export default function Dashboard() {
         </div>
       </Link>
 
-      {/* Weekly Progress Widget */}
-      {dailySummary.data && (() => {
-        const weekGoal = goalCalories * 7;
-        const weekConsumed = consumed; // today only — extend later with weekly query
-        const pct = Math.min(100, Math.round((consumed / goalCalories) * 100));
-        const macros = [
-          { label: "Proteína", val: protein, goal: proteinGoal, color: "#6366F1" },
-          { label: "Carbos", val: carbs, goal: carbsGoal, color: "#F59E0B" },
-          { label: "Grasas", val: fat, goal: fatGoal, color: "#EF4444" },
-        ];
-        return (
-          <div style={{ background: "white", borderRadius: "22px", padding: "18px 18px 16px", marginBottom: "16px", boxShadow: "0 2px 12px rgba(0,0,0,0.07)" }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
-              <div>
-                <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em" }}>Progreso de hoy</p>
-                <p style={{ margin: "2px 0 0", fontSize: "22px", fontWeight: 900, color: "#1a1a1a", letterSpacing: "-0.03em" }}>{consumed} <span style={{ fontSize: "14px", fontWeight: 600, color: "#9ca3af" }}>/ {goalCalories} kcal</span></p>
-              </div>
-              <div style={{ width: "52px", height: "52px", position: "relative" }}>
-                <svg width="52" height="52" viewBox="0 0 52 52">
-                  <circle cx="26" cy="26" r="22" fill="none" stroke="#f3f4f6" strokeWidth="5"/>
-                  <circle cx="26" cy="26" r="22" fill="none" stroke="#F97316" strokeWidth="5"
-                    strokeDasharray={`${2 * Math.PI * 22}`}
-                    strokeDashoffset={`${2 * Math.PI * 22 * (1 - pct / 100)}`}
-                    strokeLinecap="round"
-                    transform="rotate(-90 26 26)"
-                  />
-                </svg>
-                <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
-                  <span style={{ fontSize: "11px", fontWeight: 900, color: "#F97316" }}>{pct}%</span>
-                </div>
-              </div>
+      {/* ===== WIDGET PERSONALIZABLE ===== */}
+      <div style={{ background: "white", borderRadius: "22px", padding: "18px 18px 16px", marginBottom: "16px", boxShadow: "0 2px 12px rgba(0,0,0,0.07)" }}>
+        {/* Header con selector */}
+        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
+          <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em" }}>Mi widget</p>
+          <button
+            onClick={() => setShowWidgetPicker(!showWidgetPicker)}
+            style={{ background: "#FFF7ED", border: "1px solid #FED7AA", borderRadius: "10px", padding: "4px 10px", fontSize: "12px", fontWeight: 700, color: "#F97316", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }}
+          >
+            ✏️ Cambiar
+          </button>
+        </div>
+
+        {/* Selector de widget */}
+        {showWidgetPicker && (
+          <div style={{ marginBottom: "14px", display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px" }}>
+            {([
+              { id: "racha", emoji: "🔥", label: "Racha" },
+              { id: "agua", emoji: "💧", label: "Agua" },
+              { id: "proxima_comida", emoji: "🍽️", label: "Próxima comida" },
+              { id: "lista_compra", emoji: "🛒", label: "Lista compra" },
+              { id: "buddy_scan", emoji: "📷", label: "BuddyScan" },
+              { id: "macros_resumen", emoji: "📊", label: "Macros" },
+            ] as { id: CustomWidgetType; emoji: string; label: string }[]).map(opt => (
+              <button
+                key={opt.id}
+                onClick={() => {
+                  setCustomWidgetType(opt.id);
+                  try { localStorage.setItem("bm_custom_widget", opt.id); } catch {}
+                  setShowWidgetPicker(false);
+                }}
+                style={{
+                  background: customWidgetType === opt.id ? "#FFF7ED" : "#f9fafb",
+                  border: customWidgetType === opt.id ? "2px solid #F97316" : "2px solid transparent",
+                  borderRadius: "12px", padding: "8px 6px", cursor: "pointer", textAlign: "center",
+                  fontSize: "11px", fontWeight: 700, color: customWidgetType === opt.id ? "#F97316" : "#6b7280"
+                }}
+              >
+                <div style={{ fontSize: "20px", marginBottom: "4px" }}>{opt.emoji}</div>
+                {opt.label}
+              </button>
+            ))}
+          </div>
+        )}
+
+        {/* Contenido del widget según tipo seleccionado */}
+        {customWidgetType === "racha" && (
+          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
+            <div style={{ width: "64px", height: "64px", borderRadius: "18px", background: "linear-gradient(135deg, #F97316, #EA580C)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "30px", flexShrink: 0, boxShadow: "0 4px 16px rgba(249,115,22,0.35)" }}>🔥</div>
+            <div>
+              <p style={{ margin: 0, fontSize: "13px", color: "#9ca3af", fontWeight: 600 }}>Racha actual</p>
+              <p style={{ margin: "2px 0 0", fontSize: "32px", fontWeight: 900, color: "#1a1a1a", letterSpacing: "-0.04em", lineHeight: 1 }}>{streakData.data?.currentStreak ?? 0} <span style={{ fontSize: "16px", fontWeight: 600, color: "#9ca3af" }}>días</span></p>
+              {(streakData.data?.longestStreak ?? 0) > 0 && <p style={{ margin: "4px 0 0", fontSize: "13px", color: "#6b7280" }}>Récord: {streakData.data?.longestStreak} días 🏆</p>}
             </div>
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-              {macros.map(m => (
-                <div key={m.label}>
-                  <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "3px" }}>
-                    <span style={{ fontSize: "12px", fontWeight: 700, color: "#374151" }}>{m.label}</span>
-                    <span style={{ fontSize: "12px", fontWeight: 600, color: "#9ca3af" }}>{m.val}g / {m.goal}g</span>
-                  </div>
-                  <div style={{ height: "6px", borderRadius: "3px", background: "#f3f4f6", overflow: "hidden" }}>
-                    <div style={{ height: "100%", width: `${Math.min(100, (m.val / m.goal) * 100)}%`, background: m.color, borderRadius: "3px", transition: "width 0.5s" }} />
-                  </div>
-                </div>
+          </div>
+        )}
+
+        {customWidgetType === "agua" && (
+          <div>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+              <div>
+                <p style={{ margin: 0, fontSize: "13px", color: "#9ca3af", fontWeight: 600 }}>Agua hoy</p>
+                <p style={{ margin: "2px 0 0", fontSize: "28px", fontWeight: 900, color: "#1a1a1a", letterSpacing: "-0.03em" }}>{waterGlasses} <span style={{ fontSize: "14px", fontWeight: 600, color: "#9ca3af" }}>/ {waterGoal} vasos</span></p>
+              </div>
+              <span style={{ fontSize: "36px" }}>💧</span>
+            </div>
+            <div style={{ display: "flex", gap: "6px", flexWrap: "wrap", marginBottom: "10px" }}>
+              {Array.from({ length: waterGoal }).map((_, i) => (
+                <button
+                  key={i}
+                  onClick={() => {
+                    const newVal = i < waterGlasses ? i : i + 1;
+                    setWaterGlasses(newVal);
+                    try { localStorage.setItem(`bm_water_${new Date().toISOString().split("T")[0]}`, String(newVal)); } catch {}
+                  }}
+                  style={{ width: "32px", height: "32px", borderRadius: "8px", border: "none", cursor: "pointer", fontSize: "16px", background: i < waterGlasses ? "#DBEAFE" : "#f3f4f6", transition: "background 0.2s" }}
+                >
+                  {i < waterGlasses ? "💧" : "○"}
+                </button>
               ))}
             </div>
+            <div style={{ height: "6px", borderRadius: "3px", background: "#f3f4f6", overflow: "hidden" }}>
+              <div style={{ height: "100%", width: `${Math.min(100, (waterGlasses / waterGoal) * 100)}%`, background: "linear-gradient(90deg, #3B82F6, #60A5FA)", borderRadius: "3px", transition: "width 0.5s" }} />
+            </div>
+          </div>
+        )}
+
+        {customWidgetType === "proxima_comida" && (() => {
+          const nextMeal = activeMenu?.dayParts?.find((dp: any) => !dp.completed);
+          const mealApiParam = nextMeal?.dayPartInfo?.apiParam ?? "";
+          const mealEmoji = mealApiParam === "breakfast" ? "🌅" : mealApiParam === "lunch" ? "☀️" : mealApiParam === "dinner" ? "🌙" : "🍎";
+          const mealName = nextMeal?.recipes?.[0]?.recipe?.name || nextMeal?.dayPartInfo?.nameEs || "Comida planificada";
+          return nextMeal ? (
+            <Link href="/app/active-menu">
+              <div style={{ display: "flex", alignItems: "center", gap: "14px", cursor: "pointer" }}>
+                <div style={{ width: "56px", height: "56px", borderRadius: "16px", background: "#FFF7ED", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "26px", flexShrink: 0 }}>
+                  {mealEmoji}
+                </div>
+                <div style={{ flex: 1 }}>
+                  <p style={{ margin: 0, fontSize: "12px", color: "#9ca3af", fontWeight: 600, textTransform: "uppercase" }}>Próxima comida</p>
+                  <p style={{ margin: "2px 0", fontSize: "16px", fontWeight: 800, color: "#1a1a1a" }}>{mealName}</p>
+                  <p style={{ margin: 0, fontSize: "13px", color: "#F97316", fontWeight: 600 }}>Ver en menú →</p>
+                </div>
+              </div>
+            </Link>
+          ) : (
+            <div style={{ textAlign: "center", padding: "8px 0" }}>
+              <p style={{ margin: 0, fontSize: "32px" }}>🎉</p>
+              <p style={{ margin: "8px 0 0", fontSize: "14px", fontWeight: 700, color: "#1a1a1a" }}>¡Todas las comidas completadas!</p>
+              <Link href="/app/menus"><span style={{ fontSize: "13px", color: "#F97316", fontWeight: 600 }}>Planificar próxima semana →</span></Link>
+            </div>
+          );
+        })()}
+
+        {customWidgetType === "lista_compra" && (() => {
+          const pendingItems = shoppingLists.data?.flatMap((l: any) => l.items?.filter((i: any) => !i.purchased) ?? []).length ?? 0;
+          const totalLists = shoppingLists.data?.length ?? 0;
+          return (
+            <Link href="/app/shopping-lists">
+              <div style={{ display: "flex", alignItems: "center", gap: "14px", cursor: "pointer" }}>
+                <div style={{ width: "56px", height: "56px", borderRadius: "16px", background: "#ECFDF5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "26px", flexShrink: 0 }}>🛒</div>
+                <div style={{ flex: 1 }}>
+                  <p style={{ margin: 0, fontSize: "12px", color: "#9ca3af", fontWeight: 600, textTransform: "uppercase" }}>Lista de la compra</p>
+                  <p style={{ margin: "2px 0", fontSize: "22px", fontWeight: 900, color: "#1a1a1a" }}>{pendingItems} <span style={{ fontSize: "14px", fontWeight: 600, color: "#9ca3af" }}>productos pendientes</span></p>
+                  <p style={{ margin: 0, fontSize: "13px", color: "#10B981", fontWeight: 600 }}>{totalLists} lista{totalLists !== 1 ? "s" : ""} activa{totalLists !== 1 ? "s" : ""} →</p>
+                </div>
+              </div>
+            </Link>
+          );
+        })()}
+
+        {customWidgetType === "buddy_scan" && (
+          <Link href="/app/buddy-scan">
+            <div style={{ display: "flex", alignItems: "center", gap: "14px", cursor: "pointer" }}>
+              <div style={{ width: "56px", height: "56px", borderRadius: "16px", background: "linear-gradient(135deg, #6366F1, #818CF8)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "26px", flexShrink: 0, boxShadow: "0 4px 12px rgba(99,102,241,0.35)" }}>📷</div>
+              <div style={{ flex: 1 }}>
+                <p style={{ margin: 0, fontSize: "12px", color: "#9ca3af", fontWeight: 600, textTransform: "uppercase" }}>BuddyScan IA</p>
+                <p style={{ margin: "2px 0", fontSize: "16px", fontWeight: 800, color: "#1a1a1a" }}>Escanear alimento</p>
+                <p style={{ margin: 0, fontSize: "13px", color: "#6366F1", fontWeight: 600 }}>Analizar con IA →</p>
+              </div>
+            </div>
+          </Link>
+        )}
+
+        {customWidgetType === "macros_resumen" && (
+          <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            {[
+              { label: "Proteína", val: protein, goal: proteinGoal, color: "#6366F1", emoji: "💪" },
+              { label: "Carbos", val: carbs, goal: carbsGoal, color: "#F59E0B", emoji: "⚡" },
+              { label: "Grasas", val: fat, goal: fatGoal, color: "#EF4444", emoji: "🥑" },
+            ].map(m => (
+              <div key={m.label}>
+                <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "3px" }}>
+                  <span style={{ fontSize: "13px", fontWeight: 700, color: "#374151" }}>{m.emoji} {m.label}</span>
+                  <span style={{ fontSize: "13px", fontWeight: 600, color: "#9ca3af" }}>{m.val}g / {m.goal}g</span>
+                </div>
+                <div style={{ height: "7px", borderRadius: "4px", background: "#f3f4f6", overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: `${Math.min(100, m.goal > 0 ? (m.val / m.goal) * 100 : 0)}%`, background: m.color, borderRadius: "4px", transition: "width 0.5s" }} />
+                </div>
+              </div>
+            ))}
             <Link href="/app/meal-log">
-              <div style={{ marginTop: "12px", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", background: "#FFF7ED", borderRadius: "12px", padding: "8px 14px", cursor: "pointer" }}>
+              <div style={{ marginTop: "6px", display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", background: "#FFF7ED", borderRadius: "10px", padding: "7px 14px", cursor: "pointer" }}>
                 <span style={{ fontSize: "13px", fontWeight: 700, color: "#F97316" }}>Ver diario completo →</span>
               </div>
             </Link>
           </div>
-        );
-      })()}
+        )}
+      </div>
 
       {/* Quick Access — Bento Grid */}
       <div style={{ marginBottom: "20px" }}>

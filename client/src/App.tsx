@@ -73,6 +73,7 @@ const EventMenuPlanner = lazy(() => import("./pages/EventMenuPlanner"));
 const SavedEvents = lazy(() => import("./pages/SavedEvents"));
 const Complements = lazy(() => import("./pages/Complements"));
 const Badges = lazy(() => import("./pages/Badges"));
+const BuddyScan = lazy(() => import("./pages/BuddyScan"));
 const InstallAppBanner = lazy(() => import("./components/InstallAppBanner"));
 
 // ─── Page loading fallback ────────────────────────────────────────────────────
@@ -165,6 +166,7 @@ function Router() {
       <Route path="/app/buddy-experts">{() => <ProtectedRoute component={BuddyExperts} />}</Route>
       <Route path="/app/buddy-makers">{() => <ProtectedRoute component={BuddyMakers} />}</Route>
       <Route path="/app/buddy-ia">{() => <ProtectedRoute component={BuddyIA} />}</Route>
+      <Route path="/app/buddy-scan">{() => <ProtectedPage><BuddyScan /></ProtectedPage>}</Route>
       <Route path="/app/buddy-shop">{() => <ProtectedRoute component={BuddyShop} />}</Route>
       <Route path="/app/supermercados">{() => <ProtectedRoute component={MercadonaShop} />}</Route>
       <Route path="/app/supermarkets">{() => <Redirect to="/app/supermercados" />}</Route>

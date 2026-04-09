@@ -1771,3 +1771,18 @@
 - [x] Página de configuración de notificaciones: horarios por comida (desayuno, almuerzo, comida, merienda, cena) + recordatorio de actividad física
 - [x] Backend: cron job que envía notificaciones push a los usuarios según sus preferencias
 - [x] Integrar acceso a configuración de notificaciones desde el perfil y desde el icono de campana
+
+## Mejoras Prioritarias (Ronda 2)
+- [ ] Menú al diario: distribuir cada día del menú en su fecha correspondiente (no acumular todo en el mismo día)
+- [ ] BuddyScan IA: crear página /app/buddy-scan con cámara del móvil y análisis de alimentos con IA
+- [ ] Dashboard: convertir primer widget en widget personalizable (racha, próxima comida, agua, lista de la compra)
+- [ ] Onboarding: flujo guiado para nuevos usuarios (completar perfil → primera comida → primer menú IA)
+
+## Mejoras Prioritarias (Ronda 3 - Sesion actual)
+- [x] Onboarding: flujo guiado para nuevos usuarios — ya implementado en BuddySetup.tsx (6 pasos)
+- [x] BuddyScan IA: pagina /app/buddy-scan creada con camara del movil y analisis IA
+- [x] Dashboard: widget personalizable implementado
+- [x] Menu al diario: distribuir cada dia del menu en su fecha correspondiente (corregido)
+- [ ] Menu IA: cuestionario paso a paso con preguntas interactivas (dias, variedad, dificultad, personas)
+- [ ] Traducciones: auditar y completar todas las traducciones faltantes
+- [ ] BuddyIA Chat: personalizar sistema prompt con perfil completo del usuario
