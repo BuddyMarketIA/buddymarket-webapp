@@ -4748,8 +4748,15 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
         const words = normQuery.split(" ").filter(w => w.length > 2);
         words.forEach(w => searchTerms.add(w));
 
-        // Build OR conditions for all search terms
-        const conditions = Array.from(searchTerms).flatMap(term => [
+        // Also add normalized versions of each search term for tilde-insensitive matching
+        const normalizedTerms = new Set<string>();
+        Array.from(searchTerms).forEach(t => {
+          normalizedTerms.add(normalize(t));
+          normalizedTerms.add(t);
+        });
+
+        // Build OR conditions for all search terms (both original and normalized)
+        const conditions = Array.from(normalizedTerms).flatMap(term => [
           like(mercadonaProducts.name, `%${term}%`),
           like(mercadonaProducts.subcategoryName, `%${term}%`),
         ]);
@@ -4774,15 +4781,20 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
             score = matchRatio * 50;
             // Bonus if first word matches (most important word)
             if (words.length > 0 && pName.includes(words[0])) score += 15;
+            // Bonus if first word of product matches first word of query
+            const pFirstWord = pName.split(" ")[0];
+            if (words.length > 0 && pFirstWord === words[0]) score += 20;
           }
           // Penalty for very long product names (less specific)
           if (pName.length > 60) score -= 5;
           return { ...p, _score: score };
         });
 
-        // Keep results with score > 0, but if nothing found, return top partial matches
-        const withScore = scored.filter(p => p._score > 0);
-        const sorted = (withScore.length > 0 ? withScore : scored.slice(0, 5))
+        // IMPORTANT: Only return results with a meaningful score (>= 10).
+        // Never return random products when there's no real match — that's the "inventing" bug.
+        const withScore = scored.filter(p => p._score >= 10);
+        if (withScore.length === 0) return []; // No match found — return empty, not random products
+        const sorted = withScore
           .sort((a, b) => b._score - a._score)
           .slice(0, input.limit);
 
@@ -5078,18 +5090,42 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
         const { like, or } = await import("drizzle-orm");
         const term = (input.q ?? input.query ?? "").trim();
         if (!term) return [];
+        // Normalize: remove accents, lowercase
+        const normalize = (s: string) =>
+          s.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9\s]/g, " ").replace(/\s+/g, " ").trim();
+        const normTerm = normalize(term);
+        const words = normTerm.split(" ").filter(w => w.length > 2);
+        // Build search terms: original + normalized + individual words
+        const searchTerms = new Set([term, normTerm, ...words]);
         const q = `%${term}%`;
+        const qNorm = `%${normTerm}%`;
+        const conditions = Array.from(searchTerms).flatMap(t => [
+          like(lidlProducts.name, `%${t}%`),
+          like(lidlProducts.fullTitle, `%${t}%`),
+        ]);
         const rows = await drizzleDb
           .select()
           .from(lidlProducts)
-          .where(or(
-            like(lidlProducts.name, q),
-            like(lidlProducts.brand, q),
-            like(lidlProducts.category, q),
-            like(lidlProducts.fullTitle, q)
-          ))
-          .limit(input.limit);
-        return rows.map(p => ({
+          .where(or(...conditions))
+          .limit(input.limit * 3);
+        // Score and filter results
+        const scored = rows.map(p => {
+          const pName = normalize(p.name ?? "");
+          let score = 0;
+          if (pName === normTerm) score = 100;
+          else if (pName.startsWith(normTerm)) score = 85;
+          else if (pName.includes(normTerm)) score = 65;
+          else {
+            const matchedWords = words.filter(w => pName.includes(w));
+            score = (matchedWords.length / Math.max(words.length, 1)) * 50;
+            if (words.length > 0 && pName.includes(words[0])) score += 15;
+          }
+          return { ...p, _score: score };
+        });
+        const withScore = scored.filter(p => p._score >= 10);
+        if (withScore.length === 0) return [];
+        const sortedRows = withScore.sort((a, b) => b._score - a._score).slice(0, input.limit);
+        return sortedRows.map(p => ({
           id: p.id,
           name: p.name,
           brand: p.brand ?? "",
