@@ -115,11 +115,17 @@ export default function Inventory() {
   const [addingDetected, setAddingDetected] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
+  // Import from shopping list state
+  const [showImportModal, setShowImportModal] = useState(false);
+  const [selectedListId, setSelectedListId] = useState<number | null>(null);
+  const [importOnlyChecked, setImportOnlyChecked] = useState(true);
+
   const { data: items, isLoading, refetch } = trpc.inventory.list.useQuery();
   const { data: storageLocations } = trpc.catalogs.storageLocations.useQuery();
   const { data: measures } = trpc.catalogs.measures.useQuery();
   const { data: expiringItems } = trpc.inventory.getExpiringItems.useQuery({ days: 7 });
   const { data: recipeRecs } = trpc.inventory.getRecipesByExpiring.useQuery();
+  const { data: shoppingLists } = trpc.shoppingLists.list.useQuery();
   const utils = trpc.useUtils();
 
   const analyzePhoto = trpc.inventory.analyzePhoto.useMutation();
@@ -157,6 +163,23 @@ export default function Inventory() {
     if (!window.confirm(`¿Eliminar "${name}" del inventario?`)) return;
     removeItem.mutate({ id });
   };
+
+  const importFromShoppingList = trpc.inventory.importFromShoppingList.useMutation({
+    onSuccess: (data) => {
+      utils.inventory.list.invalidate();
+      utils.inventory.getExpiringItems.invalidate();
+      setShowImportModal(false);
+      setSelectedListId(null);
+      if (data.imported > 0) {
+        toast.success(`${data.imported} producto${data.imported !== 1 ? 's' : ''} importado${data.imported !== 1 ? 's' : ''} al inventario`, {
+          description: data.skipped > 0 ? `${data.skipped} producto${data.skipped !== 1 ? 's' : ''} omitido${data.skipped !== 1 ? 's' : ''}` : undefined,
+        });
+      } else {
+        toast.info("No hay productos para importar", { description: importOnlyChecked ? "Marca productos como comprados en la lista primero" : "La lista está vacía" });
+      }
+    },
+    onError: (err) => toast.error(err.message),
+  });
 
   // ── filter items ──────────────────────────────────────────────────────────
   const filtered = (items ?? []).filter((item) => {
@@ -293,6 +316,15 @@ export default function Inventory() {
           )}
         </div>
         <div className="flex items-center gap-2">
+          <button
+            onClick={() => setShowImportModal(true)}
+            className="flex h-10 w-10 items-center justify-center rounded-full bg-violet-600 shadow-sm"
+            title="Importar lista de la compra"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+              <path strokeLinecap="round" strokeLinejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
+            </svg>
+          </button>
           <button
             onClick={() => setShowPhotoModal(true)}
             className="flex h-10 w-10 items-center justify-center rounded-full bg-indigo-600 shadow-sm"
@@ -1077,6 +1109,101 @@ export default function Inventory() {
                 className="w-full rounded-2xl border border-green-200 py-3 text-sm font-semibold text-green-700 hover:bg-green-50 active:scale-95 transition-transform"
               >
                 ✨ Regenerar recetas
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Import from Shopping List Modal ───────────────────────────────── */}
+      {showImportModal && (
+        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowImportModal(false)}>
+          <div className="w-full max-w-lg rounded-t-3xl bg-white p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
+            <div className="mb-5 flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-gray-900">Importar lista de la compra</h3>
+                <p className="text-xs text-gray-500 mt-0.5">Añade los productos comprados directamente al inventario</p>
+              </div>
+              <button onClick={() => setShowImportModal(false)} className="rounded-full p-1.5 hover:bg-gray-100">
+                <XMarkIcon className="h-5 w-5 text-gray-500" />
+              </button>
+            </div>
+
+            {/* Shopping list selector */}
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 mb-1.5">Selecciona una lista de la compra</label>
+              {!shoppingLists || shoppingLists.length === 0 ? (
+                <div className="rounded-2xl border border-dashed border-gray-200 p-6 text-center">
+                  <p className="text-sm text-gray-500">No tienes listas de la compra</p>
+                  <button onClick={() => { setShowImportModal(false); navigate("/app/shopping"); }}
+                    className="mt-2 text-sm font-medium text-violet-600 hover:underline">
+                    Crear una lista →
+                  </button>
+                </div>
+              ) : (
+                <div className="space-y-2 max-h-48 overflow-y-auto">
+                  {shoppingLists.map((list: any) => (
+                    <button
+                      key={list.id}
+                      onClick={() => setSelectedListId(list.id)}
+                      className={`w-full flex items-center justify-between rounded-2xl border p-3 text-left transition-all ${
+                        selectedListId === list.id
+                          ? "border-violet-500 bg-violet-50 ring-1 ring-violet-300"
+                          : "border-gray-200 bg-white hover:border-gray-300"
+                      }`}
+                    >
+                      <div>
+                        <p className="font-medium text-sm text-gray-900">{list.name}</p>
+                        <p className="text-xs text-gray-500 mt-0.5">
+                          {list.purchased ?? 0} de {list.total ?? 0} productos comprados
+                        </p>
+                      </div>
+                      {selectedListId === list.id && (
+                        <CheckIcon className="h-5 w-5 text-violet-600 shrink-0" />
+                      )}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
+
+            {/* Options */}
+            <div className="mb-5">
+              <label className="flex items-center gap-3 cursor-pointer">
+                <div
+                  onClick={() => setImportOnlyChecked(!importOnlyChecked)}
+                  className={`relative h-6 w-11 rounded-full transition-colors ${
+                    importOnlyChecked ? "bg-violet-600" : "bg-gray-200"
+                  }`}
+                >
+                  <span className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                    importOnlyChecked ? "translate-x-5" : "translate-x-0"
+                  }`} />
+                </div>
+                <div>
+                  <p className="text-sm font-medium text-gray-900">Solo productos marcados como comprados</p>
+                  <p className="text-xs text-gray-500">Si está desactivado, importará todos los productos de la lista</p>
+                </div>
+              </label>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowImportModal(false)}
+                className="flex-1 rounded-2xl border border-gray-200 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+              >
+                Cancelar
+              </button>
+              <button
+                onClick={() => {
+                  if (!selectedListId) { toast.error("Selecciona una lista primero"); return; }
+                  importFromShoppingList.mutate({ shoppingListId: selectedListId, onlyChecked: importOnlyChecked });
+                }}
+                disabled={!selectedListId || importFromShoppingList.isPending}
+                className="flex-1 rounded-2xl bg-violet-600 py-3 text-sm font-bold text-white shadow-sm hover:bg-violet-700 disabled:opacity-50 active:scale-95 transition-transform"
+              >
+                {importFromShoppingList.isPending ? "Importando..." : "Importar al inventario"}
               </button>
             </div>
           </div>

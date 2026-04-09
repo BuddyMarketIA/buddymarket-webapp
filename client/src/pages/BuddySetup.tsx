@@ -26,6 +26,8 @@ interface SetupData {
   cookingLevel: string;
   // Paso 6: Confirmación
   generateMenu: boolean;
+  // Código de referido (opcional)
+  referralCode: string;
 }
 
 // ─── Fórmula Mifflin-St Jeor ──────────────────────────────────────────────────
@@ -220,9 +222,11 @@ export default function BuddySetup() {
     budgetPerWeek: 60,
     cookingLevel: "intermediate",
     generateMenu: true,
+    referralCode: "",
   });
 
   const completeOnboarding = trpc.profile.completeOnboarding.useMutation();
+  const applyReferralCode = trpc.userReferrals.applyCode.useMutation();
   const { data: existingProfile } = trpc.profile.get.useQuery();
 
   // Pre-fill data from existing profile (set during Registration)
@@ -308,6 +312,10 @@ export default function BuddySetup() {
         onSuccess: () => {
           setGenerating(false);
           setDone(true);
+          // Apply referral code if provided
+          if (data.referralCode.trim().length >= 4) {
+            applyReferralCode.mutate({ code: data.referralCode.trim() });
+          }
           // Redirect to tour if not seen yet, otherwise to dashboard
           const tourDone = localStorage.getItem("bm_tour_completed");
           setTimeout(() => setLocation(tourDone ? "/app/dashboard" : "/app/tour"), 2000);
@@ -832,8 +840,24 @@ function StepConfirm({ data, setData }: { data: SetupData; setData: React.Dispat
         />
       </div>
 
+      {/* Código de referido */}
+      <div className="mt-4 rounded-2xl bg-gray-50 border border-gray-200 px-4 py-3">
+        <p className="text-xs font-semibold text-gray-500 mb-1.5">¿Tienes un código de un amigo? (opcional)</p>
+        <input
+          type="text"
+          value={data.referralCode}
+          onChange={e => setData(d => ({ ...d, referralCode: e.target.value.toUpperCase() }))}
+          placeholder="Ej: BUDDY123"
+          maxLength={8}
+          className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-center text-base font-bold tracking-widest uppercase outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400"
+        />
+        {data.referralCode.length >= 4 && (
+          <p className="mt-1 text-xs text-green-600 text-center">✓ Código aplicado al finalizar</p>
+        )}
+      </div>
+
       {/* Toggle generar menú */}
-      <div className="mt-6 flex items-center justify-between rounded-2xl bg-orange-50 border-2 border-orange-200 px-4 py-4">
+      <div className="mt-4 flex items-center justify-between rounded-2xl bg-orange-50 border-2 border-orange-200 px-4 py-4">
         <div>
           <p className="font-bold text-gray-900">✨ Generar mi primer menú</p>
           <p className="text-xs text-gray-500">La IA creará un menú personalizado para esta semana</p>

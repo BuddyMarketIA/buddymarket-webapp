@@ -185,6 +185,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
         { key: "/app/stats", label: t("sidebar.stats"), to: "/app/stats", emoji: "📈" },
         { key: "/app/achievements", label: t("sidebar.myAchievements"), to: "/app/achievements", emoji: "🏆" },
         { key: "/app/badges", label: "Mis Insignias", to: "/app/badges", emoji: "🎖️" },
+        { key: "/app/referrals", label: "Invita amigos 🎁", to: "/app/referrals", emoji: "👥" },
       ],
     },
     {

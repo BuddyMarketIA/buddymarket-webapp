@@ -1786,3 +1786,14 @@
 - [ ] Menu IA: cuestionario paso a paso con preguntas interactivas (dias, variedad, dificultad, personas)
 - [ ] Traducciones: auditar y completar todas las traducciones faltantes
 - [ ] BuddyIA Chat: personalizar sistema prompt con perfil completo del usuario
+
+## Sistema de Referidos (Ronda actual)
+- [x] Schema DB: tablas userReferrals + userReferralCodes (migración aplicada)
+- [x] Backend: endpoint getReferralCode (genera código único de 8 chars si no existe)
+- [x] Backend: endpoint getReferralStats (referidos, recompensas pendientes/activas)
+- [x] Backend: endpoint applyCode (aplica código de referido al registrarse)
+- [x] Backend: endpoint activateReward (extiende suscripción 30 días al referidor)
+- [x] Frontend: página /app/referrals con código, enlace compartible, WhatsApp, historial
+- [x] Frontend: campo de código de referido en BuddySetup (paso 6 - confirmación)
+- [x] Sidebar: enlace "Invita amigos" en sección Mi Perfil
+- [x] Ruta /app/referrals/creator para BuddyExperts/BuddyMakers (sistema anterior)

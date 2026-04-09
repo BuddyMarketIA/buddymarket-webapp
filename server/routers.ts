@@ -3140,6 +3140,122 @@ Adapta esta receta eliminando los ingredientes prohibidos y sustituyéndolos por
         return { success: true };
       }),
 
+    // Import purchased items from a shopping list into the inventory
+    importFromShoppingList: protectedProcedure
+      .input(z.object({
+        shoppingListId: z.number(),
+        onlyChecked: z.boolean().default(true),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { shoppingListItems, shoppingLists, userInventoryItems } = await import("../drizzle/schema.js");
+        const { eq, and } = await import("drizzle-orm");
+        // Verify ownership
+        const [list] = await drizzleDb.select({ userId: shoppingLists.userId })
+          .from(shoppingLists).where(eq(shoppingLists.id, input.shoppingListId)).limit(1);
+        if (!list) throw new TRPCError({ code: "NOT_FOUND", message: "Lista no encontrada" });
+        requireOwnership(list.userId, ctx.user.id, ctx.user.role);
+        // Get items from the shopping list
+        const conditions = [eq(shoppingListItems.shoppingListId, input.shoppingListId)];
+        if (input.onlyChecked) conditions.push(eq(shoppingListItems.checked, true));
+        const items = await drizzleDb.select().from(shoppingListItems).where(and(...conditions));
+        if (items.length === 0) return { imported: 0, skipped: 0 };
+        let imported = 0;
+        let skipped = 0;
+        const today = new Date().toISOString().split("T")[0];
+        for (const item of items) {
+          if (!item.customName && !item.ingredientId) { skipped++; continue; }
+          try {
+            // Check if item already exists in inventory (by name or ingredientId)
+            let existingItems: any[] = [];
+            if (item.ingredientId) {
+              existingItems = await drizzleDb.select({ id: userInventoryItems.id, amount: userInventoryItems.amount })
+                .from(userInventoryItems)
+                .where(and(eq(userInventoryItems.userId, ctx.user.id), eq(userInventoryItems.ingredientId, item.ingredientId)))
+                .limit(1);
+            } else if (item.customName) {
+              const { ilike } = await import("drizzle-orm");
+              existingItems = await drizzleDb.select({ id: userInventoryItems.id, amount: userInventoryItems.amount })
+                .from(userInventoryItems)
+                .where(and(eq(userInventoryItems.userId, ctx.user.id), ilike(userInventoryItems.customName, item.customName)))
+                .limit(1);
+            }
+            if (existingItems.length > 0) {
+              // Increment existing item amount
+              const existing = existingItems[0];
+              await drizzleDb.update(userInventoryItems)
+                .set({ amount: (existing.amount ?? 0) + (item.amount ?? 1), updatedAt: new Date() })
+                .where(eq(userInventoryItems.id, existing.id));
+            } else {
+              // Insert new inventory item
+              await drizzleDb.insert(userInventoryItems).values({
+                userId: ctx.user.id,
+                ingredientId: item.ingredientId ?? undefined,
+                customName: item.customName ?? undefined,
+                amount: item.amount ?? 1,
+                measureId: item.measureId ?? undefined,
+                purchaseDate: today,
+              });
+            }
+            imported++;
+          } catch {
+            skipped++;
+          }
+        }
+        return { imported, skipped };
+      }),
+
+    // Deduct ingredients from inventory when a meal is consumed
+    deductIngredients: protectedProcedure
+      .input(z.object({
+        items: z.array(z.object({
+          name: z.string(),
+          amount: z.number().min(0),
+          ingredientId: z.number().optional(),
+        })),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { userInventoryItems } = await import("../drizzle/schema.js");
+        const { eq, and, ilike } = await import("drizzle-orm");
+        let deducted = 0;
+        let notFound = 0;
+        for (const item of input.items) {
+          try {
+            let existingItems: any[] = [];
+            if (item.ingredientId) {
+              existingItems = await drizzleDb.select({ id: userInventoryItems.id, amount: userInventoryItems.amount })
+                .from(userInventoryItems)
+                .where(and(eq(userInventoryItems.userId, ctx.user.id), eq(userInventoryItems.ingredientId, item.ingredientId)))
+                .limit(1);
+            }
+            if (existingItems.length === 0 && item.name) {
+              existingItems = await drizzleDb.select({ id: userInventoryItems.id, amount: userInventoryItems.amount })
+                .from(userInventoryItems)
+                .where(and(eq(userInventoryItems.userId, ctx.user.id), ilike(userInventoryItems.customName, item.name)))
+                .limit(1);
+            }
+            if (existingItems.length === 0) { notFound++; continue; }
+            const existing = existingItems[0];
+            const newAmount = Math.max(0, (existing.amount ?? 0) - item.amount);
+            if (newAmount === 0) {
+              // Remove item from inventory if fully consumed
+              await drizzleDb.delete(userInventoryItems).where(eq(userInventoryItems.id, existing.id));
+            } else {
+              await drizzleDb.update(userInventoryItems)
+                .set({ amount: newAmount, updatedAt: new Date() })
+                .where(eq(userInventoryItems.id, existing.id));
+            }
+            deducted++;
+          } catch {
+            notFound++;
+          }
+        }
+        return { deducted, notFound };
+      }),
+
     // Analyse a photo of fridge/pantry with vision LLM and return detected products
     analyzePhoto: protectedProcedure
       .input(z.object({ imageUrl: z.string() }))
@@ -9941,6 +10057,147 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
       const leaderboard = await db.getBadgeLeaderboard(10);
       return { badges: allBadges, leaderboard };
     }),
+  }),
+
+  // ---------------------------------------------------------------------------
+  // USER REFERRALS — Sistema de referidos para todos los usuarios
+  // ---------------------------------------------------------------------------
+  userReferrals: router({
+    /** Obtiene (o genera) el código de referido del usuario autenticado */
+    getMyCode: protectedProcedure.query(async ({ ctx }) => {
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { userReferralCodes } = await import("../drizzle/schema.js");
+      const { eq } = await import("drizzle-orm");
+      // Check if user already has a code
+      const [existing] = await drizzleDb.select().from(userReferralCodes)
+        .where(eq(userReferralCodes.userId, ctx.user.id)).limit(1);
+      if (existing) return existing;
+      // Generate a new unique code: 8 chars uppercase alphanumeric
+      const generateCode = () => {
+        const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789"; // no confusable chars
+        let code = "";
+        for (let i = 0; i < 8; i++) code += chars[Math.floor(Math.random() * chars.length)];
+        return code;
+      };
+      let code = generateCode();
+      // Ensure uniqueness (retry up to 5 times)
+      for (let i = 0; i < 5; i++) {
+        const [conflict] = await drizzleDb.select({ id: userReferralCodes.id })
+          .from(userReferralCodes).where(eq(userReferralCodes.code, code)).limit(1);
+        if (!conflict) break;
+        code = generateCode();
+      }
+      const [created] = await drizzleDb.insert(userReferralCodes)
+        .values({ userId: ctx.user.id, code })
+        .returning();
+      return created;
+    }),
+
+    /** Estadísticas del programa de referidos del usuario */
+    getStats: protectedProcedure.query(async ({ ctx }) => {
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { userReferralCodes, userReferrals, users: usersTable } = await import("../drizzle/schema.js");
+      const { eq, desc } = await import("drizzle-orm");
+      const [myCode] = await drizzleDb.select().from(userReferralCodes)
+        .where(eq(userReferralCodes.userId, ctx.user.id)).limit(1);
+      if (!myCode) return { code: null, referrals: [], totalRewarded: 0, totalRewardDays: 0 };
+      const referrals = await drizzleDb
+        .select({ referral: userReferrals, referredUser: { name: usersTable.name, imageUrl: usersTable.imageUrl, createdAt: usersTable.createdAt } })
+        .from(userReferrals)
+        .leftJoin(usersTable, eq(userReferrals.referredId, usersTable.id))
+        .where(eq(userReferrals.referrerId, ctx.user.id))
+        .orderBy(desc(userReferrals.createdAt));
+      return {
+        code: myCode,
+        referrals: referrals.map(r => ({
+          id: r.referral.id,
+          status: r.referral.status,
+          rewardDays: r.referral.rewardDays,
+          subscribedAt: r.referral.subscribedAt,
+          rewardedAt: r.referral.rewardedAt,
+          referredName: r.referredUser?.name ?? "Usuario",
+          referredImage: r.referredUser?.imageUrl ?? null,
+          createdAt: r.referral.createdAt,
+        })),
+        totalRewarded: myCode.totalRewarded,
+        totalRewardDays: myCode.totalRewardDays,
+      };
+    }),
+
+    /** Aplica un código de referido al registrarse (llamado desde onboarding) */
+    applyCode: protectedProcedure
+      .input(z.object({ code: z.string().min(4).max(32).toUpperCase() }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { userReferralCodes, userReferrals } = await import("../drizzle/schema.js");
+        const { eq, and } = await import("drizzle-orm");
+        // Check if user already used a referral code
+        const [alreadyReferred] = await drizzleDb.select({ id: userReferrals.id })
+          .from(userReferrals).where(eq(userReferrals.referredId, ctx.user.id)).limit(1);
+        if (alreadyReferred) throw new TRPCError({ code: "BAD_REQUEST", message: "Ya usaste un código de referido" });
+        // Find the referral code
+        const [referralCode] = await drizzleDb.select().from(userReferralCodes)
+          .where(eq(userReferralCodes.code, input.code.toUpperCase())).limit(1);
+        if (!referralCode) throw new TRPCError({ code: "NOT_FOUND", message: "Código de referido no válido" });
+        if (referralCode.userId === ctx.user.id) throw new TRPCError({ code: "BAD_REQUEST", message: "No puedes usar tu propio código" });
+        // Create the referral record
+        await drizzleDb.insert(userReferrals).values({
+          referrerId: referralCode.userId,
+          referredId: ctx.user.id,
+          referralCode: input.code.toUpperCase(),
+          status: "pending",
+        });
+        return { success: true, referrerName: null };
+      }),
+
+    /** Activa la recompensa del referidor (llamado desde webhook de Stripe) */
+    activateReward: protectedProcedure
+      .input(z.object({
+        referredUserId: z.number(),
+        stripeSubscriptionId: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { userReferrals, userReferralCodes, userSubscriptions } = await import("../drizzle/schema.js");
+        const { eq, and } = await import("drizzle-orm");
+        const [referral] = await drizzleDb.select().from(userReferrals)
+          .where(and(eq(userReferrals.referredId, input.referredUserId), eq(userReferrals.status, "pending")))
+          .limit(1);
+        if (!referral) return { success: false, message: "No hay referido pendiente" };
+        // Mark referral as subscribed
+        await drizzleDb.update(userReferrals)
+          .set({ status: "subscribed", subscribedAt: new Date(), stripeSubscriptionId: input.stripeSubscriptionId ?? null })
+          .where(eq(userReferrals.id, referral.id));
+        // Extend referrer's subscription by 30 days
+        const [referrerSub] = await drizzleDb.select().from(userSubscriptions)
+          .where(eq(userSubscriptions.userId, referral.referrerId)).limit(1);
+        const now = new Date();
+        const currentEnd = referrerSub?.currentPeriodEnd ?? now;
+        const newEnd = new Date(Math.max(currentEnd.getTime(), now.getTime()) + 30 * 24 * 60 * 60 * 1000);
+        if (referrerSub) {
+          await drizzleDb.update(userSubscriptions)
+            .set({ currentPeriodEnd: newEnd, updatedAt: now })
+            .where(eq(userSubscriptions.userId, referral.referrerId));
+        }
+        // Mark as rewarded
+        await drizzleDb.update(userReferrals)
+          .set({ status: "rewarded", rewardedAt: now })
+          .where(eq(userReferrals.id, referral.id));
+        // Update referrer's stats
+        await drizzleDb.update(userReferralCodes)
+          .set({ totalRewarded: (referral.rewardDays ?? 30) > 0 ? undefined : undefined, updatedAt: now })
+          .where(eq(userReferralCodes.userId, referral.referrerId));
+        const { sql: sqlTag } = await import("drizzle-orm");
+        await drizzleDb.execute(
+          sqlTag`UPDATE user_referral_codes SET total_rewarded = total_rewarded + 1, total_reward_days = total_reward_days + 30, updated_at = NOW() WHERE user_id = ${referral.referrerId}`
+        );
+        return { success: true, rewardDays: 30, referrerId: referral.referrerId };
+      }),
   }),
 });
 export type AppRouter = typeof appRouter;

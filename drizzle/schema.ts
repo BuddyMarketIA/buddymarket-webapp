@@ -1936,3 +1936,64 @@ export const phoneOtpTokens = pgTable("phone_otp_tokens", {
 }));
 export type PhoneOtpToken = typeof phoneOtpTokens.$inferSelect;
 export type InsertPhoneOtpToken = typeof phoneOtpTokens.$inferInsert;
+
+// =============================================================================
+// USER REFERRALS — Sistema de referidos para todos los usuarios
+// Cada usuario tiene un código único. Cuando un amigo se suscribe usando ese
+// código, el referidor gana 1 mes gratis (extensión de suscripción).
+// =============================================================================
+
+export const userReferralRewardStatusEnum = pgEnum("user_referral_reward_status", [
+  "pending",    // Referido registrado pero aún no suscrito
+  "subscribed", // Referido se suscribió — recompensa pendiente de aplicar
+  "rewarded",   // Recompensa ya aplicada al referidor
+  "expired",    // El referido nunca se suscribió (más de 90 días)
+]);
+
+export const userReferrals = pgTable("user_referrals", {
+  id: serial("id").primaryKey(),
+  /** Usuario que compartió el código */
+  referrerId: integer("referrerId").notNull(),
+  /** Nuevo usuario que usó el código al registrarse */
+  referredId: integer("referredId").notNull().unique(),
+  /** Código que se usó */
+  referralCode: varchar("referralCode", { length: 32 }).notNull(),
+  /** Estado del referido */
+  status: userReferralRewardStatusEnum("status").default("pending").notNull(),
+  /** Stripe subscription ID del referido (cuando se suscribe) */
+  stripeSubscriptionId: varchar("stripeSubscriptionId", { length: 128 }),
+  /** Cuándo el referido se suscribió */
+  subscribedAt: timestamp("subscribedAt"),
+  /** Cuándo se aplicó la recompensa al referidor */
+  rewardedAt: timestamp("rewardedAt"),
+  /** Días de suscripción gratuita otorgados al referidor */
+  rewardDays: integer("rewardDays").default(30),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  referrerIdx: index("ur_referrer_idx").on(t.referrerId),
+  referredIdx: index("ur_referred_idx").on(t.referredId),
+  codeIdx: index("ur_code_idx").on(t.referralCode),
+}));
+export type UserReferral = typeof userReferrals.$inferSelect;
+export type InsertUserReferral = typeof userReferrals.$inferInsert;
+
+// Campo referralCode en users se gestiona con ALTER TABLE en migración
+// Para evitar modificar la tabla users directamente, usamos una tabla auxiliar
+export const userReferralCodes = pgTable("user_referral_codes", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().unique(),
+  /** Código único de 8 caracteres alfanumérico en mayúsculas */
+  code: varchar("code", { length: 32 }).notNull().unique(),
+  /** Número total de referidos que se han suscrito */
+  totalRewarded: integer("totalRewarded").default(0).notNull(),
+  /** Días totales de suscripción gratuita ganados */
+  totalRewardDays: integer("totalRewardDays").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  userIdx: index("urc_user_idx").on(t.userId),
+  codeIdx: index("urc_code_idx").on(t.code),
+}));
+export type UserReferralCode = typeof userReferralCodes.$inferSelect;
+export type InsertUserReferralCode = typeof userReferralCodes.$inferInsert;

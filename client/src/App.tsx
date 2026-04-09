@@ -61,6 +61,7 @@ const BuddyMakerDashboard = lazy(() => import("./pages/BuddyMakerDashboard"));
 const BuddyMakerStats = lazy(() => import("./pages/BuddyMakerStats"));
 const BuddyExpertStats = lazy(() => import("./pages/BuddyExpertStats"));
 const ReferralDashboard = lazy(() => import("./pages/ReferralDashboard"));
+const Referrals = lazy(() => import("./pages/Referrals"));
 const Metrics = lazy(() => import("./pages/Metrics"));
 const ConnectedHealth = lazy(() => import("./pages/ConnectedHealth"));
 const NutritionalStats = lazy(() => import("./pages/NutritionalStats"));
@@ -185,7 +186,8 @@ function Router() {
       <Route path="/app/buddy-maker-dashboard">{() => <ProtectedPage><BuddyMakerDashboard /></ProtectedPage>}</Route>
       <Route path="/app/buddy-maker-stats">{() => <ProtectedPage><BuddyMakerStats /></ProtectedPage>}</Route>
       <Route path="/app/buddy-expert-stats">{() => <ProtectedPage><BuddyExpertStats /></ProtectedPage>}</Route>
-      <Route path="/app/referrals">{() => <ProtectedPage><ReferralDashboard /></ProtectedPage>}</Route>
+      <Route path="/app/referrals">{() => <ProtectedPage><AppLayout><Referrals /></AppLayout></ProtectedPage>}</Route>
+      <Route path="/app/referrals/creator">{() => <ProtectedPage><ReferralDashboard /></ProtectedPage>}</Route>
       <Route path="/app/metrics">{() => <ProtectedRoute component={Metrics} />}</Route>
       <Route path="/app/connected-health">{() => <ProtectedRoute component={ConnectedHealth} />}</Route>
       <Route path="/app/stats">{() => <ProtectedRoute component={NutritionalStats} />}</Route>

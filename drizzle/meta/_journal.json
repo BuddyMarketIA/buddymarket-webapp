@@ -141,6 +141,13 @@
       "when": 1775586951682,
       "tag": "0019_powerful_quasar",
       "breakpoints": true
+    },
+    {
+      "idx": 20,
+      "version": "7",
+      "when": 1775704996077,
+      "tag": "0020_futuristic_black_tom",
+      "breakpoints": true
     }
   ]
 }
