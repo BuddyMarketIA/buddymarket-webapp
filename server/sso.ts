@@ -23,12 +23,20 @@ import { ENV } from "./_core/env";
 // ─── Helper: obtener el origin público correcto detrás de proxies ─────────────
 /**
  * Cuando la app corre detrás de Cloudflare/Manus, req.get("host") devuelve el
- * host interno del contenedor. Usamos X-Forwarded-Host si está disponible.
+ * host interno del contenedor de Cloud Run.
+ * Prioridad: PUBLIC_APP_URL (env) > X-Forwarded-Host > host del request.
  */
 function getPublicOrigin(req: Request): string {
-  const proto = (req.headers["x-forwarded-proto"] as string)?.split(",")[0]?.trim() ?? req.protocol;
-  const host = (req.headers["x-forwarded-host"] as string)?.split(",")[0]?.trim() ?? req.get("host");
-  return `${proto}://${host}`;
+  // 1. Variable de entorno configurada explicitamente (más fiable)
+  if (ENV.publicAppUrl) return ENV.publicAppUrl;
+  // 2. X-Forwarded-Host enviado por el proxy
+  const fwdHost = (req.headers["x-forwarded-host"] as string)?.split(",")[0]?.trim();
+  if (fwdHost) {
+    const proto = (req.headers["x-forwarded-proto"] as string)?.split(",")[0]?.trim() ?? "https";
+    return `${proto}://${fwdHost}`;
+  }
+  // 3. Fallback al host del request (solo funciona en desarrollo local)
+  return `${req.protocol}://${req.get("host")}`;
 }
 
 // ─── Apple OAuth Web Flow helpers ────────────────────────────────────────────
