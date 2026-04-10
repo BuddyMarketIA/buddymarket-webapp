@@ -624,36 +624,38 @@ export default function Recipes() {
     <div style={{ padding: "16px", maxWidth: "480px", margin: "0 auto", paddingBottom: "100px" }}>
 
       {/* Header */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
-        <div>
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px", gap: "12px" }}>
+        <div style={{ flex: 1, minWidth: 0 }}>
           <h1 style={{ margin: 0, fontSize: "22px", fontWeight: 900, color: "#1a1a1a", letterSpacing: "-0.03em" }}>{t("recipes.title")}</h1>
-          <p style={{ margin: "2px 0 0", fontSize: "14px", color: "#9ca3af" }}>{isFetching ? t("common.loading", "Cargando...") : `${recipes.length}${hasNextPage ? "+" : ""} ${t("recipes.available", "recetas disponibles")}`}</p>
+          <p style={{ margin: "2px 0 0", fontSize: "14px", color: "#9ca3af", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{isFetching ? t("common.loading", "Cargando...") : `${recipes.length}${hasNextPage ? "+" : ""} ${t("recipes.available", "recetas disponibles")}`}</p>
         </div>
         {isAuthenticated && (
-          <button
-            onClick={() => {
-              if (!can("canCreateRecipes")) {
-                toast.error("¡Crea tus propias recetas con el plan Pro! ✨");
-                navigate("/app/subscription");
-                return;
-              }
-              navigate("/app/recipes/new");
-            }}
-            style={{
-              width: "38px", height: "38px", borderRadius: "12px",
-              background: isFree ? "linear-gradient(135deg, #F97316, #EA580C)" : "#F97316",
-              border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
-              boxShadow: "0 4px 12px rgba(249,115,22,0.35)",
-              position: "relative",
-            }}
-          >
-            {isFree && (
-              <span style={{ position: "absolute", top: "-4px", right: "-4px", background: "#7c3aed", color: "white", borderRadius: "50%", width: "14px", height: "14px", fontSize: "9px", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900 }}>P</span>
-            )}
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-              <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-            </svg>
-          </button>
+          <div style={{ flexShrink: 0, paddingTop: isFree ? "6px" : "0" }}>
+            <button
+              onClick={() => {
+                if (!can("canCreateRecipes")) {
+                  toast.error("¡Crea tus propias recetas con el plan Pro! ✨");
+                  navigate("/app/subscription");
+                  return;
+                }
+                navigate("/app/recipes/new");
+              }}
+              style={{
+                width: "38px", height: "38px", borderRadius: "12px",
+                background: isFree ? "linear-gradient(135deg, #F97316, #EA580C)" : "#F97316",
+                border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center",
+                boxShadow: "0 4px 12px rgba(249,115,22,0.35)",
+                position: "relative",
+              }}
+            >
+              {isFree && (
+                <span style={{ position: "absolute", top: "-4px", right: "-4px", background: "#7c3aed", color: "white", borderRadius: "50%", width: "14px", height: "14px", fontSize: "9px", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 900 }}>P</span>
+              )}
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
+              </svg>
+            </button>
+          </div>
         )}
       </div>
 
