@@ -218,24 +218,24 @@ function LicenciasListado({ onSelectCompany }: { onSelectCompany: (id: number, n
         ) : licenses.length === 0 ? (
           <div className="py-8 text-center text-sm text-gray-400">Sin resultados</div>
         ) : (
-          <table className="w-full text-xs">
+          <table className="w-full text-xs min-w-[640px]">
             <thead>
               <tr className="text-gray-400 border-b border-gray-100">
-                <th className="text-left py-2 font-semibold">Empleado</th>
-                <th className="text-left py-2 font-semibold">Empresa</th>
-                <th className="text-center py-2 font-semibold">Plan</th>
-                <th className="text-center py-2 font-semibold">Estado</th>
-                <th className="text-center py-2 font-semibold">Alta</th>
-                <th className="text-center py-2 font-semibold">Última actividad</th>
-                <th className="text-center py-2 font-semibold">Acciones</th>
+                <th className="text-left py-2 pr-3 font-semibold min-w-[140px]">Empleado</th>
+                <th className="text-left py-2 pr-3 font-semibold min-w-[130px]">Empresa</th>
+                <th className="text-center py-2 font-semibold w-24">Plan</th>
+                <th className="text-center py-2 font-semibold w-20">Estado</th>
+                <th className="text-center py-2 font-semibold w-20">Alta</th>
+                <th className="text-center py-2 font-semibold w-24">Última actividad</th>
+                <th className="text-center py-2 font-semibold w-16">Acciones</th>
               </tr>
             </thead>
             <tbody>
               {licenses.map(lic => (
                 <tr key={lic.memberId} className="border-b border-gray-50 hover:bg-gray-50">
-                  <td className="py-2">
-                    <p className="font-semibold text-gray-800">{lic.userName || "—"}</p>
-                    <p className="text-gray-400">{lic.userEmail}</p>
+                  <td className="py-2 pr-3">
+                    <p className="font-semibold text-gray-800 truncate max-w-[140px]">{lic.userName || "—"}</p>
+                    <p className="text-gray-400 truncate max-w-[140px]">{lic.userEmail}</p>
                   </td>
                   <td className="py-2">
                     <button
