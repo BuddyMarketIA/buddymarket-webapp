@@ -183,6 +183,13 @@
       "when": 1776018142473,
       "tag": "0025_damp_captain_cross",
       "breakpoints": true
+    },
+    {
+      "idx": 26,
+      "version": "7",
+      "when": 1776019383229,
+      "tag": "0026_skinny_photon",
+      "breakpoints": true
     }
   ]
 }

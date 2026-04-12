@@ -90,10 +90,15 @@ export const users = pgTable("users", {
   privacyAcceptedAt: timestamp("privacyAcceptedAt"),
   marketingConsent: boolean("marketingConsent").default(false),
   marketingConsentAt: timestamp("marketingConsentAt"),
+  /** Código usado al registrarse (empresa tipo EMPRESA2024 o referido de experto/maker) */
+  usedReferralCode: varchar("usedReferralCode", { length: 50 }),
+  /** Tipo de código usado: company | expert | maker | promo */
+  referralCodeType: varchar("referralCodeType", { length: 20 }),
 }, (t) => ({
   emailIdx: index("users_email_idx").on(t.email),
   roleIdx: index("users_role_idx").on(t.role),
   activeIdx: index("users_active_idx").on(t.active),
+  referralCodeIdx: index("users_referral_code_idx").on(t.usedReferralCode),
 }));
 
 export type User = typeof users.$inferSelect;
@@ -2032,12 +2037,19 @@ export const companies = pgTable("companies", {
   notes: text("notes"),
   contractStartAt: timestamp("contractStartAt"),
   contractEndAt: timestamp("contractEndAt"),
+  /** Código único de acceso tipo EMPRESA2024 — los empleados lo usan al registrarse */
+  accessCode: varchar("accessCode", { length: 32 }).unique(),
+  /** Licencias activas facturadas este mes */
+  licensesActive: integer("licensesActive").default(0).notNull(),
+  /** Mensaje de bienvenida personalizable que ve el empleado al activar */
+  welcomeMessage: text("welcomeMessage"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 }, (t) => ({
   contactEmailIdx: index("company_email_idx").on(t.contactEmail),
   stripeCustomerIdx: index("company_stripe_idx").on(t.stripeCustomerId),
   adminUserIdx: index("company_admin_idx").on(t.adminUserId),
+  accessCodeIdx: index("company_access_code_idx").on(t.accessCode),
 }));
 export type Company = typeof companies.$inferSelect;
 export type InsertCompany = typeof companies.$inferInsert;

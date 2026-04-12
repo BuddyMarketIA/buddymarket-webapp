@@ -367,6 +367,21 @@ function StepProfileSetup({ accountType, onNext }: { accountType: AccountType; o
     activityLevel: "", allergies: [] as number[], dietRestrictions: [] as number[],
     acceptTerms: false, newsletter: false,
   });
+  // Código de empresa o referido
+  const [codeInput, setCodeInput] = useState("");
+  const [codeDebounced, setCodeDebounced] = useState("");
+  const codeTimerRef = useState<ReturnType<typeof setTimeout> | null>(null);
+  const handleCodeChange = (val: string) => {
+    const upper = val.toUpperCase().replace(/[^A-Z0-9]/g, "");
+    setCodeInput(upper);
+    if (codeTimerRef[0]) clearTimeout(codeTimerRef[0]);
+    const t = setTimeout(() => setCodeDebounced(upper), 600);
+    codeTimerRef[1](t);
+  };
+  const { data: codeInfo, isFetching: codeChecking } = trpc.codes.validate.useQuery(
+    { code: codeDebounced },
+    { enabled: codeDebounced.length >= 4, retry: false, staleTime: 30000 }
+  );
 
   const { data: catalogData } = trpc.catalogs.allergies.useQuery();
   const { data: restrictionsData } = trpc.catalogs.dietRestrictions.useQuery();
@@ -376,6 +391,7 @@ function StepProfileSetup({ accountType, onNext }: { accountType: AccountType; o
   const setDietRestrictions = trpc.profile.setDietRestrictions.useMutation();
   const updatePreferences = trpc.profile.updatePreferences.useMutation();
   const advanceStep = trpc.profile.advanceRegistrationStep.useMutation();
+  const applyCompanyCode = trpc.codes.applyCompanyCode.useMutation();
 
   const totalSubSteps = 4;
   const isLoading = updateBasic.isPending || updateProfile.isPending || advanceStep.isPending;
@@ -405,6 +421,15 @@ function StepProfileSetup({ accountType, onNext }: { accountType: AccountType; o
       if (form.allergies.length > 0) await setAllergies.mutateAsync({ allergyIds: form.allergies });
       if (form.dietRestrictions.length > 0) await setDietRestrictions.mutateAsync({ restrictionIds: form.dietRestrictions });
       await updatePreferences.mutateAsync({ acceptTerms: form.acceptTerms, newsletter: form.newsletter });
+      // Aplicar código de empresa si se introdujo uno válido
+      if (codeInput.length >= 4 && codeInfo?.type === "company" && codeInfo.hasCapacity) {
+        try {
+          const result = await applyCompanyCode.mutateAsync({ code: codeInput });
+          toast.success(result.message || `¡Bienvenido al plan de ${result.companyName}!`);
+        } catch (e: any) {
+          toast.error(e?.message || "No se pudo activar el código de empresa");
+        }
+      }
       const nextStep = (accountType === "buddymaker" || accountType === "buddyexpert") ? "application" : "completed";
       await advanceStep.mutateAsync({ step: nextStep as any });
       onNext();
@@ -648,6 +673,76 @@ function StepProfileSetup({ accountType, onNext }: { accountType: AccountType; o
                 </span>
               </div>
             </label>
+          </div>
+
+          {/* Código de empresa o referido */}
+          <div style={{ background: "#F8FAFC", borderRadius: 16, padding: 18, border: "1px solid #E2E8F0" }}>
+            <div style={{ marginBottom: 10 }}>
+              <span style={{ fontSize: 14, fontWeight: 700, color: "#1E293B", display: "block" }}>
+                🏢 ¿Tienes un código de empresa o referido?
+              </span>
+              <span style={{ fontSize: 12, color: "#64748B" }}>
+                Opcional — si tu empresa tiene un convenio con BuddyMarket o alguien te recomendó
+              </span>
+            </div>
+            <div style={{ position: "relative" }}>
+              <input
+                type="text"
+                value={codeInput}
+                onChange={e => handleCodeChange(e.target.value)}
+                placeholder="Ej: MERCADONA2025 o EXPERT-MARIA"
+                maxLength={30}
+                style={{
+                  width: "100%", padding: "10px 44px 10px 14px",
+                  borderRadius: 10, border: `2px solid ${
+                    codeInput.length >= 4 && codeInfo ? (codeInfo.hasCapacity ? "#10B981" : "#EF4444") :
+                    codeInput.length >= 4 && !codeChecking && codeDebounced === codeInput && !codeInfo ? "#EF4444" : "#CBD5E1"
+                  }`,
+                  fontSize: 14, fontWeight: 700, letterSpacing: "0.05em",
+                  outline: "none", background: "white", boxSizing: "border-box",
+                }}
+              />
+              <span style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", fontSize: 16 }}>
+                {codeChecking ? "⏳" :
+                  codeInput.length >= 4 && codeInfo ? (codeInfo.hasCapacity ? "✅" : "❌") :
+                  codeInput.length >= 4 && !codeChecking && codeDebounced === codeInput && !codeInfo ? "❌" : ""}
+              </span>
+            </div>
+            {/* Preview del beneficio */}
+            {codeInfo && codeInput.length >= 4 && (
+              <div style={{
+                marginTop: 10, padding: "10px 14px", borderRadius: 10,
+                background: codeInfo.hasCapacity ? "#F0FDF4" : "#FEF2F2",
+                border: `1px solid ${codeInfo.hasCapacity ? "#BBF7D0" : "#FECACA"}`,
+              }}>
+                {codeInfo.type === "company" ? (
+                  <>
+                    <div style={{ fontSize: 13, fontWeight: 800, color: codeInfo.hasCapacity ? "#166534" : "#991B1B" }}>
+                      {codeInfo.hasCapacity ? `🏢 ${codeInfo.companyName}` : `🚫 ${codeInfo.companyName} — Sin licencias disponibles`}
+                    </div>
+                    {codeInfo.hasCapacity && (
+                      <div style={{ fontSize: 12, color: "#166534", marginTop: 2 }}>
+                        ✨ {codeInfo.benefit}
+                      </div>
+                    )}
+                  </>
+                ) : (
+                  <>
+                    <div style={{ fontSize: 13, fontWeight: 800, color: "#166534" }}>
+                      👤 Código de {codeInfo.ownerName || "creador"}
+                    </div>
+                    <div style={{ fontSize: 12, color: "#166534", marginTop: 2 }}>
+                      ✨ {codeInfo.benefit} — se aplica al suscribirte
+                    </div>
+                  </>
+                )}
+              </div>
+            )}
+            {codeInput.length >= 4 && !codeChecking && codeDebounced === codeInput && !codeInfo && (
+              <div style={{ marginTop: 8, fontSize: 12, color: "#EF4444", fontWeight: 600 }}>
+                Código no encontrado o no válido
+              </div>
+            )}
           </div>
         </div>
       )}

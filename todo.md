@@ -1979,3 +1979,32 @@
 - [x] Backend: endpoint householdRecipes.generateFamilyMenu con IA (menú unificado para todos los miembros)
 - [x] Frontend: modal FamilyMenuModal con formulario de generación y resultado del menú familiar
 - [x] Frontend: botón "Menú IA" en header de /familia
+
+## Rediseño Sistema de Códigos — Empresa + Referido
+
+### Flujo Empresa (código único tipo MERCADONA2024)
+- [x] Schema DB: campo `accessCode` en companies + campo `usedReferralCode` en users
+- [x] Backend: router `codes` con endpoints validate, applyCompanyCode, getMyCompanyAccess, generateCompanyCode
+- [x] Backend: endpoint `codes.validate` (público) — valida código y devuelve tipo + beneficio + nombre empresa/experto
+- [x] Backend: endpoint `codes.applyCompanyCode` (protegido) — activa Pro Max y registra miembro en la empresa
+- [x] Backend: endpoint `codes.generateCompanyCode` — genera código tipo EMPRESA2025 para la empresa
+- [ ] Backend: webhook Stripe — al completar checkout con código referido, registrar uso y calcular comisión para experto/maker
+- [ ] Backend: endpoint `codes.getMyStats` para expertos/makers — ver cuántos usuarios han usado su código
+
+### Flujo Registro/Login con código
+- [x] Frontend: campo opcional "¿Tienes un código?" en el flujo de registro (Registration.tsx, subStep 3)
+- [x] Frontend: validación en tiempo real del código (muestra nombre empresa o % descuento al escribir)
+- [x] Frontend: si código es de empresa → muestra "Tu empresa cubre el coste de Pro Max" y activa al registrarse
+- [x] Frontend: si código es de experto/maker → muestra "X% de descuento en tu suscripción"
+- [x] Frontend: página `/activar` — landing para empleados con campo de código, validación y activación
+
+### Panel RRHH actualizado
+- [x] Frontend: panel RRHH muestra código único de empresa (ej. MERCADONA2025) con botones Copiar y Copiar enlace
+- [x] Frontend: panel RRHH muestra enlace directo `/activar?code=EMPRESA2025` para enviar a empleados
+- [x] Frontend: botón Generar código si la empresa aún no tiene uno
+- [ ] Frontend: facturación dinámica por licencias activas ese mes
+
+### Panel BuddyExpert/Maker con métricas de referidos
+- [ ] Frontend: sección "Mi código de referido" en BuddyExpertDashboard y BuddyMakerDashboard
+- [ ] Frontend: mostrar código único, nº de usuarios referidos, suscripciones activas y comisión acumulada
+- [ ] Frontend: gráfico de evolución de referidos por mes

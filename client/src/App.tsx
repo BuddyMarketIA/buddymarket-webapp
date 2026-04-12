@@ -23,6 +23,7 @@ const Terms = lazy(() => import("./pages/Terms"));
 const Privacy = lazy(() => import("./pages/Privacy"));
 const Cookies = lazy(() => import("./pages/Cookies"));
 const Registration = lazy(() => import("./pages/Registration"));
+const ActivarCodigo = lazy(() => import("./pages/ActivarCodigo"));
 const NotFound = lazy(() => import("./pages/NotFound"));
 const Nutricionistas = lazy(() => import("./pages/Nutricionistas"));
 const Empresas = lazy(() => import("./pages/Empresas"));
@@ -156,6 +157,7 @@ function Router() {
       <Route path="/nutricionistas" component={Nutricionistas} />
       <Route path="/empresas" component={Empresas} />
       <Route path="/empresa/dashboard">{() => <ProtectedPage><EmpresaDashboard /></ProtectedPage>}</Route>
+      <Route path="/activar" component={ActivarCodigo} />
       <Route path="/familia" component={Familia} />
       <Route path="/familia/unirse" component={FamiliaUnirse} />
       <Route path="/familia/mis-recetas">{() => <ProtectedPage><MisRecetasAsignadas /></ProtectedPage>}</Route>

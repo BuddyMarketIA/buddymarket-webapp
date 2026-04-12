@@ -6,6 +6,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { companyRouter } from "./routers/company";
 import { companyRemindersRouter } from "./routers/companyReminders";
+import { codesRouter } from "./routers/codes";
 import { householdRouter } from "./routers/household";
 import { householdRecipesRouter } from "./routers/householdRecipes";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
@@ -227,6 +228,7 @@ export const appRouter = router({
   system: systemRouter,
   company: companyRouter,
   companyReminders: companyRemindersRouter,
+  codes: codesRouter,
   household: householdRouter,
   householdRecipes: householdRecipesRouter,
 

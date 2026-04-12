@@ -32,6 +32,16 @@ export default function EmpresaDashboard() {
     enabled: !!user,
     retry: false,
   });
+  const { data: companyAccess, refetch: refetchAccess } = trpc.codes.getMyCompanyAccess.useQuery(undefined, {
+    enabled: !!user,
+  });
+  const generateCodeMutation = trpc.codes.generateCompanyCode.useMutation({
+    onSuccess: (result) => {
+      toast.success(`Código generado: ${result.accessCode}`);
+      refetchAccess();
+    },
+    onError: (err) => toast.error(`Error: ${err.message}`),
+  });
   const { data: campaigns, refetch: refetchCampaigns } = trpc.companyReminders.listCampaigns.useQuery(undefined, {
     enabled: !!user && showCampaigns,
   });
@@ -278,6 +288,77 @@ export default function EmpresaDashboard() {
               />
             </div>
           </div>
+        </section>
+
+        {/* ── CÓDIGO ÚNICO DE EMPRESA ─────────────────────────────────── */}
+        <section aria-labelledby="access-code-heading">
+          <Card className="border-2 border-orange-200 bg-gradient-to-r from-orange-50 to-amber-50">
+            <CardContent className="p-6">
+              <div className="flex flex-col md:flex-row md:items-center gap-4">
+                <div className="flex-1">
+                  <h3 id="access-code-heading" className="font-black text-orange-900 text-lg mb-1 flex items-center gap-2">
+                    🏢 Código de acceso para empleados
+                  </h3>
+                  <p className="text-orange-700 text-sm mb-3">
+                    Comparte este código con tus empleados. Cada empleado lo introduce al registrarse o en
+                    {" "}<a href="/activar" className="font-bold underline" target="_blank">buddymarket.es/activar</a>{" "}
+                    y su acceso Pro Max se activa al instante. Sin coste para el empleado.
+                  </p>
+                  {companyAccess?.accessCode ? (
+                    <div className="flex items-center gap-3">
+                      <div className="bg-white border-2 border-orange-300 rounded-xl px-6 py-3 font-mono font-black text-2xl tracking-widest text-orange-900 shadow-sm">
+                        {companyAccess.accessCode}
+                      </div>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="border-orange-300 text-orange-700 hover:bg-orange-100"
+                        onClick={() => {
+                          navigator.clipboard.writeText(companyAccess.accessCode!);
+                          toast.success("Código copiado");
+                        }}
+                      >
+                        <Copy className="h-4 w-4 mr-1" /> Copiar
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        className="border-orange-300 text-orange-700 hover:bg-orange-100"
+                        onClick={() => {
+                          const link = `${window.location.origin}/activar?code=${companyAccess.accessCode}`;
+                          navigator.clipboard.writeText(link);
+                          toast.success("Enlace de activación copiado");
+                        }}
+                      >
+                        <Copy className="h-4 w-4 mr-1" /> Copiar enlace
+                      </Button>
+                    </div>
+                  ) : (
+                    <div className="flex items-center gap-3">
+                      <div className="bg-white border-2 border-dashed border-orange-300 rounded-xl px-6 py-3 text-orange-400 text-sm font-medium">
+                        Sin código generado aún
+                      </div>
+                      <Button
+                        size="sm"
+                        className="bg-orange-500 hover:bg-orange-600 text-white font-bold"
+                        onClick={() => generateCodeMutation.mutate({})}
+                        disabled={generateCodeMutation.isPending}
+                      >
+                        {generateCodeMutation.isPending ? "Generando..." : "Generar código"}
+                      </Button>
+                    </div>
+                  )}
+                </div>
+                <div className="hidden md:block text-6xl">🔑</div>
+              </div>
+              {companyAccess?.accessCode && (
+                <div className="mt-4 p-3 bg-white/70 rounded-xl border border-orange-200 text-xs text-orange-800">
+                  <strong>Enlace directo para empleados:</strong>{" "}
+                  <span className="font-mono">{window.location.origin}/activar?code={companyAccess.accessCode}</span>
+                </div>
+              )}
+            </CardContent>
+          </Card>
         </section>
 
         <div className="grid lg:grid-cols-2 gap-8">
