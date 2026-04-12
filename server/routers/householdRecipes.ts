@@ -371,6 +371,94 @@ export const householdRecipesRouter = router({
       return results;
     }),
 
+  // Obtener recetas del hogar agrupadas por semana para el calendario
+  getWeekCalendar: protectedProcedure
+    .input(z.object({
+      householdId: z.number().int().positive(),
+      weekStart: z.string(), // ISO date string del lunes de la semana (YYYY-MM-DD)
+    }))
+    .query(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+      // Verificar membresía
+      const isMember = await db
+        .select({ id: householdMembers.id, role: householdMembers.role })
+        .from(householdMembers)
+        .where(and(eq(householdMembers.householdId, input.householdId), eq(householdMembers.userId, ctx.user.id)))
+        .limit(1);
+      if (!isMember.length) throw new TRPCError({ code: "FORBIDDEN", message: "No eres miembro de este hogar" });
+
+      // Calcular rango de la semana
+      const weekStartDate = new Date(input.weekStart + "T00:00:00Z");
+      const weekEndDate = new Date(weekStartDate);
+      weekEndDate.setUTCDate(weekEndDate.getUTCDate() + 7);
+
+      const { gte, lt } = await import("drizzle-orm");
+
+      // Obtener todas las asignaciones de la semana para el hogar
+      const assignments = await db
+        .select({
+          id: householdRecipeAssignments.id,
+          memberId: householdRecipeAssignments.memberId,
+          mealType: householdRecipeAssignments.mealType,
+          note: householdRecipeAssignments.note,
+          scheduledDate: householdRecipeAssignments.scheduledDate,
+          isCompleted: householdRecipeAssignments.isCompleted,
+          completedAt: householdRecipeAssignments.completedAt,
+          createdAt: householdRecipeAssignments.createdAt,
+          recipe: {
+            id: recipes.id,
+            name: recipes.name,
+            imageUrl: recipes.imageUrl,
+            caloriesPerServing: recipes.caloriesPerServing,
+            preparationTime: recipes.preparationTime,
+            cookTime: recipes.cookTime,
+            difficulty: recipes.difficulty,
+          },
+          member: {
+            id: householdMembers.id,
+            displayName: householdMembers.displayName,
+            userId: householdMembers.userId,
+            role: householdMembers.role,
+          },
+          assignedBy: {
+            id: users.id,
+            name: users.name,
+          },
+        })
+        .from(householdRecipeAssignments)
+        .innerJoin(recipes, eq(householdRecipeAssignments.recipeId, recipes.id))
+        .innerJoin(householdMembers, eq(householdRecipeAssignments.memberId, householdMembers.id))
+        .innerJoin(users, eq(householdRecipeAssignments.assignedByUserId, users.id))
+        .where(
+          and(
+            eq(householdRecipeAssignments.householdId, input.householdId),
+            gte(householdRecipeAssignments.scheduledDate, weekStartDate),
+            lt(householdRecipeAssignments.scheduledDate, weekEndDate),
+          )
+        )
+        .orderBy(householdRecipeAssignments.scheduledDate);
+
+      // Obtener todos los miembros del hogar para mostrarlos en el calendario
+      const members = await db
+        .select({
+          id: householdMembers.id,
+          displayName: householdMembers.displayName,
+          userId: householdMembers.userId,
+          role: householdMembers.role,
+          memberUser: {
+            name: users.name,
+            imageUrl: users.imageUrl,
+          },
+        })
+        .from(householdMembers)
+        .innerJoin(users, eq(householdMembers.userId, users.id))
+        .where(eq(householdMembers.householdId, input.householdId));
+
+      return { assignments, members, weekStart: input.weekStart };
+    }),
+
   // Obtener las recetas asignadas al usuario actual (en todos sus hogares)
   getMyAssignments: protectedProcedure
     .query(async ({ ctx }) => {

@@ -1940,3 +1940,24 @@
 - [x] Interfaz de asignación en /familia: modal de búsqueda, selector de miembro/tipo de comida/fecha/nota
 - [x] Vista /familia/mis-recetas: recetas asignadas al usuario con filtros y marcar como completada
 - [x] Email de notificación al miembro cuando se le asigna una receta
+
+## Calendario semanal del hogar familiar
+- [ ] Endpoint backend getWeekCalendar: recetas asignadas agrupadas por día y franja horaria para la semana actual
+- [ ] Página /familia/calendario: grid semanal 7 días × 4 franjas (desayuno/almuerzo/cena/snack)
+- [ ] Navegación entre semanas (anterior/siguiente) en el calendario
+- [ ] Tarjetas de receta en el calendario con imagen, nombre, miembro asignado y estado completado
+- [ ] Marcar receta como completada directamente desde el calendario
+- [ ] Enlace desde /familia y desde el sidebar del AppLayout
+
+## Calendario semanal del hogar familiar (completado)
+- [x] Endpoint backend getWeekCalendar en householdRecipes: recetas agrupadas por día/franja, con miembros del hogar
+- [x] Página /familia/calendario: grid semanal 7 días × 4 franjas (desayuno/almuerzo/cena/snack)
+- [x] Navegación entre semanas (anterior/siguiente) con botón "Ir a hoy"
+- [x] Tarjetas de receta con imagen, nombre, kcal, tiempo, badge de miembro y estado completado
+- [x] Marcar receta como completada directamente desde el calendario
+- [x] Filtro por miembro del hogar (botones de filtro con colores por miembro, "Todos" por defecto)
+- [x] Vista responsive: grid en desktop, lista por día en móvil
+- [x] Estado vacío diferenciado (sin recetas esta semana / sin recetas para este miembro)
+- [x] Ruta /familia/calendario en App.tsx
+- [x] Enlace "Calendario Familiar" en sidebar de AppLayout (grupo Familia)
+- [x] Enlace "Mis Recetas Asignadas" en sidebar de AppLayout (grupo Familia)
