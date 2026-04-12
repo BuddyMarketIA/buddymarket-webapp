@@ -13,7 +13,7 @@ import {
 } from "lucide-react";
 
 export default function EmpresaDashboard() {
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [searchCode, setSearchCode] = useState("");
 
   const { data, isLoading, error, refetch } = trpc.company.getDashboard.useQuery(undefined, {
