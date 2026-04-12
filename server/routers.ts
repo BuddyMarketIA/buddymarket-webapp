@@ -3770,7 +3770,7 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
           for (let i = 0; i < attempts; i++) {
             try {
               const res = await fetch(url, {
-                headers: { "User-Agent": "BuddyMarket/1.0 (contact@buddymarket.app)" },
+                headers: { "User-Agent": "BuddyMarket/1.0 (info@buddymarket.io)" },
                 signal: AbortSignal.timeout(10000),
               });
               if (res.ok) return res;

@@ -2,7 +2,7 @@ import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Use verified Resend domain as sender. To use a custom domain (hola@buddymarketapp.com),
+// Use verified Resend domain as sender. To use a custom domain (info@buddymarket.io),
 // verify buddymarketapp.com at https://resend.com/domains and update this value.
 const CUSTOM_FROM_EMAIL = process.env.EMAIL_FROM || "BuddyMarket <onboarding@resend.dev>";
 const FROM_EMAIL = CUSTOM_FROM_EMAIL;
@@ -405,7 +405,7 @@ function day7EmailHtml(name: string): string {
 
       <p style="color:#888;font-size:13px;text-align:center;margin:16px 0 0;line-height:1.6;">
         ¿Tienes feedback sobre tu primera semana? Nos encantaría escucharte. 
-        <a href="mailto:hola@buddymarketapp.com" style="color:#F97316;text-decoration:none;">Escríbenos aquí</a>
+        <a href="mailto:info@buddymarket.io" style="color:#F97316;text-decoration:none;">Escríbenos aquí</a>
       </p>
     </td>
   </tr>`;

@@ -679,8 +679,8 @@ export default function Empresas() {
             © 2025 BuddyMarket · <Link href="/privacidad" className="hover:text-foreground">Privacidad</Link> · <Link href="/terminos" className="hover:text-foreground">Términos</Link>
           </div>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
-            <a href="mailto:empresas@buddymarket.es" className="flex items-center gap-1 hover:text-foreground">
-              <Mail className="h-3.5 w-3.5" /> empresas@buddymarket.es
+            <a href="mailto:info@buddymarket.io" className="flex items-center gap-1 hover:text-foreground">
+              <Mail className="h-3.5 w-3.5" /> info@buddymarket.io
             </a>
             <a href="tel:+34900000000" className="flex items-center gap-1 hover:text-foreground">
               <Phone className="h-3.5 w-3.5" /> 900 000 000
