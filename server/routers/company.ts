@@ -489,11 +489,210 @@ export const companyRouter = router({
   /** Disparar sincronización manual de licencias activas (solo admin de BuddyMarket) */
   triggerBillingSync: protectedProcedure
     .mutation(async ({ ctx }) => {
-      if (ctx.user.role !== "admin") {
-        throw new TRPCError({ code: "FORBIDDEN" });
-      }
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
       const { syncActiveLicenses } = await import("../jobs/billing-sync.js");
-      const result = await syncActiveLicenses();
-      return result;
+      return await syncActiveLicenses();
+    }),
+
+  // ─── ENDPOINTS EXCLUSIVOS PARA EL PANEL ADMIN DE BUDDYMARKET ────────────────
+
+  /** Listar todas las empresas con métricas agregadas */
+  adminGetCompanies: protectedProcedure
+    .input(z.object({
+      status: z.enum(["pending", "trial", "active", "suspended", "cancelled", "all"]).optional().default("all"),
+      plan: z.enum(["starter", "business", "enterprise", "corporate", "all"]).optional().default("all"),
+      search: z.string().optional(),
+    }))
+    .query(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { companies, companyMembers } = await import("../../drizzle/schema.js");
+      const { ilike, or } = await import("drizzle-orm");
+
+      const allCompanies = await drizzleDb.select({
+        id: companies.id,
+        name: companies.name,
+        contactEmail: companies.contactEmail,
+        contactName: companies.contactName,
+        plan: companies.plan,
+        status: companies.status,
+        licensesTotal: companies.licensesTotal,
+        licensesActive: companies.licensesActive,
+        accessCode: companies.accessCode,
+        stripeCustomerId: companies.stripeCustomerId,
+        stripeSubscriptionId: companies.stripeSubscriptionId,
+        industry: companies.industry,
+        contractStartAt: companies.contractStartAt,
+        createdAt: companies.createdAt,
+        notes: companies.notes,
+      }).from(companies).orderBy(desc(companies.createdAt));
+
+      let filtered = allCompanies;
+      if (input.status !== "all") filtered = filtered.filter(c => c.status === input.status);
+      if (input.plan !== "all") filtered = filtered.filter(c => c.plan === input.plan);
+      if (input.search) {
+        const s = input.search.toLowerCase();
+        filtered = filtered.filter(c => c.name.toLowerCase().includes(s) || c.contactEmail.toLowerCase().includes(s));
+      }
+
+      const memberCounts = await drizzleDb
+        .select({ companyId: companyMembers.companyId, total: count() })
+        .from(companyMembers)
+        .where(eq(companyMembers.isActive, true))
+        .groupBy(companyMembers.companyId);
+      const memberMap = new Map(memberCounts.map(m => [m.companyId, Number(m.total)]));
+
+      const prices: Record<string, number> = { starter: 8, business: 6, enterprise: 4.5, corporate: 0 };
+      const withMetrics = filtered.map(c => ({
+        ...c,
+        activeMembersCount: memberMap.get(c.id) || 0,
+        estimatedMRR: (c.licensesActive || 0) * (prices[c.plan] || 0),
+      }));
+
+      return {
+        companies: withMetrics,
+        summary: {
+          total: allCompanies.length,
+          active: allCompanies.filter(c => c.status === "active").length,
+          totalLicensesActive: allCompanies.reduce((s, c) => s + (c.licensesActive || 0), 0),
+          totalMRR: allCompanies.reduce((s, c) => s + (c.licensesActive || 0) * (prices[c.plan] || 0), 0),
+        },
+      };
+    }),
+
+  /** Detalle completo de una empresa */
+  adminGetCompanyDetail: protectedProcedure
+    .input(z.object({ companyId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { companies, companyMembers, companyBillingSnapshots, users } = await import("../../drizzle/schema.js");
+
+      const [company] = await drizzleDb.select().from(companies).where(eq(companies.id, input.companyId)).limit(1);
+      if (!company) throw new TRPCError({ code: "NOT_FOUND" });
+
+      const members = await drizzleDb
+        .select({
+          id: companyMembers.id,
+          userId: companyMembers.userId,
+          joinedAt: companyMembers.joinedAt,
+          lastActiveAt: companyMembers.lastActiveAt,
+          isActive: companyMembers.isActive,
+          userName: users.name,
+          userEmail: users.email,
+        })
+        .from(companyMembers)
+        .leftJoin(users, eq(companyMembers.userId, users.id))
+        .where(eq(companyMembers.companyId, input.companyId))
+        .orderBy(desc(companyMembers.joinedAt))
+        .limit(100);
+
+      const snapshots = await drizzleDb
+        .select().from(companyBillingSnapshots)
+        .where(eq(companyBillingSnapshots.companyId, input.companyId))
+        .orderBy(desc(companyBillingSnapshots.billingPeriodStart))
+        .limit(12);
+
+      return {
+        company,
+        members,
+        snapshots: snapshots.map(s => ({
+          ...s,
+          pricePerLicense: parseFloat(s.pricePerLicense),
+          totalAmount: parseFloat(s.totalAmount),
+        })),
+        stats: {
+          totalMembers: members.length,
+          activeMembers: members.filter(m => m.isActive).length,
+          totalBilled: snapshots.reduce((s, snap) => s + parseFloat(snap.totalAmount), 0),
+        },
+      };
+    }),
+
+  /** Actualizar estado, plan, licencias o notas de una empresa */
+  adminUpdateCompany: protectedProcedure
+    .input(z.object({
+      companyId: z.number(),
+      status: z.enum(["pending", "trial", "active", "suspended", "cancelled"]).optional(),
+      plan: z.enum(["starter", "business", "enterprise", "corporate"]).optional(),
+      licensesTotal: z.number().min(1).max(10000).optional(),
+      notes: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { companies } = await import("../../drizzle/schema.js");
+      const updates: Record<string, any> = { updatedAt: new Date() };
+      if (input.status !== undefined) updates.status = input.status;
+      if (input.plan !== undefined) updates.plan = input.plan;
+      if (input.licensesTotal !== undefined) updates.licensesTotal = input.licensesTotal;
+      if (input.notes !== undefined) updates.notes = input.notes;
+      await drizzleDb.update(companies).set(updates).where(eq(companies.id, input.companyId));
+      return { success: true };
+    }),
+
+  /** Listar leads corporativos */
+  adminGetLeads: protectedProcedure
+    .input(z.object({ contacted: z.boolean().optional() }))
+    .query(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { companyLeads } = await import("../../drizzle/schema.js");
+      const rows = input.contacted !== undefined
+        ? await drizzleDb.select().from(companyLeads).where(eq(companyLeads.contacted, input.contacted)).orderBy(desc(companyLeads.createdAt))
+        : await drizzleDb.select().from(companyLeads).orderBy(desc(companyLeads.createdAt));
+      return rows;
+    }),
+
+  /** Marcar lead como contactado */
+  adminUpdateLead: protectedProcedure
+    .input(z.object({ leadId: z.number(), contacted: z.boolean() }))
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { companyLeads } = await import("../../drizzle/schema.js");
+      await drizzleDb.update(companyLeads).set({ contacted: input.contacted }).where(eq(companyLeads.id, input.leadId));
+      return { success: true };
+    }),
+
+  /** Forzar sincronización de facturación para una empresa específica */
+  adminTriggerCompanyBillingSync: protectedProcedure
+    .input(z.object({ companyId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { companies, companyMembers, companyBillingSnapshots } = await import("../../drizzle/schema.js");
+      const { gt } = await import("drizzle-orm");
+      const [company] = await drizzleDb.select().from(companies).where(eq(companies.id, input.companyId)).limit(1);
+      if (!company) throw new TRPCError({ code: "NOT_FOUND" });
+      const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+      const [{ total }] = await drizzleDb
+        .select({ total: count() })
+        .from(companyMembers)
+        .where(and(eq(companyMembers.companyId, input.companyId), eq(companyMembers.isActive, true), gt(companyMembers.lastActiveAt, thirtyDaysAgo)));
+      const prices: Record<string, number> = { starter: 8, business: 6, enterprise: 4.5, corporate: 0 };
+      const pricePerLicense = prices[company.plan] || 0;
+      const activeLicenses = Number(total);
+      const totalAmount = activeLicenses * pricePerLicense;
+      const now = new Date();
+      const periodStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const periodEnd = new Date(now.getFullYear(), now.getMonth() + 1, 0);
+      await drizzleDb.insert(companyBillingSnapshots).values({
+        companyId: input.companyId,
+        billingPeriodStart: periodStart,
+        billingPeriodEnd: periodEnd,
+        activeLicenses,
+        pricePerLicense: pricePerLicense.toString(),
+        totalAmount: totalAmount.toString(),
+        status: "confirmed",
+      });
+      await drizzleDb.update(companies).set({ licensesActive: activeLicenses, updatedAt: new Date() }).where(eq(companies.id, input.companyId));
+      return { success: true, activeLicenses, totalAmount };
     }),
 });

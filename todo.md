@@ -2021,3 +2021,19 @@
 - [x] Backend: email de resumen previo a facturación (día 28) con licencias activas y total estimado
 - [x] Frontend: sección historial de facturación en EmpresaDashboard con tabla mes a mes
 - [x] Frontend: gráfico de evolución de licencias activas en EmpresaDashboard
+
+## Panel Admin — Gestión Empresas B2B [COMPLETADO]
+
+- [x] Backend: endpoint company.adminGetCompanies — listado con métricas, filtros por plan/estado/búsqueda y resumen global (MRR, licencias)
+- [x] Backend: endpoint company.adminGetCompanyDetail — detalle completo (miembros, snapshots, stats)
+- [x] Backend: endpoint company.adminUpdateCompany — cambiar estado, plan, notas internas
+- [x] Backend: endpoint company.adminGetLeads — listado de leads con filtro por estado de contacto
+- [x] Backend: endpoint company.adminUpdateLead — marcar lead como contactado/pendiente
+- [x] Backend: endpoint company.adminTriggerCompanyBillingSync — forzar sync de facturación
+- [x] Frontend: pestaña "Empresas B2B" en Admin.tsx con sub-tabs (Resumen global, Empresas, Leads)
+- [x] Frontend: KPIs globales (empresas totales, activas, licencias activas, MRR estimado)
+- [x] Frontend: distribución por plan con barras de progreso
+- [x] Frontend: tabla de empresas activas con MRR por empresa
+- [x] Frontend: listado de empresas con filtros (plan, estado, búsqueda) y click para ver detalle
+- [x] Frontend: detalle de empresa con stats, acciones de estado, sync de facturación, notas internas, miembros y historial de facturación
+- [x] Frontend: listado de leads con filtro contactado/pendiente y botón de enviar email directo

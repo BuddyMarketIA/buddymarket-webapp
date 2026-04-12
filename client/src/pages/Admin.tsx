@@ -24,6 +24,11 @@ import {
   StarIcon,
   GiftIcon,
   TrophyIcon,
+  BuildingOfficeIcon,
+  CurrencyEuroIcon,
+  PhoneIcon,
+  EnvelopeIcon,
+  EyeIcon,
 } from "@heroicons/react/24/outline";
 import { RECIPE_PLACEHOLDER_IMAGE as RECIPE_PLACEHOLDER } from "@/lib/constants";
 import UsageAnalyticsPanel from "@/components/UsageAnalyticsPanel";
@@ -41,6 +46,7 @@ const TABS = [
   { key: "terms", label: "TyC", icon: DocumentTextIcon },
   { key: "founders", label: "Fundadores", icon: StarIcon },
   { key: "badges", label: "Insignias", icon: TrophyIcon },
+  { key: "empresas", label: "Empresas B2B", icon: BuildingOfficeIcon },
 ];
 
 function CatalogSection({
@@ -634,6 +640,10 @@ export default function Admin() {
       {/* Badges */}
       {activeTab === "badges" && (
         <AdminBadgesPanel />
+      )}
+      {/* Empresas B2B */}
+      {activeTab === "empresas" && (
+        <AdminEmpresasPanel />
       )}
       {/* Users */}
       {activeTab === "users" && (
@@ -1251,6 +1261,499 @@ function AdminBadgesPanel() {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+// ─── Panel Admin Empresas B2B ─────────────────────────────────────────────────
+function AdminEmpresasPanel() {
+  const [subTab, setSubTab] = useState<"empresas" | "leads" | "resumen">("resumen");
+  const [statusFilter, setStatusFilter] = useState<"all" | "pending" | "trial" | "active" | "suspended" | "cancelled">("all");
+  const [planFilter, setPlanFilter] = useState<"all" | "starter" | "business" | "enterprise" | "corporate">("all");
+  const [search, setSearch] = useState("");
+  const [selectedCompanyId, setSelectedCompanyId] = useState<number | null>(null);
+  const [leadFilter, setLeadFilter] = useState<boolean | undefined>(undefined);
+
+  const { data: companiesData, refetch: refetchCompanies } = trpc.company.adminGetCompanies.useQuery(
+    { status: statusFilter, plan: planFilter, search: search || undefined },
+    { enabled: subTab === "empresas" || subTab === "resumen" }
+  );
+  const { data: companyDetail, refetch: refetchDetail } = trpc.company.adminGetCompanyDetail.useQuery(
+    { companyId: selectedCompanyId! },
+    { enabled: selectedCompanyId !== null }
+  );
+  const { data: leads, refetch: refetchLeads } = trpc.company.adminGetLeads.useQuery(
+    { contacted: leadFilter },
+    { enabled: subTab === "leads" }
+  );
+
+  const updateCompany = trpc.company.adminUpdateCompany.useMutation({
+    onSuccess: () => { toast.success("Empresa actualizada"); refetchCompanies(); refetchDetail(); },
+    onError: (e) => toast.error(e.message),
+  });
+  const updateLead = trpc.company.adminUpdateLead.useMutation({
+    onSuccess: () => { toast.success("Lead actualizado"); refetchLeads(); },
+    onError: (e) => toast.error(e.message),
+  });
+  const triggerSync = trpc.company.adminTriggerCompanyBillingSync.useMutation({
+    onSuccess: (d) => { toast.success(`Sync OK — ${d.activeLicenses} licencias activas · ${d.totalAmount.toFixed(2)} €`); refetchDetail(); refetchCompanies(); },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const STATUS_COLORS: Record<string, string> = {
+    pending: "bg-yellow-100 text-yellow-700",
+    trial: "bg-blue-100 text-blue-700",
+    active: "bg-green-100 text-green-700",
+    suspended: "bg-orange-100 text-orange-700",
+    cancelled: "bg-red-100 text-red-700",
+  };
+  const PLAN_COLORS: Record<string, string> = {
+    starter: "bg-gray-100 text-gray-700",
+    business: "bg-blue-100 text-blue-700",
+    enterprise: "bg-purple-100 text-purple-700",
+    corporate: "bg-amber-100 text-amber-700",
+  };
+
+  return (
+    <div className="space-y-4">
+      {/* Sub-tabs */}
+      <div className="flex gap-2 flex-wrap">
+        {([
+          { key: "resumen", label: "📊 Resumen global" },
+          { key: "empresas", label: "🏢 Empresas" },
+          { key: "leads", label: "📋 Leads" },
+        ] as const).map(t => (
+          <button
+            key={t.key}
+            onClick={() => { setSubTab(t.key); setSelectedCompanyId(null); }}
+            className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+              subTab === t.key ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+            }`}
+          >
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* ── RESUMEN GLOBAL ── */}
+      {subTab === "resumen" && companiesData && (
+        <div className="space-y-4">
+          {/* KPIs */}
+          <div className="grid grid-cols-2 gap-3 sm:grid-cols-4">
+            {[
+              { label: "Empresas totales", value: companiesData.summary.total, icon: "🏢", color: "bg-blue-50 text-blue-700" },
+              { label: "Empresas activas", value: companiesData.summary.active, icon: "✅", color: "bg-green-50 text-green-700" },
+              { label: "Licencias activas", value: companiesData.summary.totalLicensesActive, icon: "👥", color: "bg-purple-50 text-purple-700" },
+              { label: "MRR estimado", value: `${companiesData.summary.totalMRR.toFixed(0)} €`, icon: "💶", color: "bg-amber-50 text-amber-700" },
+            ].map(kpi => (
+              <div key={kpi.label} className={`rounded-2xl p-4 ${kpi.color}`}>
+                <p className="text-2xl mb-1">{kpi.icon}</p>
+                <p className="text-xl font-bold">{kpi.value}</p>
+                <p className="text-xs opacity-70 mt-0.5">{kpi.label}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Distribución por plan */}
+          <div className="vively-card">
+            <h4 className="text-sm font-bold text-gray-700 mb-3">Distribución por plan</h4>
+            <div className="space-y-2">
+              {(["starter", "business", "enterprise", "corporate"] as const).map(plan => {
+                const count = companiesData.companies.filter(c => c.plan === plan).length;
+                const pct = companiesData.summary.total > 0 ? (count / companiesData.summary.total) * 100 : 0;
+                return (
+                  <div key={plan} className="flex items-center gap-3">
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full w-20 text-center ${PLAN_COLORS[plan]}`}>{plan}</span>
+                    <div className="flex-1 bg-gray-100 rounded-full h-2">
+                      <div className="bg-[#F97316] h-2 rounded-full transition-all" style={{ width: `${pct}%` }} />
+                    </div>
+                    <span className="text-xs text-gray-500 w-8 text-right">{count}</span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Tabla resumen de empresas activas */}
+          <div className="vively-card overflow-x-auto">
+            <h4 className="text-sm font-bold text-gray-700 mb-3">Empresas activas — MRR por empresa</h4>
+            <table className="w-full text-xs">
+              <thead>
+                <tr className="text-gray-400 border-b border-gray-100">
+                  <th className="text-left py-2 font-semibold">Empresa</th>
+                  <th className="text-center py-2 font-semibold">Plan</th>
+                  <th className="text-center py-2 font-semibold">Licencias</th>
+                  <th className="text-right py-2 font-semibold">MRR</th>
+                </tr>
+              </thead>
+              <tbody>
+                {companiesData.companies.filter(c => c.status === "active").map(c => (
+                  <tr key={c.id} className="border-b border-gray-50 hover:bg-gray-50 cursor-pointer" onClick={() => { setSubTab("empresas"); setSelectedCompanyId(c.id); }}>
+                    <td className="py-2">
+                      <p className="font-semibold text-gray-800">{c.name}</p>
+                      <p className="text-gray-400">{c.contactEmail}</p>
+                    </td>
+                    <td className="py-2 text-center">
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${PLAN_COLORS[c.plan]}`}>{c.plan}</span>
+                    </td>
+                    <td className="py-2 text-center text-gray-700">{c.licensesActive}/{c.licensesTotal}</td>
+                    <td className="py-2 text-right font-bold text-green-700">{c.estimatedMRR.toFixed(0)} €</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {/* ── EMPRESAS ── */}
+      {subTab === "empresas" && (
+        <div className="space-y-4">
+          {/* Detalle de empresa seleccionada */}
+          {selectedCompanyId && companyDetail ? (
+            <div className="space-y-4">
+              <button
+                onClick={() => setSelectedCompanyId(null)}
+                className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800"
+              >
+                ← Volver al listado
+              </button>
+
+              {/* Header empresa */}
+              <div className="vively-card space-y-3">
+                <div className="flex items-start justify-between gap-2 flex-wrap">
+                  <div>
+                    <h3 className="text-base font-bold text-gray-900">{companyDetail.company.name}</h3>
+                    <p className="text-xs text-gray-400">{companyDetail.company.contactEmail} · {companyDetail.company.industry || "Sin sector"}</p>
+                    {companyDetail.company.accessCode && (
+                      <p className="text-xs font-mono bg-gray-100 px-2 py-0.5 rounded mt-1 inline-block">
+                        Código: {companyDetail.company.accessCode}
+                      </p>
+                    )}
+                  </div>
+                  <div className="flex gap-2 flex-wrap">
+                    <span className={`text-xs font-semibold px-2 py-1 rounded-full ${STATUS_COLORS[companyDetail.company.status]}`}>
+                      {companyDetail.company.status}
+                    </span>
+                    <span className={`text-xs font-semibold px-2 py-1 rounded-full ${PLAN_COLORS[companyDetail.company.plan]}`}>
+                      {companyDetail.company.plan}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Stats */}
+                <div className="grid grid-cols-3 gap-3">
+                  <div className="bg-gray-50 rounded-xl p-3 text-center">
+                    <p className="text-lg font-bold text-gray-900">{companyDetail.stats.activeMembers}</p>
+                    <p className="text-xs text-gray-400">Miembros activos</p>
+                  </div>
+                  <div className="bg-gray-50 rounded-xl p-3 text-center">
+                    <p className="text-lg font-bold text-gray-900">{companyDetail.company.licensesTotal}</p>
+                    <p className="text-xs text-gray-400">Licencias contratadas</p>
+                  </div>
+                  <div className="bg-green-50 rounded-xl p-3 text-center">
+                    <p className="text-lg font-bold text-green-700">{companyDetail.stats.totalBilled.toFixed(0)} €</p>
+                    <p className="text-xs text-gray-400">Total facturado</p>
+                  </div>
+                </div>
+
+                {/* Acciones admin */}
+                <div className="border-t border-gray-100 pt-3 space-y-3">
+                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Acciones de administración</p>
+                  <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
+                    {(["pending", "trial", "active", "suspended", "cancelled"] as const).map(s => (
+                      <button
+                        key={s}
+                        onClick={() => updateCompany.mutate({ companyId: companyDetail.company.id, status: s })}
+                        disabled={updateCompany.isPending || companyDetail.company.status === s}
+                        className={`py-1.5 rounded-xl text-xs font-semibold transition-all disabled:opacity-40 ${
+                          companyDetail.company.status === s
+                            ? STATUS_COLORS[s] + " cursor-default"
+                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                        }`}
+                      >
+                        {s === "active" ? "✅ Activar" : s === "suspended" ? "⏸ Suspender" : s === "cancelled" ? "❌ Cancelar" : s === "trial" ? "🔬 Trial" : "⏳ Pendiente"}
+                      </button>
+                    ))}
+                  </div>
+                  <div className="flex gap-2 flex-wrap">
+                    <button
+                      onClick={() => triggerSync.mutate({ companyId: companyDetail.company.id })}
+                      disabled={triggerSync.isPending}
+                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 disabled:opacity-50"
+                    >
+                      <ArrowPathIcon className={`h-3.5 w-3.5 ${triggerSync.isPending ? "animate-spin" : ""}`} />
+                      Sincronizar facturación
+                    </button>
+                  </div>
+                  {/* Notas */}
+                  <AdminCompanyNotes
+                    companyId={companyDetail.company.id}
+                    currentNotes={companyDetail.company.notes || ""}
+                    onSave={(notes) => updateCompany.mutate({ companyId: companyDetail.company.id, notes })}
+                    isSaving={updateCompany.isPending}
+                  />
+                </div>
+              </div>
+
+              {/* Miembros */}
+              <div className="vively-card">
+                <h4 className="text-sm font-bold text-gray-700 mb-3">
+                  Miembros ({companyDetail.stats.totalMembers})
+                </h4>
+                <div className="max-h-60 overflow-y-auto space-y-1.5">
+                  {companyDetail.members.length === 0 ? (
+                    <p className="text-xs text-gray-400 text-center py-4">Sin miembros aún</p>
+                  ) : companyDetail.members.map((m: any) => (
+                    <div key={m.id} className="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2">
+                      <div className="flex items-center gap-2 min-w-0">
+                        <div className="h-7 w-7 rounded-full bg-[#F97316]/10 flex items-center justify-center text-xs font-bold text-[#F97316] shrink-0">
+                          {m.userName?.[0]?.toUpperCase() || "?"}
+                        </div>
+                        <div className="min-w-0">
+                          <p className="text-xs font-semibold text-gray-800 truncate">{m.userName || "Sin nombre"}</p>
+                          <p className="text-xs text-gray-400 truncate">{m.userEmail}</p>
+                        </div>
+                      </div>
+                      <div className="text-right shrink-0 ml-2">
+                        <span className={`text-xs px-1.5 py-0.5 rounded-full ${m.isActive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
+                          {m.isActive ? "activo" : "inactivo"}
+                        </span>
+                        <p className="text-xs text-gray-400 mt-0.5">
+                          {m.lastActiveAt ? new Date(m.lastActiveAt).toLocaleDateString("es-ES") : "Nunca"}
+                        </p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+
+              {/* Historial de facturación */}
+              <div className="vively-card overflow-x-auto">
+                <h4 className="text-sm font-bold text-gray-700 mb-3">Historial de facturación</h4>
+                {companyDetail.snapshots.length === 0 ? (
+                  <p className="text-xs text-gray-400 text-center py-4">Sin snapshots de facturación aún</p>
+                ) : (
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="text-gray-400 border-b border-gray-100">
+                        <th className="text-left py-2 font-semibold">Período</th>
+                        <th className="text-center py-2 font-semibold">Licencias</th>
+                        <th className="text-center py-2 font-semibold">€/licencia</th>
+                        <th className="text-right py-2 font-semibold">Total</th>
+                        <th className="text-center py-2 font-semibold">Estado</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {companyDetail.snapshots.map((s: any) => (
+                        <tr key={s.id} className="border-b border-gray-50">
+                          <td className="py-2 text-gray-700">
+                            {new Date(s.billingPeriodStart).toLocaleDateString("es-ES", { month: "short", year: "numeric" })}
+                          </td>
+                          <td className="py-2 text-center text-gray-700">{s.activeLicenses}</td>
+                          <td className="py-2 text-center text-gray-700">{s.pricePerLicense.toFixed(2)} €</td>
+                          <td className="py-2 text-right font-bold text-gray-900">{s.totalAmount.toFixed(2)} €</td>
+                          <td className="py-2 text-center">
+                            <span className={`px-1.5 py-0.5 rounded-full text-xs font-semibold ${
+                              s.status === "paid" ? "bg-green-100 text-green-700" :
+                              s.status === "confirmed" ? "bg-blue-100 text-blue-700" :
+                              s.status === "disputed" ? "bg-red-100 text-red-700" :
+                              "bg-yellow-100 text-yellow-700"
+                            }`}>{s.status}</span>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                )}
+              </div>
+            </div>
+          ) : (
+            /* Listado de empresas */
+            <div className="space-y-3">
+              {/* Filtros */}
+              <div className="flex gap-2 flex-wrap">
+                <input
+                  value={search}
+                  onChange={e => setSearch(e.target.value)}
+                  placeholder="Buscar empresa..."
+                  className="vively-input flex-1 min-w-[160px] text-sm"
+                />
+                <select
+                  value={statusFilter}
+                  onChange={e => setStatusFilter(e.target.value as any)}
+                  className="vively-input text-xs"
+                >
+                  <option value="all">Todos los estados</option>
+                  <option value="pending">Pendiente</option>
+                  <option value="trial">Trial</option>
+                  <option value="active">Activa</option>
+                  <option value="suspended">Suspendida</option>
+                  <option value="cancelled">Cancelada</option>
+                </select>
+                <select
+                  value={planFilter}
+                  onChange={e => setPlanFilter(e.target.value as any)}
+                  className="vively-input text-xs"
+                >
+                  <option value="all">Todos los planes</option>
+                  <option value="starter">Starter</option>
+                  <option value="business">Business</option>
+                  <option value="enterprise">Enterprise</option>
+                  <option value="corporate">Corporate</option>
+                </select>
+              </div>
+
+              {!companiesData ? (
+                <div className="flex justify-center py-8"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900" /></div>
+              ) : companiesData.companies.length === 0 ? (
+                <div className="vively-card text-center py-8 text-gray-400">
+                  <p className="text-2xl mb-2">🏢</p>
+                  <p className="text-sm">No hay empresas con estos filtros</p>
+                </div>
+              ) : (
+                <div className="space-y-2">
+                  {companiesData.companies.map(c => (
+                    <div
+                      key={c.id}
+                      className="vively-card cursor-pointer hover:shadow-md transition-shadow"
+                      onClick={() => setSelectedCompanyId(c.id)}
+                    >
+                      <div className="flex items-start justify-between gap-2">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="text-sm font-bold text-gray-900">{c.name}</p>
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${STATUS_COLORS[c.status]}`}>{c.status}</span>
+                            <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${PLAN_COLORS[c.plan]}`}>{c.plan}</span>
+                          </div>
+                          <p className="text-xs text-gray-400 mt-0.5">{c.contactEmail} · {c.industry || "Sin sector"}</p>
+                          {c.accessCode && (
+                            <p className="text-xs font-mono text-gray-500 mt-0.5">Código: {c.accessCode}</p>
+                          )}
+                        </div>
+                        <div className="text-right shrink-0">
+                          <p className="text-sm font-bold text-green-700">{c.estimatedMRR.toFixed(0)} €/mes</p>
+                          <p className="text-xs text-gray-400">{c.licensesActive}/{c.licensesTotal} lic.</p>
+                          <p className="text-xs text-gray-400">{c.activeMembersCount} miembros</p>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* ── LEADS ── */}
+      {subTab === "leads" && (
+        <div className="space-y-3">
+          <div className="flex gap-2">
+            {([
+              { label: "Todos", value: undefined },
+              { label: "Sin contactar", value: false },
+              { label: "Contactados", value: true },
+            ] as const).map(f => (
+              <button
+                key={String(f.value)}
+                onClick={() => setLeadFilter(f.value)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                  leadFilter === f.value ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                }`}
+              >
+                {f.label}
+              </button>
+            ))}
+          </div>
+
+          {!leads ? (
+            <div className="flex justify-center py-8"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900" /></div>
+          ) : leads.length === 0 ? (
+            <div className="vively-card text-center py-8 text-gray-400">
+              <p className="text-2xl mb-2">📋</p>
+              <p className="text-sm">No hay leads con estos filtros</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {leads.map((lead: any) => (
+                <div key={lead.id} className="vively-card space-y-2">
+                  <div className="flex items-start justify-between gap-2">
+                    <div>
+                      <p className="text-sm font-bold text-gray-900">{lead.companyName}</p>
+                      <p className="text-xs text-gray-500">{lead.contactName} · {lead.contactEmail}</p>
+                      {lead.contactPhone && <p className="text-xs text-gray-400">{lead.contactPhone}</p>}
+                    </div>
+                    <div className="text-right shrink-0">
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${lead.contacted ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>
+                        {lead.contacted ? "Contactado" : "Pendiente"}
+                      </span>
+                      <p className="text-xs text-gray-400 mt-1">{new Date(lead.createdAt).toLocaleDateString("es-ES")}</p>
+                    </div>
+                  </div>
+                  <div className="flex gap-3 text-xs text-gray-500 flex-wrap">
+                    {lead.employeeCount && <span>👥 {lead.employeeCount} empleados</span>}
+                    {lead.industry && <span>🏭 {lead.industry}</span>}
+                    {lead.planInterest && <span className={`px-1.5 py-0.5 rounded-full ${PLAN_COLORS[lead.planInterest]}`}>{lead.planInterest}</span>}
+                  </div>
+                  {lead.message && (
+                    <div className="bg-gray-50 rounded-xl p-2">
+                      <p className="text-xs text-gray-600">{lead.message}</p>
+                    </div>
+                  )}
+                  <div className="flex gap-2 pt-1 border-t border-gray-100">
+                    <a
+                      href={`mailto:${lead.contactEmail}?subject=BuddyMarket for Business — ${lead.companyName}`}
+                      className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700"
+                    >
+                      <EnvelopeIcon className="h-3.5 w-3.5" />
+                      Enviar email
+                    </a>
+                    <button
+                      onClick={() => updateLead.mutate({ leadId: lead.id, contacted: !lead.contacted })}
+                      disabled={updateLead.isPending}
+                      className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold disabled:opacity-50 ${
+                        lead.contacted
+                          ? "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                          : "bg-green-500 text-white hover:bg-green-600"
+                      }`}
+                    >
+                      <CheckIcon className="h-3.5 w-3.5" />
+                      {lead.contacted ? "Marcar pendiente" : "Marcar contactado"}
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// Subcomponente para notas de empresa
+function AdminCompanyNotes({
+  companyId, currentNotes, onSave, isSaving
+}: { companyId: number; currentNotes: string; onSave: (notes: string) => void; isSaving: boolean }) {
+  const [notes, setNotes] = useState(currentNotes);
+  return (
+    <div className="space-y-2">
+      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Notas internas</p>
+      <textarea
+        value={notes}
+        onChange={e => setNotes(e.target.value)}
+        rows={3}
+        placeholder="Notas internas sobre esta empresa (solo visibles para admins)..."
+        className="vively-input w-full text-xs resize-none"
+      />
+      <button
+        onClick={() => onSave(notes)}
+        disabled={isSaving || notes === currentNotes}
+        className="px-3 py-1.5 rounded-xl bg-gray-900 text-white text-xs font-semibold hover:bg-gray-700 disabled:opacity-40"
+      >
+        {isSaving ? "Guardando..." : "Guardar notas"}
+      </button>
     </div>
   );
 }
