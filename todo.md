@@ -1882,3 +1882,19 @@
 - [x] Panel RRHH /empresa/dashboard con métricas de activación y gestión de códigos
 - [x] Enlace a /empresas en nav desktop y móvil de la landing page
 - [x] Webhook Stripe para activar plan empresarial tras pago
+
+## B2B — Sistema de Recordatorios Automáticos
+- [ ] Tablas DB: companyReminderCampaigns, companyReminderLogs (migradas)
+- [ ] Router tRPC company.reminders: createCampaign, sendNow, listCampaigns, getCampaignLogs, cancelCampaign
+- [ ] Servicio de email con Resend para recordatorios de activación
+- [ ] Templates de email HTML para recordatorios (activación, engagement, expiración)
+- [ ] Panel RRHH: sección de recordatorios con lista de campañas y formulario de nueva campaña
+- [ ] Panel RRHH: vista de logs por campaña con estado de cada envío
+- [ ] Panel RRHH: programación automática (envío inmediato o en fecha futura)
+
+## Sistema de Recordatorios B2B
+- [x] Tablas DB: company_reminder_campaigns y company_reminder_logs
+- [x] Router tRPC companyReminders: listCampaigns, getCampaignLogs, sendNow, sendActivationReminders, cancelCampaign, getStats
+- [x] Templates de email HTML para recordatorios (activation, engagement, expiry_warning, custom)
+- [x] Sección de recordatorios en EmpresaDashboard con stats, historial de campañas y logs
+- [x] Modal de envío con selector de tipo, asunto personalizable, mensaje personalizado y lista de destinatarios CSV

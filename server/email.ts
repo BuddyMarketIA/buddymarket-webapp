@@ -930,3 +930,110 @@ export async function sendFounderWelcomeEmail(params: { userName: string; userEm
     return true;
   } catch (err) { console.error("[Email] Error sending founder welcome:", err); return false; }
 }
+
+
+// ─── B2B Reminder Emails ──────────────────────────────────────────────────────
+
+function reminderActivationHtml(params: {
+  recipientName: string; companyName: string; activationCode: string;
+  customMessage?: string; expiresAt?: string;
+}): string {
+  const { recipientName, companyName, activationCode, customMessage, expiresAt } = params;
+  return emailWrapper(`
+    <tr><td style="padding:40px 40px 0;text-align:center;">
+      <div style="width:72px;height:72px;background:linear-gradient(135deg,#F97316,#FB923C);border-radius:20px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:24px;font-size:36px;">🎁</div>
+      <h1 style="font-size:26px;font-weight:900;color:#1a1a1a;margin:0 0 12px;">Tu empresa te regala BuddyMarket Pro</h1>
+      <p style="font-size:16px;color:#6b7280;margin:0 0 32px;line-height:1.6;">Hola <strong style="color:#1a1a1a;">${recipientName}</strong>, <strong style="color:#F97316;">${companyName}</strong> ha activado BuddyMarket para sus empleados.</p>
+    </td></tr>
+    <tr><td style="padding:0 40px 40px;">
+      ${customMessage ? `<p style="font-size:15px;color:#374151;line-height:1.7;margin:0 0 24px;padding:20px;background:#FFF8F0;border-radius:12px;border-left:4px solid #F97316;">${customMessage}</p>` : ""}
+      <p style="font-size:15px;color:#374151;line-height:1.7;margin:0 0 24px;">Para activar tu cuenta Pro Max, introduce el siguiente código en la aplicación:</p>
+      <div style="background:#f9fafb;border:2px dashed #F97316;border-radius:16px;padding:28px;text-align:center;margin:0 0 24px;">
+        <p style="font-size:13px;color:#9ca3af;margin:0 0 8px;text-transform:uppercase;letter-spacing:0.1em;font-weight:600;">Tu código de activación</p>
+        <p style="font-size:32px;font-weight:900;color:#F97316;letter-spacing:0.15em;margin:0;font-family:monospace;">${activationCode}</p>
+        ${expiresAt ? `<p style="font-size:12px;color:#9ca3af;margin:8px 0 0;">Válido hasta el ${expiresAt}</p>` : ""}
+      </div>
+      <table cellpadding="0" cellspacing="0" style="margin:0 auto;">
+        <tr><td style="background:linear-gradient(135deg,#F97316,#ea580c);border-radius:14px;padding:16px 40px;text-align:center;">
+          <a href="${APP_URL}/app/subscription?code=${activationCode}" style="color:#ffffff;font-size:16px;font-weight:900;text-decoration:none;">Activar mi cuenta Pro Max</a>
+        </td></tr>
+      </table>
+    </td></tr>
+  `);
+}
+
+function reminderEngagementHtml(params: {
+  recipientName: string; companyName: string; customMessage?: string;
+}): string {
+  const { recipientName, companyName, customMessage } = params;
+  return emailWrapper(`
+    <tr><td style="padding:40px 40px 0;text-align:center;">
+      <div style="width:72px;height:72px;background:linear-gradient(135deg,#10b981,#059669);border-radius:20px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:24px;font-size:36px;">🥗</div>
+      <h1 style="font-size:26px;font-weight:900;color:#1a1a1a;margin:0 0 12px;">Como va tu nutricion esta semana?</h1>
+      <p style="font-size:16px;color:#6b7280;margin:0 0 32px;line-height:1.6;">Hola <strong style="color:#1a1a1a;">${recipientName}</strong>, desde <strong style="color:#F97316;">${companyName}</strong> queremos recordarte que tienes BuddyMarket disponible.</p>
+    </td></tr>
+    <tr><td style="padding:0 40px 40px;">
+      ${customMessage ? `<p style="font-size:15px;color:#374151;line-height:1.7;margin:0 0 24px;padding:20px;background:#f0fdf4;border-radius:12px;border-left:4px solid #10b981;">${customMessage}</p>` : ""}
+      <p style="font-size:15px;color:#374151;line-height:1.7;margin:0 0 32px;">Genera tu menu semanal en segundos y lleva un seguimiento de tu nutricion. Todo desde el movil, en menos de 2 minutos al dia.</p>
+      <table cellpadding="0" cellspacing="0" style="margin:0 auto;">
+        <tr><td style="background:linear-gradient(135deg,#F97316,#ea580c);border-radius:14px;padding:16px 40px;text-align:center;">
+          <a href="${APP_URL}/app/dashboard" style="color:#ffffff;font-size:16px;font-weight:900;text-decoration:none;">Abrir BuddyMarket</a>
+        </td></tr>
+      </table>
+    </td></tr>
+  `);
+}
+
+function reminderExpiryHtml(params: {
+  recipientName: string; companyName: string; activationCode: string;
+  expiresAt: string; customMessage?: string;
+}): string {
+  const { recipientName, companyName, activationCode, expiresAt, customMessage } = params;
+  return emailWrapper(`
+    <tr><td style="padding:40px 40px 0;text-align:center;">
+      <div style="width:72px;height:72px;background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:20px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:24px;font-size:36px;">⏰</div>
+      <h1 style="font-size:26px;font-weight:900;color:#1a1a1a;margin:0 0 12px;">Tu codigo expira pronto</h1>
+      <p style="font-size:16px;color:#6b7280;margin:0 0 32px;line-height:1.6;">Hola <strong style="color:#1a1a1a;">${recipientName}</strong>, tu codigo de <strong style="color:#F97316;">${companyName}</strong> expira el <strong style="color:#f59e0b;">${expiresAt}</strong>.</p>
+    </td></tr>
+    <tr><td style="padding:0 40px 40px;">
+      ${customMessage ? `<p style="font-size:15px;color:#374151;line-height:1.7;margin:0 0 24px;padding:20px;background:#fffbeb;border-radius:12px;border-left:4px solid #f59e0b;">${customMessage}</p>` : ""}
+      <div style="background:#f9fafb;border:2px dashed #f59e0b;border-radius:16px;padding:28px;text-align:center;margin:0 0 24px;">
+        <p style="font-size:13px;color:#9ca3af;margin:0 0 8px;text-transform:uppercase;letter-spacing:0.1em;font-weight:600;">Tu codigo de activacion</p>
+        <p style="font-size:32px;font-weight:900;color:#f59e0b;letter-spacing:0.15em;margin:0;font-family:monospace;">${activationCode}</p>
+        <p style="font-size:12px;color:#9ca3af;margin:8px 0 0;">Valido hasta el ${expiresAt}</p>
+      </div>
+      <table cellpadding="0" cellspacing="0" style="margin:0 auto;">
+        <tr><td style="background:linear-gradient(135deg,#f59e0b,#d97706);border-radius:14px;padding:16px 40px;text-align:center;">
+          <a href="${APP_URL}/app/subscription?code=${activationCode}" style="color:#ffffff;font-size:16px;font-weight:900;text-decoration:none;">Activar antes de que expire</a>
+        </td></tr>
+      </table>
+    </td></tr>
+  `);
+}
+
+export async function sendCompanyReminderEmail(params: {
+  recipientEmail: string; recipientName: string; companyName: string;
+  type: "activation" | "engagement" | "expiry_warning" | "custom";
+  subject: string; activationCode?: string; expiresAt?: string;
+  customMessage?: string; customBodyHtml?: string;
+}): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  try {
+    let html: string;
+    if (params.type === "custom" && params.customBodyHtml) {
+      html = params.customBodyHtml;
+    } else if (params.type === "activation" && params.activationCode) {
+      html = reminderActivationHtml({ recipientName: params.recipientName, companyName: params.companyName, activationCode: params.activationCode, customMessage: params.customMessage, expiresAt: params.expiresAt });
+    } else if (params.type === "expiry_warning" && params.activationCode && params.expiresAt) {
+      html = reminderExpiryHtml({ recipientName: params.recipientName, companyName: params.companyName, activationCode: params.activationCode, expiresAt: params.expiresAt, customMessage: params.customMessage });
+    } else {
+      html = reminderEngagementHtml({ recipientName: params.recipientName, companyName: params.companyName, customMessage: params.customMessage });
+    }
+    const { data, error } = await resend.emails.send({ from: FROM_EMAIL, to: params.recipientEmail, subject: params.subject, html });
+    if (error) { console.error("[Email] Reminder failed:", error); return { success: false, error: error.message }; }
+    console.log("[Email] Reminder sent:", data?.id, "->", params.recipientEmail);
+    return { success: true, messageId: data?.id };
+  } catch (err: any) {
+    console.error("[Email] Error sending reminder:", err);
+    return { success: false, error: err?.message || "Unknown error" };
+  }
+}

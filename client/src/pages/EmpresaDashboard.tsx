@@ -7,19 +7,73 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { Input } from "@/components/ui/input";
 import { toast } from "@/components/sonner-a11y-shim";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription } from "@/components/ui/dialog";
+import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Users, CheckCircle2, Clock, Copy, Download, BarChart3,
-  Building2, TrendingUp, AlertCircle, ArrowLeft, RefreshCw
+  Building2, TrendingUp, AlertCircle, ArrowLeft, RefreshCw,
+  Bell, Send, Mail, Eye, ChevronDown, ChevronUp
 } from "lucide-react";
 
 export default function EmpresaDashboard() {
   const { user, loading: authLoading } = useAuth();
   const [searchCode, setSearchCode] = useState("");
+  const [showReminderModal, setShowReminderModal] = useState(false);
+  const [reminderType, setReminderType] = useState<"activation" | "engagement" | "expiry_warning">("activation");
+  const [reminderSubject, setReminderSubject] = useState("");
+  const [reminderMessage, setReminderMessage] = useState("");
+  const [recipientList, setRecipientList] = useState("");
+  const [showCampaigns, setShowCampaigns] = useState(false);
+  const [selectedCampaignId, setSelectedCampaignId] = useState<number | null>(null);
 
   const { data, isLoading, error, refetch } = trpc.company.getDashboard.useQuery(undefined, {
     enabled: !!user,
     retry: false,
   });
+  const { data: campaigns, refetch: refetchCampaigns } = trpc.companyReminders.listCampaigns.useQuery(undefined, {
+    enabled: !!user && showCampaigns,
+  });
+  const { data: campaignLogs } = trpc.companyReminders.getCampaignLogs.useQuery(
+    { campaignId: selectedCampaignId! },
+    { enabled: !!selectedCampaignId }
+  );
+  const { data: reminderStats } = trpc.companyReminders.getStats.useQuery(undefined, { enabled: !!user });
+  const sendReminderMutation = trpc.companyReminders.sendNow.useMutation({
+    onSuccess: (result) => {
+      toast.success(`Recordatorios enviados: ${result.sentCount} exitosos, ${result.failedCount} fallidos`);
+      setShowReminderModal(false);
+      setRecipientList("");
+      setReminderMessage("");
+      refetchCampaigns();
+    },
+    onError: (err) => toast.error(`Error al enviar: ${err.message}`),
+  });
+
+  const handleSendReminders = () => {
+    const lines = recipientList.trim().split("\n").filter(Boolean);
+    const recipients = lines.map((line) => {
+      const [email, name, activationCode, expiresAt] = line.split(",").map((s) => s.trim());
+      return { email, name: name || email, activationCode, expiresAt };
+    }).filter((r) => r.email && r.email.includes("@"));
+    if (recipients.length === 0) {
+      toast.error("Introduce al menos un destinatario válido (email,nombre,código)");
+      return;
+    }
+    const defaultSubjects: Record<string, string> = {
+      activation: `${data?.company?.name || "Tu empresa"} te invita a activar BuddyMarket Pro`,
+      engagement: "Como va tu nutricion esta semana? — BuddyMarket",
+      expiry_warning: "Tu codigo de BuddyMarket expira pronto",
+    };
+    sendReminderMutation.mutate({
+      name: `Campana ${reminderType} — ${new Date().toLocaleDateString("es-ES")}`,
+      type: reminderType,
+      subject: reminderSubject || defaultSubjects[reminderType],
+      customMessage: reminderMessage || undefined,
+      recipients,
+    });
+  };
 
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text).then(() => {
@@ -409,7 +463,236 @@ export default function EmpresaDashboard() {
             </Card>
           </section>
         )}
+        {/* ── RECORDATORIOS ─────────────────────────────────────────────── */}
+        <section>
+          <div className="flex items-center justify-between mb-4">
+            <div>
+              <h2 className="text-lg font-bold flex items-center gap-2">
+                <Bell className="w-5 h-5 text-orange-500" />
+                Recordatorios a empleados
+              </h2>
+              <p className="text-sm text-muted-foreground mt-0.5">
+                Notifica a los empleados que aún no han activado su código
+              </p>
+            </div>
+            <Button onClick={() => setShowReminderModal(true)} className="bg-orange-500 hover:bg-orange-600 text-white gap-2">
+              <Send className="w-4 h-4" />
+              Enviar recordatorio
+            </Button>
+          </div>
+
+          {/* Stats row */}
+          {reminderStats && (
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 mb-4">
+              <Card className="border-border/50">
+                <CardContent className="p-4 text-center">
+                  <div className="text-2xl font-bold text-orange-500">{reminderStats.pendingCodes}</div>
+                  <div className="text-xs text-muted-foreground mt-1">Códigos pendientes</div>
+                </CardContent>
+              </Card>
+              <Card className="border-border/50">
+                <CardContent className="p-4 text-center">
+                  <div className="text-2xl font-bold">{reminderStats.totalCampaigns}</div>
+                  <div className="text-xs text-muted-foreground mt-1">Campañas enviadas</div>
+                </CardContent>
+              </Card>
+              <Card className="border-border/50">
+                <CardContent className="p-4 text-center">
+                  <div className="text-2xl font-bold text-green-600">{reminderStats.totalSent}</div>
+                  <div className="text-xs text-muted-foreground mt-1">Emails entregados</div>
+                </CardContent>
+              </Card>
+              <Card className="border-border/50">
+                <CardContent className="p-4 text-center">
+                  <div className="text-2xl font-bold text-red-500">{reminderStats.totalFailed}</div>
+                  <div className="text-xs text-muted-foreground mt-1">Fallidos</div>
+                </CardContent>
+              </Card>
+            </div>
+          )}
+
+          {/* Campaign history toggle */}
+          <button
+            onClick={() => setShowCampaigns(!showCampaigns)}
+            className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground transition-colors mb-3"
+          >
+            {showCampaigns ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
+            {showCampaigns ? "Ocultar historial de campañas" : "Ver historial de campañas"}
+          </button>
+
+          {showCampaigns && campaigns && (
+            <Card className="border-border/50">
+              <CardContent className="p-0">
+                {campaigns.length === 0 ? (
+                  <div className="p-6 text-center text-muted-foreground text-sm">
+                    Aún no has enviado ningún recordatorio.
+                  </div>
+                ) : (
+                  <div className="divide-y divide-border/50">
+                    {campaigns.map((c) => (
+                      <div key={c.id} className="p-4 flex items-center justify-between gap-4">
+                        <div className="min-w-0">
+                          <div className="font-medium text-sm truncate">{c.name}</div>
+                          <div className="text-xs text-muted-foreground mt-0.5">
+                            {c.sentAt ? new Date(c.sentAt).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "Pendiente"}
+                            {" · "}{c.sentCount} enviados · {c.failedCount} fallidos
+                          </div>
+                        </div>
+                        <div className="flex items-center gap-2 shrink-0">
+                          <Badge variant={c.status === "sent" ? "default" : c.status === "failed" ? "destructive" : "secondary"} className="text-xs">
+                            {c.status === "sent" ? "Enviada" : c.status === "failed" ? "Error" : c.status === "cancelled" ? "Cancelada" : "Pendiente"}
+                          </Badge>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => setSelectedCampaignId(selectedCampaignId === c.id ? null : c.id)}
+                            className="gap-1 text-xs"
+                          >
+                            <Eye className="w-3 h-3" />
+                            Logs
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          )}
+
+          {/* Campaign logs detail */}
+          {selectedCampaignId && campaignLogs && (
+            <Card className="border-border/50 mt-3">
+              <CardHeader className="pb-2">
+                <CardTitle className="text-sm flex items-center gap-2">
+                  <Mail className="w-4 h-4" />
+                  Detalle de envíos — {campaignLogs.campaign.name}
+                </CardTitle>
+              </CardHeader>
+              <CardContent className="p-0">
+                <div className="divide-y divide-border/50 max-h-64 overflow-y-auto">
+                  {campaignLogs.logs.map((log) => (
+                    <div key={log.id} className="px-4 py-2.5 flex items-center justify-between gap-3 text-sm">
+                      <div className="min-w-0">
+                        <div className="font-medium truncate">{log.recipientName || log.recipientEmail}</div>
+                        <div className="text-xs text-muted-foreground truncate">{log.recipientEmail}</div>
+                        {log.errorMessage && <div className="text-xs text-red-500 mt-0.5">{log.errorMessage}</div>}
+                      </div>
+                      <Badge variant={log.status === "sent" ? "default" : log.status === "failed" ? "destructive" : "secondary"} className="text-xs shrink-0">
+                        {log.status === "sent" ? "Enviado" : log.status === "failed" ? "Error" : "Pendiente"}
+                      </Badge>
+                    </div>
+                  ))}
+                </div>
+              </CardContent>
+            </Card>
+          )}
+        </section>
+
       </main>
+
+      {/* ── MODAL ENVIAR RECORDATORIO ──────────────────────────────────────── */}
+      <Dialog open={showReminderModal} onOpenChange={setShowReminderModal}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Bell className="w-5 h-5 text-orange-500" />
+              Enviar recordatorio a empleados
+            </DialogTitle>
+            <DialogDescription>
+              Notifica a los empleados que aún no han activado su código de BuddyMarket.
+            </DialogDescription>
+          </DialogHeader>
+
+          <div className="space-y-4 mt-2">
+            {/* Type */}
+            <div className="space-y-1.5">
+              <Label htmlFor="reminder-type">Tipo de recordatorio</Label>
+              <Select value={reminderType} onValueChange={(v) => setReminderType(v as typeof reminderType)}>
+                <SelectTrigger id="reminder-type">
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="activation">Activación — empleados sin activar código</SelectItem>
+                  <SelectItem value="engagement">Engagement — empleados inactivos</SelectItem>
+                  <SelectItem value="expiry_warning">Aviso de expiración — códigos próximos a vencer</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Subject */}
+            <div className="space-y-1.5">
+              <Label htmlFor="reminder-subject">Asunto del email (opcional)</Label>
+              <Input
+                id="reminder-subject"
+                placeholder="Se usará el asunto por defecto si lo dejas vacío"
+                value={reminderSubject}
+                onChange={(e) => setReminderSubject(e.target.value)}
+              />
+            </div>
+
+            {/* Custom message */}
+            <div className="space-y-1.5">
+              <Label htmlFor="reminder-message">Mensaje personalizado (opcional)</Label>
+              <Textarea
+                id="reminder-message"
+                placeholder="Añade un mensaje personal de tu empresa que aparecerá destacado en el email..."
+                value={reminderMessage}
+                onChange={(e) => setReminderMessage(e.target.value)}
+                rows={3}
+              />
+            </div>
+
+            {/* Recipients */}
+            <div className="space-y-1.5">
+              <Label htmlFor="reminder-recipients">
+                Destinatarios <span className="text-red-500">*</span>
+              </Label>
+              <Textarea
+                id="reminder-recipients"
+                placeholder={"Un destinatario por línea con formato:\nemail,nombre,codigo_activacion,fecha_expiracion\n\nEjemplo:\njuan@empresa.com,Juan García,BM-ABCD1234,31/12/2026\nmaria@empresa.com,María López,BM-EFGH5678"}
+                value={recipientList}
+                onChange={(e) => setRecipientList(e.target.value)}
+                rows={6}
+                className="font-mono text-xs"
+              />
+              <p className="text-xs text-muted-foreground">
+                Formato: <code className="bg-muted px-1 rounded">email,nombre,código,fecha_expiración</code> — el código y la fecha son opcionales para recordatorios de engagement.
+              </p>
+            </div>
+
+            {/* Actions */}
+            <div className="flex gap-3 pt-2">
+              <Button
+                variant="outline"
+                onClick={() => setShowReminderModal(false)}
+                className="flex-1"
+                disabled={sendReminderMutation.isPending}
+              >
+                Cancelar
+              </Button>
+              <Button
+                onClick={handleSendReminders}
+                disabled={sendReminderMutation.isPending || !recipientList.trim()}
+                className="flex-1 bg-orange-500 hover:bg-orange-600 text-white gap-2"
+              >
+                {sendReminderMutation.isPending ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 animate-spin" />
+                    Enviando...
+                  </>
+                ) : (
+                  <>
+                    <Send className="w-4 h-4" />
+                    Enviar recordatorios
+                  </>
+                )}
+              </Button>
+            </div>
+          </div>
+        </DialogContent>
+      </Dialog>
+
     </div>
   );
 }

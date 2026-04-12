@@ -2084,3 +2084,49 @@ export const companyLeads = pgTable("company_leads", {
 }));
 export type CompanyLead = typeof companyLeads.$inferSelect;
 export type InsertCompanyLead = typeof companyLeads.$inferInsert;
+
+// ─── B2B Reminders ────────────────────────────────────────────────────────────
+export const reminderStatusEnum = pgEnum("reminderStatus", ["pending", "sent", "failed", "cancelled"]);
+export const reminderTypeEnum = pgEnum("reminderType", ["activation", "engagement", "expiry_warning", "custom"]);
+
+export const companyReminderCampaigns = pgTable("company_reminder_campaigns", {
+  id: serial("id").primaryKey(),
+  companyId: integer("companyId").notNull(),
+  name: varchar("name", { length: 255 }).notNull(),
+  type: reminderTypeEnum("type").notNull().default("activation"),
+  subject: varchar("subject", { length: 255 }).notNull(),
+  bodyHtml: text("bodyHtml").notNull(),
+  scheduledAt: timestamp("scheduledAt"),
+  sentAt: timestamp("sentAt"),
+  totalRecipients: integer("totalRecipients").notNull().default(0),
+  sentCount: integer("sentCount").notNull().default(0),
+  failedCount: integer("failedCount").notNull().default(0),
+  status: reminderStatusEnum("status").notNull().default("pending"),
+  createdByUserId: integer("createdByUserId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  companyIdx: index("crc_company_idx").on(t.companyId),
+  statusIdx: index("crc_status_idx").on(t.status),
+}));
+export type CompanyReminderCampaign = typeof companyReminderCampaigns.$inferSelect;
+export type InsertCompanyReminderCampaign = typeof companyReminderCampaigns.$inferInsert;
+
+export const companyReminderLogs = pgTable("company_reminder_logs", {
+  id: serial("id").primaryKey(),
+  campaignId: integer("campaignId").notNull(),
+  companyId: integer("companyId").notNull(),
+  recipientEmail: varchar("recipientEmail", { length: 255 }).notNull(),
+  recipientName: varchar("recipientName", { length: 255 }),
+  activationCode: varchar("activationCode", { length: 20 }),
+  status: reminderStatusEnum("status").notNull().default("pending"),
+  sentAt: timestamp("sentAt"),
+  errorMessage: text("errorMessage"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  campaignIdx: index("crl_campaign_idx").on(t.campaignId),
+  companyIdx: index("crl_company_idx").on(t.companyId),
+  emailIdx: index("crl_email_idx").on(t.recipientEmail),
+}));
+export type CompanyReminderLog = typeof companyReminderLogs.$inferSelect;
+export type InsertCompanyReminderLog = typeof companyReminderLogs.$inferInsert;
