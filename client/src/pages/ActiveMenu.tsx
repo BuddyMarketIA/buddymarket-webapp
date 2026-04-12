@@ -1,5 +1,6 @@
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
+import { jsPDF } from "jspdf";
 import { trpc } from "@/lib/trpc";
 import { toast } from "@/components/sonner-a11y-shim";
 import { useLocation } from "wouter";
@@ -28,6 +29,104 @@ import LidlCartExport from "@/components/LidlCartExport";
 import CarrefourCartExport from "@/components/CarrefourCartExport";
 import AlcampoCartExport from "@/components/AlcampoCartExport";
 import BasketComparator from "@/components/BasketComparator";
+
+// ─── Export menu to PDF ─────────────────────────────────────────────────────
+function exportMenuToPDF(activeMenu: any, dayGroups: Record<number, any[]>, getDayDate: (n: number) => Date) {
+  const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
+  const pageW = doc.internal.pageSize.getWidth();
+  const margin = 14;
+  let y = 20;
+
+  // Header
+  doc.setFillColor(249, 115, 22); // orange-500
+  doc.rect(0, 0, pageW, 14, "F");
+  doc.setTextColor(255, 255, 255);
+  doc.setFontSize(10);
+  doc.setFont("helvetica", "bold");
+  doc.text("BuddyMarket — Menú Semanal", margin, 9);
+  doc.setFont("helvetica", "normal");
+  doc.text(new Date().toLocaleDateString("es-ES", { day: "2-digit", month: "long", year: "numeric" }), pageW - margin, 9, { align: "right" });
+
+  y = 24;
+  doc.setTextColor(30, 30, 30);
+  doc.setFontSize(16);
+  doc.setFont("helvetica", "bold");
+  doc.text(activeMenu.name ?? "Mi Menú", margin, y);
+  y += 5;
+  doc.setFontSize(9);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(120, 120, 120);
+  if (activeMenu.dailyCalories) doc.text(`${activeMenu.dailyCalories} kcal/día · ${Object.keys(dayGroups).length} días`, margin, y);
+  y += 8;
+
+  const DAY_NAMES = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+  const allDays = Object.keys(dayGroups).map(Number).sort((a, b) => a - b);
+
+  for (const dayNum of allDays) {
+    const parts = dayGroups[dayNum] ?? [];
+    if (parts.length === 0) continue;
+
+    // Check if we need a new page
+    if (y > 260) { doc.addPage(); y = 20; }
+
+    // Day header
+    const dayDate = getDayDate(dayNum);
+    const dayName = DAY_NAMES[dayDate.getDay() === 0 ? 6 : dayDate.getDay() - 1] ?? `Día ${dayNum}`;
+    const dateStr = dayDate.toLocaleDateString("es-ES", { day: "2-digit", month: "short" });
+    doc.setFillColor(255, 237, 213); // orange-100
+    doc.roundedRect(margin, y, pageW - margin * 2, 8, 2, 2, "F");
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.setTextColor(194, 65, 12); // orange-700
+    doc.text(`${dayName} — ${dateStr}`, margin + 3, y + 5.5);
+    y += 11;
+
+    for (const dp of parts) {
+      if (y > 270) { doc.addPage(); y = 20; }
+      // Meal name
+      doc.setFontSize(8.5);
+      doc.setFont("helvetica", "bold");
+      doc.setTextColor(80, 80, 80);
+      const mealLabel = dp.dayPartInfo?.name ?? dp.dayPartName ?? "Comida";
+      doc.text(`• ${mealLabel}`, margin + 2, y);
+      y += 4.5;
+      // Recipes
+      if (dp.recipes?.length > 0) {
+        for (const r of dp.recipes) {
+          if (y > 275) { doc.addPage(); y = 20; }
+          doc.setFontSize(8);
+          doc.setFont("helvetica", "normal");
+          doc.setTextColor(50, 50, 50);
+          const recipeName = r.name ?? r.recipeName ?? "Receta";
+          const kcal = r.calories ? ` (${r.calories} kcal)` : "";
+          doc.text(`   ${recipeName}${kcal}`, margin + 4, y);
+          y += 4;
+        }
+      } else {
+        doc.setFontSize(7.5);
+        doc.setFont("helvetica", "italic");
+        doc.setTextColor(150, 150, 150);
+        doc.text("   Sin receta asignada", margin + 4, y);
+        y += 4;
+      }
+      y += 1;
+    }
+    y += 4;
+  }
+
+  // Footer
+  const pageCount = (doc.internal as any).getNumberOfPages();
+  for (let i = 1; i <= pageCount; i++) {
+    doc.setPage(i);
+    doc.setFontSize(7);
+    doc.setFont("helvetica", "normal");
+    doc.setTextColor(180, 180, 180);
+    doc.text(`BuddyMarket · buddymarketapp.com · Página ${i} de ${pageCount}`, pageW / 2, 292, { align: "center" });
+  }
+
+  doc.save(`menu-${(activeMenu.name ?? "semanal").replace(/\s+/g, "-").toLowerCase()}.pdf`);
+}
+// ─────────────────────────────────────────────────────────────────────────────
 
 const SUPERMARKETS = [
   { id: "general", name: "General", emoji: "🛒", available: true },
@@ -969,13 +1068,33 @@ export default function ActiveMenu() {
         </div>
       </div>
 
-      {/* Change menu link */}
-      <button
-        onClick={() => navigate("/app/menu-library")}
-        className="w-full py-3 rounded-2xl font-semibold text-sm text-gray-500 bg-white border border-gray-200"
-      >
-        Cambiar menú activo
-      </button>
+      {/* PDF + Change menu */}
+      <div className="flex gap-2">
+        <button
+          onClick={() => {
+            try {
+              exportMenuToPDF(activeMenu, dayGroups, getDayDate);
+              toast.success("PDF descargado correctamente");
+            } catch {
+              toast.error("Error al generar el PDF");
+            }
+          }}
+          className="flex-1 py-3 rounded-2xl font-semibold text-sm flex items-center justify-center gap-2"
+          style={{ background: "#FFF7ED", color: "#EA580C", border: "1.5px solid #FED7AA" }}
+          title="Descargar menú en PDF"
+        >
+          <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+            <path strokeLinecap="round" strokeLinejoin="round" d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+          </svg>
+          Descargar PDF
+        </button>
+        <button
+          onClick={() => navigate("/app/menu-library")}
+          className="flex-1 py-3 rounded-2xl font-semibold text-sm text-gray-500 bg-white border border-gray-200"
+        >
+          Cambiar menú
+        </button>
+      </div>
 
       {/* Mercadona modal */}
       {showMercadonaModal && generatedItems.length > 0 && (

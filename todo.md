@@ -2062,3 +2062,14 @@
 - [x] Acciones: ajustar límite de licencias, revocar empleado, forzar sincronización
 - [x] Gráfico de evolución de licencias activas (últimos 6 meses)
 - [x] Integrar nueva pestaña "Licencias" en el panel admin
+
+## P3 — Calidad y Pulido UX [EN PROGRESO]
+- [x] BD de ingredientes: ampliada de 457 a 510 ingredientes con 18 nuevas categorías (carnes procesadas, pescados conservas, pan, pasta, snacks, dulces, bebidas, comida internacional, etc.)
+- [x] Dashboard: widget personalizable ya implementado, anillo SVG de macros con animación, confeti al completar macros, streak de días
+- [x] Animaciones: confeti canvas-confetti al completar objetivos de macros, barras de macros con transición CSS
+- [x] Scroll infinito en Recetas: ya implementado con useInfiniteQuery + IntersectionObserver (cursor-based)
+- [x] Open Graph dinámico: server/og.ts con meta tags específicos por receta para WhatsApp/redes
+- [x] PWA: manifest.json completo, service worker con push notifications, splash screens iOS, iconos todos los tamaños
+- [x] Exportar PDF menú: implementado con jsPDF en ActiveMenu.tsx
+- [ ] Traducciones: revisar textos hardcodeados en español que no usan t()
+- [ ] BD de ingredientes: ampliar a 1.000+ ingredientes
