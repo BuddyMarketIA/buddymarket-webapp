@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import NutritionalCalculatorSection from "@/components/NutritionalCalculatorSection";
 import HabitsChecklistSection from "@/components/HabitsChecklistSection";
+import AIMenuExamplesSection from "@/components/AIMenuExamplesSection";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "@/components/sonner-a11y-shim";
@@ -553,6 +554,9 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* ═══ EJEMPLOS DE MENÚS IA ════════════════════════════════════════════ */}
+      <AIMenuExamplesSection appUrl={appUrl} />
 
       {/* ═══ CALCULADORA NUTRICIONAL ══════════════════════════════════════════ */}
       <NutritionalCalculatorSection appUrl={appUrl} />
