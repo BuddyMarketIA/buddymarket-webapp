@@ -157,7 +157,7 @@ export const companyRouter = router({
                 metadata: { plan: input.plan, type: "b2b_per_license" },
               },
               unit_amount: Math.round(b2bPlanConfig.pricePerEmployee * 100), // precio unitario por empleado
-              recurring: { interval: "month" },
+              recurring: { interval: "month" as const },
             },
             quantity: input.employeeCount, // cantidad inicial = empleados estimados
           };

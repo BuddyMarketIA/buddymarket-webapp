@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -37,7 +37,7 @@ import {
   Apple,
   LifeBuoy,
 } from "lucide-react";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { format } from "date-fns";
 import { es } from "date-fns/locale";
 
@@ -81,7 +81,6 @@ function TicketDetailModal({
   onClose: () => void;
 }) {
   const { user } = useAuth();
-  const { toast } = useToast();
   const utils = trpc.useUtils();
   const [reply, setReply] = useState("");
 
@@ -93,12 +92,12 @@ function TicketDetailModal({
       refetch();
       utils.support.getMyTickets.invalidate();
     },
-    onError: (e) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+    onError: (e) => toast.error(e.message),
   });
 
   const closeTicket = trpc.support.closeTicket.useMutation({
     onSuccess: () => {
-      toast({ title: "Ticket cerrado", description: "Tu consulta ha sido marcada como cerrada." });
+      toast.success("Ticket cerrado — Tu consulta ha sido marcada como cerrada.");
       refetch();
       utils.support.getMyTickets.invalidate();
     },
@@ -214,7 +213,6 @@ function TicketDetailModal({
 // ─── New Ticket Form ─────────────────────────────────────────────────────────
 
 function NewTicketForm({ onSuccess }: { onSuccess: () => void }) {
-  const { toast } = useToast();
   const utils = trpc.useUtils();
   const [subject, setSubject] = useState("");
   const [category, setCategory] = useState("other");
@@ -223,11 +221,11 @@ function NewTicketForm({ onSuccess }: { onSuccess: () => void }) {
 
   const createTicket = trpc.support.createTicket.useMutation({
     onSuccess: () => {
-      toast({ title: "Consulta enviada ✅", description: "Te responderemos lo antes posible. Recibirás un email de confirmación." });
+      toast.success("Consulta enviada ✅ — Te responderemos lo antes posible.");
       utils.support.getMyTickets.invalidate();
       onSuccess();
     },
-    onError: (e) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+    onError: (e) => toast.error(e.message),
   });
 
   const handleSubmit = (e: React.FormEvent) => {

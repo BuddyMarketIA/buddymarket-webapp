@@ -1,5 +1,5 @@
+import { useState } from "react";
 import { Link } from "wouter";
-
 const ORANGE = "#F97316";
 const LOGO_COLOR = "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/logo-horizontal-orange_0dcbe0a8.png";
 
@@ -46,7 +46,175 @@ const Table = ({ headers, rows }: { headers: string[]; rows: string[][] }) => (
   </div>
 );
 
+// ─── TyC B2B ──────────────────────────────────────────────────────────────────
+function TermsB2B() {
+  const P = ({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) => (
+    <p style={{ marginTop: 0, marginBottom: 14, ...style }}>{children}</p>
+  );
+  const Info = ({ children }: { children: React.ReactNode }) => (
+    <div style={{ background: "#eff6ff", border: "1px solid #bfdbfe", borderRadius: 12, padding: "16px 20px", marginBottom: 16 }}>
+      <p style={{ fontSize: 14, color: "#1e40af", margin: 0, lineHeight: 1.7 }}>{children}</p>
+    </div>
+  );
+  const WarnB2B = ({ children }: { children: React.ReactNode }) => (
+    <div style={{ background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 12, padding: "16px 20px", marginBottom: 16 }}>
+      <p style={{ fontSize: 14, color: "#92400e", margin: 0, lineHeight: 1.7 }}>{children}</p>
+    </div>
+  );
+  const TableB2B = ({ headers, rows }: { headers: string[]; rows: string[][] }) => (
+    <div style={{ overflowX: "auto", marginBottom: 16 }}>
+      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
+        <thead><tr style={{ background: "#f9fafb" }}>{headers.map((h, i) => <th key={i} style={{ padding: "10px 14px", textAlign: "left", fontWeight: 700, color: "#374151", borderBottom: "2px solid #e5e7eb", whiteSpace: "nowrap" }}>{h}</th>)}</tr></thead>
+        <tbody>{rows.map((row, ri) => <tr key={ri} style={{ borderBottom: "1px solid #f3f4f6" }}>{row.map((cell, ci) => <td key={ci} style={{ padding: "10px 14px", color: "#374151", verticalAlign: "top" }} dangerouslySetInnerHTML={{ __html: cell }} />)}</tr>)}</tbody>
+      </table>
+    </div>
+  );
+  return (
+    <>
+      <div style={{ background: "linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%)", borderRadius: 16, padding: "32px 40px", marginBottom: 48, border: "1px solid #bfdbfe" }}>
+        <h1 style={{ fontSize: 32, fontWeight: 900, color: "#111827", marginBottom: 8, letterSpacing: "-0.02em" }}>Condiciones Generales de Contratación B2B</h1>
+        <p style={{ fontSize: 16, color: "#6b7280", margin: 0 }}>Para empresas y organizaciones · Versión 1.0 — Entrada en vigor: 7 de abril de 2026</p>
+      </div>
+      <Section number="1" title="Partes del Contrato">
+        <P>Las presentes Condiciones Generales de Contratación (CGC B2B) regulan la relación contractual entre <strong>BUDDY MARKET IA, S.L.</strong> (CIF B-56.819.576, Calle Villanueva 2, 3ºC, 28001, Madrid) como proveedor, y la empresa u organización que suscribe el Plan Empresarial de BuddyMarket (en adelante, «la Empresa») como cliente.</P>
+        <P>La aceptación de estas CGC B2B se produce en el momento en que la Empresa completa el proceso de registro corporativo en la Plataforma o firma el correspondiente Contrato de Servicio.</P>
+      </Section>
+      <Section number="2" title="Objeto del Contrato">
+        <P>BuddyMarket proporciona a la Empresa acceso a la plataforma de gestión nutricional corporativa, que incluye:</P>
+        <ul style={{ paddingLeft: 20, marginBottom: 14 }}>
+          <li style={{ marginBottom: 8 }}>Licencias de usuario para los empleados de la Empresa (número según plan contratado)</li>
+          <li style={{ marginBottom: 8 }}>Panel de administración corporativo para gestión de licencias, usuarios y reporting</li>
+          <li style={{ marginBottom: 8 }}>Acceso a todas las funcionalidades del plan Pro Max para cada licencia activa</li>
+          <li style={{ marginBottom: 8 }}>Soporte técnico prioritario con SLA garantizado</li>
+          <li style={{ marginBottom: 8 }}>Informes de bienestar nutricional agregados y anonimizados</li>
+          <li style={{ marginBottom: 8 }}>Integración con sistemas de RRHH mediante API (disponible en planes Enterprise)</li>
+        </ul>
+      </Section>
+      <Section number="3" title="Planes y Precios Corporativos">
+        <TableB2B headers={["Plan", "Licencias", "Precio por licencia/mes", "Facturación"]} rows={[
+          ["Business Starter", "5–25", "9,99 €", "Mensual o anual (−15%)"],
+          ["Business Pro", "26–100", "8,49 €", "Mensual o anual (−15%)"],
+          ["Business Enterprise", "101–500", "6,99 €", "Anual obligatorio"],
+          ["Enterprise Custom", "+500", "A negociar", "Anual con SLA personalizado"],
+        ]} />
+        <P>Los precios no incluyen IVA. La facturación se realiza por el número de licencias contratadas, independientemente de las licencias activas. Las licencias no utilizadas no generan derecho a crédito ni reembolso.</P>
+        <Info>Para planes Enterprise Custom con más de 500 usuarios, contacta con nuestro equipo en <strong>empresas@buddymarket.io</strong> para una propuesta personalizada.</Info>
+      </Section>
+      <Section number="4" title="Gestión de Licencias">
+        <P>La Empresa designará Administradores responsables de asignar y revocar licencias, gestionar el código de empresa y supervisar el uso. Cada licencia es personal e intransferible. La Empresa puede reasignar licencias entre empleados, pero no compartir una misma licencia entre varios usuarios simultáneamente.</P>
+        <WarnB2B>La Empresa es responsable del uso que sus empleados hagan de la Plataforma. BuddyMarket se reserva el derecho de suspender licencias individuales o la cuenta corporativa completa en caso de uso fraudulento.</WarnB2B>
+      </Section>
+      <Section number="5" title="Privacidad y Protección de Datos (Entorno Corporativo)">
+        <P>En el marco de la relación B2B, BuddyMarket actúa como <strong>Encargado del Tratamiento</strong> de los datos personales de los empleados de la Empresa, siendo la Empresa el <strong>Responsable del Tratamiento</strong>. Las partes suscribirán el correspondiente Acuerdo de Encargo de Tratamiento (DPA) conforme al artículo 28 del RGPD.</P>
+        <P>Los informes de bienestar proporcionados a la Empresa son siempre <strong>agregados y anonimizados</strong>. BuddyMarket no proporcionará datos individuales de empleados a la Empresa sin el consentimiento expreso del empleado.</P>
+        <P>BuddyMarket se compromete a notificar a la Empresa cualquier brecha de seguridad en un plazo máximo de 72 horas y a suprimir o devolver todos los datos al finalizar el contrato.</P>
+      </Section>
+      <Section number="6" title="Niveles de Servicio (SLA)">
+        <TableB2B headers={["Plan", "Disponibilidad", "Respuesta soporte", "Resolución"]} rows={[
+          ["Business Starter", "99,5%", "24h laborables", "72h laborables"],
+          ["Business Pro", "99,7%", "8h laborables", "48h laborables"],
+          ["Business Enterprise", "99,9%", "4h (24/7)", "24h"],
+          ["Enterprise Custom", "99,99%", "1h (24/7)", "A negociar"],
+        ]} />
+        <P>En caso de incumplimiento del SLA, la Empresa tendrá derecho a un crédito de servicio del 10% de la factura mensual por cada punto porcentual de disponibilidad no alcanzado, con un máximo del 30%.</P>
+      </Section>
+      <Section number="7" title="Duración, Renovación y Resolución">
+        <P>El contrato tiene una duración inicial de 12 meses para planes anuales o de 1 mes para planes mensuales, renovándose automáticamente salvo preaviso de 30 días. Causas de resolución inmediata: incumplimiento grave, impago de dos facturas consecutivas, concurso de acreedores o uso fraudulento.</P>
+      </Section>
+      <Section number="8" title="Confidencialidad">
+        <P>Ambas partes se comprometen a mantener la confidencialidad de toda la información intercambiada durante la vigencia del contrato y por un período de 3 años tras su resolución.</P>
+      </Section>
+      <Section number="9" title="Ley Aplicable y Resolución de Disputas">
+        <P>Las presentes CGC B2B se rigen por la legislación española. Las partes se someten a los Juzgados y Tribunales de Madrid. Antes de iniciar cualquier procedimiento judicial, las partes intentarán resolver la controversia mediante mediación en un plazo máximo de 60 días.</P>
+        <p style={{ marginTop: 32, color: "#9ca3af", fontSize: 13 }}>Contacto B2B: empresas@buddymarket.io · BUDDY MARKET IA, S.L. · Calle Villanueva 2, 3ºC, 28001, Madrid</p>
+      </Section>
+    </>
+  );
+}
+
+// ─── TyC Experts/Makers ───────────────────────────────────────────────────────
+function TermsExperts() {
+  const P = ({ children, style }: { children: React.ReactNode; style?: React.CSSProperties }) => (
+    <p style={{ marginTop: 0, marginBottom: 14, ...style }}>{children}</p>
+  );
+  const WarnE = ({ children }: { children: React.ReactNode }) => (
+    <div style={{ background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: 12, padding: "16px 20px", marginBottom: 16 }}>
+      <p style={{ fontSize: 14, color: "#92400e", margin: 0, lineHeight: 1.7 }}>{children}</p>
+    </div>
+  );
+  const InfoE = ({ children }: { children: React.ReactNode }) => (
+    <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 12, padding: "16px 20px", marginBottom: 16 }}>
+      <p style={{ fontSize: 14, color: "#166534", margin: 0, lineHeight: 1.7 }}>{children}</p>
+    </div>
+  );
+  const TableE = ({ headers, rows }: { headers: string[]; rows: string[][] }) => (
+    <div style={{ overflowX: "auto", marginBottom: 16 }}>
+      <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
+        <thead><tr style={{ background: "#f9fafb" }}>{headers.map((h, i) => <th key={i} style={{ padding: "10px 14px", textAlign: "left", fontWeight: 700, color: "#374151", borderBottom: "2px solid #e5e7eb", whiteSpace: "nowrap" }}>{h}</th>)}</tr></thead>
+        <tbody>{rows.map((row, ri) => <tr key={ri} style={{ borderBottom: "1px solid #f3f4f6" }}>{row.map((cell, ci) => <td key={ci} style={{ padding: "10px 14px", color: "#374151", verticalAlign: "top" }} dangerouslySetInnerHTML={{ __html: cell }} />)}</tr>)}</tbody>
+      </table>
+    </div>
+  );
+  return (
+    <>
+      <div style={{ background: "linear-gradient(135deg, #f0fdf4 0%, #dcfce7 100%)", borderRadius: 16, padding: "32px 40px", marginBottom: 48, border: "1px solid #bbf7d0" }}>
+        <h1 style={{ fontSize: 32, fontWeight: 900, color: "#111827", marginBottom: 8, letterSpacing: "-0.02em" }}>Términos para BuddyExperts y BuddyMakers</h1>
+        <p style={{ fontSize: 16, color: "#6b7280", margin: 0 }}>Para expertos en nutrición y creadores de contenido · Versión 1.0 — Entrada en vigor: 7 de abril de 2026</p>
+      </div>
+      <Section number="1" title="Definiciones">
+        <TableE headers={["Término", "Definición"]} rows={[
+          ["BuddyExpert", "Profesional de la nutrición, dietética o salud verificado por BuddyMarket que ofrece servicios de consultoría y seguimiento personalizado a través de la Plataforma"],
+          ["BuddyMaker", "Creador de contenido especializado en alimentación, recetas y nutrición que publica contenido en la Plataforma y puede monetizarlo"],
+          ["Contenido", "Recetas, artículos, planes nutricionales, vídeos, imágenes y cualquier otro material publicado por el Creador en la Plataforma"],
+          ["Comisión", "Porcentaje de los ingresos generados que BuddyMarket retiene en concepto de servicio de plataforma"],
+        ]} />
+      </Section>
+      <Section number="2" title="Requisitos para BuddyExperts">
+        <P>Para obtener la verificación como BuddyExpert, el profesional debe acreditar: titulación universitaria en Nutrición Humana y Dietética, Medicina, Farmacia o equivalente; colegiación vigente cuando sea obligatoria; seguro de responsabilidad civil profesional con cobertura mínima de 300.000 €; y aceptación del Código Deontológico de BuddyMarket para Profesionales de la Salud.</P>
+        <WarnE>BuddyMarket se reserva el derecho de verificar la autenticidad de la documentación y de revocar la verificación si el profesional pierde los requisitos habilitantes.</WarnE>
+      </Section>
+      <Section number="3" title="Requisitos para BuddyMakers">
+        <P>Para registrarse como BuddyMaker, el creador debe ser mayor de 18 años, disponer de cuenta bancaria válida, aceptar las Directrices de Contenido y comprometerse a publicar contenido original y de calidad.</P>
+        <InfoE>Los BuddyMakers no están obligados a tener titulación en nutrición, pero deben indicar claramente que no son profesionales de la salud cuando publiquen contenido nutricional.</InfoE>
+      </Section>
+      <Section number="4" title="Modelo de Monetización y Comisiones">
+        <TableE headers={["Mecanismo", "Descripción", "Comisión BuddyMarket"]} rows={[
+          ["Consultas individuales", "Sesiones de consultoría nutricional con usuarios (solo BuddyExperts)", "20%"],
+          ["Planes nutricionales", "Venta de planes personalizados o genéricos", "20%"],
+          ["Recetas premium", "Recetas de pago accesibles a usuarios con suscripción", "15%"],
+          ["Código de referido", "Comisión por usuarios que se suscriban usando el código del Creador", "20% del primer año"],
+          ["Contenido patrocinado", "Publicaciones patrocinadas por marcas (previa aprobación de BuddyMarket)", "10%"],
+        ]} />
+        <P>Los pagos se realizan mensualmente el día 15 del mes siguiente, siempre que el saldo acumulado supere los 50 €. El Creador es responsable de declarar estos ingresos a la Agencia Tributaria.</P>
+      </Section>
+      <Section number="5" title="Derechos y Licencias sobre el Contenido">
+        <P>El Creador conserva la titularidad de los derechos de propiedad intelectual sobre el Contenido. Al publicarlo, concede a BuddyMarket una licencia no exclusiva, gratuita y mundial para reproducirlo, distribuirlo y utilizarlo con fines de mejora de la Plataforma, siempre citando al Creador. Esta licencia se extingue cuando el Creador elimina el Contenido.</P>
+      </Section>
+      <Section number="6" title="Obligaciones del Creador">
+        <P>El Creador se compromete a: publicar únicamente contenido original y veraz; no publicar información nutricional falsa o perjudicial; indicar claramente el contenido publicitario; respetar los derechos de propiedad intelectual de terceros; responder a consultas en máximo 48 horas (BuddyExperts); y no redirigir usuarios a plataformas externas para eludir comisiones.</P>
+      </Section>
+      <Section number="7" title="Responsabilidad Profesional (BuddyExperts)">
+        <WarnE><strong>RESPONSABILIDAD PROFESIONAL:</strong> Los BuddyExperts son los únicos responsables del consejo nutricional que proporcionan. BuddyMarket actúa exclusivamente como plataforma de intermediación y no asume responsabilidad por el contenido de las consultas ni por los resultados obtenidos.</WarnE>
+        <P>Los BuddyExperts deben mantener en vigor su seguro de responsabilidad civil durante toda su actividad y proporcionar copia actualizada anualmente.</P>
+      </Section>
+      <Section number="8" title="Moderación y Suspensión de Contenido">
+        <P>BuddyMarket se reserva el derecho de revisar, modificar, suspender o eliminar cualquier Contenido que infrinja estas condiciones, contenga información nutricional falsa, sea objeto de reclamaciones de propiedad intelectual o incumpla las Directrices de Contenido.</P>
+      </Section>
+      <Section number="9" title="Duración y Resolución">
+        <P>La relación tiene carácter indefinido y puede resolverse por cualquiera de las partes con un preaviso de 30 días. BuddyMarket podrá resolver de forma inmediata en caso de incumplimiento grave, especialmente si el Creador publica información que ponga en riesgo la salud de los usuarios.</P>
+        <p style={{ marginTop: 32, color: "#9ca3af", fontSize: 13 }}>Contacto Creadores: creadores@buddymarket.io · BUDDY MARKET IA, S.L. · Calle Villanueva 2, 3ºC, 28001, Madrid</p>
+      </Section>
+    </>
+  );
+}
+
 export default function Terms() {
+  const [activeTab, setActiveTab] = useState<"usuarios" | "b2b" | "experts">("usuarios");
+  const tabs = [
+    { id: "usuarios" as const, label: "Usuarios", icon: "👤", color: "#F97316" },
+    { id: "b2b" as const, label: "Empresas B2B", icon: "🏢", color: "#3B82F6" },
+    { id: "experts" as const, label: "BuddyExperts & Makers", icon: "⭐", color: "#10B981" },
+  ];
   return (
     <div style={{ fontFamily: "'Inter', sans-serif", color: "#111827", minHeight: "100vh", background: "#f9fafb" }}>
       {/* Navbar */}
@@ -57,7 +225,20 @@ export default function Terms() {
         </div>
       </nav>
 
-      <div style={{ maxWidth: 960, margin: "0 auto", padding: "64px 24px" }}>
+      <div style={{ maxWidth: 960, margin: "0 auto", padding: "48px 24px" }}>
+        {/* Selector de tipo de TyC */}
+        <div style={{ display: "flex", gap: 12, marginBottom: 40, flexWrap: "wrap" }}>
+          {tabs.map((tab) => (
+            <button key={tab.id} onClick={() => setActiveTab(tab.id)} style={{ display: "flex", alignItems: "center", gap: 8, padding: "12px 24px", borderRadius: 12, border: "2px solid", borderColor: activeTab === tab.id ? tab.color : "#e5e7eb", background: activeTab === tab.id ? tab.color : "white", color: activeTab === tab.id ? "white" : "#374151", fontWeight: 700, fontSize: 15, cursor: "pointer", transition: "all 0.2s" }}>
+              <span>{tab.icon}</span>{tab.label}
+            </button>
+          ))}
+        </div>
+
+        {/* Contenido B2B y Experts */}
+        {activeTab === "b2b" && <TermsB2B />}
+        {activeTab === "experts" && <TermsExperts />}
+        {activeTab === "usuarios" && <div style={{ background: "white", borderRadius: 20, padding: "48px", boxShadow: "0 4px 20px rgba(0,0,0,0.06)" }}>
         {/* Header */}
         <div style={{ marginBottom: 48 }}>
           <span style={{ fontSize: 12, fontWeight: 700, color: ORANGE, letterSpacing: "0.1em", textTransform: "uppercase" }}>LEGAL</span>
@@ -288,6 +469,7 @@ export default function Terms() {
           <Link href="/privacy" style={{ fontSize: 14, color: ORANGE, textDecoration: "none", fontWeight: 600 }}>Política de Privacidad →</Link>
           <Link href="/cookies" style={{ fontSize: 14, color: ORANGE, textDecoration: "none", fontWeight: 600 }}>Política de Cookies →</Link>
         </div>
+        </div>}
       </div>
     </div>
   );

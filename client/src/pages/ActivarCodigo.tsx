@@ -6,7 +6,7 @@
 import { useState } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "@/components/sonner-a11y-shim";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -16,7 +16,7 @@ import { Badge } from "@/components/ui/badge";
 const LOGO = "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/logo-horizontal-orange_0dcbe0a8.png";
 
 export default function ActivarCodigo() {
-  const { user, isLoading: authLoading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [, navigate] = useLocation();
 
   const [codeInput, setCodeInput] = useState(() => {

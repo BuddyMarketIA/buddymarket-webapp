@@ -605,7 +605,8 @@ Responde con JSON válido con esta estructura exacta:
         response_format: { type: "json_object" }
       });
 
-      const content = response.choices?.[0]?.message?.content;
+      const rawContent = response.choices?.[0]?.message?.content;
+      const content = typeof rawContent === 'string' ? rawContent : (Array.isArray(rawContent) ? (rawContent as any[]).map((c: any) => c.text ?? '').join('') : '');
       if (!content) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "La IA no generó respuesta" });
 
       let menuData: Record<string, unknown>;

@@ -1836,7 +1836,7 @@ function AdminSoportePanel() {
   });
 
   const tickets = ticketsData?.tickets ?? [];
-  const summary = ticketsData?.summary;
+  const summary = ticketsData?.kpis;
 
   return (
     <div className="space-y-4">
@@ -1846,8 +1846,8 @@ function AdminSoportePanel() {
           {[
             { label: "Total", value: summary.total, color: "bg-gray-50 text-gray-700" },
             { label: "Abiertos", value: summary.open, color: "bg-blue-50 text-blue-700" },
-            { label: "En curso", value: summary.inProgress, color: "bg-purple-50 text-purple-700" },
-            { label: "Esperando", value: summary.waiting, color: "bg-yellow-50 text-yellow-700" },
+            { label: "En curso", value: summary.in_progress, color: "bg-purple-50 text-purple-700" },
+            { label: "Esperando", value: summary.waiting_user, color: "bg-yellow-50 text-yellow-700" },
             { label: "Resueltos", value: summary.resolved, color: "bg-green-50 text-green-700" },
           ].map((kpi) => (
             <div key={kpi.label} className={`rounded-2xl p-3 text-center ${kpi.color}`}>
@@ -1970,7 +1970,7 @@ function AdminSoportePanel() {
                   </p>
                   <p className="text-xs text-gray-400 mt-0.5">
                     Categoría: {CATEGORY_LABELS_ADMIN[ticketDetail.ticket.category] ?? ticketDetail.ticket.category}
-                    {ticketDetail.ticket.orderId && ` · Pedido: ${ticketDetail.ticket.orderId}`}
+                    
                   </p>
                 </div>
                 <button
@@ -2002,8 +2002,8 @@ function AdminSoportePanel() {
                   ))}
                 </select>
                 <select
-                  value={ticketDetail.ticket.assignedTo ?? ""}
-                  onChange={(e) => updateStatus.mutate({ ticketId: ticketDetail.ticket.id, assignedTo: e.target.value || null })}
+                  value={ticketDetail.ticket.assignedAdminId?.toString() ?? ""}
+                  onChange={(e) => updateStatus.mutate({ ticketId: ticketDetail.ticket.id, assignedAdminId: e.target.value ? parseInt(e.target.value) : null })}
                   className="vively-input text-xs py-1 px-2"
                 >
                   <option value="">Sin asignar</option>
@@ -2021,7 +2021,7 @@ function AdminSoportePanel() {
                     <p className="text-xs font-semibold text-gray-700">{ticketDetail.ticket.userName} <span className="font-normal text-gray-400">(usuario)</span></p>
                     <p className="text-xs text-gray-400">{new Date(ticketDetail.ticket.createdAt).toLocaleDateString("es-ES", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</p>
                   </div>
-                  <p className="text-sm text-gray-700 whitespace-pre-wrap">{ticketDetail.ticket.description}</p>
+                  <p className="text-sm text-gray-700 whitespace-pre-wrap">{(ticketDetail.messages?.[0] as any)?.message ?? ""}</p>
                 </div>
                 {/* Messages */}
                 {(ticketDetail.messages ?? []).map((msg: any) => (
@@ -2072,7 +2072,7 @@ function AdminSoportePanel() {
                   <button
                     onClick={() => replyMutation.mutate({
                       ticketId: ticketDetail.ticket.id,
-                      content: replyText,
+                      message: replyText,
                       isInternal,
                     })}
                     disabled={!replyText.trim() || replyMutation.isPending}

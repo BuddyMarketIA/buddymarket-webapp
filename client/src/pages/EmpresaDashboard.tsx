@@ -38,7 +38,7 @@ export default function EmpresaDashboard() {
   });
   const generateCodeMutation = trpc.codes.generateCompanyCode.useMutation({
     onSuccess: (result) => {
-      toast.success(`Código generado: ${result.accessCode}`);
+      toast.success(`Código generado: ${result.code}`);
       refetchAccess();
     },
     onError: (err) => toast.error(`Error: ${err.message}`),
@@ -766,12 +766,12 @@ export default function EmpresaDashboard() {
                                 <span className={`text-xs px-2 py-1 rounded-full font-medium ${
                                   snapshot.status === "paid" ? "bg-emerald-500/10 text-emerald-600" :
                                   snapshot.status === "confirmed" ? "bg-blue-500/10 text-blue-600" :
-                                  snapshot.status === "failed" ? "bg-red-500/10 text-red-600" :
+                                  (snapshot.status as string) === "failed" ? "bg-red-500/10 text-red-600" :
                                   "bg-amber-500/10 text-amber-600"
                                 }`}>
                                   {snapshot.status === "paid" ? "Pagado" :
                                    snapshot.status === "confirmed" ? "Confirmado" :
-                                   snapshot.status === "failed" ? "Error" : "Pendiente"}
+                                   (snapshot.status as string) === "failed" ? "Error" : "Pendiente"}
                                 </span>
                               </td>
                             </tr>

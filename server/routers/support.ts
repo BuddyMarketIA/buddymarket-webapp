@@ -1,11 +1,11 @@
 import { z } from "zod";
-import { eq, desc, and, ilike, inArray, sql } from "drizzle-orm";
+import { eq, desc, and, ilike, inArray, sql, asc } from "drizzle-orm";
 import { router, protectedProcedure } from "../_core/trpc";
 import { getDb } from "../db";
 import {
   supportTickets,
   supportMessages,
-  users,
+  users as usersTable,
 } from "../../drizzle/schema";
 import { TRPCError } from "@trpc/server";
 import { notifyOwner } from "../_core/notification";
@@ -147,6 +147,7 @@ export const supportRouter = router({
     }))
     .mutation(async ({ ctx, input }) => {
       const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
 
       const [ticket] = await db.insert(supportTickets).values({
         userId: ctx.user.id,
@@ -189,6 +190,7 @@ export const supportRouter = router({
   getMyTickets: protectedProcedure
     .query(async ({ ctx }) => {
       const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
 
       const tickets = await db
         .select({
@@ -236,6 +238,7 @@ export const supportRouter = router({
     .input(z.object({ ticketId: z.number() }))
     .query(async ({ ctx, input }) => {
       const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
 
       const [ticket] = await db
         .select()
@@ -269,11 +272,11 @@ export const supportRouter = router({
         .where(whereClause)
         .orderBy(supportMessages.createdAt);
 
-      const authorIds = [...new Set(messages.map(m => m.authorId))];
+      const authorIds = Array.from(new Set(messages.map((m: any) => m.authorId))) as number[];
       const authors = authorIds.length > 0
-        ? await db.select({ id: users.id, name: users.name, imageUrl: users.imageUrl, role: users.role })
-            .from(users)
-            .where(inArray(users.id, authorIds))
+        ? await db.select({ id: usersTable.id, name: usersTable.name, imageUrl: usersTable.imageUrl, role: usersTable.role })
+            .from(usersTable)
+            .where(inArray(usersTable.id, authorIds))
         : [];
       const authorMap = Object.fromEntries(authors.map(a => [a.id, a]));
 
@@ -302,6 +305,7 @@ export const supportRouter = router({
     }))
     .mutation(async ({ ctx, input }) => {
       const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
 
       const [ticket] = await db.select().from(supportTickets).where(eq(supportTickets.id, input.ticketId));
       if (!ticket) throw new TRPCError({ code: "NOT_FOUND" });
@@ -335,7 +339,7 @@ export const supportRouter = router({
 
       // Notificar al usuario si el admin responde (no en notas internas)
       if (isAdmin && !input.isInternal) {
-        const [ticketUser] = await db.select().from(users).where(eq(users.id, ticket.userId));
+        const [ticketUser] = await db.select().from(usersTable).where(eq(usersTable.id, ticket.userId));
         if (ticketUser?.email) {
           await sendAdminReplyEmail(
             ticketUser.email,
@@ -355,6 +359,7 @@ export const supportRouter = router({
     .input(z.object({ ticketId: z.number() }))
     .mutation(async ({ ctx, input }) => {
       const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
 
       const [ticket] = await db.select().from(supportTickets).where(eq(supportTickets.id, input.ticketId));
       if (!ticket) throw new TRPCError({ code: "NOT_FOUND" });
@@ -384,6 +389,7 @@ export const supportRouter = router({
     .query(async ({ ctx, input }) => {
       if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
       const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
 
       const conditions: ReturnType<typeof eq>[] = [];
       if (input.status !== "all") conditions.push(eq(supportTickets.status, input.status as any));
@@ -410,10 +416,10 @@ export const supportRouter = router({
         .limit(input.limit)
         .offset(input.offset);
 
-      const userIds = [...new Set(tickets.map(t => t.userId))];
+      const userIds = Array.from(new Set(tickets.map((t: any) => t.userId))) as number[];
       const ticketUsers = userIds.length > 0
-        ? await db.select({ id: users.id, name: users.name, email: users.email, imageUrl: users.imageUrl })
-            .from(users).where(inArray(users.id, userIds))
+        ? await db.select({ id: usersTable.id, name: usersTable.name, email: usersTable.email, imageUrl: usersTable.imageUrl })
+            .from(usersTable).where(inArray(usersTable.id, userIds))
         : [];
       const userMap = Object.fromEntries(ticketUsers.map(u => [u.id, u]));
 
@@ -460,6 +466,7 @@ export const supportRouter = router({
     .mutation(async ({ ctx, input }) => {
       if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
       const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
 
       const updates: Record<string, any> = { updatedAt: new Date() };
       if (input.status) updates.status = input.status;
@@ -470,6 +477,72 @@ export const supportRouter = router({
       }
 
       await db.update(supportTickets).set(updates).where(eq(supportTickets.id, input.ticketId));
+      return { ok: true };
+    }),
+
+  // ── Admin: detalle de ticket ─────────────────────────────────────────────
+  adminGetTicketDetail: protectedProcedure
+    .input(z.object({ ticketId: z.number().optional() }))
+    .query(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      if (!input.ticketId) return null;
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
+      const [ticket] = await db.select().from(supportTickets).where(eq(supportTickets.id, input.ticketId)).limit(1);
+      if (!ticket) throw new TRPCError({ code: "NOT_FOUND" });
+      // Fetch ticket owner info
+      const [ticketOwner] = await db.select({ name: usersTable.name, email: usersTable.email }).from(usersTable).where(eq(usersTable.id, ticket.userId)).limit(1);
+      const msgs = await db.select().from(supportMessages).where(eq(supportMessages.ticketId, input.ticketId)).orderBy(asc(supportMessages.createdAt));
+      const msgAuthorIds = Array.from(new Set(msgs.map((m: any) => m.authorId))) as number[];
+      const authorsList = msgAuthorIds.length > 0
+        ? await db.select({ id: usersTable.id, name: usersTable.name, role: usersTable.role }).from(usersTable).where(inArray(usersTable.id, msgAuthorIds))
+        : [];
+      const authorMap: Record<number, { name: string | null; role: string }> = Object.fromEntries(authorsList.map((u: any) => [u.id, u]));
+      return {
+        ticket: {
+          ...ticket,
+          userName: ticketOwner?.name ?? "Usuario",
+          userEmail: ticketOwner?.email ?? "",
+          categoryLabel: CATEGORY_LABELS[ticket.category as string] ?? ticket.category,
+          priorityLabel: PRIORITY_LABELS[ticket.priority] ?? ticket.priority,
+          statusLabel: STATUS_LABELS[ticket.status] ?? ticket.status,
+        },
+        messages: msgs.map((m: any) => ({
+          ...m,
+          authorName: authorMap[m.authorId]?.name ?? "Usuario",
+          authorRole: authorMap[m.authorId]?.role ?? "user",
+        })),
+      };
+    }),
+  // ── Admin: responder ticket ─────────────────────────────────────────────────────────────────────────
+  adminReplyTicket: protectedProcedure
+    .input(z.object({
+      ticketId: z.number(),
+      message: z.string().min(1).max(5000),
+      isInternal: z.boolean().optional().default(false),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
+      const [ticket] = await db.select().from(supportTickets).where(eq(supportTickets.id, input.ticketId)).limit(1);
+      if (!ticket) throw new TRPCError({ code: "NOT_FOUND" });
+      await db.insert(supportMessages).values({
+        ticketId: input.ticketId,
+        authorId: ctx.user.id,
+        message: input.message,
+        authorRole: "admin",
+        isInternal: input.isInternal,
+        createdAt: new Date(),
+      });
+      const newStatus = input.isInternal ? ticket.status : "waiting_user";
+      await db.update(supportTickets).set({ status: newStatus, updatedAt: new Date() }).where(eq(supportTickets.id, input.ticketId));
+      if (!input.isInternal) {
+        const [ticketUser] = await db.select({ email: usersTable.email, name: usersTable.name }).from(usersTable).where(eq(usersTable.id, ticket.userId)).limit(1);
+        if (ticketUser?.email) {
+          await sendAdminReplyEmail(ticketUser.email, ticketUser.name ?? "Usuario", input.ticketId, ticket.subject, input.message).catch(() => {});
+        }
+      }
       return { ok: true };
     }),
 });

@@ -4555,6 +4555,47 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
         await drizzleDb.update(apiMonitors).set({ isActive: input.isActive, updatedAt: new Date() }).where(eq(apiMonitors.id, input.monitorId));
         return { success: true };
       }),
+    tagKidFriendlyRecipes: protectedProcedure
+      .input(z.object({ batchSize: z.number().int().min(1).max(50).default(20) }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { recipes } = await import("../drizzle/schema.js");
+        const { eq: eqOp } = await import("drizzle-orm");
+        const untagged = await drizzleDb.select({ id: recipes.id, name: recipes.name, tags: recipes.tags, allergens: recipes.allergens, ingredientsJson: recipes.ingredientsJson })
+          .from(recipes)
+          .where(eqOp(recipes.isKidFriendly, false))
+          .limit(input.batchSize);
+        if (untagged.length === 0) return { tagged: 0, message: "No hay recetas sin etiquetar" };
+        let tagged = 0;
+        for (const recipe of untagged) {
+          try {
+            const prompt = `Analiza esta receta y determina si es apta para niños.\nNombre: "${recipe.name}"\nIngredientes: ${recipe.ingredientsJson ?? "no especificados"}\nAlérgenos: ${recipe.allergens ?? "ninguno"}\nTags: ${recipe.tags ?? "ninguno"}\n\nResponde SOLO con JSON válido:\n- isKidFriendly: true si es apta para niños >1 año (sin picante, sin alcohol)\n- isBabyFriendly: true si es apta para bebés 6-12 meses (sin sal, sin azúcar, texturas blandas)\n- isFingerFood: true si el niño puede comerla con las manos\n- noAddedSugar: true si no lleva azúcar añadido\n- highIron: true si es rica en hierro (carnes, legumbres, espinacas)\n- highCalcium: true si es rica en calcio (lácteos, brócoli, sardinas)`;
+            const response = await invokeLLM({
+              messages: [{ role: "user", content: prompt }],
+              response_format: { type: "json_schema", json_schema: { name: "kid_tags", strict: true, schema: { type: "object", properties: { isKidFriendly: { type: "boolean" }, isBabyFriendly: { type: "boolean" }, isFingerFood: { type: "boolean" }, noAddedSugar: { type: "boolean" }, highIron: { type: "boolean" }, highCalcium: { type: "boolean" } }, required: ["isKidFriendly", "isBabyFriendly", "isFingerFood", "noAddedSugar", "highIron", "highCalcium"], additionalProperties: false } } }
+            });
+            const rawContent = response.choices?.[0]?.message?.content;
+            const content = typeof rawContent === 'string' ? rawContent : (Array.isArray(rawContent) ? rawContent.map((c: any) => c.text ?? '').join('') : '');
+            if (content) {
+              const tags = JSON.parse(content);
+              await drizzleDb.update(recipes).set({
+                isKidFriendly: tags.isKidFriendly,
+                isBabyFriendly: tags.isBabyFriendly,
+                isFingerFood: tags.isFingerFood,
+                noAddedSugar: tags.noAddedSugar,
+                highIron: tags.highIron,
+                highCalcium: tags.highCalcium,
+              }).where(eqOp(recipes.id, recipe.id));
+              tagged++;
+            }
+          } catch (e) {
+            console.error(`[KidTag] Error tagging recipe ${recipe.id}:`, e);
+          }
+        }
+        return { tagged, total: untagged.length, message: `${tagged} recetas etiquetadas` };
+      }),
   }),
   // Mercadona integrationn — proxy to tienda.mercadona.es unofficial API
   mercadona: router({
@@ -10598,50 +10639,6 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
       }),
   }),
 
-  // ---------------------------------------------------------------------------
-  // ADMIN: Etiquetado de recetas para niños con IA
-  // ---------------------------------------------------------------------------
-  admin: router({
-    tagKidFriendlyRecipes: protectedProcedure
-      .input(z.object({ batchSize: z.number().int().min(1).max(50).default(20) }))
-      .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
-        const drizzleDb = await db.getDb();
-        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-        const { recipes } = await import("../drizzle/schema.js");
-        const { eq: eqOp } = await import("drizzle-orm");
-        const untagged = await drizzleDb.select({ id: recipes.id, name: recipes.name, tags: recipes.tags, allergens: recipes.allergens, ingredientsJson: recipes.ingredientsJson })
-          .from(recipes)
-          .where(eqOp(recipes.isKidFriendly, false))
-          .limit(input.batchSize);
-        if (untagged.length === 0) return { tagged: 0, message: "No hay recetas sin etiquetar" };
-        let tagged = 0;
-        for (const recipe of untagged) {
-          try {
-            const prompt = `Analiza esta receta y determina si es apta para niños.\nNombre: "${recipe.name}"\nIngredientes: ${recipe.ingredientsJson ?? "no especificados"}\nAlérgenos: ${recipe.allergens ?? "ninguno"}\nTags: ${recipe.tags ?? "ninguno"}\n\nResponde SOLO con JSON válido:\n- isKidFriendly: true si es apta para niños >1 año (sin picante, sin alcohol)\n- isBabyFriendly: true si es apta para bebés 6-12 meses (sin sal, sin azúcar, texturas blandas)\n- isFingerFood: true si el niño puede comerla con las manos\n- noAddedSugar: true si no lleva azúcar añadido\n- highIron: true si es rica en hierro (carnes, legumbres, espinacas)\n- highCalcium: true si es rica en calcio (lácteos, brócoli, sardinas)`;
-            const response = await invokeLLM({
-              messages: [{ role: "user", content: prompt }],
-              response_format: { type: "json_schema", json_schema: { name: "kid_tags", strict: true, schema: { type: "object", properties: { isKidFriendly: { type: "boolean" }, isBabyFriendly: { type: "boolean" }, isFingerFood: { type: "boolean" }, noAddedSugar: { type: "boolean" }, highIron: { type: "boolean" }, highCalcium: { type: "boolean" } }, required: ["isKidFriendly", "isBabyFriendly", "isFingerFood", "noAddedSugar", "highIron", "highCalcium"], additionalProperties: false } } }
-            });
-            const content = response.choices?.[0]?.message?.content;
-            if (content) {
-              const tags = JSON.parse(content);
-              await drizzleDb.update(recipes).set({
-                isKidFriendly: tags.isKidFriendly,
-                isBabyFriendly: tags.isBabyFriendly,
-                isFingerFood: tags.isFingerFood,
-                noAddedSugar: tags.noAddedSugar,
-                highIron: tags.highIron,
-                highCalcium: tags.highCalcium,
-              }).where(eqOp(recipes.id, recipe.id));
-              tagged++;
-            }
-          } catch (e) {
-            console.error(`[KidTag] Error tagging recipe ${recipe.id}:`, e);
-          }
-        }
-        return { tagged, total: untagged.length, message: `${tagged} recetas etiquetadas` };
-      }),
-  }),
+
 });
 export type AppRouter = typeof appRouter;

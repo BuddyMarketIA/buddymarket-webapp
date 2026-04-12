@@ -100,7 +100,11 @@ export default function Dashboard() {
     { label: "BuddyIA", emoji: "🧠", to: "/app/buddy-ia", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/buddyscan_dd3e1e08.jpg", accent: "#8B5CF6", size: "small", subtitle: "Tu asesor nutricional" },
     { label: t("nav.diary"), emoji: "📊", to: "/app/meal-log", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/vegetables_0f947a56.jpg", accent: "#EF4444", size: "small", subtitle: t("dashboard.diarySubtitle") },
   ];
-  const [today] = useState(() => new Date().toISOString().split("T")[0]);
+  // Use local date (not UTC) so the diary resets at midnight in the user's timezone
+  const [today] = useState(() => {
+    const d = new Date();
+    return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+  });
   const [goalCaloriesOverride, setGoalCaloriesOverride] = useState<number | null>(null);
   const [showGoalEdit, setShowGoalEdit] = useState(false);
   const [recipeIdx, setRecipeIdx] = useState(0);
@@ -114,7 +118,8 @@ export default function Dashboard() {
   const [showWidgetPicker, setShowWidgetPicker] = useState(false);
   const [waterGlasses, setWaterGlasses] = useState(() => {
     try {
-      const saved = localStorage.getItem(`bm_water_${new Date().toISOString().split("T")[0]}`);
+      const _d = new Date(); const _localDate = `${_d.getFullYear()}-${String(_d.getMonth() + 1).padStart(2, '0')}-${String(_d.getDate()).padStart(2, '0')}`;
+      const saved = localStorage.getItem(`bm_water_${_localDate}`);
       return saved ? parseInt(saved, 10) : 0;
     } catch { return 0; }
   });
@@ -685,7 +690,7 @@ export default function Dashboard() {
                   onClick={() => {
                     const newVal = i < waterGlasses ? i : i + 1;
                     setWaterGlasses(newVal);
-                    try { localStorage.setItem(`bm_water_${new Date().toISOString().split("T")[0]}`, String(newVal)); } catch {}
+                    try { const _dw = new Date(); const _ld = `${_dw.getFullYear()}-${String(_dw.getMonth() + 1).padStart(2, '0')}-${String(_dw.getDate()).padStart(2, '0')}`; localStorage.setItem(`bm_water_${_ld}`, String(newVal)); } catch {}
                   }}
                   style={{ width: "32px", height: "32px", borderRadius: "8px", border: "none", cursor: "pointer", fontSize: "16px", background: i < waterGlasses ? "#DBEAFE" : "#f3f4f6", transition: "background 0.2s" }}
                 >
