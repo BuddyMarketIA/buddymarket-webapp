@@ -1,7 +1,7 @@
 import { lazy, Suspense } from "react";
 import WelcomeLanguageModal from "@/components/WelcomeLanguageModal";
 import CookieBanner from "./components/CookieBanner";
-import { Toaster } from "@/components/ui/sonner";
+import { AccessibleToaster } from "@/components/AccessibleToaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Route, Switch, Redirect, useLocation } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -225,7 +225,7 @@ function App() {
     <ErrorBoundary>
       <ThemeProvider defaultTheme="light" switchable={true}>
         <TooltipProvider>
-          <Toaster />
+          <AccessibleToaster />
           <WelcomeLanguageModal />
           <Suspense fallback={null}>
             <AppBanners />

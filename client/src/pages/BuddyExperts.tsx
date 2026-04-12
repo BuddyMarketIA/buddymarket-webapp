@@ -3,7 +3,7 @@ import { useTranslation } from "react-i18next";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { toast } from "sonner";
+import { toast } from "@/components/sonner-a11y-shim";
 
 // ─── Gradient palettes ────────────────────────────────────────────────────────
 const GRADIENTS = [

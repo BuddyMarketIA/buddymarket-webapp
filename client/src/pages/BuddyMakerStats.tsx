@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { toast } from "sonner";
+import { toast } from "@/components/sonner-a11y-shim";
 import AppLayout from "@/components/AppLayout";
 import {
   UsersIcon,

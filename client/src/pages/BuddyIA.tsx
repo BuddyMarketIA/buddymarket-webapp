@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { trpc } from "@/lib/trpc";
-import { toast } from "sonner";
+import { toast } from "@/components/sonner-a11y-shim";
 import { usePlan } from "@/hooks/usePlan";
 import { UpgradeGate } from "@/components/UpgradeGate";
 import { Button } from "@/components/ui/button";

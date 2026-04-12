@@ -1,7 +1,7 @@
 import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
-import { toast } from "sonner";
+import { toast } from "@/components/sonner-a11y-shim";
 import { useLocation } from "wouter";
 import {
   ShoppingCartIcon,

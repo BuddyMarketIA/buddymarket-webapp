@@ -8,7 +8,7 @@
  */
 
 import { useEffect, useRef, useState } from "react";
-import { toast } from "sonner";
+import { toast } from "@/components/sonner-a11y-shim";
 import { isIOSNative } from "@/hooks/usePlatform";
 import { GoogleAuth } from "@codetrix-studio/capacitor-google-auth";
 

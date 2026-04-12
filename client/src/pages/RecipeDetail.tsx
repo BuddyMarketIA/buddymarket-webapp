@@ -3,7 +3,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import ShareRecipeButton from "@/components/ShareRecipeButton";
 import { Link, useLocation, useParams } from "wouter";
-import { toast } from "sonner";
+import { toast } from "@/components/sonner-a11y-shim";
 import { useState, useMemo } from "react";
 import { RECIPE_PLACEHOLDER_IMAGE } from "@/lib/constants";
 import { useRecipeAllergyCheck } from "@/hooks/useRecipeAllergyCheck";

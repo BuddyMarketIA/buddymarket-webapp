@@ -1,7 +1,7 @@
 import { useState, useCallback, useEffect } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
-import { toast } from "sonner";
+import { toast } from "@/components/sonner-a11y-shim";
 
 const CS_GREEN = "#00843D";
 const CS_BG = "#FAF7F2"; // crema igual que la referencia

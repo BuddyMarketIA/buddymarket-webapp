@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { Link, useLocation } from "wouter";
-import { toast } from "sonner";
+import { toast } from "@/components/sonner-a11y-shim";
 import { RECIPE_PLACEHOLDER_IMAGE } from "@/lib/constants";
 
 // ─── Types ────────────────────────────────────────────────────────────────────

@@ -1,6 +1,6 @@
 import { useState, useRef } from "react";
 import { trpc } from "@/lib/trpc";
-import { toast } from "sonner";
+import { toast } from "@/components/sonner-a11y-shim";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";

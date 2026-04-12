@@ -3,7 +3,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
-import { toast } from "sonner";
+import { toast } from "@/components/sonner-a11y-shim";
 import { Link } from "wouter";
 import {
   Copy, Share2, TrendingUp, Users, DollarSign, Gift,

@@ -19,7 +19,7 @@ import {
   Share2, RefreshCw, AlertCircle, Search, ChevronLeft, ChevronRight,
   Download, Filter, Calendar, BarChart2, Activity,
 } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/components/sonner-a11y-shim";
 
 // ─── Charts Section Component ─────────────────────────────────────────────
 const CHART_TOOLTIP_STYLE = { borderRadius: 10, border: "1px solid #e5e7eb", fontSize: 12, boxShadow: "0 4px 12px rgba(0,0,0,0.08)" };

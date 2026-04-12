@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { trpc } from "@/lib/trpc";
-import { toast } from "sonner";
+import { toast } from "@/components/sonner-a11y-shim";
 import { Link, useLocation } from "wouter";
 import { usePlan } from "@/hooks/usePlan";
 import { RECIPE_PLACEHOLDER_IMAGE } from "@/lib/constants";

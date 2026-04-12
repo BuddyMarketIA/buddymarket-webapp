@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef } from "react";
 import { trpc } from "@/lib/trpc";
-import { toast } from "sonner";
+import { toast } from "@/components/sonner-a11y-shim";
 import { ChevronLeftIcon, ShoppingCartIcon, ArrowTopRightOnSquareIcon, MagnifyingGlassIcon, XMarkIcon } from "@heroicons/react/24/outline";
 
 interface MercadonaSession { accessToken: string; customerId: string; cartId: string; customerName?: string; }

@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { Share2, Copy, Check, X } from "lucide-react";
-import { toast } from "sonner";
+import { toast } from "@/components/sonner-a11y-shim";
 
 interface ShareRecipeButtonProps {
   recipeId: number;

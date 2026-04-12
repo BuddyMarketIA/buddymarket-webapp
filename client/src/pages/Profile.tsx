@@ -5,7 +5,7 @@ import CookiePreferencesPanel from "@/components/CookiePreferencesPanel";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import ImageCropModal from "@/components/ImageCropModal";
-import { toast } from "sonner";
+import { toast } from "@/components/sonner-a11y-shim";
 import {
   UserIcon,
   HeartIcon,

@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useRoute, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { toast } from "sonner";
+import { toast } from "@/components/sonner-a11y-shim";
 
 // ─── Star rating ──────────────────────────────────────────────────────────────
 function Stars({ rating }: { rating: number }) {

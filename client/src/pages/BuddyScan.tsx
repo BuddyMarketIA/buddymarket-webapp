@@ -1,7 +1,7 @@
 import { useState, useRef, useCallback } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
-import { toast } from "sonner";
+import { toast } from "@/components/sonner-a11y-shim";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Camera, Upload, RefreshCw, CheckCircle, AlertTriangle, Plus, Zap } from "lucide-react";

@@ -11,7 +11,7 @@ import { Badge } from "@/components/ui/badge";
 import { ArrowLeft, Loader2, Plus, Trash2, Sparkles, Search, X } from "lucide-react";
 import { useState, useRef, useEffect } from "react";
 import { Link, useLocation, useParams } from "wouter";
-import { toast } from "sonner";
+import { toast } from "@/components/sonner-a11y-shim";
 
 interface IngredientEntry {
   id?: number;

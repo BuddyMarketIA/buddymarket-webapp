@@ -5,7 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { getLoginUrl } from "@/const";
-import { toast } from "sonner";
+import { toast } from "@/components/sonner-a11y-shim";
 import { usePlan } from "@/hooks/usePlan";
 import { UpgradeGate } from "@/components/UpgradeGate";
 

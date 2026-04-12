@@ -7,7 +7,7 @@ import CarrefourCartExport from "@/components/CarrefourCartExport";
 import AlcampoCartExport from "@/components/AlcampoCartExport";
 import BasketComparator from "@/components/BasketComparator";
 import { trpc } from "@/lib/trpc";
-import { toast } from "sonner";
+import { toast } from "@/components/sonner-a11y-shim";
 import {
   PlusIcon,
   ChevronLeftIcon,

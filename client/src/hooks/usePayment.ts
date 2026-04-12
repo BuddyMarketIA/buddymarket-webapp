@@ -28,7 +28,7 @@
  */
 
 import { trpc } from "@/lib/trpc";
-import { toast } from "sonner";
+import { toast } from "@/components/sonner-a11y-shim";
 import { isIOSNative, isAndroidNative, isIAPAvailable } from "./usePlatform";
 
 // ─── Product ID maps ──────────────────────────────────────────────────────────

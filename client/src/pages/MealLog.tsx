@@ -1,7 +1,7 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { trpc } from "@/lib/trpc";
-import { toast } from "sonner";
+import { toast } from "@/components/sonner-a11y-shim";
 import BarcodeScanner from "@/components/BarcodeScanner";
 import NutritionCalendar from "@/components/NutritionCalendar";
 import ProductNutritionCard from "@/components/ProductNutritionCard";

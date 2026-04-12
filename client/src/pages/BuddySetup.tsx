@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
-import { toast } from "sonner";
+import { toast } from "@/components/sonner-a11y-shim";
 import { useAuth } from "@/_core/hooks/useAuth";
 
 // ─── Tipos ────────────────────────────────────────────────────────────────────

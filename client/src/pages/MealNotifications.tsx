@@ -1,6 +1,6 @@
 import { useState, useEffect, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
-import { toast } from "sonner";
+import { toast } from "@/components/sonner-a11y-shim";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type MealType = "desayuno" | "almuerzo" | "merienda" | "cena" | "snack" | "actividad";
