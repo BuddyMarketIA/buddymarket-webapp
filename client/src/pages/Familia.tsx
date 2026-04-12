@@ -16,8 +16,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   Users, UserPlus, Home, Settings, Trash2, Mail, Crown, Shield,
   ChevronRight, LogOut, Loader2, Check, X, AlertTriangle,
-  ChefHat, Search, Plus, Clock, Flame, CheckCircle2, Circle, BookOpen
+  ChefHat, Search, Plus, Clock, Flame, CheckCircle2, Circle, BookOpen,
+  Baby, User, Sparkles, Calendar, Utensils, Zap, Droplets
 } from "lucide-react";
+import { Textarea } from "@/components/ui/textarea";
 
 
 // ─── Meal type labels ─────────────────────────────────────────────────────────
@@ -432,7 +434,294 @@ function HouseholdAssignedRecipes({
   );
 }
 
-// ─── Upsell screen for non-Pro Max users ────────────────────────────────────────────────
+// ─── Generador de Menú Familiar con IA ────────────────────────────────────────────
+function FamilyMenuModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+  const [days, setDays] = useState(7);
+  const [mealsPerDay, setMealsPerDay] = useState(3);
+  const [menuType, setMenuType] = useState<"equilibrado" | "mediterraneo" | "bajo_carbohidratos" | "alto_proteina" | "familiar">("familiar");
+  const [notes, setNotes] = useState("");
+  const [generatedMenu, setGeneratedMenu] = useState<Record<string, unknown> | null>(null);
+  const [expandedDay, setExpandedDay] = useState<number | null>(0);
+
+  const generate = trpc.householdRecipes.generateFamilyMenu.useMutation({
+    onSuccess: (data) => {
+      setGeneratedMenu(data.menu as Record<string, unknown>);
+      toast.success(`Menú familiar generado para ${data.memberCount} miembro${data.memberCount !== 1 ? "s" : ""}`);
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const handleClose = () => {
+    setGeneratedMenu(null);
+    setExpandedDay(0);
+    onClose();
+  };
+
+  const menuTypeLabels: Record<string, string> = {
+    familiar: "Familiar equilibrado",
+    equilibrado: "Equilibrado",
+    mediterraneo: "Mediterráneo",
+    bajo_carbohidratos: "Bajo en carbohidratos",
+    alto_proteina: "Alto en proteína",
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={handleClose}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <Sparkles className="w-5 h-5 text-purple-500" />
+            Generar Menú Familiar con IA
+          </DialogTitle>
+        </DialogHeader>
+
+        {!generatedMenu ? (
+          <div className="space-y-4 py-2">
+            <p className="text-sm text-muted-foreground">
+              La IA creará un menú personalizado teniendo en cuenta las restricciones, alergias y necesidades nutricionales de cada miembro del hogar, incluyendo niños y bebés.
+            </p>
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label className="text-sm">Número de días</Label>
+                <Select value={String(days)} onValueChange={(v) => setDays(Number(v))}>
+                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    {[3, 5, 7, 10, 14].map((d) => (
+                      <SelectItem key={d} value={String(d)}>{d} días</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label className="text-sm">Comidas por día</Label>
+                <Select value={String(mealsPerDay)} onValueChange={(v) => setMealsPerDay(Number(v))}>
+                  <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="2">2 (comida + cena)</SelectItem>
+                    <SelectItem value="3">3 (desayuno + comida + cena)</SelectItem>
+                    <SelectItem value="4">4 (+ merienda)</SelectItem>
+                    <SelectItem value="5">5 (+ almuerzo)</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+            <div>
+              <Label className="text-sm">Tipo de menú</Label>
+              <Select value={menuType} onValueChange={(v) => setMenuType(v as typeof menuType)}>
+                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  {Object.entries(menuTypeLabels).map(([v, l]) => (
+                    <SelectItem key={v} value={v}>{l}</SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label className="text-sm">Notas adicionales <span className="text-muted-foreground">(opcional)</span></Label>
+              <Textarea
+                className="mt-1 resize-none"
+                rows={3}
+                placeholder="Ej: preferimos platos rápidos, sin pescado azul, incluir legumbres 3 veces..."
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                maxLength={500}
+              />
+            </div>
+            <p className="text-xs text-muted-foreground bg-amber-50 border border-amber-200 rounded-lg p-3">
+              ⚠️ Todos los campos son opcionales. La IA usará los perfiles de los miembros del hogar para adaptar el menú automáticamente.
+            </p>
+            <DialogFooter>
+              <Button variant="outline" onClick={handleClose}>Cancelar</Button>
+              <Button
+                onClick={() => generate.mutate({ days, mealsPerDay, menuType, notes: notes || undefined })}
+                disabled={generate.isPending}
+                className="bg-purple-600 hover:bg-purple-700 text-white gap-2"
+              >
+                {generate.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Sparkles className="w-4 h-4" />}
+                {generate.isPending ? "Generando menú..." : "Generar menú"}
+              </Button>
+            </DialogFooter>
+          </div>
+        ) : (
+          <div className="space-y-4 py-2">
+            <div className="bg-purple-50 border border-purple-200 rounded-xl p-4">
+              <h3 className="font-semibold text-purple-800 text-lg">{(generatedMenu.menuName as string) ?? "Menú familiar"}</h3>
+              <p className="text-sm text-purple-600 mt-1">{generatedMenu.nutritionSummary as string}</p>
+            </div>
+
+            {/* Days accordion */}
+            <div className="space-y-2">
+              {((generatedMenu.days as Array<{
+                dayNumber: number;
+                dayName: string;
+                meals: Array<{
+                  mealType: string;
+                  recipeName: string;
+                  description: string;
+                  isKidFriendly: boolean;
+                  isBabyFriendly: boolean;
+                  kcalEstimate: number;
+                  notes: string | null;
+                }>;
+              }>) ?? []).map((day, i) => (
+                <div key={i} className="border rounded-xl overflow-hidden">
+                  <button
+                    className="w-full flex items-center justify-between p-3 bg-muted/40 hover:bg-muted/60 transition-colors text-left"
+                    onClick={() => setExpandedDay(expandedDay === i ? null : i)}
+                  >
+                    <span className="font-medium">{day.dayName}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-muted-foreground">{day.meals.length} comidas</span>
+                      <ChevronRight className={`w-4 h-4 transition-transform ${expandedDay === i ? "rotate-90" : ""}`} />
+                    </div>
+                  </button>
+                  {expandedDay === i && (
+                    <div className="divide-y">
+                      {day.meals.map((meal, j) => (
+                        <div key={j} className="p-3 flex items-start gap-3">
+                          <div className="w-8 h-8 rounded-lg bg-orange-100 flex items-center justify-center shrink-0">
+                            <Utensils className="w-4 h-4 text-orange-500" />
+                          </div>
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <span className="text-xs font-medium text-muted-foreground uppercase tracking-wide">{meal.mealType}</span>
+                              {meal.isKidFriendly && <Badge className="text-xs bg-blue-50 text-blue-600 border-blue-200 py-0">Niños ✅</Badge>}
+                              {meal.isBabyFriendly && <Badge className="text-xs bg-pink-50 text-pink-600 border-pink-200 py-0">Bebés ✅</Badge>}
+                              <span className="text-xs text-muted-foreground ml-auto">{meal.kcalEstimate} kcal</span>
+                            </div>
+                            <p className="font-medium text-sm mt-0.5">{meal.recipeName}</p>
+                            <p className="text-xs text-muted-foreground mt-0.5">{meal.description}</p>
+                            {meal.notes && (
+                              <p className="text-xs text-amber-600 mt-1 bg-amber-50 rounded px-2 py-1">👶 {meal.notes}</p>
+                            )}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              ))}
+            </div>
+
+            {/* Shopping tips */}
+            {Array.isArray(generatedMenu.shoppingTips) && (generatedMenu.shoppingTips as string[]).length > 0 && (
+              <div className="bg-green-50 border border-green-200 rounded-xl p-4">
+                <h4 className="font-medium text-green-800 text-sm mb-2">🛒 Consejos de compra</h4>
+                <ul className="space-y-1">
+                  {(generatedMenu.shoppingTips as string[]).map((tip, i) => (
+                    <li key={i} className="text-xs text-green-700 flex items-start gap-1">
+                      <Check className="w-3 h-3 mt-0.5 shrink-0" />{tip}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            )}
+
+            <DialogFooter className="gap-2">
+              <Button variant="outline" onClick={() => setGeneratedMenu(null)}>Generar otro</Button>
+              <Button onClick={handleClose} className="bg-orange-500 hover:bg-orange-600 text-white">Cerrar</Button>
+            </DialogFooter>
+          </div>
+        )}
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ─── Modal para editar el perfil de un miembro (tipo, edad, etc.) ───────────────────────────────
+function EditMemberProfileModal({ open, memberId, onClose }: { open: boolean; memberId: number; onClose: () => void }) {
+  const [memberType, setMemberType] = useState<"adult" | "child" | "baby">("adult");
+  const [birthDate, setBirthDate] = useState("");
+  const [weightKg, setWeightKg] = useState("");
+  const [heightCm, setHeightCm] = useState("");
+  const [feedingPhase, setFeedingPhase] = useState("");
+  const utils = trpc.useUtils();
+
+  const update = trpc.household.updateMemberProfile.useMutation({
+    onSuccess: () => {
+      toast.success("Perfil actualizado");
+      utils.household.get.invalidate();
+      onClose();
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  return (
+    <Dialog open={open} onOpenChange={onClose}>
+      <DialogContent className="max-w-md">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <User className="w-5 h-5 text-orange-500" /> Editar perfil del miembro
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 py-2">
+          <div>
+            <Label className="text-sm">Tipo de miembro</Label>
+            <Select value={memberType} onValueChange={(v) => setMemberType(v as typeof memberType)}>
+              <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+              <SelectContent>
+                <SelectItem value="adult">👤 Adulto</SelectItem>
+                <SelectItem value="child">👦 Niño (1-17 años)</SelectItem>
+                <SelectItem value="baby">👶 Bebé (0-12 meses)</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+          <div>
+            <Label className="text-sm">Fecha de nacimiento <span className="text-muted-foreground">(opcional)</span></Label>
+            <Input type="date" className="mt-1" value={birthDate} onChange={(e) => setBirthDate(e.target.value)} />
+          </div>
+          {memberType !== "baby" && (
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label className="text-sm">Peso (kg)</Label>
+                <Input type="number" className="mt-1" placeholder="Ej: 25" value={weightKg} onChange={(e) => setWeightKg(e.target.value)} />
+              </div>
+              <div>
+                <Label className="text-sm">Altura (cm)</Label>
+                <Input type="number" className="mt-1" placeholder="Ej: 120" value={heightCm} onChange={(e) => setHeightCm(e.target.value)} />
+              </div>
+            </div>
+          )}
+          {memberType === "baby" && (
+            <div>
+              <Label className="text-sm">Fase de alimentación</Label>
+              <Select value={feedingPhase} onValueChange={setFeedingPhase}>
+                <SelectTrigger className="mt-1"><SelectValue placeholder="Seleccionar fase" /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="breastfeeding">Lactancia materna</SelectItem>
+                  <SelectItem value="formula">Fórmula</SelectItem>
+                  <SelectItem value="purees">Papillas / purés</SelectItem>
+                  <SelectItem value="soft_solids">Sólidos blandos</SelectItem>
+                  <SelectItem value="normal">Alimentación normal</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          )}
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Cancelar</Button>
+          <Button
+            onClick={() => update.mutate({
+              memberId,
+              memberType,
+              birthDate: birthDate || null,
+              weightKg: weightKg ? Number(weightKg) : null,
+              heightCm: heightCm ? Number(heightCm) : null,
+              feedingPhase: (feedingPhase as "breastfeeding" | "formula" | "purees" | "soft_solids" | "normal") || null,
+            })}
+            disabled={update.isPending}
+            className="bg-orange-500 hover:bg-orange-600 text-white"
+          >
+            {update.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+            Guardar
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ─── Upsell screen for non-Pro Max users ────────────────────────────────────────────
 function HouseholdUpsell({ currentTier }: { currentTier: string }) {
   const isPro = currentTier === "basic";
   return (
@@ -824,6 +1113,8 @@ export default function Familia() {
   const [newName, setNewName] = useState("");
   const [showAssign, setShowAssign] = useState(false);
   const [expandedMember, setExpandedMember] = useState<number | null>(null);
+  const [showFamilyMenu, setShowFamilyMenu] = useState(false);
+  const [editingMemberId, setEditingMemberId] = useState<number | null>(null);
 
   const { data: household, isLoading } = trpc.household.get.useQuery(undefined, {
     enabled: !!user,
@@ -923,13 +1214,23 @@ export default function Familia() {
             <Settings className="w-4 h-4" /> Mis preferencias
           </Button>
           {isOwnerOrAdmin && (
-            <Button
-              size="sm"
-              onClick={() => setShowInvite(true)}
-              className="bg-orange-500 hover:bg-orange-600 text-white gap-1"
-            >
-              <UserPlus className="w-4 h-4" /> Invitar
-            </Button>
+            <>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowFamilyMenu(true)}
+                className="gap-1 border-purple-300 text-purple-700 hover:bg-purple-50"
+              >
+                <Sparkles className="w-4 h-4" /> Menú IA
+              </Button>
+              <Button
+                size="sm"
+                onClick={() => setShowInvite(true)}
+                className="bg-orange-500 hover:bg-orange-600 text-white gap-1"
+              >
+                <UserPlus className="w-4 h-4" /> Invitar
+              </Button>
+            </>
           )}
         </div>
       </div>
@@ -965,6 +1266,17 @@ export default function Familia() {
                     </span>
                     {isMe && <Badge variant="outline" className="text-xs">Tú</Badge>}
                     <RoleBadge role={member.role} />
+                    {/* Tipo de miembro badge */}
+                    {(member as { memberType?: string }).memberType === "child" && (
+                      <Badge className="text-xs bg-blue-100 text-blue-700 border-blue-200">
+                        <User className="w-3 h-3 mr-1" />Niño
+                      </Badge>
+                    )}
+                    {(member as { memberType?: string }).memberType === "baby" && (
+                      <Badge className="text-xs bg-pink-100 text-pink-700 border-pink-200">
+                        <Baby className="w-3 h-3 mr-1" />Bebé
+                      </Badge>
+                    )}
                   </div>
                   {member.userEmail && (
                     <p className="text-xs text-muted-foreground mt-0.5">{member.userEmail}</p>
@@ -1080,6 +1392,14 @@ export default function Familia() {
       </Card>
 
       {/* Modals */}
+      <FamilyMenuModal open={showFamilyMenu} onClose={() => setShowFamilyMenu(false)} />
+      {editingMemberId !== null && (
+        <EditMemberProfileModal
+          open={editingMemberId !== null}
+          memberId={editingMemberId}
+          onClose={() => setEditingMemberId(null)}
+        />
+      )}
       <InviteModal open={showInvite} onClose={() => setShowInvite(false)} />
       {myMember && (
         <MyPreferencesModal

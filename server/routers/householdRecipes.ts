@@ -506,4 +506,120 @@ export const householdRecipesRouter = router({
 
       return assignments;
     }),
+
+  // ── Generar menú familiar unificado con IA ───────────────────────────────
+  generateFamilyMenu: protectedProcedure
+    .input(z.object({
+      days: z.number().int().min(1).max(14).default(7),
+      mealsPerDay: z.number().int().min(2).max(5).default(3),
+      menuType: z.enum(["equilibrado", "mediterraneo", "bajo_carbohidratos", "alto_proteina", "familiar"]).default("familiar"),
+      startDate: z.string().optional(), // ISO date
+      notes: z.string().max(500).optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+
+      // Get household
+      const [myMembership] = await db.select().from(householdMembers)
+        .where(eq(householdMembers.userId, ctx.user.id)).limit(1);
+      if (!myMembership) throw new TRPCError({ code: "NOT_FOUND", message: "No perteneces a ningún hogar." });
+
+      // Get all members with their profiles
+      const members = await db.select({
+        id: householdMembers.id,
+        displayName: householdMembers.displayName,
+        memberType: householdMembers.memberType,
+        birthDate: householdMembers.birthDate,
+        dietaryRestrictions: householdMembers.dietaryRestrictions,
+        allergies: householdMembers.allergies,
+        dislikedFoods: householdMembers.dislikedFoods,
+        feedingPhase: householdMembers.feedingPhase,
+        userName: users.name,
+      })
+        .from(householdMembers)
+        .leftJoin(users, eq(householdMembers.userId, users.id))
+        .where(eq(householdMembers.householdId, myMembership.householdId));
+
+      // Build member profiles for the AI prompt
+      const memberProfiles = members.map((m) => {
+        const ageYears = m.birthDate
+          ? Math.floor((Date.now() - new Date(m.birthDate).getTime()) / (1000 * 60 * 60 * 24 * 365.25))
+          : null;
+        const restrictions = m.dietaryRestrictions ? JSON.parse(m.dietaryRestrictions) : [];
+        const allergies = m.allergies ? JSON.parse(m.allergies) : [];
+        const disliked = m.dislikedFoods ? JSON.parse(m.dislikedFoods) : [];
+        const name = m.displayName ?? m.userName ?? "Miembro";
+        const typeLabel = m.memberType === "baby" ? "Bebé" : m.memberType === "child" ? "Niño" : "Adulto";
+        const ageLabel = ageYears !== null ? ` (${ageYears} años)` : "";
+        const feedLabel = m.feedingPhase ? ` | Fase: ${m.feedingPhase}` : "";
+        return `- ${name}: ${typeLabel}${ageLabel}${feedLabel}${restrictions.length ? ` | Restricciones: ${restrictions.join(", ")}` : ""}${allergies.length ? ` | Alergias: ${allergies.join(", ")}` : ""}${disliked.length ? ` | No le gusta: ${disliked.join(", ")}` : ""}`;
+      }).join("\n");
+
+      const mealNames = { 2: ["Comida", "Cena"], 3: ["Desayuno", "Comida", "Cena"], 4: ["Desayuno", "Comida", "Merienda", "Cena"], 5: ["Desayuno", "Almuerzo", "Comida", "Merienda", "Cena"] };
+      const meals = mealNames[input.mealsPerDay as keyof typeof mealNames] ?? mealNames[3];
+
+      const { invokeLLM } = await import("../_core/llm.js");
+      const prompt = `Eres un nutricionista experto en alimentación familiar e infantil. Genera un menú familiar de ${input.days} días con ${input.mealsPerDay} comidas por día (${meals.join(", ")}) para el siguiente hogar:
+
+MIEMBROS DEL HOGAR:
+${memberProfiles}
+
+TIPO DE MENÚ: ${input.menuType}
+${input.notes ? `NOTAS ADICIONALES: ${input.notes}` : ""}
+
+REGLAS IMPORTANTES:
+1. Para niños <1 año: solo papillas y purés sin sal ni azúcar
+2. Para niños 1-3 años: texturas blandas, sin picante, poca sal
+3. Para niños >3 años: comida normal adaptada, sin picante
+4. NUNCA incluyas alimentos de las listas de alergias o restricciones
+5. Intenta que los platos sean compatibles para toda la familia (adaptando porciones/condimentos)
+6. Incluye recetas ricas en hierro y calcio al menos 3 veces por semana para los niños
+
+Responde con JSON válido con esta estructura exacta:
+{
+  "menuName": "string (nombre descriptivo del menú)",
+  "days": [
+    {
+      "dayNumber": 1,
+      "dayName": "Lunes",
+      "meals": [
+        {
+          "mealType": "desayuno|almuerzo|comida|merienda|cena",
+          "recipeName": "string",
+          "description": "string (breve descripción)",
+          "isKidFriendly": true,
+          "isBabyFriendly": false,
+          "kcalEstimate": 450,
+          "notes": "string (adaptaciones para niños si aplica, puede ser null)"
+        }
+      ]
+    }
+  ],
+  "nutritionSummary": "string (resumen nutricional del menú para toda la familia)",
+  "shoppingTips": ["string"]
+}`;
+
+      const response = await invokeLLM({
+        messages: [{ role: "user", content: prompt }],
+        response_format: { type: "json_object" }
+      });
+
+      const content = response.choices?.[0]?.message?.content;
+      if (!content) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "La IA no generó respuesta" });
+
+      let menuData: Record<string, unknown>;
+      try {
+        menuData = JSON.parse(content);
+      } catch {
+        throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Error al procesar la respuesta de la IA" });
+      }
+
+      return {
+        success: true,
+        menu: menuData,
+        memberCount: members.length,
+        generatedAt: new Date().toISOString(),
+      };
+    }),
 });

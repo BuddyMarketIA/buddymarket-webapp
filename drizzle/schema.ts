@@ -464,6 +464,13 @@ export const recipes = pgTable("recipes", {
   // Structured data (JSON)
   ingredientsJson: text("ingredientsJson"), // JSON: [{name, amount, unit, category}]
   instructionsJson: text("instructionsJson"), // JSON: [{step, text}]
+  // Etiquetas para niños y bebés
+  isKidFriendly: boolean("isKidFriendly").default(false),   // apto para niños (>1 año)
+  isBabyFriendly: boolean("isBabyFriendly").default(false), // apto para bebés (6-12 meses)
+  isFingerFood: boolean("isFingerFood").default(false),      // finger food / BLW
+  noAddedSugar: boolean("noAddedSugar").default(false),      // sin azúcar añadido
+  highIron: boolean("highIron").default(false),              // alta en hierro
+  highCalcium: boolean("highCalcium").default(false),        // alta en calcio
   // Seed data flag
   isSeeded: boolean("isSeeded").default(false),
   deletedAt: timestamp("deletedAt"),
@@ -2134,6 +2141,8 @@ export type InsertCompanyReminderLog = typeof companyReminderLogs.$inferInsert;
 // ─── Modo Familia / Hogar Compartido ─────────────────────────────────────────
 export const householdRoleEnum = pgEnum("household_role", ["owner", "admin", "member"]);
 export const householdInviteStatusEnum = pgEnum("household_invite_status", ["pending", "accepted", "declined", "expired"]);
+export const householdMemberTypeEnum = pgEnum("household_member_type", ["adult", "child", "baby"]);
+export const feedingPhaseEnum = pgEnum("feeding_phase", ["breastfeeding", "formula", "purees", "soft_solids", "normal"]);
 
 export const households = pgTable("households", {
   id: serial("id").primaryKey(),
@@ -2159,6 +2168,13 @@ export const householdMembers = pgTable("household_members", {
   dietaryRestrictions: text("dietaryRestrictions"), // JSON array: ["gluten","lactosa",...]
   allergies: text("allergies"),                      // JSON array: ["frutos_secos","mariscos",...]
   preferences: text("preferences"),                 // JSON: { calories: 2000, goal: "lose_weight" }
+  // Perfil enriquecido: tipo de miembro y datos pediátricos
+  memberType: householdMemberTypeEnum("memberType").notNull().default("adult"),
+  birthDate: timestamp("birthDate"),                // para calcular edad automáticamente
+  weightKg: real("weightKg"),                       // peso en kg
+  heightCm: real("heightCm"),                       // talla en cm
+  feedingPhase: feedingPhaseEnum("feedingPhase"),   // fase de alimentación (bebés/niños)
+  dislikedFoods: text("dislikedFoods"),             // JSON: ["brócoli", "pescado"]
   joinedAt: timestamp("joinedAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 }, (t) => ({

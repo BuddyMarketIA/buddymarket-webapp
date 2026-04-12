@@ -176,6 +176,13 @@
       "when": 1776016620870,
       "tag": "0024_easy_sir_ram",
       "breakpoints": true
+    },
+    {
+      "idx": 25,
+      "version": "7",
+      "when": 1776018142473,
+      "tag": "0025_damp_captain_cross",
+      "breakpoints": true
     }
   ]
 }

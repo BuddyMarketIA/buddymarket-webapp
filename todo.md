@@ -1961,3 +1961,21 @@
 - [x] Ruta /familia/calendario en App.tsx
 - [x] Enlace "Calendario Familiar" en sidebar de AppLayout (grupo Familia)
 - [x] Enlace "Mis Recetas Asignadas" en sidebar de AppLayout (grupo Familia)
+
+## Mejoras Modo Familia — Soporte para niños (sprint actual)
+- [x] Migración DB: añadir memberType (adult/child/baby), birthDate, weight, height, feedingPhase a householdMembers
+- [x] Migración DB: añadir campo dislikedFoods (JSON) a householdMembers
+- [x] Backend: helper calcNutritionalNeeds(memberType, ageYears) con tablas OMS por franja de edad
+- [x] Backend: endpoint household.getMemberNutrition para obtener necesidades nutricionales por miembro
+- [x] Backend: endpoint household.updateMemberProfile para actualizar tipo, edad, peso, talla, fase
+- [x] Schema DB: añadir columnas isKidFriendly, isBabyFriendly, isFingerFood, noAddedSugar, highIron, highCalcium a recipes
+- [x] Backend: endpoint admin.tagKidFriendlyRecipes para etiquetar recetas (admin)
+- [ ] Backend: seed automático de etiquetas para niños en recetas existentes (via IA/LLM)
+- [x] Frontend: modal EditMemberProfileModal con tipo (adulto/niño/bebé), fecha de nacimiento, peso, talla, fase de alimentación
+- [x] Frontend: badge visual en cada miembro del hogar (👶 bebé / 🧒 niño / 👤 adulto)
+- [ ] Frontend: panel nutricional familiar en /familia con semáforo por miembro (verde/amarillo/rojo)
+- [ ] Frontend: filtro "Apto para niños" en página de recetas
+- [ ] Frontend: badge "Apto para niños 🧒" en tarjetas de receta
+- [x] Backend: endpoint householdRecipes.generateFamilyMenu con IA (menú unificado para todos los miembros)
+- [x] Frontend: modal FamilyMenuModal con formulario de generación y resultado del menú familiar
+- [x] Frontend: botón "Menú IA" en header de /familia

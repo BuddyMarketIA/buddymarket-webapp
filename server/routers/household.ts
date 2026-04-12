@@ -9,6 +9,23 @@ import {
   householdInvitations,
   users,
 } from "../../drizzle/schema";
+
+// ─── Helper: cálculo nutricional pediátrico por edad (OMS / DRI) ─────────────────
+function calcNutritionalNeeds(memberType: string, ageYears: number | null) {
+  if (memberType === "baby") {
+    const months = ageYears != null ? Math.round(ageYears * 12) : 6;
+    if (months < 6) return { kcal: 550, protein: 9.1, carbs: 60, fat: 31, calcium: 200, iron: 0.27, label: "Bebé 0-6 meses", note: "Lactancia materna o fórmula exclusiva" };
+    return { kcal: 700, protein: 11, carbs: 95, fat: 30, calcium: 260, iron: 11, label: "Bebé 6-12 meses", note: "Introducción de sólidos" };
+  }
+  if (memberType === "child") {
+    const age = ageYears ?? 5;
+    if (age <= 3)  return { kcal: 1200, protein: 13, carbs: 130, fat: 40, calcium: 700,  iron: 7,  label: "Niño 1-3 años", note: undefined };
+    if (age <= 8)  return { kcal: 1500, protein: 19, carbs: 150, fat: 50, calcium: 1000, iron: 10, label: "Niño 4-8 años", note: undefined };
+    if (age <= 13) return { kcal: 1900, protein: 34, carbs: 200, fat: 60, calcium: 1300, iron: 8,  label: "Niño 9-13 años", note: undefined };
+    return       { kcal: 2200, protein: 52, carbs: 250, fat: 70, calcium: 1300, iron: 11, label: "Adolescente 14-18 años", note: undefined };
+  }
+  return { kcal: 2000, protein: 50, carbs: 250, fat: 70, calcium: 1000, iron: 8, label: "Adulto", note: undefined };
+}
 import { eq, and, or, inArray, count } from "drizzle-orm";
 import { randomBytes } from "crypto";
 import { Resend } from "resend";
@@ -576,5 +593,81 @@ export const householdRouter = router({
         inviterAvatar: inviter?.imageUrl ?? null,
         expiresAt: invitation.expiresAt,
       };
+    }),
+
+  // Update enriched member profile (type, birthDate, weight, height, feedingPhase, dislikedFoods)
+  updateMemberProfile: protectedProcedure
+    .input(z.object({
+      memberId: z.number(),
+      memberType: z.enum(["adult", "child", "baby"]).optional(),
+      displayName: z.string().max(80).optional(),
+      birthDate: z.string().optional().nullable(),
+      weightKg: z.number().min(0).max(300).optional().nullable(),
+      heightCm: z.number().min(0).max(250).optional().nullable(),
+      feedingPhase: z.enum(["breastfeeding", "formula", "purees", "soft_solids", "normal"]).optional().nullable(),
+      dislikedFoods: z.array(z.string()).optional(),
+      dietaryRestrictions: z.array(z.string()).optional(),
+      allergies: z.array(z.string()).optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      const [myMembership] = await db.select().from(householdMembers)
+        .where(eq(householdMembers.userId, ctx.user.id)).limit(1);
+      if (!myMembership) throw new TRPCError({ code: "NOT_FOUND", message: "No perteneces a ningún hogar." });
+      const [target] = await db.select().from(householdMembers)
+        .where(eq(householdMembers.id, input.memberId)).limit(1);
+      if (!target || target.householdId !== myMembership.householdId)
+        throw new TRPCError({ code: "NOT_FOUND", message: "Miembro no encontrado." });
+      const isSelf = target.userId === ctx.user.id;
+      const hasPermission = ["owner", "admin"].includes(myMembership.role);
+      if (!isSelf && !hasPermission)
+        throw new TRPCError({ code: "FORBIDDEN", message: "Sin permisos para editar este perfil." });
+      const updateData: Record<string, unknown> = { updatedAt: new Date() };
+      if (input.memberType !== undefined) updateData.memberType = input.memberType;
+      if (input.displayName !== undefined) updateData.displayName = input.displayName;
+      if (input.birthDate !== undefined) updateData.birthDate = input.birthDate ? new Date(input.birthDate) : null;
+      if (input.weightKg !== undefined) updateData.weightKg = input.weightKg;
+      if (input.heightCm !== undefined) updateData.heightCm = input.heightCm;
+      if (input.feedingPhase !== undefined) updateData.feedingPhase = input.feedingPhase as "breastfeeding" | "formula" | "purees" | "soft_solids" | "normal" | null;
+      if (input.dislikedFoods !== undefined) updateData.dislikedFoods = JSON.stringify(input.dislikedFoods);
+      if (input.dietaryRestrictions !== undefined) updateData.dietaryRestrictions = JSON.stringify(input.dietaryRestrictions);
+      if (input.allergies !== undefined) updateData.allergies = JSON.stringify(input.allergies);
+      await db.update(householdMembers)
+        .set(updateData as Partial<typeof householdMembers.$inferInsert>)
+        .where(eq(householdMembers.id, input.memberId));
+      return { success: true };
+    }),
+
+  // Get nutritional needs for all members of the household
+  getMembersNutrition: protectedProcedure
+    .query(async ({ ctx }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
+      const [myMembership] = await db.select().from(householdMembers)
+        .where(eq(householdMembers.userId, ctx.user.id)).limit(1);
+      if (!myMembership) throw new TRPCError({ code: "NOT_FOUND", message: "No perteneces a ningún hogar." });
+      const members = await db.select({
+        id: householdMembers.id,
+        displayName: householdMembers.displayName,
+        memberType: householdMembers.memberType,
+        birthDate: householdMembers.birthDate,
+        weightKg: householdMembers.weightKg,
+        heightCm: householdMembers.heightCm,
+        feedingPhase: householdMembers.feedingPhase,
+        userId: householdMembers.userId,
+        userName: users.name,
+        userAvatar: users.imageUrl,
+      })
+        .from(householdMembers)
+        .leftJoin(users, eq(householdMembers.userId, users.id))
+        .where(eq(householdMembers.householdId, myMembership.householdId));
+      return members.map((m) => {
+        const ageYears = m.birthDate
+          ? (Date.now() - new Date(m.birthDate).getTime()) / (1000 * 60 * 60 * 24 * 365.25)
+          : null;
+        const needs = calcNutritionalNeeds(m.memberType ?? "adult", ageYears);
+        return { ...m, ageYears: ageYears ? Math.floor(ageYears) : null, nutritionalNeeds: needs };
+      });
     }),
 });
