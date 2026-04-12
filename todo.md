@@ -1518,8 +1518,11 @@
 - [x] Componente CookieBanner GDPR con preferencias granulares (necesarias, analíticas, marketing)
 - [x] Integrar CookieBanner en App.tsx (visible en todas las páginas)
 - [x] Persistir preferencias de cookies en localStorage
-- [x] Generar sitemap.xml con todas las rutas públicas
-- [x] Crear robots.txt con reglas de indexación
+- [x] Generar sitemap.xml con todas las rutas públicas (61 URLs: 11 estáticas + 50 artículos)
+- [x] Crear robots.txt con reglas de indexación (actualizado con dominios correctos)
+- [x] Artículos relacionados al final de cada post del blog (endpoint getRelated, 3 artículos misma categoría)
+- [x] Schema JSON-LD Article en cada post del blog (headline, description, image, datePublished, author, publisher)
+- [x] Schema JSON-LD global en index.html: Organization, WebSite con SearchAction, SoftwareApplication
 
 ## Gestión de cookies en perfil
 - [x] Sección de preferencias de cookies en Profile.tsx con switches individuales y botón de guardar
