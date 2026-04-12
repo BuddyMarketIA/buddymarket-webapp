@@ -3,7 +3,6 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { usePlan } from "@/hooks/usePlan";
 import { UpgradeGate } from "@/components/UpgradeGate";
-import { getLoginUrl } from "@/const";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -169,7 +168,7 @@ export default function Metrics() {
     <div className="flex flex-col items-center justify-center h-64 gap-4">
       <Scale className="w-12 h-12 text-muted-foreground" />
       <p className="text-muted-foreground">Inicia sesión para registrar tus métricas</p>
-      <Button onClick={() => window.location.href = getLoginUrl()}>Iniciar sesión</Button>
+      <Button onClick={() => window.location.href = "/login"}>Iniciar sesión</Button>
     </div>
   );
   if (!can("canTrackMetrics")) return (
@@ -197,7 +196,7 @@ export default function Metrics() {
     <div className="flex flex-col items-center justify-center h-64 gap-4">
       <Scale className="w-12 h-12 text-muted-foreground" />
       <p className="text-muted-foreground">Inicia sesión para registrar tus métricas</p>
-      <Button onClick={() => window.location.href = getLoginUrl()}>Iniciar sesión</Button>
+      <Button onClick={() => window.location.href = "/login"}>Iniciar sesión</Button>
     </div>
   );
 

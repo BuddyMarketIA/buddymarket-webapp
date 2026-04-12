@@ -1,6 +1,5 @@
 import { useState, useEffect, useRef } from "react";
 import { Link } from "wouter";
-import { getLoginUrl } from "@/const";
 import WebSSOButtons from "@/components/WebSSOButtons";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -155,7 +154,7 @@ export default function LandingPage() {
   const [activeFeature, setActiveFeature] = useState(0);
   const [heroVisible, setHeroVisible] = useState(false);
   const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
-  const loginUrl = getLoginUrl();
+  const loginUrl = "/login";
   const appUrl = user ? "/app/dashboard" : loginUrl;
   const createCheckout = trpc.subscriptions.createCheckout.useMutation();
 

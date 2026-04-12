@@ -1,7 +1,6 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { getLoginUrl } from "@/const";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -188,7 +187,7 @@ export default function BuddyApplication({ type }: { type?: AppType }) {
       <p style={{ margin: 0, fontWeight: 700, fontSize: "18px", color: "#1a1a1a" }}>Inicia sesión para continuar</p>
       <p style={{ margin: 0, fontSize: "14px", color: "#6b7280", textAlign: "center" }}>Necesitas una cuenta para enviar tu solicitud como creador.</p>
       <button
-        onClick={() => window.location.href = getLoginUrl()}
+        onClick={() => window.location.href = "/login"}
         style={{ padding: "12px 24px", borderRadius: "14px", background: "linear-gradient(135deg, #F97316, #FB923C)", color: "white", fontWeight: 700, fontSize: "15px", border: "none", cursor: "pointer" }}
       >
         Iniciar sesión

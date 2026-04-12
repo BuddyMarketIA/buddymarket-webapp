@@ -4,7 +4,6 @@ import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { getLoginUrl } from "@/const";
 import { toast } from "@/components/sonner-a11y-shim";
 import { usePlan } from "@/hooks/usePlan";
 import { UpgradeGate } from "@/components/UpgradeGate";
@@ -119,7 +118,7 @@ export default function SpecializedMenus() {
 
   const handleSelectCategory = (cat: CategoryDef) => {
     if (!user) {
-      window.location.href = getLoginUrl();
+      window.location.href = "/login";
       return;
     }
     setSelectedCategory(cat);

@@ -2,7 +2,6 @@ import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import AppLayout from "@/components/AppLayout";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { getLoginUrl } from "@/const";
 import { toast } from "@/components/sonner-a11y-shim";
 
 // ─── Types (mirrored from EventMenuPlanner) ──────────────────────────────────
@@ -93,7 +92,7 @@ export default function SavedEvents() {
         <div className="vively-page flex flex-col items-center justify-center min-h-[60vh] text-center gap-4">
           <span className="text-6xl">🎉</span>
           <h2 className="text-2xl font-bold">Inicia sesión para ver tus eventos guardados</h2>
-          <a href={getLoginUrl()} className="vively-btn-primary px-6 py-3 rounded-2xl">Iniciar sesión</a>
+          <a href="/login" className="vively-btn-primary px-6 py-3 rounded-2xl">Iniciar sesión</a>
         </div>
       </AppLayout>
     );

@@ -8,8 +8,6 @@ import ErrorBoundary from "./components/ErrorBoundary";
 import { ThemeProvider } from "./contexts/ThemeContext";
 import AppLayout from "./components/AppLayout";
 import { useAuth } from "./_core/hooks/useAuth";
-import { getLoginUrl } from "./const";
-
 // ─── Lazy-loaded pages (code splitting per route) ─────────────────────────────
 const Home = lazy(() => import("./pages/Home"));
 const LandingPage = lazy(() => import("./pages/LandingPage"));
@@ -110,13 +108,13 @@ function WithLayout({ component: Component, ...props }: { component: React.Compo
   );
 }
 
-// Protects app routes — redirects to Manus login if not authenticated
+// Protects app routes — redirects to /login if not authenticated
 function ProtectedRoute({ component: Component, params }: { component: React.ComponentType<any>; params?: any }) {
   const { user, loading } = useAuth();
   const [, setLocation] = useLocation();
   if (loading) return <PageLoader />;
   if (!user) {
-    window.location.href = getLoginUrl();
+    window.location.href = "/login";
     return null;
   }
   // Redirect to onboarding wizard if not completed yet
@@ -131,14 +129,13 @@ function ProtectedPage({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
   if (loading) return <PageLoader />;
   if (!user) {
-    window.location.href = getLoginUrl();
+    window.location.href = "/login";
     return null;
   }
   return <>{children}</>;
 }
 
 function Router() {
-  // On appbuddymarket.com, redirect root to Manus login directly
   const isAppDomain = typeof window !== 'undefined' && window.location.hostname.includes('appbuddymarket.com');
   return (
     <Switch>

@@ -2073,3 +2073,14 @@
 - [x] Exportar PDF menú: implementado con jsPDF en ActiveMenu.tsx
 - [ ] Traducciones: revisar textos hardcodeados en español que no usan t()
 - [ ] BD de ingredientes: ampliar a 1.000+ ingredientes
+
+## Eliminar Manus OAuth [EN PROGRESO]
+- [x] Frontend: reemplazar getLoginUrl() por "/login" en App.tsx (ProtectedRoute y ProtectedPage)
+- [x] Frontend: reemplazar getLoginUrl() por "/login" en main.tsx (redirectToLoginIfUnauthorized)
+- [x] Frontend: reemplazar getLoginUrl() por "/login" en useAuth.ts
+- [x] Frontend: reemplazar getLoginUrl() por "/login" en AppLayout.tsx y DashboardLayout.tsx
+- [x] Frontend: reemplazar getLoginUrl() por "/login" en otras páginas (BuddyApplication, EventMenuPlanner, Following, LandingPage, Metrics)
+- [x] Frontend: actualizar const.ts para eliminar funciones que dependen de VITE_OAUTH_PORTAL_URL
+- [x] Frontend: eliminar ManusDialog.tsx o adaptarlo para no mencionar Manus
+- [x] Backend: eliminar ruta /api/oauth/callback del servidor
+- [x] Backend: eliminar registerOAuthRoutes del index.ts

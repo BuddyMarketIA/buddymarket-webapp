@@ -11,7 +11,6 @@ import cors from "cors";
 import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
-import { registerOAuthRoutes } from "./oauth";
 import { registerSSORoutes } from "../sso";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
@@ -156,7 +155,6 @@ async function startServer() {
   });
 
   app.use(globalLimiter);
-  app.use("/api/oauth", authLimiter);
   app.use("/api/trpc/buddyIA", aiLimiter);
 
   // ─── Stripe webhook (raw body, BEFORE express.json) ───────────────────────
@@ -173,8 +171,6 @@ async function startServer() {
     next();
   });
 
-  // OAuth callback under /api/oauth/callback
-  registerOAuthRoutes(app);
   // SSO: Sign in with Apple & Google
   registerSSORoutes(app);
 

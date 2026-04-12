@@ -2,7 +2,6 @@ import { useState, useMemo } from "react";
 import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { getLoginUrl } from "@/const";
 import { Button } from "@/components/ui/button";
 import { Tooltip, TooltipContent, TooltipTrigger } from "@/components/ui/tooltip";
 import AppLayout from "@/components/AppLayout";
@@ -275,7 +274,7 @@ export default function FamiliaCalendario() {
     );
   }
   if (!user) {
-    window.location.href = getLoginUrl();
+    window.location.href = "/login";
     return null;
   }
 

@@ -1,5 +1,4 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import { getLoginUrl } from "@/const";
 import { useState, useEffect, useRef } from "react";
 import { Link, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
@@ -262,7 +261,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
     );
   }
 
-  if (!isAuthenticated) { window.location.href = getLoginUrl(); return null; }
+  if (!isAuthenticated) { window.location.href = "/login"; return null; }
 
   const shouldShowNav = !hideNav;
   const pageTitle = title || currentNavItem?.label || currentSidebarItem?.label || "BuddyMarket";

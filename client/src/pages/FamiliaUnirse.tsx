@@ -2,7 +2,6 @@ import { useEffect, useState } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { getLoginUrl } from "@/const";
 import { Button } from "@/components/ui/button";
 import { Loader2, Home, Check, AlertTriangle, Clock } from "lucide-react";
 import { toast } from "@/components/sonner-a11y-shim";
@@ -129,7 +128,7 @@ export default function FamiliaUnirse() {
               </p>
               <Button
                 onClick={() => {
-                  window.location.href = getLoginUrl();
+                  window.location.href = "/login";
                 }}
                 className="w-full bg-orange-500 hover:bg-orange-600 text-white"
                 size="lg"

@@ -3,7 +3,6 @@ import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "@/components/sonner-a11y-shim";
-import { getLoginUrl } from "@/const";
 
 type Tab = "experts" | "makers";
 type SortOrder = "popularity" | "name" | "recent";
@@ -189,7 +188,7 @@ export default function Following() {
         <div className="text-6xl">👥</div>
         <h2 className="text-xl font-bold text-gray-800">Inicia sesión para ver a quién sigues</h2>
         <p className="text-gray-500">Sigue a BuddyExperts y BuddyMakers para ver su contenido aquí.</p>
-        <a href={getLoginUrl()} className="bg-orange-500 text-white font-bold px-6 py-3 rounded-2xl hover:bg-orange-600 transition-colors">
+        <a href="/login" className="bg-orange-500 text-white font-bold px-6 py-3 rounded-2xl hover:bg-orange-600 transition-colors">
           Iniciar sesión
         </a>
       </div>
