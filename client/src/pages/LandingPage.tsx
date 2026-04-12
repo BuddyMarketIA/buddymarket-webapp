@@ -4,6 +4,8 @@ import WebSSOButtons from "@/components/WebSSOButtons";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "@/components/sonner-a11y-shim";
+import NutritionalCalculatorSection from "@/components/NutritionalCalculatorSection";
+import HabitsChecklistSection from "@/components/HabitsChecklistSection";
 
 const LOGO_HORIZONTAL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/logo-horizontal-orange_0dcbe0a8.png";
 const LOGO_ICON = "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/logo-icon-orange_2cf889cb.png";
@@ -238,13 +240,11 @@ export default function LandingPage() {
           <div className="lp-desktop-nav" style={{ display: "flex", alignItems: "center", gap: 4 }}>
             {[
               { label: "Funcionalidades", href: "#features" },
-              { label: "Menús Especiales", href: "#special" },
               { label: "Precios", href: "#pricing" },
-              { label: "Creadores 💼", href: "/creators" },
-              { label: "Empresas 🏢", href: "/empresas" },
+              { label: "Creadores", href: "/creators" },
+              { label: "Empresas", href: "/empresas" },
               { label: "Blog", href: "/blog" },
-              { label: "FAQ", href: "/faq" },
-              { label: "BuddyCoach ↗", href: "https://buddycoach.io" },
+              { label: "BuddyCoach ↗", href: "https://buddycoach.io", external: true },
             ].map(item => (
               <a key={item.label} href={item.href}
                 style={{ fontSize: 14, fontWeight: 600, color: "#374151", textDecoration: "none", padding: "8px 14px", borderRadius: 10, transition: "all 0.2s" }}
@@ -284,22 +284,19 @@ export default function LandingPage() {
         {mobileMenuOpen && (
           <div style={{ padding: "12px 20px 20px", borderTop: "1px solid #f3f4f6", display: "flex", flexDirection: "column", gap: 4, background: "white" }}>
             {[
-              { label: "Funcionalidades", href: "#features", emoji: "✨" },
-              { label: "Menús Especiales", href: "#special", emoji: "🥗" },
-              { label: "Precios", href: "#pricing", emoji: "💎" },
-              { label: "Creadores", href: "/creators", emoji: "💼" },
-              { label: "Empresas", href: "/empresas", emoji: "🏢" },
-              { label: "Blog", href: "/blog", emoji: "📝" },
-              { label: "FAQ", href: "/faq", emoji: "❓" },
-              { label: "BuddyCoach ↗", href: "https://buddycoach.io", emoji: "💪", external: true },
+              { label: "Funcionalidades", href: "#features" },
+              { label: "Precios", href: "#pricing" },
+              { label: "Creadores", href: "/creators" },
+              { label: "Empresas", href: "/empresas" },
+              { label: "Blog", href: "/blog" },
+              { label: "BuddyCoach ↗", href: "https://buddycoach.io", external: true },
             ].map(item => (
               <a key={item.label} href={item.href}
                 target={(item as any).external ? "_blank" : undefined}
                 rel={(item as any).external ? "noopener noreferrer" : undefined}
                 onClick={() => setMobileMenuOpen(false)}
-                style={{ display: "flex", alignItems: "center", gap: 12, padding: "13px 16px", borderRadius: 12, fontSize: 16, fontWeight: 600, color: "#374151", textDecoration: "none" }}>
-                <span style={{ fontSize: 20, width: 28, textAlign: "center" }}>{item.emoji}</span>
-                <span>{item.label}</span>
+                style={{ display: "flex", alignItems: "center", padding: "13px 16px", borderRadius: 12, fontSize: 15, fontWeight: 600, color: "#374151", textDecoration: "none" }}>
+                {item.label}
               </a>
             ))}
             <div style={{ height: 1, background: "#f3f4f6", margin: "8px 0" }} />
@@ -819,6 +816,12 @@ export default function LandingPage() {
           </div>
         </div>
       </section>
+
+      {/* ═══ CALCULADORA NUTRICIONAL ══════════════════════════════════════ */}
+      <NutritionalCalculatorSection appUrl={appUrl} />
+
+      {/* ═══ CHECKLIST DE HÁBITOS ════════════════════════════════════════════ */}
+      <HabitsChecklistSection appUrl={appUrl} />
 
       {/* ═══ CTA FINAL ════════════════════════════════════════════════════ */}
       <section style={{ padding: "96px 24px", background: "linear-gradient(135deg, #F97316 0%, #ea580c 100%)", textAlign: "center", position: "relative", overflow: "hidden" }}>

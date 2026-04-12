@@ -2084,3 +2084,6 @@
 - [x] Frontend: eliminar ManusDialog.tsx o adaptarlo para no mencionar Manus
 - [x] Backend: eliminar ruta /api/oauth/callback del servidor
 - [x] Backend: eliminar registerOAuthRoutes del index.ts
+## Landing Page — Nuevas Secciones
+- [x] Calculadora nutricional interactiva (IMC, TMB, macros personalizados)
+- [x] Checklist de análisis de hábitos nutricionales con feedback personalizado y puntuación
