@@ -5707,6 +5707,17 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
         experience: z.string().optional(),
         expertCategory: z.string().optional(),
         certifications: z.string().optional(),
+        // BuddyExpert specific
+        collegiateNumber: z.string().optional(),
+        yearsExperience: z.number().int().min(0).max(50).optional(),
+        servicesOffered: z.string().optional(), // JSON array
+        consultationPrice: z.number().min(0).max(9999).optional(),
+        targetAudience: z.string().optional(),
+        // BuddyMaker specific
+        contentNiche: z.string().optional(),
+        platforms: z.string().optional(), // JSON
+        followersCount: z.number().int().min(0).optional(),
+        contentFrequency: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
         const drizzleDb = await db.getDb();
@@ -5720,23 +5731,10 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
         if (existing.length > 0 && existing[0].status !== "rejected") {
           throw new TRPCError({ code: "BAD_REQUEST", message: "Ya tienes una solicitud activa para este rol" });
         }
-        if (existing.length > 0 && existing[0].status === "rejected") {
-          // Allow re-apply after rejection — update the existing record
-          await drizzleDb.update(appsTable).set({
-            ...input,
-            status: "pending",
-            adminNote: null,
-            reviewedAt: null,
-            reviewedBy: null,
-          }).where(eq(appsTable.id, existing[0].id));
-          // Notify owner
-          try { const { notifyOwner } = await import("./_core/notification"); await notifyOwner({ title: `Nueva solicitud ${input.type}: ${input.displayName}`, content: `${ctx.user.name || ctx.user.email} quiere ser ${input.type === "expert" ? "BuddyExpert" : "BuddyMaker"}. Especialidad: ${input.specialty || "N/A"}` }); } catch {}
-          return { success: true, id: existing[0].id };
-        }
-        const result = await drizzleDb.insert(appsTable).values({
+        const insertData = {
           userId: ctx.user.id,
           type: input.type,
-          status: "pending",
+          status: "pending" as const,
           displayName: input.displayName,
           bio: input.bio ?? null,
           specialty: input.specialty ?? null,
@@ -5748,7 +5746,29 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
           experience: input.experience ?? null,
           expertCategory: input.expertCategory ?? null,
           certifications: input.certifications ?? null,
-        });
+          collegiateNumber: input.collegiateNumber ?? null,
+          yearsExperience: input.yearsExperience ?? null,
+          servicesOffered: input.servicesOffered ?? null,
+          consultationPrice: input.consultationPrice ?? null,
+          targetAudience: input.targetAudience ?? null,
+          contentNiche: input.contentNiche ?? null,
+          platforms: input.platforms ?? null,
+          followersCount: input.followersCount ?? null,
+          contentFrequency: input.contentFrequency ?? null,
+        };
+        if (existing.length > 0 && existing[0].status === "rejected") {
+          // Allow re-apply after rejection — update the existing record
+          await drizzleDb.update(appsTable).set({
+            ...insertData,
+            adminNote: null,
+            reviewedAt: null,
+            reviewedBy: null,
+          }).where(eq(appsTable.id, existing[0].id));
+          // Notify owner
+          try { const { notifyOwner } = await import("./_core/notification"); await notifyOwner({ title: `Nueva solicitud ${input.type}: ${input.displayName}`, content: `${ctx.user.name || ctx.user.email} quiere ser ${input.type === "expert" ? "BuddyExpert" : "BuddyMaker"}. Especialidad: ${input.specialty || "N/A"}` }); } catch {}
+          return { success: true, id: existing[0].id };
+        }
+        const result = await drizzleDb.insert(appsTable).values(insertData);
         // Notify owner
         try { const { notifyOwner } = await import("./_core/notification"); await notifyOwner({ title: `Nueva solicitud ${input.type}: ${input.displayName}`, content: `${ctx.user.name || ctx.user.email} quiere ser ${input.type === "expert" ? "BuddyExpert" : "BuddyMaker"}. Especialidad: ${input.specialty || "N/A"}` }); } catch {}
         return { success: true, id: (result as any)[0]?.id ?? 0 };

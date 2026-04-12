@@ -1052,9 +1052,19 @@ export const buddyApplications = pgTable("buddy_applications", {
   websiteUrl: varchar("websiteUrl", { length: 256 }),
   motivation: text("motivation"), // Por qué quiere ser Expert/Maker
   experience: text("experience"), // Experiencia previa
-  // Campos específicos para Expert
+  // Campos específicos para BuddyExpert
   expertCategory: varchar("expertCategory", { length: 64 }),
   certifications: text("certifications"),
+  collegiateNumber: varchar("collegiateNumber", { length: 64 }), // Número de colegiado
+  yearsExperience: integer("yearsExperience"), // Años de experiencia clínica
+  servicesOffered: text("servicesOffered"), // JSON array: consulta_online, presencial, seguimiento, etc.
+  consultationPrice: real("consultationPrice"), // Precio por consulta en EUR
+  targetAudience: text("targetAudience"), // Público objetivo: adultos, deportistas, niños, etc.
+  // Campos específicos para BuddyMaker
+  contentNiche: varchar("contentNiche", { length: 128 }), // Nicho: recetas veganas, fitness, etc.
+  platforms: text("platforms"), // JSON: { instagram, youtube, tiktok, blog } con seguidores
+  followersCount: integer("followersCount"), // Total de seguidores aproximado
+  contentFrequency: varchar("contentFrequency", { length: 64 }), // diario, semanal, mensual
   // Admin
   adminNote: text("adminNote"), // Nota del admin al aprobar/rechazar
   reviewedAt: timestamp("reviewedAt"),

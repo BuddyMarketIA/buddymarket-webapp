@@ -493,7 +493,12 @@ export default function LandingPage() {
                 <p style={{ fontSize: 12, fontWeight: 800, color: SERVICES[activeService].color, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 8 }}>{SERVICES[activeService].title}</p>
                 <h3 style={{ fontSize: "clamp(22px,3vw,32px)", fontWeight: 800, color: "#111827", margin: "0 0 16px", lineHeight: 1.3 }}>{SERVICES[activeService].subtitle}</h3>
                 <p style={{ fontSize: 16, color: "#4b5563", lineHeight: 1.7, marginBottom: 28 }}>{SERVICES[activeService].desc}</p>
-                <a href={ctaHref} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "13px 24px", borderRadius: 12, fontSize: 15, fontWeight: 700, color: "white", background: SERVICES[activeService].color, textDecoration: "none", boxShadow: `0 6px 20px ${SERVICES[activeService].color}40` }}>
+                <a href={
+                  SERVICES[activeService].title === "BuddyExperts" ? "/register/buddy-expert" :
+                  SERVICES[activeService].title === "BuddyMakers" ? "/register/buddy-maker" :
+                  SERVICES[activeService].title === "Para Empresas" ? "/empresas" :
+                  ctaHref
+                } style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "13px 24px", borderRadius: 12, fontSize: 15, fontWeight: 700, color: "white", background: SERVICES[activeService].color, textDecoration: "none", boxShadow: `0 6px 20px ${SERVICES[activeService].color}40` }}>
                   {SERVICES[activeService].cta}
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </a>

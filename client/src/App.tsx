@@ -86,6 +86,8 @@ const Herramientas = lazy(() => import("./pages/Herramientas"));
 const Creators = lazy(() => import("./pages/Creators"));
 const CreatorDashboard = lazy(() => import("./pages/CreatorDashboard"));
 const Soporte = lazy(() => import("./pages/Soporte"));
+const RegisterBuddyExpert = lazy(() => import("./pages/RegisterBuddyExpert"));
+const RegisterBuddyMaker = lazy(() => import("./pages/RegisterBuddyMaker"));
 
 // ─── Page loading fallback ────────────────────────────────────────────────────
 function PageLoader() {
@@ -222,6 +224,8 @@ function Router() {
       <Route path="/app/expert-plans">{() => <ProtectedPage><ExpertPlansManager /></ProtectedPage>}</Route>
       <Route path="/app/my-plans">{() => <ProtectedPage><ClientPlanView /></ProtectedPage>}</Route>
       <Route path="/register">{() => <Registration />}</Route>
+      <Route path="/register/buddy-expert">{() => <RegisterBuddyExpert />}</Route>
+      <Route path="/register/buddy-maker">{() => <RegisterBuddyMaker />}</Route>
       {/* Fallback */}
       <Route path="/404" component={NotFound} />
       <Route component={NotFound} />
