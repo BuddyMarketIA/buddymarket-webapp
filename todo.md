@@ -1860,3 +1860,8 @@
 - [ ] Detalles extendidos: fecha de registro, plan, ganancias generadas, días activo
 - [ ] Indicador de estado visual con color (activo=verde, cancelado=rojo)
 - [ ] Exportar lista de referidos a CSV
+
+## Propuesta BuddyCoach para Nutricionistas (completado)
+- [x] Landing page /nutricionistas con propuesta BuddyCoach (beneficios, modelo de ingresos, formulario de solicitud)
+- [x] Formulario de solicitud BuddyCoach con notificación al owner vía trpc.system.notifyOwner
+- [x] Documento PDF propuesta de colaboración para nutricionistas

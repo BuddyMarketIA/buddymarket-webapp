@@ -24,6 +24,7 @@ const Privacy = lazy(() => import("./pages/Privacy"));
 const Cookies = lazy(() => import("./pages/Cookies"));
 const Registration = lazy(() => import("./pages/Registration"));
 const NotFound = lazy(() => import("./pages/NotFound"));
+const Nutricionistas = lazy(() => import("./pages/Nutricionistas"));
 const BuddySetup = lazy(() => import("./pages/BuddySetup"));
 const OnboardingTour = lazy(() => import("./pages/OnboardingTour"));
 const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
@@ -146,6 +147,7 @@ function Router() {
       <Route path="/legal" component={Terms} />
       <Route path="/gdpr" component={Privacy} />
       <Route path="/herramientas" component={Herramientas} />
+      <Route path="/nutricionistas" component={Nutricionistas} />
       <Route path="/creators" component={Creators} />
       <Route path="/creator-dashboard">{() => <ProtectedPage><CreatorDashboard /></ProtectedPage>}</Route>
       {/* Onboarding wizard — requires auth, no AppLayout */}
