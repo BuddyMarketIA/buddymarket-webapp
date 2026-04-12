@@ -29,6 +29,7 @@ import {
   PhoneIcon,
   EnvelopeIcon,
   EyeIcon,
+  ChatBubbleLeftRightIcon,
 } from "@heroicons/react/24/outline";
 import { RECIPE_PLACEHOLDER_IMAGE as RECIPE_PLACEHOLDER } from "@/lib/constants";
 import UsageAnalyticsPanel from "@/components/UsageAnalyticsPanel";
@@ -47,6 +48,7 @@ const TABS = [
   { key: "founders", label: "Fundadores", icon: StarIcon },
   { key: "badges", label: "Insignias", icon: TrophyIcon },
   { key: "empresas", label: "Empresas B2B", icon: BuildingOfficeIcon },
+  { key: "soporte", label: "Soporte", icon: ChatBubbleLeftRightIcon },
 ];
 
 function CatalogSection({
@@ -644,6 +646,10 @@ export default function Admin() {
       {/* Empresas B2B */}
       {activeTab === "empresas" && (
         <AdminEmpresasPanel />
+      )}
+      {/* Soporte */}
+      {activeTab === "soporte" && (
+        <AdminSoportePanel />
       )}
       {/* Users */}
       {activeTab === "users" && (
@@ -1754,6 +1760,333 @@ function AdminCompanyNotes({
       >
         {isSaving ? "Guardando..." : "Guardar notas"}
       </button>
+    </div>
+  );
+}
+
+// ── AdminSoportePanel ─────────────────────────────────────────────────────────
+const PRIORITY_LABELS: Record<string, { label: string; color: string }> = {
+  low:      { label: "Baja",     color: "bg-gray-100 text-gray-600" },
+  medium:   { label: "Media",    color: "bg-yellow-100 text-yellow-700" },
+  high:     { label: "Alta",     color: "bg-orange-100 text-orange-700" },
+  critical: { label: "Crítica",  color: "bg-red-100 text-red-700" },
+};
+const STATUS_LABELS: Record<string, { label: string; color: string }> = {
+  open:        { label: "Abierto",     color: "bg-blue-100 text-blue-700" },
+  in_progress: { label: "En curso",    color: "bg-purple-100 text-purple-700" },
+  waiting:     { label: "Esperando",   color: "bg-yellow-100 text-yellow-700" },
+  resolved:    { label: "Resuelto",    color: "bg-green-100 text-green-700" },
+  closed:      { label: "Cerrado",     color: "bg-gray-100 text-gray-500" },
+};
+const CATEGORY_LABELS_ADMIN: Record<string, string> = {
+  billing:       "Facturación",
+  technical:     "Técnico",
+  account:       "Cuenta",
+  recipes:       "Recetas",
+  nutrition:     "Nutrición",
+  family:        "Familia",
+  subscription:  "Suscripción",
+  other:         "Otro",
+};
+
+function AdminSoportePanel() {
+  const [statusFilter, setStatusFilter] = useState<string>("open");
+  const [priorityFilter, setPriorityFilter] = useState<string>("all");
+  const [searchQuery, setSearchQuery] = useState("");
+  const [selectedTicket, setSelectedTicket] = useState<any>(null);
+  const [replyText, setReplyText] = useState("");
+  const [isInternal, setIsInternal] = useState(false);
+  const utils = trpc.useUtils();
+
+  const { data: ticketsData, isLoading } = trpc.support.adminGetTickets.useQuery({
+    status: statusFilter === "all" ? undefined : statusFilter as any,
+    priority: priorityFilter === "all" ? undefined : priorityFilter as any,
+    search: searchQuery || undefined,
+    limit: 50,
+  });
+
+  const { data: ticketDetail, isLoading: detailLoading } = trpc.support.adminGetTicketDetail.useQuery(
+    { ticketId: selectedTicket?.id },
+    { enabled: !!selectedTicket?.id }
+  );
+
+  const updateStatus = trpc.support.adminUpdateTicket.useMutation({
+    onSuccess: () => {
+      toast.success("Ticket actualizado");
+      utils.support.adminGetTickets.invalidate();
+      utils.support.adminGetTicketDetail.invalidate({ ticketId: selectedTicket?.id });
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const replyMutation = trpc.support.adminReplyTicket.useMutation({
+    onSuccess: () => {
+      toast.success("Respuesta enviada");
+      setReplyText("");
+      utils.support.adminGetTicketDetail.invalidate({ ticketId: selectedTicket?.id });
+      utils.support.adminGetTickets.invalidate();
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const tickets = ticketsData?.tickets ?? [];
+  const summary = ticketsData?.summary;
+
+  return (
+    <div className="space-y-4">
+      {/* KPIs */}
+      {summary && (
+        <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
+          {[
+            { label: "Total", value: summary.total, color: "bg-gray-50 text-gray-700" },
+            { label: "Abiertos", value: summary.open, color: "bg-blue-50 text-blue-700" },
+            { label: "En curso", value: summary.inProgress, color: "bg-purple-50 text-purple-700" },
+            { label: "Esperando", value: summary.waiting, color: "bg-yellow-50 text-yellow-700" },
+            { label: "Resueltos", value: summary.resolved, color: "bg-green-50 text-green-700" },
+          ].map((kpi) => (
+            <div key={kpi.label} className={`rounded-2xl p-3 text-center ${kpi.color}`}>
+              <p className="text-2xl font-bold">{kpi.value}</p>
+              <p className="text-xs font-medium mt-0.5">{kpi.label}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="flex flex-col lg:flex-row gap-4">
+        {/* Left: ticket list */}
+        <div className="lg:w-2/5 space-y-3">
+          {/* Filters */}
+          <div className="vively-card space-y-2">
+            <div className="relative">
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <input
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Buscar tickets..."
+                className="vively-input pl-9 w-full text-sm"
+              />
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              {["all", "open", "in_progress", "waiting", "resolved", "closed"].map((s) => (
+                <button
+                  key={s}
+                  onClick={() => setStatusFilter(s)}
+                  className={`px-2.5 py-1 rounded-xl text-xs font-semibold transition-colors ${
+                    statusFilter === s
+                      ? "bg-gray-900 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  {s === "all" ? "Todos" : STATUS_LABELS[s]?.label ?? s}
+                </button>
+              ))}
+            </div>
+            <div className="flex gap-2 flex-wrap">
+              {["all", "critical", "high", "medium", "low"].map((p) => (
+                <button
+                  key={p}
+                  onClick={() => setPriorityFilter(p)}
+                  className={`px-2.5 py-1 rounded-xl text-xs font-semibold transition-colors ${
+                    priorityFilter === p
+                      ? "bg-gray-900 text-white"
+                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  }`}
+                >
+                  {p === "all" ? "Todas" : PRIORITY_LABELS[p]?.label ?? p}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {/* Ticket list */}
+          <div className="space-y-2 max-h-[60vh] overflow-y-auto">
+            {isLoading ? (
+              <div className="text-center py-8 text-sm text-gray-400">Cargando tickets...</div>
+            ) : tickets.length === 0 ? (
+              <div className="text-center py-8 text-sm text-gray-400">No hay tickets con estos filtros.</div>
+            ) : (
+              tickets.map((ticket: any) => (
+                <button
+                  key={ticket.id}
+                  onClick={() => setSelectedTicket(ticket)}
+                  className={`w-full text-left rounded-2xl border p-3 transition-all ${
+                    selectedTicket?.id === ticket.id
+                      ? "border-orange-300 bg-orange-50"
+                      : "border-gray-100 bg-white hover:border-gray-200 hover:bg-gray-50"
+                  }`}
+                >
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-800 truncate">{ticket.subject}</p>
+                      <p className="text-xs text-gray-500 mt-0.5">{ticket.userName} · #{ticket.id}</p>
+                      <p className="text-xs text-gray-400 mt-0.5 truncate">{ticket.lastMessage || ticket.description}</p>
+                    </div>
+                    <div className="flex flex-col items-end gap-1 shrink-0">
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${STATUS_LABELS[ticket.status]?.color}`}>
+                        {STATUS_LABELS[ticket.status]?.label}
+                      </span>
+                      <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${PRIORITY_LABELS[ticket.priority]?.color}`}>
+                        {PRIORITY_LABELS[ticket.priority]?.label}
+                      </span>
+                      {ticket.unreadCount > 0 && (
+                        <span className="bg-orange-500 text-white text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+                          {ticket.unreadCount}
+                        </span>
+                      )}
+                    </div>
+                  </div>
+                  <p className="text-xs text-gray-300 mt-1">
+                    {new Date(ticket.updatedAt).toLocaleDateString("es-ES", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+                  </p>
+                </button>
+              ))
+            )}
+          </div>
+        </div>
+
+        {/* Right: ticket detail */}
+        <div className="lg:flex-1">
+          {!selectedTicket ? (
+            <div className="vively-card flex flex-col items-center justify-center py-16 text-center">
+              <ChatBubbleLeftRightIcon className="h-12 w-12 text-gray-200 mb-3" />
+              <p className="text-sm text-gray-400">Selecciona un ticket para ver el detalle</p>
+            </div>
+          ) : detailLoading ? (
+            <div className="vively-card py-12 text-center text-sm text-gray-400">Cargando...</div>
+          ) : ticketDetail ? (
+            <div className="vively-card space-y-4">
+              {/* Header */}
+              <div className="flex items-start justify-between gap-3">
+                <div>
+                  <h3 className="text-base font-bold text-gray-800">{ticketDetail.ticket.subject}</h3>
+                  <p className="text-xs text-gray-500 mt-0.5">
+                    {ticketDetail.ticket.userName} · {ticketDetail.ticket.userEmail} · #{ticketDetail.ticket.id}
+                  </p>
+                  <p className="text-xs text-gray-400 mt-0.5">
+                    Categoría: {CATEGORY_LABELS_ADMIN[ticketDetail.ticket.category] ?? ticketDetail.ticket.category}
+                    {ticketDetail.ticket.orderId && ` · Pedido: ${ticketDetail.ticket.orderId}`}
+                  </p>
+                </div>
+                <button
+                  onClick={() => setSelectedTicket(null)}
+                  className="text-gray-400 hover:text-gray-600 shrink-0"
+                >
+                  <XMarkIcon className="h-5 w-5" />
+                </button>
+              </div>
+
+              {/* Status / Priority controls */}
+              <div className="flex flex-wrap gap-2">
+                <select
+                  value={ticketDetail.ticket.status}
+                  onChange={(e) => updateStatus.mutate({ ticketId: ticketDetail.ticket.id, status: e.target.value as any })}
+                  className="vively-input text-xs py-1 px-2"
+                >
+                  {Object.entries(STATUS_LABELS).map(([k, v]) => (
+                    <option key={k} value={k}>{v.label}</option>
+                  ))}
+                </select>
+                <select
+                  value={ticketDetail.ticket.priority}
+                  onChange={(e) => updateStatus.mutate({ ticketId: ticketDetail.ticket.id, priority: e.target.value as any })}
+                  className="vively-input text-xs py-1 px-2"
+                >
+                  {Object.entries(PRIORITY_LABELS).map(([k, v]) => (
+                    <option key={k} value={k}>{v.label}</option>
+                  ))}
+                </select>
+                <select
+                  value={ticketDetail.ticket.assignedTo ?? ""}
+                  onChange={(e) => updateStatus.mutate({ ticketId: ticketDetail.ticket.id, assignedTo: e.target.value || null })}
+                  className="vively-input text-xs py-1 px-2"
+                >
+                  <option value="">Sin asignar</option>
+                  <option value="admin">Admin</option>
+                  <option value="soporte">Soporte</option>
+                  <option value="tecnico">Técnico</option>
+                </select>
+              </div>
+
+              {/* Messages thread */}
+              <div className="space-y-3 max-h-[40vh] overflow-y-auto">
+                {/* Initial description */}
+                <div className="rounded-2xl bg-gray-50 p-3">
+                  <div className="flex items-center justify-between mb-1">
+                    <p className="text-xs font-semibold text-gray-700">{ticketDetail.ticket.userName} <span className="font-normal text-gray-400">(usuario)</span></p>
+                    <p className="text-xs text-gray-400">{new Date(ticketDetail.ticket.createdAt).toLocaleDateString("es-ES", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</p>
+                  </div>
+                  <p className="text-sm text-gray-700 whitespace-pre-wrap">{ticketDetail.ticket.description}</p>
+                </div>
+                {/* Messages */}
+                {(ticketDetail.messages ?? []).map((msg: any) => (
+                  <div
+                    key={msg.id}
+                    className={`rounded-2xl p-3 ${
+                      msg.isInternal
+                        ? "bg-yellow-50 border border-yellow-200"
+                        : msg.senderRole === "admin"
+                        ? "bg-orange-50 border border-orange-100"
+                        : "bg-gray-50"
+                    }`}
+                  >
+                    <div className="flex items-center justify-between mb-1">
+                      <p className="text-xs font-semibold text-gray-700">
+                        {msg.senderName}
+                        {msg.senderRole === "admin" && <span className="ml-1 text-orange-500">(Admin)</span>}
+                        {msg.isInternal && <span className="ml-1 text-yellow-600">(Nota interna)</span>}
+                      </p>
+                      <p className="text-xs text-gray-400">{new Date(msg.createdAt).toLocaleDateString("es-ES", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</p>
+                    </div>
+                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{msg.content}</p>
+                  </div>
+                ))}
+              </div>
+
+              {/* Reply box */}
+              <div className="space-y-2 border-t pt-3">
+                <div className="flex items-center gap-3">
+                  <label className="flex items-center gap-1.5 text-xs text-gray-600 cursor-pointer">
+                    <input
+                      type="checkbox"
+                      checked={isInternal}
+                      onChange={(e) => setIsInternal(e.target.checked)}
+                      className="rounded"
+                    />
+                    Nota interna (no visible para el usuario)
+                  </label>
+                </div>
+                <textarea
+                  value={replyText}
+                  onChange={(e) => setReplyText(e.target.value)}
+                  rows={3}
+                  placeholder={isInternal ? "Nota interna para el equipo..." : "Respuesta al usuario..."}
+                  className={`vively-input w-full text-sm resize-none ${isInternal ? "border-yellow-300 bg-yellow-50" : ""}`}
+                />
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => replyMutation.mutate({
+                      ticketId: ticketDetail.ticket.id,
+                      content: replyText,
+                      isInternal,
+                    })}
+                    disabled={!replyText.trim() || replyMutation.isPending}
+                    className="flex-1 py-2 rounded-xl bg-[#F97316] text-white text-sm font-semibold hover:bg-orange-600 disabled:opacity-40"
+                  >
+                    {replyMutation.isPending ? "Enviando..." : isInternal ? "Guardar nota" : "Enviar respuesta"}
+                  </button>
+                  <button
+                    onClick={() => updateStatus.mutate({ ticketId: ticketDetail.ticket.id, status: "resolved" })}
+                    disabled={ticketDetail.ticket.status === "resolved" || updateStatus.isPending}
+                    className="px-3 py-2 rounded-xl bg-green-500 text-white text-sm font-semibold hover:bg-green-600 disabled:opacity-40"
+                  >
+                    Resolver
+                  </button>
+                </div>
+              </div>
+            </div>
+          ) : null}
+        </div>
+      </div>
     </div>
   );
 }

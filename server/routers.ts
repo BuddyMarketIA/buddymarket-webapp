@@ -7,6 +7,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { companyRouter } from "./routers/company";
 import { companyRemindersRouter } from "./routers/companyReminders";
 import { codesRouter } from "./routers/codes";
+import { supportRouter } from "./routers/support";
 import { householdRouter } from "./routers/household";
 import { householdRecipesRouter } from "./routers/householdRecipes";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
@@ -229,6 +230,7 @@ export const appRouter = router({
   company: companyRouter,
   companyReminders: companyRemindersRouter,
   codes: codesRouter,
+  support: supportRouter,
   household: householdRouter,
   householdRecipes: householdRecipesRouter,
 

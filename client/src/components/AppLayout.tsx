@@ -184,6 +184,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
         { key: "/app/achievements", label: t("sidebar.myAchievements"), to: "/app/achievements", emoji: "🏆" },
         { key: "/app/badges", label: "Mis Insignias", to: "/app/badges", emoji: "🎖️" },
         { key: "/app/referrals", label: "Invita amigos 🎁", to: "/app/referrals", emoji: "👥" },
+        { key: "/app/soporte", label: "Centro de Soporte", to: "/app/soporte", emoji: "🎫" },
       ],
     },
     {

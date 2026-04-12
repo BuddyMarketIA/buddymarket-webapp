@@ -2037,3 +2037,16 @@
 - [x] Frontend: listado de empresas con filtros (plan, estado, búsqueda) y click para ver detalle
 - [x] Frontend: detalle de empresa con stats, acciones de estado, sync de facturación, notas internas, miembros y historial de facturación
 - [x] Frontend: listado de leads con filtro contactado/pendiente y botón de enviar email directo
+
+## Sistema de Tickets de Soporte [COMPLETADO]
+
+- [x] Schema DB: tabla supportTickets + supportMessages + enums (migración 0028)
+- [x] Backend: endpoints support.createTicket, getMyTickets, getTicketDetail, addMessage, closeTicket
+- [x] Backend: endpoints admin support.adminGetTickets, adminGetTicketDetail, adminUpdateTicket, adminReplyTicket
+- [x] Backend: email de confirmación al crear ticket y notificación al usuario cuando admin responde
+- [x] Backend: notificación al owner cuando llega ticket urgente/alta prioridad
+- [x] Frontend: página /app/soporte con formulario de nuevo ticket, listado y detalle con hilo de mensajes
+- [x] Frontend: badges de estado (Abierto/En curso/Esperando/Resuelto/Cerrado) y prioridad (Baja/Media/Alta/Crítica)
+- [x] Frontend: enlace "Centro de Soporte" en sidebar grupo Mi Perfil
+- [x] Frontend admin: pestaña "Soporte" en Admin.tsx con KPIs, listado con filtros y detalle de ticket
+- [x] Frontend admin: campo de respuesta pública + notas internas + cambio de estado/prioridad/asignado

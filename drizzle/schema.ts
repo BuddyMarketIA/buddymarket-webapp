@@ -2274,3 +2274,45 @@ export const householdRecipeAssignments = pgTable("household_recipe_assignments"
 }));
 export type HouseholdRecipeAssignment = typeof householdRecipeAssignments.$inferSelect;
 export type InsertHouseholdRecipeAssignment = typeof householdRecipeAssignments.$inferInsert;
+
+// =============================================================================
+// SUPPORT TICKETS
+// =============================================================================
+export const ticketStatusEnum = pgEnum("ticket_status", ["open", "in_progress", "waiting_user", "resolved", "closed"]);
+export const ticketPriorityEnum = pgEnum("ticket_priority", ["low", "medium", "high", "urgent"]);
+export const ticketCategoryEnum = pgEnum("ticket_category", ["billing", "technical", "account", "feature", "nutrition", "other"]);
+
+export const supportTickets = pgTable("support_tickets", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull(),
+  subject: varchar("subject", { length: 256 }).notNull(),
+  category: ticketCategoryEnum("category").default("other").notNull(),
+  priority: ticketPriorityEnum("priority").default("medium").notNull(),
+  status: ticketStatusEnum("status").default("open").notNull(),
+  assignedAdminId: integer("assignedAdminId"),
+  closedAt: timestamp("closedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  userIdx: index("st_user_idx").on(t.userId),
+  statusIdx: index("st_status_idx").on(t.status),
+  priorityIdx: index("st_priority_idx").on(t.priority),
+  categoryIdx: index("st_category_idx").on(t.category),
+}));
+export type SupportTicket = typeof supportTickets.$inferSelect;
+export type InsertSupportTicket = typeof supportTickets.$inferInsert;
+
+export const supportMessages = pgTable("support_messages", {
+  id: serial("id").primaryKey(),
+  ticketId: integer("ticketId").notNull(),
+  authorId: integer("authorId").notNull(),
+  authorRole: varchar("authorRole", { length: 16 }).notNull(), // "user" | "admin"
+  message: text("message").notNull(),
+  isInternal: boolean("isInternal").default(false),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  ticketIdx: index("sm_ticket_idx").on(t.ticketId),
+  authorIdx: index("sm_author_idx").on(t.authorId),
+}));
+export type SupportMessage = typeof supportMessages.$inferSelect;
+export type InsertSupportMessage = typeof supportMessages.$inferInsert;

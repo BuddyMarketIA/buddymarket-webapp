@@ -87,6 +87,7 @@ const InstallAppBanner = lazy(() => import("./components/InstallAppBanner"));
 const Herramientas = lazy(() => import("./pages/Herramientas"));
 const Creators = lazy(() => import("./pages/Creators"));
 const CreatorDashboard = lazy(() => import("./pages/CreatorDashboard"));
+const Soporte = lazy(() => import("./pages/Soporte"));
 
 // ─── Page loading fallback ────────────────────────────────────────────────────
 function PageLoader() {
@@ -158,6 +159,7 @@ function Router() {
       <Route path="/empresas" component={Empresas} />
       <Route path="/empresa/dashboard">{() => <ProtectedPage><EmpresaDashboard /></ProtectedPage>}</Route>
       <Route path="/activar" component={ActivarCodigo} />
+      <Route path="/app/soporte">{() => <ProtectedRoute component={Soporte} />}</Route>
       <Route path="/familia" component={Familia} />
       <Route path="/familia/unirse" component={FamiliaUnirse} />
       <Route path="/familia/mis-recetas">{() => <ProtectedPage><MisRecetasAsignadas /></ProtectedPage>}</Route>
