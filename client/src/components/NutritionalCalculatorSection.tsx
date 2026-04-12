@@ -255,17 +255,38 @@ export default function NutritionalCalculatorSection({ appUrl }: Props) {
                   </p>
                 </div>
 
-                <a href={appUrl} style={{
-                  display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
-                  padding: "14px 24px", borderRadius: 12, fontSize: 15, fontWeight: 700, color: "white",
-                  background: "linear-gradient(135deg, #F97316, #ea580c)", textDecoration: "none",
-                  boxShadow: "0 6px 20px rgba(249,115,22,0.35)", transition: "all 0.2s",
-                }}
+                <button
+                  onClick={() => {
+                    // Save calculator results to localStorage so BuddyIA can pre-fill the questionnaire
+                    const calcData = {
+                      tdee: results.tdee,
+                      tmb: results.tmb,
+                      protein: results.protein,
+                      carbs: results.carbs,
+                      fat: results.fat,
+                      goal,
+                      activity,
+                      sex,
+                      age,
+                      weight,
+                      height,
+                      imc: results.imc,
+                      savedAt: Date.now(),
+                    };
+                    localStorage.setItem("buddymarket_calc_prefill", JSON.stringify(calcData));
+                    window.location.href = `${appUrl}/app/buddy-ia?from=calculator`;
+                  }}
+                  style={{
+                    display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+                    padding: "14px 24px", borderRadius: 12, fontSize: 15, fontWeight: 700, color: "white",
+                    background: "linear-gradient(135deg, #F97316, #ea580c)", border: "none", cursor: "pointer",
+                    boxShadow: "0 6px 20px rgba(249,115,22,0.35)", transition: "all 0.2s", width: "100%",
+                  }}
                   onMouseEnter={e => { (e.target as HTMLElement).style.transform = "translateY(-2px)"; }}
                   onMouseLeave={e => { (e.target as HTMLElement).style.transform = "translateY(0)"; }}>
                   Generar mi menú personalizado
                   <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-                </a>
+                </button>
               </div>
             )}
           </div>

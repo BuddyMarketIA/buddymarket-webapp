@@ -479,6 +479,39 @@ function QuestionnaireView({
       if (savedPrefs.mealsPerDay) updates.mealsPerDay = savedPrefs.mealsPerDay;
     }
 
+    // 3. Override with calculator data from landing (highest priority — user just calculated)
+    const calcRaw = localStorage.getItem("buddymarket_calc_prefill");
+    if (calcRaw) {
+      try {
+        const calc = JSON.parse(calcRaw);
+        // Only use if saved within the last 30 minutes
+        const isRecent = calc.savedAt && (Date.now() - calc.savedAt) < 30 * 60 * 1000;
+        if (isRecent) {
+          // Map calculator goal to questionnaire goal
+          const goalMap: Record<string, GoalType> = {
+            lose: "perdida_peso",
+            maintain: "mantenimiento",
+            gain: "ganancia_muscular",
+          };
+          if (calc.goal && goalMap[calc.goal]) updates.goal = goalMap[calc.goal];
+          // Map activity level
+          const actMap: Record<string, ActivityLevel> = {
+            sedentary: "sedentario",
+            light: "ligero",
+            moderate: "moderado",
+            active: "activo",
+            very_active: "muy_activo",
+          };
+          if (calc.activity && actMap[calc.activity]) updates.activityLevel = actMap[calc.activity];
+          // Set calories from TDEE
+          if (calc.tdee && calc.tdee >= 1000 && calc.tdee <= 5000) updates.calories = Math.round(calc.tdee);
+          // Clear after use so it doesn't persist across sessions
+          localStorage.removeItem("buddymarket_calc_prefill");
+        }
+      } catch (_) {
+        localStorage.removeItem("buddymarket_calc_prefill");
+      }
+    }
     if (Object.keys(updates).length > 0) {
       setData(prev => ({ ...prev, ...updates }));
     }
@@ -1671,6 +1704,56 @@ export default function BuddyIA() {
   const [generatedMenu, setGeneratedMenu] = useState<GeneratedMenu | null>(null);
   const [questionnaireData, setQuestionnaireData] = useState<Partial<QuestionnaireData>>({});
   const [savedMenuId, setSavedMenuId] = useState<number | null>(null);
+  const [fromCalculator, setFromCalculator] = useState(false);
+
+  // Sync calculator data to user profile (server-side) when user arrives from landing calculator
+  const updateProfileMutation = trpc.profile.updateProfile.useMutation();
+
+  // Auto-redirect to questionnaire if user comes from the landing calculator
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    if (params.get("from") === "calculator") {
+      const calcRaw = localStorage.getItem("buddymarket_calc_prefill");
+      if (calcRaw) {
+        try {
+          const calc = JSON.parse(calcRaw);
+          const isRecent = calc.savedAt && (Date.now() - calc.savedAt) < 30 * 60 * 1000;
+          if (isRecent) {
+            // Sync to user profile so the whole app benefits from the calculated data
+            const goalMap: Record<string, string> = {
+              lose: "lose_weight",
+              maintain: "maintain",
+              gain: "gain_muscle",
+            };
+            const actMap: Record<string, string> = {
+              sedentary: "sedentary",
+              light: "light",
+              moderate: "moderate",
+              active: "active",
+              very_active: "very_active",
+            };
+            const profileUpdate: Record<string, any> = {};
+            if (calc.tdee) profileUpdate.dailyCalorieGoal = Math.round(calc.tdee);
+            if (calc.tmb) profileUpdate.basalMetabolicRate = Math.round(calc.tmb);
+            if (calc.protein) profileUpdate.dailyProteinGoal = Math.round(calc.protein);
+            if (calc.carbs) profileUpdate.dailyCarbsGoal = Math.round(calc.carbs);
+            if (calc.fat) profileUpdate.dailyFatGoal = Math.round(calc.fat);
+            if (calc.goal && goalMap[calc.goal]) profileUpdate.mainGoal = goalMap[calc.goal];
+            if (calc.activity && actMap[calc.activity]) profileUpdate.activityLevel = actMap[calc.activity];
+            if (calc.age) profileUpdate.age = calc.age;
+            if (calc.weight) profileUpdate.weight = calc.weight;
+            if (calc.height) profileUpdate.height = calc.height;
+            if (calc.sex) profileUpdate.gender = calc.sex;
+            if (Object.keys(profileUpdate).length > 0) {
+              updateProfileMutation.mutate(profileUpdate as any);
+            }
+          }
+        } catch (_) {}
+        setFromCalculator(true);
+        setMode("questionnaire");
+      }
+    }
+  }, []);
 
   if (!can("canUseBuddyIA")) {
     return (
@@ -1687,8 +1770,28 @@ export default function BuddyIA() {
   if (mode === "questionnaire") {
     return (
       <div className="h-full flex flex-col">
+        {fromCalculator && (
+          <div style={{
+            background: "linear-gradient(135deg, #fff7ed, #fef3c7)",
+            borderBottom: "1.5px solid #fed7aa",
+            padding: "12px 20px",
+            display: "flex",
+            alignItems: "center",
+            gap: 10,
+            flexShrink: 0,
+          }}>
+            <span style={{ fontSize: 18 }}>✅</span>
+            <p style={{ fontSize: 13, color: "#92400e", fontWeight: 600, margin: 0, lineHeight: 1.4 }}>
+              Hemos pre-rellenado el cuestionario con los datos de tu calculadora. Revisa y ajusta lo que necesites.
+            </p>
+            <button
+              onClick={() => setFromCalculator(false)}
+              style={{ marginLeft: "auto", background: "none", border: "none", cursor: "pointer", color: "#92400e", fontSize: 18, flexShrink: 0 }}
+            >×</button>
+          </div>
+        )}
         <QuestionnaireView
-          onBack={() => setMode("home")}
+          onBack={() => { setMode("home"); setFromCalculator(false); }}
           onMenuGenerated={(menu, data) => {
             setGeneratedMenu(menu);
             setQuestionnaireData(data);
