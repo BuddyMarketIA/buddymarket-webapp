@@ -1,6 +1,8 @@
 import { useState, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { usePlan } from "@/hooks/usePlan";
+import { UpgradeGate } from "@/components/UpgradeGate";
 import { getLoginUrl } from "@/const";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -74,6 +76,7 @@ type MetricType = typeof METRIC_TYPES[number]["id"];
 
 export default function Metrics() {
   const { user, loading } = useAuth();
+  const { can } = usePlan();
   const [form, setForm] = useState<MetricForm>(EMPTY_FORM);
   const [showAdvanced, setShowAdvanced] = useState(false);
   const [metricType, setMetricType] = useState<MetricType>("basic");
@@ -163,6 +166,34 @@ export default function Metrics() {
 
   if (loading) return <div className="flex items-center justify-center h-64"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-primary" /></div>;
   if (!user) return (
+    <div className="flex flex-col items-center justify-center h-64 gap-4">
+      <Scale className="w-12 h-12 text-muted-foreground" />
+      <p className="text-muted-foreground">Inicia sesión para registrar tus métricas</p>
+      <Button onClick={() => window.location.href = getLoginUrl()}>Iniciar sesión</Button>
+    </div>
+  );
+  if (!can("canTrackMetrics")) return (
+    <div className="max-w-lg mx-auto px-4 py-8 pb-24">
+      <div className="text-center mb-6">
+        <Scale className="w-12 h-12 mx-auto mb-3 text-orange-400" />
+        <h1 className="text-2xl font-black text-gray-900 mb-1">Métricas Corporales</h1>
+        <p className="text-gray-500 text-sm">Registra tu peso, grasa corporal y evolución</p>
+      </div>
+      <div className="blur-sm pointer-events-none select-none opacity-50 mb-4">
+        <div className="grid grid-cols-2 gap-3 mb-4">
+          {["Peso", "Grasa corporal", "Masa muscular", "Cintura"].map(m => (
+            <div key={m} className="bg-white rounded-2xl p-4 border border-gray-100">
+              <div className="h-3 bg-gray-200 rounded-full mb-2 w-2/3" />
+              <div className="h-6 bg-gray-100 rounded-full w-1/2" />
+            </div>
+          ))}
+        </div>
+      </div>
+      <UpgradeGate feature="canTrackMetrics">{null}</UpgradeGate>
+    </div>
+  );
+  // (auth check already done above)
+  if (false) return (
     <div className="flex flex-col items-center justify-center h-64 gap-4">
       <Scale className="w-12 h-12 text-muted-foreground" />
       <p className="text-muted-foreground">Inicia sesión para registrar tus métricas</p>

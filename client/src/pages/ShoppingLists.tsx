@@ -1,6 +1,7 @@
 import { useState, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { jsPDF } from "jspdf";
+import { usePlan } from "@/hooks/usePlan";
 import MercadonaCartExport from "@/components/MercadonaCartExport";
 import LidlCartExport from "@/components/LidlCartExport";
 import CarrefourCartExport from "@/components/CarrefourCartExport";
@@ -66,6 +67,7 @@ type ViewFilter = "all" | "to_buy" | "in_pantry" | "purchased";
 
 function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => void }) {
   const { t } = useTranslation();
+  const { can } = usePlan();
   const { data: listData, isLoading } = trpc.shoppingLists.getById.useQuery({ id: listId });
   const utils = trpc.useUtils();
   const [newItem, setNewItem] = useState("");
@@ -400,11 +402,18 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
           <ScaleIcon className="h-5 w-5 text-purple-500" />
         </button>
         <button
-          onClick={() => { setShowExport(true); setSelectedSupermarket(null); }}
+          onClick={() => {
+            if (!can("canConnectSupermarket")) {
+              toast.info("Requiere plan Premium", { description: "Actualiza tu plan para exportar la lista directamente a Mercadona, Carrefour, Lidl y Alcampo" });
+              return;
+            }
+            setShowExport(true); setSelectedSupermarket(null);
+          }}
           className="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm mr-1"
-          title="Comprar en supermercado online"
+          title={can("canConnectSupermarket") ? "Comprar en supermercado online" : "Requiere plan Premium"}
         >
-          <BuildingStorefrontIcon className="h-5 w-5 text-[#F97316]" />
+          <BuildingStorefrontIcon className={`h-5 w-5 ${can("canConnectSupermarket") ? "text-[#F97316]" : "text-gray-300"}`} />
+          {!can("canConnectSupermarket") && <span className="absolute -top-1 -right-1 text-[8px] bg-orange-400 text-white rounded-full w-4 h-4 flex items-center justify-center font-bold">🔒</span>}
         </button>
         <button
           onClick={() => setShowAdd(true)}

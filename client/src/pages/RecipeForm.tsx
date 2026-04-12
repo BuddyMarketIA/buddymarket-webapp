@@ -12,6 +12,8 @@ import { ArrowLeft, Loader2, Plus, Trash2, Sparkles, Search, X } from "lucide-re
 import { useState, useRef, useEffect } from "react";
 import { Link, useLocation, useParams } from "wouter";
 import { toast } from "@/components/sonner-a11y-shim";
+import { usePlan } from "@/hooks/usePlan";
+import { UpgradeGate } from "@/components/UpgradeGate";
 
 interface IngredientEntry {
   id?: number;
@@ -24,6 +26,7 @@ const COMMON_UNITS = ["g", "kg", "ml", "l", "unidad", "cucharada", "cucharadita"
 
 export default function RecipeForm() {
   const { t } = useTranslation();
+  const { can } = usePlan();
   const { id } = useParams<{ id?: string }>();
   const [, navigate] = useLocation();
   const isEditing = !!id;
@@ -198,6 +201,30 @@ export default function RecipeForm() {
       instructionsJson,
     });
   };
+
+  if (!can("canCreateRecipes")) {
+    return (
+      <div className="p-6 max-w-3xl mx-auto space-y-6">
+        <Button variant="ghost" size="sm" asChild className="-ml-2">
+          <Link href="/app/recipes">
+            <ArrowLeft className="w-4 h-4 mr-1.5" />
+            Volver a recetas
+          </Link>
+        </Button>
+        <div className="text-center py-4">
+          <div className="text-5xl mb-3">👨‍🍳</div>
+          <h1 className="text-2xl font-bold text-foreground mb-1">Crear receta</h1>
+          <p className="text-muted-foreground text-sm">Crea y comparte tus propias recetas con la comunidad</p>
+        </div>
+        <div className="blur-sm pointer-events-none select-none opacity-50 space-y-4">
+          <div className="h-10 bg-gray-100 rounded-lg" />
+          <div className="h-24 bg-gray-100 rounded-lg" />
+          <div className="h-10 bg-gray-100 rounded-lg w-2/3" />
+        </div>
+        <UpgradeGate feature="canCreateRecipes">{null}</UpgradeGate>
+      </div>
+    );
+  }
 
   return (
     <div className="p-6 max-w-3xl mx-auto space-y-6">
