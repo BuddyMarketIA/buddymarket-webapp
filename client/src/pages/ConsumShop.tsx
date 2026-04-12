@@ -310,7 +310,7 @@ export default function ConsumShop() {
               className="w-full pl-9 pr-4 py-2.5 rounded-xl text-gray-800 bg-white placeholder-gray-400 text-sm outline-none shadow-sm"
             />
             {searchQuery.length > 0 && (
-              <button onClick={() => { setSearchQuery(""); setView("home"); }} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-lg">×</button>
+              <button onClick={() => { setSearchQuery(""); setView("home"); }} aria-label="Limpiar búsqueda" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-lg">×</button>
             )}
           </div>
         </div>
@@ -464,7 +464,7 @@ export default function ConsumShop() {
           <div className="w-full max-w-lg bg-white rounded-t-3xl shadow-2xl flex flex-col max-h-[80vh]">
             <div className="flex items-center justify-between p-4 border-b">
               <h3 className="text-lg font-bold text-gray-800">🛒 Carrito ({totalItems})</h3>
-              <button onClick={() => setShowCart(false)} className="text-gray-400 hover:text-gray-600 text-2xl leading-none">×</button>
+              <button onClick={() => setShowCart(false)} aria-label="Cerrar carrito" className="text-gray-400 hover:text-gray-600 text-2xl leading-none">×</button>
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {cart.length === 0 ? (

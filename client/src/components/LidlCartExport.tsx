@@ -104,7 +104,7 @@ export default function LidlCartExport({ items, onBack, onClose }: Props) {
             </p>
           )}
         </div>
-        <button onClick={onClose} className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-500 text-lg font-bold">×</button>
+        <button onClick={onClose} className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-500 text-lg font-bold" aria-label="Cerrar">×</button>
       </div>
 
       {/* Lidl info banner */}

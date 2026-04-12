@@ -562,7 +562,7 @@ export default function BuddyMakerDashboard() {
                   <h2 className="text-base font-black text-gray-900">
                     {editingRecipe ? "Editar receta" : "Nueva receta"}
                   </h2>
-                  <button type="button" onClick={() => { setShowRecipeForm(false); setEditingRecipe(null); }} className="text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
+                  <button type="button" onClick={() => { setShowRecipeForm(false); setEditingRecipe(null); }} aria-label="Cerrar formulario" className="text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
                 </div>
 
                 {/* Basic info */}
@@ -727,7 +727,7 @@ export default function BuddyMakerDashboard() {
                           className="w-14 rounded-xl border border-gray-200 px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-green-400"
                         />
                         {recipeForm.ingredients.length > 1 && (
-                          <button type="button" onClick={() => removeIngredient(idx)} className="text-red-400 font-bold text-sm px-1">×</button>
+                          <button type="button" onClick={() => removeIngredient(idx)} aria-label="Eliminar ingrediente" className="text-red-400 font-bold text-sm px-1">×</button>
                         )}
                       </div>
                     ))}
@@ -752,7 +752,7 @@ export default function BuddyMakerDashboard() {
                           className="flex-1 rounded-xl border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-green-400 resize-none"
                         />
                         {recipeForm.steps.length > 1 && (
-                          <button type="button" onClick={() => removeStep(idx)} className="text-red-400 font-bold text-sm px-1 mt-2">×</button>
+                          <button type="button" onClick={() => removeStep(idx)} aria-label="Eliminar paso" className="text-red-400 font-bold text-sm px-1 mt-2">×</button>
                         )}
                       </div>
                     ))}

@@ -591,7 +591,7 @@ export default function BuddyExpertDashboard() {
                   <h2 className="text-base font-black text-gray-900">
                     {editingPlan ? "Editar plan" : "Nuevo plan nutricional"}
                   </h2>
-                  <button type="button" onClick={() => { setShowPlanForm(false); setEditingPlan(null); }} className="text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
+                  <button type="button" onClick={() => { setShowPlanForm(false); setEditingPlan(null); }} aria-label="Cerrar formulario" className="text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
                 </div>
                 <div className="grid grid-cols-1 gap-4">
                   <div>
@@ -778,7 +778,7 @@ export default function BuddyExpertDashboard() {
                   <h2 className="text-base font-black text-gray-900">
                     {editingMenu ? "Editar menú" : "Nuevo menú semanal"}
                   </h2>
-                  <button type="button" onClick={() => { setShowMenuForm(false); setEditingMenu(null); }} className="text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
+                  <button type="button" onClick={() => { setShowMenuForm(false); setEditingMenu(null); }} aria-label="Cerrar formulario" className="text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
                 </div>
 
                 <div className="grid grid-cols-1 gap-4">
@@ -1029,7 +1029,7 @@ function BlogTab({ expertProfile }: { expertProfile: any }) {
           {form.coverImageUrl ? (
             <div className="relative">
               <img src={form.coverImageUrl} alt="Portada" className="w-full h-40 object-cover rounded-2xl" />
-              <button type="button" onClick={() => setForm((f) => ({ ...f, coverImageUrl: "" }))} className="absolute top-2 right-2 bg-black/50 text-white rounded-full w-7 h-7 flex items-center justify-center text-xs hover:bg-black/70">✕</button>
+              <button type="button" onClick={() => setForm((f) => ({ ...f, coverImageUrl: "" }))} aria-label="Eliminar imagen" className="absolute top-2 right-2 bg-black/50 text-white rounded-full w-7 h-7 flex items-center justify-center text-xs hover:bg-black/70">✕</button>
             </div>
           ) : (
             <button type="button" onClick={() => fileRef.current?.click()} className="w-full h-32 border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center gap-2 text-gray-400 hover:border-orange-300 hover:text-orange-400 transition-colors">
@@ -1292,7 +1292,7 @@ function PdfPlansTab({ expertProfile }: { expertProfile: any }) {
         <form onSubmit={handleCreate} className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 space-y-4">
           <div className="flex items-center justify-between mb-1">
             <h3 className="font-black text-gray-900 text-sm">Nuevo plan PDF</h3>
-            <button type="button" onClick={() => { setShowForm(false); resetForm(); }} className="text-gray-400 hover:text-gray-600 text-lg">✕</button>
+            <button type="button" onClick={() => { setShowForm(false); resetForm(); }} aria-label="Cerrar formulario" className="text-gray-400 hover:text-gray-600 text-lg">✕</button>
           </div>
           <div>
             <label className="text-xs font-bold text-gray-600 mb-1 block">Título del plan *</label>

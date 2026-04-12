@@ -88,7 +88,7 @@ export default function CarrefourCartExport({ items, onBack, onClose }: Props) {
           <span className="text-xl">🔵</span>
           <h3 className="text-lg font-bold text-gray-900">Carrefour</h3>
         </div>
-        <button onClick={onClose} className="ml-auto text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
+        <button onClick={onClose} className="ml-auto text-gray-400 hover:text-gray-600 text-xl font-bold" aria-label="Cerrar">×</button>
       </div>
 
       {/* Hidden search components */}

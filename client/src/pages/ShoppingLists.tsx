@@ -630,7 +630,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
               <>
                 <div className="mb-5 flex items-center justify-between">
                   <h3 className="text-lg font-bold text-gray-900">{t("shoppingList.buyOnlineBtn", "Buy online")}</h3>
-                  <button onClick={() => setShowExport(false)} className="text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
+                  <button onClick={() => setShowExport(false)} aria-label="Cerrar" className="text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
                 </div>
                 <p className="mb-5 text-sm text-gray-500">Elige tu supermercado y abriremos la búsqueda de cada producto en su tienda online.</p>
                 <div className="grid grid-cols-2 gap-3">
@@ -1327,7 +1327,7 @@ export default function ShoppingLists() {
                 <p style={{ margin: "4px 0 0", fontSize: 13, color: "#6b7280" }}>Haz una foto a tu lista escrita o impresa</p>
               </div>
               <button onClick={() => { setShowOcrModal(false); setOcrPreview(null); setOcrItems([]); }}
-                style={{ background: "#f3f4f6", border: "none", borderRadius: "50%", width: 36, height: 36, cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+                aria-label="Cerrar" style={{ background: "#f3f4f6", border: "none", borderRadius: "50%", width: 36, height: 36, cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
             </div>
             {!ocrPreview && (
               <div style={{ border: "2px dashed #d1d5db", borderRadius: 16, padding: "32px 24px", textAlign: "center", cursor: "pointer", background: "#fafafa", marginBottom: 16 }}

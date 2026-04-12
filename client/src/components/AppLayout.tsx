@@ -49,19 +49,17 @@ function NotificationBell() {
       </button>
       {open && (
         <div style={{ position: "absolute", top: "48px", right: 0, background: "white", borderRadius: "14px", boxShadow: "0 8px 32px rgba(0,0,0,0.14)", border: "1px solid #f3f4f6", minWidth: "200px", zIndex: 9999, overflow: "hidden" }}>
-          <button
-            onClick={() => { setOpen(false); navigate("/app/notifications"); }}
+          <button onClick={() => { setOpen(false); navigate("/app/notifications"); }}
             style={{ width: "100%", padding: "13px 16px", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: "10px", fontSize: "14px", color: "#111827", fontWeight: 600, textAlign: "left" }}
           >
-            <span style={{ fontSize: "18px" }}>🔔</span>
+            <span style={{ fontSize: "18px" }} aria-hidden="true">🔔</span>
             <span>Notificaciones{count > 0 ? ` (${count})` : ""}</span>
           </button>
           <div style={{ height: "1px", background: "#f3f4f6", margin: "0 12px" }} />
-          <button
-            onClick={() => { setOpen(false); navigate("/app/meal-notifications"); }}
+          <button onClick={() => { setOpen(false); navigate("/app/meal-notifications"); }}
             style={{ width: "100%", padding: "13px 16px", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: "10px", fontSize: "14px", color: "#111827", fontWeight: 600, textAlign: "left" }}
           >
-            <span style={{ fontSize: "18px" }}>⏰</span>
+            <span style={{ fontSize: "18px" }} aria-hidden="true">⏰</span>
             <span>Configurar recordatorios</span>
           </button>
         </div>
@@ -269,12 +267,33 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
 
   return (
     <div style={{ width: "100%", maxWidth: "480px", margin: "0 auto", minHeight: "100dvh", background: "#FFF8F0", position: "relative" }}>
+      {/* Skip to main content - WCAG 2.4.1 Bypass Blocks */}
+      <a
+        href="#main-content"
+        style={{
+          position: "absolute",
+          top: "-100px",
+          left: "16px",
+          zIndex: 9999,
+          padding: "8px 16px",
+          background: "#F97316",
+          color: "white",
+          borderRadius: "8px",
+          fontWeight: 700,
+          fontSize: "14px",
+          textDecoration: "none",
+        }}
+        onFocus={(e) => { e.currentTarget.style.top = "16px"; }}
+        onBlur={(e) => { e.currentTarget.style.top = "-100px"; }}
+      >
+        Saltar al contenido principal
+      </a>
 
       {/* Sidebar Overlay */}
-      {sidebarOpen && (<div onClick={() => setSidebarOpen(false)} style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 200, backdropFilter: "blur(2px)" }} />)}
+      {sidebarOpen && (<div onClick={() => setSidebarOpen(false)} aria-hidden="true" style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 200, backdropFilter: "blur(2px)" }} />)}
 
       {/* Sidebar Panel */}
-      <div className="app-sidebar" style={{ position: "fixed", top: 0, left: sidebarOpen ? 0 : "-310px", width: "300px", height: "100dvh", paddingTop: "env(safe-area-inset-top)", zIndex: 300, transition: "left 0.3s cubic-bezier(0.4,0,0.2,1)", display: "flex", flexDirection: "column", boxShadow: sidebarOpen ? "4px 0 40px rgba(0,0,0,0.15)" : "none", overflowY: "auto" }}>
+      <div id="app-sidebar" role="dialog" aria-label="Menú de navegación" aria-modal={sidebarOpen} className="app-sidebar" style={{ position: "fixed", top: 0, left: sidebarOpen ? 0 : "-310px", width: "300px", height: "100dvh", paddingTop: "env(safe-area-inset-top)", zIndex: 300, transition: "left 0.3s cubic-bezier(0.4,0,0.2,1)", display: "flex", flexDirection: "column", boxShadow: sidebarOpen ? "4px 0 40px rgba(0,0,0,0.15)" : "none", overflowY: "auto" }}>
 
         {/* Sidebar Header */}
         <div style={{ padding: "20px 20px 16px", borderBottom: "1px solid rgba(0,0,0,0.06)", display: "flex", alignItems: "center", gap: "12px" }}>
@@ -386,21 +405,21 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
             <p style={{ margin: 0, fontSize: "14px", color: "rgba(255,255,255,0.85)" }}>{t("sidebar.installAppDesc")}</p>
           </div>
           <button onClick={handleInstall} style={{ background: "white", color: "#F97316", border: "none", borderRadius: "10px", padding: "7px 12px", fontSize: "14px", fontWeight: 800, cursor: "pointer", flexShrink: 0 }}>{t("sidebar.install")}</button>
-          <button onClick={() => { setShowInstallBanner(false); localStorage.setItem('pwa-install-dismissed', '1'); }} style={{ background: "rgba(255,255,255,0.2)", border: "none", borderRadius: "8px", width: "28px", height: "28px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+          <button onClick={() => { setShowInstallBanner(false); localStorage.setItem('pwa-install-dismissed', '1'); }} aria-label="Cerrar banner de instalación" style={{ background: "rgba(255,255,255,0.2)", border: "none", borderRadius: "8px", width: "28px", height: "28px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
         </div>
       )}
 
-      {/* Fixed Header */}
-      <div className="app-header" style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", paddingTop: "calc(env(safe-area-inset-top) + 12px)", paddingBottom: "12px", paddingLeft: "max(16px, env(safe-area-inset-left))", paddingRight: "max(16px, env(safe-area-inset-right))", display: "flex", alignItems: "center", gap: "12px" }}>
+      {/* Fixed Header - WCAG 1.3.1 Info and Relationships */}
+      <header className="app-header" style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", paddingTop: "calc(env(safe-area-inset-top) + 12px)", paddingBottom: "12px", paddingLeft: "max(16px, env(safe-area-inset-left))", paddingRight: "max(16px, env(safe-area-inset-right))", display: "flex", alignItems: "center", gap: "12px" }}>
         {showBack ? (
-          <button onClick={onBack || (() => window.history.back())} style={{ width: "40px", height: "40px", borderRadius: "12px", background: "white", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", flexShrink: 0 }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+          <button onClick={onBack || (() => window.history.back())} aria-label="Volver atrás" style={{ width: "40px", height: "40px", borderRadius: "12px", background: "white", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", flexShrink: 0 }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
           </button>
         ) : (
-          <button onClick={() => setSidebarOpen(true)} style={{ width: "40px", height: "40px", borderRadius: "12px", background: "white", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", flexShrink: 0 }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+          <button onClick={() => setSidebarOpen(true)} aria-label="Abrir menú de navegación" aria-expanded={sidebarOpen} aria-controls="app-sidebar" style={{ width: "40px", height: "40px", borderRadius: "12px", background: "white", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", flexShrink: 0 }}>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
           </button>
         )}
         <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1, minWidth: 0 }}>
@@ -416,30 +435,34 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
           <DarkModeToggle />
           {headerRight ? headerRight : <NotificationBell />}
         </div>
-      </div>
+      </header>
 
       {/* Content */}
-      <div style={{ paddingTop: "calc(env(safe-area-inset-top) + 68px)", paddingBottom: shouldShowNav ? "calc(64px + env(safe-area-inset-bottom))" : "0" }}>
+      <main id="main-content" style={{ paddingTop: "calc(env(safe-area-inset-top) + 68px)", paddingBottom: shouldShowNav ? "calc(64px + env(safe-area-inset-bottom))" : "0" }}>
         {children}
-      </div>
+      </main>
 
-      {/* Bottom Navigation */}
+      {/* Bottom Navigation - WCAG 2.4.3 Focus Order */}
       {shouldShowNav && (
-        <div className="app-nav-bar" style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100, backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", paddingBottom: "env(safe-area-inset-bottom)", boxShadow: "0 -2px 16px rgba(0,0,0,0.06)" }}>
+        <nav aria-label="Navegación principal" className="app-nav-bar" style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100, backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", paddingBottom: "env(safe-area-inset-bottom)", boxShadow: "0 -2px 16px rgba(0,0,0,0.06)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-around", padding: "6px 0" }}>
             {NAV_ITEMS.map((item) => {
               const active = matchesPath(location, item.matches);
               return (
-                <Link key={item.key} href={item.to}>
-                  <button style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "3px", padding: "6px 16px", border: "none", background: "transparent", cursor: "pointer", transition: "all 0.2s", minWidth: "52px" }}>
+                <Link key={item.key} href={item.to} aria-current={active ? "page" : undefined}>
+                  <button
+                    aria-label={item.label}
+                    aria-pressed={active}
+                    style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "3px", padding: "6px 16px", border: "none", background: "transparent", cursor: "pointer", transition: "all 0.2s", minWidth: "52px" }}
+                  >
                     {item.icon(active)}
-                    <span style={{ fontSize: "11px", fontWeight: active ? 700 : 500, color: active ? "#F97316" : "#9ca3af", transition: "color 0.2s" }}>{item.label}</span>
+                    <span aria-hidden="true" style={{ fontSize: "11px", fontWeight: active ? 700 : 500, color: active ? "#F97316" : "#9ca3af", transition: "color 0.2s" }}>{item.label}</span>
                   </button>
                 </Link>
               );
             })}
           </div>
-        </div>
+        </nav>
       )}
     </div>
   );

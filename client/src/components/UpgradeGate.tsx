@@ -85,7 +85,7 @@ export function UpgradeModal({ feature, currentTier, onClose }: UpgradeModalProp
               cursor: "pointer", color: "white", fontSize: 18,
               display: "flex", alignItems: "center", justifyContent: "center",
             }}
-          >×</button>
+           aria-label="Cerrar">×</button>
           <div style={{ fontSize: 48, marginBottom: 12 }}>🚀</div>
           <div style={{
             display: "inline-block",

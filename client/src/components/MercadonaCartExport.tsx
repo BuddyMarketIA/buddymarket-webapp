@@ -238,23 +238,23 @@ export default function MercadonaCartExport({ items, onBack, onClose }: Props) {
           <ChevronLeftIcon className="h-4 w-4" />
         </button>
         <h3 className="text-lg font-bold text-gray-900">Conectar Mercadona</h3>
-        <button onClick={onClose} className="ml-auto text-gray-400 text-xl font-bold">×</button>
+        <button onClick={onClose} aria-label="Cerrar" className="ml-auto text-gray-400 text-xl font-bold" aria-hidden="false">×</button>
       </div>
       <div className="rounded-2xl bg-orange-50 border border-orange-100 p-4">
         <p className="text-xs text-orange-700 font-medium">🔒 Tus credenciales se usan solo para añadir al carrito. No se almacenan en ningún servidor.</p>
       </div>
       <div className="space-y-3">
         <div>
-          <label className="text-xs font-semibold text-gray-500 mb-1 block">Email de Mercadona</label>
-          <input type="email" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} placeholder="tu@email.com" className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:border-orange-400" />
+          <label htmlFor="merc-email" className="text-xs font-semibold text-gray-500 mb-1 block">Email de Mercadona</label>
+          <input id="merc-email" type="email" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} placeholder="tu@email.com" className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:border-orange-400" />
         </div>
         <div>
-          <label className="text-xs font-semibold text-gray-500 mb-1 block">Contraseña</label>
-          <input type="password" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} placeholder="••••••••" className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:border-orange-400" />
+          <label htmlFor="merc-password" className="text-xs font-semibold text-gray-500 mb-1 block">Contraseña</label>
+          <input id="merc-password" type="password" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} placeholder="••••••••" className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:border-orange-400" />
         </div>
         <div>
-          <label className="text-xs font-semibold text-gray-500 mb-1 block">Código postal</label>
-          <input type="text" value={loginPostal} onChange={(e) => setLoginPostal(e.target.value)} placeholder="28001" className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:border-orange-400" />
+          <label htmlFor="merc-postal" className="text-xs font-semibold text-gray-500 mb-1 block">Código postal</label>
+          <input id="merc-postal" type="text" value={loginPostal} onChange={(e) => setLoginPostal(e.target.value)} placeholder="28001" className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:border-orange-400" />
         </div>
       </div>
       <button
@@ -313,7 +313,7 @@ export default function MercadonaCartExport({ items, onBack, onClose }: Props) {
             </p>
           )}
         </div>
-        <button onClick={onClose} className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-500 text-lg font-bold">×</button>
+        <button onClick={onClose} aria-label="Cerrar" className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-500 text-lg font-bold">×</button>
       </div>
 
       {/* Account status */}

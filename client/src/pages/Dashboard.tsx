@@ -278,6 +278,7 @@ export default function Dashboard() {
               onClick={() => { setStepsHidden(true); try { localStorage.setItem("bm_steps_hidden", "true"); } catch {} }}
               style={{ background: "none", border: "none", fontSize: "18px", color: "#9ca3af", cursor: "pointer", padding: "4px", lineHeight: 1 }}
               title="Ocultar"
+              aria-label="Ocultar acceso rápido"
             >×</button>
           </div>
 
