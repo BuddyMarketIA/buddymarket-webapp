@@ -4,6 +4,7 @@ import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
 import { createCheckoutSession } from "./stripe-webhook";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
+import { companyRouter } from "./routers/company";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { invokeLLM } from "./_core/llm";
 import { storagePut } from "./storage";
@@ -221,6 +222,7 @@ async function detectAndLogAllergyViolations(
 
 export const appRouter = router({
   system: systemRouter,
+  company: companyRouter,
 
   // ---------------------------------------------------------------------------
   // AUTH

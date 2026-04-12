@@ -12,6 +12,7 @@ import {
   date,
   index,
   unique,
+  uniqueIndex,
 } from "drizzle-orm/pg-core";
 
 // ── PostgreSQL Enums ──────────────────────────────────────────────────────
@@ -1997,3 +1998,89 @@ export const userReferralCodes = pgTable("user_referral_codes", {
 }));
 export type UserReferralCode = typeof userReferralCodes.$inferSelect;
 export type InsertUserReferralCode = typeof userReferralCodes.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────
+// BUDDYMARKET FOR BUSINESS — B2B Corporate Wellness
+// ─────────────────────────────────────────────────────────────
+
+export const companyPlanEnum = pgEnum("companyPlan", ["starter", "business", "enterprise", "corporate"]);
+export const companyStatusEnum = pgEnum("companyStatus", ["pending", "trial", "active", "suspended", "cancelled"]);
+export const activationCodeStatusEnum = pgEnum("activationCodeStatus", ["available", "used", "expired", "revoked"]);
+
+export const companies = pgTable("companies", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  taxId: varchar("taxId", { length: 20 }),
+  contactEmail: varchar("contactEmail", { length: 255 }).notNull(),
+  contactName: varchar("contactName", { length: 255 }),
+  contactPhone: varchar("contactPhone", { length: 30 }),
+  plan: companyPlanEnum("plan").notNull().default("starter"),
+  status: companyStatusEnum("status").notNull().default("pending"),
+  licensesTotal: integer("licensesTotal").notNull().default(10),
+  stripeCustomerId: varchar("stripeCustomerId", { length: 255 }),
+  stripeSubscriptionId: varchar("stripeSubscriptionId", { length: 255 }),
+  adminUserId: integer("adminUserId"),
+  industry: varchar("industry", { length: 100 }),
+  employeeCount: integer("employeeCount"),
+  notes: text("notes"),
+  contractStartAt: timestamp("contractStartAt"),
+  contractEndAt: timestamp("contractEndAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  contactEmailIdx: index("company_email_idx").on(t.contactEmail),
+  stripeCustomerIdx: index("company_stripe_idx").on(t.stripeCustomerId),
+  adminUserIdx: index("company_admin_idx").on(t.adminUserId),
+}));
+export type Company = typeof companies.$inferSelect;
+export type InsertCompany = typeof companies.$inferInsert;
+
+export const companyActivationCodes = pgTable("company_activation_codes", {
+  id: serial("id").primaryKey(),
+  companyId: integer("companyId").notNull(),
+  code: varchar("code", { length: 20 }).notNull().unique(),
+  status: activationCodeStatusEnum("status").notNull().default("available"),
+  redeemedByUserId: integer("redeemedByUserId"),
+  redeemedAt: timestamp("redeemedAt"),
+  expiresAt: timestamp("expiresAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  companyIdx: index("cac_company_idx").on(t.companyId),
+  codeIdx: index("cac_code_idx").on(t.code),
+}));
+export type CompanyActivationCode = typeof companyActivationCodes.$inferSelect;
+export type InsertCompanyActivationCode = typeof companyActivationCodes.$inferInsert;
+
+export const companyMembers = pgTable("company_members", {
+  id: serial("id").primaryKey(),
+  companyId: integer("companyId").notNull(),
+  userId: integer("userId").notNull(),
+  activationCodeId: integer("activationCodeId"),
+  joinedAt: timestamp("joinedAt").defaultNow().notNull(),
+  lastActiveAt: timestamp("lastActiveAt"),
+  isActive: boolean("isActive").notNull().default(true),
+}, (t) => ({
+  companyIdx: index("cm_company_idx").on(t.companyId),
+  userIdx: index("cm_user_idx").on(t.userId),
+  uniqueMember: uniqueIndex("cm_unique_member").on(t.companyId, t.userId),
+}));
+export type CompanyMember = typeof companyMembers.$inferSelect;
+export type InsertCompanyMember = typeof companyMembers.$inferInsert;
+
+export const companyLeads = pgTable("company_leads", {
+  id: serial("id").primaryKey(),
+  companyName: varchar("companyName", { length: 255 }).notNull(),
+  contactName: varchar("contactName", { length: 255 }).notNull(),
+  contactEmail: varchar("contactEmail", { length: 255 }).notNull(),
+  contactPhone: varchar("contactPhone", { length: 30 }),
+  employeeCount: integer("employeeCount"),
+  industry: varchar("industry", { length: 100 }),
+  planInterest: companyPlanEnum("planInterest"),
+  message: text("message"),
+  contacted: boolean("contacted").notNull().default(false),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  emailIdx: index("cl_email_idx").on(t.contactEmail),
+}));
+export type CompanyLead = typeof companyLeads.$inferSelect;
+export type InsertCompanyLead = typeof companyLeads.$inferInsert;

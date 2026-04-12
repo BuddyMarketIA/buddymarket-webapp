@@ -1865,3 +1865,20 @@
 - [x] Landing page /nutricionistas con propuesta BuddyCoach (beneficios, modelo de ingresos, formulario de solicitud)
 - [x] Formulario de solicitud BuddyCoach con notificación al owner vía trpc.system.notifyOwner
 - [x] Documento PDF propuesta de colaboración para nutricionistas
+
+## BuddyMarket for Business (B2B)
+- [ ] Schema DB: tablas companies, companyLicenses, companyActivationCodes
+- [ ] tRPC router: company (crear empresa, activar código, panel RRHH)
+- [ ] Stripe: productos y checkout para planes empresariales (Starter 8€, Business 6€, Enterprise 4.5€)
+- [ ] Landing page /empresas con planes, propuesta de valor y formulario de contacto
+- [ ] Panel RRHH /empresa/dashboard con métricas de activación y uso
+- [ ] Flujo de activación: empleado introduce código → acceso Pro Max activado
+- [ ] Webhook Stripe: activar licencias al completar pago empresarial
+
+## B2B — BuddyMarket for Business
+- [x] Tablas DB B2B: companies, companyMembers, companyActivationCodes, companyLeads
+- [x] Router tRPC company: submitLead, createCheckout, getDashboard, activateCode
+- [x] Landing page /empresas con planes, calculadora ROI, testimonios, FAQ y formulario
+- [x] Panel RRHH /empresa/dashboard con métricas de activación y gestión de códigos
+- [x] Enlace a /empresas en nav desktop y móvil de la landing page
+- [x] Webhook Stripe para activar plan empresarial tras pago
