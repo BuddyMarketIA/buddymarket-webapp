@@ -1797,3 +1797,43 @@
 - [x] Frontend: campo de código de referido en BuddySetup (paso 6 - confirmación)
 - [x] Sidebar: enlace "Invita amigos" en sección Mi Perfil
 - [x] Ruta /app/referrals/creator para BuddyExperts/BuddyMakers (sistema anterior)
+
+## Landing herramientas de captación pública (/herramientas)
+- [ ] Calculadora nutricional: fórmula Mifflin-St Jeor, distribución macros, IMC con interpretación
+- [ ] Test "¿Qué estás haciendo mal?": 12 preguntas, diagnóstico personalizado, errores + CTA
+- [ ] CTA final con enlace a registro de BuddyMarket
+- [ ] Ruta pública /herramientas registrada en App.tsx
+- [ ] Enlace en navegación pública
+
+## Landing BuddyMakers/BuddyExperts (/creators)
+- [ ] Hero section con CTA diferenciado BuddyMaker vs BuddyExpert
+- [ ] Calculadora de ingresos interactiva (slider seguidores → ingresos estimados)
+- [ ] Modelo de comisiones 20% neto explicado visualmente
+- [ ] Diferencia BuddyMaker vs BuddyExpert visual
+- [ ] Testimonios/casos de éxito
+- [ ] FAQ para creadores
+- [ ] Formulario de pre-registro
+- [ ] Ruta pública /creators registrada en App.tsx
+
+## Landing herramientas de captación pública (/herramientas)
+- [ ] Calculadora nutricional: fórmula Mifflin-St Jeor, distribución macros, IMC con interpretación
+- [ ] Test "¿Qué estás haciendo mal?": 12 preguntas, diagnóstico personalizado, errores + CTA
+- [ ] CTA final con enlace a registro de BuddyMarket
+- [ ] Ruta pública /herramientas registrada en App.tsx
+- [ ] Enlace en navegación pública
+
+## Landing BuddyMakers/BuddyExperts (/creators)
+- [ ] Hero section con CTA diferenciado BuddyMaker vs BuddyExpert
+- [ ] Calculadora de ingresos interactiva (slider seguidores → ingresos estimados)
+- [ ] Modelo de comisiones 20% neto explicado visualmente
+- [ ] Diferencia BuddyMaker vs BuddyExpert visual
+- [ ] Testimonios/casos de éxito
+- [ ] FAQ para creadores
+- [ ] Formulario de pre-registro
+- [ ] Ruta pública /creators registrada en App.tsx
+
+## Landing herramientas + Creators (COMPLETADO)
+- [x] Página /herramientas: calculadora nutricional (Mifflin-St Jeor, macros, IMC) + test de hábitos con diagnóstico
+- [x] Página /creators: hero, calculadora de ingresos interactiva, BuddyMaker vs BuddyExpert, testimonios, FAQ, CTA
+- [x] Rutas públicas /herramientas y /creators registradas en App.tsx
+- [x] Enlace "Creadores 💼" añadido en nav desktop y menú móvil de LandingPage

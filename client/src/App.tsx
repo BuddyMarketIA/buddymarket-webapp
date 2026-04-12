@@ -76,6 +76,8 @@ const Complements = lazy(() => import("./pages/Complements"));
 const Badges = lazy(() => import("./pages/Badges"));
 const BuddyScan = lazy(() => import("./pages/BuddyScan"));
 const InstallAppBanner = lazy(() => import("./components/InstallAppBanner"));
+const Herramientas = lazy(() => import("./pages/Herramientas"));
+const Creators = lazy(() => import("./pages/Creators"));
 
 // ─── Page loading fallback ────────────────────────────────────────────────────
 function PageLoader() {
@@ -142,6 +144,8 @@ function Router() {
       <Route path="/faq" component={FAQ} />
       <Route path="/legal" component={Terms} />
       <Route path="/gdpr" component={Privacy} />
+      <Route path="/herramientas" component={Herramientas} />
+      <Route path="/creators" component={Creators} />
       {/* Onboarding wizard — requires auth, no AppLayout */}
       <Route path="/buddy-setup">{() => <ProtectedPage><BuddySetup /></ProtectedPage>}</Route>
       <Route path="/app/tour">{() => <ProtectedPage><OnboardingTour /></ProtectedPage>}</Route>
