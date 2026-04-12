@@ -1849,7 +1849,7 @@
 - [ ] Página /creator-dashboard: métricas en tiempo real (referidos activos, comisiones totales, pendientes, tasa conversión)
 - [ ] Tabla de referidos con estado (activo/cancelado/prueba) y comisión por cada uno
 - [ ] Historial de comisiones por mes con estado (pagado/pendiente)
-- [ ] Gráfico de evolución de referidos y comisiones
+- [x] Gráfico de evolución de referidos y comisiones
 - [ ] Sección de código de referido con botón copiar y enlace de afiliado
 - [ ] Ruta /creator-dashboard registrada en App.tsx
 - [ ] Enlace en sidebar y en la landing /creators
@@ -2050,3 +2050,15 @@
 - [x] Frontend: enlace "Centro de Soporte" en sidebar grupo Mi Perfil
 - [x] Frontend admin: pestaña "Soporte" en Admin.tsx con KPIs, listado con filtros y detalle de ticket
 - [x] Frontend admin: campo de respuesta pública + notas internas + cambio de estado/prioridad/asignado
+
+## Panel Admin — Gestión de Licencias B2B
+- [x] Endpoint backend: adminGetLicensesOverview (KPIs globales de licencias, MRR, ARR, churn)
+- [x] Endpoint backend: adminGetAllLicenses (listado paginado de todas las licencias con filtros)
+- [x] Endpoint backend: adminAdjustLicense (ajustar licencias contratadas manualmente)
+- [x] Endpoint backend: adminRevokeLicense (revocar licencia de un empleado específico)
+- [x] Componente AdminLicenciasPanel con KPIs globales (MRR, ARR, licencias activas, tasa uso)
+- [x] Vista de tabla de licencias por empresa con filtros y búsqueda
+- [x] Vista detalle de licencias por empresa (empleados activos/inactivos, última actividad)
+- [x] Acciones: ajustar límite de licencias, revocar empleado, forzar sincronización
+- [x] Gráfico de evolución de licencias activas (últimos 6 meses)
+- [x] Integrar nueva pestaña "Licencias" en el panel admin

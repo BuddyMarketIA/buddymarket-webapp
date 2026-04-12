@@ -33,6 +33,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { RECIPE_PLACEHOLDER_IMAGE as RECIPE_PLACEHOLDER } from "@/lib/constants";
 import UsageAnalyticsPanel from "@/components/UsageAnalyticsPanel";
+import AdminLicenciasPanel from "@/components/AdminLicenciasPanel";
 
 const TABS = [
   { key: "overview", label: "Resumen", icon: ShieldCheckIcon },
@@ -48,6 +49,7 @@ const TABS = [
   { key: "founders", label: "Fundadores", icon: StarIcon },
   { key: "badges", label: "Insignias", icon: TrophyIcon },
   { key: "empresas", label: "Empresas B2B", icon: BuildingOfficeIcon },
+  { key: "licencias", label: "Licencias B2B", icon: CurrencyEuroIcon },
   { key: "soporte", label: "Soporte", icon: ChatBubbleLeftRightIcon },
 ];
 
@@ -646,6 +648,10 @@ export default function Admin() {
       {/* Empresas B2B */}
       {activeTab === "empresas" && (
         <AdminEmpresasPanel />
+      )}
+      {/* Licencias B2B */}
+      {activeTab === "licencias" && (
+        <AdminLicenciasPanel />
       )}
       {/* Soporte */}
       {activeTab === "soporte" && (

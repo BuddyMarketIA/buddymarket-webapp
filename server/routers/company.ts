@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { TRPCError } from "@trpc/server";
-import { eq, and, count, desc } from "drizzle-orm";
+import { eq, and, count, desc, sql, gte } from "drizzle-orm";
 import { router, publicProcedure, protectedProcedure } from "../_core/trpc";
 import { getDb } from "../db";
 import { notifyOwner } from "../_core/notification";
@@ -694,5 +694,217 @@ export const companyRouter = router({
       });
       await drizzleDb.update(companies).set({ licensesActive: activeLicenses, updatedAt: new Date() }).where(eq(companies.id, input.companyId));
       return { success: true, activeLicenses, totalAmount };
+    }),
+
+  // ─── PANEL DE LICENCIAS ───────────────────────────────────────────────────
+
+  /** KPIs globales de licencias: MRR, ARR, tasa de uso, evolución mensual */
+  adminGetLicensesOverview: protectedProcedure
+    .query(async ({ ctx }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { companies, companyBillingSnapshots } = await import("../../drizzle/schema.js");
+      const prices: Record<string, number> = { starter: 8, business: 6, enterprise: 4.5, corporate: 0 };
+
+      const allCompanies = await drizzleDb.select().from(companies);
+      const activeCompanies = allCompanies.filter(c => c.status === "active");
+
+      const totalLicensesContracted = activeCompanies.reduce((s, c) => s + (c.licensesTotal || 0), 0);
+      const totalLicensesActive = activeCompanies.reduce((s, c) => s + (c.licensesActive || 0), 0);
+      const usageRate = totalLicensesContracted > 0 ? (totalLicensesActive / totalLicensesContracted) * 100 : 0;
+      const mrr = activeCompanies.reduce((s, c) => s + (c.licensesActive || 0) * (prices[c.plan] || 0), 0);
+      const arr = mrr * 12;
+
+      const byPlan = ["starter", "business", "enterprise", "corporate"].map(plan => ({
+        plan,
+        totalCompanies: allCompanies.filter(c => c.plan === plan).length,
+        activeCompanies: activeCompanies.filter(c => c.plan === plan).length,
+        licensesContracted: activeCompanies.filter(c => c.plan === plan).reduce((s, c) => s + (c.licensesTotal || 0), 0),
+        licensesActive: activeCompanies.filter(c => c.plan === plan).reduce((s, c) => s + (c.licensesActive || 0), 0),
+        mrr: activeCompanies.filter(c => c.plan === plan).reduce((s, c) => s + (c.licensesActive || 0) * (prices[plan] || 0), 0),
+        pricePerLicense: prices[plan] || 0,
+      }));
+
+      const sixMonthsAgo = new Date();
+      sixMonthsAgo.setMonth(sixMonthsAgo.getMonth() - 6);
+      const snapshots = await drizzleDb
+        .select({
+          month: sql<string>`to_char(${companyBillingSnapshots.billingPeriodStart}, 'YYYY-MM')`,
+          totalLicenses: sql<number>`sum(${companyBillingSnapshots.activeLicenses})`,
+          totalRevenue: sql<number>`sum(${companyBillingSnapshots.totalAmount}::numeric)`,
+        })
+        .from(companyBillingSnapshots)
+        .where(gte(companyBillingSnapshots.billingPeriodStart, sixMonthsAgo))
+        .groupBy(sql`to_char(${companyBillingSnapshots.billingPeriodStart}, 'YYYY-MM')`)
+        .orderBy(sql`to_char(${companyBillingSnapshots.billingPeriodStart}, 'YYYY-MM')`);
+
+      const topCompanies = activeCompanies
+        .map(c => ({
+          id: c.id,
+          name: c.name,
+          plan: c.plan,
+          licensesContracted: c.licensesTotal || 0,
+          licensesActive: c.licensesActive || 0,
+          usageRate: c.licensesTotal ? Math.round(((c.licensesActive || 0) / c.licensesTotal) * 100) : 0,
+          mrr: (c.licensesActive || 0) * (prices[c.plan] || 0),
+          status: c.status,
+          contactEmail: c.contactEmail,
+          accessCode: c.accessCode,
+        }))
+        .sort((a, b) => b.mrr - a.mrr);
+
+      return {
+        summary: {
+          totalCompanies: allCompanies.length,
+          activeCompanies: activeCompanies.length,
+          totalLicensesContracted,
+          totalLicensesActive,
+          usageRate: Math.round(usageRate * 10) / 10,
+          mrr: Math.round(mrr * 100) / 100,
+          arr: Math.round(arr * 100) / 100,
+        },
+        byPlan,
+        monthlyEvolution: snapshots.map(s => ({
+          month: s.month,
+          totalLicenses: Number(s.totalLicenses) || 0,
+          totalRevenue: Number(s.totalRevenue) || 0,
+        })),
+        topCompanies,
+      };
+    }),
+
+  /** Listado paginado de todas las licencias (miembros) con filtros */
+  adminGetAllLicenses: protectedProcedure
+    .input(z.object({
+      companyId: z.number().optional(),
+      isActive: z.boolean().optional(),
+      search: z.string().optional(),
+      limit: z.number().min(1).max(200).default(50),
+      offset: z.number().min(0).default(0),
+    }))
+    .query(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { companies, companyMembers, users } = await import("../../drizzle/schema.js");
+
+      let rows = await drizzleDb
+        .select({
+          memberId: companyMembers.id,
+          companyId: companyMembers.companyId,
+          userId: companyMembers.userId,
+          joinedAt: companyMembers.joinedAt,
+          lastActiveAt: companyMembers.lastActiveAt,
+          isActive: companyMembers.isActive,
+          userName: users.name,
+          userEmail: users.email,
+          companyName: companies.name,
+          companyPlan: companies.plan,
+          companyStatus: companies.status,
+        })
+        .from(companyMembers)
+        .leftJoin(users, eq(companyMembers.userId, users.id))
+        .leftJoin(companies, eq(companyMembers.companyId, companies.id))
+        .orderBy(desc(companyMembers.joinedAt));
+
+      if (input.companyId !== undefined) rows = rows.filter(r => r.companyId === input.companyId);
+      if (input.isActive !== undefined) rows = rows.filter(r => r.isActive === input.isActive);
+      if (input.search) {
+        const s = input.search.toLowerCase();
+        rows = rows.filter(r =>
+          r.userName?.toLowerCase().includes(s) ||
+          r.userEmail?.toLowerCase().includes(s) ||
+          r.companyName?.toLowerCase().includes(s)
+        );
+      }
+
+      const total = rows.length;
+      const paginated = rows.slice(input.offset, input.offset + input.limit);
+      return { licenses: paginated, total };
+    }),
+
+  /** Ajustar licencias contratadas de una empresa */
+  adminAdjustLicense: protectedProcedure
+    .input(z.object({
+      companyId: z.number(),
+      licensesTotal: z.number().min(1).max(10000),
+      reason: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { companies } = await import("../../drizzle/schema.js");
+      const [company] = await drizzleDb.select().from(companies).where(eq(companies.id, input.companyId)).limit(1);
+      if (!company) throw new TRPCError({ code: "NOT_FOUND" });
+      const noteEntry = input.reason
+        ? `\n[${new Date().toISOString().slice(0, 10)}] Ajuste licencias: ${company.licensesTotal} → ${input.licensesTotal}. Motivo: ${input.reason}`
+        : "";
+      await drizzleDb.update(companies).set({
+        licensesTotal: input.licensesTotal,
+        notes: ((company.notes || "") + noteEntry).trim() || null,
+        updatedAt: new Date(),
+      }).where(eq(companies.id, input.companyId));
+      return { success: true, previousTotal: company.licensesTotal, newTotal: input.licensesTotal };
+    }),
+
+  /** Revocar licencia de un empleado específico */
+  adminRevokeLicense: protectedProcedure
+    .input(z.object({
+      memberId: z.number(),
+      reason: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { companyMembers, companies, userSubscriptions } = await import("../../drizzle/schema.js");
+      const [member] = await drizzleDb.select().from(companyMembers).where(eq(companyMembers.id, input.memberId)).limit(1);
+      if (!member) throw new TRPCError({ code: "NOT_FOUND" });
+      await drizzleDb.update(companyMembers).set({ isActive: false }).where(eq(companyMembers.id, input.memberId));
+      await drizzleDb.update(userSubscriptions).set({
+        plan: "free" as any,
+        manualPlan: null,
+        manualPlanNote: null,
+        updatedAt: new Date(),
+      }).where(eq(userSubscriptions.userId, member.userId));
+      const [company] = await drizzleDb.select().from(companies).where(eq(companies.id, member.companyId)).limit(1);
+      if (company) {
+        await drizzleDb.update(companies).set({
+          licensesActive: Math.max(0, (company.licensesActive || 0) - 1),
+          updatedAt: new Date(),
+        }).where(eq(companies.id, member.companyId));
+      }
+      return { success: true };
+    }),
+
+  /** Reactivar licencia de un empleado */
+  adminReactivateLicense: protectedProcedure
+    .input(z.object({ memberId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { companyMembers, companies, userSubscriptions } = await import("../../drizzle/schema.js");
+      const [member] = await drizzleDb.select().from(companyMembers).where(eq(companyMembers.id, input.memberId)).limit(1);
+      if (!member) throw new TRPCError({ code: "NOT_FOUND" });
+      const [company] = await drizzleDb.select().from(companies).where(eq(companies.id, member.companyId)).limit(1);
+      if (!company) throw new TRPCError({ code: "NOT_FOUND" });
+      if ((company.licensesActive || 0) >= (company.licensesTotal || 0)) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "La empresa ha alcanzado el límite de licencias contratadas" });
+      }
+      await drizzleDb.update(companyMembers).set({ isActive: true, lastActiveAt: new Date() }).where(eq(companyMembers.id, input.memberId));
+      await drizzleDb.update(userSubscriptions).set({
+        plan: "pro_max" as any,
+        manualPlan: "pro_max" as any,
+        manualPlanNote: `Reactivado por admin — empresa ${company.name}`,
+        updatedAt: new Date(),
+      }).where(eq(userSubscriptions.userId, member.userId));
+      await drizzleDb.update(companies).set({
+        licensesActive: (company.licensesActive || 0) + 1,
+        updatedAt: new Date(),
+      }).where(eq(companies.id, member.companyId));
+      return { success: true };
     }),
 });
