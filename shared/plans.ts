@@ -52,6 +52,9 @@ export interface PlanLimits {
   canExportData: boolean;
   canManageMultipleProfiles: boolean;
 
+  // Household / Familia
+  canUseHousehold: boolean;
+
   // Support
   prioritySupport: boolean;
 }
@@ -92,6 +95,7 @@ export const PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
 
     canExportData: false,
     canManageMultipleProfiles: false,
+    canUseHousehold: false,
 
     prioritySupport: false,
   },
@@ -131,6 +135,7 @@ export const PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
 
     canExportData: false,
     canManageMultipleProfiles: false,
+    canUseHousehold: false,
 
     prioritySupport: false,
   },
@@ -170,6 +175,7 @@ export const PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
 
     canExportData: true,
     canManageMultipleProfiles: true,
+    canUseHousehold: true,
 
     prioritySupport: true,
   },
@@ -208,6 +214,7 @@ export const PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
 
     canExportData: true,
     canManageMultipleProfiles: true,
+    canUseHousehold: true,
 
     prioritySupport: true,
   },
@@ -296,4 +303,5 @@ export const FEATURE_DESCRIPTIONS: Partial<Record<keyof PlanLimits, { title: str
   canBecomeBuddyExpert: { title: "Convertirte en BuddyExpert", requiredPlan: "free" },
   canExportData: { title: "Exportar tus datos", requiredPlan: "premium" },
   canManageMultipleProfiles: { title: "Gestionar múltiples perfiles familiares", requiredPlan: "premium" },
+  canUseHousehold: { title: "Modo Familia — hogar compartido", requiredPlan: "premium" },
 };

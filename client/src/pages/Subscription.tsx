@@ -94,6 +94,7 @@ const FEATURES: Array<{
     emoji: "👑",
     rows: [
       { label: "BuddyIA ilimitado (sin límite diario)", free: false, pro: false, promax: true, hot: true },
+      { label: "Modo Familia — hogar compartido", free: false, pro: false, promax: true, hot: true },
       { label: "Múltiples perfiles familiares", free: false, pro: false, promax: true },
       { label: "Exportar informes PDF", free: false, pro: false, promax: true },
       { label: "Soporte prioritario 24/7", free: false, pro: false, promax: true },
@@ -375,7 +376,7 @@ export default function Subscription() {
           <span className="text-xl">✨</span>
           <div>
             <p className="text-sm font-bold text-purple-800">Ya eres usuario Pro</p>
-            <p className="text-xs text-purple-600">Mejora a Pro Max para desbloquear BuddyIA ilimitado, múltiples perfiles y más</p>
+            <p className="text-xs text-purple-600">Mejora a Pro Max para desbloquear el Modo Familia 🏠, BuddyIA ilimitado, múltiples perfiles y más</p>
           </div>
         </div>
       )}
@@ -514,6 +515,7 @@ export default function Subscription() {
             {[
               "✅ Todo lo de Pro",
               "✅ BuddyIA ilimitado (sin límite diario)",
+              "🏠 Modo Familia — hogar compartido",
               "✅ Múltiples perfiles familiares",
               "✅ Exportar informes PDF",
               "✅ Historial nutricional ilimitado",

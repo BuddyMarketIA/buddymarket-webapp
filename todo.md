@@ -1918,3 +1918,11 @@
 - [x] Página /familia/unirse: aceptar invitación por token
 - [x] Enlace "Mi Hogar" en sidebar de AppLayout (grupo Familia)
 - [x] Rutas /familia y /familia/unirse en App.tsx
+
+## Gate Pro Max — Modo Familia
+- [x] Añadir canUseHousehold al tipo PlanLimits y a los 4 planes (free/basic/premium/pro_max)
+- [x] Gate en backend: router household.create verifica requirePlanFeature("canUseHousehold")
+- [x] Pantalla de upsell en /familia para usuarios sin Pro Max (con CTA a /precios)
+- [x] Modo Familia añadido en tabla de comparación de Subscription.tsx (hot: true)
+- [x] Modo Familia añadido en lista de features de la tarjeta Pro Max
+- [x] Mensaje de upgrade Pro→Pro Max menciona el Modo Familia

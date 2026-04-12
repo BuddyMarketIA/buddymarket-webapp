@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
+import { usePlan } from "@/hooks/usePlan";
 import { Link, useLocation } from "wouter";
 import { toast } from "@/components/sonner-a11y-shim";
 import { Button } from "@/components/ui/button";
@@ -17,7 +18,67 @@ import {
   ChevronRight, LogOut, Loader2, Check, X, AlertTriangle
 } from "lucide-react";
 
-// ─── Dietary restriction labels ───────────────────────────────────────────────
+// ─── Upsell screen for non-Pro Max users ────────────────────────────────────────────────
+function HouseholdUpsell({ currentTier }: { currentTier: string }) {
+  const isPro = currentTier === "basic";
+  return (
+    <div className="flex flex-col items-center justify-center min-h-[80vh] text-center px-4">
+      <div className="w-24 h-24 rounded-full bg-gradient-to-br from-violet-100 to-purple-200 flex items-center justify-center mb-6 shadow-lg">
+        <span className="text-5xl">🏠</span>
+      </div>
+      <div className="inline-flex items-center gap-2 bg-violet-100 text-violet-700 rounded-full px-4 py-1.5 text-sm font-semibold mb-4">
+        <Crown className="w-4 h-4" />
+        Exclusivo Pro Max
+      </div>
+      <h2 className="text-3xl font-bold text-foreground mb-3">Modo Familia</h2>
+      <p className="text-muted-foreground max-w-lg mb-8 leading-relaxed text-lg">
+        Comparte el menú semanal y la lista de la compra con toda tu familia.
+        Cada miembro con sus propias preferencias y restricciones dietéticas.
+      </p>
+      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-10 max-w-xl w-full">
+        {[
+          { icon: "🍽️", title: "Menú compartido", desc: "Planifica las comidas de toda la familia a la vez" },
+          { icon: "🛒", title: "Lista unificada", desc: "Una sola lista de la compra para todos" },
+          { icon: "🥗", title: "Preferencias propias", desc: "Restricciones dietéticas individuales por miembro" },
+        ].map((f) => (
+          <div key={f.title} className="bg-card border border-violet-100 rounded-xl p-5 text-center shadow-sm">
+            <div className="text-3xl mb-2">{f.icon}</div>
+            <p className="font-semibold text-sm text-foreground">{f.title}</p>
+            <p className="text-xs text-muted-foreground mt-1">{f.desc}</p>
+          </div>
+        ))}
+      </div>
+      {isPro ? (
+        <div className="space-y-3 w-full max-w-sm">
+          <p className="text-sm text-muted-foreground">
+            Estás en el plan <strong>Pro</strong>. Actualiza a <strong>Pro Max</strong> para acceder al Modo Familia.
+          </p>
+          <Link href="/precios?plan=premium">
+            <Button size="lg" className="w-full bg-violet-600 hover:bg-violet-700 text-white font-bold text-base">
+              Actualizar a Pro Max — 19,99€/mes
+            </Button>
+          </Link>
+        </div>
+      ) : (
+        <div className="space-y-3 w-full max-w-sm">
+          <p className="text-sm text-muted-foreground">
+            El Modo Familia está disponible exclusivamente en el plan <strong>Pro Max</strong>.
+          </p>
+          <Link href="/precios?plan=premium">
+            <Button size="lg" className="w-full bg-violet-600 hover:bg-violet-700 text-white font-bold text-base">
+              Ver planes y precios
+            </Button>
+          </Link>
+          <p className="text-xs text-muted-foreground">
+            Prueba gratuita de 7 días · Cancela cuando quieras
+          </p>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Dietary restriction labels ────────────────────────────────────────────────
 const DIETARY_OPTIONS = [
   { id: "gluten", label: "Sin gluten" },
   { id: "lactosa", label: "Sin lactosa" },
@@ -340,6 +401,7 @@ function MyPreferencesModal({
 // ─── Main page ────────────────────────────────────────────────────────────────
 export default function Familia() {
   const { user, loading } = useAuth();
+  const { can, tier } = usePlan();
   const [, navigate] = useLocation();
   const [showCreate, setShowCreate] = useState(false);
   const [showInvite, setShowInvite] = useState(false);
@@ -389,6 +451,11 @@ export default function Familia() {
   if (!user) {
     navigate("/");
     return null;
+  }
+
+  // ── Plan gate: Pro Max only ────────────────────────────────────────────────
+  if (!can("canUseHousehold")) {
+    return <HouseholdUpsell currentTier={tier} />;
   }
 
   if (!household) {

@@ -2,6 +2,7 @@ import { z } from "zod";
 import { router, protectedProcedure, publicProcedure } from "../_core/trpc";
 import { TRPCError } from "@trpc/server";
 import { getDb } from "../db";
+import { getUserPlanTier, requirePlanFeature } from "../planGuard";
 import {
   households,
   householdMembers,
@@ -154,6 +155,10 @@ export const householdRouter = router({
   create: protectedProcedure
     .input(z.object({ name: z.string().min(2).max(100) }))
     .mutation(async ({ ctx, input }) => {
+      // ── Plan gate: Pro Max only ──────────────────────────────────────────────
+      const tier = await getUserPlanTier(ctx.user.id, ctx.user.role);
+      requirePlanFeature(tier, "canUseHousehold");
+
       const db = await getDb();
       if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
 
