@@ -52,50 +52,73 @@ function MakerCard({ row, onFollow, index }: { row: any; onFollow: (id: number) 
 
   return (
     <div
-      className="group relative bg-white rounded-[28px] overflow-hidden cursor-pointer"
-      style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.08), 0 1px 4px rgba(0,0,0,0.04)" }}
+      className="group relative bg-white rounded-[24px] overflow-hidden cursor-pointer"
+      style={{
+        boxShadow: "0 2px 8px rgba(0,0,0,0.05), 0 8px 32px rgba(0,0,0,0.07)",
+        transition: "box-shadow 0.3s ease, transform 0.3s ease",
+      }}
+      onMouseEnter={e => {
+        (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 48px rgba(249,115,22,0.2), 0 2px 8px rgba(0,0,0,0.06)";
+        (e.currentTarget as HTMLElement).style.transform = "translateY(-3px)";
+      }}
+      onMouseLeave={e => {
+        (e.currentTarget as HTMLElement).style.boxShadow = "0 2px 8px rgba(0,0,0,0.05), 0 8px 32px rgba(0,0,0,0.07)";
+        (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
+      }}
       onClick={() => navigate(`/app/buddy-makers/${maker.id}`)}
     >
-      {/* ── Gradient header with decorative blobs ── */}
+      {/* ── Gradient header ── */}
       <div className={`relative bg-gradient-to-br ${gradient} pt-5 pb-10 px-4 overflow-hidden`}>
-        <div className="absolute -top-4 -right-4 w-20 h-20 rounded-full bg-white/10 blur-xl" />
-        <div className="absolute -bottom-6 -left-6 w-24 h-24 rounded-full bg-black/10 blur-2xl" />
-
+        <div className="absolute -top-6 -right-6 w-32 h-32 rounded-full bg-white/15 blur-2xl" />
+        <div className="absolute -bottom-8 -left-8 w-36 h-36 rounded-full bg-black/10 blur-3xl" />
+        <div className="absolute top-3 left-3 w-10 h-10 rounded-full bg-white/10 blur-lg" />
+        <div
+          className="absolute inset-0 opacity-[0.06]"
+          style={{
+            backgroundImage: "radial-gradient(circle at 1px 1px, white 1.5px, transparent 0)",
+            backgroundSize: "14px 14px",
+          }}
+        />
+        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
+          style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%)" }} />
         {/* Badges */}
-        <div className="relative flex justify-between items-start mb-3">
+        <div className="relative flex justify-between items-start mb-4">
           {maker.verified ? (
-            <span className="flex items-center gap-1 bg-white/20 backdrop-blur-sm text-white text-[11px] font-bold px-2 py-0.5 rounded-full border border-white/30">
+            <span className="flex items-center gap-1 bg-white/25 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full border border-white/40 shadow-sm">
               <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
               Verificado
             </span>
           ) : <span />}
           {maker.featured && (
-            <span className="bg-yellow-400 text-yellow-900 text-[11px] font-black px-2 py-0.5 rounded-full shadow-lg">
-              ⭐ TOP
+            <span className="bg-yellow-400/90 backdrop-blur-sm text-yellow-900 text-[10px] font-black px-2.5 py-1 rounded-full shadow-lg border border-yellow-300/50">
+              TOP
             </span>
           )}
         </div>
-
         {/* Avatar */}
         <div className="flex justify-center">
           <div className="relative">
             <div className="absolute inset-0 rounded-2xl bg-white/30 blur-md scale-110" />
-            <div className="relative w-16 h-16 rounded-2xl overflow-hidden ring-[3px] ring-white/60 shadow-2xl">
+            <div className="relative rounded-2xl overflow-hidden ring-[3px] ring-white/60 shadow-2xl" style={{ width: 72, height: 72 }}>
               <img
                 src={maker.avatarUrl ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(maker.displayName)}&background=F97316&color=fff&size=80`}
                 alt={maker.displayName}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
             </div>
+            {/* BuddyMaker badge */}
+            <span className="absolute -bottom-1.5 -right-1.5 w-6 h-6 rounded-full bg-orange-500 shadow-md flex items-center justify-center">
+              <svg className="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            </span>
           </div>
         </div>
       </div>
 
       {/* ── Body ── */}
-      <div className="px-3 pb-3 -mt-4">
+      <div className="px-4 pb-4 -mt-5">
         {/* Name */}
-        <div className="flex flex-col items-center mb-2">
-          <h3 className="font-black text-gray-900 text-[14px] text-center leading-tight tracking-tight">
+        <div className="flex flex-col items-center mb-1 text-center">
+          <h3 className="font-black text-gray-900 text-[14px] leading-tight tracking-tight mt-1">
             {maker.displayName}
           </h3>
           <p className="text-[11px] text-orange-500 font-bold mt-0.5 tracking-wide uppercase">
@@ -110,23 +133,23 @@ function MakerCard({ row, onFollow, index }: { row: any; onFollow: (id: number) 
           </p>
         )}
 
-        {/* Stats */}
-        <div className="flex items-center justify-center gap-0 mb-3 bg-gray-50 rounded-xl p-2">
-          <div className="flex-1 flex flex-col items-center">
-            <span className="text-[12px] font-black text-gray-900">{fmtCount(maker.followersCount)}</span>
-            <span className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Fans</span>
+        {/* Stats bar */}
+        <div className="flex items-stretch w-full mb-3 bg-gray-50 rounded-2xl overflow-hidden border border-gray-100">
+          <div className="flex-1 flex flex-col items-center py-2">
+            <span className="text-[13px] font-black text-gray-900">{fmtCount(maker.followersCount)}</span>
+            <span className="text-[9px] text-gray-400 font-semibold uppercase tracking-wider">Fans</span>
           </div>
-          <div className="w-px h-6 bg-gray-200" />
-          <div className="flex-1 flex flex-col items-center">
-            <span className="text-[12px] font-black text-gray-900">{maker.recipesCount}</span>
-            <span className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Recetas</span>
+          <div className="w-px bg-gray-200" />
+          <div className="flex-1 flex flex-col items-center py-2">
+            <span className="text-[13px] font-black text-gray-900">{maker.recipesCount}</span>
+            <span className="text-[9px] text-gray-400 font-semibold uppercase tracking-wider">Recetas</span>
           </div>
           {maker.rating > 0 && (
             <>
-              <div className="w-px h-6 bg-gray-200" />
-              <div className="flex-1 flex flex-col items-center">
-                <span className="text-[12px] font-black text-gray-900">⭐{maker.rating?.toFixed(1)}</span>
-                <span className="text-[10px] text-gray-400 font-semibold uppercase tracking-wider">Rating</span>
+              <div className="w-px bg-gray-200" />
+              <div className="flex-1 flex flex-col items-center py-2">
+                <span className="text-[13px] font-black text-gray-900">{maker.rating?.toFixed(1)}</span>
+                <span className="text-[9px] text-gray-400 font-semibold uppercase tracking-wider">★ Rating</span>
               </div>
             </>
           )}
@@ -138,7 +161,7 @@ function MakerCard({ row, onFollow, index }: { row: any; onFollow: (id: number) 
             href={`https://instagram.com/${maker.instagramHandle}`}
             target="_blank"
             rel="noopener noreferrer"
-            className="flex items-center justify-center gap-1.5 mb-2 text-[11px] text-pink-500 font-bold hover:text-pink-600 transition-colors"
+            className="flex items-center justify-center gap-1.5 mb-2.5 text-[11px] text-pink-500 font-bold hover:text-pink-600 transition-colors"
             onClick={(e) => e.stopPropagation()}
           >
             <IgIcon />
