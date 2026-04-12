@@ -2130,3 +2130,59 @@ export const companyReminderLogs = pgTable("company_reminder_logs", {
 }));
 export type CompanyReminderLog = typeof companyReminderLogs.$inferSelect;
 export type InsertCompanyReminderLog = typeof companyReminderLogs.$inferInsert;
+
+// ─── Modo Familia / Hogar Compartido ─────────────────────────────────────────
+export const householdRoleEnum = pgEnum("household_role", ["owner", "admin", "member"]);
+export const householdInviteStatusEnum = pgEnum("household_invite_status", ["pending", "accepted", "declined", "expired"]);
+
+export const households = pgTable("households", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 100 }).notNull(),
+  ownerId: integer("ownerId").notNull(),
+  maxMembers: integer("maxMembers").notNull().default(6),
+  avatarUrl: text("avatarUrl"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  ownerIdx: index("hh_owner_idx").on(t.ownerId),
+}));
+export type Household = typeof households.$inferSelect;
+export type InsertHousehold = typeof households.$inferInsert;
+
+export const householdMembers = pgTable("household_members", {
+  id: serial("id").primaryKey(),
+  householdId: integer("householdId").notNull(),
+  userId: integer("userId").notNull(),
+  role: householdRoleEnum("role").notNull().default("member"),
+  displayName: varchar("displayName", { length: 80 }),
+  // Preferencias y restricciones individuales
+  dietaryRestrictions: text("dietaryRestrictions"), // JSON array: ["gluten","lactosa",...]
+  allergies: text("allergies"),                      // JSON array: ["frutos_secos","mariscos",...]
+  preferences: text("preferences"),                 // JSON: { calories: 2000, goal: "lose_weight" }
+  joinedAt: timestamp("joinedAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  householdIdx: index("hhm_household_idx").on(t.householdId),
+  userIdx: index("hhm_user_idx").on(t.userId),
+  uniqueMember: uniqueIndex("hhm_unique_member").on(t.householdId, t.userId),
+}));
+export type HouseholdMember = typeof householdMembers.$inferSelect;
+export type InsertHouseholdMember = typeof householdMembers.$inferInsert;
+
+export const householdInvitations = pgTable("household_invitations", {
+  id: serial("id").primaryKey(),
+  householdId: integer("householdId").notNull(),
+  invitedByUserId: integer("invitedByUserId").notNull(),
+  invitedEmail: varchar("invitedEmail", { length: 255 }).notNull(),
+  token: varchar("token", { length: 64 }).notNull(),
+  status: householdInviteStatusEnum("status").notNull().default("pending"),
+  expiresAt: timestamp("expiresAt").notNull(),
+  acceptedAt: timestamp("acceptedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  tokenIdx: uniqueIndex("hhi_token_idx").on(t.token),
+  householdIdx: index("hhi_household_idx").on(t.householdId),
+  emailIdx: index("hhi_email_idx").on(t.invitedEmail),
+}));
+export type HouseholdInvitation = typeof householdInvitations.$inferSelect;
+export type InsertHouseholdInvitation = typeof householdInvitations.$inferInsert;

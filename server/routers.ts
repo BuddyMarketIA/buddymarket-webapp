@@ -6,6 +6,7 @@ import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
 import { companyRouter } from "./routers/company";
 import { companyRemindersRouter } from "./routers/companyReminders";
+import { householdRouter } from "./routers/household";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { invokeLLM } from "./_core/llm";
 import { storagePut } from "./storage";
@@ -225,6 +226,7 @@ export const appRouter = router({
   system: systemRouter,
   company: companyRouter,
   companyReminders: companyRemindersRouter,
+  household: householdRouter,
 
   // ---------------------------------------------------------------------------
   // AUTH

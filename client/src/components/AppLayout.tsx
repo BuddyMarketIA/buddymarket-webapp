@@ -207,6 +207,12 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       ],
     },
     {
+      label: "Familia",
+      items: [
+        { key: "/familia", label: "Mi Hogar", to: "/familia", emoji: "🏠" },
+      ],
+    },
+    {
       label: "Compra",
       items: [
         { key: "shopping", label: t("sidebar.shoppingList"), to: "/app/shopping-lists", emoji: "🛒" },

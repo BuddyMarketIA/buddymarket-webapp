@@ -1898,3 +1898,23 @@
 - [x] Templates de email HTML para recordatorios (activation, engagement, expiry_warning, custom)
 - [x] Sección de recordatorios en EmpresaDashboard con stats, historial de campañas y logs
 - [x] Modal de envío con selector de tipo, asunto personalizable, mensaje personalizado y lista de destinatarios CSV
+
+## Modo Familia / Hogar Compartido
+- [ ] Tablas DB: households, householdMembers, householdInvitations
+- [ ] Router tRPC household: create, get, invite, acceptInvite, removeMember, leave, updateMemberPrefs
+- [ ] Página /familia: panel de gestión del hogar con miembros, invitaciones y preferencias
+- [ ] Integración en menú semanal: vista combinada del hogar con filtros por miembro
+- [ ] Integración en lista de la compra: consolidar ingredientes de todos los miembros del hogar
+- [ ] Email de invitación al hogar con token de aceptación
+- [ ] Restricciones dietéticas por miembro (alergias, intolerancias, preferencias)
+
+## Modo Familia (completado)
+- [x] Tablas DB: households, householdMembers, householdInvitations
+- [x] Router tRPC household: create, get, invite, acceptInvite, getInviteByToken, removeMember, updateMyPreferences, update, cancelInvitation
+- [x] Página /familia: gestión del hogar, miembros con roles, invitaciones pendientes
+- [x] Modal de creación de hogar
+- [x] Modal de invitación por email con confirmación
+- [x] Modal de preferencias individuales (restricciones dietéticas, objetivo, calorías)
+- [x] Página /familia/unirse: aceptar invitación por token
+- [x] Enlace "Mi Hogar" en sidebar de AppLayout (grupo Familia)
+- [x] Rutas /familia y /familia/unirse en App.tsx
