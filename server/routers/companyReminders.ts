@@ -14,6 +14,7 @@ import { sendCompanyReminderEmail } from "../email";
 // ─── Helper: verify user is admin of the company ──────────────────────────────
 async function getCompanyForAdmin(userId: number) {
   const db = await getDb();
+  if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
   const [company] = await db
     .select()
     .from(companies)
@@ -32,6 +33,7 @@ export const companyRemindersRouter = router({
   getPendingCodes: protectedProcedure.query(async ({ ctx }) => {
     const company = await getCompanyForAdmin(ctx.user.id);
     const db = await getDb();
+    if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
     const pending = await db
       .select({
         id: companyActivationCodes.id,
@@ -54,6 +56,7 @@ export const companyRemindersRouter = router({
   listCampaigns: protectedProcedure.query(async ({ ctx }) => {
     const company = await getCompanyForAdmin(ctx.user.id);
     const db = await getDb();
+    if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
     const campaigns = await db
       .select()
       .from(companyReminderCampaigns)
@@ -68,6 +71,7 @@ export const companyRemindersRouter = router({
     .query(async ({ ctx, input }) => {
       const company = await getCompanyForAdmin(ctx.user.id);
       const db = await getDb();
+    if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
       // Verify campaign belongs to this company
       const [campaign] = await db
         .select()
@@ -111,6 +115,7 @@ export const companyRemindersRouter = router({
     .mutation(async ({ ctx, input }) => {
       const company = await getCompanyForAdmin(ctx.user.id);
       const db = await getDb();
+    if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
 
       // Create the campaign record
       const [campaign] = await db
@@ -211,6 +216,7 @@ export const companyRemindersRouter = router({
     .mutation(async ({ ctx, input }) => {
       const company = await getCompanyForAdmin(ctx.user.id);
       const db = await getDb();
+    if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
 
       const campaignName = `Recordatorio activación — ${new Date().toLocaleDateString("es-ES")}`;
       const subject = `${company.name} te invita a activar BuddyMarket Pro`;
@@ -292,6 +298,7 @@ export const companyRemindersRouter = router({
     .mutation(async ({ ctx, input }) => {
       const company = await getCompanyForAdmin(ctx.user.id);
       const db = await getDb();
+    if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
       const [campaign] = await db
         .select()
         .from(companyReminderCampaigns)
@@ -317,6 +324,7 @@ export const companyRemindersRouter = router({
   getStats: protectedProcedure.query(async ({ ctx }) => {
     const company = await getCompanyForAdmin(ctx.user.id);
     const db = await getDb();
+    if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
 
     const [totalCampaigns] = await db
       .select({ count: count() })
