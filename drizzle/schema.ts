@@ -2186,3 +2186,26 @@ export const householdInvitations = pgTable("household_invitations", {
 }));
 export type HouseholdInvitation = typeof householdInvitations.$inferSelect;
 export type InsertHouseholdInvitation = typeof householdInvitations.$inferInsert;
+
+// ─── Household Recipe Assignments ─────────────────────────────────────────────
+export const householdRecipeAssignments = pgTable("household_recipe_assignments", {
+  id: serial("id").primaryKey(),
+  householdId: integer("householdId").notNull(),
+  memberId: integer("memberId").notNull(),        // householdMembers.id
+  recipeId: integer("recipeId").notNull(),
+  assignedByUserId: integer("assignedByUserId").notNull(),
+  note: text("note"),                             // nota opcional del asignador
+  mealType: varchar("mealType", { length: 32 }),  // desayuno, almuerzo, cena, snack
+  scheduledDate: timestamp("scheduledDate"),      // fecha sugerida (opcional)
+  isCompleted: boolean("isCompleted").default(false),
+  completedAt: timestamp("completedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  householdIdx: index("hra_household_idx").on(t.householdId),
+  memberIdx: index("hra_member_idx").on(t.memberId),
+  recipeIdx: index("hra_recipe_idx").on(t.recipeId),
+  uniqueAssignment: uniqueIndex("hra_unique_assignment").on(t.householdId, t.memberId, t.recipeId),
+}));
+export type HouseholdRecipeAssignment = typeof householdRecipeAssignments.$inferSelect;
+export type InsertHouseholdRecipeAssignment = typeof householdRecipeAssignments.$inferInsert;

@@ -29,6 +29,7 @@ const Empresas = lazy(() => import("./pages/Empresas"));
 const EmpresaDashboard = lazy(() => import("./pages/EmpresaDashboard"));
 const Familia = lazy(() => import("./pages/Familia"));
 const FamiliaUnirse = lazy(() => import("./pages/FamiliaUnirse"));
+const MisRecetasAsignadas = lazy(() => import("./pages/MisRecetasAsignadas"));
 const BuddySetup = lazy(() => import("./pages/BuddySetup"));
 const OnboardingTour = lazy(() => import("./pages/OnboardingTour"));
 const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
@@ -156,6 +157,7 @@ function Router() {
       <Route path="/empresa/dashboard">{() => <ProtectedPage><EmpresaDashboard /></ProtectedPage>}</Route>
       <Route path="/familia" component={Familia} />
       <Route path="/familia/unirse" component={FamiliaUnirse} />
+      <Route path="/familia/mis-recetas">{() => <ProtectedPage><MisRecetasAsignadas /></ProtectedPage>}</Route>
       <Route path="/creators" component={Creators} />
       <Route path="/creator-dashboard">{() => <ProtectedPage><CreatorDashboard /></ProtectedPage>}</Route>
       {/* Onboarding wizard — requires auth, no AppLayout */}

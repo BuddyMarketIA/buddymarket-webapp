@@ -15,8 +15,422 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Users, UserPlus, Home, Settings, Trash2, Mail, Crown, Shield,
-  ChevronRight, LogOut, Loader2, Check, X, AlertTriangle
+  ChevronRight, LogOut, Loader2, Check, X, AlertTriangle,
+  ChefHat, Search, Plus, Clock, Flame, CheckCircle2, Circle, BookOpen
 } from "lucide-react";
+
+
+// ─── Meal type labels ─────────────────────────────────────────────────────────
+const MEAL_LABELS: Record<string, string> = {
+  desayuno: "Desayuno",
+  almuerzo: "Almuerzo",
+  cena: "Cena",
+  snack: "Snack",
+};
+
+// ─── Assign Recipe Modal ────────────────────────────────────────────────────
+function AssignRecipeModal({
+  open,
+  onClose,
+  householdId,
+  members,
+}: {
+  open: boolean;
+  onClose: () => void;
+  householdId: number;
+  members: Array<{ id: number; displayName: string | null; userName: string | null; userId: number }>;
+}) {
+  const [selectedMemberId, setSelectedMemberId] = useState<number | "">("");
+  const [query, setQuery] = useState("");
+  const [debouncedQuery, setDebouncedQuery] = useState("");
+  const [selectedRecipe, setSelectedRecipe] = useState<{ id: number; name: string; imageUrl: string | null } | null>(null);
+  const [mealType, setMealType] = useState<"desayuno" | "almuerzo" | "cena" | "snack" | "">("" );
+  const [note, setNote] = useState("");
+  const [scheduledDate, setScheduledDate] = useState("");
+  const utils = trpc.useUtils();
+
+  // Debounce query
+  const debounceRef = useState<ReturnType<typeof setTimeout> | null>(null);
+  const handleQueryChange = (val: string) => {
+    setQuery(val);
+    if (debounceRef[0]) clearTimeout(debounceRef[0]);
+    debounceRef[1](setTimeout(() => setDebouncedQuery(val), 350));
+  };
+
+  const { data: searchResults, isLoading: searching } = trpc.householdRecipes.searchRecipes.useQuery(
+    { householdId, query: debouncedQuery },
+    { enabled: open && debouncedQuery.length >= 2 }
+  );
+
+  const assign = trpc.householdRecipes.assign.useMutation({
+    onSuccess: () => {
+      toast.success("Receta asignada correctamente");
+      utils.householdRecipes.getForHousehold.invalidate({ householdId });
+      onClose();
+      setSelectedRecipe(null);
+      setQuery("");
+      setDebouncedQuery("");
+      setSelectedMemberId("");
+      setMealType("");
+      setNote("");
+      setScheduledDate("");
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const handleAssign = () => {
+    if (!selectedMemberId || !selectedRecipe) return;
+    assign.mutate({
+      householdId,
+      memberId: selectedMemberId as number,
+      recipeId: selectedRecipe.id,
+      mealType: mealType || undefined,
+      note: note || undefined,
+      scheduledDate: scheduledDate || undefined,
+      origin: window.location.origin,
+    });
+  };
+
+  return (
+    <Dialog open={open} onOpenChange={(v) => !v && onClose()}>
+      <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <ChefHat className="w-5 h-5 text-orange-500" />
+            Asignar receta a un miembro
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-4 py-2">
+          {/* Step 1: Select member */}
+          <div>
+            <Label htmlFor="assign-member">Miembro del hogar</Label>
+            <Select
+              value={selectedMemberId === "" ? "" : String(selectedMemberId)}
+              onValueChange={(v) => setSelectedMemberId(Number(v))}
+            >
+              <SelectTrigger id="assign-member" className="mt-1">
+                <SelectValue placeholder="Selecciona un miembro..." />
+              </SelectTrigger>
+              <SelectContent>
+                {members.map((m) => (
+                  <SelectItem key={m.id} value={String(m.id)}>
+                    {m.displayName ?? m.userName ?? `Miembro #${m.id}`}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Step 2: Search recipe */}
+          <div>
+            <Label htmlFor="recipe-search">Buscar receta</Label>
+            <div className="relative mt-1">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+              <Input
+                id="recipe-search"
+                value={query}
+                onChange={(e) => handleQueryChange(e.target.value)}
+                placeholder="Escribe el nombre de la receta..."
+                className="pl-9"
+              />
+            </div>
+            {searching && (
+              <div className="flex items-center gap-2 mt-2 text-sm text-muted-foreground">
+                <Loader2 className="w-3 h-3 animate-spin" /> Buscando...
+              </div>
+            )}
+            {searchResults && searchResults.length > 0 && !selectedRecipe && (
+              <div className="mt-2 border rounded-lg overflow-hidden divide-y">
+                {searchResults.map((r) => (
+                  <button
+                    key={r.id}
+                    type="button"
+                    onClick={() => { setSelectedRecipe(r); setQuery(r.name); }}
+                    className="w-full flex items-center gap-3 p-2.5 hover:bg-muted/60 transition-colors text-left"
+                  >
+                    {r.imageUrl ? (
+                      <img src={r.imageUrl} alt={r.name} className="w-10 h-10 rounded-lg object-cover shrink-0" />
+                    ) : (
+                      <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center shrink-0">
+                        <ChefHat className="w-5 h-5 text-orange-400" />
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium truncate">{r.name}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        {r.caloriesPerServing && (
+                          <span className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Flame className="w-3 h-3" />{r.caloriesPerServing} kcal
+                          </span>
+                        )}
+                        {(r.preparationTime || r.cookTime) && (
+                          <span className="text-xs text-muted-foreground flex items-center gap-1">
+                            <Clock className="w-3 h-3" />{(r.preparationTime ?? 0) + (r.cookTime ?? 0)} min
+                          </span>
+                        )}
+                      </div>
+                    </div>
+                  </button>
+                ))}
+              </div>
+            )}
+            {selectedRecipe && (
+              <div className="mt-2 flex items-center gap-3 p-2.5 bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800 rounded-lg">
+                {selectedRecipe.imageUrl ? (
+                  <img src={selectedRecipe.imageUrl} alt={selectedRecipe.name} className="w-10 h-10 rounded-lg object-cover shrink-0" />
+                ) : (
+                  <div className="w-10 h-10 rounded-lg bg-orange-100 flex items-center justify-center shrink-0">
+                    <ChefHat className="w-5 h-5 text-orange-400" />
+                  </div>
+                )}
+                <p className="flex-1 text-sm font-medium text-orange-700 dark:text-orange-300 truncate">{selectedRecipe.name}</p>
+                <button
+                  type="button"
+                  onClick={() => { setSelectedRecipe(null); setQuery(""); setDebouncedQuery(""); }}
+                  className="text-muted-foreground hover:text-destructive"
+                  aria-label="Quitar receta seleccionada"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              </div>
+            )}
+          </div>
+
+          {/* Step 3: Optional details */}
+          <div className="grid grid-cols-2 gap-3">
+            <div>
+              <Label htmlFor="assign-meal-type">Momento del día</Label>
+              <Select value={mealType} onValueChange={(v) => setMealType(v as typeof mealType)}>
+                <SelectTrigger id="assign-meal-type" className="mt-1">
+                  <SelectValue placeholder="Opcional" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="desayuno">🌅 Desayuno</SelectItem>
+                  <SelectItem value="almuerzo">☀️ Almuerzo</SelectItem>
+                  <SelectItem value="cena">🌙 Cena</SelectItem>
+                  <SelectItem value="snack">🍎 Snack</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label htmlFor="assign-date">Fecha programada</Label>
+              <Input
+                id="assign-date"
+                type="date"
+                value={scheduledDate}
+                onChange={(e) => setScheduledDate(e.target.value)}
+                className="mt-1"
+              />
+            </div>
+          </div>
+          <div>
+            <Label htmlFor="assign-note">Nota para el miembro (opcional)</Label>
+            <Input
+              id="assign-note"
+              value={note}
+              onChange={(e) => setNote(e.target.value)}
+              placeholder="Ej: Prueba esta receta para el lunes"
+              maxLength={300}
+              className="mt-1"
+            />
+          </div>
+        </div>
+        <DialogFooter>
+          <Button variant="outline" onClick={onClose}>Cancelar</Button>
+          <Button
+            onClick={handleAssign}
+            disabled={!selectedMemberId || !selectedRecipe || assign.isPending}
+            className="bg-orange-500 hover:bg-orange-600 text-white gap-1"
+          >
+            {assign.isPending ? <Loader2 className="w-4 h-4 animate-spin" /> : <Plus className="w-4 h-4" />}
+            Asignar receta
+          </Button>
+        </DialogFooter>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
+// ─── Household Assigned Recipes Panel ────────────────────────────────────────────
+function HouseholdAssignedRecipes({
+  householdId,
+  members,
+  isOwnerOrAdmin,
+}: {
+  householdId: number;
+  members: Array<{ id: number; displayName: string | null; userName: string | null; userId: number; userAvatar?: string | null }>;
+  isOwnerOrAdmin: boolean;
+}) {
+  const [showAssignModal, setShowAssignModal] = useState(false);
+  const [expandedMember, setExpandedMember] = useState<number | null>(null);
+  const utils = trpc.useUtils();
+
+  const { data: allAssignments, isLoading } = trpc.householdRecipes.getForHousehold.useQuery(
+    { householdId },
+    { enabled: isOwnerOrAdmin }
+  );
+
+  const unassign = trpc.householdRecipes.unassign.useMutation({
+    onSuccess: () => {
+      toast.success("Receta desasignada");
+      utils.householdRecipes.getForHousehold.invalidate({ householdId });
+    },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const markCompleted = trpc.householdRecipes.markCompleted.useMutation({
+    onSuccess: () => utils.householdRecipes.getForHousehold.invalidate({ householdId }),
+    onError: (e) => toast.error(e.message),
+  });
+
+  // Group assignments by member
+  const byMember = members.map((m) => ({
+    member: m,
+    assignments: (allAssignments ?? []).filter((a) => a.member.id === m.id),
+  }));
+
+  return (
+    <>
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex items-center justify-between">
+            <CardTitle className="text-base flex items-center gap-2">
+              <ChefHat className="w-4 h-4 text-orange-500" /> Recetas asignadas
+            </CardTitle>
+            <Button
+              size="sm"
+              onClick={() => setShowAssignModal(true)}
+              className="bg-orange-500 hover:bg-orange-600 text-white gap-1 h-8 text-xs"
+            >
+              <Plus className="w-3.5 h-3.5" /> Asignar receta
+            </Button>
+          </div>
+          <p className="text-xs text-muted-foreground mt-1">Asigna recetas específicas a cada miembro del hogar</p>
+        </CardHeader>
+        <CardContent className="space-y-3">
+          {isLoading ? (
+            <div className="flex items-center justify-center py-6">
+              <Loader2 className="w-5 h-5 animate-spin text-orange-400" />
+            </div>
+          ) : byMember.every((m) => m.assignments.length === 0) ? (
+            <div className="text-center py-8 text-muted-foreground">
+              <BookOpen className="w-8 h-8 mx-auto mb-2 opacity-40" />
+              <p className="text-sm">Aún no hay recetas asignadas</p>
+              <p className="text-xs mt-1">Usa el botón &ldquo;Asignar receta&rdquo; para empezar</p>
+            </div>
+          ) : (
+            byMember.map(({ member, assignments }) => {
+              if (assignments.length === 0) return null;
+              const isExpanded = expandedMember === member.id;
+              const completed = assignments.filter((a) => a.isCompleted).length;
+              return (
+                <div key={member.id} className="border rounded-xl overflow-hidden">
+                  {/* Member header */}
+                  <button
+                    type="button"
+                    onClick={() => setExpandedMember(isExpanded ? null : member.id)}
+                    className="w-full flex items-center justify-between p-3 hover:bg-muted/40 transition-colors"
+                  >
+                    <div className="flex items-center gap-3">
+                      <Avatar className="w-8 h-8 shrink-0">
+                        <AvatarImage src={member.userAvatar ?? undefined} />
+                        <AvatarFallback className="bg-orange-100 text-orange-700 text-xs font-semibold">
+                          {(member.displayName ?? member.userName ?? "?")[0].toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="text-left">
+                        <p className="text-sm font-medium">{member.displayName ?? member.userName ?? "Miembro"}</p>
+                        <p className="text-xs text-muted-foreground">
+                          {completed}/{assignments.length} completadas
+                        </p>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2">
+                      <Badge variant="secondary" className="text-xs">{assignments.length}</Badge>
+                      <ChevronRight className={`w-4 h-4 text-muted-foreground transition-transform ${isExpanded ? "rotate-90" : ""}`} />
+                    </div>
+                  </button>
+
+                  {/* Assignments list */}
+                  {isExpanded && (
+                    <div className="border-t divide-y">
+                      {assignments.map((a) => (
+                        <div key={a.id} className="flex items-start gap-3 p-3 bg-muted/20">
+                          {/* Complete toggle */}
+                          <button
+                            type="button"
+                            onClick={() => markCompleted.mutate({ assignmentId: a.id, householdId, completed: !a.isCompleted })}
+                            className="mt-0.5 shrink-0 text-muted-foreground hover:text-orange-500 transition-colors"
+                            aria-label={a.isCompleted ? "Marcar como pendiente" : "Marcar como completada"}
+                          >
+                            {a.isCompleted
+                              ? <CheckCircle2 className="w-5 h-5 text-green-500" />
+                              : <Circle className="w-5 h-5" />}
+                          </button>
+
+                          {/* Recipe info */}
+                          <div className="flex-1 min-w-0">
+                            <div className="flex items-center gap-2 flex-wrap">
+                              <p className={`text-sm font-medium truncate ${a.isCompleted ? "line-through text-muted-foreground" : ""}`}>
+                                {a.recipe.name}
+                              </p>
+                              {a.mealType && (
+                                <Badge variant="outline" className="text-xs py-0">
+                                  {MEAL_LABELS[a.mealType] ?? a.mealType}
+                                </Badge>
+                              )}
+                            </div>
+                            {a.scheduledDate && (
+                              <p className="text-xs text-muted-foreground mt-0.5">
+                                📅 {new Date(a.scheduledDate).toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short" })}
+                              </p>
+                            )}
+                            {a.note && (
+                              <p className="text-xs text-muted-foreground mt-0.5 italic">“{a.note}”</p>
+                            )}
+                            <p className="text-xs text-muted-foreground mt-0.5">
+                              Asignada por {a.assignedBy.name} · {new Date(a.createdAt).toLocaleDateString("es-ES")}
+                            </p>
+                          </div>
+
+                          {/* Recipe image */}
+                          {a.recipe.imageUrl && (
+                            <img
+                              src={a.recipe.imageUrl}
+                              alt={a.recipe.name}
+                              className="w-12 h-12 rounded-lg object-cover shrink-0"
+                            />
+                          )}
+
+                          {/* Unassign */}
+                          <button
+                            type="button"
+                            onClick={() => unassign.mutate({ assignmentId: a.id, householdId })}
+                            className="shrink-0 text-muted-foreground hover:text-destructive transition-colors mt-0.5"
+                            aria-label="Desasignar receta"
+                          >
+                            <X className="w-4 h-4" />
+                          </button>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })
+          )}
+        </CardContent>
+      </Card>
+
+      <AssignRecipeModal
+        open={showAssignModal}
+        onClose={() => setShowAssignModal(false)}
+        householdId={householdId}
+        members={members}
+      />
+    </>
+  );
+}
 
 // ─── Upsell screen for non-Pro Max users ────────────────────────────────────────────────
 function HouseholdUpsell({ currentTier }: { currentTier: string }) {
@@ -408,6 +822,8 @@ export default function Familia() {
   const [showPrefs, setShowPrefs] = useState(false);
   const [showRename, setShowRename] = useState(false);
   const [newName, setNewName] = useState("");
+  const [showAssign, setShowAssign] = useState(false);
+  const [expandedMember, setExpandedMember] = useState<number | null>(null);
 
   const { data: household, isLoading } = trpc.household.get.useQuery(undefined, {
     enabled: !!user,
@@ -629,6 +1045,15 @@ export default function Familia() {
             ))}
           </CardContent>
         </Card>
+      )}
+
+      {/* Assigned Recipes Section */}
+      {isOwnerOrAdmin && (
+        <HouseholdAssignedRecipes
+          householdId={household.id}
+          members={household.members}
+          isOwnerOrAdmin={isOwnerOrAdmin}
+        />
       )}
 
       {/* Quick links */}

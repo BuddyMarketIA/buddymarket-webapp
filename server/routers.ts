@@ -7,6 +7,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { companyRouter } from "./routers/company";
 import { companyRemindersRouter } from "./routers/companyReminders";
 import { householdRouter } from "./routers/household";
+import { householdRecipesRouter } from "./routers/householdRecipes";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { invokeLLM } from "./_core/llm";
 import { storagePut } from "./storage";
@@ -227,6 +228,7 @@ export const appRouter = router({
   company: companyRouter,
   companyReminders: companyRemindersRouter,
   household: householdRouter,
+  householdRecipes: householdRecipesRouter,
 
   // ---------------------------------------------------------------------------
   // AUTH

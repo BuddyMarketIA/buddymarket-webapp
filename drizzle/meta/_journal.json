@@ -169,6 +169,13 @@
       "when": 1776010178915,
       "tag": "0023_lonely_maelstrom",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1776016620870,
+      "tag": "0024_easy_sir_ram",
+      "breakpoints": true
     }
   ]
 }

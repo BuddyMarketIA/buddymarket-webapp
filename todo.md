@@ -1926,3 +1926,17 @@
 - [x] Modo Familia añadido en tabla de comparación de Subscription.tsx (hot: true)
 - [x] Modo Familia añadido en lista de features de la tarjeta Pro Max
 - [x] Mensaje de upgrade Pro→Pro Max menciona el Modo Familia
+
+## Asignación de recetas a miembros del hogar
+- [x] Tabla household_recipe_assignments en schema DB (con memberId, recipeId, mealType, scheduledDate, note, isCompleted)
+- [ ] Router tRPC householdRecipes: assign, unassign, getForMember, getForHousehold, markCompleted
+- [ ] Interfaz de asignación en /familia: selector de miembro + buscador de recetas + modal de asignación
+- [ ] Vista de recetas asignadas por miembro en /familia/recetas/:memberId
+- [ ] Notificación por email al miembro cuando se le asigna una receta
+
+## Asignación de recetas a miembros del hogar
+- [x] Tabla householdRecipeAssignments en el schema DB
+- [x] Router tRPC householdRecipes: assign, unassign, markCompleted, getForMember, getForHousehold, searchRecipes, getMyAssignments
+- [x] Interfaz de asignación en /familia: modal de búsqueda, selector de miembro/tipo de comida/fecha/nota
+- [x] Vista /familia/mis-recetas: recetas asignadas al usuario con filtros y marcar como completada
+- [x] Email de notificación al miembro cuando se le asigna una receta
