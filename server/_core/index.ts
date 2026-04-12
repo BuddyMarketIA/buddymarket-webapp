@@ -29,10 +29,8 @@ const ALLOWED_ORIGINS = [
   "http://localhost:3000",
   "http://localhost:5173",
   "https://buddymarket-ndjzmo7p.manus.space",
-  "https://www.appbuddymarket.com",
-  "https://appbuddymarket.com",
-  "https://buddymarketapp.com",
-  "https://www.buddymarketapp.com",
+  "https://buddymarket.io",
+  "https://www.buddymarket.io",
 ];
 
 function isPortAvailable(port: number): Promise<boolean> {

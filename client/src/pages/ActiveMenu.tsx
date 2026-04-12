@@ -121,7 +121,7 @@ function exportMenuToPDF(activeMenu: any, dayGroups: Record<number, any[]>, getD
     doc.setFontSize(7);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(180, 180, 180);
-    doc.text(`BuddyMarket · buddymarketapp.com · Página ${i} de ${pageCount}`, pageW / 2, 292, { align: "center" });
+    doc.text(`BuddyMarket · buddymarket.io · Página ${i} de ${pageCount}`, pageW / 2, 292, { align: "center" });
   }
 
   doc.save(`menu-${(activeMenu.name ?? "semanal").replace(/\s+/g, "-").toLowerCase()}.pdf`);

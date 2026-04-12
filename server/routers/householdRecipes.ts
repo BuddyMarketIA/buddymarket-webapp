@@ -31,7 +31,7 @@ async function sendRecipeAssignedEmail(params: {
     : null;
 
   await resend.emails.send({
-    from: "BuddyMarket <noreply@buddymarketapp.com>",
+    from: "BuddyMarket <noreply@buddymarket.io>",
     to: params.memberEmail,
     subject: `${params.assignerName} te ha asignado una receta 🍽️`,
     html: `
@@ -158,7 +158,7 @@ export const householdRecipesRouter = router({
             recipeImageUrl: recipe[0].imageUrl,
             mealType: input.mealType ?? null,
             note: input.note ?? null,
-            appUrl: input.origin ?? "https://buddymarketapp.com",
+            appUrl: input.origin ?? "https://buddymarket.io",
           });
         }
       } catch (_) { /* email no crítico */ }

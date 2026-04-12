@@ -4,7 +4,7 @@ import { trpc } from "@/lib/trpc";
 
 const ORANGE = "#F97316";
 const LOGO_ICON = "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/logo-icon-orange_0a0f0e6b.png";
-const BASE_URL = "https://appbuddymarket.com";
+const BASE_URL = "https://buddymarket.io";
 
 function renderMarkdown(text: string): string {
   return text

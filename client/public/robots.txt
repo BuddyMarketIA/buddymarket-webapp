@@ -22,7 +22,7 @@ Disallow: /creator-dashboard
 Disallow: /api/
 
 # Sitemaps
-Sitemap: https://appbuddymarket.com/sitemap.xml
-Sitemap: https://www.appbuddymarket.com/sitemap.xml
-Sitemap: https://buddymarketapp.com/sitemap.xml
-Sitemap: https://www.buddymarketapp.com/sitemap.xml
+Sitemap: https://buddymarket.io/sitemap.xml
+Sitemap: https://www.buddymarket.io/sitemap.xml
+Sitemap: https://buddymarket.io/sitemap.xml
+Sitemap: https://www.buddymarket.io/sitemap.xml

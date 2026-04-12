@@ -41,7 +41,7 @@ async function sendHouseholdInviteEmail(params: {
   if (!process.env.RESEND_API_KEY) return;
   const resend = new Resend(process.env.RESEND_API_KEY);
   await resend.emails.send({
-    from: "BuddyMarket <noreply@buddymarketapp.com>",
+    from: "BuddyMarket <noreply@buddymarket.io>",
     to: params.invitedEmail,
     subject: `${params.inviterName} te invita a unirte al hogar "${params.householdName}" en BuddyMarket`,
     html: `
@@ -82,7 +82,7 @@ async function sendHouseholdInviteEmail(params: {
           </p>
         </td></tr>
         <tr><td style="background:#f8fafc;padding:20px 40px;text-align:center;border-top:1px solid #e2e8f0;">
-          <p style="color:#94a3b8;font-size:12px;margin:0;">© 2025 BuddyMarket · <a href="https://buddymarketapp.com" style="color:#f97316;text-decoration:none;">buddymarketapp.com</a></p>
+          <p style="color:#94a3b8;font-size:12px;margin:0;">© 2025 BuddyMarket · <a href="https://buddymarket.io" style="color:#f97316;text-decoration:none;">buddymarket.io</a></p>
         </td></tr>
       </table>
     </td></tr>
