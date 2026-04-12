@@ -219,6 +219,11 @@ export default function Creators() {
           </div>
         </Link>
         <div style={{ display: "flex", gap: 8 }}>
+          <Link href="/creator-dashboard">
+            <button style={{ padding: "8px 14px", borderRadius: 10, border: "1.5px solid #F97316", background: "#FFF7ED", color: "#F97316", fontWeight: 700, fontSize: 13, cursor: "pointer" }}>
+              Mi panel
+            </button>
+          </Link>
           <Link href="/login">
             <button style={{ padding: "8px 14px", borderRadius: 10, border: "1.5px solid #E5E7EB", background: "transparent", color: "#374151", fontWeight: 600, fontSize: 13, cursor: "pointer" }}>
               Entrar

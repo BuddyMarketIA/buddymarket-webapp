@@ -1837,3 +1837,16 @@
 - [x] Página /creators: hero, calculadora de ingresos interactiva, BuddyMaker vs BuddyExpert, testimonios, FAQ, CTA
 - [x] Rutas públicas /herramientas y /creators registradas en App.tsx
 - [x] Enlace "Creadores 💼" añadido en nav desktop y menú móvil de LandingPage
+
+## Panel de Control para Creadores (/creator-dashboard)
+- [ ] Schema DB: tabla creatorReferrals (referido, código, fecha, plan, estado, comisión)
+- [ ] Schema DB: tabla creatorCommissions (creador, mes, total, pagado, pendiente)
+- [ ] tRPC router creators: getStats, getReferrals, getCommissions, getProfile
+- [ ] tRPC router creators: generarCódigoReferido único por creador
+- [ ] Página /creator-dashboard: métricas en tiempo real (referidos activos, comisiones totales, pendientes, tasa conversión)
+- [ ] Tabla de referidos con estado (activo/cancelado/prueba) y comisión por cada uno
+- [ ] Historial de comisiones por mes con estado (pagado/pendiente)
+- [ ] Gráfico de evolución de referidos y comisiones
+- [ ] Sección de código de referido con botón copiar y enlace de afiliado
+- [ ] Ruta /creator-dashboard registrada en App.tsx
+- [ ] Enlace en sidebar y en la landing /creators

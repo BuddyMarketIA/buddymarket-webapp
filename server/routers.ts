@@ -7012,6 +7012,101 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
         };
       }),
 
+    // Dashboard stats for creators — aggregated metrics for the creator panel
+    getDashboardStats: protectedProcedure.query(async ({ ctx }) => {
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) return null;
+      const { referralCodes, referralEarnings, referralSubscriptions, users: usersTable, buddyExperts, buddyMakers } = await import("../drizzle/schema");
+      const { eq, and, desc, sum, count, gte, sql } = await import("drizzle-orm");
+
+      // Find the creator's referral code
+      const codes = await drizzleDb.select().from(referralCodes)
+        .where(eq(referralCodes.userId, ctx.user.id)).limit(2);
+      if (!codes.length) return { hasCode: false as const };
+      const myCode = codes[0];
+
+      // Determine creator profile type
+      const [expertRow, makerRow] = await Promise.all([
+        drizzleDb.select({ id: buddyExperts.id, displayName: buddyExperts.displayName, avatarUrl: buddyExperts.avatarUrl, verified: buddyExperts.verified, followersCount: buddyExperts.followersCount })
+          .from(buddyExperts).where(eq(buddyExperts.userId, ctx.user.id)).limit(1),
+        drizzleDb.select({ id: buddyMakers.id, displayName: buddyMakers.displayName, avatarUrl: buddyMakers.avatarUrl, verified: buddyMakers.verified, followersCount: buddyMakers.followersCount, recipesCount: buddyMakers.recipesCount })
+          .from(buddyMakers).where(eq(buddyMakers.userId, ctx.user.id)).limit(1),
+      ]);
+      const creatorProfile = expertRow[0]
+        ? { type: "expert" as const, ...expertRow[0] }
+        : makerRow[0] ? { type: "maker" as const, ...makerRow[0] } : null;
+
+      const now = new Date();
+      const startOfMonth = new Date(now.getFullYear(), now.getMonth(), 1);
+      const startOfLastMonth = new Date(now.getFullYear(), now.getMonth() - 1, 1);
+      const endOfLastMonth = new Date(now.getFullYear(), now.getMonth(), 0, 23, 59, 59);
+
+      const [allEarnings, monthEarnings, lastMonthEarnings, activeRefs, allRefs, recentEarnings, recentRefs] = await Promise.all([
+        drizzleDb.select({ total: sum(referralEarnings.commissionAmount) }).from(referralEarnings)
+          .where(eq(referralEarnings.referralCodeId, myCode.id)),
+        drizzleDb.select({ total: sum(referralEarnings.commissionAmount) }).from(referralEarnings)
+          .where(and(eq(referralEarnings.referralCodeId, myCode.id), gte(referralEarnings.createdAt, startOfMonth))),
+        drizzleDb.select({ total: sum(referralEarnings.commissionAmount) }).from(referralEarnings)
+          .where(and(eq(referralEarnings.referralCodeId, myCode.id), gte(referralEarnings.createdAt, startOfLastMonth), sql`${referralEarnings.createdAt} <= ${endOfLastMonth}`)),
+        drizzleDb.select({ cnt: count() }).from(referralSubscriptions)
+          .where(and(eq(referralSubscriptions.referralCodeId, myCode.id), eq(referralSubscriptions.isActive, true))),
+        drizzleDb.select({ cnt: count() }).from(referralSubscriptions)
+          .where(eq(referralSubscriptions.referralCodeId, myCode.id)),
+        drizzleDb.select({ earning: referralEarnings, referredName: usersTable.name, referredImage: usersTable.imageUrl })
+          .from(referralEarnings)
+          .leftJoin(usersTable, eq(referralEarnings.referredUserId, usersTable.id))
+          .where(eq(referralEarnings.referralCodeId, myCode.id))
+          .orderBy(desc(referralEarnings.createdAt)).limit(20),
+        drizzleDb.select({ sub: referralSubscriptions, referredName: usersTable.name, referredImage: usersTable.imageUrl })
+          .from(referralSubscriptions)
+          .leftJoin(usersTable, eq(referralSubscriptions.referredUserId, usersTable.id))
+          .where(eq(referralSubscriptions.referralCodeId, myCode.id))
+          .orderBy(desc(referralSubscriptions.createdAt)).limit(20),
+      ]);
+
+      const totalEarnedCents = Number(allEarnings[0]?.total ?? 0);
+      const monthEarnedCents = Number(monthEarnings[0]?.total ?? 0);
+      const lastMonthEarnedCents = Number(lastMonthEarnings[0]?.total ?? 0);
+      const activeCount = activeRefs[0]?.cnt ?? 0;
+      const totalCount = allRefs[0]?.cnt ?? 0;
+
+      // Monthly trend — last 6 months
+      const monthlyTrend: { month: string; earned: number; referrals: number }[] = [];
+      for (let i = 5; i >= 0; i--) {
+        const mStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
+        const mEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0, 23, 59, 59);
+        const [mEarn, mRefs] = await Promise.all([
+          drizzleDb.select({ total: sum(referralEarnings.commissionAmount) }).from(referralEarnings)
+            .where(and(eq(referralEarnings.referralCodeId, myCode.id), gte(referralEarnings.createdAt, mStart), sql`${referralEarnings.createdAt} <= ${mEnd}`)),
+          drizzleDb.select({ cnt: count() }).from(referralSubscriptions)
+            .where(and(eq(referralSubscriptions.referralCodeId, myCode.id), gte(referralSubscriptions.createdAt, mStart), sql`${referralSubscriptions.createdAt} <= ${mEnd}`)),
+        ]);
+        monthlyTrend.push({
+          month: mStart.toLocaleString("es-ES", { month: "short", year: "2-digit" }),
+          earned: Math.round(Number(mEarn[0]?.total ?? 0)) / 100,
+          referrals: mRefs[0]?.cnt ?? 0,
+        });
+      }
+
+      return {
+        hasCode: true as const,
+        code: myCode,
+        creatorProfile,
+        stats: {
+          totalEarned: Math.round(totalEarnedCents) / 100,
+          monthEarned: Math.round(monthEarnedCents) / 100,
+          lastMonthEarned: Math.round(lastMonthEarnedCents) / 100,
+          activeReferrals: activeCount,
+          totalReferrals: totalCount,
+          conversionRate: totalCount > 0 ? Math.round((activeCount / totalCount) * 100) : 0,
+          usageCount: myCode.usageCount,
+        },
+        monthlyTrend,
+        recentEarnings: recentEarnings.map(r => ({ ...r.earning, referredName: r.referredName, referredImage: r.referredImage })),
+        recentReferrals: recentRefs.map(r => ({ ...r.sub, referredName: r.referredName, referredImage: r.referredImage })),
+      };
+    }),
+
     // Admin: list all referral codes
     adminList: protectedProcedure.query(async ({ ctx }) => {
       if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
