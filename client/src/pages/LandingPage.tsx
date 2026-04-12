@@ -47,11 +47,18 @@ const SERVICES = [
     desc: "Toma el control de tu alimentación con herramientas de IA que antes solo tenían los nutricionistas. Sin complicaciones, sin excusas.",
     items: ["Menús semanales personalizados con IA","Diario nutricional con registro por voz","Lista de la compra automática","24 planes especializados","Seguimiento de métricas y progreso","Biblioteca de 15.000+ recetas"],
     cta: "Empezar gratis" },
-  { icon: "👩‍⚕️", color: "#10b981", gradient: "linear-gradient(135deg,#f0fdf4,#dcfce7)", border: "#86efac",
-    title: "Para Nutricionistas y Creadores", subtitle: "Escala tu práctica profesional",
-    desc: "Crea y monetiza tu contenido nutricional. Comparte recetas, menús y planes con tu comunidad y genera ingresos recurrentes.",
-    items: ["Panel de creador con analíticas","Publicar recetas y menús premium","Comunidad de seguidores","Monetización directa de contenido","Herramientas de gestión de clientes","Badge BuddyExpert verificado"],
+  { icon: "🧑‍⚕️", color: "#10b981", gradient: "linear-gradient(135deg,#f0fdf4,#dcfce7)", border: "#86efac",
+    title: "BuddyExperts", subtitle: "Para nutricionistas y dietistas",
+    desc: "Gestiona tu consulta online, crea planes nutricionales personalizados y acompaña a tus pacientes en su evolución. Herramientas profesionales para escalar tu práctica.",
+    badge: "Para profesionales sanitarios",
+    items: ["Panel profesional con historial de pacientes","Crear y publicar menús y planes de nutrición","Seguimiento de evolución de clientes","Mensajería directa con pacientes","Monetización de planes premium","Badge BuddyExpert verificado","Gestión de citas y agenda","Informes de progreso exportables"],
     cta: "Convertirme en BuddyExpert" },
+  { icon: "🍳", color: "#f59e0b", gradient: "linear-gradient(135deg,#fffbeb,#fef3c7)", border: "#fcd34d",
+    title: "BuddyMakers", subtitle: "Para creadores de contenido culinario",
+    desc: "Comparte tu pasión por la cocina saludable. Sube tus recetas, construye tu comunidad y monetiza tu contenido. Solo recetas, sin complicaciones.",
+    badge: "Para creadores de contenido",
+    items: ["Perfil de creador con página propia","Subir y publicar recetas con fotos","Comunidad de seguidores y likes","Monetización de recetas premium","Analíticas de alcance y engagement","Badge BuddyMaker verificado"],
+    cta: "Convertirme en BuddyMaker" },
   { icon: "🏢", color: "#7c3aed", gradient: "linear-gradient(135deg,#f5f3ff,#ede9fe)", border: "#c4b5fd",
     title: "Para Empresas", subtitle: "Bienestar corporativo con ROI medible",
     desc: "Mejora la salud y productividad de tu equipo. Planes de nutrición corporativos con dashboard de administración y reportes de impacto.",
@@ -79,9 +86,9 @@ const SPECIAL_MENUS = [
 ];
 
 const STATS = [
-  { value: 50000, suffix: "+", label: "Usuarios activos", icon: "👥" },
-  { value: 200000, suffix: "+", label: "Menús generados", icon: "📋" },
-  { value: 15000, suffix: "+", label: "Recetas disponibles", icon: "🍳" },
+  { value: 15000, suffix: "+", label: "Usuarios activos", icon: "👥" },
+  { value: 48000, suffix: "+", label: "Menús generados", icon: "📋" },
+  { value: 8500, suffix: "+", label: "Recetas disponibles", icon: "🍳" },
   { value: 24, suffix: "", label: "Perfiles especializados", icon: "🎯" },
 ];
 
@@ -221,9 +228,11 @@ export default function LandingPage() {
         transition: "all 0.3s ease",
       }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", height: 68, display: "flex", alignItems: "center", gap: 8 }}>
-          <a href="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none", flexShrink: 0, marginRight: 24 }}>
-            <img src={LOGO_ICON} alt="" style={{ height: 30, width: 30 }} />
-            <img src={LOGO_HORIZONTAL} alt="BuddyMarket" style={{ height: 20 }} />
+          <a href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", flexShrink: 0, marginRight: 24 }}>
+            <img src={LOGO_ICON} alt="" style={{ height: 32, width: 32 }} onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+            <span style={{ fontSize: 20, fontWeight: 800, color: "#111827", letterSpacing: "-0.5px", lineHeight: 1 }}>
+              <span style={{ color: "#F97316" }}>B</span>uddy<span style={{ color: "#F97316" }}>M</span>arket
+            </span>
           </a>
 
           <div className="lp-nav-links" style={{ display: "flex", alignItems: "center", gap: 2, flex: 1 }}>
@@ -338,7 +347,7 @@ export default function LandingPage() {
               </div>
               <div>
                 <div style={{ display: "flex", gap: 2 }}>{[1,2,3,4,5].map(i => <span key={i} style={{ color: "#f59e0b", fontSize: 14 }}>★</span>)}</div>
-                <p style={{ fontSize: 13, color: "#6b7280", margin: 0 }}><strong style={{ color: "#111827" }}>50.000+</strong> usuarios confían en BuddyMarket</p>
+                <p style={{ fontSize: 13, color: "#6b7280", margin: 0 }}><strong style={{ color: "#111827" }}>15.000+</strong> usuarios confían en BuddyMarket</p>
               </div>
             </div>
           </div>
@@ -476,6 +485,11 @@ export default function LandingPage() {
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 48, alignItems: "start" }} className="lp-service-grid">
               <div>
                 <div style={{ fontSize: 44, marginBottom: 16 }}>{SERVICES[activeService].icon}</div>
+                {(SERVICES[activeService] as any).badge && (
+                  <span style={{ display: "inline-block", padding: "4px 12px", borderRadius: 100, fontSize: 11, fontWeight: 700, background: SERVICES[activeService].color + "18", color: SERVICES[activeService].color, border: `1px solid ${SERVICES[activeService].color}40`, marginBottom: 12, letterSpacing: "0.05em", textTransform: "uppercase" }}>
+                    {(SERVICES[activeService] as any).badge}
+                  </span>
+                )}
                 <p style={{ fontSize: 12, fontWeight: 800, color: SERVICES[activeService].color, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 8 }}>{SERVICES[activeService].title}</p>
                 <h3 style={{ fontSize: "clamp(22px,3vw,32px)", fontWeight: 800, color: "#111827", margin: "0 0 16px", lineHeight: 1.3 }}>{SERVICES[activeService].subtitle}</h3>
                 <p style={{ fontSize: 16, color: "#4b5563", lineHeight: 1.7, marginBottom: 28 }}>{SERVICES[activeService].desc}</p>
@@ -619,7 +633,7 @@ export default function LandingPage() {
             Empieza hoy a comer<br />de forma inteligente
           </h2>
           <p style={{ fontSize: 18, color: "#94a3b8", marginBottom: 36, lineHeight: 1.7 }}>
-            Únete a más de 50.000 personas que ya han transformado su alimentación con BuddyMarket. Gratis para siempre, sin tarjeta de crédito.
+            Únete a más de 15.000 personas que ya están transformando su alimentación con BuddyMarket. Gratis para siempre, sin tarjeta de crédito.
           </p>
           <a href={ctaHref} style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "16px 32px", borderRadius: 12, fontSize: 17, fontWeight: 700, color: "white", background: "linear-gradient(135deg,#F97316,#ea580c)", textDecoration: "none", boxShadow: "0 8px 32px rgba(249,115,22,0.4)" }}>
             Empezar gratis ahora
@@ -635,8 +649,10 @@ export default function LandingPage() {
           <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", gap: 48, marginBottom: 48 }} className="lp-footer-grid">
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
-                <img src={LOGO_ICON} alt="" style={{ height: 26 }} />
-                <img src={LOGO_HORIZONTAL} alt="BuddyMarket" style={{ height: 16, filter: "brightness(0) invert(1)" }} />
+                <img src={LOGO_ICON} alt="" style={{ height: 26 }} onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+                <span style={{ fontSize: 17, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.5px" }}>
+                  <span style={{ color: "#F97316" }}>B</span>uddy<span style={{ color: "#F97316" }}>M</span>arket
+                </span>
               </div>
               <p style={{ fontSize: 14, color: "#64748b", lineHeight: 1.7, maxWidth: 280, marginBottom: 16 }}>
                 Tu asistente nutricional inteligente. Menús personalizados, recetas saludables y seguimiento nutricional con IA.
