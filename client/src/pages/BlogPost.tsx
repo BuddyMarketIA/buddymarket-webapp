@@ -1,8 +1,10 @@
 import { useParams, Link } from "wouter";
+import { useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 
 const ORANGE = "#F97316";
 const LOGO_ICON = "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/logo-icon-orange_0a0f0e6b.png";
+const BASE_URL = "https://appbuddymarket.com";
 
 function renderMarkdown(text: string): string {
   return text
@@ -29,6 +31,70 @@ export default function BlogPost() {
     { slug: slug ?? "" },
     { enabled: !!slug }
   );
+
+  // Fetch related articles once we know the category
+  const { data: related } = trpc.blog.getRelated.useQuery(
+    { slug: slug ?? "", category: post?.category ?? "", limit: 3 },
+    { enabled: !!post?.category && !!slug }
+  );
+
+  // Inject JSON-LD schema markup for Google rich snippets
+  useEffect(() => {
+    if (!post) return;
+    const schema = {
+      "@context": "https://schema.org",
+      "@type": "Article",
+      "headline": post.title,
+      "description": post.excerpt ?? "",
+      "image": post.coverImageUrl ? [post.coverImageUrl] : [],
+      "datePublished": post.publishedAt ? new Date(post.publishedAt).toISOString() : undefined,
+      "dateModified": post.updatedAt ? new Date(post.updatedAt).toISOString() : (post.publishedAt ? new Date(post.publishedAt).toISOString() : undefined),
+      "author": post.expertName ? {
+        "@type": "Person",
+        "name": post.expertName,
+        "jobTitle": post.expertSpecialty ?? "Nutricionista",
+      } : {
+        "@type": "Organization",
+        "name": "BuddyMarket",
+        "url": BASE_URL,
+      },
+      "publisher": {
+        "@type": "Organization",
+        "name": "BuddyMarket",
+        "url": BASE_URL,
+        "logo": {
+          "@type": "ImageObject",
+          "url": LOGO_ICON,
+        },
+      },
+      "mainEntityOfPage": {
+        "@type": "WebPage",
+        "@id": `${BASE_URL}/blog/${post.slug}`,
+      },
+      "articleSection": post.category,
+      "keywords": post.tags ?? "",
+    };
+
+    // Remove existing schema tag if any
+    const existing = document.getElementById("article-jsonld");
+    if (existing) existing.remove();
+
+    const script = document.createElement("script");
+    script.id = "article-jsonld";
+    script.type = "application/ld+json";
+    script.textContent = JSON.stringify(schema);
+    document.head.appendChild(script);
+
+    // Update meta tags for SEO
+    document.title = `${post.title} | BuddyMarket Blog`;
+    const metaDesc = document.querySelector('meta[name="description"]');
+    if (metaDesc) metaDesc.setAttribute("content", post.excerpt ?? post.title);
+
+    return () => {
+      const el = document.getElementById("article-jsonld");
+      if (el) el.remove();
+    };
+  }, [post]);
 
   if (isLoading) {
     return (
@@ -156,6 +222,53 @@ export default function BlogPost() {
           </div>
         )}
 
+        {/* CTA Banner */}
+        <div style={{ marginTop: 56, padding: "32px 28px", background: `linear-gradient(135deg, ${ORANGE}15 0%, #fef3c7 100%)`, borderRadius: 20, border: `1px solid ${ORANGE}30`, textAlign: "center" }}>
+          <div style={{ fontSize: 36, marginBottom: 12 }}>🥗</div>
+          <h3 style={{ fontSize: 20, fontWeight: 900, color: "#111827", marginBottom: 8 }}>¿Quieres mejorar tu alimentación?</h3>
+          <p style={{ fontSize: 15, color: "#6b7280", marginBottom: 20, lineHeight: 1.6 }}>
+            BuddyMarket crea menús personalizados, listas de compra inteligentes y te acompaña en tu objetivo de salud.
+          </p>
+          <Link href="/register" style={{ display: "inline-block", padding: "12px 28px", borderRadius: 12, background: ORANGE, color: "white", textDecoration: "none", fontWeight: 700, fontSize: 15 }}>
+            Empieza gratis — sin tarjeta
+          </Link>
+        </div>
+
+        {/* Related articles */}
+        {related && related.length > 0 && (
+          <div style={{ marginTop: 64 }}>
+            <h2 style={{ fontSize: 22, fontWeight: 900, color: "#111827", marginBottom: 8, letterSpacing: "-0.02em" }}>
+              Artículos relacionados
+            </h2>
+            <p style={{ fontSize: 14, color: "#9ca3af", marginBottom: 28 }}>Más sobre {post.category}</p>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill, minmax(220px, 1fr))", gap: 20 }}>
+              {related.map((article) => (
+                <Link key={article.slug} href={`/blog/${article.slug}`} style={{ textDecoration: "none" }}>
+                  <div style={{ background: "white", borderRadius: 16, overflow: "hidden", border: "1px solid #f3f4f6", boxShadow: "0 2px 12px rgba(0,0,0,0.05)", transition: "transform 0.15s, box-shadow 0.15s", cursor: "pointer" }}
+                    onMouseEnter={(e) => { (e.currentTarget as HTMLDivElement).style.transform = "translateY(-3px)"; (e.currentTarget as HTMLDivElement).style.boxShadow = "0 8px 24px rgba(0,0,0,0.1)"; }}
+                    onMouseLeave={(e) => { (e.currentTarget as HTMLDivElement).style.transform = ""; (e.currentTarget as HTMLDivElement).style.boxShadow = "0 2px 12px rgba(0,0,0,0.05)"; }}
+                  >
+                    {article.coverImageUrl && (
+                      <img src={article.coverImageUrl} alt={article.title} style={{ width: "100%", height: 140, objectFit: "cover" }} />
+                    )}
+                    <div style={{ padding: "16px 18px" }}>
+                      <span style={{ fontSize: 11, fontWeight: 700, color: ORANGE, textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                        {article.category}
+                      </span>
+                      <h3 style={{ fontSize: 15, fontWeight: 800, color: "#111827", margin: "6px 0 8px", lineHeight: 1.4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>
+                        {article.title}
+                      </h3>
+                      <p style={{ fontSize: 12, color: "#9ca3af" }}>
+                        {article.readTimeMinutes} min · {article.publishedAt ? new Date(article.publishedAt).toLocaleDateString("es-ES", { day: "numeric", month: "short" }) : ""}
+                      </p>
+                    </div>
+                  </div>
+                </Link>
+              ))}
+            </div>
+          </div>
+        )}
+
         {/* Back to blog */}
         <div style={{ marginTop: 56, textAlign: "center" }}>
           <Link href="/blog" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "12px 28px", borderRadius: 12, background: ORANGE, color: "white", textDecoration: "none", fontWeight: 700, fontSize: 15 }}>
@@ -166,7 +279,7 @@ export default function BlogPost() {
 
       {/* Footer */}
       <footer style={{ background: "#0f172a", padding: "32px 24px", textAlign: "center" }}>
-        <p style={{ fontSize: 13, color: "#4b5563" }}>© 2025 BuddyMarket · <Link href="/terms" style={{ color: "#6b7280", textDecoration: "none" }}>Términos</Link> · <Link href="/privacy" style={{ color: "#6b7280", textDecoration: "none" }}>Privacidad</Link></p>
+        <p style={{ fontSize: 13, color: "#4b5563" }}>© 2025 BuddyMarket · <Link href="/terminos" style={{ color: "#6b7280", textDecoration: "none" }}>Términos</Link> · <Link href="/privacidad" style={{ color: "#6b7280", textDecoration: "none" }}>Privacidad</Link></p>
         <p style={{ fontSize: 11, color: "#374151", marginTop: 8 }}>⚠️ El contenido de este blog es orientativo y no sustituye el consejo de un profesional de la salud.</p>
       </footer>
 

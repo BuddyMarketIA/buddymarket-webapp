@@ -66,6 +66,62 @@
     <meta property="og:type" content="website" />
     <meta property="og:image" content="https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/icon-512x512_99d0e445.png" />
 
+    <!-- ── JSON-LD: Organization + WebSite + SoftwareApplication ── -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://appbuddymarket.com/#organization",
+          "name": "BuddyMarket",
+          "url": "https://appbuddymarket.com",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/icon-512x512_99d0e445.png",
+            "width": 512,
+            "height": 512
+          },
+          "description": "BuddyMarket es el ecosistema inteligente para planificar, comprar y gestionar tu alimentaci\u00f3n diaria con inteligencia artificial.",
+          "sameAs": [
+            "https://buddymarketapp.com",
+            "https://www.appbuddymarket.com"
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://appbuddymarket.com/#website",
+          "url": "https://appbuddymarket.com",
+          "name": "BuddyMarket",
+          "description": "Planifica tus men\u00fas, gestiona tu lista de la compra y lleva un diario nutricional con IA.",
+          "publisher": { "@id": "https://appbuddymarket.com/#organization" },
+          "inLanguage": "es-ES",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://appbuddymarket.com/blog?q={search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "BuddyMarket",
+          "operatingSystem": "Android, iOS, Web",
+          "applicationCategory": "HealthApplication",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "EUR"
+          },
+          "url": "https://appbuddymarket.com",
+          "publisher": { "@id": "https://appbuddymarket.com/#organization" }
+        }
+      ]
+    }
+    </script>
+
     <style>
       html {
         background: #FFF8F0;

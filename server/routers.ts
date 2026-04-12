@@ -9298,6 +9298,7 @@ Devuelve SOLO JSON válido con esta estructura exacta:
             viewsCount: blogPosts.viewsCount,
             likesCount: blogPosts.likesCount,
             publishedAt: blogPosts.publishedAt,
+            updatedAt: blogPosts.updatedAt,
             expertId: blogPosts.expertId,
             expertName: buddyExperts.displayName,
             expertAvatar: buddyExperts.avatarUrl,
@@ -9468,6 +9469,41 @@ Devuelve SOLO JSON válido con esta estructura exacta:
         const key = `blog-covers/${expert.id}-${Date.now()}.${ext}`;
         const { url } = await storagePut(key, buffer, input.mimeType);
         return { url };
+      }),
+    // Artículos relacionados (misma categoría, excluye el actual)
+    getRelated: publicProcedure
+      .input(z.object({
+        slug: z.string(),
+        category: z.string(),
+        limit: z.number().min(1).max(6).default(3),
+      }))
+      .query(async ({ input }) => {
+        const { blogPosts, buddyExperts } = await import("../drizzle/schema.js");
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return [];
+        const { eq, ne, and, desc } = await import("drizzle-orm");
+        return drizzleDb
+          .select({
+            id: blogPosts.id,
+            title: blogPosts.title,
+            slug: blogPosts.slug,
+            excerpt: blogPosts.excerpt,
+            coverImageUrl: blogPosts.coverImageUrl,
+            category: blogPosts.category,
+            readTimeMinutes: blogPosts.readTimeMinutes,
+            publishedAt: blogPosts.publishedAt,
+            expertName: buddyExperts.displayName,
+            expertAvatar: buddyExperts.avatarUrl,
+          })
+          .from(blogPosts)
+          .leftJoin(buddyExperts, eq(blogPosts.expertId, buddyExperts.id))
+          .where(and(
+            eq(blogPosts.status, "published"),
+            eq(blogPosts.category, input.category),
+            ne(blogPosts.slug, input.slug),
+          ))
+          .orderBy(desc(blogPosts.publishedAt))
+          .limit(input.limit);
       }),
   }),
 

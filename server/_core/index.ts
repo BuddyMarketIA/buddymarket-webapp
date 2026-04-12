@@ -23,6 +23,7 @@ import logger from "./logger";
 import { registerMetricsRoutes } from "./metrics";
 import { startPerformanceWatchdog, sendStartupAlert, startSupabaseMonitor } from "./alerts";
 import { registerOGRoutes } from "../og";
+import { registerSitemapRoutes } from "../sitemap";
 
 // ─── Allowed origins ─────────────────────────────────────────────────────────
 const ALLOWED_ORIGINS = [
@@ -254,6 +255,8 @@ async function startServer() {
   registerMetricsRoutes(app);
   // ─── Open Graph (social media bots) ──────────────────────────────────────
   registerOGRoutes(app);
+  // ─── Sitemap & robots.txt ─────────────────────────────────────────────────
+  registerSitemapRoutes(app);
   // ─── tRPC API ─────────────────────────────────────────────────────────────
   app.use(
     "/api/trpc",
