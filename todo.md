@@ -1850,3 +1850,10 @@
 - [ ] Sección de código de referido con botón copiar y enlace de afiliado
 - [ ] Ruta /creator-dashboard registrada en App.tsx
 - [ ] Enlace en sidebar y en la landing /creators
+
+## Mejora sección referidos en panel de creadores (Apr 12)
+- [ ] Endpoint getReferralsList con paginación, filtros y búsqueda
+- [ ] Tabla completa de referidos con filtros (todos/activos/cancelados), búsqueda por nombre, paginación
+- [ ] Detalles extendidos: fecha de registro, plan, ganancias generadas, días activo
+- [ ] Indicador de estado visual con color (activo=verde, cancelado=rojo)
+- [ ] Exportar lista de referidos a CSV

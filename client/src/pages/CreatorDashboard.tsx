@@ -1,4 +1,4 @@
-import { useState } from "react";
+import React, { useState } from "react";
 import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -11,12 +11,253 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
   BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line,
 } from "recharts";
+import { Input } from "@/components/ui/input";
 import {
   Users, TrendingUp, Euro, Copy, Check, ExternalLink, Star,
   ArrowUpRight, ArrowDownRight, Minus, ChefHat, Award, Clock,
-  Share2, RefreshCw, AlertCircle,
+  Share2, RefreshCw, AlertCircle, Search, ChevronLeft, ChevronRight,
+  Download, Filter,
 } from "lucide-react";
 import { toast } from "sonner";
+
+// ─── Referrals Table Component ──────────────────────────────────────────────
+const planLabels: Record<string, string> = { pro: "Pro", pro_max: "Pro Max", free: "Free" };
+
+function ReferralsTable({ codeId, stats, handleShare }: { codeId?: number; stats: any; handleShare: () => void }) {
+  const [page, setPage] = React.useState(1);
+  const [status, setStatus] = React.useState<"all" | "active" | "cancelled">("all");
+  const [search, setSearch] = React.useState("");
+  const [searchInput, setSearchInput] = React.useState("");
+  const PAGE_SIZE = 15;
+
+  const { data, isLoading, refetch } = trpc.referrals.getReferralsList.useQuery(
+    { page, pageSize: PAGE_SIZE, status, search: search || undefined },
+    { refetchInterval: 30000 }
+  );
+
+  const handleSearch = (e: React.FormEvent) => {
+    e.preventDefault();
+    setSearch(searchInput);
+    setPage(1);
+  };
+
+  const handleStatusChange = (s: "all" | "active" | "cancelled") => {
+    setStatus(s);
+    setPage(1);
+  };
+
+  const exportCSV = () => {
+    if (!data?.items?.length) return;
+    const headers = ["Nombre", "Email", "Plan", "Estado", "Fecha registro", "Días activo", "Ganancias generadas"];
+    const rows = data.items.map((r: any) => [
+      r.referredName,
+      r.referredEmail ?? "",
+      planLabels[r.plan] ?? r.plan ?? "",
+      r.isActive ? "Activo" : "Cancelado",
+      r.createdAt ? new Date(r.createdAt).toLocaleDateString("es-ES") : "",
+      r.daysActive ?? 0,
+      `${(r.totalEarned ?? 0).toFixed(2)}€`,
+    ]);
+    const csv = [headers, ...rows].map(row => row.map((c: any) => `"${c}"`).join(",")).join("\n");
+    const blob = new Blob([csv], { type: "text/csv;charset=utf-8;" });
+    const url = URL.createObjectURL(blob);
+    const a = document.createElement("a");
+    a.href = url; a.download = "referidos.csv"; a.click();
+    URL.revokeObjectURL(url);
+    toast.success("CSV exportado correctamente");
+  };
+
+  return (
+    <Card>
+      <CardHeader className="pb-3">
+        <div className="flex items-center justify-between flex-wrap gap-3">
+          <div>
+            <CardTitle className="text-base">Lista completa de referidos</CardTitle>
+            <CardDescription>
+              {stats.activeReferrals} activos · {stats.totalReferrals - stats.activeReferrals} cancelados · {stats.totalReferrals} total
+            </CardDescription>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button variant="outline" size="sm" onClick={() => refetch()} className="gap-1.5">
+              <RefreshCw className="w-3.5 h-3.5" />
+              Actualizar
+            </Button>
+            <Button variant="outline" size="sm" onClick={exportCSV} className="gap-1.5" disabled={!data?.items?.length}>
+              <Download className="w-3.5 h-3.5" />
+              CSV
+            </Button>
+          </div>
+        </div>
+
+        {/* Filters */}
+        <div className="flex flex-wrap gap-2 mt-3">
+          {(["all", "active", "cancelled"] as const).map(s => (
+            <button
+              key={s}
+              onClick={() => handleStatusChange(s)}
+              className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+                status === s
+                  ? "bg-orange-500 text-white border-orange-500"
+                  : "bg-background text-muted-foreground border-border hover:border-orange-300"
+              }`}
+            >
+              <Filter className="w-3 h-3 inline mr-1" />
+              {s === "all" ? "Todos" : s === "active" ? "Activos" : "Cancelados"}
+            </button>
+          ))}
+        </div>
+
+        {/* Search */}
+        <form onSubmit={handleSearch} className="flex gap-2 mt-2">
+          <div className="relative flex-1">
+            <Search className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground" />
+            <Input
+              value={searchInput}
+              onChange={e => setSearchInput(e.target.value)}
+              placeholder="Buscar por nombre o email..."
+              className="pl-9 h-9 text-sm"
+            />
+          </div>
+          <Button type="submit" size="sm" className="bg-orange-500 hover:bg-orange-600 text-white">Buscar</Button>
+          {search && (
+            <Button type="button" variant="outline" size="sm" onClick={() => { setSearch(""); setSearchInput(""); setPage(1); }}>Limpiar</Button>
+          )}
+        </form>
+      </CardHeader>
+
+      <CardContent className="p-0">
+        {isLoading ? (
+          <div className="flex items-center justify-center py-12">
+            <RefreshCw className="w-6 h-6 animate-spin text-orange-500" />
+          </div>
+        ) : !data?.items?.length ? (
+          <div className="text-center py-12 px-6">
+            <Users className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
+            <p className="text-muted-foreground font-medium">
+              {search || status !== "all" ? "No hay referidos con estos filtros" : "Aún no tienes referidos"}
+            </p>
+            {!search && status === "all" && (
+              <>
+                <p className="text-sm text-muted-foreground mt-1">Comparte tu código para empezar a ganar</p>
+                <Button onClick={handleShare} className="mt-4 bg-orange-500 hover:bg-orange-600 text-white" size="sm">
+                  <Share2 className="w-4 h-4 mr-1" /> Compartir mi código
+                </Button>
+              </>
+            )}
+          </div>
+        ) : (
+          <>
+            {/* Table header */}
+            <div className="hidden md:grid grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr] gap-3 px-5 py-2 bg-muted/40 border-b text-xs font-semibold text-muted-foreground uppercase tracking-wide">
+              <span>Usuario</span>
+              <span>Plan</span>
+              <span>Estado</span>
+              <span>Registro</span>
+              <span>Días activo</span>
+              <span className="text-right">Ganancias</span>
+            </div>
+
+            {data.items.map((ref: any) => (
+              <div
+                key={ref.id}
+                className="grid grid-cols-1 md:grid-cols-[2fr_1fr_1fr_1fr_1fr_1fr] gap-2 md:gap-3 px-5 py-3.5 border-b last:border-0 hover:bg-muted/20 transition-colors items-center"
+              >
+                {/* User */}
+                <div className="flex items-center gap-3">
+                  <div className="w-9 h-9 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0 text-orange-600 font-bold text-sm">
+                    {ref.referredImage
+                      ? <img src={ref.referredImage} alt="" className="w-9 h-9 rounded-full object-cover" />
+                      : (ref.referredName?.[0] ?? "?").toUpperCase()
+                    }
+                  </div>
+                  <div className="min-w-0">
+                    <p className="font-medium text-sm truncate">{ref.referredName}</p>
+                    {ref.referredEmail && <p className="text-xs text-muted-foreground truncate">{ref.referredEmail}</p>}
+                  </div>
+                </div>
+
+                {/* Plan */}
+                <div>
+                  <span className="text-xs font-medium px-2 py-0.5 rounded-full bg-blue-50 text-blue-700 border border-blue-200">
+                    {planLabels[ref.plan] ?? ref.plan ?? "Free"}
+                  </span>
+                </div>
+
+                {/* Status */}
+                <div>
+                  <span className={`inline-flex items-center gap-1 text-xs font-medium px-2 py-0.5 rounded-full border ${
+                    ref.isActive
+                      ? "bg-green-50 text-green-700 border-green-200"
+                      : "bg-red-50 text-red-600 border-red-200"
+                  }`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${ref.isActive ? "bg-green-500" : "bg-red-400"}`} />
+                    {ref.isActive ? "Activo" : "Cancelado"}
+                  </span>
+                </div>
+
+                {/* Registration date */}
+                <div className="text-sm text-muted-foreground">
+                  {ref.createdAt ? new Date(ref.createdAt).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "2-digit" }) : "—"}
+                </div>
+
+                {/* Days active */}
+                <div className="text-sm text-muted-foreground">
+                  {ref.daysActive ?? 0} días
+                </div>
+
+                {/* Earnings */}
+                <div className="text-right">
+                  <span className={`text-sm font-semibold ${ref.totalEarned > 0 ? "text-green-600" : "text-muted-foreground"}`}>
+                    {(ref.totalEarned ?? 0).toFixed(2)}€
+                  </span>
+                </div>
+              </div>
+            ))}
+
+            {/* Pagination */}
+            {data.totalPages > 1 && (
+              <div className="flex items-center justify-between px-5 py-3 border-t bg-muted/20">
+                <p className="text-xs text-muted-foreground">
+                  Mostrando {((page - 1) * PAGE_SIZE) + 1}–{Math.min(page * PAGE_SIZE, data.total)} de {data.total} referidos
+                </p>
+                <div className="flex items-center gap-1">
+                  <Button
+                    variant="outline" size="sm"
+                    onClick={() => setPage(p => Math.max(1, p - 1))}
+                    disabled={page === 1}
+                    className="w-8 h-8 p-0"
+                  >
+                    <ChevronLeft className="w-4 h-4" />
+                  </Button>
+                  {Array.from({ length: Math.min(5, data.totalPages) }, (_, i) => {
+                    const p = data.totalPages <= 5 ? i + 1 : page <= 3 ? i + 1 : page >= data.totalPages - 2 ? data.totalPages - 4 + i : page - 2 + i;
+                    return (
+                      <Button
+                        key={p} variant={p === page ? "default" : "outline"} size="sm"
+                        onClick={() => setPage(p)}
+                        className={`w-8 h-8 p-0 text-xs ${p === page ? "bg-orange-500 hover:bg-orange-600 text-white" : ""}`}
+                      >
+                        {p}
+                      </Button>
+                    );
+                  })}
+                  <Button
+                    variant="outline" size="sm"
+                    onClick={() => setPage(p => Math.min(data.totalPages, p + 1))}
+                    disabled={page === data.totalPages}
+                    className="w-8 h-8 p-0"
+                  >
+                    <ChevronRight className="w-4 h-4" />
+                  </Button>
+                </div>
+              </div>
+            )}
+          </>
+        )}
+      </CardContent>
+    </Card>
+  );
+}
 
 function StatCard({
   title, value, subtitle, icon: Icon, trend, trendValue, color = "orange",
@@ -429,44 +670,7 @@ export default function CreatorDashboard() {
           </TabsList>
 
           <TabsContent value="referrals">
-            <Card>
-              <CardHeader className="pb-3">
-                <CardTitle className="text-base">Tus referidos</CardTitle>
-                <CardDescription>
-                  {stats.activeReferrals} activos · {stats.totalReferrals - stats.activeReferrals} cancelados
-                </CardDescription>
-              </CardHeader>
-              <CardContent>
-                {recentReferrals?.length > 0 ? (
-                  <div>
-                    {recentReferrals.map((ref: any, i: number) => (
-                      <ReferralRow key={ref.id} referral={ref} index={i} />
-                    ))}
-                    {stats.totalReferrals > 20 && (
-                      <p className="text-xs text-muted-foreground text-center pt-3">
-                        Mostrando los 20 más recientes de {stats.totalReferrals} totales
-                      </p>
-                    )}
-                  </div>
-                ) : (
-                  <div className="text-center py-12">
-                    <Users className="w-12 h-12 text-muted-foreground/30 mx-auto mb-3" />
-                    <p className="text-muted-foreground font-medium">Aún no tienes referidos</p>
-                    <p className="text-sm text-muted-foreground mt-1">
-                      Comparte tu código <strong>{code?.code}</strong> para empezar a ganar
-                    </p>
-                    <Button
-                      onClick={handleShare}
-                      className="mt-4 bg-orange-500 hover:bg-orange-600 text-white"
-                      size="sm"
-                    >
-                      <Share2 className="w-4 h-4 mr-1" />
-                      Compartir mi código
-                    </Button>
-                  </div>
-                )}
-              </CardContent>
-            </Card>
+            <ReferralsTable codeId={code?.id} stats={stats} handleShare={handleShare} />
           </TabsContent>
 
           <TabsContent value="earnings">

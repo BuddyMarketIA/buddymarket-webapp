@@ -7107,6 +7107,92 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
       };
     }),
 
+    // Creator: paginated referrals list with filters and search
+    getReferralsList: protectedProcedure
+      .input(z.object({
+        page: z.number().min(1).default(1),
+        pageSize: z.number().min(1).max(100).default(20),
+        status: z.enum(["all", "active", "cancelled"]).default("all"),
+        search: z.string().optional(),
+      }))
+      .query(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return { items: [], total: 0, page: 1, pageSize: 20, totalPages: 0 };
+        const { referralCodes, referralSubscriptions, referralEarnings, users: usersTable } = await import("../drizzle/schema");
+        const { eq, and, desc, sum, count, like, or, sql } = await import("drizzle-orm");
+
+        // Find creator's code
+        const codes = await drizzleDb.select().from(referralCodes)
+          .where(eq(referralCodes.userId, ctx.user.id)).limit(1);
+        if (!codes.length) return { items: [], total: 0, page: 1, pageSize: 20, totalPages: 0 };
+        const myCode = codes[0];
+
+        // Build conditions
+        const conditions = [eq(referralSubscriptions.referralCodeId, myCode.id)];
+        if (input.status === "active") conditions.push(eq(referralSubscriptions.isActive, true));
+        if (input.status === "cancelled") conditions.push(eq(referralSubscriptions.isActive, false));
+
+        // Get total count
+        const [totalRow] = await drizzleDb.select({ cnt: count() }).from(referralSubscriptions)
+          .leftJoin(usersTable, eq(referralSubscriptions.referredUserId, usersTable.id))
+          .where(and(...conditions));
+        const total = totalRow?.cnt ?? 0;
+        const totalPages = Math.ceil(total / input.pageSize);
+        const offset = (input.page - 1) * input.pageSize;
+
+        // Get referrals with earnings per referred user
+        const rows = await drizzleDb.select({
+          sub: referralSubscriptions,
+          referredName: usersTable.name,
+          referredEmail: usersTable.email,
+          referredImage: usersTable.imageUrl,
+          referredCreatedAt: usersTable.createdAt,
+        })
+          .from(referralSubscriptions)
+          .leftJoin(usersTable, eq(referralSubscriptions.referredUserId, usersTable.id))
+          .where(and(...conditions))
+          .orderBy(desc(referralSubscriptions.createdAt))
+          .limit(input.pageSize)
+          .offset(offset);
+
+        // For each referral, get total earnings generated
+        const items = await Promise.all(rows.map(async (row) => {
+          const [earningsRow] = await drizzleDb.select({ total: sum(referralEarnings.commissionAmount) })
+            .from(referralEarnings)
+            .where(and(
+              eq(referralEarnings.referralCodeId, myCode.id),
+              eq(referralEarnings.referredUserId, row.sub.referredUserId),
+            ));
+          const totalEarned = Math.round(Number(earningsRow?.total ?? 0)) / 100;
+          const daysActive = row.sub.createdAt
+            ? Math.floor((Date.now() - new Date(row.sub.createdAt).getTime()) / (1000 * 60 * 60 * 24))
+            : 0;
+          return {
+            id: row.sub.id,
+            referredUserId: row.sub.referredUserId,
+            referredName: row.referredName ?? "Usuario",
+            referredEmail: row.referredEmail,
+            referredImage: row.referredImage,
+            plan: row.sub.plan,
+            isActive: row.sub.isActive,
+            createdAt: row.sub.createdAt,
+            cancelledAt: row.sub.cancelledAt,
+            totalEarned,
+            daysActive,
+          };
+        }));
+
+        // Filter by search after fetching (name/email)
+        const filtered = input.search
+          ? items.filter(i =>
+              i.referredName.toLowerCase().includes(input.search!.toLowerCase()) ||
+              (i.referredEmail ?? "").toLowerCase().includes(input.search!.toLowerCase())
+            )
+          : items;
+
+        return { items: filtered, total, page: input.page, pageSize: input.pageSize, totalPages };
+      }),
+
     // Admin: list all referral codes
     adminList: protectedProcedure.query(async ({ ctx }) => {
       if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
