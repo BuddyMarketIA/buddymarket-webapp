@@ -2008,3 +2008,16 @@
 - [ ] Frontend: sección "Mi código de referido" en BuddyExpertDashboard y BuddyMakerDashboard
 - [ ] Frontend: mostrar código único, nº de usuarios referidos, suscripciones activas y comisión acumulada
 - [ ] Frontend: gráfico de evolución de referidos por mes
+
+## Facturación por licencias activas B2B [COMPLETADO]
+
+- [x] Schema DB: tabla companyBillingSnapshots (id, companyId, billingPeriodStart, billingPeriodEnd, activeLicenses, pricePerLicense, totalAmount, stripeInvoiceId, status)
+- [x] Migración DB: pnpm db:push con la nueva tabla (migración 0027)
+- [x] Stripe: crear precios unitarios por plan (price_starter_b2b, price_business_b2b, price_enterprise_b2b) en stripe-b2b-products.ts
+- [x] Backend: refactorizar createCheckout para usar precio unitario con quantity variable en lugar de importe fijo
+- [x] Backend: job billing-sync.ts — contar licencias activas (lastActiveAt > 30 días), actualizar quantity en Stripe, insertar snapshot
+- [x] Backend: webhook invoice.upcoming — sincronizar quantity antes de que Stripe genere la factura
+- [x] Backend: endpoint company.getBillingHistory — devuelve snapshots de facturación de la empresa
+- [x] Backend: email de resumen previo a facturación (día 28) con licencias activas y total estimado
+- [x] Frontend: sección historial de facturación en EmpresaDashboard con tabla mes a mes
+- [x] Frontend: gráfico de evolución de licencias activas en EmpresaDashboard

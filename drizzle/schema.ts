@@ -2086,6 +2086,43 @@ export const companyMembers = pgTable("company_members", {
 export type CompanyMember = typeof companyMembers.$inferSelect;
 export type InsertCompanyMember = typeof companyMembers.$inferInsert;
 
+/** Estado del snapshot de facturación mensual */
+export const billingSnapshotStatusEnum = pgEnum("billing_snapshot_status", [
+  "pending",
+  "confirmed",
+  "paid",
+  "disputed",
+]);
+
+/**
+ * Snapshot mensual de licencias activas por empresa.
+ * Se genera el día 28 de cada mes y se actualiza cuando Stripe confirma el pago.
+ */
+export const companyBillingSnapshots = pgTable("company_billing_snapshots", {
+  id: serial("id").primaryKey(),
+  companyId: integer("companyId").notNull(),
+  billingPeriodStart: timestamp("billingPeriodStart").notNull(),
+  billingPeriodEnd: timestamp("billingPeriodEnd").notNull(),
+  /** Empleados con lastActiveAt en los últimos 30 días */
+  activeLicenses: integer("activeLicenses").notNull().default(0),
+  /** Precio unitario en euros (snapshot del plan ese mes) */
+  pricePerLicense: numeric("pricePerLicense", { precision: 10, scale: 2 }).notNull(),
+  /** Total = activeLicenses × pricePerLicense */
+  totalAmount: numeric("totalAmount", { precision: 10, scale: 2 }).notNull(),
+  stripeInvoiceId: varchar("stripeInvoiceId", { length: 255 }),
+  stripeSubscriptionItemId: varchar("stripeSubscriptionItemId", { length: 255 }),
+  status: billingSnapshotStatusEnum("status").notNull().default("pending"),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  companyIdx: index("cbs_company_idx").on(t.companyId),
+  periodIdx: index("cbs_period_idx").on(t.billingPeriodStart),
+  invoiceIdx: index("cbs_invoice_idx").on(t.stripeInvoiceId),
+}));
+export type CompanyBillingSnapshot = typeof companyBillingSnapshots.$inferSelect;
+export type InsertCompanyBillingSnapshot = typeof companyBillingSnapshots.$inferInsert;
+
 export const companyLeads = pgTable("company_leads", {
   id: serial("id").primaryKey(),
   companyName: varchar("companyName", { length: 255 }).notNull(),

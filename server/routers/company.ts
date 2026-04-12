@@ -120,7 +120,7 @@ export const companyRouter = router({
       return { success: true, leadId: lead.id };
     }),
 
-  /** Crear checkout Stripe para plan empresarial */
+  /** Crear checkout Stripe para plan empresarial — facturación por licencias activas */
   createCheckout: publicProcedure
     .input(z.object({
       plan: z.enum(["starter", "business", "enterprise"]),
@@ -133,32 +133,48 @@ export const companyRouter = router({
     .mutation(async ({ input }) => {
       const Stripe = (await import("stripe")).default;
       const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+      const { getStripePriceId, B2B_PLANS } = await import("../stripe-b2b-products.js");
 
       const planConfig = COMPANY_PLANS[input.plan];
-      const totalMonthly = Math.round(planConfig.pricePerEmployee * input.employeeCount * 100);
+      const b2bPlanConfig = B2B_PLANS[input.plan];
+      const stripePriceId = getStripePriceId(input.plan);
+
+      // Construir line_items: precio unitario por licencia con quantity = empleados estimados
+      // La quantity se actualizará mensualmente según licencias activas reales
+      const lineItem = stripePriceId
+        ? {
+            // Precio unitario preconfigurado en Stripe (produccción)
+            price: stripePriceId,
+            quantity: input.employeeCount,
+          }
+        : {
+            // Fallback: price_data dinámico (desarrollo/test sin Price ID configurado)
+            price_data: {
+              currency: "eur",
+              product_data: {
+                name: b2bPlanConfig.name,
+                description: `${b2bPlanConfig.description} — Facturación por licencias activas`,
+                metadata: { plan: input.plan, type: "b2b_per_license" },
+              },
+              unit_amount: Math.round(b2bPlanConfig.pricePerEmployee * 100), // precio unitario por empleado
+              recurring: { interval: "month" },
+            },
+            quantity: input.employeeCount, // cantidad inicial = empleados estimados
+          };
 
       const session = await stripe.checkout.sessions.create({
         mode: "subscription",
         customer_email: input.contactEmail,
         allow_promotion_codes: true,
-        line_items: [
-          {
-            price_data: {
-              currency: "eur",
-              product_data: {
-                name: planConfig.name,
-                description: `${input.employeeCount} empleados × ${planConfig.pricePerEmployee}€/mes`,
-                metadata: {
-                  plan: input.plan,
-                  employeeCount: input.employeeCount.toString(),
-                },
-              },
-              unit_amount: totalMonthly,
-              recurring: { interval: "month" },
-            },
-            quantity: 1,
+        line_items: [lineItem],
+        subscription_data: {
+          metadata: {
+            type: "company_subscription",
+            plan: input.plan,
+            companyName: input.companyName,
+            billing_model: "per_active_license",
           },
-        ],
+        },
         metadata: {
           type: "company_subscription",
           plan: input.plan,
@@ -166,6 +182,7 @@ export const companyRouter = router({
           companyName: input.companyName,
           contactName: input.contactName,
           contactEmail: input.contactEmail,
+          billing_model: "per_active_license",
         },
         client_reference_id: `company_${input.companyName.replace(/\s+/g, "_").slice(0, 40)}`,
         success_url: `${input.origin}/empresa/dashboard?setup=success`,
@@ -420,5 +437,63 @@ export const companyRouter = router({
         .limit(1);
 
       return company ? { ...company, joinedAt: membership.joinedAt } : null;
+    }),
+
+  /** Historial de facturación de la empresa (para el panel RRHH) */
+  getBillingHistory: protectedProcedure
+    .query(async ({ ctx }) => {
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+      const { companies, companyBillingSnapshots } = await import("../../drizzle/schema.js");
+      const userId = ctx.user.id;
+
+      // Verificar que el usuario es admin de la empresa
+      const [company] = await drizzleDb
+        .select()
+        .from(companies)
+        .where(eq(companies.adminUserId, userId))
+        .limit(1);
+
+      if (!company) throw new TRPCError({ code: "FORBIDDEN", message: "No eres administrador de ninguna empresa" });
+
+      const snapshots = await drizzleDb
+        .select()
+        .from(companyBillingSnapshots)
+        .where(eq(companyBillingSnapshots.companyId, company.id))
+        .orderBy(desc(companyBillingSnapshots.billingPeriodStart))
+        .limit(24); // Últimos 24 meses
+
+      return {
+        company: {
+          id: company.id,
+          name: company.name,
+          plan: company.plan,
+          licensesActive: company.licensesActive,
+          licensesTotal: company.licensesTotal,
+        },
+        snapshots: snapshots.map(s => ({
+          id: s.id,
+          billingPeriodStart: s.billingPeriodStart,
+          billingPeriodEnd: s.billingPeriodEnd,
+          activeLicenses: s.activeLicenses,
+          pricePerLicense: parseFloat(s.pricePerLicense),
+          totalAmount: parseFloat(s.totalAmount),
+          stripeInvoiceId: s.stripeInvoiceId,
+          status: s.status,
+          createdAt: s.createdAt,
+        })),
+      };
+    }),
+
+  /** Disparar sincronización manual de licencias activas (solo admin de BuddyMarket) */
+  triggerBillingSync: protectedProcedure
+    .mutation(async ({ ctx }) => {
+      if (ctx.user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+      const { syncActiveLicenses } = await import("../jobs/billing-sync.js");
+      const result = await syncActiveLicenses();
+      return result;
     }),
 });

@@ -1037,3 +1037,24 @@ export async function sendCompanyReminderEmail(params: {
     return { success: false, error: err?.message || "Unknown error" };
   }
 }
+
+export async function sendBillingPreviewEmail(params: {
+  to: string;
+  companyName: string;
+  activeLicenses: number;
+  pricePerLicense: number;
+  totalAmount: number;
+  billingDate: Date;
+}): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  const { to, companyName, activeLicenses, pricePerLicense, totalAmount, billingDate } = params;
+  const billingDateStr = billingDate.toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" });
+  const subject = "Resumen de facturacion BuddyMarket - " + billingDate.toLocaleDateString("es-ES", { month: "long", year: "numeric" });
+  const html = emailWrapper(emailHeader("Resumen de facturacion", companyName + " - " + billingDateStr, "linear-gradient(135deg,#1e40af 0%,#1d4ed8 100%)") + "<tr><td style='padding:40px;'><p style='color:#374151;font-size:15px;'>Hola, equipo de " + companyName + ". El cargo de " + totalAmount.toFixed(2) + " EUR (" + activeLicenses + " licencias x " + pricePerLicense.toFixed(2) + " EUR/mes) se realizara el " + billingDateStr + ".</p>" + ctaButton("Ver panel de empresa", "https://buddymarketapp.com/empresa/dashboard") + "</td></tr>");
+  try {
+    const { data, error } = await resend.emails.send({ from: FROM_EMAIL, to, subject, html });
+    if (error) { console.error("[Email] Billing preview failed:", error); return { success: false, error: error.message }; }
+    return { success: true, messageId: data?.id };
+  } catch (err: any) {
+    return { success: false, error: err?.message || "Unknown error" };
+  }
+}

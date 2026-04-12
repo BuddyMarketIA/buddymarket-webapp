@@ -14,8 +14,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   Users, CheckCircle2, Clock, Copy, Download, BarChart3,
   Building2, TrendingUp, AlertCircle, ArrowLeft, RefreshCw,
-  Bell, Send, Mail, Eye, ChevronDown, ChevronUp
+  Bell, Send, Mail, Eye, ChevronDown, ChevronUp, CreditCard, FileText
 } from "lucide-react";
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
 export default function EmpresaDashboard() {
   const { user, loading: authLoading } = useAuth();
@@ -50,6 +51,7 @@ export default function EmpresaDashboard() {
     { enabled: !!selectedCampaignId }
   );
   const { data: reminderStats } = trpc.companyReminders.getStats.useQuery(undefined, { enabled: !!user });
+  const { data: billingData } = trpc.company.getBillingHistory.useQuery(undefined, { enabled: !!user });
   const sendReminderMutation = trpc.companyReminders.sendNow.useMutation({
     onSuccess: (result) => {
       toast.success(`Recordatorios enviados: ${result.sentCount} exitosos, ${result.failedCount} fallidos`);
@@ -665,6 +667,133 @@ export default function EmpresaDashboard() {
                     </div>
                   ))}
                 </div>
+              </CardContent>
+            </Card>
+          )}
+        </section>
+
+        {/* ── HISTORIAL DE FACTURACIÓN ────────────────────────────────────── */}
+        <section aria-labelledby="billing-heading">
+          <h2 id="billing-heading" className="text-lg font-semibold mb-4 flex items-center gap-2">
+            <CreditCard className="h-5 w-5 text-blue-500" />
+            Historial de facturación
+          </h2>
+
+          {/* Tarjeta resumen del mes actual */}
+          {billingData && (
+            <div className="space-y-6">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <Card className="border-border/50 md:col-span-1">
+                  <CardContent className="p-5">
+                    <div className="flex items-center gap-2 mb-2">
+                      <Users className="h-4 w-4 text-emerald-500" />
+                      <span className="text-xs text-muted-foreground">Licencias activas</span>
+                    </div>
+                    <div className="text-3xl font-bold">{billingData.company.licensesActive ?? 0}</div>
+                    <div className="text-xs text-muted-foreground mt-1">de {billingData.company.licensesTotal ?? 0} contratadas</div>
+                  </CardContent>
+                </Card>
+                <Card className="border-border/50 md:col-span-2">
+                  <CardContent className="p-5">
+                    <div className="flex items-center gap-2 mb-3">
+                      <BarChart3 className="h-4 w-4 text-blue-500" />
+                      <span className="text-sm font-medium">Evolución mensual de licencias activas</span>
+                    </div>
+                    {billingData.snapshots.length > 0 ? (
+                      <ResponsiveContainer width="100%" height={120}>
+                        <BarChart data={billingData.snapshots.slice(0, 6).reverse().map(s => ({
+                          mes: new Date(s.billingPeriodStart).toLocaleDateString("es-ES", { month: "short", year: "2-digit" }),
+                          licencias: s.activeLicenses,
+                          total: s.totalAmount,
+                        }))}>
+                          <CartesianGrid strokeDasharray="3 3" stroke="hsl(var(--border))" />
+                          <XAxis dataKey="mes" tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                          <YAxis tick={{ fontSize: 11 }} stroke="hsl(var(--muted-foreground))" />
+                          <Tooltip
+                            contentStyle={{ background: "hsl(var(--card))", border: "1px solid hsl(var(--border))", borderRadius: "8px", fontSize: "12px" }}
+                            formatter={(value: number, name: string) => name === "licencias" ? [value, "Licencias activas"] : [`${value.toFixed(2)} €`, "Total"]}
+                          />
+                          <Bar dataKey="licencias" fill="#3b82f6" radius={[4, 4, 0, 0]} />
+                        </BarChart>
+                      </ResponsiveContainer>
+                    ) : (
+                      <div className="h-[120px] flex items-center justify-center text-muted-foreground text-sm">
+                        No hay datos de facturación aún
+                      </div>
+                    )}
+                  </CardContent>
+                </Card>
+              </div>
+
+              {/* Tabla de historial */}
+              {billingData.snapshots.length > 0 && (
+                <Card className="border-border/50">
+                  <CardHeader className="pb-3">
+                    <CardTitle className="text-sm flex items-center gap-2">
+                      <FileText className="h-4 w-4" />
+                      Detalle por mes
+                    </CardTitle>
+                  </CardHeader>
+                  <CardContent className="p-0">
+                    <div className="overflow-x-auto">
+                      <table className="w-full text-sm">
+                        <thead>
+                          <tr className="border-b border-border/50 bg-muted/30">
+                            <th className="text-left px-4 py-3 font-medium text-muted-foreground">Período</th>
+                            <th className="text-right px-4 py-3 font-medium text-muted-foreground">Licencias activas</th>
+                            <th className="text-right px-4 py-3 font-medium text-muted-foreground">Precio/licencia</th>
+                            <th className="text-right px-4 py-3 font-medium text-muted-foreground">Total</th>
+                            <th className="text-center px-4 py-3 font-medium text-muted-foreground">Estado</th>
+                          </tr>
+                        </thead>
+                        <tbody>
+                          {billingData.snapshots.map((snapshot) => (
+                            <tr key={snapshot.id} className="border-b border-border/30 hover:bg-muted/20 transition-colors">
+                              <td className="px-4 py-3 font-medium">
+                                {new Date(snapshot.billingPeriodStart).toLocaleDateString("es-ES", { month: "long", year: "numeric" })}
+                              </td>
+                              <td className="px-4 py-3 text-right">
+                                <span className="font-semibold">{snapshot.activeLicenses}</span>
+                                <span className="text-muted-foreground text-xs ml-1">empleados</span>
+                              </td>
+                              <td className="px-4 py-3 text-right text-muted-foreground">
+                                {snapshot.pricePerLicense.toFixed(2)} €
+                              </td>
+                              <td className="px-4 py-3 text-right font-semibold">
+                                {snapshot.totalAmount.toFixed(2)} €
+                              </td>
+                              <td className="px-4 py-3 text-center">
+                                <span className={`text-xs px-2 py-1 rounded-full font-medium ${
+                                  snapshot.status === "paid" ? "bg-emerald-500/10 text-emerald-600" :
+                                  snapshot.status === "confirmed" ? "bg-blue-500/10 text-blue-600" :
+                                  snapshot.status === "failed" ? "bg-red-500/10 text-red-600" :
+                                  "bg-amber-500/10 text-amber-600"
+                                }`}>
+                                  {snapshot.status === "paid" ? "Pagado" :
+                                   snapshot.status === "confirmed" ? "Confirmado" :
+                                   snapshot.status === "failed" ? "Error" : "Pendiente"}
+                                </span>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </table>
+                    </div>
+                  </CardContent>
+                </Card>
+              )}
+
+              <p className="text-xs text-muted-foreground text-center">
+                La facturación se actualiza automáticamente el día 28 de cada mes según las licencias activas en los últimos 30 días.
+              </p>
+            </div>
+          )}
+
+          {!billingData && (
+            <Card className="border-border/50">
+              <CardContent className="p-8 text-center">
+                <CreditCard className="h-10 w-10 text-muted-foreground mx-auto mb-3" />
+                <p className="text-muted-foreground text-sm">El historial de facturación aparecerá aquí una vez que se genere el primer ciclo de facturación.</p>
               </CardContent>
             </Card>
           )}

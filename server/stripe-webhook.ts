@@ -116,6 +116,69 @@ export function registerStripeWebhook(app: Express) {
             break;
           }
 
+          case "invoice.upcoming": {
+            // Sincronizar licencias activas antes de que Stripe genere la factura
+            const upcomingInvoice = event.data.object as any;
+            const upcomingSubId = upcomingInvoice.subscription as string | undefined;
+            if (upcomingSubId) {
+              try {
+                const { companies, companyMembers } = await import("../drizzle/schema.js");
+                const { eq, and, gte, isNotNull } = await import("drizzle-orm");
+                const drizzleDb = await db.getDb();
+                if (drizzleDb) {
+                  // Buscar empresa por stripeSubscriptionId
+                  const [company] = await drizzleDb
+                    .select()
+                    .from(companies)
+                    .where(eq(companies.stripeSubscriptionId, upcomingSubId))
+                    .limit(1);
+
+                  if (company) {
+                    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+                    const activeMembers = await drizzleDb
+                      .select({ id: companyMembers.id })
+                      .from(companyMembers)
+                      .where(
+                        and(
+                          eq(companyMembers.companyId, company.id),
+                          eq(companyMembers.isActive, true),
+                          gte(companyMembers.lastActiveAt, thirtyDaysAgo),
+                        )
+                      );
+
+                    const activeLicenses = activeMembers.length;
+
+                    // Actualizar quantity en Stripe
+                    const subscription = await stripe.subscriptions.retrieve(
+                      upcomingSubId,
+                      { expand: ["items"] }
+                    );
+                    const subItem = subscription.items.data[0];
+                    if (subItem && subItem.quantity !== activeLicenses) {
+                      await stripe.subscriptionItems.update(subItem.id, {
+                        quantity: Math.max(activeLicenses, 1),
+                        proration_behavior: "none",
+                      });
+                      console.log(
+                        `[Stripe B2B] invoice.upcoming: empresa ${company.id} (${company.name}) ` +
+                        `— ${subItem.quantity} → ${activeLicenses} licencias activas`
+                      );
+                    }
+
+                    // Actualizar licensesActive en la BD
+                    await drizzleDb
+                      .update(companies)
+                      .set({ licensesActive: activeLicenses, updatedAt: new Date() })
+                      .where(eq(companies.id, company.id));
+                  }
+                }
+              } catch (b2bErr: any) {
+                console.error("[Stripe B2B] invoice.upcoming error:", b2bErr?.message);
+              }
+            }
+            break;
+          }
+
           case "invoice.paid": {
             const invoice = event.data.object as Stripe.Invoice;
             console.log(`[Stripe] Invoice paid: ${invoice.id}`);
@@ -123,6 +186,28 @@ export function registerStripeWebhook(app: Express) {
             const invoiceSubId = (invoice as any).subscription;
             if (invoiceSubId && invoice.billing_reason === "subscription_cycle") {
               await handleReferralCommissionOnInvoice(invoice);
+            }
+            // ── B2B: marcar snapshot como pagado ──
+            if (invoiceSubId) {
+              try {
+                const { companies } = await import("../drizzle/schema.js");
+                const { eq } = await import("drizzle-orm");
+                const drizzleDb = await db.getDb();
+                if (drizzleDb) {
+                  const [company] = await drizzleDb
+                    .select({ id: companies.id })
+                    .from(companies)
+                    .where(eq(companies.stripeSubscriptionId, invoiceSubId))
+                    .limit(1);
+                  if (company) {
+                    const { markSnapshotPaid } = await import("./jobs/billing-sync.js");
+                    await markSnapshotPaid(invoice.id, company.id);
+                    console.log(`[Stripe B2B] Snapshot marcado como pagado para empresa ${company.id}`);
+                  }
+                }
+              } catch (b2bErr: any) {
+                console.error("[Stripe B2B] invoice.paid snapshot error:", b2bErr?.message);
+              }
             }
             break;
           }
