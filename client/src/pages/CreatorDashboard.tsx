@@ -9,16 +9,164 @@ import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import {
-  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, LineChart, Line,
+  BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer,
+  LineChart, Line, AreaChart, Area, ComposedChart, ReferenceLine, Legend,
 } from "recharts";
 import { Input } from "@/components/ui/input";
 import {
-  Users, TrendingUp, Euro, Copy, Check, ExternalLink, Star,
+  Users, TrendingUp, TrendingDown, Euro, Copy, Check, ExternalLink, Star,
   ArrowUpRight, ArrowDownRight, Minus, ChefHat, Award, Clock,
   Share2, RefreshCw, AlertCircle, Search, ChevronLeft, ChevronRight,
-  Download, Filter,
+  Download, Filter, Calendar, BarChart2, Activity,
 } from "lucide-react";
 import { toast } from "sonner";
+
+// ─── Charts Section Component ─────────────────────────────────────────────
+const CHART_TOOLTIP_STYLE = { borderRadius: 10, border: "1px solid #e5e7eb", fontSize: 12, boxShadow: "0 4px 12px rgba(0,0,0,0.08)" };
+
+function ChartsSection({ monthlyTrend, weeklyTrend, projection, stats }: { monthlyTrend: any[]; weeklyTrend: any[]; projection: any; stats: any }) {
+  const [period, setPeriod] = useState<"weekly" | "monthly" | "cumulative">("monthly");
+  const [chartType, setChartType] = useState<"earnings" | "referrals" | "combined">("earnings");
+
+  const data = period === "weekly" ? weeklyTrend : monthlyTrend;
+  const xKey = period === "weekly" ? "week" : "month";
+
+  const earnedKey = period === "cumulative" ? "cumEarned" : "earned";
+  const referralsKey = period === "cumulative" ? "cumReferrals" : "referrals";
+
+  const avgEarned = data.length ? data.reduce((s: number, d: any) => s + (d[earnedKey] ?? 0), 0) / data.length : 0;
+  const avgReferrals = data.length ? data.reduce((s: number, d: any) => s + (d[referralsKey] ?? 0), 0) / data.length : 0;
+
+  return (
+    <div className="space-y-5">
+      {/* Projection cards */}
+      {projection && (
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+          {[
+            { label: "Proyección anual", value: `${projection.annualEarned.toFixed(0)}€`, icon: TrendingUp, color: "text-green-600", bg: "bg-green-50" },
+            { label: "Referidos/año", value: projection.annualReferrals, icon: Users, color: "text-blue-600", bg: "bg-blue-50" },
+            { label: "Próximo mes", value: `${projection.nextMonthEarned.toFixed(2)}€`, icon: Calendar, color: "text-orange-600", bg: "bg-orange-50" },
+            { label: "Nuevos/mes", value: projection.nextMonthReferrals, icon: Activity, color: "text-purple-600", bg: "bg-purple-50" },
+          ].map(({ label, value, icon: Icon, color, bg }) => (
+            <div key={label} className={`rounded-xl p-3 ${bg} flex items-center gap-3`}>
+              <div className={`w-8 h-8 rounded-lg bg-white flex items-center justify-center shadow-sm flex-shrink-0`}>
+                <Icon className={`w-4 h-4 ${color}`} />
+              </div>
+              <div>
+                <p className="text-xs text-muted-foreground">{label}</p>
+                <p className={`text-sm font-bold ${color}`}>{value}</p>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Main chart card */}
+      <Card>
+        <CardHeader className="pb-3">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <CardTitle className="text-base font-semibold">Análisis de rendimiento</CardTitle>
+              <CardDescription>
+                {period === "weekly" ? "Últimas 12 semanas" : period === "cumulative" ? "Acumulado total" : "Últimos 12 meses"}
+              </CardDescription>
+            </div>
+            {/* Chart type selector */}
+            <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
+              {(["earnings", "referrals", "combined"] as const).map(t => (
+                <button
+                  key={t}
+                  onClick={() => setChartType(t)}
+                  className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
+                    chartType === t ? "bg-white shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                  }`}
+                >
+                  {t === "earnings" ? "💰 Ganancias" : t === "referrals" ? "👥 Referidos" : "📊 Combinado"}
+                </button>
+              ))}
+            </div>
+          </div>
+          {/* Period selector */}
+          <div className="flex gap-1.5 flex-wrap">
+            {(["weekly", "monthly", "cumulative"] as const).map(p => (
+              <button
+                key={p}
+                onClick={() => setPeriod(p)}
+                className={`px-3 py-1 rounded-full text-xs font-medium border transition-colors ${
+                  period === p
+                    ? "bg-orange-500 text-white border-orange-500"
+                    : "bg-background text-muted-foreground border-border hover:border-orange-300"
+                }`}
+              >
+                {p === "weekly" ? "Semanal" : p === "monthly" ? "Mensual" : "Acumulado"}
+              </button>
+            ))}
+          </div>
+        </CardHeader>
+        <CardContent className="pt-0">
+          <ResponsiveContainer width="100%" height={260}>
+            {chartType === "earnings" ? (
+              <AreaChart data={data} margin={{ top: 5, right: 10, bottom: 5, left: 0 }}>
+                <defs>
+                  <linearGradient id="earnGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#f97316" stopOpacity={0.3} />
+                    <stop offset="95%" stopColor="#f97316" stopOpacity={0.02} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                <XAxis dataKey={xKey} tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `${v}€`} axisLine={false} tickLine={false} width={45} />
+                <Tooltip
+                  formatter={(v: number) => [`${v.toFixed(2)}€`, period === "cumulative" ? "Acumulado" : "Ganancias"]}
+                  contentStyle={CHART_TOOLTIP_STYLE}
+                />
+                <ReferenceLine y={avgEarned} stroke="#f97316" strokeDasharray="4 4" strokeOpacity={0.5}
+                  label={{ value: `Media: ${avgEarned.toFixed(2)}€`, position: "insideTopRight", fontSize: 10, fill: "#f97316" }}
+                />
+                <Area type="monotone" dataKey={earnedKey} stroke="#f97316" strokeWidth={2.5} fill="url(#earnGrad)" dot={{ r: 3, fill: "#f97316" }} activeDot={{ r: 5 }} />
+              </AreaChart>
+            ) : chartType === "referrals" ? (
+              <ComposedChart data={data} margin={{ top: 5, right: 10, bottom: 5, left: 0 }}>
+                <defs>
+                  <linearGradient id="refGrad" x1="0" y1="0" x2="0" y2="1">
+                    <stop offset="5%" stopColor="#3b82f6" stopOpacity={0.25} />
+                    <stop offset="95%" stopColor="#3b82f6" stopOpacity={0.02} />
+                  </linearGradient>
+                </defs>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                <XAxis dataKey={xKey} tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis tick={{ fontSize: 11 }} allowDecimals={false} axisLine={false} tickLine={false} />
+                <Tooltip
+                  formatter={(v: number) => [v, period === "cumulative" ? "Acumulados" : "Referidos"]}
+                  contentStyle={CHART_TOOLTIP_STYLE}
+                />
+                <ReferenceLine y={avgReferrals} stroke="#3b82f6" strokeDasharray="4 4" strokeOpacity={0.5}
+                  label={{ value: `Media: ${avgReferrals.toFixed(1)}`, position: "insideTopRight", fontSize: 10, fill: "#3b82f6" }}
+                />
+                <Bar dataKey={referralsKey} fill="#3b82f6" radius={[4, 4, 0, 0]} opacity={0.85} />
+                <Line type="monotone" dataKey={referralsKey} stroke="#1d4ed8" strokeWidth={2} dot={false} />
+              </ComposedChart>
+            ) : (
+              <ComposedChart data={data} margin={{ top: 5, right: 10, bottom: 5, left: 0 }}>
+                <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" vertical={false} />
+                <XAxis dataKey={xKey} tick={{ fontSize: 11 }} axisLine={false} tickLine={false} />
+                <YAxis yAxisId="left" tick={{ fontSize: 11 }} tickFormatter={(v) => `${v}€`} axisLine={false} tickLine={false} width={45} />
+                <YAxis yAxisId="right" orientation="right" tick={{ fontSize: 11 }} allowDecimals={false} axisLine={false} tickLine={false} />
+                <Tooltip
+                  formatter={(v: number, name: string) => name === earnedKey ? [`${v.toFixed(2)}€`, "Ganancias"] : [v, "Referidos"]}
+                  contentStyle={CHART_TOOLTIP_STYLE}
+                />
+                <Legend formatter={(v) => v === earnedKey ? "Ganancias" : "Referidos"} wrapperStyle={{ fontSize: 12 }} />
+                <Bar yAxisId="right" dataKey={referralsKey} fill="#3b82f6" radius={[4, 4, 0, 0]} opacity={0.7} />
+                <Line yAxisId="left" type="monotone" dataKey={earnedKey} stroke="#f97316" strokeWidth={2.5} dot={{ r: 3, fill: "#f97316" }} activeDot={{ r: 5 }} />
+              </ComposedChart>
+            )}
+          </ResponsiveContainer>
+        </CardContent>
+      </Card>
+    </div>
+  );
+}
 
 // ─── Referrals Table Component ──────────────────────────────────────────────
 const planLabels: Record<string, string> = { pro: "Pro", pro_max: "Pro Max", free: "Free" };
@@ -476,7 +624,7 @@ export default function CreatorDashboard() {
     );
   }
 
-  const { code, creatorProfile, stats, monthlyTrend, recentEarnings, recentReferrals } = data as any;
+  const { code, creatorProfile, stats, monthlyTrend, weeklyTrend, projection, recentEarnings, recentReferrals } = data as any;
   const referralLink = `${window.location.origin}/registro?ref=${code?.code}`;
   const monthTrend = stats.lastMonthEarned > 0
     ? stats.monthEarned >= stats.lastMonthEarned
@@ -609,52 +757,8 @@ export default function CreatorDashboard() {
           </CardContent>
         </Card>
 
-        {/* Chart + Tabs */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Monthly Trend Chart */}
-          <Card className="lg:col-span-2">
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base font-semibold">Evolución de ganancias</CardTitle>
-              <CardDescription>Últimos 6 meses</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={220}>
-                <BarChart data={monthlyTrend} margin={{ top: 5, right: 5, bottom: 5, left: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 11 }} tickFormatter={(v) => `${v}€`} />
-                  <Tooltip
-                    formatter={(value: number) => [`${value.toFixed(2)}€`, "Ganancias"]}
-                    contentStyle={{ borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 12 }}
-                  />
-                  <Bar dataKey="earned" fill="#f97316" radius={[4, 4, 0, 0]} />
-                </BarChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-
-          {/* Referrals Trend */}
-          <Card>
-            <CardHeader className="pb-2">
-              <CardTitle className="text-base font-semibold">Nuevos referidos</CardTitle>
-              <CardDescription>Últimos 6 meses</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <ResponsiveContainer width="100%" height={220}>
-                <LineChart data={monthlyTrend} margin={{ top: 5, right: 5, bottom: 5, left: 0 }}>
-                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                  <XAxis dataKey="month" tick={{ fontSize: 11 }} />
-                  <YAxis tick={{ fontSize: 11 }} allowDecimals={false} />
-                  <Tooltip
-                    formatter={(value: number) => [value, "Referidos"]}
-                    contentStyle={{ borderRadius: 8, border: "1px solid #e5e7eb", fontSize: 12 }}
-                  />
-                  <Line type="monotone" dataKey="referrals" stroke="#3b82f6" strokeWidth={2} dot={{ r: 4 }} />
-                </LineChart>
-              </ResponsiveContainer>
-            </CardContent>
-          </Card>
-        </div>
+        {/* Interactive Charts Section */}
+        <ChartsSection monthlyTrend={monthlyTrend} weeklyTrend={weeklyTrend} projection={projection} stats={stats} />
 
         {/* Referrals & Earnings Tables */}
         <Tabs defaultValue="referrals">

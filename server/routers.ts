@@ -7070,9 +7070,10 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
       const activeCount = activeRefs[0]?.cnt ?? 0;
       const totalCount = allRefs[0]?.cnt ?? 0;
 
-      // Monthly trend — last 6 months
-      const monthlyTrend: { month: string; earned: number; referrals: number }[] = [];
-      for (let i = 5; i >= 0; i--) {
+      // Monthly trend — last 12 months
+      const monthlyTrend: { month: string; earned: number; referrals: number; cumEarned: number; cumReferrals: number }[] = [];
+      let cumEarned = 0; let cumReferrals = 0;
+      for (let i = 11; i >= 0; i--) {
         const mStart = new Date(now.getFullYear(), now.getMonth() - i, 1);
         const mEnd = new Date(now.getFullYear(), now.getMonth() - i + 1, 0, 23, 59, 59);
         const [mEarn, mRefs] = await Promise.all([
@@ -7081,12 +7082,47 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
           drizzleDb.select({ cnt: count() }).from(referralSubscriptions)
             .where(and(eq(referralSubscriptions.referralCodeId, myCode.id), gte(referralSubscriptions.createdAt, mStart), sql`${referralSubscriptions.createdAt} <= ${mEnd}`)),
         ]);
+        const mEarnVal = Math.round(Number(mEarn[0]?.total ?? 0)) / 100;
+        const mRefsVal = mRefs[0]?.cnt ?? 0;
+        cumEarned = Math.round((cumEarned + mEarnVal) * 100) / 100;
+        cumReferrals += mRefsVal;
         monthlyTrend.push({
           month: mStart.toLocaleString("es-ES", { month: "short", year: "2-digit" }),
-          earned: Math.round(Number(mEarn[0]?.total ?? 0)) / 100,
-          referrals: mRefs[0]?.cnt ?? 0,
+          earned: mEarnVal,
+          referrals: mRefsVal,
+          cumEarned,
+          cumReferrals,
         });
       }
+
+      // Weekly trend — last 12 weeks
+      const weeklyTrend: { week: string; earned: number; referrals: number }[] = [];
+      for (let i = 11; i >= 0; i--) {
+        const wStart = new Date(now); wStart.setDate(now.getDate() - (i + 1) * 7);
+        const wEnd = new Date(now); wEnd.setDate(now.getDate() - i * 7); wEnd.setHours(23, 59, 59);
+        const [wEarn, wRefs] = await Promise.all([
+          drizzleDb.select({ total: sum(referralEarnings.commissionAmount) }).from(referralEarnings)
+            .where(and(eq(referralEarnings.referralCodeId, myCode.id), gte(referralEarnings.createdAt, wStart), sql`${referralEarnings.createdAt} <= ${wEnd}`)),
+          drizzleDb.select({ cnt: count() }).from(referralSubscriptions)
+            .where(and(eq(referralSubscriptions.referralCodeId, myCode.id), gte(referralSubscriptions.createdAt, wStart), sql`${referralSubscriptions.createdAt} <= ${wEnd}`)),
+        ]);
+        weeklyTrend.push({
+          week: `S${12 - i}`,
+          earned: Math.round(Number(wEarn[0]?.total ?? 0)) / 100,
+          referrals: wRefs[0]?.cnt ?? 0,
+        });
+      }
+
+      // Projection: average of last 3 months * 12
+      const last3 = monthlyTrend.slice(-3);
+      const avgMonthlyEarned = last3.reduce((s, m) => s + m.earned, 0) / 3;
+      const avgMonthlyReferrals = last3.reduce((s, m) => s + m.referrals, 0) / 3;
+      const projection = {
+        annualEarned: Math.round(avgMonthlyEarned * 12 * 100) / 100,
+        annualReferrals: Math.round(avgMonthlyReferrals * 12),
+        nextMonthEarned: Math.round(avgMonthlyEarned * 100) / 100,
+        nextMonthReferrals: Math.round(avgMonthlyReferrals),
+      };
 
       return {
         hasCode: true as const,
@@ -7102,6 +7138,8 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
           usageCount: myCode.usageCount,
         },
         monthlyTrend,
+        weeklyTrend,
+        projection,
         recentEarnings: recentEarnings.map(r => ({ ...r.earning, referredName: r.referredName, referredImage: r.referredImage })),
         recentReferrals: recentRefs.map(r => ({ ...r.sub, referredName: r.referredName, referredImage: r.referredImage })),
       };
