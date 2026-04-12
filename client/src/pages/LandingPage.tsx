@@ -1,62 +1,80 @@
 import { useState, useEffect, useRef } from "react";
-import { Link } from "wouter";
-import WebSSOButtons from "@/components/WebSSOButtons";
+import NutritionalCalculatorSection from "@/components/NutritionalCalculatorSection";
+import HabitsChecklistSection from "@/components/HabitsChecklistSection";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "@/components/sonner-a11y-shim";
-import NutritionalCalculatorSection from "@/components/NutritionalCalculatorSection";
-import HabitsChecklistSection from "@/components/HabitsChecklistSection";
 
 const LOGO_HORIZONTAL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/logo-horizontal-orange_0dcbe0a8.png";
 const LOGO_ICON = "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/logo-icon-orange_2cf889cb.png";
-
 const FOOD = {
   salmon:   "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/salmon_quinoa-GK5uCABZM54kHC6jSfHP9p.webp",
   ensalada: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/ensalada_mediterranea-A94kBrNm9EPozXzzbctf5A.webp",
   bowl:     "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/bowl_acai_frutas-VPHcDyWLiwTWng4EtSyWaN.webp",
   pasta:    "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/pasta_pesto_tomates-ShvKafyUPxQbbjm5oqKBmm.webp",
-  pollo:    "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/pollo_al_horno_verduras-7EonsjzW4cbvVFKgkiA4g3.webp",
   menu:     "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/menu_semanal_banner-bJvcZL6L7JygtVy2QeuafW.webp",
-  teriyaki: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/pollo_teriyaki_arroz-BxhouEXinEgLMtuwwTB4gh.webp",
-  brownie:  "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/brownie_boniato-DunRnq5MEnxDMMdCy7DMcV.webp",
-  tortilla: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/tortilla_espinacas-cEYtBTb5hV7xgFpTkVy3TG.webp",
-  acai:     "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/acai_bowl_granola-mcBZCMgPadkRDbMhMseJwZ.webp",
-  buddha:   "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/buddha_bowl_vegano-LbSLY3naX2TfQAWVDygbXL.webp",
-  pan:      "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/pan_masa_madre-VDEXokc7GYSoNjo4bvjcTU.webp",
   recipes:  "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/recipes_afa44a0e.jpg",
   shopping: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/shopping_d2c9f4e5.jpg",
   pantry:   "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/pantry_3fcf0a1f.jpg",
   mealprep: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/mealprep_eb5fda9a.jpg",
 };
 
-const FEATURES = [
-  { icon: "🤖", tag: "IA Nutricional", title: "IA Nutricional\nPersonalizada", img: FOOD.salmon,
-    desc: "Nuestra inteligencia artificial analiza tu perfil, alergias, condiciones médicas y objetivos para generar planes de alimentación únicos. Más de 24 perfiles especiales.", color: "#F97316" },
-  { icon: "📋", tag: "Menús", title: "Menús Semanales\nAutomáticos", img: FOOD.menu,
-    desc: "Genera tu menú semanal completo en segundos. Con 5 comidas diarias, macros detallados y lista de la compra integrada. Adaptado a tus restricciones dietéticas.", color: "#10b981" },
-  { icon: "🍳", tag: "Recetas", title: "Biblioteca de\nRecetas", img: FOOD.recipes,
-    desc: "Miles de recetas saludables con información nutricional completa, instrucciones paso a paso, tiempos de preparación y filtros por alérgenos.", color: "#8b5cf6" },
-  { icon: "🛒", tag: "Compras", title: "Lista de la Compra\nInteligente", img: FOOD.shopping,
-    desc: "Genera automáticamente tu lista de la compra a partir de tus menús semanales. Organizada por categorías, con control de inventario en tiempo real.", color: "#3b82f6" },
-  { icon: "📊", tag: "Seguimiento", title: "Seguimiento\nNutricional", img: FOOD.mealprep,
-    desc: "Registra tus comidas y monitoriza en tiempo real tus calorías, proteínas, carbohidratos y grasas. Estadísticas detalladas y sistema de logros.", color: "#f59e0b" },
-  { icon: "🏪", tag: "Inventario", title: "Inventario\ndel Hogar", img: FOOD.pantry,
-    desc: "Controla lo que tienes en tu despensa, nevera y congelador. BuddyMarket te avisa de lo que está por caducar y adapta tus recetas al instante.", color: "#ec4899" },
+const MODULES = [
+  { icon: "🤖", color: "#F97316", bg: "#fff7ed", tag: "BuddyIA", title: "Inteligencia Artificial Nutricional",
+    desc: "Genera menús semanales personalizados en segundos. La IA analiza tu perfil, objetivos, alergias y condiciones médicas para crear planes únicos adaptados a ti.",
+    img: FOOD.menu, highlights: ["Menús en 30 segundos", "24 perfiles especiales", "Ajuste de macros automático"] },
+  { icon: "🍳", color: "#10b981", bg: "#f0fdf4", tag: "Recetas", title: "Biblioteca de Recetas Saludables",
+    desc: "Miles de recetas con información nutricional completa, instrucciones paso a paso y filtros por alérgenos, tiempo de preparación y objetivo de salud.",
+    img: FOOD.recipes, highlights: ["15.000+ recetas", "Filtros por alérgenos", "Macros detallados"] },
+  { icon: "🛒", color: "#3b82f6", bg: "#eff6ff", tag: "Lista de la Compra", title: "Compra Inteligente Automatizada",
+    desc: "Genera tu lista de la compra directamente desde tu menú semanal. Organizada por categorías y con integración con supermercados online.",
+    img: FOOD.shopping, highlights: ["Lista automática", "Por categorías", "Integración supermercados"] },
+  { icon: "📊", color: "#8b5cf6", bg: "#f5f3ff", tag: "Diario Nutricional", title: "Seguimiento Nutricional en Tiempo Real",
+    desc: "Registra tus comidas y monitoriza calorías, proteínas, carbohidratos y grasas. Estadísticas detalladas y sistema de logros para mantenerte motivado.",
+    img: FOOD.mealprep, highlights: ["Registro por voz", "Análisis de fotos", "Estadísticas avanzadas"] },
+  { icon: "🏪", color: "#ec4899", bg: "#fdf2f8", tag: "Inventario", title: "Control Total de tu Despensa",
+    desc: "Gestiona lo que tienes en casa. BuddyMarket te avisa de lo que está por caducar y adapta tus recetas al inventario disponible.",
+    img: FOOD.pantry, highlights: ["Alertas de caducidad", "Escaneo de códigos", "Adapta recetas al stock"] },
+  { icon: "📈", color: "#f59e0b", bg: "#fffbeb", tag: "Métricas", title: "Análisis de Salud y Progreso",
+    desc: "Registra peso, medidas, energía y bienestar. Visualiza tu evolución con gráficas detalladas y comparte informes con tu nutricionista.",
+    img: FOOD.salmon, highlights: ["Historial completo", "Exportar PDF", "Compartir con profesional"] },
+];
+
+const SERVICES = [
+  { icon: "👤", color: "#F97316", gradient: "linear-gradient(135deg,#fff7ed,#ffedd5)", border: "#fed7aa",
+    title: "Para Usuarios", subtitle: "Tu nutrición, simplificada",
+    desc: "Toma el control de tu alimentación con herramientas de IA que antes solo tenían los nutricionistas. Sin complicaciones, sin excusas.",
+    items: ["Menús semanales personalizados con IA","Diario nutricional con registro por voz","Lista de la compra automática","24 planes especializados","Seguimiento de métricas y progreso","Biblioteca de 15.000+ recetas"],
+    cta: "Empezar gratis" },
+  { icon: "👩‍⚕️", color: "#10b981", gradient: "linear-gradient(135deg,#f0fdf4,#dcfce7)", border: "#86efac",
+    title: "Para Nutricionistas y Creadores", subtitle: "Escala tu práctica profesional",
+    desc: "Crea y monetiza tu contenido nutricional. Comparte recetas, menús y planes con tu comunidad y genera ingresos recurrentes.",
+    items: ["Panel de creador con analíticas","Publicar recetas y menús premium","Comunidad de seguidores","Monetización directa de contenido","Herramientas de gestión de clientes","Badge BuddyExpert verificado"],
+    cta: "Convertirme en BuddyExpert" },
+  { icon: "🏢", color: "#7c3aed", gradient: "linear-gradient(135deg,#f5f3ff,#ede9fe)", border: "#c4b5fd",
+    title: "Para Empresas", subtitle: "Bienestar corporativo con ROI medible",
+    desc: "Mejora la salud y productividad de tu equipo. Planes de nutrición corporativos con dashboard de administración y reportes de impacto.",
+    items: ["Dashboard de administración centralizado","Planes nutricionales para equipos","Reportes de bienestar y engagement","Integración con RRHH y beneficios","Facturación y gestión de licencias","Soporte dedicado y onboarding"],
+    cta: "Solicitar demo" },
 ];
 
 const SPECIAL_MENUS = [
-  { emoji: "🤰", label: "Embarazadas", color: "#fce7f3" },
-  { emoji: "🌱", label: "Veganos", color: "#d1fae5" },
-  { emoji: "🌾", label: "Celíacos", color: "#fef3c7" },
-  { emoji: "💉", label: "Diabéticos", color: "#dbeafe" },
-  { emoji: "❤️", label: "Hipertensión", color: "#fee2e2" },
-  { emoji: "💪", label: "Deportistas", color: "#ede9fe" },
-  { emoji: "🤧", label: "Resfriado", color: "#e0f2fe" },
-  { emoji: "🧓", label: "Mayores 65", color: "#f0fdf4" },
-  { emoji: "👶", label: "Niños", color: "#fef9c3" },
-  { emoji: "🔬", label: "Oncológico", color: "#f3f4f6" },
-  { emoji: "🧘", label: "Intestino irritable", color: "#ecfdf5" },
-  { emoji: "🦴", label: "Osteoporosis", color: "#eff6ff" },
+  { emoji: "🤰", label: "Embarazadas", color: "#fce7f3", text: "#9d174d" },
+  { emoji: "🌱", label: "Veganos", color: "#d1fae5", text: "#065f46" },
+  { emoji: "🌾", label: "Celíacos", color: "#fef3c7", text: "#92400e" },
+  { emoji: "💉", label: "Diabéticos", color: "#dbeafe", text: "#1e40af" },
+  { emoji: "❤️", label: "Hipertensión", color: "#fee2e2", text: "#991b1b" },
+  { emoji: "💪", label: "Deportistas", color: "#ede9fe", text: "#5b21b6" },
+  { emoji: "🤧", label: "Resfriado", color: "#e0f2fe", text: "#0c4a6e" },
+  { emoji: "🧓", label: "Mayores 65", color: "#f0fdf4", text: "#14532d" },
+  { emoji: "👶", label: "Niños", color: "#fef9c3", text: "#713f12" },
+  { emoji: "🔬", label: "Oncológico", color: "#f3f4f6", text: "#374151" },
+  { emoji: "🧘", label: "Intestino irritable", color: "#ecfdf5", text: "#064e3b" },
+  { emoji: "🦴", label: "Osteoporosis", color: "#eff6ff", text: "#1e3a8a" },
+  { emoji: "🫀", label: "Colesterol", color: "#fff1f2", text: "#9f1239" },
+  { emoji: "🧠", label: "Ansiedad", color: "#faf5ff", text: "#581c87" },
+  { emoji: "🤱", label: "Lactancia", color: "#fdf4ff", text: "#701a75" },
+  { emoji: "🏋️", label: "Volumen muscular", color: "#f0f9ff", text: "#0c4a6e" },
 ];
 
 const STATS = [
@@ -66,48 +84,38 @@ const STATS = [
   { value: 24, suffix: "", label: "Perfiles especializados", icon: "🎯" },
 ];
 
-const PLANS = [
-  {
-    name: "Free", price: "0€", period: "para siempre", accent: "#6b7280", highlight: false, cta: "Empezar gratis",
-    description: "Para empezar a explorar BuddyMarket",
-    features: [
-      "Perfil nutricional básico",
-      "Ver recetas de la comunidad",
-      "3 menús generados al mes (sin IA)",
-      "Lista de la compra básica",
-      "Inventario del hogar (hasta 20 productos)",
-    ],
-  },
-  {
-    name: "Pro", price: "9,99€", period: "al mes", accent: "#F97316", highlight: true, cta: "Empezar con Pro",
-    description: "Para quienes quieren sacar el máximo partido a su nutrición",
-    features: [
-      "Menús semanales ilimitados con IA",
-      "24 menús especializados (diabetes, embarazo, celiacía...)",
-      "BuddyIA: hasta 50 mensajes/día",
-      "Diario nutricional ilimitado",
-      "Inventario ilimitado + alertas de caducidad",
-      "Métricas de salud (6 meses de historial)",
-      "Conectar supermercado online",
-    ],
-  },
-  {
-    name: "Pro Max", price: "19,99€", period: "al mes", accent: "#7c3aed", highlight: false, cta: "Empezar con Pro Max",
-    description: "Para profesionales de la salud y usuarios avanzados",
-    features: [
-      "Todo lo de Pro",
-      "BuddyIA ilimitado (sin límite de mensajes)",
-      "Historial de métricas ilimitado",
-      "Crear y publicar tus propias recetas",
-      "Acceso a BuddyExperts (nutricionistas reales)",
-      "Múltiples perfiles familiares",
-      "Exportar informes PDF",
-      "Soporte prioritario 24/7",
-    ],
-  },
+const TESTIMONIALS = [
+  { name: "Laura M.", role: "Madre de familia, Madrid", avatar: "LM", color: "#F97316",
+    text: "Antes pasaba horas pensando qué cocinar. Ahora BuddyMarket me genera el menú de la semana en segundos, adaptado a los gustos de mis hijos y con la lista de la compra incluida. Un cambio de vida.", stars: 5 },
+  { name: "Carlos R.", role: "Deportista amateur, Barcelona", avatar: "CR", color: "#10b981",
+    text: "Llevo 3 meses usando BuddyIA para mis menús de ganancia muscular. He ganado 4kg de masa muscular manteniendo el % de grasa. Los macros son perfectos y las recetas están buenísimas.", stars: 5 },
+  { name: "Ana G.", role: "Nutricionista, Valencia", avatar: "AG", color: "#8b5cf6",
+    text: "Como nutricionista, recomiendo BuddyMarket a mis pacientes para el seguimiento entre consultas. La herramienta de diario nutricional y las métricas me ayudan a ver su evolución real.", stars: 5 },
+  { name: "Pedro S.", role: "Diabético tipo 2, Sevilla", avatar: "PS", color: "#3b82f6",
+    text: "El plan para diabéticos es increíble. Controla el índice glucémico de cada comida y me ayuda a mantener la glucosa estable. Mi médico está impresionado con mi evolución.", stars: 5 },
 ];
 
-// Animated counter hook
+const PLANS = [
+  { name: "Free", price: "0€", period: "para siempre", accent: "#6b7280", highlight: false, cta: "Empezar gratis",
+    description: "Para explorar BuddyMarket sin compromiso",
+    features: ["Perfil nutricional básico","Ver recetas de la comunidad","3 menús al mes (sin IA)","Lista de la compra básica","Inventario (hasta 20 productos)"] },
+  { name: "Pro", price: "9,99€", period: "al mes", accent: "#F97316", highlight: true, cta: "Empezar con Pro",
+    description: "Para quienes quieren resultados reales",
+    features: ["Menús semanales ilimitados con IA","24 planes especializados","BuddyIA: 50 consultas/día","Diario nutricional ilimitado","Inventario ilimitado + alertas","Métricas de salud (6 meses)","Integración supermercados online"] },
+  { name: "Pro Max", price: "19,99€", period: "al mes", accent: "#7c3aed", highlight: false, cta: "Empezar con Pro Max",
+    description: "Para profesionales y familias",
+    features: ["Todo lo de Pro","BuddyIA ilimitado","Historial de métricas ilimitado","Crear y publicar recetas propias","Acceso a BuddyExperts","Perfiles familiares múltiples","Exportar informes PDF","Soporte prioritario 24/7"] },
+];
+
+const HOW_IT_WORKS = [
+  { step: "01", icon: "👤", color: "#F97316", title: "Crea tu perfil nutricional",
+    desc: "Cuéntanos tus objetivos, alergias, condiciones médicas y estilo de vida. Solo tarda 3 minutos." },
+  { step: "02", icon: "🤖", color: "#10b981", title: "La IA genera tu plan personalizado",
+    desc: "BuddyIA analiza tu perfil y crea un menú semanal completo con 5 comidas diarias y lista de la compra." },
+  { step: "03", icon: "📊", color: "#8b5cf6", title: "Sigue tu progreso y mejora",
+    desc: "Registra tus comidas, monitoriza tus métricas y deja que BuddyIA ajuste tu plan semana a semana." },
+];
+
 function useCounter(target: number, duration = 2000, start = false) {
   const [count, setCount] = useState(0);
   useEffect(() => {
@@ -125,7 +133,6 @@ function useCounter(target: number, duration = 2000, start = false) {
   return count;
 }
 
-// Intersection observer hook
 function useInView(threshold = 0.2) {
   const ref = useRef<HTMLDivElement>(null);
   const [inView, setInView] = useState(false);
@@ -137,620 +144,352 @@ function useInView(threshold = 0.2) {
   return { ref, inView };
 }
 
-function StatCard({ value, suffix, label, icon, start }: { value: number; suffix: string; label: string; icon: string; start: boolean }) {
-  const count = useCounter(value, 1800, start);
-  const display = value >= 1000 ? (count >= 1000 ? `${Math.floor(count / 1000)}k` : "0") : count.toString();
+function StatCounter({ value, suffix, label, icon, start }: { value: number; suffix: string; label: string; icon: string; start: boolean }) {
+  const count = useCounter(value, 2000, start);
+  const display = value >= 1000 ? count.toLocaleString("es-ES") : count.toString();
   return (
-    <div className="lp-stat-card">
-      <div className="lp-stat-icon">{icon}</div>
-      <div className="lp-stat-value">{display}{suffix}</div>
-      <div className="lp-stat-label">{label}</div>
+    <div style={{ textAlign: "center", padding: "24px 16px" }}>
+      <div style={{ fontSize: 32, marginBottom: 8 }}>{icon}</div>
+      <div style={{ fontSize: 40, fontWeight: 900, color: "#F97316", lineHeight: 1, fontVariantNumeric: "tabular-nums" }}>
+        {display}{suffix}
+      </div>
+      <div style={{ fontSize: 14, color: "#9ca3af", marginTop: 6, fontWeight: 500 }}>{label}</div>
     </div>
   );
 }
 
 export default function LandingPage() {
   const { user } = useAuth();
-  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [scrolled, setScrolled] = useState(false);
-  const [activeFeature, setActiveFeature] = useState(0);
-  const [heroVisible, setHeroVisible] = useState(false);
-  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
-  const loginUrl = "/login";
-  const appUrl = user ? "/app/dashboard" : loginUrl;
+  const isLoggedIn = !!user;
   const createCheckout = trpc.subscriptions.createCheckout.useMutation();
+  const appUrl = window.location.origin;
+  const loginUrl = `${appUrl}/login`;
+  const dashboardUrl = `${appUrl}/app/dashboard`;
 
-  const handlePlanCta = async (planName: string) => {
-    if (planName === "Free") {
-      window.location.href = appUrl;
-      return;
-    }
-    if (!user) {
-      window.location.href = loginUrl;
-      return;
-    }
-    const planMap: Record<string, "basic" | "premium" | "pro_max"> = {
-      "Pro": "basic",
-      "Pro Max": "pro_max",
-    };
-    const stripePlan = planMap[planName];
-    if (!stripePlan) return;
-    setCheckoutLoading(planName);
-    try {
-      const result = await createCheckout.mutateAsync({ plan: stripePlan, origin: window.location.origin });
-      if (result.url) {
-        toast.info("Redirigiendo al pago seguro...");
-        window.open(result.url, "_blank");
-      }
-    } catch {
-      toast.error("Error al iniciar el pago. Inténtalo de nuevo.");
-    } finally {
-      setCheckoutLoading(null);
-    }
-  };
+  const [mobileOpen, setMobileOpen] = useState(false);
+  const [scrolled, setScrolled] = useState(false);
+  const [activeModule, setActiveModule] = useState(0);
+  const [activeService, setActiveService] = useState(0);
+  const [checkoutLoading, setCheckoutLoading] = useState<string | null>(null);
 
   const statsSection = useInView(0.3);
-  const featuresSection = useInView(0.1);
-  const specialSection = useInView(0.1);
-  const pricingSection = useInView(0.1);
-  const coachSection = useInView(0.1);
+  const modulesSection = useInView(0.1);
 
   useEffect(() => {
-    const t = setTimeout(() => setHeroVisible(true), 100);
-    return () => clearTimeout(t);
-  }, []);
-
-  useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 40);
+    const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", onScroll, { passive: true });
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
   useEffect(() => {
-    const onResize = () => { if (window.innerWidth > 768) setMobileMenuOpen(false); };
-    window.addEventListener("resize", onResize);
-    return () => window.removeEventListener("resize", onResize);
-  }, []);
-
-  // Auto-rotate features
-  useEffect(() => {
-    const t = setInterval(() => setActiveFeature(i => (i + 1) % FEATURES.length), 4000);
+    const t = setInterval(() => setActiveModule(i => (i + 1) % MODULES.length), 4500);
     return () => clearInterval(t);
   }, []);
 
-  return (
-    <div style={{ fontFamily: "'Plus Jakarta Sans', system-ui, sans-serif", overflowX: "hidden" }}>
+  const scrollTo = (id: string) => {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
+    setMobileOpen(false);
+  };
 
-      {/* ═══ NAVBAR ═══════════════════════════════════════════════════════ */}
+  const handlePlanCta = async (planName: string) => {
+    if (planName === "Free") { window.location.href = isLoggedIn ? dashboardUrl : loginUrl; return; }
+    if (!isLoggedIn) { window.location.href = loginUrl; return; }
+    const planMap: Record<string, "basic" | "premium" | "pro_max"> = { "Pro": "basic", "Pro Max": "pro_max" };
+    const stripePlan = planMap[planName];
+    if (!stripePlan) return;
+    setCheckoutLoading(planName);
+    try {
+      const result = await createCheckout.mutateAsync({ plan: stripePlan, origin: window.location.origin });
+      if (result.url) { toast.info("Redirigiendo al pago seguro..."); window.open(result.url, "_blank"); }
+    } catch { toast.error("Error al iniciar el pago. Inténtalo de nuevo."); }
+    finally { setCheckoutLoading(null); }
+  };
+
+  const ctaHref = isLoggedIn ? dashboardUrl : loginUrl;
+
+  return (
+    <div style={{ fontFamily: "'Inter', -apple-system, sans-serif", overflowX: "hidden", background: "#fff" }}>
+
+      {/* ═══ NAVBAR ═══════════════════════════════════════════════════════════ */}
       <nav style={{
         position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
-        background: scrolled || mobileMenuOpen ? "rgba(255,255,255,0.98)" : "rgba(255,255,255,0.85)",
-        backdropFilter: "blur(20px)",
-        borderBottom: scrolled ? "1px solid #f3f4f6" : "1px solid transparent",
-        boxShadow: scrolled ? "0 4px 32px rgba(0,0,0,0.06)" : "none",
+        background: scrolled ? "rgba(255,255,255,0.96)" : "rgba(255,255,255,0.7)",
+        backdropFilter: "blur(16px)",
+        borderBottom: scrolled ? "1px solid rgba(0,0,0,0.07)" : "1px solid transparent",
+        boxShadow: scrolled ? "0 2px 20px rgba(0,0,0,0.06)" : "none",
         transition: "all 0.3s ease",
       }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", height: 72, display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16 }}>
-          <a href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", flexShrink: 0 }}>
-            <img src={LOGO_ICON} alt="BuddyMarket" style={{ height: 52, width: "auto", objectFit: "contain" }} />
-            <span style={{ fontSize: 20, fontWeight: 900, color: "#F97316", letterSpacing: "-0.03em", lineHeight: 1 }}>BuddyMarket</span>
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", height: 68, display: "flex", alignItems: "center", gap: 8 }}>
+          <a href="/" style={{ display: "flex", alignItems: "center", gap: 8, textDecoration: "none", flexShrink: 0, marginRight: 24 }}>
+            <img src={LOGO_ICON} alt="" style={{ height: 30, width: 30 }} />
+            <img src={LOGO_HORIZONTAL} alt="BuddyMarket" style={{ height: 20 }} />
           </a>
 
-          {/* Desktop links */}
-          <div className="lp-desktop-nav" style={{ display: "flex", alignItems: "center", gap: 4 }}>
+          <div className="lp-nav-links" style={{ display: "flex", alignItems: "center", gap: 2, flex: 1 }}>
             {[
-              { label: "Funcionalidades", href: "#features" },
-              { label: "Precios", href: "#pricing" },
-              { label: "Creadores", href: "/creators" },
-              { label: "Empresas", href: "/empresas" },
-              { label: "Blog", href: "/blog" },
-              { label: "BuddyCoach ↗", href: "https://buddycoach.io", external: true },
+              { label: "Funcionalidades", id: "features" },
+              { label: "Servicios", id: "services" },
+              { label: "Precios", id: "pricing" },
             ].map(item => (
-              <a key={item.label} href={item.href}
-                style={{ fontSize: 14, fontWeight: 600, color: "#374151", textDecoration: "none", padding: "8px 14px", borderRadius: 10, transition: "all 0.2s" }}
+              <button key={item.label} onClick={() => scrollTo(item.id)} style={{ padding: "8px 14px", fontSize: 14, fontWeight: 500, color: "#4b5563", background: "none", border: "none", cursor: "pointer", borderRadius: 8, transition: "all 0.15s" }}
                 onMouseEnter={e => { (e.target as HTMLElement).style.color = "#F97316"; (e.target as HTMLElement).style.background = "#fff7ed"; }}
-                onMouseLeave={e => { (e.target as HTMLElement).style.color = "#374151"; (e.target as HTMLElement).style.background = "transparent"; }}>
+                onMouseLeave={e => { (e.target as HTMLElement).style.color = "#4b5563"; (e.target as HTMLElement).style.background = "transparent"; }}>
                 {item.label}
-              </a>
+              </button>
             ))}
-          </div>
-
-          {/* Desktop CTAs */}
-          <div className="lp-desktop-cta" style={{ display: "flex", alignItems: "center", gap: 10 }}>
-            <a href={appUrl} style={{ fontSize: 14, fontWeight: 600, color: "#374151", textDecoration: "none", padding: "9px 18px", borderRadius: 10, border: "1.5px solid #e5e7eb", transition: "all 0.2s" }}
-              onMouseEnter={e => { (e.target as HTMLElement).style.borderColor = "#F97316"; (e.target as HTMLElement).style.color = "#F97316"; }}
-              onMouseLeave={e => { (e.target as HTMLElement).style.borderColor = "#e5e7eb"; (e.target as HTMLElement).style.color = "#374151"; }}>
-              Iniciar sesión
-            </a>
-            <a href={appUrl} style={{ fontSize: 14, fontWeight: 700, color: "white", textDecoration: "none", padding: "10px 22px", borderRadius: 10, background: "linear-gradient(135deg,#F97316,#ea580c)", boxShadow: "0 4px 14px rgba(249,115,22,0.35)", transition: "all 0.2s" }}
-              onMouseEnter={e => { (e.target as HTMLElement).style.transform = "translateY(-1px)"; (e.target as HTMLElement).style.boxShadow = "0 8px 24px rgba(249,115,22,0.45)"; }}
-              onMouseLeave={e => { (e.target as HTMLElement).style.transform = "translateY(0)"; (e.target as HTMLElement).style.boxShadow = "0 4px 14px rgba(249,115,22,0.35)"; }}>
-              Empezar gratis
+            <a href="/blog" style={{ padding: "8px 14px", fontSize: 14, fontWeight: 500, color: "#4b5563", textDecoration: "none", borderRadius: 8, transition: "all 0.15s" }}
+              onMouseEnter={e => { (e.target as HTMLElement).style.color = "#F97316"; (e.target as HTMLElement).style.background = "#fff7ed"; }}
+              onMouseLeave={e => { (e.target as HTMLElement).style.color = "#4b5563"; (e.target as HTMLElement).style.background = "transparent"; }}>
+              Blog
             </a>
           </div>
 
-          {/* Hamburger */}
-          <button className="lp-hamburger"
-            onClick={() => setMobileMenuOpen(o => !o)}
-            style={{ display: "none", alignItems: "center", justifyContent: "center", width: 44, height: 44, borderRadius: 12, border: "1.5px solid #e5e7eb", background: "white", cursor: "pointer", flexShrink: 0 }}>
-            {mobileMenuOpen
-              ? <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-              : <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2.5" strokeLinecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
+          <div className="lp-nav-cta" style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {isLoggedIn ? (
+              <a href={dashboardUrl} style={{ padding: "9px 20px", fontSize: 14, fontWeight: 700, color: "white", background: "linear-gradient(135deg,#F97316,#ea580c)", borderRadius: 10, textDecoration: "none", boxShadow: "0 4px 12px rgba(249,115,22,0.3)" }}>
+                Ir a la app
+              </a>
+            ) : (
+              <>
+                <a href={loginUrl} style={{ padding: "9px 18px", fontSize: 14, fontWeight: 500, color: "#374151", textDecoration: "none", borderRadius: 10, border: "1.5px solid #e5e7eb", background: "white", transition: "all 0.15s" }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "#F97316"; (e.currentTarget as HTMLElement).style.color = "#F97316"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "#e5e7eb"; (e.currentTarget as HTMLElement).style.color = "#374151"; }}>
+                  Iniciar sesión
+                </a>
+                <a href={loginUrl} style={{ padding: "9px 20px", fontSize: 14, fontWeight: 700, color: "white", background: "linear-gradient(135deg,#F97316,#ea580c)", borderRadius: 10, textDecoration: "none", boxShadow: "0 4px 12px rgba(249,115,22,0.3)", transition: "all 0.2s" }}
+                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-1px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 20px rgba(249,115,22,0.4)"; }}
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 12px rgba(249,115,22,0.3)"; }}>
+                  Empezar gratis
+                </a>
+              </>
+            )}
+          </div>
+
+          <button className="lp-hamburger" onClick={() => setMobileOpen(o => !o)} style={{ display: "none", alignItems: "center", justifyContent: "center", width: 40, height: 40, borderRadius: 10, border: "1.5px solid #e5e7eb", background: "white", cursor: "pointer" }}>
+            {mobileOpen
+              ? <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2.5" strokeLinecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
             }
           </button>
         </div>
 
-        {/* Mobile menu */}
-        {mobileMenuOpen && (
-          <div style={{ padding: "12px 20px 20px", borderTop: "1px solid #f3f4f6", display: "flex", flexDirection: "column", gap: 4, background: "white" }}>
-            {[
-              { label: "Funcionalidades", href: "#features" },
-              { label: "Precios", href: "#pricing" },
-              { label: "Creadores", href: "/creators" },
-              { label: "Empresas", href: "/empresas" },
-              { label: "Blog", href: "/blog" },
-              { label: "BuddyCoach ↗", href: "https://buddycoach.io", external: true },
-            ].map(item => (
-              <a key={item.label} href={item.href}
-                target={(item as any).external ? "_blank" : undefined}
-                rel={(item as any).external ? "noopener noreferrer" : undefined}
-                onClick={() => setMobileMenuOpen(false)}
-                style={{ display: "flex", alignItems: "center", padding: "13px 16px", borderRadius: 12, fontSize: 15, fontWeight: 600, color: "#374151", textDecoration: "none" }}>
+        {mobileOpen && (
+          <div style={{ background: "white", borderTop: "1px solid #f3f4f6", padding: "12px 20px 20px" }}>
+            {[{ label: "Funcionalidades", id: "features" }, { label: "Servicios", id: "services" }, { label: "Precios", id: "pricing" }].map(item => (
+              <button key={item.label} onClick={() => scrollTo(item.id)} style={{ display: "block", width: "100%", textAlign: "left", padding: "13px 0", fontSize: 15, fontWeight: 500, color: "#374151", background: "none", border: "none", borderBottom: "1px solid #f3f4f6", cursor: "pointer" }}>
                 {item.label}
-              </a>
+              </button>
             ))}
-            <div style={{ height: 1, background: "#f3f4f6", margin: "8px 0" }} />
-            <a href={appUrl} style={{ display: "block", textAlign: "center", padding: "13px 20px", borderRadius: 12, fontSize: 16, fontWeight: 600, color: "#374151", textDecoration: "none", border: "1.5px solid #e5e7eb", marginBottom: 8 }}>Iniciar sesión</a>
-            <a href={appUrl} style={{ display: "block", textAlign: "center", padding: "14px 20px", borderRadius: 12, fontSize: 16, fontWeight: 700, color: "white", textDecoration: "none", background: "linear-gradient(135deg,#F97316,#ea580c)", boxShadow: "0 4px 14px rgba(249,115,22,0.35)" }}>Empezar gratis →</a>
+            <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 10 }}>
+              <a href={loginUrl} style={{ padding: "12px", textAlign: "center", fontSize: 15, fontWeight: 600, color: "#374151", textDecoration: "none", borderRadius: 10, border: "1.5px solid #e5e7eb" }}>Iniciar sesión</a>
+              <a href={loginUrl} style={{ padding: "12px", textAlign: "center", fontSize: 15, fontWeight: 700, color: "white", background: "linear-gradient(135deg,#F97316,#ea580c)", borderRadius: 10, textDecoration: "none" }}>Empezar gratis</a>
+            </div>
           </div>
         )}
       </nav>
 
-      {/* ═══ HERO ═════════════════════════════════════════════════════════ */}
-      <section style={{ paddingTop: 72, background: "linear-gradient(150deg, #fff7ed 0%, #ffffff 55%, #f0fdf4 100%)", minHeight: "100svh", display: "flex", alignItems: "center", position: "relative", overflow: "hidden" }}>
-        {/* Decorative blobs */}
-        <div style={{ position: "absolute", top: "10%", right: "-5%", width: 500, height: 500, borderRadius: "50%", background: "radial-gradient(circle, rgba(249,115,22,0.08) 0%, transparent 70%)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", bottom: "5%", left: "-8%", width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle, rgba(16,185,129,0.07) 0%, transparent 70%)", pointerEvents: "none" }} />
+      {/* ═══ HERO ══════════════════════════════════════════════════════════════ */}
+      <section style={{ paddingTop: 68, background: "linear-gradient(150deg,#fff7ed 0%,#ffffff 50%,#f0fdf4 100%)", minHeight: "100svh", display: "flex", alignItems: "center", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", top: "8%", right: "-4%", width: 520, height: 520, borderRadius: "50%", background: "radial-gradient(circle,rgba(249,115,22,0.08) 0%,transparent 70%)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", bottom: "5%", left: "-6%", width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle,rgba(16,185,129,0.06) 0%,transparent 70%)", pointerEvents: "none" }} />
 
-        <div className="lp-hero-inner" style={{ maxWidth: 1200, margin: "0 auto", padding: "56px 24px", display: "flex", flexDirection: "column", gap: 48, width: "100%" }}>
-          {/* Text column */}
-          <div className="lp-hero-text" style={{ opacity: heroVisible ? 1 : 0, transform: heroVisible ? "translateY(0)" : "translateY(32px)", transition: "all 0.8s cubic-bezier(0.16,1,0.3,1)" }}>
-            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 16px", borderRadius: 100, background: "#fff7ed", border: "1.5px solid #fed7aa", fontSize: 13, fontWeight: 700, color: "#ea580c", marginBottom: 24 }}>
-              <span style={{ display: "inline-block", width: 8, height: 8, borderRadius: "50%", background: "#F97316", animation: "lp-pulse 2s infinite" }} />
-              Ahora con IA Nutricional
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "80px 24px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center", width: "100%" }} className="lp-hero-grid">
+          <div>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#fff7ed", border: "1.5px solid #fed7aa", borderRadius: 100, padding: "6px 14px", marginBottom: 28 }}>
+              <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#F97316", display: "inline-block", animation: "lp-pulse 2s infinite" }} />
+              <span style={{ fontSize: 13, fontWeight: 600, color: "#ea580c" }}>Ahora con IA Nutricional</span>
             </div>
 
-            <h1 style={{ fontSize: "clamp(40px, 8vw, 80px)", fontWeight: 900, color: "#111827", lineHeight: 1.02, letterSpacing: "-0.04em", margin: "0 0 24px" }}>
+            <h1 style={{ fontSize: "clamp(36px,5.5vw,66px)", fontWeight: 900, lineHeight: 1.08, color: "#111827", margin: "0 0 24px", letterSpacing: "-0.03em" }}>
               Tu nutrición,<br />
-              <span style={{ color: "#F97316", position: "relative" }}>
+              <span style={{ color: "#F97316", position: "relative", display: "inline-block" }}>
                 inteligente
-                <svg style={{ position: "absolute", bottom: -6, left: 0, width: "100%", height: 8, overflow: "visible" }} viewBox="0 0 200 8" preserveAspectRatio="none">
-                  <path d="M0,6 Q50,0 100,5 Q150,10 200,4" stroke="#F97316" strokeWidth="3" fill="none" strokeLinecap="round" opacity="0.6"/>
+                <svg viewBox="0 0 300 14" style={{ position: "absolute", bottom: -4, left: 0, width: "100%", height: 10 }} preserveAspectRatio="none">
+                  <path d="M0,10 Q75,2 150,8 Q225,14 300,6" stroke="#F97316" strokeWidth="3" fill="none" strokeLinecap="round" opacity="0.45" />
                 </svg>
               </span><br />
               y personalizada
             </h1>
 
-            <p style={{ fontSize: "clamp(16px, 2.5vw, 20px)", color: "#6b7280", lineHeight: 1.75, maxWidth: 540, marginBottom: 36 }}>
-              BuddyMarket es el gestor nutricional que se adapta a ti. Menús semanales automáticos, recetas personalizadas, control de inventario y seguimiento nutricional — todo en un solo lugar.
+            <p style={{ fontSize: "clamp(16px,2vw,19px)", color: "#6b7280", lineHeight: 1.75, maxWidth: 520, marginBottom: 36 }}>
+              BuddyMarket combina inteligencia artificial y nutrición científica para crear menús semanales únicos, gestionar tu despensa y ayudarte a alcanzar tus objetivos de salud.
             </p>
 
-            <div className="lp-hero-btns" style={{ display: "flex", flexDirection: "column", gap: 12, marginBottom: 32 }}>
-              <a href={appUrl} className="lp-btn-primary" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", gap: 8, padding: "17px 36px", borderRadius: 14, fontSize: 17, fontWeight: 800, color: "white", textDecoration: "none", background: "linear-gradient(135deg,#F97316,#ea580c)", boxShadow: "0 8px 32px rgba(249,115,22,0.4)", transition: "all 0.25s", width: "fit-content" }}>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 40 }}>
+              <a href={ctaHref} style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "14px 28px", borderRadius: 12, fontSize: 16, fontWeight: 700, color: "white", background: "linear-gradient(135deg,#F97316,#ea580c)", textDecoration: "none", boxShadow: "0 8px 24px rgba(249,115,22,0.35)", transition: "all 0.2s" }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 32px rgba(249,115,22,0.45)"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 24px rgba(249,115,22,0.35)"; }}>
                 Empezar gratis
-                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
               </a>
-
-              <a href="#features" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "16px 28px", borderRadius: 14, fontSize: 16, fontWeight: 700, color: "#374151", textDecoration: "none", border: "2px solid #e5e7eb", background: "white", transition: "all 0.2s", width: "fit-content" }}>
+              <button onClick={() => scrollTo("features")} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 24px", borderRadius: 12, fontSize: 16, fontWeight: 600, color: "#374151", background: "white", border: "2px solid #e5e7eb", cursor: "pointer", transition: "all 0.2s" }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "#F97316"; (e.currentTarget as HTMLElement).style.color = "#F97316"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "#e5e7eb"; (e.currentTarget as HTMLElement).style.color = "#374151"; }}>
                 Ver funcionalidades
-              </a>
+              </button>
             </div>
 
-            <div className="lp-trust-row" style={{ display: "flex", flexWrap: "wrap", gap: 16 }}>
-              {["✅ Sin tarjeta de crédito", "✅ Gratis para siempre", "✅ Cancela cuando quieras"].map(t => (
-                <span key={t} style={{ fontSize: 13, color: "#6b7280", fontWeight: 600 }}>{t}</span>
-              ))}
+            <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
+              <div style={{ display: "flex" }}>
+                {[["LM","#F97316"],["CR","#10b981"],["AG","#8b5cf6"],["PS","#3b82f6"],["MR","#f59e0b"]].map(([init, bg], i) => (
+                  <div key={i} style={{ width: 34, height: 34, borderRadius: "50%", background: bg, border: "2.5px solid white", marginLeft: i === 0 ? 0 : -9, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color: "white" }}>{init}</div>
+                ))}
+              </div>
+              <div>
+                <div style={{ display: "flex", gap: 2 }}>{[1,2,3,4,5].map(i => <span key={i} style={{ color: "#f59e0b", fontSize: 14 }}>★</span>)}</div>
+                <p style={{ fontSize: 13, color: "#6b7280", margin: 0 }}><strong style={{ color: "#111827" }}>50.000+</strong> usuarios confían en BuddyMarket</p>
+              </div>
             </div>
           </div>
 
-          {/* Food grid */}
-          <div className="lp-hero-grid" style={{ opacity: heroVisible ? 1 : 0, transform: heroVisible ? "translateY(0)" : "translateY(48px)", transition: "all 1s cubic-bezier(0.16,1,0.3,1) 0.2s" }}>
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "200px 200px", gap: 12, borderRadius: 24, overflow: "hidden" }}>
-              <div style={{ gridRow: "1 / 3", borderRadius: 20, overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.12)" }}>
-                <img src={FOOD.salmon} alt="Salmón con quinoa" style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.6s", display: "block" }}
-                  onMouseEnter={e => (e.target as HTMLImageElement).style.transform = "scale(1.05)"}
-                  onMouseLeave={e => (e.target as HTMLImageElement).style.transform = "scale(1)"} />
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "200px 200px", gap: 12 }} className="lp-hero-imgs">
+            {[FOOD.salmon, FOOD.ensalada, FOOD.bowl, FOOD.pasta].map((src, i) => (
+              <div key={i} style={{ borderRadius: 20, overflow: "hidden", transform: ["rotate(-1.5deg)","rotate(1deg)","rotate(1.5deg)","rotate(-1deg)"][i], boxShadow: "0 12px 32px rgba(0,0,0,0.12)", transition: "transform 0.3s" }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "rotate(0deg) scale(1.03)"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ["rotate(-1.5deg)","rotate(1deg)","rotate(1.5deg)","rotate(-1deg)"][i]; }}>
+                <img src={src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
               </div>
-              <div style={{ borderRadius: 20, overflow: "hidden", boxShadow: "0 12px 40px rgba(0,0,0,0.1)" }}>
-                <img src={FOOD.ensalada} alt="Ensalada mediterránea" style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.6s", display: "block" }}
-                  onMouseEnter={e => (e.target as HTMLImageElement).style.transform = "scale(1.05)"}
-                  onMouseLeave={e => (e.target as HTMLImageElement).style.transform = "scale(1)"} />
-              </div>
-              <div style={{ borderRadius: 20, overflow: "hidden", boxShadow: "0 12px 40px rgba(0,0,0,0.1)" }}>
-                <img src={FOOD.bowl} alt="Bowl de açaí" style={{ width: "100%", height: "100%", objectFit: "cover", transition: "transform 0.6s", display: "block" }}
-                  onMouseEnter={e => (e.target as HTMLImageElement).style.transform = "scale(1.05)"}
-                  onMouseLeave={e => (e.target as HTMLImageElement).style.transform = "scale(1)"} />
-              </div>
+            ))}
+            <div style={{ position: "absolute", bottom: -16, left: "50%", transform: "translateX(-50%)", background: "white", borderRadius: 100, padding: "10px 20px", boxShadow: "0 8px 24px rgba(0,0,0,0.12)", display: "flex", alignItems: "center", gap: 10, whiteSpace: "nowrap" }}>
+              <span style={{ fontSize: 20 }}>🤖</span>
+              <div><p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: "#111827" }}>Menú generado por IA</p><p style={{ margin: 0, fontSize: 11, color: "#6b7280" }}>1.847 kcal · 142g proteína</p></div>
+              <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#10b981", animation: "lp-pulse 2s infinite" }} />
             </div>
           </div>
         </div>
       </section>
 
-      {/* ═══ MARQUEE STRIP ════════════════════════════════════════════════ */}
-      <div style={{ background: "#F97316", padding: "14px 0", overflow: "hidden", position: "relative" }}>
-        <div style={{ display: "flex", animation: "lp-marquee 20s linear infinite", whiteSpace: "nowrap", gap: 0 }}>
-          {[...Array(3)].map((_, i) => (
-            <div key={i} style={{ display: "flex", gap: 0, flexShrink: 0 }}>
-              {["🤖 IA Nutricional", "📋 Menús Semanales", "🍳 Miles de Recetas", "🛒 Lista de Compra", "📊 Seguimiento", "🏪 Inventario", "🤰 Embarazadas", "🌱 Veganos", "🌾 Celíacos", "💉 Diabéticos", "💪 Deportistas"].map(item => (
-                <span key={item} style={{ fontSize: 14, fontWeight: 700, color: "white", padding: "0 32px", letterSpacing: "0.02em" }}>
-                  {item} <span style={{ opacity: 0.5, marginLeft: 16 }}>•</span>
-                </span>
-              ))}
-            </div>
+      {/* ═══ MARQUEE ══════════════════════════════════════════════════════════ */}
+      <div style={{ background: "#111827", padding: "14px 0", overflow: "hidden" }}>
+        <div style={{ display: "flex", gap: 48, animation: "lp-marquee 30s linear infinite", width: "max-content" }}>
+          {[...Array(3)].flatMap(() => ["🤖 IA Nutricional","📋 Menús Semanales","🍳 15.000+ Recetas","🛒 Lista de la Compra","📊 Diario Nutricional","🏪 Control de Inventario","💪 24 Planes Especiales","📈 Métricas de Salud"]).map((item, i) => (
+            <span key={i} style={{ fontSize: 13, fontWeight: 600, color: "#9ca3af", whiteSpace: "nowrap" }}>{item}</span>
           ))}
         </div>
       </div>
 
-      {/* ═══ STATS ════════════════════════════════════════════════════════ */}
-      <section ref={statsSection.ref} style={{ background: "#111827", padding: "72px 24px" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div className="lp-stats-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 24 }}>
-            {STATS.map((s, i) => (
-              <div key={i} className="lp-stat-card" style={{
-                textAlign: "center", padding: "32px 20px",
-                background: "rgba(255,255,255,0.04)", borderRadius: 20,
-                border: "1px solid rgba(255,255,255,0.08)",
-                opacity: statsSection.inView ? 1 : 0,
-                transform: statsSection.inView ? "translateY(0)" : "translateY(24px)",
-                transition: `all 0.6s cubic-bezier(0.16,1,0.3,1) ${i * 0.1}s`,
-              }}>
-                <div style={{ fontSize: 32, marginBottom: 8 }}>{s.icon}</div>
-                <div style={{ fontSize: "clamp(32px, 6vw, 52px)", fontWeight: 900, color: "#F97316", lineHeight: 1 }}>
-                  <StatCard value={s.value} suffix={s.suffix} label={s.label} icon="" start={statsSection.inView} />
-                </div>
-              </div>
-            ))}
-          </div>
+      {/* ═══ STATS ════════════════════════════════════════════════════════════ */}
+      <section ref={statsSection.ref} style={{ background: "#111827", padding: "60px 24px 72px" }}>
+        <div style={{ maxWidth: 900, margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(4,1fr)", gap: 16 }} className="lp-stats-grid">
+          {STATS.map((s, i) => <StatCounter key={i} {...s} start={statsSection.inView} />)}
         </div>
       </section>
 
-      {/* ═══ FEATURES ═════════════════════════════════════════════════════ */}
-      <section id="features" ref={featuresSection.ref} style={{ padding: "96px 24px", background: "#ffffff" }}>
+      {/* ═══ FEATURES / MODULES ═══════════════════════════════════════════════ */}
+      <section id="features" ref={modulesSection.ref} style={{ padding: "100px 24px", background: "#fff" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 56,
-            opacity: featuresSection.inView ? 1 : 0, transform: featuresSection.inView ? "translateY(0)" : "translateY(24px)",
-            transition: "all 0.7s cubic-bezier(0.16,1,0.3,1)" }}>
+          <div style={{ textAlign: "center", marginBottom: 56 }}>
             <span style={{ fontSize: 11, fontWeight: 800, color: "#F97316", letterSpacing: "0.12em", textTransform: "uppercase" }}>FUNCIONALIDADES</span>
-            <h2 style={{ fontSize: "clamp(28px, 5vw, 52px)", fontWeight: 900, color: "#111827", margin: "12px 0 16px", letterSpacing: "-0.03em", lineHeight: 1.1 }}>
-              Todo lo que necesitas<br className="lp-desktop-br" /> para comer bien cada día
+            <h2 style={{ fontSize: "clamp(28px,4vw,44px)", fontWeight: 900, color: "#111827", margin: "12px 0 16px", lineHeight: 1.2 }}>
+              Todo lo que necesitas para<br />comer bien, en un solo lugar
             </h2>
-            <p style={{ fontSize: "clamp(15px, 2vw, 18px)", color: "#6b7280", maxWidth: 560, margin: "0 auto", lineHeight: 1.75 }}>
-              Una plataforma completa que combina inteligencia artificial con nutrición real.
+            <p style={{ fontSize: 18, color: "#6b7280", maxWidth: 540, margin: "0 auto" }}>
+              Seis módulos integrados que trabajan juntos para transformar tu relación con la alimentación.
             </p>
           </div>
 
-          {/* Feature tabs */}
-          <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: 48, overflowX: "auto", scrollbarWidth: "none", paddingBottom: 4 }}>
-            {FEATURES.map((f, i) => (
-              <button key={i} onClick={() => setActiveFeature(i)} style={{
-                padding: "10px 18px", borderRadius: 100, fontSize: 14, fontWeight: 700,
-                cursor: "pointer", border: "none", transition: "all 0.25s", flexShrink: 0,
-                background: activeFeature === i ? FEATURES[i].color : "#f3f4f6",
-                color: activeFeature === i ? "white" : "#374151",
-                boxShadow: activeFeature === i ? `0 4px 16px ${FEATURES[i].color}55` : "none",
-                transform: activeFeature === i ? "scale(1.05)" : "scale(1)",
-              }}>
-                {f.icon} {f.tag}
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center", marginBottom: 40 }}>
+            {MODULES.map((m, i) => (
+              <button key={i} onClick={() => setActiveModule(i)} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 18px", borderRadius: 100, fontSize: 14, fontWeight: 600, cursor: "pointer", border: "2px solid", transition: "all 0.2s", borderColor: activeModule === i ? m.color : "#e5e7eb", background: activeModule === i ? m.bg : "white", color: activeModule === i ? m.color : "#6b7280", boxShadow: activeModule === i ? `0 4px 16px ${m.color}30` : "none" }}>
+                <span>{m.icon}</span><span>{m.tag}</span>
               </button>
             ))}
           </div>
 
-          {/* Active feature */}
-          <div className="lp-feature-layout" style={{ display: "flex", flexDirection: "column", gap: 40 }}>
-            <div style={{ flex: 1 }}>
-              <div style={{ fontSize: 48, marginBottom: 16 }}>{FEATURES[activeFeature].icon}</div>
-              <h3 style={{ fontSize: "clamp(24px, 4vw, 36px)", fontWeight: 900, color: "#111827", margin: "0 0 16px", letterSpacing: "-0.025em", lineHeight: 1.15, whiteSpace: "pre-line" }}>
-                {FEATURES[activeFeature].title}
-              </h3>
-              <p style={{ fontSize: 16, color: "#6b7280", lineHeight: 1.8, marginBottom: 32, maxWidth: 480 }}>
-                {FEATURES[activeFeature].desc}
-              </p>
-              <a href={appUrl} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "13px 28px", borderRadius: 12, fontSize: 15, fontWeight: 700, color: "white", textDecoration: "none", background: FEATURES[activeFeature].color, boxShadow: `0 6px 20px ${FEATURES[activeFeature].color}55`, transition: "all 0.2s" }}>
-                Probar ahora →
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 48, alignItems: "center", background: MODULES[activeModule].bg, borderRadius: 24, padding: "48px", border: `1.5px solid ${MODULES[activeModule].color}20`, transition: "all 0.4s" }} className="lp-module-grid">
+            <div>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "white", borderRadius: 12, padding: "10px 16px", marginBottom: 24, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+                <span style={{ fontSize: 26 }}>{MODULES[activeModule].icon}</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: MODULES[activeModule].color, textTransform: "uppercase", letterSpacing: "0.08em" }}>{MODULES[activeModule].tag}</span>
+              </div>
+              <h3 style={{ fontSize: "clamp(22px,3vw,32px)", fontWeight: 800, color: "#111827", margin: "0 0 14px", lineHeight: 1.3 }}>{MODULES[activeModule].title}</h3>
+              <p style={{ fontSize: 16, color: "#4b5563", lineHeight: 1.7, marginBottom: 24 }}>{MODULES[activeModule].desc}</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 28 }}>
+                {MODULES[activeModule].highlights.map((h, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
+                    <div style={{ width: 22, height: 22, borderRadius: "50%", background: MODULES[activeModule].color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    </div>
+                    <span style={{ fontSize: 15, fontWeight: 600, color: "#374151" }}>{h}</span>
+                  </div>
+                ))}
+              </div>
+              <a href={ctaHref} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "13px 24px", borderRadius: 12, fontSize: 15, fontWeight: 700, color: "white", background: MODULES[activeModule].color, textDecoration: "none", boxShadow: `0 6px 20px ${MODULES[activeModule].color}40` }}>
+                Probar {MODULES[activeModule].tag}
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
               </a>
             </div>
-            <div style={{ flex: 1, borderRadius: 24, overflow: "hidden", boxShadow: "0 24px 80px rgba(0,0,0,0.12)", aspectRatio: "4/3", transition: "all 0.4s" }}>
-              <img src={FEATURES[activeFeature].img} alt={FEATURES[activeFeature].title} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "all 0.5s", display: "block" }} />
+            <div style={{ borderRadius: 20, overflow: "hidden", boxShadow: "0 20px 60px rgba(0,0,0,0.12)", aspectRatio: "4/3" }}>
+              <img src={MODULES[activeModule].img} alt={MODULES[activeModule].title} style={{ width: "100%", height: "100%", objectFit: "cover", transition: "all 0.5s" }} />
             </div>
           </div>
         </div>
       </section>
 
-      {/* ═══ SPECIAL MENUS ════════════════════════════════════════════════ */}
-      <section id="special" ref={specialSection.ref} style={{ padding: "96px 24px", background: "linear-gradient(135deg, #fff7ed 0%, #fef9c3 100%)" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 52,
-            opacity: specialSection.inView ? 1 : 0, transform: specialSection.inView ? "translateY(0)" : "translateY(24px)",
-            transition: "all 0.7s cubic-bezier(0.16,1,0.3,1)" }}>
-            <span style={{ fontSize: 11, fontWeight: 800, color: "#F97316", letterSpacing: "0.12em", textTransform: "uppercase" }}>MENÚS ESPECIALIZADOS</span>
-            <h2 style={{ fontSize: "clamp(28px, 5vw, 52px)", fontWeight: 900, color: "#111827", margin: "12px 0 16px", letterSpacing: "-0.03em", lineHeight: 1.1 }}>
-              Un menú para cada persona,<br className="lp-desktop-br" /> condición y momento vital
-            </h2>
-            <p style={{ fontSize: "clamp(15px, 2vw, 18px)", color: "#6b7280", maxWidth: 560, margin: "0 auto", lineHeight: 1.75 }}>
-              Nuestra IA genera menús adaptados a más de 24 perfiles especiales.
-            </p>
-          </div>
-
-          <div className="lp-special-grid" style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 12, marginBottom: 40 }}>
-            {SPECIAL_MENUS.map((m, i) => (
-              <div key={m.label} style={{
-                background: m.color, borderRadius: 16, padding: "20px 12px", textAlign: "center",
-                border: "2px solid transparent", cursor: "pointer",
-                opacity: specialSection.inView ? 1 : 0,
-                transform: specialSection.inView ? "translateY(0) scale(1)" : "translateY(16px) scale(0.95)",
-                transition: `all 0.5s cubic-bezier(0.16,1,0.3,1) ${i * 0.05}s`,
-              }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px) scale(1.03)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 32px rgba(0,0,0,0.12)"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(0) scale(1)"; (e.currentTarget as HTMLElement).style.boxShadow = "none"; }}>
-                <div style={{ fontSize: 28, marginBottom: 8 }}>{m.emoji}</div>
-                <div style={{ fontSize: 12, fontWeight: 700, color: "#374151", lineHeight: 1.3 }}>{m.label}</div>
-              </div>
-            ))}
-          </div>
-
-          {/* Mosaic */}
-          <div className="lp-mosaic-grid" style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: 8, borderRadius: 24, overflow: "hidden", boxShadow: "0 24px 80px rgba(0,0,0,0.1)" }}>
-            {[FOOD.pasta, FOOD.teriyaki, FOOD.brownie, FOOD.tortilla, FOOD.acai, FOOD.buddha, FOOD.pan, FOOD.pollo].map((img, i) => (
-              <div key={i} style={{ aspectRatio: "1", overflow: "hidden" }}>
-                <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block", transition: "transform 0.5s" }}
-                  onMouseEnter={e => (e.target as HTMLImageElement).style.transform = "scale(1.08)"}
-                  onMouseLeave={e => (e.target as HTMLImageElement).style.transform = "scale(1)"} />
-              </div>
-            ))}
-          </div>
-        </div>
-      </section>
-
-      {/* ═══ HOW IT WORKS ═════════════════════════════════════════════════ */}
-      <section style={{ padding: "96px 24px", background: "#111827" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
+      {/* ═══ HOW IT WORKS ═════════════════════════════════════════════════════ */}
+      <section style={{ padding: "100px 24px", background: "#0f172a" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 56 }}>
             <span style={{ fontSize: 11, fontWeight: 800, color: "#F97316", letterSpacing: "0.12em", textTransform: "uppercase" }}>CÓMO FUNCIONA</span>
-            <h2 style={{ fontSize: "clamp(28px, 5vw, 52px)", fontWeight: 900, color: "white", margin: "12px 0 16px", letterSpacing: "-0.03em", lineHeight: 1.1 }}>
-              En 3 pasos, come mejor
+            <h2 style={{ fontSize: "clamp(28px,4vw,44px)", fontWeight: 900, color: "white", margin: "12px 0 0", lineHeight: 1.2 }}>
+              De cero a tu menú personalizado<br />en menos de 5 minutos
             </h2>
           </div>
-          <div className="lp-steps-grid" style={{ display: "grid", gridTemplateColumns: "1fr", gap: 24 }}>
-            {[
-              { step: "01", icon: "👤", title: "Crea tu perfil", desc: "Indica tus objetivos, alergias, condiciones médicas y preferencias. La IA aprende de ti." },
-              { step: "02", icon: "🤖", title: "La IA genera tu plan", desc: "En segundos, BuddyMarket crea tu menú semanal personalizado con recetas y lista de la compra." },
-              { step: "03", icon: "🎯", title: "Sigue tu progreso", desc: "Registra tus comidas, monitoriza tus macros y alcanza tus objetivos con estadísticas en tiempo real." },
-            ].map((s, i) => (
-              <div key={i} style={{ display: "flex", gap: 20, alignItems: "flex-start", padding: "28px", background: "rgba(255,255,255,0.04)", borderRadius: 20, border: "1px solid rgba(255,255,255,0.08)" }}>
-                <div style={{ fontSize: 11, fontWeight: 900, color: "#F97316", letterSpacing: "0.06em", opacity: 0.6, minWidth: 28, paddingTop: 4 }}>{s.step}</div>
-                <div style={{ fontSize: 36 }}>{s.icon}</div>
-                <div>
-                  <div style={{ fontSize: 18, fontWeight: 800, color: "white", marginBottom: 8 }}>{s.title}</div>
-                  <div style={{ fontSize: 15, color: "#9ca3af", lineHeight: 1.7 }}>{s.desc}</div>
-                </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 28 }} className="lp-steps-grid">
+            {HOW_IT_WORKS.map((step, i) => (
+              <div key={i} style={{ background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)", borderRadius: 20, padding: "36px 28px", textAlign: "center", transition: "all 0.3s" }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.07)"; (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.04)"; (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; }}>
+                <div style={{ width: 56, height: 56, borderRadius: "50%", background: `${step.color}20`, border: `2px solid ${step.color}40`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 20px", fontSize: 22 }}>{step.icon}</div>
+                <div style={{ fontSize: 11, fontWeight: 800, color: step.color, letterSpacing: "0.1em", marginBottom: 12 }}>PASO {step.step}</div>
+                <h3 style={{ fontSize: 20, fontWeight: 800, color: "white", margin: "0 0 12px", lineHeight: 1.3 }}>{step.title}</h3>
+                <p style={{ fontSize: 14, color: "#9ca3af", lineHeight: 1.7, margin: 0 }}>{step.desc}</p>
               </div>
             ))}
+          </div>
+          <div style={{ textAlign: "center", marginTop: 48 }}>
+            <a href={ctaHref} style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "15px 32px", borderRadius: 12, fontSize: 16, fontWeight: 700, color: "white", background: "linear-gradient(135deg,#F97316,#ea580c)", textDecoration: "none", boxShadow: "0 8px 24px rgba(249,115,22,0.4)" }}>
+              Empezar ahora — es gratis
+              <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
           </div>
         </div>
       </section>
 
-      {/* ═══ TESTIMONIALS ═════════════════════════════════════════════════ */}
-      <section style={{ padding: "96px 24px", background: "#ffffff" }}>
+      {/* ═══ SERVICES ═════════════════════════════════════════════════════════ */}
+      <section id="services" style={{ padding: "100px 24px", background: "#f9fafb" }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div style={{ textAlign: "center", marginBottom: 52 }}>
-            <span style={{ fontSize: 11, fontWeight: 800, color: "#F97316", letterSpacing: "0.12em", textTransform: "uppercase" }}>TESTIMONIOS</span>
-            <h2 style={{ fontSize: "clamp(28px, 5vw, 52px)", fontWeight: 900, color: "#111827", margin: "12px 0", letterSpacing: "-0.03em", lineHeight: 1.1 }}>
-              Lo que dicen nuestros usuarios
-            </h2>
+          <div style={{ textAlign: "center", marginBottom: 56 }}>
+            <span style={{ fontSize: 11, fontWeight: 800, color: "#F97316", letterSpacing: "0.12em", textTransform: "uppercase" }}>SERVICIOS</span>
+            <h2 style={{ fontSize: "clamp(28px,4vw,44px)", fontWeight: 900, color: "#111827", margin: "12px 0 16px", lineHeight: 1.2 }}>Una plataforma para todos</h2>
+            <p style={{ fontSize: 18, color: "#6b7280", maxWidth: 540, margin: "0 auto" }}>Tanto si eres usuario individual, nutricionista o empresa, BuddyMarket tiene una solución diseñada para ti.</p>
           </div>
-          <div className="lp-testimonials-grid" style={{ display: "grid", gridTemplateColumns: "1fr", gap: 20 }}>
-            {[
-              { text: "Desde que uso BuddyMarket he perdido 8 kg en 3 meses sin pasar hambre. Los menús son deliciosos y muy fáciles de seguir.", name: "María G.", role: "Usuaria desde 2024", img: FOOD.ensalada, rating: 5 },
-              { text: "Como celíaco, siempre fue difícil encontrar recetas variadas. BuddyMarket me genera menús sin gluten increíbles cada semana.", name: "Carlos M.", role: "Celíaco, usuario Pro", img: FOOD.pasta, rating: 5 },
-              { text: "Soy nutricionista y recomiendo BuddyMarket a mis pacientes. La precisión nutricional y la variedad de perfiles médicos es impresionante.", name: "Laura P.", role: "Nutricionista", img: FOOD.bowl, rating: 5 },
-            ].map((t, i) => (
-              <div key={i} style={{ background: "#f9fafb", borderRadius: 20, padding: "28px", border: "1px solid #f3f4f6", transition: "all 0.3s" }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 16px 48px rgba(0,0,0,0.08)"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow = "none"; }}>
-                <div style={{ color: "#F97316", fontSize: 18, letterSpacing: 3, marginBottom: 14 }}>{"★".repeat(t.rating)}</div>
-                <p style={{ fontSize: 15, color: "#374151", lineHeight: 1.75, marginBottom: 20, fontStyle: "italic" }}>"{t.text}"</p>
-                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-                  <div style={{ width: 48, height: 48, borderRadius: "50%", overflow: "hidden", flexShrink: 0 }}>
-                    <img src={t.img} alt={t.name} style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-                  </div>
-                  <div>
-                    <div style={{ fontWeight: 700, fontSize: 14, color: "#111827" }}>{t.name}</div>
-                    <div style={{ fontSize: 13, color: "#9ca3af" }}>{t.role}</div>
-                  </div>
-                </div>
-              </div>
+          <div style={{ display: "flex", gap: 8, justifyContent: "center", marginBottom: 36, flexWrap: "wrap" }}>
+            {SERVICES.map((s, i) => (
+              <button key={i} onClick={() => setActiveService(i)} style={{ padding: "10px 22px", borderRadius: 100, fontSize: 14, fontWeight: 600, cursor: "pointer", border: "2px solid", transition: "all 0.2s", borderColor: activeService === i ? s.color : "#e5e7eb", background: activeService === i ? s.color : "white", color: activeService === i ? "white" : "#6b7280" }}>
+                {s.icon} {s.title}
+              </button>
             ))}
           </div>
-        </div>
-      </section>
-
-      {/* ═══ PRICING ══════════════════════════════════════════════════════ */}
-      <section id="pricing" ref={pricingSection.ref} style={{ padding: "96px 24px", background: "#f9fafb" }}>
-        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
-          {/* Header */}
-          <div style={{ textAlign: "center", marginBottom: 56,
-            opacity: pricingSection.inView ? 1 : 0, transform: pricingSection.inView ? "translateY(0)" : "translateY(24px)",
-            transition: "all 0.7s cubic-bezier(0.16,1,0.3,1)" }}>
-            <span style={{ fontSize: 11, fontWeight: 800, color: "#F97316", letterSpacing: "0.12em", textTransform: "uppercase" }}>PRECIOS</span>
-            <h2 style={{ fontSize: "clamp(28px, 5vw, 52px)", fontWeight: 900, color: "#111827", margin: "12px 0 16px", letterSpacing: "-0.03em" }}>
-              Elige tu plan
-            </h2>
-            <p style={{ fontSize: 17, color: "#6b7280" }}>Sin permanencia. Cancela cuando quieras.</p>
-          </div>
-
-          {/* Plan cards */}
-          <div className="lp-pricing-grid" style={{ display: "grid", gridTemplateColumns: "1fr", gap: 20, marginBottom: 56 }}>
-            {PLANS.map((plan, i) => (
-              <div key={i} style={{
-                background: plan.highlight ? "#111827" : "white",
-                borderRadius: 24, padding: "32px 28px",
-                border: `2px solid ${plan.highlight ? plan.accent : "#e5e7eb"}`,
-                position: "relative",
-                boxShadow: plan.highlight ? "0 24px 80px rgba(0,0,0,0.15)" : "0 4px 20px rgba(0,0,0,0.04)",
-                opacity: pricingSection.inView ? 1 : 0,
-                transform: pricingSection.inView ? (plan.highlight ? "scale(1.02)" : "scale(1)") : "translateY(24px)",
-                transition: `all 0.6s cubic-bezier(0.16,1,0.3,1) ${i * 0.1}s`,
-              }}>
-                {plan.highlight && (
-                  <div style={{ position: "absolute", top: -14, left: "50%", transform: "translateX(-50%)", background: "#F97316", color: "white", fontSize: 11, fontWeight: 800, padding: "5px 20px", borderRadius: 100, letterSpacing: "0.06em", whiteSpace: "nowrap" }}>
-                    &#9733; MÁS POPULAR
-                  </div>
-                )}
-                <div style={{ fontSize: 12, fontWeight: 800, color: plan.accent, marginBottom: 8, letterSpacing: "0.08em" }}>{plan.name.toUpperCase()}</div>
-                <div style={{ display: "flex", alignItems: "baseline", gap: 6, marginBottom: 4 }}>
-                  <span style={{ fontSize: 44, fontWeight: 900, color: plan.highlight ? "white" : "#111827", lineHeight: 1 }}>{plan.price}</span>
-                  <span style={{ fontSize: 13, color: plan.highlight ? "#9ca3af" : "#6b7280" }}>/{plan.period}</span>
-                </div>
-                <p style={{ fontSize: 13, color: plan.highlight ? "#9ca3af" : "#6b7280", marginBottom: 20, marginTop: 4 }}>{plan.description}</p>
-                <div style={{ height: 1, background: plan.highlight ? "#374151" : "#f3f4f6", margin: "0 0 20px" }} />
-                <ul style={{ listStyle: "none", padding: 0, margin: "0 0 24px", display: "flex", flexDirection: "column", gap: 10 }}>
-                  {plan.features.map((f, j) => (
-                    <li key={j} style={{ display: "flex", alignItems: "flex-start", gap: 10, fontSize: 13.5, color: plan.highlight ? "#d1d5db" : "#374151" }}>
-                      <span style={{ color: plan.accent, fontWeight: 900, flexShrink: 0, fontSize: 15 }}>&#10003;</span>
-                      <span>{f}</span>
-                    </li>
-                  ))}
-                </ul>
-                <button
-                  onClick={() => handlePlanCta(plan.name)}
-                  disabled={checkoutLoading === plan.name}
-                  style={{
-                    display: "block", width: "100%", textAlign: "center", padding: "14px 20px", borderRadius: 14,
-                    fontSize: 15, fontWeight: 700, cursor: checkoutLoading === plan.name ? "not-allowed" : "pointer",
-                    transition: "all 0.2s",
-                    background: checkoutLoading === plan.name ? "#D1D5DB" : (plan.highlight ? plan.accent : "transparent"),
-                    color: checkoutLoading === plan.name ? "#9CA3AF" : (plan.highlight ? "white" : plan.accent),
-                    border: `2px solid ${checkoutLoading === plan.name ? "#D1D5DB" : plan.accent}`,
-                    boxShadow: plan.highlight && checkoutLoading !== plan.name ? `0 8px 24px ${plan.accent}55` : "none",
-                  }}
-                >
-                  {checkoutLoading === plan.name ? "Procesando..." : plan.cta}
-                </button>
+          <div style={{ background: SERVICES[activeService].gradient, border: `1.5px solid ${SERVICES[activeService].border}`, borderRadius: 24, padding: "48px", transition: "all 0.4s" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 48, alignItems: "start" }} className="lp-service-grid">
+              <div>
+                <div style={{ fontSize: 44, marginBottom: 16 }}>{SERVICES[activeService].icon}</div>
+                <p style={{ fontSize: 12, fontWeight: 800, color: SERVICES[activeService].color, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 8 }}>{SERVICES[activeService].title}</p>
+                <h3 style={{ fontSize: "clamp(22px,3vw,32px)", fontWeight: 800, color: "#111827", margin: "0 0 16px", lineHeight: 1.3 }}>{SERVICES[activeService].subtitle}</h3>
+                <p style={{ fontSize: 16, color: "#4b5563", lineHeight: 1.7, marginBottom: 28 }}>{SERVICES[activeService].desc}</p>
+                <a href={ctaHref} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "13px 24px", borderRadius: 12, fontSize: 15, fontWeight: 700, color: "white", background: SERVICES[activeService].color, textDecoration: "none", boxShadow: `0 6px 20px ${SERVICES[activeService].color}40` }}>
+                  {SERVICES[activeService].cta}
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </a>
               </div>
-            ))}
-          </div>
-
-          {/* Full comparison table */}
-          <div style={{ opacity: pricingSection.inView ? 1 : 0, transition: "all 0.8s 0.4s" }}>
-            <h3 style={{ textAlign: "center", fontSize: 20, fontWeight: 800, color: "#111827", marginBottom: 24 }}>
-              Comparativa completa de planes
-            </h3>
-            <div className="lp-comparison-table" style={{ background: "white", borderRadius: 24, overflow: "hidden", border: "1px solid #e5e7eb", boxShadow: "0 4px 20px rgba(0,0,0,0.04)" }}>
-              {/* Table header */}
-              <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", background: "#111827" }}>
-                <div style={{ padding: "18px 24px", fontSize: 12, fontWeight: 700, color: "#9ca3af" }}>Funcionalidad</div>
-                {[
-                  { name: "Free", color: "#9ca3af", price: "0€" },
-                  { name: "Pro", color: "#F97316", price: "9,99€" },
-                  { name: "Pro Max", color: "#a78bfa", price: "19,99€" },
-                ].map(p => (
-                  <div key={p.name} style={{ padding: "18px 12px", textAlign: "center" }}>
-                    <div style={{ fontSize: 14, fontWeight: 900, color: p.color }}>{p.name}</div>
-                    <div style={{ fontSize: 11, color: "#6b7280", marginTop: 2 }}>{p.price}/mes</div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Rows */}
-              {([
-                { category: "Recetas", rows: [
-                  { label: "Ver recetas de la comunidad", free: true, pro: true, promax: true },
-                  { label: "Recetas guardadas", free: "10", pro: "Ilimitadas", promax: "Ilimitadas" },
-                  { label: "Crear tus propias recetas", free: false, pro: false, promax: true },
-                  { label: "Publicar como BuddyMaker", free: "Con aprobación", pro: "Con aprobación", promax: "Con aprobación" },
-                ]},
-                { category: "Menús con IA", rows: [
-                  { label: "Menús generados al mes", free: "3", pro: "Ilimitados", promax: "Ilimitados" },
-                  { label: "Generación de menús con IA", free: false, pro: true, promax: true },
-                  { label: "24 menús especializados (diabetes, embarazo...)", free: false, pro: true, promax: true },
-                ]},
-                { category: "Diario Nutricional", rows: [
-                  { label: "Registro de comidas diario", free: false, pro: true, promax: true },
-                  { label: "Seguimiento de macros y calorías", free: false, pro: true, promax: true },
-                  { label: "Historial nutricional", free: false, pro: "6 meses", promax: "Ilimitado" },
-                ]},
-                { category: "Inventario", rows: [
-                  { label: "Inventario del hogar", free: "20 productos", pro: "Ilimitado", promax: "Ilimitado" },
-                  { label: "Alertas de caducidad", free: false, pro: true, promax: true },
-                  { label: "Lista de la compra automática", free: true, pro: true, promax: true },
-                  { label: "Conectar supermercado online", free: false, pro: true, promax: true },
-                ]},
-                { category: "BuddyIA (Asistente IA)", rows: [
-                  { label: "Mensajes al día con BuddyIA", free: "0", pro: "50", promax: "Ilimitados" },
-                  { label: "Generación de menús por cuestionario", free: false, pro: true, promax: true },
-                ]},
-                { category: "Métricas de Salud", rows: [
-                  { label: "Seguimiento de peso y medidas", free: false, pro: true, promax: true },
-                  { label: "Historial de métricas", free: false, pro: "6 meses", promax: "Ilimitado" },
-                ]},
-                { category: "Comunidad BuddyMarket", rows: [
-                  { label: "Ver recetas de BuddyMakers", free: true, pro: true, promax: true },
-                  { label: "Consultas con BuddyExperts (nutricionistas)", free: false, pro: false, promax: true },
-                  { label: "Solicitar ser BuddyMaker", free: "Con aprobación", pro: "Con aprobación", promax: "Con aprobación" },
-                  { label: "Solicitar ser BuddyExpert", free: "Con aprobación", pro: "Con aprobación", promax: "Con aprobación" },
-                ]},
-                { category: "Extras Pro Max", rows: [
-                  { label: "Exportar informes PDF", free: false, pro: false, promax: true },
-                  { label: "Múltiples perfiles familiares", free: false, pro: false, promax: true },
-                  { label: "Soporte prioritario 24/7", free: false, pro: false, promax: true },
-                ]},
-              ] as Array<{ category: string; rows: Array<{ label: string; free: boolean | string; pro: boolean | string; promax: boolean | string }>}>).map((section, si) => (
-                <div key={si}>
-                  <div style={{ background: "#f9fafb", padding: "9px 24px", fontSize: 11, fontWeight: 800, color: "#9ca3af", letterSpacing: "0.1em", textTransform: "uppercase", borderTop: si > 0 ? "1px solid #f3f4f6" : "none" }}>
-                    {section.category}
-                  </div>
-                  {section.rows.map((row, ri) => (
-                    <div key={ri} style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", borderTop: "1px solid #f3f4f6" }}>
-                      <div style={{ padding: "13px 24px", fontSize: 13.5, color: "#374151" }}>{row.label}</div>
-                      {([row.free, row.pro, row.promax] as Array<boolean | string>).map((val, ci) => {
-                        const colors = ["#9ca3af", "#F97316", "#7c3aed"];
-                        const isTrue = val === true;
-                        const isFalse = val === false;
-                        return (
-                          <div key={ci} style={{ padding: "13px 12px", textAlign: "center", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                            {isTrue && <span style={{ fontSize: 17, color: colors[ci], fontWeight: 900 }}>&#10003;</span>}
-                            {isFalse && <span style={{ fontSize: 17, color: "#e5e7eb" }}>&#8722;</span>}
-                            {!isTrue && !isFalse && <span style={{ fontSize: 12, fontWeight: 700, color: colors[ci] }}>{val}</span>}
-                          </div>
-                        );
-                      })}
+              <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {SERVICES[activeService].items.map((item, i) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 14, background: "white", borderRadius: 12, padding: "13px 18px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+                    <div style={{ width: 26, height: 26, borderRadius: "50%", background: SERVICES[activeService].color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                      <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                     </div>
-                  ))}
-                </div>
-              ))}
-
-              {/* CTA row */}
-              <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", borderTop: "2px solid #f3f4f6", background: "#f9fafb" }}>
-                <div style={{ padding: "20px 24px" }} />
-                {[
-                  { name: "Free", accent: "#6b7280", cta: "Empezar gratis" },
-                  { name: "Pro", accent: "#F97316", cta: "Empezar con Pro" },
-                  { name: "Pro Max", accent: "#7c3aed", cta: "Empezar con Pro Max" },
-                ].map(p => (
-                  <div key={p.name} style={{ padding: "16px 10px" }}>
-                    <button
-                      onClick={() => handlePlanCta(p.name)}
-                      disabled={checkoutLoading === p.name}
-                      style={{
-                        width: "100%", padding: "10px 6px", borderRadius: 10, fontSize: 12, fontWeight: 700,
-                        cursor: "pointer", transition: "all 0.2s",
-                        background: p.name === "Pro" ? p.accent : "transparent",
-                        color: p.name === "Pro" ? "white" : p.accent,
-                        border: `2px solid ${p.accent}`,
-                      }}
-                    >
-                      {checkoutLoading === p.name ? "..." : p.cta}
-                    </button>
+                    <span style={{ fontSize: 14, fontWeight: 500, color: "#374151" }}>{item}</span>
                   </div>
                 ))}
               </div>
@@ -759,198 +498,199 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ═══ BUDDYCOACH ═══════════════════════════════════════════════════ */}
-      <section ref={coachSection.ref} style={{ padding: "96px 24px", background: "#0f172a" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div className="lp-coach-layout" style={{ display: "flex", flexDirection: "column", gap: 48 }}>
-            <div style={{ opacity: coachSection.inView ? 1 : 0, transform: coachSection.inView ? "translateX(0)" : "translateX(-32px)", transition: "all 0.8s cubic-bezier(0.16,1,0.3,1)" }}>
-              <span style={{ fontSize: 11, fontWeight: 800, color: "#F97316", letterSpacing: "0.12em", textTransform: "uppercase" }}>ECOSISTEMA BUDDY</span>
-              <h2 style={{ fontSize: "clamp(28px, 5vw, 52px)", fontWeight: 900, color: "white", margin: "12px 0 20px", letterSpacing: "-0.03em", lineHeight: 1.1 }}>
-                ¿Eres entrenador personal?<br />
-                <span style={{ color: "#F97316" }}>Conoce BuddyCoach</span>
-              </h2>
-              <p style={{ fontSize: 16, color: "#94a3b8", lineHeight: 1.8, marginBottom: 28, maxWidth: 520 }}>
-                BuddyCoach.io es la plataforma hermana diseñada para entrenadores personales y coaches de fitness. Gestiona tus clientes, crea planes de entrenamiento con IA y conecta la nutrición con el rendimiento deportivo.
-              </p>
-              <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 36 }}>
-                {[
-                  { icon: "👥", text: "Gestión completa de clientes y seguimiento de progreso" },
-                  { icon: "🏋️", text: "Planes de entrenamiento personalizados con IA" },
-                  { icon: "🔗", text: "Integración directa con los menús nutricionales de BuddyMarket" },
-                  { icon: "📈", text: "Métricas de rendimiento, fuerza y composición corporal" },
-                ].map((item, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
-                    <span style={{ fontSize: 18, flexShrink: 0, marginTop: 2 }}>{item.icon}</span>
-                    <span style={{ fontSize: 15, color: "#cbd5e1", lineHeight: 1.6 }}>{item.text}</span>
-                  </div>
-                ))}
+      {/* ═══ SPECIAL MENUS ════════════════════════════════════════════════════ */}
+      <section style={{ padding: "100px 24px", background: "white" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 48 }}>
+            <span style={{ fontSize: 11, fontWeight: 800, color: "#F97316", letterSpacing: "0.12em", textTransform: "uppercase" }}>PLANES ESPECIALIZADOS</span>
+            <h2 style={{ fontSize: "clamp(28px,4vw,44px)", fontWeight: 900, color: "#111827", margin: "12px 0 16px", lineHeight: 1.2 }}>24 planes nutricionales<br />para cada condición</h2>
+            <p style={{ fontSize: 18, color: "#6b7280", maxWidth: 500, margin: "0 auto" }}>Menús diseñados para condiciones médicas, etapas de vida y objetivos concretos. Avalados por nutricionistas.</p>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(130px,1fr))", gap: 10 }}>
+            {SPECIAL_MENUS.map((m, i) => (
+              <div key={i} style={{ background: m.color, borderRadius: 14, padding: "16px 10px", textAlign: "center", cursor: "pointer", transition: "all 0.2s", border: "1.5px solid transparent" }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 24px rgba(0,0,0,0.1)"; (e.currentTarget as HTMLElement).style.borderColor = m.text; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow = "none"; (e.currentTarget as HTMLElement).style.borderColor = "transparent"; }}>
+                <div style={{ fontSize: 26, marginBottom: 6 }}>{m.emoji}</div>
+                <div style={{ fontSize: 12, fontWeight: 700, color: m.text }}>{m.label}</div>
               </div>
-              <a href="https://buddycoach.io" target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "15px 32px", borderRadius: 14, fontSize: 16, fontWeight: 700, color: "white", textDecoration: "none", background: "linear-gradient(135deg,#F97316,#ea580c)", boxShadow: "0 8px 32px rgba(249,115,22,0.4)" }}>
-                Visitar BuddyCoach.io →
-              </a>
-            </div>
-
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12, opacity: coachSection.inView ? 1 : 0, transform: coachSection.inView ? "translateX(0)" : "translateX(32px)", transition: "all 0.8s cubic-bezier(0.16,1,0.3,1) 0.2s" }}>
-              {[
-                { icon: "🎯", title: "Planes a medida", desc: "Rutinas adaptadas a cada cliente con IA" },
-                { icon: "📊", title: "Seguimiento real", desc: "Fuerza, peso, medidas y rendimiento" },
-                { icon: "🥗", title: "Nutrición integrada", desc: "Conecta con BuddyMarket" },
-                { icon: "💰", title: "Gestión de negocio", desc: "Facturación y suscripciones" },
-              ].map((card, i) => (
-                <div key={i} style={{ background: "#1e293b", borderRadius: 16, padding: "22px", border: "1px solid #334155", transition: "all 0.25s", cursor: "pointer" }}
-                  onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "#F97316"; (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "#334155"; (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; }}>
-                  <div style={{ fontSize: 28, marginBottom: 10 }}>{card.icon}</div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: "white", marginBottom: 6 }}>{card.title}</div>
-                  <div style={{ fontSize: 13, color: "#94a3b8", lineHeight: 1.6 }}>{card.desc}</div>
-                </div>
-              ))}
-              <div style={{ gridColumn: "1 / -1", background: "linear-gradient(135deg,#F97316,#ea580c)", borderRadius: 16, padding: "18px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 16, flexWrap: "wrap" }}>
-                <div>
-                  <div style={{ fontSize: 14, fontWeight: 700, color: "white", marginBottom: 4 }}>🤝 Ecosistema completo</div>
-                  <div style={{ fontSize: 13, color: "rgba(255,255,255,0.85)" }}>BuddyMarket + BuddyCoach = nutrición y entrenamiento unidos</div>
-                </div>
-                <a href="https://buddycoach.io" target="_blank" rel="noopener noreferrer" style={{ padding: "9px 18px", borderRadius: 10, fontSize: 13, fontWeight: 700, color: "#F97316", background: "white", textDecoration: "none", whiteSpace: "nowrap", flexShrink: 0 }}>Ver más →</a>
-              </div>
-            </div>
+            ))}
+          </div>
+          <div style={{ textAlign: "center", marginTop: 36 }}>
+            <a href={ctaHref} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "13px 24px", borderRadius: 12, fontSize: 15, fontWeight: 700, color: "#F97316", background: "#fff7ed", border: "2px solid #fed7aa", textDecoration: "none", transition: "all 0.2s" }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "#F97316"; (e.currentTarget as HTMLElement).style.color = "white"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "#fff7ed"; (e.currentTarget as HTMLElement).style.color = "#F97316"; }}>
+              Ver todos los planes especializados
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
           </div>
         </div>
       </section>
 
-      {/* ═══ CALCULADORA NUTRICIONAL ══════════════════════════════════════ */}
+      {/* ═══ TESTIMONIALS ═════════════════════════════════════════════════════ */}
+      <section style={{ padding: "100px 24px", background: "#f9fafb" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 48 }}>
+            <span style={{ fontSize: 11, fontWeight: 800, color: "#F97316", letterSpacing: "0.12em", textTransform: "uppercase" }}>TESTIMONIOS</span>
+            <h2 style={{ fontSize: "clamp(28px,4vw,44px)", fontWeight: 900, color: "#111827", margin: "12px 0 0", lineHeight: 1.2 }}>Lo que dicen nuestros usuarios</h2>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 20 }} className="lp-testimonials-grid">
+            {TESTIMONIALS.map((t, i) => (
+              <div key={i} style={{ background: "white", borderRadius: 20, padding: "28px", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", border: "1px solid #f3f4f6", transition: "all 0.3s" }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 40px rgba(0,0,0,0.1)"; (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 24px rgba(0,0,0,0.06)"; (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; }}>
+                <div style={{ display: "flex", gap: 3, marginBottom: 14 }}>{[1,2,3,4,5].map(s => <span key={s} style={{ color: "#f59e0b", fontSize: 15 }}>★</span>)}</div>
+                <p style={{ fontSize: 15, color: "#374151", lineHeight: 1.7, margin: "0 0 20px", fontStyle: "italic" }}>"{t.text}"</p>
+                <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+                  <div style={{ width: 42, height: 42, borderRadius: "50%", background: t.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "white", flexShrink: 0 }}>{t.avatar}</div>
+                  <div>
+                    <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#111827" }}>{t.name}</p>
+                    <p style={{ margin: 0, fontSize: 13, color: "#9ca3af" }}>{t.role}</p>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ CALCULADORA NUTRICIONAL ══════════════════════════════════════════ */}
       <NutritionalCalculatorSection appUrl={appUrl} />
 
       {/* ═══ CHECKLIST DE HÁBITOS ════════════════════════════════════════════ */}
       <HabitsChecklistSection appUrl={appUrl} />
 
-      {/* ═══ CTA FINAL ════════════════════════════════════════════════════ */}
-      <section style={{ padding: "96px 24px", background: "linear-gradient(135deg, #F97316 0%, #ea580c 100%)", textAlign: "center", position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", top: "20%", left: "10%", width: 300, height: 300, borderRadius: "50%", background: "rgba(255,255,255,0.06)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", bottom: "10%", right: "5%", width: 200, height: 200, borderRadius: "50%", background: "rgba(255,255,255,0.05)", pointerEvents: "none" }} />
-        <div style={{ maxWidth: 680, margin: "0 auto", position: "relative" }}>
-          <img src={LOGO_ICON} alt="BuddyMarket" style={{ height: 72, width: "auto", objectFit: "contain", marginBottom: 28 }} />
-          <h2 style={{ fontSize: "clamp(28px, 6vw, 56px)", fontWeight: 900, color: "white", margin: "0 0 16px", letterSpacing: "-0.03em", lineHeight: 1.05 }}>
-            Empieza hoy a comer<br />de forma inteligente
-          </h2>
-          <p style={{ fontSize: "clamp(15px, 2vw, 19px)", color: "rgba(255,255,255,0.88)", marginBottom: 40, lineHeight: 1.75 }}>
-            Únete a más de 50.000 personas que ya han transformado su alimentación con BuddyMarket. Gratis para siempre, sin tarjeta de crédito.
+      {/* ═══ PRICING ══════════════════════════════════════════════════════════ */}
+      <section id="pricing" style={{ padding: "100px 24px", background: "#fff" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 56 }}>
+            <span style={{ fontSize: 11, fontWeight: 800, color: "#F97316", letterSpacing: "0.12em", textTransform: "uppercase" }}>PRECIOS</span>
+            <h2 style={{ fontSize: "clamp(28px,4vw,44px)", fontWeight: 900, color: "#111827", margin: "12px 0 16px", lineHeight: 1.2 }}>Planes para cada necesidad</h2>
+            <p style={{ fontSize: 18, color: "#6b7280", maxWidth: 460, margin: "0 auto" }}>Empieza gratis y escala cuando lo necesites. Sin permanencia, cancela cuando quieras.</p>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 24, alignItems: "start" }} className="lp-plans-grid">
+            {PLANS.map((plan, i) => (
+              <div key={i} style={{ borderRadius: 24, padding: "36px 28px", background: plan.highlight ? "#111827" : "white", border: plan.highlight ? "none" : "2px solid #f3f4f6", boxShadow: plan.highlight ? "0 20px 60px rgba(0,0,0,0.2)" : "0 4px 16px rgba(0,0,0,0.04)", position: "relative", transition: "all 0.3s", transform: plan.highlight ? "scale(1.04)" : "scale(1)" }}
+                onMouseEnter={e => { if (!plan.highlight) { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(0,0,0,0.1)"; } }}
+                onMouseLeave={e => { if (!plan.highlight) { (e.currentTarget as HTMLElement).style.transform = "scale(1)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 16px rgba(0,0,0,0.04)"; } }}>
+                {plan.highlight && (
+                  <div style={{ position: "absolute", top: -13, left: "50%", transform: "translateX(-50%)", background: "#F97316", color: "white", fontSize: 11, fontWeight: 800, padding: "5px 16px", borderRadius: 100, whiteSpace: "nowrap" }}>MÁS POPULAR</div>
+                )}
+                <p style={{ fontSize: 12, fontWeight: 700, color: plan.accent, textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 8px" }}>{plan.name}</p>
+                <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 4 }}>
+                  <span style={{ fontSize: 46, fontWeight: 900, color: plan.highlight ? "white" : "#111827", lineHeight: 1 }}>{plan.price}</span>
+                  <span style={{ fontSize: 13, color: plan.highlight ? "#9ca3af" : "#6b7280" }}>/{plan.period}</span>
+                </div>
+                <p style={{ fontSize: 14, color: plan.highlight ? "#9ca3af" : "#6b7280", marginBottom: 24 }}>{plan.description}</p>
+                <div style={{ display: "flex", flexDirection: "column", gap: 11, marginBottom: 28 }}>
+                  {plan.features.map((f, j) => (
+                    <div key={j} style={{ display: "flex", alignItems: "flex-start", gap: 10 }}>
+                      <div style={{ width: 20, height: 20, borderRadius: "50%", background: plan.highlight ? `${plan.accent}30` : "#f3f4f6", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, marginTop: 1 }}>
+                        <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke={plan.accent} strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                      </div>
+                      <span style={{ fontSize: 14, color: plan.highlight ? "#d1d5db" : "#374151", lineHeight: 1.5 }}>{f}</span>
+                    </div>
+                  ))}
+                </div>
+                <button onClick={() => handlePlanCta(plan.name)} disabled={checkoutLoading === plan.name} style={{ display: "block", width: "100%", textAlign: "center", padding: "14px", borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: "pointer", background: plan.highlight ? plan.accent : "transparent", color: plan.highlight ? "white" : plan.accent, border: `2px solid ${plan.accent}`, transition: "all 0.2s", opacity: checkoutLoading === plan.name ? 0.7 : 1 }}
+                  onMouseEnter={e => { if (!plan.highlight) { (e.currentTarget as HTMLElement).style.background = plan.accent; (e.currentTarget as HTMLElement).style.color = "white"; } }}
+                  onMouseLeave={e => { if (!plan.highlight) { (e.currentTarget as HTMLElement).style.background = "transparent"; (e.currentTarget as HTMLElement).style.color = plan.accent; } }}>
+                  {checkoutLoading === plan.name ? "Cargando..." : plan.cta}
+                </button>
+              </div>
+            ))}
+          </div>
+          <p style={{ textAlign: "center", fontSize: 13, color: "#9ca3af", marginTop: 28 }}>
+            * El contenido de BuddyMarket es orientativo y no sustituye el consejo de un profesional de la salud. Consulta siempre con tu médico o nutricionista.
           </p>
-          <a href={appUrl} style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "18px 48px", borderRadius: 16, fontSize: 18, fontWeight: 800, color: "#F97316", background: "white", textDecoration: "none", boxShadow: "0 16px 48px rgba(0,0,0,0.2)", transition: "all 0.25s" }}
-            onMouseEnter={e => { (e.target as HTMLElement).style.transform = "translateY(-3px)"; (e.target as HTMLElement).style.boxShadow = "0 24px 64px rgba(0,0,0,0.25)"; }}
-            onMouseLeave={e => { (e.target as HTMLElement).style.transform = "translateY(0)"; (e.target as HTMLElement).style.boxShadow = "0 16px 48px rgba(0,0,0,0.2)"; }}>
-            Crear cuenta gratuita
-            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </a>
-          <p style={{ fontSize: 13, color: "rgba(255,255,255,0.7)", marginTop: 20 }}>Sin tarjeta de crédito · Gratis para siempre · Cancela cuando quieras</p>
         </div>
       </section>
 
-      {/* ═══ FOOTER ═══════════════════════════════════════════════════════ */}
-      <footer style={{ background: "#0f172a", padding: "60px 24px 32px" }}>
-        <div style={{ maxWidth: 1200, margin: "0 auto" }}>
-          <div className="lp-footer-grid" style={{ display: "grid", gridTemplateColumns: "1fr", gap: 36, marginBottom: 44 }}>
-            <div>
-              <img src={LOGO_ICON} alt="BuddyMarket" style={{ height: 56, width: "auto", objectFit: "contain", marginBottom: 16 }} />
-              <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.75, maxWidth: 280, marginBottom: 12 }}>El gestor nutricional inteligente que se adapta a ti. Planifica, cocina y come bien cada día.</p>
-              <p style={{ fontSize: 12, color: "#4b5563", lineHeight: 1.6 }}>⚠️ El contenido de BuddyMarket es orientativo y no sustituye el consejo de un profesional de la salud.</p>
-            </div>
+      {/* ═══ CTA FINAL ════════════════════════════════════════════════════════ */}
+      <section style={{ padding: "100px 24px", background: "linear-gradient(135deg,#0f172a 0%,#1e293b 100%)", textAlign: "center", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%,-50%)", width: 600, height: 600, borderRadius: "50%", background: "radial-gradient(circle,rgba(249,115,22,0.12) 0%,transparent 70%)", pointerEvents: "none" }} />
+        <div style={{ maxWidth: 680, margin: "0 auto", position: "relative" }}>
+          <div style={{ fontSize: 52, marginBottom: 20 }}>🚀</div>
+          <h2 style={{ fontSize: "clamp(28px,5vw,52px)", fontWeight: 900, color: "white", margin: "0 0 20px", lineHeight: 1.2 }}>
+            Empieza hoy a comer<br />de forma inteligente
+          </h2>
+          <p style={{ fontSize: 18, color: "#94a3b8", marginBottom: 36, lineHeight: 1.7 }}>
+            Únete a más de 50.000 personas que ya han transformado su alimentación con BuddyMarket. Gratis para siempre, sin tarjeta de crédito.
+          </p>
+          <a href={ctaHref} style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "16px 32px", borderRadius: 12, fontSize: 17, fontWeight: 700, color: "white", background: "linear-gradient(135deg,#F97316,#ea580c)", textDecoration: "none", boxShadow: "0 8px 32px rgba(249,115,22,0.4)" }}>
+            Empezar gratis ahora
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+          </a>
+          <p style={{ fontSize: 13, color: "#64748b", marginTop: 18 }}>Sin tarjeta de crédito · Cancela cuando quieras · Soporte en español</p>
+        </div>
+      </section>
 
+      {/* ═══ FOOTER ═══════════════════════════════════════════════════════════ */}
+      <footer style={{ background: "#0f172a", padding: "64px 24px 32px", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", gap: 48, marginBottom: 48 }} className="lp-footer-grid">
             <div>
-              <h4 style={{ fontSize: 12, fontWeight: 700, color: "white", marginBottom: 16, letterSpacing: "0.08em", textTransform: "uppercase" }}>Producto</h4>
-              {["Funcionalidades", "Precios", "Menús Especiales", "BuddyMakers", "BuddyExperts"].map(l => (
-                <div key={l} style={{ marginBottom: 10 }}><a href="#" style={{ fontSize: 14, color: "#6b7280", textDecoration: "none", transition: "color 0.2s" }}
-                  onMouseEnter={e => (e.target as HTMLElement).style.color = "#F97316"}
-                  onMouseLeave={e => (e.target as HTMLElement).style.color = "#6b7280"}>{l}</a></div>
-              ))}
-              <div style={{ marginBottom: 10 }}><a href="https://buddycoach.io" target="_blank" rel="noopener noreferrer" style={{ fontSize: 14, color: "#F97316", fontWeight: 600, textDecoration: "none" }}>BuddyCoach.io ↗</a></div>
+              <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
+                <img src={LOGO_ICON} alt="" style={{ height: 26 }} />
+                <img src={LOGO_HORIZONTAL} alt="BuddyMarket" style={{ height: 16, filter: "brightness(0) invert(1)" }} />
+              </div>
+              <p style={{ fontSize: 14, color: "#64748b", lineHeight: 1.7, maxWidth: 280, marginBottom: 16 }}>
+                Tu asistente nutricional inteligente. Menús personalizados, recetas saludables y seguimiento nutricional con IA.
+              </p>
+              <p style={{ fontSize: 12, color: "#475569", lineHeight: 1.6 }}>
+                El contenido de BuddyMarket es orientativo y no sustituye el consejo de un profesional de la salud.
+              </p>
             </div>
-
-            <div>
-              <h4 style={{ fontSize: 12, fontWeight: 700, color: "white", marginBottom: 16, letterSpacing: "0.08em", textTransform: "uppercase" }}>Recursos</h4>
-              {[{ label: "Blog", href: "/blog" }, { label: "Preguntas Frecuentes", href: "/faq" }, { label: "Centro de ayuda", href: "#" }, { label: "Comunidad", href: "#" }].map(l => (
-                <div key={l.label} style={{ marginBottom: 10 }}><a href={l.href} style={{ fontSize: 14, color: "#6b7280", textDecoration: "none" }}
-                  onMouseEnter={e => (e.target as HTMLElement).style.color = "#F97316"}
-                  onMouseLeave={e => (e.target as HTMLElement).style.color = "#6b7280"}>{l.label}</a></div>
-              ))}
-            </div>
-
-            <div>
-              <h4 style={{ fontSize: 12, fontWeight: 700, color: "white", marginBottom: 16, letterSpacing: "0.08em", textTransform: "uppercase" }}>Legal</h4>
-              {[
-                { label: "Términos y Condiciones", href: "/terms" },
-                { label: "Política de Privacidad", href: "/privacy" },
-                { label: "Política de Cookies", href: "/cookies" },
-              ].map(l => (
-                <div key={l.label} style={{ marginBottom: 10 }}>
-                  <Link href={l.href} style={{ fontSize: 14, color: "#6b7280", textDecoration: "none" }}>{l.label}</Link>
-                </div>
-              ))}
-            </div>
+            {[
+              { title: "Producto", items: ["Funcionalidades","Precios","BuddyIA","Recetas","Menús especiales","Para empresas"] },
+              { title: "Empresa", items: ["Sobre nosotros","Blog","Creadores","Afiliados","Prensa","Contacto"] },
+              { title: "Legal", items: ["Privacidad","Términos de uso","Cookies","RGPD","Aviso legal"] },
+            ].map(col => (
+              <div key={col.title}>
+                <p style={{ fontSize: 12, fontWeight: 700, color: "#f1f5f9", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 16 }}>{col.title}</p>
+                {col.items.map(item => (
+                  <a key={item} href="#" style={{ display: "block", fontSize: 14, color: "#64748b", textDecoration: "none", marginBottom: 10, transition: "color 0.15s" }}
+                    onMouseEnter={e => { (e.target as HTMLElement).style.color = "#F97316"; }}
+                    onMouseLeave={e => { (e.target as HTMLElement).style.color = "#64748b"; }}>
+                    {item}
+                  </a>
+                ))}
+              </div>
+            ))}
           </div>
-
-          <div style={{ borderTop: "1px solid #1e293b", paddingTop: 28, display: "flex", flexDirection: "column", gap: 12 }}>
-            <p style={{ fontSize: 13, color: "#4b5563" }}>© 2025 BuddyMarket. Todos los derechos reservados.</p>
-            <div style={{ display: "flex", gap: 20, flexWrap: "wrap" }}>
-              {["Twitter/X", "Instagram", "LinkedIn"].map(s => (
-                <a key={s} href="#" style={{ fontSize: 13, color: "#4b5563", textDecoration: "none" }}
-                  onMouseEnter={e => (e.target as HTMLElement).style.color = "#F97316"}
-                  onMouseLeave={e => (e.target as HTMLElement).style.color = "#4b5563"}>{s}</a>
+          <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 24, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+            <p style={{ fontSize: 13, color: "#475569", margin: 0 }}>© 2025 BuddyMarket · buddymarket.io · Todos los derechos reservados</p>
+            <div style={{ display: "flex", gap: 16 }}>
+              {["Twitter","Instagram","LinkedIn","YouTube"].map(net => (
+                <a key={net} href="#" style={{ fontSize: 13, color: "#475569", textDecoration: "none", transition: "color 0.15s" }}
+                  onMouseEnter={e => { (e.target as HTMLElement).style.color = "#F97316"; }}
+                  onMouseLeave={e => { (e.target as HTMLElement).style.color = "#475569"; }}>
+                  {net}
+                </a>
               ))}
             </div>
           </div>
         </div>
       </footer>
 
-      {/* ═══ GLOBAL ANIMATIONS ════════════════════════════════════════════ */}
+      {/* ═══ GLOBAL CSS ═══════════════════════════════════════════════════════ */}
       <style>{`
-        @keyframes lp-pulse {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.6; transform: scale(0.85); }
-        }
-        @keyframes lp-marquee {
-          0% { transform: translateX(0); }
-          100% { transform: translateX(-33.333%); }
-        }
-        .lp-btn-primary:hover { transform: translateY(-2px) !important; box-shadow: 0 16px 48px rgba(249,115,22,0.5) !important; }
-        .lp-stat-card .lp-stat-icon { display: none; }
-        .lp-stat-card .lp-stat-value { font-size: clamp(32px,6vw,52px); font-weight: 900; color: #F97316; line-height: 1; }
-        .lp-stat-card .lp-stat-label { font-size: 13px; color: #9ca3af; margin-top: 8px; font-weight: 500; }
-
-        /* Responsive */
-        @media (max-width: 767px) {
-          .lp-desktop-nav, .lp-desktop-cta { display: none !important; }
+        @keyframes lp-marquee { from { transform: translateX(0); } to { transform: translateX(-33.33%); } }
+        @keyframes lp-pulse { 0%,100% { opacity:1; transform:scale(1); } 50% { opacity:0.6; transform:scale(0.85); } }
+        .lp-nav-links, .lp-nav-cta { display: flex; }
+        .lp-hamburger { display: none !important; }
+        @media (max-width: 768px) {
+          .lp-nav-links, .lp-nav-cta { display: none !important; }
           .lp-hamburger { display: flex !important; }
-          .lp-comparison-table { overflow-x: auto !important; -webkit-overflow-scrolling: touch; }
-          .lp-comparison-table > div { min-width: 520px !important; }
-        }
-        @media (min-width: 640px) {
-          .lp-stats-grid { grid-template-columns: repeat(4, 1fr) !important; }
-          .lp-special-grid { grid-template-columns: repeat(4, 1fr) !important; }
-          .lp-mosaic-grid { grid-template-columns: repeat(4, 1fr) !important; }
-          .lp-testimonials-grid { grid-template-columns: repeat(2, 1fr) !important; }
-          .lp-pricing-grid { grid-template-columns: repeat(2, 1fr) !important; }
-          .lp-steps-grid { grid-template-columns: repeat(3, 1fr) !important; }
-          .lp-hero-btns { flex-direction: row !important; }
-          .lp-trust-row { flex-direction: row !important; }
-          .lp-footer-grid { grid-template-columns: 1fr 1fr !important; }
-        }
-        @media (min-width: 1024px) {
-          .lp-hero-inner { flex-direction: row !important; align-items: center !important; gap: 72px !important; }
-          .lp-hero-text { flex: 1; }
-          .lp-hero-grid { flex: 1; }
-          .lp-hero-grid > div { grid-template-rows: 280px 280px !important; }
-          .lp-feature-layout { flex-direction: row !important; gap: 72px !important; align-items: center !important; }
-          .lp-feature-layout > div:first-child { flex: 1; }
-          .lp-feature-layout > div:last-child { flex: 1; }
-          .lp-testimonials-grid { grid-template-columns: repeat(3, 1fr) !important; }
-          .lp-pricing-grid { grid-template-columns: repeat(3, 1fr) !important; }
-          .lp-coach-layout { flex-direction: row !important; gap: 80px !important; align-items: center !important; }
-          .lp-coach-layout > div:first-child { flex: 1; }
-          .lp-coach-layout > div:last-child { flex: 1; }
-          .lp-footer-grid { grid-template-columns: 2fr 1fr 1fr 1fr !important; }
-          .lp-special-grid { grid-template-columns: repeat(6, 1fr) !important; }
-          .lp-desktop-br { display: block; }
-          .lp-footer-grid > div:last-child, .lp-footer-grid > div:nth-child(3), .lp-footer-grid > div:nth-child(4) { display: block; }
+          .lp-hero-grid { grid-template-columns: 1fr !important; gap: 40px !important; }
+          .lp-hero-imgs { display: none !important; }
+          .lp-stats-grid { grid-template-columns: repeat(2,1fr) !important; }
+          .lp-steps-grid { grid-template-columns: 1fr !important; }
+          .lp-module-grid { grid-template-columns: 1fr !important; }
+          .lp-service-grid { grid-template-columns: 1fr !important; }
+          .lp-testimonials-grid { grid-template-columns: 1fr !important; }
+          .lp-plans-grid { grid-template-columns: 1fr !important; }
+          .lp-footer-grid { grid-template-columns: 1fr 1fr !important; gap: 32px !important; }
         }
       `}</style>
     </div>
