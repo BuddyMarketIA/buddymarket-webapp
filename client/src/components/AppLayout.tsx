@@ -1,11 +1,40 @@
 import { useAuth } from "@/_core/hooks/useAuth";
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { usePlan } from "@/hooks/usePlan";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useTranslation } from "react-i18next";
 import LanguageSelector from "@/components/LanguageSelector";
+
+// ─── Hook: detecta si estamos en desktop (≥1024px) ───────────────────────────
+function useIsDesktop() {
+  const [isDesktop, setIsDesktop] = useState(() => typeof window !== "undefined" ? window.innerWidth >= 1024 : false);
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches);
+    mq.addEventListener("change", handler);
+    setIsDesktop(mq.matches);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+  return isDesktop;
+}
+
+// ─── Hook: detecta si es dispositivo táctil/móvil ────────────────────────────
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(() => {
+    if (typeof window === "undefined") return false;
+    return /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent) || window.innerWidth < 1024;
+  });
+  useEffect(() => {
+    const mq = window.matchMedia("(min-width: 1024px)");
+    const handler = (e: MediaQueryListEvent) => setIsMobile(!e.matches);
+    mq.addEventListener("change", handler);
+    setIsMobile(!mq.matches);
+    return () => mq.removeEventListener("change", handler);
+  }, []);
+  return isMobile;
+}
 
 function NotificationBell() {
   const [, navigate] = useLocation();
@@ -20,7 +49,6 @@ function NotificationBell() {
   });
   const count = typeof unreadCount === "number" ? unreadCount : 0;
 
-  // Close dropdown on outside click
   useEffect(() => {
     if (!open) return;
     const handler = (e: MouseEvent) => {
@@ -51,14 +79,14 @@ function NotificationBell() {
           <button onClick={() => { setOpen(false); navigate("/app/notifications"); }}
             style={{ width: "100%", padding: "13px 16px", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: "10px", fontSize: "14px", color: "#111827", fontWeight: 600, textAlign: "left" }}
           >
-            <span style={{ fontSize: "18px" }} aria-hidden="true">🔔</span>
+            <span style={{ fontSize: "18px" }}>🔔</span>
             <span>Notificaciones{count > 0 ? ` (${count})` : ""}</span>
           </button>
           <div style={{ height: "1px", background: "#f3f4f6", margin: "0 12px" }} />
           <button onClick={() => { setOpen(false); navigate("/app/meal-notifications"); }}
             style={{ width: "100%", padding: "13px 16px", background: "none", border: "none", cursor: "pointer", display: "flex", alignItems: "center", gap: "10px", fontSize: "14px", color: "#111827", fontWeight: 600, textAlign: "left" }}
           >
-            <span style={{ fontSize: "18px" }} aria-hidden="true">⏰</span>
+            <span style={{ fontSize: "18px" }}>⏰</span>
             <span>Configurar recordatorios</span>
           </button>
         </div>
@@ -106,11 +134,129 @@ function matchesPath(location: string, paths: string[]) {
   return paths.some((p) => location === p || location.startsWith(p + "/"));
 }
 
+// ─── Sidebar content (shared between mobile drawer and desktop fixed) ─────────
+function SidebarContent({
+  location,
+  user,
+  userAvatarUrl,
+  userName,
+  userEmail,
+  planDisplay,
+  isApprovedExpert,
+  isApprovedMaker,
+  hasPendingApplication,
+  onClose,
+  logout,
+  SIDEBAR_GROUPS,
+  t,
+}: any) {
+  return (
+    <>
+      {/* Sidebar Header */}
+      <div style={{ padding: "20px 20px 16px", borderBottom: "1px solid rgba(0,0,0,0.06)", display: "flex", alignItems: "center", gap: "12px" }}>
+        <div style={{ width: "44px", height: "44px", borderRadius: "14px", overflow: "hidden", boxShadow: "0 4px 12px rgba(249,115,22,0.35)", flexShrink: 0 }}>
+          <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/logo-icon-orange_2cf889cb.png" alt="BuddyMarket" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+        </div>
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ margin: 0, fontSize: "17px", fontWeight: 900, color: "var(--sidebar-text, #1a1a1a)", letterSpacing: "-0.03em" }}>BuddyMarket</p>
+          <p style={{ margin: 0, fontSize: "14px", color: "#F97316", fontWeight: 600 }}>{t("common.nutritionalManager", "Gestor Nutricional")}</p>
+        </div>
+        <LanguageSelector variant="icon" />
+      </div>
+
+      {/* Sidebar Nav */}
+      <nav style={{ flex: 1, padding: "12px", overflowY: "auto" }}>
+        {SIDEBAR_GROUPS.map((group: any, gi: number) => (
+          <div key={group.label} style={{ marginBottom: "2px" }}>
+            <p style={{ margin: gi === 0 ? "4px 0 4px 16px" : "10px 0 4px 16px", fontSize: "11px", fontWeight: 800, color: "#9ca3af", letterSpacing: "0.08em", textTransform: "uppercase" }}>{group.label}</p>
+            {group.items.filter((item: any) => {
+              if (item.key === "/app/buddy-expert-dashboard" && !isApprovedExpert) return false;
+              if (item.key === "/app/expert/patients" && !isApprovedExpert) return false;
+              if (item.key === "/app/buddy-maker-dashboard" && !isApprovedMaker) return false;
+              if (item.key === "/app/maker-analytics" && !isApprovedMaker) return false;
+              if (item.key === "/app/buddy-application" && (isApprovedExpert || isApprovedMaker || hasPendingApplication)) return false;
+              return true;
+            }).map((item: any) => {
+              const isPendingItem = item.key === "register" && hasPendingApplication;
+              if (item.to.startsWith("http")) {
+                return (
+                  <a key={item.key} href={item.to} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "9px 14px", borderRadius: "10px", background: "linear-gradient(135deg, rgba(249,115,22,0.08), rgba(251,146,60,0.06))", cursor: "pointer", marginBottom: "2px", border: "1px solid rgba(249,115,22,0.15)" }}>
+                      <span style={{ fontSize: "17px", width: "22px", textAlign: "center" }}>{item.emoji}</span>
+                      <span style={{ fontSize: "14px", fontWeight: 700, color: "#F97316" }}>{item.label}</span>
+                      <svg style={{ marginLeft: "auto" }} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                    </div>
+                  </a>
+                );
+              }
+              const active = location === item.to || location.startsWith(item.to + "/");
+              return (
+                <Link key={item.key} href={item.to} onClick={onClose}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "11px", padding: "9px 13px", borderRadius: "10px", background: active ? "rgba(249,115,22,0.10)" : isPendingItem ? "rgba(234,179,8,0.08)" : "transparent", cursor: "pointer", marginBottom: "1px", transition: "background 0.15s" }}>
+                    <span style={{ fontSize: "17px", width: "21px", textAlign: "center" }}>{item.emoji}</span>
+                    <span style={{ fontSize: "14px", fontWeight: active ? 700 : 500, color: active ? "#F97316" : isPendingItem ? "#B45309" : "var(--sidebar-text, #374151)" }}>{item.label}</span>
+                    {isPendingItem && <span style={{ marginLeft: "auto", fontSize: "10px", fontWeight: 700, background: "#FEF3C7", color: "#D97706", borderRadius: "6px", padding: "2px 6px" }}>{t("common.pending", "En revisión")}</span>}
+                    {active && !isPendingItem && <div style={{ marginLeft: "auto", width: "5px", height: "5px", borderRadius: "50%", background: "#F97316" }} />}
+                  </div>
+                </Link>
+              );
+            })}
+          </div>
+        ))}
+        <div style={{ height: "1px", background: "rgba(0,0,0,0.06)", margin: "10px 4px" }} />
+        <Link href="/app/admin" onClick={onClose}>
+          <div style={{ display: "flex", alignItems: "center", gap: "11px", padding: "9px 13px", borderRadius: "10px", background: location === "/app/admin" ? "rgba(249,115,22,0.10)" : "transparent", cursor: "pointer", marginBottom: "2px" }}>
+            <span style={{ fontSize: "17px", width: "21px", textAlign: "center" }}>🛡️</span>
+            <span style={{ fontSize: "14px", fontWeight: location === "/app/admin" ? 700 : 500, color: location === "/app/admin" ? "#F97316" : "var(--sidebar-text, #374151)" }}>{t("sidebar.administration")}</span>
+          </div>
+        </Link>
+      </nav>
+
+      {/* Sidebar Footer */}
+      <div style={{ padding: "14px 18px", borderTop: "1px solid rgba(0,0,0,0.06)", display: "flex", alignItems: "center", gap: "10px" }}>
+        {userAvatarUrl ? (
+          <img src={userAvatarUrl} alt={userName} style={{ width: "38px", height: "38px", borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: "2px solid #F97316" }} />
+        ) : (
+          <div style={{ width: "38px", height: "38px", borderRadius: "50%", background: "linear-gradient(135deg, #F97316, #FB923C)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+            <span style={{ fontSize: "16px", fontWeight: 800, color: "white" }}>{userName.charAt(0).toUpperCase()}</span>
+          </div>
+        )}
+        <div style={{ flex: 1, minWidth: 0 }}>
+          <p style={{ margin: 0, fontSize: "14px", fontWeight: 700, color: "var(--sidebar-text, #1a1a1a)", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{userName}</p>
+          <p style={{ margin: 0, fontSize: "12px", color: "#9ca3af", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{userEmail}</p>
+        </div>
+        <Link href="/app/subscription">
+          <div style={{ background: planDisplay?.color || "#6B7280", borderRadius: "8px", padding: "3px 8px", fontSize: "12px", fontWeight: 800, color: "white", letterSpacing: "0.05em", cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}>
+            {planDisplay?.badge || "Free"}
+          </div>
+        </Link>
+      </div>
+      <div style={{ padding: "0 18px 6px", display: "flex", gap: "12px", justifyContent: "center" }}>
+        <Link href="/terms"><span style={{ fontSize: "11px", color: "#9ca3af", textDecoration: "underline", cursor: "pointer" }}>{t("sidebar.terms")}</span></Link>
+        <span style={{ fontSize: "11px", color: "#d1d5db" }}>·</span>
+        <Link href="/privacy"><span style={{ fontSize: "11px", color: "#9ca3af", textDecoration: "underline", cursor: "pointer" }}>{t("sidebar.privacy")}</span></Link>
+      </div>
+      <div style={{ padding: "0 18px 18px" }}>
+        <button
+          onClick={() => logout.mutate()}
+          disabled={logout.isPending}
+          style={{ width: "100%", display: "flex", alignItems: "center", gap: "10px", padding: "10px 14px", borderRadius: "12px", border: "1.5px solid rgba(239,68,68,0.2)", background: "rgba(239,68,68,0.04)", cursor: logout.isPending ? "not-allowed" : "pointer", transition: "all 0.2s", opacity: logout.isPending ? 0.7 : 1 }}
+        >
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
+          <span style={{ fontSize: "13px", fontWeight: 600, color: "#EF4444" }}>{logout.isPending ? t("sidebar.loggingOut") : t("sidebar.logout")}</span>
+        </button>
+      </div>
+    </>
+  );
+}
+
 export default function AppLayout({ children, title, showBack = false, onBack, headerRight, hideNav = false }: AppLayoutProps) {
   const { loading, isAuthenticated, user } = useAuth();
   const [location] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { t } = useTranslation();
+  const isDesktop = useIsDesktop();
+  const isMobile = useIsMobile();
   const logout = trpc.auth.logout.useMutation({ onSuccess: () => { window.location.href = "/"; } });
 
   const expertApplicationQuery = trpc.buddyApplications.getMyApplication.useQuery({ type: "expert" }, { enabled: !!user, staleTime: 5 * 60 * 1000 });
@@ -124,8 +270,14 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
   const touchStartX = useRef(0);
   const touchStartY = useRef(0);
 
+  // Cerrar sidebar móvil al cambiar de ruta
   useEffect(() => { setSidebarOpen(false); }, [location]);
-  useEffect(() => { document.body.style.overflow = sidebarOpen ? "hidden" : ""; return () => { document.body.style.overflow = ""; }; }, [sidebarOpen]);
+  useEffect(() => {
+    if (!isDesktop) {
+      document.body.style.overflow = sidebarOpen ? "hidden" : "";
+    }
+    return () => { document.body.style.overflow = ""; };
+  }, [sidebarOpen, isDesktop]);
 
   useEffect(() => {
     const handler = (e: any) => { e.preventDefault(); setInstallPrompt(e); if (!localStorage.getItem('pwa-install-dismissed')) setShowInstallBanner(true); };
@@ -133,7 +285,9 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
     return () => window.removeEventListener('beforeinstallprompt', handler);
   }, []);
 
+  // Swipe gesture (solo móvil)
   useEffect(() => {
+    if (isDesktop) return;
     const onTouchStart = (e: TouchEvent) => { touchStartX.current = e.touches[0].clientX; touchStartY.current = e.touches[0].clientY; };
     const onTouchEnd = (e: TouchEvent) => {
       const dx = e.changedTouches[0].clientX - touchStartX.current;
@@ -145,7 +299,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
     document.addEventListener('touchstart', onTouchStart, { passive: true });
     document.addEventListener('touchend', onTouchEnd, { passive: true });
     return () => { document.removeEventListener('touchstart', onTouchStart); document.removeEventListener('touchend', onTouchEnd); };
-  }, [sidebarOpen]);
+  }, [sidebarOpen, isDesktop]);
 
   const handleInstall = async () => {
     if (!installPrompt) return;
@@ -176,8 +330,8 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       label: "Mi Perfil",
       items: [
         { key: "/app/profile", label: t("sidebar.myProfile"), to: "/app/profile", emoji: "👤" },
-        { key: "/app/metrics", label: t("sidebar.myMetrics"), to: "/app/metrics", emoji: "⚖️" },
-        { key: "/app/connected-health", label: t("sidebar.connectedHealth"), to: "/app/connected-health", emoji: "❤️" },
+        { key: "/app/metrics", label: t("nav.metrics"), to: "/app/metrics", emoji: "📏" },
+        { key: "/app/connected-health", label: t("nav.connectedHealth"), to: "/app/connected-health", emoji: "💪" },
         { key: "/app/progress", label: t("nav.progress"), to: "/app/progress", emoji: "📉" },
         { key: "/app/stats", label: t("sidebar.stats"), to: "/app/stats", emoji: "📈" },
         { key: "/app/achievements", label: t("sidebar.myAchievements"), to: "/app/achievements", emoji: "🏆" },
@@ -269,142 +423,147 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
   const shouldShowNav = !hideNav;
   const pageTitle = title || currentNavItem?.label || currentSidebarItem?.label || "BuddyMarket";
   const { planDisplay } = usePlan();
-  const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : "U";
   const userName = user?.name || "Usuario";
   const userEmail = user?.email || "";
   const profileData = trpc.profile.get.useQuery(undefined, { enabled: !!user, staleTime: 5 * 60 * 1000 });
-  // Prefer profile photo from BuddyMarket DB, fall back to OAuth imageUrl
   const userAvatarUrl = profileData.data?.user?.imageUrl || (user as any)?.imageUrl || null;
 
+  const sidebarProps = {
+    location, user, userAvatarUrl, userName, userEmail, planDisplay,
+    isApprovedExpert, isApprovedMaker, hasPendingApplication,
+    onClose: () => setSidebarOpen(false),
+    logout, SIDEBAR_GROUPS, t,
+  };
+
+  // ─── DESKTOP LAYOUT ──────────────────────────────────────────────────────────
+  if (isDesktop) {
+    const DESKTOP_SIDEBAR_WIDTH = 260;
+    return (
+      <div style={{ display: "flex", minHeight: "100dvh", background: "#FFF8F0" }}>
+        {/* Skip to main */}
+        <a href="#main-content" style={{ position: "absolute", top: "-100px", left: "16px", zIndex: 9999, padding: "8px 16px", background: "#F97316", color: "white", borderRadius: "8px", fontWeight: 700, fontSize: "14px", textDecoration: "none" }}
+          onFocus={(e) => { e.currentTarget.style.top = "16px"; }}
+          onBlur={(e) => { e.currentTarget.style.top = "-100px"; }}
+        >Saltar al contenido principal</a>
+
+        {/* Desktop Sidebar — fijo a la izquierda */}
+        <aside
+          id="app-sidebar"
+          aria-label="Menú de navegación"
+          style={{
+            width: `${DESKTOP_SIDEBAR_WIDTH}px`,
+            minWidth: `${DESKTOP_SIDEBAR_WIDTH}px`,
+            height: "100dvh",
+            position: "fixed",
+            top: 0,
+            left: 0,
+            display: "flex",
+            flexDirection: "column",
+            background: "white",
+            borderRight: "1px solid rgba(0,0,0,0.07)",
+            boxShadow: "2px 0 16px rgba(0,0,0,0.05)",
+            zIndex: 200,
+            overflowY: "auto",
+          }}
+        >
+          <SidebarContent {...sidebarProps} />
+        </aside>
+
+        {/* Main area */}
+        <div style={{ flex: 1, marginLeft: `${DESKTOP_SIDEBAR_WIDTH}px`, display: "flex", flexDirection: "column", minHeight: "100dvh" }}>
+
+          {/* Desktop Header */}
+          <header style={{
+            position: "sticky",
+            top: 0,
+            zIndex: 100,
+            background: "rgba(255,248,240,0.92)",
+            backdropFilter: "blur(20px)",
+            WebkitBackdropFilter: "blur(20px)",
+            borderBottom: "1px solid rgba(0,0,0,0.06)",
+            padding: "0 32px",
+            height: "64px",
+            display: "flex",
+            alignItems: "center",
+            gap: "16px",
+          }}>
+            {showBack && (
+              <button onClick={onBack || (() => window.history.back())} aria-label="Volver atrás"
+                style={{ width: "36px", height: "36px", borderRadius: "10px", background: "white", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", flexShrink: 0 }}>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+              </button>
+            )}
+
+            {/* Indicador de entorno */}
+            <div style={{ display: "flex", alignItems: "center", gap: "6px", background: "rgba(249,115,22,0.08)", borderRadius: "8px", padding: "4px 10px", flexShrink: 0 }}>
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="2" y="3" width="20" height="14" rx="2"/><line x1="8" y1="21" x2="16" y2="21"/><line x1="12" y1="17" x2="12" y2="21"/></svg>
+              <span style={{ fontSize: "11px", fontWeight: 700, color: "#F97316", letterSpacing: "0.04em" }}>ESCRITORIO</span>
+            </div>
+
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <h1 style={{ margin: 0, fontSize: "18px", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.02em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{pageTitle}</h1>
+            </div>
+
+            <div style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
+              <DarkModeToggle />
+              {headerRight ? headerRight : <NotificationBell />}
+              {/* Avatar */}
+              {userAvatarUrl ? (
+                <Link href="/app/profile">
+                  <img src={userAvatarUrl} alt={userName} style={{ width: "36px", height: "36px", borderRadius: "50%", objectFit: "cover", border: "2px solid #F97316", cursor: "pointer" }} />
+                </Link>
+              ) : (
+                <Link href="/app/profile">
+                  <div style={{ width: "36px", height: "36px", borderRadius: "50%", background: "linear-gradient(135deg, #F97316, #FB923C)", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                    <span style={{ fontSize: "14px", fontWeight: 800, color: "white" }}>{userName.charAt(0).toUpperCase()}</span>
+                  </div>
+                </Link>
+              )}
+            </div>
+          </header>
+
+          {/* PWA Install Banner */}
+          {showInstallBanner && (
+            <div style={{ background: "linear-gradient(135deg, #F97316, #FB923C)", padding: "10px 32px", display: "flex", alignItems: "center", gap: "10px" }}>
+              <div style={{ width: "32px", height: "32px", borderRadius: "8px", overflow: "hidden", flexShrink: 0 }}>
+                <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/logo-icon-orange_2cf889cb.png" alt="BuddyMarket" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+              </div>
+              <div style={{ flex: 1 }}>
+                <p style={{ margin: 0, fontSize: "13px", fontWeight: 800, color: "white" }}>{t("sidebar.installApp")}</p>
+                <p style={{ margin: 0, fontSize: "12px", color: "rgba(255,255,255,0.85)" }}>{t("sidebar.installAppDesc")}</p>
+              </div>
+              <button onClick={handleInstall} style={{ background: "white", color: "#F97316", border: "none", borderRadius: "8px", padding: "6px 12px", fontSize: "13px", fontWeight: 800, cursor: "pointer" }}>{t("sidebar.install")}</button>
+              <button onClick={() => { setShowInstallBanner(false); localStorage.setItem('pwa-install-dismissed', '1'); }} aria-label="Cerrar" style={{ background: "rgba(255,255,255,0.2)", border: "none", borderRadius: "6px", width: "26px", height: "26px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+                <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              </button>
+            </div>
+          )}
+
+          {/* Content — sin padding-bottom para barra inferior */}
+          <main id="main-content" style={{ flex: 1, padding: "0" }}>
+            {children}
+          </main>
+        </div>
+      </div>
+    );
+  }
+
+  // ─── MÓVIL LAYOUT (igual que antes) ──────────────────────────────────────────
   return (
     <div style={{ width: "100%", maxWidth: "480px", margin: "0 auto", minHeight: "100dvh", background: "#FFF8F0", position: "relative" }}>
-      {/* Skip to main content - WCAG 2.4.1 Bypass Blocks */}
-      <a
-        href="#main-content"
-        style={{
-          position: "absolute",
-          top: "-100px",
-          left: "16px",
-          zIndex: 9999,
-          padding: "8px 16px",
-          background: "#F97316",
-          color: "white",
-          borderRadius: "8px",
-          fontWeight: 700,
-          fontSize: "14px",
-          textDecoration: "none",
-        }}
+      <a href="#main-content" style={{ position: "absolute", top: "-100px", left: "16px", zIndex: 9999, padding: "8px 16px", background: "#F97316", color: "white", borderRadius: "8px", fontWeight: 700, fontSize: "14px", textDecoration: "none" }}
         onFocus={(e) => { e.currentTarget.style.top = "16px"; }}
         onBlur={(e) => { e.currentTarget.style.top = "-100px"; }}
-      >
-        Saltar al contenido principal
-      </a>
+      >Saltar al contenido principal</a>
 
       {/* Sidebar Overlay */}
       {sidebarOpen && (<div onClick={() => setSidebarOpen(false)} aria-hidden="true" style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 200, backdropFilter: "blur(2px)" }} />)}
 
-      {/* Sidebar Panel */}
-      <div id="app-sidebar" role="dialog" aria-label="Menú de navegación" aria-modal={sidebarOpen} className="app-sidebar" style={{ position: "fixed", top: 0, left: sidebarOpen ? 0 : "-310px", width: "300px", height: "100dvh", paddingTop: "env(safe-area-inset-top)", zIndex: 300, transition: "left 0.3s cubic-bezier(0.4,0,0.2,1)", display: "flex", flexDirection: "column", boxShadow: sidebarOpen ? "4px 0 40px rgba(0,0,0,0.15)" : "none", overflowY: "auto" }}>
-
-        {/* Sidebar Header */}
-        <div style={{ padding: "20px 20px 16px", borderBottom: "1px solid rgba(0,0,0,0.06)", display: "flex", alignItems: "center", gap: "12px" }}>
-          <div style={{ width: "44px", height: "44px", borderRadius: "14px", overflow: "hidden", boxShadow: "0 4px 12px rgba(249,115,22,0.35)", flexShrink: 0 }}>
-            <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/logo-icon-orange_2cf889cb.png" alt="BuddyMarket" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-          </div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ margin: 0, fontSize: "17px", fontWeight: 900, color: "#1a1a1a", letterSpacing: "-0.03em" }}>BuddyMarket</p>
-            <p style={{ margin: 0, fontSize: "14px", color: "#F97316", fontWeight: 600 }}>{t("common.nutritionalManager", "Gestor Nutricional")}</p>
-          </div>
-          {/* Language selector in sidebar header */}
-          <LanguageSelector variant="icon" />
-        </div>
-
-        {/* Sidebar Nav */}
-        <nav style={{ flex: 1, padding: "12px" }}>
-          {SIDEBAR_GROUPS.map((group, gi) => (
-            <div key={group.label} style={{ marginBottom: "2px" }}>
-              <p style={{ margin: gi === 0 ? "4px 0 4px 16px" : "10px 0 4px 16px", fontSize: "14px", fontWeight: 800, color: "#9ca3af", letterSpacing: "0.08em", textTransform: "uppercase" }}>{group.label}</p>
-              {group.items.filter(item => {
-                if (item.key === "/app/buddy-expert-dashboard" && !isApprovedExpert) return false;
-                if (item.key === "/app/expert/patients" && !isApprovedExpert) return false;
-                if (item.key === "/app/buddy-maker-dashboard" && !isApprovedMaker) return false;
-                if (item.key === "/app/maker-analytics" && !isApprovedMaker) return false;
-                if (item.key === "/app/buddy-application" && (isApprovedExpert || isApprovedMaker || hasPendingApplication)) return false;
-                return true;
-              }).map((item) => {
-                const isPendingItem = item.key === "register" && hasPendingApplication;
-                if (item.to.startsWith("http")) {
-                  return (
-                    <a key={item.key} href={item.to} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "14px", padding: "11px 16px", borderRadius: "12px", background: "linear-gradient(135deg, rgba(249,115,22,0.08), rgba(251,146,60,0.06))", cursor: "pointer", marginBottom: "2px", border: "1px solid rgba(249,115,22,0.15)" }}>
-                        <span style={{ fontSize: "19px", width: "24px", textAlign: "center" }}>{item.emoji}</span>
-                        <span style={{ fontSize: "15px", fontWeight: 700, color: "#F97316" }}>{item.label}</span>
-                        <svg style={{ marginLeft: "auto" }} width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                      </div>
-                    </a>
-                  );
-                }
-                const active = location === item.to || location.startsWith(item.to + "/");
-                return (
-                  <Link key={item.key} href={item.to}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 14px", borderRadius: "12px", background: active ? "rgba(249,115,22,0.10)" : isPendingItem ? "rgba(234,179,8,0.08)" : "transparent", cursor: "pointer", marginBottom: "2px", transition: "background 0.15s" }}>
-                      <span style={{ fontSize: "18px", width: "22px", textAlign: "center" }}>{item.emoji}</span>
-                      <span style={{ fontSize: "15px", fontWeight: active ? 700 : 500, color: active ? "#F97316" : isPendingItem ? "#B45309" : "#374151" }}>{item.label}</span>
-                      {isPendingItem && <span style={{ marginLeft: "auto", fontSize: "11px", fontWeight: 700, background: "#FEF3C7", color: "#D97706", borderRadius: "6px", padding: "2px 7px" }}>{t("common.pending", "En revisión")}</span>}
-                      {active && !isPendingItem && <div style={{ marginLeft: "auto", width: "5px", height: "5px", borderRadius: "50%", background: "#F97316" }} />}
-                    </div>
-                  </Link>
-                );
-              })}
-            </div>
-          ))}
-          <div style={{ height: "1px", background: "rgba(0,0,0,0.06)", margin: "10px 4px" }} />
-          <Link href="/app/admin">
-            <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "10px 14px", borderRadius: "12px", background: location === "/app/admin" ? "rgba(249,115,22,0.10)" : "transparent", cursor: "pointer", marginBottom: "2px" }}>
-              <span style={{ fontSize: "18px", width: "22px", textAlign: "center" }}>🛡️</span>
-              <span style={{ fontSize: "15px", fontWeight: location === "/app/admin" ? 700 : 500, color: location === "/app/admin" ? "#F97316" : "#374151" }}>{t("sidebar.administration")}</span>
-            </div>
-          </Link>
-        </nav>
-
-        {/* Sidebar Footer */}
-        <div style={{ padding: "16px 20px", borderTop: "1px solid rgba(0,0,0,0.06)", display: "flex", alignItems: "center", gap: "12px" }}>
-          {userAvatarUrl ? (
-            <img src={userAvatarUrl} alt={userName} style={{ width: "42px", height: "42px", borderRadius: "50%", objectFit: "cover", flexShrink: 0, border: "2px solid #F97316" }} />
-          ) : (
-            <div style={{ width: "42px", height: "42px", borderRadius: "50%", background: "linear-gradient(135deg, #F97316, #FB923C)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px", fontWeight: 800, color: "white", flexShrink: 0 }}>{userInitial}</div>
-          )}
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ margin: 0, fontSize: "15px", fontWeight: 700, color: "#1a1a1a", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{userName}</p>
-            <p style={{ margin: 0, fontSize: "13px", color: "#9ca3af", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{userEmail}</p>
-          </div>
-          <Link href="/app/subscription">
-            <div style={{ background: planDisplay?.color || "#6B7280", borderRadius: "8px", padding: "4px 10px", fontSize: "13px", fontWeight: 800, color: "white", letterSpacing: "0.05em", cursor: "pointer", whiteSpace: "nowrap", flexShrink: 0 }}>
-              {planDisplay?.badge || "Free"}
-            </div>
-          </Link>
-        </div>
-        {/* Legal links */}
-        <div style={{ padding: "0 20px 8px", display: "flex", gap: "12px", justifyContent: "center" }}>
-          <Link href="/terms">
-            <span style={{ fontSize: "11px", color: "#9ca3af", textDecoration: "underline", cursor: "pointer" }}>{t("sidebar.terms")}</span>
-          </Link>
-          <span style={{ fontSize: "11px", color: "#d1d5db" }}>·</span>
-          <Link href="/privacy">
-            <span style={{ fontSize: "11px", color: "#9ca3af", textDecoration: "underline", cursor: "pointer" }}>{t("sidebar.privacy")}</span>
-          </Link>
-        </div>
-        {/* Logout button */}
-        <div style={{ padding: "0 20px 20px" }}>
-          <button
-            onClick={() => logout.mutate()}
-            disabled={logout.isPending}
-            style={{ width: "100%", display: "flex", alignItems: "center", gap: "10px", padding: "11px 16px", borderRadius: "14px", border: "1.5px solid rgba(239,68,68,0.2)", background: "rgba(239,68,68,0.04)", cursor: logout.isPending ? "not-allowed" : "pointer", transition: "all 0.2s", opacity: logout.isPending ? 0.7 : 1 }}
-          >
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#EF4444" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h4"/><polyline points="16 17 21 12 16 7"/><line x1="21" y1="12" x2="9" y2="12"/></svg>
-            <span style={{ fontSize: "14px", fontWeight: 600, color: "#EF4444" }}>{logout.isPending ? t("sidebar.loggingOut") : t("sidebar.logout")}</span>
-          </button>
-        </div>
+      {/* Sidebar Panel (drawer) */}
+      <div id="app-sidebar" role="dialog" aria-label="Menú de navegación" aria-modal={sidebarOpen} className="app-sidebar"
+        style={{ position: "fixed", top: 0, left: sidebarOpen ? 0 : "-310px", width: "300px", height: "100dvh", paddingTop: "env(safe-area-inset-top)", zIndex: 300, transition: "left 0.3s cubic-bezier(0.4,0,0.2,1)", display: "flex", flexDirection: "column", background: "white", boxShadow: sidebarOpen ? "4px 0 40px rgba(0,0,0,0.15)" : "none", overflowY: "auto" }}
+      >
+        <SidebarContent {...sidebarProps} />
       </div>
 
       {/* PWA Install Banner */}
@@ -419,22 +578,23 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
           </div>
           <button onClick={handleInstall} style={{ background: "white", color: "#F97316", border: "none", borderRadius: "10px", padding: "7px 12px", fontSize: "14px", fontWeight: 800, cursor: "pointer", flexShrink: 0 }}>{t("sidebar.install")}</button>
           <button onClick={() => { setShowInstallBanner(false); localStorage.setItem('pwa-install-dismissed', '1'); }} aria-label="Cerrar banner de instalación" style={{ background: "rgba(255,255,255,0.2)", border: "none", borderRadius: "8px", width: "28px", height: "28px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", flexShrink: 0 }}>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" aria-hidden="true"><path d="M18 6L6 18M6 6l12 12"/></svg>
+            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
           </button>
         </div>
       )}
 
-      {/* Fixed Header - WCAG 1.3.1 Info and Relationships */}
+      {/* Fixed Header */}
       <header className="app-header" style={{ position: "fixed", top: 0, left: 0, right: 0, zIndex: 100, backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", paddingTop: "calc(env(safe-area-inset-top) + 12px)", paddingBottom: "12px", paddingLeft: "max(16px, env(safe-area-inset-left))", paddingRight: "max(16px, env(safe-area-inset-right))", display: "flex", alignItems: "center", gap: "12px" }}>
         {showBack ? (
           <button onClick={onBack || (() => window.history.back())} aria-label="Volver atrás" style={{ width: "40px", height: "40px", borderRadius: "12px", background: "white", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", flexShrink: 0 }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><path d="M15 18l-6-6 6-6"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
           </button>
         ) : (
           <button onClick={() => setSidebarOpen(true)} aria-label="Abrir menú de navegación" aria-expanded={sidebarOpen} aria-controls="app-sidebar" style={{ width: "40px", height: "40px", borderRadius: "12px", background: "white", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.08)", flexShrink: 0 }}>
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
           </button>
         )}
+
         <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1, minWidth: 0 }}>
           <div style={{ width: "32px", height: "32px", borderRadius: "10px", overflow: "hidden", boxShadow: "0 2px 8px rgba(249,115,22,0.30)", flexShrink: 0 }}>
             <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/logo-icon-orange_2cf889cb.png" alt="BuddyMarket" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
@@ -444,6 +604,13 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
             <p className="app-header__title-main" style={{ margin: 0, fontSize: "17px", fontWeight: 800, letterSpacing: "-0.02em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{pageTitle}</p>
           </div>
         </div>
+
+        {/* Indicador de entorno móvil */}
+        <div style={{ display: "flex", alignItems: "center", gap: "4px", background: "rgba(0,0,0,0.05)", borderRadius: "8px", padding: "3px 8px", flexShrink: 0 }}>
+          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+          <span style={{ fontSize: "10px", fontWeight: 700, color: "#9ca3af", letterSpacing: "0.04em" }}>MÓVIL</span>
+        </div>
+
         <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
           <DarkModeToggle />
           {headerRight ? headerRight : <NotificationBell />}
@@ -455,7 +622,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
         {children}
       </main>
 
-      {/* Bottom Navigation - WCAG 2.4.3 Focus Order */}
+      {/* Bottom Navigation */}
       {shouldShowNav && (
         <nav aria-label="Navegación principal" className="app-nav-bar" style={{ position: "fixed", bottom: 0, left: 0, right: 0, zIndex: 100, backdropFilter: "blur(20px)", WebkitBackdropFilter: "blur(20px)", paddingBottom: "env(safe-area-inset-bottom)", boxShadow: "0 -2px 16px rgba(0,0,0,0.06)" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-around", padding: "6px 0" }}>
