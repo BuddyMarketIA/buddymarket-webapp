@@ -229,7 +229,10 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
         { key: "/app/buddy-makers", label: t("nav.buddyMakers"), to: "/app/buddy-makers", emoji: "👨‍🍳" },
         { key: "/app/following", label: t("sidebar.following"), to: "/app/following", emoji: "👥" },
         { key: "/app/buddy-expert-dashboard", label: t("sidebar.expertPanel"), to: "/app/buddy-expert-dashboard", emoji: "🎓" },
+        { key: "/app/expert/patients", label: "Mis pacientes", to: "/app/expert/patients", emoji: "👥" },
         { key: "/app/buddy-maker-dashboard", label: t("sidebar.makerPanel"), to: "/app/buddy-maker-dashboard", emoji: "🍳" },
+        { key: "/app/maker-analytics", label: "Analíticas", to: "/app/maker-analytics", emoji: "📊" },
+        { key: "/app/my-expert", label: "Mi nutricionista", to: "/app/my-expert", emoji: "👩‍⚕️" },
         { key: "/app/buddy-application", label: t("sidebar.requestAccess"), to: "/app/buddy-application", emoji: "📝" },
       ],
     },
@@ -323,7 +326,9 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
               <p style={{ margin: gi === 0 ? "4px 0 4px 16px" : "10px 0 4px 16px", fontSize: "14px", fontWeight: 800, color: "#9ca3af", letterSpacing: "0.08em", textTransform: "uppercase" }}>{group.label}</p>
               {group.items.filter(item => {
                 if (item.key === "/app/buddy-expert-dashboard" && !isApprovedExpert) return false;
+                if (item.key === "/app/expert/patients" && !isApprovedExpert) return false;
                 if (item.key === "/app/buddy-maker-dashboard" && !isApprovedMaker) return false;
+                if (item.key === "/app/maker-analytics" && !isApprovedMaker) return false;
                 if (item.key === "/app/buddy-application" && (isApprovedExpert || isApprovedMaker || hasPendingApplication)) return false;
                 return true;
               }).map((item) => {

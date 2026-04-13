@@ -298,9 +298,14 @@ export default function BuddyMakerDashboard() {
             <h1 className="text-xl font-black text-gray-900">Panel BuddyMaker</h1>
             <p className="text-xs text-gray-500">Gestiona tu perfil y tus recetas</p>
           </div>
-          <a href="/app/buddy-maker-stats" className="flex items-center gap-1.5 rounded-xl bg-orange-50 px-3 py-1.5 text-sm font-semibold text-[#FF6B35] hover:bg-orange-100 transition-colors">
-            <span>📊</span> Estadísticas
-          </a>
+          <div className="flex gap-2">
+            <a href="/app/maker-analytics" className="flex items-center gap-1.5 rounded-xl bg-orange-50 px-3 py-1.5 text-sm font-semibold text-[#FF6B35] hover:bg-orange-100 transition-colors">
+              <span>📈</span> Alcance
+            </a>
+            <a href="/app/buddy-maker-stats" className="flex items-center gap-1.5 rounded-xl bg-orange-50 px-3 py-1.5 text-sm font-semibold text-[#FF6B35] hover:bg-orange-100 transition-colors">
+              <span>📊</span> Ingresos
+            </a>
+          </div>
         </div>
 
         {/* Stripe Connect Banner */}

@@ -10,6 +10,8 @@ import { codesRouter } from "./routers/codes";
 import { supportRouter } from "./routers/support";
 import { householdRouter } from "./routers/household";
 import { householdRecipesRouter } from "./routers/householdRecipes";
+import { expertPatientsRouter } from "./routers/expertPatients";
+import { makerAnalyticsRouter } from "./routers/makerAnalytics";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { invokeLLM } from "./_core/llm";
 import { storagePut } from "./storage";
@@ -233,6 +235,8 @@ export const appRouter = router({
   support: supportRouter,
   household: householdRouter,
   householdRecipes: householdRecipesRouter,
+  expertPatients: expertPatientsRouter,
+  makerAnalytics: makerAnalyticsRouter,
 
   // ---------------------------------------------------------------------------
   // AUTH

@@ -2087,3 +2087,29 @@
 ## Landing Page — Nuevas Secciones
 - [x] Calculadora nutricional interactiva (IMC, TMB, macros personalizados)
 - [x] Checklist de análisis de hábitos nutricionales con feedback personalizado y puntuación
+
+## BuddyExperts — Sistema de Gestión de Pacientes
+- [x] Tabla expertPatients (relación expert-paciente con estado, fecha de inicio)
+- [x] Tabla expertMessages (mensajería directa expert ↔ paciente)
+- [x] Tabla expertAppointments (citas con Google Calendar sync)
+- [x] Tabla patientProgress (seguimiento de evolución: peso, medidas, fotos)
+- [x] Backend: procedimientos de mensajería (enviar, listar, marcar leído)
+- [x] Backend: procedimientos de gestión de pacientes (invitar, listar, ver perfil)
+- [x] Backend: asignar menú a paciente con adaptación IA por alergias/intolerancias
+- [x] Backend: gestión de citas (crear, confirmar, cancelar, Google Calendar)
+- [x] Backend: seguimiento de evolución del paciente
+- [x] Frontend: Panel de pacientes del BuddyExpert (lista, buscar, invitar)
+- [x] Frontend: Vista detalle de paciente (historial, menús asignados, mensajes, citas)
+- [x] Frontend: Mensajería directa expert ↔ paciente en tiempo real
+- [x] Frontend: Asignar menú de la BD del expert con adaptación IA
+- [x] Frontend: Gestión de citas con integración Google Calendar
+- [x] Frontend: Vista del paciente (ver menús asignados, mensajes, citas)
+- [x] Frontend: Seguimiento de evolución con gráficas
+
+## BuddyMakers — Analíticas de Alcance
+- [x] Tabla recipeAnalytics (vistas, likes, guardados, compartidos por receta)
+- [x] Backend: registrar vista de receta al cargar detalle
+- [x] Backend: procedimiento getMyRecipeAnalytics (stats por receta + totales)
+- [x] Frontend: Página de analíticas de alcance para BuddyMakers (/app/maker-analytics)
+- [x] Frontend: Tabla de recetas con columnas de vistas, likes, guardados
+- [x] Frontend: Gráfica de evolución temporal de alcance

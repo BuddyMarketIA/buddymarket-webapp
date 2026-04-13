@@ -2326,3 +2326,149 @@ export const supportMessages = pgTable("support_messages", {
 }));
 export type SupportMessage = typeof supportMessages.$inferSelect;
 export type InsertSupportMessage = typeof supportMessages.$inferInsert;
+
+// =============================================================================
+// BUDDYEXPERTS — GESTIÓN DE PACIENTES
+// =============================================================================
+export const expertPatientStatusEnum = pgEnum("expertPatientStatus", ["invited", "active", "paused", "discharged"]);
+export const expertPatients = pgTable("expert_patients", {
+  id: serial("id").primaryKey(),
+  expertId: integer("expertId").notNull(),
+  patientUserId: integer("patientUserId").notNull(),
+  status: expertPatientStatusEnum("status").default("invited").notNull(),
+  notes: text("notes"),
+  startDate: timestamp("startDate"),
+  endDate: timestamp("endDate"),
+  inviteToken: varchar("inviteToken", { length: 64 }),
+  inviteAcceptedAt: timestamp("inviteAcceptedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  expertIdx: index("ep_expert_idx").on(t.expertId),
+  patientIdx: index("ep_patient_idx").on(t.patientUserId),
+  tokenIdx: index("ep_token_idx").on(t.inviteToken),
+}));
+export type ExpertPatient = typeof expertPatients.$inferSelect;
+export type InsertExpertPatient = typeof expertPatients.$inferInsert;
+
+export const expertMessages = pgTable("expert_messages", {
+  id: serial("id").primaryKey(),
+  expertPatientId: integer("expertPatientId").notNull(),
+  senderId: integer("senderId").notNull(),
+  senderRole: varchar("senderRole", { length: 16 }).notNull(),
+  content: text("content").notNull(),
+  attachmentUrl: text("attachmentUrl"),
+  attachmentType: varchar("attachmentType", { length: 32 }),
+  isRead: boolean("isRead").default(false).notNull(),
+  readAt: timestamp("readAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  relIdx: index("em_rel_idx").on(t.expertPatientId),
+  senderIdx: index("em_sender_idx").on(t.senderId),
+}));
+export type ExpertMessage = typeof expertMessages.$inferSelect;
+export type InsertExpertMessage = typeof expertMessages.$inferInsert;
+
+export const appointmentStatusEnum = pgEnum("appointmentStatus", ["scheduled", "confirmed", "completed", "cancelled", "no_show"]);
+export const expertAppointments = pgTable("expert_appointments", {
+  id: serial("id").primaryKey(),
+  expertPatientId: integer("expertPatientId").notNull(),
+  expertId: integer("expertId").notNull(),
+  patientUserId: integer("patientUserId").notNull(),
+  title: varchar("title", { length: 256 }).notNull(),
+  description: text("description"),
+  startTime: timestamp("startTime").notNull(),
+  endTime: timestamp("endTime").notNull(),
+  status: appointmentStatusEnum("status").default("scheduled").notNull(),
+  modality: varchar("modality", { length: 16 }).default("online").notNull(),
+  meetingUrl: text("meetingUrl"),
+  location: text("location"),
+  googleCalendarEventId: varchar("googleCalendarEventId", { length: 256 }),
+  googleCalendarLink: text("googleCalendarLink"),
+  reminderSentAt: timestamp("reminderSentAt"),
+  cancelledAt: timestamp("cancelledAt"),
+  cancelReason: text("cancelReason"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  relIdx: index("ea_rel_idx").on(t.expertPatientId),
+  expertIdx: index("ea_expert_idx").on(t.expertId),
+  patientIdx: index("ea_patient_idx").on(t.patientUserId),
+  startIdx: index("ea_start_idx").on(t.startTime),
+}));
+export type ExpertAppointment = typeof expertAppointments.$inferSelect;
+export type InsertExpertAppointment = typeof expertAppointments.$inferInsert;
+
+export const assignedMenuStatusEnum = pgEnum("assignedMenuStatus", ["pending_adaptation", "adapted", "active", "archived"]);
+export const expertAssignedMenus = pgTable("expert_assigned_menus", {
+  id: serial("id").primaryKey(),
+  expertPatientId: integer("expertPatientId").notNull(),
+  expertId: integer("expertId").notNull(),
+  patientUserId: integer("patientUserId").notNull(),
+  originalMenuId: integer("originalMenuId"),
+  originalMenuTitle: varchar("originalMenuTitle", { length: 256 }),
+  adaptedMenuData: text("adaptedMenuData"),
+  adaptationNotes: text("adaptationNotes"),
+  status: assignedMenuStatusEnum("status").default("pending_adaptation").notNull(),
+  weekStartDate: timestamp("weekStartDate"),
+  expertNotes: text("expertNotes"),
+  patientFeedback: text("patientFeedback"),
+  patientRating: integer("patientRating"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  relIdx: index("eam_rel_idx").on(t.expertPatientId),
+  expertIdx: index("eam_expert_idx").on(t.expertId),
+  patientIdx: index("eam_patient_idx").on(t.patientUserId),
+}));
+export type ExpertAssignedMenu = typeof expertAssignedMenus.$inferSelect;
+export type InsertExpertAssignedMenu = typeof expertAssignedMenus.$inferInsert;
+
+export const patientProgress = pgTable("patient_progress", {
+  id: serial("id").primaryKey(),
+  expertPatientId: integer("expertPatientId").notNull(),
+  patientUserId: integer("patientUserId").notNull(),
+  recordedAt: timestamp("recordedAt").defaultNow().notNull(),
+  weight: real("weight"),
+  bodyFat: real("bodyFat"),
+  muscleMass: real("muscleMass"),
+  waist: real("waist"),
+  hip: real("hip"),
+  chest: real("chest"),
+  arm: real("arm"),
+  thigh: real("thigh"),
+  photoUrl: text("photoUrl"),
+  notes: text("notes"),
+  expertComment: text("expertComment"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  relIdx: index("pp_rel_idx").on(t.expertPatientId),
+  patientIdx: index("pp_patient_idx").on(t.patientUserId),
+  dateIdx: index("pp_date_idx").on(t.recordedAt),
+}));
+export type PatientProgress = typeof patientProgress.$inferSelect;
+export type InsertPatientProgress = typeof patientProgress.$inferInsert;
+
+// =============================================================================
+// BUDDYMAKERS — ANALÍTICAS DE ALCANCE
+// =============================================================================
+export const recipeAnalytics = pgTable("recipe_analytics", {
+  id: serial("id").primaryKey(),
+  recipeId: integer("recipeId").notNull(),
+  makerId: integer("makerId").notNull(),
+  date: varchar("date", { length: 10 }).notNull(),
+  views: integer("views").default(0).notNull(),
+  uniqueViews: integer("uniqueViews").default(0).notNull(),
+  likes: integer("likes").default(0).notNull(),
+  saves: integer("saves").default(0).notNull(),
+  shares: integer("shares").default(0).notNull(),
+  comments: integer("comments").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  recipeIdx: index("ra_recipe_idx").on(t.recipeId),
+  makerIdx: index("ra_maker_idx").on(t.makerId),
+  dateIdx: index("ra_date_idx").on(t.date),
+}));
+export type RecipeAnalytic = typeof recipeAnalytics.$inferSelect;
+export type InsertRecipeAnalytic = typeof recipeAnalytics.$inferInsert;
