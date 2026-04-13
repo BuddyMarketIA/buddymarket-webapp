@@ -18,7 +18,10 @@
     "settings": "Ajustes",
     "profile": "Perfil",
     "logout": "Cerrar sesión",
-    "scan": "BuddyScan IA"
+    "scan": "BuddyScan IA",
+    "metrics": "Mis Métricas",
+    "connectedHealth": "Salud Conectada",
+    "reminders": "Recordatorios"
   },
   "common": {
     "search": "Buscar",

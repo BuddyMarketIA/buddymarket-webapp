@@ -98,6 +98,16 @@ export default function RecipeDetail() {
 
   const utils = trpc.useUtils();
 
+  const { data: likeStatus } = trpc.recipeLikes.getStatus.useQuery(
+    { recipeId: Number(id) },
+    { enabled: !!user && !!id }
+  );
+  const toggleLike = trpc.recipeLikes.toggle.useMutation({
+    onSuccess: () => {
+      utils.recipeLikes.getStatus.invalidate({ recipeId: Number(id) });
+    },
+  });
+
   const toggleFav = trpc.recipes.toggleFavorite.useMutation({
     onSuccess: () => {
       utils.recipes.getById.invalidate({ id: Number(id) });
@@ -262,9 +272,26 @@ export default function RecipeDetail() {
           <button
             onClick={() => toggleFav.mutate({ recipeId: recipe.id })}
             className="rounded-full p-2 hover:bg-orange-50"
+            title="Guardar en favoritos"
           >
             <HeartIcon className="h-5 w-5 text-gray-400" />
           </button>
+          {user && (
+            <button
+              onClick={() => toggleLike.mutate({ recipeId: recipe.id })}
+              className="flex items-center gap-1 rounded-full px-2 py-1.5 hover:bg-red-50 transition-colors"
+              title={likeStatus?.liked ? "Quitar like" : "Me gusta"}
+            >
+              {likeStatus?.liked ? (
+                <HeartSolid className="h-5 w-5 text-red-500" />
+              ) : (
+                <HeartIcon className="h-5 w-5 text-gray-400" />
+              )}
+              {likeStatus?.likesCount !== undefined && likeStatus.likesCount > 0 && (
+                <span className="text-xs font-medium text-gray-500">{likeStatus.likesCount}</span>
+              )}
+            </button>
+          )}
           <ShareRecipeButton
             recipeId={recipe.id}
             recipeName={recipe.name}

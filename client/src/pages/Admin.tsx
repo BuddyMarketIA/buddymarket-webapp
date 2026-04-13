@@ -271,9 +271,15 @@ export default function Admin() {
   const { data: foodCategories } = trpc.catalogs.foodCategories.useQuery();
   const [appFilter, setAppFilter] = useState<"pending" | "approved" | "rejected">("pending");
   const [adminNote, setAdminNote] = useState<Record<number, string>>({});
+  const [roleReqFilter, setRoleReqFilter] = useState<"pending" | "approved" | "rejected">("pending");
+  const [roleReqNote, setRoleReqNote] = useState<Record<number, string>>({});
   const { data: users } = trpc.admin.users.useQuery({});
   const { data: applications, isLoading: appsLoading } = trpc.buddyApplications.listPending.useQuery(
     { status: appFilter },
+    { enabled: activeTab === "applications" }
+  );
+  const { data: roleRequests, isLoading: roleReqLoading } = trpc.roleRequests.adminList.useQuery(
+    { status: roleReqFilter },
     { enabled: activeTab === "applications" }
   );
 
@@ -310,6 +316,15 @@ export default function Admin() {
   });
   const deleteCategory = trpc.admin.deleteFoodCategory.useMutation({
     onSuccess: () => { utils.catalogs.foodCategories.invalidate(); toast.success("Eliminada"); },
+  });
+
+  const approveRoleReq = trpc.roleRequests.approve.useMutation({
+    onSuccess: () => { utils.roleRequests.adminList.invalidate(); toast.success("✅ Solicitud de rol aprobada"); },
+    onError: (err: any) => toast.error(err.message),
+  });
+  const rejectRoleReq = trpc.roleRequests.reject.useMutation({
+    onSuccess: () => { utils.roleRequests.adminList.invalidate(); toast.success("❌ Solicitud de rol rechazada"); },
+    onError: (err: any) => toast.error(err.message),
   });
 
   const reviewApplication = trpc.buddyApplications.review.useMutation({
@@ -641,6 +656,97 @@ export default function Admin() {
                 </div>
               );
               })}
+            </div>
+          )}
+        </div>
+
+        {/* Role Requests sub-section */}
+        <div className="mt-6 space-y-4">
+          <h3 className="text-sm font-bold text-gray-700 flex items-center gap-2">🎭 Solicitudes de cambio de rol</h3>
+          <div className="flex gap-2">
+            {(["pending", "approved", "rejected"] as const).map(s => (
+              <button
+                key={s}
+                onClick={() => setRoleReqFilter(s)}
+                className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
+                  roleReqFilter === s ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                }`}
+              >
+                {s === "pending" ? "⏳ Pendientes" : s === "approved" ? "✅ Aprobadas" : "❌ Rechazadas"}
+              </button>
+            ))}
+          </div>
+          {roleReqLoading ? (
+            <div className="flex justify-center py-6"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900" /></div>
+          ) : !roleRequests?.length ? (
+            <div className="vively-card text-center py-6 text-gray-400">
+              <p className="text-2xl mb-2">🎭</p>
+              <p className="text-sm">No hay solicitudes de rol {roleReqFilter === "pending" ? "pendientes" : roleReqFilter === "approved" ? "aprobadas" : "rechazadas"}</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {(roleRequests as any[]).map((req: any) => (
+                <div key={req.id} className="vively-card space-y-3">
+                  <div className="flex items-start justify-between gap-2">
+                    <div className="flex items-center gap-2">
+                      <span className="text-2xl">{req.roleType === "buddyexpert" ? "🎓" : "👨‍🍳"}</span>
+                      <div>
+                        <p className="font-bold text-sm text-gray-900">{req.user?.name || "Sin nombre"}</p>
+                        <p className="text-xs text-gray-400">{req.user?.email} · {req.roleType === "buddyexpert" ? "BuddyExpert" : "BuddyMaker"}</p>
+                      </div>
+                    </div>
+                    <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
+                      req.status === "pending" ? "bg-yellow-100 text-yellow-700" :
+                      req.status === "approved" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"
+                    }`}>{req.status}</span>
+                  </div>
+                  {req.motivation && (
+                    <div className="bg-gray-50 rounded-xl p-3">
+                      <p className="text-xs font-medium text-gray-500 mb-1">Motivación</p>
+                      <p className="text-xs text-gray-700">{req.motivation}</p>
+                    </div>
+                  )}
+                  {req.specialties?.length > 0 && (
+                    <p className="text-xs text-gray-600"><span className="font-medium">Especialidades:</span> {req.specialties.join(", ")}</p>
+                  )}
+                  {req.socialLinks && (
+                    <div className="flex gap-3 text-xs text-blue-500">
+                      {req.socialLinks.instagram && <span>📸 {req.socialLinks.instagram}</span>}
+                      {req.socialLinks.youtube && <span>▶️ {req.socialLinks.youtube}</span>}
+                      {req.socialLinks.website && <a href={req.socialLinks.website} target="_blank" rel="noreferrer" className="underline">🌐 Web</a>}
+                    </div>
+                  )}
+                  {req.status === "pending" && (
+                    <div className="space-y-2 pt-1 border-t border-gray-100">
+                      <input
+                        placeholder="Nota para el usuario (opcional)"
+                        value={roleReqNote[req.id] ?? ""}
+                        onChange={e => setRoleReqNote(prev => ({ ...prev, [req.id]: e.target.value }))}
+                        className="vively-input w-full text-xs"
+                      />
+                      <div className="flex gap-2">
+                        <button
+                          onClick={() => approveRoleReq.mutate({ requestId: req.id, note: roleReqNote[req.id] })}
+                          disabled={approveRoleReq.isPending}
+                          className="flex-1 py-2 rounded-xl bg-green-500 text-white text-xs font-bold hover:bg-green-600 disabled:opacity-50"
+                        >
+                          ✅ Aprobar y asignar rol
+                        </button>
+                        <button
+                          onClick={() => rejectRoleReq.mutate({ requestId: req.id, note: roleReqNote[req.id] })}
+                          disabled={rejectRoleReq.isPending}
+                          className="flex-1 py-2 rounded-xl bg-red-500 text-white text-xs font-bold hover:bg-red-600 disabled:opacity-50"
+                        >
+                          ❌ Rechazar
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                  {req.reviewNote && (
+                    <p className="text-xs text-gray-500 italic border-t border-gray-100 pt-2">Nota admin: "{req.reviewNote}"</p>
+                  )}
+                </div>
+              ))}
             </div>
           )}
         </div>
