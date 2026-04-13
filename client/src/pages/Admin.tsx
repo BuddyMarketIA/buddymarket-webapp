@@ -562,7 +562,7 @@ export default function Admin() {
 
       {/* Applications */}
       {activeTab === "applications" && (
-        <div className="space-y-4">
+        <div className="space-y-6">
           {/* Filter */}
           <div className="flex gap-2">
             {(["pending", "approved", "rejected"] as const).map(s => (
@@ -658,10 +658,9 @@ export default function Admin() {
               })}
             </div>
           )}
-        </div>
 
-        {/* Role Requests sub-section */}
-        <div className="mt-6 space-y-4">
+          {/* Role Requests sub-section */}
+          <div className="space-y-4">
           <h3 className="text-sm font-bold text-gray-700 flex items-center gap-2">🎭 Solicitudes de cambio de rol</h3>
           <div className="flex gap-2">
             {(["pending", "approved", "rejected"] as const).map(s => (
@@ -749,6 +748,7 @@ export default function Admin() {
               ))}
             </div>
           )}
+          </div>
         </div>
       )}
 

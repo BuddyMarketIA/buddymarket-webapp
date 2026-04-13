@@ -1,7 +1,7 @@
 import { useState, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
 import AppLayout from "@/components/AppLayout";
-import { useAuth } from "@/hooks/useAuth";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { useLocation } from "wouter";
 import { toast } from "sonner";
 
