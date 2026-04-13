@@ -2180,3 +2180,6 @@
 
 ## Retry automático tRPC (Apr 13)
 - [ ] Implementar retry automático con backoff en cliente tRPC para errores 502/503 (sandbox hibernación)
+
+## Banner de estado del servidor (Apr 13)
+- [x] Añadir banner de conectividad en LoginPage.tsx que detecte automáticamente problemas de servidor e informe al usuario

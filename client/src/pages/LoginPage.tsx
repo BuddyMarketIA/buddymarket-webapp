@@ -4,8 +4,90 @@ import { trpc } from "@/lib/trpc";
 import { toast } from "@/components/sonner-a11y-shim";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Eye, EyeOff, Mail, Lock, ArrowRight, Loader2, ChevronLeft, User, Phone, Shield, CheckCircle2, X } from "lucide-react";
+import { Eye, EyeOff, Mail, Lock, ArrowRight, Loader2, ChevronLeft, User, Phone, Shield, CheckCircle2, X, WifiOff, AlertTriangle, RefreshCw } from "lucide-react";
 import WebSSOButtons from "@/components/WebSSOButtons";
+
+// ─── Hook: detección de estado del servidor ───────────────────────────────────
+type ServerStatus = "checking" | "ok" | "slow" | "down";
+
+function useServerStatus(): { status: ServerStatus; latency: number | null; retry: () => void } {
+  const [status, setStatus] = useState<ServerStatus>("checking");
+  const [latency, setLatency] = useState<number | null>(null);
+  const [tick, setTick] = useState(0);
+
+  useEffect(() => {
+    let cancelled = false;
+    const check = async () => {
+      setStatus("checking");
+      const start = Date.now();
+      try {
+        const res = await fetch("/api/health", {
+          method: "GET",
+          cache: "no-store",
+          signal: AbortSignal.timeout(8000),
+        });
+        if (cancelled) return;
+        const ms = Date.now() - start;
+        setLatency(ms);
+        if (!res.ok) {
+          setStatus("down");
+        } else if (ms > 3000) {
+          setStatus("slow");
+        } else {
+          setStatus("ok");
+        }
+      } catch {
+        if (cancelled) return;
+        setLatency(null);
+        setStatus("down");
+      }
+    };
+    check();
+    return () => { cancelled = true; };
+  }, [tick]);
+
+  return { status, latency, retry: () => setTick(t => t + 1) };
+}
+
+// ─── Componente: Banner de estado del servidor ────────────────────────────────
+function ServerStatusBanner({ status, latency, retry }: { status: ServerStatus; latency: number | null; retry: () => void }) {
+  if (status === "ok") return null;
+
+  if (status === "checking") {
+    return (
+      <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-100 text-gray-500 text-xs font-medium mb-3">
+        <Loader2 className="w-3.5 h-3.5 animate-spin flex-shrink-0" />
+        <span>Verificando conexión con el servidor...</span>
+      </div>
+    );
+  }
+
+  if (status === "slow") {
+    return (
+      <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 text-xs font-medium mb-3">
+        <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+        <span className="flex-1">El servidor responde lento ({latency ? `${latency}ms` : "…"}). Puede tardar un poco más de lo normal.</span>
+        <button onClick={retry} className="ml-1 hover:text-amber-900 transition-colors flex-shrink-0">
+          <RefreshCw className="w-3.5 h-3.5" />
+        </button>
+      </div>
+    );
+  }
+
+  // status === "down"
+  return (
+    <div className="flex items-start gap-2 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium mb-3">
+      <WifiOff className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
+      <div className="flex-1">
+        <p className="font-semibold">No se puede conectar con el servidor</p>
+        <p className="text-red-500 mt-0.5 font-normal">Comprueba tu conexión a internet o inténtalo de nuevo en unos minutos.</p>
+      </div>
+      <button onClick={retry} className="ml-1 hover:text-red-900 transition-colors flex-shrink-0 mt-0.5">
+        <RefreshCw className="w-3.5 h-3.5" />
+      </button>
+    </div>
+  );
+}
 
 // ─── TyC Modal para SSO ───────────────────────────────────────────────────────
 const SSO_TYC_ACCEPTED_KEY = "buddymarket_sso_tyc_v2";
@@ -182,6 +264,9 @@ export default function LoginPage() {
   const [showConfirm, setShowConfirm] = useState(false);
   const [slide, setSlide] = useState(0);
   const [transitioning, setTransitioning] = useState(false);
+
+  // Estado del servidor
+  const { status: serverStatus, latency: serverLatency, retry: retryServer } = useServerStatus();
 
   // Auto-redirect if user is already authenticated
   const meQuery = trpc.auth.me.useQuery(undefined, { retry: false, refetchOnWindowFocus: false });
@@ -453,6 +538,9 @@ export default function LoginPage() {
       {/* ── Bottom: Form card ── */}
       <div className="relative z-10 flex-1 flex flex-col justify-end">
         <div className="bg-white rounded-t-[2rem] px-6 pt-7 pb-10 shadow-2xl min-h-[420px]">
+
+          {/* ── Banner de estado del servidor ── */}
+          <ServerStatusBanner status={serverStatus} latency={serverLatency} retry={retryServer} />
 
           {/* Back button for sub-modes */}
           {(mode !== "login") && (
