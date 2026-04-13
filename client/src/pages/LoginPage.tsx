@@ -14,9 +14,17 @@ function useServerStatus(): { status: ServerStatus; latency: number | null; retr
   const [status, setStatus] = useState<ServerStatus>("checking");
   const [latency, setLatency] = useState<number | null>(null);
   const [tick, setTick] = useState(0);
+  const retryTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
     let cancelled = false;
+
+    // Limpiar timer de reintento automático previo
+    if (retryTimerRef.current) {
+      clearTimeout(retryTimerRef.current);
+      retryTimerRef.current = null;
+    }
+
     const check = async () => {
       setStatus("checking");
       const start = Date.now();
@@ -24,14 +32,18 @@ function useServerStatus(): { status: ServerStatus; latency: number | null; retr
         const res = await fetch("/api/health", {
           method: "GET",
           cache: "no-store",
-          signal: AbortSignal.timeout(8000),
+          signal: AbortSignal.timeout(12000),
         });
         if (cancelled) return;
         const ms = Date.now() - start;
         setLatency(ms);
         if (!res.ok) {
           setStatus("down");
-        } else if (ms > 3000) {
+          // Reintento automático en 30 segundos
+          retryTimerRef.current = setTimeout(() => {
+            if (!cancelled) setTick(t => t + 1);
+          }, 30000);
+        } else if (ms > 4000) {
           setStatus("slow");
         } else {
           setStatus("ok");
@@ -40,10 +52,20 @@ function useServerStatus(): { status: ServerStatus; latency: number | null; retr
         if (cancelled) return;
         setLatency(null);
         setStatus("down");
+        // Reintento automático en 30 segundos
+        retryTimerRef.current = setTimeout(() => {
+          if (!cancelled) setTick(t => t + 1);
+        }, 30000);
       }
     };
     check();
-    return () => { cancelled = true; };
+    return () => {
+      cancelled = true;
+      if (retryTimerRef.current) {
+        clearTimeout(retryTimerRef.current);
+        retryTimerRef.current = null;
+      }
+    };
   }, [tick]);
 
   return { status, latency, retry: () => setTick(t => t + 1) };
@@ -55,20 +77,25 @@ function ServerStatusBanner({ status, latency, retry }: { status: ServerStatus; 
 
   if (status === "checking") {
     return (
-      <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-gray-100 text-gray-500 text-xs font-medium mb-3">
-        <Loader2 className="w-3.5 h-3.5 animate-spin flex-shrink-0" />
-        <span>Verificando conexión con el servidor...</span>
+      <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-gray-100 text-gray-400 text-xs mb-3">
+        <Loader2 className="w-3 h-3 animate-spin flex-shrink-0" />
+        <span>Verificando conexión...</span>
       </div>
     );
   }
 
   if (status === "slow") {
     return (
-      <div className="flex items-center gap-2 px-4 py-2.5 rounded-xl bg-amber-50 border border-amber-200 text-amber-700 text-xs font-medium mb-3">
-        <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
-        <span className="flex-1">El servidor responde lento ({latency ? `${latency}ms` : "…"}). Puede tardar un poco más de lo normal.</span>
-        <button onClick={retry} className="ml-1 hover:text-amber-900 transition-colors flex-shrink-0">
-          <RefreshCw className="w-3.5 h-3.5" />
+      <div className="rounded-xl bg-amber-50 border border-amber-200 text-amber-800 text-xs mb-3 overflow-hidden">
+        <div className="flex items-center gap-2 px-4 py-2.5">
+          <AlertTriangle className="w-3.5 h-3.5 flex-shrink-0" />
+          <span className="flex-1 font-medium">Servidor lento ({latency ? `${latency}ms` : "…"}). Puede tardar un poco más.</span>
+        </div>
+        <button
+          onClick={retry}
+          className="w-full flex items-center justify-center gap-1.5 py-2 bg-amber-100 hover:bg-amber-200 text-amber-700 font-semibold transition-colors border-t border-amber-200 text-xs"
+        >
+          <RefreshCw className="w-3 h-3" /> Reintentar
         </button>
       </div>
     );
@@ -76,14 +103,21 @@ function ServerStatusBanner({ status, latency, retry }: { status: ServerStatus; 
 
   // status === "down"
   return (
-    <div className="flex items-start gap-2 px-4 py-3 rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs font-medium mb-3">
-      <WifiOff className="w-3.5 h-3.5 flex-shrink-0 mt-0.5" />
-      <div className="flex-1">
-        <p className="font-semibold">No se puede conectar con el servidor</p>
-        <p className="text-red-500 mt-0.5 font-normal">Comprueba tu conexión a internet o inténtalo de nuevo en unos minutos.</p>
+    <div className="rounded-xl bg-red-50 border border-red-200 text-red-700 text-xs mb-3 overflow-hidden">
+      <div className="flex items-start gap-2.5 px-4 py-3">
+        <WifiOff className="w-4 h-4 flex-shrink-0 mt-0.5" />
+        <div className="flex-1">
+          <p className="font-semibold text-sm">No se puede conectar con el servidor</p>
+          <p className="text-red-500 mt-0.5 font-normal leading-relaxed">
+            Comprueba tu conexión a internet o inténtalo de nuevo en unos minutos.
+          </p>
+        </div>
       </div>
-      <button onClick={retry} className="ml-1 hover:text-red-900 transition-colors flex-shrink-0 mt-0.5">
-        <RefreshCw className="w-3.5 h-3.5" />
+      <button
+        onClick={retry}
+        className="w-full flex items-center justify-center gap-1.5 py-2.5 bg-red-100 hover:bg-red-200 text-red-700 font-semibold transition-colors border-t border-red-200"
+      >
+        <RefreshCw className="w-3.5 h-3.5" /> Reintentar ahora
       </button>
     </div>
   );
