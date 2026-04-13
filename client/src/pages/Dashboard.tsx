@@ -8,6 +8,7 @@ import { RECIPE_PLACEHOLDER_IMAGE } from "@/lib/constants";
 import { usePlan } from "@/hooks/usePlan";
 import DidYouKnow from "@/components/DidYouKnow";
 import { useTranslation } from "react-i18next";
+import { useTheme } from "@/contexts/ThemeContext";
 
 // QUICK_ACCESS built inside component
 const _QUICK_ACCESS_PLACEHOLDER = [
@@ -91,6 +92,33 @@ const RECIPE_OF_DAY = [
 export default function Dashboard() {
   const { user } = useAuth();
   const { t, i18n } = useTranslation();
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const C = {
+    pageBg:       isDark ? "#0f172a" : "transparent",
+    cardBg:       isDark ? "#1e293b" : "white",
+    cardBg2:      isDark ? "#1e293b" : "#f9fafb",
+    cardBorder:   isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)",
+    textPrimary:  isDark ? "#f1f5f9" : "#1a1a1a",
+    textSecond:   isDark ? "#94a3b8" : "#9ca3af",
+    textMuted:    isDark ? "#64748b" : "#6b7280",
+    orangeLight:  isDark ? "rgba(249,115,22,0.18)" : "#FFF7ED",
+    orangeBorder: isDark ? "rgba(249,115,22,0.30)" : "#FED7AA",
+    indigoBg:     isDark ? "rgba(99,102,241,0.15)" : "#EEF2FF",
+    indigoBorder: isDark ? "rgba(99,102,241,0.30)" : "#C7D2FE",
+    indigoText:   isDark ? "#a5b4fc" : "#3730a3",
+    indigoText2:  isDark ? "#818cf8" : "#4338ca",
+    greenBg:      isDark ? "rgba(16,185,129,0.12)" : "#ECFDF5",
+    blueBg:       isDark ? "rgba(59,130,246,0.15)" : "#DBEAFE",
+    inputBg:      isDark ? "#0f172a" : "#f3f4f6",
+    shadow:       isDark ? "0 2px 8px rgba(0,0,0,0.4)" : "0 2px 8px rgba(0,0,0,0.06)",
+    shadow2:      isDark ? "0 2px 12px rgba(0,0,0,0.5)" : "0 2px 12px rgba(0,0,0,0.07)",
+    divider:      isDark ? "rgba(255,255,255,0.07)" : "rgba(0,0,0,0.06)",
+    recBg:        isDark ? "rgba(249,115,22,0.10)" : "linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%)",
+    recBorder:    isDark ? "rgba(249,115,22,0.20)" : "rgba(249,115,22,0.15)",
+    widgetBg:     isDark ? "rgba(255,255,255,0.04)" : "rgba(249,115,22,0.07)",
+    stepCard: (bg: string, border: string) => isDark ? { bg: "rgba(255,255,255,0.05)", border: "rgba(255,255,255,0.10)" } : { bg, border },
+  };
   const QUICK_ACCESS = [
     { label: t("nav.recipes"), emoji: "🍽️", to: "/app/recipes", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/recipes_afa44a0e.jpg", accent: "#F97316", size: "large", subtitle: t("dashboard.recipeSubtitle") },
     { label: t("nav.menus"), emoji: "📅", to: "/app/menus", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/mealprep_eb5fda9a.jpg", accent: "#6366F1", size: "small", subtitle: t("dashboard.menuSubtitle") },
@@ -250,7 +278,7 @@ export default function Dashboard() {
   const showProfileCard = !onboardingDone && profileCompletion < 85 && !profileData.isLoading;
 
   return (
-    <div style={{ padding: "16px", paddingBottom: "8px" }}>
+    <div style={{ padding: "16px", paddingBottom: "8px", background: C.pageBg, minHeight: "100vh" }}>
 
       {/* Greeting Row */}
       <div style={{ display: "flex", alignItems: "flex-start", gap: "14px", marginBottom: "20px" }}>
@@ -258,10 +286,10 @@ export default function Dashboard() {
           {userAvatar ? <img src={userAvatar} alt={firstName} style={{ width: "100%", height: "100%", objectFit: "cover" }} /> : userInitial}
         </div>
         <div style={{ flex: 1 }}>
-          <p style={{ margin: 0, fontSize: "22px", fontWeight: 900, color: "#1a1a1a", letterSpacing: "-0.03em" }}>
+          <p style={{ margin: 0, fontSize: "22px", fontWeight: 900, color: C.textPrimary, letterSpacing: "-0.03em" }}>
             {t(`dashboard.${getGreetingKey()}`)}, {firstName}! 👋
           </p>
-          <p style={{ margin: "2px 0 0", fontSize: "13px", color: "#9ca3af", fontWeight: 500 }}>
+          <p style={{ margin: "2px 0 0", fontSize: "13px", color: C.textSecond, fontWeight: 500 }}>
             {getDay(i18n.language).charAt(0).toUpperCase() + getDay(i18n.language).slice(1)}
           </p>
           <p style={{ margin: "4px 0 0", fontSize: "14px", color: "#F97316", fontWeight: 600 }}>
@@ -278,7 +306,7 @@ export default function Dashboard() {
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
               <div style={{ width: "28px", height: "28px", borderRadius: "8px", background: "linear-gradient(135deg, #F97316, #FB923C)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "14px" }}>🚀</div>
-              <h2 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.02em" }}>{t("dashboard.quickAccess")}</h2>            </div>
+              <h2 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: C.textPrimary, letterSpacing: "-0.02em" }}>{t("dashboard.quickAccess")}</h2>            </div>
             <button
               onClick={() => { setStepsHidden(true); try { localStorage.setItem("bm_steps_hidden", "true"); } catch {} }}
               style={{ background: "none", border: "none", fontSize: "18px", color: "#9ca3af", cursor: "pointer", padding: "4px", lineHeight: 1 }}
@@ -366,7 +394,7 @@ export default function Dashboard() {
               <Link key={item.step} href={item.to}>
                 <div
                   className="step-card"
-                  style={{ position: "relative", background: item.bg, border: `1.5px solid ${item.border}`, borderRadius: "18px", padding: "14px", cursor: "pointer", height: "100%", boxSizing: "border-box", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}
+                  style={{ position: "relative", background: C.stepCard(item.bg, item.border).bg, border: `1.5px solid ${C.stepCard(item.bg, item.border).border}`, borderRadius: "18px", padding: "14px", cursor: "pointer", height: "100%", boxSizing: "border-box", boxShadow: C.shadow }}
                 >
                   {/* Step badge + emoji */}
                   <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
@@ -376,12 +404,12 @@ export default function Dashboard() {
                     >
                       {item.emoji}
                     </div>
-                    <span style={{ fontSize: "10px", fontWeight: 800, color: item.textColor, textTransform: "uppercase", letterSpacing: "0.06em", opacity: 0.7 }}>Paso {item.step}</span>
+                    <span style={{ fontSize: "10px", fontWeight: 800, color: isDark ? C.textSecond : item.textColor, textTransform: "uppercase", letterSpacing: "0.06em", opacity: 0.7 }}>Paso {item.step}</span>
                   </div>
                   {/* Title */}
-                  <p style={{ margin: "0 0 4px", fontSize: "13px", fontWeight: 800, color: item.textColor, lineHeight: 1.3 }}>{item.title}</p>
+                  <p style={{ margin: "0 0 4px", fontSize: "13px", fontWeight: 800, color: isDark ? C.textPrimary : item.textColor, lineHeight: 1.3 }}>{item.title}</p>
                   {/* Description */}
-                  <p style={{ margin: "0 0 10px", fontSize: "11px", color: item.textColor, opacity: 0.75, lineHeight: 1.5 }}>{item.desc}</p>
+                  <p style={{ margin: "0 0 10px", fontSize: "11px", color: isDark ? C.textSecond : item.textColor, opacity: 0.75, lineHeight: 1.5 }}>{item.desc}</p>
                   {/* CTA */}
                   <div
                     className="step-cta"
@@ -399,17 +427,17 @@ export default function Dashboard() {
       {/* Profile Completion Card */}
       {showProfileCard && (
         <Link href="/app/profile">
-          <div style={{ background: "linear-gradient(135deg, #EEF2FF 0%, #E0E7FF 100%)", border: "2px solid #C7D2FE", borderRadius: "20px", padding: "16px", marginBottom: "16px", cursor: "pointer", boxShadow: "0 4px 16px rgba(99,102,241,0.14)" }}>
+          <div style={{ background: C.indigoBg, border: `2px solid ${C.indigoBorder}`, borderRadius: "20px", padding: "16px", marginBottom: "16px", cursor: "pointer", boxShadow: "0 4px 16px rgba(99,102,241,0.14)" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "12px", marginBottom: "10px" }}>
               <div style={{ width: "40px", height: "40px", borderRadius: "50%", background: "linear-gradient(135deg, #6366F1, #818CF8)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", flexShrink: 0 }}>👤</div>
               <div style={{ flex: 1 }}>
-                <p style={{ margin: 0, fontSize: "14px", fontWeight: 800, color: "#3730a3" }}>Completa tu perfil</p>
-                <p style={{ margin: "2px 0 0", fontSize: "14px", color: "#4338ca", fontWeight: 500 }}>Para darte las mejores recomendaciones personalizadas</p>
+                <p style={{ margin: 0, fontSize: "14px", fontWeight: 800, color: C.indigoText }}>Completa tu perfil</p>
+                <p style={{ margin: "2px 0 0", fontSize: "14px", color: C.indigoText2, fontWeight: 500 }}>Para darte las mejores recomendaciones personalizadas</p>
               </div>
               <span style={{ fontSize: "20px", fontWeight: 900, color: "#6366F1" }}>{profileCompletion}%</span>
             </div>
             {/* Progress bar */}
-            <div style={{ background: "#C7D2FE", borderRadius: "999px", height: "8px", overflow: "hidden" }}>
+            <div style={{ background: isDark ? "rgba(99,102,241,0.25)" : "#C7D2FE", borderRadius: "999px", height: "8px", overflow: "hidden" }}>
               <div style={{ background: "linear-gradient(90deg, #6366F1, #818CF8)", borderRadius: "999px", height: "100%", width: `${profileCompletion}%`, transition: "width 0.6s ease" }} />
             </div>
             <p style={{ margin: "8px 0 0", fontSize: "14px", color: "#6366F1", fontWeight: 600, textAlign: "right" }}>Toca para completar →</p>
@@ -549,18 +577,18 @@ export default function Dashboard() {
       {todayMenuItems.length > 0 && (
         <div style={{ marginBottom: "20px" }}>
           <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
-            <h2 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.02em" }}>Menú de hoy</h2>
+            <h2 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: C.textPrimary, letterSpacing: "-0.02em" }}>Menú de hoy</h2>
             <Link href="/app/menus"><span style={{ fontSize: "13px", fontWeight: 600, color: "#F97316" }}>Ver semana →</span></Link>
           </div>
           <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
             {todayMenuItems.slice(0, 3).map((item: any, i: number) => (
-              <div key={i} style={{ background: "white", borderRadius: "16px", padding: "14px 16px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", display: "flex", alignItems: "center", gap: "12px" }}>
-                <div style={{ width: "40px", height: "40px", borderRadius: "12px", background: "#FFF7ED", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", flexShrink: 0 }}>
+              <div key={i} style={{ background: C.cardBg, borderRadius: "16px", padding: "14px 16px", boxShadow: C.shadow, display: "flex", alignItems: "center", gap: "12px" }}>
+                <div style={{ width: "40px", height: "40px", borderRadius: "12px", background: C.orangeLight, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", flexShrink: 0 }}>
                   {item.mealType === "breakfast" ? "🌅" : item.mealType === "lunch" ? "☀️" : item.mealType === "dinner" ? "🌙" : "🍎"}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#1a1a1a" }}>{item.recipe?.name || item.customMealName || "Comida"}</p>
-                  <p style={{ margin: 0, fontSize: "14px", color: "#9ca3af" }}>{item.mealType === "breakfast" ? "Desayuno" : item.mealType === "lunch" ? "Comida" : item.mealType === "dinner" ? "Cena" : "Snack"}</p>
+                  <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: C.textPrimary }}>{item.recipe?.name || item.customMealName || "Comida"}</p>
+                  <p style={{ margin: 0, fontSize: "14px", color: C.textSecond }}>{item.mealType === "breakfast" ? "Desayuno" : item.mealType === "lunch" ? "Comida" : item.mealType === "dinner" ? "Cena" : "Snack"}</p>
                 </div>
                 <Link href={`/app/meal-log`}>
                   <button onClick={() => toast.success("Añadido al diario")} style={{ background: "#F97316", border: "none", borderRadius: "10px", padding: "6px 12px", fontSize: "14px", fontWeight: 700, color: "white", cursor: "pointer" }}>
@@ -619,13 +647,13 @@ export default function Dashboard() {
       </Link>
 
       {/* ===== WIDGET PERSONALIZABLE ===== */}
-      <div style={{ background: "white", borderRadius: "22px", padding: "18px 18px 16px", marginBottom: "16px", boxShadow: "0 2px 12px rgba(0,0,0,0.07)" }}>
+      <div style={{ background: C.cardBg, borderRadius: "22px", padding: "18px 18px 16px", marginBottom: "16px", boxShadow: C.shadow2 }}>
         {/* Header con selector */}
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px" }}>
-          <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em" }}>Mi widget</p>
+          <p style={{ margin: 0, fontSize: "13px", fontWeight: 700, color: C.textSecond, textTransform: "uppercase", letterSpacing: "0.05em" }}>Mi widget</p>
           <button
             onClick={() => setShowWidgetPicker(!showWidgetPicker)}
-            style={{ background: "#FFF7ED", border: "1px solid #FED7AA", borderRadius: "10px", padding: "4px 10px", fontSize: "12px", fontWeight: 700, color: "#F97316", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }}
+            style={{ background: C.orangeLight, border: `1px solid ${C.orangeBorder}`, borderRadius: "10px", padding: "4px 10px", fontSize: "12px", fontWeight: 700, color: "#F97316", cursor: "pointer", display: "flex", alignItems: "center", gap: "4px" }}
           >
             ✏️ Cambiar
           </button>
@@ -667,9 +695,9 @@ export default function Dashboard() {
           <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
             <div style={{ width: "64px", height: "64px", borderRadius: "18px", background: "linear-gradient(135deg, #F97316, #EA580C)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "30px", flexShrink: 0, boxShadow: "0 4px 16px rgba(249,115,22,0.35)" }}>🔥</div>
             <div>
-              <p style={{ margin: 0, fontSize: "13px", color: "#9ca3af", fontWeight: 600 }}>Racha actual</p>
-              <p style={{ margin: "2px 0 0", fontSize: "32px", fontWeight: 900, color: "#1a1a1a", letterSpacing: "-0.04em", lineHeight: 1 }}>{streakData.data?.currentStreak ?? 0} <span style={{ fontSize: "16px", fontWeight: 600, color: "#9ca3af" }}>días</span></p>
-              {(streakData.data?.longestStreak ?? 0) > 0 && <p style={{ margin: "4px 0 0", fontSize: "13px", color: "#6b7280" }}>Récord: {streakData.data?.longestStreak} días 🏆</p>}
+              <p style={{ margin: 0, fontSize: "13px", color: C.textSecond, fontWeight: 600 }}>Racha actual</p>
+              <p style={{ margin: "2px 0 0", fontSize: "32px", fontWeight: 900, color: C.textPrimary, letterSpacing: "-0.04em", lineHeight: 1 }}>{streakData.data?.currentStreak ?? 0} <span style={{ fontSize: "16px", fontWeight: 600, color: C.textSecond }}>días</span></p>
+              {(streakData.data?.longestStreak ?? 0) > 0 && <p style={{ margin: "4px 0 0", fontSize: "13px", color: C.textMuted }}>Récord: {streakData.data?.longestStreak} días 🏆</p>}
             </div>
           </div>
         )}
@@ -678,8 +706,8 @@ export default function Dashboard() {
           <div>
             <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
               <div>
-                <p style={{ margin: 0, fontSize: "13px", color: "#9ca3af", fontWeight: 600 }}>Agua hoy</p>
-                <p style={{ margin: "2px 0 0", fontSize: "28px", fontWeight: 900, color: "#1a1a1a", letterSpacing: "-0.03em" }}>{waterGlasses} <span style={{ fontSize: "14px", fontWeight: 600, color: "#9ca3af" }}>/ {waterGoal} vasos</span></p>
+                <p style={{ margin: 0, fontSize: "13px", color: C.textSecond, fontWeight: 600 }}>Agua hoy</p>
+                <p style={{ margin: "2px 0 0", fontSize: "28px", fontWeight: 900, color: C.textPrimary, letterSpacing: "-0.03em" }}>{waterGlasses} <span style={{ fontSize: "14px", fontWeight: 600, color: C.textSecond }}>/ {waterGoal} vasos</span></p>
               </div>
               <span style={{ fontSize: "36px" }}>💧</span>
             </div>
@@ -692,13 +720,13 @@ export default function Dashboard() {
                     setWaterGlasses(newVal);
                     try { const _dw = new Date(); const _ld = `${_dw.getFullYear()}-${String(_dw.getMonth() + 1).padStart(2, '0')}-${String(_dw.getDate()).padStart(2, '0')}`; localStorage.setItem(`bm_water_${_ld}`, String(newVal)); } catch {}
                   }}
-                  style={{ width: "32px", height: "32px", borderRadius: "8px", border: "none", cursor: "pointer", fontSize: "16px", background: i < waterGlasses ? "#DBEAFE" : "#f3f4f6", transition: "background 0.2s" }}
+                  style={{ width: "32px", height: "32px", borderRadius: "8px", border: "none", cursor: "pointer", fontSize: "16px", background: i < waterGlasses ? (isDark ? "rgba(59,130,246,0.25)" : "#DBEAFE") : C.inputBg, transition: "background 0.2s" }}
                 >
                   {i < waterGlasses ? "💧" : "○"}
                 </button>
               ))}
             </div>
-            <div style={{ height: "6px", borderRadius: "3px", background: "#f3f4f6", overflow: "hidden" }}>
+            <div style={{ height: "6px", borderRadius: "3px", background: C.inputBg, overflow: "hidden" }}>
               <div style={{ height: "100%", width: `${Math.min(100, (waterGlasses / waterGoal) * 100)}%`, background: "linear-gradient(90deg, #3B82F6, #60A5FA)", borderRadius: "3px", transition: "width 0.5s" }} />
             </div>
           </div>
@@ -712,12 +740,12 @@ export default function Dashboard() {
           return nextMeal ? (
             <Link href="/app/active-menu">
               <div style={{ display: "flex", alignItems: "center", gap: "14px", cursor: "pointer" }}>
-                <div style={{ width: "56px", height: "56px", borderRadius: "16px", background: "#FFF7ED", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "26px", flexShrink: 0 }}>
+                <div style={{ width: "56px", height: "56px", borderRadius: "16px", background: C.orangeLight, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "26px", flexShrink: 0 }}>
                   {mealEmoji}
                 </div>
                 <div style={{ flex: 1 }}>
-                  <p style={{ margin: 0, fontSize: "12px", color: "#9ca3af", fontWeight: 600, textTransform: "uppercase" }}>Próxima comida</p>
-                  <p style={{ margin: "2px 0", fontSize: "16px", fontWeight: 800, color: "#1a1a1a" }}>{mealName}</p>
+                  <p style={{ margin: 0, fontSize: "12px", color: C.textSecond, fontWeight: 600, textTransform: "uppercase" }}>Próxima comida</p>
+                  <p style={{ margin: "2px 0", fontSize: "16px", fontWeight: 800, color: C.textPrimary }}>{mealName}</p>
                   <p style={{ margin: 0, fontSize: "13px", color: "#F97316", fontWeight: 600 }}>Ver en menú →</p>
                 </div>
               </div>
@@ -725,7 +753,7 @@ export default function Dashboard() {
           ) : (
             <div style={{ textAlign: "center", padding: "8px 0" }}>
               <p style={{ margin: 0, fontSize: "32px" }}>🎉</p>
-              <p style={{ margin: "8px 0 0", fontSize: "14px", fontWeight: 700, color: "#1a1a1a" }}>¡Todas las comidas completadas!</p>
+              <p style={{ margin: "8px 0 0", fontSize: "14px", fontWeight: 700, color: C.textPrimary }}>¡Todas las comidas completadas!</p>
               <Link href="/app/menus"><span style={{ fontSize: "13px", color: "#F97316", fontWeight: 600 }}>Planificar próxima semana →</span></Link>
             </div>
           );
@@ -737,10 +765,10 @@ export default function Dashboard() {
           return (
             <Link href="/app/shopping-lists">
               <div style={{ display: "flex", alignItems: "center", gap: "14px", cursor: "pointer" }}>
-                <div style={{ width: "56px", height: "56px", borderRadius: "16px", background: "#ECFDF5", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "26px", flexShrink: 0 }}>🛒</div>
+                <div style={{ width: "56px", height: "56px", borderRadius: "16px", background: C.greenBg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "26px", flexShrink: 0 }}>🛒</div>
                 <div style={{ flex: 1 }}>
-                  <p style={{ margin: 0, fontSize: "12px", color: "#9ca3af", fontWeight: 600, textTransform: "uppercase" }}>Lista de la compra</p>
-                  <p style={{ margin: "2px 0", fontSize: "22px", fontWeight: 900, color: "#1a1a1a" }}>{pendingItems} <span style={{ fontSize: "14px", fontWeight: 600, color: "#9ca3af" }}>productos pendientes</span></p>
+                  <p style={{ margin: 0, fontSize: "12px", color: C.textSecond, fontWeight: 600, textTransform: "uppercase" }}>Lista de la compra</p>
+                  <p style={{ margin: "2px 0", fontSize: "22px", fontWeight: 900, color: C.textPrimary }}>{pendingItems} <span style={{ fontSize: "14px", fontWeight: 600, color: C.textSecond }}>productos pendientes</span></p>
                   <p style={{ margin: 0, fontSize: "13px", color: "#10B981", fontWeight: 600 }}>{totalLists} lista{totalLists !== 1 ? "s" : ""} activa{totalLists !== 1 ? "s" : ""} →</p>
                 </div>
               </div>
@@ -753,8 +781,8 @@ export default function Dashboard() {
             <div style={{ display: "flex", alignItems: "center", gap: "14px", cursor: "pointer" }}>
               <div style={{ width: "56px", height: "56px", borderRadius: "16px", background: "linear-gradient(135deg, #6366F1, #818CF8)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "26px", flexShrink: 0, boxShadow: "0 4px 12px rgba(99,102,241,0.35)" }}>📷</div>
               <div style={{ flex: 1 }}>
-                <p style={{ margin: 0, fontSize: "12px", color: "#9ca3af", fontWeight: 600, textTransform: "uppercase" }}>BuddyScan IA</p>
-                <p style={{ margin: "2px 0", fontSize: "16px", fontWeight: 800, color: "#1a1a1a" }}>Escanear alimento</p>
+                  <p style={{ margin: 0, fontSize: "12px", color: C.textSecond, fontWeight: 600, textTransform: "uppercase" }}>BuddyScan IA</p>
+                  <p style={{ margin: "2px 0", fontSize: "16px", fontWeight: 800, color: C.textPrimary }}>Escanear alimento</p>
                 <p style={{ margin: 0, fontSize: "13px", color: "#6366F1", fontWeight: 600 }}>Analizar con IA →</p>
               </div>
             </div>
@@ -766,7 +794,7 @@ export default function Dashboard() {
 
       {/* Quick Access — Bento Grid */}
       <div style={{ marginBottom: "20px" }}>
-        <h2 style={{ margin: "0 0 14px", fontSize: "17px", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.02em" }}>Accesos Rápidos</h2>
+        <h2 style={{ margin: "0 0 14px", fontSize: "17px", fontWeight: 800, color: C.textPrimary, letterSpacing: "-0.02em" }}>Accesos Rápidos</h2>
 
         {/* Row 1: large + 2 small */}
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "auto auto", gap: "10px", marginBottom: "10px" }}>
@@ -906,7 +934,7 @@ export default function Dashboard() {
       {/* Recommendations Section */}
       <div style={{ marginBottom: "20px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
-          <h2 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.02em" }}>
+          <h2 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: C.textPrimary, letterSpacing: "-0.02em" }}>
             ✨ Recomendaciones para ti
           </h2>
           <Link href="/app/recipes"><span style={{ fontSize: "13px", fontWeight: 600, color: "#F97316" }}>Ver todas →</span></Link>
@@ -928,8 +956,8 @@ export default function Dashboard() {
                       <p style={{ margin: "2px 0 0", fontSize: "11px", color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>🔥 {recipe.caloriesPerServing ? `${recipe.caloriesPerServing} kcal` : "—"}</p>
                     </div>
                   </div>
-                  <div style={{ background: "white", padding: "6px 10px" }}>
-                    <p style={{ margin: 0, fontSize: "13px", color: "#9ca3af", fontWeight: 600 }}>
+                  <div style={{ background: C.cardBg, padding: "6px 10px" }}>
+                    <p style={{ margin: 0, fontSize: "13px", color: C.textSecond, fontWeight: 600 }}>
                       {recipe.mealTime === "desayuno" ? "☀️ Desayuno" :
                        recipe.mealTime === "comida" ? "🍽️ Comida" :
                        recipe.mealTime === "cena" ? "🌙 Cena" :
@@ -943,10 +971,10 @@ export default function Dashboard() {
           </div>
         ) : (
           <Link href="/app/profile">
-            <div style={{ background: "linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%)", borderRadius: "18px", padding: "20px", textAlign: "center", boxShadow: "0 2px 8px rgba(249,115,22,0.08)", border: "1px solid rgba(249,115,22,0.15)", cursor: "pointer" }}>
+            <div style={{ background: isDark ? "rgba(249,115,22,0.10)" : "linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%)", borderRadius: "18px", padding: "20px", textAlign: "center", boxShadow: "0 2px 8px rgba(249,115,22,0.08)", border: "1px solid rgba(249,115,22,0.15)", cursor: "pointer" }}>
               <p style={{ margin: "0 0 6px", fontSize: "28px" }}>🍽️</p>
-              <p style={{ margin: "0 0 4px", fontSize: "14px", fontWeight: 800, color: "#1a1a1a" }}>Personaliza tus recomendaciones</p>
-              <p style={{ margin: "0 0 12px", fontSize: "14px", color: "#9ca3af" }}>Completa tu perfil para recibir recetas adaptadas a tus objetivos y preferencias</p>
+              <p style={{ margin: "0 0 4px", fontSize: "14px", fontWeight: 800, color: C.textPrimary }}>Personaliza tus recomendaciones</p>
+              <p style={{ margin: "0 0 12px", fontSize: "14px", color: C.textSecond }}>Completa tu perfil para recibir recetas adaptadas a tus objetivos y preferencias</p>
               <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "#F97316", borderRadius: "12px", padding: "8px 16px" }}>
                 <span style={{ fontSize: "14px", fontWeight: 700, color: "white" }}>Completar perfil →</span>
               </div>
@@ -1022,7 +1050,7 @@ export default function Dashboard() {
       {/* Recipe of the Day Carousel */}
       <div style={{ marginBottom: "20px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
-          <h2 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.02em" }}>{t("dashboard.recipeOfDay")}</h2>
+          <h2 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: C.textPrimary, letterSpacing: "-0.02em" }}>{t("dashboard.recipeOfDay")}</h2>
           <Link href="/app/recipes"><span style={{ fontSize: "13px", fontWeight: 600, color: "#F97316" }}>{t("common.seeMore")} →</span></Link>
         </div>
         <div style={{ position: "relative", borderRadius: "22px", overflow: "hidden", height: "180px", boxShadow: "0 8px 24px rgba(0,0,0,0.15)" }}>
@@ -1066,7 +1094,7 @@ export default function Dashboard() {
       {/* Community Section: BuddyExperts & BuddyMakers (BuddyIA is in bottom nav) */}
       <div style={{ marginBottom: "20px" }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
-          <h2 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.02em" }}>Expertos y Creadores</h2>
+          <h2 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: C.textPrimary, letterSpacing: "-0.02em" }}>Expertos y Creadores</h2>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
           {[
@@ -1161,7 +1189,7 @@ export default function Dashboard() {
         </div>
       </a>
       {/* Disclaimer */}
-      <p style={{ fontSize: "13px", color: "#d1d5db", textAlign: "center", margin: "8px 0 0", lineHeight: 1.5 }}>
+      <p style={{ fontSize: "13px", color: C.textMuted, textAlign: "center", margin: "8px 0 0", lineHeight: 1.5 }}>
         BuddyMarket no constituye asesoramiento médico o nutricional profesional. Consulta a un profesional.
       </p>
     </div>

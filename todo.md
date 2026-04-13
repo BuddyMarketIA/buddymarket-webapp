@@ -2131,3 +2131,27 @@
 - [ ] UI: indicador de estado de conexión (online/offline) en la app
 - [ ] UI: banner de "Modo offline - datos en caché" cuando no hay conexión
 - [ ] Manifest PWA: actualizar con iconos, shortcuts y display standalone
+
+## iOS App Nativa — API Mobile + SwiftUI
+- [ ] Backend: router mobileApi con endpoints REST/JSON para iOS
+- [ ] Backend: GET /api/mobile/recipes (catálogo paginado)
+- [ ] Backend: GET /api/mobile/recipes/:id (detalle receta)
+- [ ] Backend: POST /api/mobile/auth/apple (login con Apple token)
+- [ ] Backend: GET /api/mobile/user/dashboard (datos del día)
+- [ ] Backend: POST /api/mobile/iap/verify (verificar compra StoreKit 2)
+- [ ] Backend: GET /api/mobile/user/profile (perfil del usuario)
+- [ ] iOS: Proyecto SwiftUI con XcodeGen (project.yml)
+- [ ] iOS: Capa de red (APIClient.swift con URLSession)
+- [ ] iOS: Modelos de datos (Recipe, User, Dashboard, Subscription)
+- [ ] iOS: Pantalla Onboarding (3 slides nativos con animaciones)
+- [ ] iOS: Pantalla Login nativa (Sign in with Apple + Google)
+- [ ] iOS: Dashboard nativo (calorías, macros, receta del día)
+- [ ] iOS: Explorar recetas nativo (grid con filtros y búsqueda)
+- [ ] iOS: Detalle de receta nativo (ingredientes, instrucciones, macros)
+- [ ] iOS: Perfil nativo (datos, suscripción, ajustes)
+- [ ] iOS: Pantalla suscripción StoreKit 2 nativa
+- [ ] iOS: Notificaciones push nativas
+
+## Bug fixes pendientes
+- [ ] Dashboard: card de calorías muestra 0 kcal/0g macros cuando no hay comidas registradas — añadir CTA motivacional y sugerencia de primera comida del día
+- [ ] Dark mode incompleto: header y bottom nav en oscuro pero contenido del dashboard en fondo claro — unificar todos los fondos, textos y cards en dark mode

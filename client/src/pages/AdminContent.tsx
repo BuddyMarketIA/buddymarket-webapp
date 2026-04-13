@@ -499,7 +499,7 @@ function MenuForm({
 type View = "list" | "new-recipe" | "edit-recipe" | "new-menu" | "edit-menu";
 
 export default function AdminContent() {
-  const { user, isLoading } = useAuth();
+  const { user, loading: isLoading } = useAuth();
   const [activeTab, setActiveTab] = useState<"recipes" | "menus">("recipes");
   const [view, setView] = useState<View>("list");
   const [editTarget, setEditTarget] = useState<any>(null);
