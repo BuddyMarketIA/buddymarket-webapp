@@ -10750,5 +10750,46 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
       }),
   }),
 
+  // -- Ingredient Nutrition --
+  ingredientNutrition: router({
+    search: publicProcedure
+      .input(z.object({ query: z.string().min(1).max(100), limit: z.number().int().min(1).max(50).default(20) }))
+      .query(async ({ input }) => {
+        return db.searchIngredientNutrition(input.query, input.limit);
+      }),
+    getById: publicProcedure
+      .input(z.object({ id: z.number().int() }))
+      .query(async ({ input }) => {
+        return db.getIngredientNutritionById(input.id);
+      }),
+    byCategory: publicProcedure
+      .input(z.object({ category: z.string(), limit: z.number().int().min(1).max(100).default(50) }))
+      .query(async ({ input }) => {
+        return db.getIngredientsByCategory(input.category, input.limit);
+      }),
+    categories: publicProcedure.query(async () => {
+      return db.getAllIngredientNutritionCategories();
+    }),
+    calculateNutrition: publicProcedure
+      .input(z.object({
+        items: z.array(z.object({
+          ingredientId: z.number().int(),
+          grams: z.number().positive(),
+        }))
+      }))
+      .mutation(async ({ input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { ingredientNutrition } = await import("../drizzle/schema.js");
+        const { inArray } = await import("drizzle-orm");
+        const ids = input.items.map((i: { ingredientId: number }) => i.ingredientId);
+        const found = await drizzleDb.select().from(ingredientNutrition).where(inArray(ingredientNutrition.id, ids));
+        const ingMap = new Map(found.map((i: { id: number }) => [i.id, i]));
+        const resolved = input.items
+          .map((item: { ingredientId: number; grams: number }) => ({ ingredient: ingMap.get(item.ingredientId), grams: item.grams }))
+          .filter((x: { ingredient: unknown; grams: number }) => !!x.ingredient);
+        return db.calculateNutritionFromItems(resolved as any);
+      }),
+  }),
 });
 export type AppRouter = typeof appRouter;

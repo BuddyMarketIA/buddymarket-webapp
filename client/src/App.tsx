@@ -95,6 +95,7 @@ const ExpertPatients = lazy(() => import("./pages/ExpertPatients"));
 const ExpertPatientDetail = lazy(() => import("./pages/ExpertPatientDetail"));
 const MyExpert = lazy(() => import("./pages/MyExpert"));
 const MakerAnalytics = lazy(() => import("./pages/MakerAnalytics"));
+const IngredientExplorer = lazy(() => import("./pages/IngredientExplorer"));
 
 // ─── Page loading fallback ────────────────────────────────────────────────────
 function PageLoader() {
@@ -184,6 +185,7 @@ function Router() {
       <Route path="/app/recipes/:id/edit">{(params) => <ProtectedRoute component={RecipeForm} params={params} />}</Route>
       <Route path="/app/recipes/:id">{(params) => <ProtectedRoute component={RecipeDetail} params={params} />}</Route>
       <Route path="/app/recipes">{() => <ProtectedRoute component={Recipes} />}</Route>
+      <Route path="/app/ingredients">{() => <ProtectedRoute component={IngredientExplorer} />}</Route>
       <Route path="/app/menus">{() => <ProtectedRoute component={Menus} />}</Route>
       <Route path="/app/my-menus">{() => <ProtectedRoute component={MyMenus} />}</Route>
       <Route path="/app/shopping-lists">{() => <ProtectedRoute component={ShoppingLists} />}</Route>

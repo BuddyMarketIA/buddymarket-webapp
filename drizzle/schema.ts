@@ -2500,3 +2500,44 @@ export const serverLogs = pgTable("server_logs", {
 }));
 export type ServerLog = typeof serverLogs.$inferSelect;
 export type InsertServerLog = typeof serverLogs.$inferInsert;
+
+// =============================================================================
+// INGREDIENT NUTRITION — BASE DE DATOS NUTRICIONAL DE INGREDIENTES
+// =============================================================================
+export const ingredientNutrition = pgTable("ingredient_nutrition", {
+  id: serial("id").primaryKey(),
+  // Identificación
+  name: varchar("name", { length: 200 }).notNull(),
+  nameEn: varchar("nameEn", { length: 200 }),
+  aliases: text("aliases"),          // JSON array de sinónimos/variantes
+  category: varchar("category", { length: 100 }),
+  // Valores por 100g
+  calories: real("calories").default(0).notNull(),
+  protein: real("protein").default(0).notNull(),
+  carbs: real("carbs").default(0).notNull(),
+  fat: real("fat").default(0).notNull(),
+  fiber: real("fiber").default(0),
+  sugar: real("sugar").default(0),
+  sodium: real("sodium").default(0),
+  saturatedFat: real("saturatedFat").default(0),
+  // Micronutrientes (por 100g)
+  vitaminC: real("vitaminC"),
+  vitaminA: real("vitaminA"),
+  vitaminD: real("vitaminD"),
+  vitaminB12: real("vitaminB12"),
+  calcium: real("calcium"),
+  iron: real("iron"),
+  potassium: real("potassium"),
+  magnesium: real("magnesium"),
+  // Metadatos
+  glycemicIndex: integer("glycemicIndex"),
+  isProcessed: boolean("isProcessed").default(false),
+  source: varchar("source", { length: 100 }).default("generated"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  nameIdx: index("in_name_idx").on(t.name),
+  categoryIdx: index("in_category_idx").on(t.category),
+}));
+export type IngredientNutrition = typeof ingredientNutrition.$inferSelect;
+export type InsertIngredientNutrition = typeof ingredientNutrition.$inferInsert;

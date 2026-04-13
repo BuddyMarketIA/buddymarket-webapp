@@ -232,6 +232,13 @@
       "when": 1776106415032,
       "tag": "0032_stiff_magik",
       "breakpoints": true
+    },
+    {
+      "idx": 33,
+      "version": "7",
+      "when": 1776106922201,
+      "tag": "0033_clear_cammi",
+      "breakpoints": true
     }
   ]
 }

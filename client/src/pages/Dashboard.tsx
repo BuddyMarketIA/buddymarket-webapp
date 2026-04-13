@@ -140,6 +140,7 @@ export default function Dashboard() {
     { label: t("nav.scan"), emoji: "📷", to: "/app/buddy-scan", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/buddyscan_dd3e1e08.jpg", accent: "#8B5CF6", size: "wide", subtitle: t("dashboard.scanSubtitle") },
     { label: "BuddyIA", emoji: "🧠", to: "/app/buddy-ia", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/buddyscan_dd3e1e08.jpg", accent: "#8B5CF6", size: "small", subtitle: "Tu asesor nutricional" },
     { label: t("nav.diary"), emoji: "📊", to: "/app/meal-log", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/vegetables_0f947a56.jpg", accent: "#EF4444", size: "small", subtitle: t("dashboard.diarySubtitle") },
+    { label: "Ingredientes", emoji: "🥗", to: "/app/ingredients", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/vegetables_0f947a56.jpg", accent: "#4CAF50", size: "small", subtitle: "Valores nutricionales" },
   ];
   // Use local date (not UTC) so the diary resets at midnight in the user's timezone
   const [today] = useState(() => {

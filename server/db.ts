@@ -2567,3 +2567,78 @@ export async function insertServerLog(data: {
     // No propagar errores del logger para evitar bucles
   }
 }
+
+// ── Ingredient Nutrition ──────────────────────────────────────────────────────
+export async function searchIngredientNutrition(query: string, limit = 20) {
+  try {
+    const db = await getDb();
+    if (!db) return [];
+    const { ingredientNutrition } = await import("../drizzle/schema.js");
+    const q = `%${query}%`;
+    return db
+      .select()
+      .from(ingredientNutrition)
+      .where(or(ilike(ingredientNutrition.name, q), ilike(ingredientNutrition.aliases, q)))
+      .limit(limit);
+  } catch {
+    return [];
+  }
+}
+
+export async function getIngredientNutritionById(id: number) {
+  try {
+    const db = await getDb();
+    if (!db) return undefined;
+    const { ingredientNutrition } = await import("../drizzle/schema.js");
+    const result = await db.select().from(ingredientNutrition).where(eq(ingredientNutrition.id, id)).limit(1);
+    return result[0];
+  } catch {
+    return undefined;
+  }
+}
+
+export async function getIngredientsByCategory(category: string, limit = 50) {
+  try {
+    const db = await getDb();
+    if (!db) return [];
+    const { ingredientNutrition } = await import("../drizzle/schema.js");
+    return db.select().from(ingredientNutrition).where(eq(ingredientNutrition.category, category)).limit(limit);
+  } catch {
+    return [];
+  }
+}
+
+export async function getAllIngredientNutritionCategories() {
+  try {
+    const db = await getDb();
+    if (!db) return [];
+    const { ingredientNutrition } = await import("../drizzle/schema.js");
+    const result = await db
+      .selectDistinct({ category: ingredientNutrition.category })
+      .from(ingredientNutrition)
+      .orderBy(sql`category ASC`);
+    return result.map((r: { category: string | null }) => r.category).filter(Boolean);
+  } catch {
+    return [];
+  }
+}
+
+export function calculateNutritionFromItems(
+  items: Array<{ ingredient: { calories: number; protein: number; carbs: number; fat: number; fiber?: number | null; sugar?: number | null; sodium?: number | null }; grams: number }>
+) {
+  return items.reduce(
+    (acc, { ingredient, grams }) => {
+      const factor = grams / 100;
+      return {
+        calories: acc.calories + ingredient.calories * factor,
+        protein: acc.protein + ingredient.protein * factor,
+        carbs: acc.carbs + ingredient.carbs * factor,
+        fat: acc.fat + ingredient.fat * factor,
+        fiber: acc.fiber + (ingredient.fiber ?? 0) * factor,
+        sugar: acc.sugar + (ingredient.sugar ?? 0) * factor,
+        sodium: acc.sodium + (ingredient.sodium ?? 0) * factor,
+      };
+    },
+    { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, sugar: 0, sodium: 0 }
+  );
+}

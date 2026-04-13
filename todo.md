@@ -2194,3 +2194,13 @@
 - [ ] Crear página /admin/logs con tabla de errores, filtros y estadísticas
 - [ ] Añadir ruta /admin/logs en App.tsx protegida por rol admin
 - [ ] Añadir enlace al panel de logs en la navegación del admin
+
+## Sprint: BD de ingredientes nutricionales (en curso)
+- [ ] Schema BD: tabla ingredientNutrition con campos nutricionales completos
+- [ ] Migración db:push
+- [ ] Generar 1500 ingredientes con valores nutricionales por 100g via script
+- [ ] Insertar 1500 ingredientes en BD
+- [ ] Endpoint tRPC ingredients.search para autocompletado
+- [ ] Vincular ingredientes de recetas con ingredientNutrition
+- [ ] Actualizar cálculo nutricional de recetas para usar BD de ingredientes
+- [ ] UI RecipeDetail: mostrar nutrición calculada desde BD de ingredientes
