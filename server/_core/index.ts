@@ -222,9 +222,15 @@ async function startServer() {
       dbStatus = "error";
     }
 
-    const pkg = JSON.parse(
-      (await import("fs")).readFileSync(new URL("../../package.json", import.meta.url), "utf8")
-    );
+    let pkg: { version?: string } = {};
+    try {
+      pkg = JSON.parse(
+        (await import("fs")).readFileSync(new URL("../../package.json", import.meta.url), "utf8")
+      );
+    } catch {
+      // En producción el path puede no existir; usamos versión por defecto
+      pkg = { version: "1.0.0" };
+    }
 
     const health = {
       ok: dbStatus === "ok",
