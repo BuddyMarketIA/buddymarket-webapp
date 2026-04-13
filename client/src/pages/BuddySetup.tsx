@@ -225,9 +225,17 @@ export default function BuddySetup() {
     referralCode: "",
   });
 
+  const utils = trpc.useUtils();
   const completeOnboarding = trpc.profile.completeOnboarding.useMutation();
   const applyReferralCode = trpc.userReferrals.applyCode.useMutation();
   const { data: existingProfile } = trpc.profile.get.useQuery();
+
+  // Guard: if onboarding is already completed, redirect to dashboard immediately
+  useEffect(() => {
+    if (user?.onboardingCompleted) {
+      setLocation("/app/dashboard");
+    }
+  }, [user?.onboardingCompleted, setLocation]);
 
   // Pre-fill data from existing profile (set during Registration)
   useEffect(() => {
@@ -252,7 +260,13 @@ export default function BuddySetup() {
       // Mark onboarding as completed silently and redirect to dashboard
       completeOnboarding.mutate(
         { mainGoal: p.mainGoal as any, gender: p.gender as any, age: p.age, heightCm: p.height, weightKg: p.weight, activityLevel: p.activityLevel as any, generateMenu: false },
-        { onSuccess: () => setLocation("/app/dashboard"), onError: () => setLocation("/app/dashboard") }
+        {
+          onSuccess: () => {
+            utils.auth.me.invalidate();
+            setLocation("/app/dashboard");
+          },
+          onError: () => setLocation("/app/dashboard")
+        }
       );
     }
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -312,6 +326,8 @@ export default function BuddySetup() {
         onSuccess: () => {
           setGenerating(false);
           setDone(true);
+          // Invalidate auth.me cache so ProtectedRoute sees onboardingCompleted: true
+          utils.auth.me.invalidate();
           // Apply referral code if provided
           if (data.referralCode.trim().length >= 4) {
             applyReferralCode.mutate({ code: data.referralCode.trim() });
