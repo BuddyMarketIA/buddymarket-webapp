@@ -39,6 +39,9 @@ const MODULES = [
   { icon: "📈", color: "#f59e0b", bg: "#fffbeb", tag: "Métricas", title: "Análisis de Salud y Progreso",
     desc: "Registra peso, medidas, energía y bienestar. Visualiza tu evolución con gráficas detalladas y comparte informes con tu nutricionista.",
     img: FOOD.salmon, highlights: ["Historial completo", "Exportar PDF", "Compartir con profesional"] },
+  { icon: "🧑‍⚕️", color: "#10b981", bg: "#f0fdf4", tag: "BuddyExperts", title: "Tu Nutricionista Personal Online",
+    desc: "Accede a nutricionistas certificados que crean planes 100% personalizados para ti, hacen seguimiento de tu evolución y responden tus dudas en tiempo real.",
+    img: FOOD.mealprep, highlights: ["Planes personalizados", "Seguimiento semanal", "Mensajería directa"] },
 ];
 
 const SERVICES = [
@@ -48,15 +51,29 @@ const SERVICES = [
     items: ["Menús semanales personalizados con IA","Diario nutricional con registro por voz","Lista de la compra automática","24 planes especializados","Seguimiento de métricas y progreso","Biblioteca de 15.000+ recetas"],
     cta: "Empezar gratis" },
   { icon: "🧑‍⚕️", color: "#10b981", gradient: "linear-gradient(135deg,#f0fdf4,#dcfce7)", border: "#86efac",
-    title: "BuddyExperts", subtitle: "Para nutricionistas y dietistas",
-    desc: "Gestiona tu consulta online, crea planes nutricionales personalizados y acompaña a tus pacientes en su evolución. Herramientas profesionales para escalar tu práctica.",
-    badge: "Para profesionales sanitarios",
+    title: "BuddyExperts", subtitle: "Escala tu consulta y multiplica tus ingresos",
+    desc: "Gestiona tu consulta online, publica planes nutricionales y acompaña a tus pacientes. BuddyMarket te da las herramientas para llegar a más clientes y cobrar por tu expertise sin intermediarios.",
+    badge: "Para nutricionistas y dietistas certificados",
+    earnings: { label: "Ingresos potenciales", value: "800–3.500€/mes", note: "según número de pacientes activos" },
+    perks: [
+      { icon: "💰", title: "70% de comisión", desc: "Te quedas el 70% de cada plan o consulta vendida. Sin cuotas fijas." },
+      { icon: "🔗", title: "Código de referido", desc: "Gana un 20% recurrente de cada usuario que se suscriba con tu código." },
+      { icon: "🏅", title: "Badge verificado", desc: "Sello de nutricionista certificado que genera confianza y más conversiones." },
+      { icon: "📈", title: "Panel de analíticas", desc: "Visualiza ingresos, pacientes activos, evolución y tasa de retención." },
+    ],
     items: ["Panel profesional con historial de pacientes","Crear y publicar menús y planes de nutrición","Seguimiento de evolución de clientes","Mensajería directa con pacientes","Monetización de planes premium","Badge BuddyExpert verificado","Gestión de citas y agenda","Informes de progreso exportables"],
     cta: "Convertirme en BuddyExpert" },
   { icon: "🍳", color: "#f59e0b", gradient: "linear-gradient(135deg,#fffbeb,#fef3c7)", border: "#fcd34d",
-    title: "BuddyMakers", subtitle: "Para creadores de contenido culinario",
-    desc: "Comparte tu pasión por la cocina saludable. Sube tus recetas, construye tu comunidad y monetiza tu contenido. Solo recetas, sin complicaciones.",
-    badge: "Para creadores de contenido",
+    title: "BuddyMakers", subtitle: "Monetiza tus recetas y construye tu comunidad",
+    desc: "Sube tus recetas, crece tu audiencia y cobra por tu contenido. BuddyMarket te da visibilidad ante miles de usuarios que buscan exactamente lo que tú creas.",
+    badge: "Para creadores de contenido culinario",
+    earnings: { label: "Ingresos potenciales", value: "200–1.500€/mes", note: "según seguidores y recetas premium" },
+    perks: [
+      { icon: "💰", title: "Recetas premium", desc: "Cobra por tus recetas exclusivas. Tú fijas el precio, nosotros gestionamos el cobro." },
+      { icon: "🔗", title: "Código de referido", desc: "Gana un 20% recurrente de cada usuario que se suscriba con tu código de creador." },
+      { icon: "📣", title: "Visibilidad garantizada", desc: "Tus recetas aparecen en búsquedas, newsletters y la portada de la app." },
+      { icon: "📊", title: "Analíticas de creador", desc: "Visualiza alcance, seguidores, ingresos y qué recetas generan más engagement." },
+    ],
     items: ["Perfil de creador con página propia","Subir y publicar recetas con fotos","Comunidad de seguidores y likes","Monetización de recetas premium","Analíticas de alcance y engagement","Badge BuddyMaker verificado"],
     cta: "Convertirme en BuddyMaker" },
   { icon: "🏢", color: "#7c3aed", gradient: "linear-gradient(135deg,#f5f3ff,#ede9fe)", border: "#c4b5fd",
@@ -228,10 +245,10 @@ export default function LandingPage() {
         transition: "all 0.3s ease",
       }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", height: 68, display: "flex", alignItems: "center", gap: 8 }}>
-          <a href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", flexShrink: 0, marginRight: 24 }}>
-            <img src={LOGO_ICON} alt="" style={{ height: 32, width: 32 }} onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
-            <span style={{ fontSize: 20, fontWeight: 800, color: "#111827", letterSpacing: "-0.5px", lineHeight: 1 }}>
-              <span style={{ color: "#F97316" }}>B</span>uddy<span style={{ color: "#F97316" }}>M</span>arket
+          <a href="/" style={{ display: "flex", alignItems: "center", gap: 12, textDecoration: "none", flexShrink: 0, marginRight: 24 }}>
+            <img src={LOGO_ICON} alt="" style={{ height: 44, width: 44 }} onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+            <span style={{ fontSize: 24, fontWeight: 900, color: "#F97316", letterSpacing: "-0.5px", lineHeight: 1 }}>
+              BuddyMarket
             </span>
           </a>
 
@@ -492,7 +509,20 @@ export default function LandingPage() {
                 )}
                 <p style={{ fontSize: 12, fontWeight: 800, color: SERVICES[activeService].color, letterSpacing: "0.1em", textTransform: "uppercase", marginBottom: 8 }}>{SERVICES[activeService].title}</p>
                 <h3 style={{ fontSize: "clamp(22px,3vw,32px)", fontWeight: 800, color: "#111827", margin: "0 0 16px", lineHeight: 1.3 }}>{SERVICES[activeService].subtitle}</h3>
-                <p style={{ fontSize: 16, color: "#4b5563", lineHeight: 1.7, marginBottom: 28 }}>{SERVICES[activeService].desc}</p>
+                <p style={{ fontSize: 16, color: "#4b5563", lineHeight: 1.7, marginBottom: 20 }}>{SERVICES[activeService].desc}</p>
+
+                {/* Earnings badge for BuddyExperts and BuddyMakers */}
+                {(SERVICES[activeService] as any).earnings && (
+                  <div style={{ background: "white", border: `2px solid ${SERVICES[activeService].color}`, borderRadius: 16, padding: "16px 20px", marginBottom: 24, display: "flex", alignItems: "center", gap: 16 }}>
+                    <div style={{ width: 48, height: 48, borderRadius: 12, background: SERVICES[activeService].color + "18", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 24, flexShrink: 0 }}>💸</div>
+                    <div>
+                      <div style={{ fontSize: 11, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 2 }}>{(SERVICES[activeService] as any).earnings.label}</div>
+                      <div style={{ fontSize: 22, fontWeight: 900, color: SERVICES[activeService].color, lineHeight: 1 }}>{(SERVICES[activeService] as any).earnings.value}</div>
+                      <div style={{ fontSize: 12, color: "#9ca3af", marginTop: 2 }}>{(SERVICES[activeService] as any).earnings.note}</div>
+                    </div>
+                  </div>
+                )}
+
                 <a href={
                   SERVICES[activeService].title === "BuddyExperts" ? "/register/buddy-expert" :
                   SERVICES[activeService].title === "BuddyMakers" ? "/register/buddy-maker" :
@@ -504,6 +534,23 @@ export default function LandingPage() {
                 </a>
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+                {/* Perks grid for BuddyExperts and BuddyMakers */}
+                {(SERVICES[activeService] as any).perks && (
+                  <>
+                    <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 8 }}>
+                      {(SERVICES[activeService] as any).perks.map((perk: any, pi: number) => (
+                        <div key={pi} style={{ background: "white", borderRadius: 14, padding: "16px", boxShadow: "0 2px 12px rgba(0,0,0,0.06)", border: `1px solid ${SERVICES[activeService].color}20` }}>
+                          <div style={{ fontSize: 22, marginBottom: 8 }}>{perk.icon}</div>
+                          <div style={{ fontSize: 13, fontWeight: 700, color: "#111827", marginBottom: 4 }}>{perk.title}</div>
+                          <div style={{ fontSize: 12, color: "#6b7280", lineHeight: 1.5 }}>{perk.desc}</div>
+                        </div>
+                      ))}
+                    </div>
+                    <div style={{ borderTop: "1px solid #e5e7eb", paddingTop: 12, marginBottom: 4 }}>
+                      <span style={{ fontSize: 12, fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.08em" }}>Funcionalidades incluidas</span>
+                    </div>
+                  </>
+                )}
                 {SERVICES[activeService].items.map((item, i) => (
                   <div key={i} style={{ display: "flex", alignItems: "center", gap: 14, background: "white", borderRadius: 12, padding: "13px 18px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
                     <div style={{ width: 26, height: 26, borderRadius: "50%", background: SERVICES[activeService].color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
