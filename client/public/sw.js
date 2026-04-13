@@ -1,8 +1,32 @@
-// BuddyMarket Service Worker — v4.0
-// Strategies: Shell (cache-first) | Static assets (stale-while-revalidate) | Navigation (network-first)
-const SHELL_CACHE = 'buddymarket-shell-v4';
-const STATIC_CACHE = 'buddymarket-static-v4';
-const CACHE_NAME = SHELL_CACHE; // keep backward-compat reference
+// BuddyMarket Service Worker — v5.0
+// Strategies:
+//   Shell (cache-first)                     → HTML shell, manifest, icons
+//   Static assets (stale-while-revalidate)  → JS/CSS bundles, fonts
+//   Images (cache-first + CDN)              → recipe/menu images, CDN assets
+//   API data (network-first + offline fallback) → tRPC calls for recipes, menus, catalog
+//   Offline queue (IndexedDB)               → mutations queued while offline, replayed on reconnect
+
+const SHELL_CACHE   = 'buddymarket-shell-v5';
+const STATIC_CACHE  = 'buddymarket-static-v5';
+const API_CACHE     = 'buddymarket-api-v5';
+const IMAGE_CACHE   = 'buddymarket-images-v5';
+const CURRENT_CACHES = [SHELL_CACHE, STATIC_CACHE, API_CACHE, IMAGE_CACHE];
+
+// API endpoints that should be cached for offline use
+const CACHEABLE_API_PATTERNS = [
+  'contentSync.getRecipeCatalog',
+  'contentSync.getMenuCatalog',
+  'contentSync.getSyncManifest',
+  'catalogs.allergies',
+  'catalogs.dietRestrictions',
+  'catalogs.foodCategories',
+  'recipes.list',
+  'recipes.detail',
+  'menus.list',
+  'menus.detail',
+  'household.menus',
+];
+
 const STATIC_ASSETS = [
   '/',
   '/manifest.json',
@@ -11,7 +35,59 @@ const STATIC_ASSETS = [
   '/apple-touch-icon.png',
 ];
 
-// Install: cache static shell
+// ─── IndexedDB helpers for offline queue ─────────────────────────────────────
+
+const DB_NAME = 'buddymarket-offline';
+const DB_VERSION = 1;
+const STORE_QUEUE = 'sync-queue';
+
+function openDB() {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VERSION);
+    req.onupgradeneeded = (e) => {
+      const db = e.target.result;
+      if (!db.objectStoreNames.contains(STORE_QUEUE)) {
+        const store = db.createObjectStore(STORE_QUEUE, { keyPath: 'id', autoIncrement: true });
+        store.createIndex('timestamp', 'timestamp');
+      }
+    };
+    req.onsuccess = (e) => resolve(e.target.result);
+    req.onerror = (e) => reject(e.target.error);
+  });
+}
+
+async function queueMutation(payload) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_QUEUE, 'readwrite');
+    tx.objectStore(STORE_QUEUE).add({ ...payload, timestamp: Date.now() });
+    tx.oncomplete = resolve;
+    tx.onerror = (e) => reject(e.target.error);
+  });
+}
+
+async function getPendingMutations() {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_QUEUE, 'readonly');
+    const req = tx.objectStore(STORE_QUEUE).getAll();
+    req.onsuccess = (e) => resolve(e.target.result);
+    req.onerror = (e) => reject(e.target.error);
+  });
+}
+
+async function deleteMutation(id) {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx = db.transaction(STORE_QUEUE, 'readwrite');
+    tx.objectStore(STORE_QUEUE).delete(id);
+    tx.oncomplete = resolve;
+    tx.onerror = (e) => reject(e.target.error);
+  });
+}
+
+// ─── Install ──────────────────────────────────────────────────────────────────
+
 self.addEventListener('install', (event) => {
   event.waitUntil(
     caches.open(SHELL_CACHE).then((cache) => cache.addAll(STATIC_ASSETS))
@@ -19,9 +95,9 @@ self.addEventListener('install', (event) => {
   self.skipWaiting();
 });
 
-// Activate: clean old caches
+// ─── Activate ─────────────────────────────────────────────────────────────────
+
 self.addEventListener('activate', (event) => {
-  const CURRENT_CACHES = [SHELL_CACHE, STATIC_CACHE];
   event.waitUntil(
     caches.keys().then((keys) =>
       Promise.all(keys.filter((k) => !CURRENT_CACHES.includes(k)).map((k) => caches.delete(k)))
@@ -30,16 +106,53 @@ self.addEventListener('activate', (event) => {
   self.clients.claim();
 });
 
-// Fetch: network-first for API, cache-first for static assets
+// ─── Fetch ────────────────────────────────────────────────────────────────────
+
 self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip non-GET and API calls
+  // Skip non-GET
   if (request.method !== 'GET') return;
+
+  // ── API data: network-first with offline fallback ──────────────────────────
+  if (url.pathname.startsWith('/api/trpc/')) {
+    const isCacheable = CACHEABLE_API_PATTERNS.some(
+      (p) => url.pathname.includes(p) || url.search.includes(p)
+    );
+    if (!isCacheable) return;
+
+    event.respondWith(
+      fetch(request.clone()).then((response) => {
+        if (response.ok) {
+          const clone = response.clone();
+          caches.open(API_CACHE).then((cache) => {
+            clone.blob().then((blob) => {
+              const headers = new Headers({
+                'Content-Type': 'application/json',
+                'sw-cached-at': Date.now().toString(),
+              });
+              cache.put(request, new Response(blob, { status: 200, headers }));
+            });
+          });
+        }
+        return response;
+      }).catch(async () => {
+        const cached = await caches.match(request);
+        if (cached) return cached;
+        return new Response(
+          JSON.stringify({ error: { message: 'Sin conexion y sin datos en cache' } }),
+          { status: 503, headers: { 'Content-Type': 'application/json' } }
+        );
+      })
+    );
+    return;
+  }
+
+  // Skip other API calls
   if (url.pathname.startsWith('/api/')) return;
 
-  // For navigation requests: network-first, fallback to cached shell
+  // ── Navigation: network-first, fallback to shell ──────────────────────────
   if (request.mode === 'navigate') {
     event.respondWith(
       fetch(request).catch(() =>
@@ -49,7 +162,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // JS/CSS bundles — stale-while-revalidate (serve cached, update in background)
+  // ── JS/CSS bundles: stale-while-revalidate ────────────────────────────────
   if (url.pathname.match(/\.(js|css|woff2?|ttf|eot)$/)) {
     event.respondWith(
       caches.open(STATIC_CACHE).then((cache) =>
@@ -65,39 +178,105 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Images & icons — cache-first
+  // ── Images: cache-first (includes CDN images for recipes/menus) ──────────
   if (
     url.pathname.match(/\.(png|jpg|jpeg|svg|gif|webp|ico)$/) ||
+    url.hostname.includes('cloudfront') ||
+    url.hostname.includes('placehold.co') ||
     url.pathname === '/manifest.json'
   ) {
     event.respondWith(
-      caches.match(request).then((cached) => {
-        if (cached) return cached;
-        return fetch(request).then((response) => {
-          if (response.ok) {
-            const clone = response.clone();
-            caches.open(STATIC_CACHE).then((cache) => cache.put(request, clone));
-          }
-          return response;
-        });
-      })
+      caches.open(IMAGE_CACHE).then((cache) =>
+        cache.match(request).then((cached) => {
+          if (cached) return cached;
+          return fetch(request).then((response) => {
+            if (response.ok) cache.put(request, response.clone());
+            return response;
+          }).catch(() => new Response('', { status: 404 }));
+        })
+      )
     );
     return;
   }
 });
 
+// ─── Background Sync: replay queued mutations on reconnect ───────────────────
+
+self.addEventListener('sync', (event) => {
+  if (event.tag === 'replay-mutations') {
+    event.waitUntil(replayQueuedMutations());
+  }
+});
+
+async function replayQueuedMutations() {
+  const pending = await getPendingMutations();
+  for (const item of pending) {
+    try {
+      const response = await fetch(item.url, {
+        method: item.method,
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(item.body),
+      });
+      if (response.ok) {
+        await deleteMutation(item.id);
+      }
+    } catch (_) {
+      // Will retry on next sync event
+    }
+  }
+  const clients = await self.clients.matchAll();
+  clients.forEach((client) => client.postMessage({ type: 'SYNC_COMPLETE' }));
+}
+
+// ─── Message handler ──────────────────────────────────────────────────────────
+
+self.addEventListener('message', (event) => {
+  if (event.data?.type === 'SKIP_WAITING') {
+    self.skipWaiting();
+    return;
+  }
+  if (event.data?.type === 'TRIGGER_SYNC') {
+    replayQueuedMutations();
+    return;
+  }
+  if (event.data?.type === 'CLEAR_API_CACHE') {
+    caches.delete(API_CACHE).then(() => {
+      event.source?.postMessage({ type: 'API_CACHE_CLEARED' });
+    });
+    return;
+  }
+  if (event.data?.type === 'GET_PENDING_COUNT') {
+    getPendingMutations().then((pending) => {
+      event.source?.postMessage({ type: 'PENDING_COUNT', count: pending.length });
+    });
+    return;
+  }
+  if (event.data?.type === 'SCHEDULE_REMINDER') {
+    const { title, mealType, summary, delay } = event.data;
+    const body = summary
+      ? buildNotificationBody(summary, mealType)
+      : `Es hora de registrar tu ${mealType || 'comida'}!`;
+    setTimeout(() => {
+      self.registration.showNotification(title || 'BuddyMarket', {
+        body,
+        icon: '/icon-192x192.png',
+        badge: '/icon-192x192.png',
+        tag: `local-meal-reminder-${mealType || 'generic'}`,
+        data: { url: '/meal-log' },
+        vibrate: [200, 100, 200],
+        actions: [
+          { action: 'open', title: 'Registrar ahora' },
+          { action: 'dismiss', title: 'Mas tarde' },
+        ],
+      });
+    }, delay || 0);
+  }
+});
+
 // =============================================================================
-// HELPERS — build caloric summary body text
+// NOTIFICATION HELPERS
 // =============================================================================
 
-/**
- * Builds a human-readable body for a meal reminder notification that includes
- * the user's caloric progress for the day.
- *
- * @param {object} summary  - { consumed, goal, percentage, remaining, proteins, carbohydrates, fats }
- * @param {string} mealType - e.g. "desayuno", "almuerzo", "cena"
- * @returns {string}
- */
 function buildNotificationBody(summary, mealType) {
   const mealEmojis = {
     desayuno: '🌅',
@@ -109,41 +288,33 @@ function buildNotificationBody(summary, mealType) {
   };
   const emoji = mealEmojis[mealType] || '🍽️';
   const isActivity = mealType === 'actividad';
-  const mealLabel = isActivity ? '🏃 ¡Hora de entrenar!' : (mealType ? `${emoji} Hora de ${mealType}` : '🍽️ Hora de comer');
-
+  const mealLabel = isActivity
+    ? '🏃 Hora de entrenar!'
+    : (mealType ? `${emoji} Hora de ${mealType}` : '🍽️ Hora de comer');
   if (isActivity) {
-    return `${mealLabel}\n💪 Registra tu actividad física de hoy en BuddyMarket.`;
+    return `${mealLabel}\n💪 Registra tu actividad fisica de hoy en BuddyMarket.`;
   }
-
   if (!summary || summary.goal <= 0) {
-    return `${mealLabel} — ¡Recuerda registrar tus comidas!`;
+    return `${mealLabel} — Recuerda registrar tus comidas!`;
   }
-
   const { consumed, goal, percentage, remaining, proteins, carbohydrates, fats } = summary;
-
-  // Progress bar using unicode blocks (10 chars wide)
   const filled = Math.round(percentage / 10);
   const empty = 10 - filled;
   const bar = '█'.repeat(filled) + '░'.repeat(empty);
-
   if (consumed === 0) {
-    return `${mealLabel}\n📊 ${bar} 0%\nAún no has registrado comidas hoy. ¡Empieza ahora!`;
+    return `${mealLabel}\n📊 ${bar} 0%\nAun no has registrado comidas hoy. Empieza ahora!`;
   }
-
   const lines = [
     `${mealLabel}`,
     `📊 ${bar} ${percentage}%`,
     `🔥 ${consumed} / ${goal} kcal consumidas`,
   ];
-
   if (remaining > 0) {
     lines.push(`⚡ Te quedan ${remaining} kcal para tu objetivo`);
   } else {
-    lines.push(`✅ ¡Has alcanzado tu objetivo calórico!`);
+    lines.push(`✅ Has alcanzado tu objetivo calorico!`);
   }
-
   lines.push(`🥩 P: ${proteins}g  🌾 C: ${carbohydrates}g  🫒 G: ${fats}g`);
-
   return lines.join('\n');
 }
 
@@ -151,11 +322,10 @@ function buildNotificationBody(summary, mealType) {
 // PUSH NOTIFICATIONS
 // =============================================================================
 
-// Handle incoming push messages from server
 self.addEventListener('push', (event) => {
   let data = {
     title: 'BuddyMarket',
-    body: '¡Recuerda registrar tus comidas!',
+    body: 'Recuerda registrar tus comidas!',
     icon: '/icon-192x192.png',
     badge: '/icon-192x192.png',
     tag: 'meal-reminder',
@@ -163,7 +333,6 @@ self.addEventListener('push', (event) => {
     mealType: null,
     summary: null,
   };
-
   try {
     if (event.data) {
       const parsed = event.data.json();
@@ -172,12 +341,9 @@ self.addEventListener('push', (event) => {
   } catch (e) {
     if (event.data) data.body = event.data.text();
   }
-
-  // If we have a caloric summary, build an enriched body
   if (data.summary) {
     data.body = buildNotificationBody(data.summary, data.mealType);
   }
-
   const options = {
     body: data.body,
     icon: data.icon || '/icon-192x192.png',
@@ -189,23 +355,18 @@ self.addEventListener('push', (event) => {
     vibrate: [200, 100, 200],
     actions: [
       { action: 'open', title: 'Registrar ahora' },
-      { action: 'dismiss', title: 'Más tarde' },
+      { action: 'dismiss', title: 'Mas tarde' },
     ],
   };
-
   event.waitUntil(self.registration.showNotification(data.title, options));
 });
 
-// Handle notification click
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
   if (event.action === 'dismiss') return;
-
   const targetUrl = event.notification.data?.url || '/meal-log';
-
   event.waitUntil(
     self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clients) => {
-      // Focus existing window if open
       for (const client of clients) {
         if (client.url.includes(self.location.origin) && 'focus' in client) {
           client.focus();
@@ -213,43 +374,9 @@ self.addEventListener('notificationclick', (event) => {
           return;
         }
       }
-      // Otherwise open new window
       if (self.clients.openWindow) {
         return self.clients.openWindow(targetUrl);
       }
     })
   );
-});
-
-// Handle messages from the main thread (schedule local notifications with caloric summary)
-self.addEventListener('message', (event) => {
-  // SW update: skip waiting when new version is ready
-  if (event.data?.type === 'SKIP_WAITING') {
-    self.skipWaiting();
-    return;
-  }
-
-  if (event.data?.type === 'SCHEDULE_REMINDER') {
-    const { title, mealType, summary, delay } = event.data;
-
-    // Build body with caloric summary if available
-    const body = summary
-      ? buildNotificationBody(summary, mealType)
-      : `¡Es hora de registrar tu ${mealType || 'comida'}!`;
-
-    setTimeout(() => {
-      self.registration.showNotification(title || 'BuddyMarket', {
-        body,
-        icon: '/icon-192x192.png',
-        badge: '/icon-192x192.png',
-        tag: `local-meal-reminder-${mealType || 'generic'}`,
-        data: { url: '/meal-log' },
-        vibrate: [200, 100, 200],
-        actions: [
-          { action: 'open', title: 'Registrar ahora' },
-          { action: 'dismiss', title: 'Más tarde' },
-        ],
-      });
-    }, delay || 0);
-  }
 });

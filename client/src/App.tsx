@@ -1,6 +1,7 @@
 import { lazy, Suspense } from "react";
 import WelcomeLanguageModal from "@/components/WelcomeLanguageModal";
 import CookieBanner from "./components/CookieBanner";
+import OfflineIndicator from "./components/OfflineIndicator";
 import { AccessibleToaster } from "@/components/AccessibleToaster";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Route, Switch, Redirect, useLocation } from "wouter";
@@ -46,6 +47,7 @@ const Inventory = lazy(() => import("./pages/Inventory"));
 const MealLog = lazy(() => import("./pages/MealLog"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Admin = lazy(() => import("./pages/Admin"));
+const AdminContent = lazy(() => import("./pages/AdminContent"));
 const Subscription = lazy(() => import("./pages/Subscription"));
 const BuddyExperts = lazy(() => import("./pages/BuddyExperts"));
 const BuddyMakers = lazy(() => import("./pages/BuddyMakers"));
@@ -190,6 +192,7 @@ function Router() {
       <Route path="/app/profile">{() => <ProtectedRoute component={Profile} />}</Route>
       <Route path="/app/badges">{() => <ProtectedRoute component={Badges} />}</Route>
       <Route path="/app/admin">{() => <ProtectedRoute component={Admin} />}</Route>
+      <Route path="/app/admin/content">{() => <ProtectedRoute component={AdminContent} />}</Route>
       <Route path="/app/subscription">{() => <ProtectedRoute component={Subscription} />}</Route>
       <Route path="/app/buddy-experts">{() => <ProtectedRoute component={BuddyExperts} />}</Route>
       <Route path="/app/buddy-makers">{() => <ProtectedRoute component={BuddyMakers} />}</Route>
@@ -258,6 +261,7 @@ function App() {
             <AppBanners />
           </Suspense>
           <CookieBanner />
+          <OfflineIndicator />
           <Suspense fallback={<PageLoader />}>
             <Router />
           </Suspense>

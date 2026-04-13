@@ -12,6 +12,7 @@ import { householdRouter } from "./routers/household";
 import { householdRecipesRouter } from "./routers/householdRecipes";
 import { expertPatientsRouter } from "./routers/expertPatients";
 import { makerAnalyticsRouter } from "./routers/makerAnalytics";
+import { contentSyncRouter } from "./routers/contentSync";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { invokeLLM } from "./_core/llm";
 import { storagePut } from "./storage";
@@ -237,6 +238,7 @@ export const appRouter = router({
   householdRecipes: householdRecipesRouter,
   expertPatients: expertPatientsRouter,
   makerAnalytics: makerAnalyticsRouter,
+  contentSync: contentSyncRouter,
 
   // ---------------------------------------------------------------------------
   // AUTH

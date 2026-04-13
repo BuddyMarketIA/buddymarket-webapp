@@ -2113,3 +2113,21 @@
 - [x] Frontend: Página de analíticas de alcance para BuddyMakers (/app/maker-analytics)
 - [x] Frontend: Tabla de recetas con columnas de vistas, likes, guardados
 - [x] Frontend: Gráfica de evolución temporal de alcance
+
+## Contenido Dinámico desde BD + Modo Offline
+- [ ] Backend: endpoint de sincronización de recetas con paginación y timestamp de última actualización
+- [ ] Backend: endpoint de sincronización de menús con paginación y timestamp
+- [ ] Panel Admin: formulario completo para añadir/editar recetas desde la app (sin redespliegue)
+- [ ] Panel Admin: formulario completo para añadir/editar menús desde la app (sin redespliegue)
+- [ ] Panel Admin: gestión de recetas con imagen, ingredientes, instrucciones, valores nutricionales
+- [ ] Panel Admin: gestión de menús con recetas asignadas por día y momento del día
+- [ ] Service Worker: estrategia de caché para shell de la app (Cache First)
+- [ ] Service Worker: estrategia de caché para API de recetas y menús (Stale-While-Revalidate)
+- [ ] Service Worker: precaché de imágenes de recetas visitadas
+- [ ] Service Worker: página offline personalizada cuando no hay conexión
+- [ ] IndexedDB: almacenamiento local de recetas, menús y datos del usuario
+- [ ] Sincronización offline: cola de acciones pendientes (meal logs, favoritos, listas de compra)
+- [ ] Sincronización offline: sincronizar cola al recuperar conexión
+- [ ] UI: indicador de estado de conexión (online/offline) en la app
+- [ ] UI: banner de "Modo offline - datos en caché" cuando no hay conexión
+- [ ] Manifest PWA: actualizar con iconos, shortcuts y display standalone
