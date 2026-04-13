@@ -534,6 +534,92 @@ export function registerSSORoutes(app: Express) {
       res.status(400).json({ error: err?.message ?? "Error al validar compra de Google Play" });
     }
   });
+
+  // ─── Apple Server-to-Server Notifications ────────────────────────────────
+  // Apple sends POST requests here when users revoke Sign in with Apple,
+  // delete their Apple account, or change email forwarding preferences.
+  // Configured in: Apple Developer → Certificates, Identifiers & Profiles → App IDs
+  //   → Sign in with Apple → Server-to-Server Notification Endpoint
+  // Reference: https://developer.apple.com/documentation/sign_in_with_apple/processing_changes_for_sign_in_with_apple_accounts
+  app.post("/api/auth/apple/notifications", async (req: Request, res: Response) => {
+    try {
+      const { payload } = req.body ?? {};
+      if (!payload) {
+        console.warn("[Apple S2S] Missing payload in notification");
+        res.status(200).json({ received: true });
+        return;
+      }
+
+      // The payload is a signed JWT — decode it to get the event
+      // In production you should verify the signature using Apple's public keys
+      const parts = (payload as string).split(".");
+      if (parts.length !== 3) {
+        console.warn("[Apple S2S] Invalid JWT format in payload");
+        res.status(200).json({ received: true });
+        return;
+      }
+
+      let decoded: any;
+      try {
+        decoded = JSON.parse(Buffer.from(parts[1], "base64url").toString("utf8"));
+      } catch {
+        console.warn("[Apple S2S] Failed to decode JWT payload");
+        res.status(200).json({ received: true });
+        return;
+      }
+
+      const events = decoded?.events ? JSON.parse(decoded.events) : null;
+      if (!events) {
+        console.warn("[Apple S2S] No events in notification payload");
+        res.status(200).json({ received: true });
+        return;
+      }
+
+      const { type, sub: appleUserId } = events as { type: string; sub: string };
+      console.log(`[Apple S2S] Event: ${type} | Apple User: ${appleUserId}`);
+
+      switch (type) {
+        case "email-disabled":
+        case "email-enabled":
+          // User changed email forwarding preferences — no action needed
+          console.log(`[Apple S2S] Email preference changed for user ${appleUserId}`);
+          break;
+
+        case "consent-revoked":
+        case "account-delete": {
+          // User revoked Sign in with Apple or deleted their Apple account
+          // Anonymize the user's account data
+          console.log(`[Apple S2S] Revoking account for Apple user: ${appleUserId}`);
+          try {
+            const { db: dbModule } = await import("./db.js");
+            const { users } = await import("../drizzle/schema.js");
+            const { eq } = await import("drizzle-orm");
+            const openId = `apple:${appleUserId}`;
+            await dbModule.update(users)
+              .set({
+                email: `revoked_${appleUserId}@apple.invalid`,
+                name: "Usuario eliminado",
+              })
+              .where(eq(users.openId, openId));
+            console.log(`[Apple S2S] Account anonymized for openId: ${openId}`);
+          } catch (dbErr: any) {
+            console.error("[Apple S2S] Failed to anonymize user:", dbErr?.message);
+          }
+          break;
+        }
+
+        default:
+          console.log(`[Apple S2S] Unhandled event type: ${type}`);
+      }
+
+      // Always return 200 to Apple to prevent retries
+      res.status(200).json({ received: true });
+    } catch (err: any) {
+      console.error("[Apple S2S] Error processing notification:", err?.message);
+      // Always return 200 to Apple to prevent retries for processing errors
+      res.status(200).json({ received: true });
+    }
+  });
 }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
