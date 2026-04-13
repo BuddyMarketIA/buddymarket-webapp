@@ -412,6 +412,13 @@ export default function Admin() {
                 <span>➕ Añadir recetas y menús (sin redespliegue)</span>
                 <span className="text-orange-400">→</span>
               </Link>
+              <Link
+                href="/app/admin/logs"
+                className="flex w-full items-center justify-between rounded-xl bg-red-50 border border-red-200 px-4 py-2.5 text-sm font-semibold text-red-700 hover:bg-red-100"
+              >
+                <span>🔴 Registros de errores del servidor</span>
+                <span className="text-red-400">→</span>
+              </Link>
               {[
                 { label: "Gestionar recetas y fotos", tab: "recipes" },
                 { label: "Gestionar alergias", tab: "allergies" },

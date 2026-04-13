@@ -2472,3 +2472,31 @@ export const recipeAnalytics = pgTable("recipe_analytics", {
 }));
 export type RecipeAnalytic = typeof recipeAnalytics.$inferSelect;
 export type InsertRecipeAnalytic = typeof recipeAnalytics.$inferInsert;
+
+// =============================================================================
+// SERVER LOGS — REGISTROS DE ERRORES Y EVENTOS DEL SERVIDOR
+// =============================================================================
+export const logLevelEnum = pgEnum("logLevel", ["debug", "info", "warn", "error", "fatal"]);
+
+export const serverLogs = pgTable("server_logs", {
+  id: serial("id").primaryKey(),
+  level: logLevelEnum("level").notNull().default("error"),
+  message: text("message").notNull(),
+  stack: text("stack"),
+  path: varchar("path", { length: 500 }),
+  method: varchar("method", { length: 10 }),
+  statusCode: integer("statusCode"),
+  userId: integer("userId"),
+  userAgent: text("userAgent"),
+  ip: varchar("ip", { length: 100 }),
+  metadata: text("metadata"), // JSON serializado
+  resolved: boolean("resolved").default(false).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  levelIdx: index("sl_level_idx").on(t.level),
+  createdAtIdx: index("sl_created_at_idx").on(t.createdAt),
+  resolvedIdx: index("sl_resolved_idx").on(t.resolved),
+  userIdx: index("sl_user_idx").on(t.userId),
+}));
+export type ServerLog = typeof serverLogs.$inferSelect;
+export type InsertServerLog = typeof serverLogs.$inferInsert;

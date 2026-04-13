@@ -48,6 +48,7 @@ const MealLog = lazy(() => import("./pages/MealLog"));
 const Profile = lazy(() => import("./pages/Profile"));
 const Admin = lazy(() => import("./pages/Admin"));
 const AdminContent = lazy(() => import("./pages/AdminContent"));
+const AdminLogs = lazy(() => import("./pages/AdminLogs"));
 const Subscription = lazy(() => import("./pages/Subscription"));
 const BuddyExperts = lazy(() => import("./pages/BuddyExperts"));
 const BuddyMakers = lazy(() => import("./pages/BuddyMakers"));
@@ -194,6 +195,7 @@ function Router() {
       <Route path="/app/badges">{() => <ProtectedRoute component={Badges} />}</Route>
       <Route path="/app/admin">{() => <ProtectedRoute component={Admin} />}</Route>
       <Route path="/app/admin/content">{() => <ProtectedRoute component={AdminContent} />}</Route>
+      <Route path="/app/admin/logs">{() => <ProtectedRoute component={AdminLogs} />}</Route>
       <Route path="/app/subscription">{() => <ProtectedRoute component={Subscription} />}</Route>
       <Route path="/app/buddy-experts">{() => <ProtectedRoute component={BuddyExperts} />}</Route>
       <Route path="/app/buddy-makers">{() => <ProtectedRoute component={BuddyMakers} />}</Route>

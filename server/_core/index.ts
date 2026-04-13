@@ -292,6 +292,36 @@ async function startServer() {
       res.sendFile(assetlinksPath);
     });
   });
+  // ─── Error logger middleware (captura errores 4xx/5xx en DB) ──────────────
+  app.use(async (err: Error & { status?: number; statusCode?: number }, req: express.Request, res: express.Response, next: express.NextFunction) => {
+    const statusCode = (err as { status?: number; statusCode?: number }).status ?? (err as { status?: number; statusCode?: number }).statusCode ?? 500;
+    // Solo registrar errores de servidor (5xx) y algunos 4xx relevantes
+    if (statusCode >= 400) {
+      try {
+        const { insertServerLog } = await import("../db.js");
+        const ctx = (req as { trpcContext?: { user?: { id: number } } }).trpcContext;
+        await insertServerLog({
+          level: statusCode >= 500 ? "error" : "warn",
+          message: err.message || "Unknown error",
+          stack: err.stack,
+          path: req.path,
+          method: req.method,
+          statusCode,
+          userId: ctx?.user?.id,
+          userAgent: req.headers["user-agent"],
+          ip: req.ip,
+          metadata: {
+            query: req.query,
+            body: statusCode >= 500 ? undefined : req.body,
+          },
+        });
+      } catch {
+        // No propagar errores del logger
+      }
+    }
+    next(err);
+  });
+
   // ─── Sentry error handler (MUST be after all routes) ────────────────────
   attachSentryErrorHandler(app);
 

@@ -2183,3 +2183,14 @@
 
 ## Banner de estado del servidor (Apr 13)
 - [x] Añadir banner de conectividad en LoginPage.tsx que detecte automáticamente problemas de servidor e informe al usuario
+
+## Panel de Administración - Logs de Errores del Servidor
+- [ ] Añadir tabla server_logs en drizzle/schema.ts (id, level, message, stack, path, userId, metadata, createdAt)
+- [ ] Crear helper insertServerLog en server/db.ts
+- [ ] Crear middleware Express para capturar errores 500 y guardarlos en DB
+- [ ] Crear procedimiento tRPC logs.list con filtros (level, desde, hasta, búsqueda, paginación)
+- [ ] Crear procedimiento tRPC logs.stats (conteo por nivel, tendencia últimas 24h)
+- [ ] Crear procedimiento tRPC logs.clear para borrar logs antiguos
+- [ ] Crear página /admin/logs con tabla de errores, filtros y estadísticas
+- [ ] Añadir ruta /admin/logs en App.tsx protegida por rol admin
+- [ ] Añadir enlace al panel de logs en la navegación del admin

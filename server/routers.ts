@@ -10665,6 +10665,90 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
       }),
   }),
 
+  // ===========================================================================
+  // LOGS — Panel de administración de errores del servidor
+  // ===========================================================================
+  logs: router({
+    list: protectedProcedure
+      .input(z.object({
+        level: z.enum(["debug", "info", "warn", "error", "fatal", "all"]).optional().default("all"),
+        from: z.string().optional(),
+        to: z.string().optional(),
+        search: z.string().optional(),
+        resolved: z.boolean().optional(),
+        limit: z.number().int().min(1).max(200).optional().default(50),
+        offset: z.number().int().min(0).optional().default(0),
+      }))
+      .query(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { serverLogs } = await import("../drizzle/schema.js");
+        const { and, eq, gte, lte, like, desc, count } = await import("drizzle-orm");
+        const conditions = [];
+        if (input.level && input.level !== "all") conditions.push(eq(serverLogs.level, input.level as "debug" | "info" | "warn" | "error" | "fatal"));
+        if (input.from) conditions.push(gte(serverLogs.createdAt, new Date(input.from)));
+        if (input.to) conditions.push(lte(serverLogs.createdAt, new Date(input.to)));
+        if (input.search) conditions.push(like(serverLogs.message, `%${input.search}%`));
+        if (input.resolved !== undefined) conditions.push(eq(serverLogs.resolved, input.resolved));
+        const where = conditions.length > 0 ? and(...conditions) : undefined;
+        const [rows, totalResult] = await Promise.all([
+          drizzleDb.select().from(serverLogs).where(where).orderBy(desc(serverLogs.createdAt)).limit(input.limit).offset(input.offset),
+          drizzleDb.select({ count: count() }).from(serverLogs).where(where),
+        ]);
+        return { logs: rows, total: Number(totalResult[0]?.count ?? 0) };
+      }),
+
+    stats: protectedProcedure
+      .query(async ({ ctx }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { serverLogs } = await import("../drizzle/schema.js");
+        const { eq, gte, count, and } = await import("drizzle-orm");
+        const since24h = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        const since7d = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+        const [total, last24h, last7d, byLevel, unresolved] = await Promise.all([
+          drizzleDb.select({ count: count() }).from(serverLogs),
+          drizzleDb.select({ count: count() }).from(serverLogs).where(gte(serverLogs.createdAt, since24h)),
+          drizzleDb.select({ count: count() }).from(serverLogs).where(gte(serverLogs.createdAt, since7d)),
+          drizzleDb.select({ level: serverLogs.level, count: count() }).from(serverLogs).groupBy(serverLogs.level),
+          drizzleDb.select({ count: count() }).from(serverLogs).where(and(eq(serverLogs.resolved, false), eq(serverLogs.level, "error"))),
+        ]);
+        return {
+          total: Number(total[0]?.count ?? 0),
+          last24h: Number(last24h[0]?.count ?? 0),
+          last7d: Number(last7d[0]?.count ?? 0),
+          byLevel: byLevel.reduce((acc, r) => ({ ...acc, [r.level]: Number(r.count) }), {} as Record<string, number>),
+          unresolvedErrors: Number(unresolved[0]?.count ?? 0),
+        };
+      }),
+
+    resolve: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { serverLogs } = await import("../drizzle/schema.js");
+        const { eq } = await import("drizzle-orm");
+        await drizzleDb.update(serverLogs).set({ resolved: true }).where(eq(serverLogs.id, input.id));
+        return { success: true };
+      }),
+
+    clearOld: protectedProcedure
+      .input(z.object({ olderThanDays: z.number().int().min(1).max(365).default(30) }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { serverLogs } = await import("../drizzle/schema.js");
+        const { lt } = await import("drizzle-orm");
+        const cutoff = new Date(Date.now() - input.olderThanDays * 24 * 60 * 60 * 1000);
+        await drizzleDb.delete(serverLogs).where(lt(serverLogs.createdAt, cutoff));
+        return { success: true };
+      }),
+  }),
 
 });
 export type AppRouter = typeof appRouter;

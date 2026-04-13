@@ -2532,3 +2532,38 @@ export async function getUserByPhone(phone: string) {
   const result = await db.select().from(users).where(eq(users.phone, phone)).limit(1);
   return result[0];
 }
+
+
+// ── Server Logs ───────────────────────────────────────────────────────────────
+export async function insertServerLog(data: {
+  level: "debug" | "info" | "warn" | "error" | "fatal";
+  message: string;
+  stack?: string;
+  path?: string;
+  method?: string;
+  statusCode?: number;
+  userId?: number;
+  userAgent?: string;
+  ip?: string;
+  metadata?: Record<string, unknown>;
+}) {
+  try {
+    const db = await getDb();
+    if (!db) return;
+    const { serverLogs } = await import("../drizzle/schema.js");
+    await db.insert(serverLogs).values({
+      level: data.level,
+      message: data.message.slice(0, 5000),
+      stack: data.stack?.slice(0, 10000),
+      path: data.path?.slice(0, 500),
+      method: data.method,
+      statusCode: data.statusCode,
+      userId: data.userId,
+      userAgent: data.userAgent?.slice(0, 500),
+      ip: data.ip?.slice(0, 100),
+      metadata: data.metadata ? JSON.stringify(data.metadata) : undefined,
+    });
+  } catch {
+    // No propagar errores del logger para evitar bucles
+  }
+}
