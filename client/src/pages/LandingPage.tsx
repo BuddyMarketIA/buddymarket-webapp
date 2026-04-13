@@ -316,11 +316,11 @@ export default function LandingPage() {
       </nav>
 
       {/* ═══ HERO ══════════════════════════════════════════════════════════════ */}
-      <section style={{ paddingTop: 68, background: "linear-gradient(150deg,#fff7ed 0%,#ffffff 50%,#f0fdf4 100%)", minHeight: "100svh", display: "flex", alignItems: "center", position: "relative", overflow: "hidden" }}>
+      <section style={{ paddingTop: 68, background: "linear-gradient(150deg,#fff7ed 0%,#ffffff 50%,#f0fdf4 100%)", display: "flex", alignItems: "center", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", top: "8%", right: "-4%", width: 520, height: 520, borderRadius: "50%", background: "radial-gradient(circle,rgba(249,115,22,0.08) 0%,transparent 70%)", pointerEvents: "none" }} />
         <div style={{ position: "absolute", bottom: "5%", left: "-6%", width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle,rgba(16,185,129,0.06) 0%,transparent 70%)", pointerEvents: "none" }} />
 
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "80px 24px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center", width: "100%" }} className="lp-hero-grid">
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "60px 24px 56px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center", width: "100%" }} className="lp-hero-grid">
           <div>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#fff7ed", border: "1.5px solid #fed7aa", borderRadius: 100, padding: "6px 14px", marginBottom: 28 }}>
               <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#F97316", display: "inline-block", animation: "lp-pulse 2s infinite" }} />
@@ -369,7 +369,7 @@ export default function LandingPage() {
             </div>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "200px 200px", gap: 12 }} className="lp-hero-imgs">
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "200px 200px", gap: 12, position: "relative" }} className="lp-hero-imgs">
             {[FOOD.salmon, FOOD.ensalada, FOOD.bowl, FOOD.pasta].map((src, i) => (
               <div key={i} style={{ borderRadius: 20, overflow: "hidden", transform: ["rotate(-1.5deg)","rotate(1deg)","rotate(1.5deg)","rotate(-1deg)"][i], boxShadow: "0 12px 32px rgba(0,0,0,0.12)", transition: "transform 0.3s" }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "rotate(0deg) scale(1.03)"; }}
@@ -377,7 +377,7 @@ export default function LandingPage() {
                 <img src={src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
               </div>
             ))}
-            <div style={{ position: "absolute", bottom: -16, left: "50%", transform: "translateX(-50%)", background: "white", borderRadius: 100, padding: "10px 20px", boxShadow: "0 8px 24px rgba(0,0,0,0.12)", display: "flex", alignItems: "center", gap: 10, whiteSpace: "nowrap" }}>
+            <div style={{ position: "absolute", bottom: -20, left: "50%", transform: "translateX(-50%)", background: "white", borderRadius: 100, padding: "10px 20px", boxShadow: "0 8px 24px rgba(0,0,0,0.14)", display: "flex", alignItems: "center", gap: 10, whiteSpace: "nowrap", zIndex: 10 }}>
               <span style={{ fontSize: 20 }}>🤖</span>
               <div><p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: "#111827" }}>Menú generado por IA</p><p style={{ margin: 0, fontSize: 11, color: "#6b7280" }}>1.847 kcal · 142g proteína</p></div>
               <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#10b981", animation: "lp-pulse 2s infinite" }} />
