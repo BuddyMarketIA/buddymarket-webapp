@@ -10661,10 +10661,36 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
         await drizzleDb.execute(
           sqlTag`UPDATE user_referral_codes SET total_rewarded = total_rewarded + 1, total_reward_days = total_reward_days + 30, updated_at = NOW() WHERE user_id = ${referral.referrerId}`
         );
-        return { success: true, rewardDays: 30, referrerId: referral.referrerId };
+         return { success: true, rewardDays: 30, referrerId: referral.referrerId };
       }),
+    /** Leaderboard público de los mejores referidores */
+    getLeaderboard: protectedProcedure.query(async () => {
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { userReferralCodes, users: usersTable } = await import("../drizzle/schema.js");
+      const { eq, desc, gt } = await import("drizzle-orm");
+      const rows = await drizzleDb
+        .select({
+          userId: userReferralCodes.userId,
+          totalRewarded: userReferralCodes.totalRewarded,
+          totalRewardDays: userReferralCodes.totalRewardDays,
+          name: usersTable.name,
+          imageUrl: usersTable.imageUrl,
+        })
+        .from(userReferralCodes)
+        .leftJoin(usersTable, eq(userReferralCodes.userId, usersTable.id))
+        .where(gt(userReferralCodes.totalRewarded, 0))
+        .orderBy(desc(userReferralCodes.totalRewarded))
+        .limit(10);
+      return rows.map((r, i) => ({
+        rank: i + 1,
+        name: r.name ?? "Usuario",
+        imageUrl: r.imageUrl ?? null,
+        totalRewarded: r.totalRewarded,
+        totalRewardDays: r.totalRewardDays,
+      }));
+    }),
   }),
-
   // ===========================================================================
   // LOGS — Panel de administración de errores del servidor
   // ===========================================================================

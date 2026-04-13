@@ -7,11 +7,14 @@ import {
   ClipboardDocumentIcon,
   CheckIcon,
   ShareIcon,
-  StarIcon,
-  CalendarDaysIcon,
+  TrophyIcon,
+  SparklesIcon,
   ChevronRightIcon,
+  FireIcon,
 } from "@heroicons/react/24/outline";
+import { StarIcon as StarSolid } from "@heroicons/react/24/solid";
 import { useAuth } from "@/_core/hooks/useAuth";
+import AppLayout from "@/components/AppLayout";
 
 // ─── Status badge ──────────────────────────────────────────────────────────────
 function StatusBadge({ status }: { status: string }) {
