@@ -222,9 +222,9 @@ function RecipeCard({ recipe, searchQuery, isFav, onToggleFav }: { recipe: Recip
           />
           <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, transparent 40%, rgba(0,0,0,0.6) 100%)" }} />
           {/* Meal time badge */}
-          <div style={{ position: "absolute", top: "10px", left: "10px", background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)", borderRadius: "10px", padding: "4px 8px", display: "flex", alignItems: "center", gap: "4px" }}>
-            <span style={{ fontSize: "14px" }}>{MEAL_TIME_EMOJI[mealTime] || "🕐"}</span>
-            <span style={{ fontSize: "13px", color: "white", fontWeight: 700 }}>{t(`recipes.mealTime.${MEAL_TIME_LABEL_KEYS[mealTime] || "anyTime"}`, mealTime) || mealTime}</span>
+          <div style={{ position: "absolute", top: "10px", left: "10px", background: "rgba(0,0,0,0.65)", backdropFilter: "blur(4px)", borderRadius: "10px", padding: "4px 8px", display: "flex", alignItems: "center", gap: "4px", maxWidth: "calc(100% - 90px)", overflow: "hidden" }}>
+            <span style={{ fontSize: "14px", flexShrink: 0 }}>{MEAL_TIME_EMOJI[mealTime] || "🕐"}</span>
+            <span style={{ fontSize: "13px", color: "white", fontWeight: 700, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{t(`recipes.mealTime.${MEAL_TIME_LABEL_KEYS[mealTime] || "anyTime"}`, mealTime) || mealTime}</span>
           </div>
           {/* Generar imagen IA — solo si no tiene foto real y el usuario está logueado */}
           {user && !hasRealImage && !localImageUrl && (

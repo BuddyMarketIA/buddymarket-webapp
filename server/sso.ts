@@ -591,16 +591,19 @@ export function registerSSORoutes(app: Express) {
           // Anonymize the user's account data
           console.log(`[Apple S2S] Revoking account for Apple user: ${appleUserId}`);
           try {
-            const { db: dbModule } = await import("./db.js");
+            const { getDb } = await import("./db.js");
+            const drizzleDb = await getDb();
             const { users } = await import("../drizzle/schema.js");
             const { eq } = await import("drizzle-orm");
             const openId = `apple:${appleUserId}`;
-            await dbModule.update(users)
-              .set({
-                email: `revoked_${appleUserId}@apple.invalid`,
-                name: "Usuario eliminado",
-              })
-              .where(eq(users.openId, openId));
+            if (drizzleDb) {
+              await drizzleDb.update(users)
+                .set({
+                  email: `revoked_${appleUserId}@apple.invalid`,
+                  name: "Usuario eliminado",
+                })
+                .where(eq(users.openId, openId));
+            }
             console.log(`[Apple S2S] Account anonymized for openId: ${openId}`);
           } catch (dbErr: any) {
             console.error("[Apple S2S] Failed to anonymize user:", dbErr?.message);

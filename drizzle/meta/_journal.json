@@ -218,6 +218,13 @@
       "when": 1776039193881,
       "tag": "0030_bizarre_white_tiger",
       "breakpoints": true
+    },
+    {
+      "idx": 31,
+      "version": "7",
+      "when": 1776050001186,
+      "tag": "0031_fluffy_veda",
+      "breakpoints": true
     }
   ]
 }

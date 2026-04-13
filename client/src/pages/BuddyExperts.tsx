@@ -64,6 +64,7 @@ function ExpertCard({
   );
   const [, navigate] = useLocation();
   const expert = row.expert;
+  const expertAvatar = expert.avatarUrl || row.user?.imageUrl || null;
   const gradient = GRADIENTS[index % GRADIENTS.length];
   const fmtCount = (n: number) =>
     n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n ?? 0);
@@ -124,9 +125,9 @@ function ExpertCard({
         <div className="relative flex justify-center">
           <div className="relative">
             <div className="absolute inset-0 rounded-2xl bg-white/30 blur-md scale-110" />
-            {expert.avatarUrl ? (
+            {expertAvatar ? (
               <img
-                src={expert.avatarUrl}
+                src={expertAvatar}
                 alt={expert.displayName}
                 className="relative w-18 h-18 rounded-2xl object-cover ring-[3px] ring-white/60 shadow-2xl group-hover:scale-105 transition-transform duration-500"
                 style={{ width: 72, height: 72 }}

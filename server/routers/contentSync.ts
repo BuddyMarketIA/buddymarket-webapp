@@ -469,7 +469,7 @@ export const contentSyncRouter = router({
    * Returns all public menus for the catalog (offline-cacheable).
    */
   getMenuCatalog: publicProcedure
-    .input(z.object({ limit: z.number().int().min(1).max(200).optional().default(100), offset: z.number().int().min(0).optional().default(0) }).optional().default({}))
+    .input(z.object({ limit: z.number().int().min(1).max(200).default(100), offset: z.number().int().min(0).default(0) }).default({}))
     .query(async ({ input }) => {
       const { getDb } = await import("../db");
       const drizzleDb = await getDb();

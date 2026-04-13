@@ -93,6 +93,52 @@ export default function ShareRecipeButton({
     setShowMenu(false);
   };
 
+  if (variant === "bar") {
+    // Bar variant — horizontal social share row for recipe detail page
+    return (
+      <div
+        style={{
+          display: "flex",
+          alignItems: "center",
+          gap: 10,
+          padding: "14px 16px",
+          background: "#fff7ed",
+          borderRadius: 16,
+          border: "1px solid #fed7aa",
+          marginTop: 8,
+        }}
+      >
+        <Share2 size={16} color="#ea580c" style={{ flexShrink: 0 }} />
+        <span style={{ fontSize: 13, fontWeight: 700, color: "#ea580c", flexShrink: 0 }}>Compartir:</span>
+        <div style={{ display: "flex", gap: 8, flexWrap: "wrap" }}>
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 12px", background: "#dcfce7", borderRadius: 10, textDecoration: "none", color: "#16a34a", fontWeight: 600, fontSize: 12 }}
+          >
+            <span>💬</span> WhatsApp
+          </a>
+          <a
+            href={telegramUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 12px", background: "#dbeafe", borderRadius: 10, textDecoration: "none", color: "#1d4ed8", fontWeight: 600, fontSize: 12 }}
+          >
+            <span>✈️</span> Telegram
+          </a>
+          <button
+            onClick={handleCopy}
+            style={{ display: "flex", alignItems: "center", gap: 5, padding: "6px 12px", background: copied ? "#dcfce7" : "#f3f4f6", borderRadius: 10, border: "none", cursor: "pointer", color: copied ? "#16a34a" : "#374151", fontWeight: 600, fontSize: 12 }}
+          >
+            {copied ? <Check size={12} /> : <Copy size={12} />}
+            {copied ? "¡Copiado!" : "Copiar"}
+          </button>
+        </div>
+      </div>
+    );
+  }
+
   if (variant === "full") {
     return (
       <div style={{ position: "relative", display: "inline-block" }} ref={menuRef}>

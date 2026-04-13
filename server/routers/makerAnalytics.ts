@@ -10,8 +10,8 @@ export const makerAnalyticsRouter = router({
       makerId: z.number(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const { db: getDb } = await import("../db.js");
-      const drizzleDb = await getDb.getDb();
+      const { getDb } = await import("../db.js");
+      const drizzleDb = await getDb();
       if (!drizzleDb) return { success: false };
       const { recipeAnalytics } = await import("../../drizzle/schema.js");
       const { eq, and, sql } = await import("drizzle-orm");
@@ -55,8 +55,8 @@ export const makerAnalyticsRouter = router({
       type: z.enum(["like", "save", "share", "comment"]),
     }))
     .mutation(async ({ ctx, input }) => {
-      const { db: getDb } = await import("../db.js");
-      const drizzleDb = await getDb.getDb();
+      const { getDb } = await import("../db.js");
+      const drizzleDb = await getDb();
       if (!drizzleDb) return { success: false };
       const { recipeAnalytics } = await import("../../drizzle/schema.js");
       const { eq, and, sql } = await import("drizzle-orm");
@@ -104,8 +104,8 @@ export const makerAnalyticsRouter = router({
       if (ctx.user.role !== "buddymaker" && ctx.user.role !== "admin") {
         throw new TRPCError({ code: "FORBIDDEN", message: "Solo BuddyMakers pueden acceder a estas analíticas" });
       }
-      const { db: getDb } = await import("../db.js");
-      const drizzleDb = await getDb.getDb();
+      const { getDb } = await import("../db.js");
+      const drizzleDb = await getDb();
       if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       const { recipeAnalytics, recipes } = await import("../../drizzle/schema.js");
       const { eq, and, gte, sum, sql } = await import("drizzle-orm");
@@ -154,10 +154,10 @@ export const makerAnalyticsRouter = router({
         const { inArray } = await import("drizzle-orm");
         const recipeData = await drizzleDb.select({
           id: recipes.id,
-          title: recipes.title,
+          name: recipes.name,
           imageUrl: recipes.imageUrl,
         }).from(recipes).where(inArray(recipes.id, recipeIds));
-        recipeDetails = Object.fromEntries(recipeData.map(r => [r.id, { title: r.title, imageUrl: r.imageUrl }]));
+        recipeDetails = Object.fromEntries(recipeData.map(r => [r.id, { title: r.name, imageUrl: r.imageUrl }]));
       }
 
       // Evolución temporal (por día)
@@ -211,8 +211,8 @@ export const makerAnalyticsRouter = router({
       period: z.enum(["7d", "30d", "90d"]).default("30d"),
     }))
     .query(async ({ ctx, input }) => {
-      const { db: getDb } = await import("../db.js");
-      const drizzleDb = await getDb.getDb();
+      const { getDb } = await import("../db.js");
+      const drizzleDb = await getDb();
       if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       const { recipeAnalytics } = await import("../../drizzle/schema.js");
       const { eq, and, gte, sql } = await import("drizzle-orm");

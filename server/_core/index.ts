@@ -12,6 +12,7 @@ import helmet from "helmet";
 import rateLimit from "express-rate-limit";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerSSORoutes } from "../sso";
+import { registerMobileApi } from "../mobileApi";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
@@ -171,6 +172,8 @@ async function startServer() {
 
   // SSO: Sign in with Apple & Google
   registerSSORoutes(app);
+  // Mobile REST API (iOS native app)
+  registerMobileApi(app);
 
   // ─── Upload inventory photo to S3 (multipart) ──────────────────────────────
   const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 16 * 1024 * 1024 } });

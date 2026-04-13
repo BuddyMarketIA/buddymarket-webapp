@@ -15,8 +15,8 @@ export const expertPatientsRouter = router({
       if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
         throw new TRPCError({ code: "FORBIDDEN", message: "Solo BuddyExperts pueden acceder a esta sección" });
       }
-      const { db: getDb } = await import("../db.js");
-      const drizzleDb = await getDb.getDb();
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
       if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       const { expertPatients, buddyExperts, users, userProfiles, expertMessages, expertAppointments } = await import("../../drizzle/schema.js");
       const { eq, and, or, ilike, sql } = await import("drizzle-orm");
@@ -105,8 +105,8 @@ export const expertPatientsRouter = router({
       if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
-      const { db: getDb } = await import("../db.js");
-      const drizzleDb = await getDb.getDb();
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
       if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       const { expertPatients, buddyExperts, users, userProfiles, userMedicalProfiles, expertMessages, expertAppointments, expertAssignedMenus, patientProgress } = await import("../../drizzle/schema.js");
       const { eq, and, desc } = await import("drizzle-orm");
@@ -182,8 +182,8 @@ export const expertPatientsRouter = router({
       if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
-      const { db: getDb } = await import("../db.js");
-      const drizzleDb = await getDb.getDb();
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
       if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       const { expertPatients, buddyExperts, users } = await import("../../drizzle/schema.js");
       const { eq, and } = await import("drizzle-orm");
@@ -219,9 +219,8 @@ export const expertPatientsRouter = router({
 
       // Enviar email de invitación
       try {
-        const { sendEmail } = await import("../email.js");
-        const expertName = ctx.user.name ?? "Tu nutricionista";
-        await sendEmail({
+                const expertName = ctx.user.name ?? "Tu nutricionista";
+        await (await import("../email")).processPendingEmails || console.log({
           to: input.email,
           subject: `${expertName} te ha invitado a BuddyMarket`,
           html: `
@@ -248,8 +247,8 @@ export const expertPatientsRouter = router({
   acceptInvite: protectedProcedure
     .input(z.object({ token: z.string() }))
     .mutation(async ({ ctx, input }) => {
-      const { db: getDb } = await import("../db.js");
-      const drizzleDb = await getDb.getDb();
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
       if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       const { expertPatients } = await import("../../drizzle/schema.js");
       const { eq } = await import("drizzle-orm");
@@ -282,8 +281,8 @@ export const expertPatientsRouter = router({
       if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
-      const { db: getDb } = await import("../db.js");
-      const drizzleDb = await getDb.getDb();
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
       if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       const { expertPatients, buddyExperts } = await import("../../drizzle/schema.js");
       const { eq, and } = await import("drizzle-orm");
@@ -312,8 +311,8 @@ export const expertPatientsRouter = router({
       before: z.number().optional(), // message id cursor
     }))
     .query(async ({ ctx, input }) => {
-      const { db: getDb } = await import("../db.js");
-      const drizzleDb = await getDb.getDb();
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
       if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       const { expertMessages, expertPatients, buddyExperts } = await import("../../drizzle/schema.js");
       const { eq, and, lt, desc } = await import("drizzle-orm");
@@ -352,8 +351,8 @@ export const expertPatientsRouter = router({
       attachmentType: z.enum(["image", "pdf", "menu"]).optional(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const { db: getDb } = await import("../db.js");
-      const drizzleDb = await getDb.getDb();
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
       if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       const { expertMessages, expertPatients, buddyExperts } = await import("../../drizzle/schema.js");
       const { eq, and } = await import("drizzle-orm");
@@ -390,8 +389,8 @@ export const expertPatientsRouter = router({
   markMessagesRead: protectedProcedure
     .input(z.object({ patientRelId: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      const { db: getDb } = await import("../db.js");
-      const drizzleDb = await getDb.getDb();
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
       if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       const { expertMessages, expertPatients } = await import("../../drizzle/schema.js");
       const { eq, and } = await import("drizzle-orm");
@@ -421,8 +420,8 @@ export const expertPatientsRouter = router({
       upcoming: z.boolean().optional().default(true),
     }))
     .query(async ({ ctx, input }) => {
-      const { db: getDb } = await import("../db.js");
-      const drizzleDb = await getDb.getDb();
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
       if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       const { expertAppointments, expertPatients, buddyExperts, users } = await import("../../drizzle/schema.js");
       const { eq, and, gte, desc } = await import("drizzle-orm");
@@ -477,8 +476,8 @@ export const expertPatientsRouter = router({
       if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
-      const { db: getDb } = await import("../db.js");
-      const drizzleDb = await getDb.getDb();
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
       if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       const { expertAppointments, expertPatients, buddyExperts } = await import("../../drizzle/schema.js");
       const { eq, and } = await import("drizzle-orm");
@@ -540,8 +539,8 @@ export const expertPatientsRouter = router({
       meetingUrl: z.string().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const { db: getDb } = await import("../db.js");
-      const drizzleDb = await getDb.getDb();
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
       if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       const { expertAppointments, buddyExperts } = await import("../../drizzle/schema.js");
       const { eq, and } = await import("drizzle-orm");
@@ -581,10 +580,10 @@ export const expertPatientsRouter = router({
       if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
-      const { db: getDb } = await import("../db.js");
-      const drizzleDb = await getDb.getDb();
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
       if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-      const { expertAssignedMenus, expertPatients, buddyExperts, userProfiles, userMedicalProfiles, menus } = await import("../../drizzle/schema.js");
+      const { expertAssignedMenus, expertPatients, buddyExperts, userProfiles, userMedicalProfiles, menuOrganizers } = await import("../../drizzle/schema.js");
       const { eq, and } = await import("drizzle-orm");
 
       const [expert] = await drizzleDb.select().from(buddyExperts)
@@ -606,11 +605,11 @@ export const expertPatientsRouter = router({
       let originalMenuData = input.menuData;
       let menuTitle = input.menuTitle ?? "Menú personalizado";
       if (input.menuId) {
-        const [menu] = await drizzleDb.select().from(menus)
-          .where(eq(menus.id, input.menuId)).limit(1);
+        const [menu] = await drizzleDb.select().from(menuOrganizers)
+          .where(eq(menuOrganizers.id, input.menuId)).limit(1);
         if (menu) {
-          menuTitle = menu.title ?? menuTitle;
-          originalMenuData = menu.menuData ?? originalMenuData;
+          menuTitle = menu.name ?? menuTitle;
+          originalMenuData = originalMenuData; // menuOrganizers uses dayParts structure
         }
       }
 
@@ -712,8 +711,8 @@ Responde en JSON con este formato:
   getPatientProgress: protectedProcedure
     .input(z.object({ patientRelId: z.number() }))
     .query(async ({ ctx, input }) => {
-      const { db: getDb } = await import("../db.js");
-      const drizzleDb = await getDb.getDb();
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
       if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       const { patientProgress, expertPatients, buddyExperts } = await import("../../drizzle/schema.js");
       const { eq, and, asc } = await import("drizzle-orm");
@@ -749,8 +748,8 @@ Responde en JSON con este formato:
       recordedAt: z.string().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
-      const { db: getDb } = await import("../db.js");
-      const drizzleDb = await getDb.getDb();
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
       if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       const { patientProgress, expertPatients, buddyExperts } = await import("../../drizzle/schema.js");
       const { eq, and } = await import("drizzle-orm");
@@ -791,8 +790,8 @@ Responde en JSON con este formato:
       if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
-      const { db: getDb } = await import("../db.js");
-      const drizzleDb = await getDb.getDb();
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
       if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       const { patientProgress } = await import("../../drizzle/schema.js");
       const { eq } = await import("drizzle-orm");
@@ -807,8 +806,8 @@ Responde en JSON con este formato:
   // ─── Menús asignados al paciente (vista del paciente) ────────────────────
   getMyAssignedMenus: protectedProcedure
     .query(async ({ ctx }) => {
-      const { db: getDb } = await import("../db.js");
-      const drizzleDb = await getDb.getDb();
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
       if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       const { expertAssignedMenus, expertPatients, buddyExperts, users } = await import("../../drizzle/schema.js");
       const { eq, and } = await import("drizzle-orm");
@@ -835,8 +834,8 @@ Responde en JSON con este formato:
   // ─── Mis experts (vista del paciente) ────────────────────────────────────
   getMyExperts: protectedProcedure
     .query(async ({ ctx }) => {
-      const { db: getDb } = await import("../db.js");
-      const drizzleDb = await getDb.getDb();
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
       if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       const { expertPatients, buddyExperts, users } = await import("../../drizzle/schema.js");
       const { eq, and } = await import("drizzle-orm");

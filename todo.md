@@ -2155,3 +2155,9 @@
 ## Bug fixes pendientes
 - [ ] Dashboard: card de calorías muestra 0 kcal/0g macros cuando no hay comidas registradas — añadir CTA motivacional y sugerencia de primera comida del día
 - [ ] Dark mode incompleto: header y bottom nav en oscuro pero contenido del dashboard en fondo claro — unificar todos los fondos, textos y cards en dark mode
+
+## Bugs reportados (capturas Apr 13)
+- [x] Bug: Botones compartir/favorito se superponen sobre el badge de tiempo en tarjetas de receta (maxWidth + truncado en badge)
+- [x] Bug: Botón compartir flotante en detalle de receta mal posicionado (implementado variant bar como barra horizontal integrada)
+- [x] Bug: Error 'The string did not match the expected pattern' al generar lista de la compra (enum supermarket BD actualizado con consum e hiperdino)
+- [x] Bug: Avatar de BuddyExpert muestra letra 'D' en lugar de imagen (usar user.imageUrl como fallback cuando expert.avatarUrl es null)
