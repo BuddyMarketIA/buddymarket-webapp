@@ -2161,3 +2161,22 @@
 - [x] Bug: Botón compartir flotante en detalle de receta mal posicionado (implementado variant bar como barra horizontal integrada)
 - [x] Bug: Error 'The string did not match the expected pattern' al generar lista de la compra (enum supermarket BD actualizado con consum e hiperdino)
 - [x] Bug: Avatar de BuddyExpert muestra letra 'D' en lugar de imagen (usar user.imageUrl como fallback cuando expert.avatarUrl es null)
+
+## Bug crítico login (Apr 13 - v2)
+- [x] Bug: Error al iniciar sesión "Unexpected token '<', DOCTYPE is not valid JSON" - servidor devuelve HTML en lugar de JSON
+
+## Errores auditoría completa (Apr 13)
+- [x] Bug crítico #1: Home.tsx redirige a https://buddymarket.io/app/dashboard hardcodeado
+- [x] Bug crítico #2: support.ts import incorrecto '../email' que no exporta sendEmail
+- [x] Bug crítico #3: companyReminders.ts import incorrecto server/_core/db
+- [x] Bug moderado #4: BuddyExperts.tsx usa window.location.href en lugar de navigate()
+- [x] Bug moderado #5: App.tsx ProtectedRoute/ProtectedPage usa window.location.href en lugar de setLocation
+- [x] Bug moderado #7: MealLog.tsx usa window.location.href = "/app/achievements"
+- [x] Accesibilidad #8: Complements.tsx DialogContent sin DialogTitle
+- [x] Accesibilidad #9: ExpertPlansManager.tsx DialogContent sin DialogTitle
+- [x] Accesibilidad #10: MenuLibrary.tsx DialogContent sin DialogTitle
+- [x] Accesibilidad #11: EmpresaDashboard.tsx DialogContent sin DialogTitle
+- [x] Calidad #12: Reducir usos críticos de as any/@ts-ignore en páginas principales
+
+## Retry automático tRPC (Apr 13)
+- [ ] Implementar retry automático con backoff en cliente tRPC para errores 502/503 (sandbox hibernación)

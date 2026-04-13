@@ -1,5 +1,6 @@
 import { useState, useMemo, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "@/components/sonner-a11y-shim";
 import { usePlan } from "@/hooks/usePlan";
@@ -160,6 +161,7 @@ function AILoadingAnimation() {
 
 export default function MealLog() {
   const { t } = useTranslation();
+  const [, navigate] = useLocation();
   const { can } = usePlan();
   const [dateOffset, setDateOffset] = useState(0);
   const [showCalendar, setShowCalendar] = useState(false);
@@ -215,7 +217,7 @@ export default function MealLog() {
         setTimeout(() => {
           toast.success(`🏆 ¡Logro desbloqueado! +${data.newlyUnlocked.length} nuevo${data.newlyUnlocked.length > 1 ? "s" : ""} logro${data.newlyUnlocked.length > 1 ? "s" : ""}`, {
             duration: 5000,
-            action: { label: "Ver logros", onClick: () => window.location.href = "/app/achievements" },
+            action: { label: "Ver logros", onClick: () => navigate("/app/achievements") },
           });
         }, 800);
       }

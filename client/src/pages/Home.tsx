@@ -10,7 +10,7 @@ export default function Home() {
   const { t } = useTranslation();
 
   useEffect(() => {
-    if (!loading && isAuthenticated) window.location.href = "https://buddymarket.io/app/dashboard";
+    if (!loading && isAuthenticated) navigate("/app/dashboard");
   }, [isAuthenticated, loading, navigate]);
 
   const FEATURES = [

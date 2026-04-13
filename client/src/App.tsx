@@ -122,7 +122,7 @@ function ProtectedRoute({ component: Component, params }: { component: React.Com
   const [, setLocation] = useLocation();
   if (loading) return <PageLoader />;
   if (!user) {
-    window.location.href = "/login";
+    setLocation("/login");
     return null;
   }
   // Redirect to onboarding wizard if not completed yet
@@ -135,9 +135,10 @@ function ProtectedRoute({ component: Component, params }: { component: React.Com
 
 function ProtectedPage({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
+  const [, setLocation] = useLocation();
   if (loading) return <PageLoader />;
   if (!user) {
-    window.location.href = "/login";
+    setLocation("/login");
     return null;
   }
   return <>{children}</>;

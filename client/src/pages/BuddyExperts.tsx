@@ -192,7 +192,7 @@ function ExpertCard({
             {isFollowing ? "✓ Siguiendo" : "+ Seguir"}
           </button>
           <button
-            onClick={(e) => { e.stopPropagation(); window.location.href = `/app/buddy-experts/${expert.id}`; }}
+            onClick={(e) => { e.stopPropagation(); navigate(`/app/buddy-experts/${expert.id}`); }}
             className="flex-1 py-2.5 rounded-2xl text-[12px] font-black bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all duration-200 border border-gray-200"
           >
             Ver perfil
