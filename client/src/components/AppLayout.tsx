@@ -447,6 +447,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
   if (isDesktop) {
     const DESKTOP_SIDEBAR_WIDTH = 260;
     return (
+      <>
       <div style={{ display: "flex", minHeight: "100dvh", background: "#FFF8F0" }}>
         {/* Skip to main */}
         <a href="#main-content" style={{ position: "absolute", top: "-100px", left: "16px", zIndex: 9999, padding: "8px 16px", background: "#F97316", color: "white", borderRadius: "8px", fontWeight: 700, fontSize: "14px", textDecoration: "none" }}
@@ -553,6 +554,14 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
           </main>
         </div>
       </div>
+      {/* Logout confirmation dialog — desktop */}
+      <LogoutConfirmDialog
+        open={showLogoutConfirm}
+        onConfirm={handleLogoutConfirmed}
+        onCancel={() => setShowLogoutConfirm(false)}
+        isPending={logoutPending}
+      />
+      </>
     );
   }
 
