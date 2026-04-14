@@ -39,6 +39,12 @@ export function useAuth(options?: UseAuthOptions) {
     } finally {
       // Always clear cache and redirect to landing regardless of server response
       utils.auth.me.setData(undefined, null);
+      // Belt-and-suspenders: also clear the cookie from the client side
+      // This handles cases where the server clearCookie didn't propagate
+      const cookieName = "app_session_id";
+      document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=None; Secure`;
+      document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax`;
+      document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
       window.location.href = "/";
     }
   }, [logoutMutation, utils]);

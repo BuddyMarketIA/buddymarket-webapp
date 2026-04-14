@@ -247,7 +247,15 @@ export const appRouter = router({
     me: publicProcedure.query((opts) => opts.ctx.user),
     logout: publicProcedure.mutation(({ ctx }) => {
       const cookieOptions = getSessionCookieOptions(ctx.req);
-      ctx.res.clearCookie(COOKIE_NAME, { ...cookieOptions, maxAge: -1 });
+      const expiredDate = new Date(0);
+      // Primary clear
+      ctx.res.clearCookie(COOKIE_NAME, cookieOptions);
+      // Fallback: overwrite with expired cookie using same options
+      ctx.res.cookie(COOKIE_NAME, "", { ...cookieOptions, expires: expiredDate, maxAge: 0 });
+      // Fallback without domain (covers cookies set without domain attribute)
+      ctx.res.cookie(COOKIE_NAME, "", { httpOnly: true, path: "/", sameSite: "none", secure: cookieOptions.secure, expires: expiredDate, maxAge: 0 });
+      // Fallback for lax/non-HTTPS environments
+      ctx.res.cookie(COOKIE_NAME, "", { httpOnly: true, path: "/", sameSite: "lax", expires: expiredDate, maxAge: 0 });
       return { success: true } as const;
     }),
     // ── OTP Login ─────────────────────────────────────────────────────────
