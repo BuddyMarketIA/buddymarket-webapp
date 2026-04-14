@@ -27,16 +27,19 @@ export function useAuth(options?: UseAuthOptions) {
     try {
       await logoutMutation.mutateAsync();
     } catch (error: unknown) {
+      // If already unauthorized, treat as successful logout
       if (
-        error instanceof TRPCClientError &&
-        error.data?.code === "UNAUTHORIZED"
+        !(
+          error instanceof TRPCClientError &&
+          error.data?.code === "UNAUTHORIZED"
+        )
       ) {
-        return;
+        console.error("[logout] unexpected error:", error);
       }
-      throw error;
     } finally {
+      // Always clear cache and redirect to landing regardless of server response
       utils.auth.me.setData(undefined, null);
-      await utils.auth.me.invalidate();
+      window.location.href = "/";
     }
   }, [logoutMutation, utils]);
 
@@ -62,7 +65,7 @@ export function useAuth(options?: UseAuthOptions) {
     if (typeof window === "undefined") return;
     if (window.location.pathname === redirectPath) return;
 
-    window.location.href = redirectPath
+    window.location.href = redirectPath;
   }, [
     redirectOnUnauthenticated,
     redirectPath,

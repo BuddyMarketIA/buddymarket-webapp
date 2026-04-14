@@ -251,13 +251,14 @@ function SidebarContent({
 }
 
 export default function AppLayout({ children, title, showBack = false, onBack, headerRight, hideNav = false }: AppLayoutProps) {
-  const { loading, isAuthenticated, user } = useAuth();
+  const { loading, isAuthenticated, user, logout: logoutFn } = useAuth();
   const [location] = useLocation();
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const { t } = useTranslation();
   const isDesktop = useIsDesktop();
   const isMobile = useIsMobile();
-  const logout = trpc.auth.logout.useMutation({ onSuccess: () => { window.location.href = "/"; } });
+  // Use the centralised logout from useAuth so all logout paths redirect consistently
+  const logout = { mutate: () => logoutFn(), isPending: false };
 
   const expertApplicationQuery = trpc.buddyApplications.getMyApplication.useQuery({ type: "expert" }, { enabled: !!user, staleTime: 5 * 60 * 1000 });
   const makerApplicationQuery = trpc.buddyApplications.getMyApplication.useQuery({ type: "maker" }, { enabled: !!user, staleTime: 5 * 60 * 1000 });
