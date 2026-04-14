@@ -273,6 +273,10 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
   const isApprovedMaker = makerApplicationQuery.data?.status === "approved";
   const hasPendingApplication = expertApplicationQuery.data?.status === "pending" || makerApplicationQuery.data?.status === "pending";
 
+  // ⚠️ These hooks MUST be here (before any conditional return) to avoid React error #300
+  const { planDisplay } = usePlan();
+  const profileData = trpc.profile.get.useQuery(undefined, { enabled: !!user, staleTime: 5 * 60 * 1000 });
+
   const [installPrompt, setInstallPrompt] = useState<any>(null);
   const [showInstallBanner, setShowInstallBanner] = useState(false);
   const touchStartX = useRef(0);
@@ -430,10 +434,8 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
 
   const shouldShowNav = !hideNav;
   const pageTitle = title || currentNavItem?.label || currentSidebarItem?.label || "BuddyMarket";
-  const { planDisplay } = usePlan();
   const userName = user?.name || "Usuario";
   const userEmail = user?.email || "";
-  const profileData = trpc.profile.get.useQuery(undefined, { enabled: !!user, staleTime: 5 * 60 * 1000 });
   const userAvatarUrl = profileData.data?.user?.imageUrl || (user as any)?.imageUrl || null;
 
   const sidebarProps = {
