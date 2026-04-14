@@ -2204,3 +2204,6 @@
 - [ ] Vincular ingredientes de recetas con ingredientNutrition
 - [ ] Actualizar cálculo nutricional de recetas para usar BD de ingredientes
 - [ ] UI RecipeDetail: mostrar nutrición calculada desde BD de ingredientes
+
+## Mejoras UX (Sprint actual)
+- [x] Diálogo de confirmación antes de cerrar sesión (AppLayout, DashboardLayout, Profile)

@@ -1,4 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import LogoutConfirmDialog from "@/components/LogoutConfirmDialog";
 import { Avatar, AvatarFallback } from "@/components/ui/avatar";
 import {
   DropdownMenu,
@@ -106,7 +107,13 @@ function DashboardLayoutContent({
   children,
   setSidebarWidth,
 }: DashboardLayoutContentProps) {
-  const { user, logout } = useAuth();
+  const { user, logout: logoutFn } = useAuth();
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [logoutPending, setLogoutPending] = useState(false);
+  const handleLogoutConfirmed = async () => {
+    setLogoutPending(true);
+    await logoutFn();
+  };
   const [location, setLocation] = useLocation();
   const { state, toggleSidebar } = useSidebar();
   const isCollapsed = state === "collapsed";
@@ -242,7 +249,7 @@ function DashboardLayoutContent({
               </DropdownMenuTrigger>
               <DropdownMenuContent align="end" className="w-48">
                 <DropdownMenuItem
-                  onClick={logout}
+                  onClick={() => setShowLogoutConfirm(true)}
                   className="cursor-pointer text-destructive focus:text-destructive"
                 >
                   <LogOut className="mr-2 h-4 w-4" />
@@ -280,6 +287,14 @@ function DashboardLayoutContent({
         )}
         <main className="flex-1 p-4">{children}</main>
       </SidebarInset>
+
+      {/* Logout confirmation dialog */}
+      <LogoutConfirmDialog
+        open={showLogoutConfirm}
+        onConfirm={handleLogoutConfirmed}
+        onCancel={() => setShowLogoutConfirm(false)}
+        isPending={logoutPending}
+      />
     </>
   );
 }

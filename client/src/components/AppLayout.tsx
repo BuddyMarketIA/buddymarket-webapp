@@ -6,6 +6,7 @@ import { usePlan } from "@/hooks/usePlan";
 import { useTheme } from "@/contexts/ThemeContext";
 import { useTranslation } from "react-i18next";
 import LanguageSelector from "@/components/LanguageSelector";
+import LogoutConfirmDialog from "@/components/LogoutConfirmDialog";
 
 // ─── Hook: detecta si estamos en desktop (≥1024px) ───────────────────────────
 function useIsDesktop() {
@@ -257,8 +258,14 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
   const { t } = useTranslation();
   const isDesktop = useIsDesktop();
   const isMobile = useIsMobile();
-  // Use the centralised logout from useAuth so all logout paths redirect consistently
-  const logout = { mutate: () => logoutFn(), isPending: false };
+  // Logout with confirmation dialog
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [logoutPending, setLogoutPending] = useState(false);
+  const handleLogoutConfirmed = async () => {
+    setLogoutPending(true);
+    await logoutFn();
+  };
+  const logout = { mutate: () => setShowLogoutConfirm(true), isPending: logoutPending };
 
   const expertApplicationQuery = trpc.buddyApplications.getMyApplication.useQuery({ type: "expert" }, { enabled: !!user, staleTime: 5 * 60 * 1000 });
   const makerApplicationQuery = trpc.buddyApplications.getMyApplication.useQuery({ type: "maker" }, { enabled: !!user, staleTime: 5 * 60 * 1000 });
@@ -645,6 +652,14 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
           </div>
         </nav>
       )}
+
+      {/* Logout confirmation dialog */}
+      <LogoutConfirmDialog
+        open={showLogoutConfirm}
+        onConfirm={handleLogoutConfirmed}
+        onCancel={() => setShowLogoutConfirm(false)}
+        isPending={logoutPending}
+      />
     </div>
   );
 }

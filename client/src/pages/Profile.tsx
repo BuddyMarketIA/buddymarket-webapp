@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import LogoutConfirmDialog from "@/components/LogoutConfirmDialog";
 import { useTranslation } from "react-i18next";
 import { SUPPORTED_LANGUAGES, type LanguageCode } from "@/lib/i18n";
 import CookiePreferencesPanel from "@/components/CookiePreferencesPanel";
@@ -169,7 +170,13 @@ function SaveButton({ onClick, loading }: { onClick: () => void; loading: boolea
 // ─── Componente principal ────────────────────────────────────────────────────
 export default function Profile() {
   const [activeTab, setActiveTab] = useState("account");
-  const { user, logout } = useAuth();
+  const { user, logout: logoutFn } = useAuth();
+  const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
+  const [logoutPending, setLogoutPending] = useState(false);
+  const handleLogoutConfirmed = async () => {
+    setLogoutPending(true);
+    await logoutFn();
+  };
   const { data: profile, isLoading } = trpc.profile.get.useQuery();
   const { data: allergiesCatalog } = trpc.catalogs.allergies.useQuery();
   const { data: restrictionsCatalog } = trpc.catalogs.dietRestrictions.useQuery();
@@ -588,7 +595,7 @@ export default function Profile() {
             <p style={{ margin: 0, fontSize: "18px", fontWeight: 800, color: "#1a1a1a" }}>{user?.name || "Mi perfil"}</p>
             <p style={{ margin: "2px 0 0", fontSize: "13px", color: "#9ca3af" }}>{user?.email}</p>
           </div>
-          <button onClick={logout} style={{ padding: "8px 14px", borderRadius: "10px", border: "1.5px solid #fee2e2", background: "white", color: "#ef4444", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>
+          <button onClick={() => setShowLogoutConfirm(true)} style={{ padding: "8px 14px", borderRadius: "10px", border: "1.5px solid #fee2e2", background: "white", color: "#ef4444", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>
             Salir
           </button>
         </div>
@@ -1167,6 +1174,13 @@ export default function Profile() {
         </div>
       </div>
     )}
+      {/* Logout confirmation dialog */}
+      <LogoutConfirmDialog
+        open={showLogoutConfirm}
+        onConfirm={handleLogoutConfirmed}
+        onCancel={() => setShowLogoutConfirm(false)}
+        isPending={logoutPending}
+      />
     </>
   );
 }
@@ -1242,6 +1256,7 @@ function DeleteAccountSection() {
           )}
         </div>
       </div>
+
     </div>
   );
 }
