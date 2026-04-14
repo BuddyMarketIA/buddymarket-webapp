@@ -3,6 +3,7 @@ import WelcomeLanguageModal from "@/components/WelcomeLanguageModal";
 import CookieBanner from "./components/CookieBanner";
 import OfflineIndicator from "./components/OfflineIndicator";
 import { AccessibleToaster } from "@/components/AccessibleToaster";
+import { RetryToastManager } from "@/components/RetryToastManager";
 import { TooltipProvider } from "@/components/ui/tooltip";
 import { Route, Switch, Redirect, useLocation } from "wouter";
 import ErrorBoundary from "./components/ErrorBoundary";
@@ -261,6 +262,7 @@ function App() {
       <ThemeProvider defaultTheme="light" switchable={true}>
         <TooltipProvider>
           <AccessibleToaster />
+          <RetryToastManager />
           <WelcomeLanguageModal />
           <Suspense fallback={null}>
             <AppBanners />

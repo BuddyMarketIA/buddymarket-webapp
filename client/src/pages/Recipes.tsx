@@ -166,7 +166,7 @@ function HeartButton({ isFav, onToggle }: { isFav: boolean; onToggle: () => void
 }
 
 // ─── Recipe Card ────────────────────────────────────────────
-function RecipeCard({ recipe, searchQuery, isFav, onToggleFav }: { recipe: Recipe; searchQuery?: string; isFav?: boolean; onToggleFav?: () => void }) {
+function RecipeCard({ recipe, searchQuery, isFav, onToggleFav, likesCount }: { recipe: Recipe; searchQuery?: string; isFav?: boolean; onToggleFav?: () => void; likesCount?: number }) {
   const { t } = useTranslation();
   const totalTime = (recipe.preparationTime || 0) + (recipe.cookTime || 0);
   const hasRealImage = !!(recipe.imageUrl && !recipe.imageUrl.includes('placeholder'));
@@ -309,7 +309,7 @@ function RecipeCard({ recipe, searchQuery, isFav, onToggleFav }: { recipe: Recip
             </div>
           )}
           {/* Time + kcal overlay */}
-          <div style={{ position: "absolute", bottom: "8px", left: "10px", display: "flex", gap: "6px" }}>
+          <div style={{ position: "absolute", bottom: "8px", left: "10px", display: "flex", gap: "6px", flexWrap: "wrap" }}>
             {totalTime > 0 && (
               <span style={{ fontSize: "14px", color: "rgba(255,255,255,0.9)", fontWeight: 600, background: "rgba(0,0,0,0.4)", borderRadius: "8px", padding: "2px 6px" }}>
                 ⏱ {totalTime} min
@@ -318,6 +318,11 @@ function RecipeCard({ recipe, searchQuery, isFav, onToggleFav }: { recipe: Recip
             {recipe.caloriesPerServing && (
               <span style={{ fontSize: "14px", color: "rgba(255,255,255,0.9)", fontWeight: 600, background: "rgba(0,0,0,0.4)", borderRadius: "8px", padding: "2px 6px" }}>
                 🔥 {recipe.caloriesPerServing} kcal
+              </span>
+            )}
+            {likesCount !== undefined && likesCount > 0 && (
+              <span style={{ fontSize: "14px", color: "rgba(255,255,255,0.9)", fontWeight: 600, background: "rgba(239,68,68,0.55)", borderRadius: "8px", padding: "2px 6px" }}>
+                ❤️ {likesCount}
               </span>
             )}
           </div>
@@ -589,6 +594,14 @@ export default function Recipes() {
     toggleFavMutation.mutate({ recipeId: recipe.id });
     toast.success(isFav ? `"${recipe.name}" eliminada de favoritos` : `"${recipe.name}" añadida a favoritos ❤️`);
   };
+  // Likes batch — load counts for all visible recipes
+  const recipeIds = useMemo(() => recipes.map((r) => r.id), [recipes]);
+  const { data: likesBatch } = trpc.recipeLikes.getBatch.useQuery(
+    { recipeIds },
+    { enabled: recipeIds.length > 0 }
+  );
+  const getLikesCount = (recipeId: number) =>
+    (likesBatch?.counts as Record<number, number> | undefined)?.[recipeId] ?? 0;
 
   const activeFiltersCount = [mealTimeFilter, cuisineFilter, cookingMethodFilter].filter(Boolean).length;
 
@@ -896,6 +909,7 @@ export default function Recipes() {
                 searchQuery={debouncedSearch || undefined}
                 isFav={favoriteIds?.includes(recipe.id)}
                 onToggleFav={isAuthenticated ? () => handleToggleFav(recipe) : undefined}
+                likesCount={getLikesCount(recipe.id)}
               />
             ))}
             {/* Skeleton cards appended while fetching next page */}

@@ -103,15 +103,59 @@ export default function RecipeDetail() {
     { enabled: !!user && !!id }
   );
   const toggleLike = trpc.recipeLikes.toggle.useMutation({
-    onSuccess: () => {
+    // Optimistic update: flip liked state and adjust count immediately
+    onMutate: async () => {
+      await utils.recipeLikes.getStatus.cancel({ recipeId: Number(id) });
+      const prev = utils.recipeLikes.getStatus.getData({ recipeId: Number(id) });
+      if (prev) {
+        utils.recipeLikes.getStatus.setData(
+          { recipeId: Number(id) },
+          {
+            liked: !prev.liked,
+            likesCount: prev.liked
+              ? Math.max(0, (prev.likesCount ?? 0) - 1)
+              : (prev.likesCount ?? 0) + 1,
+          }
+        );
+      }
+      return { prev };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev) {
+        utils.recipeLikes.getStatus.setData({ recipeId: Number(id) }, ctx.prev);
+      }
+    },
+    onSettled: () => {
       utils.recipeLikes.getStatus.invalidate({ recipeId: Number(id) });
     },
   });
 
+  const { data: isFavoriteData } = trpc.recipes.isFavorite.useQuery(
+    { recipeId: Number(id) },
+    { enabled: !!user && !!id }
+  );
   const toggleFav = trpc.recipes.toggleFavorite.useMutation({
+    onMutate: async () => {
+      await utils.recipes.isFavorite.cancel({ recipeId: Number(id) });
+      const prev = utils.recipes.isFavorite.getData({ recipeId: Number(id) });
+      utils.recipes.isFavorite.setData({ recipeId: Number(id) }, !prev);
+      return { prev };
+    },
+    onError: (_err, _vars, ctx) => {
+      if (ctx?.prev !== undefined) {
+        utils.recipes.isFavorite.setData({ recipeId: Number(id) }, ctx.prev);
+      }
+    },
+    onSettled: () => {
+      utils.recipes.isFavorite.invalidate({ recipeId: Number(id) });
+      utils.recipes.getFavoriteIds.invalidate();
+    },
     onSuccess: () => {
-      utils.recipes.getById.invalidate({ id: Number(id) });
-      toast.success(t("recipes.favoritesUpdated", "Favorites updated"));
+      toast.success(
+        isFavoriteData
+          ? t("recipes.removedFromFavorites", "Eliminada de favoritos")
+          : t("recipes.addedToFavorites", "Añadida a favoritos ❤️")
+      );
     },
   });
 
@@ -271,10 +315,14 @@ export default function RecipeDetail() {
         <div className="flex items-center gap-1">
           <button
             onClick={() => toggleFav.mutate({ recipeId: recipe.id })}
-            className="rounded-full p-2 hover:bg-orange-50"
-            title="Guardar en favoritos"
+            className="rounded-full p-2 hover:bg-orange-50 transition-colors"
+            title={isFavoriteData ? "Quitar de favoritos" : "Guardar en favoritos"}
           >
-            <HeartIcon className="h-5 w-5 text-gray-400" />
+            {isFavoriteData ? (
+              <HeartSolid className="h-5 w-5 text-orange-500" />
+            ) : (
+              <HeartIcon className="h-5 w-5 text-gray-400" />
+            )}
           </button>
           {user && (
             <button
