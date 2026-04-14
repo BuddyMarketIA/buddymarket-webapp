@@ -246,7 +246,7 @@ export default function LandingPage() {
       }}>
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "0 24px", height: 68, display: "flex", alignItems: "center", gap: 8 }}>
           <a href="/" style={{ display: "flex", alignItems: "center", gap: 12, textDecoration: "none", flexShrink: 0, marginRight: 24 }}>
-            <img src={LOGO_ICON} alt="" style={{ height: 44, width: 44 }} onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+            <img src={LOGO_ICON} alt="BuddyMarket logo" style={{ height: 44, width: 44 }} onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
             <span style={{ fontSize: 24, fontWeight: 900, color: "#F97316", letterSpacing: "-0.5px", lineHeight: 1 }}>
               BuddyMarket
             </span>
@@ -374,7 +374,7 @@ export default function LandingPage() {
               <div key={i} style={{ borderRadius: 20, overflow: "hidden", transform: ["rotate(-1.5deg)","rotate(1deg)","rotate(1.5deg)","rotate(-1deg)"][i], boxShadow: "0 12px 32px rgba(0,0,0,0.12)", transition: "transform 0.3s" }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "rotate(0deg) scale(1.03)"; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ["rotate(-1.5deg)","rotate(1deg)","rotate(1.5deg)","rotate(-1deg)"][i]; }}>
-                <img src={src} alt="" style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                <img src={src} alt={["Salmón con quinoa, receta saludable de BuddyMarket","Ensalada mediterránea fresca","Bowl de açaí con frutas","Pasta al pesto con tomates cherry"][i]} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
               </div>
             ))}
             <div style={{ position: "absolute", bottom: -20, left: "50%", transform: "translateX(-50%)", background: "white", borderRadius: 100, padding: "10px 20px", boxShadow: "0 8px 24px rgba(0,0,0,0.14)", display: "flex", alignItems: "center", gap: 10, whiteSpace: "nowrap", zIndex: 10 }}>
@@ -750,7 +750,7 @@ export default function LandingPage() {
           <div style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", gap: 48, marginBottom: 48 }} className="lp-footer-grid">
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 16 }}>
-                <img src={LOGO_ICON} alt="" style={{ height: 26 }} onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
+                <img src={LOGO_ICON} alt="BuddyMarket" style={{ height: 26 }} onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
                 <span style={{ fontSize: 17, fontWeight: 800, color: "#f1f5f9", letterSpacing: "-0.5px" }}>
                   <span style={{ color: "#F97316" }}>B</span>uddy<span style={{ color: "#F97316" }}>M</span>arket
                 </span>
