@@ -2207,3 +2207,14 @@
 
 ## Mejoras UX (Sprint actual)
 - [x] Diálogo de confirmación antes de cerrar sesión (AppLayout, DashboardLayout, Profile)
+
+## Autenticación email + contraseña (Sprint actual)
+- [x] Verificar campo passwordHash en schema users (ya existe según auditoría)
+- [x] Endpoint servidor: registro con email + contraseña (bcrypt hash)
+- [x] Endpoint servidor: login con email + contraseña
+- [x] Endpoint servidor: solicitar recuperación de contraseña (envío email con token)
+- [x] Endpoint servidor: resetear contraseña con token
+- [x] Frontend: formulario de login con tabs (OAuth / Email+Contraseña)
+- [x] Frontend: formulario de registro con email+contraseña
+- [x] Frontend: página /reset-password para resetear contraseña
+- [x] Crear cuenta real de Guillermo con contraseña (guillermo@buddymarket.io)
