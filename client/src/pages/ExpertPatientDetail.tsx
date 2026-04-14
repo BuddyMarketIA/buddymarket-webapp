@@ -52,7 +52,7 @@ export default function ExpertPatientDetail() {
     { enabled: !!user && patientRelId > 0, refetchInterval: 15000 }
   );
 
-  const { data: myMenus } = trpc.menus.getMyMenus?.useQuery?.(undefined, { enabled: showAssignMenuModal }) ?? { data: null };
+  const { data: myMenus } = trpc.buddyExperts.getMyMenus.useQuery(undefined, { enabled: showAssignMenuModal });
 
   const sendMessageMutation = trpc.expertPatients.sendMessage.useMutation({
     onSuccess: () => {

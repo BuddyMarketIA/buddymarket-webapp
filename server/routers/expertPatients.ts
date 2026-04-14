@@ -665,7 +665,8 @@ Responde en JSON con este formato:
 
             const content = response.choices?.[0]?.message?.content;
             if (content) {
-              const parsed = JSON.parse(content);
+              const contentStr = typeof content === "string" ? content : JSON.stringify(content);
+              const parsed = JSON.parse(contentStr);
               const adaptedData = typeof parsed.adaptedMenu === "string"
                 ? parsed.adaptedMenu
                 : JSON.stringify(parsed.adaptedMenu);

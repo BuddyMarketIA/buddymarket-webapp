@@ -469,15 +469,17 @@ export const contentSyncRouter = router({
    * Returns all public menus for the catalog (offline-cacheable).
    */
   getMenuCatalog: publicProcedure
-    .input(z.object({ limit: z.number().int().min(1).max(200).default(100), offset: z.number().int().min(0).default(0) }).default({}))
+    .input(z.object({ limit: z.number().int().min(1).max(200).default(100), offset: z.number().int().min(0).default(0) }).optional())
     .query(async ({ input }) => {
+      const limit = input?.limit ?? 100;
+      const offset = input?.offset ?? 0;
       const { getDb } = await import("../db");
       const drizzleDb = await getDb();
       if (!drizzleDb) return { menus: [], total: 0, serverTime: Date.now() };
       const { menuOrganizers } = await import("../../drizzle/schema");
       const { count, desc, eq } = await import("drizzle-orm");
       const [rows, countRows] = await Promise.all([
-        drizzleDb.select().from(menuOrganizers).where(eq(menuOrganizers.isPublic, true)).orderBy(desc(menuOrganizers.updatedAt)).limit(input.limit).offset(input.offset),
+        drizzleDb.select().from(menuOrganizers).where(eq(menuOrganizers.isPublic, true)).orderBy(desc(menuOrganizers.updatedAt)).limit(limit).offset(offset),
         drizzleDb.select({ total: count() }).from(menuOrganizers).where(eq(menuOrganizers.isPublic, true)),
       ]);
       return { menus: rows, total: countRows[0]?.total ?? 0, serverTime: Date.now() };
