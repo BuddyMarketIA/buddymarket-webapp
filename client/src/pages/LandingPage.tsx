@@ -627,6 +627,55 @@ export default function LandingPage() {
       {/* ═══ CALCULADORA NUTRICIONAL ══════════════════════════════════════════ */}
       <NutritionalCalculatorSection appUrl={appUrl} />
 
+      {/* ═══ SHARE CALCULADORA ══════════════════════════════════════════════ */}
+      <section style={{ padding: "56px 24px", background: "#111827" }}>
+        <div style={{ maxWidth: 860, margin: "0 auto", display: "flex", flexDirection: "column", alignItems: "center", textAlign: "center", gap: 20 }}>
+          <div style={{ fontSize: 44 }}>🤝</div>
+          <h2 style={{ fontSize: "clamp(22px, 4vw, 38px)", fontWeight: 900, color: "white", margin: 0, letterSpacing: "-0.02em", lineHeight: 1.15 }}>
+            ¿Conoces a alguien que quiera mejorar su alimentación?
+          </h2>
+          <p style={{ fontSize: "clamp(14px, 2vw, 17px)", color: "rgba(255,255,255,0.7)", maxWidth: 520, margin: 0, lineHeight: 1.7 }}>
+            Envíales el enlace a la <strong style={{ color: "#F97316" }}>calculadora nutricional gratuita</strong>. Descubrirán su IMC, metabolismo basal y macros en segundos — sin registro, sin coste.
+          </p>
+          <div style={{ display: "flex", gap: 12, flexWrap: "wrap", justifyContent: "center", marginTop: 8 }}>
+            <a
+              href="/calculadora"
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 8,
+                padding: "14px 28px", borderRadius: 12, fontSize: 16, fontWeight: 800,
+                background: "linear-gradient(135deg, #F97316, #ea580c)", color: "white",
+                textDecoration: "none", boxShadow: "0 8px 24px rgba(249,115,22,0.4)",
+                transition: "all 0.2s",
+              }}
+            >
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8M16 6l-4-4-4 4M12 2v13"/></svg>
+              Abrir calculadora y compartir
+            </a>
+            <button
+              onClick={() => {
+                const url = `${window.location.origin}/calculadora`;
+                navigator.clipboard.writeText(url).catch(() => {});
+                const btn = document.getElementById('lp-share-btn');
+                if (btn) { btn.textContent = '✓ ¡Enlace copiado!'; setTimeout(() => { if (btn) btn.textContent = '📋 Copiar enlace'; }, 2500); }
+              }}
+              id="lp-share-btn"
+              style={{
+                display: "inline-flex", alignItems: "center", gap: 8,
+                padding: "14px 28px", borderRadius: 12, fontSize: 16, fontWeight: 700,
+                background: "rgba(255,255,255,0.1)", color: "white",
+                border: "1.5px solid rgba(255,255,255,0.2)", cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+            >
+              📋 Copiar enlace
+            </button>
+          </div>
+          <p style={{ fontSize: 12, color: "rgba(255,255,255,0.35)", margin: 0 }}>
+            buddymarketapp.com/calculadora · Gratis · Sin registro
+          </p>
+        </div>
+      </section>
+
       {/* ═══ CHECKLIST DE HÁBITOS ════════════════════════════════════════════ */}
       <HabitsChecklistSection appUrl={appUrl} />
 
