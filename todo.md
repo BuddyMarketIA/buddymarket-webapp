@@ -2246,3 +2246,4 @@
 - [x] Bug crítico producción: servidor devuelve HTML en lugar de JSON para llamadas tRPC en buddymarketapp.com — corregido fallback SPA en vite.ts para excluir rutas /api/*
 - [x] Bug crítico: se pueden crear múltiples cuentas con el mismo email — añadir constraint UNIQUE en BD y validación en registro
 - [x] Tarea: fusionar/eliminar cuentas duplicadas de luismariaccc@gmail.com en producción — eliminadas IDs 2732 y 2865
+- [x] Bug persistente: error HTML en lugar de JSON en producción — Service Worker v5 tenía caché HTML de respuestas API. Corregido con SW v6: limpia todas las cachés antiguas y excluye rutas de auth del caché

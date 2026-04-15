@@ -1,18 +1,35 @@
-// BuddyMarket Service Worker — v5.0
+// BuddyMarket Service Worker — v6.0
+// BREAKING CHANGE v6: Cleared all caches (v5 had stale HTML responses cached for API routes)
 // Strategies:
 //   Shell (cache-first)                     → HTML shell, manifest, icons
 //   Static assets (stale-while-revalidate)  → JS/CSS bundles, fonts
 //   Images (cache-first + CDN)              → recipe/menu images, CDN assets
 //   API data (network-first + offline fallback) → tRPC calls for recipes, menus, catalog
+//   Auth routes (NEVER cached)              → login, register, me, logout, SSO
 //   Offline queue (IndexedDB)               → mutations queued while offline, replayed on reconnect
 
-const SHELL_CACHE   = 'buddymarket-shell-v5';
-const STATIC_CACHE  = 'buddymarket-static-v5';
-const API_CACHE     = 'buddymarket-api-v5';
-const IMAGE_CACHE   = 'buddymarket-images-v5';
+const SHELL_CACHE   = 'buddymarket-shell-v6';
+const STATIC_CACHE  = 'buddymarket-static-v6';
+const API_CACHE     = 'buddymarket-api-v6';
+const IMAGE_CACHE   = 'buddymarket-images-v6';
 const CURRENT_CACHES = [SHELL_CACHE, STATIC_CACHE, API_CACHE, IMAGE_CACHE];
 
-// API endpoints that should be cached for offline use
+// Auth-related patterns that must NEVER be cached
+const AUTH_PATTERNS = [
+  'auth.login',
+  'auth.register',
+  'auth.logout',
+  'auth.me',
+  'auth.sendOTP',
+  'auth.verifyOTP',
+  'auth.forgotPassword',
+  'auth.resetPassword',
+  'auth.acceptTerms',
+  '/api/auth/',
+  '/api/oauth/',
+];
+
+// API endpoints that should be cached for offline use (non-auth only)
 const CACHEABLE_API_PATTERNS = [
   'contentSync.getRecipeCatalog',
   'contentSync.getMenuCatalog',
@@ -99,8 +116,12 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
   event.waitUntil(
+    // Delete ALL old caches (including v5 which may have stale HTML responses)
     caches.keys().then((keys) =>
-      Promise.all(keys.filter((k) => !CURRENT_CACHES.includes(k)).map((k) => caches.delete(k)))
+      Promise.all(keys.filter((k) => !CURRENT_CACHES.includes(k)).map((k) => {
+        console.log('[SW v6] Deleting old cache:', k);
+        return caches.delete(k);
+      }))
     )
   );
   self.clients.claim();
@@ -112,19 +133,27 @@ self.addEventListener('fetch', (event) => {
   const { request } = event;
   const url = new URL(request.url);
 
-  // Skip non-GET
+  // Skip non-GET — mutations always go directly to network
   if (request.method !== 'GET') return;
+
+  // ── CRITICAL: Never cache auth routes — always go to network ──────────────
+  const isAuthRoute = AUTH_PATTERNS.some(
+    (p) => url.pathname.includes(p) || url.search.includes(p)
+  );
+  if (isAuthRoute) return; // Let browser handle directly, no SW interception
 
   // ── API data: network-first with offline fallback ──────────────────────────
   if (url.pathname.startsWith('/api/trpc/')) {
     const isCacheable = CACHEABLE_API_PATTERNS.some(
       (p) => url.pathname.includes(p) || url.search.includes(p)
     );
-    if (!isCacheable) return;
+    if (!isCacheable) return; // Non-cacheable API calls go directly to network
 
     event.respondWith(
       fetch(request.clone()).then((response) => {
-        if (response.ok) {
+        // Only cache valid JSON responses, never HTML
+        const contentType = response.headers.get('content-type') || '';
+        if (response.ok && contentType.includes('application/json')) {
           const clone = response.clone();
           caches.open(API_CACHE).then((cache) => {
             clone.blob().then((blob) => {
@@ -149,7 +178,7 @@ self.addEventListener('fetch', (event) => {
     return;
   }
 
-  // Skip other API calls
+  // Skip other API calls — never intercept /api/* routes
   if (url.pathname.startsWith('/api/')) return;
 
   // ── Navigation: network-first, fallback to shell ──────────────────────────
