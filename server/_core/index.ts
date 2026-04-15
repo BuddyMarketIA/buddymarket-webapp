@@ -32,6 +32,11 @@ const ALLOWED_ORIGINS = [
   "https://buddymarket-ndjzmo7p.manus.space",
   "https://buddymarket.io",
   "https://www.buddymarket.io",
+  // Production domains
+  "https://buddymarketapp.com",
+  "https://www.buddymarketapp.com",
+  "https://appbuddymarket.com",
+  "https://www.appbuddymarket.com",
 ];
 
 function isPortAvailable(port: number): Promise<boolean> {
@@ -338,6 +343,12 @@ async function startServer() {
   if (port !== preferredPort) {
     logger.warn(`Port ${preferredPort} is busy, using port ${port} instead`);
   }
+
+  // Set request timeout to 55s so the server closes connections cleanly
+  // before the proxy (which times out at ~60s) returns a 504 HTML page.
+  server.setTimeout(55_000);
+  server.keepAliveTimeout = 65_000;
+  server.headersTimeout = 66_000;
 
   server.listen(port, () => {
     logger.info(`Server running on http://localhost:${port}/`);

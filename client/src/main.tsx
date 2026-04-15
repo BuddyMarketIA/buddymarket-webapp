@@ -28,36 +28,65 @@ import "./index.css";
 import "@/lib/i18n"; // i18n must be initialized before App renders
 
 // Detect server-down / HTML-instead-of-JSON errors (e.g. 502 from sandbox waking up)
+const SERVER_DOWN_PATTERNS = [
+  "<!DOCTYPE", "<!doctype", "not valid JSON", "Failed to fetch",
+  "NetworkError", "SERVER_DOWN", "502", "503", "504",
+];
 const isServerDownError = (error: unknown): boolean => {
   if (!(error instanceof TRPCClientError)) return false;
   const msg = error.message ?? "";
-  return (
-    msg.includes("<!DOCTYPE") ||
-    msg.includes("<!doctype") ||
-    msg.includes("not valid JSON") ||
-    msg.includes("Failed to fetch") ||
-    msg.includes("NetworkError") ||
-    msg.includes("502") ||
-    msg.includes("503")
-  );
+  return SERVER_DOWN_PATTERNS.some((p) => msg.includes(p));
+};
+
+// Custom fetch that intercepts HTML responses BEFORE tRPC tries to parse them.
+// Converts the cryptic "Unexpected token '<'" into a clear SERVER_DOWN error.
+const safeFetch: typeof globalThis.fetch = async (input, init) => {
+  const response = await globalThis.fetch(input, {
+    ...(init ?? {}),
+    credentials: "include",
+  });
+  // If the server returned HTML (502/503/504 from proxy), intercept it
+  const contentType = response.headers.get("content-type") ?? "";
+  if (
+    !response.ok &&
+    (contentType.includes("text/html") || contentType.includes("text/plain"))
+  ) {
+    // Return a fake JSON error response that tRPC can parse cleanly
+    const errorBody = JSON.stringify([{
+      error: {
+        json: {
+          message: `SERVER_DOWN: HTTP ${response.status} — el servidor está arrancando, reintentando...`,
+          code: -32603,
+          data: { code: "INTERNAL_SERVER_ERROR", httpStatus: response.status },
+        }
+      }
+    }]);
+    return new Response(errorBody, {
+      status: response.status,
+      headers: { "content-type": "application/json" },
+    });
+  }
+  return response;
 };
 
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
       retry: (failureCount, error) => {
-        if (isServerDownError(error)) return failureCount < 3;
+        // Retry up to 4 times for server-down errors (cold start can take ~10s)
+        if (isServerDownError(error)) return failureCount < 4;
         return false;
       },
-      retryDelay: (attemptIndex) => Math.min(1000 * 2 ** attemptIndex, 10000),
+      retryDelay: (attemptIndex) => Math.min(1500 * 2 ** attemptIndex, 15000),
       staleTime: 30_000,
     },
     mutations: {
       retry: (failureCount, error) => {
+        // Only retry once for mutations to avoid double-submitting
         if (isServerDownError(error)) return failureCount < 1;
         return false;
       },
-      retryDelay: 2000,
+      retryDelay: 3000,
     },
   },
 });
@@ -95,12 +124,7 @@ const trpcClient = trpc.createClient({
     httpBatchLink({
       url: "/api/trpc",
       transformer: superjson,
-      fetch(input, init) {
-        return globalThis.fetch(input, {
-          ...(init ?? {}),
-          credentials: "include",
-        });
-      },
+      fetch: safeFetch,
     }),
   ],
 });
