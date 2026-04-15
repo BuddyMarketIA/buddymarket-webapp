@@ -2302,3 +2302,17 @@
 - [x] Eliminar timer de 2s que borraba el flag prematuramente
 - [x] Limpiar flag solo cuando el usuario hace login activamente (no con timer)
 - [x] Añadir clearLogoutFlag() en todos los handlers de login (email, registro, OTP, SSO)
+
+## Correcciones urgentes pre-lanzamiento (Apr 15)
+- [x] CORS: añadir dominios *.run.app de Google Cloud Run a la lista de orígenes permitidos
+- [x] Logs del servidor: añadir botón "Resolver todos" para marcar todos los errores como resueltos de una sola vez
+
+## Doble Dashboard BuddyExpert (Apr 15)
+- [x] Selector de modo en AppLayout: "Modo Usuario" / "Modo Profesional" visible solo para BuddyExperts aprobados
+- [ ] Dashboard Profesional BuddyExpert: resumen de pacientes activos, consultas pendientes, ingresos del mes
+- [ ] Panel de pacientes: lista de pacientes con estado, último check-in, plan activo
+- [ ] Gestión de planes: crear/editar planes nutricionales para pacientes con IA
+- [ ] Chat con pacientes: lista de conversaciones activas con badge de mensajes no leídos
+- [ ] Calendario de disponibilidad: configurar horarios de consulta
+- [ ] Métricas profesionales: pacientes activos, planes enviados, valoraciones recibidas
+- [ ] Notificaciones profesionales: nuevas solicitudes de pacientes, mensajes, pagos

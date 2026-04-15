@@ -76,6 +76,10 @@ export default function AdminLogs() {
     onSuccess: () => { toast.success("Logs antiguos eliminados"); refetch(); },
     onError: () => toast.error("Error al limpiar"),
   });
+  const resolveAllMutation = trpc.logs.resolveAll.useMutation({
+    onSuccess: () => { toast.success("Todos los errores marcados como resueltos"); refetch(); },
+    onError: () => toast.error("Error al resolver todos"),
+  });
 
   const totalPages = Math.ceil((data?.total ?? 0) / LIMIT);
 
@@ -108,6 +112,16 @@ export default function AdminLogs() {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
                 </svg>
                 Actualizar
+              </button>
+              <button
+                onClick={() => { if (confirm("¿Marcar todos los errores sin resolver como resueltos?")) resolveAllMutation.mutate({ level: level !== "all" ? level : undefined }); }}
+                disabled={resolveAllMutation.isPending}
+                className="flex items-center gap-2 px-4 py-2 rounded-xl border border-green-200 bg-green-50 text-sm font-medium text-green-700 hover:bg-green-100 transition-colors disabled:opacity-50"
+              >
+                <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                </svg>
+                Resolver todos
               </button>
               <button
                 onClick={() => { if (confirm("¿Eliminar logs de más de 30 días?")) clearMutation.mutate({ olderThanDays: 30 }); }}

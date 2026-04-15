@@ -149,8 +149,12 @@ function SidebarContent({
   onClose,
   logout,
   SIDEBAR_GROUPS,
+  EXPERT_SIDEBAR_GROUPS,
   t,
+  expertMode,
+  toggleExpertMode,
 }: any) {
+  const activeGroups = (isApprovedExpert && expertMode) ? EXPERT_SIDEBAR_GROUPS : SIDEBAR_GROUPS;
   return (
     <>
       {/* Sidebar Header */}
@@ -165,9 +169,25 @@ function SidebarContent({
         <LanguageSelector variant="icon" />
       </div>
 
+      {/* Expert Mode Toggle — solo visible para expertos aprobados */}
+      {isApprovedExpert && toggleExpertMode && (
+        <div style={{ padding: "10px 16px", borderBottom: "1px solid rgba(0,0,0,0.06)" }}>
+          <div style={{ display: "flex", background: "#f3f4f6", borderRadius: "10px", padding: "3px", gap: "2px" }}>
+            <button
+              onClick={() => toggleExpertMode(false)}
+              style={{ flex: 1, padding: "7px 8px", borderRadius: "8px", border: "none", cursor: "pointer", fontSize: "12px", fontWeight: 700, transition: "all 0.2s", background: !expertMode ? "white" : "transparent", color: !expertMode ? "#F97316" : "#6b7280", boxShadow: !expertMode ? "0 1px 4px rgba(0,0,0,0.12)" : "none" }}
+            >👤 Usuario</button>
+            <button
+              onClick={() => toggleExpertMode(true)}
+              style={{ flex: 1, padding: "7px 8px", borderRadius: "8px", border: "none", cursor: "pointer", fontSize: "12px", fontWeight: 700, transition: "all 0.2s", background: expertMode ? "linear-gradient(135deg, #F97316, #FB923C)" : "transparent", color: expertMode ? "white" : "#6b7280", boxShadow: expertMode ? "0 2px 8px rgba(249,115,22,0.35)" : "none" }}
+            >🎓 Profesional</button>
+          </div>
+        </div>
+      )}
+
       {/* Sidebar Nav */}
       <nav style={{ flex: 1, padding: "12px", overflowY: "auto" }}>
-        {SIDEBAR_GROUPS.map((group: any, gi: number) => (
+        {activeGroups.map((group: any, gi: number) => (
           <div key={group.label} style={{ marginBottom: "2px" }}>
             <p style={{ margin: gi === 0 ? "4px 0 4px 16px" : "10px 0 4px 16px", fontSize: "11px", fontWeight: 800, color: "#9ca3af", letterSpacing: "0.08em", textTransform: "uppercase" }}>{group.label}</p>
             {group.items.filter((item: any) => {
@@ -273,6 +293,15 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
   const isApprovedExpert = expertApplicationQuery.data?.status === "approved";
   const isApprovedMaker = makerApplicationQuery.data?.status === "approved";
   const hasPendingApplication = expertApplicationQuery.data?.status === "pending" || makerApplicationQuery.data?.status === "pending";
+  // ─── Expert mode toggle (persisted in localStorage) ──────────────────────
+  const [expertMode, setExpertMode] = useState<boolean>(() => {
+    if (typeof window === "undefined") return false;
+    return localStorage.getItem("bm_expert_mode") === "1";
+  });
+  const toggleExpertMode = useCallback((val: boolean) => {
+    setExpertMode(val);
+    localStorage.setItem("bm_expert_mode", val ? "1" : "0");
+  }, []);
 
   // ⚠️ These hooks MUST be here (before any conditional return) to avoid React error #300
   const { planDisplay } = usePlan();
@@ -328,6 +357,32 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
     { key: "diario", label: t("nav.diary"), to: "/app/meal-log", matches: ["/app/meal-log"], icon: (active: boolean) => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? "#F97316" : "#9ca3af"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>) },
     { key: "/app/menus", label: t("nav.menus"), to: "/app/menus", matches: ["/app/menus"], icon: (active: boolean) => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? "#F97316" : "#9ca3af"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>) },
     { key: "perfil", label: t("nav.profile"), to: "/app/profile", matches: ["/app/profile"], icon: (active: boolean) => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? "#F97316" : "#9ca3af"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>) },
+  ];
+
+  // ─── SIDEBAR PROFESIONAL (solo para BuddyExperts aprobados) ───────────────────
+  const EXPERT_SIDEBAR_GROUPS = [
+    {
+      label: "Panel Profesional",
+      items: [
+        { key: "/app/buddy-expert-dashboard", label: "Mi Panel", to: "/app/buddy-expert-dashboard", emoji: "🎓" },
+        { key: "/app/buddy-expert-stats", label: "Estadísticas", to: "/app/buddy-expert-stats", emoji: "📊" },
+        { key: "/app/expert-plans", label: "Mis Planes", to: "/app/expert-plans", emoji: "📋" },
+      ],
+    },
+    {
+      label: "Pacientes",
+      items: [
+        { key: "/app/expert/patients", label: "Mis Pacientes", to: "/app/expert/patients", emoji: "👥" },
+        { key: "/app/expert/chat", label: "Chat con Pacientes", to: "/app/expert/chat", emoji: "💬" },
+      ],
+    },
+    {
+      label: "Contenido",
+      items: [
+        { key: "/app/buddy-makers", label: "BuddyMakers", to: "/app/buddy-makers", emoji: "👨‍🍳" },
+        { key: "/app/buddy-shop", label: "BuddyShop ↗", to: "/app/buddy-shop", emoji: "🛦" },
+      ],
+    },
   ];
 
   const SIDEBAR_GROUPS = [
@@ -444,7 +499,9 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
     location, user, userAvatarUrl, userName, userEmail, planDisplay,
     isApprovedExpert, isApprovedMaker, hasPendingApplication,
     onClose: () => setSidebarOpen(false),
-    logout, SIDEBAR_GROUPS, t,
+    logout, SIDEBAR_GROUPS, EXPERT_SIDEBAR_GROUPS, t,
+    expertMode: isApprovedExpert ? expertMode : false,
+    toggleExpertMode: isApprovedExpert ? toggleExpertMode : undefined,
   };
 
   // ─── DESKTOP LAYOUT ──────────────────────────────────────────────────────────

@@ -10805,6 +10805,20 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
         await drizzleDb.delete(serverLogs).where(lt(serverLogs.createdAt, cutoff));
         return { success: true };
       }),
+    resolveAll: protectedProcedure
+      .input(z.object({ level: z.string().optional() }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { serverLogs } = await import("../drizzle/schema.js");
+        const { eq, and } = await import("drizzle-orm");
+        const where = input.level
+          ? and(eq(serverLogs.resolved, false), eq(serverLogs.level, input.level as "error" | "warn" | "info" | "debug" | "fatal"))
+          : eq(serverLogs.resolved, false);
+        await drizzleDb.update(serverLogs).set({ resolved: true }).where(where);
+        return { success: true };
+      }),
   }),
 
   // -- Ingredient Nutrition --

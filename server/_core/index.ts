@@ -118,9 +118,14 @@ async function startServer() {
     origin: (origin, callback) => {
       // Allow requests with no origin (mobile apps, curl, server-to-server)
       if (!origin) return callback(null, true);
-      if (ALLOWED_ORIGINS.includes(origin) || process.env.NODE_ENV === "development") {
-        return callback(null, true);
-      }
+      // Allow exact matches in allowlist
+      if (ALLOWED_ORIGINS.includes(origin)) return callback(null, true);
+      // Allow development environment
+      if (process.env.NODE_ENV === "development") return callback(null, true);
+      // Allow Google Cloud Run deployment domains (*.run.app)
+      if (/\.run\.app$/.test(origin)) return callback(null, true);
+      // Allow Manus preview/sandbox domains
+      if (/\.manus\.(space|computer|app)$/.test(origin)) return callback(null, true);
       logger.warn(`[CORS] Blocked request from origin: ${origin}`);
       return callback(new Error(`CORS policy: origin ${origin} not allowed`));
     },
