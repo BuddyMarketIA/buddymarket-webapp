@@ -2344,3 +2344,25 @@
 - [ ] Asignación de plantilla: ver restricciones del paciente antes de asignar
 - [ ] Subida de PDF: convertir PDF de menú a estructura de menú con IA
 - [ ] Vista de paciente desde dashboard: métricas, historial, planes asignados, chat directo
+
+## Vista Detallada Paciente + Notas Internas
+- [ ] Tabla expertPatientNotes en schema de BD
+- [ ] Endpoints tRPC: notas CRUD, historial de progreso del paciente, menús asignados
+- [ ] Página ExpertPatientDetail: gráficos de peso/métricas, menús asignados, notas internas
+- [ ] Enlace desde dashboard profesional y lista de pacientes a la vista detallada
+
+## Sprint Notas Internas + Vista Detallada Paciente (completado)
+- [x] Schema DB: tabla expertPatientNotes (notas internas del experto sobre pacientes)
+- [x] tRPC: endpoint addPatientNote (crear nota interna)
+- [x] tRPC: endpoint getPatientNotes (listar notas de un paciente)
+- [x] tRPC: endpoint updatePatientNote (editar/fijar nota)
+- [x] tRPC: endpoint deletePatientNote (eliminar nota)
+- [x] tRPC: endpoint getPatientFullDetail (datos completos del paciente: mensajes, citas, menús, progreso, notas, métricas)
+- [x] ExpertPatientDetail: tab "Notas" con notas privadas (5 tipos: general, clínica, dieta, objetivo, alerta)
+- [x] ExpertPatientDetail: notas fijadas visibles en cabecera del perfil
+- [x] ExpertPatientDetail: alertas de notas tipo "alert" visibles al entrar al perfil
+- [x] ExpertPatientDetail: tab "Evolución" con gráficos Recharts (peso, grasa, músculo)
+- [x] ExpertPatientDetail: resumen estadístico (peso inicial, actual, cambio total, registros)
+- [x] ExpertPatientDetail: tab "Menús" con todos los menús asignados y estado IA
+- [x] ExpertPatientDetail: tab "Perfil" ampliada con objetivos calóricos y tipo de dieta
+- [x] Build de producción verificado (Vite build exitoso)

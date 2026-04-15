@@ -2591,3 +2591,25 @@ export const pdfMenuImports = pgTable("pdf_menu_imports", {
 }));
 export type PdfMenuImport = typeof pdfMenuImports.$inferSelect;
 export type InsertPdfMenuImport = typeof pdfMenuImports.$inferInsert;
+
+// =============================================================================
+// EXPERT PATIENT NOTES (Notas internas del nutricionista sobre pacientes)
+// =============================================================================
+export const expertPatientNotes = pgTable("expert_patient_notes", {
+  id: serial("id").primaryKey(),
+  expertId: integer("expertId").notNull(),
+  patientUserId: integer("patientUserId").notNull(),
+  expertPatientId: integer("expertPatientId").notNull(),
+  content: text("content").notNull(),
+  noteType: varchar("noteType", { length: 32 }).default("general").notNull(), // general | clinical | diet | goal | alert
+  isPinned: boolean("isPinned").default(false).notNull(),
+  isPrivate: boolean("isPrivate").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  expertIdx: index("epn_expert_idx").on(t.expertId),
+  patientIdx: index("epn_patient_idx").on(t.patientUserId),
+  expertPatientIdx: index("epn_ep_idx").on(t.expertPatientId),
+}));
+export type ExpertPatientNote = typeof expertPatientNotes.$inferSelect;
+export type InsertExpertPatientNote = typeof expertPatientNotes.$inferInsert;

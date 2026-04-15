@@ -848,6 +848,222 @@ Responde en JSON con este formato:
       return menus;
     }),
 
+  // ─── Notas internas del experto sobre el paciente ──────────────────────────
+  addPatientNote: protectedProcedure
+    .input(z.object({
+      patientRelId: z.number(),
+      content: z.string().min(1).max(5000),
+      noteType: z.enum(["general", "clinical", "diet", "goal", "alert"]).optional().default("general"),
+      isPinned: z.boolean().optional().default(false),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN", message: "Solo BuddyExperts pueden añadir notas" });
+      }
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { expertPatientNotes, expertPatients, buddyExperts } = await import("../../drizzle/schema.js");
+      const { eq, and } = await import("drizzle-orm");
+
+      const [expert] = await drizzleDb.select().from(buddyExperts)
+        .where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+      if (!expert) throw new TRPCError({ code: "NOT_FOUND" });
+
+      const [rel] = await drizzleDb.select().from(expertPatients)
+        .where(and(eq(expertPatients.id, input.patientRelId), eq(expertPatients.expertId, expert.id)))
+        .limit(1);
+      if (!rel) throw new TRPCError({ code: "NOT_FOUND", message: "Paciente no encontrado" });
+
+      const [note] = await drizzleDb.insert(expertPatientNotes).values({
+        expertId: expert.id,
+        patientUserId: rel.patientUserId,
+        expertPatientId: input.patientRelId,
+        content: input.content,
+        noteType: input.noteType,
+        isPinned: input.isPinned,
+        isPrivate: true,
+      }).returning();
+
+      return note;
+    }),
+
+  getPatientNotes: protectedProcedure
+    .input(z.object({ patientRelId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { expertPatientNotes, expertPatients, buddyExperts } = await import("../../drizzle/schema.js");
+      const { eq, and, desc } = await import("drizzle-orm");
+
+      const [expert] = await drizzleDb.select().from(buddyExperts)
+        .where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+      if (!expert) throw new TRPCError({ code: "NOT_FOUND" });
+
+      const [rel] = await drizzleDb.select().from(expertPatients)
+        .where(and(eq(expertPatients.id, input.patientRelId), eq(expertPatients.expertId, expert.id)))
+        .limit(1);
+      if (!rel) throw new TRPCError({ code: "NOT_FOUND" });
+
+      const notes = await drizzleDb.select().from(expertPatientNotes)
+        .where(and(
+          eq(expertPatientNotes.expertPatientId, input.patientRelId),
+          eq(expertPatientNotes.expertId, expert.id)
+        ))
+        .orderBy(desc(expertPatientNotes.isPinned), desc(expertPatientNotes.createdAt));
+
+      return notes;
+    }),
+
+  updatePatientNote: protectedProcedure
+    .input(z.object({
+      noteId: z.number(),
+      content: z.string().min(1).max(5000).optional(),
+      noteType: z.enum(["general", "clinical", "diet", "goal", "alert"]).optional(),
+      isPinned: z.boolean().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { expertPatientNotes, buddyExperts } = await import("../../drizzle/schema.js");
+      const { eq, and } = await import("drizzle-orm");
+
+      const [expert] = await drizzleDb.select().from(buddyExperts)
+        .where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+      if (!expert) throw new TRPCError({ code: "NOT_FOUND" });
+
+      const [note] = await drizzleDb.select().from(expertPatientNotes)
+        .where(and(eq(expertPatientNotes.id, input.noteId), eq(expertPatientNotes.expertId, expert.id)))
+        .limit(1);
+      if (!note) throw new TRPCError({ code: "NOT_FOUND" });
+
+      const updates: Record<string, unknown> = { updatedAt: new Date() };
+      if (input.content !== undefined) updates.content = input.content;
+      if (input.noteType !== undefined) updates.noteType = input.noteType;
+      if (input.isPinned !== undefined) updates.isPinned = input.isPinned;
+
+      await drizzleDb.update(expertPatientNotes)
+        .set(updates)
+        .where(eq(expertPatientNotes.id, input.noteId));
+
+      return { success: true };
+    }),
+
+  deletePatientNote: protectedProcedure
+    .input(z.object({ noteId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { expertPatientNotes, buddyExperts } = await import("../../drizzle/schema.js");
+      const { eq, and } = await import("drizzle-orm");
+
+      const [expert] = await drizzleDb.select().from(buddyExperts)
+        .where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+      if (!expert) throw new TRPCError({ code: "NOT_FOUND" });
+
+      await drizzleDb.delete(expertPatientNotes)
+        .where(and(eq(expertPatientNotes.id, input.noteId), eq(expertPatientNotes.expertId, expert.id)));
+
+      return { success: true };
+    }),
+
+  // ─── Vista detallada del paciente (datos completos para el experto) ────────
+  getPatientFullDetail: protectedProcedure
+    .input(z.object({ patientRelId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const {
+        expertPatients, buddyExperts, users, userProfiles, userMedicalProfiles,
+        expertMessages, expertAppointments, expertAssignedMenus, patientProgress,
+        expertPatientNotes, userMetrics,
+      } = await import("../../drizzle/schema.js");
+      const { eq, and, desc, asc } = await import("drizzle-orm");
+
+      const [expert] = await drizzleDb.select().from(buddyExperts)
+        .where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+      if (!expert) throw new TRPCError({ code: "NOT_FOUND" });
+
+      const [rel] = await drizzleDb.select().from(expertPatients)
+        .where(and(eq(expertPatients.id, input.patientRelId), eq(expertPatients.expertId, expert.id)))
+        .limit(1);
+      if (!rel) throw new TRPCError({ code: "NOT_FOUND", message: "Paciente no encontrado" });
+
+      const [patientUser] = await drizzleDb.select().from(users)
+        .where(eq(users.id, rel.patientUserId)).limit(1);
+      const [profile] = await drizzleDb.select().from(userProfiles)
+        .where(eq(userProfiles.userId, rel.patientUserId)).limit(1);
+      const [medProfile] = await drizzleDb.select().from(userMedicalProfiles)
+        .where(eq(userMedicalProfiles.userId, rel.patientUserId)).limit(1);
+
+      // Historial de progreso (peso, grasa, músculo, medidas)
+      const progressHistory = await drizzleDb.select().from(patientProgress)
+        .where(eq(patientProgress.expertPatientId, input.patientRelId))
+        .orderBy(asc(patientProgress.recordedAt))
+        .limit(60);
+
+      // Métricas del usuario (desde la app de usuario)
+      const userMetricsHistory = await drizzleDb.select().from(userMetrics)
+        .where(eq(userMetrics.userId, rel.patientUserId))
+        .orderBy(asc(userMetrics.date))
+        .limit(60);
+
+      // Menús asignados
+      const assignedMenus = await drizzleDb.select().from(expertAssignedMenus)
+        .where(eq(expertAssignedMenus.expertPatientId, input.patientRelId))
+        .orderBy(desc(expertAssignedMenus.createdAt))
+        .limit(20);
+
+      // Citas (historial)
+      const appointments = await drizzleDb.select().from(expertAppointments)
+        .where(eq(expertAppointments.expertPatientId, input.patientRelId))
+        .orderBy(desc(expertAppointments.startTime))
+        .limit(30);
+
+      // Notas internas del experto
+      const notes = await drizzleDb.select().from(expertPatientNotes)
+        .where(and(
+          eq(expertPatientNotes.expertPatientId, input.patientRelId),
+          eq(expertPatientNotes.expertId, expert.id)
+        ))
+        .orderBy(desc(expertPatientNotes.isPinned), desc(expertPatientNotes.createdAt));
+
+      // Mensajes recientes
+      const recentMessages = await drizzleDb.select().from(expertMessages)
+        .where(eq(expertMessages.expertPatientId, input.patientRelId))
+        .orderBy(desc(expertMessages.createdAt))
+        .limit(20);
+
+      return {
+        relation: rel,
+        user: patientUser,
+        profile,
+        medicalProfile: medProfile,
+        progressHistory,
+        userMetricsHistory,
+        assignedMenus,
+        appointments,
+        notes,
+        recentMessages,
+      };
+    }),
+
   // ─── Mis experts (vista del paciente) ────────────────────────────────────
   getMyExperts: protectedProcedure
     .query(async ({ ctx }) => {
