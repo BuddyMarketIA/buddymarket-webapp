@@ -27,16 +27,16 @@ import { registerSitemapRoutes } from "../sitemap";
 
 // ─── Allowed origins ─────────────────────────────────────────────────────────
 const ALLOWED_ORIGINS = [
-  "http://localhost:3000",
-  "http://localhost:5173",
+  // Primary production domain
+  "https://buddymarketapp.com",
+  "https://www.buddymarketapp.com",
+  // Legacy / Manus preview domains
   "https://buddymarket-ndjzmo7p.manus.space",
   "https://buddymarket.io",
   "https://www.buddymarket.io",
-  // Production domains
-  "https://buddymarketapp.com",
-  "https://www.buddymarketapp.com",
-  "https://appbuddymarket.com",
-  "https://www.appbuddymarket.com",
+  // Local development
+  "http://localhost:3000",
+  "http://localhost:5173",
 ];
 
 function isPortAvailable(port: number): Promise<boolean> {

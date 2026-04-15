@@ -6,7 +6,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 // verify buddymarket.io at https://resend.com/domains and update this value.
 const CUSTOM_FROM_EMAIL = process.env.EMAIL_FROM || "BuddyMarket <onboarding@resend.dev>";
 const FROM_EMAIL = CUSTOM_FROM_EMAIL;
-const APP_URL = "https://buddymarket.io";
+const APP_URL = process.env.PUBLIC_APP_URL || "https://buddymarketapp.com";
 
 // ─── Shared HTML helpers ──────────────────────────────────────────────────────
 
@@ -34,7 +34,7 @@ function emailWrapper(content: string): string {
                 Si tienes alguna pregunta, responde a este email.
               </p>
               <p style="margin:0;">
-                <a href="${APP_URL}" style="color:#F97316;text-decoration:none;font-size:13px;font-weight:600;">buddymarket.io</a>
+                <a href="${APP_URL}" style="color:#F97316;text-decoration:none;font-size:13px;font-weight:600;">buddymarketapp.com</a>
                 <span style="color:#ccc;margin:0 8px;">·</span>
                 <a href="${APP_URL}/privacidad" style="color:#999;text-decoration:none;font-size:13px;">Privacidad</a>
                 <span style="color:#ccc;margin:0 8px;">·</span>
@@ -782,7 +782,7 @@ function paymentConfirmationHtml(params: {
           </table>
         </td></tr>
       </table>
-      <table cellpadding="0" cellspacing="0" style="margin:0 auto 32px;"><tr><td style="background:linear-gradient(135deg,#F97316,#EA580C);border-radius:14px;padding:14px 32px;text-align:center;"><a href="https://buddymarket.io/app/dashboard" style="color:#ffffff;font-size:15px;font-weight:800;text-decoration:none;">Ir a mi panel →</a></td></tr></table>
+      <table cellpadding="0" cellspacing="0" style="margin:0 auto 32px;"><tr><td style="background:linear-gradient(135deg,#F97316,#EA580C);border-radius:14px;padding:14px 32px;text-align:center;"><a href="${APP_URL}/app/dashboard" style="color:#ffffff;font-size:15px;font-weight:800;text-decoration:none;">Ir a mi panel →</a></td></tr></table>
       <p style="color:#888;font-size:13px;line-height:1.7;margin:0 0 40px;">Si tienes alguna pregunta sobre tu suscripción, responde a este email.</p>
     </td></tr>
   `);
@@ -1049,7 +1049,7 @@ export async function sendBillingPreviewEmail(params: {
   const { to, companyName, activeLicenses, pricePerLicense, totalAmount, billingDate } = params;
   const billingDateStr = billingDate.toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" });
   const subject = "Resumen de facturacion BuddyMarket - " + billingDate.toLocaleDateString("es-ES", { month: "long", year: "numeric" });
-  const html = emailWrapper(emailHeader("Resumen de facturacion", companyName + " - " + billingDateStr, "linear-gradient(135deg,#1e40af 0%,#1d4ed8 100%)") + "<tr><td style='padding:40px;'><p style='color:#374151;font-size:15px;'>Hola, equipo de " + companyName + ". El cargo de " + totalAmount.toFixed(2) + " EUR (" + activeLicenses + " licencias x " + pricePerLicense.toFixed(2) + " EUR/mes) se realizara el " + billingDateStr + ".</p>" + ctaButton("Ver panel de empresa", "https://buddymarket.io/empresa/dashboard") + "</td></tr>");
+  const html = emailWrapper(emailHeader("Resumen de facturacion", companyName + " - " + billingDateStr, "linear-gradient(135deg,#1e40af 0%,#1d4ed8 100%)") + "<tr><td style='padding:40px;'><p style='color:#374151;font-size:15px;'>Hola, equipo de " + companyName + ". El cargo de " + totalAmount.toFixed(2) + " EUR (" + activeLicenses + " licencias x " + pricePerLicense.toFixed(2) + " EUR/mes) se realizara el " + billingDateStr + ".</p>" + ctaButton("Ver panel de empresa", `${APP_URL}/empresa/dashboard`) + "</td></tr>");
   try {
     const { data, error } = await resend.emails.send({ from: FROM_EMAIL, to, subject, html });
     if (error) { console.error("[Email] Billing preview failed:", error); return { success: false, error: error.message }; }

@@ -827,7 +827,7 @@ export default function LandingPage() {
             ))}
           </div>
           <div style={{ borderTop: "1px solid rgba(255,255,255,0.06)", paddingTop: 24, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
-            <p style={{ fontSize: 13, color: "#475569", margin: 0 }}>© 2025 BuddyMarket · buddymarket.io · Todos los derechos reservados</p>
+            <p style={{ fontSize: 13, color: "#475569", margin: 0 }}>© 2026 BuddyMarket · buddymarketapp.com · Todos los derechos reservados</p>
             <div style={{ display: "flex", gap: 16 }}>
               {["Twitter","Instagram","LinkedIn","YouTube"].map(net => (
                 <a key={net} href="#" style={{ fontSize: 13, color: "#475569", textDecoration: "none", transition: "color 0.15s" }}

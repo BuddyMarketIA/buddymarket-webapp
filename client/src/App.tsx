@@ -149,7 +149,7 @@ function ProtectedPage({ children }: { children: React.ReactNode }) {
 }
 
 function Router() {
-  const isAppDomain = typeof window !== 'undefined' && window.location.hostname.includes('buddymarket.io');
+  const isAppDomain = typeof window !== 'undefined' && window.location.hostname.includes('buddymarketapp.com') || window.location.hostname.includes('buddymarket.io');
   return (
     <Switch>
       {/* Public landing — on buddymarket.io show LoginPage */}
