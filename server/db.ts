@@ -117,15 +117,20 @@ export async function upsertUser(user: InsertUser): Promise<void> {
 
   // --- Account deduplication: if openId not found but email matches an existing account,
   // update that account's openId instead of creating a new one.
-  // This prevents duplicate accounts when Google SSO returns a different openId.
+  // This prevents duplicate accounts when a user registers with email and then logs in with Google/Apple.
   if (user.email) {
+    const normalizedEmail = user.email.toLowerCase().trim();
     const existingByOpenId = await db.select({ id: users.id }).from(users).where(eq(users.openId, user.openId)).limit(1);
     if (existingByOpenId.length === 0) {
-      // No account with this openId — check if email already exists
-      const existingByEmail = await db.select({ id: users.id, openId: users.openId }).from(users)
-        .where(eq(users.email, user.email.toLowerCase().trim())).limit(1);
+      // No account with this openId — fetch ALL accounts with this email (handles prior duplicates)
+      const existingByEmail = await db
+        .select({ id: users.id, openId: users.openId, createdAt: users.createdAt })
+        .from(users)
+        .where(and(eq(users.email, normalizedEmail), sql`${users.deletedAt} IS NULL`))
+        .orderBy(users.createdAt); // oldest first — keep the original account
       if (existingByEmail.length > 0) {
-        // Link this openId to the existing account
+        // Use the OLDEST account as the canonical one (first registration)
+        const canonical = existingByEmail[0];
         const updateData: Record<string, unknown> = {
           openId: user.openId,
           lastSignedIn: user.lastSignedIn ?? new Date(),
@@ -133,8 +138,14 @@ export async function upsertUser(user: InsertUser): Promise<void> {
         if (user.name) updateData.name = user.name;
         if (user.loginMethod) updateData.loginMethod = user.loginMethod;
         if (user.imageUrl) updateData.imageUrl = user.imageUrl;
-        await db.update(users).set(updateData).where(eq(users.id, existingByEmail[0].id));
-        console.log(`[upsertUser] Linked openId ${user.openId} to existing account ID ${existingByEmail[0].id} (email: ${user.email})`);
+        await db.update(users).set(updateData).where(eq(users.id, canonical.id));
+        console.log(`[upsertUser] Linked openId ${user.openId} to existing account ID ${canonical.id} (email: ${normalizedEmail}). Total active accounts with this email: ${existingByEmail.length}`);
+        // Soft-delete any extra duplicate accounts (keep only the canonical)
+        if (existingByEmail.length > 1) {
+          const duplicateIds = existingByEmail.slice(1).map((u) => u.id);
+          console.warn(`[upsertUser] Soft-deleting ${duplicateIds.length} duplicate account(s) for email ${normalizedEmail}. IDs: ${duplicateIds.join(", ")}`);
+          await db.update(users).set({ deletedAt: new Date(), active: false }).where(inArray(users.id, duplicateIds));
+        }
         return;
       }
     }
@@ -2243,10 +2254,12 @@ export async function deleteExpiredOtpTokens(): Promise<void> {
 export async function getUserByEmail(email: string) {
   const db = await getDb();
   if (!db) return undefined;
+  // Only return active (non-deleted) accounts, ordered by createdAt to get the canonical one first
   const result = await db
     .select()
     .from(users)
-    .where(eq(users.email, email.toLowerCase()))
+    .where(and(eq(users.email, email.toLowerCase()), sql`${users.deletedAt} IS NULL`))
+    .orderBy(users.createdAt)
     .limit(1);
   return result[0];
 }
