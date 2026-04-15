@@ -1,7 +1,9 @@
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Link } from "wouter";
-import { useState, useMemo, useEffect, useRef, useCallback } from "react";
+import { useState, useMemo, useEffect, useRef, useCallback, lazy, Suspense } from "react";
+import { useExpertMode } from "@/contexts/ExpertModeContext";
+const BuddyExpertDashboard = lazy(() => import("./BuddyExpertDashboard"));
 
 // Hook para detectar desktop
 function useIsDesktop() {
@@ -104,6 +106,7 @@ const RECIPE_OF_DAY = [
 
 export default function Dashboard() {
   const { user } = useAuth();
+  const { expertMode } = useExpertMode();
   const { t, i18n } = useTranslation();
   const { theme } = useTheme();
   const isDark = theme === "dark";
@@ -291,7 +294,16 @@ export default function Dashboard() {
   const onboardingDone = profileData.data?.user?.onboardingCompleted === true;
   const showProfileCard = !onboardingDone && profileCompletion < 85 && !profileData.isLoading;
 
-  const isDesktop = useIsDesktop();
+   const isDesktop = useIsDesktop();
+
+  // Si el experto está en modo profesional, mostrar su panel profesional
+  if (expertMode) {
+    return (
+      <Suspense fallback={<div style={{ padding: "32px", textAlign: "center", color: "#9ca3af", fontSize: "16px" }}>Cargando panel profesional...</div>}>
+        <BuddyExpertDashboard />
+      </Suspense>
+    );
+  }
 
   // En desktop: layout de 3 columnas
   if (isDesktop) {

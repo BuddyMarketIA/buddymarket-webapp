@@ -1058,3 +1058,60 @@ export async function sendBillingPreviewEmail(params: {
     return { success: false, error: err?.message || "Unknown error" };
   }
 }
+
+// ─── Generic sendEmail helper ──────────────────────────────────────────────
+// Use this for one-off transactional emails that don't need a full template.
+export async function sendEmail(params: {
+  to: string;
+  subject: string;
+  html: string;
+}): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: params.to,
+      subject: params.subject,
+      html: emailWrapper(params.html),
+    });
+    if (error) {
+      console.error("[Email] sendEmail failed:", error);
+      return { success: false, error: error.message };
+    }
+    console.log("[Email] sendEmail sent:", data?.id, "→", params.to);
+    return { success: true, messageId: data?.id };
+  } catch (err: any) {
+    console.error("[Email] sendEmail exception:", err?.message);
+    return { success: false, error: err?.message || "Unknown error" };
+  }
+}
+
+// ─── Password Reset Email ──────────────────────────────────────────────────
+function passwordResetHtml(name: string, resetUrl: string): string {
+  return emailHeader("🔐", "Restablecer contraseña", "Solicitud de cambio de contraseña") +
+    `<tr><td style="padding:40px;">
+      <p style="color:#374151;font-size:15px;margin:0 0 16px;">Hola <strong>${name}</strong>,</p>
+      <p style="color:#374151;font-size:15px;margin:0 0 24px;">Hemos recibido una solicitud para restablecer la contraseña de tu cuenta BuddyMarket. Haz clic en el botón de abajo para crear una nueva contraseña.</p>
+      ${ctaButton("Restablecer contraseña", resetUrl)}
+      <p style="color:#6b7280;font-size:13px;margin:24px 0 0;">Este enlace expira en 1 hora. Si no solicitaste este cambio, puedes ignorar este email de forma segura.</p>
+    </td></tr>`;
+}
+
+export async function sendPasswordResetEmail(
+  email: string,
+  name: string,
+  resetUrl: string
+): Promise<void> {
+  try {
+    const html = passwordResetHtml(name, resetUrl);
+    const { error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: email,
+      subject: "Restablecer tu contraseña de BuddyMarket",
+      html: emailWrapper(html),
+    });
+    if (error) console.error("[Email] Password reset email failed:", error);
+    else console.log("[Email] Password reset email sent →", email);
+  } catch (err) {
+    console.error("[Email] Password reset exception:", err);
+  }
+}

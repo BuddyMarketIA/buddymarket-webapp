@@ -2316,3 +2316,16 @@
 - [ ] Calendario de disponibilidad: configurar horarios de consulta
 - [ ] Métricas profesionales: pacientes activos, planes enviados, valoraciones recibidas
 - [ ] Notificaciones profesionales: nuevas solicitudes de pacientes, mensajes, pagos
+
+## Limpieza sidebar BuddyExpert + Dashboard diferenciado (Apr 15)
+- [ ] Eliminar items profesionales (BuddyExperts, BuddyMakers, BuddyIA, panel experto) del SIDEBAR_GROUPS modo usuario
+- [ ] EXPERT_SIDEBAR_GROUPS: mantener solo items profesionales (panel, pacientes, chat, planes, estadísticas)
+- [ ] Dashboard modo usuario: contenido nutricional normal (recetas, menús, diario, objetivos)
+- [ ] Dashboard modo profesional: resumen pacientes activos, consultas pendientes, mensajes, ingresos, accesos rápidos profesionales
+
+## Bug: Email de invitación de BuddyExpert no llega (Apr 15)
+- [ ] Diagnosticar por qué el email de invitación del experto a paciente no se envía
+- [ ] Verificar que el endpoint de invitación llama correctamente a la función de email
+- [ ] Verificar que Resend está configurado y el dominio buddymarketapp.com está verificado
+- [ ] Corregir el envío de email de invitación si hay error
+- [ ] Añadir log de auditoría cuando se envía una invitación

@@ -31,7 +31,7 @@ async function sendRecipeAssignedEmail(params: {
     : null;
 
   await resend.emails.send({
-    from: "BuddyMarket <noreply@buddymarket.io>",
+    from: process.env.EMAIL_FROM || "BuddyMarket <onboarding@resend.dev>",
     to: params.memberEmail,
     subject: `${params.assignerName} te ha asignado una receta 🍽️`,
     html: `

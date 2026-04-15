@@ -219,21 +219,37 @@ export const expertPatientsRouter = router({
 
       // Enviar email de invitación
       try {
-                const expertName = ctx.user.name ?? "Tu nutricionista";
-        await (await import("../email")).processPendingEmails || console.log({
+        const expertName = ctx.user.name ?? "Tu nutricionista";
+        const appUrl = process.env.PUBLIC_APP_URL || "https://buddymarketapp.com";
+        const { sendEmail } = await import("../email");
+        await sendEmail({
           to: input.email,
           subject: `${expertName} te ha invitado a BuddyMarket`,
           html: `
-            <div style="font-family:sans-serif;max-width:600px;margin:0 auto">
-              <h2 style="color:#f97316">¡Tienes una invitación de tu nutricionista!</h2>
-              <p><strong>${expertName}</strong> te ha invitado a seguir tu plan nutricional en BuddyMarket.</p>
-              <p>Acepta la invitación para acceder a tus menús personalizados, mensajería directa y seguimiento de evolución.</p>
-              <a href="https://buddymarket.io/accept-invite?token=${token}" 
-                 style="display:inline-block;background:#f97316;color:white;padding:12px 24px;border-radius:8px;text-decoration:none;margin:16px 0">
-                Aceptar invitación
-              </a>
-              <p style="color:#666;font-size:14px">Si no esperabas esta invitación, puedes ignorar este email.</p>
-            </div>
+            <tr>
+              <td style="background:linear-gradient(135deg,#F97316 0%,#EA580C 100%);padding:44px 40px 36px;text-align:center;">
+                <div style="font-size:48px;margin-bottom:12px;">🎓</div>
+                <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:0 0 8px;">¡Tienes una invitación!</h1>
+                <p style="color:rgba(255,255,255,0.85);font-size:15px;margin:0;">${expertName} te ha invitado a BuddyMarket</p>
+              </td>
+            </tr>
+            <tr><td style="padding:40px;">
+              <p style="color:#374151;font-size:15px;margin:0 0 16px;">Hola,</p>
+              <p style="color:#374151;font-size:15px;margin:0 0 16px;">
+                <strong>${expertName}</strong> te ha invitado a seguir tu plan nutricional personalizado en BuddyMarket.
+              </p>
+              <p style="color:#374151;font-size:15px;margin:0 0 24px;">
+                Acepta la invitación para acceder a tus menús personalizados, mensajería directa con tu nutricionista y seguimiento de tu evolución.
+              </p>
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin:28px 0 20px;">
+                <tr><td align="center">
+                  <a href="${appUrl}/accept-invite?token=${token}" style="display:inline-block;background:linear-gradient(135deg,#F97316,#EA580C);color:#ffffff;text-decoration:none;font-size:16px;font-weight:700;padding:16px 40px;border-radius:50px;">
+                    Aceptar invitación
+                  </a>
+                </td></tr>
+              </table>
+              <p style="color:#6b7280;font-size:13px;margin:24px 0 0;">Si no esperabas esta invitación, puedes ignorar este email de forma segura.</p>
+            </td></tr>
           `,
         });
       } catch (e) {

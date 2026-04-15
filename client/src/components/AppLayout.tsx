@@ -1,4 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import { ExpertModeContext } from "../contexts/ExpertModeContext";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
@@ -367,6 +368,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
         { key: "/app/buddy-expert-dashboard", label: "Mi Panel", to: "/app/buddy-expert-dashboard", emoji: "🎓" },
         { key: "/app/buddy-expert-stats", label: "Estadísticas", to: "/app/buddy-expert-stats", emoji: "📊" },
         { key: "/app/expert-plans", label: "Mis Planes", to: "/app/expert-plans", emoji: "📋" },
+        { key: "/app/buddy-ia", label: "BuddyIA Profesional", to: "/app/buddy-ia", emoji: "🤖" },
       ],
     },
     {
@@ -377,9 +379,10 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       ],
     },
     {
-      label: "Contenido",
+      label: "Mi Perfil Profesional",
       items: [
-        { key: "/app/buddy-makers", label: "BuddyMakers", to: "/app/buddy-makers", emoji: "👨‍🍳" },
+        { key: "/app/profile", label: "Mi Perfil", to: "/app/profile", emoji: "👤" },
+        ...(isApprovedMaker ? [{ key: "/app/buddy-maker-dashboard", label: "Panel BuddyMaker", to: "/app/buddy-maker-dashboard", emoji: "🍳" }] : []),
         { key: "/app/buddy-shop", label: "BuddyShop ↗", to: "/app/buddy-shop", emoji: "🛦" },
       ],
     },
@@ -450,11 +453,6 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
         { key: "/app/buddy-experts", label: t("nav.buddyExperts"), to: "/app/buddy-experts", emoji: "🧑‍🍳" },
         { key: "/app/buddy-makers", label: t("nav.buddyMakers"), to: "/app/buddy-makers", emoji: "👨‍🍳" },
         { key: "/app/following", label: t("sidebar.following"), to: "/app/following", emoji: "👥" },
-        { key: "/app/buddy-expert-dashboard", label: t("sidebar.expertPanel"), to: "/app/buddy-expert-dashboard", emoji: "🎓" },
-        { key: "/app/expert/patients", label: "Mis pacientes", to: "/app/expert/patients", emoji: "👥" },
-        { key: "/app/expert/chat", label: "Chat pacientes", to: "/app/expert/chat", emoji: "💬" },
-        { key: "/app/buddy-maker-dashboard", label: t("sidebar.makerPanel"), to: "/app/buddy-maker-dashboard", emoji: "🍳" },
-        { key: "/app/maker-analytics", label: "Analíticas", to: "/app/maker-analytics", emoji: "📊" },
         { key: "/app/my-expert", label: "Mi nutricionista", to: "/app/my-expert", emoji: "👩‍⚕️" },
         { key: "/app/buddy-application", label: t("sidebar.requestAccess"), to: "/app/buddy-application", emoji: "📝" },
       ],
@@ -504,11 +502,16 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
     toggleExpertMode: isApprovedExpert ? toggleExpertMode : undefined,
   };
 
+  const expertModeValue = {
+    expertMode: isApprovedExpert ? expertMode : false,
+    toggleExpertMode: isApprovedExpert ? toggleExpertMode : () => {},
+  };
+
   // ─── DESKTOP LAYOUT ──────────────────────────────────────────────────────────
   if (isDesktop) {
     const DESKTOP_SIDEBAR_WIDTH = 260;
     return (
-      <>
+      <ExpertModeContext.Provider value={expertModeValue}>
       <div style={{ display: "flex", minHeight: "100dvh", background: "#FFF8F0" }}>
         {/* Skip to main */}
         <a href="#main-content" style={{ position: "absolute", top: "-100px", left: "16px", zIndex: 9999, padding: "8px 16px", background: "#F97316", color: "white", borderRadius: "8px", fontWeight: 700, fontSize: "14px", textDecoration: "none" }}
@@ -622,13 +625,13 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
         onCancel={() => setShowLogoutConfirm(false)}
         isPending={logoutPending}
       />
-      </>
+      </ExpertModeContext.Provider>
     );
   }
 
   // ─── MÓVIL LAYOUT (igual que antes) ──────────────────────────────────────────
   return (
-    <div style={{ width: "100%", maxWidth: "480px", margin: "0 auto", minHeight: "100dvh", background: "#FFF8F0", position: "relative" }}>
+    <ExpertModeContext.Provider value={expertModeValue}><div style={{ width: "100%", maxWidth: "480px", margin: "0 auto", minHeight: "100dvh", background: "#FFF8F0", position: "relative" }}>
       <a href="#main-content" style={{ position: "absolute", top: "-100px", left: "16px", zIndex: 9999, padding: "8px 16px", background: "#F97316", color: "white", borderRadius: "8px", fontWeight: 700, fontSize: "14px", textDecoration: "none" }}
         onFocus={(e) => { e.currentTarget.style.top = "16px"; }}
         onBlur={(e) => { e.currentTarget.style.top = "-100px"; }}
@@ -730,6 +733,6 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
         onCancel={() => setShowLogoutConfirm(false)}
         isPending={logoutPending}
       />
-    </div>
+    </div></ExpertModeContext.Provider>
   );
 }
