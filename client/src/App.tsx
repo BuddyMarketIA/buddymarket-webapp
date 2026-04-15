@@ -1,4 +1,4 @@
-import { lazy, Suspense } from "react";
+import { lazy, Suspense, useEffect } from "react";
 import WelcomeLanguageModal from "@/components/WelcomeLanguageModal";
 import CookieBanner from "./components/CookieBanner";
 import OfflineIndicator from "./components/OfflineIndicator";
@@ -34,6 +34,18 @@ const FamiliaUnirse = lazy(() => import("./pages/FamiliaUnirse"));
 const MisRecetasAsignadas = lazy(() => import("./pages/MisRecetasAsignadas"));
 const FamiliaCalendario = lazy(() => import("./pages/FamiliaCalendario"));
 const BuddySetup = lazy(() => import("./pages/BuddySetup"));
+// Guard: only show BuddySetup if user hasn't completed onboarding
+function BuddySetupGuard() {
+  const { user, loading } = useAuth();
+  const [, setLocation] = useLocation();
+  useEffect(() => {
+    if (!loading && user?.onboardingCompleted) {
+      setLocation("/app/dashboard");
+    }
+  }, [user?.onboardingCompleted, loading, setLocation]);
+  if (loading) return null;
+  return <BuddySetup />;
+}
 const OnboardingTour = lazy(() => import("./pages/OnboardingTour"));
 const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
 
@@ -165,7 +177,7 @@ function Router() {
       <Route path="/creators" component={Creators} />
       <Route path="/creator-dashboard">{() => <ProtectedPage><CreatorDashboard /></ProtectedPage>}</Route>
       {/* Onboarding wizard — requires auth, no AppLayout */}
-      <Route path="/buddy-setup">{() => <ProtectedPage><BuddySetup /></ProtectedPage>}</Route>
+      <Route path="/buddy-setup">{() => <ProtectedPage><BuddySetupGuard /></ProtectedPage>}</Route>
       <Route path="/app/tour">{() => <ProtectedPage><OnboardingTour /></ProtectedPage>}</Route>
       {/* /app → redirect to /app/dashboard */}
       <Route path="/app">{() => <Redirect to="/app/dashboard" />}</Route>

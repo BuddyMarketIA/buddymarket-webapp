@@ -2233,3 +2233,4 @@
 - [x] Bug crítico: /buddy-setup devuelve HTML en lugar de JSON al guardar configuración — ProtectedRoute simplificado
 - [x] Bug crítico: bucle infinito en el flujo de registro/inicio de sesión
 - [x] Reemplazar vídeo hero landing por secuencia de 3 vídeos: supermercado, alimentos saludables, batch cooking
+- [x] Bug crítico: BuddySetup aparece al cerrar sesión — wizard de onboarding solo debe mostrarse a usuarios nuevos que nunca lo han completado

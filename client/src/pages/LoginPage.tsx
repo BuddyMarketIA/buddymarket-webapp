@@ -81,10 +81,11 @@ export default function LoginPage() {
   const isJustLoggedOut = new URLSearchParams(window.location.search).get("logout") === "1";
 
   useEffect(() => {
+    // Never redirect if user just logged out (even if session briefly still active)
     if (meQuery.isLoading || isJustLoggedOut) return;
+    // If already authenticated, always go to dashboard (never to buddy-setup from login page)
     if (meQuery.data) {
-      const dest = meQuery.data.onboardingCompleted ? "/app/dashboard" : "/buddy-setup";
-      setLocation(dest);
+      setLocation("/app/dashboard");
     }
   }, [meQuery.data, meQuery.isLoading, isJustLoggedOut, setLocation]);
 
@@ -98,10 +99,13 @@ export default function LoginPage() {
   }, []);
 
   // Single post-auth redirect function
-  const afterAuth = async () => {
+  const afterAuth = async (isNewRegistration = false) => {
     try {
       const user = await utils.auth.me.fetch();
-      const dest = user && !user.onboardingCompleted ? "/buddy-setup" : "/app/dashboard";
+      // Only go to buddy-setup if this is a brand new registration AND onboarding not done
+      const dest = (isNewRegistration && user && !user.onboardingCompleted)
+        ? "/buddy-setup"
+        : "/app/dashboard";
       setLocation(dest);
     } catch {
       setLocation("/app/dashboard");
@@ -117,7 +121,8 @@ export default function LoginPage() {
       await loginMut.mutateAsync({ email, password });
       if (rememberMe) localStorage.setItem("bm_remembered_email", email);
       else localStorage.removeItem("bm_remembered_email");
-      await afterAuth();
+      // Login existing user: always go to dashboard, never to buddy-setup
+      await afterAuth(false);
     } catch (err: any) {
       toast.error(err?.message ?? "Email o contraseña incorrectos");
     }
@@ -133,7 +138,8 @@ export default function LoginPage() {
       await registerMut.mutateAsync({ name, email, password });
       try { await acceptTermsMut.mutateAsync({ termsVersion: "2.0", acceptPrivacy, marketingConsent: false }); } catch { /* non-critical */ }
       toast.success(`¡Bienvenido, ${name.split(" ")[0]}!`);
-      await afterAuth();
+      // New registration: allow redirect to buddy-setup
+      await afterAuth(true);
     } catch (err: any) {
       toast.error(err?.message ?? "Error al crear la cuenta");
     }
@@ -167,7 +173,8 @@ export default function LoginPage() {
     if (otpCode.length < 6) { toast.error("Introduce el código de 6 dígitos"); return; }
     try {
       await verifyOTPMut.mutateAsync({ email: otpEmail, code: otpCode });
-      await afterAuth();
+      // OTP login = existing user, always go to dashboard
+      await afterAuth(false);
     } catch (err: any) {
       toast.error(err?.message ?? "Código incorrecto");
     }
