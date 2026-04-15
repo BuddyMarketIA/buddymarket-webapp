@@ -318,7 +318,8 @@ export default function LoginPage() {
 
   // Form fields — ALL hooks must be declared before any conditional returns
   const [name, setName] = useState("");
-  const [email, setEmail] = useState("");
+  // "Recordar mi sesión": pre-fill email from localStorage if previously saved
+  const [email, setEmail] = useState(() => localStorage.getItem("bm_remembered_email") ?? "");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [forgotEmail, setForgotEmail] = useState("");
@@ -327,6 +328,8 @@ export default function LoginPage() {
   const [phone, setPhone] = useState("");
   const [phoneOtpCode, setPhoneOtpCode] = useState(["", "", "", "", "", ""]);
   const phoneOtpRefs = useRef<(HTMLInputElement | null)[]>([]);
+  // "Recordar mi sesión" checkbox
+  const [rememberMe, setRememberMe] = useState(() => !!localStorage.getItem("bm_remembered_email"));
   // Terms acceptance (registro por email)
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [acceptPrivacy, setAcceptPrivacy] = useState(false);
@@ -387,6 +390,12 @@ export default function LoginPage() {
     e.preventDefault();
     try {
       await loginMut.mutateAsync({ email, password });
+      // Persist or clear the remembered email based on the checkbox
+      if (rememberMe) {
+        localStorage.setItem("bm_remembered_email", email);
+      } else {
+        localStorage.removeItem("bm_remembered_email");
+      }
       await afterAuth();
     } catch (err: any) {
       toast.error("Error al iniciar sesión", { description: err.message });
@@ -622,7 +631,16 @@ export default function LoginPage() {
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
-                <div className="flex justify-end">
+                <div className="flex items-center justify-between">
+                  <label className="flex items-center gap-2 cursor-pointer select-none">
+                    <input
+                      type="checkbox"
+                      checked={rememberMe}
+                      onChange={e => setRememberMe(e.target.checked)}
+                      className="w-4 h-4 rounded border-gray-300 accent-[#F97316] cursor-pointer"
+                    />
+                    <span className="text-xs text-gray-500">Recordar mi sesión</span>
+                  </label>
                   <button type="button" onClick={() => setMode("forgot")}
                     className="text-[#F97316] text-xs hover:text-[#fb923c] transition-colors">
                     ¿Olvidaste tu contraseña?
