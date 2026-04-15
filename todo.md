@@ -2235,3 +2235,14 @@
 - [x] Reemplazar vídeo hero landing por secuencia de 3 vídeos: supermercado, alimentos saludables, batch cooking
 - [x] Bug crítico: BuddySetup aparece al cerrar sesión — wizard de onboarding solo debe mostrarse a usuarios nuevos que nunca lo han completado
 - [x] Bug: logo de BuddyMarket roto en la página de login — corregido usando /favicon-192x192.png local
+- [ ] Restablecimiento de contraseña: tabla passwordResetTokens en BD (token, userId, expiresAt, usedAt)
+- [ ] Restablecimiento de contraseña: procedimiento tRPC auth.requestPasswordReset (genera token, envía email con Resend)
+- [ ] Restablecimiento de contraseña: procedimiento tRPC auth.resetPassword (verifica token, actualiza contraseña, invalida token)
+- [ ] Restablecimiento de contraseña: flujo en LoginPage modo "forgot" ya existente conectado al backend
+- [ ] Restablecimiento de contraseña: página /reset-password?token=xxx para introducir nueva contraseña
+- [ ] Bug: nav.metrics no se traduce correctamente en el sidebar — mostrar "Mis Métricas" en lugar de la clave raw
+- [ ] Bug: tarjetas BuddyExperts no muestran el nombre del experto ni la descripción/bio
+- [ ] Bug crítico: al cerrar sesión, LoginPage muestra el formulario 1 segundo y luego redirige automáticamente al dashboard porque auth.me devuelve el usuario antes de que la cookie expire
+- [x] Bug crítico producción: servidor devuelve HTML en lugar de JSON para llamadas tRPC en buddymarketapp.com — corregido fallback SPA en vite.ts para excluir rutas /api/*
+- [x] Bug crítico: se pueden crear múltiples cuentas con el mismo email — añadir constraint UNIQUE en BD y validación en registro
+- [x] Tarea: fusionar/eliminar cuentas duplicadas de luismariaccc@gmail.com en producción — eliminadas IDs 2732 y 2865
