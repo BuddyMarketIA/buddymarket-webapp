@@ -14,7 +14,7 @@ import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
 } from "recharts";
 
-type Tab = "messages" | "menus" | "appointments" | "progress" | "notes" | "profile";
+type Tab = "messages" | "menus" | "appointments" | "progress" | "notes" | "profile" | "diary";
 
 const NOTE_TYPE_LABELS: Record<string, { label: string; color: string; icon: string }> = {
   general: { label: "General", color: "bg-gray-100 text-gray-700", icon: "📝" },
@@ -48,6 +48,20 @@ export default function ExpertPatientDetail() {
   const [notePinned, setNotePinned] = useState(false);
   const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
 
+  // Diario del paciente
+  const [diaryDateRange, setDiaryDateRange] = useState(() => {
+    const end = new Date();
+    const start = new Date();
+    start.setDate(start.getDate() - 13); // 14 days
+    return {
+      start: start.toISOString().split("T")[0],
+      end: end.toISOString().split("T")[0],
+    };
+  });
+  const [showMilestoneModal, setShowMilestoneModal] = useState(false);
+  const [milestoneForm, setMilestoneForm] = useState({ title: "", description: "", date: new Date().toISOString().split("T")[0], icon: "🏆" });
+  const [expandedDiaryDay, setExpandedDiaryDay] = useState<string | null>(null);
+
   // Formulario de progreso
   const [progressForm, setProgressForm] = useState({
     weight: "", bodyFat: "", muscleMass: "", waist: "", hip: "", notes: "",
@@ -72,6 +86,28 @@ export default function ExpertPatientDetail() {
 
   const markReadMutation = trpc.expertPatients.markMessagesRead.useMutation();
   const { data: myMenus } = trpc.buddyExperts.getMyMenus.useQuery(undefined, { enabled: showAssignMenuModal });
+
+  // Diario queries
+  const { data: diaryData, isLoading: isDiaryLoading } = trpc.expertPatients.getPatientDiary.useQuery(
+    { expertPatientId: patientRelId, startDate: diaryDateRange.start, endDate: diaryDateRange.end },
+    { enabled: !!user && patientRelId > 0 && activeTab === "diary" }
+  );
+  const { data: milestones, refetch: refetchMilestones } = trpc.expertPatients.getPatientMilestones.useQuery(
+    { expertPatientId: patientRelId },
+    { enabled: !!user && patientRelId > 0 && activeTab === "diary" }
+  );
+  const addMilestoneMutation = trpc.expertPatients.addPatientMilestone.useMutation({
+    onSuccess: () => {
+      toast.success("🏆 Hito guardado");
+      setShowMilestoneModal(false);
+      setMilestoneForm({ title: "", description: "", date: new Date().toISOString().split("T")[0], icon: "🏆" });
+      refetchMilestones();
+    },
+    onError: () => toast.error("Error al guardar el hito"),
+  });
+  const deleteMilestoneMutation = trpc.expertPatients.deletePatientMilestone.useMutation({
+    onSuccess: () => { toast.success("Hito eliminado"); refetchMilestones(); },
+  });
 
   const sendMessageMutation = trpc.expertPatients.sendMessage.useMutation({
     onSuccess: () => {
@@ -189,6 +225,7 @@ export default function ExpertPatientDetail() {
 
   const TABS: { id: Tab; label: string; icon: string; count?: number }[] = [
     { id: "messages", label: "Mensajes", icon: "💬", count: unreadCount || undefined },
+    { id: "diary", label: "Diario", icon: "📓" },
     { id: "menus", label: "Menús", icon: "🥗", count: assignedMenus.length || undefined },
     { id: "appointments", label: "Citas", icon: "📅", count: appointments.filter(a => a.status === "scheduled").length || undefined },
     { id: "progress", label: "Evolución", icon: "📈", count: progressRecords.length || undefined },
@@ -385,7 +422,187 @@ export default function ExpertPatientDetail() {
           </div>
         )}
 
-        {/* ─── TAB: MENÚS ────────────────────────────────────────────────── */}
+              {/* ─── TAB: DIARIO ────────────────────────────────────────── */}
+        {activeTab === "diary" && (
+          <div>
+            {/* Selector de rango de fechas */}
+            <div className="flex flex-wrap items-center gap-3 mb-5">
+              <div className="flex items-center gap-2">
+                <label className="text-sm text-gray-500">Desde</label>
+                <input type="date" value={diaryDateRange.start}
+                  onChange={e => setDiaryDateRange(prev => ({ ...prev, start: e.target.value }))}
+                  className="text-sm border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-orange-300" />
+              </div>
+              <div className="flex items-center gap-2">
+                <label className="text-sm text-gray-500">Hasta</label>
+                <input type="date" value={diaryDateRange.end}
+                  onChange={e => setDiaryDateRange(prev => ({ ...prev, end: e.target.value }))}
+                  className="text-sm border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-orange-300" />
+              </div>
+              <div className="flex gap-1.5 ml-auto">
+                {[7, 14, 30].map(days => (
+                  <button key={days} onClick={() => {
+                    const end = new Date();
+                    const start = new Date();
+                    start.setDate(start.getDate() - (days - 1));
+                    setDiaryDateRange({ start: start.toISOString().split("T")[0], end: end.toISOString().split("T")[0] });
+                  }} className="px-2.5 py-1 text-xs rounded-full bg-orange-100 text-orange-600 hover:bg-orange-200 font-medium">
+                    {days}d
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {isDiaryLoading ? (
+              <div className="flex justify-center py-12"><div className="animate-spin w-6 h-6 border-4 border-orange-500 border-t-transparent rounded-full" /></div>
+            ) : !diaryData || diaryData.days.length === 0 ? (
+              <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                <div className="text-4xl mb-2">📓</div>
+                <p className="text-gray-500 font-medium">Sin registros en este periodo</p>
+                <p className="text-sm text-gray-400 mt-1">El paciente aún no ha registrado comidas en estas fechas</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {/* Resumen de adherencia del periodo */}
+                {(() => {
+                  const days = diaryData.days;
+                  const daysWithMeals = days.filter(d => d.mealCount > 0).length;
+                  const avgAdherence = Math.round(days.reduce((s, d) => s + d.adherenceScore, 0) / days.length);
+                  const avgCalories = Math.round(days.filter(d => d.totalCalories > 0).reduce((s, d) => s + d.totalCalories, 0) / Math.max(1, days.filter(d => d.totalCalories > 0).length));
+                  return (
+                    <div className="grid grid-cols-3 gap-3 mb-4">
+                      <div className="p-3 bg-orange-50 rounded-xl text-center">
+                        <p className="text-xs text-gray-500">Días registrados</p>
+                        <p className="text-xl font-bold text-orange-600">{daysWithMeals}/{days.length}</p>
+                      </div>
+                      <div className="p-3 rounded-xl text-center" style={{ background: avgAdherence >= 70 ? '#f0fdf4' : avgAdherence >= 40 ? '#fefce8' : '#fef2f2' }}>
+                        <p className="text-xs text-gray-500">Adherencia media</p>
+                        <p className="text-xl font-bold" style={{ color: avgAdherence >= 70 ? '#16a34a' : avgAdherence >= 40 ? '#ca8a04' : '#dc2626' }}>{avgAdherence}%</p>
+                      </div>
+                      <div className="p-3 bg-blue-50 rounded-xl text-center">
+                        <p className="text-xs text-gray-500">Kcal media/día</p>
+                        <p className="text-xl font-bold text-blue-600">{avgCalories > 0 ? avgCalories : '—'}</p>
+                      </div>
+                    </div>
+                  );
+                })()}
+
+                {/* Lista de días */}
+                {[...diaryData.days].reverse().map(day => {
+                  const adherenceColor = day.adherenceScore >= 70 ? 'bg-green-500' : day.adherenceScore >= 40 ? 'bg-yellow-400' : day.mealCount === 0 ? 'bg-gray-300' : 'bg-red-400';
+                  const isExpanded = expandedDiaryDay === day.date;
+                  const dateLabel = new Date(day.date + 'T12:00:00').toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' });
+                  return (
+                    <div key={day.date} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                      <button
+                        onClick={() => setExpandedDiaryDay(isExpanded ? null : day.date)}
+                        className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors"
+                      >
+                        {/* Semáforo de adherencia */}
+                        <div className={`w-3 h-3 rounded-full flex-shrink-0 ${adherenceColor}`} />
+                        <span className="text-sm font-medium text-gray-700 w-28 text-left capitalize">{dateLabel}</span>
+                        <div className="flex-1 flex items-center gap-2">
+                          {day.mealCount > 0 ? (
+                            <>
+                              <span className="text-xs text-gray-500">{day.mealCount} comidas</span>
+                              {day.totalCalories > 0 && <span className="text-xs text-gray-400">· {day.totalCalories} kcal</span>}
+                              {day.totalProtein > 0 && <span className="text-xs text-gray-400">· {day.totalProtein.toFixed(0)}g prot</span>}
+                            </>
+                          ) : (
+                            <span className="text-xs text-gray-400 italic">Sin registros</span>
+                          )}
+                        </div>
+                        {day.wellbeing && (
+                          <div className="flex gap-1 text-xs">
+                            {day.wellbeing.energyLevel && <span title="Energía">⚡{day.wellbeing.energyLevel}/5</span>}
+                            {day.wellbeing.moodLevel && <span title="Ánimo">😊{day.wellbeing.moodLevel}/5</span>}
+                          </div>
+                        )}
+                        <span className="text-gray-400 text-xs">{isExpanded ? '▲' : '▼'}</span>
+                      </button>
+
+                      {isExpanded && (
+                        <div className="border-t border-gray-100 p-3 bg-gray-50">
+                          {day.meals.length > 0 ? (
+                            <div className="space-y-2">
+                              {day.meals.map((meal: any) => (
+                                <div key={meal.id} className="flex items-center gap-2 text-sm">
+                                  <span className="text-gray-400 text-xs w-16 flex-shrink-0">
+                                    {meal.mealType === 'breakfast' ? '🌅 Desayuno' :
+                                     meal.mealType === 'lunch' ? '🍽️ Comida' :
+                                     meal.mealType === 'dinner' ? '🌙 Cena' :
+                                     meal.mealType === 'snack' ? '🍎 Snack' : '🍴 Otro'}
+                                  </span>
+                                  <span className="flex-1 text-gray-700">{meal.foodName || meal.recipeName || 'Alimento'}</span>
+                                  {meal.calories && <span className="text-xs text-gray-400">{meal.calories} kcal</span>}
+                                </div>
+                              ))}
+                              <div className="mt-2 pt-2 border-t border-gray-200 grid grid-cols-4 gap-2 text-xs text-center">
+                                <div><p className="text-gray-400">Kcal</p><p className="font-semibold text-gray-700">{day.totalCalories}</p></div>
+                                <div><p className="text-gray-400">Prot</p><p className="font-semibold text-gray-700">{day.totalProtein.toFixed(1)}g</p></div>
+                                <div><p className="text-gray-400">Carbos</p><p className="font-semibold text-gray-700">{day.totalCarbs.toFixed(1)}g</p></div>
+                                <div><p className="text-gray-400">Grasa</p><p className="font-semibold text-gray-700">{day.totalFat.toFixed(1)}g</p></div>
+                              </div>
+                            </div>
+                          ) : (
+                            <p className="text-sm text-gray-400 italic text-center py-2">El paciente no registró comidas este día</p>
+                          )}
+                          {day.wellbeing && (
+                            <div className="mt-3 pt-3 border-t border-gray-200">
+                              <p className="text-xs font-semibold text-gray-600 mb-2">📊 Bienestar del paciente</p>
+                              <div className="grid grid-cols-5 gap-2 text-xs text-center">
+                                {day.wellbeing.energyLevel && <div><p className="text-gray-400">⚡ Energía</p><p className="font-semibold">{day.wellbeing.energyLevel}/5</p></div>}
+                                {day.wellbeing.moodLevel && <div><p className="text-gray-400">😊 Ánimo</p><p className="font-semibold">{day.wellbeing.moodLevel}/5</p></div>}
+                                {day.wellbeing.sleepQuality && <div><p className="text-gray-400">💤 Sueño</p><p className="font-semibold">{day.wellbeing.sleepQuality}/5</p></div>}
+                                {day.wellbeing.hungerLevel && <div><p className="text-gray-400">🥤 Hambre</p><p className="font-semibold">{day.wellbeing.hungerLevel}/5</p></div>}
+                                {day.wellbeing.digestiveComfort && <div><p className="text-gray-400">💚 Digest.</p><p className="font-semibold">{day.wellbeing.digestiveComfort}/5</p></div>}
+                              </div>
+                              {day.wellbeing.notes && <p className="text-xs text-gray-500 mt-2 italic">"{day.wellbeing.notes}"</p>}
+                            </div>
+                          )}
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {/* Hitos del paciente */}
+            <div className="mt-6">
+              <div className="flex justify-between items-center mb-3">
+                <h4 className="font-semibold text-gray-700">🏆 Hitos y logros</h4>
+                <Button size="sm" onClick={() => setShowMilestoneModal(true)} className="bg-orange-500 hover:bg-orange-600 text-white">
+                  + Hito
+                </Button>
+              </div>
+              {!milestones || milestones.length === 0 ? (
+                <div className="text-center py-6 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                  <p className="text-sm text-gray-400">Añade hitos para celebrar los logros del paciente</p>
+                </div>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {milestones.map((m: any) => (
+                    <div key={m.id} className="flex items-center gap-2 px-3 py-2 bg-yellow-50 border border-yellow-200 rounded-xl group">
+                      <span className="text-lg">{m.icon}</span>
+                      <div>
+                        <p className="text-sm font-medium text-yellow-800">{m.title}</p>
+                        {m.description && <p className="text-xs text-yellow-600">{m.description}</p>}
+                        <p className="text-xs text-yellow-500">{new Date(m.milestoneDate + 'T12:00:00').toLocaleDateString('es-ES', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+                      </div>
+                      <button
+                        onClick={() => deleteMilestoneMutation.mutate({ milestoneId: m.id })}
+                        className="ml-1 text-yellow-400 hover:text-red-500 opacity-0 group-hover:opacity-100 transition-opacity text-xs"
+                      >✕</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* ─── TAB: MENÚS ────────────────────────────────────────── */}
         {activeTab === "menus" && (
           <div>
             <div className="flex justify-between items-center mb-4">
@@ -812,6 +1029,56 @@ export default function ExpertPatientDetail() {
           </div>
         )}
       </div>
+
+      {/* Modal: Hito del paciente */}
+      <Dialog open={showMilestoneModal} onOpenChange={setShowMilestoneModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>🏆 Nuevo hito del paciente</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="flex gap-2">
+              {['🏆', '🌟', '💪', '❤️', '🎯', '📉', '🔥', '👏', '🎉', '✅'].map(icon => (
+                <button key={icon} onClick={() => setMilestoneForm(prev => ({ ...prev, icon }))}
+                  className={`text-xl p-1.5 rounded-lg transition-colors ${
+                    milestoneForm.icon === icon ? 'bg-orange-100 ring-2 ring-orange-400' : 'hover:bg-gray-100'
+                  }`}>{icon}</button>
+              ))}
+            </div>
+            <div>
+              <Label>Título del hito *</Label>
+              <Input placeholder="Ej: Perdió 5 kg, Primera semana completada..." value={milestoneForm.title}
+                onChange={e => setMilestoneForm(prev => ({ ...prev, title: e.target.value }))} className="mt-1" />
+            </div>
+            <div>
+              <Label>Descripción (opcional)</Label>
+              <Textarea placeholder="Detalles del logro..." value={milestoneForm.description}
+                onChange={e => setMilestoneForm(prev => ({ ...prev, description: e.target.value }))} className="mt-1" rows={2} />
+            </div>
+            <div>
+              <Label>Fecha del hito</Label>
+              <Input type="date" value={milestoneForm.date}
+                onChange={e => setMilestoneForm(prev => ({ ...prev, date: e.target.value }))} className="mt-1" />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowMilestoneModal(false)}>Cancelar</Button>
+            <Button
+              onClick={() => addMilestoneMutation.mutate({
+                expertPatientId: patientRelId,
+                title: milestoneForm.title,
+                description: milestoneForm.description || undefined,
+                milestoneDate: milestoneForm.date,
+                icon: milestoneForm.icon,
+              })}
+              disabled={!milestoneForm.title.trim() || addMilestoneMutation.isPending}
+              className="bg-orange-500 hover:bg-orange-600 text-white"
+            >
+              {addMilestoneMutation.isPending ? "Guardando..." : "Guardar hito"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Modal: Nota interna */}
       <Dialog open={showNoteModal} onOpenChange={setShowNoteModal}>

@@ -2427,3 +2427,37 @@
 - [ ] ExpertDashboard: card "Ingresos" con total cobrado este mes, total histórico y últimos pagos
 - [ ] ExpertDashboard: card "Código Referido" con el código único, botón copiar, stats de uso y explicación del 20%
 - [ ] Stripe: crear cupón de descuento del 20% asociado al referralCode del experto
+
+## Grupo 2 — Diario del paciente visible para el experto
+- [ ] Tab "Diario" en ExpertPatientDetail: vista del diario alimentario del paciente día a día (comidas, calorías, macros, hora)
+- [ ] Semáforo de adherencia diaria: indicador verde/amarillo/rojo por día de la semana en la tab Diario
+- [ ] Alertas de desvío del plan: badge/banner en la ficha del paciente si lleva 2+ días fuera de objetivos
+- [ ] Registro de síntomas y bienestar: el paciente puede anotar energía/digestión/sueño/humor, el experto lo ve con tendencias
+- [ ] Foto de plato con análisis IA: el experto puede ver y corregir el análisis de macros de las fotos del paciente
+
+## Grupo 3 — Seguimiento del progreso
+- [ ] Gráfico multi-métrica interactivo: peso, % grasa, masa muscular, IMC y perímetros con zoom por periodo
+- [ ] Comparativa de fotos de progreso: vista lado a lado con slider deslizante
+- [ ] Informe de progreso mensual en PDF: generación con un clic desde la ficha del paciente
+- [ ] Objetivo visual con barra de progreso y cuenta atrás (visible para experto y paciente)
+- [ ] Hitos y logros del paciente: el experto puede marcar hitos que se notifican al paciente
+
+## Grupo 4 — Planificación nutricional avanzada
+- [ ] Editor de menús drag & drop: construir menús semanales arrastrando recetas a cada comida
+- [ ] Plantillas de menús reutilizables por objetivo (pérdida de peso, ganancia muscular, vegano, sin gluten)
+- [ ] Ajuste calórico automático: el experto introduce déficit/superávit y el sistema ajusta raciones
+- [ ] Sustituciones de alimentos: 3 alternativas equivalentes en macros por alimento del menú
+- [ ] Menú de emergencia / semana libre: plan simplificado para viajes o semanas complicadas
+
+## Grupo 5 — Comunicación entre citas
+- [ ] Check-in semanal automatizado: recordatorio lunes al paciente para registrar peso, foto y valoración
+- [ ] Respuestas rápidas predefinidas en el chat del experto
+- [ ] Recordatorios automáticos al paciente: peso, comidas, próxima cita en 24h
+- [ ] Valoración semanal del paciente: formulario breve (hambre, energía, adherencia, dificultades) visible para el experto
+
+## Grupo 6 — Gestión del negocio
+- [ ] Facturación automática en PDF al completar una cita
+- [ ] Paquetes de sesiones con pago (bonos): el experto define bonos que el paciente puede comprar
+- [ ] Panel de ocupación semanal: calendario con huecos libres y ocupados
+- [ ] Lista de espera: pacientes se apuntan cuando no hay huecos y reciben notificación automática
+- [ ] Estadísticas de negocio: ingresos mensuales, retención, media de sesiones y valor por paciente

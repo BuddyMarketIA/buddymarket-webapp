@@ -1347,6 +1347,124 @@ Responde en JSON con este formato:
       return { conflict: false, source: "local" };
     }),
 
+  // ─── Diario del paciente (vista del experto) ───────────────────────────
+  getPatientDiary: protectedProcedure
+    .input(z.object({
+      expertPatientId: z.number(),
+      startDate: z.string(),
+      endDate: z.string(),
+    }))
+    .query(async ({ ctx, input }) => {
+      if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { expertPatients, mealLogs, patientWellbeingLogs, buddyExperts } = await import("../../drizzle/schema.js");
+      const { eq, and, gte, lte } = await import("drizzle-orm");
+
+      const [expert] = await drizzleDb.select().from(buddyExperts).where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+      const [relation] = await drizzleDb.select().from(expertPatients)
+        .where(and(eq(expertPatients.id, input.expertPatientId), expert ? eq(expertPatients.expertId, expert.id) : eq(expertPatients.id, input.expertPatientId)))
+        .limit(1);
+      if (!relation) throw new TRPCError({ code: "NOT_FOUND" });
+      const patientUserId = relation.patientUserId;
+
+      const meals = await drizzleDb.select().from(mealLogs)
+        .where(and(eq(mealLogs.userId, patientUserId), gte(mealLogs.logDate, input.startDate), lte(mealLogs.logDate, input.endDate)))
+        .orderBy(mealLogs.logDate);
+
+      const wellbeing = await drizzleDb.select().from(patientWellbeingLogs)
+        .where(and(eq(patientWellbeingLogs.userId, patientUserId), gte(patientWellbeingLogs.logDate, input.startDate), lte(patientWellbeingLogs.logDate, input.endDate)))
+        .orderBy(patientWellbeingLogs.logDate);
+
+      const mealsByDate: Record<string, typeof meals> = {};
+      for (const meal of meals) {
+        if (!mealsByDate[meal.logDate]) mealsByDate[meal.logDate] = [];
+        mealsByDate[meal.logDate].push(meal);
+      }
+
+      const days: Array<{ date: string; totalCalories: number; totalProtein: number; totalCarbs: number; totalFat: number; mealCount: number; meals: typeof meals; wellbeing: (typeof wellbeing)[0] | null; adherenceScore: number }> = [];
+      const start = new Date(input.startDate);
+      const end = new Date(input.endDate);
+      for (let d = new Date(start); d <= end; d.setDate(d.getDate() + 1)) {
+        const dateStr = d.toISOString().split("T")[0];
+        const dayMeals = mealsByDate[dateStr] || [];
+        const dayWellbeing = wellbeing.find(w => w.logDate === dateStr) || null;
+        days.push({
+          date: dateStr,
+          totalCalories: dayMeals.reduce((s, m) => s + (m.calories || 0), 0),
+          totalProtein: dayMeals.reduce((s, m) => s + (m.proteins || 0), 0),
+          totalCarbs: dayMeals.reduce((s, m) => s + (m.carbohydrates || 0), 0),
+          totalFat: dayMeals.reduce((s, m) => s + (m.fats || 0), 0),
+          mealCount: dayMeals.length,
+          meals: dayMeals,
+          wellbeing: dayWellbeing,
+          adherenceScore: Math.min(100, dayMeals.length * 33),
+        });
+      }
+      return { days, patientUserId };
+    }),
+
+  // ─── Hitos del paciente ───────────────────────────────────────────────────
+  getPatientMilestones: protectedProcedure
+    .input(z.object({ expertPatientId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { patientMilestones } = await import("../../drizzle/schema.js");
+      const { eq } = await import("drizzle-orm");
+      return drizzleDb.select().from(patientMilestones)
+        .where(eq(patientMilestones.expertPatientId, input.expertPatientId))
+        .orderBy(patientMilestones.milestoneDate);
+    }),
+
+  addPatientMilestone: protectedProcedure
+    .input(z.object({
+      expertPatientId: z.number(),
+      patientUserId: z.number(),
+      title: z.string().min(1),
+      description: z.string().optional(),
+      milestoneDate: z.string(),
+      icon: z.string().optional().default("🏆"),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { patientMilestones, buddyExperts } = await import("../../drizzle/schema.js");
+      const { eq } = await import("drizzle-orm");
+      const [expert] = await drizzleDb.select().from(buddyExperts).where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+      if (!expert) throw new TRPCError({ code: "FORBIDDEN" });
+      const [milestone] = await drizzleDb.insert(patientMilestones).values({
+        expertId: expert.id,
+        patientUserId: input.patientUserId,
+        expertPatientId: input.expertPatientId,
+        title: input.title,
+        description: input.description,
+        milestoneDate: input.milestoneDate,
+        icon: input.icon,
+      }).returning();
+      return milestone;
+    }),
+
+  deletePatientMilestone: protectedProcedure
+    .input(z.object({ milestoneId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { patientMilestones } = await import("../../drizzle/schema.js");
+      const { eq } = await import("drizzle-orm");
+      await drizzleDb.delete(patientMilestones).where(eq(patientMilestones.id, input.milestoneId));
+      return { success: true };
+    }),
+
   // ─── Mis experts (vista del paciente) ────────────────────────────────────
   getMyExperts: protectedProcedure
     .query(async ({ ctx }) => {

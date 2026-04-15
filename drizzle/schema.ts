@@ -2620,3 +2620,70 @@ export const expertPatientNotes = pgTable("expert_patient_notes", {
 }));
 export type ExpertPatientNote = typeof expertPatientNotes.$inferSelect;
 export type InsertExpertPatientNote = typeof expertPatientNotes.$inferInsert;
+
+// =============================================================================
+// PATIENT WELLBEING LOGS (Registro de síntomas y bienestar del paciente)
+// =============================================================================
+export const patientWellbeingLogs = pgTable("patient_wellbeing_logs", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull(),
+  logDate: date("logDate").notNull(),
+  energyLevel: integer("energyLevel"), // 1-10
+  digestiveComfort: integer("digestiveComfort"), // 1-10
+  sleepQuality: integer("sleepQuality"), // 1-10
+  moodLevel: integer("moodLevel"), // 1-10
+  hungerLevel: integer("hungerLevel"), // 1-10
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  userIdx: index("pwl_user_idx").on(t.userId),
+  dateIdx: index("pwl_date_idx").on(t.logDate),
+}));
+export type PatientWellbeingLog = typeof patientWellbeingLogs.$inferSelect;
+export type InsertPatientWellbeingLog = typeof patientWellbeingLogs.$inferInsert;
+
+// =============================================================================
+// WEEKLY CHECKINS (Check-in semanal del paciente)
+// =============================================================================
+export const weeklyCheckins = pgTable("weekly_checkins", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull(),
+  expertPatientId: integer("expertPatientId"),
+  weekStart: date("weekStart").notNull(),
+  weight: real("weight"),
+  photoUrl: varchar("photoUrl", { length: 1024 }),
+  adherenceRating: integer("adherenceRating"), // 1-10
+  hungerRating: integer("hungerRating"), // 1-10
+  energyRating: integer("energyRating"), // 1-10
+  difficultyNotes: text("difficultyNotes"),
+  generalNotes: text("generalNotes"),
+  expertFeedback: text("expertFeedback"),
+  expertFeedbackAt: timestamp("expertFeedbackAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  userIdx: index("wc_user_idx").on(t.userId),
+  weekIdx: index("wc_week_idx").on(t.weekStart),
+}));
+export type WeeklyCheckin = typeof weeklyCheckins.$inferSelect;
+export type InsertWeeklyCheckin = typeof weeklyCheckins.$inferInsert;
+
+// =============================================================================
+// PATIENT MILESTONES (Hitos y logros del paciente marcados por el experto)
+// =============================================================================
+export const patientMilestones = pgTable("patient_milestones", {
+  id: serial("id").primaryKey(),
+  expertId: integer("expertId").notNull(),
+  patientUserId: integer("patientUserId").notNull(),
+  expertPatientId: integer("expertPatientId").notNull(),
+  title: varchar("title", { length: 256 }).notNull(),
+  description: text("description"),
+  milestoneDate: date("milestoneDate").notNull(),
+  icon: varchar("icon", { length: 8 }).default("🏆"),
+  isNotified: boolean("isNotified").default(false).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  expertIdx: index("pm_expert_idx").on(t.expertId),
+  patientIdx: index("pm_patient_idx").on(t.patientUserId),
+}));
+export type PatientMilestone = typeof patientMilestones.$inferSelect;
+export type InsertPatientMilestone = typeof patientMilestones.$inferInsert;
