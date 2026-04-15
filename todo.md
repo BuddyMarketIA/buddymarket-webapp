@@ -2255,3 +2255,16 @@
 - [x] LoginPage: lee flag sessionStorage bm_just_logged_out para bloquear auto-redirección post-logout, lo limpia tras 2 segundos
 - [ ] Bug: nav.metrics y nav.connectedHealth no se muestran en sidebar — pendiente verificar AppLayout.tsx
 - [ ] SSO Google: iabuddymarket@gmail.com no aparece como BuddyExpert al hacer login — pendiente verificar server/routers/auth.ts
+
+## Bugs reportados Apr 15 (sesión 3)
+- [ ] Bug: Panel de administración — los cambios no se guardan ni se muestran correctamente
+- [ ] Bug: Flujo de solicitud BuddyExpert — al solicitar convertirse en BuddyExpert no aparece nada (formulario vacío o sin respuesta)
+
+## Revisión completa Apr 15 (sesión 3)
+- [x] Panel admin: select de accountType usaba defaultValue (no controlado) — corregido a value controlado
+- [x] Panel admin: admin.stats no devolvía totalAllergies ni totalCategories — corregido (ahora muestra 34 alergias y 18 categorías)
+- [x] Auditoría completa de 338 procedimientos tRPC: todos los críticos responden correctamente
+- [x] Verificado: RegisterBuddyExpert funciona correctamente (5 pasos, envío OK)
+- [x] Verificado: notifications.inApp es sub-router anidado, funciona con .list/.unreadCount/.markRead
+- [x] Verificado: codes, companyReminders, household, expertPatients, support — todos responden OK
+- [x] Verificado: No hay errores 500 en el servidor (solo OTP email limitado por Resend sandbox)

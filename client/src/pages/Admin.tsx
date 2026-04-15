@@ -828,7 +828,7 @@ export default function Admin() {
                     <div className="space-y-1">
                       <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Tipo</p>
                       <select
-                        defaultValue={(u as any).accountType ?? "user"}
+                        value={(u as any).accountType ?? "user"}
                         onChange={(e) => setUserAccountType.mutate({ userId: u.id, accountType: e.target.value as any })}
                         className="w-full rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-xs font-semibold text-gray-700"
                       >

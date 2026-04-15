@@ -4422,17 +4422,23 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
       }),
     stats: protectedProcedure.query(async ({ ctx }) => {
         if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
-        const [users, recipesList, ingredients, menus] = await Promise.all([
+        const [users, recipesList, ingredients, menus, allergiesList, categoriesList, dietsList] = await Promise.all([
           db.getAllUsers(1000, 0),
           db.getAllRecipes(1000),
           db.getAllIngredients(1000, 0),
           db.getAllMenus(1000),
+          db.getAllAllergies(),
+          db.getAllFoodCategories(),
+          db.getAllDietRestrictions(),
         ]);
         return {
           totalUsers: users.length,
           totalRecipes: recipesList.length,
           totalIngredients: ingredients.length,
           totalMenus: menus.length,
+          totalAllergies: allergiesList.length,
+          totalCategories: categoriesList.length,
+          totalDiets: dietsList.length,
         };
       }),
     // ── Admin: list all recipes with pagination + search ──────────────────────
