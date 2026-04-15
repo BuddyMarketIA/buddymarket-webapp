@@ -293,8 +293,26 @@ export default function ExpertDashboard() {
   const { data: allPatients } = trpc.expertPatients.getPatients.useQuery(
     { status: "all", search: q }, { enabled: !!user }
   );
-  const { data: blogData } = trpc.blog.list.useQuery({ limit: 2 }, { staleTime: 300000 });
-
+   const { data: blogData } = trpc.blog.list.useQuery({ limit: 2 }, { staleTime: 300000 });
+  // Referral code + earnings
+  const { data: referralCode, refetch: refetchReferral } = trpc.referrals.getMyCode.useQuery(
+    { creatorType: "buddyexpert" }, { enabled: !!user, staleTime: 60000 }
+  );
+  const { data: earningsData } = trpc.referrals.getMyEarnings.useQuery(
+    { limit: 5 }, { enabled: !!user, staleTime: 60000 }
+  );
+  const generateCode = trpc.referrals.generate.useMutation({
+    onSuccess: () => { refetchReferral(); toast.success("Código de referido generado ✅"); },
+    onError: () => toast.error("Error al generar el código"),
+  });
+  const [codeCopied, setCodeCopied] = useState(false);
+  const copyCode = (code: string) => {
+    navigator.clipboard.writeText(code).then(() => {
+      setCodeCopied(true);
+      toast.success("Código copiado al portapapeles 📋");
+      setTimeout(() => setCodeCopied(false), 2000);
+    });
+  };
   const disconnectGcal = trpc.expertPatients.disconnectGoogleCalendar.useMutation({
     onSuccess: () => { refetchGcal(); toast.success("Google Calendar desconectado"); },
   });
@@ -538,6 +556,94 @@ export default function ExpertDashboard() {
             <button onClick={() => nav("/app/scan")} style={{ width: "100%", padding: "9px", borderRadius: 9, background: "linear-gradient(135deg,#4F46E5,#7C3AED)", color: "#fff", border: "none", fontWeight: 700, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
               <Scan size={13} /> Abrir BuddyScan
             </button>
+          </div>
+
+          {/* 💰 Ingresos y Código de Referido */}
+          <div style={{ background: "#fff", borderRadius: 16, padding: "18px", boxShadow: "0 1px 8px rgba(0,0,0,0.06)" }}>
+            {/* Header */}
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
+              <h3 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "#111827" }}>💰 Ingresos</h3>
+              <Link href="/app/buddy-expert-stats">
+                <span style={{ fontSize: 11, color: "#F97316", fontWeight: 600, cursor: "pointer" }}>Ver todo &gt;</span>
+              </Link>
+            </div>
+
+            {/* KPIs de ingresos */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 14 }}>
+              <div style={{ background: "linear-gradient(135deg,#F0FDF4,#DCFCE7)", borderRadius: 10, padding: "10px 12px" }}>
+                <p style={{ margin: "0 0 2px", fontSize: 10, color: "#16A34A", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>Cobrado</p>
+                <p style={{ margin: 0, fontSize: 18, fontWeight: 900, color: "#15803D" }}>
+                  {earningsData?.totalEarned ? `${(earningsData.totalEarned / 100).toFixed(2)}€` : "0,00€"}
+                </p>
+              </div>
+              <div style={{ background: "linear-gradient(135deg,#FFF7ED,#FFEDD5)", borderRadius: 10, padding: "10px 12px" }}>
+                <p style={{ margin: "0 0 2px", fontSize: 10, color: "#EA580C", fontWeight: 600, textTransform: "uppercase", letterSpacing: 0.5 }}>Referidos</p>
+                <p style={{ margin: 0, fontSize: 18, fontWeight: 900, color: "#C2410C" }}>
+                  {earningsData?.activeReferrals ?? 0}
+                </p>
+              </div>
+            </div>
+
+            {/* Últimos cobros */}
+            {earningsData?.earnings && earningsData.earnings.length > 0 && (
+              <div style={{ marginBottom: 14 }}>
+                <p style={{ margin: "0 0 8px", fontSize: 11, fontWeight: 700, color: "#6B7280", textTransform: "uppercase", letterSpacing: 0.5 }}>Últimos cobros</p>
+                {earningsData.earnings.slice(0, 3).map((e: any, i: number) => (
+                  <div key={i} style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "6px 0", borderBottom: "1px solid #F9FAFB" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                      <div style={{ width: 28, height: 28, borderRadius: "50%", background: "#F0FDF4", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 12 }}>👤</div>
+                      <div>
+                        <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: "#111827" }}>{e.referredName ?? "Usuario"}</p>
+                        <p style={{ margin: 0, fontSize: 10, color: "#9CA3AF" }}>{new Date(e.createdAt).toLocaleDateString("es-ES")}</p>
+                      </div>
+                    </div>
+                    <div style={{ textAlign: "right" }}>
+                      <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#16A34A" }}>+{(e.commissionAmount / 100).toFixed(2)}€</p>
+                      <span style={{ fontSize: 10, padding: "1px 6px", borderRadius: 5, background: e.status === "active" ? "#F0FDF4" : "#FFF7ED", color: e.status === "active" ? "#16A34A" : "#EA580C", fontWeight: 600 }}>
+                        {e.status === "active" ? "Pagado" : "Pendiente"}
+                      </span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+            )}
+
+            {/* Código de referido */}
+            <div style={{ background: "linear-gradient(135deg,#EEF2FF,#E0E7FF)", borderRadius: 12, padding: "12px 14px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: 6, marginBottom: 6 }}>
+                <span style={{ fontSize: 14 }}>🎁</span>
+                <p style={{ margin: 0, fontSize: 12, fontWeight: 800, color: "#3730A3" }}>Tu código de referido</p>
+              </div>
+              <p style={{ margin: "0 0 8px", fontSize: 10, color: "#6366F1", lineHeight: 1.4 }}>
+                Comparte este código y gana un <strong>20% de comisión</strong> por cada paciente que se suscriba.
+              </p>
+              {referralCode ? (
+                <div style={{ display: "flex", gap: 6 }}>
+                  <div style={{ flex: 1, background: "#fff", borderRadius: 8, padding: "8px 12px", border: "1.5px dashed #A5B4FC", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                    <span style={{ fontSize: 16, fontWeight: 900, color: "#4F46E5", letterSpacing: 2 }}>{referralCode.code}</span>
+                  </div>
+                  <button
+                    onClick={() => copyCode(referralCode.code)}
+                    style={{ padding: "8px 12px", borderRadius: 8, background: codeCopied ? "#16A34A" : "#4F46E5", color: "#fff", border: "none", fontWeight: 700, fontSize: 11, cursor: "pointer", transition: "background 0.2s", whiteSpace: "nowrap" }}
+                  >
+                    {codeCopied ? "✓ Copiado" : "Copiar"}
+                  </button>
+                </div>
+              ) : (
+                <button
+                  onClick={() => generateCode.mutate({ creatorType: "buddyexpert", discountPercent: 15 })}
+                  disabled={generateCode.isPending}
+                  style={{ width: "100%", padding: "9px", borderRadius: 8, background: "#4F46E5", color: "#fff", border: "none", fontWeight: 700, fontSize: 12, cursor: "pointer" }}
+                >
+                  {generateCode.isPending ? "Generando..." : "Generar mi código"}
+                </button>
+              )}
+              {referralCode && (
+                <p style={{ margin: "6px 0 0", fontSize: 10, color: "#6B7280", textAlign: "center" }}>
+                  {referralCode.usageCount} uso{referralCode.usageCount !== 1 ? "s" : ""} · {referralCode.discountPercent}% descuento para el paciente
+                </p>
+              )}
+            </div>
           </div>
         </div>
       </div>

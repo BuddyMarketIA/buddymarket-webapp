@@ -2417,3 +2417,13 @@
 - [ ] Puntos activos (dot) visibles al hacer hover sobre el gráfico
 - [ ] Línea de cursor vertical al pasar el ratón
 - [ ] Panel de resumen debajo del gráfico con el punto seleccionado
+
+## Sprint Card Pagos y Referidos Dashboard Profesional
+- [ ] Schema DB: añadir campo referralCode (único) a tabla buddyExperts
+- [ ] Schema DB: verificar tabla creatorEarnings para historial de cobros
+- [ ] tRPC: endpoint getExpertEarnings (historial de pagos recibidos, total mes, total histórico)
+- [ ] tRPC: endpoint getOrCreateReferralCode (genera código único si no existe, devuelve código y stats)
+- [ ] tRPC: endpoint getReferralStats (cuántos usuarios han usado el código, comisiones generadas)
+- [ ] ExpertDashboard: card "Ingresos" con total cobrado este mes, total histórico y últimos pagos
+- [ ] ExpertDashboard: card "Código Referido" con el código único, botón copiar, stats de uso y explicación del 20%
+- [ ] Stripe: crear cupón de descuento del 20% asociado al referralCode del experto
