@@ -359,16 +359,14 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
     { key: "/app/menus", label: t("nav.menus"), to: "/app/menus", matches: ["/app/menus"], icon: (active: boolean) => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? "#F97316" : "#9ca3af"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>) },
     { key: "perfil", label: t("nav.profile"), to: "/app/profile", matches: ["/app/profile"], icon: (active: boolean) => (<svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke={active ? "#F97316" : "#9ca3af"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>) },
   ];
-
-  // ─── SIDEBAR PROFESIONAL (solo para BuddyExperts aprobados) ───────────────────
+  // ─── SIDEBAR PROFESIONAL (solo para BuddyExperts aprobados) ─────────────────────
   const EXPERT_SIDEBAR_GROUPS = [
     {
-      label: "Panel Profesional",
+      label: "Mi Panel",
       items: [
-        { key: "/app/buddy-expert-dashboard", label: "Mi Panel", to: "/app/buddy-expert-dashboard", emoji: "🎓" },
+        { key: "/app/buddy-expert-dashboard", label: "Panel Profesional", to: "/app/buddy-expert-dashboard", emoji: "🎓" },
         { key: "/app/buddy-expert-stats", label: "Estadísticas", to: "/app/buddy-expert-stats", emoji: "📊" },
         { key: "/app/expert-plans", label: "Mis Planes", to: "/app/expert-plans", emoji: "📋" },
-        { key: "/app/buddy-ia", label: "BuddyIA Profesional", to: "/app/buddy-ia", emoji: "🤖" },
       ],
     },
     {
@@ -376,39 +374,24 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       items: [
         { key: "/app/expert/patients", label: "Mis Pacientes", to: "/app/expert/patients", emoji: "👥" },
         { key: "/app/expert/chat", label: "Chat con Pacientes", to: "/app/expert/chat", emoji: "💬" },
+        { key: "/app/buddy-ia", label: "BuddyIA Profesional", to: "/app/buddy-ia", emoji: "🤖" },
       ],
     },
     {
-      label: "Mi Perfil Profesional",
+      label: "Mi Cuenta",
       items: [
         { key: "/app/profile", label: "Mi Perfil", to: "/app/profile", emoji: "👤" },
         ...(isApprovedMaker ? [{ key: "/app/buddy-maker-dashboard", label: "Panel BuddyMaker", to: "/app/buddy-maker-dashboard", emoji: "🍳" }] : []),
-        { key: "/app/buddy-shop", label: "BuddyShop ↗", to: "/app/buddy-shop", emoji: "🛦" },
+        { key: "/app/soporte", label: "Soporte", to: "/app/soporte", emoji: "🎫" },
       ],
     },
   ];
-
   const SIDEBAR_GROUPS = [
     {
       label: "Inicio",
       items: [
         { key: "/app/dashboard", label: t("nav.dashboard"), to: "/app/dashboard", emoji: "🏠" },
         { key: "/app/buddy-ia", label: t("nav.buddyIA"), to: "/app/buddy-ia", emoji: "🤖" },
-        { key: "/app/meal-notifications", label: t("sidebar.reminders"), to: "/app/meal-notifications", emoji: "🔔" },
-      ],
-    },
-    {
-      label: "Mi Perfil",
-      items: [
-        { key: "/app/profile", label: t("sidebar.myProfile"), to: "/app/profile", emoji: "👤" },
-        { key: "/app/metrics", label: t("nav.metrics"), to: "/app/metrics", emoji: "📏" },
-        { key: "/app/connected-health", label: t("nav.connectedHealth"), to: "/app/connected-health", emoji: "💪" },
-        { key: "/app/progress", label: t("nav.progress"), to: "/app/progress", emoji: "📉" },
-        { key: "/app/stats", label: t("sidebar.stats"), to: "/app/stats", emoji: "📈" },
-        { key: "/app/achievements", label: t("sidebar.myAchievements"), to: "/app/achievements", emoji: "🏆" },
-        { key: "/app/badges", label: "Mis Insignias", to: "/app/badges", emoji: "🎖️" },
-        { key: "/app/referrals", label: "Invita amigos 🎁", to: "/app/referrals", emoji: "👥" },
-        { key: "/app/soporte", label: "Centro de Soporte", to: "/app/soporte", emoji: "🎫" },
       ],
     },
     {
@@ -416,27 +399,9 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       items: [
         { key: "/app/meal-log", label: t("sidebar.nutritionalDiary"), to: "/app/meal-log", emoji: "📊" },
         { key: "/app/recipes", label: t("nav.recipes"), to: "/app/recipes", emoji: "📖" },
-        { key: "/app/favorites", label: t("sidebar.myFavorites"), to: "/app/favorites", emoji: "❤️" },
-        { key: "/app/inventory", label: t("nav.inventory"), to: "/app/inventory", emoji: "📦" },
-      ],
-    },
-    {
-      label: "Menús",
-      items: [
-        { key: "/app/menus", label: "Explorar Menús", to: "/app/menus", emoji: "📅" },
-        { key: "/app/my-menus", label: t("sidebar.myMenus"), to: "/app/my-menus", emoji: "🗂️" },
+        { key: "/app/menus", label: "Mis Menús", to: "/app/menus", emoji: "📅" },
         { key: "/app/menu-library", label: t("sidebar.menuLibrary"), to: "/app/menu-library", emoji: "📚" },
-        { key: "/app/specialized-menus", label: t("sidebar.specializedMenus"), to: "/app/specialized-menus", emoji: "🏥" },
-        { key: "/app/event-menu", label: t("sidebar.eventMenu"), to: "/app/event-menu", emoji: "🎉" },
-        { key: "/app/saved-events", label: "Mis Eventos Guardados", to: "/app/saved-events", emoji: "⭐" },
-      ],
-    },
-    {
-      label: "Familia",
-      items: [
-        { key: "/familia", label: "Mi Hogar", to: "/familia", emoji: "🏠" },
-        { key: "/familia/calendario", label: "Calendario Familiar", to: "/familia/calendario", emoji: "📅" },
-        { key: "/familia/mis-recetas", label: "Mis Recetas Asignadas", to: "/familia/mis-recetas", emoji: "🍽️" },
+        { key: "/app/inventory", label: t("nav.inventory"), to: "/app/inventory", emoji: "📦" },
       ],
     },
     {
@@ -444,23 +409,26 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       items: [
         { key: "shopping", label: t("sidebar.shoppingList"), to: "/app/shopping-lists", emoji: "🛒" },
         { key: "/app/supermercados", label: t("sidebar.supermarkets"), to: "/app/supermercados", emoji: "🏪" },
-        { key: "/app/buddy-shop", label: t("sidebar.buddyShop") + " ↗", to: "/app/buddy-shop", emoji: "🛦" },
+        { key: "/familia", label: "Mi Hogar", to: "/familia", emoji: "🏡" },
       ],
     },
     {
       label: "Comunidad",
       items: [
-        { key: "/app/buddy-experts", label: t("nav.buddyExperts"), to: "/app/buddy-experts", emoji: "🧑‍🍳" },
+        { key: "/app/buddy-experts", label: t("nav.buddyExperts"), to: "/app/buddy-experts", emoji: "🧑‍⚕️" },
         { key: "/app/buddy-makers", label: t("nav.buddyMakers"), to: "/app/buddy-makers", emoji: "👨‍🍳" },
-        { key: "/app/following", label: t("sidebar.following"), to: "/app/following", emoji: "👥" },
         { key: "/app/my-expert", label: "Mi nutricionista", to: "/app/my-expert", emoji: "👩‍⚕️" },
-        { key: "/app/buddy-application", label: t("sidebar.requestAccess"), to: "/app/buddy-application", emoji: "📝" },
       ],
     },
     {
-      label: t("sidebar.communityVively"),
+      label: "Mi Cuenta",
       items: [
-        { key: "buddycoach", label: "BuddyCoach ↗", to: "https://buddycoach.io", emoji: "🏃" },
+        { key: "/app/profile", label: t("sidebar.myProfile"), to: "/app/profile", emoji: "👤" },
+        { key: "/app/metrics", label: t("nav.metrics"), to: "/app/metrics", emoji: "📏" },
+        { key: "/app/progress", label: t("nav.progress"), to: "/app/progress", emoji: "📉" },
+        { key: "/app/achievements", label: t("sidebar.myAchievements"), to: "/app/achievements", emoji: "🏆" },
+        { key: "/app/referrals", label: "Invita amigos 🎁", to: "/app/referrals", emoji: "👥" },
+        { key: "/app/soporte", label: "Soporte", to: "/app/soporte", emoji: "🎫" },
       ],
     },
   ];
