@@ -2227,3 +2227,4 @@
 - [ ] Sistema de referidos: UI para generar código, compartir y ver historial de recompensas
 - [x] Bug crítico: al cerrar sesión la app re-autentica automáticamente al usuario (no permanece en login)
 - [x] Añadir opción "Recordar mi sesión" en formulario de login (persistir email en localStorage)
+- [x] Bug landing: botón "Ir a la app" debe mostrar "Regístrate"/"Iniciar sesión" cuando no hay sesión y navegar a /login

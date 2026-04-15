@@ -184,8 +184,9 @@ function StatCounter({ value, suffix, label, icon, start }: { value: number; suf
 }
 
 export default function LandingPage() {
-  const { user } = useAuth();
-  const isLoggedIn = !!user;
+  const { user, loading: authLoading } = useAuth();
+  // Only consider logged in once auth check is complete (avoid showing "Ir a la app" during loading)
+  const isLoggedIn = !authLoading && !!user;
   const createCheckout = trpc.subscriptions.createCheckout.useMutation();
   const appUrl = window.location.origin;
   const loginUrl = `${appUrl}/login`;
