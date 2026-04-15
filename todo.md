@@ -2247,3 +2247,11 @@
 - [x] Bug crítico: se pueden crear múltiples cuentas con el mismo email — añadir constraint UNIQUE en BD y validación en registro
 - [x] Tarea: fusionar/eliminar cuentas duplicadas de luismariaccc@gmail.com en producción — eliminadas IDs 2732 y 2865
 - [x] Bug persistente: error HTML en lugar de JSON en producción — Service Worker v5 tenía caché HTML de respuestas API. Corregido con SW v6: limpia todas las cachés antiguas y excluye rutas de auth del caché
+- [ ] Bug crítico: cerrar sesión vuelve a abrir la cuenta automáticamente — el logout no destruye la sesión correctamente y LoginPage redirige al usuario de vuelta
+- [x] Tarea: convertir iabuddymarket@gmail.com a tipo BuddyExpert en la BD de producción — completado, ID 4335 ahora accountType=buddyexpert
+
+## Fixes Apr 15 (sesión 2)
+- [x] Bug crítico: logout vuelve a abrir la sesión — corregido con sessionStorage flag bm_just_logged_out + window.location.replace + invalidate completo del caché tRPC en useAuth.ts
+- [x] LoginPage: lee flag sessionStorage bm_just_logged_out para bloquear auto-redirección post-logout, lo limpia tras 2 segundos
+- [ ] Bug: nav.metrics y nav.connectedHealth no se muestran en sidebar — pendiente verificar AppLayout.tsx
+- [ ] SSO Google: iabuddymarket@gmail.com no aparece como BuddyExpert al hacer login — pendiente verificar server/routers/auth.ts

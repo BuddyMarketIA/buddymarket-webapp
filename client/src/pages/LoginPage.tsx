@@ -78,7 +78,12 @@ export default function LoginPage() {
 
   // Check if already logged in — single redirect path
   const meQuery = trpc.auth.me.useQuery(undefined, { retry: false, refetchOnWindowFocus: false });
-  const isJustLoggedOut = new URLSearchParams(window.location.search).get("logout") === "1";
+  // Check if user just logged out — use sessionStorage (persists across React re-renders)
+  // Also support legacy ?logout=1 URL param for backwards compatibility
+  const isJustLoggedOut = (
+    sessionStorage.getItem("bm_just_logged_out") === "1" ||
+    new URLSearchParams(window.location.search).get("logout") === "1"
+  );
 
   useEffect(() => {
     // Never redirect if user just logged out (even if session briefly still active)
@@ -88,6 +93,14 @@ export default function LoginPage() {
       setLocation("/app/dashboard");
     }
   }, [meQuery.data, meQuery.isLoading, isJustLoggedOut, setLocation]);
+
+  // Clear the logout flag when user interacts with the login form
+  useEffect(() => {
+    const clearLogoutFlag = () => sessionStorage.removeItem("bm_just_logged_out");
+    // Clear after a short delay to allow the initial render to complete
+    const timer = setTimeout(clearLogoutFlag, 2000);
+    return () => clearTimeout(timer);
+  }, []);
 
   // Carousel auto-advance
   useEffect(() => {

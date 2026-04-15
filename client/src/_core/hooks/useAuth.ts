@@ -37,18 +37,23 @@ export function useAuth(options?: UseAuthOptions) {
         console.error("[logout] unexpected error:", error);
       }
     } finally {
-      // Always clear cache regardless of server response
+      // Clear all tRPC cache
       utils.auth.me.setData(undefined, null);
-      // Belt-and-suspenders: also clear the cookie from the client side
-      // This handles cases where the server clearCookie didn't propagate
+      await utils.invalidate();
+
+      // Clear the session cookie from the client side
       const cookieName = "app_session_id";
       document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=None; Secure`;
       document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax`;
       document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
-      // Redirect to /login?logout=1 instead of "/" to:
-      // 1. Avoid race condition where browser sends old cookie before Set-Cookie is processed
-      // 2. Signal LoginPage to NOT auto-redirect to dashboard even if auth.me briefly returns a user
-      window.location.href = "/login?logout=1";
+
+      // Set sessionStorage flag so LoginPage never auto-redirects after logout
+      // This flag persists across React re-renders but clears when the tab closes
+      sessionStorage.setItem("bm_just_logged_out", "1");
+
+      // Force a full page reload to /login to clear ALL React state and tRPC cache
+      // Using replace() so the user can't go "back" to the authenticated page
+      window.location.replace("/login");
     }
   }, [logoutMutation, utils]);
 
