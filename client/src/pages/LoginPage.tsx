@@ -303,14 +303,18 @@ export default function LoginPage() {
   const { status: serverStatus, latency: serverLatency, retry: retryServer } = useServerStatus();
 
   // Auto-redirect if user is already authenticated
+  // BUT: if ?logout=1 is present, skip auto-redirect to avoid race condition
+  // where the browser sends the old cookie before Set-Cookie maxAge=0 is processed.
+  const isJustLoggedOut = typeof window !== "undefined" && new URLSearchParams(window.location.search).get("logout") === "1";
   const meQuery = trpc.auth.me.useQuery(undefined, { retry: false, refetchOnWindowFocus: false });
   useEffect(() => {
     if (meQuery.isLoading) return;
+    if (isJustLoggedOut) return; // Don't auto-redirect after logout — user explicitly signed out
     if (meQuery.data) {
       // User is already logged in — always send to dashboard
       setLocation("/app/dashboard");
     }
-  }, [meQuery.data, meQuery.isLoading, setLocation]);
+  }, [meQuery.data, meQuery.isLoading, setLocation, isJustLoggedOut]);
 
   // Form fields — ALL hooks must be declared before any conditional returns
   const [name, setName] = useState("");

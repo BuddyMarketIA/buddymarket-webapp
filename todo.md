@@ -2218,3 +2218,11 @@
 - [x] Frontend: formulario de registro con email+contraseña
 - [x] Frontend: página /reset-password para resetear contraseña
 - [x] Crear cuenta real de Guillermo con contraseña (guillermo@buddymarket.io)
+
+## Fixes pendientes (Apr 15)
+- [ ] Corregir traducciones nav.metrics y nav.connectedHealth (mostrar "Métricas" y "Salud Conectada" en lugar de claves crudas)
+- [ ] Sistema de referidos: solo disponible para suscriptores Pro y ProMax
+- [ ] Sistema de referidos: referir amigo que se hace Pro → 1 mes gratis de Pro para el referidor
+- [ ] Sistema de referidos: referir amigo que se hace ProMax → 1 mes gratis de ProMax para el referidor
+- [ ] Sistema de referidos: UI para generar código, compartir y ver historial de recompensas
+- [x] Bug crítico: al cerrar sesión la app re-autentica automáticamente al usuario (no permanece en login)

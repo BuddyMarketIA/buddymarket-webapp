@@ -37,7 +37,7 @@ export function useAuth(options?: UseAuthOptions) {
         console.error("[logout] unexpected error:", error);
       }
     } finally {
-      // Always clear cache and redirect to landing regardless of server response
+      // Always clear cache regardless of server response
       utils.auth.me.setData(undefined, null);
       // Belt-and-suspenders: also clear the cookie from the client side
       // This handles cases where the server clearCookie didn't propagate
@@ -45,7 +45,10 @@ export function useAuth(options?: UseAuthOptions) {
       document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=None; Secure`;
       document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax`;
       document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
-      window.location.href = "/";
+      // Redirect to /login?logout=1 instead of "/" to:
+      // 1. Avoid race condition where browser sends old cookie before Set-Cookie is processed
+      // 2. Signal LoginPage to NOT auto-redirect to dashboard even if auth.me briefly returns a user
+      window.location.href = "/login?logout=1";
     }
   }, [logoutMutation, utils]);
 
