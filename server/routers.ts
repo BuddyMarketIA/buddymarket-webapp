@@ -5804,7 +5804,24 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
           .where(and(eq(appsTable.userId, ctx.user.id), eq(appsTable.type, input.type)))
           .orderBy(desc(appsTable.appliedAt))
           .limit(1);
-        return rows[0] ?? null;
+        if (rows[0]) return rows[0];
+        // Fallback: if user has the matching accountType, treat as approved automatically
+        const accountTypeMap: Record<string, string> = { expert: "buddyexpert", maker: "buddymaker" };
+        if (ctx.user.accountType === accountTypeMap[input.type]) {
+          return {
+            id: -1,
+            userId: ctx.user.id,
+            type: input.type as "expert" | "maker",
+            status: "approved" as const,
+            displayName: ctx.user.name,
+            bio: null,
+            specialty: null,
+            appliedAt: new Date(),
+            updatedAt: new Date(),
+            reviewedAt: new Date(),
+          } as any;
+        }
+        return null;
       }),
     // ADMIN: list all pending applications
     listPending: protectedProcedure
