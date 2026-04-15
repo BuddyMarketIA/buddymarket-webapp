@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input";
 import { Eye, EyeOff, Mail, Lock, User, Loader2, ArrowRight, ChevronLeft } from "lucide-react";
 import WebSSOButtons from "@/components/WebSSOButtons";
 
-const LOGO = "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/logo-icon-orange_2cf889cb.png";
+const LOGO = "/favicon-192x192.png";
 
 const SLIDES = [
   {
