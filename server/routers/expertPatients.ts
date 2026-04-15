@@ -1064,6 +1064,128 @@ Responde en JSON con este formato:
       };
     }),
 
+  // ─── Dashboard stats del experto ──────────────────────────────────────────
+  getExpertDashboardStats: protectedProcedure
+    .query(async ({ ctx }) => {
+      if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { expertPatients, buddyExperts, expertMessages, expertAppointments, expertAssignedMenus, patientProgress, users, userProfiles } = await import("../../drizzle/schema.js");
+      const { eq, and, gte, lte, lt, desc, asc, count, sql } = await import("drizzle-orm");
+
+      // Obtener el perfil del experto
+      const [expertProfile] = await drizzleDb.select().from(buddyExperts)
+        .where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+      if (!expertProfile) throw new TRPCError({ code: "NOT_FOUND", message: "Perfil de experto no encontrado" });
+
+      const expertId = expertProfile.id;
+
+      // Pacientes activos
+      const allPatients = await drizzleDb.select({
+        rel: expertPatients,
+        patientUser: { id: users.id, name: users.name, email: users.email, imageUrl: users.imageUrl },
+        profile: { weight: userProfiles.weight, mainGoal: userProfiles.mainGoal },
+      })
+        .from(expertPatients)
+        .leftJoin(users, eq(users.id, expertPatients.patientUserId))
+        .leftJoin(userProfiles, eq(userProfiles.userId, expertPatients.patientUserId))
+        .where(eq(expertPatients.expertId, expertId))
+        .orderBy(desc(expertPatients.createdAt));
+
+      const activePatients = allPatients.filter(p => p.rel.status === "active");
+
+      // Mensajes sin leer
+      const unreadMessages = await drizzleDb.select()
+        .from(expertMessages)
+        .innerJoin(expertPatients, eq(expertPatients.id, expertMessages.expertPatientId))
+        .where(and(
+          eq(expertPatients.expertId, expertId),
+          eq(expertMessages.senderRole, "patient"),
+          eq(expertMessages.isRead, false)
+        ));
+
+      // Citas de hoy y próximas 7 días
+      const now = new Date();
+      const todayStart = new Date(now); todayStart.setHours(0, 0, 0, 0);
+      const todayEnd = new Date(now); todayEnd.setHours(23, 59, 59, 999);
+      const weekEnd = new Date(now); weekEnd.setDate(weekEnd.getDate() + 7);
+
+      const upcomingAppointments = await drizzleDb.select({
+        appt: expertAppointments,
+        patientUser: { id: users.id, name: users.name, email: users.email, imageUrl: users.imageUrl },
+      })
+        .from(expertAppointments)
+        .innerJoin(expertPatients, eq(expertPatients.id, expertAppointments.expertPatientId))
+        .leftJoin(users, eq(users.id, expertPatients.patientUserId))
+        .where(and(
+          eq(expertPatients.expertId, expertId),
+          gte(expertAppointments.startTime, now),
+          lte(expertAppointments.startTime, weekEnd)
+        ))
+        .orderBy(asc(expertAppointments.startTime))
+        .limit(10);
+
+      const todayAppointments = upcomingAppointments.filter(a => {
+        const d = new Date(a.appt.startTime);
+        return d >= todayStart && d <= todayEnd;
+      });
+
+      // Menús asignados este mes
+      const monthStart = new Date(now.getFullYear(), now.getMonth(), 1);
+      const menusThisMonth = await drizzleDb.select()
+        .from(expertAssignedMenus)
+        .innerJoin(expertPatients, eq(expertPatients.id, expertAssignedMenus.expertPatientId))
+        .where(and(
+          eq(expertPatients.expertId, expertId),
+          gte(expertAssignedMenus.createdAt, monthStart)
+        ));
+
+      // Registros de progreso recientes (últimos 30 días)
+      const thirtyDaysAgo = new Date(now); thirtyDaysAgo.setDate(thirtyDaysAgo.getDate() - 30);
+      const recentProgress = await drizzleDb.select({
+        progress: patientProgress,
+        patientUser: { id: users.id, name: users.name, imageUrl: users.imageUrl },
+      })
+        .from(patientProgress)
+        .innerJoin(expertPatients, eq(expertPatients.id, patientProgress.expertPatientId))
+        .leftJoin(users, eq(users.id, expertPatients.patientUserId))
+        .where(and(
+          eq(expertPatients.expertId, expertId),
+          gte(patientProgress.recordedAt, thirtyDaysAgo)
+        ))
+        .orderBy(desc(patientProgress.recordedAt))
+        .limit(5);
+
+      // Pacientes recientes (últimos 5)
+      const recentPatients = allPatients.slice(0, 5);
+
+      // Pacientes con mensajes sin leer (agrupar por paciente)
+      const unreadByPatient = new Map<number, number>();
+      for (const msg of unreadMessages) {
+        const pid = (msg as any).expertMessages?.expertPatientId ?? 0;
+        unreadByPatient.set(pid, (unreadByPatient.get(pid) ?? 0) + 1);
+      }
+
+      return {
+        stats: {
+          totalPatients: allPatients.length,
+          activePatients: activePatients.length,
+          unreadMessages: unreadMessages.length,
+          todayAppointments: todayAppointments.length,
+          upcomingAppointmentsWeek: upcomingAppointments.length,
+          menusAssignedThisMonth: menusThisMonth.length,
+          recentProgressRecords: recentProgress.length,
+        },
+        upcomingAppointments,
+        recentPatients,
+        recentProgress,
+        expertProfile,
+      };
+    }),
+
   // ─── Mis experts (vista del paciente) ────────────────────────────────────
   getMyExperts: protectedProcedure
     .query(async ({ ctx }) => {

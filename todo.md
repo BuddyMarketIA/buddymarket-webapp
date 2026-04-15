@@ -2366,3 +2366,16 @@
 - [x] ExpertPatientDetail: tab "Menús" con todos los menús asignados y estado IA
 - [x] ExpertPatientDetail: tab "Perfil" ampliada con objetivos calóricos y tipo de dieta
 - [x] Build de producción verificado (Vite build exitoso)
+
+## Sprint Dashboard Panel Profesional BuddyExpert
+- [x] tRPC: endpoint getExpertDashboardStats (métricas: pacientes activos, citas hoy/semana, mensajes sin leer, ingresos)
+- [x] tRPC: endpoint getExpertUpcomingAppointments (próximas citas del experto)
+- [x] tRPC: endpoint getExpertRecentActivity (actividad reciente: nuevos pacientes, mensajes, progresos)
+- [x] Página ExpertDashboard: tarjetas KPI (pacientes activos, citas hoy, mensajes pendientes, menús este mes)
+- [x] Página ExpertDashboard: lista de próximas citas con acceso rápido al paciente
+- [x] Página ExpertDashboard: pacientes recientes con estado y última actividad
+- [x] Página ExpertDashboard: progreso reciente de pacientes (últimos 30 días)
+- [x] Página ExpertDashboard: accesos rápidos (pacientes, mensajes, planes, estadísticas, perfil, invitar)
+- [x] Página ExpertDashboard: card de estado del perfil profesional con stats
+- [x] Registrar ruta /app/expert/dashboard en App.tsx como página de inicio del panel profesional
+- [x] Añadir enlace Dashboard Profesional en sidebar del modo experto

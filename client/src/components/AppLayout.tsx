@@ -192,6 +192,7 @@ function SidebarContent({
           <div key={group.label} style={{ marginBottom: "2px" }}>
             <p style={{ margin: gi === 0 ? "4px 0 4px 16px" : "10px 0 4px 16px", fontSize: "11px", fontWeight: 800, color: "#9ca3af", letterSpacing: "0.08em", textTransform: "uppercase" }}>{group.label}</p>
             {group.items.filter((item: any) => {
+              if (item.key === "/app/expert/dashboard" && !isApprovedExpert) return false;
               if (item.key === "/app/buddy-expert-dashboard" && !isApprovedExpert) return false;
               if (item.key === "/app/expert/patients" && !isApprovedExpert) return false;
               if (item.key === "/app/expert/chat" && !isApprovedExpert) return false;
@@ -364,6 +365,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
     {
       label: "Mi Panel",
       items: [
+        { key: "/app/expert/dashboard", label: "Dashboard Profesional", to: "/app/expert/dashboard", emoji: "🏠" },
         { key: "/app/buddy-expert-dashboard", label: "Panel Profesional", to: "/app/buddy-expert-dashboard", emoji: "🎓" },
         { key: "/app/buddy-expert-stats", label: "Estadísticas", to: "/app/buddy-expert-stats", emoji: "📊" },
         { key: "/app/expert-plans", label: "Mis Planes", to: "/app/expert-plans", emoji: "📋" },
