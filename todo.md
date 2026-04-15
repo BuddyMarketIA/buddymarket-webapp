@@ -2280,3 +2280,6 @@
 
 ## Bug crítico Apr 15 - JSON parse error (Service Worker)
 - [x] Bug: "Unexpected token '<', DOCTYPE is not valid JSON" en producción — SW v9 kill-switch: se desregistra en install, sin fetch handler. main.tsx desregistra todos los SWs activos y limpia todas las cachés al cargar
+
+## Bug diseño tarjetas BuddyExperts (Apr 15)
+- [x] Rediseñar tarjetas de BuddyExperts: nombre no visible, avatar mal posicionado, diseño poco profesional — corregido con avatar sobresaliente del header (posición absoluta -bottom-9), área de contenido con pt-12 para dar espacio al avatar, nombre en h3 prominente text-[15px] font-black

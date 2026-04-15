@@ -73,7 +73,7 @@ function ExpertCard({
 
   return (
     <div
-      className="group relative bg-white rounded-[24px] overflow-hidden cursor-pointer"
+      className="group relative bg-white rounded-[24px] overflow-hidden cursor-pointer flex flex-col"
       style={{
         boxShadow: "0 2px 8px rgba(0,0,0,0.05), 0 8px 32px rgba(0,0,0,0.07)",
         transition: "box-shadow 0.3s ease, transform 0.3s ease",
@@ -88,12 +88,11 @@ function ExpertCard({
       }}
       onClick={() => navigate(`/app/buddy-experts/${expert.id}`)}
     >
-      {/* Gradient header */}
-      <div className={`relative bg-gradient-to-br ${gradient} pt-5 pb-10 px-4 overflow-hidden`}>
+      {/* Gradient header — fixed height, avatar sobresale por debajo */}
+      <div className={`relative bg-gradient-to-br ${gradient} h-[100px] overflow-visible`}>
         {/* Decorative blobs */}
         <div className="absolute -top-6 -right-6 w-32 h-32 rounded-full bg-white/15 blur-2xl" />
         <div className="absolute -bottom-8 -left-8 w-36 h-36 rounded-full bg-black/10 blur-3xl" />
-        <div className="absolute top-3 left-3 w-10 h-10 rounded-full bg-white/10 blur-lg" />
         {/* Dot grid */}
         <div
           className="absolute inset-0 opacity-[0.06]"
@@ -106,9 +105,9 @@ function ExpertCard({
         <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
           style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%)" }} />
         {/* Badges */}
-        <div className="relative flex justify-between items-start mb-4">
+        <div className="relative flex justify-between items-start p-3">
           {expert.verified ? (
-            <span className="flex items-center gap-1 bg-white/25 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full border border-white/40 shadow-sm">
+            <span className="flex items-center gap-1 bg-white/25 backdrop-blur-md text-white text-[10px] font-bold px-2 py-0.5 rounded-full border border-white/40 shadow-sm">
               <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
                 <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
               </svg>
@@ -116,28 +115,25 @@ function ExpertCard({
             </span>
           ) : <span />}
           {expert.featured && (
-            <span className="bg-yellow-400/90 backdrop-blur-sm text-yellow-900 text-[10px] font-black px-2.5 py-1 rounded-full shadow-lg border border-yellow-300/50">
+            <span className="bg-yellow-400/90 backdrop-blur-sm text-yellow-900 text-[10px] font-black px-2 py-0.5 rounded-full shadow-lg border border-yellow-300/50">
               TOP
             </span>
           )}
         </div>
-        {/* Avatar — floated out of header */}
-        <div className="relative flex justify-center">
+        {/* Avatar — posicionado en el borde inferior del header, sobresaliendo hacia abajo */}
+        <div className="absolute -bottom-9 left-1/2 -translate-x-1/2">
           <div className="relative">
-            <div className="absolute inset-0 rounded-2xl bg-white/30 blur-md scale-110" />
             {expertAvatar ? (
               <img
                 src={expertAvatar}
                 alt={expert.displayName}
-                className="relative w-18 h-18 rounded-2xl object-cover ring-[3px] ring-white/60 shadow-2xl group-hover:scale-105 transition-transform duration-500"
-                style={{ width: 72, height: 72 }}
+                className="w-[72px] h-[72px] rounded-2xl object-cover ring-[3px] ring-white shadow-xl group-hover:scale-105 transition-transform duration-500"
               />
             ) : (
               <div
-                className="relative rounded-2xl bg-white/30 backdrop-blur-sm flex items-center justify-center text-3xl ring-[3px] ring-white/60 shadow-2xl"
-                style={{ width: 72, height: 72 }}
+                className="w-[72px] h-[72px] rounded-2xl bg-white/30 backdrop-blur-sm flex items-center justify-center text-3xl font-black text-white ring-[3px] ring-white shadow-xl"
               >
-                {expert.displayName?.[0] ?? "?"}
+                {expert.displayName?.[0]?.toUpperCase() ?? "?"}
               </div>
             )}
             {/* Category emoji badge */}
@@ -148,12 +144,12 @@ function ExpertCard({
         </div>
       </div>
 
-      {/* Content */}
-      <div className="px-4 pb-4 -mt-5 flex flex-col items-center text-center gap-1">
-        <h3 className="font-black text-gray-900 text-[14px] leading-tight line-clamp-1 mt-1">
+      {/* Content — espacio superior para el avatar sobresaliente (72px/2 + 4px margen) */}
+      <div className="pt-12 px-4 pb-4 flex flex-col items-center text-center gap-1 flex-1">
+        <h3 className="font-black text-gray-900 text-[15px] leading-tight line-clamp-1 w-full">
           {expert.displayName}
         </h3>
-        <p className="text-[11px] text-indigo-500 font-bold line-clamp-1 tracking-wide uppercase">
+        <p className="text-[11px] text-indigo-500 font-bold line-clamp-2 tracking-wide uppercase w-full">
           {expert.specialty ?? CATEGORY_LABELS[expert.category] ?? t("buddyExperts.nutritionist", "Nutricionista")}
         </p>
 
@@ -180,7 +176,7 @@ function ExpertCard({
         </div>
 
         {/* Action buttons */}
-        <div className="flex gap-2 w-full">
+        <div className="flex gap-2 w-full mt-auto">
           <button
             onClick={(e) => { e.stopPropagation(); onFollow(expert.id); }}
             className={`flex-1 py-2.5 rounded-2xl text-[12px] font-black transition-all duration-200 ${
