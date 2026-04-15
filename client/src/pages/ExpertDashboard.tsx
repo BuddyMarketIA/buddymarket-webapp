@@ -1,27 +1,17 @@
 import { useLocation, useSearch, Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { useEffect, useState, useMemo, useCallback } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { toast } from "sonner";
 import {
   ChevronDown, ChevronRight, ChevronUp, Search, Video,
-  Bell, ShieldCheck, UserPlus, CalendarPlus, FileText,
-  Package, Scan, Calendar, Mail, Users, BarChart2,
-  MessageSquare, User, HelpCircle, Bot, LayoutDashboard,
-  Minus,
+  Bell, UserPlus, CalendarPlus, FileText,
+  Package, Scan, Calendar, Mail,
+  MessageSquare, Minus,
 } from "lucide-react";
 import {
-  LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer,
-  CartesianGrid, ReferenceLine,
+  LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
 } from "recharts";
-
-// ─── Types ────────────────────────────────────────────────────────────────────
-interface ChartPoint {
-  date: string;
-  peso: number | null;
-  adherencia: number;
-  patientName?: string;
-}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 const getInitials = (name?: string | null) =>
@@ -40,7 +30,7 @@ const getAdherence = (id: number) => Math.max(30, Math.min(95, (id * 37 + 13) % 
 
 // ─── Custom Tooltip ───────────────────────────────────────────────────────────
 function CustomTooltip({ active, payload, label }: any) {
-  if (!active || !payload || !payload.length) return null;
+  if (!active || !payload?.length) return null;
   const peso = payload.find((p: any) => p.dataKey === "peso");
   const adh = payload.find((p: any) => p.dataKey === "adherencia");
   return (
@@ -68,97 +58,7 @@ function CustomTooltip({ active, payload, label }: any) {
   );
 }
 
-// ─── Sidebar ──────────────────────────────────────────────────────────────────
-const NAV = [
-  { icon: <LayoutDashboard size={16} />, label: "Profesional", path: "/app/expert/dashboard" },
-  { icon: <BarChart2 size={16} />, label: "Estadísticas", path: "/app/buddy-expert-stats" },
-  { icon: <Users size={16} />, label: "Mis Planes", path: "/app/expert/plans" },
-  { icon: <Users size={16} />, label: "Mis Pacientes", path: "/app/expert/patients" },
-  { icon: <MessageSquare size={16} />, label: "Chat con Pacientes", path: "/app/expert/messages" },
-  { icon: <Bot size={16} />, label: "BuddyIA Profesional", path: "/app/expert/ai" },
-  { icon: <User size={16} />, label: "Mi Perfil", path: "/app/buddy-expert-dashboard" },
-  { icon: <HelpCircle size={16} />, label: "Soporte", path: "/app/support" },
-];
-
-function Sidebar({ user }: { user: any }) {
-  const [loc] = useLocation();
-  return (
-    <aside style={{
-      width: 240, minHeight: "100vh", background: "#fff",
-      borderRight: "1px solid #ede8e3", display: "flex", flexDirection: "column",
-      flexShrink: 0, position: "sticky", top: 0, height: "100vh", overflowY: "auto",
-    }}>
-      {/* Logo */}
-      <div style={{ padding: "20px 20px 14px" }}>
-        <Link href="/">
-          <div style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
-            <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#F97316", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 900, fontSize: 16 }}>
-              D
-            </div>
-            <span style={{ fontWeight: 800, fontSize: 17, color: "#111827", letterSpacing: "-0.3px" }}>BuddyMarket</span>
-          </div>
-        </Link>
-      </div>
-
-      {/* Mode selector */}
-      <div style={{ padding: "0 14px 14px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#FFF3E8", borderRadius: 10, padding: "9px 13px", border: "1px solid #FDDCB5", cursor: "pointer" }}>
-          <span style={{ fontSize: 16 }}>🎓</span>
-          <span style={{ fontWeight: 700, fontSize: 14, color: "#F97316", flex: 1 }}>Profesional</span>
-          <ChevronDown size={14} color="#F97316" />
-        </div>
-      </div>
-
-      {/* Nav items */}
-      <nav style={{ flex: 1, padding: "0 10px" }}>
-        {NAV.map(item => {
-          const active = loc === item.path;
-          return (
-            <Link key={item.path} href={item.path}>
-              <div style={{
-                display: "flex", alignItems: "center", gap: 11, padding: "10px 13px",
-                borderRadius: 10, marginBottom: 2, cursor: "pointer",
-                background: active ? "#FFF3E8" : "transparent",
-                color: active ? "#F97316" : "#4B5563",
-                fontWeight: active ? 700 : 500, fontSize: 14,
-                transition: "background 0.15s",
-              }}>
-                <span style={{ color: active ? "#F97316" : "#9CA3AF", flexShrink: 0 }}>{item.icon}</span>
-                {item.label}
-              </div>
-            </Link>
-          );
-        })}
-      </nav>
-
-      {/* Admin */}
-      <div style={{ padding: "8px 10px 10px" }}>
-        <Link href="/admin">
-          <div style={{ display: "flex", alignItems: "center", gap: 11, padding: "10px 13px", borderRadius: 10, cursor: "pointer", color: "#4B5563", fontSize: 14, fontWeight: 500 }}>
-            <ShieldCheck size={16} color="#9CA3AF" />
-            Administración
-          </div>
-        </Link>
-      </div>
-
-      {/* User */}
-      {user && (
-        <div style={{ margin: "0 10px 16px", padding: "10px 13px", borderTop: "1px solid #F3F4F6", display: "flex", alignItems: "center", gap: 10 }}>
-          {user.imageUrl
-            ? <img src={user.imageUrl} alt="" style={{ width: 34, height: 34, borderRadius: "50%", objectFit: "cover" }} />
-            : <div style={{ width: 34, height: 34, borderRadius: "50%", background: "#F97316", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: 13 }}>{getInitials(user.name)}</div>
-          }
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#111827", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.name}</p>
-            <p style={{ margin: 0, fontSize: 11, color: "#9CA3AF" }}>BuddyExpert</p>
-          </div>
-        </div>
-      )}
-    </aside>
-  );
-}
-
-// ─── KPI Card (matches mockup exactly) ────────────────────────────────────────
+// ─── KPI Card ─────────────────────────────────────────────────────────────────
 function KpiCard({ count, title, subtitle, linkText, linkIcon, bg, href }: {
   count: number | string; title: string; subtitle?: string;
   linkText: string; linkIcon?: React.ReactNode; bg: string; href: string;
@@ -170,21 +70,18 @@ function KpiCard({ count, title, subtitle, linkText, linkIcon, bg, href }: {
       cursor: "pointer", overflow: "hidden", boxShadow: "0 2px 16px rgba(0,0,0,0.10)",
       display: "flex", flexDirection: "column",
     }}>
-      {/* Top: number + text */}
-      <div style={{ padding: "20px 20px 14px", display: "flex", alignItems: "flex-start", gap: 14 }}>
-        <span style={{ fontSize: 52, fontWeight: 900, color: "#fff", lineHeight: 1, flexShrink: 0 }}>{count}</span>
+      <div style={{ padding: "18px 18px 12px", display: "flex", alignItems: "flex-start", gap: 12 }}>
+        <span style={{ fontSize: 46, fontWeight: 900, color: "#fff", lineHeight: 1, flexShrink: 0 }}>{count}</span>
         <div style={{ paddingTop: 4 }}>
-          <p style={{ margin: 0, fontSize: 18, fontWeight: 700, color: "#fff", lineHeight: 1.2 }}>{title}</p>
-          {subtitle && <p style={{ margin: "4px 0 0", fontSize: 12, color: "rgba(255,255,255,0.7)" }}>{subtitle}</p>}
+          <p style={{ margin: 0, fontSize: 16, fontWeight: 700, color: "#fff", lineHeight: 1.2 }}>{title}</p>
+          {subtitle && <p style={{ margin: "3px 0 0", fontSize: 11, color: "rgba(255,255,255,0.7)" }}>{subtitle}</p>}
         </div>
       </div>
-      {/* Divider */}
-      <div style={{ height: 1, background: "rgba(255,255,255,0.2)", margin: "0 20px" }} />
-      {/* Bottom: link */}
-      <div style={{ padding: "10px 20px", display: "flex", alignItems: "center", gap: 6 }}>
-        <span style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.9)", flex: 1 }}>{linkText}</span>
+      <div style={{ height: 1, background: "rgba(255,255,255,0.2)", margin: "0 18px" }} />
+      <div style={{ padding: "9px 18px", display: "flex", alignItems: "center", gap: 6 }}>
+        <span style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.9)", flex: 1 }}>{linkText}</span>
         {linkIcon && <span style={{ color: "rgba(255,255,255,0.8)" }}>{linkIcon}</span>}
-        <ChevronRight size={14} color="rgba(255,255,255,0.8)" />
+        <ChevronRight size={13} color="rgba(255,255,255,0.8)" />
       </div>
     </div>
   );
@@ -195,23 +92,23 @@ function PatientRow({ patient, onNav }: { patient: any; onNav: (p: string) => vo
   const adh = getAdherence(patient.id);
   const adhColor = adh >= 70 ? "#F59E0B" : adh >= 50 ? "#F59E0B" : "#EF4444";
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 0", borderBottom: "1px solid #F9FAFB" }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: "1px solid #F9FAFB" }}>
       {patient.user?.imageUrl
-        ? <img src={patient.user.imageUrl} alt="" style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
-        : <div style={{ width: 40, height: 40, borderRadius: "50%", background: "linear-gradient(135deg,#F97316,#FB923C)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: 14, flexShrink: 0 }}>{getInitials(patient.user?.name)}</div>
+        ? <img src={patient.user.imageUrl} alt="" style={{ width: 38, height: 38, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+        : <div style={{ width: 38, height: 38, borderRadius: "50%", background: "linear-gradient(135deg,#F97316,#FB923C)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: 13, flexShrink: 0 }}>{getInitials(patient.user?.name)}</div>
       }
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ margin: "0 0 5px", fontSize: 14, fontWeight: 700, color: "#111827", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{patient.user?.name ?? "Paciente"}</p>
-        <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+        <p style={{ margin: "0 0 4px", fontSize: 13, fontWeight: 700, color: "#111827", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{patient.user?.name ?? "Paciente"}</p>
+        <div style={{ display: "flex", alignItems: "center", gap: 5 }}>
           <div style={{ flex: 1, height: 5, background: "#F3F4F6", borderRadius: 99, overflow: "hidden" }}>
             <div style={{ width: `${adh}%`, height: "100%", background: adhColor, borderRadius: 99 }} />
           </div>
-          <span style={{ fontSize: 12, fontWeight: 700, color: adhColor, minWidth: 32 }}>{adh}%</span>
+          <span style={{ fontSize: 11, fontWeight: 700, color: adhColor, minWidth: 30 }}>{adh}%</span>
         </div>
       </div>
-      <div style={{ display: "flex", gap: 6, flexShrink: 0 }}>
-        <button onClick={() => onNav(`/app/expert/patients/${patient.id}`)} style={{ padding: "5px 11px", borderRadius: 8, background: "#F97316", color: "#fff", border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Plan</button>
-        <button onClick={() => onNav(`/app/expert/messages?patient=${patient.id}`)} style={{ padding: "5px 11px", borderRadius: 8, background: "#1B2B4B", color: "#fff", border: "none", fontSize: 12, fontWeight: 700, cursor: "pointer" }}>Chat</button>
+      <div style={{ display: "flex", gap: 5, flexShrink: 0 }}>
+        <button onClick={() => onNav(`/app/expert/patients/${patient.id}`)} style={{ padding: "4px 10px", borderRadius: 7, background: "#F97316", color: "#fff", border: "none", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Plan</button>
+        <button onClick={() => onNav(`/app/expert/messages?patient=${patient.id}`)} style={{ padding: "4px 10px", borderRadius: 7, background: "#1B2B4B", color: "#fff", border: "none", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>Chat</button>
       </div>
     </div>
   );
@@ -228,36 +125,34 @@ function AppointmentRow({ appt }: { appt: any }) {
   const imminent = mins !== null && mins >= 0 && mins <= 30;
 
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "11px 0", borderBottom: "1px solid #F9FAFB" }}>
+    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "10px 0", borderBottom: "1px solid #F9FAFB" }}>
       {appt.patientUser?.imageUrl
-        ? <img src={appt.patientUser.imageUrl} alt="" style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
-        : <div style={{ width: 40, height: 40, borderRadius: "50%", background: "#E0E7FF", display: "flex", alignItems: "center", justifyContent: "center", color: "#4F46E5", fontWeight: 700, fontSize: 14, flexShrink: 0 }}>{getInitials(patientName)}</div>
+        ? <img src={appt.patientUser.imageUrl} alt="" style={{ width: 38, height: 38, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+        : <div style={{ width: 38, height: 38, borderRadius: "50%", background: "#E0E7FF", display: "flex", alignItems: "center", justifyContent: "center", color: "#4F46E5", fontWeight: 700, fontSize: 13, flexShrink: 0 }}>{getInitials(patientName)}</div>
       }
       <div style={{ flex: 1, minWidth: 0 }}>
-        <p style={{ margin: "0 0 3px", fontSize: 14, fontWeight: 700, color: "#111827" }}>
-          {patientName} <span style={{ color: "#9CA3AF", fontWeight: 400, fontSize: 13 }}>({title})</span>
+        <p style={{ margin: "0 0 2px", fontSize: 13, fontWeight: 700, color: "#111827" }}>
+          {patientName} <span style={{ color: "#9CA3AF", fontWeight: 400, fontSize: 12 }}>({title})</span>
         </p>
-        <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, color: "#6B7280" }}>
-          <Calendar size={11} />
-          <span>{title}</span>
+        <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "#6B7280" }}>
+          <Calendar size={10} /><span>{title}</span>
         </div>
       </div>
-      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 4, flexShrink: 0 }}>
-        <span style={{ background: "#F0FDF4", color: "#16A34A", fontWeight: 700, fontSize: 13, padding: "3px 9px", borderRadius: 8 }}>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3, flexShrink: 0 }}>
+        <span style={{ background: "#F0FDF4", color: "#16A34A", fontWeight: 700, fontSize: 12, padding: "2px 8px", borderRadius: 7 }}>
           {fmtTime(startTime)}
         </span>
         {isOnline && meetUrl && (
           <button onClick={() => window.open(meetUrl, "_blank")} style={{
-            display: "flex", alignItems: "center", gap: 3, padding: "3px 8px",
-            borderRadius: 7, border: "none", cursor: "pointer", fontSize: 11, fontWeight: 700,
+            display: "flex", alignItems: "center", gap: 3, padding: "2px 7px",
+            borderRadius: 6, border: "none", cursor: "pointer", fontSize: 10, fontWeight: 700,
             background: imminent ? "#22C55E" : "#3B82F6", color: "#fff",
-            animation: imminent ? "pulse 1.5s infinite" : "none",
           }}>
-            <Video size={10} /> Unirse
+            <Video size={9} /> Unirse
           </button>
         )}
       </div>
-      <ChevronRight size={16} color="#D1D5DB" />
+      <ChevronRight size={14} color="#D1D5DB" />
     </div>
   );
 }
@@ -267,14 +162,14 @@ function QuickBtn({ icon, label, bg, onClick }: { icon: React.ReactNode; label: 
   return (
     <button onClick={onClick} style={{
       display: "flex", alignItems: "center", width: "100%",
-      padding: "14px 18px", borderRadius: 14, border: "none",
+      padding: "13px 16px", borderRadius: 12, border: "none",
       background: bg, color: "#fff", cursor: "pointer",
-      fontWeight: 700, fontSize: 15, marginBottom: 10,
+      fontWeight: 700, fontSize: 14, marginBottom: 8,
       boxShadow: "0 2px 10px rgba(0,0,0,0.12)",
     }}>
-      <span style={{ marginRight: 12 }}>{icon}</span>
+      <span style={{ marginRight: 10 }}>{icon}</span>
       <span style={{ flex: 1, textAlign: "left" }}>{label}</span>
-      <ChevronRight size={18} />
+      <ChevronRight size={16} />
     </button>
   );
 }
@@ -284,25 +179,25 @@ function StatCard({ title, desc, bg, icon, img, onClick }: {
   title: string; desc: string; bg: string; icon: React.ReactNode; img: string; onClick: () => void;
 }) {
   return (
-    <div onClick={onClick} style={{ borderRadius: 12, overflow: "hidden", cursor: "pointer", position: "relative", height: 82, marginBottom: 10 }}>
+    <div onClick={onClick} style={{ borderRadius: 12, overflow: "hidden", cursor: "pointer", position: "relative", height: 78, marginBottom: 8 }}>
       <img src={img} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
-      <div style={{ position: "absolute", inset: 0, background: bg, display: "flex", flexDirection: "column", justifyContent: "center", padding: "12px 14px" }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 3 }}>
+      <div style={{ position: "absolute", inset: 0, background: bg, display: "flex", flexDirection: "column", justifyContent: "center", padding: "10px 12px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 2 }}>
           {icon}
-          <span style={{ fontSize: 14, fontWeight: 800, color: "#fff" }}>{title}</span>
+          <span style={{ fontSize: 13, fontWeight: 800, color: "#fff" }}>{title}</span>
         </div>
-        <p style={{ margin: 0, fontSize: 11, color: "rgba(255,255,255,0.88)", lineHeight: 1.3 }}>{desc}</p>
+        <p style={{ margin: 0, fontSize: 10, color: "rgba(255,255,255,0.88)", lineHeight: 1.3 }}>{desc}</p>
       </div>
     </div>
   );
 }
 
-// ─── Progress Chart with interactive tooltip ──────────────────────────────────
+// ─── Progress Chart ───────────────────────────────────────────────────────────
 function ProgressChart({ data, patients }: { data: any[]; patients: any[] }) {
   const [activeIdx, setActiveIdx] = useState<number | null>(null);
 
-  const chartData: ChartPoint[] = useMemo(() => {
-    if (!data || data.length === 0) return [];
+  const chartData = useMemo(() => {
+    if (!data?.length) return [];
     return data
       .map((d: any) => {
         const pid = d.progress?.patientUserId ?? d.patientUserId ?? 1;
@@ -318,13 +213,11 @@ function ProgressChart({ data, patients }: { data: any[]; patients: any[] }) {
       .filter(d => d.peso != null);
   }, [data, patients]);
 
-  const activePoint = activeIdx !== null ? chartData[activeIdx] : null;
-  const lastPoint = chartData[chartData.length - 1];
-  const displayPoint = activePoint ?? lastPoint;
+  const displayPoint = (activeIdx !== null ? chartData[activeIdx] : null) ?? chartData[chartData.length - 1];
 
-  if (chartData.length === 0) {
+  if (!chartData.length) {
     return (
-      <div style={{ height: 160, display: "flex", alignItems: "center", justifyContent: "center", color: "#9CA3AF", fontSize: 13 }}>
+      <div style={{ height: 150, display: "flex", alignItems: "center", justifyContent: "center", color: "#9CA3AF", fontSize: 13 }}>
         Sin datos de progreso aún
       </div>
     );
@@ -333,90 +226,53 @@ function ProgressChart({ data, patients }: { data: any[]; patients: any[] }) {
   return (
     <div>
       <div style={{ position: "relative" }}>
-        <ResponsiveContainer width="100%" height={160}>
+        <ResponsiveContainer width="100%" height={150}>
           <LineChart
             data={chartData}
             margin={{ top: 5, right: 10, left: -20, bottom: 0 }}
-            onMouseMove={(e: any) => {
-              if (e.activeTooltipIndex !== undefined) setActiveIdx(e.activeTooltipIndex);
-            }}
+            onMouseMove={(e: any) => { if (e.activeTooltipIndex !== undefined) setActiveIdx(e.activeTooltipIndex); }}
             onMouseLeave={() => setActiveIdx(null)}
           >
             <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
             <XAxis dataKey="date" tick={{ fontSize: 9, fill: "#9CA3AF" }} tickLine={false} axisLine={false} />
             <YAxis tick={{ fontSize: 9, fill: "#9CA3AF" }} tickLine={false} axisLine={false} />
             <Tooltip content={<CustomTooltip />} cursor={{ stroke: "#E5E7EB", strokeWidth: 1 }} />
-            <Line
-              type="monotone" dataKey="peso" stroke="#F97316" strokeWidth={2.5}
-              dot={(props: any) => {
-                const isActive = props.index === activeIdx;
-                return isActive
-                  ? <circle key={props.key} cx={props.cx} cy={props.cy} r={5} fill="#F97316" stroke="#fff" strokeWidth={2} />
-                  : <circle key={props.key} cx={props.cx} cy={props.cy} r={3} fill="#F97316" opacity={0.6} />;
-              }}
-              activeDot={{ r: 6, fill: "#F97316", stroke: "#fff", strokeWidth: 2 }}
-              name="Peso (kg)"
+            <Line type="monotone" dataKey="peso" stroke="#F97316" strokeWidth={2.5}
+              dot={(props: any) => <circle key={props.key} cx={props.cx} cy={props.cy} r={props.index === activeIdx ? 5 : 3} fill="#F97316" opacity={props.index === activeIdx ? 1 : 0.6} stroke={props.index === activeIdx ? "#fff" : "none"} strokeWidth={2} />}
+              activeDot={{ r: 6, fill: "#F97316", stroke: "#fff", strokeWidth: 2 }} name="Peso (kg)"
             />
-            <Line
-              type="monotone" dataKey="adherencia" stroke="#14B8A6" strokeWidth={2.5}
-              dot={(props: any) => {
-                const isActive = props.index === activeIdx;
-                return isActive
-                  ? <circle key={props.key} cx={props.cx} cy={props.cy} r={5} fill="#14B8A6" stroke="#fff" strokeWidth={2} />
-                  : <circle key={props.key} cx={props.cx} cy={props.cy} r={3} fill="#14B8A6" opacity={0.6} />;
-              }}
-              activeDot={{ r: 6, fill: "#14B8A6", stroke: "#fff", strokeWidth: 2 }}
-              name="Adherencia %"
+            <Line type="monotone" dataKey="adherencia" stroke="#14B8A6" strokeWidth={2.5}
+              dot={(props: any) => <circle key={props.key} cx={props.cx} cy={props.cy} r={props.index === activeIdx ? 5 : 3} fill="#14B8A6" opacity={props.index === activeIdx ? 1 : 0.6} stroke={props.index === activeIdx ? "#fff" : "none"} strokeWidth={2} />}
+              activeDot={{ r: 6, fill: "#14B8A6", stroke: "#fff", strokeWidth: 2 }} name="Adherencia %"
             />
           </LineChart>
         </ResponsiveContainer>
-
-        {/* Floating value badge (like in mockup: "82%" + "↑2.6 kg") */}
         {displayPoint && (
-          <div style={{
-            position: "absolute", right: 12, top: 8,
-            background: "rgba(255,255,255,0.95)", borderRadius: 10,
-            padding: "6px 10px", boxShadow: "0 2px 10px rgba(0,0,0,0.1)",
-            border: "1px solid #F3F4F6", textAlign: "right",
-          }}>
-            <p style={{ margin: 0, fontSize: 20, fontWeight: 900, color: "#111827", lineHeight: 1 }}>
-              {displayPoint.adherencia}%
-            </p>
-            {displayPoint.peso != null && (
-              <p style={{ margin: "2px 0 0", fontSize: 11, color: "#16A34A", fontWeight: 600 }}>
-                ↑{displayPoint.peso} kg
-              </p>
-            )}
+          <div style={{ position: "absolute", right: 10, top: 6, background: "rgba(255,255,255,0.95)", borderRadius: 8, padding: "5px 9px", boxShadow: "0 2px 8px rgba(0,0,0,0.1)", border: "1px solid #F3F4F6", textAlign: "right" }}>
+            <p style={{ margin: 0, fontSize: 18, fontWeight: 900, color: "#111827", lineHeight: 1 }}>{displayPoint.adherencia}%</p>
+            {displayPoint.peso != null && <p style={{ margin: "2px 0 0", fontSize: 10, color: "#16A34A", fontWeight: 600 }}>↑{displayPoint.peso} kg</p>}
           </div>
         )}
       </div>
-
-      {/* Legend + controls */}
-      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 8 }}>
-        <div style={{ display: "flex", gap: 14 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, color: "#6B7280" }}>
-            <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#F97316", display: "inline-block" }} />
-            Peso
+      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: 6 }}>
+        <div style={{ display: "flex", gap: 12 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "#6B7280" }}>
+            <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#F97316", display: "inline-block" }} />Peso
           </div>
-          <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 12, color: "#6B7280" }}>
-            <span style={{ width: 10, height: 10, borderRadius: "50%", background: "#14B8A6", display: "inline-block" }} />
-            Adherencia
+          <div style={{ display: "flex", alignItems: "center", gap: 4, fontSize: 11, color: "#6B7280" }}>
+            <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#14B8A6", display: "inline-block" }} />Adherencia
           </div>
         </div>
-        <div style={{ display: "flex", gap: 4 }}>
-          <button style={{ width: 26, height: 26, borderRadius: 6, border: "1px solid #E5E7EB", background: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <Minus size={12} color="#6B7280" />
-          </button>
-          <button style={{ width: 26, height: 26, borderRadius: 6, border: "1px solid #E5E7EB", background: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}>
-            <ChevronDown size={12} color="#6B7280" />
-          </button>
+        <div style={{ display: "flex", gap: 3 }}>
+          <button style={{ width: 24, height: 24, borderRadius: 5, border: "1px solid #E5E7EB", background: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><Minus size={10} color="#6B7280" /></button>
+          <button style={{ width: 24, height: 24, borderRadius: 5, border: "1px solid #E5E7EB", background: "#fff", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center" }}><ChevronDown size={10} color="#6B7280" /></button>
         </div>
       </div>
     </div>
   );
 }
 
-// ─── Main Component ───────────────────────────────────────────────────────────
+// ─── Main ─────────────────────────────────────────────────────────────────────
 export default function ExpertDashboard() {
   const { user } = useAuth();
   const [, nav] = useLocation();
@@ -424,12 +280,11 @@ export default function ExpertDashboard() {
   const [q, setQ] = useState("");
   const [showAll, setShowAll] = useState(false);
 
-  // Data queries
   const { data, isLoading } = trpc.expertPatients.getExpertDashboardStats.useQuery(
     undefined, { enabled: !!user, refetchInterval: 60000 }
   );
   const { data: gcalStatus, refetch: refetchGcal } = trpc.expertPatients.getGoogleCalendarStatus.useQuery(
-    undefined, { enabled: !!user && (user.role === "buddyexpert" || user.role === "admin"), staleTime: 30000 }
+    undefined, { enabled: !!user, staleTime: 30000 }
   );
   const { data: gcalAuthData } = trpc.expertPatients.getGoogleCalendarAuthUrl.useQuery(
     { origin: typeof window !== "undefined" ? window.location.origin : "" },
@@ -444,7 +299,6 @@ export default function ExpertDashboard() {
     onSuccess: () => { refetchGcal(); toast.success("Google Calendar desconectado"); },
   });
 
-  // Handle OAuth callback
   useEffect(() => {
     const p = new URLSearchParams(search);
     if (p.get("gcal_connected") === "1") {
@@ -461,13 +315,14 @@ export default function ExpertDashboard() {
   const upcoming = data?.upcomingAppointments ?? [];
   const recentPatients = data?.recentPatients ?? [];
   const recentProgress = data?.recentProgress ?? [];
-  const expertProfile = data?.expertProfile;
 
   const todayAppts = useMemo(() =>
     upcoming.filter(a => isToday((a as any).appt?.startTime)), [upcoming]);
 
   const patientList: any[] = allPatients ?? recentPatients;
-  const filtered = q ? patientList.filter(p => (p.user?.name ?? "").toLowerCase().includes(q.toLowerCase())) : patientList;
+  const filtered = q
+    ? patientList.filter(p => (p.user?.name ?? "").toLowerCase().includes(q.toLowerCase()))
+    : patientList;
   const displayed = showAll ? filtered : filtered.slice(0, 3);
 
   if (!user) return null;
@@ -475,251 +330,214 @@ export default function ExpertDashboard() {
   const greeting = user.name?.split(" ").slice(0, 2).join(" ") ?? "Profesional";
 
   return (
-    <div style={{ display: "flex", minHeight: "100vh", background: "#F5F0EB", fontFamily: "'Plus Jakarta Sans','Inter',sans-serif" }}>
-      <style>{`
-        @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.6} }
-        * { box-sizing: border-box; }
-        ::-webkit-scrollbar { width: 4px; }
-        ::-webkit-scrollbar-track { background: transparent; }
-        ::-webkit-scrollbar-thumb { background: #E5E7EB; border-radius: 4px; }
-      `}</style>
+    <div style={{ background: "#F5F0EB", minHeight: "100%", fontFamily: "'Plus Jakarta Sans','Inter',sans-serif" }}>
+      <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}} *{box-sizing:border-box}`}</style>
 
-      <Sidebar user={user} />
-
-      {/* Main */}
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "auto" }}>
-
-        {/* Header */}
-        <div style={{ background: "#F5F0EB", padding: "22px 28px 16px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-          <h1 style={{ margin: 0, fontSize: 24, fontWeight: 800, color: "#111827" }}>
-            Hola {greeting} 👋
-          </h1>
-          <div style={{ display: "flex", alignItems: "center", gap: 14 }}>
-            {gcalStatus?.connected ? (
-              <div style={{ display: "flex", alignItems: "center", gap: 5, background: "#F0FDF4", border: "1px solid #BBF7D0", borderRadius: 10, padding: "5px 11px", fontSize: 11, color: "#16A34A", fontWeight: 600 }}>
-                <span>📅</span><span>Calendar ●</span>
-                <button onClick={() => disconnectGcal.mutate()} style={{ fontSize: 10, color: "#DC2626", background: "none", border: "none", cursor: "pointer", fontWeight: 600, marginLeft: 4, padding: 0 }}>✕</button>
-              </div>
-            ) : gcalAuthData?.url ? (
-              <button onClick={() => window.location.href = gcalAuthData.url} style={{ display: "flex", alignItems: "center", gap: 5, background: "#fff", border: "1px solid #E5E7EB", borderRadius: 10, padding: "5px 11px", fontSize: 11, color: "#374151", fontWeight: 600, cursor: "pointer" }}>
-                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" style={{ width: 13, height: 13 }} />
-                Conectar Calendar
-              </button>
-            ) : null}
-            <div style={{ position: "relative", cursor: "pointer" }} onClick={() => nav("/app/notifications")}>
-              <Bell size={22} color="#6B7280" />
-              {(stats?.unreadMessages ?? 0) > 0 && (
-                <span style={{ position: "absolute", top: -4, right: -4, width: 14, height: 14, background: "#EF4444", borderRadius: "50%", fontSize: 9, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}>
-                  {(stats?.unreadMessages ?? 0) > 9 ? "9+" : stats?.unreadMessages}
-                </span>
-              )}
+      {/* Header */}
+      <div style={{ padding: "20px 24px 14px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "#111827" }}>
+          Hola {greeting} 👋
+        </h1>
+        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+          {gcalStatus?.connected ? (
+            <div style={{ display: "flex", alignItems: "center", gap: 5, background: "#F0FDF4", border: "1px solid #BBF7D0", borderRadius: 9, padding: "4px 10px", fontSize: 11, color: "#16A34A", fontWeight: 600 }}>
+              <span>📅</span><span>Calendar ●</span>
+              <button onClick={() => disconnectGcal.mutate()} style={{ fontSize: 10, color: "#DC2626", background: "none", border: "none", cursor: "pointer", fontWeight: 600, marginLeft: 3, padding: 0 }}>✕</button>
             </div>
-            {user.imageUrl
-              ? <img src={user.imageUrl} alt="" style={{ width: 40, height: 40, borderRadius: "50%", objectFit: "cover", cursor: "pointer", border: "2px solid #fff", boxShadow: "0 2px 8px rgba(0,0,0,0.12)" }} onClick={() => nav("/app/buddy-expert-dashboard")} />
-              : <div style={{ width: 40, height: 40, borderRadius: "50%", background: "#F97316", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, cursor: "pointer" }} onClick={() => nav("/app/buddy-expert-dashboard")}>{getInitials(user.name)}</div>
-            }
+          ) : gcalAuthData?.url ? (
+            <button onClick={() => window.location.href = gcalAuthData.url} style={{ display: "flex", alignItems: "center", gap: 5, background: "#fff", border: "1px solid #E5E7EB", borderRadius: 9, padding: "4px 10px", fontSize: 11, color: "#374151", fontWeight: 600, cursor: "pointer" }}>
+              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" style={{ width: 12, height: 12 }} />
+              Conectar Calendar
+            </button>
+          ) : null}
+          <div style={{ position: "relative", cursor: "pointer" }} onClick={() => nav("/app/notifications")}>
+            <Bell size={20} color="#6B7280" />
+            {(stats?.unreadMessages ?? 0) > 0 && (
+              <span style={{ position: "absolute", top: -4, right: -4, width: 13, height: 13, background: "#EF4444", borderRadius: "50%", fontSize: 8, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}>
+                {(stats?.unreadMessages ?? 0) > 9 ? "9+" : stats?.unreadMessages}
+              </span>
+            )}
           </div>
         </div>
+      </div>
 
-        {/* Body: 3-column grid */}
-        <div style={{ flex: 1, padding: "0 28px 28px", display: "grid", gridTemplateColumns: "1fr 1fr 320px", gap: 20, alignItems: "start" }}>
+      {/* Body: 2-column grid (content + right panel) */}
+      <div style={{ padding: "0 24px 24px", display: "grid", gridTemplateColumns: "1fr 300px", gap: 18, alignItems: "start" }}>
 
-          {/* ── Col 1 ── */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+        {/* ── Left+Center ── */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
-            {/* KPI cards (col 1 spans 2 cols) — rendered in a sub-grid via col 1+2 */}
+          {/* Row 1: 3 KPI cards */}
+          <div style={{ display: "flex", gap: 14 }}>
+            <KpiCard
+              count={isLoading ? "…" : (stats?.activePatients ?? 0)}
+              title="Planes en curso"
+              subtitle={`${stats?.totalPatients ?? 0} pacientes`}
+              linkText="Ver planes"
+              bg="linear-gradient(135deg,#F97316,#EA6C0A)"
+              href="/app/expert/plans"
+            />
+            <KpiCard
+              count={isLoading ? "…" : (stats?.unreadMessages ?? 0)}
+              title="Mensajes"
+              subtitle="nuevos"
+              linkText="Responder mensajes"
+              linkIcon={<Mail size={13} />}
+              bg="linear-gradient(135deg,#1B2B4B,#243B6B)"
+              href="/app/expert/messages"
+            />
+            <KpiCard
+              count={isLoading ? "…" : (stats?.todayAppointments ?? 0)}
+              title="Citas"
+              subtitle="hoy"
+              linkText="Paciente(s) de ping..."
+              bg="linear-gradient(135deg,#2D9B8A,#1E8070)"
+              href="/app/expert/patients"
+            />
           </div>
 
-          {/* We need KPIs to span col1+col2, so use a wrapper div spanning 2 cols */}
-          {/* Restructure: use a 2-col inner grid for left+center, right col for sidebar */}
-        </div>
+          {/* Row 2: Pacientes + Recordatorio de citas */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
 
-        {/* Redo layout properly */}
-        <div style={{ flex: 1, padding: "0 28px 28px", display: "grid", gridTemplateColumns: "1fr 320px", gap: 20, alignItems: "start", marginTop: -20 }}>
-
-          {/* ── Left+Center area ── */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-
-            {/* Row 1: 3 KPI cards */}
-            <div style={{ display: "flex", gap: 16 }}>
-              <KpiCard
-                count={isLoading ? "…" : (stats?.activePatients ?? 0)}
-                title="Planes en curso"
-                subtitle={`${stats?.totalPatients ?? 0} años`}
-                linkText="Ver planes"
-                bg="linear-gradient(135deg, #F97316 0%, #EA6C0A 100%)"
-                href="/app/expert/plans"
-              />
-              <KpiCard
-                count={isLoading ? "…" : (stats?.unreadMessages ?? 0)}
-                title="Mensajes"
-                subtitle="nuevos"
-                linkText="Responder mensajes"
-                linkIcon={<Mail size={14} />}
-                bg="linear-gradient(135deg, #1B2B4B 0%, #243B6B 100%)"
-                href="/app/expert/messages"
-              />
-              <KpiCard
-                count={isLoading ? "…" : (stats?.todayAppointments ?? 0)}
-                title="Mensajes"
-                subtitle="nuevos"
-                linkText="Paciente(s) de ping..."
-                bg="linear-gradient(135deg, #2D9B8A 0%, #1E8070 100%)"
-                href="/app/expert/patients"
-              />
-            </div>
-
-            {/* Row 2: Pacientes + Recordatorio de citas */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
-
-              {/* Pacientes */}
-              <div style={{ background: "#fff", borderRadius: 18, padding: "20px", boxShadow: "0 1px 8px rgba(0,0,0,0.06)" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-                  <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: "#111827" }}>Pacientes</h3>
-                  <Link href="/app/expert/patients">
-                    <span style={{ fontSize: 13, color: "#F97316", fontWeight: 600, cursor: "pointer" }}>Ver todos &gt;</span>
-                  </Link>
-                </div>
-                {/* Search */}
-                <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#F9FAFB", borderRadius: 10, padding: "8px 12px", marginBottom: 12, border: "1px solid #F3F4F6" }}>
-                  <Search size={14} color="#9CA3AF" />
-                  <input value={q} onChange={e => setQ(e.target.value)} placeholder="Buscar" style={{ border: "none", background: "transparent", outline: "none", fontSize: 13, color: "#374151", flex: 1 }} />
-                </div>
-                {/* List */}
-                {isLoading
-                  ? [1, 2, 3].map(i => <div key={i} style={{ height: 50, background: "#F3F4F6", borderRadius: 10, marginBottom: 8, animation: "pulse 1.5s infinite" }} />)
-                  : displayed.length === 0
-                    ? <div style={{ textAlign: "center", padding: "20px 0", color: "#9CA3AF", fontSize: 13 }}>{q ? "Sin resultados" : "Aún no tienes pacientes"}</div>
-                    : displayed.map((p: any) => <PatientRow key={p.id} patient={p} onNav={nav} />)
-                }
-                {/* Ver más */}
-                {filtered.length > 3 && (
-                  <button onClick={() => setShowAll(!showAll)} style={{ display: "flex", alignItems: "center", gap: 6, margin: "10px auto 0", background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 10, padding: "8px 18px", fontSize: 13, color: "#374151", cursor: "pointer", fontWeight: 600 }}>
-                    {showAll ? <><ChevronUp size={13} /> Ver menos</> : <><ChevronDown size={13} /> Ver más</>}
-                  </button>
-                )}
-              </div>
-
-              {/* Recordatorio de citas */}
-              <div style={{ background: "#fff", borderRadius: 18, padding: "20px", boxShadow: "0 1px 8px rgba(0,0,0,0.06)" }}>
-                <h3 style={{ margin: "0 0 4px", fontSize: 16, fontWeight: 800, color: "#111827" }}>Recordatorio de citas</h3>
-                <p style={{ margin: "0 0 14px", fontSize: 13, color: "#6B7280", textTransform: "capitalize" }}>{fmtDateLong(new Date())}</p>
-                {isLoading
-                  ? [1, 2, 3].map(i => <div key={i} style={{ height: 54, background: "#F3F4F6", borderRadius: 10, marginBottom: 8, animation: "pulse 1.5s infinite" }} />)
-                  : todayAppts.length === 0
-                    ? <div style={{ textAlign: "center", padding: "20px 0", color: "#9CA3AF", fontSize: 13 }}><Calendar size={28} style={{ margin: "0 auto 6px", display: "block", opacity: 0.3 }} />No hay citas para hoy</div>
-                    : todayAppts.map((a: any) => <AppointmentRow key={a.appt?.id} appt={a} />)
-                }
-                <button onClick={() => nav("/app/expert/appointments")} style={{ display: "flex", alignItems: "center", gap: 6, marginTop: 14, background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 10, padding: "9px 14px", fontSize: 13, color: "#374151", cursor: "pointer", fontWeight: 600 }}>
-                  <Calendar size={14} /> Ver calendario
-                </button>
-              </div>
-            </div>
-
-            {/* Row 3: Contenido destacado + Accesos rápidos */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
-
-              {/* Contenido destacado */}
-              <div style={{ background: "#fff", borderRadius: 18, padding: "20px", boxShadow: "0 1px 8px rgba(0,0,0,0.06)" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-                  <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: "#111827" }}>Contenido destacado</h3>
-                  <Link href="/app/blog">
-                    <span style={{ fontSize: 13, color: "#F97316", fontWeight: 600, cursor: "pointer" }}>Ver más &gt;</span>
-                  </Link>
-                </div>
-                {(blogData?.posts?.length ? blogData.posts : [
-                  { id: 1, expertName: "Eliana Gómez", expertRole: "Nutricionista Certificada", readTimeMinutes: 3, category: "4 consejos", title: "Descubre las mejores fuentes de proteínas vegetales", coverImageUrl: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=120&q=80" },
-                  { id: 2, expertName: "Eliana Gómez", expertRole: "Nutricionista Certificada", readTimeMinutes: 24, category: "8 alimentos", title: "5 alimentos que ayudan a mejorar el metabolismo", coverImageUrl: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=120&q=80" },
-                ]).map((post: any) => (
-                  <div key={post.id} style={{ marginBottom: 16, paddingBottom: 16, borderBottom: "1px solid #F9FAFB" }}>
-                    {/* Author */}
-                    <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 6 }}>
-                      <div style={{ width: 28, height: 28, borderRadius: "50%", background: "linear-gradient(135deg,#F97316,#FB923C)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 11, fontWeight: 700, flexShrink: 0 }}>
-                        {getInitials(post.expertName)}
-                      </div>
-                      <div>
-                        <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: "#111827" }}>{post.expertName ?? "BuddyExpert"}</p>
-                        <p style={{ margin: 0, fontSize: 10, color: "#9CA3AF" }}>{post.expertRole ?? "Nutricionista"}</p>
-                      </div>
-                    </div>
-                    {/* Content */}
-                    <div style={{ display: "flex", gap: 10 }}>
-                      <div style={{ flex: 1 }}>
-                        <p style={{ margin: "0 0 4px", fontSize: 11, color: "#9CA3AF" }}>⏱ {post.category} · {post.readTimeMinutes}h</p>
-                        <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#111827", lineHeight: 1.4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" } as any}>{post.title}</p>
-                        <p style={{ margin: "3px 0 0", fontSize: 11, color: "#9CA3AF" }}>{post.category} · {post.readTimeMinutes}h</p>
-                      </div>
-                      {post.coverImageUrl && <img src={post.coverImageUrl} alt="" style={{ width: 60, height: 60, borderRadius: 10, objectFit: "cover", flexShrink: 0 }} />}
-                    </div>
-                  </div>
-                ))}
-              </div>
-
-              {/* Accesos rápidos + gráfico */}
-              <div style={{ background: "#fff", borderRadius: 18, padding: "20px", boxShadow: "0 1px 8px rgba(0,0,0,0.06)" }}>
-                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 6 }}>
-                  <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: "#111827" }}>Accesos rápidos</h3>
-                  <Link href="/app/expert/patients">
-                    <span style={{ fontSize: 13, color: "#F97316", fontWeight: 600, cursor: "pointer" }}>Ver más &gt;</span>
-                  </Link>
-                </div>
-                <p style={{ margin: "0 0 12px", fontSize: 13, color: "#374151", fontWeight: 600 }}>
-                  Progreso Pacientes <span style={{ color: "#9CA3AF", fontWeight: 400 }}>Último mes</span>
-                </p>
-                <ProgressChart data={recentProgress} patients={patientList} />
-              </div>
-            </div>
-          </div>
-
-          {/* ── Right column ── */}
-          <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
-
-            {/* Tareas rápidas */}
-            <div style={{ background: "#fff", borderRadius: 18, padding: "20px", boxShadow: "0 1px 8px rgba(0,0,0,0.06)" }}>
-              <h3 style={{ margin: "0 0 14px", fontSize: 16, fontWeight: 800, color: "#111827" }}>Tareas rápidas</h3>
-              <QuickBtn icon={<FileText size={18} />} label="Crear Plan" bg="linear-gradient(135deg,#F97316,#EA6C0A)" onClick={() => nav("/app/expert/plans")} />
-              <QuickBtn icon={<UserPlus size={18} />} label="Agregar Paciente" bg="linear-gradient(135deg,#16A34A,#15803D)" onClick={() => nav("/app/expert/patients")} />
-              <QuickBtn icon={<CalendarPlus size={18} />} label="Agendar Cita" bg="linear-gradient(135deg,#2D9B8A,#1E8070)" onClick={() => nav("/app/expert/appointments")} />
-            </div>
-
-            {/* Estadísticas */}
-            <div style={{ background: "#fff", borderRadius: 18, padding: "20px", boxShadow: "0 1px 8px rgba(0,0,0,0.06)" }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 14 }}>
-                <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: "#111827" }}>Estadísticas</h3>
-                <Link href="/app/buddy-expert-stats">
-                  <span style={{ fontSize: 13, color: "#F97316", fontWeight: 600, cursor: "pointer" }}>Ver más &gt;</span>
+            {/* Pacientes */}
+            <div style={{ background: "#fff", borderRadius: 16, padding: "18px", boxShadow: "0 1px 8px rgba(0,0,0,0.06)" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                <h3 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "#111827" }}>Pacientes</h3>
+                <Link href="/app/expert/patients">
+                  <span style={{ fontSize: 12, color: "#F97316", fontWeight: 600, cursor: "pointer" }}>Ver todos &gt;</span>
                 </Link>
               </div>
-              <StatCard
-                title="Inventario"
-                desc="Accede a la lista de propiedades nutricionales."
-                bg="linear-gradient(135deg,rgba(249,115,22,0.88),rgba(234,108,10,0.75))"
-                icon={<Package size={15} color="#fff" />}
-                img="https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&q=80"
-                onClick={() => nav("/app/inventory")}
-              />
-              <StatCard
-                title="BuddyScan IA"
-                desc="Escanea productos para obtener información nutricional."
-                bg="linear-gradient(135deg,rgba(79,70,229,0.88),rgba(109,40,217,0.75))"
-                icon={<Scan size={15} color="#fff" />}
-                img="https://images.unsplash.com/photo-1550583724-b2692b85b150?w=400&q=80"
-                onClick={() => nav("/app/scan")}
-              />
+              <div style={{ display: "flex", alignItems: "center", gap: 7, background: "#F9FAFB", borderRadius: 9, padding: "7px 11px", marginBottom: 10, border: "1px solid #F3F4F6" }}>
+                <Search size={13} color="#9CA3AF" />
+                <input value={q} onChange={e => setQ(e.target.value)} placeholder="Buscar" style={{ border: "none", background: "transparent", outline: "none", fontSize: 12, color: "#374151", flex: 1 }} />
+              </div>
+              {isLoading
+                ? [1, 2, 3].map(i => <div key={i} style={{ height: 46, background: "#F3F4F6", borderRadius: 8, marginBottom: 6, animation: "pulse 1.5s infinite" }} />)
+                : displayed.length === 0
+                  ? <div style={{ textAlign: "center", padding: "16px 0", color: "#9CA3AF", fontSize: 12 }}>{q ? "Sin resultados" : "Aún no tienes pacientes"}</div>
+                  : displayed.map((p: any) => <PatientRow key={p.id} patient={p} onNav={nav} />)
+              }
+              {filtered.length > 3 && (
+                <button onClick={() => setShowAll(!showAll)} style={{ display: "flex", alignItems: "center", gap: 5, margin: "8px auto 0", background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 9, padding: "7px 16px", fontSize: 12, color: "#374151", cursor: "pointer", fontWeight: 600 }}>
+                  {showAll ? <><ChevronUp size={12} /> Ver menos</> : <><ChevronDown size={12} /> Ver más</>}
+                </button>
+              )}
             </div>
 
-            {/* BuddyScan IA featured */}
-            <div style={{ background: "#fff", borderRadius: 18, padding: "20px", boxShadow: "0 1px 8px rgba(0,0,0,0.06)" }}>
-              <h3 style={{ margin: "0 0 12px", fontSize: 16, fontWeight: 800, color: "#111827" }}>BuddyScan IA</h3>
-              <div style={{ borderRadius: 12, overflow: "hidden", marginBottom: 12 }}>
-                <img src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400&q=80" alt="" style={{ width: "100%", height: 120, objectFit: "cover" }} />
-              </div>
-              <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#111827", lineHeight: 1.4 }}>5 alimentos que ayudan a mejorar el metabolismo</p>
-              <p style={{ margin: "4px 0 12px", fontSize: 12, color: "#9CA3AF" }}>8 alimentos · 24h</p>
-              <button onClick={() => nav("/app/scan")} style={{ width: "100%", padding: "10px", borderRadius: 10, background: "linear-gradient(135deg,#4F46E5,#7C3AED)", color: "#fff", border: "none", fontWeight: 700, fontSize: 13, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 6 }}>
-                <Scan size={14} /> Abrir BuddyScan
+            {/* Recordatorio de citas */}
+            <div style={{ background: "#fff", borderRadius: 16, padding: "18px", boxShadow: "0 1px 8px rgba(0,0,0,0.06)" }}>
+              <h3 style={{ margin: "0 0 3px", fontSize: 15, fontWeight: 800, color: "#111827" }}>Recordatorio de citas</h3>
+              <p style={{ margin: "0 0 12px", fontSize: 12, color: "#6B7280", textTransform: "capitalize" }}>{fmtDateLong(new Date())}</p>
+              {isLoading
+                ? [1, 2, 3].map(i => <div key={i} style={{ height: 50, background: "#F3F4F6", borderRadius: 8, marginBottom: 6, animation: "pulse 1.5s infinite" }} />)
+                : todayAppts.length === 0
+                  ? <div style={{ textAlign: "center", padding: "16px 0", color: "#9CA3AF", fontSize: 12 }}><Calendar size={24} style={{ margin: "0 auto 5px", display: "block", opacity: 0.3 }} />No hay citas para hoy</div>
+                  : todayAppts.map((a: any) => <AppointmentRow key={a.appt?.id} appt={a} />)
+              }
+              <button onClick={() => nav("/app/expert/appointments")} style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 12, background: "#F9FAFB", border: "1px solid #E5E7EB", borderRadius: 9, padding: "8px 12px", fontSize: 12, color: "#374151", cursor: "pointer", fontWeight: 600 }}>
+                <Calendar size={13} /> Ver calendario
               </button>
             </div>
+          </div>
+
+          {/* Row 3: Contenido destacado + Accesos rápidos */}
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+
+            {/* Contenido destacado */}
+            <div style={{ background: "#fff", borderRadius: 16, padding: "18px", boxShadow: "0 1px 8px rgba(0,0,0,0.06)" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                <h3 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "#111827" }}>Contenido destacado</h3>
+                <Link href="/app/blog">
+                  <span style={{ fontSize: 12, color: "#F97316", fontWeight: 600, cursor: "pointer" }}>Ver más &gt;</span>
+                </Link>
+              </div>
+              {(blogData?.posts?.length ? blogData.posts : [
+                { id: 1, expertName: "Eliana Gómez", expertRole: "Nutricionista Certificada", readTimeMinutes: 3, category: "4 consejos", title: "Descubre las mejores fuentes de proteínas vegetales", coverImageUrl: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=120&q=80" },
+                { id: 2, expertName: "Eliana Gómez", expertRole: "Nutricionista Certificada", readTimeMinutes: 24, category: "8 alimentos", title: "5 alimentos que ayudan a mejorar el metabolismo", coverImageUrl: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=120&q=80" },
+              ]).map((post: any) => (
+                <div key={post.id} style={{ marginBottom: 14, paddingBottom: 14, borderBottom: "1px solid #F9FAFB" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 5 }}>
+                    <div style={{ width: 26, height: 26, borderRadius: "50%", background: "linear-gradient(135deg,#F97316,#FB923C)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{getInitials(post.expertName)}</div>
+                    <div>
+                      <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: "#111827" }}>{post.expertName ?? "BuddyExpert"}</p>
+                      <p style={{ margin: 0, fontSize: 10, color: "#9CA3AF" }}>{post.expertRole ?? "Nutricionista"}</p>
+                    </div>
+                  </div>
+                  <div style={{ display: "flex", gap: 8 }}>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ margin: "0 0 3px", fontSize: 10, color: "#9CA3AF" }}>⏱ {post.category} · {post.readTimeMinutes}h</p>
+                      <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: "#111827", lineHeight: 1.4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" } as any}>{post.title}</p>
+                    </div>
+                    {post.coverImageUrl && <img src={post.coverImageUrl} alt="" style={{ width: 52, height: 52, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} />}
+                  </div>
+                </div>
+              ))}
+            </div>
+
+            {/* Accesos rápidos + gráfico */}
+            <div style={{ background: "#fff", borderRadius: 16, padding: "18px", boxShadow: "0 1px 8px rgba(0,0,0,0.06)" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 4 }}>
+                <h3 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "#111827" }}>Accesos rápidos</h3>
+                <Link href="/app/expert/patients">
+                  <span style={{ fontSize: 12, color: "#F97316", fontWeight: 600, cursor: "pointer" }}>Ver más &gt;</span>
+                </Link>
+              </div>
+              <p style={{ margin: "0 0 10px", fontSize: 12, color: "#374151", fontWeight: 600 }}>
+                Progreso Pacientes <span style={{ color: "#9CA3AF", fontWeight: 400 }}>Último mes</span>
+              </p>
+              <ProgressChart data={recentProgress} patients={patientList} />
+            </div>
+          </div>
+        </div>
+
+        {/* ── Right column ── */}
+        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
+
+          {/* Tareas rápidas */}
+          <div style={{ background: "#fff", borderRadius: 16, padding: "18px", boxShadow: "0 1px 8px rgba(0,0,0,0.06)" }}>
+            <h3 style={{ margin: "0 0 12px", fontSize: 15, fontWeight: 800, color: "#111827" }}>Tareas rápidas</h3>
+            <QuickBtn icon={<FileText size={16} />} label="Crear Plan" bg="linear-gradient(135deg,#F97316,#EA6C0A)" onClick={() => nav("/app/expert/plans")} />
+            <QuickBtn icon={<UserPlus size={16} />} label="Agregar Paciente" bg="linear-gradient(135deg,#16A34A,#15803D)" onClick={() => nav("/app/expert/patients")} />
+            <QuickBtn icon={<CalendarPlus size={16} />} label="Agendar Cita" bg="linear-gradient(135deg,#2D9B8A,#1E8070)" onClick={() => nav("/app/expert/appointments")} />
+          </div>
+
+          {/* Estadísticas */}
+          <div style={{ background: "#fff", borderRadius: 16, padding: "18px", boxShadow: "0 1px 8px rgba(0,0,0,0.06)" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+              <h3 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "#111827" }}>Estadísticas</h3>
+              <Link href="/app/buddy-expert-stats">
+                <span style={{ fontSize: 12, color: "#F97316", fontWeight: 600, cursor: "pointer" }}>Ver más &gt;</span>
+              </Link>
+            </div>
+            <StatCard
+              title="Inventario"
+              desc="Accede a la lista de propiedades nutricionales."
+              bg="linear-gradient(135deg,rgba(249,115,22,0.88),rgba(234,108,10,0.75))"
+              icon={<Package size={14} color="#fff" />}
+              img="https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&q=80"
+              onClick={() => nav("/app/inventory")}
+            />
+            <StatCard
+              title="BuddyScan IA"
+              desc="Escanea productos para obtener información nutricional."
+              bg="linear-gradient(135deg,rgba(79,70,229,0.88),rgba(109,40,217,0.75))"
+              icon={<Scan size={14} color="#fff" />}
+              img="https://images.unsplash.com/photo-1550583724-b2692b85b150?w=400&q=80"
+              onClick={() => nav("/app/scan")}
+            />
+          </div>
+
+          {/* BuddyScan IA featured */}
+          <div style={{ background: "#fff", borderRadius: 16, padding: "18px", boxShadow: "0 1px 8px rgba(0,0,0,0.06)" }}>
+            <h3 style={{ margin: "0 0 10px", fontSize: 15, fontWeight: 800, color: "#111827" }}>BuddyScan IA</h3>
+            <div style={{ borderRadius: 10, overflow: "hidden", marginBottom: 10 }}>
+              <img src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400&q=80" alt="" style={{ width: "100%", height: 110, objectFit: "cover" }} />
+            </div>
+            <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: "#111827", lineHeight: 1.4 }}>5 alimentos que ayudan a mejorar el metabolismo</p>
+            <p style={{ margin: "3px 0 10px", fontSize: 11, color: "#9CA3AF" }}>8 alimentos · 24h</p>
+            <button onClick={() => nav("/app/scan")} style={{ width: "100%", padding: "9px", borderRadius: 9, background: "linear-gradient(135deg,#4F46E5,#7C3AED)", color: "#fff", border: "none", fontWeight: 700, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}>
+              <Scan size={13} /> Abrir BuddyScan
+            </button>
           </div>
         </div>
       </div>

@@ -238,7 +238,7 @@ function Router() {
       <Route path="/app/event-menu">{() => <ProtectedPage><EventMenuPlanner /></ProtectedPage>}</Route>
       <Route path="/app/saved-events">{() => <ProtectedPage><SavedEvents /></ProtectedPage>}</Route>
       <Route path="/app/expert-plans">{() => <ProtectedPage><ExpertPlansManager /></ProtectedPage>}</Route>
-      <Route path="/app/expert/dashboard">{() => <ProtectedPage><ExpertDashboard /></ProtectedPage>}</Route>
+      <Route path="/app/expert/dashboard">{() => <ProtectedRoute component={ExpertDashboard} />}</Route>
       <Route path="/app/expert/patients">{() => <ProtectedPage><ExpertPatients /></ProtectedPage>}</Route>
       <Route path="/app/expert/patients/:id">{() => <ProtectedPage><ExpertPatientDetail /></ProtectedPage>}</Route>
       <Route path="/app/expert/chat">{() => <ProtectedPage><ExpertChat /></ProtectedPage>}</Route>

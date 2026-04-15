@@ -296,10 +296,20 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
   const isApprovedMaker = makerApplicationQuery.data?.status === "approved";
   const hasPendingApplication = expertApplicationQuery.data?.status === "pending" || makerApplicationQuery.data?.status === "pending";
   // ─── Expert mode toggle (persisted in localStorage) ──────────────────────
+  const isExpertRoute = location.startsWith("/app/expert") || location.startsWith("/app/buddy-expert");
   const [expertMode, setExpertMode] = useState<boolean>(() => {
     if (typeof window === "undefined") return false;
+    // Auto-activate expert mode on expert routes
+    if (window.location.pathname.startsWith("/app/expert") || window.location.pathname.startsWith("/app/buddy-expert")) return true;
     return localStorage.getItem("bm_expert_mode") === "1";
   });
+  // Auto-activate expert mode when navigating to expert routes
+  useEffect(() => {
+    if (isExpertRoute && !expertMode) {
+      setExpertMode(true);
+      localStorage.setItem("bm_expert_mode", "1");
+    }
+  }, [isExpertRoute]);
   const toggleExpertMode = useCallback((val: boolean) => {
     setExpertMode(val);
     localStorage.setItem("bm_expert_mode", val ? "1" : "0");
