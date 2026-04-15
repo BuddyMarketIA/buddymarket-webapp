@@ -2411,3 +2411,9 @@
 - [x] ExpertDashboard: sección BuddyScan IA con imagen y descripción
 - [x] ExpertDashboard: Contenido destacado (artículos/recetas de BuddyMakers)
 - [x] ExpertDashboard: Accesos rápidos con gráfico de Progreso Pacientes (Peso + Adherencia)
+
+## Sprint Gráfico Progreso Interactivo
+- [ ] Tooltip personalizado en gráfico Progreso Pacientes: muestra fecha, peso, adherencia y nombre del paciente
+- [ ] Puntos activos (dot) visibles al hacer hover sobre el gráfico
+- [ ] Línea de cursor vertical al pasar el ratón
+- [ ] Panel de resumen debajo del gráfico con el punto seleccionado
