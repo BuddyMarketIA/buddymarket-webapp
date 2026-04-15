@@ -220,7 +220,7 @@ export default function Subscription() {
         )}
       </div>
 
-      {/* ── 3 KEY DIFFERENCES BANNER (Free only) ── */
+      {/* ── 3 KEY DIFFERENCES BANNER (Free only) ── */}
       {isFree && (
         <div className="mb-5 rounded-3xl overflow-hidden" style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
           <div className="p-5">
