@@ -2,7 +2,6 @@ import { useState } from "react";
 import { PLAN_DISPLAY, PLAN_LIMITS, FEATURE_DESCRIPTIONS, getUpgradePlan, type PlanTier, type PlanLimits } from "@shared/plans";
 import { usePlan } from "@/hooks/usePlan";
 import { usePayment, type PaymentPlan } from "@/hooks/usePayment";
-import { isIOSNative } from "@/hooks/usePlatform";
 
 // ─────────────────────────────────────────────────────────────────────────────
 // Upgrade Modal
@@ -15,7 +14,6 @@ interface UpgradeModalProps {
 
 export function UpgradeModal({ feature, currentTier, onClose }: UpgradeModalProps) {
   const { purchase, isPending } = usePayment({ onSuccess: onClose });
-  const iosNative = isIOSNative();
 
   const featureInfo = FEATURE_DESCRIPTIONS[feature];
   const requiredPlan = featureInfo?.requiredPlan ?? getUpgradePlan(currentTier) ?? "basic";
@@ -113,24 +111,7 @@ export function UpgradeModal({ feature, currentTier, onClose }: UpgradeModalProp
             Desbloquea esta y muchas más funcionalidades con el plan <strong>{planInfo.name}</strong>
           </p>
 
-          {/* iOS IAP notice */}
-          {iosNative && (
-            <div style={{
-              background: "linear-gradient(135deg, #f0f9ff, #e0f2fe)",
-              border: "1px solid #bae6fd",
-              borderRadius: 12,
-              padding: "12px 14px",
-              marginBottom: 16,
-              display: "flex",
-              alignItems: "flex-start",
-              gap: 10,
-            }}>
-              <span style={{ fontSize: 20, flexShrink: 0 }}></span>
-              <p style={{ margin: 0, fontSize: 13, color: "#075985", lineHeight: 1.5 }}>
-                La suscripción se procesará a través de la <strong>App Store de Apple</strong>. El importe se cargará en tu cuenta de Apple ID.
-              </p>
-            </div>
-          )}
+
 
           {/* Feature list */}
           <div style={{
@@ -144,15 +125,12 @@ export function UpgradeModal({ feature, currentTier, onClose }: UpgradeModalProp
             ))}
           </div>
 
-          {/* Price — only show on web (on iOS, App Store shows the price) */}
-          {!iosNative && (
-            <div style={{ textAlign: "center", marginBottom: 20 }}>
-              <span style={{ fontSize: 32, fontWeight: 900, color: planInfo.color }}>{planInfo.price}</span>
-              {planInfo.priceMonthly > 0 && (
-                <span style={{ fontSize: 13, color: "#9CA3AF", marginLeft: 4 }}>· cancela cuando quieras</span>
-              )}
-            </div>
-          )}
+          <div style={{ textAlign: "center", marginBottom: 20 }}>
+            <span style={{ fontSize: 32, fontWeight: 900, color: planInfo.color }}>{planInfo.price}</span>
+            {planInfo.priceMonthly > 0 && (
+              <span style={{ fontSize: 13, color: "#9CA3AF", marginLeft: 4 }}>· cancela cuando quieras</span>
+            )}
+          </div>
 
           {/* CTA Button */}
           <button
@@ -173,11 +151,7 @@ export function UpgradeModal({ feature, currentTier, onClose }: UpgradeModalProp
               marginBottom: 10,
             }}
           >
-            {isPending
-              ? (iosNative ? "Abriendo App Store..." : "Procesando...")
-              : iosNative
-                ? `Suscribirse — ${planInfo.name}`
-                : `Actualizar a ${planInfo.name} — ${planInfo.price}`}
+            {isPending ? "Procesando..." : `Actualizar a ${planInfo.name} — ${planInfo.price}`}
           </button>
 
           {nextPlanInfo && nextPlan && (
@@ -198,7 +172,7 @@ export function UpgradeModal({ feature, currentTier, onClose }: UpgradeModalProp
                 marginBottom: 10,
               }}
             >
-              Ver {nextPlanInfo.name}{!iosNative ? ` — ${nextPlanInfo.price}` : ""}
+              Ver {nextPlanInfo.name} — {nextPlanInfo.price}
             </button>
           )}
 

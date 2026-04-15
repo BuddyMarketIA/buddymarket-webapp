@@ -78,10 +78,10 @@ export default function LoginPage() {
 
   // Check if already logged in — single redirect path
   const meQuery = trpc.auth.me.useQuery(undefined, { retry: false, refetchOnWindowFocus: false });
-  // Check if user just logged out — use sessionStorage (persists across React re-renders)
+  // Check if user just logged out — use localStorage (persists across reloads)
   // Also support legacy ?logout=1 URL param for backwards compatibility
   const isJustLoggedOut = (
-    sessionStorage.getItem("bm_just_logged_out") === "1" ||
+    localStorage.getItem("bm_just_logged_out") === "1" ||
     new URLSearchParams(window.location.search).get("logout") === "1"
   );
 
@@ -94,13 +94,9 @@ export default function LoginPage() {
     }
   }, [meQuery.data, meQuery.isLoading, isJustLoggedOut, setLocation]);
 
-  // Clear the logout flag when user interacts with the login form
-  useEffect(() => {
-    const clearLogoutFlag = () => sessionStorage.removeItem("bm_just_logged_out");
-    // Clear after a short delay to allow the initial render to complete
-    const timer = setTimeout(clearLogoutFlag, 2000);
-    return () => clearTimeout(timer);
-  }, []);
+  // Clear the logout flag ONLY when user actively starts a new login.
+  // This prevents the flag from blocking the redirect after a successful login.
+  const clearLogoutFlag = () => localStorage.removeItem("bm_just_logged_out");
 
   // Carousel auto-advance
   useEffect(() => {
@@ -134,6 +130,7 @@ export default function LoginPage() {
       await loginMut.mutateAsync({ email, password });
       if (rememberMe) localStorage.setItem("bm_remembered_email", email);
       else localStorage.removeItem("bm_remembered_email");
+      clearLogoutFlag();
       // Login existing user: always go to dashboard, never to buddy-setup
       await afterAuth(false);
     } catch (err: any) {
@@ -151,6 +148,7 @@ export default function LoginPage() {
       await registerMut.mutateAsync({ name, email, password });
       try { await acceptTermsMut.mutateAsync({ termsVersion: "2.0", acceptPrivacy, marketingConsent: false }); } catch { /* non-critical */ }
       toast.success(`¡Bienvenido, ${name.split(" ")[0]}!`);
+      clearLogoutFlag();
       // New registration: allow redirect to buddy-setup
       await afterAuth(true);
     } catch (err: any) {
@@ -186,6 +184,7 @@ export default function LoginPage() {
     if (otpCode.length < 6) { toast.error("Introduce el código de 6 dígitos"); return; }
     try {
       await verifyOTPMut.mutateAsync({ email: otpEmail, code: otpCode });
+      clearLogoutFlag();
       // OTP login = existing user, always go to dashboard
       await afterAuth(false);
     } catch (err: any) {
@@ -270,7 +269,7 @@ export default function LoginPage() {
               </div>
 
               {/* SSO */}
-              <WebSSOButtons onSuccess={afterAuth} />
+              <WebSSOButtons onSuccess={() => { clearLogoutFlag(); afterAuth(); }} onBeforeSSO={(_, action) => { clearLogoutFlag(); action(); }} />
 
               <div className="flex items-center gap-3">
                 <div className="flex-1 h-px bg-gray-200" />
@@ -326,7 +325,7 @@ export default function LoginPage() {
               </div>
 
               {/* SSO */}
-              <WebSSOButtons onSuccess={afterAuth} />
+              <WebSSOButtons onSuccess={() => { clearLogoutFlag(); afterAuth(); }} onBeforeSSO={(_, action) => { clearLogoutFlag(); action(); }} />
 
               <div className="flex items-center gap-3">
                 <div className="flex-1 h-px bg-gray-200" />

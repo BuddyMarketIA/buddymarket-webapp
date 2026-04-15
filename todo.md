@@ -2283,3 +2283,22 @@
 
 ## Bug diseño tarjetas BuddyExperts (Apr 15)
 - [x] Rediseñar tarjetas de BuddyExperts: nombre no visible, avatar mal posicionado, diseño poco profesional — corregido con avatar sobresaliente del header (posición absoluta -bottom-9), área de contenido con pt-12 para dar espacio al avatar, nombre en h3 prominente text-[15px] font-black
+
+## Salida a mercado - Webapp pura (Apr 15)
+- [ ] Eliminar todo código Capacitor/iOS/Android de la webapp
+- [ ] Corregir definitivamente el bug de logout: la sesión se reabre sola al cerrar sesión
+- [ ] Verificar que la app no crashea en ningún flujo crítico
+- [ ] Checkpoint y publicación
+
+## Salida a mercado - Webapp pura (completado)
+- [x] Eliminar directorios ios/, android/, capacitor.config.ts, codemagic.yaml, guías de App Store
+- [x] Eliminar dependencias de Capacitor del package.json
+- [x] Simplificar usePayment.ts: eliminar lógica IAP iOS/Android, solo Stripe Checkout
+- [x] Simplificar IAPSubscriptionButton.tsx: webapp pura, sin lógica nativa
+- [x] Simplificar UpgradeGate.tsx: eliminar isIOSNative, mostrar siempre precio Stripe
+- [x] Simplificar Subscription.tsx: eliminar isIOSNative e IOSPaymentBanner
+- [x] Simplificar WebSSOButtons.tsx: eliminar Capacitor GoogleAuth, solo OAuth redirect estándar
+- [x] Corregir bug de logout: cambiar sessionStorage por localStorage para el flag bm_just_logged_out
+- [x] Eliminar timer de 2s que borraba el flag prematuramente
+- [x] Limpiar flag solo cuando el usuario hace login activamente (no con timer)
+- [x] Añadir clearLogoutFlag() en todos los handlers de login (email, registro, OTP, SSO)

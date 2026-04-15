@@ -17,7 +17,6 @@
  */
 
 import { usePayment, type PaymentPlan } from "@/hooks/usePayment";
-import { isIOSNative } from "@/hooks/usePlatform";
 
 interface IAPSubscriptionButtonProps {
   plan: PaymentPlan;
@@ -40,15 +39,13 @@ export function IAPSubscriptionButton({
   children,
 }: IAPSubscriptionButtonProps) {
   const { purchase, isPending } = usePayment({ onSuccess });
-  const iosNative = isIOSNative();
 
   const handleClick = () => {
     if (disabled || isPending) return;
     purchase(plan, window.location.origin);
   };
 
-  const defaultLabel = iosNative ? "Suscribirse" : (label ?? "Empezar ahora");
-  const displayLabel = children ?? defaultLabel;
+  const displayLabel = children ?? label ?? "Empezar ahora";
 
   return (
     <button
@@ -56,9 +53,9 @@ export function IAPSubscriptionButton({
       disabled={disabled || isPending}
       className={className}
       style={style}
-      aria-label={iosNative ? `Suscribirse al plan ${plan} mediante App Store` : `Contratar plan ${plan}`}
+      aria-label={`Contratar plan ${plan}`}
     >
-      {isPending ? (iosNative ? "Abriendo App Store..." : "Procesando...") : displayLabel}
+      {isPending ? "Procesando..." : displayLabel}
     </button>
   );
 }
@@ -73,32 +70,9 @@ export function IAPSubscriptionButton({
  * but we MUST NOT link directly to an external checkout from a web page that
  * is also accessible inside the app.
  */
+/** No-op en webapp pura. Mantenido por compatibilidad con imports existentes. */
 export function IOSPaymentBanner() {
-  if (!isIOSNative()) return null;
-  return (
-    <div
-      style={{
-        background: "linear-gradient(135deg, #f0f9ff 0%, #e0f2fe 100%)",
-        border: "1px solid #bae6fd",
-        borderRadius: "12px",
-        padding: "16px",
-        marginBottom: "20px",
-        display: "flex",
-        alignItems: "flex-start",
-        gap: "12px",
-      }}
-    >
-      <span style={{ fontSize: "24px", flexShrink: 0 }}></span>
-      <div>
-        <p style={{ margin: "0 0 4px", fontSize: "14px", fontWeight: 700, color: "#0c4a6e" }}>
-          Gestiona tu suscripción desde la app
-        </p>
-        <p style={{ margin: 0, fontSize: "13px", color: "#075985", lineHeight: 1.5 }}>
-          Las suscripciones se gestionan a través de la App Store de Apple. Abre la app de BuddyMarket en tu iPhone para suscribirte o gestionar tu plan.
-        </p>
-      </div>
-    </div>
-  );
+  return null;
 }
 
 /**
@@ -125,7 +99,6 @@ export function WebOnlyStripeButton({
   style?: React.CSSProperties;
   fallback?: React.ReactNode;
 }) {
-  if (isIOSNative()) return <>{fallback}</>;
   return (
     <button
       onClick={onClick}

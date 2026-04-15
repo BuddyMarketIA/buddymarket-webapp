@@ -5,8 +5,7 @@ import { SparklesIcon, BoltIcon, StarIcon, CheckIcon, XMarkIcon, LockClosedIcon,
 import { CheckCircleIcon, ArrowRightIcon } from "@heroicons/react/24/outline";
 import { usePlan } from "@/hooks/usePlan";
 import { usePayment, type PaymentPlan } from "@/hooks/usePayment";
-import { isIOSNative } from "@/hooks/usePlatform";
-import { IOSPaymentBanner } from "@/components/IAPSubscriptionButton";
+
 
 // ─── Feature comparison table ─────────────────────────────────────────────────
 type CellVal = boolean | string;
@@ -163,7 +162,6 @@ export default function Subscription() {
     ? new URLSearchParams(window.location.search).get("plan")
     : null;
   const { purchase, isPending: checkoutLoading } = usePayment();
-  const iosNative = isIOSNative();
   const currentPlan = (subscription as any)?.plan ?? null;
   const isActive = (subscription as any)?.status === "active";
 
@@ -222,10 +220,7 @@ export default function Subscription() {
         )}
       </div>
 
-      {/* ── iOS banner ── */}
-      {iosNative && <div className="mb-4"><IOSPaymentBanner /></div>}
-
-      {/* ── 3 KEY DIFFERENCES BANNER (Free only) ── */}
+      {/* ── 3 KEY DIFFERENCES BANNER (Free only) ── */
       {isFree && (
         <div className="mb-5 rounded-3xl overflow-hidden" style={{ background: "linear-gradient(135deg, #0f172a 0%, #1e293b 100%)", boxShadow: "0 20px 60px rgba(0,0,0,0.3)" }}>
           <div className="p-5">
@@ -474,8 +469,7 @@ export default function Subscription() {
                 <div key={i} className="text-xs text-gray-700 font-medium">{p}</div>
               ))}
             </div>
-            {!iosNative && (
-              <button
+            <button
                 onClick={() => handleSubscribe("basic")}
                 disabled={isPro || checkoutLoading || isLoading}
                 className={`w-full rounded-2xl py-3 text-sm font-extrabold transition-all ${
@@ -486,7 +480,6 @@ export default function Subscription() {
               >
                 {isPro ? "Plan actual" : checkoutLoading ? "Procesando..." : "Activar Pro →"}
               </button>
-            )}
           </div>
         )}
 
@@ -528,7 +521,7 @@ export default function Subscription() {
             <div className="w-full rounded-2xl bg-purple-50 py-3 text-center text-sm font-bold text-purple-500">
               Plan actual — tienes acceso completo 👑
             </div>
-          ) : !iosNative ? (
+          ) : (
             <button
               onClick={() => handleSubscribe("premium")}
               disabled={checkoutLoading || isLoading}
@@ -536,7 +529,7 @@ export default function Subscription() {
             >
               {checkoutLoading ? "Procesando..." : isPro ? "Mejorar a Pro Max →" : "Activar Pro Max →"}
             </button>
-          ) : null}
+          )}
         </div>
       </div>
 

@@ -47,9 +47,10 @@ export function useAuth(options?: UseAuthOptions) {
       document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax`;
       document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
 
-      // Set sessionStorage flag so LoginPage never auto-redirects after logout
-      // This flag persists across React re-renders but clears when the tab closes
-      sessionStorage.setItem("bm_just_logged_out", "1");
+      // Set localStorage flag so LoginPage never auto-redirects after logout.
+      // localStorage persists across reloads (unlike sessionStorage) — cleared
+      // only when user actively interacts with the login form.
+      localStorage.setItem("bm_just_logged_out", "1");
 
       // Force a full page reload to /login to clear ALL React state and tRPC cache
       // Using replace() so the user can't go "back" to the authenticated page

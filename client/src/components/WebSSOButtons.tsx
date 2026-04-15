@@ -1,16 +1,14 @@
 /**
- * WebSSOButtons — Botones de Sign in with Google (y Apple en Safari/iOS)
- * para la webapp de BuddyMarket.
+ * WebSSOButtons — Botones de Sign in with Google y Apple para la webapp de BuddyMarket.
  *
- * Google: usa el flujo OAuth2 con prompt() de Google Identity Services.
- *         El botón es SIEMPRE visible (nativo, no iframe de Google).
- * Apple: usa Sign in with Apple JS (disponible en Safari y todos los navegadores en iOS)
+ * Google: flujo OAuth2 redirect estándar via /api/auth/google/login
+ * Apple:  flujo OAuth2 redirect estándar via /api/auth/apple/login
+ *
+ * NOTA: Esta es la versión webapp pura. No usa Capacitor ni plugins nativos.
  */
 
 import { useEffect, useRef, useState } from "react";
 import { toast } from "@/components/sonner-a11y-shim";
-import { isIOSNative } from "@/hooks/usePlatform";
-import { GoogleAuth } from "@codetrix-studio/capacitor-google-auth";
 
 // ─── Tipos globales ────────────────────────────────────────────────────────────
 
@@ -200,28 +198,7 @@ export default function WebSSOButtons({
       toast.error("Google SSO no configurado", { description: "Añade VITE_GOOGLE_CLIENT_ID en los secretos" });
       return;
     }
-    // ── iOS/Android nativo: usa el plugin Capacitor GoogleAuth ──────────────
-    if (isIOSNative() || (window as any).Capacitor?.isNativePlatform?.()) {
-      setGoogleLoading(true);
-      try {
-        await GoogleAuth.initialize({
-          clientId: GOOGLE_CLIENT_ID,
-          scopes: ["profile", "email"],
-          grantOfflineAccess: true,
-        });
-        const user = await GoogleAuth.signIn();
-        const idToken = user.authentication?.idToken;
-        if (!idToken) throw new Error("No se obtuvo el token de Google");
-        await handleGoogleCredential({ credential: idToken });
-      } catch (err: any) {
-        if (err?.message !== "The user canceled the sign-in flow.") {
-          toast.error("Error con Google", { description: err.message ?? "Error desconocido" });
-        }
-        setGoogleLoading(false);
-      }
-      return;
-    }
-    // ── Web: flujo redirect OAuth estándar ──────────────────────────────────
+    // Flujo redirect OAuth estándar (webapp pura)
     const origin = window.location.origin;
     const returnPath = window.location.pathname !== "/login" ? window.location.pathname : "/";
     const url = `/api/auth/google/login?origin=${encodeURIComponent(origin)}&returnPath=${encodeURIComponent(returnPath)}`;
@@ -239,36 +216,11 @@ export default function WebSSOButtons({
   const _doAppleSignIn = async () => {
     setAppleLoading(true);
     try {
-      if (isIOSNative() && window.BuddyMarketAppleAuth) {
-        // ── iOS native: usa el plugin Capacitor (AuthenticationServices) ──────
-        const data = await window.BuddyMarketAppleAuth.signIn();
-        const identityToken = data.identityToken;
-        const nonce = data.nonce;
-        const email = data.email ?? null;
-        const fullName = data.fullName ?? null;
-
-        const res = await fetch("/api/auth/apple", {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          credentials: "include",
-          body: JSON.stringify({ identityToken, fullName, email, nonce }),
-        });
-
-        if (!res.ok) {
-          const err = await res.json() as { error?: string };
-          throw new Error(err.error ?? "Error al iniciar sesión con Apple");
-        }
-
-        toast.success("Sesión iniciada con Apple", { description: "Bienvenido a BuddyMarket" });
-        onSuccess?.();
-        setTimeout(() => window.location.reload(), 500);
-      } else {
-        // ── Web: flujo redirect OAuth estándar (funciona en todos los navegadores) ───
-        const origin = window.location.origin;
-        const returnPath = window.location.pathname !== "/login" ? window.location.pathname : "/";
-        const url = `/api/auth/apple/login?origin=${encodeURIComponent(origin)}&returnPath=${encodeURIComponent(returnPath)}`;
-        window.location.assign(url);
-      }
+      // Flujo redirect OAuth estándar (webapp pura)
+      const origin = window.location.origin;
+      const returnPath = window.location.pathname !== "/login" ? window.location.pathname : "/";
+      const url = `/api/auth/apple/login?origin=${encodeURIComponent(origin)}&returnPath=${encodeURIComponent(returnPath)}`;
+      window.location.assign(url);
     } catch (err: any) {
       if (err?.message === "popup_closed_by_user" || err?.error === "popup_closed_by_user") return;
       toast.error("Error con Apple", { description: err.message });
@@ -287,7 +239,7 @@ export default function WebSSOButtons({
   // ── Render ──────────────────────────────────────────────────────────────────
   return (
     <div className={`flex flex-col gap-3 w-full ${className}`}>
-      {/* ── Botón de Google — siempre visible, nativo ── */}
+      {/* ── Botón de Google ── */}
       <button
         type="button"
         onClick={handleGoogleClick}
@@ -298,7 +250,7 @@ export default function WebSSOButtons({
         <span>{googleLoading ? "Iniciando sesión..." : "Continuar con Google"}</span>
       </button>
 
-      {/* ── Botón de Apple — siempre visible ── */}
+      {/* ── Botón de Apple ── */}
       {showApple && (
         <button
           type="button"
