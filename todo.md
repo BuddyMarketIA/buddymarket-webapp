@@ -2329,3 +2329,18 @@
 - [ ] Verificar que Resend está configurado y el dominio buddymarketapp.com está verificado
 - [ ] Corregir el envío de email de invitación si hay error
 - [ ] Añadir log de auditoría cuando se envía una invitación
+
+## Panel Profesional Nutricionista (BuddyExpert Dashboard v2)
+- [ ] Schema BD: tabla appointments (citas) con expertId, patientId, date, type, status, notes, duration
+- [ ] Schema BD: tabla expertMenuTemplates (plantillas de menú del experto con restricciones)
+- [ ] Endpoints tRPC: appointments.list, create, update, cancel, getByDate
+- [ ] Endpoints tRPC: expertTemplates.list, create, assignToPatient
+- [ ] Endpoints tRPC: expertDashboard.metrics (ingresos, pacientes activos, alertas, citas)
+- [ ] Rediseñar BuddyExpertDashboard: cards métricas (ingresos, nº pacientes, alertas), citas del día, actividad reciente
+- [ ] Dashboard profesional: acceso directo a pacientes desde citas y actividad reciente
+- [ ] Dashboard profesional: alertas (pacientes sin check-in, planes por vencer, mensajes sin leer)
+- [ ] Gestión de citas: calendario visual, crear/editar/cancelar citas con recordatorio email
+- [ ] Biblioteca de plantillas de menú del experto: ver, crear, asignar a paciente
+- [ ] Asignación de plantilla: ver restricciones del paciente antes de asignar
+- [ ] Subida de PDF: convertir PDF de menú a estructura de menú con IA
+- [ ] Vista de paciente desde dashboard: métricas, historial, planes asignados, chat directo

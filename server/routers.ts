@@ -11,6 +11,7 @@ import { supportRouter } from "./routers/support";
 import { householdRouter } from "./routers/household";
 import { householdRecipesRouter } from "./routers/householdRecipes";
 import { expertPatientsRouter } from "./routers/expertPatients";
+import { expertDashboardRouter } from "./routers/expertDashboard";
 import { makerAnalyticsRouter } from "./routers/makerAnalytics";
 import { contentSyncRouter } from "./routers/contentSync";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
@@ -237,6 +238,7 @@ export const appRouter = router({
   household: householdRouter,
   householdRecipes: householdRecipesRouter,
   expertPatients: expertPatientsRouter,
+  expertDashboard: expertDashboardRouter,
   makerAnalytics: makerAnalyticsRouter,
   contentSync: contentSyncRouter,
 

@@ -239,6 +239,13 @@
       "when": 1776106922201,
       "tag": "0033_clear_cammi",
       "breakpoints": true
+    },
+    {
+      "idx": 34,
+      "version": "7",
+      "when": 1776284872009,
+      "tag": "0034_wealthy_wildside",
+      "breakpoints": true
     }
   ]
 }

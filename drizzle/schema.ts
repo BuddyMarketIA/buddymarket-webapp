@@ -2541,3 +2541,53 @@ export const ingredientNutrition = pgTable("ingredient_nutrition", {
 }));
 export type IngredientNutrition = typeof ingredientNutrition.$inferSelect;
 export type InsertIngredientNutrition = typeof ingredientNutrition.$inferInsert;
+
+// =============================================================================
+// EXPERT MENU TEMPLATES (Plantillas de menú del nutricionista)
+// =============================================================================
+export const expertMenuTemplates = pgTable("expert_menu_templates", {
+  id: serial("id").primaryKey(),
+  expertId: integer("expertId").notNull(),
+  title: varchar("title", { length: 256 }).notNull(),
+  description: text("description"),
+  category: varchar("category", { length: 64 }).default("dieta_equilibrada").notNull(),
+  targetGoal: varchar("targetGoal", { length: 64 }),
+  dailyCalories: integer("dailyCalories"),
+  durationDays: integer("durationDays").default(7).notNull(),
+  menuData: text("menuData").notNull(),
+  restrictions: text("restrictions"),
+  allergensFree: text("allergensFree"),
+  tags: text("tags"),
+  isActive: boolean("isActive").default(true).notNull(),
+  timesAssigned: integer("timesAssigned").default(0).notNull(),
+  sourceType: varchar("sourceType", { length: 32 }).default("manual").notNull(),
+  sourcePdfUrl: text("sourcePdfUrl"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  expertIdx: index("emt_expert_idx").on(t.expertId),
+  categoryIdx: index("emt_category_idx").on(t.category),
+}));
+export type ExpertMenuTemplate = typeof expertMenuTemplates.$inferSelect;
+export type InsertExpertMenuTemplate = typeof expertMenuTemplates.$inferInsert;
+
+// =============================================================================
+// PDF MENU IMPORTS (Importaciones de PDF a menú)
+// =============================================================================
+export const pdfMenuImports = pgTable("pdf_menu_imports", {
+  id: serial("id").primaryKey(),
+  expertId: integer("expertId").notNull(),
+  originalFilename: varchar("originalFilename", { length: 256 }).notNull(),
+  pdfUrl: text("pdfUrl").notNull(),
+  status: varchar("status", { length: 32 }).default("processing").notNull(),
+  extractedText: text("extractedText"),
+  parsedMenuData: text("parsedMenuData"),
+  errorMessage: text("errorMessage"),
+  templateId: integer("templateId"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  expertIdx: index("pmi_expert_idx").on(t.expertId),
+}));
+export type PdfMenuImport = typeof pdfMenuImports.$inferSelect;
+export type InsertPdfMenuImport = typeof pdfMenuImports.$inferInsert;
