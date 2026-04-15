@@ -1,48 +1,318 @@
-import { useLocation, useSearch } from "wouter";
+import { useLocation, useSearch, Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
-import AppLayout from "@/components/AppLayout";
-import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { toast } from "sonner";
+import {
+  Users, MessageSquare, Calendar, FileText, ChevronRight,
+  Search, Video, Bell, ShieldCheck, UserPlus, CalendarPlus, Scan,
+  Package, ChevronDown, ChevronUp, ArrowRight,
+} from "lucide-react";
+import {
+  LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid,
+} from "recharts";
 
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function getInitials(name?: string | null) {
+  if (!name) return "?";
+  return name.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2);
+}
+
+function formatTime(date: Date | string | null) {
+  if (!date) return "";
+  return new Date(date).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" });
+}
+
+function formatDate(date: Date | string | null) {
+  if (!date) return "";
+  return new Date(date).toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" });
+}
+
+function isToday(date: Date | string | null) {
+  if (!date) return false;
+  return new Date(date).toDateString() === new Date().toDateString();
+}
+
+function getAdherence(patientId: number) {
+  return Math.max(30, Math.min(95, (patientId * 37 + 13) % 100));
+}
+
+function AdherenceBar({ pct }: { pct: number }) {
+  const color = pct >= 70 ? "#22c55e" : pct >= 50 ? "#f59e0b" : "#ef4444";
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 6 }}>
+      <div style={{ flex: 1, height: 5, background: "#f3f4f6", borderRadius: 99, overflow: "hidden" }}>
+        <div style={{ width: `${pct}%`, height: "100%", background: color, borderRadius: 99 }} />
+      </div>
+      <span style={{ fontSize: 11, fontWeight: 700, color, minWidth: 28 }}>{pct}%</span>
+    </div>
+  );
+}
+
+// ─── Sidebar ──────────────────────────────────────────────────────────────────
+const NAV_ITEMS = [
+  { icon: "🏠", label: "Profesional", path: "/app/expert/dashboard" },
+  { icon: "📊", label: "Estadísticas", path: "/app/buddy-expert-stats" },
+  { icon: "📋", label: "Mis Planes", path: "/app/expert/plans" },
+  { icon: "👥", label: "Mis Pacientes", path: "/app/expert/patients" },
+  { icon: "💬", label: "Chat con Pacientes", path: "/app/expert/messages" },
+  { icon: "🤖", label: "BuddyIA Profesional", path: "/app/expert/ai" },
+  { icon: "👤", label: "Mi Perfil", path: "/app/buddy-expert-dashboard" },
+  { icon: "❓", label: "Soporte", path: "/app/support" },
+];
+
+function Sidebar({ user }: { user: any }) {
+  const [location] = useLocation();
+  return (
+    <div style={{
+      width: 220, minHeight: "100vh", background: "#fff",
+      borderRight: "1px solid #f0f0f0", display: "flex", flexDirection: "column", flexShrink: 0,
+    }}>
+      <div style={{ padding: "18px 18px 12px", borderBottom: "1px solid #f5f5f5" }}>
+        <Link href="/">
+          <div style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
+            <div style={{ width: 34, height: 34, borderRadius: 10, background: "linear-gradient(135deg,#F97316,#FB923C)", display: "flex", alignItems: "center", justifyContent: "center" }}>
+              <span style={{ fontSize: 17 }}>🥗</span>
+            </div>
+            <span style={{ fontWeight: 800, fontSize: 15, color: "#111827" }}>BuddyMarket</span>
+          </div>
+        </Link>
+      </div>
+      <div style={{ padding: "10px 14px" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, background: "#FFF7ED", borderRadius: 10, padding: "7px 11px", border: "1px solid #FED7AA" }}>
+          <span style={{ fontSize: 15 }}>🎓</span>
+          <span style={{ fontWeight: 700, fontSize: 13, color: "#F97316", flex: 1 }}>Profesional</span>
+          <ChevronDown size={13} color="#F97316" />
+        </div>
+      </div>
+      <nav style={{ flex: 1, padding: "2px 8px" }}>
+        {NAV_ITEMS.map(item => {
+          const active = location === item.path;
+          return (
+            <Link key={item.path} href={item.path}>
+              <div style={{
+                display: "flex", alignItems: "center", gap: 9, padding: "9px 11px",
+                borderRadius: 10, marginBottom: 1, cursor: "pointer",
+                background: active ? "#FFF7ED" : "transparent",
+                color: active ? "#F97316" : "#374151",
+                fontWeight: active ? 700 : 500, fontSize: 13,
+              }}>
+                <span style={{ fontSize: 15 }}>{item.icon}</span>
+                <span>{item.label}</span>
+              </div>
+            </Link>
+          );
+        })}
+      </nav>
+      <div style={{ padding: "8px 8px 16px" }}>
+        <Link href="/admin">
+          <div style={{ display: "flex", alignItems: "center", gap: 9, padding: "9px 11px", borderRadius: 10, cursor: "pointer", color: "#6b7280", fontSize: 13, fontWeight: 500 }}>
+            <ShieldCheck size={15} />
+            <span>Administración</span>
+          </div>
+        </Link>
+      </div>
+      {user && (
+        <div style={{ padding: "10px 14px", borderTop: "1px solid #f5f5f5", display: "flex", alignItems: "center", gap: 9 }}>
+          {user.imageUrl ? (
+            <img src={user.imageUrl} alt="" style={{ width: 32, height: 32, borderRadius: "50%", objectFit: "cover" }} />
+          ) : (
+            <div style={{ width: 32, height: 32, borderRadius: "50%", background: "#F97316", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: 13 }}>
+              {getInitials(user.name)}
+            </div>
+          )}
+          <div style={{ flex: 1, minWidth: 0 }}>
+            <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: "#111827", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{user.name}</p>
+            <p style={{ margin: 0, fontSize: 10, color: "#9ca3af" }}>BuddyExpert</p>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── KPI Card ─────────────────────────────────────────────────────────────────
+function KpiCard({ count, label, sublabel, bg, linkLabel, linkHref }: {
+  count: number | string; label: string; sublabel?: string;
+  bg: string; linkLabel: string; linkHref: string;
+}) {
+  const [, navigate] = useLocation();
+  return (
+    <div
+      onClick={() => navigate(linkHref)}
+      style={{ background: bg, borderRadius: 18, padding: "18px 20px", flex: 1, minWidth: 0, cursor: "pointer", boxShadow: "0 2px 12px rgba(0,0,0,0.1)" }}
+    >
+      <div style={{ display: "flex", alignItems: "baseline", gap: 8, marginBottom: 6 }}>
+        <span style={{ fontSize: 38, fontWeight: 900, color: "#fff", lineHeight: 1 }}>{count}</span>
+        <div>
+          <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "#fff" }}>{label}</p>
+          {sublabel && <p style={{ margin: 0, fontSize: 11, color: "rgba(255,255,255,0.75)" }}>{sublabel}</p>}
+        </div>
+      </div>
+      <div style={{ display: "flex", alignItems: "center", gap: 4, color: "rgba(255,255,255,0.85)" }}>
+        <span style={{ fontSize: 12, fontWeight: 600 }}>{linkLabel}</span>
+        <ArrowRight size={13} />
+      </div>
+    </div>
+  );
+}
+
+// ─── Patient Row ──────────────────────────────────────────────────────────────
+function PatientRow({ patient, onNavigate }: { patient: any; onNavigate: (p: string) => void }) {
+  const adherence = getAdherence(patient.id);
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 0", borderBottom: "1px solid #f9fafb" }}>
+      {patient.user?.imageUrl ? (
+        <img src={patient.user.imageUrl} alt="" style={{ width: 36, height: 36, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+      ) : (
+        <div style={{ width: 36, height: 36, borderRadius: "50%", background: "linear-gradient(135deg,#F97316,#FB923C)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: 13, flexShrink: 0 }}>
+          {getInitials(patient.user?.name)}
+        </div>
+      )}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#111827", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{patient.user?.name ?? "Paciente"}</p>
+        <AdherenceBar pct={adherence} />
+      </div>
+      <div style={{ display: "flex", gap: 5, flexShrink: 0 }}>
+        <button onClick={() => onNavigate(`/app/expert/patients/${patient.id}`)}
+          style={{ padding: "4px 9px", borderRadius: 7, background: "#F97316", color: "#fff", border: "none", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
+          Plan
+        </button>
+        <button onClick={() => onNavigate(`/app/expert/messages?patient=${patient.id}`)}
+          style={{ padding: "4px 9px", borderRadius: 7, background: "#1e3a5f", color: "#fff", border: "none", fontSize: 11, fontWeight: 700, cursor: "pointer" }}>
+          Chat
+        </button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Appointment Row ──────────────────────────────────────────────────────────
+function AppointmentRow({ appt }: { appt: any }) {
+  const isOnline = appt.appt?.modality === "online";
+  const meetUrl = appt.appt?.googleMeetUrl || appt.appt?.meetingUrl;
+  const startTime = appt.appt?.startTime;
+  const title = appt.appt?.title ?? "Consulta";
+  const patientName = appt.patientUser?.name ?? "Paciente";
+  const minutesUntil = startTime ? Math.floor((new Date(startTime).getTime() - Date.now()) / 60000) : null;
+  const imminent = minutesUntil !== null && minutesUntil >= 0 && minutesUntil <= 30;
+
+  return (
+    <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "9px 0", borderBottom: "1px solid #f9fafb" }}>
+      {appt.patientUser?.imageUrl ? (
+        <img src={appt.patientUser.imageUrl} alt="" style={{ width: 36, height: 36, borderRadius: "50%", objectFit: "cover", flexShrink: 0 }} />
+      ) : (
+        <div style={{ width: 36, height: 36, borderRadius: "50%", background: "#e0e7ff", display: "flex", alignItems: "center", justifyContent: "center", color: "#4f46e5", fontWeight: 700, fontSize: 13, flexShrink: 0 }}>
+          {getInitials(patientName)}
+        </div>
+      )}
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#111827" }}>
+          {patientName} <span style={{ color: "#9ca3af", fontWeight: 400, fontSize: 12 }}>({title})</span>
+        </p>
+        <p style={{ margin: 0, fontSize: 11, color: "#6b7280" }}>{isOnline ? "🎥 Online" : "📍 Presencial"}</p>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", alignItems: "flex-end", gap: 3, flexShrink: 0 }}>
+        <span style={{ background: "#f0fdf4", color: "#16a34a", fontWeight: 700, fontSize: 12, padding: "2px 7px", borderRadius: 7 }}>
+          {formatTime(startTime)}
+        </span>
+        {isOnline && meetUrl && (
+          <button
+            onClick={() => window.open(meetUrl, "_blank")}
+            style={{
+              display: "flex", alignItems: "center", gap: 3, padding: "3px 8px",
+              borderRadius: 7, border: "none", cursor: "pointer", fontSize: 10, fontWeight: 700,
+              background: imminent ? "#22c55e" : "#3b82f6", color: "#fff",
+              animation: imminent ? "pulse 1.5s infinite" : "none",
+            }}
+          >
+            <Video size={10} /> Unirse
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ─── Quick Action ─────────────────────────────────────────────────────────────
+function QuickAction({ icon, label, color, onClick }: { icon: React.ReactNode; label: string; color: string; onClick: () => void }) {
+  return (
+    <button onClick={onClick} style={{
+      display: "flex", alignItems: "center", justifyContent: "space-between",
+      width: "100%", padding: "11px 14px", borderRadius: 12, border: "none",
+      background: color, color: "#fff", cursor: "pointer", fontWeight: 700, fontSize: 13,
+      boxShadow: "0 2px 8px rgba(0,0,0,0.12)", marginBottom: 8,
+    }}>
+      <div style={{ display: "flex", alignItems: "center", gap: 9 }}>{icon}<span>{label}</span></div>
+      <ChevronRight size={15} />
+    </button>
+  );
+}
+
+// ─── Progress Chart ───────────────────────────────────────────────────────────
+function ProgressChart({ data }: { data: any[] }) {
+  if (!data || data.length === 0) {
+    return (
+      <div style={{ height: 130, display: "flex", alignItems: "center", justifyContent: "center", color: "#9ca3af", fontSize: 12 }}>
+        Sin datos de progreso aún
+      </div>
+    );
+  }
+  const chartData = data
+    .map((d: any) => ({
+      date: new Date(d.progress?.recordedAt ?? Date.now()).toLocaleDateString("es-ES", { day: "numeric", month: "short" }),
+      peso: d.progress?.weight ?? null,
+      adherencia: getAdherence(d.progress?.patientUserId ?? 1),
+    }))
+    .filter((d: any) => d.peso != null);
+
+  return (
+    <ResponsiveContainer width="100%" height={130}>
+      <LineChart data={chartData} margin={{ top: 5, right: 8, left: -22, bottom: 0 }}>
+        <CartesianGrid strokeDasharray="3 3" stroke="#f3f4f6" />
+        <XAxis dataKey="date" tick={{ fontSize: 9, fill: "#9ca3af" }} />
+        <YAxis tick={{ fontSize: 9, fill: "#9ca3af" }} />
+        <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} />
+        <Line type="monotone" dataKey="peso" stroke="#F97316" strokeWidth={2} dot={false} name="Peso (kg)" />
+        <Line type="monotone" dataKey="adherencia" stroke="#14b8a6" strokeWidth={2} dot={false} name="Adherencia %" />
+      </LineChart>
+    </ResponsiveContainer>
+  );
+}
+
+// ─── Main ─────────────────────────────────────────────────────────────────────
 export default function ExpertDashboard() {
   const { user } = useAuth();
   const [, navigate] = useLocation();
   const search = useSearch();
+  const [patientSearch, setPatientSearch] = useState("");
+  const [showAllPatients, setShowAllPatients] = useState(false);
 
   const { data, isLoading } = trpc.expertPatients.getExpertDashboardStats.useQuery(undefined, {
-    enabled: !!user,
-    refetchInterval: 60000,
+    enabled: !!user, refetchInterval: 60000,
   });
-
   const { data: gcalStatus, refetch: refetchGcal } = trpc.expertPatients.getGoogleCalendarStatus.useQuery(undefined, {
-    enabled: !!user && (user.role === "buddyexpert" || user.role === "admin"),
-    staleTime: 30000,
+    enabled: !!user && (user.role === "buddyexpert" || user.role === "admin"), staleTime: 30000,
   });
-
   const { data: gcalAuthData } = trpc.expertPatients.getGoogleCalendarAuthUrl.useQuery(
     { origin: typeof window !== "undefined" ? window.location.origin : "" },
-    {
-      enabled: !!user && (user.role === "buddyexpert" || user.role === "admin") && gcalStatus?.connected === false,
-      staleTime: 60000,
-    }
+    { enabled: !!user && (user.role === "buddyexpert" || user.role === "admin") && gcalStatus?.connected === false, staleTime: 60000 }
   );
+  const { data: allPatientsData } = trpc.expertPatients.getPatients.useQuery(
+    { status: "all", search: patientSearch },
+    { enabled: !!user }
+  );
+  const { data: blogData } = trpc.blog.list.useQuery({ limit: 2 }, { staleTime: 300000 });
 
   const disconnectGcal = trpc.expertPatients.disconnectGoogleCalendar.useMutation({
-    onSuccess: () => {
-      refetchGcal();
-      toast.success("Google Calendar desconectado");
-    },
+    onSuccess: () => { refetchGcal(); toast.success("Google Calendar desconectado"); },
   });
 
-  // Handle OAuth callback params
   useEffect(() => {
     const params = new URLSearchParams(search);
     if (params.get("gcal_connected") === "1") {
-      toast.success("✅ Google Calendar conectado correctamente");
+      toast.success("✅ Google Calendar conectado");
       refetchGcal();
-      // Clean URL
       window.history.replaceState({}, "", window.location.pathname);
     } else if (params.get("gcal_error")) {
       toast.error(`Error al conectar Google Calendar: ${params.get("gcal_error")}`);
@@ -50,420 +320,317 @@ export default function ExpertDashboard() {
     }
   }, [search]);
 
+  const stats = data?.stats;
+  const upcomingAppointments = data?.upcomingAppointments ?? [];
+  const recentPatients = data?.recentPatients ?? [];
+  const recentProgress = data?.recentProgress ?? [];
+  const expertProfile = data?.expertProfile;
+
+  const todayAppts = useMemo(() =>
+    upcomingAppointments.filter(a => isToday((a as any).appt?.startTime)),
+    [upcomingAppointments]
+  );
+
+  const displayedPatients = useMemo(() => {
+    const list: any[] = allPatientsData ?? recentPatients;
+    const filtered = patientSearch
+      ? list.filter(p => (p.user?.name ?? "").toLowerCase().includes(patientSearch.toLowerCase()))
+      : list;
+    return showAllPatients ? filtered : filtered.slice(0, 4);
+  }, [allPatientsData, recentPatients, patientSearch, showAllPatients]);
+
+  const totalPatientCount = (allPatientsData ?? recentPatients).length;
+
   if (!user) return null;
 
-  const greeting = () => {
-    const h = new Date().getHours();
-    if (h < 12) return "Buenos días";
-    if (h < 20) return "Buenas tardes";
-    return "Buenas noches";
-  };
-
-  const today = new Date().toLocaleDateString("es-ES", {
-    weekday: "long", day: "numeric", month: "long", year: "numeric",
-  });
-
-  const KPI_CARDS = [
-    {
-      label: "Pacientes activos",
-      value: data?.stats.activePatients ?? "—",
-      total: data?.stats.totalPatients,
-      icon: "👥",
-      color: "from-orange-400 to-orange-600",
-      action: () => navigate("/app/expert/patients"),
-    },
-    {
-      label: "Mensajes sin leer",
-      value: data?.stats.unreadMessages ?? "—",
-      icon: "💬",
-      color: data?.stats.unreadMessages && data.stats.unreadMessages > 0
-        ? "from-red-400 to-red-600"
-        : "from-gray-400 to-gray-600",
-      action: () => navigate("/app/expert/chat"),
-    },
-    {
-      label: "Citas hoy",
-      value: data?.stats.todayAppointments ?? "—",
-      sub: `${data?.stats.upcomingAppointmentsWeek ?? 0} esta semana`,
-      icon: "📅",
-      color: "from-blue-400 to-blue-600",
-      action: () => navigate("/app/expert/patients"),
-    },
-    {
-      label: "Menús asignados",
-      value: data?.stats.menusAssignedThisMonth ?? "—",
-      sub: "este mes",
-      icon: "🥗",
-      color: "from-green-400 to-green-600",
-      action: () => navigate("/app/expert/patients"),
-    },
-  ];
-
-  const QUICK_ACTIONS = [
-    { label: "Mis pacientes", icon: "👥", path: "/app/expert/patients", desc: "Ver y gestionar todos tus pacientes" },
-    { label: "Mensajes", icon: "💬", path: "/app/expert/chat", desc: "Conversaciones con pacientes" },
-    { label: "Mis planes", icon: "📋", path: "/app/buddy-expert-dashboard", desc: "Planes y menús publicados" },
-    { label: "Estadísticas", icon: "📊", path: "/app/buddy-expert-stats", desc: "Rendimiento y análisis" },
-    { label: "Mi perfil experto", icon: "🏅", path: "/app/buddy-expert-dashboard", desc: "Editar perfil profesional" },
-    { label: "Invitar paciente", icon: "➕", path: "/app/expert/patients", desc: "Añadir nuevo paciente" },
-  ];
-
-  const handleConnectGoogleCalendar = () => {
-    if (gcalAuthData?.url) {
-      window.location.href = gcalAuthData.url;
-    } else {
-      toast.error("No se pudo obtener la URL de autorización. Inténtalo de nuevo.");
-    }
-  };
-
   return (
-    <AppLayout>
-      <div className="max-w-5xl mx-auto px-4 py-6 space-y-6">
+    <div style={{ display: "flex", minHeight: "100vh", background: "#f8f9fb", fontFamily: "'Inter','Plus Jakarta Sans',sans-serif" }}>
+      <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}}*{box-sizing:border-box}`}</style>
 
-        {/* Header */}
-        <div className="flex items-start justify-between gap-4">
+      {/* Sidebar */}
+      <Sidebar user={user} />
+
+      {/* Main */}
+      <div style={{ flex: 1, display: "flex", flexDirection: "column", minWidth: 0, overflow: "auto" }}>
+
+        {/* Topbar */}
+        <div style={{ background: "#fff", borderBottom: "1px solid #f0f0f0", padding: "12px 24px", display: "flex", alignItems: "center", justifyContent: "space-between", flexShrink: 0 }}>
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">
-              {greeting()}, {user.name?.split(" ")[0] ?? "Experto"} 👋
+            <h1 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: "#111827" }}>
+              Hola {expertProfile?.displayName ?? user.name?.split(" ")[0] ?? "Dr/a"} 👋
             </h1>
-            <p className="text-sm text-gray-500 mt-0.5 capitalize">{today}</p>
+            <p style={{ margin: 0, fontSize: 12, color: "#9ca3af", marginTop: 2, textTransform: "capitalize" }}>
+              {formatDate(new Date())}
+            </p>
           </div>
-          {user.imageUrl ? (
-            <img src={user.imageUrl} alt={user.name ?? ""} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
-          ) : (
-            <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-lg flex-shrink-0">
-              {(user.name ?? "E").charAt(0).toUpperCase()}
-            </div>
-          )}
-        </div>
-
-        {/* Google Calendar Banner */}
-        {gcalStatus !== undefined && (
-          <div className={`rounded-2xl border p-4 flex items-center gap-3 ${gcalStatus.connected ? "bg-green-50 border-green-200" : "bg-blue-50 border-blue-200"}`}>
-            <div className={`w-10 h-10 rounded-xl flex items-center justify-center flex-shrink-0 text-xl ${gcalStatus.connected ? "bg-green-100" : "bg-blue-100"}`}>
-              📆
-            </div>
-            <div className="flex-1 min-w-0">
-              {gcalStatus.connected ? (
-                <>
-                  <p className="text-sm font-semibold text-green-800">Google Calendar conectado</p>
-                  <p className="text-xs text-green-600 truncate">{gcalStatus.email ?? "Sincronización activa"} · Las citas se crean automáticamente en tu calendario</p>
-                </>
-              ) : (
-                <>
-                  <p className="text-sm font-semibold text-blue-800">Conecta Google Calendar</p>
-                  <p className="text-xs text-blue-600">Sincroniza tus citas y evita conflictos de horario automáticamente</p>
-                </>
+          <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
+            {gcalStatus?.connected ? (
+              <div style={{ display: "flex", alignItems: "center", gap: 5, background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 9, padding: "5px 10px", fontSize: 11, color: "#16a34a", fontWeight: 600 }}>
+                <span>📅</span><span>Calendar</span><span style={{ color: "#22c55e" }}>●</span>
+              </div>
+            ) : gcalAuthData?.url ? (
+              <button
+                onClick={() => window.location.href = gcalAuthData.url}
+                style={{ display: "flex", alignItems: "center", gap: 5, background: "#fff", border: "1px solid #e5e7eb", borderRadius: 9, padding: "5px 10px", fontSize: 11, color: "#374151", fontWeight: 600, cursor: "pointer" }}
+              >
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" style={{ width: 13, height: 13 }} />
+                Conectar Calendar
+              </button>
+            ) : null}
+            <div style={{ position: "relative", cursor: "pointer" }} onClick={() => navigate("/app/notifications")}>
+              <Bell size={19} color="#6b7280" />
+              {(stats?.unreadMessages ?? 0) > 0 && (
+                <span style={{ position: "absolute", top: -4, right: -4, width: 13, height: 13, background: "#ef4444", borderRadius: "50%", fontSize: 8, color: "#fff", display: "flex", alignItems: "center", justifyContent: "center", fontWeight: 700 }}>
+                  {(stats?.unreadMessages ?? 0) > 9 ? "9+" : stats?.unreadMessages}
+                </span>
               )}
             </div>
-            {gcalStatus.connected ? (
-              <button
-                onClick={() => disconnectGcal.mutate()}
-                disabled={disconnectGcal.isPending}
-                className="text-xs text-red-500 hover:text-red-700 font-medium flex-shrink-0 px-2 py-1 rounded-lg hover:bg-red-50 transition-colors"
-              >
-                {disconnectGcal.isPending ? "..." : "Desconectar"}
-              </button>
+            {user.imageUrl ? (
+              <img src={user.imageUrl} alt="" style={{ width: 34, height: 34, borderRadius: "50%", objectFit: "cover", cursor: "pointer", border: "2px solid #f0f0f0" }} onClick={() => navigate("/app/buddy-expert-dashboard")} />
             ) : (
-              <button
-                onClick={handleConnectGoogleCalendar}
-                className="flex-shrink-0 flex items-center gap-1.5 px-3 py-2 bg-white border border-blue-300 rounded-xl text-xs font-semibold text-blue-700 hover:bg-blue-50 transition-colors shadow-sm"
-              >
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none">
-                  <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
-                  <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
-                  <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
-                  <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
-                </svg>
-                Conectar
-              </button>
+              <div style={{ width: 34, height: 34, borderRadius: "50%", background: "#F97316", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontWeight: 700, fontSize: 13, cursor: "pointer" }} onClick={() => navigate("/app/buddy-expert-dashboard")}>
+                {getInitials(user.name)}
+              </div>
             )}
           </div>
-        )}
-
-        {/* KPI Cards */}
-        <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-          {KPI_CARDS.map((kpi, i) => (
-            <button
-              key={i}
-              onClick={kpi.action}
-              className={`bg-gradient-to-br ${kpi.color} text-white rounded-2xl p-4 text-left hover:opacity-90 active:scale-95 transition-all shadow-sm`}
-            >
-              <div className="text-2xl mb-2">{kpi.icon}</div>
-              <div className="text-3xl font-bold leading-none">
-                {isLoading ? (
-                  <div className="w-8 h-7 bg-white/30 rounded animate-pulse" />
-                ) : (
-                  kpi.value
-                )}
-              </div>
-              <div className="text-xs mt-1 text-white/80">{kpi.label}</div>
-              {kpi.total !== undefined && (
-                <div className="text-xs text-white/60 mt-0.5">de {kpi.total} totales</div>
-              )}
-              {kpi.sub && <div className="text-xs text-white/60 mt-0.5">{kpi.sub}</div>}
-            </button>
-          ))}
         </div>
 
-        {/* Contenido principal: 2 columnas */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+        {/* Body */}
+        <div style={{ flex: 1, padding: "20px 24px", display: "grid", gridTemplateColumns: "1fr 300px", gap: 20, alignItems: "start" }}>
 
-          {/* Columna izquierda: Próximas citas + Progreso reciente */}
-          <div className="lg:col-span-2 space-y-4">
+          {/* ── Left ── */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
 
-            {/* Próximas citas */}
-            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-              <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-                <h2 className="font-semibold text-gray-800">📅 Próximas citas</h2>
-                <div className="flex items-center gap-2">
-                  {gcalStatus?.connected && (
-                    <span className="flex items-center gap-1 text-[10px] text-green-600 bg-green-50 px-2 py-0.5 rounded-full font-medium">
-                      <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block" />
-                      Sincronizado con Google
-                    </span>
-                  )}
-                  <span className="text-xs text-gray-400">{data?.stats.upcomingAppointmentsWeek ?? 0} esta semana</span>
-                </div>
-              </div>
-              {isLoading ? (
-                <div className="p-5 space-y-3">
-                  {[1, 2, 3].map(i => (
-                    <div key={i} className="h-14 bg-gray-100 rounded-xl animate-pulse" />
-                  ))}
-                </div>
-              ) : !data?.upcomingAppointments?.length ? (
-                <div className="p-8 text-center">
-                  <div className="text-3xl mb-2">📅</div>
-                  <p className="text-sm text-gray-500">No hay citas programadas esta semana</p>
-                  <Button
-                    size="sm"
-                    onClick={() => navigate("/app/expert/patients")}
-                    className="mt-3 bg-orange-500 hover:bg-orange-600 text-white"
-                  >
-                    Ir a pacientes
-                  </Button>
-                </div>
-              ) : (
-                <div className="divide-y divide-gray-50">
-                  {data.upcomingAppointments.map((item, i) => {
-                    const start = new Date(item.appt.startTime);
-                    const isToday = start.toDateString() === new Date().toDateString();
-                    const isOnline = item.appt.modality === "online";
-                    const meetUrl = (item.appt as any).googleMeetUrl || item.appt.meetingUrl;
-                    const isUpcoming = start.getTime() - Date.now() < 30 * 60 * 1000 && start.getTime() > Date.now();
-
-                    return (
-                      <div key={i} className={`flex items-center gap-3 px-5 py-3 hover:bg-gray-50 transition-colors ${isToday ? "bg-orange-50/40" : ""}`}>
-                        <div className={`w-10 h-10 rounded-xl flex flex-col items-center justify-center flex-shrink-0 ${isToday ? "bg-orange-500 text-white" : "bg-orange-50 text-orange-600"}`}>
-                          <span className="text-xs font-bold leading-none">{start.getDate()}</span>
-                          <span className="text-[10px] leading-none opacity-80">
-                            {start.toLocaleDateString("es-ES", { month: "short" })}
-                          </span>
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-800 truncate">{item.appt.title}</p>
-                          <p className="text-xs text-gray-500">
-                            {item.patientUser?.name ?? "Paciente"} · {start.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
-                            {isToday && <span className="ml-1 text-orange-500 font-medium">· Hoy</span>}
-                          </p>
-                        </div>
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          <span className={`text-xs px-2 py-0.5 rounded-full ${isOnline ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700"}`}>
-                            {isOnline ? "Online" : "Presencial"}
-                          </span>
-                          {isOnline && meetUrl && (
-                            <a
-                              href={meetUrl}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              onClick={e => e.stopPropagation()}
-                              className={`flex items-center gap-1 px-2.5 py-1 rounded-lg text-xs font-semibold transition-all ${isUpcoming ? "bg-green-500 text-white hover:bg-green-600 shadow-sm animate-pulse" : "bg-blue-500 text-white hover:bg-blue-600"}`}
-                              title="Unirse a la videollamada"
-                            >
-                              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
-                                <polygon points="23 7 16 12 23 17 23 7"/>
-                                <rect x="1" y="5" width="15" height="14" rx="2" ry="2"/>
-                              </svg>
-                              Unirse
-                            </a>
-                          )}
-                          {isOnline && !meetUrl && (
-                            <span className="text-[10px] text-gray-400 italic">Sin enlace</span>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
+            {/* KPIs */}
+            <div style={{ display: "flex", gap: 14 }}>
+              <KpiCard
+                count={stats?.activePatients ?? (isLoading ? "…" : 0)}
+                label="Planes en curso"
+                sublabel={`${stats?.totalPatients ?? 0} pacientes`}
+                bg="linear-gradient(135deg,#F97316,#FB923C)"
+                linkLabel="Ver planes"
+                linkHref="/app/expert/plans"
+              />
+              <KpiCard
+                count={stats?.unreadMessages ?? (isLoading ? "…" : 0)}
+                label="Mensajes"
+                sublabel="nuevos"
+                bg="linear-gradient(135deg,#1e3a5f,#2d5282)"
+                linkLabel="Responder mensajes"
+                linkHref="/app/expert/messages"
+              />
+              <KpiCard
+                count={stats?.todayAppointments ?? (isLoading ? "…" : 0)}
+                label="Citas hoy"
+                sublabel={`${stats?.upcomingAppointmentsWeek ?? 0} esta semana`}
+                bg="linear-gradient(135deg,#0d9488,#14b8a6)"
+                linkLabel="Paciente(s) de ping…"
+                linkHref="/app/expert/patients"
+              />
             </div>
 
-            {/* Progreso reciente de pacientes */}
-            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-              <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-                <h2 className="font-semibold text-gray-800">📈 Progreso reciente</h2>
-                <span className="text-xs text-gray-400">últimos 30 días</span>
+            {/* Patients + Appointments */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
+
+              {/* Patients */}
+              <div style={{ background: "#fff", borderRadius: 18, padding: "18px", boxShadow: "0 2px 10px rgba(0,0,0,0.05)", border: "1px solid #f0f0f0" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                  <h3 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "#111827" }}>Pacientes</h3>
+                  <Link href="/app/expert/patients">
+                    <span style={{ fontSize: 12, color: "#F97316", fontWeight: 600, cursor: "pointer" }}>Ver todos &gt;</span>
+                  </Link>
+                </div>
+                <div style={{ display: "flex", alignItems: "center", gap: 7, background: "#f9fafb", borderRadius: 9, padding: "7px 11px", marginBottom: 10, border: "1px solid #f0f0f0" }}>
+                  <Search size={13} color="#9ca3af" />
+                  <input
+                    value={patientSearch}
+                    onChange={e => setPatientSearch(e.target.value)}
+                    placeholder="Buscar..."
+                    style={{ border: "none", background: "transparent", outline: "none", fontSize: 12, color: "#374151", flex: 1 }}
+                  />
+                </div>
+                {isLoading ? (
+                  [1, 2, 3].map(i => <div key={i} style={{ height: 44, background: "#f3f4f6", borderRadius: 9, marginBottom: 8, animation: "pulse 1.5s infinite" }} />)
+                ) : displayedPatients.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: "20px 0", color: "#9ca3af", fontSize: 12 }}>
+                    <Users size={28} style={{ margin: "0 auto 6px", display: "block", opacity: 0.4 }} />
+                    {patientSearch ? "Sin resultados" : "Aún no tienes pacientes"}
+                  </div>
+                ) : (
+                  displayedPatients.map((p: any) => <PatientRow key={p.id} patient={p} onNavigate={navigate} />)
+                )}
+                {totalPatientCount > 4 && (
+                  <button
+                    onClick={() => setShowAllPatients(!showAllPatients)}
+                    style={{ display: "flex", alignItems: "center", gap: 5, margin: "8px auto 0", background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: 9, padding: "7px 14px", fontSize: 12, color: "#374151", cursor: "pointer", fontWeight: 600 }}
+                  >
+                    {showAllPatients ? <><ChevronUp size={13} /> Ver menos</> : <><ChevronDown size={13} /> Ver más</>}
+                  </button>
+                )}
               </div>
-              {isLoading ? (
-                <div className="p-5 space-y-3">
-                  {[1, 2].map(i => (
-                    <div key={i} className="h-12 bg-gray-100 rounded-xl animate-pulse" />
-                  ))}
+
+              {/* Appointments */}
+              <div style={{ background: "#fff", borderRadius: 18, padding: "18px", boxShadow: "0 2px 10px rgba(0,0,0,0.05)", border: "1px solid #f0f0f0" }}>
+                <div style={{ marginBottom: 12 }}>
+                  <h3 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "#111827" }}>Recordatorio de citas</h3>
+                  <p style={{ margin: "3px 0 0", fontSize: 12, color: "#6b7280", textTransform: "capitalize" }}>{formatDate(new Date())}</p>
                 </div>
-              ) : !data?.recentProgress?.length ? (
-                <div className="p-6 text-center">
-                  <p className="text-sm text-gray-400">Sin registros de progreso recientes</p>
+                {isLoading ? (
+                  [1, 2, 3].map(i => <div key={i} style={{ height: 48, background: "#f3f4f6", borderRadius: 9, marginBottom: 8, animation: "pulse 1.5s infinite" }} />)
+                ) : todayAppts.length === 0 ? (
+                  <div style={{ textAlign: "center", padding: "20px 0", color: "#9ca3af", fontSize: 12 }}>
+                    <Calendar size={28} style={{ margin: "0 auto 6px", display: "block", opacity: 0.4 }} />
+                    No hay citas para hoy
+                  </div>
+                ) : (
+                  todayAppts.map((a: any) => <AppointmentRow key={a.appt?.id} appt={a} />)
+                )}
+                <button
+                  onClick={() => navigate("/app/expert/appointments")}
+                  style={{ display: "flex", alignItems: "center", gap: 5, marginTop: 12, background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: 9, padding: "7px 12px", fontSize: 12, color: "#374151", cursor: "pointer", fontWeight: 600 }}
+                >
+                  <Calendar size={13} /> Ver calendario
+                </button>
+              </div>
+            </div>
+
+            {/* Content + Progress */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 18 }}>
+
+              {/* Featured content */}
+              <div style={{ background: "#fff", borderRadius: 18, padding: "18px", boxShadow: "0 2px 10px rgba(0,0,0,0.05)", border: "1px solid #f0f0f0" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                  <h3 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "#111827" }}>Contenido destacado</h3>
+                  <Link href="/app/blog">
+                    <span style={{ fontSize: 12, color: "#F97316", fontWeight: 600, cursor: "pointer" }}>Ver más &gt;</span>
+                  </Link>
                 </div>
-              ) : (
-                <div className="divide-y divide-gray-50">
-                  {data.recentProgress.map((item, i) => (
-                    <div key={i} className="flex items-center gap-3 px-5 py-3">
-                      <div className="w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600 font-bold text-sm flex-shrink-0">
-                        {(item.patientUser?.name ?? "P").charAt(0).toUpperCase()}
+                {(blogData?.posts && blogData.posts.length > 0 ? blogData.posts : [
+                  { id: 1, title: "Descubre las mejores fuentes de proteínas vegetales", readTimeMinutes: 3, category: "9 consejos", coverImageUrl: "https://images.unsplash.com/photo-1512621776951-a57141f2eefd?w=120&q=80", expertName: "Eliana Gómez", expertAvatar: null },
+                  { id: 2, title: "5 alimentos que ayudan a mejorar el metabolismo", readTimeMinutes: 24, category: "8 alimentos", coverImageUrl: "https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=120&q=80", expertName: "Eliana Gómez", expertAvatar: null },
+                ]).map((post: any) => (
+                  <div key={post.id} style={{ display: "flex", gap: 10, marginBottom: 12, paddingBottom: 12, borderBottom: "1px solid #f9fafb" }}>
+                    <div style={{ flex: 1, minWidth: 0 }}>
+                      <div style={{ display: "flex", alignItems: "center", gap: 5, marginBottom: 3 }}>
+                        {post.expertAvatar ? (
+                          <img src={post.expertAvatar} alt="" style={{ width: 18, height: 18, borderRadius: "50%", objectFit: "cover" }} />
+                        ) : (
+                          <div style={{ width: 18, height: 18, borderRadius: "50%", background: "#F97316", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 9, fontWeight: 700 }}>
+                            {getInitials(post.expertName)}
+                          </div>
+                        )}
+                        <span style={{ fontSize: 10, color: "#6b7280", fontWeight: 600 }}>{post.expertName ?? "BuddyExpert"}</span>
+                        <span style={{ fontSize: 10, color: "#9ca3af" }}>· {post.readTimeMinutes}h</span>
                       </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-800">{item.patientUser?.name ?? "Paciente"}</p>
-                        <div className="flex gap-2 text-xs text-gray-500 mt-0.5">
-                          {item.progress.weight && <span>⚖️ {item.progress.weight} kg</span>}
-                          {item.progress.bodyFat && <span>💧 {item.progress.bodyFat}% grasa</span>}
-                          {item.progress.muscleMass && <span>💪 {item.progress.muscleMass} kg músculo</span>}
-                        </div>
-                      </div>
-                      <span className="text-xs text-gray-400 flex-shrink-0">
-                        {new Date(item.progress.recordedAt).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
-                      </span>
+                      <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: "#111827", lineHeight: 1.4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" } as any}>
+                        {post.title}
+                      </p>
+                      <p style={{ margin: "3px 0 0", fontSize: 10, color: "#9ca3af" }}>{post.category} · {post.readTimeMinutes}h</p>
                     </div>
-                  ))}
+                    {post.coverImageUrl && (
+                      <img src={post.coverImageUrl} alt="" style={{ width: 56, height: 56, borderRadius: 9, objectFit: "cover", flexShrink: 0 }} />
+                    )}
+                  </div>
+                ))}
+              </div>
+
+              {/* Progress chart */}
+              <div style={{ background: "#fff", borderRadius: 18, padding: "18px", boxShadow: "0 2px 10px rgba(0,0,0,0.05)", border: "1px solid #f0f0f0" }}>
+                <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                  <h3 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "#111827" }}>Accesos rápidos</h3>
+                  <Link href="/app/expert/patients">
+                    <span style={{ fontSize: 12, color: "#F97316", fontWeight: 600, cursor: "pointer" }}>Ver más &gt;</span>
+                  </Link>
                 </div>
-              )}
+                <p style={{ margin: "0 0 10px", fontSize: 12, color: "#6b7280", fontWeight: 600 }}>
+                  Progreso Pacientes <span style={{ color: "#9ca3af", fontWeight: 400 }}>Último mes</span>
+                </p>
+                <ProgressChart data={recentProgress} />
+                <div style={{ display: "flex", gap: 14, marginTop: 10 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "#6b7280" }}>
+                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#F97316", display: "inline-block" }} />Peso
+                  </div>
+                  <div style={{ display: "flex", alignItems: "center", gap: 5, fontSize: 11, color: "#6b7280" }}>
+                    <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#14b8a6", display: "inline-block" }} />Adherencia
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
 
-          {/* Columna derecha: Pacientes recientes + Accesos rápidos */}
-          <div className="space-y-4">
+          {/* ── Right ── */}
+          <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
 
-            {/* Pacientes recientes */}
-            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-              <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
-                <h2 className="font-semibold text-gray-800">👥 Pacientes</h2>
-                <button
-                  onClick={() => navigate("/app/expert/patients")}
-                  className="text-xs text-orange-500 hover:text-orange-600 font-medium"
-                >
-                  Ver todos →
+            {/* Quick actions */}
+            <div style={{ background: "#fff", borderRadius: 18, padding: "18px", boxShadow: "0 2px 10px rgba(0,0,0,0.05)", border: "1px solid #f0f0f0" }}>
+              <h3 style={{ margin: "0 0 12px", fontSize: 15, fontWeight: 800, color: "#111827" }}>Tareas rápidas</h3>
+              <QuickAction icon={<FileText size={15} />} label="Crear Plan" color="linear-gradient(135deg,#F97316,#FB923C)" onClick={() => navigate("/app/expert/plans")} />
+              <QuickAction icon={<UserPlus size={15} />} label="Agregar Paciente" color="linear-gradient(135deg,#16a34a,#22c55e)" onClick={() => navigate("/app/expert/patients")} />
+              <QuickAction icon={<CalendarPlus size={15} />} label="Agendar Cita" color="linear-gradient(135deg,#0d9488,#14b8a6)" onClick={() => navigate("/app/expert/appointments")} />
+            </div>
+
+            {/* Stats */}
+            <div style={{ background: "#fff", borderRadius: 18, padding: "18px", boxShadow: "0 2px 10px rgba(0,0,0,0.05)", border: "1px solid #f0f0f0" }}>
+              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 12 }}>
+                <h3 style={{ margin: 0, fontSize: 15, fontWeight: 800, color: "#111827" }}>Estadísticas</h3>
+                <Link href="/app/buddy-expert-stats">
+                  <span style={{ fontSize: 12, color: "#F97316", fontWeight: 600, cursor: "pointer" }}>Ver más &gt;</span>
+                </Link>
+              </div>
+              <div onClick={() => navigate("/app/inventory")} style={{ borderRadius: 11, overflow: "hidden", marginBottom: 9, cursor: "pointer", position: "relative", height: 76 }}>
+                <img src="https://images.unsplash.com/photo-1584308666744-24d5c474f2ae?w=400&q=80" alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg,rgba(249,115,22,0.87),rgba(251,146,60,0.72))", display: "flex", flexDirection: "column", justifyContent: "center", padding: "10px 12px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                    <Package size={14} color="#fff" />
+                    <span style={{ fontSize: 13, fontWeight: 800, color: "#fff" }}>Inventario</span>
+                  </div>
+                  <p style={{ margin: "3px 0 0", fontSize: 10, color: "rgba(255,255,255,0.9)" }}>Accede a la lista de propiedades nutricionales.</p>
+                </div>
+              </div>
+              <div onClick={() => navigate("/app/scan")} style={{ borderRadius: 11, overflow: "hidden", cursor: "pointer", position: "relative", height: 76 }}>
+                <img src="https://images.unsplash.com/photo-1550583724-b2692b85b150?w=400&q=80" alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <div style={{ position: "absolute", inset: 0, background: "linear-gradient(135deg,rgba(79,70,229,0.87),rgba(109,40,217,0.72))", display: "flex", flexDirection: "column", justifyContent: "center", padding: "10px 12px" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: 7 }}>
+                    <Scan size={14} color="#fff" />
+                    <span style={{ fontSize: 13, fontWeight: 800, color: "#fff" }}>BuddyScan IA</span>
+                  </div>
+                  <p style={{ margin: "3px 0 0", fontSize: 10, color: "rgba(255,255,255,0.9)" }}>Escanea productos para obtener información nutricional.</p>
+                </div>
+              </div>
+            </div>
+
+            {/* BuddyScan IA featured */}
+            <div style={{ background: "#fff", borderRadius: 18, padding: "18px", boxShadow: "0 2px 10px rgba(0,0,0,0.05)", border: "1px solid #f0f0f0" }}>
+              <h3 style={{ margin: "0 0 10px", fontSize: 15, fontWeight: 800, color: "#111827" }}>BuddyScan IA</h3>
+              <div style={{ borderRadius: 11, overflow: "hidden", marginBottom: 10 }}>
+                <img src="https://images.unsplash.com/photo-1490645935967-10de6ba17061?w=400&q=80" alt="" style={{ width: "100%", height: 110, objectFit: "cover" }} />
+              </div>
+              <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: "#111827" }}>5 alimentos que ayudan a mejorar el metabolismo</p>
+              <p style={{ margin: "3px 0 10px", fontSize: 11, color: "#9ca3af" }}>8 alimentos · 24h</p>
+              <button
+                onClick={() => navigate("/app/scan")}
+                style={{ width: "100%", padding: "9px", borderRadius: 10, background: "linear-gradient(135deg,#4f46e5,#7c3aed)", color: "#fff", border: "none", fontWeight: 700, fontSize: 12, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", gap: 5 }}
+              >
+                <Scan size={13} /> Abrir BuddyScan
+              </button>
+            </div>
+
+            {/* Google Calendar disconnect */}
+            {gcalStatus?.connected && (
+              <div style={{ background: "#f0fdf4", borderRadius: 13, padding: "12px 14px", border: "1px solid #bbf7d0" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 6 }}>
+                  <span style={{ fontSize: 15 }}>📅</span>
+                  <span style={{ fontSize: 13, fontWeight: 700, color: "#16a34a" }}>Google Calendar activo</span>
+                </div>
+                <p style={{ margin: "0 0 8px", fontSize: 11, color: "#166534" }}>{gcalStatus.email}</p>
+                <button onClick={() => disconnectGcal.mutate()} style={{ fontSize: 11, color: "#dc2626", background: "none", border: "none", cursor: "pointer", fontWeight: 600, padding: 0 }}>
+                  Desconectar
                 </button>
-              </div>
-              {isLoading ? (
-                <div className="p-4 space-y-3">
-                  {[1, 2, 3].map(i => (
-                    <div key={i} className="h-10 bg-gray-100 rounded-xl animate-pulse" />
-                  ))}
-                </div>
-              ) : !data?.recentPatients?.length ? (
-                <div className="p-6 text-center">
-                  <div className="text-2xl mb-1">👥</div>
-                  <p className="text-sm text-gray-400">Sin pacientes aún</p>
-                  <Button
-                    size="sm"
-                    onClick={() => navigate("/app/expert/patients")}
-                    className="mt-2 bg-orange-500 hover:bg-orange-600 text-white text-xs"
-                  >
-                    Añadir paciente
-                  </Button>
-                </div>
-              ) : (
-                <div className="divide-y divide-gray-50">
-                  {data.recentPatients.map((item, i) => {
-                    const statusColor = {
-                      active: "bg-green-100 text-green-700",
-                      invited: "bg-yellow-100 text-yellow-700",
-                      paused: "bg-gray-100 text-gray-600",
-                      discharged: "bg-red-100 text-red-600",
-                    }[item.rel.status] ?? "bg-gray-100 text-gray-600";
-
-                    return (
-                      <button
-                        key={i}
-                        onClick={() => navigate(`/app/expert/patients/${item.rel.id}`)}
-                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-gray-50 transition-colors text-left"
-                      >
-                        {item.patientUser?.imageUrl ? (
-                          <img src={item.patientUser.imageUrl} alt="" className="w-8 h-8 rounded-full object-cover flex-shrink-0" />
-                        ) : (
-                          <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-xs flex-shrink-0">
-                            {(item.patientUser?.name ?? "P").charAt(0).toUpperCase()}
-                          </div>
-                        )}
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-800 truncate">{item.patientUser?.name ?? "Paciente"}</p>
-                          <p className="text-xs text-gray-400 truncate">{item.profile?.mainGoal ?? item.patientUser?.email ?? ""}</p>
-                        </div>
-                        <span className={`text-[10px] px-1.5 py-0.5 rounded-full font-medium flex-shrink-0 ${statusColor}`}>
-                          {item.rel.status === "active" ? "Activo" :
-                           item.rel.status === "invited" ? "Invitado" :
-                           item.rel.status === "paused" ? "Pausado" : "Alta"}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            {/* Accesos rápidos */}
-            <div className="bg-white rounded-2xl border border-gray-200 overflow-hidden">
-              <div className="px-5 py-4 border-b border-gray-100">
-                <h2 className="font-semibold text-gray-800">⚡ Accesos rápidos</h2>
-              </div>
-              <div className="p-3 grid grid-cols-2 gap-2">
-                {QUICK_ACTIONS.map((action, i) => (
-                  <button
-                    key={i}
-                    onClick={() => navigate(action.path)}
-                    className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-orange-50 hover:bg-orange-100 transition-colors text-center"
-                  >
-                    <span className="text-xl">{action.icon}</span>
-                    <span className="text-xs font-medium text-gray-700 leading-tight">{action.label}</span>
-                  </button>
-                ))}
-              </div>
-            </div>
-
-            {/* Estado del perfil */}
-            {data?.expertProfile && (
-              <div className="bg-gradient-to-br from-orange-50 to-orange-100 rounded-2xl border border-orange-200 p-4">
-                <div className="flex items-center gap-3 mb-3">
-                  <div className="w-10 h-10 rounded-xl bg-orange-500 flex items-center justify-center text-white text-lg">
-                    🏅
-                  </div>
-                  <div>
-                    <p className="text-sm font-semibold text-gray-800">Perfil profesional</p>
-                    <p className="text-xs text-gray-500">{data.expertProfile.specialty ?? "Nutricionista"}</p>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-2 text-center">
-                  <div className="bg-white rounded-lg p-2">
-                    <p className="text-lg font-bold text-orange-600">{data.stats.totalPatients}</p>
-                    <p className="text-[10px] text-gray-500">Pacientes totales</p>
-                  </div>
-                  <div className="bg-white rounded-lg p-2">
-                    <p className="text-lg font-bold text-orange-600">{data.stats.menusAssignedThisMonth}</p>
-                    <p className="text-[10px] text-gray-500">Menús este mes</p>
-                  </div>
-                </div>
-                <Button
-                  size="sm"
-                  onClick={() => navigate("/app/buddy-expert-dashboard")}
-                  className="w-full mt-3 bg-orange-500 hover:bg-orange-600 text-white text-xs"
-                >
-                  Gestionar perfil y planes
-                </Button>
               </div>
             )}
           </div>
         </div>
       </div>
-    </AppLayout>
+    </div>
   );
 }

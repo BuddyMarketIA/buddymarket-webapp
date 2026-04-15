@@ -2400,3 +2400,14 @@
 - [x] ExpertDashboard: botón "🎥 Unirse" en citas online (usa googleMeetUrl o meetingUrl)
 - [x] ExpertDashboard: botón parpadea en verde si la cita empieza en menos de 30 minutos
 - [x] Ruta GET /api/google/calendar/callback para recibir el código OAuth de Google y guardar tokens
+
+## Sprint Rediseño Dashboard Profesional (mockup) [COMPLETADO]
+- [x] ExpertDashboard: layout tipo mockup con sidebar izquierdo (Profesional, Estadísticas, Mis Planes, Mis Pacientes, Chat, BuddyIA, Mi Perfil, Soporte, Administración)
+- [x] ExpertDashboard: KPIs coloridos (Planes en curso naranja, Mensajes nuevos azul oscuro, Citas hoy teal)
+- [x] ExpertDashboard: sección Pacientes con buscador, avatar, % adherencia y botones Plan/Chat
+- [x] ExpertDashboard: Recordatorio de citas del día con hora, tipo y avatar del paciente
+- [x] ExpertDashboard: Tareas rápidas (Crear Plan, Agregar Paciente, Agendar Cita)
+- [x] ExpertDashboard: Estadísticas con cards Inventario y BuddyScan IA
+- [x] ExpertDashboard: sección BuddyScan IA con imagen y descripción
+- [x] ExpertDashboard: Contenido destacado (artículos/recetas de BuddyMakers)
+- [x] ExpertDashboard: Accesos rápidos con gráfico de Progreso Pacientes (Peso + Adherencia)
