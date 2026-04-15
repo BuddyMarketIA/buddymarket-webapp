@@ -303,13 +303,24 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
     if (window.location.pathname.startsWith("/app/expert") || window.location.pathname.startsWith("/app/buddy-expert")) return true;
     return localStorage.getItem("bm_expert_mode") === "1";
   });
-  // Auto-activate expert mode when navigating to expert routes
+  // Auto-activate expert mode when navigating to expert routes OR when user is a buddyexpert
   useEffect(() => {
     if (isExpertRoute && !expertMode) {
       setExpertMode(true);
       localStorage.setItem("bm_expert_mode", "1");
     }
   }, [isExpertRoute]);
+  // If user has buddyexpert role/accountType, always show expert mode by default
+  useEffect(() => {
+    if (user && (user.role === "buddyexpert" || user.accountType === "buddyexpert")) {
+      const stored = localStorage.getItem("bm_expert_mode");
+      // Only auto-activate if never explicitly set to "0" by the user
+      if (stored === null) {
+        setExpertMode(true);
+        localStorage.setItem("bm_expert_mode", "1");
+      }
+    }
+  }, [user]);
   const toggleExpertMode = useCallback((val: boolean) => {
     setExpertMode(val);
     localStorage.setItem("bm_expert_mode", val ? "1" : "0");
@@ -376,7 +387,6 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       label: "Mi Panel",
       items: [
         { key: "/app/expert/dashboard", label: "Dashboard Profesional", to: "/app/expert/dashboard", emoji: "🏠" },
-        { key: "/app/buddy-expert-dashboard", label: "Panel Profesional", to: "/app/buddy-expert-dashboard", emoji: "🎓" },
         { key: "/app/buddy-expert-stats", label: "Estadísticas", to: "/app/buddy-expert-stats", emoji: "📊" },
         { key: "/app/expert-plans", label: "Mis Planes", to: "/app/expert-plans", emoji: "📋" },
       ],
