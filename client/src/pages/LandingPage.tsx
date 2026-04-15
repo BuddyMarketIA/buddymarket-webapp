@@ -317,18 +317,30 @@ export default function LandingPage() {
       </nav>
 
       {/* ═══ HERO ══════════════════════════════════════════════════════════════ */}
-      <section style={{ paddingTop: 68, background: "linear-gradient(150deg,#fff7ed 0%,#ffffff 50%,#f0fdf4 100%)", display: "flex", alignItems: "center", position: "relative", overflow: "hidden" }}>
-        <div style={{ position: "absolute", top: "8%", right: "-4%", width: 520, height: 520, borderRadius: "50%", background: "radial-gradient(circle,rgba(249,115,22,0.08) 0%,transparent 70%)", pointerEvents: "none" }} />
-        <div style={{ position: "absolute", bottom: "5%", left: "-6%", width: 400, height: 400, borderRadius: "50%", background: "radial-gradient(circle,rgba(16,185,129,0.06) 0%,transparent 70%)", pointerEvents: "none" }} />
+      <section style={{ paddingTop: 68, display: "flex", alignItems: "center", position: "relative", overflow: "hidden", minHeight: "calc(100vh - 68px)" }}>
+        {/* ── Video background ── */}
+        <video
+          autoPlay
+          muted
+          loop
+          playsInline
+          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", zIndex: 0 }}
+        >
+          <source src="https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/food-hero-hd_7d31c514.mp4" type="video/mp4" />
+        </video>
+        {/* ── Gradient overlay for readability ── */}
+        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(110deg, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.45) 55%, rgba(0,0,0,0.25) 100%)", zIndex: 1 }} />
+        {/* ── Subtle orange tint bottom ── */}
+        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "35%", background: "linear-gradient(to top, rgba(249,115,22,0.18) 0%, transparent 100%)", zIndex: 1, pointerEvents: "none" }} />
 
-        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "60px 24px 56px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center", width: "100%" }} className="lp-hero-grid">
+        <div style={{ maxWidth: 1200, margin: "0 auto", padding: "60px 24px 56px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center", width: "100%", position: "relative", zIndex: 2 }} className="lp-hero-grid">
           <div>
             <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "#fff7ed", border: "1.5px solid #fed7aa", borderRadius: 100, padding: "6px 14px", marginBottom: 28 }}>
               <span style={{ width: 8, height: 8, borderRadius: "50%", background: "#F97316", display: "inline-block", animation: "lp-pulse 2s infinite" }} />
               <span style={{ fontSize: 13, fontWeight: 600, color: "#ea580c" }}>Ahora con IA Nutricional</span>
             </div>
 
-            <h1 style={{ fontSize: "clamp(36px,5.5vw,66px)", fontWeight: 900, lineHeight: 1.08, color: "#111827", margin: "0 0 24px", letterSpacing: "-0.03em" }}>
+            <h1 style={{ fontSize: "clamp(36px,5.5vw,66px)", fontWeight: 900, lineHeight: 1.08, color: "#ffffff", margin: "0 0 24px", letterSpacing: "-0.03em", textShadow: "0 2px 12px rgba(0,0,0,0.3)" }}>
               Tu nutrición,<br />
               <span style={{ color: "#F97316", position: "relative", display: "inline-block" }}>
                 inteligente
@@ -339,7 +351,7 @@ export default function LandingPage() {
               y personalizada
             </h1>
 
-            <p style={{ fontSize: "clamp(16px,2vw,19px)", color: "#6b7280", lineHeight: 1.75, maxWidth: 520, marginBottom: 36 }}>
+            <p style={{ fontSize: "clamp(16px,2vw,19px)", color: "rgba(255,255,255,0.85)", lineHeight: 1.75, maxWidth: 520, marginBottom: 36 }}>
               BuddyMarket combina inteligencia artificial y nutrición científica para crear menús semanales únicos, gestionar tu despensa y ayudarte a alcanzar tus objetivos de salud.
             </p>
 
@@ -365,7 +377,7 @@ export default function LandingPage() {
               </div>
               <div>
                 <div style={{ display: "flex", gap: 2 }}>{[1,2,3,4,5].map(i => <span key={i} style={{ color: "#f59e0b", fontSize: 14 }}>★</span>)}</div>
-                <p style={{ fontSize: 13, color: "#6b7280", margin: 0 }}><strong style={{ color: "#111827" }}>15.000+</strong> usuarios confían en BuddyMarket</p>
+                <p style={{ fontSize: 13, color: "rgba(255,255,255,0.8)", margin: 0 }}><strong style={{ color: "#ffffff" }}>15.000+</strong> usuarios confían en BuddyMarket</p>
               </div>
             </div>
           </div>

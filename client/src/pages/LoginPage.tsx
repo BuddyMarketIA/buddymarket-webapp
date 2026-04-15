@@ -311,8 +311,12 @@ export default function LoginPage() {
     if (meQuery.isLoading) return;
     if (isJustLoggedOut) return; // Don't auto-redirect after logout — user explicitly signed out
     if (meQuery.data) {
-      // User is already logged in — always send to dashboard
-      setLocation("/app/dashboard");
+      // Respect onboarding state to avoid login → buddy-setup → login loop
+      if (!meQuery.data.onboardingCompleted) {
+        setLocation("/buddy-setup");
+      } else {
+        setLocation("/app/dashboard");
+      }
     }
   }, [meQuery.data, meQuery.isLoading, setLocation, isJustLoggedOut]);
 
@@ -382,8 +386,13 @@ export default function LoginPage() {
   };
 
   const afterAuth = async () => {
-    await utils.auth.me.invalidate();
-    setLocation("/app/dashboard");
+    // Fetch fresh user data to check onboarding state before redirecting
+    const refreshed = await utils.auth.me.fetch();
+    if (refreshed && !refreshed.onboardingCompleted) {
+      setLocation("/buddy-setup");
+    } else {
+      setLocation("/app/dashboard");
+    }
   };
 
   const handleLogin = async (e: React.FormEvent) => {

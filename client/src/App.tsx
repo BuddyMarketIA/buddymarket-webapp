@@ -123,28 +123,17 @@ function WithLayout({ component: Component, ...props }: { component: React.Compo
 // Protects app routes — redirects to /login if not authenticated
 function ProtectedRoute({ component: Component, params }: { component: React.ComponentType<any>; params?: any }) {
   const { user, loading } = useAuth();
-  const [, setLocation] = useLocation();
   if (loading) return <PageLoader />;
-  if (!user) {
-    setLocation("/login");
-    return null;
-  }
+  if (!user) return <Redirect to="/login" />;
   // Redirect to onboarding wizard if not completed yet
-  if (!user.onboardingCompleted) {
-    setLocation("/buddy-setup");
-    return null;
-  }
+  if (!user.onboardingCompleted) return <Redirect to="/buddy-setup" />;
   return <WithLayout component={Component} params={params} />;
 }
 
 function ProtectedPage({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
-  const [, setLocation] = useLocation();
   if (loading) return <PageLoader />;
-  if (!user) {
-    setLocation("/login");
-    return null;
-  }
+  if (!user) return <Redirect to="/login" />;
   return <>{children}</>;
 }
 
