@@ -292,39 +292,37 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
 
   const expertApplicationQuery = trpc.buddyApplications.getMyApplication.useQuery({ type: "expert" }, { enabled: !!user, staleTime: 5 * 60 * 1000 });
   const makerApplicationQuery = trpc.buddyApplications.getMyApplication.useQuery({ type: "maker" }, { enabled: !!user, staleTime: 5 * 60 * 1000 });
-  const isApprovedExpert = expertApplicationQuery.data?.status === "approved";
-  const isApprovedMaker = makerApplicationQuery.data?.status === "approved";
+  // Un usuario es experto aprobado si tiene la aplicación aprobada O si su rol/accountType es buddyexpert
+  const isApprovedExpert = expertApplicationQuery.data?.status === "approved" ||
+    !!(user && (user.role === "buddyexpert" || (user as any).accountType === "buddyexpert"));
+  const isApprovedMaker = makerApplicationQuery.data?.status === "approved" ||
+    !!(user && (user.role === "buddymaker" || (user as any).accountType === "buddymaker"));
   const hasPendingApplication = expertApplicationQuery.data?.status === "pending" || makerApplicationQuery.data?.status === "pending";
-  // ─── Expert mode toggle (persisted in localStorage) ──────────────────────
+  // ─── Expert mode toggle ──────────────────────────────────────────────────
   const isExpertRoute = location.startsWith("/app/expert") || location.startsWith("/app/buddy-expert");
-  const [expertMode, setExpertMode] = useState<boolean>(() => {
-    if (typeof window === "undefined") return false;
-    // Auto-activate expert mode on expert routes
-    if (window.location.pathname.startsWith("/app/expert") || window.location.pathname.startsWith("/app/buddy-expert")) return true;
-    return localStorage.getItem("bm_expert_mode") === "1";
-  });
-  // Auto-activate expert mode when navigating to expert routes OR when user is a buddyexpert
+  // Si el usuario tiene rol buddyexpert, el modo experto está SIEMPRE activo por defecto
+  const isExpertByRole = !!(user && (user.role === "buddyexpert" || (user as any).accountType === "buddyexpert"));
+  const [expertModeOverride, setExpertModeOverride] = useState<boolean | null>(null);
+  // expertMode: true si es experto por rol, o si está en ruta de experto, o si el usuario lo activó manualmente
+  const expertMode = expertModeOverride !== null
+    ? expertModeOverride
+    : (isExpertByRole || isExpertRoute || localStorage.getItem("bm_expert_mode") === "1");
+  // Auto-activar cuando navega a rutas de experto
   useEffect(() => {
-    if (isExpertRoute && !expertMode) {
-      setExpertMode(true);
-      localStorage.setItem("bm_expert_mode", "1");
+    if (isExpertRoute && expertModeOverride === false) {
+      setExpertModeOverride(null); // reset override, deja que isExpertRoute lo active
     }
   }, [isExpertRoute]);
-  // If user has buddyexpert role/accountType, always show expert mode by default
-  useEffect(() => {
-    if (user && (user.role === "buddyexpert" || user.accountType === "buddyexpert")) {
-      const stored = localStorage.getItem("bm_expert_mode");
-      // Only auto-activate if never explicitly set to "0" by the user
-      if (stored === null) {
-        setExpertMode(true);
-        localStorage.setItem("bm_expert_mode", "1");
-      }
-    }
-  }, [user]);
   const toggleExpertMode = useCallback((val: boolean) => {
-    setExpertMode(val);
-    localStorage.setItem("bm_expert_mode", val ? "1" : "0");
-  }, []);
+    if (isExpertByRole && !val) {
+      // Los expertos por rol pueden cambiar a modo usuario temporalmente
+      setExpertModeOverride(false);
+      localStorage.setItem("bm_expert_mode", "0");
+    } else {
+      setExpertModeOverride(val ? null : false);
+      localStorage.setItem("bm_expert_mode", val ? "1" : "0");
+    }
+  }, [isExpertByRole]);
 
   // ⚠️ These hooks MUST be here (before any conditional return) to avoid React error #300
   const { planDisplay } = usePlan();

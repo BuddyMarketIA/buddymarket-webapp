@@ -1223,6 +1223,14 @@ Responde en JSON con este formato:
         unreadByPatient.set(pid, (unreadByPatient.get(pid) ?? 0) + 1);
       }
 
+      // Distribución de pacientes por estado para gráfico de anillos
+      const patientsByStatus = {
+        active: allPatients.filter(p => p.rel.status === "active").length,
+        invited: allPatients.filter(p => p.rel.status === "invited").length,
+        paused: allPatients.filter(p => p.rel.status === "paused").length,
+        discharged: allPatients.filter(p => p.rel.status === "discharged").length,
+      };
+
       return {
         stats: {
           totalPatients: allPatients.length,
@@ -1233,6 +1241,7 @@ Responde en JSON con este formato:
           menusAssignedThisMonth: menusThisMonth.length,
           recentProgressRecords: recentProgress.length,
         },
+        patientsByStatus,
         upcomingAppointments,
         recentPatients,
         recentProgress,
