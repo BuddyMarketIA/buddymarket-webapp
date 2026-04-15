@@ -185,6 +185,47 @@ async function startServer() {
   // Mobile REST API (iOS native app)
   registerMobileApi(app);
 
+  // ─── Google Calendar OAuth callback ────────────────────────────────────────
+  app.get("/api/google/calendar/callback", async (req: any, res: any) => {
+    try {
+      const { code, state, error } = req.query as Record<string, string>;
+      if (error) {
+        const origin = req.headers.referer?.split("/api")[0] || "";
+        return res.redirect(`${origin}/app/expert/dashboard?gcal_error=${encodeURIComponent(error)}`);
+      }
+      if (!code || !state) {
+        return res.status(400).json({ error: "Missing code or state" });
+      }
+      let stateData: { userId: number; origin: string };
+      try {
+        stateData = JSON.parse(Buffer.from(state, "base64url").toString());
+      } catch {
+        return res.status(400).json({ error: "Invalid state" });
+      }
+      const { exchangeCodeForTokens } = await import("../googleCalendar.js");
+      const redirectUri = `${stateData.origin}/api/google/calendar/callback`;
+      const tokens = await exchangeCodeForTokens(code, redirectUri);
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new Error("DB unavailable");
+      const { buddyExperts } = await import("../../drizzle/schema.js");
+      const { eq } = await import("drizzle-orm");
+      const expiry = new Date(Date.now() + tokens.expires_in * 1000);
+      await drizzleDb.update(buddyExperts).set({
+        googleCalendarConnected: true,
+        googleCalendarAccessToken: tokens.access_token,
+        googleCalendarRefreshToken: tokens.refresh_token ?? undefined,
+        googleCalendarTokenExpiry: expiry,
+        googleCalendarEmail: tokens.email ?? undefined,
+        updatedAt: new Date(),
+      }).where(eq(buddyExperts.userId, stateData.userId));
+      return res.redirect(`${stateData.origin}/app/expert/dashboard?gcal_connected=1`);
+    } catch (err: any) {
+      logger.error("[Google Calendar callback error]", err);
+      return res.redirect(`/app/expert/dashboard?gcal_error=${encodeURIComponent(err.message ?? "Unknown error")}`);
+    }
+  });
+
   // ─── Upload inventory photo to S3 (multipart) ──────────────────────────────
   const upload = multer({ storage: multer.memoryStorage(), limits: { fileSize: 16 * 1024 * 1024 } });
   app.post("/api/upload-inventory-photo", upload.single("file"), async (req: any, res: any) => {

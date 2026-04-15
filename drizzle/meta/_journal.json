@@ -253,6 +253,13 @@
       "when": 1776285560810,
       "tag": "0035_nosy_power_man",
       "breakpoints": true
+    },
+    {
+      "idx": 36,
+      "version": "7",
+      "when": 1776287302730,
+      "tag": "0036_luxuriant_daimon_hellstrom",
+      "breakpoints": true
     }
   ]
 }

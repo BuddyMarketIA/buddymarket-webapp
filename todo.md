@@ -2379,3 +2379,24 @@
 - [x] Página ExpertDashboard: card de estado del perfil profesional con stats
 - [x] Registrar ruta /app/expert/dashboard en App.tsx como página de inicio del panel profesional
 - [x] Añadir enlace Dashboard Profesional en sidebar del modo experto
+
+## Sprint Botón Videollamada en Citas Online [COMPLETADO]
+- [x] Verificar campo meetingUrl en tabla expertAppointments del schema
+- [x] Incluir meetingUrl en el endpoint getExpertDashboardStats
+- [x] Añadir botón "Unirse" con icono de videocámara en citas online del ExpertDashboard
+- [x] El botón solo aparece si la cita es online Y tiene meetingUrl
+- [x] El botón abre la URL en nueva pestaña
+
+## Sprint Integración Google Calendar para BuddyExperts [COMPLETADO]
+- [x] Schema DB: campos googleCalendarToken, googleCalendarRefreshToken, googleCalendarConnected en buddyExperts
+- [x] Schema DB: campo googleMeetUrl en expertAppointments
+- [x] tRPC: endpoint getGoogleCalendarAuthUrl (genera URL OAuth de Google)
+- [x] tRPC: endpoint getGoogleCalendarStatus (estado de conexión)
+- [x] tRPC: endpoint disconnectGoogleCalendar (revoca tokens)
+- [x] tRPC: endpoint checkCalendarAvailability (consulta freebusy + BD local para detectar conflictos)
+- [x] Helper googleCalendar.ts: getGoogleAuthUrl, exchangeCodeForTokens, revokeToken, getValidAccessToken, hasConflict, createCalendarEvent, deleteCalendarEvent
+- [x] ExpertDashboard: banner "Conectar Google Calendar" si no está conectado
+- [x] ExpertDashboard: indicador verde "Google Calendar conectado" con email si está vinculado
+- [x] ExpertDashboard: botón "🎥 Unirse" en citas online (usa googleMeetUrl o meetingUrl)
+- [x] ExpertDashboard: botón parpadea en verde si la cita empieza en menos de 30 minutos
+- [x] Ruta GET /api/google/calendar/callback para recibir el código OAuth de Google y guardar tokens

@@ -510,12 +510,64 @@ export const expertPatientsRouter = router({
       const startTime = new Date(input.startTime);
       const endTime = new Date(input.endTime);
 
-      // Generar link de Google Calendar
-      const gcalTitle = encodeURIComponent(input.title);
-      const gcalStart = startTime.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
-      const gcalEnd = endTime.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
-      const gcalDetails = encodeURIComponent(input.description ?? "Consulta nutricional BuddyMarket");
-      const gcalLink = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${gcalTitle}&dates=${gcalStart}/${gcalEnd}&details=${gcalDetails}`;
+      // Check for conflicts in local DB
+      const { ne, lte, gte } = await import("drizzle-orm");
+      const localConflicts = await drizzleDb.select({ id: expertAppointments.id })
+        .from(expertAppointments)
+        .where(and(
+          eq(expertAppointments.expertId, expert.id),
+          ne(expertAppointments.status, "cancelled"),
+          lte(expertAppointments.startTime, endTime),
+          gte(expertAppointments.endTime, startTime),
+        ));
+      if (localConflicts.length > 0) {
+        throw new TRPCError({ code: "CONFLICT", message: "Ya tienes una cita programada en ese horario. Por favor elige otro horario." });
+      }
+
+      // Try to create Google Calendar event if connected
+      let googleEventId: string | undefined;
+      let googleMeetUrl: string | undefined;
+      let gcalLink: string;
+
+      if (expert.googleCalendarConnected && expert.googleCalendarRefreshToken) {
+        try {
+          const { getValidAccessToken, createCalendarEvent } = await import("../googleCalendar.js");
+          const accessToken = await getValidAccessToken(expert);
+          // Also check Google Calendar for conflicts
+          const { hasConflict } = await import("../googleCalendar.js");
+          const gcalConflict = await hasConflict(accessToken, startTime, endTime);
+          if (gcalConflict.conflict) {
+            throw new TRPCError({ code: "CONFLICT", message: `Conflicto en Google Calendar: tienes un evento "${gcalConflict.conflictingEvent?.title ?? "otro evento"}" en ese horario.` });
+          }
+          const event = await createCalendarEvent(accessToken, {
+            title: input.title,
+            description: input.description,
+            startTime,
+            endTime,
+            addMeet: input.modality === "online",
+            location: input.location,
+          });
+          googleEventId = event.id;
+          googleMeetUrl = event.meetUrl;
+          gcalLink = event.htmlLink;
+        } catch (err: any) {
+          if (err.code === "CONFLICT") throw err;
+          // Non-fatal: continue without Google Calendar
+          console.warn("[createAppointment] Google Calendar error (non-fatal):", err.message);
+          const gcalTitle = encodeURIComponent(input.title);
+          const gcalStart = startTime.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+          const gcalEnd = endTime.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+          gcalLink = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${gcalTitle}&dates=${gcalStart}/${gcalEnd}`;
+        }
+      } else {
+        const gcalTitle = encodeURIComponent(input.title);
+        const gcalStart = startTime.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+        const gcalEnd = endTime.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
+        const gcalDetails = encodeURIComponent(input.description ?? "Consulta nutricional BuddyMarket");
+        gcalLink = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${gcalTitle}&dates=${gcalStart}/${gcalEnd}&details=${gcalDetails}`;
+      }
+
+      const finalMeetUrl = googleMeetUrl ?? input.meetingUrl;
 
       const [appt] = await drizzleDb.insert(expertAppointments).values({
         expertPatientId: input.patientRelId,
@@ -527,9 +579,11 @@ export const expertPatientsRouter = router({
         endTime,
         status: "scheduled",
         modality: input.modality,
-        meetingUrl: input.meetingUrl,
+        meetingUrl: finalMeetUrl,
+        googleMeetUrl: googleMeetUrl,
         location: input.location,
         googleCalendarLink: gcalLink,
+        googleCalendarEventId: googleEventId,
       }).returning();
 
       // Enviar mensaje automático al paciente
@@ -540,7 +594,7 @@ export const expertPatientsRouter = router({
         expertPatientId: input.patientRelId,
         senderId: ctx.user.id,
         senderRole: "expert",
-        content: `📅 He programado una cita para el **${dateStr}** a las **${timeStr}**.\n\n**Modalidad:** ${input.modality === "online" ? "Online" : "Presencial"}\n${input.meetingUrl ? `**Enlace:** ${input.meetingUrl}` : ""}\n\n[Añadir a Google Calendar](${gcalLink})`,
+        content: `📅 He programado una cita para el **${dateStr}** a las **${timeStr}**.\n\n**Modalidad:** ${input.modality === "online" ? "Online" : "Presencial"}\n${finalMeetUrl ? `**Enlace:** ${finalMeetUrl}` : ""}\n\n[Añadir a Google Calendar](${gcalLink})`,
         isRead: false,
       });
 
@@ -1184,6 +1238,104 @@ Responde en JSON con este formato:
         recentProgress,
         expertProfile,
       };
+    }),
+
+  // ─── Google Calendar Integration ─────────────────────────────────────────
+  getGoogleCalendarAuthUrl: protectedProcedure
+    .input(z.object({ origin: z.string() }))
+    .query(async ({ ctx, input }) => {
+      if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+      const { getGoogleAuthUrl } = await import("../googleCalendar.js");
+      const redirectUri = `${input.origin}/api/google/calendar/callback`;
+      const state = Buffer.from(JSON.stringify({ userId: ctx.user.id, origin: input.origin })).toString("base64url");
+      const url = getGoogleAuthUrl(redirectUri, state);
+      return { url };
+    }),
+
+  getGoogleCalendarStatus: protectedProcedure
+    .query(async ({ ctx }) => {
+      if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { buddyExperts } = await import("../../drizzle/schema.js");
+      const { eq } = await import("drizzle-orm");
+      const [expert] = await drizzleDb.select({
+        connected: buddyExperts.googleCalendarConnected,
+        email: buddyExperts.googleCalendarEmail,
+      }).from(buddyExperts).where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+      return expert ?? { connected: false, email: null };
+    }),
+
+  disconnectGoogleCalendar: protectedProcedure
+    .mutation(async ({ ctx }) => {
+      if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { buddyExperts } = await import("../../drizzle/schema.js");
+      const { eq } = await import("drizzle-orm");
+      const [expert] = await drizzleDb.select().from(buddyExperts).where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+      if (!expert) throw new TRPCError({ code: "NOT_FOUND" });
+      if (expert.googleCalendarAccessToken) {
+        try {
+          const { revokeToken } = await import("../googleCalendar.js");
+          await revokeToken(expert.googleCalendarAccessToken);
+        } catch {}
+      }
+      await drizzleDb.update(buddyExperts).set({
+        googleCalendarConnected: false,
+        googleCalendarAccessToken: null,
+        googleCalendarRefreshToken: null,
+        googleCalendarTokenExpiry: null,
+        googleCalendarEmail: null,
+        updatedAt: new Date(),
+      }).where(eq(buddyExperts.userId, ctx.user.id));
+      return { success: true };
+    }),
+
+  checkCalendarAvailability: protectedProcedure
+    .input(z.object({ startTime: z.string(), endTime: z.string() }))
+    .query(async ({ ctx, input }) => {
+      if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { buddyExperts, expertAppointments } = await import("../../drizzle/schema.js");
+      const { eq, and, lte, gte, ne } = await import("drizzle-orm");
+      const [expert] = await drizzleDb.select().from(buddyExperts).where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+      const start = new Date(input.startTime);
+      const end = new Date(input.endTime);
+      // Always check local DB first
+      const localConflicts = await drizzleDb.select({ id: expertAppointments.id, title: expertAppointments.title, startTime: expertAppointments.startTime, endTime: expertAppointments.endTime })
+        .from(expertAppointments)
+        .where(and(
+          eq(expertAppointments.expertId, expert?.id ?? 0),
+          ne(expertAppointments.status, "cancelled"),
+          lte(expertAppointments.startTime, end),
+          gte(expertAppointments.endTime, start),
+        ));
+      if (localConflicts.length > 0) {
+        return { conflict: true, source: "local", conflictingEvent: { start: localConflicts[0].startTime.toISOString(), end: localConflicts[0].endTime.toISOString(), title: localConflicts[0].title } };
+      }
+      // If Google Calendar connected, also check there
+      if (expert?.googleCalendarConnected && expert.googleCalendarRefreshToken) {
+        try {
+          const { getValidAccessToken, hasConflict } = await import("../googleCalendar.js");
+          const accessToken = await getValidAccessToken(expert);
+          const result = await hasConflict(accessToken, start, end);
+          return { ...result, source: "google" };
+        } catch {}
+      }
+      return { conflict: false, source: "local" };
     }),
 
   // ─── Mis experts (vista del paciente) ────────────────────────────────────

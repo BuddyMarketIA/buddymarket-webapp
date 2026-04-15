@@ -823,6 +823,12 @@ export const buddyExperts = pgTable("buddy_experts", {
   chargesEnabled: boolean("chargesEnabled").default(false).notNull(),
   payoutsEnabled: boolean("payoutsEnabled").default(false).notNull(),
   commissionRate: real("commissionRate").default(0.20).notNull(), // 20% por defecto
+  // Google Calendar integration
+  googleCalendarConnected: boolean("googleCalendarConnected").default(false).notNull(),
+  googleCalendarAccessToken: text("googleCalendarAccessToken"),
+  googleCalendarRefreshToken: text("googleCalendarRefreshToken"),
+  googleCalendarTokenExpiry: timestamp("googleCalendarTokenExpiry"),
+  googleCalendarEmail: varchar("googleCalendarEmail", { length: 256 }),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 }, (t) => ({
@@ -2385,6 +2391,7 @@ export const expertAppointments = pgTable("expert_appointments", {
   location: text("location"),
   googleCalendarEventId: varchar("googleCalendarEventId", { length: 256 }),
   googleCalendarLink: text("googleCalendarLink"),
+  googleMeetUrl: text("googleMeetUrl"),
   reminderSentAt: timestamp("reminderSentAt"),
   cancelledAt: timestamp("cancelledAt"),
   cancelReason: text("cancelReason"),

@@ -12,4 +12,7 @@ export const ENV = {
   twilioPhoneNumber: process.env.TWILIO_PHONE_NUMBER ?? "",
   /** URL pública de la app (ej: https://buddymarket.io). Usada como fallback en SSO callbacks. */
   publicAppUrl: process.env.PUBLIC_APP_URL ?? "",
+  // Google OAuth (para Google Calendar)
+  googleClientId: process.env.GOOGLE_CLIENT_ID ?? "",
+  googleClientSecret: process.env.GOOGLE_CLIENT_SECRET ?? "",
 };
