@@ -2277,3 +2277,6 @@
 - [x] Mejorar MyExpert.tsx (vista paciente): polling 5s, markRead automático, timestamps con fecha, ticks de leído
 - [x] Registrar ruta /app/expert/chat en App.tsx
 - [x] Añadir enlace "Chat pacientes" en sidebar de AppLayout (solo visible para BuddyExperts aprobados)
+
+## Bug crítico Apr 15 - JSON parse error (Service Worker)
+- [x] Bug: "Unexpected token '<', DOCTYPE is not valid JSON" en producción — SW v9 kill-switch: se desregistra en install, sin fetch handler. main.tsx desregistra todos los SWs activos y limpia todas las cachés al cargar

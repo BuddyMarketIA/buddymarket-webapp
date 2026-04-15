@@ -1,14 +1,23 @@
 import { trpc } from "@/lib/trpc";
 
-// ── Service Worker Registration ──────────────────────────────────────────────
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker
-      .register('/sw.js', { scope: '/' })
-      .then((reg) => console.log('[SW] Registered:', reg.scope))
-      .catch((err) => console.warn('[SW] Registration failed:', err));
-  });
-}
+// ── ELIMINAR TODOS LOS SERVICE WORKERS Y CACHÉS ──────────────────────────────
+// El SW causaba "Unexpected token '<'" en TODAS las peticiones de la app.
+// Eliminamos agresivamente cualquier SW registrado y todas las cachés.
+(async () => {
+  try {
+    if ('serviceWorker' in navigator) {
+      const registrations = await navigator.serviceWorker.getRegistrations();
+      await Promise.all(registrations.map((reg) => reg.unregister()));
+    }
+    if ('caches' in window) {
+      const keys = await caches.keys();
+      await Promise.all(keys.map((key) => caches.delete(key)));
+    }
+  } catch (_) {
+    // Ignorar errores silenciosamente
+  }
+})();
+
 import { UNAUTHED_ERR_MSG } from '@shared/const';
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink, TRPCClientError } from "@trpc/client";
@@ -36,7 +45,6 @@ const isServerDownError = (error: unknown): boolean => {
 const queryClient = new QueryClient({
   defaultOptions: {
     queries: {
-      // Retry up to 3 times for server-down errors, with exponential backoff
       retry: (failureCount, error) => {
         if (isServerDownError(error)) return failureCount < 3;
         return false;
@@ -46,8 +54,6 @@ const queryClient = new QueryClient({
     },
     mutations: {
       retry: (failureCount, error) => {
-        // Don't retry mutations automatically (could cause duplicate actions)
-        // But do retry server-down errors once
         if (isServerDownError(error)) return failureCount < 1;
         return false;
       },
@@ -59,11 +65,8 @@ const queryClient = new QueryClient({
 const redirectToLoginIfUnauthorized = (error: unknown) => {
   if (!(error instanceof TRPCClientError)) return;
   if (typeof window === "undefined") return;
-
   const isUnauthorized = error.message === UNAUTHED_ERR_MSG;
-
   if (!isUnauthorized) return;
-
   window.location.href = "/login";
 };
 
@@ -71,7 +74,6 @@ queryClient.getQueryCache().subscribe(event => {
   if (event.type === "updated" && event.action.type === "error") {
     const error = event.query.state.error;
     redirectToLoginIfUnauthorized(error);
-    // Only log non-server-down errors to avoid noise
     if (!isServerDownError(error)) {
       console.error("[API Query Error]", error);
     }
