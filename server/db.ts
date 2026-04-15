@@ -115,6 +115,31 @@ export async function upsertUser(user: InsertUser): Promise<void> {
   const db = await getDb();
   if (!db) return;
 
+  // --- Account deduplication: if openId not found but email matches an existing account,
+  // update that account's openId instead of creating a new one.
+  // This prevents duplicate accounts when Google SSO returns a different openId.
+  if (user.email) {
+    const existingByOpenId = await db.select({ id: users.id }).from(users).where(eq(users.openId, user.openId)).limit(1);
+    if (existingByOpenId.length === 0) {
+      // No account with this openId — check if email already exists
+      const existingByEmail = await db.select({ id: users.id, openId: users.openId }).from(users)
+        .where(eq(users.email, user.email.toLowerCase().trim())).limit(1);
+      if (existingByEmail.length > 0) {
+        // Link this openId to the existing account
+        const updateData: Record<string, unknown> = {
+          openId: user.openId,
+          lastSignedIn: user.lastSignedIn ?? new Date(),
+        };
+        if (user.name) updateData.name = user.name;
+        if (user.loginMethod) updateData.loginMethod = user.loginMethod;
+        if (user.imageUrl) updateData.imageUrl = user.imageUrl;
+        await db.update(users).set(updateData).where(eq(users.id, existingByEmail[0].id));
+        console.log(`[upsertUser] Linked openId ${user.openId} to existing account ID ${existingByEmail[0].id} (email: ${user.email})`);
+        return;
+      }
+    }
+  }
+
   const values: InsertUser = { openId: user.openId };
   const updateSet: Record<string, unknown> = {};
 
