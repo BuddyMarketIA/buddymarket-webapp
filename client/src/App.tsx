@@ -125,8 +125,6 @@ function ProtectedRoute({ component: Component, params }: { component: React.Com
   const { user, loading } = useAuth();
   if (loading) return <PageLoader />;
   if (!user) return <Redirect to="/login" />;
-  // Redirect to onboarding wizard if not completed yet
-  if (!user.onboardingCompleted) return <Redirect to="/buddy-setup" />;
   return <WithLayout component={Component} params={params} />;
 }
 

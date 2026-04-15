@@ -2229,6 +2229,7 @@
 - [x] Añadir opción "Recordar mi sesión" en formulario de login (persistir email en localStorage)
 - [x] Bug landing: botón "Ir a la app" debe mostrar "Regístrate"/"Iniciar sesión" cuando no hay sesión y navegar a /login
 - [x] Añadir vídeo de fondo en el hero de la landing page con overlay y texto legible
-- [ ] Bug crítico: login devuelve HTML en lugar de JSON ("Unexpected token '<', <!DOCTYPE...")
-- [ ] Bug crítico: /buddy-setup devuelve HTML en lugar de JSON al guardar configuración
+- [x] Bug crítico: login devuelve HTML en lugar de JSON ("Unexpected token '<', <!DOCTYPE...") — LoginPage reescrito completamente
+- [x] Bug crítico: /buddy-setup devuelve HTML en lugar de JSON al guardar configuración — ProtectedRoute simplificado
 - [x] Bug crítico: bucle infinito en el flujo de registro/inicio de sesión
+- [x] Reemplazar vídeo hero landing por secuencia de 3 vídeos: supermercado, alimentos saludables, batch cooking

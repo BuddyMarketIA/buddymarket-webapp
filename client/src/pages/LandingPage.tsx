@@ -6,6 +6,48 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "@/components/sonner-a11y-shim";
 
+// ─── Hero video sequence ─────────────────────────────────────────────────────
+const HERO_VIDEOS = [
+  "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/supermarket_2d753c38.mp4",
+  "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/healthy-food_51264735.mp4",
+  "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/batch-cooking_aa70ccb0.mp4",
+];
+
+function HeroVideoBackground() {
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const videoRef = useRef<HTMLVideoElement>(null);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    const handleEnded = () => {
+      setCurrentIndex(prev => (prev + 1) % HERO_VIDEOS.length);
+    };
+    video.addEventListener('ended', handleEnded);
+    return () => video.removeEventListener('ended', handleEnded);
+  }, [currentIndex]);
+
+  useEffect(() => {
+    const video = videoRef.current;
+    if (!video) return;
+    video.src = HERO_VIDEOS[currentIndex];
+    video.load();
+    video.play().catch(() => {});
+  }, [currentIndex]);
+
+  return (
+    <video
+      ref={videoRef}
+      autoPlay
+      muted
+      playsInline
+      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", zIndex: 0 }}
+    >
+      <source src={HERO_VIDEOS[0]} type="video/mp4" />
+    </video>
+  );
+}
+
 const LOGO_HORIZONTAL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/logo-horizontal-orange_0dcbe0a8.png";
 const LOGO_ICON = "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/logo-icon-orange_2cf889cb.png";
 const FOOD = {
@@ -318,16 +360,8 @@ export default function LandingPage() {
 
       {/* ═══ HERO ══════════════════════════════════════════════════════════════ */}
       <section style={{ paddingTop: 68, display: "flex", alignItems: "center", position: "relative", overflow: "hidden", minHeight: "calc(100vh - 68px)" }}>
-        {/* ── Video background ── */}
-        <video
-          autoPlay
-          muted
-          loop
-          playsInline
-          style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", zIndex: 0 }}
-        >
-          <source src="https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/food-hero-hd_7d31c514.mp4" type="video/mp4" />
-        </video>
+        {/* ── Video background sequence: supermercado → alimentos → batch cooking ── */}
+        <HeroVideoBackground />
         {/* ── Gradient overlay for readability ── */}
         <div style={{ position: "absolute", inset: 0, background: "linear-gradient(110deg, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.45) 55%, rgba(0,0,0,0.25) 100%)", zIndex: 1 }} />
         {/* ── Subtle orange tint bottom ── */}
