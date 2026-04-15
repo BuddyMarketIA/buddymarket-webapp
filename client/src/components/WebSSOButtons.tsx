@@ -90,7 +90,7 @@ export default function WebSSOButtons({
   const [googleReady, setGoogleReady] = useState(false);
   const [appleLoading, setAppleLoading] = useState(false);
   const [googleLoading, setGoogleLoading] = useState(false);
-  // Ref solo para inicializar (no para renderButton)
+  // Guard local (por instancia)
   const googleInitialized = useRef(false);
 
   // ── Cargar Google Identity Services ────────────────────────────────────────
@@ -99,8 +99,15 @@ export default function WebSSOButtons({
     if (!GOOGLE_CLIENT_ID) return;
 
     const initGoogle = () => {
-      if (!window.google?.accounts?.id || googleInitialized.current) return;
+      if (!window.google?.accounts?.id) return;
+      // Guard global compartido entre instancias para evitar el warning de GSI
+      if ((window as any).__googleGSIInitialized) {
+        setGoogleReady(true);
+        return;
+      }
+      if (googleInitialized.current) return;
       googleInitialized.current = true;
+      (window as any).__googleGSIInitialized = true;
       window.google.accounts.id.initialize({
         client_id: GOOGLE_CLIENT_ID,
         callback: handleGoogleCredential,

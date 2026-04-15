@@ -5674,7 +5674,7 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
         }
       }),
     getAll: protectedProcedure
-      .input(z.object({ limit: z.number().optional() }).optional())
+      .input(z.object({ limit: z.number().optional() }).nullish())
       .query(async ({ ctx, input }) => {
         const drizzleDb = await db.getDb();
         if (!drizzleDb) return [];
@@ -5808,7 +5808,7 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
       }),
     // ADMIN: list all pending applications
     listPending: protectedProcedure
-      .input(z.object({ type: z.enum(["expert", "maker", "all"]).optional(), status: z.enum(["pending", "approved", "rejected", "all"]).optional() }).optional())
+      .input(z.object({ type: z.enum(["expert", "maker", "all"]).optional(), status: z.enum(["pending", "approved", "rejected", "all"]).optional() }).nullish())
       .query(async ({ ctx, input }) => {
         if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
         const drizzleDb = await db.getDb();
@@ -5919,7 +5919,7 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
   // ===========================================================================
   buddyExperts: router({
     list: publicProcedure
-      .input(z.object({ category: z.string().max(50).trim().optional(), search: z.string().max(100).trim().optional(), featured: z.boolean().optional() }).optional())
+      .input(z.object({ category: z.string().max(50).trim().optional(), search: z.string().max(100).trim().optional(), featured: z.boolean().optional() }).nullish())
       .query(async ({ input }) => {
         const drizzleDb = await db.getDb();
         if (!drizzleDb) return [];
@@ -5951,7 +5951,7 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
       }),
 
     getAllPlans: publicProcedure
-      .input(z.object({ category: z.string().max(50).trim().optional(), search: z.string().max(100).trim().optional() }).optional())
+      .input(z.object({ category: z.string().max(50).trim().optional(), search: z.string().max(100).trim().optional() }).nullish())
       .query(async ({ input }) => {
         const drizzleDb = await db.getDb();
         if (!drizzleDb) return [];
@@ -5969,7 +5969,7 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
       }),
 
     getMenus: publicProcedure
-      .input(z.object({ expertId: z.number().optional(), category: z.string().optional() }).optional())
+      .input(z.object({ expertId: z.number().optional(), category: z.string().optional() }).nullish())
       .query(async ({ input }) => {
         const drizzleDb = await db.getDb();
         if (!drizzleDb) return [];
@@ -6546,7 +6546,7 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
   // ===========================================================================
   buddyMakers: router({
     list: publicProcedure
-      .input(z.object({ featured: z.boolean().optional() }).optional())
+      .input(z.object({ featured: z.boolean().optional() }).nullish())
       .query(async ({ input }) => {
         const drizzleDb = await db.getDb();
         if (!drizzleDb) return [];
@@ -7069,7 +7069,7 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
 
     // Get earnings history for the current creator
     getMyEarnings: protectedProcedure
-      .input(z.object({ limit: z.number().int().min(1).max(100).default(50) }).optional())
+      .input(z.object({ limit: z.number().int().min(1).max(100).default(50) }).nullish())
       .query(async ({ ctx, input }) => {
         const drizzleDb = await db.getDb();
         if (!drizzleDb) return { earnings: [], totalEarned: 0, activeReferrals: 0 };
@@ -8627,7 +8627,7 @@ Devuelve EXACTAMENTE este JSON:
     // ── In-App Notifications ──────────────────────────────────────────────────
     inApp: router({
       list: protectedProcedure
-        .input(z.object({ limit: z.number().int().min(1).max(100).default(50) }).optional())
+        .input(z.object({ limit: z.number().int().min(1).max(100).default(50) }).nullish())
         .query(async ({ ctx, input }) => {
           const { inAppNotifications } = await import("../drizzle/schema");
           const { getDb } = await import("./db");
@@ -9123,7 +9123,7 @@ Devuelve SOLO JSON válido con esta estructura exacta:
   // ---------------------------------------------------------------------------
   complements: router({
     list: publicProcedure
-      .input(z.object({ search: z.string().max(100).trim().optional(), category: z.string().max(50).trim().optional(), limit: z.number().int().min(1).max(200).default(100), offset: z.number().int().min(0).default(0) }).optional())
+      .input(z.object({ search: z.string().max(100).trim().optional(), category: z.string().max(50).trim().optional(), limit: z.number().int().min(1).max(200).default(100), offset: z.number().int().min(0).default(0) }).nullish())
       .query(async ({ ctx, input }) => {
         return db.listComplements({ ...(input ?? {}), userId: ctx.user?.id });
       }),
@@ -9185,14 +9185,14 @@ Devuelve SOLO JSON válido con esta estructura exacta:
   // ── Progress & Statistics ────────────────────────────────────────────────
   progress: router({
     weightHistory: protectedProcedure
-      .input(z.object({ days: z.number().int().min(7).max(365).default(30) }))
+      .input(z.object({ days: z.number().int().min(7).max(365).default(30) }).nullish())
       .query(async ({ ctx, input }) => {
         const drizzleDb = await db.getDb();
         if (!drizzleDb) return [];
         const { userMetrics } = await import("../drizzle/schema");
         const { eq, gte, and } = await import("drizzle-orm");
         const since = new Date();
-        since.setDate(since.getDate() - input.days);
+        since.setDate(since.getDate() - (input?.days ?? 30));
         const sinceStr = since.toISOString().split("T")[0];
         const rows = await drizzleDb.select({
           date: userMetrics.date,
@@ -9214,14 +9214,14 @@ Devuelve SOLO JSON válido con esta estructura exacta:
       }),
 
     dailyNutrition: protectedProcedure
-      .input(z.object({ days: z.number().int().min(7).max(90).default(30) }))
+      .input(z.object({ days: z.number().int().min(7).max(90).default(30) }).nullish())
       .query(async ({ ctx, input }) => {
         const drizzleDb = await db.getDb();
         if (!drizzleDb) return [];
         const { mealLogs } = await import("../drizzle/schema");
         const { eq, gte, and, sql } = await import("drizzle-orm");
         const since = new Date();
-        since.setDate(since.getDate() - input.days);
+        since.setDate(since.getDate() - (input?.days ?? 30));
         const sinceStr = since.toISOString().split("T")[0];
         const rows = await drizzleDb
           .select({
@@ -9247,14 +9247,14 @@ Devuelve SOLO JSON válido con esta estructura exacta:
       }),
 
     menuAdherence: protectedProcedure
-      .input(z.object({ weeks: z.number().int().min(1).max(8).default(4) }))
+      .input(z.object({ weeks: z.number().int().min(1).max(8).default(4) }).nullish())
       .query(async ({ ctx, input }) => {
         const drizzleDb = await db.getDb();
         if (!drizzleDb) return [];
         const { menuOrganizers, menuOrganizerDayParts } = await import("../drizzle/schema");
         const { eq, gte, and, sql } = await import("drizzle-orm");
         const since = new Date();
-        since.setDate(since.getDate() - input.weeks * 7);
+        since.setDate(since.getDate() - (input?.weeks ?? 4) * 7);
         const sinceStr = since.toISOString().split("T")[0];
         const menus = await drizzleDb.select({ id: menuOrganizers.id, name: menuOrganizers.name, startDate: menuOrganizers.startDate })
           .from(menuOrganizers)
