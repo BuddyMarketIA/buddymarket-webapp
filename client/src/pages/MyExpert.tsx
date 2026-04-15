@@ -23,8 +23,9 @@ export default function MyExpert() {
 
   const { data: detail, refetch: refetchDetail } = trpc.expertPatients.getPatientDetail.useQuery(
     { patientRelId: activeRelId! },
-    { enabled: !!activeRelId, refetchInterval: 15000 }
+    { enabled: !!activeRelId, refetchInterval: activeTab === "messages" ? 5000 : 30000 }
   );
+  const markReadMutation = trpc.expertPatients.markMessagesRead.useMutation();
 
   const { data: myAssignedMenus } = trpc.expertPatients.getMyAssignedMenus.useQuery(
     undefined,
@@ -56,6 +57,14 @@ export default function MyExpert() {
       setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 200);
     }
   }, [activeTab, detail?.messages]);
+
+  // Marcar como leídos cuando el paciente ve los mensajes
+  useEffect(() => {
+    if (activeRelId && activeTab === "messages" && detail?.messages) {
+      const hasUnread = detail.messages.some(m => !m.isRead && m.senderRole === "expert");
+      if (hasUnread) markReadMutation.mutate({ patientRelId: activeRelId });
+    }
+  }, [detail?.messages?.length, activeTab, activeRelId]);
 
   if (!user) return null;
 
@@ -178,19 +187,33 @@ export default function MyExpert() {
                   <p>Aún no hay mensajes. Tu nutricionista se pondrá en contacto contigo pronto.</p>
                 </div>
               ) : (
-                messages.map(msg => {
+                messages.map((msg, idx) => {
                   const isMe = msg.senderRole === "patient";
+                  const prevMsg = messages[idx - 1];
+                  const showDate = !prevMsg || new Date(msg.createdAt).toDateString() !== new Date(prevMsg.createdAt).toDateString();
                   return (
-                    <div key={msg.id} className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
-                      <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${
-                        isMe
-                          ? "bg-orange-500 text-white rounded-br-sm"
-                          : "bg-gray-100 text-gray-800 rounded-bl-sm"
-                      }`}>
-                        <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-                        <p className={`text-xs mt-1 ${isMe ? "text-orange-100" : "text-gray-400"}`}>
-                          {new Date(msg.createdAt).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
-                        </p>
+                    <div key={msg.id}>
+                      {showDate && (
+                        <div className="flex items-center gap-3 my-3">
+                          <div className="flex-1 h-px bg-gray-200" />
+                          <span className="text-xs text-gray-400 font-medium">
+                            {new Date(msg.createdAt).toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })}
+                          </span>
+                          <div className="flex-1 h-px bg-gray-200" />
+                        </div>
+                      )}
+                      <div className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
+                        <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${
+                          isMe
+                            ? "bg-orange-500 text-white rounded-br-sm"
+                            : "bg-gray-100 text-gray-800 rounded-bl-sm"
+                        }`}>
+                          <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                          <p className={`text-xs mt-1 ${isMe ? "text-orange-100" : "text-gray-400"}`}>
+                            {new Date(msg.createdAt).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
+                            {isMe && msg.isRead && <span className="ml-1">✓✓</span>}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   );

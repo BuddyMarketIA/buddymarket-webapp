@@ -107,6 +107,7 @@ const RegisterBuddyExpert = lazy(() => import("./pages/RegisterBuddyExpert"));
 const RegisterBuddyMaker = lazy(() => import("./pages/RegisterBuddyMaker"));
 const ExpertPatients = lazy(() => import("./pages/ExpertPatients"));
 const ExpertPatientDetail = lazy(() => import("./pages/ExpertPatientDetail"));
+const ExpertChat = lazy(() => import("./pages/ExpertChat"));
 const MyExpert = lazy(() => import("./pages/MyExpert"));
 const MakerAnalytics = lazy(() => import("./pages/MakerAnalytics"));
 const IngredientExplorer = lazy(() => import("./pages/IngredientExplorer"));
@@ -238,6 +239,7 @@ function Router() {
       <Route path="/app/expert-plans">{() => <ProtectedPage><ExpertPlansManager /></ProtectedPage>}</Route>
       <Route path="/app/expert/patients">{() => <ProtectedPage><ExpertPatients /></ProtectedPage>}</Route>
       <Route path="/app/expert/patients/:id">{() => <ProtectedPage><ExpertPatientDetail /></ProtectedPage>}</Route>
+      <Route path="/app/expert/chat">{() => <ProtectedPage><ExpertChat /></ProtectedPage>}</Route>
       <Route path="/app/my-expert">{() => <ProtectedPage><MyExpert /></ProtectedPage>}</Route>
       <Route path="/app/maker-analytics">{() => <ProtectedPage><MakerAnalytics /></ProtectedPage>}</Route>
       <Route path="/app/my-plans">{() => <ProtectedPage><ClientPlanView /></ProtectedPage>}</Route>

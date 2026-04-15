@@ -49,8 +49,9 @@ export default function ExpertPatientDetail() {
 
   const { data: detail, isLoading, refetch } = trpc.expertPatients.getPatientDetail.useQuery(
     { patientRelId },
-    { enabled: !!user && patientRelId > 0, refetchInterval: 15000 }
+    { enabled: !!user && patientRelId > 0, refetchInterval: activeTab === "messages" ? 5000 : 30000 }
   );
+  const markReadMutation = trpc.expertPatients.markMessagesRead.useMutation();
 
   const { data: myMenus } = trpc.buddyExperts.getMyMenus.useQuery(undefined, { enabled: showAssignMenuModal });
 
@@ -101,6 +102,14 @@ export default function ExpertPatientDetail() {
       setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 200);
     }
   }, [activeTab, detail?.messages]);
+
+  // Marcar como leídos cuando el experto ve los mensajes del paciente
+  useEffect(() => {
+    if (patientRelId && activeTab === "messages" && detail?.messages) {
+      const hasUnread = detail.messages.some(m => !m.isRead && m.senderRole === "patient");
+      if (hasUnread) markReadMutation.mutate({ patientRelId });
+    }
+  }, [detail?.messages?.length, activeTab, patientRelId]);
 
   if (!user) return null;
   if (isLoading) return (
@@ -202,20 +211,39 @@ export default function ExpertPatientDetail() {
                   <p>Aún no hay mensajes. Inicia la conversación.</p>
                 </div>
               ) : (
-                messages.map(msg => {
+                messages.map((msg, idx) => {
                   const isExpert = msg.senderRole === "expert";
+                  const prevMsg = messages[idx - 1];
+                  const showDate = !prevMsg || new Date(msg.createdAt).toDateString() !== new Date(prevMsg.createdAt).toDateString();
                   return (
-                    <div key={msg.id} className={`flex ${isExpert ? "justify-end" : "justify-start"}`}>
-                      <div className={`max-w-[75%] rounded-2xl px-4 py-2.5 ${
-                        isExpert
-                          ? "bg-orange-500 text-white rounded-br-sm"
-                          : "bg-gray-100 text-gray-800 rounded-bl-sm"
-                      }`}>
-                        <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
-                        <p className={`text-xs mt-1 ${isExpert ? "text-orange-100" : "text-gray-400"}`}>
-                          {new Date(msg.createdAt).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
-                          {isExpert && msg.isRead && " · Leído"}
-                        </p>
+                    <div key={msg.id}>
+                      {showDate && (
+                        <div className="flex items-center gap-3 my-3">
+                          <div className="flex-1 h-px bg-gray-200" />
+                          <span className="text-xs text-gray-400 font-medium">
+                            {new Date(msg.createdAt).toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })}
+                          </span>
+                          <div className="flex-1 h-px bg-gray-200" />
+                        </div>
+                      )}
+                      <div className={`flex ${isExpert ? "justify-end" : "justify-start"}`}>
+                        {!isExpert && (
+                          <div className="w-7 h-7 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-xs mr-2 flex-shrink-0 self-end mb-1">
+                            {(patientUser?.name ?? "P").charAt(0).toUpperCase()}
+                          </div>
+                        )}
+                        <div className={`max-w-[70%] rounded-2xl px-4 py-2.5 ${
+                          isExpert
+                            ? "bg-orange-500 text-white rounded-br-sm"
+                            : "bg-gray-100 text-gray-800 rounded-bl-sm"
+                        }`}>
+                          <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                          <p className={`text-xs mt-1 ${isExpert ? "text-orange-100" : "text-gray-400"}`}>
+                            {new Date(msg.createdAt).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
+                            {isExpert && msg.isRead && <span className="ml-1">✓✓ Leído</span>}
+                            {isExpert && !msg.isRead && <span className="ml-1 opacity-60">✓</span>}
+                          </p>
+                        </div>
                       </div>
                     </div>
                   );

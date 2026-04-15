@@ -173,6 +173,7 @@ function SidebarContent({
             {group.items.filter((item: any) => {
               if (item.key === "/app/buddy-expert-dashboard" && !isApprovedExpert) return false;
               if (item.key === "/app/expert/patients" && !isApprovedExpert) return false;
+              if (item.key === "/app/expert/chat" && !isApprovedExpert) return false;
               if (item.key === "/app/buddy-maker-dashboard" && !isApprovedMaker) return false;
               if (item.key === "/app/maker-analytics" && !isApprovedMaker) return false;
               if (item.key === "/app/buddy-application" && (isApprovedExpert || isApprovedMaker || hasPendingApplication)) return false;
@@ -396,6 +397,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
         { key: "/app/following", label: t("sidebar.following"), to: "/app/following", emoji: "👥" },
         { key: "/app/buddy-expert-dashboard", label: t("sidebar.expertPanel"), to: "/app/buddy-expert-dashboard", emoji: "🎓" },
         { key: "/app/expert/patients", label: "Mis pacientes", to: "/app/expert/patients", emoji: "👥" },
+        { key: "/app/expert/chat", label: "Chat pacientes", to: "/app/expert/chat", emoji: "💬" },
         { key: "/app/buddy-maker-dashboard", label: t("sidebar.makerPanel"), to: "/app/buddy-maker-dashboard", emoji: "🍳" },
         { key: "/app/maker-analytics", label: "Analíticas", to: "/app/maker-analytics", emoji: "📊" },
         { key: "/app/my-expert", label: "Mi nutricionista", to: "/app/my-expert", emoji: "👩‍⚕️" },

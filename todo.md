@@ -2268,3 +2268,12 @@
 - [x] Verificado: notifications.inApp es sub-router anidado, funciona con .list/.unreadCount/.markRead
 - [x] Verificado: codes, companyReminders, household, expertPatients, support — todos responden OK
 - [x] Verificado: No hay errores 500 en el servidor (solo OTP email limitado por Resend sandbox)
+
+## Chat Nutricionista-Paciente (Apr 15)
+- [x] Schema DB: tabla expertMessages ya existía con todos los campos necesarios
+- [x] tRPC: expertPatients.getMessages, sendMessage, markMessagesRead ya existían en el servidor
+- [x] Página ExpertChat.tsx: vista centralizada del nutricionista con lista de pacientes + conversación activa
+- [x] Mejorar ExpertPatientDetail.tsx: polling 5s, markRead automático, timestamps con fecha, avatares, ticks de leído
+- [x] Mejorar MyExpert.tsx (vista paciente): polling 5s, markRead automático, timestamps con fecha, ticks de leído
+- [x] Registrar ruta /app/expert/chat en App.tsx
+- [x] Añadir enlace "Chat pacientes" en sidebar de AppLayout (solo visible para BuddyExperts aprobados)
