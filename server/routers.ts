@@ -9282,10 +9282,10 @@ Devuelve SOLO JSON válido con esta estructura exacta:
       const userId = ctx.user.id;
       const [logsStats] = await drizzleDb.select({
         totalLogs: sql<number>`COUNT(*)`,
-        avgCalories: sql<number>`ROUND(AVG(${mealLogs.calories}), 0)`,
-        avgProteins: sql<number>`ROUND(AVG(${mealLogs.proteins}), 1)`,
-        avgCarbs: sql<number>`ROUND(AVG(${mealLogs.carbohydrates}), 1)`,
-        avgFats: sql<number>`ROUND(AVG(${mealLogs.fats}), 1)`,
+        avgCalories: sql<number>`ROUND(AVG(${mealLogs.calories})::numeric, 0)`,
+        avgProteins: sql<number>`ROUND(AVG(${mealLogs.proteins})::numeric, 1)`,
+        avgCarbs: sql<number>`ROUND(AVG(${mealLogs.carbohydrates})::numeric, 1)`,
+        avgFats: sql<number>`ROUND(AVG(${mealLogs.fats})::numeric, 1)`,
         daysWithLogs: sql<number>`COUNT(DISTINCT ${mealLogs.logDate})`,
       }).from(mealLogs).where(eq(mealLogs.userId, userId));
       const [firstMetric] = await drizzleDb.select({ weight: userMetrics.weight, date: userMetrics.date })

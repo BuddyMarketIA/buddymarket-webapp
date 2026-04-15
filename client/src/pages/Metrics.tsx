@@ -81,7 +81,7 @@ export default function Metrics() {
   const [metricType, setMetricType] = useState<MetricType>("basic");
   const [activeChart, setActiveChart] = useState<"weight" | "bodyFat" | "muscleMass" | "waist">("weight");
 
-  const metricsQuery = trpc.metrics.getAll.useQuery(undefined, { enabled: !!user });
+  const metricsQuery = trpc.metrics.getAll.useQuery({}, { enabled: !!user });
   const latestQuery = trpc.metrics.getLatest.useQuery(undefined, { enabled: !!user });
   const profileQuery = trpc.profile.get.useQuery(undefined, { enabled: !!user });
 

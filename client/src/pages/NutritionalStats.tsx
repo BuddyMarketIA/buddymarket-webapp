@@ -109,7 +109,7 @@ export default function NutritionalStats() {
   const { t } = useTranslation();
   const [days, setDays] = useState(30);
   const { data, isLoading } = trpc.mealLogs.nutritionalHistory.useQuery({ days });
-  const metricsData = trpc.metrics.getAll.useQuery();
+  const metricsData = trpc.metrics.getAll.useQuery({});
 
   const stats = useMemo(() => {
     const arr = data?.data ?? [];
