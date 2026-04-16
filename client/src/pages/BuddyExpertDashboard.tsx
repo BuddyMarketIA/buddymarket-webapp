@@ -126,6 +126,43 @@ export default function BuddyExpertDashboard() {
     onError: (e) => toast.error(e.message),
   });
 
+  const uploadAvatarMutation = trpc.buddyExperts.uploadAvatar.useMutation({
+    onSuccess: (data) => { toast.success("Foto de perfil subida"); setProfileForm((p) => ({ ...p, avatarUrl: data.url })); refetchProfile(); },
+    onError: () => toast.error("Error al subir la foto"),
+  });
+
+  const uploadCoverImageMutation = trpc.buddyExperts.uploadCoverImage.useMutation({
+    onSuccess: (data) => { toast.success("Imagen de portada subida"); setProfileForm((p) => ({ ...p, coverUrl: data.url })); refetchProfile(); },
+    onError: () => toast.error("Error al subir la portada"),
+  });
+
+  const avatarFileRef = useRef<HTMLInputElement>(null);
+  const coverFileRef = useRef<HTMLInputElement>(null);
+
+  const handleAvatarFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 5 * 1024 * 1024) { toast.error("La imagen no puede superar 5 MB"); return; }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = (reader.result as string).split(",")[1];
+      uploadAvatarMutation.mutate({ imageBase64: base64, mimeType: file.type });
+    };
+    reader.readAsDataURL(file);
+  };
+
+  const handleCoverFile = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    if (file.size > 8 * 1024 * 1024) { toast.error("La imagen no puede superar 8 MB"); return; }
+    const reader = new FileReader();
+    reader.onload = () => {
+      const base64 = (reader.result as string).split(",")[1];
+      uploadCoverImageMutation.mutate({ imageBase64: base64, mimeType: file.type });
+    };
+    reader.readAsDataURL(file);
+  };
+
   const createMenuMutation = trpc.buddyExperts.createMenu.useMutation({
     onSuccess: () => { toast.success("Menú publicado"); setShowMenuForm(false); refetchMenus(); resetMenuForm(); },
     onError: (e) => toast.error(e.message),
@@ -456,25 +493,47 @@ export default function BuddyExpertDashboard() {
                   className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
                 />
               </div>
+              {/* Foto de perfil */}
               <div>
-                <label className="text-xs font-bold text-gray-600 mb-1 block">URL foto de perfil</label>
-                <input
-                  value={profileForm.avatarUrl}
-                  onChange={(e) => setProfileForm((p) => ({ ...p, avatarUrl: e.target.value }))}
-                  placeholder="https://..."
-                  type="url"
-                  className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
-                />
+                <label className="text-xs font-bold text-gray-600 mb-1 block">Foto de perfil</label>
+                <div className="flex items-center gap-3">
+                  {profileForm.avatarUrl ? (
+                    <img src={profileForm.avatarUrl} alt="" className="w-14 h-14 rounded-full object-cover border border-gray-200" />
+                  ) : (
+                    <div className="w-14 h-14 rounded-full bg-orange-100 flex items-center justify-center text-orange-400 text-2xl border border-gray-200">👤</div>
+                  )}
+                  <input ref={avatarFileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarFile} />
+                  <button
+                    type="button"
+                    onClick={() => avatarFileRef.current?.click()}
+                    disabled={uploadAvatarMutation.isPending}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl border border-orange-300 text-orange-600 text-sm font-medium hover:bg-orange-50 transition-colors disabled:opacity-50"
+                  >
+                    {uploadAvatarMutation.isPending ? <span className="w-4 h-4 border-2 border-orange-400 border-t-transparent rounded-full animate-spin" /> : "📷"}
+                    {uploadAvatarMutation.isPending ? "Subiendo..." : "Subir foto"}
+                  </button>
+                </div>
               </div>
+              {/* Imagen de portada */}
               <div>
-                <label className="text-xs font-bold text-gray-600 mb-1 block">URL imagen de portada</label>
-                <input
-                  value={profileForm.coverUrl}
-                  onChange={(e) => setProfileForm((p) => ({ ...p, coverUrl: e.target.value }))}
-                  placeholder="https://..."
-                  type="url"
-                  className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
-                />
+                <label className="text-xs font-bold text-gray-600 mb-1 block">Imagen de portada</label>
+                <div className="flex items-center gap-3">
+                  {profileForm.coverUrl ? (
+                    <img src={profileForm.coverUrl} alt="" className="w-24 h-14 rounded-xl object-cover border border-gray-200" />
+                  ) : (
+                    <div className="w-24 h-14 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400 text-xl border border-gray-200">🖼️</div>
+                  )}
+                  <input ref={coverFileRef} type="file" accept="image/*" className="hidden" onChange={handleCoverFile} />
+                  <button
+                    type="button"
+                    onClick={() => coverFileRef.current?.click()}
+                    disabled={uploadCoverImageMutation.isPending}
+                    className="flex items-center gap-2 px-4 py-2 rounded-xl border border-orange-300 text-orange-600 text-sm font-medium hover:bg-orange-50 transition-colors disabled:opacity-50"
+                  >
+                    {uploadCoverImageMutation.isPending ? <span className="w-4 h-4 border-2 border-orange-400 border-t-transparent rounded-full animate-spin" /> : "🖼️"}
+                    {uploadCoverImageMutation.isPending ? "Subiendo..." : "Subir portada"}
+                  </button>
+                </div>
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
@@ -514,6 +573,13 @@ export default function BuddyExpertDashboard() {
         {/* Plans Tab */}
         {activeTab === "plans" && (
           <div className="space-y-4">
+            {/* Explicación contextual de planes */}
+            <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4">
+              <p className="text-sm font-bold text-blue-800 mb-1">📊 ¿Qué son los Planes Nutricionales?</p>
+              <p className="text-xs text-blue-700 leading-relaxed">
+                Los planes nutricionales son programas estructurados de varias semanas que puedes vender o compartir con la comunidad. Incluyen objetivos calóricos, número de comidas y nivel de dificultad. Los usuarios pueden suscribirse a tus planes desde tu perfil público.
+              </p>
+            </div>
             {!myProfile && (
               <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4 text-sm text-orange-800 text-center">
                 Primero debes crear tu perfil de experto en la pestaña "Perfil".
@@ -706,6 +772,13 @@ export default function BuddyExpertDashboard() {
         {/* Menus Tab */}
         {activeTab === "/app/menus" && (
           <div className="space-y-4">
+            {/* Explicación contextual de menús */}
+            <div className="bg-teal-50 border border-teal-200 rounded-2xl p-4">
+              <p className="text-sm font-bold text-teal-800 mb-1">📋 ¿Qué son los Menús Semanales?</p>
+              <p className="text-xs text-teal-700 leading-relaxed">
+                Los menús semanales son plantillas de alimentación día a día que publicas en tu perfil. Son gratuitos para los usuarios y te ayudan a ganar visibilidad y seguidores. Puedes asignarlos directamente a tus pacientes desde su perfil.
+              </p>
+            </div>
             {!myProfile && (
               <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4 text-sm text-orange-800 text-center">
                 Primero debes crear tu perfil de experto en la pestaña "Mi Perfil".

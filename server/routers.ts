@@ -6420,6 +6420,36 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
         return { success: true };
       }),
 
+    uploadAvatar: protectedProcedure
+      .input(z.object({ imageBase64: z.string(), mimeType: z.string().default("image/jpeg") }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { buddyExperts: beTable } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        const buffer = Buffer.from(input.imageBase64, "base64");
+        const ext = input.mimeType.split("/")[1]?.replace("jpeg", "jpg") ?? "jpg";
+        const key = `expert-avatars/${ctx.user.id}-${Date.now()}.${ext}`;
+        const { url } = await storagePut(key, buffer, input.mimeType);
+        await drizzleDb.update(beTable).set({ avatarUrl: url }).where(eq(beTable.userId, ctx.user.id));
+        return { url };
+      }),
+
+    uploadCoverImage: protectedProcedure
+      .input(z.object({ imageBase64: z.string(), mimeType: z.string().default("image/jpeg") }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { buddyExperts: beTable } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        const buffer = Buffer.from(input.imageBase64, "base64");
+        const ext = input.mimeType.split("/")[1]?.replace("jpeg", "jpg") ?? "jpg";
+        const key = `expert-covers/${ctx.user.id}-${Date.now()}.${ext}`;
+        const { url } = await storagePut(key, buffer, input.mimeType);
+        await drizzleDb.update(beTable).set({ coverUrl: url }).where(eq(beTable.userId, ctx.user.id));
+        return { url };
+      }),
+
     getMyMenus: protectedProcedure.query(async ({ ctx }) => {
       const drizzleDb = await db.getDb();
       if (!drizzleDb) return [];

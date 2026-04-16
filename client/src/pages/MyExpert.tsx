@@ -6,6 +6,7 @@ import { toast } from "@/components/sonner-a11y-shim";
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { ChatMarkdown } from "@/lib/renderChatMarkdown";
 
 type Tab = "messages" | "menus" | "appointments" | "progress";
 
@@ -208,7 +209,7 @@ export default function MyExpert() {
                             ? "bg-orange-500 text-white rounded-br-sm"
                             : "bg-gray-100 text-gray-800 rounded-bl-sm"
                         }`}>
-                          <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                          <ChatMarkdown content={msg.content} isExpert={msg.senderRole === "expert"} />
                           <p className={`text-xs mt-1 ${isMe ? "text-orange-100" : "text-gray-400"}`}>
                             {new Date(msg.createdAt).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
                             {isMe && msg.isRead && <span className="ml-1">✓✓</span>}

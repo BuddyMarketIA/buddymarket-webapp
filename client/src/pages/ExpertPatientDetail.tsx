@@ -14,6 +14,7 @@ import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
 } from "recharts";
 import { generatePatientPDF } from "@/hooks/usePDFReport";
+import { ChatMarkdown } from "@/lib/renderChatMarkdown";
 
 type Tab = "messages" | "menus" | "appointments" | "progress" | "notes" | "profile" | "diary" | "sessions" | "analysis" | "checkins";
 
@@ -169,6 +170,14 @@ export default function ExpertPatientDetail() {
   });
   const deleteMilestoneMutation = trpc.expertPatients.deletePatientMilestone.useMutation({
     onSuccess: () => { toast.success("Hito eliminado"); refetchMilestones(); },
+  });
+
+  const deletePatientMutation = trpc.expertPatients.deletePatient.useMutation({
+    onSuccess: () => {
+      toast.success("Paciente eliminado de tu lista");
+      navigate("/app/expert/patients");
+    },
+    onError: () => toast.error("Error al eliminar el paciente"),
   });
 
   const sendMessageMutation = trpc.expertPatients.sendMessage.useMutation({
@@ -334,32 +343,36 @@ export default function ExpertPatientDetail() {
           </div>
         )}
 
-        {/* Header del paciente */}
-        <div className="flex items-center gap-4 mb-6">
-          <button onClick={() => navigate("/app/expert/patients")} className="text-gray-400 hover:text-gray-600 transition-colors">
-            <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-            </svg>
-          </button>
-          {patientUser?.imageUrl ? (
-            <img src={patientUser.imageUrl} alt={patientUser.name ?? ""} className="w-14 h-14 rounded-full object-cover" />
-          ) : (
-            <div className="w-14 h-14 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-xl">
-              {(patientUser?.name ?? "P").charAt(0).toUpperCase()}
-            </div>
-          )}
-          <div className="flex-1 min-w-0">
-            <h1 className="text-xl font-bold text-gray-900">{patientUser?.name ?? "Paciente"}</h1>
-            <p className="text-sm text-gray-500">{patientUser?.email}</p>
-            {profile && (
-              <p className="text-xs text-gray-400 mt-0.5">
-                {profile.weight ? `${profile.weight} kg` : ""}
-                {profile.height ? ` · ${profile.height} cm` : ""}
-                {profile.age ? ` · ${profile.age} años` : ""}
-              </p>
+        {/* Header del paciente - responsive: 2 filas en mobile */}
+        <div className="mb-6">
+          {/* Fila 1: avatar + nombre */}
+          <div className="flex items-center gap-3 mb-3">
+            <button onClick={() => navigate("/app/expert/patients")} className="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0">
+              <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+              </svg>
+            </button>
+            {patientUser?.imageUrl ? (
+              <img src={patientUser.imageUrl} alt={patientUser.name ?? ""} className="w-12 h-12 rounded-full object-cover flex-shrink-0" />
+            ) : (
+              <div className="w-12 h-12 rounded-full bg-orange-100 flex items-center justify-center text-orange-600 font-bold text-lg flex-shrink-0">
+                {(patientUser?.name ?? "P").charAt(0).toUpperCase()}
+              </div>
             )}
+            <div className="flex-1 min-w-0">
+              <h1 className="text-lg font-bold text-gray-900 truncate">{patientUser?.name ?? "Paciente"}</h1>
+              <p className="text-xs text-gray-500 truncate">{patientUser?.email}</p>
+              {profile && (
+                <p className="text-xs text-gray-400 mt-0.5">
+                  {profile.weight ? `${profile.weight} kg` : ""}
+                  {profile.height ? ` · ${profile.height} cm` : ""}
+                  {profile.age ? ` · ${profile.age} años` : ""}
+                </p>
+              )}
+            </div>
           </div>
-          <div className="flex gap-2 flex-shrink-0">
+          {/* Fila 2: botones de acción */}
+          <div className="flex gap-2 flex-wrap ml-9">
             <Button
               size="sm"
               variant="outline"
@@ -396,6 +409,20 @@ export default function ExpertPatientDetail() {
               className="bg-orange-500 hover:bg-orange-600 text-white"
             >
               + Menú
+            </Button>
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                if (confirm(`¿Eliminar a ${patientUser?.name ?? "este paciente"} de tu lista? Esta acción no se puede deshacer.`)) {
+                  deletePatientMutation.mutate({ patientRelId });
+                }
+              }}
+              disabled={deletePatientMutation.isPending}
+              className="border-red-300 text-red-600 hover:bg-red-50"
+              title="Eliminar paciente"
+            >
+              🗑️
             </Button>
           </div>
         </div>
@@ -471,7 +498,7 @@ export default function ExpertPatientDetail() {
                             ? "bg-orange-500 text-white rounded-br-sm"
                             : "bg-gray-100 text-gray-800 rounded-bl-sm"
                         }`}>
-                          <p className="text-sm whitespace-pre-wrap">{msg.content}</p>
+                          <ChatMarkdown content={msg.content} isExpert={isExpert} />
                           <p className={`text-xs mt-1 ${isExpert ? "text-orange-100" : "text-gray-400"}`}>
                             {new Date(msg.createdAt).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
                             {isExpert && msg.isRead && <span className="ml-1">✓✓ Leído</span>}

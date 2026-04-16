@@ -24,6 +24,7 @@ export interface PlanLimits {
   // Nutritional diary
   canAccessDiary: boolean;
   maxDiaryEntriesPerDay: number; // -1 = unlimited
+  canUseDiaryPhotoAI: boolean;  // IA para identificar alimentos por foto
 
   // Inventory
   canAccessInventory: boolean;
@@ -60,42 +61,43 @@ export interface PlanLimits {
 }
 
 export const PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
-  // FREE — 0€ (miel en los labios: todo limitado para que quieran más)
+  // FREE — 0€ (acceso completo con límites generosos para descubrir la app)
   free: {
-    canCreateRecipes: false,          // ❌ No crear recetas
-    maxSavedRecipes: 5,               // Solo 5 recetas guardadas
+    canCreateRecipes: true,           // ✅ Puede crear 1 receta propia
+    maxSavedRecipes: 15,              // 15 recetas guardadas
 
-    maxMenusPerMonth: 1,              // Solo 1 menú al mes (sin IA)
-    canGenerateAIMenus: false,        // ❌ Sin menús IA
-    canAccessSpecializedMenus: false, // ❌ Sin menús especializados
+    maxMenusPerMonth: 2,              // 2 menús manuales al mes
+    canGenerateAIMenus: true,         // ✅ 1 menú IA de prueba al mes
+    canAccessSpecializedMenus: true,  // ✅ 1 menú especializado de prueba
 
-    canAccessEventMenus: true,        // ✅ 1 menú de evento gratis para probar
-    maxEventMenusPerMonth: 1,         // Solo 1 de prueba
+    canAccessEventMenus: true,        // ✅ 1 menú de evento gratis
+    maxEventMenusPerMonth: 1,
 
-    canAccessDiary: false,            // ❌ Sin diario nutricional
-    maxDiaryEntriesPerDay: 0,
+    canAccessDiary: true,             // ✅ DIARIO COMPLETAMENTE GRATIS
+    maxDiaryEntriesPerDay: -1,        // Sin límite de entradas
+    canUseDiaryPhotoAI: false,        // ❌ Foto IA = solo premium
 
     canAccessInventory: true,         // ✅ Inventario básico
-    maxInventoryItems: 10,            // Solo 10 productos
+    maxInventoryItems: 25,            // 25 productos
 
-    canUseBuddyIA: false,             // ❌ Sin BuddyIA
-    maxBuddyIAMessagesPerDay: 0,
+    canUseBuddyIA: true,              // ✅ 5 mensajes/día de prueba
+    maxBuddyIAMessagesPerDay: 5,
 
-    canGenerateShoppingList: true,    // ✅ Listas básicas
-    maxShoppingListsPerMonth: 2,      // Solo 2 listas al mes
-    canConnectSupermarket: false,     // ❌ Sin supermercado online
+    canGenerateShoppingList: true,    // ✅ Listas de compra
+    maxShoppingListsPerMonth: 3,      // 3 listas al mes
+    canConnectSupermarket: false,     // ❌ Sin supermercado online (premium)
 
-    canTrackMetrics: false,           // ❌ Sin métricas de salud
-    maxMetricsHistory: 0,
+    canTrackMetrics: true,            // ✅ Métricas básicas gratis (peso, medidas)
+    maxMetricsHistory: 90,            // 90 días de historial
 
-    canAccessBuddyMakers: true,       // ✅ Ver BuddyMakers (canal de monetización)
-    canAccessBuddyExperts: true,      // ✅ Ver BuddyExperts (canal de monetización)
-    canBecomeBuddyMaker: true,        // any user can apply — BuddyMarket approves
-    canBecomeBuddyExpert: true,       // any user can apply — BuddyMarket approves
+    canAccessBuddyMakers: true,       // ✅ Ver BuddyMakers
+    canAccessBuddyExperts: true,      // ✅ Ver BuddyExperts
+    canBecomeBuddyMaker: true,
+    canBecomeBuddyExpert: true,
 
-    canExportData: false,
-    canManageMultipleProfiles: false,
-    canUseHousehold: false,
+    canExportData: false,             // ❌ Sin exportar datos (premium)
+    canManageMultipleProfiles: false, // ❌ Sin perfiles familiares (premium)
+    canUseHousehold: false,           // ❌ Sin modo familia (premium)
 
     prioritySupport: false,
   },
@@ -114,6 +116,7 @@ export const PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
 
     canAccessDiary: true,
     maxDiaryEntriesPerDay: -1,        // unlimited
+    canUseDiaryPhotoAI: true,         // ✅ Foto IA en diario (Pro)
 
     canAccessInventory: true,
     maxInventoryItems: -1,            // unlimited
@@ -154,6 +157,7 @@ export const PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
 
     canAccessDiary: true,
     maxDiaryEntriesPerDay: -1,
+    canUseDiaryPhotoAI: true,         // ✅ Foto IA en diario (Pro Max)
 
     canAccessInventory: true,
     maxInventoryItems: -1,
@@ -193,6 +197,7 @@ export const PLAN_LIMITS: Record<PlanTier, PlanLimits> = {
 
     canAccessDiary: true,
     maxDiaryEntriesPerDay: -1,
+    canUseDiaryPhotoAI: true,         // ✅ Foto IA en diario (Pro Max Plus)
 
     canAccessInventory: true,
     maxInventoryItems: -1,
@@ -290,14 +295,15 @@ export function getUpgradePlan(current: PlanTier): PlanTier | null {
 
 /** Human-readable feature descriptions for upgrade modals */
 export const FEATURE_DESCRIPTIONS: Partial<Record<keyof PlanLimits, { title: string; requiredPlan: PlanTier }>> = {
-  canCreateRecipes: { title: "Crear recetas propias", requiredPlan: "basic" },
-  canGenerateAIMenus: { title: "Generar menús con IA", requiredPlan: "basic" },
-  canAccessSpecializedMenus: { title: "Menús especializados (embarazo, diabetes...)", requiredPlan: "basic" },
+  canCreateRecipes: { title: "Crear recetas propias", requiredPlan: "free" },
+  canGenerateAIMenus: { title: "Generar menús con IA (ilimitado)", requiredPlan: "basic" },
+  canAccessSpecializedMenus: { title: "Menús especializados ilimitados", requiredPlan: "basic" },
   canAccessEventMenus: { title: "Menús para eventos especiales", requiredPlan: "free" },
-  canAccessDiary: { title: "Diario nutricional", requiredPlan: "basic" },
-  canUseBuddyIA: { title: "Asistente BuddyIA", requiredPlan: "basic" },
-  canConnectSupermarket: { title: "Conectar supermercado", requiredPlan: "basic" },
-  canTrackMetrics: { title: "Seguimiento de métricas", requiredPlan: "basic" },
+  canAccessDiary: { title: "Diario nutricional", requiredPlan: "free" },
+  canUseDiaryPhotoAI: { title: "Identificar alimentos por foto con IA", requiredPlan: "basic" },
+  canUseBuddyIA: { title: "Asistente BuddyIA (ilimitado)", requiredPlan: "basic" },
+  canConnectSupermarket: { title: "Conectar supermercado online", requiredPlan: "basic" },
+  canTrackMetrics: { title: "Seguimiento de métricas de salud", requiredPlan: "free" },
   canAccessBuddyExperts: { title: "Acceso a BuddyExperts", requiredPlan: "free" },
   canBecomeBuddyMaker: { title: "Convertirte en BuddyMaker", requiredPlan: "free" },
   canBecomeBuddyExpert: { title: "Convertirte en BuddyExpert", requiredPlan: "free" },

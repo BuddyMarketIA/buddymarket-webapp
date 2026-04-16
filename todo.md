@@ -2566,3 +2566,37 @@
 ### Swipe para cerrar sidebar
 - [ ] AppLayout: detectar swipe left (touch) para cerrar sidebar en mobile
 - [ ] Animación suave al cerrar con swipe
+
+## Sprint Mejoras UX BuddyExperts (Abril 2026)
+
+### Fix chat y markdown
+- [x] Fix header del paciente desbordado en mobile en ExpertPatientDetail
+- [x] Renderizar markdown en mensajes del chat (ExpertPatientDetail y MyExpert)
+- [x] Crear utilidad renderChatMarkdown para mensajes con links, bold, listas
+
+### Fix rutas 404
+- [x] Verificar que el 404 del chat era temporal (servidor reiniciando) - no hay bug de ruta
+
+### Fotos por archivo
+- [x] Reemplazar input URL de foto de avatar por file picker en BuddyExpertDashboard
+- [x] Reemplazar input URL de foto de portada por file picker en BuddyExpertDashboard
+- [x] Agregar endpoints uploadAvatar y uploadCoverImage en buddyExperts router
+
+### Eliminar paciente
+- [x] Agregar endpoint deletePatient en expertPatients router
+- [x] Agregar botón "Eliminar paciente" con confirmación en ExpertPatientDetail
+
+### % Adherencia explicado
+- [x] Agregar tooltip explicativo del % de adherencia en PatientRow del ExpertDashboard
+
+### Email de invitación mejorado
+- [x] Mejorar email de invitación con registro: incluye enlace de registro + explicación de BuddyMarket
+- [x] Guardar inviteEmail en BD (campo nuevo en expertPatients)
+- [x] Agregar endpoint sendReminderInvite para pacientes que no han aceptado
+- [x] Agregar botón "Recordatorio" en la lista de pacientes con status "invited"
+
+### Explicaciones contextuales para BuddyExperts
+- [x] Banner de bienvenida en ExpertDashboard para expertos sin pacientes activos
+- [x] Explicación contextual en tab Planes del BuddyExpertDashboard
+- [x] Explicación contextual en tab Menús del BuddyExpertDashboard
+- [x] Explicación contextual en ExpertPatients cuando no hay pacientes

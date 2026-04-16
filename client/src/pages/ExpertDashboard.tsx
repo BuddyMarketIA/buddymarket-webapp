@@ -103,7 +103,10 @@ function PatientRow({ patient, onNav }: { patient: any; onNav: (p: string) => vo
           <div style={{ flex: 1, height: 5, background: "#F3F4F6", borderRadius: 99, overflow: "hidden" }}>
             <div style={{ width: `${adh}%`, height: "100%", background: adhColor, borderRadius: 99 }} />
           </div>
-          <span style={{ fontSize: 11, fontWeight: 700, color: adhColor, minWidth: 30 }}>{adh}%</span>
+          <span
+            title={`Adherencia al plan: ${adh}% — Porcentaje estimado de días que el paciente ha seguido el plan nutricional asignado. Se calcula a partir de los registros del diario alimenticio.`}
+            style={{ fontSize: 11, fontWeight: 700, color: adhColor, minWidth: 30, cursor: "help", textDecoration: "underline dotted" }}
+          >{adh}%</span>
         </div>
       </div>
       <div style={{ display: "flex", gap: 5, flexShrink: 0 }}>
@@ -350,6 +353,16 @@ export default function ExpertDashboard() {
   return (
     <div style={{ background: "#F5F0EB", minHeight: "100%", fontFamily: "'Plus Jakarta Sans','Inter',sans-serif" }}>
       <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}} *{box-sizing:border-box}`}</style>
+
+      {/* Banner de bienvenida contextual */}
+      {!stats?.activePatients && !isLoading && (
+        <div style={{ margin: "12px 16px 0", background: "linear-gradient(135deg,#FFF7ED,#FFEDD5)", border: "1px solid #FED7AA", borderRadius: 14, padding: "14px 16px" }}>
+          <p style={{ margin: "0 0 6px", fontSize: 14, fontWeight: 800, color: "#92400E" }}>👋 Bienvenido a tu panel de experto</p>
+          <p style={{ margin: 0, fontSize: 12, color: "#78350F", lineHeight: 1.5 }}>
+            Desde aquí gestionarás a tus pacientes, verás sus progresos y tendrás acceso rápido a tus citas del día. Para empezar, <strong>invita a tu primer paciente</strong> desde la sección “Pacientes”.
+          </p>
+        </div>
+      )}
 
       {/* Header */}
       <div style={{ padding: "16px 16px 12px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>

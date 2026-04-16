@@ -2346,6 +2346,7 @@ export const expertPatients = pgTable("expert_patients", {
   startDate: timestamp("startDate"),
   endDate: timestamp("endDate"),
   inviteToken: varchar("inviteToken", { length: 64 }),
+  inviteEmail: varchar("inviteEmail", { length: 255 }),
   inviteAcceptedAt: timestamp("inviteAcceptedAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),

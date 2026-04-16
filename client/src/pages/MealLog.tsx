@@ -393,27 +393,7 @@ export default function MealLog() {
     });
   };
 
-  if (!can("canAccessDiary")) {
-    return (
-      <div style={{ padding: "24px 16px", maxWidth: "480px", margin: "0 auto", paddingBottom: "100px" }}>
-        <div style={{ textAlign: "center", marginBottom: "24px" }}>
-          <div style={{ fontSize: 48, marginBottom: 8 }}>📔</div>
-          <h1 style={{ margin: "0 0 4px", fontSize: 22, fontWeight: 900, color: "#1a1a1a" }}>Diario Nutricional</h1>
-          <p style={{ margin: 0, fontSize: 14, color: "#6b7280" }}>Registra tus comidas y controla tus macros diarios</p>
-        </div>
-        <div style={{ background: "linear-gradient(135deg, #FFF7ED, #FEF3C7)", borderRadius: 20, padding: "20px 16px", marginBottom: 16, opacity: 0.5, pointerEvents: "none", userSelect: "none" }}>
-          <div style={{ height: 12, background: "#FED7AA", borderRadius: 99, marginBottom: 8 }} />
-          <div style={{ height: 8, background: "#FED7AA", borderRadius: 99, width: "60%", marginBottom: 16 }} />
-          <div style={{ display: "flex", gap: 8 }}>
-            {["Desayuno", "Almuerzo", "Cena"].map(m => (
-              <div key={m} style={{ flex: 1, background: "#FEF3C7", borderRadius: 12, padding: "12px 8px", textAlign: "center", fontSize: 12, fontWeight: 700, color: "#92400E" }}>{m}</div>
-            ))}
-          </div>
-        </div>
-        <UpgradeGate feature="canAccessDiary">{null}</UpgradeGate>
-      </div>
-    );
-  }
+  // El diario es gratis para todos los usuarios — no bloquear
 
   return (
     <div style={{ padding: "16px", maxWidth: "480px", margin: "0 auto", paddingBottom: "100px" }}>

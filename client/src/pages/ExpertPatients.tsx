@@ -37,6 +37,11 @@ export default function ExpertPatients() {
     { enabled: !!user && statusFilter !== "invited" }
   );
 
+  const sendReminderMutation = trpc.expertPatients.sendReminderInvite.useMutation({
+    onSuccess: () => toast.success("Recordatorio enviado al paciente"),
+    onError: (err) => toast.error(err.message || "Error al enviar el recordatorio"),
+  });
+
   const inviteMutation = trpc.expertPatients.invitePatient.useMutation({
     onSuccess: (data) => {
       toast.success(data.patientFound
@@ -94,6 +99,16 @@ export default function ExpertPatients() {
             + Invitar paciente
           </Button>
         </div>
+
+        {/* Explicación contextual */}
+        {(!patients || patients.length === 0) && !isLoading && (
+          <div className="mb-4 bg-blue-50 border border-blue-200 rounded-2xl p-4">
+            <p className="text-sm font-bold text-blue-800 mb-1">👥 Gestiona a tus pacientes desde aquí</p>
+            <p className="text-xs text-blue-700 leading-relaxed">
+              Invita a tus pacientes por email. Si ya tienen cuenta en BuddyMarket, se añadirán directamente. Si no, recibirán un email con un enlace para registrarse y conectar contigo automáticamente. Desde el perfil de cada paciente podrás chatear, asignar menús, ver su progreso y gestionar sus citas.
+            </p>
+          </div>
+        )}
 
         {/* Filtros */}
         <div className="flex flex-col sm:flex-row gap-3 mb-6">
@@ -225,6 +240,18 @@ export default function ExpertPatients() {
                     </div>
                   )}
 
+                  {/* Botón recordatorio para invitados */}
+                  {patient.status === "invited" && (
+                    <button
+                      onClick={(e) => { e.stopPropagation(); sendReminderMutation.mutate({ patientRelId: patient.id }); }}
+                      disabled={sendReminderMutation.isPending}
+                      title="Enviar recordatorio al paciente para que cree su cuenta"
+                      className="hidden sm:flex items-center gap-1 px-3 py-1.5 rounded-lg border border-orange-300 text-orange-600 text-xs font-semibold hover:bg-orange-50 transition-colors flex-shrink-0 disabled:opacity-50"
+                    >
+                      {sendReminderMutation.isPending ? <span className="w-3 h-3 border-2 border-orange-400 border-t-transparent rounded-full animate-spin" /> : "⏰"}
+                      Recordatorio
+                    </button>
+                  )}
                   {/* Flecha */}
                   <svg className="w-5 h-5 text-gray-400 group-hover:text-orange-500 transition-colors flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />

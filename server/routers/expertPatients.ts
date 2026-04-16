@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { protectedProcedure, router } from "../_core/trpc";
+import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import { invokeLLM } from "../_core/llm";
 import { randomBytes } from "crypto";
 
@@ -215,13 +215,20 @@ export const expertPatientsRouter = router({
         status: "invited",
         notes: input.notes,
         inviteToken: token,
+        inviteEmail: input.email,
       }).returning();
 
       // Enviar email de invitación
       try {
         const expertName = ctx.user.name ?? "Tu nutricionista";
         const appUrl = process.env.PUBLIC_APP_URL || "https://buddymarketapp.com";
+        const isNewUser = !patientUser;
         const { sendEmail } = await import("../email");
+        // URL de acción: si el usuario no existe, primero registrarse y luego aceptar
+        const actionUrl = isNewUser
+          ? `${appUrl}/register?invite=${token}&email=${encodeURIComponent(input.email)}`
+          : `${appUrl}/accept-invite?token=${token}`;
+        const actionLabel = isNewUser ? "Crear cuenta y aceptar invitación" : "Aceptar invitación";
         await sendEmail({
           to: input.email,
           subject: `${expertName} te ha invitado a BuddyMarket`,
@@ -238,16 +245,34 @@ export const expertPatientsRouter = router({
               <p style="color:#374151;font-size:15px;margin:0 0 16px;">
                 <strong>${expertName}</strong> te ha invitado a seguir tu plan nutricional personalizado en BuddyMarket.
               </p>
+              ${isNewUser ? `
+              <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;border:1px solid #FED7AA;border-radius:12px;overflow:hidden;">
+                <tr><td style="background:#FFF7ED;padding:16px 20px;">
+                  <p style="color:#92400E;font-size:14px;font-weight:700;margin:0 0 8px;">¿Qué es BuddyMarket?</p>
+                  <p style="color:#78350F;font-size:13px;margin:0 0 6px;">BuddyMarket es la plataforma de nutrición inteligente que conecta a nutricionistas con sus pacientes. Con BuddyMarket podrás:</p>
+                  <ul style="color:#78350F;font-size:13px;margin:4px 0 0;padding-left:18px;">
+                    <li style="margin-bottom:4px;">Acceder a tus menús personalizados creados por tu nutricionista</li>
+                    <li style="margin-bottom:4px;">Comunicarte directamente con ${expertName} por mensajes</li>
+                    <li style="margin-bottom:4px;">Registrar tu diario alimenticio y ver tu evolución</li>
+                    <li>Recibir citas y recordatorios de seguimiento</li>
+                  </ul>
+                </td></tr>
+              </table>
+              ` : ""}
               <p style="color:#374151;font-size:15px;margin:0 0 24px;">
-                Acepta la invitación para acceder a tus menús personalizados, mensajería directa con tu nutricionista y seguimiento de tu evolución.
+                ${isNewUser
+                  ? "Para empezar, crea tu cuenta gratuita en BuddyMarket. Solo tarda 1 minuto y no necesitas tarjeta de crédito."
+                  : "Acepta la invitación para acceder a tus menús personalizados, mensajería directa con tu nutricionista y seguimiento de tu evolución."
+                }
               </p>
               <table width="100%" cellpadding="0" cellspacing="0" style="margin:28px 0 20px;">
                 <tr><td align="center">
-                  <a href="${appUrl}/accept-invite?token=${token}" style="display:inline-block;background:linear-gradient(135deg,#F97316,#EA580C);color:#ffffff;text-decoration:none;font-size:16px;font-weight:700;padding:16px 40px;border-radius:50px;">
-                    Aceptar invitación
+                  <a href="${actionUrl}" style="display:inline-block;background:linear-gradient(135deg,#F97316,#EA580C);color:#ffffff;text-decoration:none;font-size:16px;font-weight:700;padding:16px 40px;border-radius:50px;">
+                    ${actionLabel}
                   </a>
                 </td></tr>
               </table>
+              ${isNewUser ? `<p style="color:#6b7280;font-size:13px;text-align:center;margin:0 0 16px;">Es completamente gratuito para pacientes ✔️</p>` : ""}
               <p style="color:#6b7280;font-size:13px;margin:24px 0 0;">Si no esperabas esta invitación, puedes ignorar este email de forma segura.</p>
             </td></tr>
           `,
@@ -259,7 +284,96 @@ export const expertPatientsRouter = router({
       return { success: true, inviteToken: token, patientFound: !!patientUser };
     }),
 
-  // ─── Aceptar invitación ───────────────────────────────────────────────────
+  // ─── Recordatorio de invitación ───────────────────────────────────────────────────────────
+  sendReminderInvite: protectedProcedure
+    .input(z.object({ patientRelId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { expertPatients, buddyExperts } = await import("../../drizzle/schema.js");
+      const { eq, and } = await import("drizzle-orm");
+      const [expert] = await drizzleDb.select().from(buddyExperts)
+        .where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+      if (!expert) throw new TRPCError({ code: "NOT_FOUND" });
+      const [rel] = await drizzleDb.select().from(expertPatients)
+        .where(and(eq(expertPatients.id, input.patientRelId), eq(expertPatients.expertId, expert.id))).limit(1);
+      if (!rel) throw new TRPCError({ code: "NOT_FOUND" });
+      if (rel.status !== "invited") throw new TRPCError({ code: "BAD_REQUEST", message: "El paciente ya aceptó la invitación" });
+      if (!rel.inviteEmail && !rel.inviteToken) throw new TRPCError({ code: "BAD_REQUEST", message: "No hay email de invitación registrado" });
+      // Obtener el email del paciente desde la relación o el usuario
+      const patientEmail = (rel as any).inviteEmail;
+      if (!patientEmail) throw new TRPCError({ code: "BAD_REQUEST", message: "No se encontró el email del paciente" });
+      const expertName = ctx.user.name ?? "Tu nutricionista";
+      const appUrl = process.env.PUBLIC_APP_URL || "https://buddymarketapp.com";
+      const token = rel.inviteToken ?? "";
+      const actionUrl = `${appUrl}/register?invite=${token}&email=${encodeURIComponent(patientEmail)}`;
+      const { sendEmail } = await import("../email");
+      await sendEmail({
+        to: patientEmail,
+        subject: `Recordatorio: ${expertName} te espera en BuddyMarket`,
+        html: `
+          <tr>
+            <td style="background:linear-gradient(135deg,#F97316 0%,#EA580C 100%);padding:44px 40px 36px;text-align:center;">
+              <div style="font-size:48px;margin-bottom:12px;">⏰</div>
+              <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:0 0 8px;">Recordatorio de invitación</h1>
+              <p style="color:rgba(255,255,255,0.85);font-size:15px;margin:0;">${expertName} te está esperando en BuddyMarket</p>
+            </td>
+          </tr>
+          <tr><td style="padding:40px;">
+            <p style="color:#374151;font-size:15px;margin:0 0 16px;">Hola,</p>
+            <p style="color:#374151;font-size:15px;margin:0 0 16px;">
+              <strong>${expertName}</strong> te invitó a BuddyMarket hace unos días y aún no has creado tu cuenta.
+            </p>
+            <p style="color:#374151;font-size:15px;margin:0 0 24px;">
+              BuddyMarket es la plataforma donde podrás acceder a tus menús personalizados, chatear con tu nutricionista y registrar tu progreso. ¡Es gratis para pacientes!
+            </p>
+            <table width="100%" cellpadding="0" cellspacing="0" style="margin:28px 0 20px;">
+              <tr><td align="center">
+                <a href="${actionUrl}" style="display:inline-block;background:linear-gradient(135deg,#F97316,#EA580C);color:#ffffff;text-decoration:none;font-size:16px;font-weight:700;padding:16px 40px;border-radius:50px;">
+                  Crear cuenta gratuita
+                </a>
+              </td></tr>
+            </table>
+            <p style="color:#6b7280;font-size:13px;margin:24px 0 0;">Si no esperabas esta invitación, puedes ignorar este email.</p>
+          </td></tr>
+        `,
+      });
+      return { success: true };
+    }),
+
+  // ─── Obtener info de invitación (público, sin auth) ─────────────────────
+  getInviteInfo: publicProcedure
+    .input(z.object({ token: z.string() }))
+    .query(async ({ input }) => {
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { expertPatients, buddyExperts, users } = await import("../../drizzle/schema.js");
+      const { eq } = await import("drizzle-orm");
+
+      const [rel] = await drizzleDb.select().from(expertPatients)
+        .where(eq(expertPatients.inviteToken, input.token)).limit(1);
+      if (!rel) throw new TRPCError({ code: "NOT_FOUND", message: "Invitación no válida o expirada" });
+
+      const [expert] = await drizzleDb.select().from(buddyExperts)
+        .where(eq(buddyExperts.id, rel.expertId)).limit(1);
+      const [expertUser] = expert ? await drizzleDb.select({ name: users.name, imageUrl: users.imageUrl, email: users.email })
+        .from(users).where(eq(users.id, expert.userId)).limit(1) : [null];
+
+      return {
+        token: input.token,
+        status: rel.status,
+        expertName: expertUser?.name ?? "Tu nutricionista",
+        expertImage: expertUser?.imageUrl ?? null,
+        expertSpecialty: expert?.specialty ?? null,
+        alreadyAccepted: rel.status === "active",
+      };
+    }),
+
   acceptInvite: protectedProcedure
     .input(z.object({ token: z.string() }))
     .mutation(async ({ ctx, input }) => {
@@ -316,6 +430,29 @@ export const expertPatientsRouter = router({
         })
         .where(and(eq(expertPatients.id, input.patientRelId), eq(expertPatients.expertId, expert.id)));
 
+      return { success: true };
+    }),
+
+  // ─── Eliminar paciente de la lista ─────────────────────────────────────────
+  deletePatient: protectedProcedure
+    .input(z.object({ patientRelId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
+        throw new TRPCError({ code: "FORBIDDEN" });
+      }
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { expertPatients, buddyExperts } = await import("../../drizzle/schema.js");
+      const { eq, and } = await import("drizzle-orm");
+      const [expert] = await drizzleDb.select().from(buddyExperts)
+        .where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+      if (!expert) throw new TRPCError({ code: "NOT_FOUND" });
+      // Verify ownership
+      const [rel] = await drizzleDb.select().from(expertPatients)
+        .where(and(eq(expertPatients.id, input.patientRelId), eq(expertPatients.expertId, expert.id))).limit(1);
+      if (!rel) throw new TRPCError({ code: "NOT_FOUND" });
+      await drizzleDb.delete(expertPatients).where(eq(expertPatients.id, input.patientRelId));
       return { success: true };
     }),
 

@@ -1391,17 +1391,17 @@ function AdminBadgesPanel() {
           <div className="text-3xl font-bold text-violet-600">{leaderboard?.length ?? 0}</div>
           <div className="text-xs text-gray-500 mt-1">Usuarios con insignias</div>
         </div>
-        <div className="vively-card text-center">
-          <div className="text-3xl font-bold text-emerald-600">
-            {leaderboard?.reduce((sum: number, u: any) => sum + (u.badgeCount ?? 0), 0) ?? 0}
+        <div className="vively-card text-center overflow-hidden">
+          <div className="text-xl font-bold text-emerald-600 truncate">
+            {(leaderboard?.reduce((sum: number, u: any) => sum + (u.badgeCount ?? 0), 0) ?? 0).toLocaleString("es-ES")}
           </div>
-          <div className="text-xs text-gray-500 mt-1">Total insignias otorgadas</div>
+          <div className="text-xs text-gray-500 mt-1">Total insignias</div>
         </div>
-        <div className="vively-card text-center">
-          <div className="text-3xl font-bold text-orange-500">
-            {leaderboard?.reduce((sum: number, u: any) => sum + (u.totalPoints ?? 0), 0) ?? 0}
+        <div className="vively-card text-center overflow-hidden">
+          <div className="text-xl font-bold text-orange-500 truncate">
+            {(leaderboard?.reduce((sum: number, u: any) => sum + (u.totalPoints ?? 0), 0) ?? 0).toLocaleString("es-ES")}
           </div>
-          <div className="text-xs text-gray-500 mt-1">Puntos totales otorgados</div>
+          <div className="text-xs text-gray-500 mt-1">Puntos totales</div>
         </div>
       </div>
 
