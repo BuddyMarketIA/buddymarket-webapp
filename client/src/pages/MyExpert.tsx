@@ -8,28 +8,86 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ChatMarkdown } from "@/lib/renderChatMarkdown";
 
-type View = "dashboard" | "messages" | "menus" | "appointments" | "progress";
+type View = "dashboard" | "messages" | "menus" | "menu_detail" | "appointments" | "progress" | "request_appointment";
+
+const DAY_LABELS: Record<string, string> = {
+  monday: "Lunes", tuesday: "Martes", wednesday: "Miércoles",
+  thursday: "Jueves", friday: "Viernes", saturday: "Sábado", sunday: "Domingo",
+};
+const MEAL_LABELS: Record<string, string> = {
+  breakfast: "🌅 Desayuno", midmorning: "☕ Media mañana", lunch: "🍽️ Comida",
+  snack: "🍎 Merienda", dinner: "🌙 Cena", supper: "🌛 Resopón",
+};
+const DAY_ORDER = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
+
+function parseMenuData(data: string | null | undefined): Record<string, Record<string, string>> | null {
+  if (!data) return null;
+  try {
+    return JSON.parse(data);
+  } catch {
+    return null;
+  }
+}
+
+function checkMenuCompatibility(menuData: Record<string, Record<string, string>>, allergies: string[], restrictions: string[], dislikedFoods: string) {
+  const issues: { day: string; meal: string; text: string; reason: string }[] = [];
+  const allContent = Object.entries(menuData);
+  const allergyList = allergies.map(a => a.toLowerCase());
+  const restrictionList = restrictions.map(r => r.toLowerCase());
+  const dislikedList = dislikedFoods ? dislikedFoods.toLowerCase().split(",").map(s => s.trim()).filter(Boolean) : [];
+
+  for (const [day, meals] of allContent) {
+    for (const [meal, text] of Object.entries(meals)) {
+      const textLower = text.toLowerCase();
+      for (const allergen of allergyList) {
+        if (textLower.includes(allergen)) {
+          issues.push({ day, meal, text, reason: `Contiene "${allergen}" (alergia)` });
+        }
+      }
+      for (const restriction of restrictionList) {
+        if (textLower.includes(restriction)) {
+          issues.push({ day, meal, text, reason: `Contiene "${restriction}" (restricción)` });
+        }
+      }
+      for (const disliked of dislikedList) {
+        if (disliked.length > 2 && textLower.includes(disliked)) {
+          issues.push({ day, meal, text, reason: `Contiene "${disliked}" (no te gusta)` });
+        }
+      }
+    }
+  }
+  return issues;
+}
 
 export default function MyExpert() {
   const { user } = useAuth();
   const [activeRelId, setActiveRelId] = useState<number | null>(null);
   const [view, setView] = useState<View>("dashboard");
   const [messageText, setMessageText] = useState("");
+  const [selectedMenuId, setSelectedMenuId] = useState<number | null>(null);
+  const [showRequestModal, setShowRequestModal] = useState(false);
+  const [reqDate, setReqDate] = useState("");
+  const [reqTime, setReqTime] = useState("");
+  const [reqModality, setReqModality] = useState<"online" | "in_person">("online");
+  const [reqNotes, setReqNotes] = useState("");
+  const [menuRating, setMenuRating] = useState(0);
+  const [menuFeedbackText, setMenuFeedbackText] = useState("");
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   const { data: myExperts, isLoading: loadingExperts } = trpc.expertPatients.getMyExperts.useQuery(
-    undefined,
-    { enabled: !!user }
+    undefined, { enabled: !!user }
   );
   const { data: detail, refetch: refetchDetail } = trpc.expertPatients.getPatientDetail.useQuery(
     { patientRelId: activeRelId! },
     { enabled: !!activeRelId, refetchInterval: view === "messages" ? 5000 : 30000 }
   );
-  const markReadMutation = trpc.expertPatients.markMessagesRead.useMutation();
-  const { data: myAssignedMenus } = trpc.expertPatients.getMyAssignedMenus.useQuery(
-    undefined,
-    { enabled: !!user }
+  const { data: myAssignedMenus, refetch: refetchMenus } = trpc.expertPatients.getMyAssignedMenus.useQuery(
+    undefined, { enabled: !!user }
   );
+  const { data: menuPrefs } = trpc.menus.getMenuPreferences.useQuery(
+    undefined, { enabled: !!user }
+  );
+  const markReadMutation = trpc.expertPatients.markMessagesRead.useMutation();
   const sendMessageMutation = trpc.expertPatients.sendMessage.useMutation({
     onSuccess: () => {
       setMessageText("");
@@ -37,6 +95,23 @@ export default function MyExpert() {
       setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 100);
     },
     onError: () => toast.error("Error al enviar el mensaje"),
+  });
+  const requestAppointmentMutation = trpc.expertPatients.requestAppointment.useMutation({
+    onSuccess: () => {
+      toast.success("✅ Solicitud enviada. Tu nutricionista te confirmará la cita.");
+      setShowRequestModal(false);
+      setReqDate(""); setReqTime(""); setReqNotes("");
+      refetchDetail();
+    },
+    onError: () => toast.error("Error al enviar la solicitud"),
+  });
+  const submitFeedbackMutation = trpc.expertPatients.submitMenuFeedback.useMutation({
+    onSuccess: () => {
+      toast.success("¡Gracias por tu valoración!");
+      setMenuRating(0); setMenuFeedbackText("");
+      refetchMenus();
+    },
+    onError: () => toast.error("Error al enviar la valoración"),
   });
   const updateAppointmentMutation = trpc.expertPatients.updateAppointment.useMutation({
     onSuccess: () => { toast.success("Cita confirmada"); refetchDetail(); },
@@ -81,10 +156,7 @@ export default function MyExpert() {
           <p className="text-gray-500 mb-6">
             Aún no tienes un BuddyExpert asignado. Cuando un nutricionista te invite, podrás ver aquí tus menús personalizados, mensajes y citas.
           </p>
-          <Button
-            onClick={() => window.location.href = "/app/buddy-experts"}
-            className="bg-orange-500 hover:bg-orange-600 text-white"
-          >
+          <Button onClick={() => window.location.href = "/app/buddy-experts"} className="bg-orange-500 hover:bg-orange-600 text-white">
             Buscar nutricionistas
           </Button>
         </div>
@@ -96,8 +168,6 @@ export default function MyExpert() {
   const messages = detail?.messages ?? [];
   const appointments = detail?.appointments ?? [];
   const progressRecords = detail?.progressRecords ?? [];
-
-  // Datos para el dashboard
   const unreadCount = messages.filter(m => !m.isRead && m.senderRole === "expert").length;
   const lastMessage = messages[messages.length - 1];
   const nextAppointment = appointments
@@ -107,28 +177,288 @@ export default function MyExpert() {
   const latestProgress = progressRecords[progressRecords.length - 1];
   const firstProgress = progressRecords[0];
   const weightDiff = latestProgress?.weight && firstProgress?.weight
-    ? latestProgress.weight - firstProgress.weight
-    : null;
+    ? latestProgress.weight - firstProgress.weight : null;
+
+  // ─── MODAL PEDIR CITA ──────────────────────────────────────────────────────
+  const RequestAppointmentModal = () => (
+    <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-4">
+      <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl">
+        <div className="p-5 border-b border-gray-100 flex items-center justify-between">
+          <h3 className="text-lg font-bold text-gray-900">📅 Pedir cita</h3>
+          <button onClick={() => setShowRequestModal(false)} className="text-gray-400 hover:text-gray-600 text-xl">✕</button>
+        </div>
+        <div className="p-5 space-y-4">
+          <p className="text-sm text-gray-500">
+            Indica tu preferencia y tu nutricionista <strong>{activeRelation?.expertUser?.name ?? "te"}</strong> confirmará la cita.
+          </p>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Fecha preferida</label>
+            <input
+              type="date"
+              value={reqDate}
+              onChange={e => setReqDate(e.target.value)}
+              min={new Date().toISOString().split("T")[0]}
+              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Hora preferida</label>
+            <input
+              type="time"
+              value={reqTime}
+              onChange={e => setReqTime(e.target.value)}
+              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+            />
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Modalidad</label>
+            <div className="flex gap-2">
+              {[{ value: "online", label: "🌐 Online", desc: "Videollamada" }, { value: "in_person", label: "📍 Presencial", desc: "En consulta" }].map(opt => (
+                <button
+                  key={opt.value}
+                  onClick={() => setReqModality(opt.value as "online" | "in_person")}
+                  className={`flex-1 py-2 px-3 rounded-xl border text-sm font-medium transition-colors ${
+                    reqModality === opt.value ? "bg-orange-500 text-white border-orange-500" : "bg-white text-gray-700 border-gray-200 hover:border-orange-300"
+                  }`}
+                >
+                  {opt.label}<br /><span className="text-xs opacity-75">{opt.desc}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+          <div>
+            <label className="block text-sm font-medium text-gray-700 mb-1">Notas adicionales <span className="text-gray-400">(opcional)</span></label>
+            <textarea
+              value={reqNotes}
+              onChange={e => setReqNotes(e.target.value)}
+              placeholder="Ej: Quiero revisar mi progreso de este mes..."
+              rows={2}
+              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
+            />
+          </div>
+        </div>
+        <div className="p-5 pt-0 flex gap-2">
+          <Button variant="outline" onClick={() => setShowRequestModal(false)} className="flex-1">Cancelar</Button>
+          <Button
+            onClick={() => activeRelId && requestAppointmentMutation.mutate({
+              patientRelId: activeRelId,
+              preferredDate: reqDate || undefined,
+              preferredTime: reqTime || undefined,
+              modality: reqModality,
+              notes: reqNotes || undefined,
+            })}
+            disabled={requestAppointmentMutation.isPending}
+            className="flex-1 bg-orange-500 hover:bg-orange-600 text-white"
+          >
+            {requestAppointmentMutation.isPending ? "Enviando..." : "Enviar solicitud"}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+
+  // ─── VISTA: DETALLE DE MENÚ ────────────────────────────────────────────────
+  if (view === "menu_detail" && selectedMenuId) {
+    const menuItem = myAssignedMenus?.find(m => m.menu.id === selectedMenuId);
+    if (!menuItem) { setView("menus"); return null; }
+
+    const rawMenuData = menuItem.menu.adaptedMenuData || menuItem.originalMenu?.menuData;
+    const menuData = parseMenuData(rawMenuData);
+    const allergies = menuPrefs?.allergies ?? [];
+    const restrictions = menuPrefs?.restrictions ?? [];
+    const dislikedFoods = menuPrefs?.dislikedFoods ?? "";
+    const issues = menuData ? checkMenuCompatibility(menuData, allergies, restrictions, dislikedFoods) : [];
+    const isCompatible = issues.length === 0;
+    const hasPrefs = allergies.length > 0 || restrictions.length > 0 || dislikedFoods.length > 0;
+    const days = menuData ? DAY_ORDER.filter(d => menuData[d]) : [];
+    const existingRating = menuItem.menu.patientRating;
+
+    return (
+      <AppLayout>
+        {showRequestModal && <RequestAppointmentModal />}
+        <div className="max-w-2xl mx-auto px-4 py-6">
+          <button onClick={() => setView("menus")} className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-orange-600 transition-colors mb-4">
+            ← Volver a mis menús
+          </button>
+
+          {/* Header del menú */}
+          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 mb-4">
+            <div className="flex items-start justify-between gap-3 mb-3">
+              <div>
+                <h2 className="text-xl font-bold text-gray-900">{menuItem.menu.originalMenuTitle ?? "Menú personalizado"}</h2>
+                <p className="text-sm text-gray-500 mt-0.5">
+                  De <strong>{menuItem.expertUser?.name ?? "tu nutricionista"}</strong>
+                  {menuItem.menu.weekStartDate && (
+                    <> · Semana del {new Date(menuItem.menu.weekStartDate).toLocaleDateString("es-ES", { day: "numeric", month: "long" })}</>
+                  )}
+                </p>
+              </div>
+              <span className={`flex-shrink-0 text-xs px-2 py-1 rounded-full font-medium ${
+                menuItem.menu.status === "active" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"
+              }`}>
+                {menuItem.menu.status === "active" ? "✓ Activo" : "Asignado"}
+              </span>
+            </div>
+
+            {menuItem.originalMenu?.description && (
+              <p className="text-sm text-gray-600 mb-3">{menuItem.originalMenu.description}</p>
+            )}
+
+            {menuItem.originalMenu?.targetCalories && (
+              <div className="flex items-center gap-1.5 text-sm text-gray-600 mb-3">
+                <span className="text-base">🔥</span>
+                <span>~{menuItem.originalMenu.targetCalories} kcal/día</span>
+              </div>
+            )}
+
+            {menuItem.menu.expertNotes && (
+              <div className="bg-orange-50 border-l-2 border-orange-400 rounded-r-xl p-3">
+                <p className="text-xs font-semibold text-orange-700 mb-1">💬 Nota de tu nutricionista</p>
+                <p className="text-sm text-gray-700">{menuItem.menu.expertNotes}</p>
+              </div>
+            )}
+          </div>
+
+          {/* Verificación de compatibilidad */}
+          {hasPrefs && (
+            <div className={`rounded-2xl p-4 mb-4 border ${isCompatible ? "bg-green-50 border-green-200" : "bg-red-50 border-red-200"}`}>
+              <div className="flex items-center gap-2 mb-2">
+                <span className="text-lg">{isCompatible ? "✅" : "⚠️"}</span>
+                <span className={`font-semibold text-sm ${isCompatible ? "text-green-800" : "text-red-800"}`}>
+                  {isCompatible ? "Compatible con tus restricciones" : `${issues.length} posible${issues.length > 1 ? "s" : ""} incompatibilidad${issues.length > 1 ? "es" : ""}`}
+                </span>
+              </div>
+              {!isCompatible && (
+                <div className="space-y-1.5">
+                  {issues.slice(0, 5).map((issue, i) => (
+                    <div key={i} className="text-xs text-red-700 bg-red-100 rounded-lg px-2 py-1.5">
+                      <span className="font-medium">{DAY_LABELS[issue.day] ?? issue.day} · {MEAL_LABELS[issue.meal] ?? issue.meal}:</span>{" "}
+                      {issue.reason}
+                    </div>
+                  ))}
+                  {issues.length > 5 && (
+                    <p className="text-xs text-red-600">+{issues.length - 5} más. Habla con tu nutricionista para adaptar el menú.</p>
+                  )}
+                </div>
+              )}
+              {isCompatible && (
+                <p className="text-xs text-green-700">
+                  Este menú respeta tus alergias{allergies.length > 0 ? ` (${allergies.join(", ")})` : ""} y restricciones.
+                </p>
+              )}
+            </div>
+          )}
+
+          {!hasPrefs && (
+            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-3 mb-4 text-sm text-amber-700">
+              💡 <strong>Tip:</strong> Añade tus alergias y restricciones en tu perfil para que verifiquemos automáticamente la compatibilidad de cada menú.
+            </div>
+          )}
+
+          {/* Contenido del menú por días */}
+          {menuData && days.length > 0 ? (
+            <div className="space-y-3 mb-4">
+              <h3 className="font-semibold text-gray-900 text-base">📋 Contenido del menú</h3>
+              {days.map(day => {
+                const dayMeals = menuData[day];
+                const dayIssues = issues.filter(i => i.day === day);
+                return (
+                  <div key={day} className={`bg-white rounded-xl border p-4 ${dayIssues.length > 0 ? "border-red-200" : "border-gray-200"}`}>
+                    <div className="flex items-center justify-between mb-3">
+                      <h4 className="font-semibold text-gray-900">{DAY_LABELS[day] ?? day}</h4>
+                      {dayIssues.length > 0 && (
+                        <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full">⚠️ {dayIssues.length} aviso</span>
+                      )}
+                    </div>
+                    <div className="space-y-2">
+                      {Object.entries(dayMeals).map(([meal, text]) => {
+                        const hasIssue = issues.some(i => i.day === day && i.meal === meal);
+                        return (
+                          <div key={meal} className={`flex gap-2 text-sm ${hasIssue ? "bg-red-50 rounded-lg px-2 py-1" : ""}`}>
+                            <span className="flex-shrink-0 text-gray-500 w-28 text-xs pt-0.5">
+                              {MEAL_LABELS[meal] ?? meal}
+                            </span>
+                            <span className={`flex-1 ${hasIssue ? "text-red-700" : "text-gray-700"}`}>{text}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <div className="bg-gray-50 rounded-xl border border-dashed border-gray-200 p-6 text-center mb-4">
+              <p className="text-gray-500 text-sm">El contenido detallado de este menú no está disponible aún.</p>
+              <p className="text-xs text-gray-400 mt-1">Consulta con tu nutricionista para más detalles.</p>
+            </div>
+          )}
+
+          {/* Valorar el menú */}
+          {!existingRating && (
+            <div className="bg-white rounded-2xl border border-gray-200 p-4 mb-4">
+              <h4 className="font-semibold text-gray-900 mb-3">⭐ ¿Qué te parece este menú?</h4>
+              <div className="flex gap-2 mb-3">
+                {[1, 2, 3, 4, 5].map(star => (
+                  <button key={star} onClick={() => setMenuRating(star)} className={`text-2xl transition-transform hover:scale-110 ${star <= menuRating ? "opacity-100" : "opacity-30"}`}>
+                    ⭐
+                  </button>
+                ))}
+              </div>
+              {menuRating > 0 && (
+                <>
+                  <textarea
+                    value={menuFeedbackText}
+                    onChange={e => setMenuFeedbackText(e.target.value)}
+                    placeholder="Cuéntale a tu nutricionista qué te ha parecido (opcional)..."
+                    rows={2}
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none mb-2"
+                  />
+                  <Button
+                    onClick={() => submitFeedbackMutation.mutate({ assignedMenuId: selectedMenuId, rating: menuRating, feedback: menuFeedbackText || undefined })}
+                    disabled={submitFeedbackMutation.isPending}
+                    className="w-full bg-orange-500 hover:bg-orange-600 text-white"
+                  >
+                    {submitFeedbackMutation.isPending ? "Enviando..." : "Enviar valoración"}
+                  </Button>
+                </>
+              )}
+            </div>
+          )}
+          {existingRating && (
+            <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4 text-sm text-amber-700">
+              ⭐ Ya valoraste este menú con {existingRating}/5 estrellas.
+              {menuItem.menu.patientFeedback && <p className="mt-1 text-gray-600 italic">"{menuItem.menu.patientFeedback}"</p>}
+            </div>
+          )}
+
+          {/* Botón pedir cita */}
+          <Button
+            onClick={() => setShowRequestModal(true)}
+            variant="outline"
+            className="w-full border-orange-300 text-orange-600 hover:bg-orange-50"
+          >
+            📅 Pedir cita para hablar sobre este menú
+          </Button>
+        </div>
+      </AppLayout>
+    );
+  }
 
   // ─── VISTA: DASHBOARD ─────────────────────────────────────────────────────
   if (view === "dashboard") {
     return (
       <AppLayout>
+        {showRequestModal && <RequestAppointmentModal />}
         <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
 
-          {/* Header */}
           <div className="flex items-center justify-between">
             <h1 className="text-2xl font-bold text-gray-900">Mi Nutricionista</h1>
             {myExperts.length > 1 && (
-              <select
-                value={activeRelId ?? ""}
-                onChange={e => setActiveRelId(Number(e.target.value))}
-                className="text-sm border border-gray-200 rounded-lg px-2 py-1 text-gray-700"
-              >
+              <select value={activeRelId ?? ""} onChange={e => setActiveRelId(Number(e.target.value))}
+                className="text-sm border border-gray-200 rounded-lg px-2 py-1 text-gray-700">
                 {myExperts.map(e => (
-                  <option key={e.relation.id} value={e.relation.id}>
-                    {e.expertUser?.name ?? "Nutricionista"}
-                  </option>
+                  <option key={e.relation.id} value={e.relation.id}>{e.expertUser?.name ?? "Nutricionista"}</option>
                 ))}
               </select>
             )}
@@ -137,7 +467,7 @@ export default function MyExpert() {
           {/* Tarjeta del nutricionista */}
           {activeRelation && (
             <div className="relative overflow-hidden rounded-2xl bg-gradient-to-br from-orange-500 to-amber-500 p-5 text-white shadow-lg">
-              <div className="flex items-center gap-4">
+              <div className="flex items-center gap-4 mb-4">
                 {activeRelation.expertUser?.imageUrl ? (
                   <img src={activeRelation.expertUser.imageUrl} alt="" className="w-16 h-16 rounded-full object-cover border-2 border-white/40" />
                 ) : (
@@ -148,35 +478,29 @@ export default function MyExpert() {
                 <div className="flex-1 min-w-0">
                   <p className="text-white/80 text-sm font-medium">Tu nutricionista</p>
                   <h2 className="text-xl font-bold truncate">{activeRelation.expertUser?.name ?? "Tu nutricionista"}</h2>
-                  <span className="inline-flex items-center gap-1 text-xs bg-white/20 px-2 py-0.5 rounded-full mt-1">
-                    ✓ BuddyExpert verificado
-                  </span>
+                  <span className="inline-flex items-center gap-1 text-xs bg-white/20 px-2 py-0.5 rounded-full mt-1">✓ BuddyExpert verificado</span>
                 </div>
               </div>
               {/* Acciones rápidas */}
-              <div className="flex gap-2 mt-4">
-                <button
-                  onClick={() => setView("messages")}
-                  className="flex-1 flex items-center justify-center gap-1.5 bg-white/20 hover:bg-white/30 transition-colors rounded-xl py-2.5 text-sm font-semibold"
-                >
+              <div className="grid grid-cols-2 gap-2">
+                <button onClick={() => setView("messages")}
+                  className="flex items-center justify-center gap-1.5 bg-white/20 hover:bg-white/30 transition-colors rounded-xl py-2.5 text-sm font-semibold">
                   💬 Chat
                   {unreadCount > 0 && (
-                    <span className="bg-red-500 text-white text-xs rounded-full min-w-[18px] h-4.5 flex items-center justify-center px-1 font-bold">
-                      {unreadCount}
-                    </span>
+                    <span className="bg-red-500 text-white text-xs rounded-full min-w-[18px] px-1 font-bold">{unreadCount}</span>
                   )}
                 </button>
-                <button
-                  onClick={() => setView("appointments")}
-                  className="flex-1 flex items-center justify-center gap-1.5 bg-white/20 hover:bg-white/30 transition-colors rounded-xl py-2.5 text-sm font-semibold"
-                >
-                  📅 Citas
+                <button onClick={() => setShowRequestModal(true)}
+                  className="flex items-center justify-center gap-1.5 bg-white text-orange-600 hover:bg-white/90 transition-colors rounded-xl py-2.5 text-sm font-bold shadow-sm">
+                  📅 Pedir cita
                 </button>
-                <button
-                  onClick={() => setView("menus")}
-                  className="flex-1 flex items-center justify-center gap-1.5 bg-white/20 hover:bg-white/30 transition-colors rounded-xl py-2.5 text-sm font-semibold"
-                >
-                  🥗 Menús
+                <button onClick={() => setView("appointments")}
+                  className="flex items-center justify-center gap-1.5 bg-white/20 hover:bg-white/30 transition-colors rounded-xl py-2.5 text-sm font-semibold">
+                  🗓️ Mis citas
+                </button>
+                <button onClick={() => setView("menus")}
+                  className="flex items-center justify-center gap-1.5 bg-white/20 hover:bg-white/30 transition-colors rounded-xl py-2.5 text-sm font-semibold">
+                  🥗 Mis menús
                 </button>
               </div>
             </div>
@@ -184,10 +508,8 @@ export default function MyExpert() {
 
           {/* Último mensaje */}
           {lastMessage && (
-            <button
-              onClick={() => setView("messages")}
-              className="w-full text-left p-4 bg-white rounded-2xl border border-gray-100 shadow-sm hover:border-orange-200 transition-colors"
-            >
+            <button onClick={() => setView("messages")}
+              className="w-full text-left p-4 bg-white rounded-2xl border border-gray-100 shadow-sm hover:border-orange-200 transition-colors">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <span className="text-base">💬</span>
@@ -212,10 +534,8 @@ export default function MyExpert() {
 
           {/* Próxima cita */}
           {nextAppointment ? (
-            <button
-              onClick={() => setView("appointments")}
-              className="w-full text-left p-4 bg-white rounded-2xl border border-blue-100 shadow-sm hover:border-blue-200 transition-colors"
-            >
+            <button onClick={() => setView("appointments")}
+              className="w-full text-left p-4 bg-white rounded-2xl border border-blue-100 shadow-sm hover:border-blue-200 transition-colors">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <span className="text-base">📅</span>
@@ -226,69 +546,55 @@ export default function MyExpert() {
               <p className="text-sm font-medium text-gray-800">{nextAppointment.title}</p>
               <p className="text-sm text-gray-500 mt-0.5">
                 {new Date(nextAppointment.startTime).toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })}
-                {" · "}
-                {new Date(nextAppointment.startTime).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
+                {" · "}{new Date(nextAppointment.startTime).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
               </p>
               <div className="flex items-center gap-3 mt-2">
-                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
-                  nextAppointment.status === "confirmed" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"
-                }`}>
+                <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${nextAppointment.status === "confirmed" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"}`}>
                   {nextAppointment.status === "confirmed" ? "✓ Confirmada" : "Pendiente de confirmar"}
                 </span>
-                <span className="text-xs text-gray-500">
-                  {nextAppointment.modality === "online" ? "🌐 Online" : "📍 Presencial"}
-                </span>
+                <span className="text-xs text-gray-500">{nextAppointment.modality === "online" ? "🌐 Online" : "📍 Presencial"}</span>
               </div>
               {nextAppointment.status === "scheduled" && (
                 <div className="mt-2">
-                  <Button
-                    size="sm"
-                    className="bg-green-500 hover:bg-green-600 text-white text-xs h-7"
-                    onClick={e => {
-                      e.stopPropagation();
-                      updateAppointmentMutation.mutate({ appointmentId: nextAppointment.id, status: "confirmed" });
-                    }}
-                  >
+                  <Button size="sm" className="bg-green-500 hover:bg-green-600 text-white text-xs h-7"
+                    onClick={e => { e.stopPropagation(); updateAppointmentMutation.mutate({ appointmentId: nextAppointment.id, status: "confirmed" }); }}>
                     Confirmar asistencia
                   </Button>
                 </div>
               )}
             </button>
           ) : (
-            <div className="p-4 bg-gray-50 rounded-2xl border border-dashed border-gray-200 text-center">
-              <p className="text-sm text-gray-400">📅 No tienes citas próximas programadas</p>
+            <div className="p-4 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+              <div className="flex items-center justify-between">
+                <p className="text-sm text-gray-400">📅 No tienes citas próximas</p>
+                <button onClick={() => setShowRequestModal(true)}
+                  className="text-xs text-orange-600 font-semibold hover:underline">
+                  + Pedir cita
+                </button>
+              </div>
             </div>
           )}
 
-          {/* Menú activo de la semana */}
+          {/* Menú activo */}
           {activeMenu ? (
-            <button
-              onClick={() => setView("menus")}
-              className="w-full text-left p-4 bg-white rounded-2xl border border-green-100 shadow-sm hover:border-green-200 transition-colors"
-            >
+            <button onClick={() => { setSelectedMenuId(activeMenu.menu.id); setView("menu_detail"); }}
+              className="w-full text-left p-4 bg-white rounded-2xl border border-green-100 shadow-sm hover:border-green-200 transition-colors">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <span className="text-base">🥗</span>
                   <span className="font-semibold text-gray-900 text-sm">Menú activo</span>
                   <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Esta semana</span>
                 </div>
-                <span className="text-xs text-green-600 font-medium">Ver todos →</span>
+                <span className="text-xs text-green-600 font-medium">Ver contenido →</span>
               </div>
               <p className="text-sm font-medium text-gray-800">{activeMenu.menu.originalMenuTitle ?? "Menú personalizado"}</p>
-              <p className="text-sm text-gray-500 mt-0.5">
-                De: <strong>{activeMenu.expertUser?.name ?? "Tu nutricionista"}</strong>
-                {activeMenu.menu.weekStartDate && (
-                  <> · Semana del {new Date(activeMenu.menu.weekStartDate).toLocaleDateString("es-ES", { day: "numeric", month: "long" })}</>
-                )}
-              </p>
+              <p className="text-sm text-gray-500 mt-0.5">De: <strong>{activeMenu.expertUser?.name ?? "Tu nutricionista"}</strong></p>
               {activeMenu.menu.expertNotes && (
                 <p className="text-xs text-orange-600 mt-2 bg-orange-50 px-2 py-1.5 rounded-lg border-l-2 border-orange-300 line-clamp-2">
                   💬 {activeMenu.menu.expertNotes}
                 </p>
               )}
-              {myAssignedMenus && myAssignedMenus.length > 1 && (
-                <p className="text-xs text-gray-400 mt-1.5">+{myAssignedMenus.length - 1} menús anteriores</p>
-              )}
+              <p className="text-xs text-gray-400 mt-2">Toca para ver el contenido completo y verificar compatibilidad</p>
             </button>
           ) : (
             <div className="p-4 bg-gray-50 rounded-2xl border border-dashed border-gray-200 text-center">
@@ -298,10 +604,8 @@ export default function MyExpert() {
 
           {/* Mi evolución */}
           {progressRecords.length > 0 && (
-            <button
-              onClick={() => setView("progress")}
-              className="w-full text-left p-4 bg-white rounded-2xl border border-purple-100 shadow-sm hover:border-purple-200 transition-colors"
-            >
+            <button onClick={() => setView("progress")}
+              className="w-full text-left p-4 bg-white rounded-2xl border border-purple-100 shadow-sm hover:border-purple-200 transition-colors">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <span className="text-base">📈</span>
@@ -309,23 +613,17 @@ export default function MyExpert() {
                 </div>
                 <span className="text-xs text-purple-500 font-medium">Ver detalle →</span>
               </div>
-              {/* Mini gráfica de barras */}
               {progressRecords.filter(r => r.weight).length > 1 && (
-                <div className="flex items-end gap-1 h-16 mb-2">
+                <div className="flex items-end gap-1 h-12 mb-2">
                   {progressRecords.filter(r => r.weight).slice(-8).map((r, i, arr) => {
                     const weights = arr.map(x => x.weight!);
-                    const min = Math.min(...weights);
-                    const max = Math.max(...weights);
-                    const range = max - min || 1;
-                    const height = ((r.weight! - min) / range) * 70 + 10;
+                    const min = Math.min(...weights); const max = Math.max(...weights);
+                    const height = ((r.weight! - min) / (max - min || 1)) * 70 + 10;
                     const isLast = i === arr.length - 1;
                     return (
                       <div key={r.id} className="flex-1 flex flex-col items-center gap-0.5">
                         {isLast && <span className="text-[9px] text-gray-500 font-bold">{r.weight}</span>}
-                        <div
-                          className={`w-full rounded-t transition-all ${isLast ? "bg-orange-500" : "bg-orange-200"}`}
-                          style={{ height: `${height}%` }}
-                        />
+                        <div className={`w-full rounded-t ${isLast ? "bg-orange-500" : "bg-orange-200"}`} style={{ height: `${height}%` }} />
                       </div>
                     );
                   })}
@@ -334,11 +632,8 @@ export default function MyExpert() {
               <div className="flex items-center gap-4 flex-wrap">
                 {latestProgress?.weight && (
                   <div className="flex items-center gap-1">
-                    <span className="text-lg">⚖️</span>
-                    <div>
-                      <p className="text-xs text-gray-500">Peso actual</p>
-                      <p className="text-sm font-bold text-gray-900">{latestProgress.weight} kg</p>
-                    </div>
+                    <span>⚖️</span>
+                    <div><p className="text-xs text-gray-500">Peso actual</p><p className="text-sm font-bold text-gray-900">{latestProgress.weight} kg</p></div>
                   </div>
                 )}
                 {weightDiff !== null && (
@@ -349,32 +644,18 @@ export default function MyExpert() {
                     <span className="text-xs text-gray-400">desde el inicio</span>
                   </div>
                 )}
-                {latestProgress?.bodyFat && (
-                  <div className="flex items-center gap-1">
-                    <span className="text-lg">💧</span>
-                    <div>
-                      <p className="text-xs text-gray-500">% Grasa</p>
-                      <p className="text-sm font-bold text-gray-900">{latestProgress.bodyFat}%</p>
-                    </div>
-                  </div>
-                )}
               </div>
-              <p className="text-xs text-gray-400 mt-2">{progressRecords.length} registros · Último: {new Date(latestProgress?.recordedAt ?? Date.now()).toLocaleDateString("es-ES", { day: "numeric", month: "long" })}</p>
             </button>
           )}
-
         </div>
       </AppLayout>
     );
   }
 
   // ─── VISTAS DE DETALLE ────────────────────────────────────────────────────
-  const BackButton = () => (
-    <button
-      onClick={() => setView("dashboard")}
-      className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-orange-600 transition-colors mb-4"
-    >
-      ← Volver al dashboard
+  const BackButton = ({ to = "dashboard" as View, label = "Volver al dashboard" }) => (
+    <button onClick={() => setView(to)} className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-orange-600 transition-colors mb-4">
+      ← {label}
     </button>
   );
 
@@ -382,6 +663,7 @@ export default function MyExpert() {
   if (view === "messages") {
     return (
       <AppLayout>
+        {showRequestModal && <RequestAppointmentModal />}
         <div className="max-w-2xl mx-auto px-4 py-6 flex flex-col" style={{ height: 'calc(100vh - 120px)' }}>
           <BackButton />
           <div className="flex items-center gap-3 mb-4">
@@ -392,10 +674,13 @@ export default function MyExpert() {
                 {(activeRelation?.expertUser?.name ?? "N").charAt(0)}
               </div>
             )}
-            <div>
+            <div className="flex-1">
               <h2 className="font-bold text-gray-900">{activeRelation?.expertUser?.name ?? "Tu nutricionista"}</h2>
               <p className="text-xs text-green-600 font-medium">● En línea</p>
             </div>
+            <button onClick={() => setShowRequestModal(true)} className="text-xs text-orange-600 font-semibold border border-orange-300 rounded-lg px-2 py-1 hover:bg-orange-50">
+              📅 Pedir cita
+            </button>
           </div>
 
           <div className="flex-1 overflow-y-auto space-y-3 pr-1 mb-4">
@@ -421,11 +706,7 @@ export default function MyExpert() {
                       </div>
                     )}
                     <div className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
-                      <div className={`max-w-[78%] rounded-2xl px-4 py-2.5 ${
-                        isMe
-                          ? "bg-orange-500 text-white rounded-br-sm"
-                          : "bg-gray-100 text-gray-800 rounded-bl-sm"
-                      }`}>
+                      <div className={`max-w-[78%] rounded-2xl px-4 py-2.5 ${isMe ? "bg-orange-500 text-white rounded-br-sm" : "bg-gray-100 text-gray-800 rounded-bl-sm"}`}>
                         <ChatMarkdown content={msg.content} isExpert={msg.senderRole === "expert"} />
                         <p className={`text-xs mt-1 ${isMe ? "text-orange-100" : "text-gray-400"}`}>
                           {new Date(msg.createdAt).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
@@ -441,25 +722,12 @@ export default function MyExpert() {
           </div>
 
           <div className="flex gap-2">
-            <Input
-              placeholder="Escribe un mensaje..."
-              value={messageText}
-              onChange={e => setMessageText(e.target.value)}
-              onKeyDown={e => {
-                if (e.key === "Enter" && !e.shiftKey && messageText.trim() && activeRelId) {
-                  e.preventDefault();
-                  sendMessageMutation.mutate({ patientRelId: activeRelId, content: messageText.trim() });
-                }
-              }}
-              className="flex-1"
-            />
-            <Button
-              onClick={() => activeRelId && messageText.trim() && sendMessageMutation.mutate({ patientRelId: activeRelId, content: messageText.trim() })}
+            <Input placeholder="Escribe un mensaje..." value={messageText} onChange={e => setMessageText(e.target.value)}
+              onKeyDown={e => { if (e.key === "Enter" && !e.shiftKey && messageText.trim() && activeRelId) { e.preventDefault(); sendMessageMutation.mutate({ patientRelId: activeRelId, content: messageText.trim() }); } }}
+              className="flex-1" />
+            <Button onClick={() => activeRelId && messageText.trim() && sendMessageMutation.mutate({ patientRelId: activeRelId, content: messageText.trim() })}
               disabled={!messageText.trim() || !activeRelId || sendMessageMutation.isPending}
-              className="bg-orange-500 hover:bg-orange-600 text-white"
-            >
-              Enviar
-            </Button>
+              className="bg-orange-500 hover:bg-orange-600 text-white">Enviar</Button>
           </div>
         </div>
       </AppLayout>
@@ -470,6 +738,7 @@ export default function MyExpert() {
   if (view === "menus") {
     return (
       <AppLayout>
+        {showRequestModal && <RequestAppointmentModal />}
         <div className="max-w-2xl mx-auto px-4 py-6">
           <BackButton />
           <h2 className="text-xl font-bold text-gray-900 mb-4">🥗 Mis menús personalizados</h2>
@@ -477,52 +746,41 @@ export default function MyExpert() {
             <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200">
               <div className="text-4xl mb-2">🥗</div>
               <p className="text-gray-500">Tu nutricionista aún no te ha asignado ningún menú</p>
-              <p className="text-sm text-gray-400 mt-1">Cuando recibas un menú personalizado, aparecerá aquí</p>
             </div>
           ) : (
-            <div className="space-y-4">
-              {myAssignedMenus.map((am, idx) => (
-                <div key={am.menu.id} className={`p-4 bg-white rounded-xl border ${idx === 0 ? "border-green-200 shadow-sm" : "border-gray-200"}`}>
-                  {idx === 0 && (
-                    <span className="inline-block text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium mb-2">
-                      ✓ Menú activo
-                    </span>
-                  )}
-                  <div className="flex items-start justify-between gap-3">
-                    <div className="flex-1">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-semibold text-gray-900">{am.menu.originalMenuTitle ?? "Menú personalizado"}</span>
+            <div className="space-y-3">
+              {myAssignedMenus.map((am, idx) => {
+                const rawData = am.menu.adaptedMenuData || am.originalMenu?.menuData;
+                const menuData = parseMenuData(rawData);
+                const allergies = menuPrefs?.allergies ?? [];
+                const restrictions = menuPrefs?.restrictions ?? [];
+                const dislikedFoods = menuPrefs?.dislikedFoods ?? "";
+                const issues = menuData ? checkMenuCompatibility(menuData, allergies, restrictions, dislikedFoods) : [];
+                const hasPrefs = allergies.length > 0 || restrictions.length > 0 || dislikedFoods.length > 0;
+                return (
+                  <button key={am.menu.id} onClick={() => { setSelectedMenuId(am.menu.id); setView("menu_detail"); }}
+                    className={`w-full text-left p-4 bg-white rounded-xl border hover:border-orange-200 transition-colors ${idx === 0 ? "border-green-200 shadow-sm" : "border-gray-200"}`}>
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1">
+                        {idx === 0 && <span className="inline-block text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium mb-1.5">✓ Menú activo</span>}
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-semibold text-gray-900">{am.menu.originalMenuTitle ?? "Menú personalizado"}</span>
+                          {hasPrefs && issues.length === 0 && menuData && <span className="text-xs text-green-600">✅ Compatible</span>}
+                          {hasPrefs && issues.length > 0 && <span className="text-xs text-red-600">⚠️ {issues.length} aviso{issues.length > 1 ? "s" : ""}</span>}
+                        </div>
+                        <p className="text-sm text-gray-500 mt-0.5">De: <strong>{am.expertUser?.name ?? "Tu nutricionista"}</strong></p>
+                        {am.originalMenu?.targetCalories && (
+                          <p className="text-xs text-gray-400 mt-0.5">🔥 ~{am.originalMenu.targetCalories} kcal/día</p>
+                        )}
+                        {am.menu.expertNotes && (
+                          <p className="text-xs text-orange-600 mt-1.5 line-clamp-1">💬 {am.menu.expertNotes}</p>
+                        )}
                       </div>
-                      <p className="text-sm text-gray-500 mt-1">
-                        De: <strong>{am.expertUser?.name ?? "Tu nutricionista"}</strong>
-                      </p>
-                      {am.menu.weekStartDate && (
-                        <p className="text-sm text-gray-500">
-                          Semana del {new Date(am.menu.weekStartDate).toLocaleDateString("es-ES", { day: "numeric", month: "long" })}
-                        </p>
-                      )}
-                      {am.menu.expertNotes && (
-                        <p className="text-sm text-gray-600 mt-2 bg-orange-50 p-2 rounded border-l-2 border-orange-300">
-                          💬 {am.menu.expertNotes}
-                        </p>
-                      )}
-                      {am.menu.adaptationNotes && (
-                        <details className="mt-2">
-                          <summary className="text-xs text-orange-600 cursor-pointer hover:underline">
-                            Ver adaptaciones realizadas
-                          </summary>
-                          <p className="text-xs text-gray-500 mt-1 bg-orange-50 p-2 rounded">
-                            {am.menu.adaptationNotes}
-                          </p>
-                        </details>
-                      )}
+                      <span className="text-orange-400 text-lg flex-shrink-0">›</span>
                     </div>
-                    <span className="text-xs text-gray-400 flex-shrink-0">
-                      {new Date(am.menu.createdAt).toLocaleDateString("es-ES")}
-                    </span>
-                  </div>
-                </div>
-              ))}
+                  </button>
+                );
+              })}
             </div>
           )}
         </div>
@@ -534,79 +792,61 @@ export default function MyExpert() {
   if (view === "appointments") {
     return (
       <AppLayout>
+        {showRequestModal && <RequestAppointmentModal />}
         <div className="max-w-2xl mx-auto px-4 py-6">
           <BackButton />
-          <h2 className="text-xl font-bold text-gray-900 mb-4">📅 Mis citas</h2>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-gray-900">📅 Mis citas</h2>
+            <Button onClick={() => setShowRequestModal(true)} size="sm" className="bg-orange-500 hover:bg-orange-600 text-white">
+              + Pedir cita
+            </Button>
+          </div>
           {appointments.length === 0 ? (
             <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200">
               <div className="text-4xl mb-2">📅</div>
               <p className="text-gray-500">No tienes citas programadas</p>
-              <p className="text-sm text-gray-400 mt-1">Tu nutricionista programará las citas cuando sea necesario</p>
+              <Button onClick={() => setShowRequestModal(true)} className="mt-4 bg-orange-500 hover:bg-orange-600 text-white">
+                Pedir mi primera cita
+              </Button>
             </div>
           ) : (
             <div className="space-y-3">
-              {appointments
-                .sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime())
-                .map(appt => {
-                  const start = new Date(appt.startTime);
-                  const isUpcoming = start > new Date();
-                  const statusColors = {
-                    scheduled: "bg-blue-100 text-blue-700",
-                    confirmed: "bg-green-100 text-green-700",
-                    completed: "bg-gray-100 text-gray-600",
-                    cancelled: "bg-red-100 text-red-600",
-                    no_show: "bg-orange-100 text-orange-600",
-                  };
-                  return (
-                    <div key={appt.id} className={`p-4 bg-white rounded-xl border ${isUpcoming ? "border-orange-200 shadow-sm" : "border-gray-200"}`}>
-                      {isUpcoming && (
-                        <span className="inline-block text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-medium mb-2">
-                          Próxima
-                        </span>
-                      )}
-                      <div className="flex items-start justify-between gap-3">
-                        <div className="flex-1">
-                          <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-semibold text-gray-900">{appt.title}</span>
-                            <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColors[appt.status]}`}>
-                              {appt.status === "scheduled" ? "Programada" :
-                               appt.status === "confirmed" ? "Confirmada" :
-                               appt.status === "completed" ? "Completada" :
-                               appt.status === "cancelled" ? "Cancelada" : "No asistí"}
-                            </span>
-                          </div>
-                          <p className="text-sm text-gray-600 mt-1">
-                            {start.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })} · {start.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
-                          </p>
-                          <p className="text-sm text-gray-500">
-                            {appt.modality === "online" ? "🌐 Online" : "📍 Presencial"}
-                          </p>
-                          {appt.meetingUrl && isUpcoming && (
-                            <a href={appt.meetingUrl} target="_blank" rel="noopener noreferrer"
-                               className="text-sm text-orange-600 hover:underline mt-1 inline-block font-medium">
-                              🔗 Unirse a la reunión
-                            </a>
-                          )}
-                          {appt.googleCalendarLink && isUpcoming && (
-                            <a href={appt.googleCalendarLink} target="_blank" rel="noopener noreferrer"
-                               className="text-xs text-blue-600 hover:underline mt-1 ml-3 inline-block">
-                              📅 Añadir a Google Calendar
-                            </a>
-                          )}
+              {appointments.sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime()).map(appt => {
+                const start = new Date(appt.startTime);
+                const isUpcoming = start > new Date();
+                const statusColors = { scheduled: "bg-blue-100 text-blue-700", confirmed: "bg-green-100 text-green-700", completed: "bg-gray-100 text-gray-600", cancelled: "bg-red-100 text-red-600", no_show: "bg-orange-100 text-orange-600" };
+                return (
+                  <div key={appt.id} className={`p-4 bg-white rounded-xl border ${isUpcoming ? "border-orange-200 shadow-sm" : "border-gray-200"}`}>
+                    {isUpcoming && <span className="inline-block text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-medium mb-2">Próxima</span>}
+                    <div className="flex items-start justify-between gap-3">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-semibold text-gray-900">{appt.title}</span>
+                          <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColors[appt.status]}`}>
+                            {appt.status === "scheduled" ? "Programada" : appt.status === "confirmed" ? "Confirmada" : appt.status === "completed" ? "Completada" : appt.status === "cancelled" ? "Cancelada" : "No asistí"}
+                          </span>
                         </div>
-                        {appt.status === "scheduled" && isUpcoming && (
-                          <Button
-                            size="sm"
-                            className="bg-green-500 hover:bg-green-600 text-white text-xs flex-shrink-0"
-                            onClick={() => updateAppointmentMutation.mutate({ appointmentId: appt.id, status: "confirmed" })}
-                          >
-                            Confirmar
-                          </Button>
+                        <p className="text-sm text-gray-600 mt-1">
+                          {start.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })} · {start.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
+                        </p>
+                        <p className="text-sm text-gray-500">{appt.modality === "online" ? "🌐 Online" : "📍 Presencial"}</p>
+                        {appt.meetingUrl && isUpcoming && (
+                          <a href={appt.meetingUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-orange-600 hover:underline mt-1 inline-block font-medium">🔗 Unirse a la reunión</a>
+                        )}
+                        {appt.googleCalendarLink && isUpcoming && (
+                          <a href={appt.googleCalendarLink} target="_blank" rel="noopener noreferrer" className="text-xs text-blue-600 hover:underline mt-1 ml-3 inline-block">📅 Añadir a Google Calendar</a>
                         )}
                       </div>
+                      {appt.status === "scheduled" && isUpcoming && (
+                        <Button size="sm" className="bg-green-500 hover:bg-green-600 text-white text-xs flex-shrink-0"
+                          onClick={() => updateAppointmentMutation.mutate({ appointmentId: appt.id, status: "confirmed" })}>
+                          Confirmar
+                        </Button>
+                      )}
                     </div>
-                  );
-                })}
+                  </div>
+                );
+              })}
             </div>
           )}
         </div>
@@ -625,7 +865,6 @@ export default function MyExpert() {
             <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200">
               <div className="text-4xl mb-2">📈</div>
               <p className="text-gray-500">Aún no hay registros de evolución</p>
-              <p className="text-sm text-gray-400 mt-1">Tu nutricionista irá registrando tu progreso en cada consulta</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -635,27 +874,20 @@ export default function MyExpert() {
                   <div className="flex items-end gap-1 h-24">
                     {progressRecords.filter(r => r.weight).slice(-12).map((r, i, arr) => {
                       const weights = arr.map(x => x.weight!);
-                      const min = Math.min(...weights);
-                      const max = Math.max(...weights);
-                      const range = max - min || 1;
-                      const height = ((r.weight! - min) / range) * 80 + 10;
+                      const min = Math.min(...weights); const max = Math.max(...weights);
+                      const height = ((r.weight! - min) / (max - min || 1)) * 80 + 10;
                       const isLast = i === arr.length - 1;
                       return (
                         <div key={r.id} className="flex-1 flex flex-col items-center gap-1">
                           <span className="text-xs text-gray-500">{isLast ? r.weight : ""}</span>
-                          <div
-                            className={`w-full rounded-t ${isLast ? "bg-orange-500" : "bg-orange-200"}`}
-                            style={{ height: `${height}%` }}
-                          />
+                          <div className={`w-full rounded-t ${isLast ? "bg-orange-500" : "bg-orange-200"}`} style={{ height: `${height}%` }} />
                         </div>
                       );
                     })}
                   </div>
                   {weightDiff !== null && (
                     <p className={`text-sm font-medium mt-2 ${weightDiff < 0 ? "text-green-600" : weightDiff > 0 ? "text-red-500" : "text-gray-500"}`}>
-                      {weightDiff < 0 ? `↓ Has perdido ${Math.abs(weightDiff).toFixed(1)} kg desde el inicio` :
-                       weightDiff > 0 ? `↑ Has ganado ${weightDiff.toFixed(1)} kg desde el inicio` :
-                       "Peso estable"}
+                      {weightDiff < 0 ? `↓ Has perdido ${Math.abs(weightDiff).toFixed(1)} kg desde el inicio` : weightDiff > 0 ? `↑ Has ganado ${weightDiff.toFixed(1)} kg desde el inicio` : "Peso estable"}
                     </p>
                   )}
                 </div>
@@ -672,9 +904,7 @@ export default function MyExpert() {
                     {record.waist && <span className="text-sm text-gray-600">📏 Cintura: <strong>{record.waist}</strong> cm</span>}
                   </div>
                   {record.expertComment && (
-                    <p className="text-sm text-orange-600 mt-2 bg-orange-50 px-2 py-1 rounded">
-                      💬 Tu nutricionista: {record.expertComment}
-                    </p>
+                    <p className="text-sm text-orange-600 mt-2 bg-orange-50 px-2 py-1 rounded">💬 Tu nutricionista: {record.expertComment}</p>
                   )}
                   {record.notes && <p className="text-sm text-gray-500 mt-1 italic">"{record.notes}"</p>}
                 </div>

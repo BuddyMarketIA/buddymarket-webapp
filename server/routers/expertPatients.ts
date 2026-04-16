@@ -1017,8 +1017,8 @@ Responde en JSON con este formato:
       const { getDb } = await import("../db");
       const drizzleDb = await getDb();
       if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-      const { expertAssignedMenus, expertPatients, buddyExperts, users } = await import("../../drizzle/schema.js");
-      const { eq, and } = await import("drizzle-orm");
+      const { expertAssignedMenus, expertPatients, buddyExperts, users, expertMenus } = await import("../../drizzle/schema.js");
+      const { eq, and, or, inArray } = await import("drizzle-orm");
 
       const menus = await drizzleDb.select({
         menu: expertAssignedMenus,
@@ -1026,13 +1026,24 @@ Responde en JSON con este formato:
           name: users.name,
           imageUrl: users.imageUrl,
         },
+        originalMenu: {
+          menuData: expertMenus.menuData,
+          title: expertMenus.title,
+          description: expertMenus.description,
+          targetCalories: expertMenus.targetCalories,
+          category: expertMenus.category,
+        },
       })
         .from(expertAssignedMenus)
         .leftJoin(buddyExperts, eq(buddyExperts.id, expertAssignedMenus.expertId))
         .leftJoin(users, eq(users.id, buddyExperts.userId))
+        .leftJoin(expertMenus, eq(expertMenus.id, expertAssignedMenus.originalMenuId))
         .where(and(
           eq(expertAssignedMenus.patientUserId, ctx.user.id),
-          eq(expertAssignedMenus.status, "adapted")
+          or(
+            eq(expertAssignedMenus.status, "adapted"),
+            eq(expertAssignedMenus.status, "active")
+          )
         ))
         .orderBy(expertAssignedMenus.createdAt);
 
@@ -1894,5 +1905,94 @@ Responde en JSON con este formato:
         ));
 
       return relations;
+    }),
+
+  // ─── Solicitar cita (vista del paciente) ─────────────────────────────────
+  requestAppointment: protectedProcedure
+    .input(z.object({
+      patientRelId: z.number(),
+      preferredDate: z.string().optional(), // ISO date string
+      preferredTime: z.string().optional(), // e.g. "10:00"
+      notes: z.string().max(500).optional(),
+      modality: z.enum(["online", "in_person"]).optional().default("online"),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { expertPatients, buddyExperts, users, expertMessages } = await import("../../drizzle/schema.js");
+      const { eq, and } = await import("drizzle-orm");
+
+      // Verify the relation belongs to this patient
+      const [rel] = await drizzleDb.select()
+        .from(expertPatients)
+        .where(and(
+          eq(expertPatients.id, input.patientRelId),
+          eq(expertPatients.patientUserId, ctx.user.id)
+        ))
+        .limit(1);
+      if (!rel) throw new TRPCError({ code: "NOT_FOUND", message: "Relación no encontrada" });
+
+      // Get patient name
+      const [patientUser] = await drizzleDb.select({ name: users.name })
+        .from(users).where(eq(users.id, ctx.user.id)).limit(1);
+
+      // Build message content
+      const dateStr = input.preferredDate
+        ? new Date(input.preferredDate).toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })
+        : "sin fecha preferida";
+      const timeStr = input.preferredTime ?? "sin hora preferida";
+      const modalityStr = input.modality === "online" ? "Online (videollamada)" : "Presencial";
+      const notesStr = input.notes ? `\n\nNotas adicionales: ${input.notes}` : "";
+
+      const messageContent = `📅 **Solicitud de cita**\n\nHola, me gustaría pedir una cita contigo.\n\n**Fecha preferida:** ${dateStr}\n**Hora preferida:** ${timeStr}\n**Modalidad:** ${modalityStr}${notesStr}\n\n*Este mensaje fue generado automáticamente desde la sección Mi Nutricionista.*`;
+
+      // Send as a chat message from patient to expert
+      await drizzleDb.insert(expertMessages).values({
+        expertPatientId: input.patientRelId,
+        senderRole: "patient",
+        senderUserId: ctx.user.id,
+        content: messageContent,
+        isRead: false,
+      });
+
+      // Notify expert via notification system
+      try {
+        const { notifyOwner } = await import("../_core/notification.js");
+        await notifyOwner({
+          title: `📅 Solicitud de cita de ${patientUser?.name ?? "un paciente"}`,
+          content: `${patientUser?.name ?? "Un paciente"} ha solicitado una cita.\nFecha: ${dateStr} · Hora: ${timeStr} · ${modalityStr}`,
+        });
+      } catch (_) { /* ignore notification errors */ }
+
+      return { success: true };
+    }),
+
+  // ─── Dar feedback a un menú asignado (vista del paciente) ────────────────
+  submitMenuFeedback: protectedProcedure
+    .input(z.object({
+      assignedMenuId: z.number(),
+      rating: z.number().min(1).max(5),
+      feedback: z.string().max(1000).optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { expertAssignedMenus } = await import("../../drizzle/schema.js");
+      const { eq, and } = await import("drizzle-orm");
+
+      await drizzleDb.update(expertAssignedMenus)
+        .set({
+          patientRating: input.rating,
+          patientFeedback: input.feedback ?? null,
+          updatedAt: new Date(),
+        })
+        .where(and(
+          eq(expertAssignedMenus.id, input.assignedMenuId),
+          eq(expertAssignedMenus.patientUserId, ctx.user.id)
+        ));
+
+      return { success: true };
     }),
 });
