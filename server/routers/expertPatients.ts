@@ -1465,6 +1465,235 @@ Responde en JSON con este formato:
       return { success: true };
     }),
 
+// ─── Session Notes (Historial de sesiones) ─────────────────────────────
+  getSessionNotes: protectedProcedure
+    .input(z.object({ expertPatientId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { sessionNotes, buddyExperts } = await import("../../drizzle/schema.js");
+      const { eq, and, desc } = await import("drizzle-orm");
+      const [expert] = await drizzleDb.select().from(buddyExperts).where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+      if (!expert) throw new TRPCError({ code: "FORBIDDEN" });
+      return drizzleDb.select().from(sessionNotes)
+        .where(and(eq(sessionNotes.expertPatientId, input.expertPatientId), eq(sessionNotes.expertId, expert.id)))
+        .orderBy(desc(sessionNotes.sessionDate));
+    }),
+  addSessionNote: protectedProcedure
+    .input(z.object({
+      expertPatientId: z.number(),
+      patientUserId: z.number(),
+      sessionDate: z.string(),
+      summary: z.string().min(1),
+      agreements: z.string().optional(),
+      nextObjectives: z.string().optional(),
+      nextAppointmentDate: z.string().optional(),
+      patientWeight: z.number().optional(),
+      patientMood: z.number().min(1).max(5).optional(),
+      adherenceScore: z.number().min(1).max(10).optional(),
+      privateNotes: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { sessionNotes, buddyExperts } = await import("../../drizzle/schema.js");
+      const { eq } = await import("drizzle-orm");
+      const [expert] = await drizzleDb.select().from(buddyExperts).where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+      if (!expert) throw new TRPCError({ code: "FORBIDDEN" });
+      const [note] = await drizzleDb.insert(sessionNotes).values({
+        expertId: expert.id,
+        patientUserId: input.patientUserId,
+        expertPatientId: input.expertPatientId,
+        sessionDate: input.sessionDate,
+        summary: input.summary,
+        agreements: input.agreements,
+        nextObjectives: input.nextObjectives,
+        nextAppointmentDate: input.nextAppointmentDate,
+        patientWeight: input.patientWeight,
+        patientMood: input.patientMood,
+        adherenceScore: input.adherenceScore,
+        privateNotes: input.privateNotes,
+      }).returning();
+      return note;
+    }),
+  updateSessionNote: protectedProcedure
+    .input(z.object({
+      noteId: z.number(),
+      summary: z.string().min(1).optional(),
+      agreements: z.string().optional(),
+      nextObjectives: z.string().optional(),
+      nextAppointmentDate: z.string().optional(),
+      patientWeight: z.number().optional(),
+      patientMood: z.number().min(1).max(5).optional(),
+      adherenceScore: z.number().min(1).max(10).optional(),
+      privateNotes: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { sessionNotes, buddyExperts } = await import("../../drizzle/schema.js");
+      const { eq } = await import("drizzle-orm");
+      const [expert] = await drizzleDb.select().from(buddyExperts).where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+      if (!expert) throw new TRPCError({ code: "FORBIDDEN" });
+      const { noteId, ...updateData } = input;
+      const [updated] = await drizzleDb.update(sessionNotes).set({ ...updateData, updatedAt: new Date() }).where(eq(sessionNotes.id, noteId)).returning();
+      return updated;
+    }),
+  deleteSessionNote: protectedProcedure
+    .input(z.object({ noteId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { sessionNotes, buddyExperts } = await import("../../drizzle/schema.js");
+      const { eq } = await import("drizzle-orm");
+      const [expert] = await drizzleDb.select().from(buddyExperts).where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+      if (!expert) throw new TRPCError({ code: "FORBIDDEN" });
+      await drizzleDb.delete(sessionNotes).where(eq(sessionNotes.id, input.noteId));
+      return { success: true };
+    }),
+  // ─── Menu Templates (Plantillas de menús reutilizables) ──────────────────
+  getMenuTemplates: protectedProcedure
+    .query(async ({ ctx }) => {
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { menuTemplates, buddyExperts } = await import("../../drizzle/schema.js");
+      const { eq, desc } = await import("drizzle-orm");
+      const [expert] = await drizzleDb.select().from(buddyExperts).where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+      if (!expert) throw new TRPCError({ code: "FORBIDDEN" });
+      return drizzleDb.select().from(menuTemplates).where(eq(menuTemplates.expertId, expert.id)).orderBy(desc(menuTemplates.createdAt));
+    }),
+  createMenuTemplate: protectedProcedure
+    .input(z.object({
+      name: z.string().min(1),
+      description: z.string().optional(),
+      category: z.string().optional(),
+      targetCalories: z.number().optional(),
+      weekData: z.string(),
+      isPublic: z.boolean().optional().default(false),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { menuTemplates, buddyExperts } = await import("../../drizzle/schema.js");
+      const { eq } = await import("drizzle-orm");
+      const [expert] = await drizzleDb.select().from(buddyExperts).where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+      if (!expert) throw new TRPCError({ code: "FORBIDDEN" });
+      const [template] = await drizzleDb.insert(menuTemplates).values({
+        expertId: expert.id,
+        name: input.name,
+        description: input.description,
+        category: input.category || "general",
+        targetCalories: input.targetCalories,
+        weekData: input.weekData,
+        isPublic: input.isPublic,
+      }).returning();
+      return template;
+    }),
+  deleteMenuTemplate: protectedProcedure
+    .input(z.object({ templateId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { menuTemplates, buddyExperts } = await import("../../drizzle/schema.js");
+      const { eq } = await import("drizzle-orm");
+      const [expert] = await drizzleDb.select().from(buddyExperts).where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+      if (!expert) throw new TRPCError({ code: "FORBIDDEN" });
+      await drizzleDb.delete(menuTemplates).where(eq(menuTemplates.id, input.templateId));
+      return { success: true };
+    }),
+  // ─── Food Substitutions (Banco de sustituciones) ─────────────────────────
+  getFoodSubstitutions: protectedProcedure
+    .input(z.object({ search: z.string().optional() }))
+    .query(async ({ ctx, input }) => {
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { foodSubstitutions, buddyExperts } = await import("../../drizzle/schema.js");
+      const { eq, and, ilike } = await import("drizzle-orm");
+      const [expert] = await drizzleDb.select().from(buddyExperts).where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+      if (!expert) throw new TRPCError({ code: "FORBIDDEN" });
+      const conditions: any[] = [eq(foodSubstitutions.expertId, expert.id)];
+      if (input.search) conditions.push(ilike(foodSubstitutions.originalFood, `%${input.search}%`));
+      return drizzleDb.select().from(foodSubstitutions).where(and(...conditions));
+    }),
+  addFoodSubstitution: protectedProcedure
+    .input(z.object({
+      originalFood: z.string().min(1),
+      originalAmount: z.string().optional(),
+      substitutes: z.string(),
+      category: z.string().optional(),
+      notes: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { foodSubstitutions, buddyExperts } = await import("../../drizzle/schema.js");
+      const { eq } = await import("drizzle-orm");
+      const [expert] = await drizzleDb.select().from(buddyExperts).where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+      if (!expert) throw new TRPCError({ code: "FORBIDDEN" });
+      const [sub] = await drizzleDb.insert(foodSubstitutions).values({
+        expertId: expert.id,
+        originalFood: input.originalFood,
+        originalAmount: input.originalAmount,
+        substitutes: input.substitutes,
+        category: input.category || "general",
+        notes: input.notes,
+      }).returning();
+      return sub;
+    }),
+  deleteFoodSubstitution: protectedProcedure
+    .input(z.object({ substitutionId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { foodSubstitutions, buddyExperts } = await import("../../drizzle/schema.js");
+      const { eq } = await import("drizzle-orm");
+      const [expert] = await drizzleDb.select().from(buddyExperts).where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+      if (!expert) throw new TRPCError({ code: "FORBIDDEN" });
+      await drizzleDb.delete(foodSubstitutions).where(eq(foodSubstitutions.id, input.substitutionId));
+      return { success: true };
+    }),
+  // ─── Análisis de tendencias con IA ───────────────────────────────────────
+  analyzePatientTrends: protectedProcedure
+    .input(z.object({ expertPatientId: z.number(), patientUserId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { buddyExperts, userMetrics, patientWellbeingLogs, sessionNotes, users, userProfiles } = await import("../../drizzle/schema.js");
+      const { eq, and, desc, gte } = await import("drizzle-orm");
+      const [expert] = await drizzleDb.select().from(buddyExperts).where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+      if (!expert) throw new TRPCError({ code: "FORBIDDEN" });
+      const ninetyDaysAgo = new Date();
+      ninetyDaysAgo.setDate(ninetyDaysAgo.getDate() - 90);
+      const dateStr = ninetyDaysAgo.toISOString().split("T")[0];
+      const [metrics, wellbeing, sessions, patientUser, patientProfile] = await Promise.all([
+        drizzleDb.select().from(userMetrics).where(and(eq(userMetrics.userId, input.patientUserId), gte(userMetrics.date, dateStr))).orderBy(desc(userMetrics.date)).limit(20),
+        drizzleDb.select().from(patientWellbeingLogs).where(and(eq(patientWellbeingLogs.userId, input.patientUserId), gte(patientWellbeingLogs.logDate, dateStr))).orderBy(desc(patientWellbeingLogs.logDate)).limit(20),
+        drizzleDb.select().from(sessionNotes).where(and(eq(sessionNotes.expertPatientId, input.expertPatientId), eq(sessionNotes.expertId, expert.id))).orderBy(desc(sessionNotes.sessionDate)).limit(5),
+        drizzleDb.select().from(users).where(eq(users.id, input.patientUserId)).limit(1),
+        drizzleDb.select().from(userProfiles).where(eq(userProfiles.userId, input.patientUserId)).limit(1),
+      ]);
+      const patientName = patientUser[0]?.name || "el paciente";
+      const profile = patientProfile[0];
+      const metricsText = metrics.map(m => `- ${m.date}: peso ${m.weight || "N/A"} kg, grasa ${m.bodyFat || "N/A"}%, músculo ${m.muscleMass || "N/A"} kg`).join("\n") || "Sin registros";
+      const wellbeingText = wellbeing.map(w => `- ${w.logDate}: energía ${w.energyLevel}/10, ánimo ${w.moodLevel}/10, sueño ${w.sleepQuality}/10, digestión ${w.digestiveComfort}/10`).join("\n") || "Sin registros";
+      const sessionsText = sessions.map(s => `- ${s.sessionDate}: ${s.summary}. Adherencia: ${s.adherenceScore}/10`).join("\n") || "Sin sesiones";
+      const prompt = `Eres un asistente de nutrición clínica. Analiza los siguientes datos de ${patientName} y proporciona un análisis profesional en español.\n\nPerfil: Peso objetivo: ${profile?.targetWeight || "no definido"} kg, Objetivo: ${profile?.mainGoal || "no definido"}, Nivel actividad: ${profile?.activityLevel || "no definido"}\n\nRegistros de peso/métricas (últimos 90 días):\n${metricsText}\n\nBienestar registrado:\n${wellbeingText}\n\nÚltimas sesiones:\n${sessionsText}\n\nProporciona:\n1. TENDENCIA GENERAL (2-3 frases sobre la evolución del paciente)\n2. PUNTOS FUERTES (2-3 aspectos positivos observados)\n3. ÁREAS DE MEJORA (2-3 aspectos a trabajar)\n4. RECOMENDACIONES PARA EL EXPERTO (3-4 acciones concretas para las próximas semanas)\n5. ALERTAS (si hay algún patrón preocupante, menciónalo)\n\nSé específico, usa los datos reales y habla en tono profesional pero accesible.`;
+      const response = await invokeLLM({ messages: [{ role: "user", content: prompt }] });
+      const analysis = response.choices?.[0]?.message?.content || "No se pudo generar el análisis.";
+      return { analysis, generatedAt: new Date().toISOString() };
+    }),
+
   // ─── Mis experts (vista del paciente) ────────────────────────────────────
   getMyExperts: protectedProcedure
     .query(async ({ ctx }) => {

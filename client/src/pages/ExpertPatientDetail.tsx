@@ -14,7 +14,7 @@ import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
 } from "recharts";
 
-type Tab = "messages" | "menus" | "appointments" | "progress" | "notes" | "profile" | "diary";
+type Tab = "messages" | "menus" | "appointments" | "progress" | "notes" | "profile" | "diary" | "sessions" | "analysis";
 
 const NOTE_TYPE_LABELS: Record<string, { label: string; color: string; icon: string }> = {
   general: { label: "General", color: "bg-gray-100 text-gray-700", icon: "📝" },
@@ -47,6 +47,21 @@ export default function ExpertPatientDetail() {
   const [noteType, setNoteType] = useState<"general" | "clinical" | "diet" | "goal" | "alert">("general");
   const [notePinned, setNotePinned] = useState(false);
   const [editingNoteId, setEditingNoteId] = useState<number | null>(null);
+
+  // Historial de sesiones
+  const [showSessionModal, setShowSessionModal] = useState(false);
+  const [editingSessionId, setEditingSessionId] = useState<number | null>(null);
+  const [sessionForm, setSessionForm] = useState({
+    sessionDate: new Date().toISOString().split("T")[0],
+    summary: "",
+    agreements: "",
+    nextObjectives: "",
+    nextAppointmentDate: "",
+    patientWeight: "",
+    patientMood: "",
+    adherenceScore: "",
+    privateNotes: "",
+  });
 
   // Diario del paciente
   const [diaryDateRange, setDiaryDateRange] = useState(() => {
@@ -88,6 +103,46 @@ export default function ExpertPatientDetail() {
   const { data: myMenus } = trpc.buddyExperts.getMyMenus.useQuery(undefined, { enabled: showAssignMenuModal });
 
   // Diario queries
+  // Historial de sesiones queries
+  const { data: sessionNotes, refetch: refetchSessions } = trpc.expertPatients.getSessionNotes.useQuery(
+    { expertPatientId: patientRelId },
+    { enabled: !!user && patientRelId > 0 && activeTab === "sessions" }
+  );
+  const createSessionMutation = trpc.expertPatients.addSessionNote.useMutation({
+    onSuccess: () => {
+      toast.success("📋 Sesión registrada correctamente");
+      setShowSessionModal(false);
+      setEditingSessionId(null);
+      setSessionForm({ sessionDate: new Date().toISOString().split("T")[0], summary: "", agreements: "", nextObjectives: "", nextAppointmentDate: "", patientWeight: "", patientMood: "", adherenceScore: "", privateNotes: "" });
+      refetchSessions();
+    },
+    onError: () => toast.error("Error al guardar la sesión"),
+  });
+  const updateSessionMutation = trpc.expertPatients.updateSessionNote.useMutation({
+    onSuccess: () => {
+      toast.success("Sesión actualizada");
+      setShowSessionModal(false);
+      setEditingSessionId(null);
+      refetchSessions();
+    },
+    onError: () => toast.error("Error al actualizar la sesión"),
+  });
+  const deleteSessionMutation = trpc.expertPatients.deleteSessionNote.useMutation({
+    onSuccess: () => { toast.success("Sesión eliminada"); refetchSessions(); },
+  });
+
+  // Análisis IA
+  const [aiAnalysisResult, setAiAnalysisResult] = useState<string | null>(null);
+  const [aiAnalysisDate, setAiAnalysisDate] = useState<string | null>(null);
+  const analyzePatientMutation = trpc.expertPatients.analyzePatientTrends.useMutation({
+    onSuccess: (data) => {
+      setAiAnalysisResult(data.analysis);
+      setAiAnalysisDate(data.generatedAt);
+      toast.success("🧠 Análisis generado correctamente");
+    },
+    onError: () => toast.error("Error al generar el análisis"),
+  });
+
   const { data: diaryData, isLoading: isDiaryLoading } = trpc.expertPatients.getPatientDiary.useQuery(
     { expertPatientId: patientRelId, startDate: diaryDateRange.start, endDate: diaryDateRange.end },
     { enabled: !!user && patientRelId > 0 && activeTab === "diary" }
@@ -230,6 +285,8 @@ export default function ExpertPatientDetail() {
     { id: "appointments", label: "Citas", icon: "📅", count: appointments.filter(a => a.status === "scheduled").length || undefined },
     { id: "progress", label: "Evolución", icon: "📈", count: progressRecords.length || undefined },
     { id: "notes", label: "Notas", icon: "🔒", count: notes.length || undefined },
+    { id: "sessions", label: "Historial", icon: "📋", count: undefined },
+    { id: "analysis", label: "Análisis IA", icon: "🧠" },
     { id: "profile", label: "Perfil", icon: "👤" },
   ];
 
@@ -964,6 +1021,147 @@ export default function ExpertPatientDetail() {
           </div>
         )}
 
+        {/* ─── TAB: HISTORIAL DE SESIONES ─────────────────────────────── */}
+        {activeTab === "sessions" && (
+          <div>
+            <div className="flex justify-between items-center mb-4">
+              <div>
+                <h3 className="font-semibold text-gray-700">Historial de sesiones ({sessionNotes?.length ?? 0})</h3>
+                <p className="text-xs text-gray-400 mt-0.5">📋 Actas de consulta y seguimiento del paciente</p>
+              </div>
+              <Button
+                size="sm"
+                onClick={() => {
+                  setEditingSessionId(null);
+                  setSessionForm({ sessionDate: new Date().toISOString().split("T")[0], summary: "", agreements: "", nextObjectives: "", nextAppointmentDate: "", patientWeight: "", patientMood: "", adherenceScore: "", privateNotes: "" });
+                  setShowSessionModal(true);
+                }}
+                className="bg-orange-500 hover:bg-orange-600 text-white"
+              >
+                + Nueva sesión
+              </Button>
+            </div>
+
+            {!sessionNotes || sessionNotes.length === 0 ? (
+              <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                <div className="text-4xl mb-2">📋</div>
+                <p className="text-gray-500 font-medium">Sin sesiones registradas</p>
+                <p className="text-sm text-gray-400 mt-1">Registra el acta de cada consulta para llevar un seguimiento completo</p>
+                <Button
+                  onClick={() => { setEditingSessionId(null); setSessionForm({ sessionDate: new Date().toISOString().split("T")[0], summary: "", agreements: "", nextObjectives: "", nextAppointmentDate: "", patientWeight: "", patientMood: "", adherenceScore: "", privateNotes: "" }); setShowSessionModal(true); }}
+                  className="mt-3 bg-orange-500 hover:bg-orange-600 text-white"
+                  size="sm"
+                >
+                  Registrar primera sesión
+                </Button>
+              </div>
+            ) : (
+              <div className="relative">
+                {/* Timeline line */}
+                <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-gray-200" />
+                <div className="space-y-4">
+                  {sessionNotes.map((session: any) => (
+                    <div key={session.id} className="relative flex gap-4">
+                      {/* Timeline dot */}
+                      <div className="flex-shrink-0 w-10 h-10 rounded-full bg-orange-100 border-2 border-orange-400 flex items-center justify-center z-10">
+                        <span className="text-orange-600 text-sm font-bold">{new Date(session.sessionDate + 'T12:00:00').getDate()}</span>
+                      </div>
+                      <div className="flex-1 pb-4">
+                        <div className="bg-white rounded-xl border border-gray-200 p-4">
+                          <div className="flex items-start justify-between gap-3 mb-3">
+                            <div>
+                              <p className="font-semibold text-gray-900">
+                                {new Date(session.sessionDate + 'T12:00:00').toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                              </p>
+                              <div className="flex gap-2 mt-1 flex-wrap">
+                                {session.adherenceScore && (
+                                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${
+                                    session.adherenceScore >= 8 ? 'bg-green-100 text-green-700' :
+                                    session.adherenceScore >= 5 ? 'bg-yellow-100 text-yellow-700' :
+                                    'bg-red-100 text-red-700'
+                                  }`}>
+                                    Adherencia: {session.adherenceScore}/10
+                                  </span>
+                                )}
+                                {session.patientWeight && (
+                                  <span className="text-xs px-2 py-0.5 rounded-full bg-blue-100 text-blue-700 font-medium">
+                                    ⚖️ {session.patientWeight} kg
+                                  </span>
+                                )}
+                                {session.patientMood && (
+                                  <span className="text-xs px-2 py-0.5 rounded-full bg-purple-100 text-purple-700 font-medium">
+                                    {['', '😞', '😕', '😐', '😊', '😄'][session.patientMood]} Ánimo: {session.patientMood}/5
+                                  </span>
+                                )}
+                              </div>
+                            </div>
+                            <div className="flex gap-1">
+                              <button
+                                onClick={() => {
+                                  setEditingSessionId(session.id);
+                                  setSessionForm({
+                                    sessionDate: session.sessionDate,
+                                    summary: session.summary,
+                                    agreements: session.agreements || '',
+                                    nextObjectives: session.nextObjectives || '',
+                                    nextAppointmentDate: session.nextAppointmentDate || '',
+                                    patientWeight: session.patientWeight?.toString() || '',
+                                    patientMood: session.patientMood?.toString() || '',
+                                    adherenceScore: session.adherenceScore?.toString() || '',
+                                    privateNotes: session.privateNotes || '',
+                                  });
+                                  setShowSessionModal(true);
+                                }}
+                                className="text-xs text-gray-400 hover:text-orange-600 transition-colors p-1"
+                              >✏️</button>
+                              <button
+                                onClick={() => { if (confirm('¿Eliminar esta sesión?')) deleteSessionMutation.mutate({ noteId: session.id }); }}
+                                className="text-xs text-gray-400 hover:text-red-500 transition-colors p-1"
+                              >🗑️</button>
+                            </div>
+                          </div>
+                          <div className="space-y-2">
+                            <div>
+                              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Resumen de la sesión</p>
+                              <p className="text-sm text-gray-700 whitespace-pre-wrap">{session.summary}</p>
+                            </div>
+                            {session.agreements && (
+                              <div className="mt-2 pt-2 border-t border-gray-100">
+                                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">✅ Acuerdos y cambios</p>
+                                <p className="text-sm text-gray-700 whitespace-pre-wrap">{session.agreements}</p>
+                              </div>
+                            )}
+                            {session.nextObjectives && (
+                              <div className="mt-2 pt-2 border-t border-gray-100">
+                                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">🎯 Objetivos próxima visita</p>
+                                <p className="text-sm text-gray-700 whitespace-pre-wrap">{session.nextObjectives}</p>
+                              </div>
+                            )}
+                            {session.nextAppointmentDate && (
+                              <div className="mt-2 pt-2 border-t border-gray-100">
+                                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">📅 Próxima cita</p>
+                                <p className="text-sm text-orange-600 font-medium">
+                                  {new Date(session.nextAppointmentDate + 'T12:00:00').toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
+                                </p>
+                              </div>
+                            )}
+                            {session.privateNotes && (
+                              <div className="mt-2 pt-2 border-t border-gray-100">
+                                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">🔒 Notas privadas</p>
+                                <p className="text-sm text-gray-500 italic whitespace-pre-wrap">{session.privateNotes}</p>
+                              </div>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* ─── TAB: PERFIL ───────────────────────────────────────────────── */}
         {activeTab === "profile" && (
           <div className="space-y-4">
@@ -1028,7 +1226,209 @@ export default function ExpertPatientDetail() {
             </div>
           </div>
         )}
+
+        {/* ─── TAB: ANÁLISIS IA ───────────────────────────────────────── */}
+        {activeTab === "analysis" && (
+          <div className="space-y-4">
+            {/* Header */}
+            <div className="flex items-start justify-between">
+              <div>
+                <h3 className="font-semibold text-gray-700">🧠 Análisis de Tendencias con IA</h3>
+                <p className="text-xs text-gray-400 mt-0.5">Análisis clínico basado en los últimos 90 días de datos del paciente</p>
+              </div>
+              <Button
+                onClick={() => analyzePatientMutation.mutate({ expertPatientId: patientRelId, patientUserId: patientUser?.id ?? 0 })}
+                disabled={analyzePatientMutation.isPending}
+                className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
+                size="sm"
+              >
+                {analyzePatientMutation.isPending ? (
+                  <span className="flex items-center gap-2">
+                    <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                    Analizando...
+                  </span>
+                ) : aiAnalysisResult ? "🔄 Regenerar análisis" : "🧠 Generar análisis IA"}
+              </Button>
+            </div>
+
+            {/* Estado inicial - sin análisis */}
+            {!aiAnalysisResult && !analyzePatientMutation.isPending && (
+              <div className="text-center py-16 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl border border-purple-200">
+                <div className="text-5xl mb-3">🧠</div>
+                <p className="text-gray-700 font-semibold text-lg">Análisis inteligente del paciente</p>
+                <p className="text-sm text-gray-500 mt-2 max-w-md mx-auto">
+                  La IA analizará los registros de peso, bienestar, adherencia y sesiones de los últimos 90 días
+                  para generar insights clínicos personalizados.
+                </p>
+                <div className="mt-4 flex flex-wrap gap-2 justify-center text-xs">
+                  <span className="px-3 py-1 bg-white rounded-full border border-purple-200 text-purple-700">⚖️ Evolución del peso</span>
+                  <span className="px-3 py-1 bg-white rounded-full border border-purple-200 text-purple-700">😊 Bienestar y ánimo</span>
+                  <span className="px-3 py-1 bg-white rounded-full border border-purple-200 text-purple-700">🎯 Adherencia al plan</span>
+                  <span className="px-3 py-1 bg-white rounded-full border border-purple-200 text-purple-700">📋 Historial de sesiones</span>
+                </div>
+                <Button
+                  onClick={() => analyzePatientMutation.mutate({ expertPatientId: patientRelId, patientUserId: patientUser?.id ?? 0 })}
+                  className="mt-5 bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 text-white"
+                >
+                  🧠 Generar análisis ahora
+                </Button>
+              </div>
+            )}
+
+            {/* Cargando */}
+            {analyzePatientMutation.isPending && (
+              <div className="text-center py-16 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl border border-purple-200">
+                <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
+                <p className="text-gray-700 font-medium">Analizando datos del paciente...</p>
+                <p className="text-sm text-gray-500 mt-1">Esto puede tardar unos segundos</p>
+              </div>
+            )}
+
+            {/* Resultado del análisis */}
+            {aiAnalysisResult && !analyzePatientMutation.isPending && (
+              <div className="space-y-3">
+                {aiAnalysisDate && (
+                  <div className="flex items-center gap-2 text-xs text-gray-400">
+                    <span>⏰ Generado el {new Date(aiAnalysisDate).toLocaleString('es-ES')}</span>
+                    <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full font-medium">IA</span>
+                  </div>
+                )}
+                <div className="bg-white rounded-2xl border border-gray-200 p-5">
+                  <div className="prose prose-sm max-w-none text-gray-700 whitespace-pre-wrap leading-relaxed">
+                    {aiAnalysisResult.split('\n').map((line, i) => {
+                      if (line.match(/^\d+\. [A-ZÁ-Ú ]+$/)) {
+                        return <p key={i} className="font-bold text-gray-900 mt-4 mb-1 text-base">{line}</p>;
+                      }
+                      if (line.startsWith('- ') || line.startsWith('• ')) {
+                        return <p key={i} className="ml-3 text-gray-700">{line}</p>;
+                      }
+                      if (line.trim() === '') return <br key={i} />;
+                      return <p key={i} className="text-gray-700">{line}</p>;
+                    })}
+                  </div>
+                </div>
+                <p className="text-xs text-gray-400 italic">
+                  ⚠️ Este análisis es orientativo y no sustituye el criterio clínico profesional.
+                </p>
+              </div>
+            )}
+          </div>
+        )}
       </div>
+
+      {/* Modal: Sesión / Acta de consulta */}
+      <Dialog open={showSessionModal} onOpenChange={setShowSessionModal}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>{editingSessionId ? "✏️ Editar acta de sesión" : "📋 Nueva acta de sesión"}</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Fecha de la sesión *</Label>
+                <Input type="date" value={sessionForm.sessionDate}
+                  onChange={e => setSessionForm(prev => ({ ...prev, sessionDate: e.target.value }))} className="mt-1" />
+              </div>
+              <div>
+                <Label>Próxima cita (opcional)</Label>
+                <Input type="date" value={sessionForm.nextAppointmentDate}
+                  onChange={e => setSessionForm(prev => ({ ...prev, nextAppointmentDate: e.target.value }))} className="mt-1" />
+              </div>
+            </div>
+            <div className="grid grid-cols-3 gap-3">
+              <div>
+                <Label>Peso (kg)</Label>
+                <Input type="number" step="0.1" placeholder="70.5" value={sessionForm.patientWeight}
+                  onChange={e => setSessionForm(prev => ({ ...prev, patientWeight: e.target.value }))} className="mt-1" />
+              </div>
+              <div>
+                <Label>Ánimo (1-5)</Label>
+                <Select value={sessionForm.patientMood} onValueChange={v => setSessionForm(prev => ({ ...prev, patientMood: v }))}>
+                  <SelectTrigger className="mt-1"><SelectValue placeholder="-" /></SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="1">😞 1 - Muy bajo</SelectItem>
+                    <SelectItem value="2">😕 2 - Bajo</SelectItem>
+                    <SelectItem value="3">😐 3 - Neutro</SelectItem>
+                    <SelectItem value="4">😊 4 - Bueno</SelectItem>
+                    <SelectItem value="5">😄 5 - Excelente</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div>
+                <Label>Adherencia (1-10)</Label>
+                <Input type="number" min="1" max="10" placeholder="7" value={sessionForm.adherenceScore}
+                  onChange={e => setSessionForm(prev => ({ ...prev, adherenceScore: e.target.value }))} className="mt-1" />
+              </div>
+            </div>
+            <div>
+              <Label>Resumen de la sesión *</Label>
+              <Textarea
+                placeholder="Qué se trató en la consulta, estado general del paciente, observaciones..."
+                value={sessionForm.summary}
+                onChange={e => setSessionForm(prev => ({ ...prev, summary: e.target.value }))}
+                className="mt-1" rows={3}
+              />
+            </div>
+            <div>
+              <Label>✅ Acuerdos y cambios acordados</Label>
+              <Textarea
+                placeholder="Cambios en la dieta, nuevos objetivos, ajustes en el plan..."
+                value={sessionForm.agreements}
+                onChange={e => setSessionForm(prev => ({ ...prev, agreements: e.target.value }))}
+                className="mt-1" rows={2}
+              />
+            </div>
+            <div>
+              <Label>🎯 Objetivos para la próxima visita</Label>
+              <Textarea
+                placeholder="Qué debe lograr el paciente antes de la próxima consulta..."
+                value={sessionForm.nextObjectives}
+                onChange={e => setSessionForm(prev => ({ ...prev, nextObjectives: e.target.value }))}
+                className="mt-1" rows={2}
+              />
+            </div>
+            <div>
+              <Label>🔒 Notas privadas (solo tú las ves)</Label>
+              <Textarea
+                placeholder="Observaciones clínicas, impresiones personales..."
+                value={sessionForm.privateNotes}
+                onChange={e => setSessionForm(prev => ({ ...prev, privateNotes: e.target.value }))}
+                className="mt-1" rows={2}
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowSessionModal(false)}>Cancelar</Button>
+            <Button
+              onClick={() => {
+                if (!sessionForm.summary.trim()) return;
+                const data = {
+                  expertPatientId: patientRelId,
+                  patientUserId: patientUser?.id ?? 0,
+                  sessionDate: sessionForm.sessionDate,
+                  summary: sessionForm.summary.trim(),
+                  agreements: sessionForm.agreements.trim() || undefined,
+                  nextObjectives: sessionForm.nextObjectives.trim() || undefined,
+                  nextAppointmentDate: sessionForm.nextAppointmentDate || undefined,
+                  patientWeight: sessionForm.patientWeight ? parseFloat(sessionForm.patientWeight) : undefined,
+                  patientMood: sessionForm.patientMood ? parseInt(sessionForm.patientMood) : undefined,
+                  adherenceScore: sessionForm.adherenceScore ? parseInt(sessionForm.adherenceScore) : undefined,
+                  privateNotes: sessionForm.privateNotes.trim() || undefined,
+                };
+                if (editingSessionId) {
+                  updateSessionMutation.mutate({ noteId: editingSessionId, ...data });
+                } else {
+                  createSessionMutation.mutate(data);
+                }
+              }}
+              disabled={!sessionForm.summary.trim() || createSessionMutation.isPending || updateSessionMutation.isPending}
+              className="bg-orange-500 hover:bg-orange-600 text-white"
+            >
+              {createSessionMutation.isPending || updateSessionMutation.isPending ? "Guardando..." : editingSessionId ? "Actualizar" : "Guardar acta"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Modal: Hito del paciente */}
       <Dialog open={showMilestoneModal} onOpenChange={setShowMilestoneModal}>

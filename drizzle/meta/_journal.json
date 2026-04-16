@@ -267,6 +267,13 @@
       "when": 1776295502803,
       "tag": "0037_grey_risque",
       "breakpoints": true
+    },
+    {
+      "idx": 38,
+      "version": "7",
+      "when": 1776298010863,
+      "tag": "0038_mighty_big_bertha",
+      "breakpoints": true
     }
   ]
 }

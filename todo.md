@@ -2461,3 +2461,42 @@
 - [ ] Panel de ocupación semanal: calendario con huecos libres y ocupados
 - [ ] Lista de espera: pacientes se apuntan cuando no hay huecos y reciben notificación automática
 - [ ] Estadísticas de negocio: ingresos mensuales, retención, media de sesiones y valor por paciente
+
+## Sprint BuddyExperts — Historial, Menús, Tendencias
+
+### Historial de sesiones
+- [x] Schema: tabla session_notes (expertPatientId, appointmentId, summary, agreements, nextObjectives, nextAppointmentDate)
+- [x] tRPC: addSessionNote, getSessionNotes, updateSessionNote, deleteSessionNote
+- [x] UI: Tab "📋 Historial" en ExpertPatientDetail con timeline de sesiones y modal para añadir acta
+
+### Plantillas de menús reutilizables
+- [x] Schema: tabla menu_templates (expertId, name, description, category, weekData JSON)
+- [x] tRPC: createMenuTemplate, getMenuTemplates, deleteMenuTemplate
+- [x] UI: Página /app/expert/menu-templates con lista de plantillas y editor semanal
+
+### Editor drag & drop de menús
+- [ ] Instalar @dnd-kit/core y @dnd-kit/sortable para drag & drop
+- [ ] UI: Editor semanal con 7 columnas (días) x 4 filas (desayuno/comida/cena/snack)
+- [ ] UI: Panel lateral con buscador de recetas para arrastrar al menú
+- [ ] UI: Totales de kcal y macros por día en tiempo real al editar
+- [ ] UI: Guardar menú editado como plan del paciente o como plantilla
+
+### Ajuste calórico automático
+- [ ] tRPC: calculateCaloricTarget (TDEE según peso, altura, actividad y objetivo del paciente)
+- [ ] UI: Banner en el editor de menús mostrando objetivo calórico vs. kcal actuales del menú
+- [ ] UI: Botón "Ajustar automáticamente" que escala las porciones para alcanzar el objetivo
+
+### Banco de sustituciones
+- [x] Schema: tabla food_substitutions (recipeId, originalIngredient, substitutes JSON)
+- [x] tRPC: addFoodSubstitution, getFoodSubstitutions, deleteFoodSubstitution
+- [x] UI: Página /app/expert/food-substitutions con banco de alternativas por categoría
+
+### Notificación de desvío del plan
+- [ ] tRPC: checkPatientAdherence (detecta pacientes con adherencia < 40% o sin registros 2+ días)
+- [ ] Endpoint de alerta: notifica al experto via notifyOwner cuando un paciente se desvía
+- [ ] UI: Badge de alerta en la lista de pacientes y en el dashboard para pacientes con desvío
+
+### Análisis de tendencias con IA
+- [x] tRPC: analyzePatientTrends (invokeLLM con datos de progreso, adherencia y diario del paciente)
+- [x] UI: Tab "🧠 Análisis IA" en ExpertPatientDetail con insights generados por IA
+- [ ] UI: Gráfico de correlación adherencia vs. pérdida de peso (pendiente)

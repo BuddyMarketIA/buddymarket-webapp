@@ -517,6 +517,8 @@ export default function ExpertDashboard() {
             <QuickBtn icon={<FileText size={16} />} label="Crear Plan" bg="linear-gradient(135deg,#F97316,#EA6C0A)" onClick={() => nav("/app/expert/plans")} />
             <QuickBtn icon={<UserPlus size={16} />} label="Agregar Paciente" bg="linear-gradient(135deg,#16A34A,#15803D)" onClick={() => nav("/app/expert/patients")} />
             <QuickBtn icon={<CalendarPlus size={16} />} label="Agendar Cita" bg="linear-gradient(135deg,#2D9B8A,#1E8070)" onClick={() => nav("/app/expert/appointments")} />
+            <QuickBtn icon={<span style={{fontSize:14}}>🗂️</span>} label="Plantillas Menús" bg="linear-gradient(135deg,#7C3AED,#6D28D9)" onClick={() => nav("/app/expert/menu-templates")} />
+            <QuickBtn icon={<span style={{fontSize:14}}>🔄</span>} label="Sustituciones" bg="linear-gradient(135deg,#0891B2,#0E7490)" onClick={() => nav("/app/expert/food-substitutions")} />
           </div>
 
           {/* Estadísticas */}

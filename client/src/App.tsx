@@ -109,6 +109,8 @@ const ExpertPatients = lazy(() => import("./pages/ExpertPatients"));
 const ExpertPatientDetail = lazy(() => import("./pages/ExpertPatientDetail"));
 const ExpertChat = lazy(() => import("./pages/ExpertChat"));
 const ExpertDashboard = lazy(() => import("./pages/ExpertDashboard"));
+const MenuTemplates = lazy(() => import("./pages/expert/MenuTemplates"));
+const FoodSubstitutions = lazy(() => import("./pages/expert/FoodSubstitutions"));
 const MyExpert = lazy(() => import("./pages/MyExpert"));
 const MakerAnalytics = lazy(() => import("./pages/MakerAnalytics"));
 const IngredientExplorer = lazy(() => import("./pages/IngredientExplorer"));
@@ -242,6 +244,8 @@ function Router() {
       <Route path="/app/expert/patients">{() => <ProtectedPage><ExpertPatients /></ProtectedPage>}</Route>
       <Route path="/app/expert/patients/:id">{() => <ProtectedPage><ExpertPatientDetail /></ProtectedPage>}</Route>
       <Route path="/app/expert/chat">{() => <ProtectedPage><ExpertChat /></ProtectedPage>}</Route>
+      <Route path="/app/expert/menu-templates">{() => <ProtectedPage><MenuTemplates /></ProtectedPage>}</Route>
+      <Route path="/app/expert/food-substitutions">{() => <ProtectedPage><FoodSubstitutions /></ProtectedPage>}</Route>
       <Route path="/app/my-expert">{() => <ProtectedPage><MyExpert /></ProtectedPage>}</Route>
       <Route path="/app/maker-analytics">{() => <ProtectedPage><MakerAnalytics /></ProtectedPage>}</Route>
       <Route path="/app/my-plans">{() => <ProtectedPage><ClientPlanView /></ProtectedPage>}</Route>

@@ -2687,3 +2687,73 @@ export const patientMilestones = pgTable("patient_milestones", {
 }));
 export type PatientMilestone = typeof patientMilestones.$inferSelect;
 export type InsertPatientMilestone = typeof patientMilestones.$inferInsert;
+
+// =============================================================================
+// SESSION NOTES (Actas de sesión / historial de consultas del experto)
+// =============================================================================
+export const sessionNotes = pgTable("session_notes", {
+  id: serial("id").primaryKey(),
+  expertId: integer("expertId").notNull(),
+  patientUserId: integer("patientUserId").notNull(),
+  expertPatientId: integer("expertPatientId").notNull(),
+  appointmentId: integer("appointmentId"),
+  sessionDate: date("sessionDate").notNull(),
+  summary: text("summary").notNull(),
+  agreements: text("agreements"),
+  nextObjectives: text("nextObjectives"),
+  nextAppointmentDate: date("nextAppointmentDate"),
+  patientWeight: real("patientWeight"),
+  patientMood: integer("patientMood"),
+  adherenceScore: integer("adherenceScore"),
+  privateNotes: text("privateNotes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  expertIdx: index("sn_expert_idx").on(t.expertId),
+  patientIdx: index("sn_patient_idx").on(t.patientUserId),
+  expertPatientIdx: index("sn_ep_idx").on(t.expertPatientId),
+  dateIdx: index("sn_date_idx").on(t.sessionDate),
+}));
+export type SessionNote = typeof sessionNotes.$inferSelect;
+export type InsertSessionNote = typeof sessionNotes.$inferInsert;
+
+// =============================================================================
+// MENU TEMPLATES (Plantillas de menús reutilizables del experto)
+// =============================================================================
+export const menuTemplates = pgTable("menu_templates", {
+  id: serial("id").primaryKey(),
+  expertId: integer("expertId").notNull(),
+  name: varchar("name", { length: 256 }).notNull(),
+  description: text("description"),
+  category: varchar("category", { length: 64 }).default("general"),
+  targetCalories: integer("targetCalories"),
+  weekData: text("weekData").notNull(),
+  isPublic: boolean("isPublic").default(false).notNull(),
+  usageCount: integer("usageCount").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  expertIdx: index("mt_expert_idx").on(t.expertId),
+  categoryIdx: index("mt_category_idx").on(t.category),
+}));
+export type MenuTemplate = typeof menuTemplates.$inferSelect;
+export type InsertMenuTemplate = typeof menuTemplates.$inferInsert;
+
+// =============================================================================
+// FOOD SUBSTITUTIONS (Banco de sustituciones de alimentos)
+// =============================================================================
+export const foodSubstitutions = pgTable("food_substitutions", {
+  id: serial("id").primaryKey(),
+  expertId: integer("expertId").notNull(),
+  originalFood: varchar("originalFood", { length: 256 }).notNull(),
+  originalAmount: varchar("originalAmount", { length: 64 }),
+  substitutes: text("substitutes").notNull(),
+  category: varchar("category", { length: 64 }).default("general"),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  expertIdx: index("fs_expert_idx").on(t.expertId),
+  foodIdx: index("fs_food_idx").on(t.originalFood),
+}));
+export type FoodSubstitution = typeof foodSubstitutions.$inferSelect;
+export type InsertFoodSubstitution = typeof foodSubstitutions.$inferInsert;
