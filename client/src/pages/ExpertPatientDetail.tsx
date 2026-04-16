@@ -13,8 +13,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
 } from "recharts";
+import { generatePatientPDF } from "@/hooks/usePDFReport";
 
-type Tab = "messages" | "menus" | "appointments" | "progress" | "notes" | "profile" | "diary" | "sessions" | "analysis";
+type Tab = "messages" | "menus" | "appointments" | "progress" | "notes" | "profile" | "diary" | "sessions" | "analysis" | "checkins";
 
 const NOTE_TYPE_LABELS: Record<string, { label: string; color: string; icon: string }> = {
   general: { label: "General", color: "bg-gray-100 text-gray-700", icon: "📝" },
@@ -130,6 +131,12 @@ export default function ExpertPatientDetail() {
   const deleteSessionMutation = trpc.expertPatients.deleteSessionNote.useMutation({
     onSuccess: () => { toast.success("Sesión eliminada"); refetchSessions(); },
   });
+
+  // Check-ins semanales
+  const { data: weeklyCheckinsData } = trpc.weeklyCheckins.getPatientCheckins.useQuery(
+    { expertPatientId: patientRelId, limit: 20 },
+    { enabled: !!user && patientRelId > 0 && activeTab === "checkins" }
+  );
 
   // Análisis IA
   const [aiAnalysisResult, setAiAnalysisResult] = useState<string | null>(null);
@@ -286,6 +293,7 @@ export default function ExpertPatientDetail() {
     { id: "progress", label: "Evolución", icon: "📈", count: progressRecords.length || undefined },
     { id: "notes", label: "Notas", icon: "🔒", count: notes.length || undefined },
     { id: "sessions", label: "Historial", icon: "📋", count: undefined },
+    { id: "checkins", label: "Check-ins", icon: "✅" },
     { id: "analysis", label: "Análisis IA", icon: "🧠" },
     { id: "profile", label: "Perfil", icon: "👤" },
   ];
@@ -352,6 +360,28 @@ export default function ExpertPatientDetail() {
             )}
           </div>
           <div className="flex gap-2 flex-shrink-0">
+            <Button
+              size="sm"
+              variant="outline"
+              onClick={() => {
+                generatePatientPDF({
+                  patient: {
+                    name: patientUser?.name ?? "Paciente",
+                    email: patientUser?.email,
+                    expertName: user?.name ?? undefined,
+                    objective: profile?.objective ?? null,
+                  },
+                  progressRecords: progressRecords,
+                  sessionNotes: sessionNotes ?? [],
+                  weeklyCheckins: weeklyCheckinsData ?? [],
+                });
+                toast.success("📄 Informe PDF generado");
+              }}
+              className="border-gray-300 text-gray-600 hover:bg-gray-50"
+              title="Generar informe PDF"
+            >
+              📄 PDF
+            </Button>
             <Button
               size="sm"
               variant="outline"
@@ -1224,6 +1254,87 @@ export default function ExpertPatientDetail() {
                 <div><span className="text-gray-500">Grasa: </span><span className="font-medium">{profile?.dailyFatGoal ? `${profile.dailyFatGoal}g` : "—"}</span></div>
               </div>
             </div>
+          </div>
+        )}
+
+        {/* ─── TAB: CHECK-INS SEMANALES ──────────────────────────────── */}
+        {activeTab === "checkins" && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold text-gray-700">✅ Check-ins Semanales</h3>
+                <p className="text-xs text-gray-400 mt-0.5">Valoraciones semanales del paciente</p>
+              </div>
+            </div>
+            {!weeklyCheckinsData || weeklyCheckinsData.length === 0 ? (
+              <div className="text-center py-12 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+                <div className="text-4xl mb-3">✅</div>
+                <p className="text-gray-500 font-medium">Sin check-ins todavía</p>
+                <p className="text-sm text-gray-400 mt-1">El paciente completará su primer check-in semanal en breve</p>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {weeklyCheckinsData.map(ci => (
+                  <div key={ci.id} className="bg-white rounded-xl border border-gray-200 p-4">
+                    <div className="flex items-center justify-between mb-3">
+                      <div>
+                        <span className="font-semibold text-gray-800 text-sm">
+                          Semana del {new Date(ci.weekStart + "T12:00:00").toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })}
+                        </span>
+                        {ci.completedAt && (
+                          <span className="ml-2 text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full">✓ Completado</span>
+                        )}
+                      </div>
+                      {ci.weight && (
+                        <span className="text-sm font-bold text-orange-600">⚖️ {ci.weight} kg</span>
+                      )}
+                    </div>
+                    <div className="grid grid-cols-5 gap-2 mb-3">
+                      {ci.energyLevel !== null && ci.energyLevel !== undefined && (
+                        <div className="text-center bg-yellow-50 rounded-lg p-2">
+                          <div className="text-xs text-gray-500">Energía</div>
+                          <div className="font-bold text-yellow-600">{ci.energyLevel}/10</div>
+                        </div>
+                      )}
+                      {ci.adherenceScore !== null && ci.adherenceScore !== undefined && (
+                        <div className="text-center bg-green-50 rounded-lg p-2">
+                          <div className="text-xs text-gray-500">Adherencia</div>
+                          <div className="font-bold text-green-600">{ci.adherenceScore}/10</div>
+                        </div>
+                      )}
+                      {ci.hunger !== null && ci.hunger !== undefined && (
+                        <div className="text-center bg-orange-50 rounded-lg p-2">
+                          <div className="text-xs text-gray-500">Saciedad</div>
+                          <div className="font-bold text-orange-600">{ci.hunger}/10</div>
+                        </div>
+                      )}
+                      {ci.mood !== null && ci.mood !== undefined && (
+                        <div className="text-center bg-blue-50 rounded-lg p-2">
+                          <div className="text-xs text-gray-500">Ánimo</div>
+                          <div className="font-bold text-blue-600">{ci.mood}/10</div>
+                        </div>
+                      )}
+                      {ci.sleepQuality !== null && ci.sleepQuality !== undefined && (
+                        <div className="text-center bg-purple-50 rounded-lg p-2">
+                          <div className="text-xs text-gray-500">Sueño</div>
+                          <div className="font-bold text-purple-600">{ci.sleepQuality}/10</div>
+                        </div>
+                      )}
+                    </div>
+                    {ci.difficulties && (
+                      <div className="mt-2 text-sm text-gray-600 bg-red-50 rounded-lg p-2">
+                        <span className="font-medium text-red-700">Dificultades:</span> {ci.difficulties}
+                      </div>
+                    )}
+                    {ci.notes && (
+                      <div className="mt-2 text-sm text-gray-600 bg-gray-50 rounded-lg p-2">
+                        <span className="font-medium">Notas:</span> {ci.notes}
+                      </div>
+                    )}
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         )}
 

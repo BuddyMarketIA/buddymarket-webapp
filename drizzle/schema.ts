@@ -2757,3 +2757,36 @@ export const foodSubstitutions = pgTable("food_substitutions", {
 }));
 export type FoodSubstitution = typeof foodSubstitutions.$inferSelect;
 export type InsertFoodSubstitution = typeof foodSubstitutions.$inferInsert;
+
+// =============================================================================
+// SESSION PACKAGES (Paquetes de sesiones / bonos)
+// =============================================================================
+export const sessionPackages = pgTable("session_packages", {
+  id: serial("id").primaryKey(),
+  expertId: integer("expertId").notNull(),
+  name: varchar("name", { length: 256 }).notNull(),
+  description: text("description"),
+  sessionsCount: integer("sessionsCount").notNull(),
+  price: real("price").notNull(),
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  expertIdx: index("sp_expert_idx").on(t.expertId),
+}));
+export type SessionPackage = typeof sessionPackages.$inferSelect;
+export type InsertSessionPackage = typeof sessionPackages.$inferInsert;
+
+export const patientPackages = pgTable("patient_packages", {
+  id: serial("id").primaryKey(),
+  expertPatientId: integer("expertPatientId").notNull(),
+  packageId: integer("packageId").notNull(),
+  sessionsUsed: integer("sessionsUsed").default(0).notNull(),
+  sessionsTotal: integer("sessionsTotal").notNull(),
+  stripePaymentId: varchar("stripePaymentId", { length: 256 }),
+  purchasedAt: timestamp("purchasedAt").defaultNow().notNull(),
+  expiresAt: timestamp("expiresAt"),
+}, (t) => ({
+  patientPkgIdx: index("patient_pkg_patient_idx").on(t.expertPatientId),
+}));
+export type PatientPackage = typeof patientPackages.$inferSelect;
+export type InsertPatientPackage = typeof patientPackages.$inferInsert;

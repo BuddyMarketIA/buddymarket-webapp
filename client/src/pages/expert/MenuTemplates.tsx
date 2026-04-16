@@ -1,4 +1,15 @@
 import { useState } from "react";
+import {
+  DndContext,
+  DragEndEvent,
+  DragOverlay,
+  DragStartEvent,
+  PointerSensor,
+  useSensor,
+  useSensors,
+  useDroppable,
+  useDraggable,
+} from "@dnd-kit/core";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "@/components/sonner-a11y-shim";
@@ -42,6 +53,48 @@ const emptyWeekData = (): WeekData => {
   return data;
 };
 
+// ─── Componentes drag & drop ─────────────────────────────────────────────────
+const QUICK_RECIPES = [
+  "Avena con frutas", "Tostadas con aguacate", "Huevos revueltos", "Yogur con granola",
+  "Ensalada de pollo", "Arroz con verduras", "Pasta integral", "Salmón al horno",
+  "Pollo a la plancha", "Lentejas", "Gazpacho", "Tortilla española",
+  "Fruta de temporada", "Frutos secos", "Batido proteico", "Queso con jamón",
+];
+
+function DraggableRecipe({ id, label }: { id: string; label: string }) {
+  const { attributes, listeners, setNodeRef, isDragging } = useDraggable({ id });
+  return (
+    <div
+      ref={setNodeRef}
+      {...attributes}
+      {...listeners}
+      className={`px-2 py-1 rounded-lg text-xs font-medium cursor-grab select-none transition-all ${
+        isDragging
+          ? "opacity-50 scale-95"
+          : "bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 hover:shadow-sm"
+      }`}
+    >
+      {label}
+    </div>
+  );
+}
+
+function DroppableCell({ id, value, onChange }: { id: string; value: string; onChange: (v: string) => void }) {
+  const { setNodeRef, isOver } = useDroppable({ id });
+  return (
+    <div ref={setNodeRef} className={`relative rounded-lg transition-all ${
+      isOver ? "ring-2 ring-orange-400 bg-orange-50" : ""
+    }`}>
+      <Input
+        placeholder="—"
+        value={value}
+        onChange={e => onChange(e.target.value)}
+        className="text-xs h-8 px-2"
+      />
+    </div>
+  );
+}
+
 export default function MenuTemplates() {
   const { user } = useAuth();
   const [showCreateModal, setShowCreateModal] = useState(false);
@@ -49,6 +102,30 @@ export default function MenuTemplates() {
   const [editingTemplateId, setEditingTemplateId] = useState<number | null>(null);
   const [searchQuery, setSearchQuery] = useState("");
   const [filterCategory, setFilterCategory] = useState("all");
+  const [activeDragId, setActiveDragId] = useState<string | null>(null);
+
+  const sensors = useSensors(
+    useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
+  );
+
+  const handleDragStart = (event: DragStartEvent) => {
+    setActiveDragId(event.active.id as string);
+  };
+
+  const handleDragEnd = (event: DragEndEvent) => {
+    setActiveDragId(null);
+    const { active, over } = event;
+    if (!over) return;
+    // over.id format: "day__mealKey"
+    const [day, mealKey] = (over.id as string).split("__");
+    if (day && mealKey) {
+      const recipeLabel = active.id as string;
+      setWeekData(prev => ({
+        ...prev,
+        [day]: { ...prev[day], [mealKey]: recipeLabel },
+      }));
+    }
+  };
 
   const [templateForm, setTemplateForm] = useState({
     name: "",
@@ -317,10 +394,20 @@ export default function MenuTemplates() {
               </div>
             </div>
 
-            {/* Editor semanal */}
+            {/* Editor semanal drag & drop */}
             <div>
-              <Label className="text-base font-semibold">📅 Contenido semanal</Label>
-              <p className="text-xs text-gray-400 mt-0.5 mb-3">Escribe el nombre del plato o alimento para cada comida y día</p>
+              <Label className="text-base font-semibold">📅 Editor semanal (drag & drop)</Label>
+              <p className="text-xs text-gray-400 mt-0.5 mb-2">Arrastra recetas rápidas a las celdas o escribe directamente</p>
+              {/* Recetas rápidas para arrastrar */}
+              <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
+                <div className="mb-3 p-3 bg-orange-50 rounded-xl border border-orange-100">
+                  <p className="text-xs font-semibold text-orange-700 mb-2">🍽️ Recetas rápidas — arrastra a la tabla</p>
+                  <div className="flex flex-wrap gap-1.5">
+                    {QUICK_RECIPES.map(recipe => (
+                      <DraggableRecipe key={recipe} id={recipe} label={recipe} />
+                    ))}
+                  </div>
+                </div>
               <div className="overflow-x-auto">
                 <table className="w-full text-sm border-collapse">
                   <thead>
@@ -339,14 +426,13 @@ export default function MenuTemplates() {
                         </td>
                         {DAYS.map(day => (
                           <td key={day} className="py-1 px-1">
-                            <Input
-                              placeholder="—"
+                            <DroppableCell
+                              id={`${day}__${meal.key}`}
                               value={weekData[day]?.[meal.key] || ""}
-                              onChange={e => setWeekData(prev => ({
+                              onChange={v => setWeekData(prev => ({
                                 ...prev,
-                                [day]: { ...prev[day], [meal.key]: e.target.value }
+                                [day]: { ...prev[day], [meal.key]: v }
                               }))}
-                              className="text-xs h-8 px-2"
                             />
                           </td>
                         ))}
@@ -355,6 +441,14 @@ export default function MenuTemplates() {
                   </tbody>
                 </table>
               </div>
+              <DragOverlay>
+                {activeDragId ? (
+                  <div className="px-2 py-1 rounded-lg text-xs font-medium bg-orange-500 text-white shadow-lg">
+                    {activeDragId}
+                  </div>
+                ) : null}
+              </DragOverlay>
+              </DndContext>
             </div>
           </div>
           <DialogFooter>

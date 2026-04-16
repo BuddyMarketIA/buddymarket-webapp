@@ -14,6 +14,8 @@ import { expertPatientsRouter } from "./routers/expertPatients";
 import { expertDashboardRouter } from "./routers/expertDashboard";
 import { makerAnalyticsRouter } from "./routers/makerAnalytics";
 import { contentSyncRouter } from "./routers/contentSync";
+import { weeklyCheckinsRouter } from "./routers/weeklyCheckins";
+import { sessionPackagesRouter } from "./routers/sessionPackages";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { invokeLLM } from "./_core/llm";
 import { storagePut } from "./storage";
@@ -241,6 +243,8 @@ export const appRouter = router({
   expertDashboard: expertDashboardRouter,
   makerAnalytics: makerAnalyticsRouter,
   contentSync: contentSyncRouter,
+  weeklyCheckins: weeklyCheckinsRouter,
+  sessionPackages: sessionPackagesRouter,
 
   // ---------------------------------------------------------------------------
   // AUTH

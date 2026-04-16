@@ -2500,3 +2500,46 @@
 - [x] tRPC: analyzePatientTrends (invokeLLM con datos de progreso, adherencia y diario del paciente)
 - [x] UI: Tab "🧠 Análisis IA" en ExpertPatientDetail con insights generados por IA
 - [ ] UI: Gráfico de correlación adherencia vs. pérdida de peso (pendiente)
+
+## Sprint 7 Funcionalidades Nuevas
+
+### Scroll infinito en Recetas
+- [ ] tRPC: endpoint recipes.list con cursor-based pagination (limit 20, cursor = lastId)
+- [ ] UI: useInfiniteQuery en Recipes.tsx con IntersectionObserver para cargar más al llegar al final
+- [ ] UI: skeleton loader mientras carga la siguiente página
+
+### Notificaciones de desvío del plan
+- [ ] tRPC: checkPatientAdherence — detecta pacientes con 2+ días sin registrar o adherencia < 40%
+- [ ] UI: badge rojo en ExpertPatients.tsx para pacientes con desvío
+- [ ] UI: banner de alerta en ExpertPatientDetail cuando el paciente lleva 2+ días sin registrar
+
+### Check-in semanal del paciente
+- [ ] Schema DB: tabla weekly_checkins (expertPatientId, userId, week, weight, photoUrl, energyLevel, adherenceScore, notes, completedAt)
+- [ ] tRPC: createWeeklyCheckin, getWeeklyCheckins, getMyPendingCheckins
+- [ ] UI: página /app/my-checkin para que el paciente complete su check-in semanal
+- [ ] UI: tab "Check-in" en ExpertPatientDetail para que el experto vea los check-ins del paciente
+
+### Valoración semanal del paciente
+- [ ] Schema DB: tabla weekly_ratings (expertPatientId, userId, week, hunger, energy, adherence, difficulties, mood, notes)
+- [ ] tRPC: createWeeklyRating, getWeeklyRatings
+- [ ] UI: formulario de valoración semanal en /app/my-checkin (combinado con check-in)
+- [ ] UI: gráfico de tendencias de valoraciones en tab del experto
+
+### Informe PDF del paciente
+- [ ] tRPC: generatePatientReport — recopila datos del paciente (métricas, sesiones, adherencia, bienestar) y genera HTML estructurado
+- [ ] UI: botón "Generar PDF" en ExpertPatientDetail que descarga el informe
+- [ ] PDF: incluye gráfico de peso, resumen de sesiones, adherencia media y recomendaciones IA
+
+### Editor drag & drop de menús
+- [ ] Instalar @dnd-kit/core y @dnd-kit/sortable
+- [ ] UI: página /app/expert/menu-editor con tabla 7 días × 4 comidas
+- [ ] UI: panel lateral con buscador de recetas para arrastrar
+- [ ] UI: totales de kcal y macros por día en tiempo real
+- [ ] UI: guardar como plantilla o asignar a paciente
+
+### Paquetes de sesiones (bonos) con Stripe
+- [ ] Schema DB: tabla session_packages (expertId, name, sessionsCount, price, description, isActive)
+- [ ] Schema DB: tabla patient_packages (expertPatientId, packageId, sessionsUsed, sessionsTotal, purchasedAt, stripePaymentId)
+- [ ] tRPC: createSessionPackage, getExpertPackages, purchasePackage (Stripe checkout), getMyPackages
+- [ ] UI: página /app/expert/packages para que el experto gestione sus bonos
+- [ ] UI: sección "Bonos disponibles" en MyExpert.tsx para que el paciente compre bonos

@@ -32,6 +32,10 @@ export default function ExpertPatients() {
     { status: statusFilter, search: search || undefined },
     { enabled: !!user, refetchInterval: 30000 }
   );
+  const { data: adherenceData } = trpc.expertPatients.checkPatientsAdherence.useQuery(
+    undefined,
+    { enabled: !!user && statusFilter !== "invited" }
+  );
 
   const inviteMutation = trpc.expertPatients.invitePatient.useMutation({
     onSuccess: (data) => {
@@ -150,6 +154,8 @@ export default function ExpertPatients() {
               const statusInfo = STATUS_LABELS[patient.status] ?? { label: patient.status, color: "bg-gray-100 text-gray-600" };
               const hasUnread = (patient.unreadMessages ?? 0) > 0;
               const nextAppt = patient.nextAppointment ? new Date(patient.nextAppointment) : null;
+              const deviation = adherenceData?.[patient.id];
+              const hasDeviation = !!deviation && patient.status === "active";
 
               return (
                 <div
@@ -197,8 +203,17 @@ export default function ExpertPatients() {
                     )}
                   </div>
 
+                  {/* Badge de desvío */}
+                  {hasDeviation && (
+                    <div className="hidden sm:flex flex-col items-end text-right flex-shrink-0">
+                      <span className="inline-flex items-center gap-1 px-2 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded-full">
+                        ⚠️ {deviation.daysWithoutLog >= 999 ? "Sin registros" : `${deviation.daysWithoutLog}d sin registrar`}
+                      </span>
+                    </div>
+                  )}
+
                   {/* Próxima cita */}
-                  {nextAppt && (
+                  {nextAppt && !hasDeviation && (
                     <div className="hidden sm:flex flex-col items-end text-right flex-shrink-0">
                       <span className="text-xs text-gray-400">Próxima cita</span>
                       <span className="text-sm font-medium text-gray-700">

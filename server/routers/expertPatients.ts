@@ -1694,6 +1694,42 @@ Responde en JSON con este formato:
       return { analysis, generatedAt: new Date().toISOString() };
     }),
 
+  // ─── Comprobar adherencia de pacientes ─────────────────────────────────────
+  checkPatientsAdherence: protectedProcedure
+    .query(async ({ ctx }) => {
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { buddyExperts, expertPatients, mealLogs } = await import("../../drizzle/schema.js");
+      const { eq, and, desc } = await import("drizzle-orm");
+      const [expert] = await drizzleDb.select().from(buddyExperts).where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+      if (!expert) throw new TRPCError({ code: "FORBIDDEN" });
+      const activePatients = await drizzleDb.select({
+        patientId: expertPatients.id,
+        patientUserId: expertPatients.patientUserId,
+      }).from(expertPatients).where(and(eq(expertPatients.expertId, expert.id), eq(expertPatients.status, "active")));
+      const deviations: Record<number, { daysWithoutLog: number; lastLogDate: string | null }> = {};
+      for (const p of activePatients) {
+        const [lastLog] = await drizzleDb.select({ logDate: mealLogs.logDate })
+          .from(mealLogs)
+          .where(eq(mealLogs.userId, p.patientUserId))
+          .orderBy(desc(mealLogs.logDate))
+          .limit(1);
+        const lastLogDate = lastLog?.logDate ?? null;
+        if (!lastLogDate) {
+          deviations[p.patientId] = { daysWithoutLog: 999, lastLogDate: null };
+        } else {
+          const last = new Date(lastLogDate);
+          const today = new Date();
+          const diffDays = Math.floor((today.getTime() - last.getTime()) / (1000 * 60 * 60 * 24));
+          if (diffDays >= 2) {
+            deviations[p.patientId] = { daysWithoutLog: diffDays, lastLogDate };
+          }
+        }
+      }
+      return deviations;
+    }),
+
   // ─── Mis experts (vista del paciente) ────────────────────────────────────
   getMyExperts: protectedProcedure
     .query(async ({ ctx }) => {

@@ -274,6 +274,13 @@
       "when": 1776298010863,
       "tag": "0038_mighty_big_bertha",
       "breakpoints": true
+    },
+    {
+      "idx": 39,
+      "version": "7",
+      "when": 1776312895437,
+      "tag": "0039_exotic_human_fly",
+      "breakpoints": true
     }
   ]
 }
