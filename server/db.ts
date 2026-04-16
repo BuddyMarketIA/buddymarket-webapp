@@ -131,13 +131,18 @@ export async function upsertUser(user: InsertUser): Promise<void> {
       if (existingByEmail.length > 0) {
         // Use the OLDEST account as the canonical one (first registration)
         const canonical = existingByEmail[0];
+        // Fetch the current canonical account to check if it already has a custom photo
+        const currentCanonical = await db.select({ imageUrl: users.imageUrl, name: users.name }).from(users).where(eq(users.id, canonical.id)).limit(1);
+        const hasCustomPhoto = currentCanonical[0]?.imageUrl && !currentCanonical[0].imageUrl.includes('googleusercontent.com') && !currentCanonical[0].imageUrl.includes('lh3.google') && !currentCanonical[0].imageUrl.includes('graph.facebook.com');
         const updateData: Record<string, unknown> = {
           openId: user.openId,
           lastSignedIn: user.lastSignedIn ?? new Date(),
         };
-        if (user.name) updateData.name = user.name;
+        // Only update name if the account doesn't already have one
+        if (user.name && !currentCanonical[0]?.name) updateData.name = user.name;
         if (user.loginMethod) updateData.loginMethod = user.loginMethod;
-        if (user.imageUrl) updateData.imageUrl = user.imageUrl;
+        // Don't overwrite a custom (non-OAuth) profile photo with the SSO provider photo
+        if (user.imageUrl && !hasCustomPhoto) updateData.imageUrl = user.imageUrl;
         await db.update(users).set(updateData).where(eq(users.id, canonical.id));
         console.log(`[upsertUser] Linked openId ${user.openId} to existing account ID ${canonical.id} (email: ${normalizedEmail}). Total active accounts with this email: ${existingByEmail.length}`);
         // Soft-delete any extra duplicate accounts (keep only the canonical)

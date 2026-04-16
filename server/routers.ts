@@ -4354,6 +4354,47 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
         return db.getUserSubscription(input.userId);
       }),
 
+    // ── Admin: Gestión de cuentas duplicadas ────────────────────────────────
+    findDuplicateAccounts: protectedProcedure
+      .input(z.object({ email: z.string().email() }))
+      .query(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return [];
+        const { users: usersTable } = await import("../drizzle/schema.js");
+        const { or, ilike } = await import("drizzle-orm");
+        const email = input.email.toLowerCase().trim();
+        const rows = await drizzleDb
+          .select({ id: usersTable.id, email: usersTable.email, name: usersTable.name, imageUrl: usersTable.imageUrl, openId: usersTable.openId, role: usersTable.role, accountType: usersTable.accountType, loginMethod: usersTable.loginMethod, createdAt: usersTable.createdAt, deletedAt: usersTable.deletedAt, lastSignedIn: usersTable.lastSignedIn })
+          .from(usersTable)
+          .where(ilike(usersTable.email, email));
+        return rows;
+      }),
+    mergeAccounts: protectedProcedure
+      .input(z.object({ keepUserId: z.number(), deleteUserIds: z.array(z.number()) }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { users: usersTable } = await import("../drizzle/schema.js");
+        const { inArray } = await import("drizzle-orm");
+        // Soft-delete the duplicate accounts
+        await drizzleDb.update(usersTable).set({ deletedAt: new Date(), active: false }).where(inArray(usersTable.id, input.deleteUserIds));
+        return { success: true, deleted: input.deleteUserIds.length };
+      }),
+    promoteToAdminProMax: protectedProcedure
+      .input(z.object({ userId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        await db.updateUser(input.userId, { role: "admin" as any });
+        await db.upsertUserSubscription(input.userId, {
+          status: "active",
+          plan: "pro_max",
+          currentPeriodStart: new Date(),
+          currentPeriodEnd: new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000), // 10 years
+        });
+        return { success: true };
+      }),
     // ── Admin: Founder Emails Management ──────────────────────────────────
     getFounderEmails: protectedProcedure
       .query(async ({ ctx }) => {

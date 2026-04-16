@@ -45,6 +45,7 @@ const TABS = [
   { key: "diets", label: "Dietas", icon: TagIcon },
   { key: "categories", label: "Categorías", icon: BookOpenIcon },
   { key: "users", label: "Usuarios", icon: UsersIcon },
+  { key: "duplicates", label: "Duplicados", icon: UsersIcon },
   { key: "terms", label: "TyC", icon: DocumentTextIcon },
   { key: "founders", label: "Fundadores", icon: StarIcon },
   { key: "badges", label: "Insignias", icon: TrophyIcon },
@@ -333,6 +334,22 @@ export default function Admin() {
       toast.success((vars as any).action === "approve" ? "✅ Solicitud aprobada" : "❌ Solicitud rechazada");
     },
     onError: (err: any) => toast.error(err.message),
+  });
+
+  // Duplicate accounts state
+  const [dupEmail, setDupEmail] = useState("");
+  const [dupSearchEmail, setDupSearchEmail] = useState("");
+  const { data: dupAccounts, isLoading: dupLoading } = trpc.admin.findDuplicateAccounts.useQuery(
+    { email: dupSearchEmail },
+    { enabled: activeTab === "duplicates" && dupSearchEmail.length > 3 }
+  );
+  const mergeAccounts = trpc.admin.mergeAccounts.useMutation({
+    onSuccess: (data) => { utils.admin.findDuplicateAccounts.invalidate(); toast.success(`✅ ${data.deleted} cuenta(s) eliminada(s)`); },
+    onError: (err) => toast.error(err.message),
+  });
+  const promoteToAdminProMax = trpc.admin.promoteToAdminProMax.useMutation({
+    onSuccess: () => { utils.admin.users.invalidate(); toast.success("✅ Cuenta promovida a Admin + Pro Max"); },
+    onError: (err) => toast.error(err.message),
   });
 
   const updateRole = trpc.admin.updateUserRole.useMutation({
@@ -778,6 +795,73 @@ export default function Admin() {
         <AdminSoportePanel />
       )}
       {/* Users */}
+      {activeTab === "duplicates" && (
+        <div className="vively-card space-y-4">
+          <h3 className="text-sm font-bold text-gray-700">🔍 Buscar cuentas duplicadas</h3>
+          <p className="text-xs text-gray-400">Busca por email para ver todas las cuentas asociadas a ese correo. Puedes elegir cuál conservar y eliminar las duplicadas.</p>
+          <div className="flex gap-2">
+            <input
+              type="email"
+              value={dupEmail}
+              onChange={(e) => setDupEmail(e.target.value)}
+              placeholder="luismariaccc@gmail.com"
+              className="flex-1 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm"
+            />
+            <button
+              onClick={() => setDupSearchEmail(dupEmail)}
+              className="rounded-xl bg-[#F97316] px-4 py-2 text-sm font-semibold text-white"
+            >
+              Buscar
+            </button>
+          </div>
+          {dupLoading && <p className="text-xs text-gray-400">Buscando...</p>}
+          {dupAccounts && dupAccounts.length === 0 && <p className="text-xs text-gray-400">No se encontraron cuentas con ese email.</p>}
+          {dupAccounts && dupAccounts.length > 0 && (
+            <div className="space-y-3">
+              <p className="text-xs font-semibold text-orange-600">{dupAccounts.length} cuenta(s) encontrada(s) con este email:</p>
+              {dupAccounts.map((acc: any) => (
+                <div key={acc.id} className="rounded-2xl border border-gray-100 bg-white p-3 shadow-sm space-y-2">
+                  <div className="flex items-center gap-3">
+                    {acc.imageUrl ? (
+                      <img src={acc.imageUrl} alt="" className="h-10 w-10 rounded-full object-cover" />
+                    ) : (
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-sm font-bold text-gray-500">
+                        {acc.name?.[0]?.toUpperCase() ?? "?"}
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-gray-800">{acc.name || "Sin nombre"}</p>
+                      <p className="text-xs text-gray-400">ID: {acc.id} · {acc.loginMethod ?? "desconocido"} · {acc.role}</p>
+                      <p className="text-xs text-gray-400">Creada: {acc.createdAt ? new Date(acc.createdAt).toLocaleDateString("es-ES") : "?"}</p>
+                      {acc.deletedAt && <p className="text-xs text-red-400">⚠️ Eliminada el {new Date(acc.deletedAt).toLocaleDateString("es-ES")}</p>}
+                    </div>
+                    <div className="flex flex-col gap-1">
+                      <button
+                        onClick={() => promoteToAdminProMax.mutate({ userId: acc.id })}
+                        className="rounded-lg bg-purple-100 px-2 py-1 text-xs font-semibold text-purple-700 hover:bg-purple-200"
+                      >
+                        Admin + Pro Max
+                      </button>
+                      {!acc.deletedAt && (
+                        <button
+                          onClick={() => {
+                            if (confirm(`¿Eliminar la cuenta ID ${acc.id} (${acc.name || acc.email})? Esta acción es reversible.`)) {
+                              mergeAccounts.mutate({ keepUserId: -1, deleteUserIds: [acc.id] });
+                            }
+                          }}
+                          className="rounded-lg bg-red-100 px-2 py-1 text-xs font-semibold text-red-600 hover:bg-red-200"
+                        >
+                          Eliminar
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
       {activeTab === "users" && (
         <div className="vively-card space-y-3">
           <h3 className="text-sm font-bold text-gray-700">
