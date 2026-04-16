@@ -352,21 +352,24 @@ export default function ExpertDashboard() {
       <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}} *{box-sizing:border-box}`}</style>
 
       {/* Header */}
-      <div style={{ padding: "20px 24px 14px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
-        <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "#111827" }}>
+      <div style={{ padding: "16px 16px 12px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
+        <h1 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: "#111827", minWidth: 0, flex: 1 }}>
           Hola {greeting} 👋
         </h1>
-        <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexShrink: 0 }}>
           {gcalStatus?.connected ? (
             <div style={{ display: "flex", alignItems: "center", gap: 5, background: "#F0FDF4", border: "1px solid #BBF7D0", borderRadius: 9, padding: "4px 10px", fontSize: 11, color: "#16A34A", fontWeight: 600 }}>
               <span>📅</span><span>Calendar ●</span>
               <button onClick={() => disconnectGcal.mutate()} style={{ fontSize: 10, color: "#DC2626", background: "none", border: "none", cursor: "pointer", fontWeight: 600, marginLeft: 3, padding: 0 }}>✕</button>
             </div>
           ) : gcalAuthData?.url ? (
-            <button onClick={() => window.location.href = gcalAuthData.url} style={{ display: "flex", alignItems: "center", gap: 5, background: "#fff", border: "1px solid #E5E7EB", borderRadius: 9, padding: "4px 10px", fontSize: 11, color: "#374151", fontWeight: 600, cursor: "pointer" }}>
-              <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" style={{ width: 12, height: 12 }} />
-              Conectar Calendar
-            </button>
+            <>
+              <button onClick={() => window.location.href = gcalAuthData.url} style={{ display: "flex", alignItems: "center", gap: 4, background: "#fff", border: "1px solid #E5E7EB", borderRadius: 9, padding: "4px 8px", fontSize: 10, color: "#374151", fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" }}>
+                <img src="https://www.gstatic.com/firebasejs/ui/2.0.0/images/auth/google.svg" alt="" style={{ width: 11, height: 11 }} />
+                <span className="gcal-label">Conectar Calendar</span>
+              </button>
+              <style>{`@media (max-width: 400px) { .gcal-label { display: none; } }`}</style>
+            </>
           ) : null}
           <div style={{ position: "relative", cursor: "pointer" }} onClick={() => nav("/app/notifications")}>
             <Bell size={20} color="#6B7280" />
@@ -379,14 +382,18 @@ export default function ExpertDashboard() {
         </div>
       </div>
 
-      {/* Body: 2-column grid (content + right panel) */}
-      <div style={{ padding: "0 24px 24px", display: "grid", gridTemplateColumns: "1fr 300px", gap: 18, alignItems: "start" }}>
+      {/* Body: responsive grid (2-col on desktop, 1-col on mobile) */}
+      <div style={{ padding: "0 16px 24px", display: "grid", gridTemplateColumns: "min(100%, calc(100vw - 32px)) 300px", gap: 18, alignItems: "start", maxWidth: "100%", overflowX: "hidden" }}
+        className="expert-dashboard-grid">
+      <style>{`@media (max-width: 768px) { .expert-dashboard-grid { grid-template-columns: 1fr !important; } }`}</style>
 
         {/* ── Left+Center ── */}
         <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
 
           {/* Row 1: 3 KPI cards */}
-          <div style={{ display: "flex", gap: 14 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}
+            className="kpi-row">
+          <style>{`@media (max-width: 480px) { .kpi-row { grid-template-columns: 1fr !important; gap: 8px !important; } }`}</style>
             <KpiCard
               count={isLoading ? "…" : (stats?.activePatients ?? 0)}
               title="Planes en curso"
@@ -415,7 +422,9 @@ export default function ExpertDashboard() {
           </div>
 
           {/* Row 2: Pacientes + Recordatorio de citas */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}
+            className="two-col-row">
+          <style>{`@media (max-width: 600px) { .two-col-row { grid-template-columns: 1fr !important; } }`}</style>
 
             {/* Pacientes */}
             <div style={{ background: "#fff", borderRadius: 16, padding: "18px", boxShadow: "0 1px 8px rgba(0,0,0,0.06)" }}>
@@ -459,7 +468,9 @@ export default function ExpertDashboard() {
           </div>
 
           {/* Row 3: Contenido destacado + Accesos rápidos */}
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}
+            className="two-col-row-2">
+          <style>{`@media (max-width: 600px) { .two-col-row-2 { grid-template-columns: 1fr !important; } }`}</style>
 
             {/* Contenido destacado */}
             <div style={{ background: "#fff", borderRadius: 16, padding: "18px", boxShadow: "0 1px 8px rgba(0,0,0,0.06)" }}>
