@@ -46,6 +46,20 @@ const CATEGORY_EMOJIS: Record<string, string> = {
 
 type Tab = "experts" | "testimonials";
 
+// ─── Star Rating ──────────────────────────────────────────────────────────────
+function StarRating({ rating }: { rating: number }) {
+  return (
+    <div className="flex items-center gap-0.5">
+      {[1,2,3,4,5].map(i => (
+        <svg key={i} className={`w-3 h-3 ${i <= Math.round(rating) ? 'text-amber-400' : 'text-gray-200'}`} fill="currentColor" viewBox="0 0 20 20">
+          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+        </svg>
+      ))}
+      <span className="text-[10px] font-bold text-gray-500 ml-0.5">{rating > 0 ? Number(rating).toFixed(1) : '—'}</span>
+    </div>
+  );
+}
+
 // ─── Premium Expert Card ──────────────────────────────────────────────────────
 function ExpertCard({
   row,
@@ -68,93 +82,97 @@ function ExpertCard({
   const gradient = GRADIENTS[index % GRADIENTS.length];
   const fmtCount = (n: number) =>
     n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n ?? 0);
-
   const categoryEmoji = CATEGORY_EMOJIS[expert.category] ?? "🩺";
+  const monthlyPrice = expert.monthlyPrice ?? expert.planPrice ?? null;
 
   return (
     <div
-      className="group relative bg-white rounded-[24px] overflow-hidden cursor-pointer flex flex-col"
+      className="group relative bg-white rounded-[28px] overflow-hidden cursor-pointer flex flex-col"
       style={{
-        boxShadow: "0 2px 8px rgba(0,0,0,0.05), 0 8px 32px rgba(0,0,0,0.07)",
-        transition: "box-shadow 0.3s ease, transform 0.3s ease",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.04), 0 6px 24px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03)",
+        transition: "box-shadow 0.35s cubic-bezier(.4,0,.2,1), transform 0.35s cubic-bezier(.4,0,.2,1)",
       }}
       onMouseEnter={e => {
-        (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 48px rgba(99,102,241,0.2), 0 2px 8px rgba(0,0,0,0.06)";
-        (e.currentTarget as HTMLElement).style.transform = "translateY(-3px)";
+        (e.currentTarget as HTMLElement).style.boxShadow = "0 20px 60px rgba(99,102,241,0.22), 0 4px 12px rgba(0,0,0,0.08), 0 0 0 1px rgba(99,102,241,0.15)";
+        (e.currentTarget as HTMLElement).style.transform = "translateY(-5px) scale(1.01)";
       }}
       onMouseLeave={e => {
-        (e.currentTarget as HTMLElement).style.boxShadow = "0 2px 8px rgba(0,0,0,0.05), 0 8px 32px rgba(0,0,0,0.07)";
-        (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
+        (e.currentTarget as HTMLElement).style.boxShadow = "0 1px 3px rgba(0,0,0,0.04), 0 6px 24px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03)";
+        (e.currentTarget as HTMLElement).style.transform = "translateY(0) scale(1)";
       }}
       onClick={() => navigate(`/app/buddy-experts/${expert.id}`)}
     >
-      {/* Gradient header — fixed height, avatar sobresale por debajo */}
-      <div className={`relative bg-gradient-to-br ${gradient} h-[100px] overflow-visible`}>
+      {/* ── Gradient header ── */}
+      <div className={`relative bg-gradient-to-br ${gradient} h-[110px] overflow-visible`}>
         {/* Decorative blobs */}
-        <div className="absolute -top-6 -right-6 w-32 h-32 rounded-full bg-white/15 blur-2xl" />
-        <div className="absolute -bottom-8 -left-8 w-36 h-36 rounded-full bg-black/10 blur-3xl" />
+        <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/20 blur-3xl" />
+        <div className="absolute -bottom-10 -left-10 w-44 h-44 rounded-full bg-black/15 blur-3xl" />
+        <div className="absolute top-4 right-12 w-16 h-16 rounded-full bg-white/10 blur-2xl" />
         {/* Dot grid */}
-        <div
-          className="absolute inset-0 opacity-[0.06]"
-          style={{
-            backgroundImage: "radial-gradient(circle at 1px 1px, white 1.5px, transparent 0)",
-            backgroundSize: "14px 14px",
-          }}
-        />
-        {/* Shine on hover */}
-        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-          style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%)" }} />
+        <div className="absolute inset-0 opacity-[0.07]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, white 1.5px, transparent 0)", backgroundSize: "14px 14px" }} />
+        {/* Animated shine on hover */}
+        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
+          style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.05) 40%, transparent 70%)" }} />
         {/* Badges */}
         <div className="relative flex justify-between items-start p-3">
-          {expert.verified ? (
-            <span className="flex items-center gap-1 bg-white/25 backdrop-blur-md text-white text-[10px] font-bold px-2 py-0.5 rounded-full border border-white/40 shadow-sm">
-              <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20">
-                <path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" />
-              </svg>
-              Verificado
-            </span>
-          ) : <span />}
+          <div className="flex gap-1.5">
+            {expert.verified && (
+              <span className="flex items-center gap-1 bg-white/25 backdrop-blur-md text-white text-[10px] font-bold px-2 py-0.5 rounded-full border border-white/40 shadow-sm">
+                <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
+                Verificado
+              </span>
+            )}
+          </div>
           {expert.featured && (
-            <span className="bg-yellow-400/90 backdrop-blur-sm text-yellow-900 text-[10px] font-black px-2 py-0.5 rounded-full shadow-lg border border-yellow-300/50">
-              TOP
+            <span className="bg-gradient-to-r from-yellow-400 to-amber-400 text-yellow-900 text-[10px] font-black px-2.5 py-0.5 rounded-full shadow-lg border border-yellow-300/60 tracking-wide">
+              ⭐ TOP
             </span>
           )}
         </div>
-        {/* Avatar — posicionado en el borde inferior del header, sobresaliendo hacia abajo */}
-        <div className="absolute -bottom-9 left-1/2 -translate-x-1/2">
+        {/* Avatar */}
+        <div className="absolute -bottom-10 left-1/2 -translate-x-1/2">
           <div className="relative">
+            <div className="absolute inset-0 rounded-2xl bg-white/40 blur-md scale-110" />
             {expertAvatar ? (
-              <img
-                src={expertAvatar}
-                alt={expert.displayName}
-                className="w-[72px] h-[72px] rounded-2xl object-cover ring-[3px] ring-white shadow-xl group-hover:scale-105 transition-transform duration-500"
+              <img src={expertAvatar} alt={expert.displayName}
+                className="relative w-[80px] h-[80px] rounded-2xl object-cover ring-[3px] ring-white shadow-2xl group-hover:scale-105 transition-transform duration-500"
               />
             ) : (
-              <div
-                className="w-[72px] h-[72px] rounded-2xl bg-white/30 backdrop-blur-sm flex items-center justify-center text-3xl font-black text-white ring-[3px] ring-white shadow-xl"
-              >
+              <div className="relative w-[80px] h-[80px] rounded-2xl bg-white/30 backdrop-blur-sm flex items-center justify-center text-3xl font-black text-white ring-[3px] ring-white shadow-2xl">
                 {expert.displayName?.[0]?.toUpperCase() ?? "?"}
               </div>
             )}
-            {/* Category emoji badge */}
-            <span className="absolute -bottom-1.5 -right-1.5 w-6 h-6 rounded-full bg-white shadow-md flex items-center justify-center text-sm">
+            <span className="absolute -bottom-2 -right-2 w-7 h-7 rounded-full bg-white shadow-lg flex items-center justify-center text-base border border-gray-100">
               {categoryEmoji}
             </span>
           </div>
         </div>
       </div>
 
-      {/* Content — espacio superior para el avatar sobresaliente (72px/2 + 4px margen) */}
-      <div className="pt-12 px-4 pb-4 flex flex-col items-center text-center gap-1 flex-1">
-        <h3 className="font-black text-gray-900 text-[15px] leading-tight line-clamp-1 w-full">
+      {/* ── Body ── */}
+      <div className="pt-14 px-4 pb-4 flex flex-col items-center text-center gap-1 flex-1">
+        <h3 className="font-black text-gray-900 text-[15px] leading-tight line-clamp-1 w-full tracking-tight">
           {expert.displayName}
         </h3>
-        <p className="text-[11px] text-indigo-500 font-bold line-clamp-2 tracking-wide uppercase w-full">
+        <p className="text-[11px] text-indigo-500 font-bold line-clamp-1 tracking-widest uppercase w-full">
           {expert.specialty ?? CATEGORY_LABELS[expert.category] ?? t("buddyExperts.nutritionist", "Nutricionista")}
         </p>
 
+        {/* Rating stars */}
+        <div className="flex items-center justify-center mt-0.5 mb-1">
+          <StarRating rating={expert.rating ?? 0} />
+          {expert.reviewsCount > 0 && (
+            <span className="text-[10px] text-gray-400 ml-1">({fmtCount(expert.reviewsCount ?? 0)})</span>
+          )}
+        </div>
+
+        {/* Bio */}
+        {expert.bio && (
+          <p className="text-[11px] text-gray-400 line-clamp-2 leading-relaxed mb-1 w-full">{expert.bio}</p>
+        )}
+
         {/* Stats bar */}
-        <div className="flex items-stretch w-full mt-2 mb-3 bg-gray-50 rounded-2xl overflow-hidden border border-gray-100">
+        <div className="flex items-stretch w-full mt-1 mb-3 bg-gray-50/80 rounded-2xl overflow-hidden border border-gray-100/80">
           <div className="flex-1 flex flex-col items-center py-2">
             <span className="font-black text-gray-900 text-[13px]">{fmtCount(expert.followersCount ?? 0)}</span>
             <span className="text-[9px] text-gray-400 font-semibold uppercase tracking-wider">Seguid.</span>
@@ -164,32 +182,32 @@ function ExpertCard({
             <span className="font-black text-gray-900 text-[13px]">{expert.plansCount ?? 0}</span>
             <span className="text-[9px] text-gray-400 font-semibold uppercase tracking-wider">Planes</span>
           </div>
-          {expert.rating ? (
+          {monthlyPrice != null && (
             <>
               <div className="w-px bg-gray-200" />
               <div className="flex-1 flex flex-col items-center py-2">
-                <span className="font-black text-gray-900 text-[13px]">{Number(expert.rating).toFixed(1)}</span>
-                <span className="text-[9px] text-gray-400 font-semibold uppercase tracking-wider">★ Rating</span>
+                <span className="font-black text-indigo-600 text-[13px]">{monthlyPrice}€</span>
+                <span className="text-[9px] text-gray-400 font-semibold uppercase tracking-wider">/mes</span>
               </div>
             </>
-          ) : null}
+          )}
         </div>
 
         {/* Action buttons */}
-        <div className="flex gap-2 w-full mt-auto">
+        <div className="flex gap-2 w-full mt-auto" onClick={e => e.stopPropagation()}>
           <button
-            onClick={(e) => { e.stopPropagation(); onFollow(expert.id); }}
-            className={`flex-1 py-2.5 rounded-2xl text-[12px] font-black transition-all duration-200 ${
+            onClick={() => onFollow(expert.id)}
+            className={`flex-1 py-2.5 rounded-2xl text-[12px] font-black transition-all duration-200 active:scale-95 ${
               isFollowing
                 ? "bg-indigo-50 text-indigo-600 border-2 border-indigo-200"
-                : "bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-lg shadow-indigo-200/60"
+                : "bg-gradient-to-r from-indigo-500 to-violet-600 text-white shadow-lg shadow-indigo-200/60 hover:shadow-indigo-300/70"
             }`}
           >
             {isFollowing ? "✓ Siguiendo" : "+ Seguir"}
           </button>
           <button
-            onClick={(e) => { e.stopPropagation(); navigate(`/app/buddy-experts/${expert.id}`); }}
-            className="flex-1 py-2.5 rounded-2xl text-[12px] font-black bg-gray-100 text-gray-700 hover:bg-gray-200 transition-all duration-200 border border-gray-200"
+            onClick={() => navigate(`/app/buddy-experts/${expert.id}`)}
+            className="flex-1 py-2.5 rounded-2xl text-[12px] font-black bg-gray-50 text-gray-700 hover:bg-gray-100 transition-all duration-200 border border-gray-200 active:scale-95"
           >
             Ver perfil
           </button>

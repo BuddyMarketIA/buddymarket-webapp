@@ -3536,6 +3536,81 @@ Si no puedes detectar productos, devuelve {"products": []}. No incluyas texto ad
           return { recipes: [], expiringIngredients: expiring, message: "No se pudieron generar recetas en este momento. Inténtalo de nuevo." };
         }
       }),
+    // Generate AI recipes using ALL inventory items (not just expiring)
+    generateRecipesFromInventory: protectedProcedure
+      .mutation(async ({ ctx }) => {
+        const [items, userAllergies, userRestrictions, userProfile] = await Promise.all([
+          db.getInventoryItems(ctx.user.id),
+          db.getUserAllergies(ctx.user.id),
+          db.getUserDietRestrictions(ctx.user.id),
+          db.getUserProfile(ctx.user.id),
+        ]);
+        if (items.length === 0) {
+          return { recipes: [], message: "Tu inventario está vacío. Añade productos primero." };
+        }
+        const ingredientList = items
+          .slice(0, 15)
+          .map((item: any) => item.customName || item.ingredient?.nameEs || "Alimento")
+          .filter(Boolean)
+          .map((name: string) => `- ${name}`)
+          .join("\n");
+        const forbiddenBlock = buildForbiddenIngredientsBlock({
+          allergies: userAllergies,
+          restrictions: userRestrictions,
+          dislikedIngredients: userProfile?.dislikedIngredients,
+        });
+        try {
+          const response = await invokeLLM({
+            messages: [
+              {
+                role: "system",
+                content: `Eres un chef experto en cocina española y mediterránea. Genera recetas usando los ingredientes disponibles en el inventario del usuario. Responde SOLO con JSON válido.${forbiddenBlock ? '\n' + forbiddenBlock : ''}`,
+              },
+              {
+                role: "user",
+                content: `Tengo estos ingredientes en mi despensa/nevera:\n${ingredientList}\n\nGenera 4 recetas variadas (desayuno, comida, cena, snack) que aprovechen estos ingredientes. Para cada receta incluye: nombre, descripción breve (1 frase), tiempo de preparación en minutos, dificultad (Fácil/Media/Difícil), calorías aproximadas, ingredientes principales usados de la lista, y emoji representativo y tipo de comida (desayuno/comida/cena/snack).`,
+              },
+            ],
+            response_format: {
+              type: "json_schema",
+              json_schema: {
+                name: "inventory_recipes",
+                strict: true,
+                schema: {
+                  type: "object",
+                  properties: {
+                    recipes: {
+                      type: "array",
+                      items: {
+                        type: "object",
+                        properties: {
+                          name: { type: "string" },
+                          description: { type: "string" },
+                          prepTime: { type: "integer" },
+                          difficulty: { type: "string" },
+                          calories: { type: "integer" },
+                          usedIngredients: { type: "array", items: { type: "string" } },
+                          emoji: { type: "string" },
+                          mealType: { type: "string" },
+                        },
+                        required: ["name", "description", "prepTime", "difficulty", "calories", "usedIngredients", "emoji", "mealType"],
+                        additionalProperties: false,
+                      },
+                    },
+                  },
+                  required: ["recipes"],
+                  additionalProperties: false,
+                },
+              },
+            },
+          });
+          const content2 = response?.choices?.[0]?.message?.content;
+          const parsed2 = JSON.parse(typeof content2 === "string" ? content2 : '{"recipes":[]}');
+          return { recipes: parsed2.recipes || [] };
+        } catch {
+          return { recipes: [], message: "No se pudieron generar recetas. Inténtalo de nuevo." };
+        }
+      }),
   }),
   // ---------------------------------------------------------------------------
   // MEAL LOGSS

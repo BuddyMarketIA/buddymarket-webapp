@@ -353,26 +353,56 @@ export default function Dashboard() {
                   </div>
                 )}
                 <div style={{ display: "flex", alignItems: "center", gap: "20px", position: "relative" }}>
-                  <div style={{ position: "relative", width: "110px", height: "110px", flexShrink: 0 }}>
-                    <svg width="110" height="110" viewBox="0 0 110 110">
-                      <circle cx="55" cy="55" r="46" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="10"/>
-                      <circle cx="55" cy="55" r="46" fill="none"
+                  {/* Premium Calorie Ring */}
+                  <div style={{ position: "relative", width: "120px", height: "120px", flexShrink: 0 }}>
+                    {/* Pulse glow when over limit */}
+                    {progress >= 100 && (
+                      <div style={{ position: "absolute", inset: "-8px", borderRadius: "50%", background: "radial-gradient(circle, rgba(239,68,68,0.3) 0%, transparent 70%)", animation: "pulse 1.5s ease-in-out infinite" }} />
+                    )}
+                    <svg width="120" height="120" viewBox="0 0 120 120">
+                      {/* Outer ring track (macros) */}
+                      <circle cx="60" cy="60" r="54" fill="none" stroke="rgba(255,255,255,0.05)" strokeWidth="5"/>
+                      {/* Outer ring: protein */}
+                      <circle cx="60" cy="60" r="54" fill="none"
+                        stroke="#818CF8" strokeWidth="5" strokeLinecap="round"
+                        strokeDasharray={`${2 * Math.PI * 54}`}
+                        strokeDashoffset={`${2 * Math.PI * 54 * (1 - Math.min(proteinPct, 100) / 100)}`}
+                        transform="rotate(-90 60 60)"
+                        style={{ transition: "stroke-dashoffset 1.2s cubic-bezier(0.4,0,0.2,1)", opacity: 0.9 }}/>
+                      {/* Inner ring track */}
+                      <circle cx="60" cy="60" r="44" fill="none" stroke="rgba(255,255,255,0.07)" strokeWidth="11"/>
+                      {/* Inner ring: calories */}
+                      <circle cx="60" cy="60" r="44" fill="none"
                         stroke={progress >= 100 ? "#EF4444" : progress >= 80 ? "#F97316" : "#22C55E"}
-                        strokeWidth="10"
-                        strokeDasharray={`${2 * Math.PI * 46}`}
-                        strokeDashoffset={`${2 * Math.PI * 46 * (1 - Math.min(progress, 100) / 100)}`}
-                        strokeLinecap="round" transform="rotate(-90 55 55)"
-                        style={{ transition: "stroke-dashoffset 1s cubic-bezier(0.4,0,0.2,1), stroke 0.4s" }}/>
-                      <circle cx={55 + 46 * Math.cos((Math.min(progress, 100) / 100 * 360 - 90) * Math.PI / 180)}
-                        cy={55 + 46 * Math.sin((Math.min(progress, 100) / 100 * 360 - 90) * Math.PI / 180)}
-                        r="5" fill={progress >= 100 ? "#EF4444" : progress >= 80 ? "#F97316" : "#22C55E"}
-                        style={{ filter: "drop-shadow(0 0 4px currentColor)" }}/>
+                        strokeWidth="11"
+                        strokeDasharray={`${2 * Math.PI * 44}`}
+                        strokeDashoffset={`${2 * Math.PI * 44 * (1 - Math.min(progress, 100) / 100)}`}
+                        strokeLinecap="round" transform="rotate(-90 60 60)"
+                        style={{ transition: "stroke-dashoffset 1s cubic-bezier(0.4,0,0.2,1), stroke 0.4s",
+                          filter: progress >= 100 ? "drop-shadow(0 0 6px #EF4444)" : progress >= 80 ? "drop-shadow(0 0 6px #F97316)" : "drop-shadow(0 0 6px #22C55E)" }}/>
+                      {/* Dot indicator */}
+                      <circle
+                        cx={60 + 44 * Math.cos((Math.min(progress, 100) / 100 * 360 - 90) * Math.PI / 180)}
+                        cy={60 + 44 * Math.sin((Math.min(progress, 100) / 100 * 360 - 90) * Math.PI / 180)}
+                        r="5.5" fill={progress >= 100 ? "#EF4444" : progress >= 80 ? "#F97316" : "#22C55E"}
+                        style={{ filter: "drop-shadow(0 0 5px currentColor)" }}/>
                     </svg>
-                    <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "2px" }}>
-                      <span style={{ fontSize: "22px", fontWeight: 900, color: "white", lineHeight: 1, letterSpacing: "-0.04em" }}>{consumed}</span>
-                      <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.55)", fontWeight: 600, letterSpacing: "0.05em" }}>kcal</span>
-                      <span style={{ fontSize: "9px", color: progress >= 100 ? "#EF4444" : "#22C55E", fontWeight: 700, marginTop: "1px" }}>{progress >= 100 ? "¡Límite!" : `${Math.round(progress)}%`}</span>
+                    <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "1px" }}>
+                      <span style={{ fontSize: "21px", fontWeight: 900, color: "white", lineHeight: 1, letterSpacing: "-0.04em" }}>{consumed}</span>
+                      <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.5)", fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase" }}>kcal</span>
+                      <span style={{ fontSize: "10px", color: progress >= 100 ? "#EF4444" : progress >= 80 ? "#F97316" : "#4ade80", fontWeight: 800, marginTop: "2px",
+                        background: progress >= 100 ? "rgba(239,68,68,0.15)" : "rgba(34,197,94,0.15)",
+                        padding: "1px 6px", borderRadius: "99px" }}>
+                        {progress >= 100 ? "⚠️ Excedido" : `${Math.round(progress)}%`}
+                      </span>
                     </div>
+                    {/* Streak badge */}
+                    {(streakData.data?.currentStreak ?? 0) > 0 && (
+                      <div style={{ position: "absolute", bottom: "-4px", right: "-4px", background: "linear-gradient(135deg, #F97316, #EF4444)", borderRadius: "99px", padding: "3px 7px", display: "flex", alignItems: "center", gap: "3px", border: "2px solid #1a1a2e", boxShadow: "0 2px 8px rgba(249,115,22,0.5)" }}>
+                        <span style={{ fontSize: "11px" }}>🔥</span>
+                        <span style={{ fontSize: "11px", fontWeight: 900, color: "white" }}>{streakData.data?.currentStreak}</span>
+                      </div>
+                    )}
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <p style={{ margin: "0 0 2px", fontSize: "14px", color: "rgba(255,255,255,0.5)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>Restantes</p>

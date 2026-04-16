@@ -36,11 +36,26 @@ function IgIcon() {
 }
 
 // ─── Premium Maker Card ───────────────────────────────────────────────────────
+// ─── Star Rating (Makers) ────────────────────────────────────────────────────────────
+function MakerStarRating({ rating }: { rating: number }) {
+  return (
+    <div className="flex items-center gap-0.5">
+      {[1,2,3,4,5].map(i => (
+        <svg key={i} className={`w-3 h-3 ${i <= Math.round(rating) ? 'text-amber-400' : 'text-gray-200'}`} fill="currentColor" viewBox="0 0 20 20">
+          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+        </svg>
+      ))}
+      <span className="text-[10px] font-bold text-gray-500 ml-0.5">{rating > 0 ? Number(rating).toFixed(1) : '—'}</span>
+    </div>
+  );
+}
+
 function MakerCard({ row, onFollow, index }: { row: any; onFollow: (id: number) => void; index: number }) {
   const [, navigate] = useLocation();
   const [following, setFollowing] = useState(false);
   const maker = row.maker;
   const gradient = GRADIENTS[index % GRADIENTS.length];
+  const fmtCount = (n: number) => n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n ?? 0);
 
   const handleFollow = (e: React.MouseEvent) => {
     e.stopPropagation();
@@ -48,66 +63,59 @@ function MakerCard({ row, onFollow, index }: { row: any; onFollow: (id: number) 
     onFollow(maker.id);
   };
 
-  const fmtCount = (n: number) => n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n);
-
   return (
     <div
-      className="group relative bg-white rounded-[24px] overflow-hidden cursor-pointer"
+      className="group relative bg-white rounded-[28px] overflow-hidden cursor-pointer flex flex-col"
       style={{
-        boxShadow: "0 2px 8px rgba(0,0,0,0.05), 0 8px 32px rgba(0,0,0,0.07)",
-        transition: "box-shadow 0.3s ease, transform 0.3s ease",
+        boxShadow: "0 1px 3px rgba(0,0,0,0.04), 0 6px 24px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03)",
+        transition: "box-shadow 0.35s cubic-bezier(.4,0,.2,1), transform 0.35s cubic-bezier(.4,0,.2,1)",
       }}
       onMouseEnter={e => {
-        (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 48px rgba(249,115,22,0.2), 0 2px 8px rgba(0,0,0,0.06)";
-        (e.currentTarget as HTMLElement).style.transform = "translateY(-3px)";
+        (e.currentTarget as HTMLElement).style.boxShadow = "0 20px 60px rgba(249,115,22,0.22), 0 4px 12px rgba(0,0,0,0.08), 0 0 0 1px rgba(249,115,22,0.15)";
+        (e.currentTarget as HTMLElement).style.transform = "translateY(-5px) scale(1.01)";
       }}
       onMouseLeave={e => {
-        (e.currentTarget as HTMLElement).style.boxShadow = "0 2px 8px rgba(0,0,0,0.05), 0 8px 32px rgba(0,0,0,0.07)";
-        (e.currentTarget as HTMLElement).style.transform = "translateY(0)";
+        (e.currentTarget as HTMLElement).style.boxShadow = "0 1px 3px rgba(0,0,0,0.04), 0 6px 24px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03)";
+        (e.currentTarget as HTMLElement).style.transform = "translateY(0) scale(1)";
       }}
       onClick={() => navigate(`/app/buddy-makers/${maker.id}`)}
     >
-      {/* ── Gradient header ── */}
-      <div className={`relative bg-gradient-to-br ${gradient} pt-5 pb-10 px-4 overflow-hidden`}>
-        <div className="absolute -top-6 -right-6 w-32 h-32 rounded-full bg-white/15 blur-2xl" />
-        <div className="absolute -bottom-8 -left-8 w-36 h-36 rounded-full bg-black/10 blur-3xl" />
-        <div className="absolute top-3 left-3 w-10 h-10 rounded-full bg-white/10 blur-lg" />
-        <div
-          className="absolute inset-0 opacity-[0.06]"
-          style={{
-            backgroundImage: "radial-gradient(circle at 1px 1px, white 1.5px, transparent 0)",
-            backgroundSize: "14px 14px",
-          }}
-        />
-        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-500"
-          style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.12) 0%, transparent 60%)" }} />
+      {/* ── Gradient header with large avatar ── */}
+      <div className={`relative bg-gradient-to-br ${gradient} h-[110px] overflow-visible`}>
+        <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/20 blur-3xl" />
+        <div className="absolute -bottom-10 -left-10 w-44 h-44 rounded-full bg-black/15 blur-3xl" />
+        <div className="absolute top-4 right-12 w-16 h-16 rounded-full bg-white/10 blur-2xl" />
+        <div className="absolute inset-0 opacity-[0.07]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, white 1.5px, transparent 0)", backgroundSize: "14px 14px" }} />
+        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
+          style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.05) 40%, transparent 70%)" }} />
         {/* Badges */}
-        <div className="relative flex justify-between items-start mb-4">
-          {maker.verified ? (
-            <span className="flex items-center gap-1 bg-white/25 backdrop-blur-md text-white text-[10px] font-bold px-2.5 py-1 rounded-full border border-white/40 shadow-sm">
-              <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
-              Verificado
-            </span>
-          ) : <span />}
+        <div className="relative flex justify-between items-start p-3">
+          <div className="flex gap-1.5">
+            {maker.verified && (
+              <span className="flex items-center gap-1 bg-white/25 backdrop-blur-md text-white text-[10px] font-bold px-2 py-0.5 rounded-full border border-white/40 shadow-sm">
+                <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
+                Verificado
+              </span>
+            )}
+          </div>
           {maker.featured && (
-            <span className="bg-yellow-400/90 backdrop-blur-sm text-yellow-900 text-[10px] font-black px-2.5 py-1 rounded-full shadow-lg border border-yellow-300/50">
-              TOP
+            <span className="bg-gradient-to-r from-yellow-400 to-amber-400 text-yellow-900 text-[10px] font-black px-2.5 py-0.5 rounded-full shadow-lg border border-yellow-300/60 tracking-wide">
+              ⭐ TOP
             </span>
           )}
         </div>
-        {/* Avatar */}
-        <div className="flex justify-center">
+        {/* Large avatar overflowing bottom */}
+        <div className="absolute -bottom-10 left-1/2 -translate-x-1/2">
           <div className="relative">
-            <div className="absolute inset-0 rounded-2xl bg-white/30 blur-md scale-110" />
-            <div className="relative rounded-2xl overflow-hidden ring-[3px] ring-white/60 shadow-2xl" style={{ width: 72, height: 72 }}>
+            <div className="absolute inset-0 rounded-2xl bg-white/40 blur-md scale-110" />
+            <div className="relative rounded-2xl overflow-hidden ring-[3px] ring-white shadow-2xl" style={{ width: 80, height: 80 }}>
               <img
                 src={maker.avatarUrl ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(maker.displayName)}&background=F97316&color=fff&size=80`}
                 alt={maker.displayName}
                 className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
               />
             </div>
-            {/* BuddyMaker badge */}
-            <span className="absolute -bottom-1.5 -right-1.5 w-6 h-6 rounded-full bg-orange-500 shadow-md flex items-center justify-center">
+            <span className="absolute -bottom-2 -right-2 w-7 h-7 rounded-full bg-gradient-to-br from-orange-500 to-pink-500 shadow-lg flex items-center justify-center border-2 border-white">
               <svg className="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
             </span>
           </div>
@@ -115,26 +123,28 @@ function MakerCard({ row, onFollow, index }: { row: any; onFollow: (id: number) 
       </div>
 
       {/* ── Body ── */}
-      <div className="px-4 pb-4 -mt-5">
-        {/* Name */}
-        <div className="flex flex-col items-center mb-1 text-center">
-          <h3 className="font-black text-gray-900 text-[14px] leading-tight tracking-tight mt-1">
-            {maker.displayName}
-          </h3>
-          <p className="text-[11px] text-orange-500 font-bold mt-0.5 tracking-wide uppercase">
-            {maker.specialty}
-          </p>
+      <div className="pt-14 px-4 pb-4 flex flex-col items-center text-center gap-1 flex-1">
+        <h3 className="font-black text-gray-900 text-[15px] leading-tight tracking-tight w-full line-clamp-1">
+          {maker.displayName}
+        </h3>
+        <p className="text-[11px] text-orange-500 font-bold tracking-widest uppercase w-full line-clamp-1">
+          {maker.specialty}
+        </p>
+
+        {/* Star rating */}
+        <div className="flex items-center justify-center mt-0.5 mb-1">
+          <MakerStarRating rating={maker.rating ?? 0} />
         </div>
 
         {/* Bio */}
         {maker.bio && (
-          <p className="text-[11px] text-gray-400 text-center line-clamp-2 leading-relaxed mb-2">
+          <p className="text-[11px] text-gray-400 text-center line-clamp-2 leading-relaxed mb-1 w-full">
             {maker.bio}
           </p>
         )}
 
         {/* Stats bar */}
-        <div className="flex items-stretch w-full mb-3 bg-gray-50 rounded-2xl overflow-hidden border border-gray-100">
+        <div className="flex items-stretch w-full mt-1 mb-3 bg-gray-50/80 rounded-2xl overflow-hidden border border-gray-100/80">
           <div className="flex-1 flex flex-col items-center py-2">
             <span className="text-[13px] font-black text-gray-900">{fmtCount(maker.followersCount)}</span>
             <span className="text-[9px] text-gray-400 font-semibold uppercase tracking-wider">Fans</span>
@@ -144,23 +154,11 @@ function MakerCard({ row, onFollow, index }: { row: any; onFollow: (id: number) 
             <span className="text-[13px] font-black text-gray-900">{maker.recipesCount}</span>
             <span className="text-[9px] text-gray-400 font-semibold uppercase tracking-wider">Recetas</span>
           </div>
-          {maker.rating > 0 && (
-            <>
-              <div className="w-px bg-gray-200" />
-              <div className="flex-1 flex flex-col items-center py-2">
-                <span className="text-[13px] font-black text-gray-900">{maker.rating?.toFixed(1)}</span>
-                <span className="text-[9px] text-gray-400 font-semibold uppercase tracking-wider">★ Rating</span>
-              </div>
-            </>
-          )}
         </div>
 
         {/* Instagram */}
         {maker.instagramHandle && (
-          <a
-            href={`https://instagram.com/${maker.instagramHandle}`}
-            target="_blank"
-            rel="noopener noreferrer"
+          <a href={`https://instagram.com/${maker.instagramHandle}`} target="_blank" rel="noopener noreferrer"
             className="flex items-center justify-center gap-1.5 mb-2.5 text-[11px] text-pink-500 font-bold hover:text-pink-600 transition-colors"
             onClick={(e) => e.stopPropagation()}
           >
@@ -170,20 +168,18 @@ function MakerCard({ row, onFollow, index }: { row: any; onFollow: (id: number) 
         )}
 
         {/* CTA buttons */}
-        <div className="flex gap-1.5" onClick={(e) => e.stopPropagation()}>
-          <button
-            onClick={handleFollow}
-            className={`flex-1 text-[12px] font-black py-2.5 rounded-xl transition-all duration-200 ${
+        <div className="flex gap-1.5 w-full mt-auto" onClick={(e) => e.stopPropagation()}>
+          <button onClick={handleFollow}
+            className={`flex-1 text-[12px] font-black py-2.5 rounded-2xl transition-all duration-200 active:scale-95 ${
               following
                 ? "bg-gray-100 text-gray-500 border border-gray-200"
-                : "bg-gradient-to-r from-orange-500 to-pink-500 text-white shadow-md shadow-orange-200 hover:shadow-orange-300 active:scale-95"
+                : "bg-gradient-to-r from-orange-500 to-pink-500 text-white shadow-lg shadow-orange-200/60 hover:shadow-orange-300/70"
             }`}
           >
             {following ? "✓ Siguiendo" : "Seguir"}
           </button>
-          <button
-            onClick={(e) => { e.stopPropagation(); navigate(`/app/buddy-makers/${maker.id}`); }}
-            className="flex-1 border border-gray-200 text-gray-700 hover:border-orange-200 hover:text-orange-600 text-[12px] font-black py-2.5 rounded-xl transition-all duration-200 active:scale-95"
+          <button onClick={(e) => { e.stopPropagation(); navigate(`/app/buddy-makers/${maker.id}`); }}
+            className="flex-1 bg-gray-50 border border-gray-200 text-gray-700 hover:bg-gray-100 text-[12px] font-black py-2.5 rounded-2xl transition-all duration-200 active:scale-95"
           >
             Ver perfil
           </button>

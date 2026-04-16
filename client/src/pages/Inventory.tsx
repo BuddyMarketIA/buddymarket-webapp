@@ -150,6 +150,13 @@ export default function Inventory() {
   });
   const suggestExpiry = trpc.inventory.suggestExpirationDate.useMutation();
   const generateAntiWaste = trpc.inventory.generateRecipesFromExpiring.useMutation();
+  const generateFromInventory = trpc.inventory.generateRecipesFromInventory.useMutation();
+  const [showInventoryRecipes, setShowInventoryRecipes] = useState(false);
+  const [generatingInventoryRecipes, setGeneratingInventoryRecipes] = useState(false);
+  const [inventoryRecipes, setInventoryRecipes] = useState<Array<{
+    name: string; description: string; prepTime: number; difficulty: string;
+    calories: number; usedIngredients: string[]; emoji: string; mealType: string;
+  }>>([]);
 
   const removeItem = trpc.inventory.remove.useMutation({
     onSuccess: () => {
@@ -477,6 +484,59 @@ export default function Inventory() {
                 </div>
               </button>
             ))}
+          </div>
+        </div>
+      )}
+
+      {/* Recetas con lo que tienes — AI section */}
+      {(items ?? []).length > 0 && (
+        <div className="mb-5 rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50 to-violet-50 p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">🍳</span>
+              <div>
+                <p className="text-sm font-bold text-indigo-900">Recetas con lo que tienes</p>
+                <p className="text-xs text-indigo-600">{(items ?? []).length} producto{(items ?? []).length !== 1 ? "s" : ""} en tu inventario</p>
+              </div>
+            </div>
+            <button
+              onClick={async () => {
+                if (inventoryRecipes.length > 0) { setShowInventoryRecipes(true); return; }
+                setGeneratingInventoryRecipes(true);
+                try {
+                  const result = await generateFromInventory.mutateAsync();
+                  if (result.recipes && result.recipes.length > 0) {
+                    setInventoryRecipes(result.recipes as any);
+                    setShowInventoryRecipes(true);
+                  } else {
+                    toast.info(result.message ?? "No se pudieron generar recetas.");
+                  }
+                } catch {
+                  toast.error("Error al generar recetas. Inténtalo de nuevo.");
+                } finally {
+                  setGeneratingInventoryRecipes(false);
+                }
+              }}
+              disabled={generatingInventoryRecipes}
+              className="flex items-center gap-1.5 rounded-xl bg-indigo-600 px-3 py-2 text-xs font-bold text-white shadow-sm active:scale-95 transition-transform disabled:opacity-60"
+            >
+              {generatingInventoryRecipes ? (
+                <><span className="animate-spin">⏳</span> Generando...</>
+              ) : (
+                <><SparklesIcon className="h-3.5 w-3.5" />{inventoryRecipes.length > 0 ? "Ver recetas" : "Generar con IA"}</>
+              )}
+            </button>
+          </div>
+          {/* Ingredient chips preview */}
+          <div className="flex flex-wrap gap-1.5">
+            {(items ?? []).slice(0, 8).map((item: any) => (
+              <span key={item.id} className="rounded-full bg-indigo-100 px-2.5 py-1 text-xs font-semibold text-indigo-700">
+                {item.customName || item.ingredientId || "Alimento"}
+              </span>
+            ))}
+            {(items ?? []).length > 8 && (
+              <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-500">+{(items ?? []).length - 8} más</span>
+            )}
           </div>
         </div>
       )}
@@ -1115,9 +1175,85 @@ export default function Inventory() {
         </div>
       )}
 
-      {/* ── Import from Shopping List Modal ───────────────────────────────── */}
-      {showImportModal && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowImportModal(false)}>
+      {/* Inventory Recipes Modal */}
+      {showInventoryRecipes && inventoryRecipes.length > 0 && (
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowInventoryRecipes(false); }}>
+          <div className="w-full max-w-sm rounded-3xl bg-white shadow-2xl animate-slide-up overflow-hidden max-h-[85vh] flex flex-col">
+            <div className="flex items-center justify-between bg-gradient-to-r from-indigo-600 to-violet-600 px-6 py-4 shrink-0">
+              <div className="flex items-center gap-2 text-white">
+                <span className="text-xl">🍳</span>
+                <div>
+                  <p className="font-bold">Recetas con tu inventario</p>
+                  <p className="text-xs text-indigo-100">Generadas con IA para ti</p>
+                </div>
+              </div>
+              <button onClick={() => setShowInventoryRecipes(false)} className="rounded-full p-1 hover:bg-white/20">
+                <XMarkIcon className="h-5 w-5 text-white" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto p-4 space-y-3">
+              {inventoryRecipes.map((recipe, idx) => (
+                <div key={idx} className="rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden">
+                  <div className="flex items-start gap-3 p-4">
+                    <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-100 to-violet-100 text-2xl">
+                      {recipe.emoji}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 mb-0.5">
+                        <p className="font-bold text-gray-900 leading-tight">{recipe.name}</p>
+                        <span className="shrink-0 rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-semibold text-indigo-600 capitalize">{recipe.mealType}</span>
+                      </div>
+                      <p className="text-xs text-gray-500 line-clamp-2">{recipe.description}</p>
+                      <div className="mt-2 flex flex-wrap gap-1.5">
+                        <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">⏱ {recipe.prepTime} min</span>
+                        {recipe.calories > 0 && <span className="rounded-full bg-orange-50 px-2 py-0.5 text-xs text-orange-700">🔥 {recipe.calories} kcal</span>}
+                        <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
+                          (recipe.difficulty === "Fácil" || recipe.difficulty === "easy") ? "bg-green-100 text-green-700" :
+                          (recipe.difficulty === "Media" || recipe.difficulty === "medium") ? "bg-yellow-100 text-yellow-700" :
+                          "bg-red-100 text-red-700"
+                        }`}>{recipe.difficulty}</span>
+                      </div>
+                      {recipe.usedIngredients.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          {recipe.usedIngredients.map((ing, i) => (
+                            <span key={i} className="rounded-full bg-indigo-50 px-2 py-0.5 text-xs text-indigo-700 border border-indigo-100">{ing}</span>
+                          ))}
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              ))}
+            </div>
+            <div className="shrink-0 border-t border-gray-100 p-4">
+              <button
+                onClick={async () => {
+                  setInventoryRecipes([]);
+                  setGeneratingInventoryRecipes(true);
+                  setShowInventoryRecipes(false);
+                  try {
+                    const result = await generateFromInventory.mutateAsync();
+                    if (result.recipes && result.recipes.length > 0) {
+                      setInventoryRecipes(result.recipes as any);
+                      setShowInventoryRecipes(true);
+                    }
+                  } catch {
+                    toast.error("Error al regenerar recetas.");
+                  } finally {
+                    setGeneratingInventoryRecipes(false);
+                  }
+                }}
+                className="w-full rounded-2xl border border-indigo-200 py-3 text-sm font-semibold text-indigo-700 hover:bg-indigo-50 active:scale-95 transition-transform"
+              >
+                ✨ Regenerar recetas
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* ── Import from Shopping List Modal ─────────────────────────────────────────────────────────── */}
+      {showImportModal && (        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowImportModal(false)}>
           <div className="w-full max-w-lg rounded-t-3xl bg-white p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
             <div className="mb-5 flex items-center justify-between">
               <div>

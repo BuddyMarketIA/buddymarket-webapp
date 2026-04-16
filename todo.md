@@ -2543,3 +2543,26 @@
 - [ ] tRPC: createSessionPackage, getExpertPackages, purchasePackage (Stripe checkout), getMyPackages
 - [ ] UI: página /app/expert/packages para que el experto gestione sus bonos
 - [ ] UI: sección "Bonos disponibles" en MyExpert.tsx para que el paciente compre bonos
+
+## Sprint UI/UX Premium (Abril 2026)
+
+### Cards BuddyMakers/Experts rediseñadas
+- [ ] MakerCard: glassmorphism, sombras multicapa, avatar grande sin foto de portada, animación hover
+- [ ] ExpertCard: mismo rediseño premium con badge de especialidad y rating visual
+- [ ] BuddyMakers.tsx y BuddyExperts.tsx: actualizar con las nuevas cards
+
+### Anillo de progreso calórico
+- [ ] Dashboard: reemplazar barra de progreso de calorías por anillo SVG circular
+- [ ] Anillo: colores dinámicos según % completado (verde/naranja/rojo)
+- [ ] Streak de días consecutivos registrando comidas
+- [ ] Animación de entrada del anillo al cargar
+
+### Inventario: Recetas con lo que tienes
+- [ ] tRPC: endpoint getRecipesByInventory — cruza ingredientes del inventario con recetas disponibles
+- [ ] UI: sección "Recetas con lo que tienes" en Inventory.tsx
+- [ ] UI: cards de recetas con badge de % ingredientes disponibles
+- [ ] UI: priorizar ingredientes próximos a caducar
+
+### Swipe para cerrar sidebar
+- [ ] AppLayout: detectar swipe left (touch) para cerrar sidebar en mobile
+- [ ] Animación suave al cerrar con swipe

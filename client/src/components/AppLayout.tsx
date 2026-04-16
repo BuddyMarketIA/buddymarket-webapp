@@ -632,6 +632,16 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       <div id="app-sidebar" role="dialog" aria-label="Menú de navegación" aria-modal={sidebarOpen} className="app-sidebar"
         style={{ position: "fixed", top: 0, left: sidebarOpen ? 0 : "-310px", width: "300px", height: "100dvh", paddingTop: "env(safe-area-inset-top)", zIndex: 300, transition: "left 0.3s cubic-bezier(0.4,0,0.2,1)", display: "flex", flexDirection: "column", background: "white", boxShadow: sidebarOpen ? "4px 0 40px rgba(0,0,0,0.15)" : "none", overflowY: "auto" }}
       >
+        {/* Drag handle indicator — visible only on mobile when sidebar is open */}
+        {sidebarOpen && (
+          <div
+            onClick={() => setSidebarOpen(false)}
+            style={{ position: "absolute", top: "50%", right: "-20px", transform: "translateY(-50%)", width: "20px", height: "60px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer", zIndex: 10 }}
+            aria-label="Cerrar menú deslizando"
+          >
+            <div style={{ width: "4px", height: "40px", borderRadius: "99px", background: "rgba(255,255,255,0.6)", boxShadow: "0 2px 8px rgba(0,0,0,0.2)" }} />
+          </div>
+        )}
         <SidebarContent {...sidebarProps} />
       </div>
 
