@@ -620,9 +620,9 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
   // ─── MÓVIL LAYOUT (igual que antes) ──────────────────────────────────────────
   return (
     <ExpertModeContext.Provider value={expertModeValue}><div style={{ width: "100%", maxWidth: "480px", margin: "0 auto", minHeight: "100dvh", background: "#FFF8F0", position: "relative" }}>
-      <a href="#main-content" style={{ position: "absolute", top: "-100px", left: "16px", zIndex: 9999, padding: "8px 16px", background: "#F97316", color: "white", borderRadius: "8px", fontWeight: 700, fontSize: "14px", textDecoration: "none" }}
-        onFocus={(e) => { e.currentTarget.style.top = "16px"; }}
-        onBlur={(e) => { e.currentTarget.style.top = "-100px"; }}
+      <a href="#main-content" style={{ position: "fixed", top: "-200px", left: "16px", zIndex: 9999, padding: "8px 16px", background: "#F97316", color: "white", borderRadius: "8px", fontWeight: 700, fontSize: "14px", textDecoration: "none", clip: "rect(0,0,0,0)", overflow: "hidden" }}
+        onFocus={(e) => { e.currentTarget.style.top = "16px"; e.currentTarget.style.clip = "auto"; e.currentTarget.style.overflow = "visible"; }}
+        onBlur={(e) => { e.currentTarget.style.top = "-200px"; e.currentTarget.style.clip = "rect(0,0,0,0)"; e.currentTarget.style.overflow = "hidden"; }}
       >Saltar al contenido principal</a>
 
       {/* Sidebar Overlay */}
@@ -684,12 +684,6 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
           </div>
         </div>
 
-        {/* Indicador de entorno móvil */}
-        <div style={{ display: "flex", alignItems: "center", gap: "4px", background: "rgba(0,0,0,0.05)", borderRadius: "8px", padding: "3px 8px", flexShrink: 0 }}>
-          <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#9ca3af" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-          <span style={{ fontSize: "10px", fontWeight: 700, color: "#9ca3af", letterSpacing: "0.04em" }}>MÓVIL</span>
-        </div>
-
         <div style={{ display: "flex", alignItems: "center", gap: "8px", flexShrink: 0 }}>
           <DarkModeToggle />
           {headerRight ? headerRight : <NotificationBell />}
@@ -697,7 +691,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       </header>
 
       {/* Content */}
-      <main id="main-content" style={{ paddingTop: "calc(env(safe-area-inset-top) + 68px)", paddingBottom: shouldShowNav ? "calc(64px + env(safe-area-inset-bottom))" : "0" }}>
+      <main id="main-content" style={{ paddingTop: "calc(env(safe-area-inset-top) + 64px)", paddingBottom: shouldShowNav ? "calc(64px + env(safe-area-inset-bottom))" : "0" }}>
         {children}
       </main>
 
