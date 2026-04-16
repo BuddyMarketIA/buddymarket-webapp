@@ -37,11 +37,14 @@ export default function ExpertPatientDetail() {
 
   // Modal estados
   const [showAssignMenuModal, setShowAssignMenuModal] = useState(false);
+  const [showMenuPickerModal, setShowMenuPickerModal] = useState(false);
   const [showProgressModal, setShowProgressModal] = useState(false);
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
   const [assignMenuTitle, setAssignMenuTitle] = useState("");
   const [assignMenuNotes, setAssignMenuNotes] = useState("");
   const [assignWeekStart, setAssignWeekStart] = useState("");
+  const [selectedMenuId, setSelectedMenuId] = useState<number | null>(null);
+  const [menuPickerSearch, setMenuPickerSearch] = useState("");
 
   // Notas internas
   const [showNoteModal, setShowNoteModal] = useState(false);
@@ -337,7 +340,9 @@ export default function ExpertPatientDetail() {
             <div className="flex-1">
               <p className="text-sm font-semibold text-red-700">Alertas del paciente</p>
               {alertNotes.map(n => (
-                <p key={n.id} className="text-sm text-red-600 mt-0.5">• {n.content}</p>
+                <div key={n.id} className="text-sm text-red-600 mt-1 [&_strong]:font-bold [&_p]:mt-0.5">
+                  <ChatMarkdown content={n.content} />
+                </div>
               ))}
             </div>
           </div>
@@ -405,7 +410,7 @@ export default function ExpertPatientDetail() {
             </Button>
             <Button
               size="sm"
-              onClick={() => setShowAssignMenuModal(true)}
+              onClick={() => { setSelectedMenuId(null); setAssignMenuTitle(""); setAssignMenuNotes(""); setAssignWeekStart(""); setMenuPickerSearch(""); setShowMenuPickerModal(true); }}
               className="bg-orange-500 hover:bg-orange-600 text-white"
             >
               + Menú
@@ -429,32 +434,35 @@ export default function ExpertPatientDetail() {
 
         {/* Notas fijadas (si las hay) */}
         {pinnedNotes.length > 0 && (
-          <div className="mb-4 flex flex-wrap gap-2">
+          <div className="mb-4 flex flex-col gap-2">
             {pinnedNotes.map(n => (
-              <div key={n.id} className="flex items-center gap-1.5 px-3 py-1.5 bg-yellow-50 border border-yellow-200 rounded-lg text-sm">
-                <span>📌</span>
-                <span className="text-yellow-800 font-medium">{n.content.substring(0, 80)}{n.content.length > 80 ? "..." : ""}</span>
+              <div key={n.id} className="flex items-start gap-1.5 px-3 py-2 bg-yellow-50 border border-yellow-200 rounded-lg text-sm">
+                <span className="flex-shrink-0 mt-0.5">📌</span>
+                <div className="text-yellow-800 font-medium flex-1 min-w-0 [&_strong]:font-bold [&_p]:leading-snug">
+                  <ChatMarkdown content={n.content.substring(0, 150) + (n.content.length > 150 ? '...' : '')} />
+                </div>
               </div>
             ))}
           </div>
         )}
 
         {/* Tabs */}
-        <div className="flex gap-1 border-b border-gray-200 mb-6 overflow-x-auto">
+        <div className="flex border-b border-gray-200 mb-6 overflow-x-auto -mx-4 px-4" style={{scrollbarWidth:'none'}}>
           {TABS.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`flex items-center gap-1.5 px-4 py-2.5 text-sm font-medium border-b-2 transition-colors whitespace-nowrap ${
+              title={tab.label}
+              className={`relative flex flex-col items-center justify-center gap-0.5 px-2.5 py-2 border-b-2 transition-colors whitespace-nowrap flex-shrink-0 ${
                 activeTab === tab.id
                   ? "border-orange-500 text-orange-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
+                  : "border-transparent text-gray-400 hover:text-gray-600"
               }`}
             >
-              <span>{tab.icon}</span>
-              <span>{tab.label}</span>
+              <span className="text-lg leading-none">{tab.icon}</span>
+              <span className="text-[9px] font-medium leading-tight">{tab.label}</span>
               {tab.count !== undefined && tab.count > 0 && (
-                <span className="bg-orange-500 text-white text-xs rounded-full w-5 h-5 flex items-center justify-center">
+                <span className="absolute top-0.5 right-0.5 bg-orange-500 text-white text-[8px] rounded-full min-w-[14px] h-3.5 flex items-center justify-center px-0.5">
                   {tab.count}
                 </span>
               )}
@@ -721,7 +729,7 @@ export default function ExpertPatientDetail() {
           <div>
             <div className="flex justify-between items-center mb-4">
               <h3 className="font-semibold text-gray-700">Menús asignados ({assignedMenus.length})</h3>
-              <Button size="sm" onClick={() => setShowAssignMenuModal(true)} className="bg-orange-500 hover:bg-orange-600 text-white">
+              <Button size="sm" onClick={() => { setSelectedMenuId(null); setAssignMenuTitle(""); setAssignMenuNotes(""); setAssignWeekStart(""); setMenuPickerSearch(""); setShowMenuPickerModal(true); }} className="bg-orange-500 hover:bg-orange-600 text-white">
                 + Asignar menú
               </Button>
             </div>
@@ -729,7 +737,7 @@ export default function ExpertPatientDetail() {
               <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200">
                 <div className="text-4xl mb-2">🥗</div>
                 <p className="text-gray-500">No hay menús asignados aún</p>
-                <Button onClick={() => setShowAssignMenuModal(true)} className="mt-3 bg-orange-500 hover:bg-orange-600 text-white" size="sm">
+                <Button onClick={() => { setSelectedMenuId(null); setAssignMenuTitle(""); setAssignMenuNotes(""); setAssignWeekStart(""); setMenuPickerSearch(""); setShowMenuPickerModal(true); }} className="mt-3 bg-orange-500 hover:bg-orange-600 text-white" size="sm">
                   Asignar primer menú
                 </Button>
               </div>
@@ -1686,14 +1694,179 @@ export default function ExpertPatientDetail() {
       </Dialog>
 
       {/* Modal: Asignar menú */}
+      {/* ── MODAL PICKER VISUAL DE MENÚS ─────────────────────────────── */}
+      <Dialog open={showMenuPickerModal} onOpenChange={open => { setShowMenuPickerModal(open); if (!open) { setSelectedMenuId(null); setMenuPickerSearch(""); } }}>
+        <DialogContent className="max-w-2xl w-[95vw] max-h-[90vh] flex flex-col p-0 gap-0">
+          <DialogHeader className="px-5 pt-5 pb-3 border-b">
+            <DialogTitle>Seleccionar menú para asignar</DialogTitle>
+            <p className="text-sm text-gray-500 mt-1">Elige el menú que mejor se adapte a las necesidades del paciente</p>
+          </DialogHeader>
+          {/* Buscador */}
+          <div className="px-5 py-3 border-b">
+            <Input
+              placeholder="🔍 Buscar por nombre, categoría..."
+              value={menuPickerSearch}
+              onChange={e => setMenuPickerSearch(e.target.value)}
+              className="bg-gray-50"
+            />
+          </div>
+          {/* Grid de tarjetas */}
+          <div className="flex-1 overflow-y-auto p-5">
+            {!myMenus || myMenus.length === 0 ? (
+              <div className="text-center py-12 text-gray-400">
+                <p className="text-4xl mb-3">🥗</p>
+                <p className="font-medium">Aún no tienes menús creados</p>
+                <p className="text-sm mt-1">Crea menús en tu panel de contenido para poder asignarlos a pacientes</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                {(myMenus as any[]).filter(m => {
+                  if (!menuPickerSearch) return true;
+                  const q = menuPickerSearch.toLowerCase();
+                  return (m.title ?? "").toLowerCase().includes(q) ||
+                    (m.description ?? "").toLowerCase().includes(q) ||
+                    (m.category ?? "").toLowerCase().includes(q);
+                }).map((m: any) => {
+                  const isSelected = selectedMenuId === m.id;
+                  const CATEGORY_LABELS: Record<string, string> = {
+                    perdida_peso: "Pérdida de peso",
+                    ganancia_muscular: "Ganancia muscular",
+                    definicion: "Definición",
+                    dieta_equilibrada: "Dieta equilibrada",
+                    rendimiento: "Rendimiento",
+                    bienestar: "Bienestar",
+                    vegano: "Vegano/Plant-based",
+                  };
+                  const CATEGORY_COLORS: Record<string, string> = {
+                    perdida_peso: "bg-red-100 text-red-700",
+                    ganancia_muscular: "bg-blue-100 text-blue-700",
+                    definicion: "bg-purple-100 text-purple-700",
+                    dieta_equilibrada: "bg-green-100 text-green-700",
+                    rendimiento: "bg-yellow-100 text-yellow-700",
+                    bienestar: "bg-teal-100 text-teal-700",
+                    vegano: "bg-emerald-100 text-emerald-700",
+                  };
+                  // Parse menuData to get day count
+                  let dayCount = 0;
+                  let mealPreview: string[] = [];
+                  try {
+                    const data = m.menuData ? JSON.parse(m.menuData) : null;
+                    if (data?.days) { dayCount = data.days.length; }
+                    else if (Array.isArray(data)) { dayCount = data.length; }
+                    // Get first day meals preview
+                    const firstDay = data?.days?.[0] ?? data?.[0];
+                    if (firstDay?.meals) {
+                      mealPreview = Object.values(firstDay.meals).slice(0, 3).map((meal: any) => meal?.name ?? meal?.recipe ?? "").filter(Boolean);
+                    }
+                  } catch {}
+                  return (
+                    <button
+                      key={m.id}
+                      onClick={() => { setSelectedMenuId(m.id); setAssignMenuTitle(m.title ?? `Menú ${m.id}`); }}
+                      className={`text-left rounded-xl border-2 p-4 transition-all ${
+                        isSelected
+                          ? "border-orange-500 bg-orange-50 shadow-md"
+                          : "border-gray-200 bg-white hover:border-orange-300 hover:bg-orange-50/30"
+                      }`}
+                    >
+                      {/* Cover image or placeholder */}
+                      {m.coverUrl ? (
+                        <img src={m.coverUrl} alt={m.title} className="w-full h-28 object-cover rounded-lg mb-3" />
+                      ) : (
+                        <div className="w-full h-20 bg-gradient-to-br from-orange-100 to-orange-200 rounded-lg mb-3 flex items-center justify-center text-3xl">
+                          🥗
+                        </div>
+                      )}
+                      {/* Title */}
+                      <h3 className="font-semibold text-gray-900 text-sm leading-tight mb-1.5">{m.title ?? `Menú ${m.id}`}</h3>
+                      {/* Category badge */}
+                      {m.category && (
+                        <span className={`inline-block text-[10px] font-medium px-2 py-0.5 rounded-full mb-2 ${CATEGORY_COLORS[m.category] ?? "bg-gray-100 text-gray-600"}`}>
+                          {CATEGORY_LABELS[m.category] ?? m.category}
+                        </span>
+                      )}
+                      {/* Description */}
+                      {m.description && (
+                        <p className="text-xs text-gray-500 line-clamp-2 mb-2">{m.description}</p>
+                      )}
+                      {/* Stats row */}
+                      <div className="flex items-center gap-3 text-xs text-gray-500">
+                        {m.dailyCalories && (
+                          <span className="flex items-center gap-1">🔥 {m.dailyCalories} kcal/día</span>
+                        )}
+                        {dayCount > 0 && (
+                          <span className="flex items-center gap-1">📅 {dayCount} días</span>
+                        )}
+                      </div>
+                      {/* Meal preview */}
+                      {mealPreview.length > 0 && (
+                        <div className="mt-2 flex flex-wrap gap-1">
+                          {mealPreview.map((meal, i) => (
+                            <span key={i} className="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">{meal}</span>
+                          ))}
+                        </div>
+                      )}
+                      {/* Selected indicator */}
+                      {isSelected && (
+                        <div className="mt-2 flex items-center gap-1 text-orange-600 text-xs font-medium">
+                          <span>✓</span> Seleccionado
+                        </div>
+                      )}
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+          {/* Footer con acción */}
+          <div className="px-5 py-4 border-t bg-gray-50 flex items-center justify-between gap-3">
+            <Button variant="outline" onClick={() => { setShowMenuPickerModal(false); setSelectedMenuId(null); setMenuPickerSearch(""); }}>
+              Cancelar
+            </Button>
+            <Button
+              onClick={() => {
+                if (!selectedMenuId) return;
+                setShowMenuPickerModal(false);
+                setShowAssignMenuModal(true);
+              }}
+              disabled={!selectedMenuId}
+              className="bg-orange-500 hover:bg-orange-600 text-white"
+            >
+              Continuar con este menú →
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── MODAL CONFIRMACIÓN ASIGNACIÓN ─────────────────────────────── */}
       <Dialog open={showAssignMenuModal} onOpenChange={setShowAssignMenuModal}>
         <DialogContent className="max-w-md">
           <DialogHeader>
-            <DialogTitle>Asignar menú al paciente</DialogTitle>
+            <DialogTitle>Confirmar asignación</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-2">
+            {/* Menú seleccionado */}
+            {selectedMenuId && myMenus && (() => {
+              const sel = (myMenus as any[]).find(m => m.id === selectedMenuId);
+              return sel ? (
+                <div className="flex items-center gap-3 p-3 bg-orange-50 border border-orange-200 rounded-xl">
+                  <span className="text-2xl">🥗</span>
+                  <div>
+                    <p className="font-semibold text-gray-900 text-sm">{sel.title}</p>
+                    {sel.dailyCalories && <p className="text-xs text-gray-500">🔥 {sel.dailyCalories} kcal/día</p>}
+                  </div>
+                  <button
+                    onClick={() => { setShowAssignMenuModal(false); setShowMenuPickerModal(true); }}
+                    className="ml-auto text-xs text-orange-600 underline"
+                  >
+                    Cambiar
+                  </button>
+                </div>
+              ) : null;
+            })()}
+            {/* Título personalizable */}
             <div>
-              <Label>Título del menú *</Label>
+              <Label>Título para el paciente</Label>
               <Input
                 placeholder="Ej: Menú hipocalórico semana 1"
                 value={assignMenuTitle}
@@ -1701,23 +1874,6 @@ export default function ExpertPatientDetail() {
                 className="mt-1"
               />
             </div>
-            {myMenus && myMenus.length > 0 && (
-              <div>
-                <Label>O selecciona uno de tus menús</Label>
-                <Select onValueChange={v => setAssignMenuTitle(v)}>
-                  <SelectTrigger className="mt-1">
-                    <SelectValue placeholder="Seleccionar menú existente..." />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {myMenus.map((m: any) => (
-                      <SelectItem key={m.id} value={m.name ?? `Menú ${m.id}`}>
-                        {m.name ?? `Menú ${m.id}`}
-                      </SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-            )}
             <div>
               <Label>Semana de inicio (opcional)</Label>
               <Input
