@@ -924,24 +924,24 @@ export default function Dashboard() {
 
       {/* Calorie Ring Card — clickable, navigates to /meal-log */}
       <Link href="/app/meal-log">
-        <div style={{ background: "linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)", borderRadius: "28px", padding: "22px", marginBottom: "16px", boxShadow: "0 12px 40px rgba(0,0,0,0.30)", position: "relative", overflow: "hidden", cursor: "pointer" }}>
+        <div style={{ background: "linear-gradient(145deg, #1a1a2e 0%, #16213e 50%, #0f3460 100%)", borderRadius: "24px", padding: "16px", marginBottom: "16px", boxShadow: "0 12px 40px rgba(0,0,0,0.30)", position: "relative", overflow: "hidden", cursor: "pointer" }}>
           {/* Decorative blobs */}
           <div style={{ position: "absolute", top: "-30px", right: "-30px", width: "160px", height: "160px", borderRadius: "50%", background: "radial-gradient(circle, rgba(249,115,22,0.25) 0%, transparent 70%)" }} />
           <div style={{ position: "absolute", bottom: "-40px", left: "-20px", width: "140px", height: "140px", borderRadius: "50%", background: "radial-gradient(circle, rgba(99,102,241,0.20) 0%, transparent 70%)" }} />
 
           {/* Top row: label + meta button */}
-          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "18px", position: "relative" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-              <div style={{ width: "28px", height: "28px", borderRadius: "8px", background: "rgba(249,115,22,0.25)", display: "flex", alignItems: "center", justifyContent: "center" }}>
-                <span style={{ fontSize: "14px" }}>🔥</span>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px", position: "relative", gap: "8px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px", minWidth: 0 }}>
+              <div style={{ width: "24px", height: "24px", borderRadius: "7px", background: "rgba(249,115,22,0.25)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                <span style={{ fontSize: "12px" }}>🔥</span>
               </div>
-              <span style={{ fontSize: "13px", fontWeight: 700, color: "rgba(255,255,255,0.75)", letterSpacing: "0.02em" }}>CALORÍAS HOY</span>
+              <span style={{ fontSize: "12px", fontWeight: 700, color: "rgba(255,255,255,0.75)", letterSpacing: "0.02em", whiteSpace: "nowrap" }}>CALORÍAS HOY</span>
             </div>
             <button
               onClick={(e) => { e.preventDefault(); e.stopPropagation(); setShowGoalEdit(!showGoalEdit); }}
-              style={{ background: "rgba(249,115,22,0.20)", border: "1px solid rgba(249,115,22,0.35)", borderRadius: "10px", padding: "4px 10px", fontSize: "14px", color: "#FB923C", cursor: "pointer", fontWeight: 700 }}
+              style={{ background: "rgba(249,115,22,0.20)", border: "1px solid rgba(249,115,22,0.35)", borderRadius: "8px", padding: "3px 8px", fontSize: "11px", color: "#FB923C", cursor: "pointer", fontWeight: 700, flexShrink: 0, whiteSpace: "nowrap" }}
             >
-              Meta: {goalCalories} kcal
+              Meta: {goalCalories}
             </button>
           </div>
 
@@ -957,33 +957,33 @@ export default function Dashboard() {
           )}
 
           {/* Main content: big ring + numbers */}
-          <div style={{ display: "flex", alignItems: "center", gap: "20px", position: "relative" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "14px", position: "relative" }}>
             {/* Large SVG ring */}
-            <div style={{ position: "relative", width: "110px", height: "110px", flexShrink: 0 }}>
-              <svg width="110" height="110" viewBox="0 0 110 110">
+            <div style={{ position: "relative", width: "96px", height: "96px", flexShrink: 0 }}>
+              <svg width="96" height="96" viewBox="0 0 96 96">
                 {/* Background track */}
-                <circle cx="55" cy="55" r="46" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="10"/>
+                <circle cx="48" cy="48" r="40" fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="9"/>
                 {/* Colored arc: green if on track, orange if over */}
-                <circle cx="55" cy="55" r="46" fill="none"
+                <circle cx="48" cy="48" r="40" fill="none"
                   stroke={progress >= 100 ? "#EF4444" : progress >= 80 ? "#F97316" : "#22C55E"}
-                  strokeWidth="10"
-                  strokeDasharray={`${2 * Math.PI * 46}`}
-                  strokeDashoffset={`${2 * Math.PI * 46 * (1 - Math.min(progress, 100) / 100)}`}
+                  strokeWidth="9"
+                  strokeDasharray={`${2 * Math.PI * 40}`}
+                  strokeDashoffset={`${2 * Math.PI * 40 * (1 - Math.min(progress, 100) / 100)}`}
                   strokeLinecap="round"
-                  transform="rotate(-90 55 55)"
+                  transform="rotate(-90 48 48)"
                   style={{ transition: "stroke-dashoffset 1s cubic-bezier(0.4,0,0.2,1), stroke 0.4s" }}
                 />
                 {/* Glow dot at tip */}
                 <circle
-                  cx={55 + 46 * Math.cos((Math.min(progress, 100) / 100 * 360 - 90) * Math.PI / 180)}
-                  cy={55 + 46 * Math.sin((Math.min(progress, 100) / 100 * 360 - 90) * Math.PI / 180)}
-                  r="5" fill={progress >= 100 ? "#EF4444" : progress >= 80 ? "#F97316" : "#22C55E"}
+                  cx={48 + 40 * Math.cos((Math.min(progress, 100) / 100 * 360 - 90) * Math.PI / 180)}
+                  cy={48 + 40 * Math.sin((Math.min(progress, 100) / 100 * 360 - 90) * Math.PI / 180)}
+                  r="4.5" fill={progress >= 100 ? "#EF4444" : progress >= 80 ? "#F97316" : "#22C55E"}
                   style={{ filter: "drop-shadow(0 0 4px currentColor)" }}
                 />
               </svg>
-              <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "2px" }}>
-                <span style={{ fontSize: "22px", fontWeight: 900, color: "white", lineHeight: 1, letterSpacing: "-0.04em" }}>{consumed}</span>
-                <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.55)", fontWeight: 600, letterSpacing: "0.05em" }}>kcal</span>
+              <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "1px" }}>
+                <span style={{ fontSize: "18px", fontWeight: 900, color: "white", lineHeight: 1, letterSpacing: "-0.04em" }}>{consumed}</span>
+                <span style={{ fontSize: "10px", color: "rgba(255,255,255,0.55)", fontWeight: 600, letterSpacing: "0.05em" }}>kcal</span>
                 <span style={{ fontSize: "9px", color: progress >= 100 ? "#EF4444" : "#22C55E", fontWeight: 700, marginTop: "1px" }}>
                   {progress >= 100 ? "¡Límite!" : `${Math.round(progress)}%`}
                 </span>
@@ -992,25 +992,25 @@ export default function Dashboard() {
 
             {/* Right column: remaining + macros */}
             <div style={{ flex: 1, minWidth: 0 }}>
-              <p style={{ margin: "0 0 2px", fontSize: "14px", color: "rgba(255,255,255,0.5)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>Restantes</p>
-              <p style={{ margin: "0 0 16px", fontSize: "32px", fontWeight: 900, color: "white", letterSpacing: "-0.05em", lineHeight: 1 }}>
-                {remaining}<span style={{ fontSize: "14px", fontWeight: 600, color: "rgba(255,255,255,0.5)", marginLeft: "4px" }}>kcal</span>
+              <p style={{ margin: "0 0 1px", fontSize: "11px", color: "rgba(255,255,255,0.5)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em" }}>Restantes</p>
+              <p style={{ margin: "0 0 10px", fontSize: "26px", fontWeight: 900, color: "white", letterSpacing: "-0.05em", lineHeight: 1 }}>
+                {remaining}<span style={{ fontSize: "12px", fontWeight: 600, color: "rgba(255,255,255,0.5)", marginLeft: "3px" }}>kcal</span>
               </p>
 
               {/* Macro bars */}
               {[
-                { label: "Proteínas", value: Math.round(protein), max: Math.round((goalCalories * 0.30) / 4), color: "#818CF8", emoji: "💪" },
+                { label: "Prot.", value: Math.round(protein), max: Math.round((goalCalories * 0.30) / 4), color: "#818CF8", emoji: "💪" },
                 { label: "Carbos", value: Math.round(carbs), max: Math.round((goalCalories * 0.45) / 4), color: "#FBBF24", emoji: "⚡" },
                 { label: "Grasas", value: Math.round(fat), max: Math.round((goalCalories * 0.25) / 9), color: "#34D399", emoji: "🥑" },
               ].map((m) => {
                 const pct = Math.min(100, m.max > 0 ? (m.value / m.max) * 100 : 0);
                 return (
-                  <div key={m.label} style={{ marginBottom: "7px" }}>
-                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "3px" }}>
-                      <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.6)", fontWeight: 600 }}>{m.emoji} {m.label}</span>
-                      <span style={{ fontSize: "13px", color: m.color, fontWeight: 800 }}>{m.value}g</span>
+                  <div key={m.label} style={{ marginBottom: "5px" }}>
+                    <div style={{ display: "flex", justifyContent: "space-between", marginBottom: "2px" }}>
+                      <span style={{ fontSize: "11px", color: "rgba(255,255,255,0.6)", fontWeight: 600, whiteSpace: "nowrap" }}>{m.emoji} {m.label}</span>
+                      <span style={{ fontSize: "11px", color: m.color, fontWeight: 800 }}>{m.value}g</span>
                     </div>
-                    <div style={{ height: "4px", borderRadius: "999px", background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
+                    <div style={{ height: "3px", borderRadius: "999px", background: "rgba(255,255,255,0.08)", overflow: "hidden" }}>
                       <div style={{ height: "100%", borderRadius: "999px", background: m.color, width: `${pct}%`, transition: "width 1s cubic-bezier(0.4,0,0.2,1)", boxShadow: `0 0 6px ${m.color}80` }} />
                     </div>
                   </div>
@@ -1020,14 +1020,11 @@ export default function Dashboard() {
           </div>
 
           {/* Bottom CTA */}
-          <div style={{ marginTop: "16px", paddingTop: "14px", borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "space-between", position: "relative" }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-              <span style={{ fontSize: "14px" }}>📝</span>
-              <span style={{ fontSize: "14px", fontWeight: 600, color: "rgba(255,255,255,0.6)" }}>Toca para registrar comidas</span>
-            </div>
-            <div style={{ display: "flex", alignItems: "center", gap: "4px", background: "rgba(249,115,22,0.20)", borderRadius: "10px", padding: "5px 10px" }}>
-              <span style={{ fontSize: "14px", fontWeight: 700, color: "#FB923C" }}>Abrir diario</span>
-              <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#FB923C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+          <div style={{ marginTop: "12px", paddingTop: "10px", borderTop: "1px solid rgba(255,255,255,0.08)", display: "flex", alignItems: "center", justifyContent: "space-between", position: "relative" }}>
+            <span style={{ fontSize: "12px", fontWeight: 600, color: "rgba(255,255,255,0.5)" }}>📝 Toca para registrar</span>
+            <div style={{ display: "flex", alignItems: "center", gap: "4px", background: "rgba(249,115,22,0.20)", borderRadius: "8px", padding: "4px 8px" }}>
+              <span style={{ fontSize: "12px", fontWeight: 700, color: "#FB923C" }}>Abrir diario</span>
+              <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="#FB923C" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
             </div>
           </div>
         </div>
@@ -1320,9 +1317,9 @@ export default function Dashboard() {
           ))}
         </div>
 
-        {/* Row 2: wide BuddyScan + small Inventario + small Diario */}
-        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "10px" }}>
-          {/* Wide BuddyScan — spans 2 cols */}
+        {/* Row 2: BuddyScan full-width + 2 small */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "10px" }}>
+          {/* Wide BuddyScan — spans full row */}
           <Link href={QUICK_ACCESS[4].to} style={{ gridColumn: "1 / 3" }}>
             <div style={{ height: "90px", borderRadius: "18px", overflow: "hidden", position: "relative", cursor: "pointer", boxShadow: "0 4px 14px rgba(0,0,0,0.15)", transition: "transform 0.2s" }}
               onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.02)")}
