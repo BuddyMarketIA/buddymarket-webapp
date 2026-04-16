@@ -446,24 +446,27 @@ export default function ExpertPatientDetail() {
           </div>
         )}
 
-        {/* Tabs */}
-        <div className="flex border-b border-gray-200 mb-6 overflow-x-auto -mx-4 px-4" style={{scrollbarWidth:'none'}}>
+        {/* Tabs — solo iconos en mobile con scroll horizontal */}
+        <div
+          className="flex border-b border-gray-200 mb-6 -mx-4 px-2"
+          style={{ overflowX: 'auto', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
+        >
           {TABS.map(tab => (
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
               title={tab.label}
-              className={`relative flex flex-col items-center justify-center gap-0.5 px-2.5 py-2 border-b-2 transition-colors whitespace-nowrap flex-shrink-0 ${
+              className={`relative flex flex-col items-center justify-center gap-0.5 min-w-[52px] px-1 py-2.5 border-b-2 transition-colors flex-shrink-0 ${
                 activeTab === tab.id
                   ? "border-orange-500 text-orange-600"
                   : "border-transparent text-gray-400 hover:text-gray-600"
               }`}
             >
-              <span className="text-lg leading-none">{tab.icon}</span>
-              <span className="text-[9px] font-medium leading-tight">{tab.label}</span>
+              <span className="text-xl leading-none">{tab.icon}</span>
+              <span className="text-[8px] font-medium leading-none mt-0.5 max-w-[48px] text-center truncate">{tab.label}</span>
               {tab.count !== undefined && tab.count > 0 && (
-                <span className="absolute top-0.5 right-0.5 bg-orange-500 text-white text-[8px] rounded-full min-w-[14px] h-3.5 flex items-center justify-center px-0.5">
-                  {tab.count}
+                <span className="absolute top-1 right-1 bg-orange-500 text-white text-[7px] font-bold rounded-full min-w-[13px] h-3 flex items-center justify-center px-0.5 leading-none">
+                  {tab.count > 9 ? '9+' : tab.count}
                 </span>
               )}
             </button>
