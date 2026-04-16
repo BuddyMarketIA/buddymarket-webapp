@@ -2600,3 +2600,22 @@
 - [x] Explicación contextual en tab Planes del BuddyExpertDashboard
 - [x] Explicación contextual en tab Menús del BuddyExpertDashboard
 - [x] Explicación contextual en ExpertPatients cuando no hay pacientes
+
+## Flujo de contratación de nutricionista (paciente → nutricionista)
+
+- [ ] Schema: tabla expertServicePlans (planes de pago del nutricionista: nombre, precio, duración, descripción, incluye)
+- [ ] Schema: tabla expertHireRequests (solicitudes de contratación: pacienteId, expertId, planId, estado, mensaje)
+- [ ] Migración DB: pnpm db:push con nuevas tablas
+- [ ] Endpoint: buddyExperts.getServicePlans - obtener planes de un nutricionista
+- [ ] Endpoint: buddyExperts.upsertServicePlan - crear/editar plan de servicio (nutricionista)
+- [ ] Endpoint: buddyExperts.deleteServicePlan - eliminar plan (nutricionista)
+- [ ] Endpoint: expertPatients.sendHireRequest - paciente envía solicitud con plan elegido
+- [ ] Endpoint: expertPatients.getHireRequests - nutricionista ve sus solicitudes pendientes
+- [ ] Endpoint: expertPatients.respondHireRequest - nutricionista acepta/rechaza solicitud
+- [ ] UI: BuddyExpertDashboard - tab "Mis servicios" para gestionar planes de pago
+- [ ] UI: BuddyExpertPublicProfile - mostrar planes de pago al paciente con botón "Contratar"
+- [ ] UI: Modal de contratación - seleccionar plan + mensaje personalizado + confirmar solicitud
+- [ ] UI: BuddyExpertDashboard - sección "Solicitudes de contratación" con aceptar/rechazar
+- [ ] Al aceptar solicitud: crear relación expertPatients automáticamente
+- [ ] Email al paciente al aceptar/rechazar su solicitud
+- [ ] Email al nutricionista al recibir nueva solicitud

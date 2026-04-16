@@ -112,6 +112,7 @@ const ExpertDashboard = lazy(() => import("./pages/ExpertDashboard"));
 const MenuTemplates = lazy(() => import("./pages/expert/MenuTemplates"));
 const FoodSubstitutions = lazy(() => import("./pages/expert/FoodSubstitutions"));
 const SessionPackages = lazy(() => import("./pages/expert/SessionPackages"));
+const HireRequests = lazy(() => import("./pages/expert/HireRequests"));
 const MyExpert = lazy(() => import("./pages/MyExpert"));
 const MakerAnalytics = lazy(() => import("./pages/MakerAnalytics"));
 const IngredientExplorer = lazy(() => import("./pages/IngredientExplorer"));
@@ -249,6 +250,7 @@ function Router() {
       <Route path="/app/expert/menu-templates">{() => <ProtectedPage><MenuTemplates /></ProtectedPage>}</Route>
       <Route path="/app/expert/food-substitutions">{() => <ProtectedPage><FoodSubstitutions /></ProtectedPage>}</Route>
       <Route path="/app/expert/session-packages">{() => <ProtectedPage><SessionPackages /></ProtectedPage>}</Route>
+      <Route path="/app/expert/hire-requests">{() => <ProtectedPage><HireRequests /></ProtectedPage>}</Route>
       <Route path="/app/my-expert">{() => <ProtectedPage><MyExpert /></ProtectedPage>}</Route>
       <Route path="/app/weekly-checkin">{() => <ProtectedPage><WeeklyCheckin /></ProtectedPage>}</Route>
       <Route path="/app/maker-analytics">{() => <ProtectedPage><MakerAnalytics /></ProtectedPage>}</Route>

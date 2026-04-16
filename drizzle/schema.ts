@@ -2791,3 +2791,50 @@ export const patientPackages = pgTable("patient_packages", {
 }));
 export type PatientPackage = typeof patientPackages.$inferSelect;
 export type InsertPatientPackage = typeof patientPackages.$inferInsert;
+
+// =============================================================================
+// PLANES DE SERVICIO DEL NUTRICIONISTA (para contratación por pacientes)
+// =============================================================================
+export const expertServicePlans = pgTable("expert_service_plans", {
+  id: serial("id").primaryKey(),
+  expertId: integer("expertId").notNull(),
+  name: varchar("name", { length: 256 }).notNull(),
+  description: text("description"),
+  price: real("price").notNull(),
+  billingPeriod: varchar("billingPeriod", { length: 32 }).default("monthly").notNull(),
+  durationMonths: integer("durationMonths"),
+  includes: text("includes"), // JSON array de strings
+  maxConsultations: integer("maxConsultations"),
+  isActive: boolean("isActive").default(true).notNull(),
+  isPopular: boolean("isPopular").default(false).notNull(),
+  sortOrder: integer("sortOrder").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  espExpertIdx: index("esp_expert_idx").on(t.expertId),
+}));
+export type ExpertServicePlan = typeof expertServicePlans.$inferSelect;
+export type InsertExpertServicePlan = typeof expertServicePlans.$inferInsert;
+
+// =============================================================================
+// SOLICITUDES DE CONTRATACIÓN (paciente → nutricionista)
+// =============================================================================
+export const expertHireRequests = pgTable("expert_hire_requests", {
+  id: serial("id").primaryKey(),
+  patientUserId: integer("patientUserId").notNull(),
+  expertId: integer("expertId").notNull(),
+  servicePlanId: integer("servicePlanId"),
+  status: varchar("status", { length: 32 }).default("pending").notNull(),
+  message: text("message"),
+  expertResponse: text("expertResponse"),
+  expertPatientId: integer("expertPatientId"),
+  respondedAt: timestamp("respondedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  ehrPatientIdx: index("ehr_patient_idx").on(t.patientUserId),
+  ehrExpertIdx: index("ehr_expert_idx").on(t.expertId),
+  ehrStatusIdx: index("ehr_status_idx").on(t.status),
+}));
+export type ExpertHireRequest = typeof expertHireRequests.$inferSelect;
+export type InsertExpertHireRequest = typeof expertHireRequests.$inferInsert;

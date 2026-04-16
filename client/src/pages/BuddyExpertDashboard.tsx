@@ -4,7 +4,7 @@ import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "@/components/sonner-a11y-shim";
 import AppLayout from "@/components/AppLayout";
 
-type Tab = "/app/profile" | "plans" | "pdf-plans" | "/app/menus" | "blog";
+type Tab = "/app/profile" | "plans" | "pdf-plans" | "/app/menus" | "blog" | "services";
 
 const CATEGORIES = [
   { value: "perdida_peso", label: "Pérdida de peso" },
@@ -431,13 +431,13 @@ export default function BuddyExpertDashboard() {
         )}
         {/* Tabs */}
         <div className="flex gap-1 mb-6 bg-gray-100 rounded-2xl p-1">
-          {(["/app/profile", "plans", "pdf-plans", "/app/menus", "blog"] as Tab[]).map((tab) => (
-            <button
+          {(["/app/profile", "plans", "pdf-plans", "/app/menus", "blog", "services"] as Tab[]).map((tab) => (
+              <button
               key={tab}
               onClick={() => setActiveTab(tab)}
               className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${activeTab === tab ? "bg-white text-orange-600 shadow-sm" : "text-gray-500"}`}
             >
-              {tab === "/app/profile" ? "👤 Perfil" : tab === "plans" ? "📊 Planes" : tab === "pdf-plans" ? "📄 PDF" : tab === "/app/menus" ? "📋 Menús" : "✍️ Blog"}
+              {tab === "/app/profile" ? "👤 Perfil" : tab === "plans" ? "📊 Planes" : tab === "pdf-plans" ? "📄 PDF" : tab === "/app/menus" ? "📋 Menús" : tab === "services" ? "💰 Servicios" : "✍️ Blog"}
             </button>
           ))}
         </div>
@@ -983,8 +983,188 @@ export default function BuddyExpertDashboard() {
         {activeTab === "blog" && (
           <BlogTab expertProfile={myProfile} />
         )}
+        {/* Services Tab */}
+        {activeTab === "services" && (
+          <ServicePlansTab />
+        )}
       </div>
     </AppLayout>
+  );
+}
+
+// ─── Service Plans Tab Component ────────────────────────────────────────────
+function ServicePlansTab() {
+  const utils = trpc.useUtils();
+  const { data: plans, isLoading } = trpc.buddyExperts.getMyServicePlans.useQuery();
+  const [showForm, setShowForm] = useState(false);
+  const [editingPlan, setEditingPlan] = useState<any | null>(null);
+  const [form, setForm] = useState({ name: "", description: "", price: "", billingPeriod: "monthly", durationMonths: "", includes: "", maxConsultations: "", isPopular: false });
+
+  const createMut = trpc.buddyExperts.createServicePlan.useMutation({
+    onSuccess: () => { toast.success("Plan creado"); utils.buddyExperts.getMyServicePlans.invalidate(); setShowForm(false); resetForm(); },
+    onError: (e) => toast.error(e.message || "Error"),
+  });
+  const updateMut = trpc.buddyExperts.updateServicePlan.useMutation({
+    onSuccess: () => { toast.success("Plan actualizado"); utils.buddyExperts.getMyServicePlans.invalidate(); setShowForm(false); setEditingPlan(null); resetForm(); },
+    onError: (e) => toast.error(e.message || "Error"),
+  });
+  const deleteMut = trpc.buddyExperts.deleteServicePlan.useMutation({
+    onSuccess: () => { toast.success("Plan eliminado"); utils.buddyExperts.getMyServicePlans.invalidate(); },
+    onError: (e) => toast.error(e.message || "Error"),
+  });
+
+  const resetForm = () => setForm({ name: "", description: "", price: "", billingPeriod: "monthly", durationMonths: "", includes: "", maxConsultations: "", isPopular: false });
+
+  const openEdit = (plan: any) => {
+    let includesList: string[] = [];
+    try { includesList = plan.includes ? JSON.parse(plan.includes) : []; } catch { includesList = []; }
+    setForm({
+      name: plan.name || "",
+      description: plan.description || "",
+      price: String(plan.price ?? ""),
+      billingPeriod: plan.billingPeriod || "monthly",
+      durationMonths: String(plan.durationMonths ?? ""),
+      includes: includesList.join("\n"),
+      maxConsultations: String(plan.maxConsultations ?? ""),
+      isPopular: plan.isPopular ?? false,
+    });
+    setEditingPlan(plan);
+    setShowForm(true);
+  };
+
+  const handleSubmit = () => {
+    const includesArr = form.includes.split("\n").map(s => s.trim()).filter(Boolean);
+    const payload = {
+      name: form.name,
+      description: form.description || undefined,
+      price: parseFloat(form.price) || 0,
+      billingPeriod: form.billingPeriod as any,
+      durationMonths: form.durationMonths ? parseInt(form.durationMonths) : undefined,
+      includes: includesArr.length > 0 ? JSON.stringify(includesArr) : undefined,
+      maxConsultations: form.maxConsultations ? parseInt(form.maxConsultations) : undefined,
+      isPopular: form.isPopular,
+    };
+    if (editingPlan) updateMut.mutate({ id: editingPlan.id, ...payload });
+    else createMut.mutate(payload);
+  };
+
+  const periodLabel: Record<string, string> = { monthly: "mes", quarterly: "trimestre", annual: "año", one_time: "pago único" };
+
+  return (
+    <div>
+      <div className="bg-blue-50 rounded-2xl p-4 mb-4 border border-blue-100">
+        <p className="text-sm text-blue-800 font-medium">💡 Planes de contratación</p>
+        <p className="text-xs text-blue-600 mt-1">Define los servicios que ofreces a tus pacientes. Aparecerán en tu perfil público para que puedan solicitarte directamente.</p>
+      </div>
+      <button onClick={() => { resetForm(); setEditingPlan(null); setShowForm(true); }} className="w-full py-3 rounded-2xl border-2 border-dashed border-orange-300 text-orange-500 font-bold text-sm hover:bg-orange-50 transition-colors mb-4">
+        + Crear nuevo plan de servicio
+      </button>
+      {isLoading && <div className="h-24 bg-gray-100 rounded-2xl animate-pulse" />}
+      {!isLoading && (!plans || plans.length === 0) && (
+        <div className="text-center py-10 text-gray-400">
+          <div className="text-4xl mb-2">💰</div>
+          <p className="text-sm">Aún no tienes planes de servicio</p>
+        </div>
+      )}
+      <div className="space-y-3">
+        {(plans ?? []).map((plan: any) => {
+          let includes: string[] = [];
+          try { includes = plan.includes ? JSON.parse(plan.includes) : []; } catch { includes = []; }
+          return (
+            <div key={plan.id} className={`bg-white rounded-2xl border-2 p-4 shadow-sm ${plan.isPopular ? "border-orange-300" : "border-gray-100"}`}>
+              <div className="flex items-start justify-between gap-2">
+                <div className="flex-1">
+                  <div className="flex items-center gap-2">
+                    <h4 className="font-bold text-gray-900 text-sm">{plan.name}</h4>
+                    {plan.isPopular && <span className="text-xs bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full font-medium">⭐ Popular</span>}
+                    {!plan.isActive && <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Inactivo</span>}
+                  </div>
+                  <p className="text-lg font-black text-orange-500 mt-0.5">{plan.price === 0 ? "Gratis" : `${plan.price}€`}<span className="text-xs font-normal text-gray-400">/{periodLabel[plan.billingPeriod] ?? plan.billingPeriod}</span></p>
+                  {plan.description && <p className="text-xs text-gray-500 mt-1">{plan.description}</p>}
+                  {includes.length > 0 && (
+                    <ul className="mt-2 space-y-0.5">
+                      {includes.slice(0, 3).map((item: string, i: number) => (
+                        <li key={i} className="text-xs text-gray-600 flex items-center gap-1"><span className="text-green-500">✓</span>{item}</li>
+                      ))}
+                      {includes.length > 3 && <li className="text-xs text-gray-400">+{includes.length - 3} más...</li>}
+                    </ul>
+                  )}
+                </div>
+                <div className="flex flex-col gap-1">
+                  <button onClick={() => openEdit(plan)} className="text-xs bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-200">✏️ Editar</button>
+                  <button onClick={() => { if (confirm("¿Eliminar este plan?")) deleteMut.mutate({ id: plan.id }); }} className="text-xs bg-red-50 text-red-500 px-3 py-1.5 rounded-lg hover:bg-red-100">🗑️</button>
+                </div>
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Form modal */}
+      {showForm && (
+        <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setShowForm(false)}>
+          <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+          <div className="relative bg-white w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+            <div className="p-5 overflow-y-auto">
+              <div className="flex items-center justify-between mb-4">
+                <h3 className="font-bold text-gray-900 text-lg">{editingPlan ? "Editar plan" : "Nuevo plan de servicio"}</h3>
+                <button onClick={() => setShowForm(false)} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500">×</button>
+              </div>
+              <div className="space-y-3">
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Nombre del plan *</label>
+                  <input value={form.name} onChange={e => setForm(f => ({...f, name: e.target.value}))} placeholder="Ej: Plan Seguimiento Mensual" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300" />
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Descripción</label>
+                  <textarea value={form.description} onChange={e => setForm(f => ({...f, description: e.target.value}))} placeholder="Describe qué incluye este plan..." className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange-300" rows={2} />
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Precio (€) *</label>
+                    <input type="number" value={form.price} onChange={e => setForm(f => ({...f, price: e.target.value}))} placeholder="89" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Facturación</label>
+                    <select value={form.billingPeriod} onChange={e => setForm(f => ({...f, billingPeriod: e.target.value}))} className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                      <option value="monthly">Mensual</option>
+                      <option value="quarterly">Trimestral</option>
+                      <option value="annual">Anual</option>
+                      <option value="one_time">Pago único</option>
+                    </select>
+                  </div>
+                </div>
+                <div className="grid grid-cols-2 gap-3">
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Duración (meses)</label>
+                    <input type="number" value={form.durationMonths} onChange={e => setForm(f => ({...f, durationMonths: e.target.value}))} placeholder="3" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300" />
+                  </div>
+                  <div>
+                    <label className="block text-xs font-medium text-gray-700 mb-1">Consultas incluidas</label>
+                    <input type="number" value={form.maxConsultations} onChange={e => setForm(f => ({...f, maxConsultations: e.target.value}))} placeholder="2" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300" />
+                  </div>
+                </div>
+                <div>
+                  <label className="block text-xs font-medium text-gray-700 mb-1">Qué incluye (una línea por item)</label>
+                  <textarea value={form.includes} onChange={e => setForm(f => ({...f, includes: e.target.value}))} placeholder="Menú semanal personalizado&#10;2 consultas/mes&#10;Chat con la nutricionista" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange-300" rows={4} />
+                </div>
+                <label className="flex items-center gap-2 cursor-pointer">
+                  <input type="checkbox" checked={form.isPopular} onChange={e => setForm(f => ({...f, isPopular: e.target.checked}))} className="w-4 h-4 accent-orange-500" />
+                  <span className="text-sm text-gray-700">Marcar como plan popular (⭐)</span>
+                </label>
+              </div>
+              <button
+                onClick={handleSubmit}
+                disabled={!form.name || !form.price || createMut.isPending || updateMut.isPending}
+                className="mt-4 w-full py-3 rounded-xl font-bold text-white bg-gradient-to-r from-orange-500 to-red-500 hover:opacity-90 disabled:opacity-50"
+              >
+                {createMut.isPending || updateMut.isPending ? "Guardando..." : editingPlan ? "Guardar cambios" : "Crear plan"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
   );
 }
 

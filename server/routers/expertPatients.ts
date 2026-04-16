@@ -1995,4 +1995,169 @@ Responde en JSON con este formato:
 
       return { success: true };
     }),
+
+  // ── Solicitudes de contratación (paciente → nutricionista) ─────────────────
+  sendHireRequest: protectedProcedure
+    .input(z.object({
+      expertId: z.number(),
+      servicePlanId: z.number().optional(),
+      message: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { expertHireRequests, expertPatients, buddyExperts, users } = await import("../../drizzle/schema.js");
+      const { eq, and } = await import("drizzle-orm");
+      // Verificar que no hay ya una solicitud pendiente
+      const existing = await drizzleDb.select().from(expertHireRequests)
+        .where(and(
+          eq(expertHireRequests.patientUserId, ctx.user.id),
+          eq(expertHireRequests.expertId, input.expertId),
+          eq(expertHireRequests.status, "pending")
+        )).limit(1);
+      if (existing[0]) throw new TRPCError({ code: "CONFLICT", message: "Ya tienes una solicitud pendiente con este nutricionista" });
+      // Verificar que no es ya paciente
+      const existingRelation = await drizzleDb.select().from(expertPatients)
+        .where(and(
+          eq(expertPatients.patientUserId, ctx.user.id),
+          eq(expertPatients.expertId, input.expertId)
+        )).limit(1);
+      if (existingRelation[0]) throw new TRPCError({ code: "CONFLICT", message: "Ya eres paciente de este nutricionista" });
+      const [request] = await drizzleDb.insert(expertHireRequests).values({
+        patientUserId: ctx.user.id,
+        expertId: input.expertId,
+        servicePlanId: input.servicePlanId ?? null,
+        message: input.message ?? null,
+        status: "pending",
+        createdAt: new Date(),
+        updatedAt: new Date(),
+      }).returning();
+      // Notificar al nutricionista
+      try {
+        const expert = await drizzleDb.select({ userId: buddyExperts.userId, displayName: buddyExperts.displayName })
+          .from(buddyExperts).where(eq(buddyExperts.id, input.expertId)).limit(1);
+        const patient = await drizzleDb.select({ name: users.name, email: users.email })
+          .from(users).where(eq(users.id, ctx.user.id)).limit(1);
+        if (expert[0] && patient[0]) {
+          const expertUser = await drizzleDb.select({ email: users.email })
+            .from(users).where(eq(users.id, expert[0].userId)).limit(1);
+          if (expertUser[0]?.email) {
+            const { sendEmail } = await import("../email.js");
+            await sendEmail({
+              to: expertUser[0].email,
+              subject: `Nueva solicitud de paciente - BuddyMarket`,
+              html: `<p>Hola ${expert[0].displayName},</p><p><strong>${patient[0].name ?? "Un paciente"}</strong> ha enviado una solicitud para trabajar contigo en BuddyMarket.</p><p>Accede a tu panel para aceptar o rechazar la solicitud.</p>`,
+            });
+          }
+        }
+      } catch (_) {}
+      return { id: request.id, status: "pending" };
+    }),
+
+  getMyHireRequests: protectedProcedure
+    .query(async ({ ctx }) => {
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { expertHireRequests, buddyExperts, expertServicePlans } = await import("../../drizzle/schema.js");
+      const { eq } = await import("drizzle-orm");
+      const rows = await drizzleDb.select({
+        id: expertHireRequests.id,
+        status: expertHireRequests.status,
+        message: expertHireRequests.message,
+        expertResponse: expertHireRequests.expertResponse,
+        createdAt: expertHireRequests.createdAt,
+        respondedAt: expertHireRequests.respondedAt,
+        expert: { id: buddyExperts.id, displayName: buddyExperts.displayName, avatarUrl: buddyExperts.avatarUrl, specialty: buddyExperts.specialty },
+        plan: { id: expertServicePlans.id, name: expertServicePlans.name, price: expertServicePlans.price, billingPeriod: expertServicePlans.billingPeriod },
+      })
+        .from(expertHireRequests)
+        .leftJoin(buddyExperts, eq(expertHireRequests.expertId, buddyExperts.id))
+        .leftJoin(expertServicePlans, eq(expertHireRequests.servicePlanId, expertServicePlans.id))
+        .where(eq(expertHireRequests.patientUserId, ctx.user.id))
+        .orderBy(expertHireRequests.createdAt);
+      return rows;
+    }),
+
+  getExpertHireRequests: protectedProcedure
+    .query(async ({ ctx }) => {
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { expertHireRequests, buddyExperts, expertServicePlans, users } = await import("../../drizzle/schema.js");
+      const { eq } = await import("drizzle-orm");
+      const expert = await drizzleDb.select().from(buddyExperts).where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+      if (!expert[0]) return [];
+      const rows = await drizzleDb.select({
+        id: expertHireRequests.id,
+        status: expertHireRequests.status,
+        message: expertHireRequests.message,
+        createdAt: expertHireRequests.createdAt,
+        patient: { id: users.id, name: users.name, email: users.email, imageUrl: users.imageUrl },
+        plan: { id: expertServicePlans.id, name: expertServicePlans.name, price: expertServicePlans.price, billingPeriod: expertServicePlans.billingPeriod },
+      })
+        .from(expertHireRequests)
+        .leftJoin(users, eq(expertHireRequests.patientUserId, users.id))
+        .leftJoin(expertServicePlans, eq(expertHireRequests.servicePlanId, expertServicePlans.id))
+        .where(eq(expertHireRequests.expertId, expert[0].id))
+        .orderBy(expertHireRequests.createdAt);
+      return rows;
+    }),
+
+  respondHireRequest: protectedProcedure
+    .input(z.object({
+      requestId: z.number(),
+      action: z.enum(["accept", "reject"]),
+      response: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { expertHireRequests, buddyExperts, expertPatients, users } = await import("../../drizzle/schema.js");
+      const { eq, and } = await import("drizzle-orm");
+      const expert = await drizzleDb.select().from(buddyExperts).where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+      if (!expert[0]) throw new TRPCError({ code: "FORBIDDEN" });
+      const request = await drizzleDb.select().from(expertHireRequests)
+        .where(and(eq(expertHireRequests.id, input.requestId), eq(expertHireRequests.expertId, expert[0].id))).limit(1);
+      if (!request[0]) throw new TRPCError({ code: "NOT_FOUND" });
+      if (request[0].status !== "pending") throw new TRPCError({ code: "BAD_REQUEST", message: "Esta solicitud ya fue respondida" });
+      let expertPatientId: number | undefined;
+      if (input.action === "accept") {
+        const [rel] = await drizzleDb.insert(expertPatients).values({
+          expertId: expert[0].id,
+          patientUserId: request[0].patientUserId,
+          status: "active",
+          inviteEmail: null,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        }).returning({ id: expertPatients.id });
+        expertPatientId = rel.id;
+      }
+      await drizzleDb.update(expertHireRequests).set({
+        status: input.action === "accept" ? "accepted" : "rejected",
+        expertResponse: input.response ?? null,
+        expertPatientId: expertPatientId ?? null,
+        respondedAt: new Date(),
+        updatedAt: new Date(),
+      }).where(eq(expertHireRequests.id, input.requestId));
+      // Notificar al paciente
+      try {
+        const patient = await drizzleDb.select({ name: users.name, email: users.email })
+          .from(users).where(eq(users.id, request[0].patientUserId)).limit(1);
+        if (patient[0]?.email) {
+          const { sendEmail } = await import("../email.js");
+          const accepted = input.action === "accept";
+          await sendEmail({
+            to: patient[0].email,
+            subject: accepted ? `¡Tu solicitud fue aceptada! - BuddyMarket` : `Solicitud respondida - BuddyMarket`,
+            html: accepted
+              ? `<p>Hola ${patient[0].name ?? ""},</p><p><strong>${expert[0].displayName}</strong> ha aceptado tu solicitud. Ya puedes acceder a tu sección “Mi Nutricionista” en BuddyMarket.</p>`
+              : `<p>Hola ${patient[0].name ?? ""},</p><p>${expert[0].displayName} no puede atenderte en este momento.${input.response ? ` Mensaje: ${input.response}` : ""}</p>`,
+          });
+        }
+      } catch (_) {}
+      return { ok: true, action: input.action, expertPatientId };
+    }),
 });

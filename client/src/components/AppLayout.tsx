@@ -393,6 +393,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       label: "Pacientes",
       items: [
         { key: "/app/expert/patients", label: "Mis Pacientes", to: "/app/expert/patients", emoji: "👥" },
+        { key: "/app/expert/hire-requests", label: "Solicitudes", to: "/app/expert/hire-requests", emoji: "📩" },
         { key: "/app/expert/chat", label: "Chat con Pacientes", to: "/app/expert/chat", emoji: "💬" },
         { key: "/app/buddy-ia", label: "BuddyIA Profesional", to: "/app/buddy-ia", emoji: "🤖" },
       ],

@@ -6709,6 +6709,81 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
           .offset(input.offset);
         return { followers: rows, total };
       }),
+
+    // ── Planes de servicio del nutricionista ─────────────────────────────────
+    getServicePlans: publicProcedure
+      .input(z.object({ expertId: z.number() }))
+      .query(async ({ input }) => {
+        const drizzleDb = await db.getDb();
+        const { expertServicePlans } = await import("../drizzle/schema.js");
+        return drizzleDb.select().from(expertServicePlans)
+          .where(and(eq(expertServicePlans.expertId, input.expertId), eq(expertServicePlans.isActive, true)))
+          .orderBy(asc(expertServicePlans.sortOrder), asc(expertServicePlans.price));
+      }),
+
+    getMyServicePlans: protectedProcedure
+      .query(async ({ ctx }) => {
+        const drizzleDb = await db.getDb();
+        const { expertServicePlans, buddyExperts } = await import("../drizzle/schema.js");
+        const expert = await drizzleDb.select().from(buddyExperts).where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+        if (!expert[0]) return [];
+        return drizzleDb.select().from(expertServicePlans)
+          .where(eq(expertServicePlans.expertId, expert[0].id))
+          .orderBy(asc(expertServicePlans.sortOrder), asc(expertServicePlans.price));
+      }),
+
+    upsertServicePlan: protectedProcedure
+      .input(z.object({
+        id: z.number().optional(),
+        name: z.string().min(1),
+        description: z.string().optional(),
+        price: z.number().min(0),
+        billingPeriod: z.enum(["monthly", "quarterly", "annual", "one_time"]).default("monthly"),
+        durationMonths: z.number().optional(),
+        includes: z.array(z.string()).optional(),
+        maxConsultations: z.number().optional(),
+        isActive: z.boolean().default(true),
+        isPopular: z.boolean().default(false),
+        sortOrder: z.number().default(0),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        const { expertServicePlans, buddyExperts } = await import("../drizzle/schema.js");
+        const expert = await drizzleDb.select().from(buddyExperts).where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+        if (!expert[0]) throw new TRPCError({ code: "FORBIDDEN", message: "No eres un BuddyExpert" });
+        const data = {
+          expertId: expert[0].id,
+          name: input.name,
+          description: input.description ?? null,
+          price: input.price,
+          billingPeriod: input.billingPeriod,
+          durationMonths: input.durationMonths ?? null,
+          includes: input.includes ? JSON.stringify(input.includes) : null,
+          maxConsultations: input.maxConsultations ?? null,
+          isActive: input.isActive,
+          isPopular: input.isPopular,
+          sortOrder: input.sortOrder,
+          updatedAt: new Date(),
+        };
+        if (input.id) {
+          await drizzleDb.update(expertServicePlans).set(data).where(and(eq(expertServicePlans.id, input.id), eq(expertServicePlans.expertId, expert[0].id)));
+          return { id: input.id };
+        } else {
+          const [row] = await drizzleDb.insert(expertServicePlans).values({ ...data, createdAt: new Date() }).returning({ id: expertServicePlans.id });
+          return row;
+        }
+      }),
+
+    deleteServicePlan: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        const { expertServicePlans, buddyExperts } = await import("../drizzle/schema.js");
+        const expert = await drizzleDb.select().from(buddyExperts).where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+        if (!expert[0]) throw new TRPCError({ code: "FORBIDDEN" });
+        await drizzleDb.delete(expertServicePlans).where(and(eq(expertServicePlans.id, input.id), eq(expertServicePlans.expertId, expert[0].id)));
+        return { ok: true };
+      }),
   }),
   // ===========================================================================
   // BUDDY MAKERSS
