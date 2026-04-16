@@ -735,6 +735,30 @@ export const expertPatientsRouter = router({
         isRead: false,
       });
 
+      // Enviar email de confirmación de cita al paciente
+      try {
+        const { users } = await import("../../drizzle/schema.js");
+        const patientUser = await drizzleDb.select({ name: users.name, email: users.email })
+          .from(users).where(eq(users.id, rel.patientUserId)).limit(1);
+        if (patientUser[0]?.email) {
+          const { sendAppointmentConfirmedEmail } = await import("../email.js");
+          await sendAppointmentConfirmedEmail({
+            patientEmail: patientUser[0].email,
+            patientName: patientUser[0].name ?? "Paciente",
+            expertName: expert.displayName ?? "tu nutricionista",
+            appointmentTitle: input.title,
+            startTime,
+            endTime,
+            modality: input.modality,
+            meetingUrl: finalMeetUrl ?? null,
+            location: input.location ?? null,
+            gcalLink,
+          });
+        }
+      } catch (emailErr) {
+        console.error("[Email] Error sending appointment confirmed email:", emailErr);
+      }
+
       return appt;
     }),
 
@@ -911,6 +935,28 @@ Responde en JSON con este formato:
         content: `🥗 He asignado un nuevo menú personalizado: **${menuTitle}**\n\n${input.expertNotes ? `📝 ${input.expertNotes}\n\n` : ""}El menú ha sido adaptado a tus necesidades específicas. Puedes verlo en la sección "Mis Menús".`,
         isRead: false,
       });
+
+      // Enviar email al paciente notificando el nuevo menú
+      try {
+        const patientUser = await drizzleDb.select({ name: users.name, email: users.email })
+          .from(users).where(eq(users.id, patientRel[0].patientUserId)).limit(1);
+        const expertUser = await drizzleDb.select({ displayName: buddyExperts.displayName })
+          .from(buddyExperts).where(eq(buddyExperts.id, patientRel[0].expertId)).limit(1);
+        if (patientUser[0]?.email && expertUser[0]) {
+          const { sendMenuAssignedEmail } = await import("../email.js");
+          await sendMenuAssignedEmail({
+            patientEmail: patientUser[0].email,
+            patientName: patientUser[0].name ?? "Paciente",
+            expertName: expertUser[0].displayName ?? "tu nutricionista",
+            menuTitle,
+            menuDescription: input.customDescription ?? null,
+            menuCalories: null,
+            menuNotes: input.expertNotes ?? null,
+          });
+        }
+      } catch (emailErr) {
+        console.error("[Email] Error sending menu assigned email:", emailErr);
+      }
 
       return { success: true, assignedMenuId: assigned.id };
     }),
@@ -2043,11 +2089,24 @@ Responde en JSON con este formato:
           const expertUser = await drizzleDb.select({ email: users.email })
             .from(users).where(eq(users.id, expert[0].userId)).limit(1);
           if (expertUser[0]?.email) {
-            const { sendEmail } = await import("../email.js");
-            await sendEmail({
-              to: expertUser[0].email,
-              subject: `Nueva solicitud de paciente - BuddyMarket`,
-              html: `<p>Hola ${expert[0].displayName},</p><p><strong>${patient[0].name ?? "Un paciente"}</strong> ha enviado una solicitud para trabajar contigo en BuddyMarket.</p><p>Accede a tu panel para aceptar o rechazar la solicitud.</p>`,
+            const { sendNewHireRequestEmail } = await import("../email.js");
+            // Get plan info if any
+            let planName = "Sin plan especificado";
+            let planPrice = "";
+            if (input.servicePlanId) {
+              const { expertServicePlans } = await import("../../drizzle/schema.js");
+              const plan = await drizzleDb.select({ name: expertServicePlans.name, price: expertServicePlans.price, billingPeriod: expertServicePlans.billingPeriod })
+                .from(expertServicePlans).where(eq(expertServicePlans.id, input.servicePlanId)).limit(1);
+              if (plan[0]) { planName = plan[0].name; planPrice = `${plan[0].price}€/${plan[0].billingPeriod}`; }
+            }
+            await sendNewHireRequestEmail({
+              expertEmail: expertUser[0].email,
+              expertName: expert[0].displayName ?? "Experto",
+              patientName: patient[0].name ?? "Paciente",
+              patientEmail: patient[0].email ?? "",
+              planName,
+              planPrice,
+              message: input.message ?? null,
             });
           }
         }
@@ -2147,14 +2206,23 @@ Responde en JSON con este formato:
         const patient = await drizzleDb.select({ name: users.name, email: users.email })
           .from(users).where(eq(users.id, request[0].patientUserId)).limit(1);
         if (patient[0]?.email) {
-          const { sendEmail } = await import("../email.js");
+          const { sendHireRequestResponseEmail } = await import("../email.js");
           const accepted = input.action === "accept";
-          await sendEmail({
-            to: patient[0].email,
-            subject: accepted ? `¡Tu solicitud fue aceptada! - BuddyMarket` : `Solicitud respondida - BuddyMarket`,
-            html: accepted
-              ? `<p>Hola ${patient[0].name ?? ""},</p><p><strong>${expert[0].displayName}</strong> ha aceptado tu solicitud. Ya puedes acceder a tu sección “Mi Nutricionista” en BuddyMarket.</p>`
-              : `<p>Hola ${patient[0].name ?? ""},</p><p>${expert[0].displayName} no puede atenderte en este momento.${input.response ? ` Mensaje: ${input.response}` : ""}</p>`,
+          // Get plan name
+          let planName = "tu plan solicitado";
+          if (request[0].servicePlanId) {
+            const { expertServicePlans } = await import("../../drizzle/schema.js");
+            const plan = await drizzleDb.select({ name: expertServicePlans.name })
+              .from(expertServicePlans).where(eq(expertServicePlans.id, request[0].servicePlanId)).limit(1);
+            if (plan[0]) planName = plan[0].name;
+          }
+          await sendHireRequestResponseEmail({
+            patientEmail: patient[0].email,
+            patientName: patient[0].name ?? "Paciente",
+            expertName: expert[0].displayName ?? "tu nutricionista",
+            planName,
+            accepted,
+            message: input.response ?? null,
           });
         }
       } catch (_) {}

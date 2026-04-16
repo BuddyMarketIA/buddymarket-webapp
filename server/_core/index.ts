@@ -415,7 +415,7 @@ startServer().catch((err) => {
   process.exit(1);
 });
 
-// ─── Email Sequence Scheduler (every 15 min) ───────────────────────────────
+/// ─── Email Sequence Scheduler (every 15 min) ─────────────────────────────
 setTimeout(() => {
   processPendingEmails().catch((err) => logger.error("[Email] Scheduler error:", err));
   setInterval(() => {
@@ -423,6 +423,13 @@ setTimeout(() => {
   }, 15 * 60 * 1000);
   logger.info("[Email] Sequence scheduler started (every 15 min)");
 }, 5000);
+
+// ─── BuddyMarket Email Jobs (check-in, inactividad, citas, resumen experto) ──────
+setTimeout(() => {
+  import("../jobs/email-jobs").then(({ startEmailJobs }) => {
+    startEmailJobs();
+  }).catch((err) => logger.error("[EmailJobs] Failed to start email jobs:", err));
+}, 10000); // 10s delay to let DB settle;
 
 // ─── Database Backup Scheduler (daily at 03:00 UTC) ──────────────────────────
 function scheduleNextBackup() {

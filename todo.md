@@ -2619,3 +2619,45 @@
 - [ ] Al aceptar solicitud: crear relación expertPatients automáticamente
 - [ ] Email al paciente al aceptar/rechazar su solicitud
 - [ ] Email al nutricionista al recibir nueva solicitud
+
+## Sistema completo de emails automáticos
+
+### Emails para Usuarios (Pacientes)
+- [ ] Email bienvenida al registrarse (con enlace a completar perfil y primer menú IA)
+- [ ] Email recordatorio 24h si no han completado el onboarding
+- [ ] Email confirmación de primer menú generado con IA
+- [ ] Email "primera semana" con tips de uso de la app
+- [ ] Email recordatorio check-in semanal (lunes por la mañana, job programado)
+- [ ] Email resumen semanal de progreso (domingo noche, job programado)
+- [ ] Email sugerencia de menú para la semana siguiente (domingo por la tarde)
+- [ ] Email lista de la compra generada lista para descargar
+- [ ] Email primer logro desbloqueado
+- [ ] Email primer mes completado con estadísticas
+- [ ] Email objetivo alcanzado (ej: "¡Has perdido 5 kg!")
+- [ ] Email racha de 7 días registrando en el diario
+- [ ] Email reactivación 3 días de inactividad (job programado)
+- [ ] Email reactivación 7 días de inactividad (job programado)
+- [ ] Email reactivación 30 días con oferta especial (job programado)
+- [ ] Email invitación recibida de nutricionista (ya existe, mejorar plantilla)
+- [ ] Email recordatorio invitación no aceptada en 48h (job programado)
+- [ ] Email menú nuevo asignado por nutricionista
+- [ ] Email cita confirmada + recordatorio 24h antes (job programado)
+- [ ] Email respuesta a solicitud de contratación aceptada/rechazada
+- [ ] Email mensaje nuevo del nutricionista (si +2h sin abrir app)
+
+### Emails para BuddyExperts (Nutricionistas)
+- [ ] Email bienvenida al ser aprobado como BuddyExpert
+- [ ] Email recordatorio 48h si no han completado su perfil público
+- [ ] Email checklist de configuración (foto, bio, planes, primer menú)
+- [ ] Email nueva solicitud de contratación recibida
+- [ ] Email paciente ha aceptado la invitación y está activo
+- [ ] Email paciente no ha completado su check-in semanal (job programado, lunes)
+- [ ] Email paciente ha alcanzado un hito importante
+- [ ] Email recordatorio de cita con paciente 1h antes (job programado)
+- [ ] Email resumen semanal del experto (lunes por la mañana, job programado)
+- [ ] Email resumen mensual con estadísticas completas (job programado, día 1 del mes)
+- [ ] Email nuevo seguidor en su perfil público
+- [ ] Email alguien ha valorado su menú o plan
+- [ ] Email confirmación de pago recibido de un paciente
+- [ ] Email recordatorio para crear planes de servicio si no los tiene
+- [ ] Email aviso cuando un paciente cancela su plan

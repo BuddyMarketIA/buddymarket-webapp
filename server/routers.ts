@@ -6014,6 +6014,18 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
         if (input.action === "approve") {
           const userRows = await drizzleDb.select().from(usersTable).where(eq(usersTable.id, app.userId)).limit(1);
           const user = userRows[0];
+          // Send welcome email to the expert
+          if (user?.email) {
+            try {
+              const { sendExpertWelcomeEmail } = await import("./email");
+              await sendExpertWelcomeEmail({
+                expertEmail: user.email,
+                expertName: app.displayName ?? user.name ?? "Experto",
+              });
+            } catch (emailErr) {
+              console.error("[Email] Error sending expert welcome email:", emailErr);
+            }
+          }
           if (app.type === "expert") {
             const existing = await drizzleDb.select().from(buddyExperts).where(eq(buddyExperts.userId, app.userId)).limit(1);
             if (!existing.length) {

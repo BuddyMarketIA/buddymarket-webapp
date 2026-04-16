@@ -1115,3 +1115,879 @@ export async function sendPasswordResetEmail(
     console.error("[Email] Password reset exception:", err);
   }
 }
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NUEVOS FLUJOS DE EMAIL — BuddyMarket Lifecycle Emails
+// ═══════════════════════════════════════════════════════════════════════════════
+
+// ─── Check-in Semanal Recordatorio ────────────────────────────────────────────
+
+function weeklyCheckinReminderHtml(name: string, expertName: string): string {
+  const firstName = name?.split(" ")[0] || "amigo";
+  const body = `
+  ${emailHeader("📊", "¡Es hora de tu check-in semanal!", "Tu nutricionista espera tus datos de esta semana", "linear-gradient(135deg,#10B981 0%,#059669 100%)")}
+  <tr>
+    <td style="padding:40px 40px 32px;">
+      <p style="color:#374151;font-size:16px;line-height:1.7;margin:0 0 16px;">
+        Hola <strong>${firstName}</strong>,
+      </p>
+      <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 24px;">
+        <strong style="color:#059669;">${expertName}</strong> está esperando tu check-in semanal para hacer un seguimiento de tu progreso. Solo te llevará 2 minutos.
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#F0FDF4;border-radius:16px;padding:24px;margin:0 0 24px;">
+        <tr><td>
+          <p style="color:#166534;font-size:14px;font-weight:700;margin:0 0 12px;">📝 ¿Qué registrar esta semana?</p>
+          <p style="color:#15803D;font-size:13px;margin:0 0 8px;">⚖️ Tu peso actual</p>
+          <p style="color:#15803D;font-size:13px;margin:0 0 8px;">💪 Nivel de energía (1-10)</p>
+          <p style="color:#15803D;font-size:13px;margin:0 0 8px;">🍽️ Adherencia al menú (%)</p>
+          <p style="color:#15803D;font-size:13px;margin:0;">💬 Notas o dificultades de la semana</p>
+        </td></tr>
+      </table>
+      ${ctaButton("Hacer mi check-in ahora →", `${APP_URL}/app/my-expert`)}
+      <p style="color:#9CA3AF;font-size:13px;line-height:1.6;margin:24px 0 0;text-align:center;">
+        Tu nutricionista revisa estos datos para ajustar tu plan. ¡Cada check-in cuenta!
+      </p>
+    </td>
+  </tr>`;
+  return emailWrapper(body);
+}
+
+export async function sendWeeklyCheckinReminder(params: {
+  userEmail: string;
+  userName: string;
+  expertName: string;
+}): Promise<boolean> {
+  if (!process.env.RESEND_API_KEY) return false;
+  try {
+    const firstName = params.userName?.split(" ")[0] || "amigo";
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: params.userEmail,
+      subject: `📊 ${firstName}, ¡no olvides tu check-in semanal con ${params.expertName}!`,
+      html: weeklyCheckinReminderHtml(params.userName, params.expertName),
+    });
+    if (error) { console.error("[Email] Weekly checkin reminder failed:", error); return false; }
+    console.log("[Email] Weekly checkin reminder sent:", data?.id, "→", params.userEmail);
+    return true;
+  } catch (err) { console.error("[Email] Error sending weekly checkin reminder:", err); return false; }
+}
+
+// ─── Resumen Semanal del Paciente ─────────────────────────────────────────────
+
+function weeklyProgressSummaryHtml(params: {
+  name: string;
+  expertName: string;
+  currentWeight?: number | null;
+  startWeight?: number | null;
+  adherenceAvg?: number | null;
+  energyAvg?: number | null;
+  weekNumber?: number;
+}): string {
+  const firstName = params.name?.split(" ")[0] || "amigo";
+  const weightDiff = params.currentWeight && params.startWeight
+    ? (params.currentWeight - params.startWeight).toFixed(1)
+    : null;
+  const weightDiffStr = weightDiff
+    ? parseFloat(weightDiff) < 0
+      ? `<span style="color:#10B981;font-weight:700;">${weightDiff} kg</span> desde el inicio`
+      : `<span style="color:#F97316;font-weight:700;">+${weightDiff} kg</span> desde el inicio`
+    : null;
+
+  const body = `
+  ${emailHeader("📈", `Tu resumen de la semana`, `Semana ${params.weekNumber || ""} con ${params.expertName}`, "linear-gradient(135deg,#6366F1 0%,#4F46E5 100%)")}
+  <tr>
+    <td style="padding:40px 40px 32px;">
+      <p style="color:#374151;font-size:16px;line-height:1.7;margin:0 0 20px;">
+        Hola <strong>${firstName}</strong>, aquí tienes tu resumen de progreso de esta semana:
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+        <tr>
+          ${params.currentWeight ? `
+          <td width="48%" style="background:#FFF7ED;border-radius:12px;padding:20px;text-align:center;vertical-align:top;">
+            <div style="font-size:28px;margin-bottom:8px;">⚖️</div>
+            <div style="color:#F97316;font-size:24px;font-weight:800;">${params.currentWeight} kg</div>
+            <div style="color:#777;font-size:12px;margin-top:4px;">Peso actual</div>
+            ${weightDiffStr ? `<div style="font-size:12px;margin-top:6px;">${weightDiffStr}</div>` : ""}
+          </td>
+          <td width="4%"></td>` : ""}
+          ${params.adherenceAvg !== null && params.adherenceAvg !== undefined ? `
+          <td width="48%" style="background:#F0FDF4;border-radius:12px;padding:20px;text-align:center;vertical-align:top;">
+            <div style="font-size:28px;margin-bottom:8px;">🍽️</div>
+            <div style="color:#10B981;font-size:24px;font-weight:800;">${params.adherenceAvg}%</div>
+            <div style="color:#777;font-size:12px;margin-top:4px;">Adherencia al menú</div>
+          </td>` : ""}
+        </tr>
+      </table>
+      ${params.energyAvg ? `
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#EFF6FF;border-radius:12px;padding:16px 20px;margin:0 0 24px;">
+        <tr><td>
+          <p style="color:#1D4ED8;font-size:14px;font-weight:700;margin:0 0 4px;">⚡ Nivel de energía medio: ${params.energyAvg}/10</p>
+          <p style="color:#3B82F6;font-size:13px;margin:0;">
+            ${params.energyAvg >= 7 ? "¡Excelente! Tu energía está en un gran nivel esta semana." : params.energyAvg >= 5 ? "Nivel moderado. Asegúrate de descansar bien y mantener la hidratación." : "Energía baja. Comenta esto con tu nutricionista en el próximo check-in."}
+          </p>
+        </td></tr>
+      </table>` : ""}
+      ${ctaButton("Ver mi progreso completo →", `${APP_URL}/app/my-expert`)}
+    </td>
+  </tr>`;
+  return emailWrapper(body);
+}
+
+export async function sendWeeklyProgressSummary(params: {
+  userEmail: string;
+  userName: string;
+  expertName: string;
+  currentWeight?: number | null;
+  startWeight?: number | null;
+  adherenceAvg?: number | null;
+  energyAvg?: number | null;
+  weekNumber?: number;
+}): Promise<boolean> {
+  if (!process.env.RESEND_API_KEY) return false;
+  try {
+    const firstName = params.userName?.split(" ")[0] || "amigo";
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: params.userEmail,
+      subject: `📈 Tu resumen semanal de progreso, ${firstName}`,
+      html: weeklyProgressSummaryHtml(params),
+    });
+    if (error) { console.error("[Email] Weekly progress summary failed:", error); return false; }
+    console.log("[Email] Weekly progress summary sent:", data?.id, "→", params.userEmail);
+    return true;
+  } catch (err) { console.error("[Email] Error sending weekly progress summary:", err); return false; }
+}
+
+// ─── Reactivación por Inactividad ─────────────────────────────────────────────
+
+function reactivationEmailHtml(name: string, daysInactive: number): string {
+  const firstName = name?.split(" ")[0] || "amigo";
+  const isLongInactive = daysInactive >= 7;
+  const emoji = daysInactive >= 30 ? "🎁" : daysInactive >= 7 ? "💭" : "👋";
+  const title = daysInactive >= 30
+    ? "¡Te echamos de menos!"
+    : daysInactive >= 7
+    ? `${firstName}, ¿todo bien?`
+    : `${firstName}, tu menú te espera`;
+  const subtitle = daysInactive >= 30
+    ? "Han pasado 30 días. Vuelve con una sorpresa especial."
+    : daysInactive >= 7
+    ? "Llevas una semana sin registrar. ¡No pierdas tu racha!"
+    : "Llevas 3 días sin abrir la app. ¡Sigue con tu plan!";
+
+  const body = `
+  ${emailHeader(emoji, title, subtitle, isLongInactive ? "linear-gradient(135deg,#8B5CF6 0%,#7C3AED 100%)" : "linear-gradient(135deg,#F97316 0%,#EA580C 100%)")}
+  <tr>
+    <td style="padding:40px 40px 32px;">
+      <p style="color:#374151;font-size:16px;line-height:1.7;margin:0 0 20px;">
+        Hola <strong>${firstName}</strong>,
+      </p>
+      <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 24px;">
+        ${daysInactive >= 30
+          ? "Han pasado 30 días desde tu última visita a BuddyMarket. Sabemos que la vida se complica, pero tu salud siempre merece un momento. Para ayudarte a retomar el camino, hemos preparado algo especial para ti."
+          : daysInactive >= 7
+          ? "Llevas una semana sin registrar tu progreso. Tu nutricionista sigue ahí, con tu plan actualizado y esperando tus datos. ¿Qué tal ha ido la semana?"
+          : "Llevas 3 días sin abrir BuddyMarket. Tu menú semanal está listo y tu diario nutricional espera tus registros. ¡Solo 2 minutos al día marcan la diferencia!"}
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#FFF7ED;border-radius:16px;padding:24px;margin:0 0 24px;">
+        <tr><td>
+          <p style="color:#C2410C;font-size:14px;font-weight:700;margin:0 0 12px;">🎯 Retoma donde lo dejaste:</p>
+          <p style="color:#92400E;font-size:13px;margin:0 0 8px;">📅 Tu menú semanal está esperándote</p>
+          <p style="color:#92400E;font-size:13px;margin:0 0 8px;">📊 Registra tu peso y progreso</p>
+          <p style="color:#92400E;font-size:13px;margin:0;">💬 Habla con tu nutricionista</p>
+        </td></tr>
+      </table>
+      ${daysInactive >= 30 ? `
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#FFF7ED,#FFEDD5);border:2px solid #FED7AA;border-radius:16px;padding:24px;margin:0 0 24px;text-align:center;">
+        <tr><td>
+          <p style="color:#C2410C;font-size:16px;font-weight:800;margin:0 0 8px;">🎁 Oferta especial de reactivación</p>
+          <p style="color:#92400E;font-size:14px;margin:0;">Escríbenos a <a href="mailto:hola@buddymarket.io" style="color:#F97316;">hola@buddymarket.io</a> con el asunto "VUELVO" y te regalamos 1 mes de seguimiento extra con tu nutricionista.</p>
+        </td></tr>
+      </table>` : ""}
+      ${ctaButton("Volver a BuddyMarket →", `${APP_URL}/app/dashboard`)}
+    </td>
+  </tr>`;
+  return emailWrapper(body);
+}
+
+export async function sendReactivationEmail(params: {
+  userEmail: string;
+  userName: string;
+  daysInactive: number;
+}): Promise<boolean> {
+  if (!process.env.RESEND_API_KEY) return false;
+  try {
+    const firstName = params.userName?.split(" ")[0] || "amigo";
+    const subject = params.daysInactive >= 30
+      ? `🎁 ${firstName}, ¡te echamos de menos! Vuelve con una sorpresa`
+      : params.daysInactive >= 7
+      ? `💭 ${firstName}, ¿todo bien? Tu nutricionista te espera`
+      : `👋 ${firstName}, tu menú semanal te espera en BuddyMarket`;
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: params.userEmail,
+      subject,
+      html: reactivationEmailHtml(params.userName, params.daysInactive),
+    });
+    if (error) { console.error("[Email] Reactivation email failed:", error); return false; }
+    console.log("[Email] Reactivation email sent:", data?.id, "→", params.userEmail);
+    return true;
+  } catch (err) { console.error("[Email] Error sending reactivation email:", err); return false; }
+}
+
+// ─── Menú Asignado por Nutricionista ─────────────────────────────────────────
+
+function menuAssignedEmailHtml(params: {
+  patientName: string;
+  expertName: string;
+  menuTitle: string;
+  menuDescription?: string | null;
+  menuCalories?: number | null;
+  menuNotes?: string | null;
+}): string {
+  const firstName = params.patientName?.split(" ")[0] || "amigo";
+  const body = `
+  ${emailHeader("🥗", "¡Tienes un nuevo menú semanal!", `${params.expertName} te ha asignado un menú personalizado`)}
+  <tr>
+    <td style="padding:40px 40px 32px;">
+      <p style="color:#374151;font-size:16px;line-height:1.7;margin:0 0 16px;">
+        Hola <strong>${firstName}</strong>,
+      </p>
+      <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 24px;">
+        Tu nutricionista <strong style="color:#F97316;">${params.expertName}</strong> te ha preparado un nuevo menú semanal personalizado para ti.
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#FFF7ED,#FFEDD5);border:1px solid #FED7AA;border-radius:16px;padding:24px;margin:0 0 24px;">
+        <tr><td>
+          <h2 style="color:#C2410C;font-size:20px;font-weight:800;margin:0 0 8px;">${params.menuTitle}</h2>
+          ${params.menuDescription ? `<p style="color:#92400E;font-size:14px;line-height:1.6;margin:0 0 12px;">${params.menuDescription}</p>` : ""}
+          ${params.menuCalories ? `<p style="color:#F97316;font-size:14px;font-weight:700;margin:0;">🔥 ~${params.menuCalories} kcal/día</p>` : ""}
+        </td></tr>
+      </table>
+      ${params.menuNotes ? `
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#FFFBEB;border-left:4px solid #F59E0B;border-radius:0 12px 12px 0;padding:16px 20px;margin:0 0 24px;">
+        <tr><td>
+          <p style="color:#92400E;font-size:13px;font-weight:700;margin:0 0 6px;">📝 Nota de tu nutricionista</p>
+          <p style="color:#78350F;font-size:14px;line-height:1.6;margin:0;">${params.menuNotes}</p>
+        </td></tr>
+      </table>` : ""}
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#F0FDF4;border-radius:12px;padding:20px;margin:0 0 24px;">
+        <tr><td>
+          <p style="color:#166534;font-size:14px;font-weight:700;margin:0 0 10px;">✨ ¿Qué puedes hacer con tu menú?</p>
+          <p style="color:#15803D;font-size:13px;margin:0 0 6px;">🛒 <strong>Generar tu lista de la compra</strong> automáticamente</p>
+          <p style="color:#15803D;font-size:13px;margin:0 0 6px;">📊 <strong>Ver si es compatible</strong> con tus restricciones alimentarias</p>
+          <p style="color:#15803D;font-size:13px;margin:0;">⭐ <strong>Valorarlo</strong> para que tu nutricionista pueda mejorarlo</p>
+        </td></tr>
+      </table>
+      ${ctaButton("Ver mi menú →", `${APP_URL}/app/my-expert`)}
+    </td>
+  </tr>`;
+  return emailWrapper(body);
+}
+
+export async function sendMenuAssignedEmail(params: {
+  patientEmail: string;
+  patientName: string;
+  expertName: string;
+  menuTitle: string;
+  menuDescription?: string | null;
+  menuCalories?: number | null;
+  menuNotes?: string | null;
+}): Promise<boolean> {
+  if (!process.env.RESEND_API_KEY) return false;
+  try {
+    const firstName = params.patientName?.split(" ")[0] || "amigo";
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: params.patientEmail,
+      subject: `🥗 ${params.expertName} te ha asignado un nuevo menú, ${firstName}`,
+      html: menuAssignedEmailHtml(params),
+    });
+    if (error) { console.error("[Email] Menu assigned email failed:", error); return false; }
+    console.log("[Email] Menu assigned email sent:", data?.id, "→", params.patientEmail);
+    return true;
+  } catch (err) { console.error("[Email] Error sending menu assigned email:", err); return false; }
+}
+
+// ─── Cita Confirmada ──────────────────────────────────────────────────────────
+
+function appointmentConfirmedEmailHtml(params: {
+  patientName: string;
+  expertName: string;
+  appointmentDate: string;
+  appointmentTime: string;
+  modality: string;
+  notes?: string | null;
+}): string {
+  const firstName = params.patientName?.split(" ")[0] || "amigo";
+  const modalityLabel = params.modality === "online" ? "🖥️ Videollamada online" : params.modality === "presencial" ? "🏥 Consulta presencial" : params.modality;
+  const body = `
+  ${emailHeader("📅", "¡Cita confirmada!", `Tu cita con ${params.expertName} está programada`, "linear-gradient(135deg,#0EA5E9 0%,#0284C7 100%)")}
+  <tr>
+    <td style="padding:40px 40px 32px;">
+      <p style="color:#374151;font-size:16px;line-height:1.7;margin:0 0 16px;">
+        Hola <strong>${firstName}</strong>,
+      </p>
+      <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 24px;">
+        Tu cita con <strong style="color:#0284C7;">${params.expertName}</strong> ha sido confirmada. Aquí tienes los detalles:
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#F0F9FF;border:1px solid #BAE6FD;border-radius:16px;padding:24px;margin:0 0 24px;">
+        <tr><td>
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td style="padding:10px 0;border-bottom:1px solid #E0F2FE;">
+                <span style="color:#0369A1;font-size:13px;font-weight:700;">📅 Fecha</span>
+                <span style="color:#0C4A6E;font-size:15px;font-weight:600;float:right;">${params.appointmentDate}</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:10px 0;border-bottom:1px solid #E0F2FE;">
+                <span style="color:#0369A1;font-size:13px;font-weight:700;">🕐 Hora</span>
+                <span style="color:#0C4A6E;font-size:15px;font-weight:600;float:right;">${params.appointmentTime}</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:10px 0;">
+                <span style="color:#0369A1;font-size:13px;font-weight:700;">📍 Modalidad</span>
+                <span style="color:#0C4A6E;font-size:14px;font-weight:600;float:right;">${modalityLabel}</span>
+              </td>
+            </tr>
+          </table>
+        </td></tr>
+      </table>
+      ${params.notes ? `
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#FFFBEB;border-left:4px solid #F59E0B;border-radius:0 12px 12px 0;padding:16px 20px;margin:0 0 24px;">
+        <tr><td>
+          <p style="color:#92400E;font-size:13px;font-weight:700;margin:0 0 6px;">📝 Notas</p>
+          <p style="color:#78350F;font-size:14px;line-height:1.6;margin:0;">${params.notes}</p>
+        </td></tr>
+      </table>` : ""}
+      ${ctaButton("Ver mis citas →", `${APP_URL}/app/my-expert`)}
+      <p style="color:#9CA3AF;font-size:13px;line-height:1.6;margin:16px 0 0;text-align:center;">
+        Recibirás un recordatorio 24 horas antes de tu cita.
+      </p>
+    </td>
+  </tr>`;
+  return emailWrapper(body);
+}
+
+export async function sendAppointmentConfirmedEmail(params: {
+  patientEmail: string;
+  patientName: string;
+  expertName: string;
+  appointmentDate: string;
+  appointmentTime: string;
+  modality: string;
+  notes?: string | null;
+}): Promise<boolean> {
+  if (!process.env.RESEND_API_KEY) return false;
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: params.patientEmail,
+      subject: `📅 Cita confirmada con ${params.expertName} — ${params.appointmentDate} a las ${params.appointmentTime}`,
+      html: appointmentConfirmedEmailHtml(params),
+    });
+    if (error) { console.error("[Email] Appointment confirmed email failed:", error); return false; }
+    console.log("[Email] Appointment confirmed email sent:", data?.id, "→", params.patientEmail);
+    return true;
+  } catch (err) { console.error("[Email] Error sending appointment confirmed email:", err); return false; }
+}
+
+// ─── Recordatorio de Cita (24h antes) ────────────────────────────────────────
+
+function appointmentReminderEmailHtml(params: {
+  patientName: string;
+  expertName: string;
+  appointmentDate: string;
+  appointmentTime: string;
+  modality: string;
+}): string {
+  const firstName = params.patientName?.split(" ")[0] || "amigo";
+  const modalityLabel = params.modality === "online" ? "🖥️ Videollamada online" : "🏥 Consulta presencial";
+  const body = `
+  ${emailHeader("⏰", "Recordatorio de cita", `Mañana tienes cita con ${params.expertName}`, "linear-gradient(135deg,#F59E0B 0%,#D97706 100%)")}
+  <tr>
+    <td style="padding:40px 40px 32px;">
+      <p style="color:#374151;font-size:16px;line-height:1.7;margin:0 0 16px;">
+        Hola <strong>${firstName}</strong>,
+      </p>
+      <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 24px;">
+        Te recordamos que mañana tienes una cita con <strong style="color:#D97706;">${params.expertName}</strong>:
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#FFFBEB;border:1px solid #FDE68A;border-radius:16px;padding:24px;margin:0 0 24px;text-align:center;">
+        <tr><td>
+          <p style="color:#92400E;font-size:28px;font-weight:900;margin:0 0 4px;">${params.appointmentTime}</p>
+          <p style="color:#78350F;font-size:16px;margin:0 0 8px;">${params.appointmentDate}</p>
+          <p style="color:#92400E;font-size:14px;margin:0;">${modalityLabel}</p>
+        </td></tr>
+      </table>
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#F0FDF4;border-radius:12px;padding:20px;margin:0 0 24px;">
+        <tr><td>
+          <p style="color:#166534;font-size:14px;font-weight:700;margin:0 0 10px;">✅ Prepárate para tu cita:</p>
+          <p style="color:#15803D;font-size:13px;margin:0 0 6px;">📊 Revisa tu progreso de la semana</p>
+          <p style="color:#15803D;font-size:13px;margin:0 0 6px;">📝 Anota las dudas que quieras comentar</p>
+          <p style="color:#15803D;font-size:13px;margin:0;">⚖️ Pésate esta mañana para tener el dato actualizado</p>
+        </td></tr>
+      </table>
+      ${ctaButton("Ver mis citas →", `${APP_URL}/app/my-expert`)}
+    </td>
+  </tr>`;
+  return emailWrapper(body);
+}
+
+export async function sendAppointmentReminderEmail(params: {
+  patientEmail: string;
+  patientName: string;
+  expertName: string;
+  appointmentDate: string;
+  appointmentTime: string;
+  modality: string;
+}): Promise<boolean> {
+  if (!process.env.RESEND_API_KEY) return false;
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: params.patientEmail,
+      subject: `⏰ Recordatorio: Mañana tienes cita con ${params.expertName} a las ${params.appointmentTime}`,
+      html: appointmentReminderEmailHtml(params),
+    });
+    if (error) { console.error("[Email] Appointment reminder email failed:", error); return false; }
+    console.log("[Email] Appointment reminder email sent:", data?.id, "→", params.patientEmail);
+    return true;
+  } catch (err) { console.error("[Email] Error sending appointment reminder email:", err); return false; }
+}
+
+// ─── Solicitud de Contratación (al Nutricionista) ─────────────────────────────
+
+function newHireRequestEmailHtml(params: {
+  expertName: string;
+  patientName: string;
+  patientEmail: string;
+  planName: string;
+  planPrice: string;
+  message?: string | null;
+}): string {
+  const firstName = params.expertName?.split(" ")[0] || "experto";
+  const body = `
+  ${emailHeader("🤝", "¡Nueva solicitud de paciente!", `${params.patientName} quiere contratarte`, "linear-gradient(135deg,#8B5CF6 0%,#7C3AED 100%)")}
+  <tr>
+    <td style="padding:40px 40px 32px;">
+      <p style="color:#374151;font-size:16px;line-height:1.7;margin:0 0 16px;">
+        Hola <strong>${firstName}</strong>,
+      </p>
+      <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 24px;">
+        <strong style="color:#7C3AED;">${params.patientName}</strong> ha enviado una solicitud para contratar tus servicios en BuddyMarket.
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F3FF;border:1px solid #DDD6FE;border-radius:16px;padding:24px;margin:0 0 24px;">
+        <tr><td>
+          <table width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td style="padding:8px 0;border-bottom:1px solid #EDE9FE;">
+                <span style="color:#6D28D9;font-size:13px;font-weight:700;">👤 Paciente</span>
+                <span style="color:#4C1D95;font-size:14px;font-weight:600;float:right;">${params.patientName}</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:8px 0;border-bottom:1px solid #EDE9FE;">
+                <span style="color:#6D28D9;font-size:13px;font-weight:700;">📧 Email</span>
+                <span style="color:#4C1D95;font-size:14px;float:right;">${params.patientEmail}</span>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:8px 0;">
+                <span style="color:#6D28D9;font-size:13px;font-weight:700;">💼 Plan solicitado</span>
+                <span style="color:#4C1D95;font-size:14px;font-weight:600;float:right;">${params.planName} — ${params.planPrice}</span>
+              </td>
+            </tr>
+          </table>
+        </td></tr>
+      </table>
+      ${params.message ? `
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#FFFBEB;border-left:4px solid #F59E0B;border-radius:0 12px 12px 0;padding:16px 20px;margin:0 0 24px;">
+        <tr><td>
+          <p style="color:#92400E;font-size:13px;font-weight:700;margin:0 0 6px;">💬 Mensaje del paciente</p>
+          <p style="color:#78350F;font-size:14px;line-height:1.6;margin:0;">${params.message}</p>
+        </td></tr>
+      </table>` : ""}
+      ${ctaButton("Ver solicitud y responder →", `${APP_URL}/app/expert/hire-requests`)}
+      <p style="color:#9CA3AF;font-size:13px;line-height:1.6;margin:16px 0 0;text-align:center;">
+        Acepta o rechaza la solicitud desde tu panel de BuddyMarket.
+      </p>
+    </td>
+  </tr>`;
+  return emailWrapper(body);
+}
+
+export async function sendNewHireRequestEmail(params: {
+  expertEmail: string;
+  expertName: string;
+  patientName: string;
+  patientEmail: string;
+  planName: string;
+  planPrice: string;
+  message?: string | null;
+}): Promise<boolean> {
+  if (!process.env.RESEND_API_KEY) return false;
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: params.expertEmail,
+      subject: `🤝 Nueva solicitud de ${params.patientName} — Plan ${params.planName}`,
+      html: newHireRequestEmailHtml(params),
+    });
+    if (error) { console.error("[Email] New hire request email failed:", error); return false; }
+    console.log("[Email] New hire request email sent:", data?.id, "→", params.expertEmail);
+    return true;
+  } catch (err) { console.error("[Email] Error sending new hire request email:", err); return false; }
+}
+
+// ─── Respuesta a Solicitud de Contratación (al Paciente) ─────────────────────
+
+function hireRequestResponseEmailHtml(params: {
+  patientName: string;
+  expertName: string;
+  planName: string;
+  accepted: boolean;
+  message?: string | null;
+}): string {
+  const firstName = params.patientName?.split(" ")[0] || "amigo";
+  const body = `
+  ${emailHeader(
+    params.accepted ? "🎉" : "📩",
+    params.accepted ? "¡Solicitud aceptada!" : "Solicitud no aceptada",
+    params.accepted ? `${params.expertName} acepta trabajar contigo` : `${params.expertName} ha respondido a tu solicitud`,
+    params.accepted ? "linear-gradient(135deg,#10B981 0%,#059669 100%)" : "linear-gradient(135deg,#6B7280 0%,#4B5563 100%)"
+  )}
+  <tr>
+    <td style="padding:40px 40px 32px;">
+      <p style="color:#374151;font-size:16px;line-height:1.7;margin:0 0 16px;">
+        Hola <strong>${firstName}</strong>,
+      </p>
+      ${params.accepted ? `
+      <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 24px;">
+        ¡Excelente noticia! <strong style="color:#059669;">${params.expertName}</strong> ha aceptado tu solicitud del plan <strong>${params.planName}</strong>. Ya estás vinculado a tu nutricionista en BuddyMarket.
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#F0FDF4;border-radius:16px;padding:24px;margin:0 0 24px;">
+        <tr><td>
+          <p style="color:#166534;font-size:14px;font-weight:700;margin:0 0 12px;">🚀 ¿Qué sigue ahora?</p>
+          <p style="color:#15803D;font-size:13px;margin:0 0 8px;">💬 Escríbele un mensaje a tu nutricionista para presentarte</p>
+          <p style="color:#15803D;font-size:13px;margin:0 0 8px;">📋 Completa tu perfil nutricional si aún no lo has hecho</p>
+          <p style="color:#15803D;font-size:13px;margin:0;">📅 Solicita tu primera cita de valoración</p>
+        </td></tr>
+      </table>
+      ${ctaButton("Ir a Mi Nutricionista →", `${APP_URL}/app/my-expert`)}` : `
+      <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 24px;">
+        <strong style="color:#4B5563;">${params.expertName}</strong> no puede aceptar tu solicitud en este momento para el plan <strong>${params.planName}</strong>.
+      </p>
+      ${params.message ? `
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#F9FAFB;border-left:4px solid #9CA3AF;border-radius:0 12px 12px 0;padding:16px 20px;margin:0 0 24px;">
+        <tr><td>
+          <p style="color:#374151;font-size:13px;font-weight:700;margin:0 0 6px;">💬 Mensaje del nutricionista</p>
+          <p style="color:#4B5563;font-size:14px;line-height:1.6;margin:0;">${params.message}</p>
+        </td></tr>
+      </table>` : ""}
+      <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 24px;">
+        Puedes buscar otros nutricionistas disponibles en el directorio de BuddyExperts.
+      </p>
+      ${ctaButton("Buscar nutricionistas →", `${APP_URL}/app/buddyexperts`)}`}
+    </td>
+  </tr>`;
+  return emailWrapper(body);
+}
+
+export async function sendHireRequestResponseEmail(params: {
+  patientEmail: string;
+  patientName: string;
+  expertName: string;
+  planName: string;
+  accepted: boolean;
+  message?: string | null;
+}): Promise<boolean> {
+  if (!process.env.RESEND_API_KEY) return false;
+  try {
+    const firstName = params.patientName?.split(" ")[0] || "amigo";
+    const subject = params.accepted
+      ? `🎉 ${params.expertName} ha aceptado tu solicitud, ${firstName}!`
+      : `📩 Respuesta de ${params.expertName} a tu solicitud`;
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: params.patientEmail,
+      subject,
+      html: hireRequestResponseEmailHtml(params),
+    });
+    if (error) { console.error("[Email] Hire request response email failed:", error); return false; }
+    console.log("[Email] Hire request response email sent:", data?.id, "→", params.patientEmail);
+    return true;
+  } catch (err) { console.error("[Email] Error sending hire request response email:", err); return false; }
+}
+
+// ─── Resumen Semanal del Experto ──────────────────────────────────────────────
+
+function expertWeeklySummaryHtml(params: {
+  expertName: string;
+  activePatients: number;
+  pendingCheckins: number;
+  appointmentsThisWeek: number;
+  avgAdherence?: number | null;
+  newMessages?: number;
+}): string {
+  const firstName = params.expertName?.split(" ")[0] || "experto";
+  const now = new Date();
+  const weekStr = now.toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" });
+  const body = `
+  ${emailHeader("📊", "Tu resumen semanal", `Semana del ${weekStr}`, "linear-gradient(135deg,#1D4ED8 0%,#1E40AF 100%)")}
+  <tr>
+    <td style="padding:40px 40px 32px;">
+      <p style="color:#374151;font-size:16px;line-height:1.7;margin:0 0 20px;">
+        Hola <strong>${firstName}</strong>, aquí tienes el resumen de tu actividad esta semana en BuddyMarket:
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+        <tr>
+          <td width="48%" style="background:#EFF6FF;border-radius:12px;padding:20px;text-align:center;vertical-align:top;">
+            <div style="font-size:28px;margin-bottom:8px;">👥</div>
+            <div style="color:#1D4ED8;font-size:28px;font-weight:800;">${params.activePatients}</div>
+            <div style="color:#3B82F6;font-size:12px;margin-top:4px;">Pacientes activos</div>
+          </td>
+          <td width="4%"></td>
+          <td width="48%" style="background:${params.pendingCheckins > 0 ? "#FEF2F2" : "#F0FDF4"};border-radius:12px;padding:20px;text-align:center;vertical-align:top;">
+            <div style="font-size:28px;margin-bottom:8px;">📋</div>
+            <div style="color:${params.pendingCheckins > 0 ? "#DC2626" : "#10B981"};font-size:28px;font-weight:800;">${params.pendingCheckins}</div>
+            <div style="color:${params.pendingCheckins > 0 ? "#EF4444" : "#22C55E"};font-size:12px;margin-top:4px;">Check-ins pendientes</div>
+          </td>
+        </tr>
+        <tr><td colspan="3" style="height:12px;"></td></tr>
+        <tr>
+          <td width="48%" style="background:#FFF7ED;border-radius:12px;padding:20px;text-align:center;vertical-align:top;">
+            <div style="font-size:28px;margin-bottom:8px;">📅</div>
+            <div style="color:#F97316;font-size:28px;font-weight:800;">${params.appointmentsThisWeek}</div>
+            <div style="color:#FB923C;font-size:12px;margin-top:4px;">Citas esta semana</div>
+          </td>
+          <td width="4%"></td>
+          ${params.avgAdherence !== null && params.avgAdherence !== undefined ? `
+          <td width="48%" style="background:#F5F3FF;border-radius:12px;padding:20px;text-align:center;vertical-align:top;">
+            <div style="font-size:28px;margin-bottom:8px;">🎯</div>
+            <div style="color:#7C3AED;font-size:28px;font-weight:800;">${params.avgAdherence}%</div>
+            <div style="color:#8B5CF6;font-size:12px;margin-top:4px;">Adherencia media</div>
+          </td>` : "<td width='48%'></td>"}
+        </tr>
+      </table>
+      ${params.pendingCheckins > 0 ? `
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#FEF2F2;border-radius:12px;padding:20px;margin:0 0 24px;">
+        <tr><td>
+          <p style="color:#991B1B;font-size:14px;font-weight:700;margin:0 0 8px;">⚠️ ${params.pendingCheckins} paciente${params.pendingCheckins > 1 ? "s" : ""} sin check-in esta semana</p>
+          <p style="color:#7F1D1D;font-size:13px;margin:0;">Recuérdales que registren su progreso semanal para poder hacer un seguimiento adecuado.</p>
+        </td></tr>
+      </table>` : ""}
+      ${ctaButton("Ver mi panel →", `${APP_URL}/app/expert/dashboard`)}
+    </td>
+  </tr>`;
+  return emailWrapper(body);
+}
+
+export async function sendExpertWeeklySummary(params: {
+  expertEmail: string;
+  expertName: string;
+  activePatients: number;
+  pendingCheckins: number;
+  appointmentsThisWeek: number;
+  avgAdherence?: number | null;
+  newMessages?: number;
+}): Promise<boolean> {
+  if (!process.env.RESEND_API_KEY) return false;
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: params.expertEmail,
+      subject: `📊 Tu resumen semanal BuddyMarket — ${params.activePatients} pacientes activos`,
+      html: expertWeeklySummaryHtml(params),
+    });
+    if (error) { console.error("[Email] Expert weekly summary failed:", error); return false; }
+    console.log("[Email] Expert weekly summary sent:", data?.id, "→", params.expertEmail);
+    return true;
+  } catch (err) { console.error("[Email] Error sending expert weekly summary:", err); return false; }
+}
+
+// ─── Hito Alcanzado (Paciente) ────────────────────────────────────────────────
+
+function milestoneEmailHtml(params: {
+  patientName: string;
+  expertName: string;
+  milestoneTitle: string;
+  milestoneDescription: string;
+  emoji: string;
+}): string {
+  const firstName = params.patientName?.split(" ")[0] || "amigo";
+  const body = `
+  ${emailHeader(params.emoji, `¡${params.milestoneTitle}!`, "Has alcanzado un nuevo hito en tu progreso", "linear-gradient(135deg,#F59E0B 0%,#D97706 100%)")}
+  <tr>
+    <td style="padding:40px 40px 32px;">
+      <p style="color:#374151;font-size:16px;line-height:1.7;margin:0 0 16px;">
+        Hola <strong>${firstName}</strong>,
+      </p>
+      <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 24px;">
+        ${params.milestoneDescription}
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#FFFBEB,#FEF3C7);border:2px solid #FDE68A;border-radius:16px;padding:32px;margin:0 0 24px;text-align:center;">
+        <tr><td>
+          <div style="font-size:64px;margin-bottom:16px;">${params.emoji}</div>
+          <h2 style="color:#92400E;font-size:22px;font-weight:900;margin:0 0 8px;">${params.milestoneTitle}</h2>
+          <p style="color:#78350F;font-size:14px;margin:0;">Con el apoyo de <strong>${params.expertName}</strong></p>
+        </td></tr>
+      </table>
+      <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 24px;text-align:center;">
+        Cada pequeño logro suma. ¡Sigue así!
+      </p>
+      ${ctaButton("Ver mi progreso →", `${APP_URL}/app/my-expert`)}
+    </td>
+  </tr>`;
+  return emailWrapper(body);
+}
+
+export async function sendMilestoneEmail(params: {
+  patientEmail: string;
+  patientName: string;
+  expertName: string;
+  milestoneTitle: string;
+  milestoneDescription: string;
+  emoji?: string;
+}): Promise<boolean> {
+  if (!process.env.RESEND_API_KEY) return false;
+  try {
+    const firstName = params.patientName?.split(" ")[0] || "amigo";
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: params.patientEmail,
+      subject: `${params.emoji || "🏆"} ¡${params.milestoneTitle}! Nuevo hito alcanzado, ${firstName}`,
+      html: milestoneEmailHtml({ ...params, emoji: params.emoji || "🏆" }),
+    });
+    if (error) { console.error("[Email] Milestone email failed:", error); return false; }
+    console.log("[Email] Milestone email sent:", data?.id, "→", params.patientEmail);
+    return true;
+  } catch (err) { console.error("[Email] Error sending milestone email:", err); return false; }
+}
+
+// ─── Bienvenida BuddyExpert ───────────────────────────────────────────────────
+
+function expertWelcomeEmailHtml(expertName: string): string {
+  const firstName = expertName?.split(" ")[0] || "experto";
+  const body = `
+  ${emailHeader("🧑‍⚕️", `¡Bienvenido, ${firstName}!`, "Tu perfil como BuddyExpert ya está activo", "linear-gradient(135deg,#7C3AED 0%,#6D28D9 100%)")}
+  <tr>
+    <td style="padding:40px 40px 32px;">
+      <p style="color:#374151;font-size:16px;line-height:1.7;margin:0 0 16px;">
+        Hola <strong>${firstName}</strong>,
+      </p>
+      <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 24px;">
+        Tu perfil como <strong style="color:#7C3AED;">BuddyExpert</strong> ha sido aprobado y ya está activo en BuddyMarket. Ahora puedes empezar a conectar con pacientes y gestionar tu consulta de forma digital.
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+        <tr>
+          <td width="48%" style="background:#F5F3FF;border-radius:12px;padding:20px;vertical-align:top;">
+            <div style="font-size:28px;margin-bottom:8px;">👤</div>
+            <div style="color:#1a1a1a;font-size:14px;font-weight:700;margin-bottom:4px;">Completa tu perfil</div>
+            <div style="color:#777;font-size:13px;line-height:1.5;">Añade foto, bio, especialidades y planes de servicio</div>
+          </td>
+          <td width="4%"></td>
+          <td width="48%" style="background:#F5F3FF;border-radius:12px;padding:20px;vertical-align:top;">
+            <div style="font-size:28px;margin-bottom:8px;">👥</div>
+            <div style="color:#1a1a1a;font-size:14px;font-weight:700;margin-bottom:4px;">Invita pacientes</div>
+            <div style="color:#777;font-size:13px;line-height:1.5;">Envía invitaciones por email a tus pacientes actuales</div>
+          </td>
+        </tr>
+        <tr><td colspan="3" style="height:12px;"></td></tr>
+        <tr>
+          <td width="48%" style="background:#F5F3FF;border-radius:12px;padding:20px;vertical-align:top;">
+            <div style="font-size:28px;margin-bottom:8px;">🥗</div>
+            <div style="color:#1a1a1a;font-size:14px;font-weight:700;margin-bottom:4px;">Crea menús</div>
+            <div style="color:#777;font-size:13px;line-height:1.5;">Diseña menús semanales y asígnalos a tus pacientes</div>
+          </td>
+          <td width="4%"></td>
+          <td width="48%" style="background:#F5F3FF;border-radius:12px;padding:20px;vertical-align:top;">
+            <div style="font-size:28px;margin-bottom:8px;">💰</div>
+            <div style="color:#1a1a1a;font-size:14px;font-weight:700;margin-bottom:4px;">Define tus servicios</div>
+            <div style="color:#777;font-size:13px;line-height:1.5;">Crea planes de pago para que los pacientes te contraten</div>
+          </td>
+        </tr>
+      </table>
+      ${ctaButton("Ir a mi panel de experto →", `${APP_URL}/app/buddyexpert/dashboard`)}
+      <p style="color:#9CA3AF;font-size:13px;line-height:1.6;margin:16px 0 0;text-align:center;">
+        Si tienes alguna duda, escríbenos a <a href="mailto:hola@buddymarket.io" style="color:#F97316;">hola@buddymarket.io</a>
+      </p>
+    </td>
+  </tr>`;
+  return emailWrapper(body);
+}
+
+export async function sendExpertWelcomeEmail(params: {
+  expertEmail: string;
+  expertName: string;
+}): Promise<boolean> {
+  if (!process.env.RESEND_API_KEY) return false;
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: params.expertEmail,
+      subject: `🧑‍⚕️ ¡Bienvenido a BuddyExperts! Tu perfil ya está activo`,
+      html: expertWelcomeEmailHtml(params.expertName),
+    });
+    if (error) { console.error("[Email] Expert welcome email failed:", error); return false; }
+    console.log("[Email] Expert welcome email sent:", data?.id, "→", params.expertEmail);
+    return true;
+  } catch (err) { console.error("[Email] Error sending expert welcome email:", err); return false; }
+}
+
+// ─── Paciente sin Check-in (aviso al Experto) ─────────────────────────────────
+
+function patientMissingCheckinEmailHtml(params: {
+  expertName: string;
+  patients: Array<{ name: string; weeksMissing: number }>;
+}): string {
+  const firstName = params.expertName?.split(" ")[0] || "experto";
+  const patientRows = params.patients.map(p => `
+    <tr>
+      <td style="padding:10px 0;border-bottom:1px solid #FEE2E2;">
+        <span style="color:#1a1a1a;font-size:14px;font-weight:600;">${p.name}</span>
+        <span style="color:#DC2626;font-size:13px;float:right;">${p.weeksMissing} semana${p.weeksMissing > 1 ? "s" : ""} sin check-in</span>
+      </td>
+    </tr>`).join("");
+
+  const body = `
+  ${emailHeader("⚠️", "Pacientes sin check-in", "Algunos pacientes no han registrado su progreso", "linear-gradient(135deg,#DC2626 0%,#B91C1C 100%)")}
+  <tr>
+    <td style="padding:40px 40px 32px;">
+      <p style="color:#374151;font-size:16px;line-height:1.7;margin:0 0 16px;">
+        Hola <strong>${firstName}</strong>,
+      </p>
+      <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 24px;">
+        Los siguientes pacientes no han completado su check-in semanal. Puede ser un buen momento para contactarles:
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#FEF2F2;border-radius:12px;padding:20px;margin:0 0 24px;">
+        <tr><td>
+          ${patientRows}
+        </td></tr>
+      </table>
+      ${ctaButton("Ver mis pacientes →", `${APP_URL}/app/expert/patients`)}
+    </td>
+  </tr>`;
+  return emailWrapper(body);
+}
+
+export async function sendPatientMissingCheckinEmail(params: {
+  expertEmail: string;
+  expertName: string;
+  patients: Array<{ name: string; weeksMissing: number }>;
+}): Promise<boolean> {
+  if (!process.env.RESEND_API_KEY) return false;
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: params.expertEmail,
+      subject: `⚠️ ${params.patients.length} paciente${params.patients.length > 1 ? "s" : ""} sin check-in esta semana`,
+      html: patientMissingCheckinEmailHtml(params),
+    });
+    if (error) { console.error("[Email] Patient missing checkin email failed:", error); return false; }
+    console.log("[Email] Patient missing checkin email sent:", data?.id, "→", params.expertEmail);
+    return true;
+  } catch (err) { console.error("[Email] Error sending patient missing checkin email:", err); return false; }
+}
