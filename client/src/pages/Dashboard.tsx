@@ -22,6 +22,7 @@ import confetti from "canvas-confetti";
 import { RECIPE_PLACEHOLDER_IMAGE } from "@/lib/constants";
 import { usePlan } from "@/hooks/usePlan";
 import DidYouKnow from "@/components/DidYouKnow";
+import { BuddyScore } from "@/components/BuddyScore";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/contexts/ThemeContext";
 
@@ -1046,6 +1047,11 @@ export default function Dashboard() {
           </div>
         </div>
       )}
+
+      {/* BuddyScore Learning Widget */}
+      <div style={{ marginBottom: "16px" }}>
+        <BuddyScore compact />
+      </div>
 
       {/* Today's Menu */}
       {todayMenuItems.length > 0 && (

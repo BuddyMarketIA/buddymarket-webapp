@@ -7,6 +7,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import ImageCropModal from "@/components/ImageCropModal";
 import { toast } from "@/components/sonner-a11y-shim";
+import { BuddyScore } from "@/components/BuddyScore";
 import {
   UserIcon,
   HeartIcon,
@@ -16,6 +17,7 @@ import {
   SparklesIcon,
   CakeIcon,
   TrashIcon,
+  CpuChipIcon,
 } from "@heroicons/react/24/outline";
 
 // ─── 5 tabs consolidados ────────────────────────────────────────────────────
@@ -25,6 +27,7 @@ const TABS = [
   { key: "food",       label: "Alimentación",        icon: CakeIcon },
   { key: "allergies",  label: "Alergias",            icon: ExclamationCircleIcon },
   { key: "prefs",      label: "Preferencias",        icon: SparklesIcon },
+  { key: "buddyia",    label: "BuddyIA aprende",     icon: CpuChipIcon },
 ];
 
 // ─── Helpers de UI ───────────────────────────────────────────────────────────
@@ -1203,6 +1206,13 @@ export default function Profile() {
         </div>
       </div>
     )}
+      {/* BuddyIA aprende tab */}
+      {activeTab === "buddyia" && (
+        <div style={{ paddingBottom: "24px" }}>
+          <BuddyScore />
+        </div>
+      )}
+
       {/* Logout confirmation dialog */}
       <LogoutConfirmDialog
         open={showLogoutConfirm}

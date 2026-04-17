@@ -11169,5 +11169,62 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
         return db.calculateNutritionFromItems(resolved as any);
       }),
   }),
+
+  learning: router({
+    trackInteraction: protectedProcedure
+      .input(z.object({
+        recipeId: z.number().int(),
+        type: z.enum(["view", "long_view", "save", "cooked", "like", "dislike", "skip", "share", "add_to_menu", "log_meal"]),
+        context: z.record(z.unknown()).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { trackRecipeInteraction } = await import("./learning-engine.js");
+        await trackRecipeInteraction(ctx.user.id, input.recipeId, input.type, input.context);
+        return { ok: true };
+      }),
+
+    getProfile: protectedProcedure
+      .query(async ({ ctx }) => {
+        const { getUserTasteProfile, calculateBuddyScore, syncExistingInteractions } = await import("./learning-engine.js");
+        let profile = await getUserTasteProfile(ctx.user.id);
+        if (!profile) {
+          await syncExistingInteractions(ctx.user.id);
+          profile = await getUserTasteProfile(ctx.user.id);
+        }
+        const totalInteractions = profile?.totalInteractions ?? 0;
+        const confidenceScore = profile?.confidenceScore ?? 0;
+        const buddyScore = calculateBuddyScore(totalInteractions, confidenceScore);
+        return {
+          buddyScore,
+          totalInteractions,
+          confidenceScore,
+          topCuisines: profile ? Object.entries(JSON.parse(profile.cuisineScores as string || "{}" ))
+            .sort((a: any, b: any) => b[1] - a[1]).slice(0, 3).map(([k]) => k) : [],
+          topCookingMethods: profile ? Object.entries(JSON.parse(profile.cookingMethodScores as string || "{}" ))
+            .sort((a: any, b: any) => b[1] - a[1]).slice(0, 3).map(([k]) => k) : [],
+          lastCalculatedAt: profile?.lastCalculatedAt ?? null,
+        };
+      }),
+
+    submitFeedback: protectedProcedure
+      .input(z.object({
+        feedbackType: z.string(),
+        entityId: z.number().int().optional(),
+        entityType: z.string().optional(),
+        comment: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        const { userAIFeedback } = await import("../drizzle/schema.js");
+        await drizzleDb.insert(userAIFeedback).values({
+          userId: ctx.user.id,
+          feedbackType: input.feedbackType,
+          entityId: input.entityId,
+          entityType: input.entityType,
+          comment: input.comment,
+        });
+        return { ok: true };
+      }),
+  }),
 });
 export type AppRouter = typeof appRouter;

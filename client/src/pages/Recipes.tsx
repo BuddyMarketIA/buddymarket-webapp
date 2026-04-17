@@ -576,6 +576,7 @@ export default function Recipes() {
   // Favorites
   const utils = trpc.useUtils();
   const { data: favoriteIds } = trpc.recipes.getFavoriteIds.useQuery(undefined, { enabled: isAuthenticated });
+  const trackInteraction = trpc.learning.trackInteraction.useMutation();
   const toggleFavMutation = trpc.recipes.toggleFavorite.useMutation({
     onMutate: async ({ recipeId }) => {
       await utils.recipes.getFavoriteIds.cancel();
@@ -599,6 +600,10 @@ export default function Recipes() {
   const handleToggleFav = (recipe: Recipe) => {
     const isFav = favoriteIds?.includes(recipe.id);
     toggleFavMutation.mutate({ recipeId: recipe.id });
+    // Track interaction for learning engine (only when saving, not removing)
+    if (!isFav && isAuthenticated) {
+      trackInteraction.mutate({ recipeId: recipe.id, type: "save" });
+    }
     toast.success(isFav ? `"${recipe.name}" eliminada de favoritos` : `"${recipe.name}" añadida a favoritos ❤️`);
   };
   // Likes batch — load counts for all visible recipes

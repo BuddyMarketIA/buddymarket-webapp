@@ -2838,3 +2838,64 @@ export const expertHireRequests = pgTable("expert_hire_requests", {
 }));
 export type ExpertHireRequest = typeof expertHireRequests.$inferSelect;
 export type InsertExpertHireRequest = typeof expertHireRequests.$inferInsert;
+
+// =============================================================================
+// SISTEMA DE APRENDIZAJE ADAPTATIVO — BUDDY INTELLIGENCE
+// =============================================================================
+
+export const recipeInteractionTypeEnum = pgEnum("recipeInteractionType", [
+  "view", "long_view", "save", "cooked", "like", "dislike", "skip", "share", "add_to_menu", "log_meal"
+]);
+
+export const userTasteProfile = pgTable("user_taste_profile", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().unique(),
+  cuisineScores: text("cuisineScores").default("{}"),
+  ingredientScores: text("ingredientScores").default("{}"),
+  cookingMethodScores: text("cookingMethodScores").default("{}"),
+  mealTimeScores: text("mealTimeScores").default("{}"),
+  complexityPreference: real("complexityPreference").default(0),
+  avgPrepTimePreference: real("avgPrepTimePreference").default(30),
+  avgCaloriesPreference: real("avgCaloriesPreference").default(500),
+  totalInteractions: integer("totalInteractions").default(0).notNull(),
+  confidenceScore: integer("confidenceScore").default(0).notNull(),
+  lastCalculatedAt: timestamp("lastCalculatedAt").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  utpUserIdx: index("utp_user_idx").on(t.userId),
+}));
+export type UserTasteProfile = typeof userTasteProfile.$inferSelect;
+export type InsertUserTasteProfile = typeof userTasteProfile.$inferInsert;
+
+export const recipeInteractions = pgTable("recipe_interactions", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull(),
+  recipeId: integer("recipeId").notNull(),
+  type: recipeInteractionTypeEnum("type").notNull(),
+  signalWeight: real("signalWeight").default(0).notNull(),
+  context: text("context"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  riUserIdx: index("ri_user_idx").on(t.userId),
+  riRecipeIdx: index("ri_recipe_idx").on(t.recipeId),
+  riTypeIdx: index("ri_type_idx").on(t.type),
+  riUserRecipeIdx: index("ri_user_recipe_idx").on(t.userId, t.recipeId),
+}));
+export type RecipeInteraction = typeof recipeInteractions.$inferSelect;
+export type InsertRecipeInteraction = typeof recipeInteractions.$inferInsert;
+
+export const userAIFeedback = pgTable("user_ai_feedback", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull(),
+  feedbackType: varchar("feedbackType", { length: 64 }).notNull(),
+  entityId: integer("entityId"),
+  entityType: varchar("entityType", { length: 32 }),
+  comment: text("comment"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  uafUserIdx: index("uaf_user_idx").on(t.userId),
+  uafTypeIdx: index("uaf_type_idx").on(t.feedbackType),
+}));
+export type UserAIFeedback = typeof userAIFeedback.$inferSelect;
+export type InsertUserAIFeedback = typeof userAIFeedback.$inferInsert;
