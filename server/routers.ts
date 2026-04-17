@@ -6128,11 +6128,93 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
               await drizzleDb.update(buddyMakers).set({ verified: true }).where(eq(buddyMakers.userId, app.userId));
             }
           }
+          // AUTO-ACTIVATE PRO MAX (free for experts/makers as ambassadors)
+          try {
+            await db.upsertUserSubscription(app.userId, {
+              status: "active",
+              plan: "pro_max",
+              currentPeriodStart: new Date(),
+              currentPeriodEnd: new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000),
+            });
+            console.log("[Approval] Pro Max activated for userId=" + app.userId + " (" + app.type + ")");
+          } catch (proErr) {
+            console.error("[Approval] Failed to activate Pro Max:", proErr);
+          }
+          // AUTO-GENERATE REFERRAL CODE + STRIPE COUPON
+          try {
+            const { referralCodes: refCodesTable } = await import("../drizzle/schema");
+            const ownerType = app.type === "expert" ? "expert" : "maker";
+            const existingCode = await drizzleDb.select().from(refCodesTable)
+              .where(and(eq(refCodesTable.userId, app.userId), eq(refCodesTable.ownerType, ownerType as any)))
+              .limit(1);
+            if (!existingCode.length) {
+              const baseName = (app.displayName ?? user?.name ?? "BUDDY").toUpperCase().replace(/[^A-Z0-9]/g, "").slice(0, 10);
+              const suffix = Math.random().toString(36).substring(2, 6).toUpperCase();
+              const code = baseName + suffix;
+              let stripeCouponId = null;
+              let stripePromoCodeId = null;
+              try {
+                const Stripe = (await import("stripe")).default;
+                const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+                const coupon = await stripe.coupons.create({
+                  percent_off: 15,
+                  duration: "once",
+                  name: "Referido " + code + " - 15% descuento",
+                  metadata: { referral_code: code, creator_user_id: app.userId.toString(), creator_type: ownerType },
+                });
+                stripeCouponId = coupon.id;
+                const promoCode = await stripe.promotionCodes.create({
+                  coupon: coupon.id,
+                  code,
+                  metadata: { referral_code: code, creator_user_id: app.userId.toString() },
+                } as any);
+                stripePromoCodeId = promoCode.id;
+              } catch (stripeErr) {
+                console.error("[Approval] Stripe coupon creation failed:", stripeErr);
+              }
+              await drizzleDb.insert(refCodesTable).values({
+                userId: app.userId,
+                ownerType: ownerType as any,
+                code,
+                stripeCouponId,
+                stripePromoCodeId,
+                discountPercent: 15,
+                commissionPercent: 20,
+              });
+              console.log("[Approval] Referral code '" + code + "' created for userId=" + app.userId);
+              if (user?.email) {
+                try {
+                  const { sendEmail } = await import("./email");
+                  const roleLabel = app.type === "expert" ? "BuddyExpert" : "BuddyMaker";
+                  await sendEmail({
+                    to: user.email,
+                    subject: "Bienvenido a BuddyMarket - Tu codigo de referido es " + code,
+                    html: "<div style='font-family:sans-serif;max-width:600px;margin:0 auto;padding:32px'>" +
+                      "<h1 style='color:#f97316'>Tu cuenta " + roleLabel + " esta activa!</h1>" +
+                      "<p>Hola <strong>" + (app.displayName ?? user.name ?? "Embajador") + "</strong>,</p>" +
+                      "<p>Tu solicitud ha sido aprobada. Como embajador de BuddyMarket tienes acceso a <strong>Pro Max de forma completamente gratuita</strong>.</p>" +
+                      "<h2 style='color:#f97316'>Tu codigo de referido exclusivo:</h2>" +
+                      "<div style='background:#fff7ed;border:2px solid #f97316;border-radius:12px;padding:24px;text-align:center;margin:16px 0 24px'>" +
+                      "<span style='font-size:36px;font-weight:bold;letter-spacing:6px;color:#ea580c'>" + code + "</span>" +
+                      "</div>" +
+                      "<p>Comparte este codigo con tu comunidad:</p>" +
+                      "<ul><li>Ellos reciben un <strong>15% de descuento</strong> en su primera suscripcion</li>" +
+                      "<li>Tu recibes el <strong>20% de comision</strong> de cada pago mientras la suscripcion este activa</li></ul>" +
+                      "<p>Puedes ver tus ganancias en tu dashboard de BuddyMarket.</p>" +
+                      "</div>",
+                  });
+                } catch (emailErr) {
+                  console.error("[Approval] Failed to send referral code email:", emailErr);
+                }
+              }
+            }
+          } catch (refErr) {
+            console.error("[Approval] Failed to generate referral code:", refErr);
+          }
         }
         return { success: true };
       }),
   }),
-
   // ===========================================================================
   // BUDDY EXPERTS
   // ===========================================================================

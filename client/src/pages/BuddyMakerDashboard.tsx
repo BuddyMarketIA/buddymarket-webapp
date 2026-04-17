@@ -367,6 +367,19 @@ export default function BuddyMakerDashboard() {
             )}
           </div>
         )}
+        {/* Referral Program Banner */}
+        <div className="mb-4 rounded-2xl bg-gradient-to-r from-violet-50 to-purple-50 border border-violet-200 p-4 flex items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <span className="text-2xl">🎁</span>
+            <div>
+              <p className="text-sm font-semibold text-violet-800">Programa de Referidos</p>
+              <p className="text-xs text-violet-600">Gana el 20% de cada suscripción de tus referidos</p>
+            </div>
+          </div>
+          <a href="/app/referrals/creator" className="shrink-0 rounded-xl bg-violet-600 px-4 py-2 text-sm font-semibold text-white hover:bg-violet-700 transition-colors whitespace-nowrap">
+            Ver mi código
+          </a>
+        </div>
         {/* Tabs */}
         <div className="flex gap-2 mb-6 bg-gray-100 rounded-2xl p-1">
           {(["/app/profile", "/app/recipes"] as Tab[]).map((tab) => (
