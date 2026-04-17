@@ -2116,3 +2116,197 @@ export async function sendAchievementEmail(params: {
     return true;
   } catch (err) { console.error("[Email] Error sending achievement email:", err); return false; }
 }
+
+// ─── Email Primer Menú IA ─────────────────────────────────────────────────────
+function firstAIMenuEmailHtml(name: string, menuName: string): string {
+  const firstName = name?.split(" ")[0] || "amigo";
+  const body = `
+  ${emailHeader("🥗", `¡Tu primer menú IA está listo!`, `${menuName} — generado especialmente para ti`, "linear-gradient(135deg,#22C55E 0%,#16A34A 100%)")}
+  <tr>
+    <td style="padding:40px 40px 32px;">
+      <p style="color:#374151;font-size:16px;line-height:1.7;margin:0 0 20px;">
+        ¡Enhorabuena, <strong>${firstName}</strong>! 🎉
+      </p>
+      <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 24px;">
+        Tu primer menú generado con Inteligencia Artificial ya está disponible en BuddyMarket.
+        Ha sido creado teniendo en cuenta tus objetivos nutricionales, preferencias y restricciones alimentarias.
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#F0FDF4,#DCFCE7);border:2px solid #BBF7D0;border-radius:20px;padding:28px;margin:0 0 24px;">
+        <tr><td>
+          <div style="font-size:48px;text-align:center;margin-bottom:16px;">🥗</div>
+          <h2 style="color:#14532D;font-size:20px;font-weight:800;margin:0 0 8px;text-align:center;">${menuName}</h2>
+          <p style="color:#166534;font-size:14px;line-height:1.6;margin:0;text-align:center;">
+            Menú semanal personalizado · Generado por IA · Adaptado a tus objetivos
+          </p>
+        </td></tr>
+      </table>
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+        <tr>
+          <td width="30%" style="background:#F0FDF4;border-radius:12px;padding:16px;text-align:center;vertical-align:top;">
+            <div style="font-size:28px;margin-bottom:8px;">📅</div>
+            <div style="color:#166534;font-size:13px;font-weight:700;">7 días</div>
+            <div style="color:#4ADE80;font-size:12px;">de menú completo</div>
+          </td>
+          <td width="5%"></td>
+          <td width="30%" style="background:#F0FDF4;border-radius:12px;padding:16px;text-align:center;vertical-align:top;">
+            <div style="font-size:28px;margin-bottom:8px;">🎯</div>
+            <div style="color:#166534;font-size:13px;font-weight:700;">Personalizado</div>
+            <div style="color:#4ADE80;font-size:12px;">a tus objetivos</div>
+          </td>
+          <td width="5%"></td>
+          <td width="30%" style="background:#F0FDF4;border-radius:12px;padding:16px;text-align:center;vertical-align:top;">
+            <div style="font-size:28px;margin-bottom:8px;">🛒</div>
+            <div style="color:#166534;font-size:13px;font-weight:700;">Lista de compra</div>
+            <div style="color:#4ADE80;font-size:12px;">incluida</div>
+          </td>
+        </tr>
+      </table>
+      <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 24px;">
+        Puedes aplicar este menú a tu diario nutricional, generar la lista de la compra automáticamente
+        y ajustarlo a tus preferencias. ¡La IA de BuddyMarket aprende de ti con cada menú que generas!
+      </p>
+      ${ctaButton("Ver mi menú en BuddyMarket →", `${APP_URL}/app/menus`)}
+      <p style="color:#9CA3AF;font-size:13px;text-align:center;margin:16px 0 0;">
+        ¿Quieres otro menú diferente? Puedes generar tantos como quieras desde la sección de IA.
+      </p>
+    </td>
+  </tr>`;
+  return emailWrapper(body);
+}
+
+export async function sendFirstAIMenuEmail(params: {
+  userEmail: string;
+  userName: string;
+  menuName: string;
+}): Promise<boolean> {
+  if (!process.env.RESEND_API_KEY) return false;
+  try {
+    const firstName = params.userName?.split(" ")[0] || "amigo";
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: params.userEmail,
+      subject: `🥗 ¡${firstName}, tu primer menú IA está listo en BuddyMarket!`,
+      html: firstAIMenuEmailHtml(params.userName, params.menuName),
+    });
+    if (error) { console.error("[Email] First AI menu email failed:", error); return false; }
+    console.log("[Email] First AI menu email sent:", data?.id, "→", params.userEmail);
+    return true;
+  } catch (err) { console.error("[Email] Error sending first AI menu email:", err); return false; }
+}
+
+// ─── Email Resumen Semanal de Progreso (Usuario) ──────────────────────────────
+function userWeeklyProgressHtml(params: {
+  userName: string;
+  daysLogged: number;
+  avgCalories: number | null;
+  avgProtein: number | null;
+  weightChange: number | null;
+  currentWeight: number | null;
+  targetWeight: number | null;
+  streakDays: number;
+}): string {
+  const firstName = params.userName?.split(" ")[0] || "amigo";
+  const weightChangeText = params.weightChange !== null
+    ? params.weightChange < 0
+      ? `<span style="color:#16A34A;font-weight:700;">↓ ${Math.abs(params.weightChange).toFixed(1)} kg</span>`
+      : params.weightChange > 0
+      ? `<span style="color:#DC2626;font-weight:700;">↑ ${params.weightChange.toFixed(1)} kg</span>`
+      : `<span style="color:#6B7280;font-weight:700;">= Sin cambio</span>`
+    : `<span style="color:#9CA3AF;">Sin datos</span>`;
+  const progressToGoal = params.currentWeight && params.targetWeight
+    ? Math.round(((params.currentWeight - params.targetWeight) / params.currentWeight) * 100)
+    : null;
+  const body = `
+  ${emailHeader("📊", `Tu resumen semanal`, `${params.daysLogged}/7 días registrados esta semana`, "linear-gradient(135deg,#3B82F6 0%,#2563EB 100%)")}
+  <tr>
+    <td style="padding:40px 40px 32px;">
+      <p style="color:#374151;font-size:16px;line-height:1.7;margin:0 0 20px;">
+        Hola <strong>${firstName}</strong>, aquí tienes tu resumen de la semana:
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+        <tr>
+          <td width="48%" style="background:#EFF6FF;border-radius:12px;padding:20px;text-align:center;vertical-align:top;">
+            <div style="font-size:32px;font-weight:900;color:#1D4ED8;">${params.daysLogged}/7</div>
+            <div style="color:#3B82F6;font-size:13px;font-weight:700;">Días registrados</div>
+          </td>
+          <td width="4%"></td>
+          <td width="48%" style="background:#EFF6FF;border-radius:12px;padding:20px;text-align:center;vertical-align:top;">
+            <div style="font-size:32px;font-weight:900;color:#1D4ED8;">${params.streakDays}</div>
+            <div style="color:#3B82F6;font-size:13px;font-weight:700;">Días de racha 🔥</div>
+          </td>
+        </tr>
+        <tr><td colspan="3" style="height:12px;"></td></tr>
+        <tr>
+          <td width="48%" style="background:#EFF6FF;border-radius:12px;padding:20px;text-align:center;vertical-align:top;">
+            <div style="font-size:28px;font-weight:900;color:#1D4ED8;">${params.avgCalories ? Math.round(params.avgCalories) : "—"}</div>
+            <div style="color:#3B82F6;font-size:13px;font-weight:700;">kcal/día promedio</div>
+          </td>
+          <td width="4%"></td>
+          <td width="48%" style="background:#EFF6FF;border-radius:12px;padding:20px;text-align:center;vertical-align:top;">
+            <div style="font-size:28px;font-weight:900;color:#1D4ED8;">${params.avgProtein ? Math.round(params.avgProtein) : "—"}g</div>
+            <div style="color:#3B82F6;font-size:13px;font-weight:700;">proteína/día promedio</div>
+          </td>
+        </tr>
+      </table>
+      ${params.currentWeight || params.weightChange !== null ? `
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#F0FDF4;border-radius:16px;padding:24px;margin:0 0 24px;">
+        <tr><td>
+          <p style="color:#166534;font-size:14px;font-weight:700;margin:0 0 12px;">⚖️ Evolución del peso</p>
+          <table width="100%" cellpadding="0" cellspacing="0">
+            ${params.currentWeight ? `<tr><td style="color:#374151;font-size:14px;padding:4px 0;">Peso actual:</td><td style="color:#1a1a1a;font-size:14px;font-weight:700;text-align:right;">${params.currentWeight.toFixed(1)} kg</td></tr>` : ""}
+            ${params.targetWeight ? `<tr><td style="color:#374151;font-size:14px;padding:4px 0;">Objetivo:</td><td style="color:#1a1a1a;font-size:14px;font-weight:700;text-align:right;">${params.targetWeight.toFixed(1)} kg</td></tr>` : ""}
+            ${params.weightChange !== null ? `<tr><td style="color:#374151;font-size:14px;padding:4px 0;">Cambio esta semana:</td><td style="font-size:14px;text-align:right;">${weightChangeText}</td></tr>` : ""}
+            ${progressToGoal !== null ? `<tr><td style="color:#374151;font-size:14px;padding:4px 0;">Progreso hacia objetivo:</td><td style="color:#1a1a1a;font-size:14px;font-weight:700;text-align:right;">${progressToGoal}% restante</td></tr>` : ""}
+          </table>
+        </td></tr>
+      </table>` : ""}
+      ${params.daysLogged < 5 ? `
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#FFF7ED;border-radius:16px;padding:20px 24px;margin:0 0 24px;">
+        <tr><td>
+          <p style="color:#C2410C;font-size:14px;font-weight:700;margin:0 0 8px;">💡 Consejo para la próxima semana</p>
+          <p style="color:#92400E;font-size:14px;line-height:1.6;margin:0;">
+            Registraste ${params.daysLogged} de 7 días. Los usuarios que registran 5+ días por semana
+            alcanzan sus objetivos un <strong>3x más rápido</strong>. ¡Intenta llegar a 5 días la próxima semana!
+          </p>
+        </td></tr>
+      </table>` : `
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#F0FDF4;border-radius:16px;padding:20px 24px;margin:0 0 24px;">
+        <tr><td>
+          <p style="color:#166534;font-size:14px;font-weight:700;margin:0 0 8px;">🌟 ¡Excelente semana!</p>
+          <p style="color:#15803D;font-size:14px;line-height:1.6;margin:0;">
+            Registraste ${params.daysLogged} de 7 días. ¡Eso es una semana casi perfecta!
+            Tu constancia está marcando la diferencia. ¡Sigue así!
+          </p>
+        </td></tr>
+      </table>`}
+      ${ctaButton("Ver mi progreso completo →", `${APP_URL}/app/dashboard`)}
+    </td>
+  </tr>`;
+  return emailWrapper(body);
+}
+
+export async function sendUserWeeklyProgress(params: {
+  userEmail: string;
+  userName: string;
+  daysLogged: number;
+  avgCalories: number | null;
+  avgProtein: number | null;
+  weightChange: number | null;
+  currentWeight: number | null;
+  targetWeight: number | null;
+  streakDays: number;
+}): Promise<boolean> {
+  if (!process.env.RESEND_API_KEY) return false;
+  try {
+    const firstName = params.userName?.split(" ")[0] || "amigo";
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: params.userEmail,
+      subject: `📊 ${firstName}, tu resumen semanal de BuddyMarket está listo`,
+      html: userWeeklyProgressHtml(params),
+    });
+    if (error) { console.error("[Email] User weekly progress failed:", error); return false; }
+    console.log("[Email] User weekly progress sent:", data?.id, "→", params.userEmail);
+    return true;
+  } catch (err) { console.error("[Email] Error sending user weekly progress:", err); return false; }
+}

@@ -8393,6 +8393,16 @@ Devuelve SOLO JSON válido con esta estructura exacta (${input.daysCount} elemen
           type: "success",
           link: "/app/menus",
         });
+        // Send first AI menu email (async, non-blocking)
+        if (ctx.user.email) {
+          import("./email.js").then(({ sendFirstAIMenuEmail }) => {
+            sendFirstAIMenuEmail({
+              userEmail: ctx.user.email!,
+              userName: ctx.user.name ?? ctx.user.email!,
+              menuName: input.menuName ?? "Tu men\u00fa semanal",
+            }).catch(() => {});
+          }).catch(() => {});
+        }
         return { menuId, success: true };
       }),
 

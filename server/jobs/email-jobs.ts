@@ -25,7 +25,14 @@ import {
   sendReactivationEmail,
   sendAppointmentReminderEmail,
   sendExpertWeeklySummary,
+  sendUserWeeklyProgress,
+  processPendingEmails,
 } from "../email";
+import {
+  mealLogs,
+  userProfiles,
+  userHealthMetrics,
+} from "../../drizzle/schema";
 
 const logger = {
   info: (msg: string, ...args: any[]) => console.log(`[EmailJobs] ${msg}`, ...args),
@@ -183,13 +190,43 @@ export async function runInactivityEmails() {
       }
     }
 
-    logger.info(`Inactivity emails: ${sent3} sent (3-day), ${sent7} sent (7-day)`);
+    // Usuarios con lastActiveAt entre 30 y 31 días (tercer recordatorio)
+    const thirtyOneDaysAgo = new Date(now.getTime() - 31 * 24 * 60 * 60 * 1000);
+    const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
+    const inactiveThirtyDays = await db
+      .select({ id: users.id, name: users.name, email: users.email, lastActiveAt: users.lastActiveAt })
+      .from(users)
+      .where(
+        and(
+          isNotNull(users.email),
+          isNotNull(users.lastActiveAt),
+          gte(users.lastActiveAt, thirtyOneDaysAgo),
+          lte(users.lastActiveAt, thirtyDaysAgo),
+          ne(users.role, "buddyexpert"),
+          ne(users.role, "admin"),
+        )
+      )
+      .limit(50);
+    let sent30 = 0;
+    for (const user of inactiveThirtyDays) {
+      if (!user.email) continue;
+      try {
+        await sendReactivationEmail({
+          userEmail: user.email,
+          userName: user.name ?? "Usuario",
+          daysInactive: 30,
+        });
+        sent30++;
+      } catch (err) {
+        logger.error(`Failed to send 30-day inactivity email to ${user.email}:`, err);
+      }
+    }
+    logger.info(`Inactivity emails: ${sent3} sent (3-day), ${sent7} sent (7-day), ${sent30} sent (30-day)`);
   } catch (err) {
     logger.error("Error in inactivity email job:", err);
   }
 }
-
-// ─── Job: Recordatorio de cita 24h antes ─────────────────────────────────────
+// ─── Job: Recordatorio de cita 24h antess ─────────────────────────────────────
 export async function runAppointmentReminders() {
   logger.info("Starting appointment reminder job...");
   const db = await getDb();
@@ -253,6 +290,125 @@ export async function runAppointmentReminders() {
     logger.info(`Appointment reminders: ${sent} sent`);
   } catch (err) {
     logger.error("Error in appointment reminder job:", err);
+  }
+}
+
+// ─── Job: Resumen semanal de progreso del usuario ────────────────────────────────────────────
+export async function runUserWeeklyProgress() {
+  logger.info("Starting user weekly progress email job...");
+  const db = await getDb();
+  if (!db) { logger.warn("DB not available"); return; }
+  try {
+    const now = new Date();
+    const sevenDaysAgo = new Date(now.getTime() - 7 * 24 * 60 * 60 * 1000);
+    const fourteenDaysAgo = new Date(now.getTime() - 14 * 24 * 60 * 60 * 1000);
+    // Usuarios activos en los últimos 30 días con email
+    const activeUsers = await db
+      .select({ id: users.id, name: users.name, email: users.email })
+      .from(users)
+      .where(
+        and(
+          isNotNull(users.email),
+          isNotNull(users.lastActiveAt),
+          gte(users.lastActiveAt, new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)),
+          ne(users.role, "admin"),
+        )
+      )
+      .limit(200);
+    let sent = 0;
+    for (const user of activeUsers) {
+      if (!user.email) continue;
+      try {
+        // Calcular días registrados esta semana
+        const weekLogs = await db
+          .selectDistinct({ logDate: mealLogs.logDate })
+          .from(mealLogs)
+          .where(and(eq(mealLogs.userId, user.id), gte(mealLogs.logDate, sevenDaysAgo.toISOString().split('T')[0])))
+          .limit(7);
+        const daysLogged = weekLogs.length;
+        if (daysLogged === 0) continue; // No enviar si no registró nada esta semana
+        // Calcular promedios nutricionales
+        const nutritionRows = await db
+          .select({ calories: mealLogs.calories, proteins: mealLogs.proteins })
+          .from(mealLogs)
+          .where(and(eq(mealLogs.userId, user.id), gte(mealLogs.logDate, sevenDaysAgo.toISOString().split('T')[0])));
+        const totalCals = nutritionRows.reduce((s, r) => s + (r.calories ?? 0), 0);
+        const totalProt = nutritionRows.reduce((s, r) => s + (r.proteins ?? 0), 0);
+        const avgCalories = nutritionRows.length > 0 ? totalCals / daysLogged : null;
+        const avgProtein = nutritionRows.length > 0 ? totalProt / daysLogged : null;
+        // Obtener perfil para peso objetivo
+        const profile = await db
+          .select({ weight: userProfiles.weight, targetWeight: userProfiles.targetWeight })
+          .from(userProfiles)
+          .where(eq(userProfiles.userId, user.id))
+          .limit(1);
+        const currentWeight = profile[0]?.weight ?? null;
+        const targetWeight = profile[0]?.targetWeight ?? null;
+        // Calcular cambio de peso esta semana
+        const lastWeekWeight = await db
+          .select({ weight: userHealthMetrics.weight })
+          .from(userHealthMetrics)
+          .where(and(
+            eq(userHealthMetrics.userId, user.id),
+            gte(userHealthMetrics.recordedAt, fourteenDaysAgo.toISOString().split('T')[0]),
+            lte(userHealthMetrics.recordedAt, sevenDaysAgo.toISOString().split('T')[0]),
+          ))
+          .orderBy(sql`${userHealthMetrics.recordedAt} DESC`)
+          .limit(1);
+        const weightChange = (currentWeight && lastWeekWeight[0]?.weight)
+          ? currentWeight - lastWeekWeight[0].weight
+          : null;
+        // Calcular racha (número de días consecutivos)
+        const allLogs = await db
+          .selectDistinct({ logDate: mealLogs.logDate })
+          .from(mealLogs)
+          .where(eq(mealLogs.userId, user.id))
+          .orderBy(sql`${mealLogs.logDate} DESC`)
+          .limit(60);
+        let streakDays = 0;
+        if (allLogs.length > 0) {
+          const dates = allLogs.map(r => r.logDate).sort().reverse();
+          const today = now.toISOString().split('T')[0];
+          const yesterday = new Date(now.getTime() - 86400000).toISOString().split('T')[0];
+          if (dates[0] === today || dates[0] === yesterday) {
+            streakDays = 1;
+            for (let i = 1; i < dates.length; i++) {
+              const prev = new Date(dates[i - 1]!);
+              const curr = new Date(dates[i]!);
+              const diff = Math.round((prev.getTime() - curr.getTime()) / 86400000);
+              if (diff === 1) streakDays++;
+              else break;
+            }
+          }
+        }
+        await sendUserWeeklyProgress({
+          userEmail: user.email,
+          userName: user.name ?? "Usuario",
+          daysLogged,
+          avgCalories,
+          avgProtein,
+          weightChange,
+          currentWeight,
+          targetWeight,
+          streakDays,
+        });
+        sent++;
+      } catch (err) {
+        logger.error(`Failed to send weekly progress to ${user.email}:`, err);
+      }
+    }
+    logger.info(`User weekly progress: ${sent} sent`);
+  } catch (err) {
+    logger.error("Error in user weekly progress job:", err);
+  }
+}
+
+// ─── Job: Procesador de cola de emails de onboarding ───────────────────────────────────
+export async function runOnboardingEmailProcessor() {
+  try {
+    await processPendingEmails();
+  } catch (err) {
+    logger.error("Error in onboarding email processor:", err);
   }
 }
 
@@ -397,6 +553,16 @@ export function startEmailJobs() {
     }, msUntil);
   }
 
+  function scheduleHourly(job: () => Promise<void>, label: string) {
+    const msUntil = 60 * 60 * 1000;
+    logger.info(`[${label}] First run in 1h, then hourly`);
+    setTimeout(() => {
+      job().catch(err => logger.error(`[${label}] Job error:`, err));
+      setInterval(() => {
+        job().catch(err => logger.error(`[${label}] Job error:`, err));
+      }, 60 * 60 * 1000);
+    }, msUntil);
+  }
   function scheduleWeekly(dayOfWeek: number, hour: number, minute: number, job: () => Promise<void>, label: string) {
     // dayOfWeek: 0=Sun, 1=Mon, ..., 6=Sat
     const now = new Date();
@@ -429,8 +595,11 @@ export function startEmailJobs() {
   // Diario 10:00 UTC — Reactivación por inactividad
   scheduleDaily(10, 0, runInactivityEmails, "InactivityEmails");
 
-  // Diario 11:00 UTC — Recordatorio de cita 24h antes
+   // Diario 11:00 UTC — Recordatorio de cita 24h antes
   scheduleDaily(11, 0, runAppointmentReminders, "AppointmentReminders");
-
+  // Domingo 20:00 UTC — Resumen semanal de progreso del usuario
+  scheduleWeekly(0, 20, 0, runUserWeeklyProgress, "UserWeeklyProgress");
+  // Cada hora — Procesador de cola de emails de onboarding
+  scheduleHourly(runOnboardingEmailProcessor, "OnboardingProcessor");
   logger.info("All email jobs registered.");
 }
