@@ -68,7 +68,7 @@ const MODULES = [
     img: FOOD.menu, highlights: ["Menús en 30 segundos", "24 perfiles especiales", "Ajuste de macros automático"] },
   { icon: "🍳", color: "#10b981", bg: "#f0fdf4", tag: "Recetas", title: "Biblioteca de Recetas Saludables",
     desc: "Miles de recetas con información nutricional completa, instrucciones paso a paso y filtros por alérgenos, tiempo de preparación y objetivo de salud.",
-    img: FOOD.recipes, highlights: ["15.000+ recetas", "Filtros por alérgenos", "Macros detallados"] },
+    img: FOOD.recipes, highlights: ["207+ recetas", "Filtros por alérgenos", "Macros detallados"] },
   { icon: "🛒", color: "#3b82f6", bg: "#eff6ff", tag: "Lista de la Compra", title: "Compra Inteligente Automatizada",
     desc: "Genera tu lista de la compra directamente desde tu menú semanal. Organizada por categorías y con integración con supermercados online.",
     img: FOOD.shopping, highlights: ["Lista automática", "Por categorías", "Integración supermercados"] },
@@ -90,7 +90,7 @@ const SERVICES = [
   { icon: "👤", color: "#F97316", gradient: "linear-gradient(135deg,#fff7ed,#ffedd5)", border: "#fed7aa",
     title: "Para Usuarios", subtitle: "Tu nutrición, simplificada",
     desc: "Toma el control de tu alimentación con herramientas de IA que antes solo tenían los nutricionistas. Sin complicaciones, sin excusas.",
-    items: ["Menús semanales personalizados con IA","Diario nutricional con registro por voz","Lista de la compra automática","24 planes especializados","Seguimiento de métricas y progreso","Biblioteca de 15.000+ recetas"],
+    items: ["Menús semanales personalizados con IA","Diario nutricional con registro por voz","Lista de la compra automática","24 planes especializados","Seguimiento de métricas y progreso","Biblioteca de 207+ recetas saludables"],
     cta: "Empezar gratis" },
   { icon: "🧑‍⚕️", color: "#10b981", gradient: "linear-gradient(135deg,#f0fdf4,#dcfce7)", border: "#86efac",
     title: "BuddyExperts", subtitle: "Escala tu consulta y multiplica tus ingresos",
@@ -145,10 +145,10 @@ const SPECIAL_MENUS = [
 ];
 
 const STATS = [
-  { value: 15000, suffix: "+", label: "Usuarios activos", icon: "👥" },
-  { value: 48000, suffix: "+", label: "Menús generados", icon: "📋" },
-  { value: 8500, suffix: "+", label: "Recetas disponibles", icon: "🍳" },
+  { value: 207, suffix: "+", label: "Recetas disponibles", icon: "🍳" },
   { value: 24, suffix: "", label: "Perfiles especializados", icon: "🎯" },
+  { value: 6, suffix: "", label: "Supermercados integrados", icon: "🛒" },
+  { value: 100, suffix: "%", label: "Gratis para empezar", icon: "🎁" },
 ];
 
 const TESTIMONIALS = [
@@ -165,7 +165,7 @@ const TESTIMONIALS = [
 const PLANS = [
   { name: "Free", price: "0€", period: "para siempre", accent: "#6b7280", highlight: false, cta: "Empezar gratis",
     description: "Para explorar BuddyMarket sin compromiso",
-    features: ["Perfil nutricional básico","Ver recetas de la comunidad","3 menús al mes (sin IA)","Lista de la compra básica","Inventario (hasta 20 productos)"] },
+    features: ["Perfil nutricional básico","Ver 207+ recetas de la comunidad","2 menús/mes + 1 menú IA de prueba","3 listas de la compra/mes","Inventario (hasta 25 productos)"] },
   { name: "Pro", price: "9,99€", period: "al mes", accent: "#F97316", highlight: true, cta: "Empezar con Pro",
     description: "Para quienes quieren resultados reales",
     features: ["Menús semanales ilimitados con IA","24 planes especializados","BuddyIA: 50 consultas/día","Diario nutricional ilimitado","Inventario ilimitado + alertas","Métricas de salud (6 meses)","Integración supermercados online"] },
@@ -411,7 +411,7 @@ export default function LandingPage() {
               </div>
               <div>
                 <div style={{ display: "flex", gap: 2 }}>{[1,2,3,4,5].map(i => <span key={i} style={{ color: "#f59e0b", fontSize: 14 }}>★</span>)}</div>
-                <p style={{ fontSize: 13, color: "rgba(255,255,255,0.8)", margin: 0 }}><strong style={{ color: "#ffffff" }}>15.000+</strong> usuarios confían en BuddyMarket</p>
+                <p style={{ fontSize: 13, color: "rgba(255,255,255,0.8)", margin: 0 }}><strong style={{ color: "#ffffff" }}>Únete</strong> a la comunidad BuddyMarket</p>
               </div>
             </div>
           </div>
@@ -436,7 +436,7 @@ export default function LandingPage() {
       {/* ═══ MARQUEE ══════════════════════════════════════════════════════════ */}
       <div style={{ background: "#111827", padding: "14px 0", overflow: "hidden" }}>
         <div style={{ display: "flex", gap: 48, animation: "lp-marquee 30s linear infinite", width: "max-content" }}>
-          {[...Array(3)].flatMap(() => ["🤖 IA Nutricional","📋 Menús Semanales","🍳 15.000+ Recetas","🛒 Lista de la Compra","📊 Diario Nutricional","🏪 Control de Inventario","💪 24 Planes Especiales","📈 Métricas de Salud"]).map((item, i) => (
+          {[...Array(3)].flatMap(() => ["🤖 IA Nutricional","📋 Menús Semanales","🍳 207+ Recetas","🛒 Lista de la Compra","📊 Diario Nutricional","🏪 Control de Inventario","💪 24 Planes Especiales","📈 Métricas de Salud"]).map((item, i) => (
             <span key={i} style={{ fontSize: 13, fontWeight: 600, color: "#9ca3af", whiteSpace: "nowrap" }}>{item}</span>
           ))}
         </div>
@@ -781,7 +781,7 @@ export default function LandingPage() {
             Empieza hoy a comer<br />de forma inteligente
           </h2>
           <p style={{ fontSize: 18, color: "#94a3b8", marginBottom: 36, lineHeight: 1.7 }}>
-            Únete a más de 15.000 personas que ya están transformando su alimentación con BuddyMarket. Gratis para siempre, sin tarjeta de crédito.
+            Empieza a transformar tu alimentación con BuddyMarket. Gratis para siempre, sin tarjeta de crédito.
           </p>
           <a href={ctaHref} style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "16px 32px", borderRadius: 12, fontSize: 17, fontWeight: 700, color: "white", background: "linear-gradient(135deg,#F97316,#ea580c)", textDecoration: "none", boxShadow: "0 8px 32px rgba(249,115,22,0.4)" }}>
             Empezar gratis ahora
@@ -810,17 +810,36 @@ export default function LandingPage() {
               </p>
             </div>
             {[
-              { title: "Producto", items: ["Funcionalidades","Precios","BuddyIA","Recetas","Menús especiales","Para empresas"] },
-              { title: "Empresa", items: ["Sobre nosotros","Blog","Creadores","Afiliados","Prensa","Contacto"] },
-              { title: "Legal", items: ["Privacidad","Términos de uso","Cookies","RGPD","Aviso legal"] },
+              { title: "Producto", items: [
+                { label: "Funcionalidades", href: "/#funcionalidades" },
+                { label: "Precios", href: "/#precios" },
+                { label: "BuddyIA", href: "/app/buddy-ia" },
+                { label: "Recetas", href: "/app/recipes" },
+                { label: "Menús especiales", href: "/app/menu-library" },
+                { label: "Para empresas", href: "/empresas" },
+              ]},
+              { title: "Empresa", items: [
+                { label: "Blog", href: "/blog" },
+                { label: "Creadores", href: "/creators" },
+                { label: "FAQ", href: "/faq" },
+                { label: "Herramientas", href: "/herramientas" },
+                { label: "Contacto", href: "mailto:info@buddymarket.io" },
+              ]},
+              { title: "Legal", items: [
+                { label: "Privacidad", href: "/privacy" },
+                { label: "Términos de uso", href: "/terms" },
+                { label: "Cookies", href: "/cookies" },
+                { label: "RGPD", href: "/privacy" },
+                { label: "Aviso legal", href: "/terms" },
+              ]},
             ].map(col => (
               <div key={col.title}>
                 <p style={{ fontSize: 12, fontWeight: 700, color: "#f1f5f9", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: 16 }}>{col.title}</p>
                 {col.items.map(item => (
-                  <a key={item} href="#" style={{ display: "block", fontSize: 14, color: "#64748b", textDecoration: "none", marginBottom: 10, transition: "color 0.15s" }}
+                  <a key={item.label} href={item.href} style={{ display: "block", fontSize: 14, color: "#64748b", textDecoration: "none", marginBottom: 10, transition: "color 0.15s" }}
                     onMouseEnter={e => { (e.target as HTMLElement).style.color = "#F97316"; }}
                     onMouseLeave={e => { (e.target as HTMLElement).style.color = "#64748b"; }}>
-                    {item}
+                    {item.label}
                   </a>
                 ))}
               </div>

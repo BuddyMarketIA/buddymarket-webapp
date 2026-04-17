@@ -17,7 +17,7 @@ export default function Cookies() {
         <div style={{ marginBottom: 48 }}>
           <span style={{ fontSize: 12, fontWeight: 700, color: ORANGE, letterSpacing: "0.1em", textTransform: "uppercase" }}>LEGAL</span>
           <h1 style={{ fontSize: "clamp(28px, 4vw, 44px)", fontWeight: 900, color: "#111827", marginTop: 8, marginBottom: 12, letterSpacing: "-0.02em" }}>Política de Cookies</h1>
-          <p style={{ fontSize: 14, color: "#9ca3af" }}>Última actualización: 1 de abril de 2025</p>
+          <p style={{ fontSize: 14, color: "#9ca3af" }}>Última actualización: 17 de abril de 2026</p>
         </div>
 
         <div style={{ background: "white", borderRadius: 20, padding: "48px", boxShadow: "0 4px 20px rgba(0,0,0,0.06)" }}>
@@ -106,7 +106,7 @@ export default function Cookies() {
           <section>
             <h2 style={{ fontSize: 22, fontWeight: 800, color: "#111827", marginBottom: 16, paddingBottom: 12, borderBottom: "2px solid #f3f4f6" }}>Contacto</h2>
             <p style={{ fontSize: 15, color: "#374151", lineHeight: 1.8 }}>
-              Si tiene preguntas sobre nuestra política de cookies, puede contactarnos en <a href="mailto:privacidad@buddymarket.app" style={{ color: ORANGE }}>privacidad@buddymarket.app</a>.
+              Si tiene preguntas sobre nuestra política de cookies, puede contactarnos en <a href="mailto:info@buddymarket.io" style={{ color: ORANGE }}>info@buddymarket.io</a>.
             </p>
           </section>
         </div>

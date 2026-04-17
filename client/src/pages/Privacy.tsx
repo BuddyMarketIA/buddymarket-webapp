@@ -24,7 +24,7 @@ export default function Privacy() {
         <div style={{ marginBottom: 48 }}>
           <span style={{ fontSize: 12, fontWeight: 700, color: ORANGE, letterSpacing: "0.1em", textTransform: "uppercase" }}>LEGAL</span>
           <h1 style={{ fontSize: "clamp(28px, 4vw, 44px)", fontWeight: 900, color: "#111827", marginTop: 8, marginBottom: 12, letterSpacing: "-0.02em" }}>Política de Privacidad</h1>
-          <p style={{ fontSize: 14, color: "#9ca3af" }}>Última actualización: 1 de abril de 2025</p>
+          <p style={{ fontSize: 14, color: "#9ca3af" }}>Última actualización: 17 de abril de 2026</p>
         </div>
 
         <div style={{ background: "white", borderRadius: 20, padding: "48px 48px", boxShadow: "0 4px 20px rgba(0,0,0,0.06)" }}>
@@ -33,8 +33,8 @@ export default function Privacy() {
             <p>De conformidad con el Reglamento (UE) 2016/679 del Parlamento Europeo y del Consejo (RGPD) y la Ley Orgánica 3/2018, de 5 de diciembre, de Protección de Datos Personales y garantía de los derechos digitales (LOPDGDD), le informamos que el responsable del tratamiento de sus datos personales es:</p>
             <div style={{ background: "#f9fafb", borderRadius: 12, padding: "20px 24px", marginTop: 16 }}>
               <p><strong>Razón social:</strong> BuddyMarket S.L.</p>
-              <p><strong>Email de contacto:</strong> privacidad@buddymarket.app</p>
-              <p><strong>Delegado de Protección de Datos:</strong> dpo@buddymarket.app</p>
+              <p><strong>Email de contacto:</strong> info@buddymarket.io</p>
+              <p><strong>Delegado de Protección de Datos:</strong> info@buddymarket.io</p>
             </div>
           </Section>
 
@@ -104,7 +104,7 @@ export default function Privacy() {
                 </div>
               ))}
             </div>
-            <p style={{ marginTop: 16 }}>Para ejercer cualquiera de estos derechos, puede enviar una solicitud a <a href="mailto:privacidad@buddymarket.app" style={{ color: ORANGE }}>privacidad@buddymarket.app</a> adjuntando copia de su documento de identidad. Responderemos en el plazo máximo de 30 días.</p>
+            <p style={{ marginTop: 16 }}>Para ejercer cualquiera de estos derechos, puede enviar una solicitud a <a href="mailto:info@buddymarket.io" style={{ color: ORANGE }}>info@buddymarket.io</a> adjuntando copia de su documento de identidad. Responderemos en el plazo máximo de 30 días.</p>
             <p style={{ marginTop: 12 }}>También tiene derecho a presentar una reclamación ante la Agencia Española de Protección de Datos (AEPD) en <a href="https://www.aepd.es" target="_blank" rel="noopener noreferrer" style={{ color: ORANGE }}>www.aepd.es</a>.</p>
           </Section>
 
@@ -126,8 +126,7 @@ export default function Privacy() {
           <Section title="7. Contacto">
             <p>Para cualquier consulta sobre esta Política de Privacidad o el tratamiento de sus datos personales, puede contactar con nosotros en:</p>
             <ul style={{ marginTop: 12, paddingLeft: 24, display: "flex", flexDirection: "column", gap: 8 }}>
-              <li><strong>Email:</strong> privacidad@buddymarket.app</li>
-              <li><strong>DPO:</strong> dpo@buddymarket.app</li>
+              <li><strong>Email:</strong> info@buddymarket.io</li>
             </ul>
           </Section>
         </div>

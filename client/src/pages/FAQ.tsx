@@ -46,7 +46,7 @@ const FAQ_DATA: FAQCategory[] = [
       },
       {
         q: "¿Puedo exportar o imprimir el menú semanal?",
-        a: "Sí. Desde la vista del menú semanal encontrarás un botón para exportar el menú en PDF, listo para imprimir o compartir. El PDF incluye todas las recetas con sus ingredientes y el resumen nutricional.",
+        a: "La exportación a PDF está disponible en el plan Pro Max. Desde la vista del menú semanal encontrarás el botón de exportar, que genera un PDF listo para imprimir o compartir con todas las recetas, ingredientes y resumen nutricional.",
       },
     ],
   },
@@ -118,7 +118,7 @@ const FAQ_DATA: FAQCategory[] = [
       },
       {
         q: "¿Cuántas veces puedo generar menús con IA?",
-        a: "En el plan gratuito puedes generar hasta 3 menús al mes con IA. Los planes Pro y Pro Max ofrecen generaciones ilimitadas. Los menús generados a partir de un plan de BuddyExpert siempre son gratuitos independientemente de tu plan.",
+        a: "En el plan gratuito puedes generar 1 menú con IA al mes como prueba (más 2 menús manuales). Los planes Pro y Pro Max ofrecen generaciones ilimitadas. Los menús generados a partir de un plan de BuddyExpert siempre son gratuitos independientemente de tu plan.",
       },
       {
         q: "¿La IA aprende de mis preferencias?",
@@ -142,11 +142,11 @@ const FAQ_DATA: FAQCategory[] = [
     items: [
       {
         q: "¿Qué incluye el plan gratuito?",
-        a: "El plan gratuito incluye acceso a la biblioteca de recetas, generación de hasta 3 menús al mes con IA, lista de la compra básica, comparador de precios de supermercados y seguimiento del diario alimentario. Es suficiente para empezar a organizar tu alimentación.",
+        a: "El plan gratuito incluye: acceso a 207+ recetas de la comunidad, diario nutricional y seguimiento de métricas de salud (90 días de historial), 2 menús manuales al mes + 1 menú IA de prueba, hasta 3 listas de la compra al mes, inventario de hasta 25 productos, hasta 15 recetas guardadas y 5 mensajes con BuddyIA al día. Es suficiente para empezar a organizar tu alimentación.",
       },
       {
         q: "¿Qué ventajas tiene el plan Pro?",
-        a: "El plan Pro incluye generación ilimitada de menús con IA, acceso completo a los menús de BuddyExperts, comparador de precios avanzado, gestión de inventario con alertas de caducidad, exportación de menús y listas en PDF, y soporte prioritario.",
+        a: "El plan Pro (9,99€/mes) incluye: generación ilimitada de menús con IA, 24 menús especializados (diabetes, embarazo, celiaquía, deporte...), BuddyIA con 50 mensajes al día, diario nutricional con historial de 6 meses, inventario ilimitado con alertas de caducidad, listas de la compra ilimitadas y conexión con supermercados online. La exportación a PDF está disponible en el plan Pro Max.",
       },
       {
         q: "¿Cómo cancelo mi suscripción?",

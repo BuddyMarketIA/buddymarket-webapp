@@ -247,7 +247,7 @@ export default function Blog() {
 
       {/* Footer mini */}
       <footer style={{ background: "#0f172a", padding: "32px 24px", textAlign: "center" }}>
-        <p style={{ fontSize: 13, color: "#4b5563" }}>© 2025 BuddyMarket · <Link href="/terms" style={{ color: "#6b7280", textDecoration: "none" }}>Términos</Link> · <Link href="/privacy" style={{ color: "#6b7280", textDecoration: "none" }}>Privacidad</Link></p>
+        <p style={{ fontSize: 13, color: "#4b5563" }}>© 2026 BuddyMarket · <Link href="/terms" style={{ color: "#6b7280", textDecoration: "none" }}>Términos</Link> · <Link href="/privacy" style={{ color: "#6b7280", textDecoration: "none" }}>Privacidad</Link></p>
         <p style={{ fontSize: 11, color: "#374151", marginTop: 8 }}>⚠️ El contenido de este blog es orientativo y no sustituye el consejo de un profesional de la salud.</p>
       </footer>
 

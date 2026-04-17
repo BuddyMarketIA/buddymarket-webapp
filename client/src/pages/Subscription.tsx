@@ -20,8 +20,8 @@ const FEATURES: Array<{
     emoji: "📖",
     rows: [
       { label: "Ver recetas de la comunidad", free: true, pro: true, promax: true },
-      { label: "Recetas guardadas", free: "Solo 5", pro: "Ilimitadas", promax: "Ilimitadas" },
-      { label: "Crear tus propias recetas", free: false, pro: true, promax: true, hot: true },
+      { label: "Recetas guardadas", free: "Hasta 15", pro: "Ilimitadas", promax: "Ilimitadas" },
+      { label: "Crear tus propias recetas", free: true, pro: true, promax: true },
       { label: "Cálculo nutricional automático con IA", free: false, pro: true, promax: true },
       { label: "Compartir recetas con la comunidad", free: false, pro: true, promax: true },
     ],
@@ -30,9 +30,9 @@ const FEATURES: Array<{
     category: "Menús con IA",
     emoji: "🤖",
     rows: [
-      { label: "Menús generados al mes", free: "Solo 1", pro: "Ilimitados", promax: "Ilimitados", hot: true },
-      { label: "Generación de menús con IA", free: false, pro: true, promax: true, hot: true },
-      { label: "24 menús especializados (diabetes, embarazo...)", free: false, pro: true, promax: true, hot: true },
+      { label: "Menús manuales al mes", free: "2 menús", pro: "Ilimitados", promax: "Ilimitados", hot: true },
+      { label: "Generación de menús con IA", free: "1 prueba/mes", pro: "Ilimitados", promax: "Ilimitados", hot: true },
+      { label: "24 menús especializados (diabetes, embarazo...)", free: "1 prueba", pro: "Ilimitados", promax: "Ilimitados", hot: true },
       { label: "Menús para eventos (cumpleaños, cenas...)", free: "1 de prueba", pro: "Ilimitados", promax: "Ilimitados" },
     ],
   },
@@ -40,7 +40,7 @@ const FEATURES: Array<{
     category: "Listas de la Compra",
     emoji: "🛒",
     rows: [
-      { label: "Listas de la compra al mes", free: "Solo 2", pro: "Ilimitadas", promax: "Ilimitadas", hot: true },
+      { label: "Listas de la compra al mes", free: "Hasta 3", pro: "Ilimitadas", promax: "Ilimitadas", hot: true },
       { label: "Generar lista desde menú IA", free: false, pro: true, promax: true },
       { label: "Conectar supermercado online", free: false, pro: true, promax: true },
     ],
@@ -49,16 +49,17 @@ const FEATURES: Array<{
     category: "Diario Nutricional",
     emoji: "📊",
     rows: [
-      { label: "Registro de comidas diario", free: false, pro: true, promax: true, hot: true },
-      { label: "Seguimiento de macros y calorías", free: false, pro: true, promax: true },
-      { label: "Historial nutricional", free: false, pro: "6 meses", promax: "Ilimitado" },
+      { label: "Registro de comidas diario", free: true, pro: true, promax: true },
+      { label: "Seguimiento de macros y calorías", free: true, pro: true, promax: true },
+      { label: "Foto IA para identificar alimentos", free: false, pro: true, promax: true, hot: true },
+      { label: "Historial nutricional", free: "90 días", pro: "6 meses", promax: "Ilimitado" },
     ],
   },
   {
     category: "Inventario",
     emoji: "🏠",
     rows: [
-      { label: "Productos en inventario", free: "Solo 10", pro: "Ilimitados", promax: "Ilimitados" },
+      { label: "Productos en inventario", free: "Hasta 25", pro: "Ilimitados", promax: "Ilimitados" },
       { label: "Alertas de caducidad", free: false, pro: true, promax: true },
     ],
   },
@@ -66,7 +67,7 @@ const FEATURES: Array<{
     category: "BuddyIA (Asistente)",
     emoji: "💬",
     rows: [
-      { label: "Mensajes con BuddyIA al día", free: "Bloqueado", pro: "50 mensajes", promax: "Ilimitados", hot: true },
+      { label: "Mensajes con BuddyIA al día", free: "5 mensajes", pro: "50 mensajes", promax: "Ilimitados", hot: true },
       { label: "Adaptar recetas a tus alergias con IA", free: false, pro: true, promax: true },
       { label: "Consejos nutricionales personalizados", free: false, pro: true, promax: true },
     ],
@@ -75,8 +76,8 @@ const FEATURES: Array<{
     category: "Métricas de Salud",
     emoji: "❤️",
     rows: [
-      { label: "Seguimiento de peso y medidas", free: false, pro: true, promax: true },
-      { label: "Historial de métricas", free: false, pro: "6 meses", promax: "Ilimitado" },
+      { label: "Seguimiento de peso y medidas", free: true, pro: true, promax: true },
+      { label: "Historial de métricas", free: "90 días", pro: "6 meses", promax: "Ilimitado" },
     ],
   },
   {
@@ -289,25 +290,25 @@ export default function Subscription() {
             <div className="space-y-2">
               <UsageBar
                 used={usage.shoppingListsThisMonth}
-                max={2}
+                max={3}
                 label="Listas de la compra"
                 icon="🛒"
               />
               <UsageBar
                 used={usage.menusThisMonth}
-                max={1}
-                label="Menús al mes"
+                max={2}
+                label="Menús manuales al mes"
                 icon="📅"
               />
               <UsageBar
                 used={usage.savedRecipes}
-                max={5}
+                max={15}
                 label="Recetas guardadas"
                 icon="📖"
               />
               <UsageBar
                 used={usage.inventoryItems}
-                max={10}
+                max={25}
                 label="Productos en inventario"
                 icon="🏠"
               />
@@ -332,24 +333,24 @@ export default function Subscription() {
                 description="Pregunta lo que quieras sobre nutrición, recetas y tu salud"
               />
               <LockedFeature
-                icon="📊"
-                title="Diario nutricional completo"
-                description="Registra tus comidas y sigue tus macros y calorías cada día"
+                icon="📸"
+                title="Foto IA para identificar alimentos"
+                description="Fotografía tu plato y la IA calcula los macros automáticamente"
               />
               <LockedFeature
                 icon="🏥"
-                title="24 menús especializados"
+                title="24 menús especializados ilimitados"
                 description="Diabetes, embarazo, celiaquía, deportistas, hipertensión y mucho más"
               />
               <LockedFeature
-                icon="🍳"
-                title="Crea tus propias recetas"
-                description="Añade tus recetas favoritas y compártelas con la comunidad"
+                icon="🛒"
+                title="Conectar supermercado online"
+                description="Exporta tu lista de la compra directamente a Mercadona, Lidl y más"
               />
               <LockedFeature
-                icon="❤️"
-                title="Seguimiento de métricas de salud"
-                description="Controla tu peso, medidas y evolución con gráficas detalladas"
+                icon="📈"
+                title="Historial de métricas ilimitado"
+                description="Sigue tu evolución sin límite de tiempo con gráficas detalladas"
               />
             </div>
             <button
@@ -403,21 +404,21 @@ export default function Subscription() {
                   <span className="text-xl font-extrabold text-gray-400">0€</span>
                   <span className="text-xs text-gray-400">/siempre</span>
                 </div>
-                <p className="text-xs text-gray-500 mt-0.5">Para echar un vistazo — muy limitado</p>
+                <p className="text-xs text-gray-500 mt-0.5">Para empezar a explorar BuddyMarket</p>
               </div>
             </div>
             <div className="mb-4 space-y-1">
               {[
-                "❌ Sin menús con IA",
-                "❌ Sin diario nutricional",
-                "❌ Sin BuddyIA",
-                "❌ Solo 5 recetas guardadas",
-                "❌ Solo 2 listas de la compra/mes",
-                "❌ Solo 1 menú/mes (sin IA)",
-                "❌ Sin métricas de salud",
-                "❌ Sin menús especializados",
+                "✅ Diario nutricional y métricas de salud",
+                "✅ Hasta 15 recetas guardadas",
+                "✅ Hasta 3 listas de la compra/mes",
+                "✅ 2 menús manuales + 1 menú IA de prueba",
+                "✅ Inventario hasta 25 productos",
+                "✅ 5 mensajes BuddyIA al día",
+                "❌ Sin menús IA ilimitados",
+                "❌ Sin integración supermercados",
               ].map((l, i) => (
-                <div key={i} className="text-xs text-red-400 font-medium">{l}</div>
+                <div key={i} className={`text-xs font-medium ${l.startsWith('✅') ? 'text-green-600' : 'text-red-400'}`}>{l}</div>
               ))}
             </div>
             <div className="w-full rounded-2xl bg-gray-100 py-3 text-center text-sm font-bold text-gray-400">
