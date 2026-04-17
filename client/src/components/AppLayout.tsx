@@ -707,7 +707,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
                   <button
                     aria-label={item.label}
                     aria-pressed={active}
-                    style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "3px", padding: "6px 16px", border: "none", background: "transparent", cursor: "pointer", transition: "all 0.2s", minWidth: "52px" }}
+                    style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "3px", padding: "8px 16px", border: "none", background: active ? "rgba(249,115,22,0.08)" : "transparent", borderRadius: "12px", cursor: "pointer", transition: "all 0.2s", minWidth: "56px", minHeight: "44px", justifyContent: "center" }}
                   >
                     {item.icon(active)}
                     <span aria-hidden="true" style={{ fontSize: "11px", fontWeight: active ? 700 : 500, color: active ? "#F97316" : "#9ca3af", transition: "color 0.2s" }}>{item.label}</span>

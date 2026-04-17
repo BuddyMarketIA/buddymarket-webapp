@@ -1991,3 +1991,128 @@ export async function sendPatientMissingCheckinEmail(params: {
     return true;
   } catch (err) { console.error("[Email] Error sending patient missing checkin email:", err); return false; }
 }
+
+// ─── Email de Racha de 7 Días ─────────────────────────────────────────────────
+
+function streakEmailHtml(name: string, streakDays: number): string {
+  const firstName = name?.split(" ")[0] || "amigo";
+  const milestone = streakDays >= 30 ? "🏆" : streakDays >= 14 ? "🥇" : "🔥";
+  const title = streakDays >= 30
+    ? `¡30 días de racha, ${firstName}!`
+    : streakDays >= 14
+    ? `¡2 semanas seguidas, ${firstName}!`
+    : `¡7 días de racha, ${firstName}!`;
+  const subtitle = streakDays >= 30
+    ? "Un mes entero registrando tus comidas. ¡Eres increíble!"
+    : streakDays >= 14
+    ? "Dos semanas sin fallar ni un día. ¡Eso es disciplina!"
+    : "Una semana completa registrando tus comidas. ¡Sigue así!";
+
+  const body = `
+  ${emailHeader(milestone, title, subtitle, "linear-gradient(135deg,#F97316 0%,#EF4444 100%)")}
+  <tr>
+    <td style="padding:40px 40px 32px;">
+      <p style="color:#374151;font-size:16px;line-height:1.7;margin:0 0 20px;">
+        Hola <strong>${firstName}</strong>,
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#FFF7ED,#FFEDD5);border:2px solid #FED7AA;border-radius:20px;padding:28px;margin:0 0 24px;text-align:center;">
+        <tr><td>
+          <div style="font-size:64px;margin-bottom:8px;">${milestone}</div>
+          <p style="color:#C2410C;font-size:48px;font-weight:900;margin:0 0 4px;letter-spacing:-0.04em;">${streakDays}</p>
+          <p style="color:#92400E;font-size:18px;font-weight:700;margin:0;">días consecutivos</p>
+          <p style="color:#B45309;font-size:14px;margin:12px 0 0;">registrando tus comidas en BuddyMarket</p>
+        </td></tr>
+      </table>
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#F0FDF4;border-radius:16px;padding:20px 24px;margin:0 0 24px;">
+        <tr><td>
+          <p style="color:#166534;font-size:14px;font-weight:700;margin:0 0 8px;">💡 ¿Sabías que...</p>
+          <p style="color:#15803D;font-size:14px;line-height:1.6;margin:0;">
+            Las personas que registran sus comidas durante <strong>7 días seguidos</strong> tienen un 
+            <strong>80% más de probabilidades</strong> de alcanzar sus objetivos nutricionales. 
+            ¡Tú ya llevas ${streakDays} días!
+          </p>
+        </td></tr>
+      </table>
+      <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 24px;">
+        ${streakDays >= 14
+          ? "Tu constancia es admirable. Sigue así y verás resultados increíbles. ¡No rompas la racha!"
+          : "Llevas una semana entera siendo fiel a tu plan nutricional. Cada día que registras es un paso más hacia tus objetivos."}
+      </p>
+      ${ctaButton(`Mantener mi racha de ${streakDays} días 🔥`, `${APP_URL}/app/meal-log`)}
+      <p style="color:#9CA3AF;font-size:13px;text-align:center;margin:16px 0 0;">
+        Sigue registrando hoy para no perder tu racha. ¡Tú puedes!
+      </p>
+    </td>
+  </tr>`;
+  return emailWrapper(body);
+}
+
+export async function sendStreakEmail(params: {
+  userEmail: string;
+  userName: string;
+  streakDays: number;
+}): Promise<boolean> {
+  if (!process.env.RESEND_API_KEY) return false;
+  try {
+    const firstName = params.userName?.split(" ")[0] || "amigo";
+    const milestone = params.streakDays >= 30 ? "🏆" : params.streakDays >= 14 ? "🥇" : "🔥";
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: params.userEmail,
+      subject: `${milestone} ¡${firstName}, llevas ${params.streakDays} días de racha en BuddyMarket!`,
+      html: streakEmailHtml(params.userName, params.streakDays),
+    });
+    if (error) { console.error("[Email] Streak email failed:", error); return false; }
+    console.log("[Email] Streak email sent:", data?.id, "→", params.userEmail);
+    return true;
+  } catch (err) { console.error("[Email] Error sending streak email:", err); return false; }
+}
+
+// ─── Email de Logro Desbloqueado ──────────────────────────────────────────────
+
+function achievementEmailHtml(name: string, achievementTitle: string, achievementDescription: string, achievementEmoji: string): string {
+  const firstName = name?.split(" ")[0] || "amigo";
+  const body = `
+  ${emailHeader("🏅", `¡Nuevo logro desbloqueado!`, `${achievementEmoji} ${achievementTitle}`, "linear-gradient(135deg,#8B5CF6 0%,#7C3AED 100%)")}
+  <tr>
+    <td style="padding:40px 40px 32px;">
+      <p style="color:#374151;font-size:16px;line-height:1.7;margin:0 0 20px;">
+        ¡Enhorabuena, <strong>${firstName}</strong>! 🎉
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#F5F3FF,#EDE9FE);border:2px solid #DDD6FE;border-radius:20px;padding:28px;margin:0 0 24px;text-align:center;">
+        <tr><td>
+          <div style="font-size:64px;margin-bottom:16px;">${achievementEmoji}</div>
+          <h2 style="color:#4C1D95;font-size:22px;font-weight:800;margin:0 0 8px;">${achievementTitle}</h2>
+          <p style="color:#6D28D9;font-size:15px;line-height:1.6;margin:0;">${achievementDescription}</p>
+        </td></tr>
+      </table>
+      <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 24px;">
+        Acabas de desbloquear este logro en BuddyMarket. Cada logro es un recordatorio de tu progreso y tu dedicación. ¡Sigue así!
+      </p>
+      ${ctaButton("Ver todos mis logros 🏆", `${APP_URL}/app/achievements`)}
+    </td>
+  </tr>`;
+  return emailWrapper(body);
+}
+
+export async function sendAchievementEmail(params: {
+  userEmail: string;
+  userName: string;
+  achievementTitle: string;
+  achievementDescription: string;
+  achievementEmoji: string;
+}): Promise<boolean> {
+  if (!process.env.RESEND_API_KEY) return false;
+  try {
+    const firstName = params.userName?.split(" ")[0] || "amigo";
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: params.userEmail,
+      subject: `🏅 ¡${firstName}, has desbloqueado un nuevo logro en BuddyMarket!`,
+      html: achievementEmailHtml(params.userName, params.achievementTitle, params.achievementDescription, params.achievementEmoji),
+    });
+    if (error) { console.error("[Email] Achievement email failed:", error); return false; }
+    console.log("[Email] Achievement email sent:", data?.id, "→", params.userEmail);
+    return true;
+  } catch (err) { console.error("[Email] Error sending achievement email:", err); return false; }
+}

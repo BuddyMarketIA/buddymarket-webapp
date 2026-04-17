@@ -819,6 +819,7 @@ export default function LandingPage() {
                 { label: "Para empresas", href: "/empresas" },
               ]},
               { title: "Empresa", items: [
+                { label: "Sobre nosotros", href: "/about" },
                 { label: "Blog", href: "/blog" },
                 { label: "Creadores", href: "/creators" },
                 { label: "FAQ", href: "/faq" },

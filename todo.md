@@ -2661,3 +2661,35 @@
 - [ ] Email confirmación de pago recibido de un paciente
 - [ ] Email recordatorio para crear planes de servicio si no los tiene
 - [ ] Email aviso cuando un paciente cancela su plan
+
+## Mejoras de calidad pre-lanzamiento (Abril 2026)
+- [x] Service worker real activado (PWA funcional, notificaciones push habilitadas)
+- [x] Email de racha de 7 días y logro desbloqueado añadidos al sistema
+- [x] Feature "Recetas con lo que tienes" - endpoint servidor + UI con tab en Recetas
+- [x] Página "Sobre nosotros" (/about y /sobre-nosotros) con equipo, misión y valores
+- [x] Link "Sobre nosotros" añadido al footer de la landing
+- [x] Barra de progreso de completitud del perfil de usuario
+- [x] Touch targets nav bar inferior mejorados a 44px mínimo con indicador visual activo
+- [x] Métricas infladas corregidas en landing (207+ recetas, cifras reales)
+- [x] Inconsistencias entre planes corregidas (landing, suscripción, FAQ)
+- [x] Links del footer de la landing apuntan a páginas reales
+- [x] Copyright actualizado a 2026 en blog, privacy y cookies
+- [x] Aviso tarjeta 4242 eliminado de la página de suscripción
+- [x] Datos de prueba eliminados de la base de datos
+- [x] Blog posts reasignados a BuddyMarket con fechas variadas
+
+## Mejoras de calidad pre-lanzamiento (Abril 2026)
+- [x] Service worker real activado (PWA funcional, notificaciones push habilitadas)
+- [x] Email de racha de 7 dias y logro desbloqueado aniadidos al sistema
+- [x] Feature Recetas con lo que tienes - endpoint servidor + UI con tab en Recetas
+- [x] Pagina Sobre nosotros (/about y /sobre-nosotros) con equipo, mision y valores
+- [x] Link Sobre nosotros aniadido al footer de la landing
+- [x] Barra de progreso de completitud del perfil de usuario
+- [x] Touch targets nav bar inferior mejorados a 44px minimo con indicador visual activo
+- [x] Metricas infladas corregidas en landing (207+ recetas, cifras reales)
+- [x] Inconsistencias entre planes corregidas (landing, suscripcion, FAQ)
+- [x] Links del footer de la landing apuntan a paginas reales
+- [x] Copyright actualizado a 2026 en blog, privacy y cookies
+- [x] Aviso tarjeta 4242 eliminado de la pagina de suscripcion
+- [x] Datos de prueba eliminados de la base de datos
+- [x] Blog posts reasignados a BuddyMarket con fechas variadas

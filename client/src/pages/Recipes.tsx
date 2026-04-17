@@ -485,6 +485,7 @@ export default function Recipes() {
   const [cuisineFilter, setCuisineFilter] = useState("");
   const [cookingMethodFilter, setCookingMethodFilter] = useState("");
   const [showMyRecipes, setShowMyRecipes] = useState(false);
+  const [showWithInventory, setShowWithInventory] = useState(false);
 
   // Load recent searches on mount
   useEffect(() => {
@@ -512,6 +513,12 @@ export default function Recipes() {
     document.addEventListener("mousedown", handleClick);
     return () => document.removeEventListener("mousedown", handleClick);
   }, []);
+
+  // Query: recetas con lo que tienes
+  const { data: inventoryRecipesData, isLoading: isLoadingInventory } = trpc.recipes.withInventory.useQuery(
+    { limit: 30, minMatchPercent: 40 },
+    { enabled: isAuthenticated && showWithInventory }
+  );
 
   // Suggestions query (fires when user is typing, before debounce commits)
   const suggestionsQuery = trpc.recipes.searchSuggestions.useQuery(
@@ -800,20 +807,26 @@ export default function Recipes() {
         </div>
       )}
 
-      {/* My recipes / All recipes toggle */}
+      {/* My recipes / All recipes / Con lo que tienes toggle */}
       {isAuthenticated && !debouncedSearch && (
-        <div style={{ display: "flex", gap: "8px", marginBottom: "14px" }}>
+        <div style={{ display: "flex", gap: "6px", marginBottom: "14px" }}>
           <button
-            onClick={() => setShowMyRecipes(false)}
-            style={{ flex: 1, padding: "9px", borderRadius: "14px", border: "none", cursor: "pointer", fontSize: "13px", fontWeight: 700, background: !showMyRecipes ? "#F97316" : "white", color: !showMyRecipes ? "white" : "#6b7280", boxShadow: !showMyRecipes ? "0 4px 12px rgba(249,115,22,0.35)" : "0 1px 4px rgba(0,0,0,0.06)", transition: "all 0.2s" }}
+            onClick={() => { setShowMyRecipes(false); setShowWithInventory(false); }}
+            style={{ flex: 1, padding: "8px 4px", borderRadius: "14px", border: "none", cursor: "pointer", fontSize: "12px", fontWeight: 700, background: !showMyRecipes && !showWithInventory ? "#F97316" : "white", color: !showMyRecipes && !showWithInventory ? "white" : "#6b7280", boxShadow: !showMyRecipes && !showWithInventory ? "0 4px 12px rgba(249,115,22,0.35)" : "0 1px 4px rgba(0,0,0,0.06)", transition: "all 0.2s" }}
           >
-            {t("recipes.catalog", "All recipes")}
+            {t("recipes.catalog", "Todas")}
           </button>
           <button
-            onClick={() => setShowMyRecipes(true)}
-            style={{ flex: 1, padding: "9px", borderRadius: "14px", border: "none", cursor: "pointer", fontSize: "13px", fontWeight: 700, background: showMyRecipes ? "#F97316" : "white", color: showMyRecipes ? "white" : "#6b7280", boxShadow: showMyRecipes ? "0 4px 12px rgba(249,115,22,0.35)" : "0 1px 4px rgba(0,0,0,0.06)", transition: "all 0.2s" }}
+            onClick={() => { setShowMyRecipes(true); setShowWithInventory(false); }}
+            style={{ flex: 1, padding: "8px 4px", borderRadius: "14px", border: "none", cursor: "pointer", fontSize: "12px", fontWeight: 700, background: showMyRecipes && !showWithInventory ? "#F97316" : "white", color: showMyRecipes && !showWithInventory ? "white" : "#6b7280", boxShadow: showMyRecipes && !showWithInventory ? "0 4px 12px rgba(249,115,22,0.35)" : "0 1px 4px rgba(0,0,0,0.06)", transition: "all 0.2s" }}
           >
-            {t("recipes.myRecipes", "My recipes")}
+            {t("recipes.myRecipes", "Mis recetas")}
+          </button>
+          <button
+            onClick={() => { setShowWithInventory(true); setShowMyRecipes(false); }}
+            style={{ flex: 1, padding: "8px 4px", borderRadius: "14px", border: "none", cursor: "pointer", fontSize: "12px", fontWeight: 700, background: showWithInventory ? "#10B981" : "white", color: showWithInventory ? "white" : "#6b7280", boxShadow: showWithInventory ? "0 4px 12px rgba(16,185,129,0.35)" : "0 1px 4px rgba(0,0,0,0.06)", transition: "all 0.2s" }}
+          >
+            🧑‍🍳 Con lo que tienes
           </button>
         </div>
       )}
@@ -873,8 +886,53 @@ export default function Recipes() {
         </>
       )}
 
+      {/* Panel: Con lo que tienes */}
+      {showWithInventory && (
+        <div style={{ marginBottom: "8px" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+            <h2 style={{ margin: 0, fontSize: "16px", fontWeight: 800, color: "#1a1a1a" }}>🧑‍🍳 Recetas con lo que tienes</h2>
+            {inventoryRecipesData && (
+              <span style={{ fontSize: "13px", color: "#9ca3af" }}>{inventoryRecipesData.recipes.length} recetas</span>
+            )}
+          </div>
+          {isLoadingInventory ? (
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+              {[1,2,3,4].map(i => <RecipeCardSkeleton key={i} />)}
+            </div>
+          ) : inventoryRecipesData?.inventoryCount === 0 ? (
+            <div style={{ background: "white", borderRadius: "18px", padding: "32px 24px", textAlign: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+              <p style={{ fontSize: "32px", margin: "0 0 8px" }}>🛒</p>
+              <p style={{ fontSize: "15px", fontWeight: 700, color: "#1a1a1a", margin: "0 0 4px" }}>Tu inventario está vacío</p>
+              <p style={{ fontSize: "13px", color: "#9ca3af", margin: "0 0 16px" }}>Añade ingredientes a tu inventario para ver qué puedes cocinar</p>
+              <button onClick={() => { const el = document.querySelector('[href*="inventory"]') as HTMLAnchorElement; if (el) el.click(); }} style={{ background: "#10B981", border: "none", borderRadius: "12px", padding: "10px 20px", fontSize: "13px", fontWeight: 700, color: "white", cursor: "pointer" }}>Ir a mi inventario</button>
+            </div>
+          ) : inventoryRecipesData?.recipes.length === 0 ? (
+            <div style={{ background: "white", borderRadius: "18px", padding: "32px 24px", textAlign: "center", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+              <p style={{ fontSize: "32px", margin: "0 0 8px" }}>🤔</p>
+              <p style={{ fontSize: "15px", fontWeight: 700, color: "#1a1a1a", margin: "0 0 4px" }}>Sin coincidencias suficientes</p>
+              <p style={{ fontSize: "13px", color: "#9ca3af", margin: 0 }}>Tienes {inventoryRecipesData?.inventoryCount} ingredientes pero ninguna receta coincide al 40%+. Añade más ingredientes o baja el umbral.</p>
+            </div>
+          ) : (
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+              {(inventoryRecipesData?.recipes ?? []).map((recipe: any) => (
+                <div key={recipe.id} style={{ position: "relative" }}>
+                  <RecipeCard
+                    recipe={recipe}
+                    isFav={favoriteIds?.includes(recipe.id)}
+                    onToggleFav={isAuthenticated ? () => handleToggleFav(recipe) : undefined}
+                    likesCount={getLikesCount(recipe.id)}
+                  />
+                  <div style={{ position: "absolute", top: "8px", left: "8px", background: recipe.matchRate >= 0.9 ? "#10B981" : recipe.matchRate >= 0.7 ? "#F59E0B" : "#6B7280", color: "white", borderRadius: "8px", padding: "3px 8px", fontSize: "11px", fontWeight: 700, zIndex: 2 }}>
+                    {Math.round(recipe.matchRate * 100)}% ✓
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
       {/* Recipes count + grid */}
-      <div>
+      {!showWithInventory && <div>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
           <h2 style={{ margin: 0, fontSize: "16px", fontWeight: 800, color: "#1a1a1a" }}>
             {debouncedSearch
@@ -958,7 +1016,8 @@ export default function Recipes() {
       </div>
 
       {/* Infinite scroll sentinel */}
-      {recipes.length > 0 && (
+      </div>}
+      {recipes.length > 0 && !showWithInventory && (
         <div ref={sentinelRef} style={{ height: "60px", display: "flex", alignItems: "center", justifyContent: "center", marginTop: "8px" }}>
           {isFetchingNextPage && (
             <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>

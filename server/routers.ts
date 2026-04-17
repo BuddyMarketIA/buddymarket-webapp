@@ -1924,6 +1924,74 @@ Adapta esta receta eliminando los ingredientes prohibidos y sustituyéndolos por
           throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Error al calcular la nutrición. Inténtalo de nuevo." });
         }
       }),
+    // ── Recetas con lo que tienes (basado en inventario) ──────────────────────
+    withInventory: protectedProcedure
+      .input(z.object({
+        limit: z.number().int().min(1).max(50).optional(),
+        minMatchPercent: z.number().min(0).max(100).optional(),
+      }))
+      .query(async ({ ctx, input }) => {
+        const limit = input.limit ?? 20;
+        const minMatch = (input.minMatchPercent ?? 40) / 100;
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { userInventoryItems, recipeIngredients, recipes: recipesTable } = await import("../drizzle/schema.js");
+        const { eq, and, inArray, sql } = await import("drizzle-orm");
+        // Get user's inventory ingredient IDs
+        const inventoryRows = await drizzleDb
+          .select({ ingredientId: userInventoryItems.ingredientId })
+          .from(userInventoryItems)
+          .where(eq(userInventoryItems.userId, ctx.user.id))
+          .limit(200);
+        const inventoryIngredientIds = inventoryRows
+          .map((r: any) => r.ingredientId)
+          .filter((id: any): id is number => id !== null && id !== undefined);
+        if (inventoryIngredientIds.length === 0) {
+          return { recipes: [], inventoryCount: 0 };
+        }
+        // Get all recipe ingredient counts and matches
+        const allRecipeStats = await drizzleDb
+          .select({
+            recipeId: recipeIngredients.recipeId,
+            totalIngredients: sql<number>`COUNT(*)`,
+            matchedIngredients: sql<number>`SUM(CASE WHEN ${recipeIngredients.ingredientId} = ANY(ARRAY[${sql.raw(inventoryIngredientIds.join(','))}]::int[]) THEN 1 ELSE 0 END)`,
+          })
+          .from(recipeIngredients)
+          .groupBy(recipeIngredients.recipeId)
+          .having(sql`COUNT(*) > 0`)
+          .limit(500);
+        // Filter by match percentage and sort by match rate
+        const matched = allRecipeStats
+          .map((r: any) => ({
+            recipeId: r.recipeId,
+            total: Number(r.totalIngredients),
+            matched: Number(r.matchedIngredients),
+            matchRate: Number(r.matchedIngredients) / Number(r.totalIngredients),
+          }))
+          .filter((r: any) => r.matchRate >= minMatch && r.matched > 0)
+          .sort((a: any, b: any) => b.matchRate - a.matchRate)
+          .slice(0, limit);
+        if (matched.length === 0) {
+          return { recipes: [], inventoryCount: inventoryIngredientIds.length };
+        }
+        // Fetch full recipe data
+        const recipeIds = matched.map((r: any) => r.recipeId);
+        const recipeRows = await drizzleDb
+          .select()
+          .from(recipesTable)
+          .where(inArray(recipesTable.id, recipeIds));
+        // Merge match data
+        const matchMap = new Map(matched.map((r: any) => [r.recipeId, r]));
+        const recipes = recipeRows
+          .map((r: any) => ({
+            ...r,
+            matchRate: matchMap.get(r.id)?.matchRate ?? 0,
+            matchedIngredients: matchMap.get(r.id)?.matched ?? 0,
+            totalIngredients: matchMap.get(r.id)?.total ?? 0,
+          }))
+          .sort((a: any, b: any) => b.matchRate - a.matchRate);
+        return { recipes, inventoryCount: inventoryIngredientIds.length };
+      }),
   }),
   // ---------------------------------------------------------------------------
   // MENU ORGANIZERS

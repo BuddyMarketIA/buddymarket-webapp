@@ -594,6 +594,35 @@ export default function Profile() {
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ margin: 0, fontSize: "18px", fontWeight: 800, color: "#1a1a1a" }}>{user?.name || "Mi perfil"}</p>
             <p style={{ margin: "2px 0 0", fontSize: "13px", color: "#9ca3af" }}>{user?.email}</p>
+            {/* Barra de progreso de completitud del perfil */}
+            {(() => {
+              const fields = [
+                !!user?.name,
+                !!user?.imageUrl,
+                !!height,
+                !!weight,
+                !!mainGoal,
+                !!activityLevel,
+                !!gender,
+                !!birthYear,
+                selectedAllergies.length > 0 || selectedRestrictions.length > 0 || true, // always count as filled if user has seen it
+                !!cookingLevel,
+              ];
+              const filled = fields.filter(Boolean).length;
+              const pct = Math.round((filled / fields.length) * 100);
+              const color = pct >= 80 ? "#10B981" : pct >= 50 ? "#F59E0B" : "#F97316";
+              return (
+                <div style={{ marginTop: "8px" }}>
+                  <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "4px" }}>
+                    <span style={{ fontSize: "11px", color: "#9ca3af", fontWeight: 600 }}>Perfil completado</span>
+                    <span style={{ fontSize: "11px", color, fontWeight: 700 }}>{pct}%</span>
+                  </div>
+                  <div style={{ height: "6px", background: "#f3f4f6", borderRadius: "3px", overflow: "hidden" }}>
+                    <div style={{ height: "100%", width: `${pct}%`, background: color, borderRadius: "3px", transition: "width 0.5s ease" }} />
+                  </div>
+                </div>
+              );
+            })()}
           </div>
           <button onClick={() => setShowLogoutConfirm(true)} style={{ padding: "8px 14px", borderRadius: "10px", border: "1.5px solid #fee2e2", background: "white", color: "#ef4444", fontSize: "13px", fontWeight: 600, cursor: "pointer" }}>
             Salir
