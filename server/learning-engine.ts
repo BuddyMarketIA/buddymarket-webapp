@@ -15,7 +15,7 @@
  *   - Meal logs del diario nutricional (peso: +1.0)
  */
 
-import { db } from "./db";
+import { getDb } from "./db";
 import {
   recipeInteractions,
   userTasteProfile,
@@ -64,7 +64,7 @@ export async function trackRecipeInteraction(
   if (weight === 0) return;
 
   // 1. Registrar la interacción
-  await db.insert(recipeInteractions).values({
+  await (await getDb()).insert(recipeInteractions).values({
     userId,
     recipeId,
     type: type as any,
@@ -80,7 +80,7 @@ export async function trackRecipeInteraction(
 export async function updateTasteProfile(userId: number): Promise<void> {
   try {
     // Obtener las últimas 200 interacciones del usuario
-    const interactions = await db
+    const interactions = await (await getDb())
       .select({
         recipeId: recipeInteractions.recipeId,
         type: recipeInteractions.type,
@@ -96,7 +96,7 @@ export async function updateTasteProfile(userId: number): Promise<void> {
 
     // Obtener datos de las recetas involucradas
     const recipeIds = [...new Set(interactions.map(i => i.recipeId))];
-    const recipeData = await db
+    const recipeData = await (await getDb())
       .select({
     id: recipes.id,
     cuisine: recipes.cuisineType,
@@ -186,7 +186,7 @@ export async function updateTasteProfile(userId: number): Promise<void> {
     const confidenceScore = Math.min(100, Math.floor(interactions.length * 2));
 
     // Guardar o actualizar el perfil
-    await db
+    await (await getDb())
       .insert(userTasteProfile)
       .values({
         userId,
@@ -225,7 +225,7 @@ export async function updateTasteProfile(userId: number): Promise<void> {
 
 // ─── Obtener el perfil de gustos del usuario ──────────────────────────────────
 export async function getUserTasteProfile(userId: number) {
-  const profile = await db
+  const profile = await (await getDb())
     .select()
     .from(userTasteProfile)
     .where(eq(userTasteProfile.userId, userId))
@@ -289,13 +289,13 @@ export function calculateBuddyScore(totalInteractions: number, confidenceScore: 
 export async function syncExistingInteractions(userId: number): Promise<void> {
   try {
     // Favoritos → "save"
-    const favorites = await db
+    const favorites = await (await getDb())
       .select({ recipeId: recipeFavorites.recipeId, createdAt: recipeFavorites.createdAt })
       .from(recipeFavorites)
       .where(eq(recipeFavorites.userId, userId));
 
     for (const fav of favorites) {
-      await db.insert(recipeInteractions).values({
+      await (await getDb()).insert(recipeInteractions).values({
         userId,
         recipeId: fav.recipeId,
         type: "save" as any,
@@ -305,13 +305,13 @@ export async function syncExistingInteractions(userId: number): Promise<void> {
     }
 
     // Likes → "like"
-    const likes = await db
+    const likes = await (await getDb())
       .select({ recipeId: recipeLikes.recipeId, createdAt: recipeLikes.createdAt })
       .from(recipeLikes)
       .where(eq(recipeLikes.userId, userId));
 
     for (const like of likes) {
-      await db.insert(recipeInteractions).values({
+      await (await getDb()).insert(recipeInteractions).values({
         userId,
         recipeId: like.recipeId,
         type: "like" as any,
@@ -321,14 +321,14 @@ export async function syncExistingInteractions(userId: number): Promise<void> {
     }
 
     // Meal logs → "log_meal"
-    const logs = await db
+    const logs = await (await getDb())
       .select({ recipeId: mealLogs.recipeId, createdAt: mealLogs.createdAt })
       .from(mealLogs)
       .where(and(eq(mealLogs.userId, userId), sql`${mealLogs.recipeId} IS NOT NULL`));
 
     for (const log of logs) {
       if (!log.recipeId) continue;
-      await db.insert(recipeInteractions).values({
+      await (await getDb()).insert(recipeInteractions).values({
         userId,
         recipeId: log.recipeId,
         type: "log_meal" as any,

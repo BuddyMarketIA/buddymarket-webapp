@@ -1018,10 +1018,8 @@ export default function Recipes() {
             )}
           </div>
         )}
-      </div>
-
-      {/* Infinite scroll sentinel */}
       </div>}
+      {/* Infinite scroll sentinel */}
       {recipes.length > 0 && !showWithInventory && (
         <div ref={sentinelRef} style={{ height: "60px", display: "flex", alignItems: "center", justifyContent: "center", marginTop: "8px" }}>
           {isFetchingNextPage && (
