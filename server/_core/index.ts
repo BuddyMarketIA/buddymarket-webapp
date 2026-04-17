@@ -305,6 +305,33 @@ async function startServer() {
     return res.status(statusCode).json(health);
   });
 
+  // ─── Seed ingredients endpoint (internal use only) ───────────────────────
+  app.post("/api/internal/seed-ingredients", async (req: any, res: any) => {
+    const secret = req.headers["x-seed-secret"];
+    if (secret !== "buddymarket-seed-2024") {
+      return res.status(403).json({ error: "Forbidden" });
+    }
+    const { category, count, examples, excludeNames } = req.body;
+    if (!category || !count) {
+      return res.status(400).json({ error: "Missing category or count" });
+    }
+    try {
+      const { invokeLLM } = await import("./llm");
+      const excludeStr = (excludeNames || []).slice(0, 15).join(", ");
+      const userPrompt = `Lista ${count} ingredientes únicos de la categoría "${category}".\nEjemplos: ${(examples || "").substring(0, 200)}\nNO incluyas: ${excludeStr}\nDevuelve SOLO un array JSON con objetos que tengan: nameEs (nombre en español), nameEn (nombre en inglés), apiParam (identificador único en snake_case).\nEjemplo: [{"nameEs":"Pak Choi","nameEn":"Pak Choi","apiParam":"pak_choi"}]`;
+      const result = await invokeLLM({
+        messages: [
+          { role: "system", content: "Eres experto en alimentos. Devuelves SOLO arrays JSON válidos. Sin texto adicional." },
+          { role: "user", content: userPrompt },
+        ],
+      });
+      const content = (result as any)?.choices?.[0]?.message?.content || "";
+      return res.json({ ok: true, content });
+    } catch (err: any) {
+      return res.status(500).json({ error: err.message });
+    }
+  });
+
    // ─── Metrics endpoints ───────────────────────────────────
   registerMetricsRoutes(app);
   // ─── Open Graph (social media bots) ──────────────────────────────────────
