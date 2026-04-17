@@ -640,13 +640,6 @@ export default function Subscription() {
         </div>
       </div>
 
-      {/* ── Test mode notice ── */}
-      <div className="mb-4 rounded-2xl bg-yellow-50 border border-yellow-200 p-4 text-center">
-        <p className="text-xs font-semibold text-yellow-700">🧪 Modo de prueba activo</p>
-        <p className="mt-1 text-xs text-yellow-600">
-          Usa la tarjeta <strong>4242 4242 4242 4242</strong> para probar sin cargo real.
-        </p>
-      </div>
 
       <p className="text-center text-xs text-gray-400 pb-6">
         Los precios incluyen IVA · Cancela en cualquier momento
