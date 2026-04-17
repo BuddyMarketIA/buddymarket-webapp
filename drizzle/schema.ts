@@ -2226,7 +2226,7 @@ export type InsertHousehold = typeof households.$inferInsert;
 export const householdMembers = pgTable("household_members", {
   id: serial("id").primaryKey(),
   householdId: integer("householdId").notNull(),
-  userId: integer("userId").notNull(),
+  userId: integer("userId"),  // nullable: miembros manuales (sin cuenta) tienen userId null
   role: householdRoleEnum("role").notNull().default("member"),
   displayName: varchar("displayName", { length: 80 }),
   // Preferencias y restricciones individuales
@@ -2245,7 +2245,7 @@ export const householdMembers = pgTable("household_members", {
 }, (t) => ({
   householdIdx: index("hhm_household_idx").on(t.householdId),
   userIdx: index("hhm_user_idx").on(t.userId),
-  uniqueMember: uniqueIndex("hhm_unique_member").on(t.householdId, t.userId),
+  // uniqueMember solo aplica cuando userId no es null; se gestiona a nivel de aplicación
 }));
 export type HouseholdMember = typeof householdMembers.$inferSelect;
 export type InsertHouseholdMember = typeof householdMembers.$inferInsert;

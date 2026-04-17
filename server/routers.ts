@@ -3172,6 +3172,90 @@ Adapta esta receta eliminando los ingredientes prohibidos y sustituyéndolos por
         const available = await db.checkPantryAvailability(ctx.user.id, input.ingredientNames);
         return { availableKeys: Array.from(available) };
       }),
+    // ── Generate AI menu from shopping list items ──────────────────────────
+    generateMenuFromList: protectedProcedure
+      .input(z.object({ listId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const [listData, listItems, userAllergies, userRestrictions, userProfile] = await Promise.all([
+          db.getShoppingListById(input.listId),
+          db.getShoppingListItems(input.listId),
+          db.getUserAllergies(ctx.user.id),
+          db.getUserDietRestrictions(ctx.user.id),
+          db.getUserProfile(ctx.user.id),
+        ]);
+        if (!listData) throw new TRPCError({ code: "NOT_FOUND", message: "Lista no encontrada" });
+        // Verify ownership
+        if ((listData as any).userId !== ctx.user.id) throw new TRPCError({ code: "FORBIDDEN" });
+        const items = (listItems ?? []) as any[];
+        if (items.length === 0) throw new TRPCError({ code: "BAD_REQUEST", message: "La lista está vacía" });
+        const ingredientList = items
+          .slice(0, 20)
+          .map((row: any) => row.ingredient?.nameEs ?? row.item?.customName ?? row.item?.name ?? null)
+          .filter(Boolean)
+          .map((name: string) => `- ${name}`)
+          .join("\n");
+        const forbiddenBlock = buildForbiddenIngredientsBlock({
+          allergies: userAllergies,
+          restrictions: userRestrictions,
+          dislikedIngredients: userProfile?.dislikedIngredients,
+        });
+        const response = await invokeLLM({
+          messages: [
+            {
+              role: "system",
+              content: `Eres un chef y nutricionista experto en cocina española y mediterránea. Genera un menú semanal completo usando principalmente los ingredientes de la lista de la compra del usuario. Responde SOLO con JSON válido.${forbiddenBlock ? '\n' + forbiddenBlock : ''}`,
+            },
+            {
+              role: "user",
+              content: `El usuario ha comprado estos ingredientes:\n${ingredientList}\n\nGenera un menú semanal para 7 días (lunes a domingo) con desayuno, comida y cena para cada día. Aprovecha al máximo los ingredientes de la lista. Para cada plato incluye: nombre del plato, momento del día (desayuno/comida/cena), ingredientes principales usados de la lista, calorías aproximadas y emoji representativo.`,
+            },
+          ],
+          response_format: {
+            type: "json_schema",
+            json_schema: {
+              name: "weekly_menu_from_list",
+              strict: true,
+              schema: {
+                type: "object",
+                properties: {
+                  menuName: { type: "string" },
+                  days: {
+                    type: "array",
+                    items: {
+                      type: "object",
+                      properties: {
+                        day: { type: "string" },
+                        meals: {
+                          type: "array",
+                          items: {
+                            type: "object",
+                            properties: {
+                              mealType: { type: "string" },
+                              name: { type: "string" },
+                              emoji: { type: "string" },
+                              calories: { type: "integer" },
+                              usedIngredients: { type: "array", items: { type: "string" } },
+                            },
+                            required: ["mealType", "name", "emoji", "calories", "usedIngredients"],
+                            additionalProperties: false,
+                          },
+                        },
+                      },
+                      required: ["day", "meals"],
+                      additionalProperties: false,
+                    },
+                  },
+                },
+                required: ["menuName", "days"],
+                additionalProperties: false,
+              },
+            },
+          },
+        });
+        const content = response?.choices?.[0]?.message?.content;
+        const parsed = JSON.parse(typeof content === "string" ? content : '{"menuName":"Menú semanal","days":[]}');
+        return { menu: parsed, ingredientCount: items.length };
+      }),
   }),
   // ---------------------------------------------------------------------------
   // INVENTORYY
@@ -3394,11 +3478,16 @@ Si no puedes detectar productos, devuelve {"products": []}. No incluyas texto ad
         const items = await db.getInventoryItems(ctx.user.id);
         const now = new Date();
         const cutoff = new Date(now.getTime() + input.days * 24 * 60 * 60 * 1000);
-        return items.filter((item: any) => {
-          if (!item.expirationDate) return false;
-          const exp = new Date(item.expirationDate);
+        return items.filter((row: any) => {
+          const expDate = row.item?.expirationDate ?? row.expirationDate;
+          if (!expDate) return false;
+          const exp = new Date(expDate);
           return exp <= cutoff;
-        }).sort((a: any, b: any) => new Date(a.expirationDate).getTime() - new Date(b.expirationDate).getTime());
+        }).sort((a: any, b: any) => {
+          const aDate = a.item?.expirationDate ?? a.expirationDate;
+          const bDate = b.item?.expirationDate ?? b.expirationDate;
+          return new Date(aDate).getTime() - new Date(bDate).getTime();
+        });
       }),
 
     // Get recipe recommendations based on expiring inventory ingredients
@@ -3408,8 +3497,8 @@ Si no puedes detectar productos, devuelve {"products": []}. No incluyas texto ad
         const now = new Date();
         const cutoff = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
         const expiring = items
-          .filter((item: any) => item.expirationDate && new Date(item.expirationDate) <= cutoff)
-          .map((item: any) => item.customName || item.ingredientId)
+          .filter((row: any) => row.item?.expirationDate && new Date(row.item.expirationDate) <= cutoff)
+          .map((row: any) => row.ingredient?.nameEs ?? row.item?.customName ?? null)
           .filter(Boolean)
           .slice(0, 10);
         if (expiring.length === 0) {
@@ -3537,10 +3626,10 @@ Si no puedes detectar productos, devuelve {"products": []}. No incluyas texto ad
         const now = new Date();
         const cutoff = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
         const expiring = items
-          .filter((item: any) => item.expirationDate && new Date(item.expirationDate) <= cutoff)
-          .map((item: any) => ({
-            name: item.customName || item.ingredient?.nameEs || "Alimento",
-            daysLeft: Math.ceil((new Date(item.expirationDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)),
+          .filter((row: any) => row.item?.expirationDate && new Date(row.item.expirationDate) <= cutoff)
+          .map((row: any) => ({
+            name: row.ingredient?.nameEs ?? row.item?.customName ?? "Alimento",
+            daysLeft: Math.ceil((new Date(row.item.expirationDate).getTime() - now.getTime()) / (1000 * 60 * 60 * 24)),
           }))
           .slice(0, 8);
 
@@ -3618,7 +3707,7 @@ Si no puedes detectar productos, devuelve {"products": []}. No incluyas texto ad
         }
         const ingredientList = items
           .slice(0, 15)
-          .map((item: any) => item.customName || item.ingredient?.nameEs || "Alimento")
+          .map((row: any) => row.ingredient?.nameEs ?? row.item?.customName ?? null)
           .filter(Boolean)
           .map((name: string) => `- ${name}`)
           .join("\n");

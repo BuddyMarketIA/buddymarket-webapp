@@ -429,13 +429,14 @@ function ExpertProfile({ id }: { id: number }) {
       badge="BuddyExpert"
       badgeColor="from-orange-500 to-red-500"
     >
-      {/* ── Planes de contratación de servicio ── */}
-      {servicePlans && servicePlans.length > 0 && (
-        <section>
-          <div className="flex items-center justify-between mb-3">
-            <h3 className="font-bold text-gray-900 text-base">Contratar servicio</h3>
-            <span className="text-xs text-orange-500 font-medium bg-orange-50 px-2 py-0.5 rounded-full">Seguimiento personalizado</span>
-          </div>
+      {/* ── Planes de contratación de servicio ── SIEMPRE VISIBLE ── */}
+      <section>
+        <div className="flex items-center justify-between mb-3">
+          <h3 className="font-bold text-gray-900 text-base">Contratar servicio</h3>
+          <span className="text-xs text-orange-500 font-medium bg-orange-50 px-2 py-0.5 rounded-full">Seguimiento personalizado</span>
+        </div>
+        {/* Si hay planes configurados, mostrarlos; si no, botón directo */}
+        {servicePlans && servicePlans.length > 0 ? (
           <div className="space-y-3">
             {servicePlans.map((plan: any) => {
               let includes: string[] = [];
@@ -485,46 +486,53 @@ function ExpertProfile({ id }: { id: number }) {
               );
             })}
           </div>
-          {/* Modal de solicitud */}
-          {showHireModal && (
-            <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setShowHireModal(false)}>
-              <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-              <div className="relative bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
-                <div className="p-5">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-bold text-gray-900 text-lg">Solicitar contratación</h3>
-                    <button onClick={() => setShowHireModal(false)} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200">×</button>
-                  </div>
-                  {selectedPlan && (
-                    <div className="bg-orange-50 rounded-xl p-3 mb-4">
-                      <p className="text-sm font-semibold text-orange-800">{selectedPlan.name}</p>
-                      <p className="text-xs text-orange-600">{selectedPlan.price === 0 ? "Gratis" : `${selectedPlan.price}€/${selectedPlan.billingPeriod === "monthly" ? "mes" : selectedPlan.billingPeriod}`}</p>
-                    </div>
-                  )}
-                  <div className="mb-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-1.5">Mensaje para el nutricionista <span className="text-gray-400 font-normal">(opcional)</span></label>
-                    <textarea
-                      value={hireMessage}
-                      onChange={(e) => setHireMessage(e.target.value)}
-                      placeholder="Cuéntale tus objetivos, restricciones alimentarias o cualquier información relevante..."
-                      className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange-300"
-                      rows={4}
-                    />
-                  </div>
-                  <button
-                    onClick={() => hireRequestMut.mutate({ expertId: id, servicePlanId: selectedPlan?.id, message: hireMessage || undefined })}
-                    disabled={hireRequestMut.isPending}
-                    className="w-full py-3 rounded-xl font-bold text-white bg-gradient-to-r from-orange-500 to-red-500 hover:opacity-90 disabled:opacity-50 transition-opacity"
-                  >
-                    {hireRequestMut.isPending ? "Enviando..." : "🚀 Enviar solicitud"}
-                  </button>
-                  <p className="text-xs text-gray-400 text-center mt-2">El nutricionista revisará tu solicitud y te responderá por email</p>
+        ) : (
+          <button
+            onClick={() => { if (!user) { toast.error("Inicia sesión para solicitar un nutricionista"); return; } setShowHireModal(true); }}
+            className="w-full py-3 rounded-xl text-sm font-bold bg-gradient-to-r from-orange-500 to-red-500 text-white hover:opacity-90 transition-opacity"
+          >
+            📞 Contactar nutricionista
+          </button>
+        )}
+        {/* Modal de solicitud */}
+        {showHireModal && (
+          <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setShowHireModal(false)}>
+            <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
+            <div className="relative bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+              <div className="p-5">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-bold text-gray-900 text-lg">Solicitar contratación</h3>
+                  <button onClick={() => setShowHireModal(false)} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200">×</button>
                 </div>
+                {selectedPlan && (
+                  <div className="bg-orange-50 rounded-xl p-3 mb-4">
+                    <p className="text-sm font-semibold text-orange-800">{selectedPlan.name}</p>
+                    <p className="text-xs text-orange-600">{selectedPlan.price === 0 ? "Gratis" : `${selectedPlan.price}€/${selectedPlan.billingPeriod === "monthly" ? "mes" : selectedPlan.billingPeriod}`}</p>
+                  </div>
+                )}
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Mensaje para el nutricionista <span className="text-gray-400 font-normal">(opcional)</span></label>
+                  <textarea
+                    value={hireMessage}
+                    onChange={(e) => setHireMessage(e.target.value)}
+                    placeholder="Cuéntale tus objetivos, restricciones alimentarias o cualquier información relevante..."
+                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange-300"
+                    rows={4}
+                  />
+                </div>
+                <button
+                  onClick={() => hireRequestMut.mutate({ expertId: id, servicePlanId: selectedPlan?.id, message: hireMessage || undefined })}
+                  disabled={hireRequestMut.isPending}
+                  className="w-full py-3 rounded-xl font-bold text-white bg-gradient-to-r from-orange-500 to-red-500 hover:opacity-90 disabled:opacity-50 transition-opacity"
+                >
+                  {hireRequestMut.isPending ? "Enviando..." : "🚀 Enviar solicitud"}
+                </button>
+                <p className="text-xs text-gray-400 text-center mt-2">El nutricionista revisará tu solicitud y te responderá por email</p>
               </div>
             </div>
-          )}
-        </section>
-      )}
+          </div>
+        )}
+      </section>
 
       {/* Plans */}
       {plans.length > 0 && (

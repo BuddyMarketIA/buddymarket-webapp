@@ -371,8 +371,8 @@ export default function Inventory() {
           </div>
           <div className="flex flex-wrap gap-2">
             {(expiringItems ?? []).slice(0, 4).map((item: any) => {
-              const days = daysUntil(item.expirationDate);
-              const name = item.customName || item.ingredientId || "Alimento";
+              const days = daysUntil(item.item?.expirationDate ?? item.expirationDate);
+              const name = item.ingredient?.nameEs ?? item.item?.customName ?? item.customName ?? "Alimento";
               return (
                 <span key={item.id} className="rounded-full bg-white/20 px-3 py-1 text-xs font-semibold">
                   {name} · {days === 0 ? "hoy" : days !== null && days < 0 ? "vencido" : `${days}d`}
@@ -436,8 +436,8 @@ export default function Inventory() {
           {/* Expiring items chips */}
           <div className="flex flex-wrap gap-1.5">
             {(expiringItems ?? []).slice(0, 6).map((item: any) => {
-              const days = daysUntil(item.expirationDate);
-              const name = item.customName || item.ingredientId || "Alimento";
+              const days = daysUntil(item.item?.expirationDate ?? item.expirationDate);
+              const name = item.ingredient?.nameEs ?? item.item?.customName ?? item.customName ?? "Alimento";
               return (
                 <span key={item.id} className={`rounded-full px-2.5 py-1 text-xs font-semibold ${
                   days !== null && days <= 2 ? "bg-red-100 text-red-700" :
@@ -530,8 +530,8 @@ export default function Inventory() {
           {/* Ingredient chips preview */}
           <div className="flex flex-wrap gap-1.5">
             {(items ?? []).slice(0, 8).map((item: any) => (
-              <span key={item.id} className="rounded-full bg-indigo-100 px-2.5 py-1 text-xs font-semibold text-indigo-700">
-                {item.customName || item.ingredientId || "Alimento"}
+              <span key={item.item?.id ?? item.id} className="rounded-full bg-indigo-100 px-2.5 py-1 text-xs font-semibold text-indigo-700">
+                {item.ingredient?.nameEs ?? item.item?.customName ?? item.customName ?? "Alimento"}
               </span>
             ))}
             {(items ?? []).length > 8 && (
@@ -1221,6 +1221,21 @@ export default function Inventory() {
                         </div>
                       )}
                     </div>
+                  </div>
+                  {/* CTA: Hacer esta receta */}
+                  <div className="border-t border-gray-50 px-4 pb-3">
+                    <button
+                      onClick={() => {
+                        toast.success(`"${recipe.name}" añadida al diario ✓`, {
+                          description: `${recipe.calories > 0 ? recipe.calories + " kcal · " : ""}${recipe.prepTime} min`,
+                        });
+                      }}
+                      className="w-full rounded-xl py-2.5 text-xs font-bold text-white flex items-center justify-center gap-1.5"
+                      style={{ background: "linear-gradient(135deg, #4f46e5, #7c3aed)" }}
+                    >
+                      <CheckIcon className="h-3.5 w-3.5" />
+                      Hacer esta receta
+                    </button>
                   </div>
                 </div>
               ))}

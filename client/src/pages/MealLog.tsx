@@ -17,29 +17,47 @@ const AI_STEPS = [
   { icon: "✨", label: "Generando análisis completo", detail: "Preparando tu informe nutricional..." },
 ];
 
-function AILoadingAnimation() {
+function AILoadingAnimation({ onTimeout }: { onTimeout?: () => void }) {
   const [step, setStep] = useState(0);
   const [progress, setProgress] = useState(0);
+  const [timedOut, setTimedOut] = useState(false);
 
   useEffect(() => {
-    // Advance steps every ~2.5 seconds
+    // Advance steps every ~3 seconds
     const stepInterval = setInterval(() => {
       setStep(prev => Math.min(prev + 1, AI_STEPS.length - 1));
-    }, 2500);
+    }, 3000);
 
-    // Smooth progress bar
+    // Smooth progress bar — holds at 88% until result arrives
     const progressInterval = setInterval(() => {
       setProgress(prev => {
-        if (prev >= 92) return prev; // hold near end until real result arrives
+        if (prev >= 88) return prev;
         return prev + 1;
       });
-    }, 120);
+    }, 200);
+
+    // Timeout after 90 seconds
+    const timeoutId = setTimeout(() => {
+      setTimedOut(true);
+      onTimeout?.();
+    }, 90000);
 
     return () => {
       clearInterval(stepInterval);
       clearInterval(progressInterval);
+      clearTimeout(timeoutId);
     };
-  }, []);
+  }, [onTimeout]);
+
+  if (timedOut) {
+    return (
+      <div style={{ background: "#FEF2F2", border: "1.5px solid #FECACA", borderRadius: 18, padding: "20px 18px", marginBottom: 12, textAlign: "center" }}>
+        <p style={{ fontSize: 24, margin: "0 0 8px" }}>⏱️</p>
+        <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#991B1B" }}>El análisis está tardando demasiado</p>
+        <p style={{ margin: "6px 0 0", fontSize: 12, color: "#B91C1C" }}>Introduce los valores manualmente o intenta con una foto más pequeña.</p>
+      </div>
+    );
+  }
 
   const currentStep = AI_STEPS[step];
 
@@ -152,7 +170,7 @@ function AILoadingAnimation() {
       </div>
 
       <p style={{ margin: 0, fontSize: 11, color: "#C2410C", textAlign: "center", fontStyle: "italic" }}>
-        El análisis puede tardar entre 5 y 15 segundos
+        El análisis puede tardar entre 10 y 60 segundos
       </p>
     </div>
   );
@@ -364,10 +382,22 @@ export default function MealLog() {
     reader.onload = (ev) => {
       const dataUrl = ev.target?.result as string;
       setPhotoPreview(dataUrl);
-      // Extract base64 without data URL prefix
-      const base64 = dataUrl.split(",")[1];
-      setPhotoBase64(base64);
       setAiResult(null);
+      // Compress image to max 800px before sending to AI (reduces latency)
+      const img = new Image();
+      img.onload = () => {
+        const MAX = 800;
+        const scale = Math.min(1, MAX / Math.max(img.width, img.height));
+        const canvas = document.createElement("canvas");
+        canvas.width = Math.round(img.width * scale);
+        canvas.height = Math.round(img.height * scale);
+        const ctx2d = canvas.getContext("2d");
+        if (!ctx2d) { setPhotoBase64(dataUrl.split(",")[1]); return; }
+        ctx2d.drawImage(img, 0, 0, canvas.width, canvas.height);
+        const compressed = canvas.toDataURL("image/jpeg", 0.75);
+        setPhotoBase64(compressed.split(",")[1]);
+      };
+      img.src = dataUrl;
     };
     reader.readAsDataURL(file);
   };
@@ -719,7 +749,7 @@ export default function MealLog() {
                     {/* Analyze button / AI loading animation */}
                     {!aiResult && (
                       analyzeFood.isPending ? (
-                        <AILoadingAnimation />
+                        <AILoadingAnimation onTimeout={() => analyzeFood.reset()} />
                       ) : (
                         <button
                           onClick={handleAnalyze}

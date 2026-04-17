@@ -2693,3 +2693,20 @@
 - [x] Aviso tarjeta 4242 eliminado de la pagina de suscripcion
 - [x] Datos de prueba eliminados de la base de datos
 - [x] Blog posts reasignados a BuddyMarket con fechas variadas
+
+## Bugs y mejoras (Abril 2026 - sprint actual)
+- [ ] Fix scroll bloqueado en páginas (BuddyIA, Menús, Recetas, etc.)
+- [ ] Añadir botones de volver atrás en páginas de detalle sin navegación de retorno
+- [ ] Fix foto IA se queda al 92% — comprimir imagen antes de enviar al LLM + timeout 90s
+- [ ] Rediseñar pantalla de Menús: pantalla inicial con cards (Mis Menús, Menús BuddyMarket, Crear con IA, Menús de mi Nutricionista)
+- [ ] Panel de control calórico detallado en el diario: déficit/superávit, análisis IA, recomendaciones de comidas personalizadas
+- [ ] Mi Hogar: añadir miembros manualmente (sin invitación) con formulario de perfil completo
+- [ ] Mi Hogar: arreglar layout descuadrado del header (botones se salen de la pantalla)
+- [ ] Mi Hogar: completar perfil de cada miembro (nombre, edad, alergias, objetivos, restricciones)
+
+## Fixes y mejoras sesión actual
+- [x] Crear menú desde lista de la compra: botón IA (chispa) en ShoppingLists que genera menú semanal con los ingredientes de la lista y muestra modal con 7 días
+- [ ] Fix modal lista de compra (Mi lista — Mercadona) sale muy arriba en lugar de bottom sheet centrado
+- [x] Fix ingredientes "Alimento" en modal Recetas con tu inventario — ahora muestra nombres reales (ingredient?.nameEs ?? item?.customName)
+- [x] Añadir botón "Hacer esta receta" en modal Recetas con tu inventario
+- [x] Limpiar datos demo: 6 usuarios .demo@buddymarket.io eliminados ✅

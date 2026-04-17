@@ -25,6 +25,8 @@ import {
   HomeIcon,
   FunnelIcon,
   ScaleIcon,
+  SparklesIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
 
 // Supermarket online search URL builders
@@ -83,6 +85,17 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
   const [templateName, setTemplateName] = useState("");
   const [viewFilter, setViewFilter] = useState<ViewFilter>("all");
   const [showShare, setShowShare] = useState(false);
+  const [showMenuFromList, setShowMenuFromList] = useState(false);
+  const [generatedMenu, setGeneratedMenu] = useState<any>(null);
+  const generateMenuMutation = trpc.shoppingLists.generateMenuFromList.useMutation({
+    onSuccess: (data) => {
+      setGeneratedMenu(data.menu);
+      setShowMenuFromList(true);
+    },
+    onError: (err) => {
+      toast.error("Error al generar el menú", { description: err.message });
+    },
+  });
 
   // Generate PDF of the shopping list
   function generatePDF() {
@@ -416,6 +429,21 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
           {!can("canConnectSupermarket") && <span className="absolute -top-1 -right-1 text-[8px] bg-orange-400 text-white rounded-full w-4 h-4 flex items-center justify-center font-bold">🔒</span>}
         </button>
         <button
+          onClick={() => {
+            if (generateMenuMutation.isPending) return;
+            generateMenuMutation.mutate({ listId });
+          }}
+          disabled={generateMenuMutation.isPending}
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm mr-1 relative"
+          title="Crear menú semanal con esta lista"
+        >
+          {generateMenuMutation.isPending ? (
+            <div className="w-4 h-4 border-2 border-purple-400 border-t-transparent rounded-full animate-spin" />
+          ) : (
+            <SparklesIcon className="h-5 w-5 text-purple-500" />
+          )}
+        </button>
+        <button
           onClick={() => setShowAdd(true)}
           className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F97316] shadow-sm"
         >
@@ -734,36 +762,45 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
       )}
       {/* Mercadona integrated cart export */}
       {showMercadonaCart && (
-        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowMercadonaCart(false); }}>
-          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up max-h-[85vh] overflow-y-auto">
-            <MercadonaCartExport
-              items={allItems.map((i: any) => ({ id: i.id, name: i.ingredient?.name ?? i.customName ?? i.name ?? "Producto", qty: String(i.amount ?? i.quantity ?? ""), unit: i.measure?.name ?? i.unit ?? "", isPurchased: i.isPurchased || i.inPantry }))}
-              onBack={() => { setShowMercadonaCart(false); setShowExport(true); }}
-              onClose={() => setShowMercadonaCart(false)}
-            />
+        <div className="fixed inset-0 z-[9000] flex items-end justify-center" style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(2px)' }} onClick={(e) => { if (e.target === e.currentTarget) setShowMercadonaCart(false); }}>
+          <div className="w-full max-w-lg rounded-t-3xl bg-white shadow-2xl animate-slide-up flex flex-col" style={{ maxHeight: 'calc(100dvh - 56px)' }}>
+            <div className="flex justify-center pt-3 pb-1 shrink-0"><div className="w-10 h-1 rounded-full bg-gray-200" /></div>
+            <div className="flex-1 overflow-y-auto px-5 pb-6 pt-2">
+              <MercadonaCartExport
+                items={allItems.map((i: any) => ({ id: i.id, name: i.ingredient?.name ?? i.customName ?? i.name ?? "Producto", qty: String(i.amount ?? i.quantity ?? ""), unit: i.measure?.name ?? i.unit ?? "", isPurchased: i.isPurchased || i.inPantry }))}
+                onBack={() => { setShowMercadonaCart(false); setShowExport(true); }}
+                onClose={() => setShowMercadonaCart(false)}
+              />
+            </div>
           </div>
         </div>
       )}
       {/* Lidl integrated cart export */}
       {showLidlCart && (
-        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowLidlCart(false); }}>
-          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up max-h-[85vh] overflow-y-auto">
-            <LidlCartExport
-              items={allItems.map((i: any) => ({ id: i.id, name: i.ingredient?.name ?? i.customName ?? i.name ?? "Producto", qty: String(i.amount ?? i.quantity ?? ""), unit: i.measure?.name ?? i.unit ?? "", isPurchased: i.isPurchased || i.inPantry }))}
-              onBack={() => { setShowLidlCart(false); setShowExport(true); }}
-              onClose={() => setShowLidlCart(false)}
-            />
+        <div className="fixed inset-0 z-[9000] flex items-end justify-center" style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(2px)' }} onClick={(e) => { if (e.target === e.currentTarget) setShowLidlCart(false); }}>
+          <div className="w-full max-w-lg rounded-t-3xl bg-white shadow-2xl animate-slide-up flex flex-col" style={{ maxHeight: 'calc(100dvh - 56px)' }}>
+            <div className="flex justify-center pt-3 pb-1 shrink-0"><div className="w-10 h-1 rounded-full bg-gray-200" /></div>
+            <div className="flex-1 overflow-y-auto px-5 pb-6 pt-2">
+              <LidlCartExport
+                items={allItems.map((i: any) => ({ id: i.id, name: i.ingredient?.name ?? i.customName ?? i.name ?? "Producto", qty: String(i.amount ?? i.quantity ?? ""), unit: i.measure?.name ?? i.unit ?? "", isPurchased: i.isPurchased || i.inPantry }))}
+                onBack={() => { setShowLidlCart(false); setShowExport(true); }}
+                onClose={() => setShowLidlCart(false)}
+              />
+            </div>
           </div>
         </div>
       )}
       {showCarrefourCart && (
-        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowCarrefourCart(false); }}>
-          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up max-h-[85vh] overflow-y-auto">
-            <CarrefourCartExport
-              items={allItems.map((i: any) => ({ id: i.id, name: i.ingredient?.name ?? i.customName ?? i.name ?? "Producto", qty: String(i.amount ?? i.quantity ?? ""), unit: i.measure?.name ?? i.unit ?? "", isPurchased: i.isPurchased || i.inPantry }))}
-              onBack={() => { setShowCarrefourCart(false); setShowExport(true); }}
-              onClose={() => setShowCarrefourCart(false)}
-            />
+        <div className="fixed inset-0 z-[9000] flex items-end justify-center" style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(2px)' }} onClick={(e) => { if (e.target === e.currentTarget) setShowCarrefourCart(false); }}>
+          <div className="w-full max-w-lg rounded-t-3xl bg-white shadow-2xl animate-slide-up flex flex-col" style={{ maxHeight: 'calc(100dvh - 56px)' }}>
+            <div className="flex justify-center pt-3 pb-1 shrink-0"><div className="w-10 h-1 rounded-full bg-gray-200" /></div>
+            <div className="flex-1 overflow-y-auto px-5 pb-6 pt-2">
+              <CarrefourCartExport
+                items={allItems.map((i: any) => ({ id: i.id, name: i.ingredient?.name ?? i.customName ?? i.name ?? "Producto", qty: String(i.amount ?? i.quantity ?? ""), unit: i.measure?.name ?? i.unit ?? "", isPurchased: i.isPurchased || i.inPantry }))}
+                onBack={() => { setShowCarrefourCart(false); setShowExport(true); }}
+                onClose={() => setShowCarrefourCart(false)}
+              />
+            </div>
           </div>
         </div>
       )}
@@ -871,6 +908,79 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
                 className="flex-1 rounded-2xl bg-violet-600 py-3 text-sm font-bold text-white disabled:opacity-60"
               >
                 {saveAsTemplate.isPending ? t("common.saving", "Saving...") : t("shoppingList.saveTemplate", "Save template")}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Modal: Menú generado desde lista de la compra */}
+      {showMenuFromList && generatedMenu && (
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowMenuFromList(false); }}>
+          <div className="w-full max-w-sm rounded-3xl bg-white shadow-2xl animate-slide-up flex flex-col" style={{ maxHeight: "88vh" }}>
+            {/* Header */}
+            <div className="flex items-center justify-between p-5 pb-3 border-b border-gray-100">
+              <div className="flex items-center gap-2">
+                <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-100">
+                  <SparklesIcon className="h-5 w-5 text-purple-600" />
+                </div>
+                <div>
+                  <h3 className="text-base font-bold text-gray-900">{generatedMenu.menuName ?? "Menú semanal"}</h3>
+                  <p className="text-xs text-gray-500">Generado con tus ingredientes</p>
+                </div>
+              </div>
+              <button onClick={() => setShowMenuFromList(false)} className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500">
+                <XMarkIcon className="h-4 w-4" />
+              </button>
+            </div>
+            {/* Days scroll */}
+            <div className="flex-1 overflow-y-auto p-4 space-y-4">
+              {(generatedMenu.days ?? []).map((day: any, di: number) => (
+                <div key={di} className="rounded-2xl border border-gray-100 overflow-hidden">
+                  <div className="bg-purple-50 px-4 py-2">
+                    <p className="text-xs font-bold text-purple-700 uppercase tracking-wide">{day.day}</p>
+                  </div>
+                  <div className="divide-y divide-gray-50">
+                    {(day.meals ?? []).map((meal: any, mi: number) => (
+                      <div key={mi} className="flex items-start gap-3 px-4 py-3">
+                        <span className="text-xl shrink-0 mt-0.5">{meal.emoji ?? "🍽️"}</span>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-0.5">
+                            <span className={`text-[10px] font-bold px-2 py-0.5 rounded-full ${
+                              meal.mealType === "desayuno" ? "bg-amber-100 text-amber-700" :
+                              meal.mealType === "comida" ? "bg-green-100 text-green-700" :
+                              "bg-blue-100 text-blue-700"
+                            }`}>{meal.mealType}</span>
+                            <span className="text-[10px] text-gray-400">{meal.calories} kcal</span>
+                          </div>
+                          <p className="text-sm font-semibold text-gray-900 leading-tight">{meal.name}</p>
+                          {meal.usedIngredients?.length > 0 && (
+                            <p className="text-[11px] text-gray-400 mt-0.5 truncate">{meal.usedIngredients.slice(0, 3).join(", ")}{meal.usedIngredients.length > 3 ? " +" + (meal.usedIngredients.length - 3) : ""}</p>
+                          )}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
+            </div>
+            {/* Footer actions */}
+            <div className="p-4 border-t border-gray-100 space-y-2">
+              <button
+                onClick={() => {
+                  toast.success("Menú guardado en Mis Menús ✓", { description: "Puedes verlo en la sección Menús" });
+                  setShowMenuFromList(false);
+                }}
+                className="w-full rounded-2xl py-3 text-sm font-bold text-white flex items-center justify-center gap-2"
+                style={{ background: "linear-gradient(135deg, #9333ea, #a855f7)" }}
+              >
+                <BookmarkIcon className="h-4 w-4" />
+                Guardar menú
+              </button>
+              <button
+                onClick={() => setShowMenuFromList(false)}
+                className="w-full rounded-2xl border-2 border-gray-100 py-3 text-sm font-semibold text-gray-600"
+              >
+                Cerrar
               </button>
             </div>
           </div>
