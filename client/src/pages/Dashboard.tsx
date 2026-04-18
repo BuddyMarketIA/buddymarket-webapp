@@ -169,6 +169,39 @@ export default function Dashboard() {
       return saved ? parseInt(saved, 10) : 0;
     } catch { return 0; }
   });
+  const [isGeneratingMenu, setIsGeneratingMenu] = useState(false);
+  const [showWeightCheckin, setShowWeightCheckin] = useState(() => {
+    try {
+      const today = new Date(); const isMonday = today.getDay() === 1;
+      const lastCheckin = localStorage.getItem('bm_weight_checkin_week');
+      const thisWeek = `${today.getFullYear()}-W${Math.ceil(today.getDate() / 7)}`;
+      return isMonday && lastCheckin !== thisWeek;
+    } catch { return false; }
+  });
+  const [weightInput, setWeightInput] = useState('');
+  const generateMenuMutation = trpc.buddyIA.generateMenuWithQuestionnaire.useMutation({
+    onSuccess: () => {
+      toast.success('✨ ¡Menú generado! Revísalo en Menús activos', { duration: 4000 });
+      activeMenuData.refetch();
+      setIsGeneratingMenu(false);
+    },
+    onError: (err) => {
+      toast.error(err.message || 'Error generando el menú');
+      setIsGeneratingMenu(false);
+    },
+  });
+  const logWeightMutation = trpc.healthMetrics.add.useMutation({
+    onSuccess: () => {
+      try {
+        const today = new Date();
+        const thisWeek = `${today.getFullYear()}-W${Math.ceil(today.getDate() / 7)}`;
+        localStorage.setItem('bm_weight_checkin_week', thisWeek);
+      } catch {}
+      setShowWeightCheckin(false);
+      toast.success('✅ Peso registrado. ¡Sigue así!');
+    },
+  });
+  const tasteInsights = trpc.retention.getTasteInsights.useQuery();
   // Auto-rotate recipe carousel every 3 seconds
   useEffect(() => {
     const timer = setInterval(() => {
@@ -471,6 +504,96 @@ export default function Dashboard() {
               </div>
             </Link>
 
+            {/* Botón Generar Menú en 1 Clic */}
+            {!activeMenu && (
+              <button
+                onClick={() => {
+                  if (isGeneratingMenu) return;
+                  setIsGeneratingMenu(true);
+                  const profile = profileData.data?.profile;
+                  const today = new Date();
+                  const startDate = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`;
+                  generateMenuMutation.mutate({
+                    startDate,
+                    cookingStyle: 'rapido',
+                    persons: 1,
+                    mealsPerDay: 5,
+                    goal: (profile?.mainGoal as any) || 'mantenimiento',
+                    calories: profile?.dailyCalorieGoal || 2000,
+                    daysCount: 7,
+                  });
+                }}
+                style={{ width: '100%', padding: '16px 20px', borderRadius: '18px', border: 'none', cursor: isGeneratingMenu ? 'wait' : 'pointer', background: isGeneratingMenu ? 'linear-gradient(135deg, #9CA3AF, #6B7280)' : 'linear-gradient(135deg, #6366F1, #8B5CF6)', boxShadow: isGeneratingMenu ? 'none' : '0 6px 20px rgba(99,102,241,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', transition: 'all 0.2s' }}
+              >
+                {isGeneratingMenu ? (
+                  <>
+                    <div style={{ width: '20px', height: '20px', borderRadius: '50%', border: '2px solid rgba(255,255,255,0.3)', borderTopColor: 'white', animation: 'spin 0.8s linear infinite' }} />
+                    <span style={{ fontSize: '15px', fontWeight: 800, color: 'white' }}>Generando tu menú...</span>
+                  </>
+                ) : (
+                  <>
+                    <span style={{ fontSize: '22px' }}>✨</span>
+                    <div style={{ textAlign: 'left' }}>
+                      <p style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: 'white' }}>Generar mi menú esta semana</p>
+                      <p style={{ margin: '2px 0 0', fontSize: '12px', color: 'rgba(255,255,255,0.75)' }}>Con IA · Adaptado a tu perfil · 1 clic</p>
+                    </div>
+                  </>
+                )}
+              </button>
+            )}
+            {/* Check-in de peso semanal (lunes) */}
+            {showWeightCheckin && (
+              <div style={{ background: C.cardBg, borderRadius: '18px', padding: '16px 18px', boxShadow: C.shadow2, border: `1px solid ${isDark ? 'rgba(99,102,241,0.3)' : '#C7D2FE'}` }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '10px', marginBottom: '12px' }}>
+                  <span style={{ fontSize: '24px' }}>⚖️</span>
+                  <div>
+                    <p style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: C.textPrimary }}>Check-in semanal</p>
+                    <p style={{ margin: '2px 0 0', fontSize: '12px', color: C.textSecond }}>¿Cuánto pesas hoy?</p>
+                  </div>
+                  <button onClick={() => setShowWeightCheckin(false)} style={{ marginLeft: 'auto', background: 'none', border: 'none', cursor: 'pointer', fontSize: '18px', color: C.textMuted }}>✕</button>
+                </div>
+                <div style={{ display: 'flex', gap: '8px' }}>
+                  <input
+                    type="number"
+                    value={weightInput}
+                    onChange={e => setWeightInput(e.target.value)}
+                    placeholder="Ej: 72.5"
+                    style={{ flex: 1, padding: '10px 14px', borderRadius: '12px', border: `1px solid ${C.cardBorder}`, background: C.inputBg, color: C.textPrimary, fontSize: '15px', fontWeight: 700, outline: 'none' }}
+                  />
+                  <span style={{ display: 'flex', alignItems: 'center', fontSize: '14px', color: C.textSecond, fontWeight: 600 }}>kg</span>
+                  <button
+                    onClick={() => {
+                      const w = parseFloat(weightInput);
+                      if (!w || w < 20 || w > 500) { toast.error('Introduce un peso válido (20-500 kg)'); return; }
+                      const today = new Date();
+                      logWeightMutation.mutate({ weight: w, recordedAt: `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}` });
+                    }}
+                    disabled={logWeightMutation.isPending}
+                    style={{ padding: '10px 16px', borderRadius: '12px', background: '#6366F1', border: 'none', cursor: 'pointer', fontSize: '14px', fontWeight: 800, color: 'white' }}
+                  >Guardar</button>
+                </div>
+              </div>
+            )}
+            {/* Perfil de Gusto IA */}
+            {tasteInsights.data && tasteInsights.data.topCuisines && tasteInsights.data.topCuisines.length > 0 && (
+              <div style={{ background: C.cardBg, borderRadius: '18px', padding: '16px 18px', boxShadow: C.shadow2 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                    <span style={{ fontSize: '20px' }}>🧠</span>
+                    <p style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: C.textPrimary }}>Tu perfil de gusto IA</p>
+                  </div>
+                  <span style={{ fontSize: '11px', color: C.textMuted, fontWeight: 600 }}>Actualizado hoy</span>
+                </div>
+                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                  {(tasteInsights.data.topCuisines || []).slice(0, 3).map((c: string) => (
+                    <span key={c} style={{ padding: '4px 10px', borderRadius: '20px', background: isDark ? 'rgba(249,115,22,0.15)' : '#FFF7ED', border: `1px solid ${isDark ? 'rgba(249,115,22,0.3)' : '#FED7AA'}`, fontSize: '12px', fontWeight: 700, color: '#F97316' }}>{c}</span>
+                  ))}
+                  {(tasteInsights.data.topIngredients || []).slice(0, 3).map((i: string) => (
+                    <span key={i} style={{ padding: '4px 10px', borderRadius: '20px', background: isDark ? 'rgba(99,102,241,0.15)' : '#EEF2FF', border: `1px solid ${isDark ? 'rgba(99,102,241,0.3)' : '#C7D2FE'}`, fontSize: '12px', fontWeight: 700, color: '#6366F1' }}>{i}</span>
+                  ))}
+                </div>
+              </div>
+            )}
             {/* Recomendaciones */}
             {recommendedRecipes.data && recommendedRecipes.data.recipes.length > 0 && (
               <div style={{ background: C.cardBg, borderRadius: "20px", padding: "18px", boxShadow: C.shadow2 }}>
@@ -680,33 +803,55 @@ export default function Dashboard() {
           {/* COLUMN 3: Receta del día + Comunidad + Upgrade + BuddyCoach */}
           <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
 
-            {/* Receta del día */}
-            <div style={{ background: C.cardBg, borderRadius: "20px", overflow: "hidden", boxShadow: C.shadow2 }}>
-              <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 16px 12px" }}>
-                <h2 style={{ margin: 0, fontSize: "16px", fontWeight: 800, color: C.textPrimary }}>{t("dashboard.recipeOfDay")}</h2>
-                <Link href="/app/recipes"><span style={{ fontSize: "13px", fontWeight: 600, color: "#F97316" }}>Ver más →</span></Link>
-              </div>
-              <div style={{ position: "relative", height: "180px" }}>
-                {RECIPE_OF_DAY.map((recipe, idx) => (
-                  <Link key={idx} href={`/app/recipes/${recipe.id}`} style={{ display: "block", position: "absolute", inset: 0, pointerEvents: idx === recipeIdx ? "auto" : "none" }}>
-                    <div style={{ position: "absolute", inset: 0, background: `linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.75) 100%), url(${recipe.img}) center/cover`, opacity: idx === recipeIdx ? 1 : 0, transition: "opacity 0.7s ease", display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "16px", cursor: "pointer" }}>
-                      <span style={{ display: "inline-block", background: "#F97316", color: "white", fontSize: "13px", fontWeight: 800, borderRadius: "8px", padding: "3px 8px", marginBottom: "6px", width: "fit-content" }}>{recipe.tag}</span>
-                      <p style={{ margin: 0, fontSize: "17px", fontWeight: 900, color: "white", letterSpacing: "-0.02em", textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>{recipe.name}</p>
-                      <div style={{ display: "flex", gap: "12px", marginTop: "4px" }}>
-                        <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>🔥 {recipe.kcal} kcal</span>
-                        <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>⏱ {recipe.time}</span>
-                      </div>
+            {/* Receta del día — contextual IA */}
+            {(() => {
+              const contextualRecipe = trpc.retention.getDailyContextualRecipe.useQuery();
+              const cr = contextualRecipe.data?.recipe;
+              const contextMsg = contextualRecipe.data?.contextMsg || '';
+              return (
+                <div style={{ background: C.cardBg, borderRadius: "20px", overflow: "hidden", boxShadow: C.shadow2 }}>
+                  <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 16px 12px" }}>
+                    <div>
+                      <h2 style={{ margin: 0, fontSize: "16px", fontWeight: 800, color: C.textPrimary }}>{t("dashboard.recipeOfDay")}</h2>
+                      {contextMsg && <p style={{ margin: "2px 0 0", fontSize: "11px", color: C.textMuted, fontWeight: 600 }}>{contextMsg}</p>}
                     </div>
-                  </Link>
-                ))}
-                <div style={{ position: "absolute", bottom: "12px", right: "12px", display: "flex", gap: "5px" }}>
-                  {RECIPE_OF_DAY.map((_, idx) => (
-                    <button key={idx} onClick={() => setRecipeIdx(idx)}
-                      style={{ width: idx === recipeIdx ? "18px" : "6px", height: "6px", borderRadius: "3px", background: idx === recipeIdx ? "white" : "rgba(255,255,255,0.5)", border: "none", padding: 0, cursor: "pointer", transition: "all 0.3s" }} />
-                  ))}
+                    <Link href="/app/recipes"><span style={{ fontSize: "13px", fontWeight: 600, color: "#F97316" }}>Ver más →</span></Link>
+                  </div>
+                  <div style={{ position: "relative", height: "180px" }}>
+                    {cr ? (
+                      <Link href={`/app/recipes/${cr.id}`} style={{ display: "block", position: "absolute", inset: 0 }}>
+                        <div style={{ position: "absolute", inset: 0, background: `linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.75) 100%), url(${cr.imageUrl || 'https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/recipes_afa44a0e.jpg'}) center/cover`, display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "16px", cursor: "pointer" }}>
+                          <span style={{ display: "inline-block", background: "#F97316", color: "white", fontSize: "13px", fontWeight: 800, borderRadius: "8px", padding: "3px 8px", marginBottom: "6px", width: "fit-content" }}>Hoy</span>
+                          <p style={{ margin: 0, fontSize: "17px", fontWeight: 900, color: "white", letterSpacing: "-0.02em", textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>{cr.name}</p>
+                          <div style={{ display: "flex", gap: "12px", marginTop: "4px" }}>
+                            {cr.caloriesPerServing && <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>🔥 {cr.caloriesPerServing} kcal</span>}
+                            {cr.prepTime && <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>⏱ {cr.prepTime} min</span>}
+                          </div>
+                        </div>
+                      </Link>
+                    ) : (
+                      // Fallback al carrusel estático
+                      <>
+                        {RECIPE_OF_DAY.map((recipe, idx) => (
+                          <Link key={idx} href={`/app/recipes/${recipe.id}`} style={{ display: "block", position: "absolute", inset: 0, pointerEvents: idx === recipeIdx ? "auto" : "none" }}>
+                            <div style={{ position: "absolute", inset: 0, background: `linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.75) 100%), url(${recipe.img}) center/cover`, opacity: idx === recipeIdx ? 1 : 0, transition: "opacity 0.7s ease", display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "16px", cursor: "pointer" }}>
+                              <span style={{ display: "inline-block", background: "#F97316", color: "white", fontSize: "13px", fontWeight: 800, borderRadius: "8px", padding: "3px 8px", marginBottom: "6px", width: "fit-content" }}>{recipe.tag}</span>
+                              <p style={{ margin: 0, fontSize: "17px", fontWeight: 900, color: "white", letterSpacing: "-0.02em", textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>{recipe.name}</p>
+                            </div>
+                          </Link>
+                        ))}
+                        <div style={{ position: "absolute", bottom: "12px", right: "12px", display: "flex", gap: "5px" }}>
+                          {RECIPE_OF_DAY.map((_, idx) => (
+                            <button key={idx} onClick={() => setRecipeIdx(idx)}
+                              style={{ width: idx === recipeIdx ? "18px" : "6px", height: "6px", borderRadius: "3px", background: idx === recipeIdx ? "white" : "rgba(255,255,255,0.5)", border: "none", padding: 0, cursor: "pointer", transition: "all 0.3s" }} />
+                          ))}
+                        </div>
+                      </>
+                    )}
+                  </div>
                 </div>
-              </div>
-            </div>
+              );
+            })()}
 
             {/* Comunidad */}
             <div style={{ background: C.cardBg, borderRadius: "20px", padding: "16px", boxShadow: C.shadow2 }}>

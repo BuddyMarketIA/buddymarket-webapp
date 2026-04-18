@@ -2229,4 +2229,73 @@ Responde en JSON con este formato:
       } catch (_) {}
       return { ok: true, action: input.action, expertPatientId };
     }),
+
+  // ── Proactive: Get patients inactive for N+ days ───────────────────────────
+  getInactivePatients: protectedProcedure
+    .input(z.object({ inactiveDays: z.number().int().min(1).max(30).default(3) }))
+    .query(async ({ ctx, input }) => {
+      if (ctx.user.role !== 'buddyexpert' && ctx.user.role !== 'admin') {
+        throw new TRPCError({ code: 'FORBIDDEN' });
+      }
+      const { getDb } = await import('../db');
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' });
+      const { expertPatients, buddyExperts, users, mealLogs } = await import('../../drizzle/schema.js');
+      const { eq, and, desc, isNull } = await import('drizzle-orm');
+      const [expert] = await drizzleDb.select({ id: buddyExperts.id })
+        .from(buddyExperts).where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+      if (!expert) return [];
+      const patients = await drizzleDb.select({
+        expertPatientId: expertPatients.id,
+        patientUserId: expertPatients.patientUserId,
+        patientName: users.name,
+        patientEmail: users.email,
+        patientAvatar: users.imageUrl,
+      })
+        .from(expertPatients)
+        .innerJoin(users, and(eq(users.id, expertPatients.patientUserId), isNull(users.deletedAt)))
+        .where(and(eq(expertPatients.expertId, expert.id), eq(expertPatients.status, 'active')))
+        .limit(50);
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - input.inactiveDays);
+      const cutoffStr = cutoff.toISOString().split('T')[0]!;
+      const inactive: Array<typeof patients[0] & { lastLogDate: string | null }> = [];
+      for (const p of patients) {
+        const [lastLog] = await drizzleDb.select({ logDate: mealLogs.logDate })
+          .from(mealLogs).where(eq(mealLogs.userId, p.patientUserId))
+          .orderBy(desc(mealLogs.logDate)).limit(1);
+        const lastLogDate = lastLog?.logDate ? String(lastLog.logDate) : null;
+        if (!lastLogDate || lastLogDate < cutoffStr) {
+          inactive.push({ ...p, lastLogDate });
+        }
+      }
+      return inactive;
+    }),
+
+  sendProactiveMessage: protectedProcedure
+    .input(z.object({ expertPatientId: z.number().int(), message: z.string().min(1).max(1000) }))
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.user.role !== 'buddyexpert' && ctx.user.role !== 'admin') {
+        throw new TRPCError({ code: 'FORBIDDEN' });
+      }
+      const { getDb } = await import('../db');
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR' });
+      const { expertMessages, expertPatients, buddyExperts } = await import('../../drizzle/schema.js');
+      const { eq, and } = await import('drizzle-orm');
+      const [expert] = await drizzleDb.select({ id: buddyExperts.id })
+        .from(buddyExperts).where(eq(buddyExperts.userId, ctx.user.id)).limit(1);
+      if (!expert) throw new TRPCError({ code: 'FORBIDDEN', message: 'No eres un experto' });
+      const [rel] = await drizzleDb.select().from(expertPatients)
+        .where(and(eq(expertPatients.id, input.expertPatientId), eq(expertPatients.expertId, expert.id))).limit(1);
+      if (!rel) throw new TRPCError({ code: 'NOT_FOUND', message: 'Relación no encontrada' });
+      await drizzleDb.insert(expertMessages).values({
+        expertPatientId: input.expertPatientId,
+        senderId: ctx.user.id,
+        senderRole: 'expert',
+        content: input.message,
+        isRead: false,
+      });
+      return { ok: true };
+    }),
 });

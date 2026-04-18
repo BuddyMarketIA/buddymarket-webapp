@@ -316,6 +316,25 @@ export const retentionRouter = router({
     return drizzleDb.select().from(monthlyReports).where(eq(monthlyReports.userId, ctx.user.id)).orderBy(desc(monthlyReports.year), desc(monthlyReports.month)).limit(12);
   }),
 
+  // ── Daily Contextual Recipe ───────────────────────────────────────────────
+  getDailyContextualRecipe: protectedProcedure.query(async ({ ctx }) => {
+    const drizzleDb = await db.getDb();
+    const { recipes } = await import("../../drizzle/schema.js");
+    const { eq } = await import("drizzle-orm");
+    const now = new Date();
+    const month = now.getMonth() + 1;
+    const isWarm = month >= 5 && month <= 9;
+    const season = month >= 3 && month <= 5 ? 'primavera' : month >= 6 && month <= 8 ? 'verano' : month >= 9 && month <= 11 ? 'otoño' : 'invierno';
+    const dateSeed = parseInt(`${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`);
+    const allRecipes = await drizzleDb.select({ id: recipes.id, name: recipes.name, imageUrl: recipes.imageUrl, caloriesPerServing: recipes.caloriesPerServing, prepTime: recipes.prepTime })
+      .from(recipes).where(eq(recipes.isPublic, true)).limit(200);
+    if (allRecipes.length === 0) return null;
+    const idx = dateSeed % allRecipes.length;
+    const recipe = allRecipes[idx];
+    const contextMsg = isWarm ? '☀️ Perfecta para el calor de hoy' : '🍂 Ideal para esta época del año';
+    return { recipe, contextMsg, season };
+  }),
+
   generateMonthlyReport: protectedProcedure
     .input(z.object({ year: z.number().int().min(2024).max(2030), month: z.number().int().min(1).max(12) }))
     .mutation(async ({ ctx, input }) => {
