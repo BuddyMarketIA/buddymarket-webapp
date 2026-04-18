@@ -316,6 +316,13 @@
       "when": 1776488441474,
       "tag": "0044_short_tempest",
       "breakpoints": true
+    },
+    {
+      "idx": 45,
+      "version": "7",
+      "when": 1776494170756,
+      "tag": "0045_flimsy_shockwave",
+      "breakpoints": true
     }
   ]
 }

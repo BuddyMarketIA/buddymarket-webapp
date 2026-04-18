@@ -192,6 +192,10 @@ export default function Dashboard() {
   const goalCalories = goalCaloriesOverride ?? profileCalorieGoal ?? 2000;
   const waterGoal = 8; // default 8 glasses/day
   const shoppingLists = trpc.shoppingLists.list.useQuery(undefined, { enabled: customWidgetType === "lista_compra" });
+  const levelInfo = trpc.retention.getLevelInfo.useQuery();
+  const streakShield = trpc.retention.getStreakShield.useQuery();
+  const weeklyChallenges = trpc.retention.getWeeklyChallenges.useQuery();
+  const thirtyDayChallenge = trpc.retention.getActiveThirtyDayChallenge.useQuery();
   const remaining = Math.max(0, goalCalories - consumed);
   const progress = Math.min(100, (consumed / goalCalories) * 100);
   const protein = dailySummary.data?.proteins ?? 0;
@@ -545,13 +549,40 @@ export default function Dashboard() {
                 </div>
               )}
               {customWidgetType === "racha" && (
-                <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-                  <div style={{ width: "64px", height: "64px", borderRadius: "18px", background: "linear-gradient(135deg, #F97316, #EA580C)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "30px", flexShrink: 0, boxShadow: "0 4px 16px rgba(249,115,22,0.35)" }}>🔥</div>
-                  <div>
-                    <p style={{ margin: 0, fontSize: "13px", color: C.textSecond, fontWeight: 600 }}>Racha actual</p>
-                    <p style={{ margin: "2px 0 0", fontSize: "32px", fontWeight: 900, color: C.textPrimary, letterSpacing: "-0.04em", lineHeight: 1 }}>{streakData.data?.currentStreak ?? 0} <span style={{ fontSize: "16px", fontWeight: 600, color: C.textSecond }}>días</span></p>
-                    {(streakData.data?.longestStreak ?? 0) > 0 && <p style={{ margin: "4px 0 0", fontSize: "13px", color: C.textMuted }}>Récord: {streakData.data?.longestStreak} días 🏆</p>}
+                <div>
+                  <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "12px" }}>
+                    <div style={{ width: "64px", height: "64px", borderRadius: "18px", background: "linear-gradient(135deg, #F97316, #EA580C)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "30px", flexShrink: 0, boxShadow: "0 4px 16px rgba(249,115,22,0.35)" }}>🔥</div>
+                    <div style={{ flex: 1 }}>
+                      <p style={{ margin: 0, fontSize: "13px", color: C.textSecond, fontWeight: 600 }}>Racha actual</p>
+                      <p style={{ margin: "2px 0 0", fontSize: "32px", fontWeight: 900, color: C.textPrimary, letterSpacing: "-0.04em", lineHeight: 1 }}>{streakData.data?.currentStreak ?? 0} <span style={{ fontSize: "16px", fontWeight: 600, color: C.textSecond }}>días</span></p>
+                      {(streakData.data?.longestStreak ?? 0) > 0 && <p style={{ margin: "4px 0 0", fontSize: "13px", color: C.textMuted }}>Récord: {streakData.data?.longestStreak} días 🏆</p>}
+                    </div>
+                    {(streakShield.data?.shieldsAvailable ?? 0) > 0 && (
+                      <div title={`${streakShield.data?.shieldsAvailable} escudo(s) disponible(s)`} style={{ width: "36px", height: "36px", borderRadius: "10px", background: isDark ? "rgba(99,102,241,0.2)" : "#EEF2FF", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", flexShrink: 0, border: `1px solid ${isDark ? "rgba(99,102,241,0.3)" : "#C7D2FE"}` }}>🛡️</div>
+                    )}
                   </div>
+                  {/* Level progress bar */}
+                  {levelInfo.data && (
+                    <div style={{ padding: "10px 12px", borderRadius: "12px", background: isDark ? "rgba(255,255,255,0.04)" : "#F9FAFB", border: `1px solid ${C.cardBorder}` }}>
+                      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                        <span style={{ fontSize: "12px", fontWeight: 700, color: C.textPrimary }}>{levelInfo.data.currentLevel.emoji} {levelInfo.data.currentLevel.nameEs}</span>
+                        <span style={{ fontSize: "11px", color: C.textMuted }}>{levelInfo.data.totalPoints} pts</span>
+                      </div>
+                      <div style={{ height: "5px", borderRadius: "3px", background: C.inputBg, overflow: "hidden" }}>
+                        <div style={{ height: "100%", width: `${levelInfo.data.progressPct}%`, background: "linear-gradient(90deg, #F97316, #EA580C)", borderRadius: "3px", transition: "width 0.5s" }} />
+                      </div>
+                      {levelInfo.data.nextLevel && <p style={{ margin: "4px 0 0", fontSize: "10px", color: C.textMuted }}>{levelInfo.data.progressPct}% hacia {levelInfo.data.nextLevel.nameEs}</p>}
+                    </div>
+                  )}
+                  {/* Weekly challenges mini */}
+                  {weeklyChallenges.data && weeklyChallenges.data.length > 0 && (
+                    <Link href="/app/challenges">
+                      <div style={{ marginTop: "10px", padding: "8px 12px", borderRadius: "10px", background: isDark ? "rgba(249,115,22,0.08)" : "#FFF7ED", border: `1px solid ${isDark ? "rgba(249,115,22,0.2)" : "#FED7AA"}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                        <span style={{ fontSize: "12px", fontWeight: 700, color: "#F97316" }}>🏆 Retos semanales</span>
+                        <span style={{ fontSize: "11px", color: C.textMuted }}>{weeklyChallenges.data.filter((c: any) => c.completed).length}/{weeklyChallenges.data.length} completados →</span>
+                      </div>
+                    </Link>
+                  )}
                 </div>
               )}
               {customWidgetType === "agua" && (
@@ -1172,13 +1203,38 @@ export default function Dashboard() {
 
         {/* Contenido del widget según tipo seleccionado */}
         {customWidgetType === "racha" && (
-          <div style={{ display: "flex", alignItems: "center", gap: "16px" }}>
-            <div style={{ width: "64px", height: "64px", borderRadius: "18px", background: "linear-gradient(135deg, #F97316, #EA580C)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "30px", flexShrink: 0, boxShadow: "0 4px 16px rgba(249,115,22,0.35)" }}>🔥</div>
-            <div>
-              <p style={{ margin: 0, fontSize: "13px", color: C.textSecond, fontWeight: 600 }}>Racha actual</p>
-              <p style={{ margin: "2px 0 0", fontSize: "32px", fontWeight: 900, color: C.textPrimary, letterSpacing: "-0.04em", lineHeight: 1 }}>{streakData.data?.currentStreak ?? 0} <span style={{ fontSize: "16px", fontWeight: 600, color: C.textSecond }}>días</span></p>
-              {(streakData.data?.longestStreak ?? 0) > 0 && <p style={{ margin: "4px 0 0", fontSize: "13px", color: C.textMuted }}>Récord: {streakData.data?.longestStreak} días 🏆</p>}
+          <div>
+            <div style={{ display: "flex", alignItems: "center", gap: "16px", marginBottom: "12px" }}>
+              <div style={{ width: "64px", height: "64px", borderRadius: "18px", background: "linear-gradient(135deg, #F97316, #EA580C)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "30px", flexShrink: 0, boxShadow: "0 4px 16px rgba(249,115,22,0.35)" }}>🔥</div>
+              <div style={{ flex: 1 }}>
+                <p style={{ margin: 0, fontSize: "13px", color: C.textSecond, fontWeight: 600 }}>Racha actual</p>
+                <p style={{ margin: "2px 0 0", fontSize: "32px", fontWeight: 900, color: C.textPrimary, letterSpacing: "-0.04em", lineHeight: 1 }}>{streakData.data?.currentStreak ?? 0} <span style={{ fontSize: "16px", fontWeight: 600, color: C.textSecond }}>días</span></p>
+                {(streakData.data?.longestStreak ?? 0) > 0 && <p style={{ margin: "4px 0 0", fontSize: "13px", color: C.textMuted }}>Récord: {streakData.data?.longestStreak} días 🏆</p>}
+              </div>
+              {(streakShield.data?.shieldsAvailable ?? 0) > 0 && (
+                <div title={`${streakShield.data?.shieldsAvailable} escudo(s)`} style={{ width: "36px", height: "36px", borderRadius: "10px", background: isDark ? "rgba(99,102,241,0.2)" : "#EEF2FF", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", flexShrink: 0, border: `1px solid ${isDark ? "rgba(99,102,241,0.3)" : "#C7D2FE"}` }}>🛡️</div>
+              )}
             </div>
+            {levelInfo.data && (
+              <div style={{ padding: "10px 12px", borderRadius: "12px", background: isDark ? "rgba(255,255,255,0.04)" : "#F9FAFB", border: `1px solid ${C.cardBorder}`, marginBottom: "8px" }}>
+                <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
+                  <span style={{ fontSize: "12px", fontWeight: 700, color: C.textPrimary }}>{levelInfo.data.currentLevel.emoji} {levelInfo.data.currentLevel.nameEs}</span>
+                  <span style={{ fontSize: "11px", color: C.textMuted }}>{levelInfo.data.totalPoints} pts</span>
+                </div>
+                <div style={{ height: "5px", borderRadius: "3px", background: C.inputBg, overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: `${levelInfo.data.progressPct}%`, background: "linear-gradient(90deg, #F97316, #EA580C)", borderRadius: "3px", transition: "width 0.5s" }} />
+                </div>
+                {levelInfo.data.nextLevel && <p style={{ margin: "4px 0 0", fontSize: "10px", color: C.textMuted }}>{levelInfo.data.progressPct}% hacia {levelInfo.data.nextLevel.nameEs}</p>}
+              </div>
+            )}
+            {weeklyChallenges.data && weeklyChallenges.data.length > 0 && (
+              <Link href="/app/challenges">
+                <div style={{ padding: "8px 12px", borderRadius: "10px", background: isDark ? "rgba(249,115,22,0.08)" : "#FFF7ED", border: `1px solid ${isDark ? "rgba(249,115,22,0.2)" : "#FED7AA"}`, display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+                  <span style={{ fontSize: "12px", fontWeight: 700, color: "#F97316" }}>🏆 Retos semanales</span>
+                  <span style={{ fontSize: "11px", color: C.textMuted }}>{weeklyChallenges.data.filter((c: any) => c.completed).length}/{weeklyChallenges.data.length} →</span>
+                </div>
+              </Link>
+            )}
           </div>
         )}
 

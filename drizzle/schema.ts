@@ -2922,3 +2922,103 @@ export const userAIFeedback = pgTable("user_ai_feedback", {
 }));
 export type UserAIFeedback = typeof userAIFeedback.$inferSelect;
 export type InsertUserAIFeedback = typeof userAIFeedback.$inferInsert;
+
+// =============================================================================
+// RETENTION FEATURES — Streak Shield, Weekly Challenges, 30-Day Challenge, Monthly Reports, Taste Insights
+// =============================================================================
+
+// ─── Streak Shield ────────────────────────────────────────────────────────────
+export const streakShields = pgTable("streak_shields", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().unique(),
+  shieldsAvailable: integer("shieldsAvailable").default(1).notNull(),
+  lastShieldGrantedAt: timestamp("lastShieldGrantedAt"),
+  shieldsUsedTotal: integer("shieldsUsedTotal").default(0).notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  ssUserIdx: index("ss_user_idx").on(t.userId),
+}));
+export type StreakShield = typeof streakShields.$inferSelect;
+export type InsertStreakShield = typeof streakShields.$inferInsert;
+
+// ─── Weekly Challenges ────────────────────────────────────────────────────────
+export const weeklyChallenges = pgTable("weekly_challenges", {
+  id: serial("id").primaryKey(),
+  slug: varchar("slug", { length: 64 }).notNull().unique(),
+  titleEs: varchar("titleEs", { length: 128 }).notNull(),
+  descriptionEs: text("descriptionEs").notNull(),
+  icon: varchar("icon", { length: 8 }).notNull(),
+  targetValue: integer("targetValue").notNull(),
+  metricType: varchar("metricType", { length: 64 }).notNull(),
+  pointsReward: integer("pointsReward").default(100).notNull(),
+  badgeSlug: varchar("badgeSlug", { length: 64 }),
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type WeeklyChallenge = typeof weeklyChallenges.$inferSelect;
+
+export const userWeeklyChallenges = pgTable("user_weekly_challenges", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull(),
+  challengeId: integer("challengeId").notNull(),
+  weekStart: date("weekStart").notNull(),
+  currentValue: integer("currentValue").default(0).notNull(),
+  completed: boolean("completed").default(false).notNull(),
+  completedAt: timestamp("completedAt"),
+  pointsAwarded: integer("pointsAwarded").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  uwcUserIdx: index("uwc_user_idx").on(t.userId),
+  uwcWeekIdx: index("uwc_week_idx").on(t.weekStart),
+  uwcUnique: unique("uwc_unique").on(t.userId, t.challengeId, t.weekStart),
+}));
+export type UserWeeklyChallenge = typeof userWeeklyChallenges.$inferSelect;
+
+// ─── 30-Day Challenge ─────────────────────────────────────────────────────────
+export const thirtyDayChallengeTypeEnum = pgEnum("thirtyDayChallengeType", ["weight_loss", "muscle_gain", "wellness"]);
+
+export const thirtyDayChallenges = pgTable("thirty_day_challenges", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull(),
+  challengeType: thirtyDayChallengeTypeEnum("challengeType").notNull(),
+  startDate: date("startDate").notNull(),
+  endDate: date("endDate").notNull(),
+  currentDay: integer("currentDay").default(0).notNull(),
+  completedDays: text("completedDays").default("[]").notNull(),
+  completed: boolean("completed").default(false).notNull(),
+  completedAt: timestamp("completedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  tdcUserIdx: index("tdc_user_idx").on(t.userId),
+}));
+export type ThirtyDayChallenge = typeof thirtyDayChallenges.$inferSelect;
+
+// ─── Monthly Reports ──────────────────────────────────────────────────────────
+export const monthlyReports = pgTable("monthly_reports", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull(),
+  year: integer("year").notNull(),
+  month: integer("month").notNull(),
+  pdfUrl: text("pdfUrl"),
+  generatedAt: timestamp("generatedAt").defaultNow().notNull(),
+  summaryJson: text("summaryJson"),
+}, (t) => ({
+  mrUserIdx: index("mr_user_idx").on(t.userId),
+  mrUnique: unique("mr_unique").on(t.userId, t.year, t.month),
+}));
+export type MonthlyReport = typeof monthlyReports.$inferSelect;
+
+// ─── Taste Insights ───────────────────────────────────────────────────────────
+export const tasteInsights = pgTable("taste_insights", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().unique(),
+  topCuisines: text("topCuisines").default("[]").notNull(),
+  topIngredients: text("topIngredients").default("[]").notNull(),
+  avoidedIngredients: text("avoidedIngredients").default("[]").notNull(),
+  preferredComplexity: varchar("preferredComplexity", { length: 32 }),
+  insightSummaryEs: text("insightSummaryEs"),
+  lastUpdatedAt: timestamp("lastUpdatedAt").defaultNow().notNull(),
+}, (t) => ({
+  tiUserIdx: index("ti_user_idx").on(t.userId),
+}));
+export type TasteInsight = typeof tasteInsights.$inferSelect;

@@ -93,6 +93,7 @@ const Progress = lazy(() => import("./pages/Progress"));
 const Notifications = lazy(() => import("./pages/Notifications"));
 const MealNotifications = lazy(() => import("./pages/MealNotifications"));
 const Achievements = lazy(() => import("./pages/Achievements"));
+const Challenges = lazy(() => import("./pages/Challenges"));
 const BuddyApplication = lazy(() => import("./pages/BuddyApplication"));
 const EventMenuPlanner = lazy(() => import("./pages/EventMenuPlanner"));
 const SavedEvents = lazy(() => import("./pages/SavedEvents"));
@@ -118,6 +119,7 @@ const MyExpert = lazy(() => import("./pages/MyExpert"));
 const MakerAnalytics = lazy(() => import("./pages/MakerAnalytics"));
 const IngredientExplorer = lazy(() => import("./pages/IngredientExplorer"));
 const WeeklyCheckin = lazy(() => import("./pages/WeeklyCheckin"));
+const MonthlyReports = lazy(() => import("./pages/MonthlyReports"));
 
 // ─── Page loading fallback ────────────────────────────────────────────────────
 function PageLoader() {
@@ -242,6 +244,8 @@ function Router() {
       <Route path="/app/notifications">{() => <ProtectedPage><Notifications /></ProtectedPage>}</Route>
       <Route path="/app/meal-notifications">{() => <ProtectedRoute component={MealNotifications} />}</Route>
       <Route path="/app/achievements">{() => <ProtectedRoute component={Achievements} />}</Route>
+      <Route path="/app/challenges">{() => <ProtectedRoute component={Challenges} />}</Route>
+      <Route path="/app/monthly-reports">{() => <ProtectedRoute component={MonthlyReports} />}</Route>
       <Route path="/app/buddy-application">{() => <ProtectedRoute component={BuddyApplication} />}</Route>
       <Route path="/app/event-menu">{() => <ProtectedPage><EventMenuPlanner /></ProtectedPage>}</Route>
       <Route path="/app/saved-events">{() => <ProtectedPage><SavedEvents /></ProtectedPage>}</Route>

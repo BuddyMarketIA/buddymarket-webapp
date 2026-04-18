@@ -2715,3 +2715,119 @@
 - [ ] Diario: recomendaciones de comidas personalizadas para completar el día y llegar a objetivos
 - [ ] Fix ExpertChat responsive en móvil (layout dos paneles → uno a la vez)
 - [ ] Fix nombres "Paciente" en lista de pacientes del experto (usar email como fallback)
+
+## 🔥 Mejoras de Retención — 3 días (18-20 abril 2026)
+
+### DÍA 1 — Hábito Diario y Gamificación Base
+
+#### Mejora 1: Racha Diaria con Consecuencias Reales
+- [ ] Notificación push a las 20:00 si el usuario no ha registrado nada ese día ("⚠️ Tu racha de X días está en peligro")
+- [ ] Animación de fuego (Lottie o CSS) al mantener racha en el Dashboard
+- [x] "Escudo de racha" consumible: 1 por semana para no perder la racha si fallas un día
+- [ ] Banner de celebración al superar récord personal de racha
+- [x] Endpoint `retention.useStreakShield` para consumir el escudo (router retention.ts)
+
+#### Mejora 2: Resumen Diario Nocturno (job a las 21:00)
+- [ ] Job programado nocturno (21:00 hora España) que genera resumen personalizado
+- [ ] Email con: calorías del día vs objetivo, puntuación IA, receta del día siguiente, micro-tip nutricional
+- [ ] Notificación push complementaria al email
+- [ ] Endpoint `mealLogs.getDailySummaryEmail` para generar el contenido
+- [ ] Template HTML de email para el resumen nocturno
+
+#### Mejora 3: Check-in de Peso Semanal en Dashboard
+- [ ] Card prominente en Dashboard cada lunes: "¿Cuánto pesas hoy?" con campo numérico inline
+- [ ] Al registrar, mostrar inmediatamente gráfica de evolución de las últimas 8 semanas
+- [ ] Endpoint `progress.logWeeklyWeight` (reutilizar tabla userHealthMetrics)
+- [ ] Notificación push cada lunes a las 9:00 recordando el check-in
+
+#### Mejora 7: Sistema de Niveles Nutricionales Visible
+- [x] Definir 8 niveles con nombres: Principiante → Explorador → Guardián → Maestro → Campeón → Leyenda → Gurú → BuddyMaster
+- [x] Mostrar nivel actual con barra de progreso en Dashboard y en perfil
+- [ ] Animación de subida de nivel con confetti
+- [x] Endpoint `retention.getLevelInfo` que calcula nivel según puntos acumulados
+- [ ] Notificación push al subir de nivel
+
+#### Mejora 9: Badges como Vitrina de Colección
+- [ ] Rediseñar pantalla /app/badges como galería visual tipo "vitrina"
+- [ ] Animación al desbloquear badge (efecto de brillo/reveal)
+- [ ] Mostrar % de usuarios que tienen cada badge (rareza social)
+- [ ] Badge "Leyenda BuddyMarket" para 365 días de racha (aspiracional)
+- [ ] Sección "Próximos badges" con progreso hacia el siguiente
+
+### DÍA 2 — Personalización IA y Funcionalidades Sociales
+
+#### Mejora 4: Perfil de Gusto IA Visible
+- [ ] Card en Dashboard: "Tu perfil de gusto IA" con las 3 preferencias detectadas
+- [ ] Actualizar `userTasteProfile` al marcar favoritos, puntuar recetas o cocinarlas
+- [ ] Mensaje visible cuando la IA aprende algo nuevo: "Hemos aprendido que te gustan las recetas mediterráneas"
+- [ ] Endpoint `profile.getTasteInsights` que devuelve las preferencias detectadas
+- [ ] Sección en perfil: "Lo que BuddyMarket sabe de ti" con preferencias editables
+
+#### Mejora 5: Generador de Menú en 1 Clic
+- [ ] Botón prominente en Dashboard: "✨ Generar mi menú esta semana"
+- [ ] Animación de generación de 3 segundos con mensaje de progreso
+- [ ] Generación automática de lista de la compra al crear el menú
+- [ ] Modal de confirmación con preview del menú antes de activarlo
+- [ ] Endpoint `menus.generateOneClick` que usa perfil + objetivos + alergias
+
+#### Mejora 6: Modo Familia Completo (Pro Max)
+- [ ] Completar flujo de invitación de miembros del hogar (tabla households ya existe)
+- [ ] Menú familiar unificado respetando restricciones individuales de cada miembro
+- [ ] Lista de la compra compartida en tiempo real entre miembros del hogar
+- [ ] Pantalla de gestión del hogar con avatares de cada miembro
+- [ ] Gate de Pro Max con upgrade CTA si el usuario no tiene el plan
+
+#### Mejora 8: Retos Semanales con Comunidad
+- [x] Tabla `weekly_challenges` en schema con retos predefinidos
+- [x] Tabla `user_weekly_challenges` para tracking de progreso
+- [x] Card de reto activo en Dashboard con barra de progreso (enlace a /app/challenges)
+- [x] 10 retos predefinidos: "5 colores esta semana", "3 recetas nuevas", "7 días de registro", etc.
+- [ ] Imagen compartible generada automáticamente al completar un reto
+- [ ] Badge exclusivo por completar cada tipo de reto
+
+### DÍA 3 — Conexión Humana y Valor Tangible
+
+#### Mejora 10: BuddyExpert Proactivo
+- [ ] Panel en ExpertPatients: botón "Enviar mensaje proactivo" a paciente
+- [ ] Notificación push al paciente cuando el experto le escribe
+- [ ] Experto puede comentar directamente en el diario del paciente (endpoint `expertMessages.commentOnLog`)
+- [ ] Alerta al experto si un paciente lleva 3+ días sin registrar comidas
+- [ ] Dashboard del experto: lista de pacientes inactivos (>3 días sin log)
+
+#### Mejora 11: Receta del Día Contextual
+- [ ] Integración con API meteorológica (Open-Meteo, gratuita) para temperatura exterior
+- [ ] Algoritmo de selección: temporada + temperatura + día semana + stock inventario usuario
+- [ ] Card "Receta del Día" en Dashboard con contexto: "Hace frío y tienes zanahoria en casa 🥕"
+- [ ] Endpoint `recipes.getDailyContextual` con lógica de selección inteligente
+- [ ] Rotación cada 24h con seed basado en fecha para consistencia
+
+#### Mejora 12: Informe Mensual PDF
+- [ ] Job programado el día 1 de cada mes a las 8:00
+- [ ] Generación de PDF con: evolución peso, adherencia menú, macros promedio, logros del mes
+- [ ] Comparativa con mes anterior y recomendaciones IA para el mes siguiente
+- [ ] Email automático con el PDF adjunto al usuario
+- [x] Sección /app/monthly-reports con historial de informes generados
+- [x] Tabla `monthly_reports` en schema + pantalla /app/monthly-reports
+
+#### Mejora 13: Escáner Integrado en Lista de Compra
+- [ ] Botón "📷 Escanear" directamente en la pantalla de ShoppingLists
+- [ ] Al escanear, mostrar puntuación nutricional A-E (estilo Nutriscore) del producto
+- [ ] Comparar con alternativas del inventario del usuario
+- [ ] Añadir producto escaneado a la lista con un toque
+- [ ] Historial de productos escaneados en BuddyScan
+
+#### Mejora 14: Dashboard Salud Conectada
+- [ ] Completar integración Apple Health (tabla healthIntegrations ya existe)
+- [ ] Completar integración Google Fit
+- [ ] Widget en Dashboard: pasos del día + sueño de anoche + frecuencia cardíaca
+- [ ] Insight diario: correlación entre sueño y adherencia al menú
+- [ ] Endpoint `connectedHealth.getDailySummary` que agrega datos de wearables
+
+#### Mejora 15: Modo Reto de 30 Días
+- [x] Tabla `thirty_day_challenges` con 3 programas predefinidos: Pérdida de peso, Ganancia muscular, Bienestar general
+- [x] Cada día tiene: tarea específica, objetivo de agua, micro-hábito
+- [x] Calendario visual tipo "cadena de hábitos" en /app/challenges tab 30 días
+- [x] Check diario con animación al completar el día
+- [ ] Informe de transformación al finalizar los 30 días
+- [ ] Badge exclusivo "Transformación Completada" al terminar
+- [x] Endpoint `retention.startThirtyDayChallenge` y `retention.checkInThirtyDay`

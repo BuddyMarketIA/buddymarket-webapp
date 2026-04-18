@@ -448,6 +448,8 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
         { key: "/app/metrics", label: t("nav.metrics"), to: "/app/metrics", emoji: "📏" },
         { key: "/app/progress", label: t("nav.progress"), to: "/app/progress", emoji: "📉" },
         { key: "/app/achievements", label: t("sidebar.myAchievements"), to: "/app/achievements", emoji: "🏆" },
+        { key: "/app/challenges", label: "Retos", to: "/app/challenges", emoji: "🔥" },
+        { key: "/app/monthly-reports", label: "Informes mensuales", to: "/app/monthly-reports", emoji: "📊" },
         { key: "/app/referrals", label: "Invita amigos 🎁", to: "/app/referrals", emoji: "👥" },
         { key: "/app/soporte", label: "Soporte", to: "/app/soporte", emoji: "🎫" },
       ],
