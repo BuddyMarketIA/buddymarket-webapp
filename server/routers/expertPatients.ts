@@ -19,7 +19,7 @@ export const expertPatientsRouter = router({
       const drizzleDb = await getDb();
       if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       const { expertPatients, buddyExperts, users, userProfiles, expertMessages, expertAppointments } = await import("../../drizzle/schema.js");
-      const { eq, and, or, ilike, sql } = await import("drizzle-orm");
+      const { eq, and, or, ilike, sql, isNull } = await import("drizzle-orm");
 
       // Obtener el buddyExpert del usuario actual
       const [expert] = await drizzleDb.select().from(buddyExperts)
@@ -38,6 +38,7 @@ export const expertPatientsRouter = router({
           name: users.name,
           email: users.email,
           imageUrl: users.imageUrl,
+          deletedAt: users.deletedAt,
         },
         profile: {
           weight: userProfiles.weight,
@@ -49,12 +50,12 @@ export const expertPatientsRouter = router({
         },
       })
         .from(expertPatients)
-        .leftJoin(users, eq(users.id, expertPatients.patientUserId))
+        .leftJoin(users, and(eq(users.id, expertPatients.patientUserId), isNull(users.deletedAt)))
         .leftJoin(userProfiles, eq(userProfiles.userId, expertPatients.patientUserId))
         .where(and(...conditions));
 
-      // Filtrar por búsqueda si se proporciona
-      let filtered = rows;
+      // Filtrar relaciones huerófanas (usuario borrado) y por búsqueda si se proporciona
+      let filtered = rows.filter(r => r.user?.id != null);
       if (input.search) {
         const s = input.search.toLowerCase();
         filtered = rows.filter(r =>

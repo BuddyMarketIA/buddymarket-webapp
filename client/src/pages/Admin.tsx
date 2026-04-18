@@ -372,6 +372,13 @@ export default function Admin() {
     },
     onError: (err) => toast.error(err.message),
   });
+  const deleteUser = trpc.admin.deleteUser.useMutation({
+    onSuccess: (data) => {
+      utils.admin.users.invalidate();
+      toast.success(data.method === "hard_delete" ? "Usuario eliminado permanentemente" : "Usuario desactivado correctamente");
+    },
+    onError: (err) => toast.error(err.message),
+  });
 
   if (user?.role !== "admin") {
     return (
@@ -940,6 +947,20 @@ export default function Admin() {
                         <option value="pro_max">Pro Max</option>
                       </select>
                     </div>
+                  {/* Borrar usuario */}
+                  <div className="flex justify-end pt-1">
+                    <button
+                      onClick={() => {
+                        if (confirm(`¿Borrar al usuario ${u.name || u.email} (ID ${u.id})? El usuario quedará desactivado y desaparecerá de todas las listas.`)) {
+                          deleteUser.mutate({ userId: u.id, hardDelete: false });
+                        }
+                      }}
+                      disabled={deleteUser.isPending}
+                      className="flex items-center gap-1 rounded-lg bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-600 hover:bg-red-100 disabled:opacity-50"
+                    >
+                      <TrashIcon className="h-3.5 w-3.5" />
+                      Borrar usuario
+                    </button>
                   </div>
                 </div>
               );

@@ -203,7 +203,8 @@ export async function getUserById(id: number) {
 export async function getAllUsers(limit = 50, offset = 0) {
   const db = await getDb();
   if (!db) return [];
-  return db.select().from(users).limit(limit).offset(offset).orderBy(desc(users.createdAt));
+  const { isNull } = await import("drizzle-orm");
+  return db.select().from(users).where(isNull(users.deletedAt)).limit(limit).offset(offset).orderBy(desc(users.createdAt));
 }
 
 export async function updateUser(id: number, data: Partial<InsertUser>) {

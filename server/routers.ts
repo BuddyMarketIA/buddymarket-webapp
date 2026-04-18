@@ -4585,6 +4585,31 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
         await drizzleDb.update(usersTable).set({ deletedAt: new Date(), active: false }).where(inArray(usersTable.id, input.deleteUserIds));
         return { success: true, deleted: input.deleteUserIds.length };
       }),
+    // ── Admin: Borrar usuario completamente ──────────────────────────────────────────
+    deleteUser: protectedProcedure
+      .input(z.object({ userId: z.number(), hardDelete: z.boolean().optional().default(false) }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (input.userId === ctx.user.id) throw new TRPCError({ code: "BAD_REQUEST", message: "No puedes borrarte a ti mismo" });
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { users: usersTable, expertPatients, userProfiles, userMedicalProfiles, userPreferences } = await import("../drizzle/schema.js");
+        const { eq } = await import("drizzle-orm");
+        // Limpiar relaciones huerófanas de expertPatients en cualquier caso
+        await drizzleDb.delete(expertPatients).where(eq(expertPatients.patientUserId, input.userId));
+        if (input.hardDelete) {
+          // Hard delete: eliminar perfil y datos del usuario, luego el usuario
+          await drizzleDb.delete(userProfiles).where(eq(userProfiles.userId, input.userId));
+          await drizzleDb.delete(userMedicalProfiles).where(eq(userMedicalProfiles.userId, input.userId));
+          await drizzleDb.delete(userPreferences).where(eq(userPreferences.userId, input.userId));
+          await drizzleDb.delete(usersTable).where(eq(usersTable.id, input.userId));
+          return { success: true, method: "hard_delete" };
+        } else {
+          // Soft delete: marcar como borrado
+          await drizzleDb.update(usersTable).set({ deletedAt: new Date(), active: false }).where(eq(usersTable.id, input.userId));
+          return { success: true, method: "soft_delete" };
+        }
+      }),
     promoteToAdminProMax: protectedProcedure
       .input(z.object({ userId: z.number() }))
       .mutation(async ({ ctx, input }) => {

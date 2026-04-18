@@ -1570,6 +1570,29 @@ export type ExpertClientPlan = typeof expertClientPlans.$inferSelect;
 export type InsertExpertClientPlan = typeof expertClientPlans.$inferInsert;
 
 // =============================================================================
+// EXPERT KNOWLEDGE BASE — Biblioteca de PDFs de dietas del BuddyExpert para IA
+// =============================================================================
+export const expertKnowledgePdfs = pgTable("expert_knowledge_pdfs", {
+  id: serial("id").primaryKey(),
+  expertId: integer("expertId").notNull(),
+  title: varchar("title", { length: 256 }).notNull(),
+  description: text("description"),
+  pdfUrl: text("pdfUrl").notNull(),
+  pdfKey: text("pdfKey").notNull(),
+  pdfFileName: varchar("pdfFileName", { length: 256 }),
+  extractedContent: text("extractedContent"), // Contenido extraído del PDF para búsqueda IA
+  tags: text("tags"), // JSON array: ["perdida_peso", "mediterranea", "diabeticos"]
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  expertIdx: index("ekp_expert_idx").on(t.expertId),
+  activeIdx: index("ekp_active_idx").on(t.isActive),
+}));
+export type ExpertKnowledgePdf = typeof expertKnowledgePdfs.$inferSelect;
+export type InsertExpertKnowledgePdf = typeof expertKnowledgePdfs.$inferInsert;
+
+// =============================================================================
 // API HEALTH MONITORING — Sistema de monitorización de APIs
 // =============================================================================
 export const apiHealthStatusEnum = pgEnum("apiHealthStatus", ["ok", "degraded", "down", "unknown"]);
