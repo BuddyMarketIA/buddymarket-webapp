@@ -5,7 +5,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Progress } from "@/components/ui/progress";
 import { Badge } from "@/components/ui/badge";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/components/sonner-a11y-shim";
 import { Trophy, Flame, Target, CheckCircle2, Calendar, Zap, Star } from "lucide-react";
 
 const CHALLENGE_TYPE_CONFIG = {
@@ -16,12 +16,11 @@ const CHALLENGE_TYPE_CONFIG = {
 
 function WeeklyChallengeCard({ challenge }: { challenge: any }) {
   const utils = trpc.useUtils();
-  const { toast } = useToast();
   const updateProgress = trpc.retention.updateChallengeProgress.useMutation({
     onSuccess: (data) => {
       utils.retention.getWeeklyChallenges.invalidate();
       if (data.newlyCompleted) {
-        toast({ title: "🎉 ¡Reto completado!", description: `Has ganado ${challenge.pointsReward} puntos. ¡Increíble!` });
+        toast.success(`🎉 ¡Reto completado! Has ganado ${challenge.pointsReward} puntos. ¡Increíble!`);
       }
     },
   });
@@ -53,16 +52,15 @@ function WeeklyChallengeCard({ challenge }: { challenge: any }) {
 
 function ThirtyDayCard({ challenge }: { challenge: any }) {
   const utils = trpc.useUtils();
-  const { toast } = useToast();
   const checkIn = trpc.retention.checkInThirtyDay.useMutation({
     onSuccess: (data) => {
       utils.retention.getActiveThirtyDayChallenge.invalidate();
       if (data.alreadyCheckedIn) {
-        toast({ title: "Ya has hecho check-in hoy", description: "¡Vuelve mañana para continuar tu racha!" });
+        toast.info("Ya has hecho check-in hoy. ¡Vuelve mañana para continuar tu racha!");
       } else if (data.isComplete) {
-        toast({ title: "🏆 ¡Reto de 30 días completado!", description: "¡Eres una leyenda BuddyMarket! Has ganado el badge exclusivo." });
+        toast.success("🏆 ¡Reto de 30 días completado! ¡Eres una leyenda BuddyMarket! Has ganado el badge exclusivo.");
       } else {
-        toast({ title: `✅ Día ${data.currentDay} completado`, description: `+20 puntos. ¡${30 - (data.currentDay ?? 0)} días más para completar el reto!` });
+        toast.success(`✅ Día ${data.currentDay} completado. +20 puntos. ¡${30 - (data.currentDay ?? 0)} días más para completar el reto!`);
       }
     },
   });
@@ -129,7 +127,6 @@ function ThirtyDayCard({ challenge }: { challenge: any }) {
 export default function Challenges() {
   const [tab, setTab] = useState<"weekly" | "thirty">("weekly");
   const [startingChallenge, setStartingChallenge] = useState(false);
-  const { toast } = useToast();
   const utils = trpc.useUtils();
 
   const weeklyChallenges = trpc.retention.getWeeklyChallenges.useQuery();
@@ -139,7 +136,7 @@ export default function Challenges() {
     onSuccess: () => {
       utils.retention.getActiveThirtyDayChallenge.invalidate();
       setStartingChallenge(false);
-      toast({ title: "🚀 ¡Reto iniciado!", description: "Tu reto de 30 días ha comenzado. ¡Haz check-in cada día!" });
+      toast.success("🚀 ¡Reto iniciado! Tu reto de 30 días ha comenzado. ¡Haz check-in cada día!");
     },
   });
 

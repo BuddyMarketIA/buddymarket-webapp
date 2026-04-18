@@ -1,36 +1,45 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import AppLayout from "@/components/AppLayout";
-import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { useToast } from "@/hooks/use-toast";
-import { FileText, Download, TrendingUp, Calendar, Loader2, BarChart3 } from "lucide-react";
+import { toast } from "@/components/sonner-a11y-shim";
+import { FileText, Download, TrendingUp, Loader2, BarChart3, Sparkles } from "lucide-react";
 
 const MONTH_NAMES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
 
 export default function MonthlyReports() {
-  const { toast } = useToast();
   const now = new Date();
-  const [generating, setGenerating] = useState(false);
-
+  const [generatingPdf, setGeneratingPdf] = useState<string | null>(null);
   const reports = trpc.retention.getMonthlyReports.useQuery();
   const utils = trpc.useUtils();
 
   const generateReport = trpc.retention.generateMonthlyReport.useMutation({
     onSuccess: (data) => {
       utils.retention.getMonthlyReports.invalidate();
-      setGenerating(false);
-      toast({
-        title: "📊 Informe generado",
-        description: `Tu informe de ${MONTH_NAMES[(data.report?.month ?? 1) - 1]} está listo. Días registrados: ${data.stats.totalDays}`,
-      });
+      toast.success(`📊 Informe de ${MONTH_NAMES[(data.report?.month ?? 1) - 1]} generado. Días registrados: ${data.stats.totalDays}`);
     },
-    onError: () => setGenerating(false),
+    onError: (e) => toast.error(e.message),
   });
 
-  const handleGenerate = (year: number, month: number) => {
-    setGenerating(true);
-    generateReport.mutate({ year, month });
+  const generatePDF = trpc.retention.generateMonthlyReportPDF.useMutation({
+    onSuccess: (data) => {
+      setGeneratingPdf(null);
+      utils.retention.getMonthlyReports.invalidate();
+      if (data.ok && data.url) {
+        window.open(data.url, "_blank");
+        toast.success("✅ PDF generado. Descargando...");
+      } else {
+        toast.error("No se pudo generar el PDF. Inténtalo de nuevo.");
+      }
+    },
+    onError: (e) => { setGeneratingPdf(null); toast.error(e.message); },
+  });
+
+  const handleGeneratePDF = (year: number, month: number) => {
+    const key = `${year}-${month}`;
+    setGeneratingPdf(key);
+    generatePDF.mutate({ year, month });
   };
 
   // Generate last 3 months options
@@ -64,8 +73,8 @@ export default function MonthlyReports() {
                 return (
                   <Button key={`${year}-${month}`} variant="outline" size="sm"
                     className={alreadyGenerated ? "border-green-400 text-green-600" : "border-blue-300 text-blue-600"}
-                    disabled={generating || generateReport.isPending}
-                    onClick={() => !alreadyGenerated && handleGenerate(year, month)}>
+                    disabled={generateReport.isPending}
+                    onClick={() => generateReport.mutate({ year, month })}>
                     {alreadyGenerated ? "✅ " : ""}{MONTH_NAMES[month - 1]} {year}
                   </Button>
                 );
@@ -84,6 +93,8 @@ export default function MonthlyReports() {
             <h2 className="font-bold text-foreground">Mis informes</h2>
             {reports.data.map(report => {
               const summary = report.summaryJson ? JSON.parse(report.summaryJson) : null;
+              const pdfKey = `${report.year}-${report.month}`;
+              const isGeneratingThisPdf = generatingPdf === pdfKey;
               return (
                 <Card key={report.id} className="border border-border hover:border-blue-300 transition-all">
                   <CardContent className="p-4">
@@ -94,19 +105,36 @@ export default function MonthlyReports() {
                       <div className="flex-1 min-w-0">
                         <h3 className="font-bold text-foreground">{MONTH_NAMES[report.month - 1]} {report.year}</h3>
                         {summary && (
-                          <div className="flex gap-4 mt-1">
-                            <span className="text-xs text-muted-foreground">📅 {summary.totalDays} días registrados</span>
+                          <div className="flex flex-wrap gap-3 mt-1">
+                            <span className="text-xs text-muted-foreground">📅 {summary.totalDays} días</span>
                             <span className="text-xs text-muted-foreground">🔥 ~{summary.avgCalories} kcal/día</span>
-                            <span className="text-xs text-muted-foreground">💪 ~{summary.avgProtein}g proteína/día</span>
+                            <span className="text-xs text-muted-foreground">💪 ~{summary.avgProtein}g prot/día</span>
                           </div>
                         )}
                         <p className="text-xs text-muted-foreground mt-0.5">
                           Generado el {new Date(report.generatedAt).toLocaleDateString("es-ES")}
                         </p>
                       </div>
-                      <Button variant="outline" size="sm" className="flex-shrink-0" onClick={() => toast({ title: "PDF disponible próximamente", description: "La descarga en PDF estará disponible en la próxima actualización." })}>
-                        <Download className="w-4 h-4" />
-                      </Button>
+                      <div className="flex flex-col gap-2 flex-shrink-0">
+                        {report.pdfUrl ? (
+                          <Button variant="outline" size="sm" asChild>
+                            <a href={report.pdfUrl} target="_blank" rel="noopener noreferrer">
+                              <Download className="w-4 h-4 mr-1" /> PDF
+                            </a>
+                          </Button>
+                        ) : (
+                          <Button
+                            variant="outline" size="sm"
+                            disabled={isGeneratingThisPdf}
+                            onClick={() => handleGeneratePDF(report.year, report.month)}
+                            className="border-orange-300 text-orange-600 hover:bg-orange-50"
+                          >
+                            {isGeneratingThisPdf
+                              ? <><Loader2 className="w-3 h-3 animate-spin mr-1" /> Generando...</>
+                              : <><Sparkles className="w-3 h-3 mr-1" /> Generar PDF</>}
+                          </Button>
+                        )}
+                      </div>
                     </div>
                   </CardContent>
                 </Card>

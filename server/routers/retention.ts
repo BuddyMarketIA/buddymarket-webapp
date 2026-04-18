@@ -355,4 +355,75 @@ export const retentionRouter = router({
         .returning();
       return { ok: true, report, stats: { totalDays, avgCalories, avgProtein } };
     }),
+
+  // ── Generate Monthly Report PDF ─────────────────────────────────────────────
+  generateMonthlyReportPDF: protectedProcedure
+    .input(z.object({ year: z.number().int().min(2024).max(2030), month: z.number().int().min(1).max(12) }))
+    .mutation(async ({ ctx, input }) => {
+      const drizzleDb = await db.getDb();
+      const { monthlyReports, mealLogs, users } = await import('../../drizzle/schema.js');
+      const { eq, and, gte, lte } = await import('drizzle-orm');
+      const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+      const monthName = MONTHS[input.month - 1]!;
+      const startDate = `${input.year}-${String(input.month).padStart(2,'0')}-01`;
+      const endDate = `${input.year}-${String(input.month).padStart(2,'0')}-31`;
+      const logs = await drizzleDb.select()
+        .from(mealLogs).where(and(eq(mealLogs.userId, ctx.user.id), gte(mealLogs.logDate, startDate), lte(mealLogs.logDate, endDate)));
+      const [userRow] = await drizzleDb.select({ name: users.name, email: users.email }).from(users).where(eq(users.id, ctx.user.id)).limit(1);
+      const totalDays = new Set(logs.map(l => l.logDate)).size;
+      const avgCalories = logs.length > 0 ? Math.round(logs.reduce((s,l) => s + (l.calories ?? 0), 0) / Math.max(totalDays, 1)) : 0;
+      const avgProtein = logs.length > 0 ? Math.round(logs.reduce((s,l) => s + (l.protein ?? 0), 0) / Math.max(totalDays, 1)) : 0;
+      const avgCarbs = logs.length > 0 ? Math.round(logs.reduce((s,l) => s + (l.carbs ?? 0), 0) / Math.max(totalDays, 1)) : 0;
+      const avgFat = logs.length > 0 ? Math.round(logs.reduce((s,l) => s + (l.fat ?? 0), 0) / Math.max(totalDays, 1)) : 0;
+      try {
+        const PDFDocument = (await import('pdfkit')).default;
+        const doc = new PDFDocument({ margin: 50, size: 'A4' });
+        const chunks: Buffer[] = [];
+        const pdfReady = new Promise<Buffer>((resolve, reject) => {
+          doc.on('data', (c: Buffer) => chunks.push(c));
+          doc.on('end', () => resolve(Buffer.concat(chunks)));
+          doc.on('error', reject);
+        });
+        // Header
+        doc.rect(0, 0, 595, 120).fill('#F97316');
+        doc.fillColor('white').fontSize(28).font('Helvetica-Bold').text('BuddyMarket', 50, 35);
+        doc.fontSize(16).font('Helvetica').text(`Informe Nutricional — ${monthName} ${input.year}`, 50, 72);
+        doc.fillColor('#333').fontSize(12).font('Helvetica').text(`Usuario: ${userRow?.name || ctx.user.email}`, 50, 140);
+        doc.text(`Generado el: ${new Date().toLocaleDateString('es-ES')}`, 50, 158);
+        // Stats
+        doc.fontSize(16).font('Helvetica-Bold').fillColor('#F97316').text('Resumen del mes', 50, 195);
+        doc.moveTo(50, 215).lineTo(545, 215).strokeColor('#F97316').lineWidth(2).stroke();
+        const stats = [
+          { label: 'Días con registro', value: `${totalDays} días` },
+          { label: 'Registros totales', value: `${logs.length} comidas` },
+          { label: 'Calorías promedio/día', value: `${avgCalories} kcal` },
+          { label: 'Proteína promedio/día', value: `${avgProtein} g` },
+          { label: 'Carbohidratos promedio/día', value: `${avgCarbs} g` },
+          { label: 'Grasas promedio/día', value: `${avgFat} g` },
+        ];
+        let y = 230;
+        stats.forEach((s, i) => {
+          const bg = i % 2 === 0 ? '#FFF7ED' : '#FFFFFF';
+          doc.rect(50, y, 495, 28).fill(bg);
+          doc.fillColor('#333').fontSize(12).font('Helvetica').text(s.label, 60, y + 8);
+          doc.font('Helvetica-Bold').text(s.value, 400, y + 8);
+          y += 28;
+        });
+        // Footer
+        doc.fontSize(10).fillColor('#999').font('Helvetica').text('BuddyMarket — Tu nutrición, inteligente y personalizada', 50, 760, { align: 'center', width: 495 });
+        doc.end();
+        const pdfBuffer = await pdfReady;
+        const { storagePut } = await import('../storage.js');
+        const fileKey = `monthly-reports/${ctx.user.id}-${input.year}-${input.month}-${Date.now()}.pdf`;
+        const { url } = await storagePut(fileKey, pdfBuffer, 'application/pdf');
+        // Update report with PDF URL
+        await drizzleDb.update(monthlyReports)
+          .set({ pdfUrl: url })
+          .where(and(eq(monthlyReports.userId, ctx.user.id), eq(monthlyReports.year, input.year), eq(monthlyReports.month, input.month)));
+        return { ok: true, url };
+      } catch (err: any) {
+        console.error('[retention.generateMonthlyReportPDF]', err?.message || err);
+        return { ok: false, url: null, error: 'No se pudo generar el PDF' };
+      }
+    }),
 });

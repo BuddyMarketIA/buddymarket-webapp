@@ -1,4 +1,5 @@
 import { useState, useRef } from "react";
+import BarcodeScanner from "@/components/BarcodeScanner";
 import { useTranslation } from "react-i18next";
 import { jsPDF } from "jspdf";
 import { usePlan } from "@/hooks/usePlan";
@@ -87,6 +88,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
   const [showShare, setShowShare] = useState(false);
   const [showMenuFromList, setShowMenuFromList] = useState(false);
   const [generatedMenu, setGeneratedMenu] = useState<any>(null);
+  const [showBarcodeScanner, setShowBarcodeScanner] = useState(false);
   const generateMenuMutation = trpc.shoppingLists.generateMenuFromList.useMutation({
     onSuccess: (data) => {
       setGeneratedMenu(data.menu);
@@ -630,11 +632,36 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
         </div>
       )}
 
+      {/* Barcode Scanner Modal */}
+      {showBarcodeScanner && (
+        <BarcodeScanner
+          onProductFound={(product) => {
+            setShowBarcodeScanner(false);
+            setShowAdd(false);
+            addItem.mutate({ shoppingListId: listId, customName: `${product.name}${product.brand ? ` (${product.brand})` : ''}` });
+            toast.success(`✅ ${product.name} añadido a la lista`);
+          }}
+          onClose={() => setShowBarcodeScanner(false)}
+        />
+      )}
       {/* Add item modal */}
       {showAdd && (
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowAdd(false); }}>
           <div className="w-full max-w-sm rounded-3xl bg-background p-6 shadow-2xl animate-slide-up">
             <h3 className="mb-4 text-lg font-bold text-foreground">Añadir producto</h3>
+            {/* Barcode scan button */}
+            <button
+              onClick={() => { setShowAdd(false); setShowBarcodeScanner(true); }}
+              className="w-full mb-3 flex items-center justify-center gap-2 rounded-2xl border-2 border-dashed border-orange-300 bg-orange-50 py-3 text-sm font-semibold text-orange-600 hover:bg-orange-100 transition-colors"
+            >
+              <CameraIcon className="w-5 h-5" />
+              Escanear código de barras
+            </button>
+            <div className="relative flex items-center mb-4">
+              <div className="flex-1 border-t border-border" />
+              <span className="mx-3 text-xs text-muted-foreground">o escribe el nombre</span>
+              <div className="flex-1 border-t border-border" />
+            </div>
             <input
               value={newItem}
               onChange={(e) => setNewItem(e.target.value)}
