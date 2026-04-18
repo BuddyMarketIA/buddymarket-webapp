@@ -767,7 +767,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
             <div className="flex justify-center pt-3 pb-1 shrink-0"><div className="w-10 h-1 rounded-full bg-gray-200" /></div>
             <div className="flex-1 overflow-y-auto px-5 pb-6 pt-2">
               <MercadonaCartExport
-                items={allItems.map((i: any) => ({ id: i.id, name: i.ingredient?.name ?? i.customName ?? i.name ?? "Producto", qty: String(i.amount ?? i.quantity ?? ""), unit: i.measure?.name ?? i.unit ?? "", isPurchased: i.isPurchased || i.inPantry }))}
+                items={allItems.map((i: any) => ({ id: i.id, name: i.ingredient?.nameEs ?? i.ingredient?.name ?? i.customName ?? i.name ?? "Producto", qty: String(i.amount ?? i.quantity ?? ""), unit: i.measure?.nameEs ?? i.measure?.name ?? i.unit ?? "", isPurchased: i.isPurchased || i.inPantry }))}
                 onBack={() => { setShowMercadonaCart(false); setShowExport(true); }}
                 onClose={() => setShowMercadonaCart(false)}
               />
@@ -782,7 +782,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
             <div className="flex justify-center pt-3 pb-1 shrink-0"><div className="w-10 h-1 rounded-full bg-gray-200" /></div>
             <div className="flex-1 overflow-y-auto px-5 pb-6 pt-2">
               <LidlCartExport
-                items={allItems.map((i: any) => ({ id: i.id, name: i.ingredient?.name ?? i.customName ?? i.name ?? "Producto", qty: String(i.amount ?? i.quantity ?? ""), unit: i.measure?.name ?? i.unit ?? "", isPurchased: i.isPurchased || i.inPantry }))}
+                items={allItems.map((i: any) => ({ id: i.id, name: i.ingredient?.nameEs ?? i.ingredient?.name ?? i.customName ?? i.name ?? "Producto", qty: String(i.amount ?? i.quantity ?? ""), unit: i.measure?.nameEs ?? i.measure?.name ?? i.unit ?? "", isPurchased: i.isPurchased || i.inPantry }))}
                 onBack={() => { setShowLidlCart(false); setShowExport(true); }}
                 onClose={() => setShowLidlCart(false)}
               />
@@ -796,7 +796,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
             <div className="flex justify-center pt-3 pb-1 shrink-0"><div className="w-10 h-1 rounded-full bg-gray-200" /></div>
             <div className="flex-1 overflow-y-auto px-5 pb-6 pt-2">
               <CarrefourCartExport
-                items={allItems.map((i: any) => ({ id: i.id, name: i.ingredient?.name ?? i.customName ?? i.name ?? "Producto", qty: String(i.amount ?? i.quantity ?? ""), unit: i.measure?.name ?? i.unit ?? "", isPurchased: i.isPurchased || i.inPantry }))}
+                items={allItems.map((i: any) => ({ id: i.id, name: i.ingredient?.nameEs ?? i.ingredient?.name ?? i.customName ?? i.name ?? "Producto", qty: String(i.amount ?? i.quantity ?? ""), unit: i.measure?.nameEs ?? i.measure?.name ?? i.unit ?? "", isPurchased: i.isPurchased || i.inPantry }))}
                 onBack={() => { setShowCarrefourCart(false); setShowExport(true); }}
                 onClose={() => setShowCarrefourCart(false)}
               />
@@ -808,7 +808,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowAlcampoCart(false); }}>
           <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up max-h-[85vh] overflow-y-auto">
             <AlcampoCartExport
-              items={allItems.map((i: any) => ({ id: i.id, name: i.ingredient?.name ?? i.customName ?? i.name ?? "Producto", qty: String(i.amount ?? i.quantity ?? ""), unit: i.measure?.name ?? i.unit ?? "", isPurchased: i.isPurchased || i.inPantry }))}
+              items={allItems.map((i: any) => ({ id: i.id, name: i.ingredient?.nameEs ?? i.ingredient?.name ?? i.customName ?? i.name ?? "Producto", qty: String(i.amount ?? i.quantity ?? ""), unit: i.measure?.nameEs ?? i.measure?.name ?? i.unit ?? "", isPurchased: i.isPurchased || i.inPantry }))}
               onBack={() => { setShowAlcampoCart(false); setShowExport(true); }}
               onClose={() => setShowAlcampoCart(false)}
             />

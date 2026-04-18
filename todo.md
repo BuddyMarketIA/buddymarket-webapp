@@ -2710,3 +2710,8 @@
 - [x] Fix ingredientes "Alimento" en modal Recetas con tu inventario — ahora muestra nombres reales (ingredient?.nameEs ?? item?.customName)
 - [x] Añadir botón "Hacer esta receta" en modal Recetas con tu inventario
 - [x] Limpiar datos demo: 6 usuarios .demo@buddymarket.io eliminados ✅
+- [ ] Diario: panel calórico detallado con déficit/superávit + explicación del porqué según perfil (TMB, actividad, objetivo)
+- [ ] Diario: evaluación IA del día (si lo estás haciendo bien, macros, distribución de comidas)
+- [ ] Diario: recomendaciones de comidas personalizadas para completar el día y llegar a objetivos
+- [ ] Fix ExpertChat responsive en móvil (layout dos paneles → uno a la vez)
+- [ ] Fix nombres "Paciente" en lista de pacientes del experto (usar email como fallback)

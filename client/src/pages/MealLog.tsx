@@ -219,6 +219,9 @@ export default function MealLog() {
     return d.toISOString().split("T")[0];
   }, [dateOffset]);
 
+  const [showDailyAnalysis, setShowDailyAnalysis] = useState(false);
+  const [analysisRequested, setAnalysisRequested] = useState(false);
+
   const { data: logs, isLoading } = trpc.mealLogs.list.useQuery({
     startDate: selectedDate,
     endDate: selectedDate,
@@ -226,6 +229,10 @@ export default function MealLog() {
   const { data: summary } = trpc.mealLogs.dailySummary.useQuery({ date: selectedDate });
   const { data: dayParts } = trpc.catalogs.dayParts.useQuery();
   const { data: profileData } = trpc.profile.get.useQuery();
+  const { data: dailyAnalysis, isLoading: analysisLoading } = trpc.mealLogs.getDailyAnalysis.useQuery(
+    { date: selectedDate },
+    { enabled: analysisRequested, staleTime: 5 * 60 * 1000 }
+  );
   const utils = trpc.useUtils();
 
   const evaluateAchievements = trpc.achievements.evaluate.useMutation({
@@ -607,6 +614,159 @@ export default function MealLog() {
           </div>
         </div>
       </div>
+
+      {/* ─── Calorie Deficit Panel ─── */}
+      {totalCals > 0 && (() => {
+        const deficit = targetCals - Math.round(totalCals);
+        const isDeficit = deficit > 0;
+        const isSurplus = deficit < 0;
+        const goalType = (profileData?.profile as any)?.goal ?? 'maintenance';
+        const goalLabels: Record<string, string> = { weight_loss: 'pérdida de peso', muscle_gain: 'ganancia muscular', maintenance: 'mantenimiento', toning: 'tonificación', fat_loss: 'pérdida de grasa' };
+        const goalLabel = goalLabels[goalType] ?? 'tu objetivo';
+        return (
+          <div style={{ background: isDeficit ? 'linear-gradient(135deg,#fff7ed,#fff)' : isSurplus ? 'linear-gradient(135deg,#fef2f2,#fff)' : 'linear-gradient(135deg,#f0fdf4,#fff)', borderRadius: "20px", padding: "16px", marginBottom: "12px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", border: `1px solid ${isDeficit ? '#fed7aa' : isSurplus ? '#fecaca' : '#bbf7d0'}` }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                <span style={{ fontSize: "20px" }}>{isDeficit ? '📉' : isSurplus ? '📈' : '✅'}</span>
+                <div>
+                  <p style={{ margin: 0, fontSize: "13px", fontWeight: 800, color: "#1a1a1a" }}>
+                    {isDeficit ? `Déficit: ${deficit} kcal restantes` : isSurplus ? `Superávit: +${Math.abs(deficit)} kcal` : '¡Objetivo alcanzado!'}
+                  </p>
+                  <p style={{ margin: 0, fontSize: "11px", color: "#6b7280", marginTop: "1px" }}>Objetivo: {goalLabel}</p>
+                </div>
+              </div>
+              <div style={{ textAlign: "right" }}>
+                <p style={{ margin: 0, fontSize: "20px", fontWeight: 900, color: isDeficit ? '#f97316' : isSurplus ? '#ef4444' : '#22c55e' }}>{Math.round(totalCals)}</p>
+                <p style={{ margin: 0, fontSize: "10px", color: "#9ca3af" }}>/ {targetCals} kcal</p>
+              </div>
+            </div>
+            {/* Deficit bar */}
+            <div style={{ background: '#f3f4f6', borderRadius: '999px', height: '8px', overflow: 'hidden', marginBottom: '10px' }}>
+              <div style={{ background: isDeficit ? 'linear-gradient(90deg,#f97316,#fb923c)' : isSurplus ? '#ef4444' : '#22c55e', borderRadius: '999px', height: '100%', width: `${Math.min(100, calPct)}%`, transition: 'width 0.6s ease' }} />
+            </div>
+            <p style={{ margin: '0 0 10px', fontSize: '12px', color: '#6b7280', lineHeight: 1.5 }}>
+              {isDeficit
+                ? `Llevas ${Math.round(totalCals)} kcal de ${targetCals}. Con ${deficit} kcal más completarás tu objetivo de ${goalLabel}.`
+                : isSurplus
+                ? `Has superado tu objetivo en ${Math.abs(deficit)} kcal. Esto puede ralentizar ${goalType === 'weight_loss' ? 'la pérdida de peso' : 'tu progreso'}.`
+                : '¡Perfecto! Has alcanzado exactamente tu objetivo calórico.'}
+            </p>
+            {/* AI Analysis button */}
+            <button
+              onClick={() => { setAnalysisRequested(true); setShowDailyAnalysis(true); }}
+              style={{ width: '100%', background: 'white', border: '1.5px solid #e5e7eb', borderRadius: '12px', padding: '10px 14px', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '8px', color: '#374151', fontWeight: 700, fontSize: '13px', transition: 'all 0.2s' }}
+              onMouseEnter={e => { e.currentTarget.style.borderColor = '#f97316'; e.currentTarget.style.color = '#f97316'; }}
+              onMouseLeave={e => { e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.color = '#374151'; }}
+            >
+              <span style={{ fontSize: '16px' }}>🤖</span>
+              <span>Analizar mi día con IA</span>
+            </button>
+          </div>
+        );
+      })()}
+
+      {/* ─── AI Daily Analysis Modal ─── */}
+      {showDailyAnalysis && (
+        <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) setShowDailyAnalysis(false); }}>
+          <div style={{ width: '100%', maxWidth: '480px', background: 'white', borderRadius: '28px 28px 0 0', padding: '24px', maxHeight: '85dvh', overflowY: 'auto', boxShadow: '0 -4px 32px rgba(0,0,0,0.15)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '20px' }}>
+              <div>
+                <h2 style={{ margin: 0, fontSize: '18px', fontWeight: 900, color: '#1a1a1a' }}>🤖 Análisis del día</h2>
+                <p style={{ margin: '2px 0 0', fontSize: '12px', color: '#9ca3af' }}>Evaluación nutricional personalizada</p>
+              </div>
+              <button onClick={() => setShowDailyAnalysis(false)} style={{ width: '32px', height: '32px', borderRadius: '50%', background: '#f3f4f6', border: 'none', cursor: 'pointer', fontSize: '16px', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+            </div>
+
+            {analysisLoading ? (
+              <div style={{ textAlign: 'center', padding: '40px 0' }}>
+                <div style={{ fontSize: '40px', marginBottom: '12px' }}>🧠</div>
+                <p style={{ fontSize: '15px', fontWeight: 700, color: '#1a1a1a', margin: '0 0 6px' }}>Analizando tu día...</p>
+                <p style={{ fontSize: '13px', color: '#9ca3af', margin: 0 }}>La IA está evaluando tus comidas y preparando recomendaciones personalizadas</p>
+              </div>
+            ) : dailyAnalysis?.hasData && dailyAnalysis.analysis ? (
+              <>
+                {/* Score */}
+                <div style={{ background: 'linear-gradient(135deg,#fff7ed,#fff)', borderRadius: '16px', padding: '16px', marginBottom: '16px', textAlign: 'center', border: '1px solid #fed7aa' }}>
+                  <p style={{ margin: '0 0 4px', fontSize: '12px', color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Puntuación del día</p>
+                  <div style={{ fontSize: '48px', fontWeight: 900, color: (dailyAnalysis.analysis as any).score >= 7 ? '#22c55e' : (dailyAnalysis.analysis as any).score >= 5 ? '#f97316' : '#ef4444', lineHeight: 1 }}>{(dailyAnalysis.analysis as any).score}<span style={{ fontSize: '20px', color: '#9ca3af' }}>/10</span></div>
+                  <p style={{ margin: '8px 0 0', fontSize: '13px', color: '#374151', lineHeight: 1.5 }}>{(dailyAnalysis.analysis as any).evaluation}</p>
+                </div>
+
+                {/* Deficit explanation */}
+                <div style={{ background: '#f9fafb', borderRadius: '14px', padding: '14px', marginBottom: '14px' }}>
+                  <p style={{ margin: '0 0 6px', fontSize: '12px', fontWeight: 700, color: '#374151' }}>📊 Tu balance calórico</p>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#6b7280', lineHeight: 1.6 }}>{dailyAnalysis.deficitExplanation}</p>
+                  <div style={{ display: 'flex', gap: '10px', marginTop: '10px' }}>
+                    <div style={{ flex: 1, background: 'white', borderRadius: '10px', padding: '8px', textAlign: 'center', border: '1px solid #e5e7eb' }}>
+                      <p style={{ margin: 0, fontSize: '10px', color: '#9ca3af', fontWeight: 600 }}>TMB</p>
+                      <p style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: '#1a1a1a' }}>{dailyAnalysis.tmb}</p>
+                      <p style={{ margin: 0, fontSize: '9px', color: '#9ca3af' }}>kcal/día</p>
+                    </div>
+                    <div style={{ flex: 1, background: 'white', borderRadius: '10px', padding: '8px', textAlign: 'center', border: '1px solid #e5e7eb' }}>
+                      <p style={{ margin: 0, fontSize: '10px', color: '#9ca3af', fontWeight: 600 }}>TDEE</p>
+                      <p style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: '#1a1a1a' }}>{dailyAnalysis.tdee}</p>
+                      <p style={{ margin: 0, fontSize: '9px', color: '#9ca3af' }}>kcal/día</p>
+                    </div>
+                    <div style={{ flex: 1, background: 'white', borderRadius: '10px', padding: '8px', textAlign: 'center', border: `1px solid ${dailyAnalysis.deficit > 0 ? '#fed7aa' : '#fecaca'}` }}>
+                      <p style={{ margin: 0, fontSize: '10px', color: '#9ca3af', fontWeight: 600 }}>{dailyAnalysis.deficit > 0 ? 'Déficit' : 'Superávit'}</p>
+                      <p style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: dailyAnalysis.deficit > 0 ? '#f97316' : '#ef4444' }}>{Math.abs(dailyAnalysis.deficit)}</p>
+                      <p style={{ margin: 0, fontSize: '9px', color: '#9ca3af' }}>kcal</p>
+                    </div>
+                  </div>
+                </div>
+
+                {/* Strengths */}
+                {(dailyAnalysis.analysis as any).strengths?.length > 0 && (
+                  <div style={{ marginBottom: '14px' }}>
+                    <p style={{ margin: '0 0 8px', fontSize: '13px', fontWeight: 700, color: '#374151' }}>✅ Lo que estás haciendo bien</p>
+                    {(dailyAnalysis.analysis as any).strengths.map((s: string, i: number) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '6px', background: '#f0fdf4', borderRadius: '10px', padding: '8px 10px' }}>
+                        <span style={{ color: '#22c55e', fontSize: '14px', flexShrink: 0 }}>●</span>
+                        <span style={{ fontSize: '12px', color: '#374151', lineHeight: 1.5 }}>{s}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Improvements */}
+                {(dailyAnalysis.analysis as any).improvements?.length > 0 && (
+                  <div style={{ marginBottom: '14px' }}>
+                    <p style={{ margin: '0 0 8px', fontSize: '13px', fontWeight: 700, color: '#374151' }}>💡 Áreas de mejora</p>
+                    {(dailyAnalysis.analysis as any).improvements.map((s: string, i: number) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'flex-start', gap: '8px', marginBottom: '6px', background: '#fffbeb', borderRadius: '10px', padding: '8px 10px' }}>
+                        <span style={{ color: '#f59e0b', fontSize: '14px', flexShrink: 0 }}>●</span>
+                        <span style={{ fontSize: '12px', color: '#374151', lineHeight: 1.5 }}>{s}</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {/* Recommendations */}
+                {(dailyAnalysis.analysis as any).recommendations?.length > 0 && (
+                  <div>
+                    <p style={{ margin: '0 0 8px', fontSize: '13px', fontWeight: 700, color: '#374151' }}>🍽️ Recomendaciones para completar el día</p>
+                    {(dailyAnalysis.analysis as any).recommendations.map((r: any, i: number) => (
+                      <div key={i} style={{ background: 'white', borderRadius: '14px', padding: '12px', marginBottom: '8px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', border: '1px solid #f3f4f6' }}>
+                        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '4px' }}>
+                          <p style={{ margin: 0, fontSize: '14px', fontWeight: 700, color: '#1a1a1a' }}>{r.name}</p>
+                          <span style={{ fontSize: '13px', fontWeight: 700, color: '#f97316', background: '#fff7ed', borderRadius: '8px', padding: '2px 8px' }}>{r.calories} kcal</span>
+                        </div>
+                        <p style={{ margin: 0, fontSize: '12px', color: '#6b7280', lineHeight: 1.4 }}>{r.reason}</p>
+                      </div>
+                    ))}
+                  </div>
+                )}
+              </>
+            ) : (
+              <div style={{ textAlign: 'center', padding: '32px 0' }}>
+                <p style={{ fontSize: '36px', margin: '0 0 8px' }}>📋</p>
+                <p style={{ fontSize: '14px', fontWeight: 700, color: '#1a1a1a', margin: '0 0 4px' }}>Sin datos suficientes</p>
+                <p style={{ fontSize: '12px', color: '#9ca3af', margin: 0 }}>Registra al menos una comida para obtener el análisis del día</p>
+              </div>
+            )}
+          </div>
+        </div>
+      )}
 
       {/* Quick add photo button */}
       <button

@@ -112,7 +112,7 @@ export default function ExpertChat() {
     <AppLayout>
       <div className="flex h-[calc(100vh-120px)] bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
         {/* ── Panel izquierdo: Lista de pacientes ── */}
-        <div className="w-80 flex-shrink-0 border-r border-gray-200 flex flex-col bg-gray-50">
+        <div className={`${selectedPatientRelId ? 'hidden md:flex' : 'flex'} w-full md:w-80 flex-shrink-0 border-r border-gray-200 flex-col bg-gray-50`}>
           {/* Header */}
           <div className="p-4 border-b border-gray-200 bg-white">
             <div className="flex items-center justify-between mb-3">
@@ -205,7 +205,7 @@ export default function ExpertChat() {
         </div>
 
         {/* ── Panel derecho: Conversación ── */}
-        <div className="flex-1 flex flex-col">
+        <div className={`${selectedPatientRelId ? 'flex' : 'hidden md:flex'} flex-1 flex-col min-w-0`}>
           {!selectedPatientRelId ? (
             <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
               <div className="text-6xl mb-4">💬</div>
@@ -218,6 +218,13 @@ export default function ExpertChat() {
             <>
               {/* Header de la conversación */}
               <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-200 bg-white">
+                {/* Botón volver en móvil */}
+                <button
+                  onClick={() => setSelectedPatientRelId(null)}
+                  className="md:hidden flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500"
+                >
+                  <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
+                </button>
                 {selectedPatient?.user?.imageUrl ? (
                   <img
                     src={selectedPatient.user.imageUrl}
@@ -276,13 +283,13 @@ export default function ExpertChat() {
                                 {(selectedPatient?.user?.name ?? "P").charAt(0).toUpperCase()}
                               </div>
                             )}
-                            <div className={`max-w-[70%] ${isExpert ? "items-end" : "items-start"} flex flex-col`}>
-                              <div className={`rounded-2xl px-4 py-2.5 ${
+                            <div className={`max-w-[70%] min-w-0 ${isExpert ? "items-end" : "items-start"} flex flex-col`}>
+                              <div className={`rounded-2xl px-4 py-2.5 min-w-0 ${
                                 isExpert
                                   ? "bg-orange-500 text-white rounded-br-sm"
                                   : "bg-gray-100 text-gray-800 rounded-bl-sm"
                               }`}>
-                                <p className="text-sm whitespace-pre-wrap leading-relaxed">{msg.content}</p>
+                                <p className="text-sm whitespace-pre-wrap leading-relaxed break-words overflow-wrap-anywhere">{msg.content}</p>
                               </div>
                               <p className={`text-xs mt-1 ${isExpert ? "text-right text-gray-400" : "text-gray-400"}`}>
                                 {formatMessageTime(msg.createdAt)}

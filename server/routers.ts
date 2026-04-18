@@ -4124,6 +4124,52 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
         }
       }),
 
+    getDailyAnalysis: protectedProcedure
+      .input(z.object({ date: z.string() }))
+      .query(async ({ ctx, input }) => {
+        try {
+          const drizzleDb = await db.getDb();
+          if (!drizzleDb) throw new Error("DB not available");
+          const { mealLogs: mealLogsTable, userProfiles } = await import("../drizzle/schema");
+          const { eq, and, gte, lte } = await import("drizzle-orm");
+          const [profile] = await drizzleDb.select().from(userProfiles).where(eq(userProfiles.userId, ctx.user.id)).limit(1);
+          const logs = await drizzleDb.select().from(mealLogsTable).where(and(eq(mealLogsTable.userId, ctx.user.id), gte(mealLogsTable.logDate, input.date), lte(mealLogsTable.logDate, input.date)));
+          if (logs.length === 0) return { hasData: false, analysis: null, totalCalories: 0, totalProteins: 0, totalCarbs: 0, totalFats: 0, dailyCalorieGoal: 2000, tmb: 0, tdee: 0, deficit: 0, deficitExplanation: '', goal: 'maintenance' };
+          const totalCalories = logs.reduce((s, l) => s + (Number(l.calories) || 0), 0);
+          const totalProteins = logs.reduce((s, l) => s + (Number(l.proteins) || 0), 0);
+          const totalCarbs = logs.reduce((s, l) => s + (Number(l.carbohydrates) || 0), 0);
+          const totalFats = logs.reduce((s, l) => s + (Number(l.fats) || 0), 0);
+          const weight = profile?.weight ? Number(profile.weight) : 70;
+          const height = profile?.height ? Number(profile.height) : 170;
+          const age = profile?.age ? Number(profile.age) : 30;
+          const gender = profile?.gender ?? 'male';
+          const activityLevel = (profile as any)?.activityLevel ?? 'moderate';
+          const goal = (profile as any)?.goal ?? 'maintenance';
+          const dailyCalorieGoal = profile?.dailyCalorieGoal ? Number(profile.dailyCalorieGoal) : 2000;
+          const tmb = gender === 'female' ? 655 + (9.6 * weight) + (1.8 * height) - (4.7 * age) : 66 + (13.7 * weight) + (5 * height) - (6.8 * age);
+          const actMult: Record<string, number> = { sedentary: 1.2, light: 1.375, moderate: 1.55, active: 1.725, very_active: 1.9 };
+          const tdee = Math.round(tmb * (actMult[activityLevel] ?? 1.55));
+          const deficit = dailyCalorieGoal - Math.round(totalCalories);
+          const goalLabels: Record<string, string> = { weight_loss: 'p\u00e9rdida de peso', muscle_gain: 'ganancia muscular', maintenance: 'mantenimiento', toning: 'tonificaci\u00f3n', fat_loss: 'p\u00e9rdida de grasa' };
+          const goalLabel = goalLabels[goal] ?? goal;
+          const deficitExplanation = `Tu TDEE (gasto energ\u00e9tico total) es ~${tdee} kcal/d\u00eda. Tu objetivo cal\u00f3rico de ${dailyCalorieGoal} kcal est\u00e1 ajustado para ${goalLabel}. ${deficit > 0 ? `Te quedan ${deficit} kcal para llegar a tu objetivo.` : deficit < 0 ? `Has superado tu objetivo en ${Math.abs(deficit)} kcal.` : '\u00a1Has alcanzado exactamente tu objetivo!'}`;
+          const mealNames = logs.map(l => l.customMealName ?? 'comida').join(', ');
+          const aiResp = await invokeLLM({
+            messages: [
+              { role: 'system', content: 'Eres un nutricionista experto. Responde SIEMPRE en espa\u00f1ol. S\u00e9 conciso y pr\u00e1ctico.' },
+              { role: 'user', content: `Analiza el d\u00eda nutricional:\nComidas: ${mealNames}\nCalor\u00edas: ${Math.round(totalCalories)} / ${dailyCalorieGoal} kcal\nProte\u00ednas: ${Math.round(totalProteins)}g / ${Math.round(dailyCalorieGoal*0.30/4)}g\nCarbos: ${Math.round(totalCarbs)}g / ${Math.round(dailyCalorieGoal*0.45/4)}g\nGrasas: ${Math.round(totalFats)}g / ${Math.round(dailyCalorieGoal*0.25/9)}g\nObjetivo: ${goalLabel}\nCalor\u00edas restantes: ${Math.max(0, deficit)} kcal\n\nResponde en JSON: { "evaluation": "string", "score": number, "strengths": ["string"], "improvements": ["string"], "recommendations": [{"name": "string", "calories": number, "reason": "string"}] }` }
+            ],
+            response_format: { type: 'json_schema', json_schema: { name: 'daily_analysis', strict: true, schema: { type: 'object', properties: { evaluation: { type: 'string' }, score: { type: 'number' }, strengths: { type: 'array', items: { type: 'string' } }, improvements: { type: 'array', items: { type: 'string' } }, recommendations: { type: 'array', items: { type: 'object', properties: { name: { type: 'string' }, calories: { type: 'number' }, reason: { type: 'string' } }, required: ['name', 'calories', 'reason'], additionalProperties: false } } }, required: ['evaluation', 'score', 'strengths', 'improvements', 'recommendations'], additionalProperties: false } } }
+          });
+          let analysis: any = null;
+          try { const c = aiResp?.choices?.[0]?.message?.content; analysis = typeof c === 'string' ? JSON.parse(c) : c; } catch (_) {}
+          return { hasData: true, totalCalories: Math.round(totalCalories), totalProteins: Math.round(totalProteins), totalCarbs: Math.round(totalCarbs), totalFats: Math.round(totalFats), dailyCalorieGoal, tmb: Math.round(tmb), tdee, deficit, deficitExplanation, goal, analysis };
+        } catch (e) {
+          console.error('[getDailyAnalysis] error:', e);
+          throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Error al generar el an\u00e1lisis' });
+        }
+      }),
+
     submitAIFeedback: protectedProcedure
       .input(z.object({
         mealLogId: z.number().optional(),
