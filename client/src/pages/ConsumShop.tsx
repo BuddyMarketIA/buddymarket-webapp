@@ -139,23 +139,23 @@ function PriceRangeInput({ min, max, value, onChange }: {
   const pct = (v: number) => ((v - min) / (max - min || 1)) * 100;
   return (
     <div className="space-y-3">
-      <div className="relative h-2 rounded-full bg-gray-200">
+      <div className="relative h-2 rounded-full bg-muted">
         <div className="absolute h-2 rounded-full" style={{ background: CS_GREEN, left: `${pct(value[0])}%`, right: `${100 - pct(value[1])}%` }} />
         <input type="range" min={min} max={max} step={0.5} value={value[0]} onChange={e => onChange([Math.min(Number(e.target.value), value[1]), value[1]])} className="absolute inset-0 w-full opacity-0 cursor-pointer h-2" style={{ zIndex: 3 }} />
         <input type="range" min={min} max={max} step={0.5} value={value[1]} onChange={e => onChange([value[0], Math.max(Number(e.target.value), value[0])])} className="absolute inset-0 w-full opacity-0 cursor-pointer h-2" style={{ zIndex: 4 }} />
       </div>
       <div className="flex items-center gap-2">
         <div className="flex-1">
-          <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
-            <span className="px-2 text-xs text-gray-400 bg-gray-50">€</span>
-            <input type="number" min={min} max={max} step={0.5} value={localMin} onChange={e => setLocalMin(e.target.value)} onBlur={commit} onKeyDown={e => e.key === "Enter" && commit()} className="w-full px-2 py-1.5 text-sm text-gray-800 outline-none bg-white" />
+          <div className="flex items-center border border-border rounded-lg overflow-hidden">
+            <span className="px-2 text-xs text-muted-foreground/70 bg-muted/30">€</span>
+            <input type="number" min={min} max={max} step={0.5} value={localMin} onChange={e => setLocalMin(e.target.value)} onBlur={commit} onKeyDown={e => e.key === "Enter" && commit()} className="w-full px-2 py-1.5 text-sm text-foreground outline-none bg-background" />
           </div>
         </div>
         <span className="text-gray-300">—</span>
         <div className="flex-1">
-          <div className="flex items-center border border-gray-200 rounded-lg overflow-hidden">
-            <span className="px-2 text-xs text-gray-400 bg-gray-50">€</span>
-            <input type="number" min={min} max={max} step={0.5} value={localMax} onChange={e => setLocalMax(e.target.value)} onBlur={commit} onKeyDown={e => e.key === "Enter" && commit()} className="w-full px-2 py-1.5 text-sm text-gray-800 outline-none bg-white" />
+          <div className="flex items-center border border-border rounded-lg overflow-hidden">
+            <span className="px-2 text-xs text-muted-foreground/70 bg-muted/30">€</span>
+            <input type="number" min={min} max={max} step={0.5} value={localMax} onChange={e => setLocalMax(e.target.value)} onBlur={commit} onKeyDown={e => e.key === "Enter" && commit()} className="w-full px-2 py-1.5 text-sm text-foreground outline-none bg-background" />
           </div>
         </div>
       </div>
@@ -288,7 +288,7 @@ export default function ConsumShop() {
           </div>
           <button
             onClick={() => setShowCart(true)}
-            className="relative flex items-center gap-1.5 bg-white/20 hover:bg-white/30 px-3 py-1.5 rounded-xl text-white text-sm font-semibold transition-colors"
+            className="relative flex items-center gap-1.5 bg-background/20 hover:bg-background/30 px-3 py-1.5 rounded-xl text-white text-sm font-semibold transition-colors"
           >
             🛒 {totalItems}
             {totalItems > 0 && (
@@ -301,16 +301,16 @@ export default function ConsumShop() {
         {/* Search bar */}
         <div className="max-w-2xl mx-auto px-4 pb-3">
           <div className="relative">
-            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm">🔍</span>
+            <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/70 text-sm">🔍</span>
             <input
               type="text"
               value={searchQuery}
               onChange={e => handleSearch(e.target.value)}
               placeholder="Buscar en Consum..."
-              className="w-full pl-9 pr-4 py-2.5 rounded-xl text-gray-800 bg-white placeholder-gray-400 text-sm outline-none shadow-sm"
+              className="w-full pl-9 pr-4 py-2.5 rounded-xl text-foreground bg-background placeholder-gray-400 text-sm outline-none shadow-sm"
             />
             {searchQuery.length > 0 && (
-              <button onClick={() => { setSearchQuery(""); setView("home"); }} aria-label="Limpiar búsqueda" className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600 text-lg">×</button>
+              <button onClick={() => { setSearchQuery(""); setView("home"); }} aria-label="Limpiar búsqueda" className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/70 hover:text-muted-foreground text-lg">×</button>
             )}
           </div>
         </div>
@@ -320,11 +320,11 @@ export default function ConsumShop() {
         {/* ── HOME: category grid ── */}
         {view === "home" && (
           <>
-            <p className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-4">Categorías</p>
+            <p className="text-xs font-bold text-muted-foreground/70 uppercase tracking-widest mb-4">Categorías</p>
             {loadingCats ? (
               <div className="grid grid-cols-3 gap-3">
                 {[...Array(12)].map((_, i) => (
-                  <div key={i} className="bg-white rounded-2xl aspect-square animate-pulse" />
+                  <div key={i} className="bg-background rounded-2xl aspect-square animate-pulse" />
                 ))}
               </div>
             ) : (
@@ -333,10 +333,10 @@ export default function ConsumShop() {
                   <button
                     key={cat.category}
                     onClick={() => openCategory(cat.category)}
-                    className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-all active:scale-[0.97] flex flex-col items-center justify-center gap-2 p-4 aspect-square"
+                    className="bg-background rounded-2xl shadow-sm hover:shadow-md transition-all active:scale-[0.97] flex flex-col items-center justify-center gap-2 p-4 aspect-square"
                   >
                     <span className="text-4xl leading-none">{getCatEmoji(cat.category)}</span>
-                    <span className="text-xs font-semibold text-gray-700 text-center leading-tight line-clamp-2">
+                    <span className="text-xs font-semibold text-foreground/80 text-center leading-tight line-clamp-2">
                       {cat.category}
                     </span>
                   </button>
@@ -353,7 +353,7 @@ export default function ConsumShop() {
             <div className="mb-4 flex items-center gap-2 flex-wrap">
               <button
                 onClick={() => setFiltersOpen(v => !v)}
-                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border-2 transition-colors ${filtersActive ? "border-green-600 text-green-700 bg-green-50" : "border-gray-200 text-gray-600 bg-white"}`}
+                className={`flex items-center gap-1.5 px-3 py-2 rounded-xl text-xs font-semibold border-2 transition-colors ${filtersActive ? "border-green-600 text-green-700 bg-green-50" : "border-border text-muted-foreground bg-background"}`}
               >
                 ⚙️ Filtros
                 {filtersActive && <span className="bg-green-600 text-white text-[9px] font-bold rounded-full px-1 py-0.5 leading-none">ON</span>}
@@ -363,7 +363,7 @@ export default function ConsumShop() {
                 <button
                   key={o.value}
                   onClick={() => setSortBy(o.value)}
-                  className={`px-3 py-2 rounded-xl text-xs font-semibold border-2 transition-colors ${sortBy === o.value ? "text-white border-transparent" : "border-gray-200 text-gray-500 bg-white"}`}
+                  className={`px-3 py-2 rounded-xl text-xs font-semibold border-2 transition-colors ${sortBy === o.value ? "text-white border-transparent" : "border-border text-muted-foreground bg-background"}`}
                   style={sortBy === o.value ? { background: CS_GREEN } : {}}
                 >
                   {o.label}
@@ -376,8 +376,8 @@ export default function ConsumShop() {
 
             {/* Filter panel */}
             {filtersOpen && (
-              <div className="bg-white rounded-2xl shadow-sm p-4 mb-4 border border-gray-100">
-                <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-3">Rango de precio</p>
+              <div className="bg-background rounded-2xl shadow-sm p-4 mb-4 border border-border/50">
+                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-3">Rango de precio</p>
                 <PriceRangeInput min={absMin} max={absMax} value={priceRange} onChange={setPriceRange} />
                 {(priceRange[0] > absMin || priceRange[1] < absMax) && (
                   <p className="text-xs text-green-700 font-semibold mt-2 text-center">
@@ -389,7 +389,7 @@ export default function ConsumShop() {
 
             {/* Results count */}
             <div className="flex items-center justify-between mb-3">
-              <p className="text-sm text-gray-500">
+              <p className="text-sm text-muted-foreground">
                 {isLoading ? "Buscando..." : (
                   <><span className="font-bold" style={{ color: CS_GREEN }}>{displayProducts.length}</span> resultado{displayProducts.length !== 1 ? "s" : ""}</>
                 )}
@@ -400,17 +400,17 @@ export default function ConsumShop() {
             {isLoading ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                 {[...Array(9)].map((_, i) => (
-                  <div key={i} className="bg-white rounded-2xl p-3 animate-pulse">
-                    <div className="w-full h-28 bg-gray-200 rounded-xl mb-2" />
-                    <div className="h-3 bg-gray-200 rounded mb-1" />
-                    <div className="h-3 bg-gray-200 rounded w-2/3" />
+                  <div key={i} className="bg-background rounded-2xl p-3 animate-pulse">
+                    <div className="w-full h-28 bg-muted rounded-xl mb-2" />
+                    <div className="h-3 bg-muted rounded mb-1" />
+                    <div className="h-3 bg-muted rounded w-2/3" />
                   </div>
                 ))}
               </div>
             ) : displayProducts.length === 0 ? (
               <div className="text-center py-16">
                 <p className="text-3xl mb-2">🔍</p>
-                <p className="text-gray-600 font-semibold mb-1">Sin resultados</p>
+                <p className="text-muted-foreground font-semibold mb-1">Sin resultados</p>
                 {filtersActive && (
                   <button onClick={clearFilters} className="mt-2 text-sm font-semibold px-4 py-2 rounded-xl text-white" style={{ background: CS_GREEN }}>
                     Limpiar filtros
@@ -422,22 +422,22 @@ export default function ConsumShop() {
                 {displayProducts.map((product: any) => {
                   const inCart = cart.find(i => i.id === String(product.id));
                   return (
-                    <div key={product.id} className="bg-white rounded-2xl shadow-sm hover:shadow-md transition-shadow flex flex-col overflow-hidden">
-                      <div className="w-full h-32 bg-gray-50 flex items-center justify-center">
+                    <div key={product.id} className="bg-background rounded-2xl shadow-sm hover:shadow-md transition-shadow flex flex-col overflow-hidden">
+                      <div className="w-full h-32 bg-muted/30 flex items-center justify-center">
                         <ProductImage src={product.image} name={product.name} category={product.category} />
                       </div>
                       <div className="p-3 flex flex-col flex-1">
-                        <p className="text-[10px] text-gray-400 mb-0.5 truncate">{product.brand ?? product.category}</p>
-                        <p className="text-xs font-semibold text-gray-800 leading-tight mb-1 flex-1 line-clamp-2">{product.name}</p>
-                        {product.packaging && <p className="text-[10px] text-gray-400 mb-2">{product.packaging}</p>}
+                        <p className="text-[10px] text-muted-foreground/70 mb-0.5 truncate">{product.brand ?? product.category}</p>
+                        <p className="text-xs font-semibold text-foreground leading-tight mb-1 flex-1 line-clamp-2">{product.name}</p>
+                        {product.packaging && <p className="text-[10px] text-muted-foreground/70 mb-2">{product.packaging}</p>}
                         <div className="flex items-center justify-between mt-auto">
                           {product.price ? (
                             <div>
                               <span className="text-sm font-bold" style={{ color: CS_GREEN }}>{Number(product.price).toFixed(2)}€</span>
-                              {product.pricePerUnit && <p className="text-[9px] text-gray-400 leading-none">{product.pricePerUnit}</p>}
+                              {product.pricePerUnit && <p className="text-[9px] text-muted-foreground/70 leading-none">{product.pricePerUnit}</p>}
                             </div>
                           ) : (
-                            <span className="text-[10px] text-gray-400">S/P</span>
+                            <span className="text-[10px] text-muted-foreground/70">S/P</span>
                           )}
                           <button
                             onClick={() => addToCart(product)}
@@ -461,27 +461,27 @@ export default function ConsumShop() {
       {/* ── Cart panel ── */}
       {showCart && (
         <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40" onClick={e => { if (e.target === e.currentTarget) setShowCart(false); }}>
-          <div className="w-full max-w-lg bg-white rounded-t-3xl shadow-2xl flex flex-col max-h-[80vh]">
+          <div className="w-full max-w-lg bg-background rounded-t-3xl shadow-2xl flex flex-col max-h-[80vh]">
             <div className="flex items-center justify-between p-4 border-b">
-              <h3 className="text-lg font-bold text-gray-800">🛒 Carrito ({totalItems})</h3>
-              <button onClick={() => setShowCart(false)} aria-label="Cerrar carrito" className="text-gray-400 hover:text-gray-600 text-2xl leading-none">×</button>
+              <h3 className="text-lg font-bold text-foreground">🛒 Carrito ({totalItems})</h3>
+              <button onClick={() => setShowCart(false)} aria-label="Cerrar carrito" className="text-muted-foreground/70 hover:text-muted-foreground text-2xl leading-none">×</button>
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {cart.length === 0 ? (
-                <p className="text-center text-gray-400 py-8">El carrito está vacío</p>
+                <p className="text-center text-muted-foreground/70 py-8">El carrito está vacío</p>
               ) : (
                 cart.map(item => (
                   <div key={item.id} className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center shrink-0">
+                    <div className="w-12 h-12 bg-muted/30 rounded-xl flex items-center justify-center shrink-0">
                       <ProductImage src={item.image} name={item.name} category={item.category} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-800 truncate">{item.name}</p>
-                      <p className="text-xs text-gray-400">{item.packaging}</p>
+                      <p className="text-sm font-medium text-foreground truncate">{item.name}</p>
+                      <p className="text-xs text-muted-foreground/70">{item.packaging}</p>
                     </div>
                     <div className="flex items-center gap-2 text-sm shrink-0">
                       <span className="font-bold" style={{ color: CS_GREEN }}>{((item.price ?? 0) * item.qty).toFixed(2)}€</span>
-                      <span className="text-gray-400 text-xs">×{item.qty}</span>
+                      <span className="text-muted-foreground/70 text-xs">×{item.qty}</span>
                       <button onClick={() => removeFromCart(item.id)} className="text-gray-300 hover:text-red-500">🗑</button>
                     </div>
                   </div>
@@ -492,7 +492,7 @@ export default function ConsumShop() {
               <div className="p-4 border-t space-y-3">
                 {/* Total */}
                 <div className="flex justify-between items-center">
-                  <span className="font-semibold text-gray-700">Total estimado</span>
+                  <span className="font-semibold text-foreground/80">Total estimado</span>
                   <span className="text-xl font-bold" style={{ color: CS_GREEN }}>{totalPrice.toFixed(2)}€</span>
                 </div>
 
@@ -522,7 +522,7 @@ export default function ConsumShop() {
                     <>🛒 Ver productos en Consum.es →</>
                   )}
                 </button>
-                <p className="text-xs text-gray-400 text-center">
+                <p className="text-xs text-muted-foreground/70 text-center">
                   Abre una nueva pestaña con {cart.length} producto{cart.length !== 1 ? "s" : ""} de tu lista
                 </p>
               </div>

@@ -20,7 +20,7 @@ function Stars({ rating }: { rating: number }) {
 // ─── Stat pill ────────────────────────────────────────────────────────────────
 function StatPill({ icon, value, label }: { icon: string; value: string | number; label: string }) {
   return (
-    <div className="flex flex-col items-center gap-0.5 bg-white/10 backdrop-blur-sm rounded-2xl px-4 py-2.5 min-w-[72px]">
+    <div className="flex flex-col items-center gap-0.5 bg-background/10 backdrop-blur-sm rounded-2xl px-4 py-2.5 min-w-[72px]">
       <span className="text-lg">{icon}</span>
       <span className="text-white font-bold text-sm leading-none">{value}</span>
       <span className="text-white/70 text-xs">{label}</span>
@@ -66,7 +66,7 @@ function PlanPreviewModal({ plan, onClose, onCopy, onBuy, alreadyCopied, copying
 
       {/* Modal */}
       <div
-        className="relative bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col"
+        className="relative bg-background w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col"
         onClick={(e) => e.stopPropagation()}
       >
         {/* Cover image */}
@@ -101,21 +101,21 @@ function PlanPreviewModal({ plan, onClose, onCopy, onBuy, alreadyCopied, copying
           <div className="grid grid-cols-3 gap-2">
             <div className="bg-orange-50 rounded-2xl p-3 text-center">
               <p className="text-orange-600 font-bold text-lg">{plan.durationWeeks}</p>
-              <p className="text-gray-500 text-xs">semanas</p>
+              <p className="text-muted-foreground text-xs">semanas</p>
             </div>
             <div className="bg-orange-50 rounded-2xl p-3 text-center">
               <p className="text-orange-600 font-bold text-lg">{plan.dailyCalories ?? "—"}</p>
-              <p className="text-gray-500 text-xs">kcal/día</p>
+              <p className="text-muted-foreground text-xs">kcal/día</p>
             </div>
             <div className="bg-orange-50 rounded-2xl p-3 text-center">
               <p className="text-orange-600 font-bold text-lg">{plan.dailyMeals ?? 3}</p>
-              <p className="text-gray-500 text-xs">comidas/día</p>
+              <p className="text-muted-foreground text-xs">comidas/día</p>
             </div>
           </div>
 
           {/* Level + price */}
           <div className="flex items-center justify-between">
-            <span className="bg-gray-100 text-gray-700 text-sm font-semibold px-3 py-1 rounded-full">
+            <span className="bg-muted/50 text-foreground/80 text-sm font-semibold px-3 py-1 rounded-full">
               {levelLabel[plan.level] ?? plan.level}
             </span>
             {isPaid ? (
@@ -128,8 +128,8 @@ function PlanPreviewModal({ plan, onClose, onCopy, onBuy, alreadyCopied, copying
           {/* Description */}
           {plan.description && (
             <div>
-              <h3 className="font-semibold text-gray-800 text-sm mb-1">Descripción</h3>
-              <p className="text-gray-600 text-sm leading-relaxed">{plan.description}</p>
+              <h3 className="font-semibold text-foreground text-sm mb-1">Descripción</h3>
+              <p className="text-muted-foreground text-sm leading-relaxed">{plan.description}</p>
             </div>
           )}
 
@@ -145,40 +145,40 @@ function PlanPreviewModal({ plan, onClose, onCopy, onBuy, alreadyCopied, copying
           )}
 
           {/* What's included */}
-          <div className="bg-gray-50 rounded-2xl p-4">
-            <h3 className="font-semibold text-gray-800 text-sm mb-3">¿Qué incluye este plan?</h3>
+          <div className="bg-muted/30 rounded-2xl p-4">
+            <h3 className="font-semibold text-foreground text-sm mb-3">¿Qué incluye este plan?</h3>
             <ul className="space-y-2">
-              <li className="flex items-center gap-2 text-sm text-gray-600">
+              <li className="flex items-center gap-2 text-sm text-muted-foreground">
                 <span className="w-5 h-5 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs">✓</span>
                 {plan.durationWeeks} semanas de menús personalizados
               </li>
-              <li className="flex items-center gap-2 text-sm text-gray-600">
+              <li className="flex items-center gap-2 text-sm text-muted-foreground">
                 <span className="w-5 h-5 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs">✓</span>
                 {plan.dailyMeals ?? 3} comidas diarias estructuradas
               </li>
-              <li className="flex items-center gap-2 text-sm text-gray-600">
+              <li className="flex items-center gap-2 text-sm text-muted-foreground">
                 <span className="w-5 h-5 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs">✓</span>
                 Recetas con ingredientes y preparación
               </li>
-              <li className="flex items-center gap-2 text-sm text-gray-600">
+              <li className="flex items-center gap-2 text-sm text-muted-foreground">
                 <span className="w-5 h-5 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs">✓</span>
                 Lista de la compra automática
               </li>
               {isPaid && (
                 <>
-                  <li className="flex items-center gap-2 text-sm text-gray-600">
+                  <li className="flex items-center gap-2 text-sm text-muted-foreground">
                     <span className="w-5 h-5 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs">✓</span>
                     Sesión online semanal de seguimiento y ajuste
                   </li>
-                  <li className="flex items-center gap-2 text-sm text-gray-600">
+                  <li className="flex items-center gap-2 text-sm text-muted-foreground">
                     <span className="w-5 h-5 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs">✓</span>
                     Acceso directo por WhatsApp para dudas
                   </li>
-                  <li className="flex items-center gap-2 text-sm text-gray-600">
+                  <li className="flex items-center gap-2 text-sm text-muted-foreground">
                     <span className="w-5 h-5 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs">✓</span>
                     Opciones de sustitución para cada comida
                   </li>
-                  <li className="flex items-center gap-2 text-sm text-gray-600">
+                  <li className="flex items-center gap-2 text-sm text-muted-foreground">
                     <span className="w-5 h-5 bg-orange-100 text-orange-600 rounded-full flex items-center justify-center text-xs">✓</span>
                     Adaptado a tus gustos e intolerancias
                   </li>
@@ -188,14 +188,14 @@ function PlanPreviewModal({ plan, onClose, onCopy, onBuy, alreadyCopied, copying
             {isPaid && (
               <div className="mt-3 bg-orange-50 border border-orange-100 rounded-xl p-3">
                 <p className="text-xs text-orange-700 font-semibold">💳 Suscripción mensual · Cancela cuando quieras</p>
-                <p className="text-xs text-gray-500 mt-0.5">Pago seguro con Stripe. Sin permanencia.</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Pago seguro con Stripe. Sin permanencia.</p>
               </div>
             )}
           </div>
         </div>
 
         {/* Action buttons */}
-        <div className="p-4 border-t border-gray-100 flex-shrink-0">
+        <div className="p-4 border-t border-border/50 flex-shrink-0">
           {isPaid ? (
             <button
               onClick={onBuy}
@@ -266,7 +266,7 @@ function PlanCard({ plan, onCopy, onBuy, alreadyCopied, copying, buying }: {
           buying={buying}
         />
       )}
-      <div className="bg-white rounded-2xl overflow-hidden border border-orange-100 shadow-sm hover:shadow-md transition-all">
+      <div className="bg-background rounded-2xl overflow-hidden border border-orange-100 shadow-sm hover:shadow-md transition-all">
         <div className="relative h-28 overflow-hidden cursor-pointer" onClick={() => setShowPreview(true)}>
           {plan.coverUrl ? (
             <img src={plan.coverUrl} alt={plan.title} className="w-full h-full object-cover" />
@@ -276,7 +276,7 @@ function PlanCard({ plan, onCopy, onBuy, alreadyCopied, copying, buying }: {
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent" />
           {/* Preview hint */}
           <div className="absolute inset-0 flex items-center justify-center opacity-0 hover:opacity-100 transition-opacity bg-black/20">
-            <span className="bg-white/90 text-gray-800 text-xs font-bold px-3 py-1.5 rounded-full shadow">👁 Ver plan</span>
+            <span className="bg-background/90 text-foreground text-xs font-bold px-3 py-1.5 rounded-full shadow">👁 Ver plan</span>
           </div>
           <div className="absolute bottom-2 left-3 right-3">
             <p className="text-white font-bold text-sm line-clamp-1">{plan.title}</p>
@@ -286,14 +286,14 @@ function PlanCard({ plan, onCopy, onBuy, alreadyCopied, copying, buying }: {
           )}
         </div>
         <div className="p-3">
-          <p className="text-xs text-gray-500 mb-2 line-clamp-2">{plan.description}</p>
-          <div className="flex gap-2 mb-3 text-xs text-gray-500">
+          <p className="text-xs text-muted-foreground mb-2 line-clamp-2">{plan.description}</p>
+          <div className="flex gap-2 mb-3 text-xs text-muted-foreground">
             <span className="bg-orange-50 text-orange-700 font-semibold px-2 py-0.5 rounded-full">{plan.durationWeeks} sem</span>
             <span className="bg-orange-50 text-orange-700 font-semibold px-2 py-0.5 rounded-full">{plan.dailyCalories} kcal/día</span>
             <span className="bg-orange-50 text-orange-700 font-semibold px-2 py-0.5 rounded-full capitalize">{plan.level}</span>
           </div>
           <div className="flex items-center justify-between mb-2">
-            <span className="text-xs text-gray-400">{cat[plan.category] ?? plan.category}</span>
+            <span className="text-xs text-muted-foreground/70">{cat[plan.category] ?? plan.category}</span>
             {isPaid ? (
               <span className="text-sm font-bold text-orange-600">{plan.price}€</span>
             ) : (
@@ -432,7 +432,7 @@ function ExpertProfile({ id }: { id: number }) {
       {/* ── Planes de contratación de servicio ── SIEMPRE VISIBLE ── */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h3 className="font-bold text-gray-900 text-base">Contratar servicio</h3>
+          <h3 className="font-bold text-foreground text-base">Contratar servicio</h3>
           <span className="text-xs text-orange-500 font-medium bg-orange-50 px-2 py-0.5 rounded-full">Seguimiento personalizado</span>
         </div>
         {/* Si hay planes configurados, mostrarlos; si no, botón directo */}
@@ -443,26 +443,26 @@ function ExpertProfile({ id }: { id: number }) {
               try { includes = plan.includes ? JSON.parse(plan.includes) : []; } catch { includes = []; }
               const periodLabel: Record<string, string> = { monthly: "mes", quarterly: "trimestre", annual: "año", one_time: "pago único" };
               return (
-                <div key={plan.id} className={`relative bg-white rounded-2xl border-2 p-4 shadow-sm ${
-                  plan.isPopular ? "border-orange-400" : "border-gray-100"
+                <div key={plan.id} className={`relative bg-background rounded-2xl border-2 p-4 shadow-sm ${
+                  plan.isPopular ? "border-orange-400" : "border-border/50"
                 }`}>
                   {plan.isPopular && (
                     <div className="absolute -top-3 left-4 bg-orange-500 text-white text-xs font-bold px-3 py-0.5 rounded-full shadow">⭐ Más popular</div>
                   )}
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1">
-                      <h4 className="font-bold text-gray-900 text-sm">{plan.name}</h4>
-                      {plan.description && <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{plan.description}</p>}
+                      <h4 className="font-bold text-foreground text-sm">{plan.name}</h4>
+                      {plan.description && <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{plan.description}</p>}
                     </div>
                     <div className="text-right flex-shrink-0">
                       <div className="text-xl font-black text-orange-500">{plan.price === 0 ? "Gratis" : `${plan.price}€`}</div>
-                      {plan.price > 0 && <div className="text-xs text-gray-400">/{periodLabel[plan.billingPeriod] ?? plan.billingPeriod}</div>}
+                      {plan.price > 0 && <div className="text-xs text-muted-foreground/70">/{periodLabel[plan.billingPeriod] ?? plan.billingPeriod}</div>}
                     </div>
                   </div>
                   {includes.length > 0 && (
                     <ul className="mt-3 space-y-1">
                       {includes.map((item: string, i: number) => (
-                        <li key={i} className="flex items-start gap-1.5 text-xs text-gray-600">
+                        <li key={i} className="flex items-start gap-1.5 text-xs text-muted-foreground">
                           <span className="text-green-500 mt-0.5 flex-shrink-0">✓</span>
                           <span>{item}</span>
                         </li>
@@ -470,7 +470,7 @@ function ExpertProfile({ id }: { id: number }) {
                     </ul>
                   )}
                   {plan.maxConsultations && (
-                    <p className="text-xs text-gray-400 mt-2">{plan.maxConsultations} consultas incluidas</p>
+                    <p className="text-xs text-muted-foreground/70 mt-2">{plan.maxConsultations} consultas incluidas</p>
                   )}
                   <button
                     onClick={() => {
@@ -498,11 +498,11 @@ function ExpertProfile({ id }: { id: number }) {
         {showHireModal && (
           <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setShowHireModal(false)}>
             <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-            <div className="relative bg-white w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
+            <div className="relative bg-background w-full sm:max-w-md rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl" onClick={(e) => e.stopPropagation()}>
               <div className="p-5">
                 <div className="flex items-center justify-between mb-4">
-                  <h3 className="font-bold text-gray-900 text-lg">Solicitar contratación</h3>
-                  <button onClick={() => setShowHireModal(false)} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-gray-200">×</button>
+                  <h3 className="font-bold text-foreground text-lg">Solicitar contratación</h3>
+                  <button onClick={() => setShowHireModal(false)} className="w-8 h-8 flex items-center justify-center rounded-full bg-muted/50 text-muted-foreground hover:bg-muted">×</button>
                 </div>
                 {selectedPlan && (
                   <div className="bg-orange-50 rounded-xl p-3 mb-4">
@@ -511,12 +511,12 @@ function ExpertProfile({ id }: { id: number }) {
                   </div>
                 )}
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-1.5">Mensaje para el nutricionista <span className="text-gray-400 font-normal">(opcional)</span></label>
+                  <label className="block text-sm font-medium text-foreground/80 mb-1.5">Mensaje para el nutricionista <span className="text-muted-foreground/70 font-normal">(opcional)</span></label>
                   <textarea
                     value={hireMessage}
                     onChange={(e) => setHireMessage(e.target.value)}
                     placeholder="Cuéntale tus objetivos, restricciones alimentarias o cualquier información relevante..."
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange-300"
+                    className="w-full border border-border rounded-xl px-3 py-2.5 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange-300"
                     rows={4}
                   />
                 </div>
@@ -527,7 +527,7 @@ function ExpertProfile({ id }: { id: number }) {
                 >
                   {hireRequestMut.isPending ? "Enviando..." : "🚀 Enviar solicitud"}
                 </button>
-                <p className="text-xs text-gray-400 text-center mt-2">El nutricionista revisará tu solicitud y te responderá por email</p>
+                <p className="text-xs text-muted-foreground/70 text-center mt-2">El nutricionista revisará tu solicitud y te responderá por email</p>
               </div>
             </div>
           </div>
@@ -537,7 +537,7 @@ function ExpertProfile({ id }: { id: number }) {
       {/* Plans */}
       {plans.length > 0 && (
         <section>
-          <h3 className="font-bold text-gray-900 text-base mb-3">Planes nutricionales</h3>
+          <h3 className="font-bold text-foreground text-base mb-3">Planes nutricionales</h3>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
             {plans.map((plan: any) => (
               <PlanCard
@@ -557,7 +557,7 @@ function ExpertProfile({ id }: { id: number }) {
       {/* Menus */}
       {menus.length > 0 && (
         <section>
-          <h3 className="font-bold text-gray-900 text-base mb-3">Menús semanales gratuitos</h3>
+          <h3 className="font-bold text-foreground text-base mb-3">Menús semanales gratuitos</h3>
           <div className="space-y-3">
             {menus.map((menu: any) => (
               <MenuRow key={menu.id} menu={menu} />
@@ -595,7 +595,7 @@ function MenuRow({ menu }: { menu: any }) {
   } catch { menuData = null; }
 
   return (
-    <div className="bg-white rounded-2xl border border-orange-100 overflow-hidden">
+    <div className="bg-background rounded-2xl border border-orange-100 overflow-hidden">
       <div className="flex items-center gap-3 p-3">
         <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0">
           {menu.coverUrl ? (
@@ -605,8 +605,8 @@ function MenuRow({ menu }: { menu: any }) {
           )}
         </div>
         <div className="flex-1 min-w-0">
-          <p className="font-bold text-gray-900 text-sm truncate">{menu.title}</p>
-          <p className="text-xs text-gray-500">{menu.dailyCalories} kcal/día · <span className="text-green-600 font-semibold">GRATIS</span></p>
+          <p className="font-bold text-foreground text-sm truncate">{menu.title}</p>
+          <p className="text-xs text-muted-foreground">{menu.dailyCalories} kcal/día · <span className="text-green-600 font-semibold">GRATIS</span></p>
         </div>
         <div className="flex gap-1.5">
           {user && (
@@ -628,14 +628,14 @@ function MenuRow({ menu }: { menu: any }) {
       </div>
       {showDatePicker && user && (
         <div className="border-t border-orange-100 px-3 py-3 bg-orange-50">
-          <p className="text-xs font-semibold text-gray-700 mb-2">¿Cuándo quieres empezar este menú?</p>
+          <p className="text-xs font-semibold text-foreground/80 mb-2">¿Cuándo quieres empezar este menú?</p>
           <div className="flex gap-2 items-center">
             <input
               type="date"
               value={startDate}
               min={new Date().toISOString().split("T")[0]}
               onChange={(e) => setStartDate(e.target.value)}
-              className="flex-1 text-xs border border-orange-200 rounded-xl px-3 py-2 bg-white focus:outline-none focus:ring-2 focus:ring-orange-300"
+              className="flex-1 text-xs border border-orange-200 rounded-xl px-3 py-2 bg-background focus:outline-none focus:ring-2 focus:ring-orange-300"
             />
             <button
               onClick={() => copyMenuMut.mutate({ menuId: menu.id, startDate })}
@@ -646,7 +646,7 @@ function MenuRow({ menu }: { menu: any }) {
             </button>
             <button
               onClick={() => setShowDatePicker(false)}
-              className="text-xs text-gray-500 font-semibold px-3 py-2 rounded-xl hover:bg-gray-100 transition-colors"
+              className="text-xs text-muted-foreground font-semibold px-3 py-2 rounded-xl hover:bg-muted/50 transition-colors"
             >
               ✕
             </button>
@@ -656,7 +656,7 @@ function MenuRow({ menu }: { menu: any }) {
       {expanded && (
         !menuData?.days ? (
           <div className="border-t border-orange-50 px-3 pb-3 pt-2">
-            <p className="text-xs text-gray-400 text-center py-2">No hay datos de menú disponibles</p>
+            <p className="text-xs text-muted-foreground/70 text-center py-2">No hay datos de menú disponibles</p>
           </div>
         ) :
         <div className="border-t border-orange-50 px-3 pb-3 pt-2 space-y-2 max-h-80 overflow-y-auto">
@@ -677,7 +677,7 @@ function MenuRow({ menu }: { menu: any }) {
                 <p className="text-xs font-bold text-orange-700 mb-1.5">{day.day}</p>
                 <div className="space-y-1">
                   {mealsArray.map((meal, j) => (
-                    <p key={j} className="text-xs text-gray-600"><span className="font-semibold text-gray-700">{meal.name}:</span> {meal.food}</p>
+                    <p key={j} className="text-xs text-muted-foreground"><span className="font-semibold text-foreground/80">{meal.name}:</span> {meal.food}</p>
                   ))}
                 </div>
               </div>
@@ -703,7 +703,7 @@ function MakerRecipeCard({ recipe }: { recipe: any }) {
   const diffLabel: Record<string, string> = { easy: "Fácil", facil: "Fácil", medium: "Media", medio: "Media", hard: "Difícil", dificil: "Difícil" };
   const totalTime = (recipe.preparationTime ?? 0) + (recipe.cookTime ?? 0);
   return (
-    <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-orange-50 hover:shadow-md transition-shadow">
+    <div className="bg-background rounded-2xl overflow-hidden shadow-sm border border-orange-50 hover:shadow-md transition-shadow">
       <div className="relative h-32 overflow-hidden bg-gradient-to-br from-orange-100 to-pink-100">
         {recipe.imageUrl ? (
           <img src={recipe.imageUrl} alt={recipe.name} className="w-full h-full object-cover" />
@@ -719,7 +719,7 @@ function MakerRecipeCard({ recipe }: { recipe: any }) {
         <p className="absolute bottom-2 left-2 right-2 text-white font-bold text-[13px] line-clamp-2 leading-tight">{recipe.name}</p>
       </div>
       <div className="p-2.5">
-        <div className="flex items-center justify-between text-[12px] text-gray-500 font-medium">
+        <div className="flex items-center justify-between text-[12px] text-muted-foreground font-medium">
           <span className="flex items-center gap-1">
             <span>🔥</span>
             <span>{recipe.caloriesPerServing ?? "—"} kcal</span>
@@ -808,10 +808,10 @@ function MakerProfile({ id }: { id: number }) {
             <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
           </svg>
           <div>
-            <p className="text-sm font-bold text-gray-900">@{maker.instagramHandle}</p>
-            <p className="text-xs text-gray-500">Ver en Instagram</p>
+            <p className="text-sm font-bold text-foreground">@{maker.instagramHandle}</p>
+            <p className="text-xs text-muted-foreground">Ver en Instagram</p>
           </div>
-          <svg className="w-4 h-4 text-gray-400 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <svg className="w-4 h-4 text-muted-foreground/70 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
           </svg>
         </a>
@@ -820,15 +820,15 @@ function MakerProfile({ id }: { id: number }) {
       {/* Recipes section */}
       <section>
         <div className="flex items-center justify-between mb-3">
-          <h3 className="font-bold text-gray-900 text-base">Recetas publicadas</h3>
+          <h3 className="font-bold text-foreground text-base">Recetas publicadas</h3>
           {recipes.length > 0 && (
             <span className="text-xs text-orange-500 font-bold bg-orange-50 px-2.5 py-1 rounded-full">{recipes.length} recetas</span>
           )}
         </div>
         {recipes.length === 0 ? (
-          <div className="bg-white rounded-2xl border border-dashed border-orange-200 p-6 text-center">
+          <div className="bg-background rounded-2xl border border-dashed border-orange-200 p-6 text-center">
             <p className="text-3xl mb-2">🍳</p>
-            <p className="text-sm text-gray-500">Este maker aún no ha publicado recetas</p>
+            <p className="text-sm text-muted-foreground">Este maker aún no ha publicado recetas</p>
           </div>
         ) : (
           <div className="grid grid-cols-2 gap-3">
@@ -911,7 +911,7 @@ function ProfileLayout({
 
       {/* Avatar + identity */}
       <div className="px-4 -mt-10 mb-4 relative z-10">
-        <div className="bg-white rounded-3xl shadow-xl p-4">
+        <div className="bg-background rounded-3xl shadow-xl p-4">
           <div className="flex items-start gap-4 mb-4">
             <div className="relative flex-shrink-0">
               <img
@@ -925,7 +925,7 @@ function ProfileLayout({
             </div>
             <div className="flex-1 min-w-0 pt-1">
               <div className="flex items-center gap-2 flex-wrap mb-1">
-                <h1 className="text-xl font-black text-gray-900">{name}</h1>
+                <h1 className="text-xl font-black text-foreground">{name}</h1>
                 {verified && (
                   <span className="flex items-center gap-1 bg-orange-100 text-orange-700 text-xs font-bold px-2 py-0.5 rounded-full">
                     <svg className="w-3 h-3" fill="currentColor" viewBox="0 0 20 20">
@@ -939,14 +939,14 @@ function ProfileLayout({
               {rating > 0 && (
                 <div className="flex items-center gap-1.5">
                   <Stars rating={rating} />
-                  <span className="text-xs text-gray-500 font-medium">{rating.toFixed(1)} ({reviewsCount} reseñas)</span>
+                  <span className="text-xs text-muted-foreground font-medium">{rating.toFixed(1)} ({reviewsCount} reseñas)</span>
                 </div>
               )}
             </div>
           </div>
 
           {bio && (
-            <p className="text-sm text-gray-600 leading-relaxed mb-4 border-t border-gray-50 pt-3">{bio}</p>
+            <p className="text-sm text-muted-foreground leading-relaxed mb-4 border-t border-gray-50 pt-3">{bio}</p>
           )}
 
           {/* Follow CTA */}
@@ -955,7 +955,7 @@ function ProfileLayout({
             disabled={followLoading}
             className={`w-full py-3 rounded-2xl text-sm font-bold transition-all shadow-sm hover:shadow-md ${
               isFollowing
-                ? "bg-gray-100 text-gray-700 hover:bg-red-50 hover:text-red-600 border border-gray-200"
+                ? "bg-muted/50 text-foreground/80 hover:bg-red-50 hover:text-red-600 border border-border"
                 : `bg-gradient-to-r ${badgeColor} text-white hover:opacity-90`
             }`}
           >
@@ -976,17 +976,17 @@ function ProfileLayout({
 function ProfileSkeleton() {
   return (
     <div className="min-h-screen bg-[#FFF8F0]">
-      <div className="h-52 bg-gray-200 animate-pulse" />
+      <div className="h-52 bg-muted animate-pulse" />
       <div className="px-4 -mt-10 relative z-10">
-        <div className="bg-white rounded-3xl shadow-xl p-4 animate-pulse">
+        <div className="bg-background rounded-3xl shadow-xl p-4 animate-pulse">
           <div className="flex gap-4 mb-4">
-            <div className="w-20 h-20 rounded-2xl bg-gray-200" />
+            <div className="w-20 h-20 rounded-2xl bg-muted" />
             <div className="flex-1 space-y-2 pt-2">
-              <div className="h-5 bg-gray-200 rounded w-3/4" />
-              <div className="h-4 bg-gray-200 rounded w-1/2" />
+              <div className="h-5 bg-muted rounded w-3/4" />
+              <div className="h-4 bg-muted rounded w-1/2" />
             </div>
           </div>
-          <div className="h-12 bg-gray-200 rounded-2xl" />
+          <div className="h-12 bg-muted rounded-2xl" />
         </div>
       </div>
     </div>
@@ -998,8 +998,8 @@ function NotFound({ type }: { type: string }) {
   return (
     <div className="min-h-screen bg-[#FFF8F0] flex flex-col items-center justify-center gap-4 px-4">
       <div className="text-6xl">🔍</div>
-      <h2 className="text-xl font-bold text-gray-800">No encontrado</h2>
-      <p className="text-gray-500 text-center">Este {type} no existe o ya no está disponible.</p>
+      <h2 className="text-xl font-bold text-foreground">No encontrado</h2>
+      <p className="text-muted-foreground text-center">Este {type} no existe o ya no está disponible.</p>
       <button onClick={() => window.history.length > 2 ? window.history.back() : navigate("/app/buddy-makers")} className="bg-orange-500 text-white font-semibold px-6 py-2.5 rounded-xl">Volver</button>
     </div>
   );

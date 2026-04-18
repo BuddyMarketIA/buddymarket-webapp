@@ -159,11 +159,11 @@ export default function RegisterBuddyExpert() {
 
   if (!user) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
+      <div className="min-h-screen bg-muted/30 flex items-center justify-center p-4">
         <Card className="max-w-md w-full text-center p-8">
           <Stethoscope className="w-12 h-12 text-emerald-500 mx-auto mb-4" />
           <h2 className="text-xl font-bold mb-2">Inicia sesión primero</h2>
-          <p className="text-gray-500 mb-6">Necesitas una cuenta para solicitar ser BuddyExpert.</p>
+          <p className="text-muted-foreground mb-6">Necesitas una cuenta para solicitar ser BuddyExpert.</p>
           <Button onClick={() => navigate("/login")} className="bg-emerald-500 hover:bg-emerald-600 w-full">
             Iniciar sesión
           </Button>
@@ -179,15 +179,15 @@ export default function RegisterBuddyExpert() {
           <div className="w-20 h-20 bg-emerald-100 rounded-full flex items-center justify-center mx-auto mb-6">
             <CheckCircle2 className="w-10 h-10 text-emerald-600" />
           </div>
-          <h1 className="text-3xl font-bold text-gray-900 mb-3">¡Solicitud enviada!</h1>
-          <p className="text-gray-600 mb-2">
+          <h1 className="text-3xl font-bold text-foreground mb-3">¡Solicitud enviada!</h1>
+          <p className="text-muted-foreground mb-2">
             Hemos recibido tu solicitud para convertirte en <strong>BuddyExpert</strong>.
           </p>
-          <p className="text-gray-500 text-sm mb-8">
+          <p className="text-muted-foreground text-sm mb-8">
             Nuestro equipo revisará tu perfil en un plazo de 2-5 días hábiles. Te notificaremos por email cuando tengamos una respuesta.
           </p>
-          <div className="bg-white rounded-2xl p-6 shadow-sm border border-emerald-100 mb-6 text-left">
-            <h3 className="font-semibold text-gray-900 mb-3">¿Qué ocurre ahora?</h3>
+          <div className="bg-background rounded-2xl p-6 shadow-sm border border-emerald-100 mb-6 text-left">
+            <h3 className="font-semibold text-foreground mb-3">¿Qué ocurre ahora?</h3>
             <div className="space-y-3">
               {[
                 "Revisamos tus credenciales y experiencia",
@@ -199,7 +199,7 @@ export default function RegisterBuddyExpert() {
                   <div className="w-6 h-6 rounded-full bg-emerald-100 text-emerald-700 text-xs font-bold flex items-center justify-center flex-shrink-0 mt-0.5">
                     {i + 1}
                   </div>
-                  <p className="text-sm text-gray-600">{step}</p>
+                  <p className="text-sm text-muted-foreground">{step}</p>
                 </div>
               ))}
             </div>
@@ -213,11 +213,11 @@ export default function RegisterBuddyExpert() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen bg-muted/30">
       {/* Header */}
-      <div className="bg-white border-b border-gray-100 sticky top-0 z-10">
+      <div className="bg-background border-b border-border/50 sticky top-0 z-10">
         <div className="max-w-3xl mx-auto px-4 py-4 flex items-center justify-between">
-          <button onClick={() => navigate("/")} className="flex items-center gap-2 text-gray-500 hover:text-gray-900 transition-colors">
+          <button onClick={() => navigate("/")} className="flex items-center gap-2 text-muted-foreground hover:text-foreground transition-colors">
             <ChevronLeft className="w-4 h-4" />
             <span className="text-sm">Volver</span>
           </button>
@@ -225,12 +225,12 @@ export default function RegisterBuddyExpert() {
             <div className="w-7 h-7 rounded-lg bg-emerald-500 flex items-center justify-center">
               <Stethoscope className="w-4 h-4 text-white" />
             </div>
-            <span className="font-semibold text-gray-900">Registro BuddyExpert</span>
+            <span className="font-semibold text-foreground">Registro BuddyExpert</span>
           </div>
-          <span className="text-sm text-gray-400">{step} / {STEPS.length}</span>
+          <span className="text-sm text-muted-foreground/70">{step} / {STEPS.length}</span>
         </div>
         {/* Progress bar */}
-        <div className="h-1 bg-gray-100">
+        <div className="h-1 bg-muted/50">
           <div
             className="h-1 bg-emerald-500 transition-all duration-500"
             style={{ width: `${(step / STEPS.length) * 100}%` }}
@@ -250,7 +250,7 @@ export default function RegisterBuddyExpert() {
                 <div className={`flex items-center gap-2 px-3 py-1.5 rounded-full text-xs font-medium transition-all ${
                   isActive ? "bg-emerald-500 text-white" :
                   isDone ? "bg-emerald-100 text-emerald-700" :
-                  "bg-gray-100 text-gray-400"
+                  "bg-muted/50 text-muted-foreground/70"
                 }`}>
                   {isDone ? <CheckCircle2 className="w-3.5 h-3.5" /> : <Icon className="w-3.5 h-3.5" />}
                   <span className="hidden sm:inline">{s.title}</span>
@@ -267,8 +267,8 @@ export default function RegisterBuddyExpert() {
             {step === 1 && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Tu perfil profesional</h2>
-                  <p className="text-gray-500 mt-1">Esta información aparecerá en tu perfil público como BuddyExpert.</p>
+                  <h2 className="text-2xl font-bold text-foreground">Tu perfil profesional</h2>
+                  <p className="text-muted-foreground mt-1">Esta información aparecerá en tu perfil público como BuddyExpert.</p>
                 </div>
                 <div className="space-y-4">
                   <div>
@@ -302,7 +302,7 @@ export default function RegisterBuddyExpert() {
                           className={`text-left px-3 py-2.5 rounded-xl border text-sm transition-all ${
                             form.expertCategory === cat.value
                               ? "border-emerald-500 bg-emerald-50 text-emerald-700 font-medium"
-                              : "border-gray-200 hover:border-emerald-200 hover:bg-emerald-50/50"
+                              : "border-border hover:border-emerald-200 hover:bg-emerald-50/50"
                           }`}
                         >
                           {cat.label}
@@ -320,7 +320,7 @@ export default function RegisterBuddyExpert() {
                       className="mt-1 min-h-[100px]"
                       maxLength={500}
                     />
-                    <p className="text-xs text-gray-400 mt-1">{form.bio.length}/500</p>
+                    <p className="text-xs text-muted-foreground/70 mt-1">{form.bio.length}/500</p>
                   </div>
                 </div>
               </div>
@@ -330,8 +330,8 @@ export default function RegisterBuddyExpert() {
             {step === 2 && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Credenciales y experiencia</h2>
-                  <p className="text-gray-500 mt-1">Estos datos nos ayudan a verificar tu perfil profesional.</p>
+                  <h2 className="text-2xl font-bold text-foreground">Credenciales y experiencia</h2>
+                  <p className="text-muted-foreground mt-1">Estos datos nos ayudan a verificar tu perfil profesional.</p>
                 </div>
                 <div className="space-y-4">
                   <div className="grid grid-cols-2 gap-4">
@@ -344,7 +344,7 @@ export default function RegisterBuddyExpert() {
                         onChange={(e) => update("collegiateNumber", e.target.value)}
                         className="mt-1"
                       />
-                      <p className="text-xs text-gray-400 mt-1">Opcional pero recomendado para verificación</p>
+                      <p className="text-xs text-muted-foreground/70 mt-1">Opcional pero recomendado para verificación</p>
                     </div>
                     <div>
                       <Label htmlFor="yearsExperience">Años de experiencia</Label>
@@ -372,7 +372,7 @@ export default function RegisterBuddyExpert() {
                   </div>
                   <div>
                     <Label>Público objetivo</Label>
-                    <p className="text-xs text-gray-500 mb-2">¿A quién va dirigida principalmente tu práctica?</p>
+                    <p className="text-xs text-muted-foreground mb-2">¿A quién va dirigida principalmente tu práctica?</p>
                     <div className="flex flex-wrap gap-2">
                       {TARGET_AUDIENCES.map((aud) => (
                         <button
@@ -382,7 +382,7 @@ export default function RegisterBuddyExpert() {
                           className={`px-3 py-1.5 rounded-full text-sm border transition-all ${
                             form.targetAudience.includes(aud.value)
                               ? "border-emerald-500 bg-emerald-500 text-white"
-                              : "border-gray-200 hover:border-emerald-300"
+                              : "border-border hover:border-emerald-300"
                           }`}
                         >
                           {aud.label}
@@ -398,8 +398,8 @@ export default function RegisterBuddyExpert() {
             {step === 3 && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Servicios y tarifas</h2>
-                  <p className="text-gray-500 mt-1">Define qué servicios ofreces y tu precio orientativo.</p>
+                  <h2 className="text-2xl font-bold text-foreground">Servicios y tarifas</h2>
+                  <p className="text-muted-foreground mt-1">Define qué servicios ofreces y tu precio orientativo.</p>
                 </div>
                 <div className="space-y-4">
                   <div>
@@ -413,7 +413,7 @@ export default function RegisterBuddyExpert() {
                           className={`text-left px-3 py-2.5 rounded-xl border text-sm transition-all flex items-center gap-2 ${
                             form.servicesOffered.includes(svc.value)
                               ? "border-emerald-500 bg-emerald-50 text-emerald-700"
-                              : "border-gray-200 hover:border-emerald-200"
+                              : "border-border hover:border-emerald-200"
                           }`}
                         >
                           {form.servicesOffered.includes(svc.value) && (
@@ -427,7 +427,7 @@ export default function RegisterBuddyExpert() {
                   <div>
                     <Label htmlFor="consultationPrice">Precio orientativo por consulta (€)</Label>
                     <div className="relative mt-1">
-                      <Euro className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Euro className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/70" />
                       <Input
                         id="consultationPrice"
                         type="number"
@@ -439,7 +439,7 @@ export default function RegisterBuddyExpert() {
                         className="pl-9"
                       />
                     </div>
-                    <p className="text-xs text-gray-400 mt-1">Este precio es orientativo y lo podrás ajustar en tu perfil</p>
+                    <p className="text-xs text-muted-foreground/70 mt-1">Este precio es orientativo y lo podrás ajustar en tu perfil</p>
                   </div>
                 </div>
               </div>
@@ -449,14 +449,14 @@ export default function RegisterBuddyExpert() {
             {step === 4 && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Presencia online</h2>
-                  <p className="text-gray-500 mt-1">Tus redes sociales y web profesional (opcional).</p>
+                  <h2 className="text-2xl font-bold text-foreground">Presencia online</h2>
+                  <p className="text-muted-foreground mt-1">Tus redes sociales y web profesional (opcional).</p>
                 </div>
                 <div className="space-y-4">
                   <div>
                     <Label htmlFor="instagramHandle">Instagram</Label>
                     <div className="relative mt-1">
-                      <Instagram className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Instagram className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/70" />
                       <Input
                         id="instagramHandle"
                         placeholder="@tuusuario"
@@ -469,7 +469,7 @@ export default function RegisterBuddyExpert() {
                   <div>
                     <Label htmlFor="youtubeHandle">YouTube</Label>
                     <div className="relative mt-1">
-                      <Youtube className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Youtube className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/70" />
                       <Input
                         id="youtubeHandle"
                         placeholder="@tucanal"
@@ -482,7 +482,7 @@ export default function RegisterBuddyExpert() {
                   <div>
                     <Label htmlFor="tiktokHandle">TikTok</Label>
                     <div className="relative mt-1">
-                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 text-sm font-bold">T</span>
+                      <span className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground/70 text-sm font-bold">T</span>
                       <Input
                         id="tiktokHandle"
                         placeholder="@tuusuario"
@@ -495,7 +495,7 @@ export default function RegisterBuddyExpert() {
                   <div>
                     <Label htmlFor="websiteUrl">Web profesional</Label>
                     <div className="relative mt-1">
-                      <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" />
+                      <Globe className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/70" />
                       <Input
                         id="websiteUrl"
                         placeholder="https://tuweb.com"
@@ -513,8 +513,8 @@ export default function RegisterBuddyExpert() {
             {step === 5 && (
               <div className="space-y-6">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-900">Tu motivación</h2>
-                  <p className="text-gray-500 mt-1">Cuéntanos por qué quieres ser BuddyExpert en BuddyMarket.</p>
+                  <h2 className="text-2xl font-bold text-foreground">Tu motivación</h2>
+                  <p className="text-muted-foreground mt-1">Cuéntanos por qué quieres ser BuddyExpert en BuddyMarket.</p>
                 </div>
                 <div className="space-y-4">
                   <div>
@@ -527,7 +527,7 @@ export default function RegisterBuddyExpert() {
                       className="mt-1 min-h-[120px]"
                       maxLength={1000}
                     />
-                    <p className="text-xs text-gray-400 mt-1">{form.motivation.length}/1000</p>
+                    <p className="text-xs text-muted-foreground/70 mt-1">{form.motivation.length}/1000</p>
                   </div>
                   <div>
                     <Label htmlFor="experience">Experiencia con plataformas digitales</Label>
@@ -548,24 +548,24 @@ export default function RegisterBuddyExpert() {
                     </h3>
                     <div className="space-y-2 text-sm">
                       <div className="flex justify-between">
-                        <span className="text-gray-500">Nombre</span>
+                        <span className="text-muted-foreground">Nombre</span>
                         <span className="font-medium">{form.displayName || "—"}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-500">Especialidad</span>
+                        <span className="text-muted-foreground">Especialidad</span>
                         <span className="font-medium">{EXPERT_CATEGORIES.find(c => c.value === form.expertCategory)?.label || "—"}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-500">Experiencia</span>
+                        <span className="text-muted-foreground">Experiencia</span>
                         <span className="font-medium">{form.yearsExperience ? `${form.yearsExperience} años` : "—"}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-gray-500">Servicios</span>
+                        <span className="text-muted-foreground">Servicios</span>
                         <span className="font-medium">{form.servicesOffered.length} seleccionados</span>
                       </div>
                       {form.consultationPrice && (
                         <div className="flex justify-between">
-                          <span className="text-gray-500">Precio consulta</span>
+                          <span className="text-muted-foreground">Precio consulta</span>
                           <span className="font-medium">{form.consultationPrice}€</span>
                         </div>
                       )}
@@ -584,7 +584,7 @@ export default function RegisterBuddyExpert() {
             )}
 
             {/* Navigation */}
-            <div className="flex justify-between mt-8 pt-6 border-t border-gray-100">
+            <div className="flex justify-between mt-8 pt-6 border-t border-border/50">
               <Button
                 variant="outline"
                 onClick={() => step > 1 ? setStep(s => s - 1) : navigate("/")}
@@ -626,8 +626,8 @@ export default function RegisterBuddyExpert() {
         </Card>
 
         {/* Benefits sidebar */}
-        <div className="mt-6 bg-white rounded-2xl border border-gray-100 p-5 shadow-sm">
-          <h3 className="font-semibold text-gray-900 mb-3 flex items-center gap-2">
+        <div className="mt-6 bg-background rounded-2xl border border-border/50 p-5 shadow-sm">
+          <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2">
             <Users className="w-4 h-4 text-emerald-500" />
             Beneficios de ser BuddyExpert
           </h3>
@@ -642,7 +642,7 @@ export default function RegisterBuddyExpert() {
               "Estadísticas y analíticas",
               "Soporte prioritario",
             ].map((benefit) => (
-              <div key={benefit} className="flex items-center gap-2 text-sm text-gray-600">
+              <div key={benefit} className="flex items-center gap-2 text-sm text-muted-foreground">
                 <CheckCircle2 className="w-3.5 h-3.5 text-emerald-500 flex-shrink-0" />
                 {benefit}
               </div>

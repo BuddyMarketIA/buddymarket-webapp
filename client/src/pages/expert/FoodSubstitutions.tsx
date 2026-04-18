@@ -11,7 +11,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const CATEGORY_LABELS: Record<string, { label: string; color: string; icon: string }> = {
-  general: { label: "General", color: "bg-gray-100 text-gray-700", icon: "🍽️" },
+  general: { label: "General", color: "bg-muted/50 text-foreground/80", icon: "🍽️" },
   protein: { label: "Proteínas", color: "bg-blue-100 text-blue-700", icon: "🥩" },
   carbs: { label: "Carbohidratos", color: "bg-yellow-100 text-yellow-700", icon: "🍞" },
   fat: { label: "Grasas", color: "bg-orange-100 text-orange-700", icon: "🥑" },
@@ -105,8 +105,8 @@ export default function FoodSubstitutions() {
         {/* Header */}
         <div className="flex items-start justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">🔄 Banco de Sustituciones</h1>
-            <p className="text-sm text-gray-500 mt-1">Define alternativas equivalentes para alimentos en los menús de tus pacientes</p>
+            <h1 className="text-2xl font-bold text-foreground">🔄 Banco de Sustituciones</h1>
+            <p className="text-sm text-muted-foreground mt-1">Define alternativas equivalentes para alimentos en los menús de tus pacientes</p>
           </div>
           <Button onClick={() => setShowModal(true)} className="bg-orange-500 hover:bg-orange-600 text-white">
             + Nueva sustitución
@@ -140,10 +140,10 @@ export default function FoodSubstitutions() {
             <div className="animate-spin w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full" />
           </div>
         ) : filteredList.length === 0 ? (
-          <div className="text-center py-16 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+          <div className="text-center py-16 bg-muted/30 rounded-2xl border border-dashed border-border">
             <div className="text-5xl mb-3">🔄</div>
-            <p className="text-gray-500 font-medium text-lg">Sin sustituciones definidas</p>
-            <p className="text-sm text-gray-400 mt-1 max-w-sm mx-auto">
+            <p className="text-muted-foreground font-medium text-lg">Sin sustituciones definidas</p>
+            <p className="text-sm text-muted-foreground/70 mt-1 max-w-sm mx-auto">
               Crea un banco de alternativas para facilitar la adaptación de menús cuando un paciente no puede consumir ciertos alimentos.
             </p>
             <Button onClick={() => setShowModal(true)} className="mt-4 bg-orange-500 hover:bg-orange-600 text-white">
@@ -157,13 +157,13 @@ export default function FoodSubstitutions() {
               const parsedSubs = parseSubstitutes(sub.substitutes);
 
               return (
-                <div key={sub.id} className="bg-white rounded-2xl border border-gray-200 p-4 hover:shadow-sm transition-shadow group">
+                <div key={sub.id} className="bg-background rounded-2xl border border-border p-4 hover:shadow-sm transition-shadow group">
                   <div className="flex items-start justify-between gap-3">
                     <div className="flex-1">
                       <div className="flex items-center gap-2 flex-wrap mb-2">
-                        <span className="font-semibold text-gray-900 text-base">{sub.originalFood}</span>
+                        <span className="font-semibold text-foreground text-base">{sub.originalFood}</span>
                         {sub.originalAmount && (
-                          <span className="text-sm text-gray-500">({sub.originalAmount})</span>
+                          <span className="text-sm text-muted-foreground">({sub.originalAmount})</span>
                         )}
                         <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${catInfo.color}`}>
                           {catInfo.icon} {catInfo.label}
@@ -172,7 +172,7 @@ export default function FoodSubstitutions() {
 
                       {/* Sustituciones */}
                       <div className="flex items-start gap-2">
-                        <span className="text-gray-400 text-sm mt-0.5 flex-shrink-0">→</span>
+                        <span className="text-muted-foreground/70 text-sm mt-0.5 flex-shrink-0">→</span>
                         <div className="flex flex-wrap gap-2">
                           {parsedSubs.map((s, i) => (
                             <div key={i} className="flex items-center gap-1 px-3 py-1.5 bg-green-50 border border-green-200 rounded-xl">
@@ -185,13 +185,13 @@ export default function FoodSubstitutions() {
                       </div>
 
                       {sub.notes && (
-                        <p className="text-xs text-gray-500 mt-2 italic">💡 {sub.notes}</p>
+                        <p className="text-xs text-muted-foreground mt-2 italic">💡 {sub.notes}</p>
                       )}
                     </div>
 
                     <button
                       onClick={() => { if (confirm("¿Eliminar esta sustitución?")) deleteSubstitutionMutation.mutate({ substitutionId: sub.id }); }}
-                      className="text-gray-400 hover:text-red-500 transition-colors p-1 opacity-0 group-hover:opacity-100 text-sm flex-shrink-0"
+                      className="text-muted-foreground/70 hover:text-red-500 transition-colors p-1 opacity-0 group-hover:opacity-100 text-sm flex-shrink-0"
                       title="Eliminar"
                     >🗑️</button>
                   </div>
@@ -284,13 +284,13 @@ export default function FoodSubstitutions() {
                     {substitutes.length > 1 && (
                       <button
                         onClick={() => setSubstitutes(prev => prev.filter((_, idx) => idx !== i))}
-                        className="text-gray-400 hover:text-red-500 transition-colors mt-1 text-sm"
+                        className="text-muted-foreground/70 hover:text-red-500 transition-colors mt-1 text-sm"
                       >✕</button>
                     )}
                   </div>
                 ))}
               </div>
-              <p className="text-xs text-gray-400 mt-1">Nombre · Cantidad equivalente · Nota (ej: "sin lactosa")</p>
+              <p className="text-xs text-muted-foreground/70 mt-1">Nombre · Cantidad equivalente · Nota (ej: "sin lactosa")</p>
             </div>
 
             <div>

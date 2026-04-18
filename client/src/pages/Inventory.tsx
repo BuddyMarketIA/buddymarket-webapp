@@ -25,12 +25,12 @@ function daysUntil(date: Date | string | null | undefined): number | null {
 }
 
 function expiryColor(days: number | null) {
-  if (days === null) return "border-gray-100 bg-white";
+  if (days === null) return "border-border/50 bg-background";
   if (days < 0)  return "border-l-4 border-l-red-600   border-t border-r border-b border-red-200   bg-red-50";
   if (days <= 2) return "border-l-4 border-l-red-500   border-t border-r border-b border-red-200   bg-red-50";
   if (days <= 5) return "border-l-4 border-l-orange-400 border-t border-r border-b border-orange-200 bg-orange-50";
   if (days <= 7) return "border-l-4 border-l-yellow-400 border-t border-r border-b border-yellow-200 bg-yellow-50";
-  return "border border-gray-100 bg-white";
+  return "border border-border/50 bg-background";
 }
 
 function expiryBadge(days: number | null) {
@@ -39,7 +39,7 @@ function expiryBadge(days: number | null) {
   if (days === 0) return <span className="shrink-0 rounded-full bg-red-500   px-2.5 py-0.5 text-xs font-bold text-white shadow-sm">⚠ Caduca hoy</span>;
   if (days <= 2) return <span className="shrink-0 rounded-full bg-red-500   px-2.5 py-0.5 text-xs font-bold text-white shadow-sm">⚠ {days}d</span>;
   if (days <= 5) return <span className="shrink-0 rounded-full bg-orange-400 px-2.5 py-0.5 text-xs font-bold text-white shadow-sm">⏰ {days}d</span>;
-  if (days <= 7) return <span className="shrink-0 rounded-full bg-yellow-400 px-2.5 py-0.5 text-xs font-bold text-gray-800 shadow-sm">⏳ {days}d</span>;
+  if (days <= 7) return <span className="shrink-0 rounded-full bg-yellow-400 px-2.5 py-0.5 text-xs font-bold text-foreground shadow-sm">⏳ {days}d</span>;
   return null;
 }
 
@@ -314,7 +314,7 @@ export default function Inventory() {
       {/* Header */}
       <div className="mb-4 flex items-center justify-between">
         <div>
-          <h1 className="text-2xl font-bold text-gray-900">{t("inventory.title", "Inventory")}</h1>
+          <h1 className="text-2xl font-bold text-foreground">{t("inventory.title", "Inventory")}</h1>
           {expiringCount > 0 && (
             <div className="mt-0.5 flex items-center gap-1 text-xs text-orange-500">
               <ExclamationTriangleIcon className="h-3.5 w-3.5" />
@@ -374,13 +374,13 @@ export default function Inventory() {
               const days = daysUntil(item.item?.expirationDate ?? item.expirationDate);
               const name = item.ingredient?.nameEs ?? item.item?.customName ?? item.customName ?? "Alimento";
               return (
-                <span key={item.id} className="rounded-full bg-white/20 px-3 py-1 text-xs font-semibold">
+                <span key={item.id} className="rounded-full bg-background/20 px-3 py-1 text-xs font-semibold">
                   {name} · {days === 0 ? "hoy" : days !== null && days < 0 ? "vencido" : `${days}d`}
                 </span>
               );
             })}
             {(expiringItems ?? []).length > 4 && (
-              <span className="rounded-full bg-white/20 px-3 py-1 text-xs font-semibold">
+              <span className="rounded-full bg-background/20 px-3 py-1 text-xs font-semibold">
                 +{(expiringItems ?? []).length - 4} más
               </span>
             )}
@@ -449,7 +449,7 @@ export default function Inventory() {
               );
             })}
             {(expiringItems ?? []).length > 6 && (
-              <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-500">
+              <span className="rounded-full bg-muted/50 px-2.5 py-1 text-xs font-semibold text-muted-foreground">
                 +{(expiringItems ?? []).length - 6} más
               </span>
             )}
@@ -462,14 +462,14 @@ export default function Inventory() {
         <div className="mb-5">
           <div className="mb-2 flex items-center gap-2">
             <SparklesIcon className="h-4 w-4 text-orange-500" />
-            <span className="text-sm font-bold text-gray-800">Recetas del catálogo</span>
+            <span className="text-sm font-bold text-foreground">Recetas del catálogo</span>
           </div>
           <div className="flex gap-3 overflow-x-auto pb-2">
             {recipeRecs.recipes.slice(0, 5).map((recipe: any) => (
               <button
                 key={recipe.id}
                 onClick={() => navigate(`/app/recipes/${recipe.id}`)}
-                className="shrink-0 w-36 rounded-2xl bg-white border border-gray-100 shadow-sm overflow-hidden text-left active:scale-95 transition-transform"
+                className="shrink-0 w-36 rounded-2xl bg-background border border-border/50 shadow-sm overflow-hidden text-left active:scale-95 transition-transform"
               >
                 {recipe.imageUrl ? (
                   <img src={recipe.imageUrl} alt={recipe.name} className="h-24 w-full object-cover" />
@@ -477,9 +477,9 @@ export default function Inventory() {
                   <div className="h-24 w-full bg-gradient-to-br from-orange-100 to-orange-200 flex items-center justify-center text-3xl">🍽️</div>
                 )}
                 <div className="p-2">
-                  <p className="text-xs font-semibold text-gray-800 line-clamp-2 leading-tight">{recipe.name}</p>
+                  <p className="text-xs font-semibold text-foreground line-clamp-2 leading-tight">{recipe.name}</p>
                   {recipe.calories && (
-                    <p className="mt-1 text-xs text-gray-400">{recipe.calories} kcal</p>
+                    <p className="mt-1 text-xs text-muted-foreground/70">{recipe.calories} kcal</p>
                   )}
                 </div>
               </button>
@@ -535,20 +535,20 @@ export default function Inventory() {
               </span>
             ))}
             {(items ?? []).length > 8 && (
-              <span className="rounded-full bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-500">+{(items ?? []).length - 8} más</span>
+              <span className="rounded-full bg-muted/50 px-2.5 py-1 text-xs font-semibold text-muted-foreground">+{(items ?? []).length - 8} más</span>
             )}
           </div>
         </div>
       )}
 
       {/* Search */}
-      <div className="mb-4 flex items-center gap-3 rounded-2xl bg-gray-100 px-4 py-3">
-        <MagnifyingGlassIcon className="h-4 w-4 shrink-0 text-gray-400" />
+      <div className="mb-4 flex items-center gap-3 rounded-2xl bg-muted/50 px-4 py-3">
+        <MagnifyingGlassIcon className="h-4 w-4 shrink-0 text-muted-foreground/70" />
         <input
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           placeholder={t("inventory.searchPlaceholder", "Search inventory...")}
-          className="flex-1 bg-transparent text-sm outline-none placeholder:text-gray-400"
+          className="flex-1 bg-transparent text-sm outline-none placeholder:text-muted-foreground/70"
         />
       </div>
 
@@ -573,7 +573,7 @@ export default function Inventory() {
       {/* Sort controls */}
       {(items ?? []).length > 1 && (
         <div className="mb-4 flex items-center gap-2">
-          <span className="shrink-0 text-xs font-semibold text-gray-400">Ordenar:</span>
+          <span className="shrink-0 text-xs font-semibold text-muted-foreground/70">Ordenar:</span>
           <div className="flex flex-1 gap-1.5 overflow-x-auto pb-0.5">
             {([
               { key: "expiry", label: "Caducidad", icon: "📅" },
@@ -593,7 +593,7 @@ export default function Inventory() {
                 className={`flex shrink-0 items-center gap-1 rounded-xl px-3 py-1.5 text-xs font-semibold transition-colors ${
                   sortBy === opt.key
                     ? "bg-[#F97316] text-white shadow-sm"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    : "bg-muted/50 text-muted-foreground hover:bg-muted"
                 }`}
               >
                 {opt.icon} {opt.label}
@@ -615,16 +615,16 @@ export default function Inventory() {
           {search ? (
             <>
               <span className="mb-4 text-5xl">🔍</span>
-              <h3 className="mb-2 text-base font-bold text-gray-900">{t("inventory.noResults", "No results")}</h3>
-              <p className="mb-6 text-sm text-gray-500">No encontramos "{search}" en tu inventario</p>
+              <h3 className="mb-2 text-base font-bold text-foreground">{t("inventory.noResults", "No results")}</h3>
+              <p className="mb-6 text-sm text-muted-foreground">No encontramos "{search}" en tu inventario</p>
               <button onClick={() => setSearch("")} className="btn-vively-outline">Limpiar búsqueda</button>
             </>
           ) : (
             <>
               <span className="mb-3 text-6xl">📦</span>
-              <h3 className="mb-1 text-lg font-bold text-gray-900">{t("inventory.empty", "Your inventory is empty")}</h3>
-              <p className="mb-2 text-sm text-gray-500 max-w-xs text-center">Añade los alimentos que tienes en casa para recibir alertas de caducidad y sugerencias de recetas</p>
-              <div className="mb-6 flex flex-col gap-2 text-xs text-gray-400">
+              <h3 className="mb-1 text-lg font-bold text-foreground">{t("inventory.empty", "Your inventory is empty")}</h3>
+              <p className="mb-2 text-sm text-muted-foreground max-w-xs text-center">Añade los alimentos que tienes en casa para recibir alertas de caducidad y sugerencias de recetas</p>
+              <div className="mb-6 flex flex-col gap-2 text-xs text-muted-foreground/70">
                 <span>💡 Tip: Usa la cámara para añadir varios productos a la vez con IA</span>
               </div>
               <div className="flex gap-3">
@@ -654,29 +654,29 @@ export default function Inventory() {
                   days !== null && days <= 2 ? "bg-red-100" :
                   days !== null && days <= 5 ? "bg-orange-100" :
                   days !== null && days <= 7 ? "bg-yellow-100" :
-                  "bg-white/80"
+                  "bg-background/80"
                 }`}>
                   {emoji}
                 </div>
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-2 flex-wrap">
-                    <span className={`text-sm font-semibold truncate ${days !== null && days <= 7 ? "text-gray-900" : "text-gray-900"}`}>{name}</span>
+                    <span className={`text-sm font-semibold truncate ${days !== null && days <= 7 ? "text-foreground" : "text-foreground"}`}>{name}</span>
                     {expiryBadge(days)}
                   </div>
                   <div className="mt-0.5 flex items-center gap-2 text-xs flex-wrap">
-                    {item.item.amount && <span className="text-gray-400">{item.item.amount} {item.measure?.nameEs ?? ""}</span>}
+                    {item.item.amount && <span className="text-muted-foreground/70">{item.item.amount} {item.measure?.nameEs ?? ""}</span>}
                     {item.item.expirationDate && (
                       <span className={`flex items-center gap-1 font-medium ${
                         days !== null && days < 0  ? "text-red-600" :
                         days !== null && days <= 2 ? "text-red-500" :
                         days !== null && days <= 5 ? "text-orange-500" :
                         days !== null && days <= 7 ? "text-yellow-600" :
-                        "text-gray-400"
+                        "text-muted-foreground/70"
                       }`}>
                         📅 {new Date(item.item.expirationDate).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "2-digit" })}
                       </span>
                     )}
-                    <span className="rounded-full bg-gray-100 px-2 py-0.5 text-gray-400">{locLabel}</span>
+                    <span className="rounded-full bg-muted/50 px-2 py-0.5 text-muted-foreground/70">{locLabel}</span>
                   </div>
                 </div>
                 <button
@@ -694,11 +694,11 @@ export default function Inventory() {
       {/* Add manually modal */}
       {showAdd && (
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowAdd(false); }}>
-          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up">
+          <div className="w-full max-w-sm rounded-3xl bg-background p-6 shadow-2xl animate-slide-up">
             <div className="mb-4 flex items-center justify-between">
-              <h3 className="text-lg font-bold text-gray-900">Añadir al inventario</h3>
-              <button onClick={() => setShowAdd(false)} className="rounded-full p-1 hover:bg-gray-100">
-                <XMarkIcon className="h-5 w-5 text-gray-400" />
+              <h3 className="text-lg font-bold text-foreground">Añadir al inventario</h3>
+              <button onClick={() => setShowAdd(false)} className="rounded-full p-1 hover:bg-muted/50">
+                <XMarkIcon className="h-5 w-5 text-muted-foreground/70" />
               </button>
             </div>
             <div className="space-y-3">
@@ -756,7 +756,7 @@ export default function Inventory() {
               </select>
               <div>
                 <div className="mb-1 flex items-center justify-between">
-                  <label className="text-xs font-semibold text-gray-500">📅 Fecha de caducidad</label>
+                  <label className="text-xs font-semibold text-muted-foreground">📅 Fecha de caducidad</label>
                   {expiryLoading && (
                     <span className="text-xs text-orange-500 animate-pulse">✨ Estimando...</span>
                   )}
@@ -774,12 +774,12 @@ export default function Inventory() {
                   min={new Date().toISOString().split("T")[0]}
                 />
                 {!expirationDate && !expiryLoading && customName.trim() && (
-                  <p className="mt-1 text-xs text-gray-400">Escribe el nombre y pulsa fuera para estimar la fecha</p>
+                  <p className="mt-1 text-xs text-muted-foreground/70">Escribe el nombre y pulsa fuera para estimar la fecha</p>
                 )}
               </div>
             </div>
             <div className="mt-4 flex gap-3">
-              <button onClick={() => setShowAdd(false)} className="flex-1 rounded-2xl border border-gray-200 py-3 text-sm font-semibold text-gray-600">
+              <button onClick={() => setShowAdd(false)} className="flex-1 rounded-2xl border border-border py-3 text-sm font-semibold text-muted-foreground">
                 Cancelar
               </button>
               <button
@@ -806,7 +806,7 @@ export default function Inventory() {
  {/* Photo AI modal */}
       {showPhotoModal && (
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) { setShowPhotoModal(false); setPhotoPreview(null); setPhotoFile(null); setDetectedProducts([]); } }}>
-          <div className="w-full max-w-sm rounded-3xl bg-white shadow-2xl animate-slide-up overflow-hidden">
+          <div className="w-full max-w-sm rounded-3xl bg-background shadow-2xl animate-slide-up overflow-hidden">
             {/* Header */}
             <div className="flex items-center justify-between bg-gradient-to-r from-indigo-600 to-purple-600 px-6 py-4">
               <div className="flex items-center gap-2 text-white">
@@ -880,8 +880,8 @@ export default function Inventory() {
                 <div className="mt-4">
                   <div className="mb-3 flex items-center justify-between">
                     <div>
-                      <p className="text-sm font-bold text-gray-800">{detectedProducts.length} productos detectados</p>
-                      <p className="text-xs text-gray-400 mt-0.5">Edita nombre, cantidad o caducidad antes de guardar</p>
+                      <p className="text-sm font-bold text-foreground">{detectedProducts.length} productos detectados</p>
+                      <p className="text-xs text-muted-foreground/70 mt-0.5">Edita nombre, cantidad o caducidad antes de guardar</p>
                     </div>
                     <button
                       onClick={() => setDetectedProducts((prev) => prev.map((p) => ({ ...p, selected: !prev.every((x) => x.selected) })))}
@@ -895,7 +895,7 @@ export default function Inventory() {
                       <div
                         key={idx}
                         className={`rounded-xl border p-3 transition-colors ${
-                          product.selected ? "border-indigo-300 bg-indigo-50" : "border-gray-200 bg-gray-50 opacity-60"
+                          product.selected ? "border-indigo-300 bg-indigo-50" : "border-border bg-muted/30 opacity-60"
                         }`}
                       >
                         {/* Row 1: checkbox + name editable */}
@@ -903,7 +903,7 @@ export default function Inventory() {
                           <button
                             onClick={() => setDetectedProducts((prev) => prev.map((p, i) => i === idx ? { ...p, selected: !p.selected } : p))}
                             className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-full border-2 transition-colors ${
-                              product.selected ? "border-indigo-500 bg-indigo-500" : "border-gray-300 bg-white"
+                              product.selected ? "border-indigo-500 bg-indigo-500" : "border-border bg-background"
                             }`}
                           >
                             {product.selected && <CheckIcon className="h-3.5 w-3.5 text-white" />}
@@ -912,13 +912,13 @@ export default function Inventory() {
                             type="text"
                             value={product.name}
                             onChange={(e) => setDetectedProducts((prev) => prev.map((p, i) => i === idx ? { ...p, name: e.target.value } : p))}
-                            className="flex-1 rounded-lg border border-gray-200 bg-white px-2.5 py-1.5 text-sm font-semibold text-gray-800 outline-none focus:border-indigo-400"
+                            className="flex-1 rounded-lg border border-border bg-background px-2.5 py-1.5 text-sm font-semibold text-foreground outline-none focus:border-indigo-400"
                             placeholder="Nombre del producto"
                           />
                           {/* Delete product */}
                           <button
                             onClick={() => setDetectedProducts((prev) => prev.filter((_, i) => i !== idx))}
-                            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-gray-400 hover:text-red-500 hover:bg-red-50 transition-colors"
+                            className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-muted-foreground/70 hover:text-red-500 hover:bg-red-50 transition-colors"
                             title="Eliminar"
                           >
                             <XMarkIcon className="h-4 w-4" />
@@ -932,21 +932,21 @@ export default function Inventory() {
                             min="0.1"
                             step="0.1"
                             onChange={(e) => setDetectedProducts((prev) => prev.map((p, i) => i === idx ? { ...p, amount: parseFloat(e.target.value) || 1 } : p))}
-                            className="w-16 rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 outline-none focus:border-indigo-400 text-center"
+                            className="w-16 rounded-lg border border-border bg-background px-2 py-1 text-xs text-foreground/80 outline-none focus:border-indigo-400 text-center"
                           />
                           <input
                             type="text"
                             value={product.unit}
                             onChange={(e) => setDetectedProducts((prev) => prev.map((p, i) => i === idx ? { ...p, unit: e.target.value } : p))}
-                            className="w-20 rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs text-gray-700 outline-none focus:border-indigo-400"
+                            className="w-20 rounded-lg border border-border bg-background px-2 py-1 text-xs text-foreground/80 outline-none focus:border-indigo-400"
                             placeholder="unidad"
                           />
-                          <span className="text-xs text-gray-400">·</span>
+                          <span className="text-xs text-muted-foreground/70">·</span>
                           <input
                             type="date"
                             value={product.expirationDate ?? ""}
                             onChange={(e) => setDetectedProducts((prev) => prev.map((p, i) => i === idx ? { ...p, expirationDate: e.target.value } : p))}
-                            className="flex-1 rounded-lg border border-gray-200 bg-white px-2 py-1 text-xs text-gray-600 outline-none focus:border-indigo-400"
+                            className="flex-1 rounded-lg border border-border bg-background px-2 py-1 text-xs text-muted-foreground outline-none focus:border-indigo-400"
                             min={new Date().toISOString().split("T")[0]}
                           />
                         </div>
@@ -975,7 +975,7 @@ export default function Inventory() {
 
               {/* Tip */}
               {!photoPreview && (
-                <p className="mt-4 text-center text-xs text-gray-400">
+                <p className="mt-4 text-center text-xs text-muted-foreground/70">
                   La IA detecta automáticamente los alimentos y te permite añadir la fecha de caducidad de cada uno
                 </p>
               )}
@@ -1096,7 +1096,7 @@ export default function Inventory() {
       {/* Anti-waste AI recipes modal */}
       {showAntiWaste && generatedRecipes.length > 0 && (
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowAntiWaste(false); }}>
-          <div className="w-full max-w-sm rounded-3xl bg-white shadow-2xl animate-slide-up overflow-hidden max-h-[85vh] flex flex-col">
+          <div className="w-full max-w-sm rounded-3xl bg-background shadow-2xl animate-slide-up overflow-hidden max-h-[85vh] flex flex-col">
             {/* Header */}
             <div className="flex items-center justify-between bg-gradient-to-r from-green-600 to-emerald-600 px-6 py-4 shrink-0">
               <div className="flex items-center gap-2 text-white">
@@ -1106,23 +1106,23 @@ export default function Inventory() {
                   <p className="text-xs text-green-100">Generadas con IA para tus productos</p>
                 </div>
               </div>
-              <button onClick={() => setShowAntiWaste(false)} className="rounded-full p-1 hover:bg-white/20">
+              <button onClick={() => setShowAntiWaste(false)} className="rounded-full p-1 hover:bg-background/20">
                 <XMarkIcon className="h-5 w-5 text-white" />
               </button>
             </div>
             {/* Recipes list */}
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {generatedRecipes.map((recipe, idx) => (
-                <div key={idx} className="rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden">
+                <div key={idx} className="rounded-2xl border border-border/50 bg-background shadow-sm overflow-hidden">
                   <div className="flex items-start gap-3 p-4">
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-green-100 to-emerald-100 text-2xl">
                       {recipe.emoji}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="font-bold text-gray-900 leading-tight">{recipe.name}</p>
-                      <p className="mt-0.5 text-xs text-gray-500 line-clamp-2">{recipe.description}</p>
+                      <p className="font-bold text-foreground leading-tight">{recipe.name}</p>
+                      <p className="mt-0.5 text-xs text-muted-foreground line-clamp-2">{recipe.description}</p>
                       <div className="mt-2 flex flex-wrap gap-1.5">
-                        <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">
+                        <span className="rounded-full bg-muted/50 px-2 py-0.5 text-xs text-muted-foreground">
                           ⏱ {recipe.prepTime} min
                         </span>
                         <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
@@ -1148,7 +1148,7 @@ export default function Inventory() {
               ))}
             </div>
             {/* Footer */}
-            <div className="shrink-0 border-t border-gray-100 p-4">
+            <div className="shrink-0 border-t border-border/50 p-4">
               <button
                 onClick={async () => {
                   setGeneratedRecipes([]);
@@ -1178,7 +1178,7 @@ export default function Inventory() {
       {/* Inventory Recipes Modal */}
       {showInventoryRecipes && inventoryRecipes.length > 0 && (
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowInventoryRecipes(false); }}>
-          <div className="w-full max-w-sm rounded-3xl bg-white shadow-2xl animate-slide-up overflow-hidden max-h-[85vh] flex flex-col">
+          <div className="w-full max-w-sm rounded-3xl bg-background shadow-2xl animate-slide-up overflow-hidden max-h-[85vh] flex flex-col">
             <div className="flex items-center justify-between bg-gradient-to-r from-indigo-600 to-violet-600 px-6 py-4 shrink-0">
               <div className="flex items-center gap-2 text-white">
                 <span className="text-xl">🍳</span>
@@ -1187,25 +1187,25 @@ export default function Inventory() {
                   <p className="text-xs text-indigo-100">Generadas con IA para ti</p>
                 </div>
               </div>
-              <button onClick={() => setShowInventoryRecipes(false)} className="rounded-full p-1 hover:bg-white/20">
+              <button onClick={() => setShowInventoryRecipes(false)} className="rounded-full p-1 hover:bg-background/20">
                 <XMarkIcon className="h-5 w-5 text-white" />
               </button>
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {inventoryRecipes.map((recipe, idx) => (
-                <div key={idx} className="rounded-2xl border border-gray-100 bg-white shadow-sm overflow-hidden">
+                <div key={idx} className="rounded-2xl border border-border/50 bg-background shadow-sm overflow-hidden">
                   <div className="flex items-start gap-3 p-4">
                     <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-gradient-to-br from-indigo-100 to-violet-100 text-2xl">
                       {recipe.emoji}
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 mb-0.5">
-                        <p className="font-bold text-gray-900 leading-tight">{recipe.name}</p>
+                        <p className="font-bold text-foreground leading-tight">{recipe.name}</p>
                         <span className="shrink-0 rounded-full bg-indigo-50 px-2 py-0.5 text-xs font-semibold text-indigo-600 capitalize">{recipe.mealType}</span>
                       </div>
-                      <p className="text-xs text-gray-500 line-clamp-2">{recipe.description}</p>
+                      <p className="text-xs text-muted-foreground line-clamp-2">{recipe.description}</p>
                       <div className="mt-2 flex flex-wrap gap-1.5">
-                        <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs text-gray-600">⏱ {recipe.prepTime} min</span>
+                        <span className="rounded-full bg-muted/50 px-2 py-0.5 text-xs text-muted-foreground">⏱ {recipe.prepTime} min</span>
                         {recipe.calories > 0 && <span className="rounded-full bg-orange-50 px-2 py-0.5 text-xs text-orange-700">🔥 {recipe.calories} kcal</span>}
                         <span className={`rounded-full px-2 py-0.5 text-xs font-semibold ${
                           (recipe.difficulty === "Fácil" || recipe.difficulty === "easy") ? "bg-green-100 text-green-700" :
@@ -1240,7 +1240,7 @@ export default function Inventory() {
                 </div>
               ))}
             </div>
-            <div className="shrink-0 border-t border-gray-100 p-4">
+            <div className="shrink-0 border-t border-border/50 p-4">
               <button
                 onClick={async () => {
                   setInventoryRecipes([]);
@@ -1269,23 +1269,23 @@ export default function Inventory() {
 
       {/* ── Import from Shopping List Modal ─────────────────────────────────────────────────────────── */}
       {showImportModal && (        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowImportModal(false)}>
-          <div className="w-full max-w-lg rounded-t-3xl bg-white p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
+          <div className="w-full max-w-lg rounded-t-3xl bg-background p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
             <div className="mb-5 flex items-center justify-between">
               <div>
-                <h3 className="text-lg font-bold text-gray-900">Importar lista de la compra</h3>
-                <p className="text-xs text-gray-500 mt-0.5">Añade los productos comprados directamente al inventario</p>
+                <h3 className="text-lg font-bold text-foreground">Importar lista de la compra</h3>
+                <p className="text-xs text-muted-foreground mt-0.5">Añade los productos comprados directamente al inventario</p>
               </div>
-              <button onClick={() => setShowImportModal(false)} className="rounded-full p-1.5 hover:bg-gray-100">
-                <XMarkIcon className="h-5 w-5 text-gray-500" />
+              <button onClick={() => setShowImportModal(false)} className="rounded-full p-1.5 hover:bg-muted/50">
+                <XMarkIcon className="h-5 w-5 text-muted-foreground" />
               </button>
             </div>
 
             {/* Shopping list selector */}
             <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-1.5">Selecciona una lista de la compra</label>
+              <label className="block text-sm font-medium text-foreground/80 mb-1.5">Selecciona una lista de la compra</label>
               {!shoppingLists || shoppingLists.length === 0 ? (
-                <div className="rounded-2xl border border-dashed border-gray-200 p-6 text-center">
-                  <p className="text-sm text-gray-500">No tienes listas de la compra</p>
+                <div className="rounded-2xl border border-dashed border-border p-6 text-center">
+                  <p className="text-sm text-muted-foreground">No tienes listas de la compra</p>
                   <button onClick={() => { setShowImportModal(false); navigate("/app/shopping"); }}
                     className="mt-2 text-sm font-medium text-violet-600 hover:underline">
                     Crear una lista →
@@ -1300,12 +1300,12 @@ export default function Inventory() {
                       className={`w-full flex items-center justify-between rounded-2xl border p-3 text-left transition-all ${
                         selectedListId === list.id
                           ? "border-violet-500 bg-violet-50 ring-1 ring-violet-300"
-                          : "border-gray-200 bg-white hover:border-gray-300"
+                          : "border-border bg-background hover:border-border"
                       }`}
                     >
                       <div>
-                        <p className="font-medium text-sm text-gray-900">{list.name}</p>
-                        <p className="text-xs text-gray-500 mt-0.5">
+                        <p className="font-medium text-sm text-foreground">{list.name}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5">
                           {list.purchased ?? 0} de {list.total ?? 0} productos comprados
                         </p>
                       </div>
@@ -1324,16 +1324,16 @@ export default function Inventory() {
                 <div
                   onClick={() => setImportOnlyChecked(!importOnlyChecked)}
                   className={`relative h-6 w-11 rounded-full transition-colors ${
-                    importOnlyChecked ? "bg-violet-600" : "bg-gray-200"
+                    importOnlyChecked ? "bg-violet-600" : "bg-muted"
                   }`}
                 >
-                  <span className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-white shadow transition-transform ${
+                  <span className={`absolute top-0.5 left-0.5 h-5 w-5 rounded-full bg-background shadow transition-transform ${
                     importOnlyChecked ? "translate-x-5" : "translate-x-0"
                   }`} />
                 </div>
                 <div>
-                  <p className="text-sm font-medium text-gray-900">Solo productos marcados como comprados</p>
-                  <p className="text-xs text-gray-500">Si está desactivado, importará todos los productos de la lista</p>
+                  <p className="text-sm font-medium text-foreground">Solo productos marcados como comprados</p>
+                  <p className="text-xs text-muted-foreground">Si está desactivado, importará todos los productos de la lista</p>
                 </div>
               </label>
             </div>
@@ -1342,7 +1342,7 @@ export default function Inventory() {
             <div className="flex gap-3">
               <button
                 onClick={() => setShowImportModal(false)}
-                className="flex-1 rounded-2xl border border-gray-200 py-3 text-sm font-semibold text-gray-700 hover:bg-gray-50"
+                className="flex-1 rounded-2xl border border-border py-3 text-sm font-semibold text-foreground/80 hover:bg-muted/30"
               >
                 Cancelar
               </button>

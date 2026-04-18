@@ -161,13 +161,13 @@ function GeneratingScreen({ onTimeout }: { onTimeout: () => void }) {
         <div className="absolute -bottom-1 -right-1 text-2xl animate-bounce">✨</div>
       </div>
 
-      <h2 className="mb-2 text-2xl font-bold text-gray-900">Generando tu menú personalizado</h2>
+      <h2 className="mb-2 text-2xl font-bold text-foreground">Generando tu menú personalizado</h2>
       <p className="mb-2 text-sm text-orange-500 font-semibold min-h-[20px] transition-all">
         {GENERATING_MESSAGES[msgIndex]}
       </p>
-      <p className="mb-8 text-xs text-gray-400">Esto puede tardar hasta 30 segundos</p>
+      <p className="mb-8 text-xs text-muted-foreground/70">Esto puede tardar hasta 30 segundos</p>
 
-      <div className="w-64 h-2 bg-gray-200 rounded-full overflow-hidden mb-6">
+      <div className="w-64 h-2 bg-muted rounded-full overflow-hidden mb-6">
         <div
           className="h-full bg-gradient-to-r from-orange-400 to-orange-500 rounded-full transition-all duration-1000"
           style={{ width: `${Math.min((elapsed / 30) * 100, 95)}%` }}
@@ -187,7 +187,7 @@ function GeneratingScreen({ onTimeout }: { onTimeout: () => void }) {
       {elapsed >= 15 && (
         <button
           onClick={onTimeout}
-          className="mt-8 text-sm text-gray-400 hover:text-gray-600 underline transition-colors"
+          className="mt-8 text-sm text-muted-foreground/70 hover:text-muted-foreground underline transition-colors"
         >
           Ir al dashboard sin esperar →
         </button>
@@ -377,11 +377,11 @@ export default function BuddySetup() {
     return (
       <div className="fixed inset-0 flex flex-col items-center justify-center bg-[#fdf8f3] px-6 text-center">
         <div className="mb-6 text-7xl animate-bounce">🎉</div>
-        <h1 className="mb-3 text-3xl font-extrabold text-gray-900">¡Todo listo!</h1>
+        <h1 className="mb-3 text-3xl font-extrabold text-foreground">¡Todo listo!</h1>
         {data.generateMenu ? (
-          <p className="text-gray-500">Tu primer menú personalizado está siendo preparado.<br />Redirigiendo al Dashboard…</p>
+          <p className="text-muted-foreground">Tu primer menú personalizado está siendo preparado.<br />Redirigiendo al Dashboard…</p>
         ) : (
-          <p className="text-gray-500">Tu perfil ha sido configurado correctamente.<br />Redirigiendo al Dashboard…</p>
+          <p className="text-muted-foreground">Tu perfil ha sido configurado correctamente.<br />Redirigiendo al Dashboard…</p>
         )}
       </div>
     );
@@ -411,21 +411,21 @@ export default function BuddySetup() {
       <div className="flex items-center justify-between px-5 pt-12 pb-4">
         <button
           onClick={goBack}
-          className={`flex h-10 w-10 items-center justify-center rounded-full bg-white shadow-sm text-gray-600 transition-opacity ${step === 1 ? "opacity-0 pointer-events-none" : "opacity-100"}`}
+          className={`flex h-10 w-10 items-center justify-center rounded-full bg-background shadow-sm text-muted-foreground transition-opacity ${step === 1 ? "opacity-0 pointer-events-none" : "opacity-100"}`}
         >
           ←
         </button>
-        <div className="text-sm font-semibold text-gray-400">{step} / {totalSteps}</div>
+        <div className="text-sm font-semibold text-muted-foreground/70">{step} / {totalSteps}</div>
         <button
           onClick={() => setLocation("/app/dashboard")}
-          className="text-sm text-gray-400 hover:text-gray-600"
+          className="text-sm text-muted-foreground/70 hover:text-muted-foreground"
         >
           Omitir
         </button>
       </div>
 
       {/* Barra de progreso */}
-      <div className="mx-5 mb-6 h-1.5 rounded-full bg-gray-200">
+      <div className="mx-5 mb-6 h-1.5 rounded-full bg-muted">
         <div
           className="h-full rounded-full bg-orange-400 transition-all duration-500"
           style={{ width: `${(step / totalSteps) * 100}%` }}
@@ -471,8 +471,8 @@ export default function BuddySetup() {
 function StepGoal({ data, setData }: { data: SetupData; setData: React.Dispatch<React.SetStateAction<SetupData>> }) {
   return (
     <div>
-      <h1 className="mb-1 text-2xl font-extrabold text-gray-900">¿Cuál es tu objetivo?</h1>
-      <p className="mb-6 text-sm text-gray-500">Personalizaremos tu menú y recetas según tu meta.</p>
+      <h1 className="mb-1 text-2xl font-extrabold text-foreground">¿Cuál es tu objetivo?</h1>
+      <p className="mb-6 text-sm text-muted-foreground">Personalizaremos tu menú y recetas según tu meta.</p>
       <div className="space-y-3">
         {GOALS.map((g) => (
           <button
@@ -481,13 +481,13 @@ function StepGoal({ data, setData }: { data: SetupData; setData: React.Dispatch<
             className={`flex w-full items-center gap-4 rounded-2xl border-2 px-4 py-4 text-left transition-all ${
               data.mainGoal === g.id
                 ? "border-orange-400 bg-orange-50 shadow-sm"
-                : "border-gray-100 bg-white hover:border-gray-200"
+                : "border-border/50 bg-background hover:border-border"
             }`}
           >
             <span className="text-3xl">{g.emoji}</span>
             <div>
-              <p className="font-bold text-gray-900">{g.label}</p>
-              <p className="text-xs text-gray-500">{g.desc}</p>
+              <p className="font-bold text-foreground">{g.label}</p>
+              <p className="text-xs text-muted-foreground">{g.desc}</p>
             </div>
             {data.mainGoal === g.id && (
               <span className="ml-auto text-orange-500 text-lg">✓</span>
@@ -505,12 +505,12 @@ function StepPhysical({ data, setData }: { data: SetupData; setData: React.Dispa
 
   return (
     <div>
-      <h1 className="mb-1 text-2xl font-extrabold text-gray-900">Tus datos físicos</h1>
-      <p className="mb-6 text-sm text-gray-500">Calculamos tus calorías reales con la fórmula Mifflin-St Jeor.</p>
+      <h1 className="mb-1 text-2xl font-extrabold text-foreground">Tus datos físicos</h1>
+      <p className="mb-6 text-sm text-muted-foreground">Calculamos tus calorías reales con la fórmula Mifflin-St Jeor.</p>
 
       {/* Sexo */}
       <div className="mb-5">
-        <p className="mb-2 font-bold text-gray-900 text-sm">Sexo biológico</p>
+        <p className="mb-2 font-bold text-foreground text-sm">Sexo biológico</p>
         <div className="grid grid-cols-2 gap-3">
           {[
             { id: "male", emoji: "♂️", label: "Hombre" },
@@ -522,20 +522,20 @@ function StepPhysical({ data, setData }: { data: SetupData; setData: React.Dispa
               className={`flex flex-col items-center gap-2 rounded-2xl border-2 py-4 transition-all ${
                 data.gender === g.id
                   ? "border-orange-400 bg-orange-50"
-                  : "border-gray-100 bg-white"
+                  : "border-border/50 bg-background"
               }`}
             >
               <span className="text-2xl">{g.emoji}</span>
-              <span className="text-sm font-semibold text-gray-700">{g.label}</span>
+              <span className="text-sm font-semibold text-foreground/80">{g.label}</span>
             </button>
           ))}
         </div>
       </div>
 
       {/* Edad */}
-      <div className="mb-5 rounded-2xl bg-white p-4 shadow-sm">
+      <div className="mb-5 rounded-2xl bg-background p-4 shadow-sm">
         <div className="flex items-center justify-between mb-2">
-          <span className="font-bold text-gray-900 text-sm">Edad</span>
+          <span className="font-bold text-foreground text-sm">Edad</span>
           <span className="text-xl font-extrabold text-orange-500">{data.age} años</span>
         </div>
         <input
@@ -543,13 +543,13 @@ function StepPhysical({ data, setData }: { data: SetupData; setData: React.Dispa
           onChange={(e) => setData((d) => ({ ...d, age: Number(e.target.value) }))}
           className="w-full accent-orange-500"
         />
-        <div className="flex justify-between text-xs text-gray-400 mt-1"><span>15</span><span>80</span></div>
+        <div className="flex justify-between text-xs text-muted-foreground/70 mt-1"><span>15</span><span>80</span></div>
       </div>
 
       {/* Altura */}
-      <div className="mb-5 rounded-2xl bg-white p-4 shadow-sm">
+      <div className="mb-5 rounded-2xl bg-background p-4 shadow-sm">
         <div className="flex items-center justify-between mb-2">
-          <span className="font-bold text-gray-900 text-sm">Altura</span>
+          <span className="font-bold text-foreground text-sm">Altura</span>
           <span className="text-xl font-extrabold text-orange-500">{data.heightCm} cm</span>
         </div>
         <input
@@ -557,13 +557,13 @@ function StepPhysical({ data, setData }: { data: SetupData; setData: React.Dispa
           onChange={(e) => setData((d) => ({ ...d, heightCm: Number(e.target.value) }))}
           className="w-full accent-orange-500"
         />
-        <div className="flex justify-between text-xs text-gray-400 mt-1"><span>140 cm</span><span>220 cm</span></div>
+        <div className="flex justify-between text-xs text-muted-foreground/70 mt-1"><span>140 cm</span><span>220 cm</span></div>
       </div>
 
       {/* Peso */}
-      <div className="mb-5 rounded-2xl bg-white p-4 shadow-sm">
+      <div className="mb-5 rounded-2xl bg-background p-4 shadow-sm">
         <div className="flex items-center justify-between mb-2">
-          <span className="font-bold text-gray-900 text-sm">Peso actual</span>
+          <span className="font-bold text-foreground text-sm">Peso actual</span>
           <span className="text-xl font-extrabold text-orange-500">{data.weightKg} kg</span>
         </div>
         <input
@@ -571,12 +571,12 @@ function StepPhysical({ data, setData }: { data: SetupData; setData: React.Dispa
           onChange={(e) => setData((d) => ({ ...d, weightKg: Number(e.target.value) }))}
           className="w-full accent-orange-500"
         />
-        <div className="flex justify-between text-xs text-gray-400 mt-1"><span>40 kg</span><span>180 kg</span></div>
+        <div className="flex justify-between text-xs text-muted-foreground/70 mt-1"><span>40 kg</span><span>180 kg</span></div>
       </div>
 
       {/* Nivel de actividad */}
       <div className="mb-5">
-        <p className="mb-2 font-bold text-gray-900 text-sm">Nivel de actividad física</p>
+        <p className="mb-2 font-bold text-foreground text-sm">Nivel de actividad física</p>
         <div className="space-y-2">
           {ACTIVITY_LEVELS.map((a) => (
             <button
@@ -585,13 +585,13 @@ function StepPhysical({ data, setData }: { data: SetupData; setData: React.Dispa
               className={`flex w-full items-center gap-3 rounded-2xl border-2 px-4 py-3 text-left transition-all ${
                 data.activityLevel === a.id
                   ? "border-orange-400 bg-orange-50"
-                  : "border-gray-100 bg-white"
+                  : "border-border/50 bg-background"
               }`}
             >
               <span className="text-xl">{a.emoji}</span>
               <div className="flex-1">
-                <p className="font-bold text-gray-900 text-sm">{a.label}</p>
-                <p className="text-xs text-gray-500">{a.desc}</p>
+                <p className="font-bold text-foreground text-sm">{a.label}</p>
+                <p className="text-xs text-muted-foreground">{a.desc}</p>
               </div>
               {data.activityLevel === a.id && <span className="text-orange-500">✓</span>}
             </button>
@@ -602,22 +602,22 @@ function StepPhysical({ data, setData }: { data: SetupData; setData: React.Dispa
       {/* Resultado TDEE en tiempo real */}
       {tdee && data.gender && (
         <div className="rounded-2xl bg-gradient-to-r from-orange-50 to-amber-50 border-2 border-orange-200 p-4 mb-4">
-          <p className="text-xs text-gray-500 mb-2 font-semibold uppercase tracking-wide">Tu metabolismo estimado</p>
+          <p className="text-xs text-muted-foreground mb-2 font-semibold uppercase tracking-wide">Tu metabolismo estimado</p>
           <div className="grid grid-cols-3 gap-2 text-center">
             <div>
-              <p className="text-lg font-extrabold text-gray-900">{tdee.tmb}</p>
-              <p className="text-xs text-gray-500">TMB (kcal)</p>
+              <p className="text-lg font-extrabold text-foreground">{tdee.tmb}</p>
+              <p className="text-xs text-muted-foreground">TMB (kcal)</p>
             </div>
             <div>
-              <p className="text-lg font-extrabold text-gray-900">{tdee.tdee}</p>
-              <p className="text-xs text-gray-500">TDEE (kcal)</p>
+              <p className="text-lg font-extrabold text-foreground">{tdee.tdee}</p>
+              <p className="text-xs text-muted-foreground">TDEE (kcal)</p>
             </div>
             <div>
               <p className="text-lg font-extrabold text-orange-500">{tdee.goal}</p>
-              <p className="text-xs text-gray-500">Objetivo (kcal)</p>
+              <p className="text-xs text-muted-foreground">Objetivo (kcal)</p>
             </div>
           </div>
-          <p className="text-xs text-gray-400 mt-2 text-center">
+          <p className="text-xs text-muted-foreground/70 mt-2 text-center">
             {tdee.goal < tdee.tdee
               ? `Déficit de ${tdee.tdee - tdee.goal} kcal/día para tu objetivo`
               : tdee.goal > tdee.tdee
@@ -644,8 +644,8 @@ function StepRestrictions({
 
   return (
     <div>
-      <h1 className="mb-1 text-2xl font-extrabold text-gray-900">¿Tienes restricciones?</h1>
-      <p className="mb-6 text-sm text-gray-500">Selecciona todas las que apliquen. Puedes cambiarlo más tarde.</p>
+      <h1 className="mb-1 text-2xl font-extrabold text-foreground">¿Tienes restricciones?</h1>
+      <p className="mb-6 text-sm text-muted-foreground">Selecciona todas las que apliquen. Puedes cambiarlo más tarde.</p>
       <div className="grid grid-cols-2 gap-3">
         {RESTRICTIONS.map((r) => (
           <button
@@ -654,11 +654,11 @@ function StepRestrictions({
             className={`flex flex-col items-center gap-2 rounded-2xl border-2 py-4 px-2 transition-all ${
               data.restrictions.includes(r.id)
                 ? "border-orange-400 bg-orange-50 shadow-sm"
-                : "border-gray-100 bg-white hover:border-gray-200"
+                : "border-border/50 bg-background hover:border-border"
             }`}
           >
             <span className="text-2xl">{r.emoji}</span>
-            <span className="text-xs font-semibold text-gray-700 text-center">{r.label}</span>
+            <span className="text-xs font-semibold text-foreground/80 text-center">{r.label}</span>
             {data.restrictions.includes(r.id) && (
               <span className="text-orange-500 text-xs">✓</span>
             )}
@@ -670,17 +670,17 @@ function StepRestrictions({
           className={`flex flex-col items-center gap-2 rounded-2xl border-2 py-4 px-2 transition-all col-span-2 ${
             showOtras || (data.customRestrictions && data.customRestrictions.trim().length > 0)
               ? "border-orange-400 bg-orange-50 shadow-sm"
-              : "border-gray-100 bg-white hover:border-gray-200"
+              : "border-border/50 bg-background hover:border-border"
           }`}
         >
           <span className="text-2xl">✍️</span>
-          <span className="text-xs font-semibold text-gray-700 text-center">Otras restricciones</span>
+          <span className="text-xs font-semibold text-foreground/80 text-center">Otras restricciones</span>
         </button>
       </div>
       {/* Campo de texto para restricciones personalizadas */}
       {showOtras && (
         <div className="mt-4">
-          <label className="block text-sm font-semibold text-gray-700 mb-1.5">
+          <label className="block text-sm font-semibold text-foreground/80 mb-1.5">
             Describe tus restricciones o alergias específicas
           </label>
           <textarea
@@ -688,9 +688,9 @@ function StepRestrictions({
             onChange={(e) => setData((d) => ({ ...d, customRestrictions: e.target.value }))}
             placeholder="Ej: alérgico al apio, intolerante al sorbitol, dieta baja en FODMAP, sin sulfitos..."
             rows={3}
-            className="w-full rounded-2xl border-2 border-gray-200 bg-white px-4 py-3 text-sm text-gray-800 placeholder-gray-400 focus:border-orange-400 focus:outline-none resize-none transition-colors"
+            className="w-full rounded-2xl border-2 border-border bg-background px-4 py-3 text-sm text-foreground placeholder-gray-400 focus:border-orange-400 focus:outline-none resize-none transition-colors"
           />
-          <p className="mt-1.5 text-xs text-gray-400">La IA tendrá en cuenta estas restricciones al generar tu menú.</p>
+          <p className="mt-1.5 text-xs text-muted-foreground/70">La IA tendrá en cuenta estas restricciones al generar tu menú.</p>
         </div>
       )}
     </div>
@@ -709,8 +709,8 @@ function StepMealTimes({
 }) {
   return (
     <div>
-      <h1 className="mb-1 text-2xl font-extrabold text-gray-900">¿Cuándo comes?</h1>
-      <p className="mb-6 text-sm text-gray-500">Selecciona las comidas que haces habitualmente.</p>
+      <h1 className="mb-1 text-2xl font-extrabold text-foreground">¿Cuándo comes?</h1>
+      <p className="mb-6 text-sm text-muted-foreground">Selecciona las comidas que haces habitualmente.</p>
 
       <div className="mb-6 grid grid-cols-3 gap-3">
         {MEAL_TIMES.map((m) => (
@@ -720,16 +720,16 @@ function StepMealTimes({
             className={`flex flex-col items-center gap-1.5 rounded-2xl border-2 py-3 px-2 transition-all ${
               data.mealTimes.includes(m.id)
                 ? "border-orange-400 bg-orange-50"
-                : "border-gray-100 bg-white"
+                : "border-border/50 bg-background"
             }`}
           >
             <span className="text-2xl">{m.emoji}</span>
-            <span className="text-xs font-semibold text-gray-700 text-center">{m.label}</span>
+            <span className="text-xs font-semibold text-foreground/80 text-center">{m.label}</span>
           </button>
         ))}
       </div>
 
-      <h2 className="mb-3 font-bold text-gray-900">Tiempo disponible para cocinar</h2>
+      <h2 className="mb-3 font-bold text-foreground">Tiempo disponible para cocinar</h2>
       <div className="grid grid-cols-2 gap-3">
         {PREP_TIMES.map((p) => (
           <button
@@ -738,11 +738,11 @@ function StepMealTimes({
             className={`rounded-2xl border-2 py-3 px-3 text-left transition-all ${
               data.mealPrepTime === p.id
                 ? "border-orange-400 bg-orange-50"
-                : "border-gray-100 bg-white"
+                : "border-border/50 bg-background"
             }`}
           >
-            <p className="font-bold text-gray-900 text-sm">{p.label}</p>
-            <p className="text-xs text-gray-500">{p.desc}</p>
+            <p className="font-bold text-foreground text-sm">{p.label}</p>
+            <p className="text-xs text-muted-foreground">{p.desc}</p>
           </button>
         ))}
       </div>
@@ -754,12 +754,12 @@ function StepMealTimes({
 function StepBudget({ data, setData }: { data: SetupData; setData: React.Dispatch<React.SetStateAction<SetupData>> }) {
   return (
     <div>
-      <h1 className="mb-1 text-2xl font-extrabold text-gray-900">Presupuesto y nivel</h1>
-      <p className="mb-6 text-sm text-gray-500">Ajustaremos las recetas a tu bolsillo y habilidades.</p>
+      <h1 className="mb-1 text-2xl font-extrabold text-foreground">Presupuesto y nivel</h1>
+      <p className="mb-6 text-sm text-muted-foreground">Ajustaremos las recetas a tu bolsillo y habilidades.</p>
 
-      <div className="mb-6 rounded-2xl bg-white p-5 shadow-sm">
+      <div className="mb-6 rounded-2xl bg-background p-5 shadow-sm">
         <div className="mb-3 flex items-center justify-between">
-          <span className="font-bold text-gray-900">Presupuesto semanal</span>
+          <span className="font-bold text-foreground">Presupuesto semanal</span>
           <span className="text-xl font-extrabold text-orange-500">{data.budgetPerWeek}€</span>
         </div>
         <input
@@ -767,10 +767,10 @@ function StepBudget({ data, setData }: { data: SetupData; setData: React.Dispatc
           onChange={(e) => setData((d) => ({ ...d, budgetPerWeek: Number(e.target.value) }))}
           className="w-full accent-orange-500"
         />
-        <div className="mt-1 flex justify-between text-xs text-gray-400">
+        <div className="mt-1 flex justify-between text-xs text-muted-foreground/70">
           <span>20€</span><span>200€</span>
         </div>
-        <p className="mt-2 text-xs text-gray-500">
+        <p className="mt-2 text-xs text-muted-foreground">
           {data.budgetPerWeek < 40
             ? "🟡 Recetas económicas y de temporada"
             : data.budgetPerWeek < 100
@@ -779,7 +779,7 @@ function StepBudget({ data, setData }: { data: SetupData; setData: React.Dispatc
         </p>
       </div>
 
-      <h2 className="mb-3 font-bold text-gray-900">Nivel de cocina</h2>
+      <h2 className="mb-3 font-bold text-foreground">Nivel de cocina</h2>
       <div className="space-y-3">
         {COOKING_LEVELS.map((c) => (
           <button
@@ -788,13 +788,13 @@ function StepBudget({ data, setData }: { data: SetupData; setData: React.Dispatc
             className={`flex w-full items-center gap-4 rounded-2xl border-2 px-4 py-3 text-left transition-all ${
               data.cookingLevel === c.id
                 ? "border-orange-400 bg-orange-50"
-                : "border-gray-100 bg-white"
+                : "border-border/50 bg-background"
             }`}
           >
             <span className="text-2xl">{c.emoji}</span>
             <div>
-              <p className="font-bold text-gray-900 text-sm">{c.label}</p>
-              <p className="text-xs text-gray-500">{c.desc}</p>
+              <p className="font-bold text-foreground text-sm">{c.label}</p>
+              <p className="text-xs text-muted-foreground">{c.desc}</p>
             </div>
             {data.cookingLevel === c.id && <span className="ml-auto text-orange-500">✓</span>}
           </button>
@@ -812,8 +812,8 @@ function StepConfirm({ data, setData }: { data: SetupData; setData: React.Dispat
 
   return (
     <div>
-      <h1 className="mb-1 text-2xl font-extrabold text-gray-900">¡Casi listo!</h1>
-      <p className="mb-6 text-sm text-gray-500">Revisa tu configuración antes de empezar.</p>
+      <h1 className="mb-1 text-2xl font-extrabold text-foreground">¡Casi listo!</h1>
+      <p className="mb-6 text-sm text-muted-foreground">Revisa tu configuración antes de empezar.</p>
 
       <div className="space-y-3">
         <SummaryRow emoji={goalEmoji} label="Objetivo" value={goalLabel} />
@@ -857,15 +857,15 @@ function StepConfirm({ data, setData }: { data: SetupData; setData: React.Dispat
       </div>
 
       {/* Código de referido */}
-      <div className="mt-4 rounded-2xl bg-gray-50 border border-gray-200 px-4 py-3">
-        <p className="text-xs font-semibold text-gray-500 mb-1.5">¿Tienes un código de un amigo? (opcional)</p>
+      <div className="mt-4 rounded-2xl bg-muted/30 border border-border px-4 py-3">
+        <p className="text-xs font-semibold text-muted-foreground mb-1.5">¿Tienes un código de un amigo? (opcional)</p>
         <input
           type="text"
           value={data.referralCode}
           onChange={e => setData(d => ({ ...d, referralCode: e.target.value.toUpperCase() }))}
           placeholder="Ej: BUDDY123"
           maxLength={8}
-          className="w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-center text-base font-bold tracking-widest uppercase outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400"
+          className="w-full rounded-xl border border-border bg-background px-3 py-2 text-center text-base font-bold tracking-widest uppercase outline-none focus:border-orange-400 focus:ring-1 focus:ring-orange-400"
         />
         {data.referralCode.length >= 4 && (
           <p className="mt-1 text-xs text-green-600 text-center">✓ Código aplicado al finalizar</p>
@@ -875,15 +875,15 @@ function StepConfirm({ data, setData }: { data: SetupData; setData: React.Dispat
       {/* Toggle generar menú */}
       <div className="mt-4 flex items-center justify-between rounded-2xl bg-orange-50 border-2 border-orange-200 px-4 py-4">
         <div>
-          <p className="font-bold text-gray-900">✨ Generar mi primer menú</p>
-          <p className="text-xs text-gray-500">La IA creará un menú personalizado para esta semana</p>
+          <p className="font-bold text-foreground">✨ Generar mi primer menú</p>
+          <p className="text-xs text-muted-foreground">La IA creará un menú personalizado para esta semana</p>
         </div>
         <button
           onClick={() => setData((d) => ({ ...d, generateMenu: !d.generateMenu }))}
           className={`relative h-7 w-12 rounded-full transition-colors ${data.generateMenu ? "bg-orange-500" : "bg-gray-300"}`}
         >
           <span
-            className={`absolute top-1 h-5 w-5 rounded-full bg-white shadow transition-transform ${data.generateMenu ? "translate-x-6" : "translate-x-1"}`}
+            className={`absolute top-1 h-5 w-5 rounded-full bg-background shadow transition-transform ${data.generateMenu ? "translate-x-6" : "translate-x-1"}`}
           />
         </button>
       </div>
@@ -893,11 +893,11 @@ function StepConfirm({ data, setData }: { data: SetupData; setData: React.Dispat
 
 function SummaryRow({ emoji, label, value }: { emoji: string; label: string; value: string }) {
   return (
-    <div className="flex items-start gap-3 rounded-2xl bg-white px-4 py-3 shadow-sm">
+    <div className="flex items-start gap-3 rounded-2xl bg-background px-4 py-3 shadow-sm">
       <span className="text-xl">{emoji}</span>
       <div className="min-w-0">
-        <p className="text-xs text-gray-400">{label}</p>
-        <p className="font-semibold text-gray-900 text-sm leading-snug">{value}</p>
+        <p className="text-xs text-muted-foreground/70">{label}</p>
+        <p className="font-semibold text-foreground text-sm leading-snug">{value}</p>
       </div>
     </div>
   );

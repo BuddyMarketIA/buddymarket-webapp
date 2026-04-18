@@ -134,7 +134,7 @@ function PlatformCard({
           {/* Platform icon */}
           <div
             className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl flex-shrink-0 ${
-              enabled ? "bg-white shadow-sm" : "bg-muted"
+              enabled ? "bg-background shadow-sm" : "bg-muted"
             }`}
           >
             {icon}

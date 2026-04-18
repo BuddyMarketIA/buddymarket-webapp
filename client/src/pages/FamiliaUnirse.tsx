@@ -72,7 +72,7 @@ export default function FamiliaUnirse() {
       <div className="w-full max-w-md bg-card border rounded-2xl shadow-lg overflow-hidden">
         {/* Header */}
         <div className="bg-gradient-to-br from-orange-500 to-orange-600 p-8 text-center text-white">
-          <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center mx-auto mb-4">
+          <div className="w-16 h-16 rounded-full bg-background/20 flex items-center justify-center mx-auto mb-4">
             <Home className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold">Invitación al hogar</h1>

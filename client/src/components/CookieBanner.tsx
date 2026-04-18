@@ -153,7 +153,7 @@ export default function CookieBanner() {
 
   return (
     <div className="fixed bottom-0 left-0 right-0 z-[9999] p-4 md:p-6 animate-in slide-in-from-bottom duration-500">
-      <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-2xl border border-orange-100 overflow-hidden">
+      <div className="max-w-4xl mx-auto bg-background rounded-2xl shadow-2xl border border-orange-100 overflow-hidden">
         {/* Main banner */}
         <div className="p-5 md:p-6">
           <div className="flex items-start gap-4">
@@ -164,31 +164,31 @@ export default function CookieBanner() {
 
             {/* Content */}
             <div className="flex-1 min-w-0">
-              <h3 className="font-bold text-gray-900 text-base mb-1">{tx.title}</h3>
-              <p className="text-sm text-gray-600 leading-relaxed">{tx.desc}</p>
+              <h3 className="font-bold text-foreground text-base mb-1">{tx.title}</h3>
+              <p className="text-sm text-muted-foreground leading-relaxed">{tx.desc}</p>
 
               {/* Cookie details (expandable) */}
               {showDetails && (
-                <div className="mt-4 space-y-3 border-t border-gray-100 pt-4">
+                <div className="mt-4 space-y-3 border-t border-border/50 pt-4">
                   {/* Necessary */}
-                  <div className="flex items-start justify-between gap-3 p-3 rounded-xl bg-gray-50">
+                  <div className="flex items-start justify-between gap-3 p-3 rounded-xl bg-muted/30">
                     <div className="flex items-start gap-3">
                       <Shield className="w-4 h-4 text-green-500 mt-0.5 flex-shrink-0" />
                       <div>
-                        <p className="text-sm font-semibold text-gray-900">{tx.necessary}</p>
-                        <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{tx.necessaryDesc}</p>
+                        <p className="text-sm font-semibold text-foreground">{tx.necessary}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{tx.necessaryDesc}</p>
                       </div>
                     </div>
                     <span className="text-xs text-green-600 font-medium whitespace-nowrap mt-0.5">{tx.alwaysOn}</span>
                   </div>
 
                   {/* Analytics */}
-                  <div className="flex items-start justify-between gap-3 p-3 rounded-xl bg-gray-50">
+                  <div className="flex items-start justify-between gap-3 p-3 rounded-xl bg-muted/30">
                     <div className="flex items-start gap-3">
                       <BarChart3 className="w-4 h-4 text-blue-500 mt-0.5 flex-shrink-0" />
                       <div>
-                        <p className="text-sm font-semibold text-gray-900">{tx.analytics}</p>
-                        <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{tx.analyticsDesc}</p>
+                        <p className="text-sm font-semibold text-foreground">{tx.analytics}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{tx.analyticsDesc}</p>
                       </div>
                     </div>
                     <Switch
@@ -199,12 +199,12 @@ export default function CookieBanner() {
                   </div>
 
                   {/* Marketing */}
-                  <div className="flex items-start justify-between gap-3 p-3 rounded-xl bg-gray-50">
+                  <div className="flex items-start justify-between gap-3 p-3 rounded-xl bg-muted/30">
                     <div className="flex items-start gap-3">
                       <Megaphone className="w-4 h-4 text-orange-500 mt-0.5 flex-shrink-0" />
                       <div>
-                        <p className="text-sm font-semibold text-gray-900">{tx.marketing}</p>
-                        <p className="text-xs text-gray-500 mt-0.5 leading-relaxed">{tx.marketingDesc}</p>
+                        <p className="text-sm font-semibold text-foreground">{tx.marketing}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{tx.marketingDesc}</p>
                       </div>
                     </div>
                     <Switch
@@ -229,7 +229,7 @@ export default function CookieBanner() {
             <Button
               onClick={handleRejectAll}
               variant="outline"
-              className="border-gray-200 text-gray-700 hover:bg-gray-50 font-medium rounded-xl px-5 py-2 text-sm flex-1 md:flex-none"
+              className="border-border text-foreground/80 hover:bg-muted/30 font-medium rounded-xl px-5 py-2 text-sm flex-1 md:flex-none"
             >
               {tx.rejectAll}
             </Button>
@@ -244,7 +244,7 @@ export default function CookieBanner() {
             ) : (
               <button
                 onClick={() => setShowDetails(true)}
-                className="flex items-center gap-1 text-sm text-gray-500 hover:text-orange-500 transition-colors px-2 py-2"
+                className="flex items-center gap-1 text-sm text-muted-foreground hover:text-orange-500 transition-colors px-2 py-2"
               >
                 {tx.customize}
                 <ChevronDown className="w-3.5 h-3.5" />
@@ -253,14 +253,14 @@ export default function CookieBanner() {
             {showDetails && (
               <button
                 onClick={() => setShowDetails(false)}
-                className="flex items-center gap-1 text-sm text-gray-400 hover:text-gray-600 transition-colors px-2 py-2"
+                className="flex items-center gap-1 text-sm text-muted-foreground/70 hover:text-muted-foreground transition-colors px-2 py-2"
               >
                 <ChevronUp className="w-3.5 h-3.5" />
               </button>
             )}
             <a
               href="/cookies"
-              className="text-xs text-gray-400 hover:text-orange-500 transition-colors ml-auto"
+              className="text-xs text-muted-foreground/70 hover:text-orange-500 transition-colors ml-auto"
             >
               {tx.learnMore}
             </a>

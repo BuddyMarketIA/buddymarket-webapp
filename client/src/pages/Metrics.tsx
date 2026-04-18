@@ -158,7 +158,7 @@ export default function Metrics() {
   function trend(curr?: number | null, prev?: number | null) {
     if (!curr || !prev) return null;
     const diff = curr - prev;
-    if (Math.abs(diff) < 0.1) return <Minus className="w-4 h-4 text-gray-400" />;
+    if (Math.abs(diff) < 0.1) return <Minus className="w-4 h-4 text-muted-foreground/70" />;
     if (diff < 0) return <TrendingDown className="w-4 h-4 text-green-500" />;
     return <TrendingUp className="w-4 h-4 text-red-400" />;
   }
@@ -175,15 +175,15 @@ export default function Metrics() {
     <div className="max-w-lg mx-auto px-4 py-8 pb-24">
       <div className="text-center mb-6">
         <Scale className="w-12 h-12 mx-auto mb-3 text-orange-400" />
-        <h1 className="text-2xl font-black text-gray-900 mb-1">Métricas Corporales</h1>
-        <p className="text-gray-500 text-sm">Registra tu peso, grasa corporal y evolución</p>
+        <h1 className="text-2xl font-black text-foreground mb-1">Métricas Corporales</h1>
+        <p className="text-muted-foreground text-sm">Registra tu peso, grasa corporal y evolución</p>
       </div>
       <div className="blur-sm pointer-events-none select-none opacity-50 mb-4">
         <div className="grid grid-cols-2 gap-3 mb-4">
           {["Peso", "Grasa corporal", "Masa muscular", "Cintura"].map(m => (
-            <div key={m} className="bg-white rounded-2xl p-4 border border-gray-100">
-              <div className="h-3 bg-gray-200 rounded-full mb-2 w-2/3" />
-              <div className="h-6 bg-gray-100 rounded-full w-1/2" />
+            <div key={m} className="bg-background rounded-2xl p-4 border border-border/50">
+              <div className="h-3 bg-muted rounded-full mb-2 w-2/3" />
+              <div className="h-6 bg-muted/50 rounded-full w-1/2" />
             </div>
           ))}
         </div>
@@ -597,15 +597,15 @@ function TDEECalculator({ profileData, latestWeight }: { profileData?: any; late
                 <p className="text-sm opacity-80 mt-1">kcal/día • {GOAL_ADJUSTMENTS[goal]?.label}</p>
               </div>
               <div className="mt-4 grid grid-cols-3 gap-3 text-center">
-                <div className="bg-white/20 rounded-xl p-2">
+                <div className="bg-background/20 rounded-xl p-2">
                   <p className="text-xs opacity-80">BMR basal</p>
                   <p className="font-bold text-sm">{Math.round(bmr!)} kcal</p>
                 </div>
-                <div className="bg-white/20 rounded-xl p-2">
+                <div className="bg-background/20 rounded-xl p-2">
                   <p className="text-xs opacity-80">TDEE total</p>
                   <p className="font-bold text-sm">{tdee} kcal</p>
                 </div>
-                <div className="bg-white/20 rounded-xl p-2">
+                <div className="bg-background/20 rounded-xl p-2">
                   <p className="text-xs opacity-80">Ajuste</p>
                   <p className="font-bold text-sm">{GOAL_ADJUSTMENTS[goal]?.kcal > 0 ? "+" : ""}{GOAL_ADJUSTMENTS[goal]?.kcal} kcal</p>
                 </div>

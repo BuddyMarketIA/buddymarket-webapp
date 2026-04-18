@@ -8,7 +8,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Trophy, Star, Lock, Medal, Users, Sparkles } from "lucide-react";
 
 const RARITY_CONFIG = {
-  common: { label: "Común", color: "bg-gray-100 text-gray-700 border-gray-200", glow: "" },
+  common: { label: "Común", color: "bg-muted/50 text-foreground/80 border-border", glow: "" },
   rare: { label: "Raro", color: "bg-blue-100 text-blue-700 border-blue-200", glow: "shadow-blue-100" },
   epic: { label: "Épico", color: "bg-purple-100 text-purple-700 border-purple-200", glow: "shadow-purple-100" },
   legendary: { label: "Legendario", color: "bg-amber-100 text-amber-700 border-amber-200", glow: "shadow-amber-200" },
@@ -31,8 +31,8 @@ function BadgeCard({ badge }: { badge: any }) {
     <div
       className={`relative rounded-2xl border-2 p-4 transition-all duration-200 ${
         earned
-          ? `bg-white ${rarity.glow} shadow-md border-opacity-60 ${rarity.color.replace("bg-", "border-").replace(" text-gray-700", "").replace(" text-blue-700", "").replace(" text-purple-700", "").replace(" text-amber-700", "")}`
-          : "bg-gray-50 border-gray-100 opacity-60 grayscale"
+          ? `bg-background ${rarity.glow} shadow-md border-opacity-60 ${rarity.color.replace("bg-", "border-").replace(" text-foreground/80", "").replace(" text-blue-700", "").replace(" text-purple-700", "").replace(" text-amber-700", "")}`
+          : "bg-muted/30 border-border/50 opacity-60 grayscale"
       }`}
     >
       {/* Rarity badge */}
@@ -48,29 +48,29 @@ function BadgeCard({ badge }: { badge: any }) {
       </div>
 
       {/* Name */}
-      <h3 className={`font-bold text-sm mb-1 ${earned ? "text-gray-900" : "text-gray-400"}`}>
+      <h3 className={`font-bold text-sm mb-1 ${earned ? "text-foreground" : "text-muted-foreground/70"}`}>
         {badge.nameEs}
       </h3>
 
       {/* Description */}
-      <p className={`text-xs leading-relaxed mb-3 ${earned ? "text-gray-600" : "text-gray-400"}`}>
+      <p className={`text-xs leading-relaxed mb-3 ${earned ? "text-muted-foreground" : "text-muted-foreground/70"}`}>
         {badge.descriptionEs}
       </p>
 
       {/* Footer */}
       <div className="flex items-center justify-between">
-        <span className={`text-xs ${category?.color ?? "text-gray-500"}`}>
+        <span className={`text-xs ${category?.color ?? "text-muted-foreground"}`}>
           {category?.icon} {category?.label}
         </span>
-        <span className={`text-xs font-bold ${earned ? "text-amber-600" : "text-gray-400"}`}>
+        <span className={`text-xs font-bold ${earned ? "text-amber-600" : "text-muted-foreground/70"}`}>
           +{badge.points} pts
         </span>
       </div>
 
       {/* Earned date */}
       {earned && badge.earnedAt && (
-        <div className="mt-2 pt-2 border-t border-gray-100">
-          <p className="text-xs text-gray-400">
+        <div className="mt-2 pt-2 border-t border-border/50">
+          <p className="text-xs text-muted-foreground/70">
             Conseguida el {new Date(badge.earnedAt).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}
           </p>
         </div>
@@ -104,9 +104,9 @@ export default function BadgesPage() {
       <div className="text-center space-y-2">
         <div className="flex items-center justify-center gap-2 mb-2">
           <Trophy className="w-8 h-8 text-amber-500" />
-          <h1 className="text-3xl font-bold text-gray-900">Mis Insignias</h1>
+          <h1 className="text-3xl font-bold text-foreground">Mis Insignias</h1>
         </div>
-        <p className="text-gray-500 max-w-lg mx-auto">
+        <p className="text-muted-foreground max-w-lg mx-auto">
           Gana insignias completando acciones en BuddyMarket. Cada insignia refleja tu compromiso con una alimentación más inteligente y personalizada.
         </p>
       </div>
@@ -116,19 +116,19 @@ export default function BadgesPage() {
         <Card className="text-center">
           <CardContent className="pt-6">
             <div className="text-4xl font-bold text-amber-500">{myBadges?.totalBadges ?? 0}</div>
-            <div className="text-sm text-gray-500 mt-1">Insignias ganadas</div>
+            <div className="text-sm text-muted-foreground mt-1">Insignias ganadas</div>
           </CardContent>
         </Card>
         <Card className="text-center">
           <CardContent className="pt-6">
             <div className="text-4xl font-bold text-violet-600">{myBadges?.totalPoints ?? 0}</div>
-            <div className="text-sm text-gray-500 mt-1">Puntos totales</div>
+            <div className="text-sm text-muted-foreground mt-1">Puntos totales</div>
           </CardContent>
         </Card>
         <Card className="text-center">
           <CardContent className="pt-6">
             <div className="text-4xl font-bold text-emerald-600">{progressPct}%</div>
-            <div className="text-sm text-gray-500 mt-1">Colección completada</div>
+            <div className="text-sm text-muted-foreground mt-1">Colección completada</div>
             <Progress value={progressPct} className="mt-2 h-2" />
           </CardContent>
         </Card>
@@ -153,7 +153,7 @@ export default function BadgesPage() {
           {loadingCatalog ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {Array.from({ length: 12 }).map((_, i) => (
-                <div key={i} className="h-48 bg-gray-100 rounded-2xl animate-pulse" />
+                <div key={i} className="h-48 bg-muted/50 rounded-2xl animate-pulse" />
               ))}
             </div>
           ) : (
@@ -166,7 +166,7 @@ export default function BadgesPage() {
                   <div className="flex items-center gap-2 mb-4">
                     <span className="text-2xl">{catConfig.icon}</span>
                     <h2 className={`text-lg font-bold ${catConfig.color}`}>{catConfig.label}</h2>
-                    <span className="text-sm text-gray-400 ml-auto">{earnedInCat}/{catBadges.length}</span>
+                    <span className="text-sm text-muted-foreground/70 ml-auto">{earnedInCat}/{catBadges.length}</span>
                   </div>
                   <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
                     {catBadges.map((badge: any) => (
@@ -184,11 +184,11 @@ export default function BadgesPage() {
           {loadingMine ? (
             <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-4">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="h-48 bg-gray-100 rounded-2xl animate-pulse" />
+                <div key={i} className="h-48 bg-muted/50 rounded-2xl animate-pulse" />
               ))}
             </div>
           ) : myBadges?.badges.length === 0 ? (
-            <div className="text-center py-16 text-gray-400">
+            <div className="text-center py-16 text-muted-foreground/70">
               <Trophy className="w-12 h-12 mx-auto mb-4 opacity-30" />
               <p className="text-lg font-medium">Aún no tienes insignias</p>
               <p className="text-sm mt-1">Adapta tu primera receta con IA para ganar tu primera insignia</p>
@@ -215,11 +215,11 @@ export default function BadgesPage() {
               {loadingLeaderboard ? (
                 <div className="space-y-3">
                   {Array.from({ length: 5 }).map((_, i) => (
-                    <div key={i} className="h-12 bg-gray-100 rounded-lg animate-pulse" />
+                    <div key={i} className="h-12 bg-muted/50 rounded-lg animate-pulse" />
                   ))}
                 </div>
               ) : leaderboard?.length === 0 ? (
-                <p className="text-center text-gray-400 py-8">Aún no hay usuarios en el ranking</p>
+                <p className="text-center text-muted-foreground/70 py-8">Aún no hay usuarios en el ranking</p>
               ) : (
                 <div className="space-y-3">
                   {leaderboard?.map((entry: any, index: number) => (
@@ -227,9 +227,9 @@ export default function BadgesPage() {
                       key={entry.userId}
                       className={`flex items-center gap-4 p-3 rounded-xl ${
                         index === 0 ? "bg-amber-50 border border-amber-200" :
-                        index === 1 ? "bg-gray-50 border border-gray-200" :
+                        index === 1 ? "bg-muted/30 border border-border" :
                         index === 2 ? "bg-orange-50 border border-orange-200" :
-                        "bg-white border border-gray-100"
+                        "bg-background border border-border/50"
                       }`}
                     >
                       {/* Position */}
@@ -237,7 +237,7 @@ export default function BadgesPage() {
                         index === 0 ? "bg-amber-400 text-white" :
                         index === 1 ? "bg-gray-400 text-white" :
                         index === 2 ? "bg-orange-400 text-white" :
-                        "bg-gray-100 text-gray-600"
+                        "bg-muted/50 text-muted-foreground"
                       }`}>
                         {index + 1}
                       </div>
@@ -250,14 +250,14 @@ export default function BadgesPage() {
 
                       {/* Name */}
                       <div className="flex-1 min-w-0">
-                        <p className="font-semibold text-gray-900 truncate">{entry.userName ?? "Usuario"}</p>
-                        <p className="text-xs text-gray-500">{entry.badgeCount} insignias</p>
+                        <p className="font-semibold text-foreground truncate">{entry.userName ?? "Usuario"}</p>
+                        <p className="text-xs text-muted-foreground">{entry.badgeCount} insignias</p>
                       </div>
 
                       {/* Points */}
                       <div className="text-right">
                         <p className="font-bold text-amber-600">{entry.totalPoints}</p>
-                        <p className="text-xs text-gray-400">puntos</p>
+                        <p className="text-xs text-muted-foreground/70">puntos</p>
                       </div>
                     </div>
                   ))}

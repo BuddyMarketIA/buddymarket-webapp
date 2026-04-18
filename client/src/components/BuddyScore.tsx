@@ -22,7 +22,7 @@ const LEVEL_COLORS = [
 ];
 
 const LEVEL_BG = [
-  "bg-gray-50 border-gray-200",
+  "bg-muted/30 border-border",
   "bg-green-50 border-green-200",
   "bg-blue-50 border-blue-200",
   "bg-orange-50 border-orange-200",
@@ -272,7 +272,7 @@ function BuddyScoreDetailDialog({
                 { action: "Guardar en favoritos", weight: "Señal alta", color: "text-green-500" },
                 { action: "Dar like a una receta", weight: "Señal alta", color: "text-green-500" },
                 { action: "Ver una receta más de 30 segundos", weight: "Señal media", color: "text-blue-500" },
-                { action: "Ver una receta brevemente", weight: "Señal baja", color: "text-gray-400" },
+                { action: "Ver una receta brevemente", weight: "Señal baja", color: "text-muted-foreground/70" },
                 { action: "Saltar una recomendación", weight: "Señal negativa", color: "text-orange-500" },
                 { action: "Dar dislike a una receta", weight: "Señal negativa alta", color: "text-red-500" },
               ].map((item) => (

@@ -257,7 +257,7 @@ export default function BuddyMakerDashboard() {
       <AppLayout>
         <div className="flex flex-col items-center justify-center min-h-screen gap-4 p-8 text-center">
           <div className="text-5xl">🔒</div>
-          <h2 className="text-xl font-bold text-gray-800">Inicia sesión para acceder a tu panel de creador</h2>
+          <h2 className="text-xl font-bold text-foreground">Inicia sesión para acceder a tu panel de creador</h2>
         </div>
       </AppLayout>
     );
@@ -295,8 +295,8 @@ export default function BuddyMakerDashboard() {
             👨‍🍳
           </div>
           <div className="flex-1">
-            <h1 className="text-xl font-black text-gray-900">Panel BuddyMaker</h1>
-            <p className="text-xs text-gray-500">Gestiona tu perfil y tus recetas</p>
+            <h1 className="text-xl font-black text-foreground">Panel BuddyMaker</h1>
+            <p className="text-xs text-muted-foreground">Gestiona tu perfil y tus recetas</p>
           </div>
           <div className="flex gap-2">
             <a href="/app/maker-analytics" className="flex items-center gap-1.5 rounded-xl bg-orange-50 px-3 py-1.5 text-sm font-semibold text-[#FF6B35] hover:bg-orange-100 transition-colors">
@@ -381,12 +381,12 @@ export default function BuddyMakerDashboard() {
           </a>
         </div>
         {/* Tabs */}
-        <div className="flex gap-2 mb-6 bg-gray-100 rounded-2xl p-1">
+        <div className="flex gap-2 mb-6 bg-muted/50 rounded-2xl p-1">
           {(["/app/profile", "/app/recipes"] as Tab[]).map((tab) => (
             <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === tab ? "bg-white text-green-600 shadow-sm" : "text-gray-500"}`}
+              className={`flex-1 py-2.5 rounded-xl text-sm font-bold transition-all ${activeTab === tab ? "bg-background text-green-600 shadow-sm" : "text-muted-foreground"}`}
             >
               {tab === "/app/profile" ? "👤 Mi Perfil" : "🍽️ Mis Recetas"}
             </button>
@@ -395,8 +395,8 @@ export default function BuddyMakerDashboard() {
 
         {/* Profile Tab */}
         {activeTab === "/app/profile" && (
-          <form onSubmit={handleSaveProfile} className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-4">
-            <h2 className="text-base font-black text-gray-900 mb-2">
+          <form onSubmit={handleSaveProfile} className="bg-background rounded-3xl p-6 shadow-sm border border-border/50 space-y-4">
+            <h2 className="text-base font-black text-foreground mb-2">
               {myProfile ? "Editar perfil de creador" : "Crear perfil de creador"}
             </h2>
             {!myProfile && (
@@ -406,80 +406,80 @@ export default function BuddyMakerDashboard() {
             )}
             <div className="grid grid-cols-1 gap-4">
               <div>
-                <label className="text-xs font-bold text-gray-600 mb-1 block">Nombre público *</label>
+                <label className="text-xs font-bold text-muted-foreground mb-1 block">Nombre público *</label>
                 <input
                   required
                   value={profileForm.displayName}
                   onChange={(e) => setProfileForm((p) => ({ ...p, displayName: e.target.value }))}
                   placeholder="Ej: Carlos Cocina Sana"
-                  className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+                  className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
                 />
               </div>
               <div>
-                <label className="text-xs font-bold text-gray-600 mb-1 block">Especialidad culinaria</label>
+                <label className="text-xs font-bold text-muted-foreground mb-1 block">Especialidad culinaria</label>
                 <input
                   value={profileForm.specialty}
                   onChange={(e) => setProfileForm((p) => ({ ...p, specialty: e.target.value }))}
                   placeholder="Ej: Cocina mediterránea, Repostería saludable..."
-                  className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+                  className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
                 />
               </div>
               <div>
-                <label className="text-xs font-bold text-gray-600 mb-1 block">Bio / Presentación</label>
+                <label className="text-xs font-bold text-muted-foreground mb-1 block">Bio / Presentación</label>
                 <textarea
                   value={profileForm.bio}
                   onChange={(e) => setProfileForm((p) => ({ ...p, bio: e.target.value }))}
                   placeholder="Cuéntanos tu historia y qué tipo de recetas compartes..."
                   rows={3}
-                  className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-400 resize-none"
+                  className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-400 resize-none"
                 />
               </div>
               <div>
-                <label className="text-xs font-bold text-gray-600 mb-1 block">URL foto de perfil</label>
+                <label className="text-xs font-bold text-muted-foreground mb-1 block">URL foto de perfil</label>
                 <input
                   value={profileForm.avatarUrl}
                   onChange={(e) => setProfileForm((p) => ({ ...p, avatarUrl: e.target.value }))}
                   placeholder="https://..."
                   type="url"
-                  className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+                  className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
                 />
               </div>
               <div>
-                <label className="text-xs font-bold text-gray-600 mb-1 block">URL imagen de portada</label>
+                <label className="text-xs font-bold text-muted-foreground mb-1 block">URL imagen de portada</label>
                 <input
                   value={profileForm.coverUrl}
                   onChange={(e) => setProfileForm((p) => ({ ...p, coverUrl: e.target.value }))}
                   placeholder="https://..."
                   type="url"
-                  className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+                  className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
                 />
               </div>
               <div className="grid grid-cols-3 gap-3">
                 <div>
-                  <label className="text-xs font-bold text-gray-600 mb-1 block">Instagram</label>
+                  <label className="text-xs font-bold text-muted-foreground mb-1 block">Instagram</label>
                   <input
                     value={profileForm.instagramHandle}
                     onChange={(e) => setProfileForm((p) => ({ ...p, instagramHandle: e.target.value }))}
                     placeholder="@usuario"
-                    className="w-full rounded-xl border border-gray-200 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+                    className="w-full rounded-xl border border-border px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-gray-600 mb-1 block">YouTube</label>
+                  <label className="text-xs font-bold text-muted-foreground mb-1 block">YouTube</label>
                   <input
                     value={profileForm.youtubeHandle}
                     onChange={(e) => setProfileForm((p) => ({ ...p, youtubeHandle: e.target.value }))}
                     placeholder="@canal"
-                    className="w-full rounded-xl border border-gray-200 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+                    className="w-full rounded-xl border border-border px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-gray-600 mb-1 block">TikTok</label>
+                  <label className="text-xs font-bold text-muted-foreground mb-1 block">TikTok</label>
                   <input
                     value={profileForm.tiktokHandle}
                     onChange={(e) => setProfileForm((p) => ({ ...p, tiktokHandle: e.target.value }))}
                     placeholder="@usuario"
-                    className="w-full rounded-xl border border-gray-200 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+                    className="w-full rounded-xl border border-border px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
                   />
                 </div>
               </div>
@@ -515,7 +515,7 @@ export default function BuddyMakerDashboard() {
                   + Publicar nueva receta
                 </button>
                 {(!myRecipes || myRecipes.length === 0) ? (
-                  <div className="text-center py-12 text-gray-400">
+                  <div className="text-center py-12 text-muted-foreground/70">
                     <div className="text-5xl mb-3">🍽️</div>
                     <p className="font-semibold">Aún no has publicado ninguna receta</p>
                     <p className="text-sm mt-1">Comparte tus recetas favoritas con la comunidad</p>
@@ -523,7 +523,7 @@ export default function BuddyMakerDashboard() {
                 ) : (
                   <div className="space-y-3">
                     {myRecipes.map((recipe) => (
-                      <div key={recipe.id} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                      <div key={recipe.id} className="bg-background rounded-2xl p-4 shadow-sm border border-border/50">
                         <div className="flex items-start gap-3">
                           <img
                             src={recipe.imageUrl || RECIPE_PLACEHOLDER_IMAGE}
@@ -532,8 +532,8 @@ export default function BuddyMakerDashboard() {
                             onError={e => { (e.target as HTMLImageElement).src = RECIPE_PLACEHOLDER_IMAGE; }}
                           />
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-bold text-gray-900 text-sm line-clamp-1">{recipe.name}</h3>
-                            <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{recipe.description}</p>
+                            <h3 className="font-bold text-foreground text-sm line-clamp-1">{recipe.name}</h3>
+                            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{recipe.description}</p>
                             <div className="flex items-center gap-2 mt-2 flex-wrap">
                               {recipe.difficulty && (
                                 <span className={`text-xs rounded-full px-2 py-0.5 font-semibold ${difficultyColors[recipe.difficulty]}`}>
@@ -541,12 +541,12 @@ export default function BuddyMakerDashboard() {
                                 </span>
                               )}
                               {recipe.caloriesPerServing && (
-                                <span className="text-xs text-gray-400">{recipe.caloriesPerServing} kcal</span>
+                                <span className="text-xs text-muted-foreground/70">{recipe.caloriesPerServing} kcal</span>
                               )}
                               {recipe.preparationTime && (
-                                <span className="text-xs text-gray-400">{recipe.preparationTime + (recipe.cookTime ?? 0)} min</span>
+                                <span className="text-xs text-muted-foreground/70">{recipe.preparationTime + (recipe.cookTime ?? 0)} min</span>
                               )}
-                              <span className={`text-xs rounded-full px-2 py-0.5 font-semibold ${recipe.isPublic ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
+                              <span className={`text-xs rounded-full px-2 py-0.5 font-semibold ${recipe.isPublic ? "bg-green-100 text-green-700" : "bg-muted/50 text-muted-foreground"}`}>
                                 {recipe.isPublic ? "Pública" : "Privada"}
                               </span>
                             </div>
@@ -575,44 +575,44 @@ export default function BuddyMakerDashboard() {
 
             {/* Recipe Form */}
             {showRecipeForm && (
-              <form onSubmit={handleSaveRecipe} className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-5">
+              <form onSubmit={handleSaveRecipe} className="bg-background rounded-3xl p-6 shadow-sm border border-border/50 space-y-5">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-base font-black text-gray-900">
+                  <h2 className="text-base font-black text-foreground">
                     {editingRecipe ? "Editar receta" : "Nueva receta"}
                   </h2>
-                  <button type="button" onClick={() => { setShowRecipeForm(false); setEditingRecipe(null); }} aria-label="Cerrar formulario" className="text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
+                  <button type="button" onClick={() => { setShowRecipeForm(false); setEditingRecipe(null); }} aria-label="Cerrar formulario" className="text-muted-foreground/70 hover:text-muted-foreground text-xl font-bold">×</button>
                 </div>
 
                 {/* Basic info */}
                 <div className="space-y-3">
                   <div>
-                    <label className="text-xs font-bold text-gray-600 mb-1 block">Nombre de la receta *</label>
+                    <label className="text-xs font-bold text-muted-foreground mb-1 block">Nombre de la receta *</label>
                     <input
                       required
                       value={recipeForm.name}
                       onChange={(e) => setRecipeForm((p) => ({ ...p, name: e.target.value }))}
                       placeholder="Ej: Ensalada mediterránea con quinoa"
-                      className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+                      className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-bold text-gray-600 mb-1 block">Descripción</label>
+                    <label className="text-xs font-bold text-muted-foreground mb-1 block">Descripción</label>
                     <textarea
                       value={recipeForm.description}
                       onChange={(e) => setRecipeForm((p) => ({ ...p, description: e.target.value }))}
                       placeholder="Describe brevemente la receta..."
                       rows={2}
-                      className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-400 resize-none"
+                      className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-400 resize-none"
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-bold text-gray-600 mb-1 block">URL imagen de la receta</label>
+                    <label className="text-xs font-bold text-muted-foreground mb-1 block">URL imagen de la receta</label>
                     <input
                       value={recipeForm.imageUrl}
                       onChange={(e) => setRecipeForm((p) => ({ ...p, imageUrl: e.target.value }))}
                       placeholder="https://..."
                       type="url"
-                      className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+                      className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
                     />
                   </div>
                 </div>
@@ -620,37 +620,37 @@ export default function BuddyMakerDashboard() {
                 {/* Times & servings */}
                 <div className="grid grid-cols-3 gap-3">
                   <div>
-                    <label className="text-xs font-bold text-gray-600 mb-1 block">Prep. (min)</label>
+                    <label className="text-xs font-bold text-muted-foreground mb-1 block">Prep. (min)</label>
                     <input
                       value={recipeForm.prepTime}
                       onChange={(e) => setRecipeForm((p) => ({ ...p, prepTime: e.target.value }))}
                       type="number" min="0" placeholder="15"
-                      className="w-full rounded-xl border border-gray-200 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+                      className="w-full rounded-xl border border-border px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-bold text-gray-600 mb-1 block">Cocción (min)</label>
+                    <label className="text-xs font-bold text-muted-foreground mb-1 block">Cocción (min)</label>
                     <input
                       value={recipeForm.cookTime}
                       onChange={(e) => setRecipeForm((p) => ({ ...p, cookTime: e.target.value }))}
                       type="number" min="0" placeholder="20"
-                      className="w-full rounded-xl border border-gray-200 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+                      className="w-full rounded-xl border border-border px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-bold text-gray-600 mb-1 block">Raciones</label>
+                    <label className="text-xs font-bold text-muted-foreground mb-1 block">Raciones</label>
                     <input
                       value={recipeForm.servings}
                       onChange={(e) => setRecipeForm((p) => ({ ...p, servings: e.target.value }))}
                       type="number" min="1" placeholder="2"
-                      className="w-full rounded-xl border border-gray-200 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+                      className="w-full rounded-xl border border-border px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
                     />
                   </div>
                 </div>
 
                 {/* Nutritional info */}
                 <div>
-                  <label className="text-xs font-bold text-gray-600 mb-2 block">Información nutricional (por ración)</label>
+                  <label className="text-xs font-bold text-muted-foreground mb-2 block">Información nutricional (por ración)</label>
                   <div className="grid grid-cols-4 gap-2">
                     {[
                       { key: "calories", label: "Kcal", placeholder: "350" },
@@ -659,12 +659,12 @@ export default function BuddyMakerDashboard() {
                       { key: "fat", label: "Grasa (g)", placeholder: "12" },
                     ].map(({ key, label, placeholder }) => (
                       <div key={key}>
-                        <label className="text-xs text-gray-400 mb-1 block">{label}</label>
+                        <label className="text-xs text-muted-foreground/70 mb-1 block">{label}</label>
                         <input
                           value={(recipeForm as any)[key]}
                           onChange={(e) => setRecipeForm((p) => ({ ...p, [key]: e.target.value }))}
                           type="number" min="0" placeholder={placeholder}
-                          className="w-full rounded-xl border border-gray-200 px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+                          className="w-full rounded-xl border border-border px-2 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
                         />
                       </div>
                     ))}
@@ -674,42 +674,42 @@ export default function BuddyMakerDashboard() {
                 {/* Classification */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs font-bold text-gray-600 mb-1 block">Momento del día</label>
+                    <label className="text-xs font-bold text-muted-foreground mb-1 block">Momento del día</label>
                     <select
                       value={recipeForm.mealTime}
                       onChange={(e) => setRecipeForm((p) => ({ ...p, mealTime: e.target.value as MealTime }))}
-                      className="w-full rounded-xl border border-gray-200 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+                      className="w-full rounded-xl border border-border px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
                     >
                       {MEAL_TIMES.map((m) => <option key={m.value} value={m.value}>{m.label}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="text-xs font-bold text-gray-600 mb-1 block">Dificultad</label>
+                    <label className="text-xs font-bold text-muted-foreground mb-1 block">Dificultad</label>
                     <select
                       value={recipeForm.difficulty}
                       onChange={(e) => setRecipeForm((p) => ({ ...p, difficulty: e.target.value as Difficulty }))}
-                      className="w-full rounded-xl border border-gray-200 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+                      className="w-full rounded-xl border border-border px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
                     >
                       {DIFFICULTIES.map((d) => <option key={d.value} value={d.value}>{d.label}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="text-xs font-bold text-gray-600 mb-1 block">Método de cocción</label>
+                    <label className="text-xs font-bold text-muted-foreground mb-1 block">Método de cocción</label>
                     <select
                       value={recipeForm.cookingMethod}
                       onChange={(e) => setRecipeForm((p) => ({ ...p, cookingMethod: e.target.value }))}
-                      className="w-full rounded-xl border border-gray-200 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+                      className="w-full rounded-xl border border-border px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
                     >
                       <option value="">Sin especificar</option>
                       {COOKING_METHODS.map((m) => <option key={m} value={m.toLowerCase()}>{m}</option>)}
                     </select>
                   </div>
                   <div>
-                    <label className="text-xs font-bold text-gray-600 mb-1 block">Tipo de cocina</label>
+                    <label className="text-xs font-bold text-muted-foreground mb-1 block">Tipo de cocina</label>
                     <select
                       value={recipeForm.cuisineType}
                       onChange={(e) => setRecipeForm((p) => ({ ...p, cuisineType: e.target.value }))}
-                      className="w-full rounded-xl border border-gray-200 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
+                      className="w-full rounded-xl border border-border px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-green-400"
                     >
                       <option value="">Sin especificar</option>
                       {CUISINE_TYPES.map((c) => <option key={c} value={c.toLowerCase()}>{c}</option>)}
@@ -720,7 +720,7 @@ export default function BuddyMakerDashboard() {
                 {/* Ingredients */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <label className="text-xs font-bold text-gray-600">Ingredientes</label>
+                    <label className="text-xs font-bold text-muted-foreground">Ingredientes</label>
                     <button type="button" onClick={addIngredient} className="text-xs font-bold text-green-600">+ Añadir</button>
                   </div>
                   <div className="space-y-2">
@@ -730,19 +730,19 @@ export default function BuddyMakerDashboard() {
                           value={ing.name}
                           onChange={(e) => updateIngredient(idx, "name", e.target.value)}
                           placeholder="Ingrediente"
-                          className="flex-1 rounded-xl border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-green-400"
+                          className="flex-1 rounded-xl border border-border px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-green-400"
                         />
                         <input
                           value={ing.amount}
                           onChange={(e) => updateIngredient(idx, "amount", e.target.value)}
                           placeholder="Cant."
-                          className="w-16 rounded-xl border border-gray-200 px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-green-400"
+                          className="w-16 rounded-xl border border-border px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-green-400"
                         />
                         <input
                           value={ing.unit}
                           onChange={(e) => updateIngredient(idx, "unit", e.target.value)}
                           placeholder="Ud."
-                          className="w-14 rounded-xl border border-gray-200 px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-green-400"
+                          className="w-14 rounded-xl border border-border px-2 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-green-400"
                         />
                         {recipeForm.ingredients.length > 1 && (
                           <button type="button" onClick={() => removeIngredient(idx)} aria-label="Eliminar ingrediente" className="text-red-400 font-bold text-sm px-1">×</button>
@@ -755,7 +755,7 @@ export default function BuddyMakerDashboard() {
                 {/* Steps */}
                 <div>
                   <div className="flex items-center justify-between mb-2">
-                    <label className="text-xs font-bold text-gray-600">Pasos de elaboración</label>
+                    <label className="text-xs font-bold text-muted-foreground">Pasos de elaboración</label>
                     <button type="button" onClick={addStep} className="text-xs font-bold text-green-600">+ Añadir paso</button>
                   </div>
                   <div className="space-y-2">
@@ -767,7 +767,7 @@ export default function BuddyMakerDashboard() {
                           onChange={(e) => updateStep(idx, e.target.value)}
                           placeholder={`Paso ${idx + 1}...`}
                           rows={2}
-                          className="flex-1 rounded-xl border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-green-400 resize-none"
+                          className="flex-1 rounded-xl border border-border px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-green-400 resize-none"
                         />
                         {recipeForm.steps.length > 1 && (
                           <button type="button" onClick={() => removeStep(idx)} aria-label="Eliminar paso" className="text-red-400 font-bold text-sm px-1 mt-2">×</button>
@@ -780,21 +780,21 @@ export default function BuddyMakerDashboard() {
                 {/* Extra */}
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="text-xs font-bold text-gray-600 mb-1 block">Alérgenos</label>
+                    <label className="text-xs font-bold text-muted-foreground mb-1 block">Alérgenos</label>
                     <input
                       value={recipeForm.allergens}
                       onChange={(e) => setRecipeForm((p) => ({ ...p, allergens: e.target.value }))}
                       placeholder='["gluten","lacteos"]'
-                      className="w-full rounded-xl border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-green-400"
+                      className="w-full rounded-xl border border-border px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-green-400"
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-bold text-gray-600 mb-1 block">Etiquetas</label>
+                    <label className="text-xs font-bold text-muted-foreground mb-1 block">Etiquetas</label>
                     <input
                       value={recipeForm.tags}
                       onChange={(e) => setRecipeForm((p) => ({ ...p, tags: e.target.value }))}
                       placeholder='["rapida","fitness"]'
-                      className="w-full rounded-xl border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-green-400"
+                      className="w-full rounded-xl border border-border px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-green-400"
                     />
                   </div>
                 </div>
@@ -807,14 +807,14 @@ export default function BuddyMakerDashboard() {
                     onChange={(e) => setRecipeForm((p) => ({ ...p, isPublic: e.target.checked }))}
                     className="w-4 h-4 accent-green-500"
                   />
-                  <label htmlFor="isPublicRecipe" className="text-sm font-semibold text-gray-700">Publicar como receta pública (visible para todos)</label>
+                  <label htmlFor="isPublicRecipe" className="text-sm font-semibold text-foreground/80">Publicar como receta pública (visible para todos)</label>
                 </div>
 
                 <div className="flex gap-3">
                   <button
                     type="button"
                     onClick={() => { setShowRecipeForm(false); setEditingRecipe(null); }}
-                    className="flex-1 py-3 rounded-2xl text-sm font-bold text-gray-600 bg-gray-100"
+                    className="flex-1 py-3 rounded-2xl text-sm font-bold text-muted-foreground bg-muted/50"
                   >
                     Cancelar
                   </button>

@@ -108,17 +108,17 @@ function UsageBar({ used, max, label, icon, critical }: { used: number; max: num
   const isAlmostFull = pct >= 75;
   const isFull = pct >= 100;
   return (
-    <div className={`rounded-2xl p-3 ${isFull ? "bg-red-50 border border-red-200" : isAlmostFull ? "bg-orange-50 border border-orange-200" : "bg-gray-50 border border-gray-100"}`}>
+    <div className={`rounded-2xl p-3 ${isFull ? "bg-red-50 border border-red-200" : isAlmostFull ? "bg-orange-50 border border-orange-200" : "bg-muted/30 border border-border/50"}`}>
       <div className="flex items-center justify-between mb-1.5">
         <div className="flex items-center gap-1.5">
           <span className="text-base">{icon}</span>
-          <span className="text-xs font-semibold text-gray-700">{label}</span>
+          <span className="text-xs font-semibold text-foreground/80">{label}</span>
         </div>
-        <span className={`text-xs font-extrabold ${isFull ? "text-red-600" : isAlmostFull ? "text-orange-600" : "text-gray-500"}`}>
+        <span className={`text-xs font-extrabold ${isFull ? "text-red-600" : isAlmostFull ? "text-orange-600" : "text-muted-foreground"}`}>
           {used}/{max}
         </span>
       </div>
-      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+      <div className="h-2 bg-muted rounded-full overflow-hidden">
         <div
           className={`h-full rounded-full transition-all ${isFull ? "bg-red-500" : isAlmostFull ? "bg-orange-500" : "bg-gray-400"}`}
           style={{ width: `${pct}%` }}
@@ -134,17 +134,17 @@ function UsageBar({ used, max, label, icon, critical }: { used: number; max: num
 // ─── Locked feature teaser ────────────────────────────────────────────────────
 function LockedFeature({ icon, title, description }: { icon: string; title: string; description: string }) {
   return (
-    <div className="flex items-start gap-3 p-3 rounded-2xl bg-white border border-gray-100 shadow-sm relative overflow-hidden">
+    <div className="flex items-start gap-3 p-3 rounded-2xl bg-background border border-border/50 shadow-sm relative overflow-hidden">
       <div className="absolute inset-0 bg-gradient-to-r from-transparent to-orange-50/50" />
-      <div className="relative flex-shrink-0 w-10 h-10 rounded-xl bg-gray-100 flex items-center justify-center">
+      <div className="relative flex-shrink-0 w-10 h-10 rounded-xl bg-muted/50 flex items-center justify-center">
         <span className="text-xl filter grayscale opacity-50">{icon}</span>
         <div className="absolute -top-1 -right-1 w-4 h-4 bg-orange-500 rounded-full flex items-center justify-center">
           <LockClosedIcon className="h-2.5 w-2.5 text-white" />
         </div>
       </div>
       <div className="relative flex-1 min-w-0">
-        <p className="text-xs font-bold text-gray-700 blur-[0.5px]">{title}</p>
-        <p className="text-[10px] text-gray-400 mt-0.5 blur-[0.5px] line-clamp-1">{description}</p>
+        <p className="text-xs font-bold text-foreground/80 blur-[0.5px]">{title}</p>
+        <p className="text-[10px] text-muted-foreground/70 mt-0.5 blur-[0.5px] line-clamp-1">{description}</p>
       </div>
       <div className="relative flex-shrink-0">
         <span className="text-[10px] font-extrabold text-orange-500 bg-orange-50 px-2 py-0.5 rounded-full">PRO</span>
@@ -188,24 +188,24 @@ export default function Subscription() {
           <SparklesIcon className="h-3.5 w-3.5" />
           Desbloquea todo BuddyMarket
         </div>
-        <h1 className="text-2xl font-extrabold text-gray-900 leading-tight">
+        <h1 className="text-2xl font-extrabold text-foreground leading-tight">
           Come mejor.<br />
           <span className="text-[#F97316]">Sin límites.</span>
         </h1>
-        <p className="text-sm text-gray-500 mt-1.5">Sin permanencia · Cancela cuando quieras</p>
+        <p className="text-sm text-muted-foreground mt-1.5">Sin permanencia · Cancela cuando quieras</p>
       </div>
 
       {/* ── Current plan badge ── */}
       <div className="mb-5 flex items-center gap-3 rounded-2xl bg-[#F97316]/10 p-4">
         <CheckCircleIcon className="h-5 w-5 shrink-0 text-[#F97316]" />
         <div className="flex-1">
-          <p className="text-sm font-bold text-gray-900">
+          <p className="text-sm font-bold text-foreground">
             Plan actual:{" "}
             <span style={{ color: planDisplay?.color || "#6B7280" }}>
               {planDisplay?.badge || "Free"}
             </span>
           </p>
-          <p className="text-xs text-gray-500">
+          <p className="text-xs text-muted-foreground">
             {isActive
               ? "Tu suscripción está activa y al día"
               : "Plan gratuito — mejora para desbloquear más funciones"}
@@ -214,7 +214,7 @@ export default function Subscription() {
         {isActive && (
           <button
             onClick={() => toast.info("Para cancelar, contacta con soporte en support@buddymarket.app")}
-            className="rounded-xl border border-gray-200 px-3 py-1.5 text-xs font-semibold text-gray-400 hover:bg-gray-50"
+            className="rounded-xl border border-border px-3 py-1.5 text-xs font-semibold text-muted-foreground/70 hover:bg-muted/30"
           >
             Cancelar
           </button>
@@ -237,7 +237,7 @@ export default function Subscription() {
                     <span className="text-sm font-extrabold text-white">Menús IA ilimitados</span>
                     <span className="text-[10px] font-extrabold bg-orange-500 text-white px-2 py-0.5 rounded-full">PRO</span>
                   </div>
-                  <p className="text-xs text-gray-400">Genera menús semanales personalizados en segundos. Ahorra horas de planificación cada semana.</p>
+                  <p className="text-xs text-muted-foreground/70">Genera menús semanales personalizados en segundos. Ahorra horas de planificación cada semana.</p>
                 </div>
               </div>
               {/* Diff 2: BuddyIA */}
@@ -248,7 +248,7 @@ export default function Subscription() {
                     <span className="text-sm font-extrabold text-white">BuddyIA — Tu nutricionista 24/7</span>
                     <span className="text-[10px] font-extrabold bg-purple-500 text-white px-2 py-0.5 rounded-full">PRO</span>
                   </div>
-                  <p className="text-xs text-gray-400">Pregunta sobre nutrición, adapta recetas a tus alergias y recibe consejos personalizados al instante.</p>
+                  <p className="text-xs text-muted-foreground/70">Pregunta sobre nutrición, adapta recetas a tus alergias y recibe consejos personalizados al instante.</p>
                 </div>
               </div>
               {/* Diff 3: Crear recetas */}
@@ -259,7 +259,7 @@ export default function Subscription() {
                     <span className="text-sm font-extrabold text-white">Crea y comparte tus recetas</span>
                     <span className="text-[10px] font-extrabold bg-emerald-500 text-white px-2 py-0.5 rounded-full">PRO</span>
                   </div>
-                  <p className="text-xs text-gray-400">Publica tus recetas con foto generada por IA. Construye tu perfil de BuddyMaker y gana seguidores.</p>
+                  <p className="text-xs text-muted-foreground/70">Publica tus recetas con foto generada por IA. Construye tu perfil de BuddyMaker y gana seguidores.</p>
                 </div>
               </div>
             </div>
@@ -272,7 +272,7 @@ export default function Subscription() {
               Desbloquear todo por solo 9,99€/mes
               <ArrowRightIcon className="h-4 w-4" />
             </button>
-            <p className="text-center text-[10px] text-gray-500 mt-2">Sin permanencia · Cancela cuando quieras · Pago seguro</p>
+            <p className="text-center text-[10px] text-muted-foreground mt-2">Sin permanencia · Cancela cuando quieras · Pago seguro</p>
           </div>
         </div>
       )}
@@ -361,7 +361,7 @@ export default function Subscription() {
               Desbloquear todo por 9,99€/mes
               <ArrowRightIcon className="h-4 w-4" />
             </button>
-            <p className="text-center text-[10px] text-gray-400 mt-2">Sin permanencia · Cancela cuando quieras</p>
+            <p className="text-center text-[10px] text-muted-foreground/70 mt-2">Sin permanencia · Cancela cuando quieras</p>
           </div>
         </div>
       )}
@@ -390,21 +390,21 @@ export default function Subscription() {
       <div className="space-y-4 mb-6">
         {/* FREE card — shown only if not Pro/ProMax */}
         {isFree && (
-          <div className="relative rounded-3xl border-2 border-gray-200 bg-white p-5 shadow-sm">
-            <div className="absolute -top-3 left-4 rounded-full bg-gray-500 px-3 py-1 text-[11px] font-bold text-white">
+          <div className="relative rounded-3xl border-2 border-border bg-background p-5 shadow-sm">
+            <div className="absolute -top-3 left-4 rounded-full bg-muted px-3 py-1 text-[11px] font-bold text-muted-foreground">
               ACTIVO
             </div>
             <div className="mb-3 flex items-start gap-3">
-              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-gray-100">
-                <StarIcon className="h-5 w-5 text-gray-400" />
+              <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-muted/50">
+                <StarIcon className="h-5 w-5 text-muted-foreground/70" />
               </div>
               <div className="flex-1">
                 <div className="flex items-baseline gap-1.5">
-                  <h2 className="text-base font-extrabold text-gray-900">Free</h2>
-                  <span className="text-xl font-extrabold text-gray-400">0€</span>
-                  <span className="text-xs text-gray-400">/siempre</span>
+                  <h2 className="text-base font-extrabold text-foreground">Free</h2>
+                  <span className="text-xl font-extrabold text-muted-foreground/70">0€</span>
+                  <span className="text-xs text-muted-foreground/70">/siempre</span>
                 </div>
-                <p className="text-xs text-gray-500 mt-0.5">Para empezar a explorar BuddyMarket</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Para empezar a explorar BuddyMarket</p>
               </div>
             </div>
             <div className="mb-4 space-y-1">
@@ -421,7 +421,7 @@ export default function Subscription() {
                 <div key={i} className={`text-xs font-medium ${l.startsWith('✅') ? 'text-green-600' : 'text-red-400'}`}>{l}</div>
               ))}
             </div>
-            <div className="w-full rounded-2xl bg-gray-100 py-3 text-center text-sm font-bold text-gray-400">
+            <div className="w-full rounded-2xl bg-muted/50 py-3 text-center text-sm font-bold text-muted-foreground/70">
               Plan actual
             </div>
           </div>
@@ -430,7 +430,7 @@ export default function Subscription() {
         {/* PRO card */}
         {!isProMax && (
           <div
-            className="relative rounded-3xl border-2 bg-white p-5 shadow-lg"
+            className="relative rounded-3xl border-2 bg-background p-5 shadow-lg"
             style={{ borderColor: "#F97316" }}
           >
             {!isPro && (
@@ -449,11 +449,11 @@ export default function Subscription() {
               </div>
               <div className="flex-1">
                 <div className="flex items-baseline gap-1.5">
-                  <h2 className="text-base font-extrabold text-gray-900">Pro</h2>
+                  <h2 className="text-base font-extrabold text-foreground">Pro</h2>
                   <span className="text-xl font-extrabold text-[#F97316]">9,99€</span>
-                  <span className="text-xs text-gray-400">/mes</span>
+                  <span className="text-xs text-muted-foreground/70">/mes</span>
                 </div>
-                <p className="text-xs text-gray-500 mt-0.5">Todo lo que necesitas para comer bien</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Todo lo que necesitas para comer bien</p>
               </div>
             </div>
             <div className="mb-4 space-y-1.5">
@@ -467,7 +467,7 @@ export default function Subscription() {
                 "✅ Métricas de salud",
                 "✅ Inventario ilimitado",
               ].map((p, i) => (
-                <div key={i} className="text-xs text-gray-700 font-medium">{p}</div>
+                <div key={i} className="text-xs text-foreground/80 font-medium">{p}</div>
               ))}
             </div>
             <button
@@ -475,7 +475,7 @@ export default function Subscription() {
                 disabled={isPro || checkoutLoading || isLoading}
                 className={`w-full rounded-2xl py-3 text-sm font-extrabold transition-all ${
                   isPro
-                    ? "bg-gray-100 text-gray-400 cursor-not-allowed"
+                    ? "bg-muted/50 text-muted-foreground/70 cursor-not-allowed"
                     : "bg-[#F97316] text-white hover:bg-[#EA6C0A] shadow-md active:scale-95"
                 }`}
               >
@@ -486,7 +486,7 @@ export default function Subscription() {
 
         {/* PRO MAX card */}
         <div
-          className="relative rounded-3xl border-2 bg-white p-5"
+          className="relative rounded-3xl border-2 bg-background p-5"
           style={{ borderColor: "#7c3aed", boxShadow: isProMax ? "0 0 0 4px rgba(124,58,237,0.1)" : "0 4px 24px rgba(124,58,237,0.12)" }}
         >
           <div className="absolute -top-3 left-1/2 -translate-x-1/2 rounded-full bg-purple-600 px-4 py-1 text-[11px] font-extrabold text-white shadow whitespace-nowrap">
@@ -498,11 +498,11 @@ export default function Subscription() {
             </div>
             <div className="flex-1">
               <div className="flex items-baseline gap-1.5">
-                <h2 className="text-base font-extrabold text-gray-900">Pro Max</h2>
+                <h2 className="text-base font-extrabold text-foreground">Pro Max</h2>
                 <span className="text-xl font-extrabold text-purple-600">19,99€</span>
-                <span className="text-xs text-gray-400">/mes</span>
+                <span className="text-xs text-muted-foreground/70">/mes</span>
               </div>
-              <p className="text-xs text-gray-500 mt-0.5">Para los que no quieren límites</p>
+              <p className="text-xs text-muted-foreground mt-0.5">Para los que no quieren límites</p>
             </div>
           </div>
           <div className="mb-4 space-y-1.5">
@@ -538,7 +538,7 @@ export default function Subscription() {
       <div className="mb-4">
         <button
           onClick={() => setShowFullTable(!showFullTable)}
-          className="w-full py-3 rounded-xl border-2 border-gray-200 text-sm font-bold text-gray-600 hover:border-gray-300 transition-all flex items-center justify-center gap-2"
+          className="w-full py-3 rounded-xl border-2 border-border text-sm font-bold text-muted-foreground hover:border-border transition-all flex items-center justify-center gap-2"
         >
           {showFullTable ? "Ocultar" : "Ver"} comparativa completa
           <span className={`transition-transform inline-block ${showFullTable ? "rotate-180" : ""}`}>▼</span>
@@ -546,9 +546,9 @@ export default function Subscription() {
       </div>
 
       {showFullTable && (
-        <div className="mb-6 rounded-2xl overflow-hidden border border-gray-200 shadow-sm">
+        <div className="mb-6 rounded-2xl overflow-hidden border border-border shadow-sm">
           <div className="grid grid-cols-4 bg-gray-900">
-            <div className="p-3 text-xs font-bold text-gray-400">Función</div>
+            <div className="p-3 text-xs font-bold text-muted-foreground/70">Función</div>
             {[
               { name: "Free", color: "#9ca3af" },
               { name: "Pro", color: "#F97316" },
@@ -562,13 +562,13 @@ export default function Subscription() {
 
           {FEATURES.map((section, si) => (
             <div key={si}>
-              <div className={`flex items-center gap-2 bg-gray-50 px-3 py-2 ${si > 0 ? "border-t border-gray-100" : ""}`}>
+              <div className={`flex items-center gap-2 bg-muted/30 px-3 py-2 ${si > 0 ? "border-t border-border/50" : ""}`}>
                 <span>{section.emoji}</span>
-                <span className="text-[10px] font-extrabold uppercase tracking-widest text-gray-400">{section.category}</span>
+                <span className="text-[10px] font-extrabold uppercase tracking-widest text-muted-foreground/70">{section.category}</span>
               </div>
               {section.rows.map((row, ri) => (
-                <div key={ri} className={`grid grid-cols-4 border-t border-gray-100 ${row.hot ? "bg-orange-50/30" : ""}`}>
-                  <div className="p-3 text-xs text-gray-600 flex items-start gap-1">
+                <div key={ri} className={`grid grid-cols-4 border-t border-border/50 ${row.hot ? "bg-orange-50/30" : ""}`}>
+                  <div className="p-3 text-xs text-muted-foreground flex items-start gap-1">
                     {row.hot && <span className="text-orange-400 text-[10px] mt-0.5">🔥</span>}
                     <span>{row.label}</span>
                   </div>
@@ -595,7 +595,7 @@ export default function Subscription() {
             </div>
           ))}
 
-          <div className="grid grid-cols-4 border-t-2 border-gray-100 bg-gray-50 p-2 gap-2">
+          <div className="grid grid-cols-4 border-t-2 border-border/50 bg-muted/30 p-2 gap-2">
             <div />
             {[
               { key: "free", accent: "#6b7280" },
@@ -604,7 +604,7 @@ export default function Subscription() {
             ].map((p) => (
               <div key={p.key}>
                 {p.key === "free" ? (
-                  <div className="w-full rounded-xl py-2 text-center text-xs font-bold text-gray-400">Gratis</div>
+                  <div className="w-full rounded-xl py-2 text-center text-xs font-bold text-muted-foreground/70">Gratis</div>
                 ) : (
                   <button
                     onClick={() => handleSubscribe(p.key)}
@@ -633,16 +633,16 @@ export default function Subscription() {
             { text: "\"Los menús para diabéticos me han cambiado la vida\"", name: "Carlos M." },
             { text: "\"BuddyIA me resuelve todas las dudas de nutrición al instante\"", name: "Ana R." },
           ].map((r, i) => (
-            <div key={i} className="bg-white rounded-xl p-3 shadow-sm">
-              <p className="text-xs text-gray-600 italic">{r.text}</p>
-              <p className="text-[10px] text-gray-400 font-semibold mt-1">— {r.name}</p>
+            <div key={i} className="bg-background rounded-xl p-3 shadow-sm">
+              <p className="text-xs text-muted-foreground italic">{r.text}</p>
+              <p className="text-[10px] text-muted-foreground/70 font-semibold mt-1">— {r.name}</p>
             </div>
           ))}
         </div>
       </div>
 
 
-      <p className="text-center text-xs text-gray-400 pb-6">
+      <p className="text-center text-xs text-muted-foreground/70 pb-6">
         Los precios incluyen IVA · Cancela en cualquier momento
       </p>
     </div>

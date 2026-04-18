@@ -325,7 +325,7 @@ export default function BuddyExpertDashboard() {
       <AppLayout>
         <div className="flex flex-col items-center justify-center min-h-screen gap-4 p-8 text-center">
           <div className="text-5xl">🔒</div>
-          <h2 className="text-xl font-bold text-gray-800">Inicia sesión para acceder a tu panel de experto</h2>
+          <h2 className="text-xl font-bold text-foreground">Inicia sesión para acceder a tu panel de experto</h2>
         </div>
       </AppLayout>
     );
@@ -362,8 +362,8 @@ export default function BuddyExpertDashboard() {
             🎓
           </div>
           <div className="flex-1">
-            <h1 className="text-xl font-black text-gray-900">Panel BuddyExpert</h1>
-            <p className="text-xs text-gray-500">Gestiona tu perfil y tus menús semanales</p>
+            <h1 className="text-xl font-black text-foreground">Panel BuddyExpert</h1>
+            <p className="text-xs text-muted-foreground">Gestiona tu perfil y tus menús semanales</p>
           </div>
           <a href="/app/buddy-expert-stats" className="flex items-center gap-1.5 rounded-xl bg-blue-50 px-3 py-1.5 text-sm font-semibold text-blue-600 hover:bg-blue-100 transition-colors">
             <span>📊</span> Estadísticas
@@ -430,12 +430,12 @@ export default function BuddyExpertDashboard() {
           </div>
         )}
         {/* Tabs */}
-        <div className="flex gap-1 mb-6 bg-gray-100 rounded-2xl p-1">
+        <div className="flex gap-1 mb-6 bg-muted/50 rounded-2xl p-1">
           {(["/app/profile", "plans", "pdf-plans", "/app/menus", "blog", "services"] as Tab[]).map((tab) => (
               <button
               key={tab}
               onClick={() => setActiveTab(tab)}
-              className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${activeTab === tab ? "bg-white text-orange-600 shadow-sm" : "text-gray-500"}`}
+              className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${activeTab === tab ? "bg-background text-orange-600 shadow-sm" : "text-muted-foreground"}`}
             >
               {tab === "/app/profile" ? "👤 Perfil" : tab === "plans" ? "📊 Planes" : tab === "pdf-plans" ? "📄 PDF" : tab === "/app/menus" ? "📋 Menús" : tab === "services" ? "💰 Servicios" : "✍️ Blog"}
             </button>
@@ -444,8 +444,8 @@ export default function BuddyExpertDashboard() {
 
         {/* Profile Tab */}
         {activeTab === "/app/profile" && (
-          <form onSubmit={handleSaveProfile} className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-4">
-            <h2 className="text-base font-black text-gray-900 mb-2">
+          <form onSubmit={handleSaveProfile} className="bg-background rounded-3xl p-6 shadow-sm border border-border/50 space-y-4">
+            <h2 className="text-base font-black text-foreground mb-2">
               {myProfile ? "Editar perfil de experto" : "Crear perfil de experto"}
             </h2>
             {!myProfile && (
@@ -455,52 +455,52 @@ export default function BuddyExpertDashboard() {
             )}
             <div className="grid grid-cols-1 gap-4">
               <div>
-                <label className="text-xs font-bold text-gray-600 mb-1 block">Nombre público *</label>
+                <label className="text-xs font-bold text-muted-foreground mb-1 block">Nombre público *</label>
                 <input
                   required
                   value={profileForm.displayName}
                   onChange={(e) => setProfileForm((p) => ({ ...p, displayName: e.target.value }))}
                   placeholder="Ej: Ana García, Nutricionista"
-                  className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                  className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
                 />
               </div>
               <div>
-                <label className="text-xs font-bold text-gray-600 mb-1 block">Especialidad</label>
+                <label className="text-xs font-bold text-muted-foreground mb-1 block">Especialidad</label>
                 <input
                   value={profileForm.specialty}
                   onChange={(e) => setProfileForm((p) => ({ ...p, specialty: e.target.value }))}
                   placeholder="Ej: Nutricionista deportiva, Dietista clínica..."
-                  className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                  className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
                 />
               </div>
               <div>
-                <label className="text-xs font-bold text-gray-600 mb-1 block">Categoría principal</label>
+                <label className="text-xs font-bold text-muted-foreground mb-1 block">Categoría principal</label>
                 <select
                   value={profileForm.category}
                   onChange={(e) => setProfileForm((p) => ({ ...p, category: e.target.value as Category }))}
-                  className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                  className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
                 >
                   {CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
                 </select>
               </div>
               <div>
-                <label className="text-xs font-bold text-gray-600 mb-1 block">Bio / Presentación</label>
+                <label className="text-xs font-bold text-muted-foreground mb-1 block">Bio / Presentación</label>
                 <textarea
                   value={profileForm.bio}
                   onChange={(e) => setProfileForm((p) => ({ ...p, bio: e.target.value }))}
                   placeholder="Cuéntanos sobre tu experiencia y metodología..."
                   rows={3}
-                  className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
+                  className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
                 />
               </div>
               {/* Foto de perfil */}
               <div>
-                <label className="text-xs font-bold text-gray-600 mb-1 block">Foto de perfil</label>
+                <label className="text-xs font-bold text-muted-foreground mb-1 block">Foto de perfil</label>
                 <div className="flex items-center gap-3">
                   {profileForm.avatarUrl ? (
-                    <img src={profileForm.avatarUrl} alt="" className="w-14 h-14 rounded-full object-cover border border-gray-200" />
+                    <img src={profileForm.avatarUrl} alt="" className="w-14 h-14 rounded-full object-cover border border-border" />
                   ) : (
-                    <div className="w-14 h-14 rounded-full bg-orange-100 flex items-center justify-center text-orange-400 text-2xl border border-gray-200">👤</div>
+                    <div className="w-14 h-14 rounded-full bg-orange-100 flex items-center justify-center text-orange-400 text-2xl border border-border">👤</div>
                   )}
                   <input ref={avatarFileRef} type="file" accept="image/*" className="hidden" onChange={handleAvatarFile} />
                   <button
@@ -516,12 +516,12 @@ export default function BuddyExpertDashboard() {
               </div>
               {/* Imagen de portada */}
               <div>
-                <label className="text-xs font-bold text-gray-600 mb-1 block">Imagen de portada</label>
+                <label className="text-xs font-bold text-muted-foreground mb-1 block">Imagen de portada</label>
                 <div className="flex items-center gap-3">
                   {profileForm.coverUrl ? (
-                    <img src={profileForm.coverUrl} alt="" className="w-24 h-14 rounded-xl object-cover border border-gray-200" />
+                    <img src={profileForm.coverUrl} alt="" className="w-24 h-14 rounded-xl object-cover border border-border" />
                   ) : (
-                    <div className="w-24 h-14 rounded-xl bg-gray-100 flex items-center justify-center text-gray-400 text-xl border border-gray-200">🖼️</div>
+                    <div className="w-24 h-14 rounded-xl bg-muted/50 flex items-center justify-center text-muted-foreground/70 text-xl border border-border">🖼️</div>
                   )}
                   <input ref={coverFileRef} type="file" accept="image/*" className="hidden" onChange={handleCoverFile} />
                   <button
@@ -537,22 +537,22 @@ export default function BuddyExpertDashboard() {
               </div>
               <div className="grid grid-cols-2 gap-3">
                 <div>
-                  <label className="text-xs font-bold text-gray-600 mb-1 block">Instagram</label>
+                  <label className="text-xs font-bold text-muted-foreground mb-1 block">Instagram</label>
                   <input
                     value={profileForm.instagramHandle}
                     onChange={(e) => setProfileForm((p) => ({ ...p, instagramHandle: e.target.value }))}
                     placeholder="@usuario"
-                    className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                    className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
                   />
                 </div>
                 <div>
-                  <label className="text-xs font-bold text-gray-600 mb-1 block">Web / LinkedIn</label>
+                  <label className="text-xs font-bold text-muted-foreground mb-1 block">Web / LinkedIn</label>
                   <input
                     value={profileForm.websiteUrl}
                     onChange={(e) => setProfileForm((p) => ({ ...p, websiteUrl: e.target.value }))}
                     placeholder="https://..."
                     type="url"
-                    className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                    className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
                   />
                 </div>
               </div>
@@ -595,7 +595,7 @@ export default function BuddyExpertDashboard() {
                   + Crear nuevo plan nutricional
                 </button>
                 {(!myPlans || myPlans.length === 0) ? (
-                  <div className="text-center py-12 text-gray-400">
+                  <div className="text-center py-12 text-muted-foreground/70">
                     <div className="text-5xl mb-3">📊</div>
                     <p className="font-semibold">Aún no has creado ningún plan</p>
                     <p className="text-sm mt-1">Crea planes nutricionales para compartir con la comunidad</p>
@@ -603,30 +603,30 @@ export default function BuddyExpertDashboard() {
                 ) : (
                   <div className="space-y-3">
                     {myPlans.map((plan) => (
-                      <div key={plan.id} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                      <div key={plan.id} className="bg-background rounded-2xl p-4 shadow-sm border border-border/50">
                         <div className="flex items-start gap-3">
                           {plan.coverUrl && (
                             <img src={plan.coverUrl} alt={plan.title} className="w-16 h-16 rounded-xl object-cover shrink-0" />
                           )}
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-bold text-gray-900 text-sm line-clamp-1">{plan.title}</h3>
-                            <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{plan.description}</p>
+                            <h3 className="font-bold text-foreground text-sm line-clamp-1">{plan.title}</h3>
+                            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{plan.description}</p>
                             <div className="flex flex-wrap items-center gap-2 mt-2">
                               <span className="text-xs bg-orange-100 text-orange-700 rounded-full px-2 py-0.5 font-semibold">
                                 {CATEGORIES.find((c) => c.value === plan.category)?.label ?? plan.category}
                               </span>
-                              <span className="text-xs text-gray-400">{plan.durationWeeks} semanas</span>
-                              {plan.dailyCalories && <span className="text-xs text-gray-400">{plan.dailyCalories} kcal</span>}
+                              <span className="text-xs text-muted-foreground/70">{plan.durationWeeks} semanas</span>
+                              {plan.dailyCalories && <span className="text-xs text-muted-foreground/70">{plan.dailyCalories} kcal</span>}
                               <span className={`text-xs rounded-full px-2 py-0.5 font-semibold ${
                                 plan.price && plan.price > 0 ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"
                               }`}>
                                 {plan.price && plan.price > 0 ? `${plan.price}€` : "Gratis"}
                               </span>
-                              <span className={`text-xs rounded-full px-2 py-0.5 font-semibold ${plan.isPublic ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
+                              <span className={`text-xs rounded-full px-2 py-0.5 font-semibold ${plan.isPublic ? "bg-green-100 text-green-700" : "bg-muted/50 text-muted-foreground"}`}>
                                 {plan.isPublic ? "Público" : "Privado"}
                               </span>
                             </div>
-                            <p className="text-xs text-gray-400 mt-1">{plan.copiesCount} copias</p>
+                            <p className="text-xs text-muted-foreground/70 mt-1">{plan.copiesCount} copias</p>
                           </div>
                           <div className="flex flex-col gap-2 shrink-0">
                             <button
@@ -652,51 +652,51 @@ export default function BuddyExpertDashboard() {
 
             {/* Plan Form */}
             {showPlanForm && (
-              <form onSubmit={handleSavePlan} className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-5">
+              <form onSubmit={handleSavePlan} className="bg-background rounded-3xl p-6 shadow-sm border border-border/50 space-y-5">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-base font-black text-gray-900">
+                  <h2 className="text-base font-black text-foreground">
                     {editingPlan ? "Editar plan" : "Nuevo plan nutricional"}
                   </h2>
-                  <button type="button" onClick={() => { setShowPlanForm(false); setEditingPlan(null); }} aria-label="Cerrar formulario" className="text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
+                  <button type="button" onClick={() => { setShowPlanForm(false); setEditingPlan(null); }} aria-label="Cerrar formulario" className="text-muted-foreground/70 hover:text-muted-foreground text-xl font-bold">×</button>
                 </div>
                 <div className="grid grid-cols-1 gap-4">
                   <div>
-                    <label className="text-xs font-bold text-gray-600 mb-1 block">Título del plan *</label>
+                    <label className="text-xs font-bold text-muted-foreground mb-1 block">Título del plan *</label>
                     <input
                       required
                       value={planForm.title}
                       onChange={(e) => setPlanForm((p) => ({ ...p, title: e.target.value }))}
                       placeholder="Ej: Plan de pérdida de peso en 4 semanas"
-                      className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                      className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-bold text-gray-600 mb-1 block">Descripción</label>
+                    <label className="text-xs font-bold text-muted-foreground mb-1 block">Descripción</label>
                     <textarea
                       value={planForm.description}
                       onChange={(e) => setPlanForm((p) => ({ ...p, description: e.target.value }))}
                       placeholder="Describe el objetivo y características del plan..."
                       rows={2}
-                      className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
+                      className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs font-bold text-gray-600 mb-1 block">Categoría</label>
+                      <label className="text-xs font-bold text-muted-foreground mb-1 block">Categoría</label>
                       <select
                         value={planForm.category}
                         onChange={(e) => setPlanForm((p) => ({ ...p, category: e.target.value as Category }))}
-                        className="w-full rounded-xl border border-gray-200 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                        className="w-full rounded-xl border border-border px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
                       >
                         {CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
                       </select>
                     </div>
                     <div>
-                      <label className="text-xs font-bold text-gray-600 mb-1 block">Nivel</label>
+                      <label className="text-xs font-bold text-muted-foreground mb-1 block">Nivel</label>
                       <select
                         value={planForm.level}
                         onChange={(e) => setPlanForm((p) => ({ ...p, level: e.target.value as any }))}
-                        className="w-full rounded-xl border border-gray-200 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                        className="w-full rounded-xl border border-border px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
                       >
                         <option value="principiante">Principiante</option>
                         <option value="intermedio">Intermedio</option>
@@ -706,41 +706,41 @@ export default function BuddyExpertDashboard() {
                   </div>
                   <div className="grid grid-cols-3 gap-3">
                     <div>
-                      <label className="text-xs font-bold text-gray-600 mb-1 block">Semanas</label>
+                      <label className="text-xs font-bold text-muted-foreground mb-1 block">Semanas</label>
                       <input
                         value={planForm.durationWeeks}
                         onChange={(e) => setPlanForm((p) => ({ ...p, durationWeeks: e.target.value }))}
                         type="number" min="1" max="52"
-                        className="w-full rounded-xl border border-gray-200 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                        className="w-full rounded-xl border border-border px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-bold text-gray-600 mb-1 block">Kcal/día</label>
+                      <label className="text-xs font-bold text-muted-foreground mb-1 block">Kcal/día</label>
                       <input
                         value={planForm.dailyCalories}
                         onChange={(e) => setPlanForm((p) => ({ ...p, dailyCalories: e.target.value }))}
                         type="number" min="500" max="5000" placeholder="Ej: 1800"
-                        className="w-full rounded-xl border border-gray-200 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                        className="w-full rounded-xl border border-border px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
                       />
                     </div>
                     <div>
-                      <label className="text-xs font-bold text-gray-600 mb-1 block">Precio (€)</label>
+                      <label className="text-xs font-bold text-muted-foreground mb-1 block">Precio (€)</label>
                       <input
                         value={planForm.price}
                         onChange={(e) => setPlanForm((p) => ({ ...p, price: e.target.value }))}
                         type="number" min="0" step="0.01" placeholder="0 = gratis"
-                        className="w-full rounded-xl border border-gray-200 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                        className="w-full rounded-xl border border-border px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="text-xs font-bold text-gray-600 mb-1 block">URL imagen de portada</label>
+                    <label className="text-xs font-bold text-muted-foreground mb-1 block">URL imagen de portada</label>
                     <input
                       value={planForm.coverUrl}
                       onChange={(e) => setPlanForm((p) => ({ ...p, coverUrl: e.target.value }))}
                       placeholder="https://..."
                       type="url"
-                      className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                      className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
                     />
                   </div>
                   <div className="flex items-center gap-3">
@@ -751,7 +751,7 @@ export default function BuddyExpertDashboard() {
                       onChange={(e) => setPlanForm((p) => ({ ...p, isPublic: e.target.checked }))}
                       className="w-4 h-4 accent-orange-500"
                     />
-                    <label htmlFor="planIsPublic" className="text-sm text-gray-700">Visible públicamente en BuddyExperts</label>
+                    <label htmlFor="planIsPublic" className="text-sm text-foreground/80">Visible públicamente en BuddyExperts</label>
                   </div>
                 </div>
                 <button
@@ -794,7 +794,7 @@ export default function BuddyExpertDashboard() {
                   + Publicar nuevo menú semanal
                 </button>
                 {(!myMenus || myMenus.length === 0) ? (
-                  <div className="text-center py-12 text-gray-400">
+                  <div className="text-center py-12 text-muted-foreground/70">
                     <div className="text-5xl mb-3">📋</div>
                     <p className="font-semibold">Aún no has publicado ningún menú</p>
                     <p className="text-sm mt-1">Comparte menús semanales gratuitos para ganar seguidores</p>
@@ -802,22 +802,22 @@ export default function BuddyExpertDashboard() {
                 ) : (
                   <div className="space-y-3">
                     {myMenus.map((menu) => (
-                      <div key={menu.id} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+                      <div key={menu.id} className="bg-background rounded-2xl p-4 shadow-sm border border-border/50">
                         <div className="flex items-start gap-3">
                           {menu.coverUrl && (
                             <img src={menu.coverUrl} alt={menu.title} className="w-16 h-16 rounded-xl object-cover shrink-0" />
                           )}
                           <div className="flex-1 min-w-0">
-                            <h3 className="font-bold text-gray-900 text-sm line-clamp-1">{menu.title}</h3>
-                            <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{menu.description}</p>
+                            <h3 className="font-bold text-foreground text-sm line-clamp-1">{menu.title}</h3>
+                            <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{menu.description}</p>
                             <div className="flex items-center gap-2 mt-2">
                               <span className="text-xs bg-orange-100 text-orange-700 rounded-full px-2 py-0.5 font-semibold">
                                 {CATEGORIES.find((c) => c.value === menu.category)?.label ?? menu.category}
                               </span>
                               {menu.dailyCalories && (
-                                <span className="text-xs text-gray-400">{menu.dailyCalories} kcal/día</span>
+                                <span className="text-xs text-muted-foreground/70">{menu.dailyCalories} kcal/día</span>
                               )}
-                              <span className={`text-xs rounded-full px-2 py-0.5 font-semibold ${menu.isPublic ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
+                              <span className={`text-xs rounded-full px-2 py-0.5 font-semibold ${menu.isPublic ? "bg-green-100 text-green-700" : "bg-muted/50 text-muted-foreground"}`}>
                                 {menu.isPublic ? "Público" : "Privado"}
                               </span>
                             </div>
@@ -846,48 +846,48 @@ export default function BuddyExpertDashboard() {
 
             {/* Menu Form */}
             {showMenuForm && (
-              <form onSubmit={handleSaveMenu} className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-5">
+              <form onSubmit={handleSaveMenu} className="bg-background rounded-3xl p-6 shadow-sm border border-border/50 space-y-5">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-base font-black text-gray-900">
+                  <h2 className="text-base font-black text-foreground">
                     {editingMenu ? "Editar menú" : "Nuevo menú semanal"}
                   </h2>
-                  <button type="button" onClick={() => { setShowMenuForm(false); setEditingMenu(null); }} aria-label="Cerrar formulario" className="text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
+                  <button type="button" onClick={() => { setShowMenuForm(false); setEditingMenu(null); }} aria-label="Cerrar formulario" className="text-muted-foreground/70 hover:text-muted-foreground text-xl font-bold">×</button>
                 </div>
 
                 <div className="grid grid-cols-1 gap-4">
                   <div>
-                    <label className="text-xs font-bold text-gray-600 mb-1 block">Título del menú *</label>
+                    <label className="text-xs font-bold text-muted-foreground mb-1 block">Título del menú *</label>
                     <input
                       required
                       value={menuForm.title}
                       onChange={(e) => setMenuForm((p) => ({ ...p, title: e.target.value }))}
                       placeholder="Ej: Menú semanal para pérdida de peso"
-                      className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                      className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
                     />
                   </div>
                   <div>
-                    <label className="text-xs font-bold text-gray-600 mb-1 block">Descripción</label>
+                    <label className="text-xs font-bold text-muted-foreground mb-1 block">Descripción</label>
                     <textarea
                       value={menuForm.description}
                       onChange={(e) => setMenuForm((p) => ({ ...p, description: e.target.value }))}
                       placeholder="Describe el objetivo y características del menú..."
                       rows={2}
-                      className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
+                      className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
                     />
                   </div>
                   <div className="grid grid-cols-2 gap-3">
                     <div>
-                      <label className="text-xs font-bold text-gray-600 mb-1 block">Categoría</label>
+                      <label className="text-xs font-bold text-muted-foreground mb-1 block">Categoría</label>
                       <select
                         value={menuForm.category}
                         onChange={(e) => setMenuForm((p) => ({ ...p, category: e.target.value as Category }))}
-                        className="w-full rounded-xl border border-gray-200 px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                        className="w-full rounded-xl border border-border px-3 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
                       >
                         {CATEGORIES.map((c) => <option key={c.value} value={c.value}>{c.label}</option>)}
                       </select>
                     </div>
                     <div>
-                      <label className="text-xs font-bold text-gray-600 mb-1 block">Calorías/día</label>
+                      <label className="text-xs font-bold text-muted-foreground mb-1 block">Calorías/día</label>
                       <input
                         value={menuForm.dailyCalories}
                         onChange={(e) => setMenuForm((p) => ({ ...p, dailyCalories: e.target.value }))}
@@ -895,18 +895,18 @@ export default function BuddyExpertDashboard() {
                         type="number"
                         min="500"
                         max="5000"
-                        className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                        className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
                       />
                     </div>
                   </div>
                   <div>
-                    <label className="text-xs font-bold text-gray-600 mb-1 block">URL imagen de portada</label>
+                    <label className="text-xs font-bold text-muted-foreground mb-1 block">URL imagen de portada</label>
                     <input
                       value={menuForm.coverUrl}
                       onChange={(e) => setMenuForm((p) => ({ ...p, coverUrl: e.target.value }))}
                       placeholder="https://..."
                       type="url"
-                      className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                      className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
                     />
                   </div>
                   <div className="flex items-center gap-3">
@@ -917,28 +917,28 @@ export default function BuddyExpertDashboard() {
                       onChange={(e) => setMenuForm((p) => ({ ...p, isPublic: e.target.checked }))}
                       className="w-4 h-4 accent-orange-500"
                     />
-                    <label htmlFor="isPublic" className="text-sm font-semibold text-gray-700">Publicar como menú público (visible para todos)</label>
+                    <label htmlFor="isPublic" className="text-sm font-semibold text-foreground/80">Publicar como menú público (visible para todos)</label>
                   </div>
                 </div>
 
                 {/* Days & Meals */}
                 <div>
-                  <h3 className="text-sm font-black text-gray-900 mb-3">Contenido del menú</h3>
+                  <h3 className="text-sm font-black text-foreground mb-3">Contenido del menú</h3>
                   <div className="space-y-4">
                     {menuForm.days.map((dayData, dayIdx) => (
-                      <div key={dayData.day} className="border border-gray-100 rounded-2xl overflow-hidden">
+                      <div key={dayData.day} className="border border-border/50 rounded-2xl overflow-hidden">
                         <div className="bg-orange-50 px-4 py-2">
                           <span className="text-sm font-black text-orange-700">{dayData.day}</span>
                         </div>
                         <div className="p-3 space-y-2">
                           {dayData.meals.map((meal, mealIdx) => (
                             <div key={meal.name} className="flex items-center gap-2">
-                              <span className="text-xs font-bold text-gray-500 w-24 shrink-0">{meal.name}</span>
+                              <span className="text-xs font-bold text-muted-foreground w-24 shrink-0">{meal.name}</span>
                               <input
                                 value={meal.food}
                                 onChange={(e) => updateMealFood(dayIdx, mealIdx, e.target.value)}
                                 placeholder="Ej: Avena con frutas y miel"
-                                className="flex-1 rounded-xl border border-gray-200 px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-orange-400"
+                                className="flex-1 rounded-xl border border-border px-3 py-2 text-xs focus:outline-none focus:ring-2 focus:ring-orange-400"
                               />
                             </div>
                           ))}
@@ -952,7 +952,7 @@ export default function BuddyExpertDashboard() {
                   <button
                     type="button"
                     onClick={() => { setShowMenuForm(false); setEditingMenu(null); }}
-                    className="flex-1 py-3 rounded-2xl text-sm font-bold text-gray-600 bg-gray-100"
+                    className="flex-1 py-3 rounded-2xl text-sm font-bold text-muted-foreground bg-muted/50"
                   >
                     Cancelar
                   </button>
@@ -968,7 +968,7 @@ export default function BuddyExpertDashboard() {
                   </button>
                 </div>
 
-                <p className="text-xs text-gray-400 text-center">
+                <p className="text-xs text-muted-foreground/70 text-center">
                   * Nota: Este contenido no constituye recomendación profesional. Consulta a un profesional de la salud.
                 </p>
               </form>
@@ -1059,9 +1059,9 @@ function ServicePlansTab() {
       <button onClick={() => { resetForm(); setEditingPlan(null); setShowForm(true); }} className="w-full py-3 rounded-2xl border-2 border-dashed border-orange-300 text-orange-500 font-bold text-sm hover:bg-orange-50 transition-colors mb-4">
         + Crear nuevo plan de servicio
       </button>
-      {isLoading && <div className="h-24 bg-gray-100 rounded-2xl animate-pulse" />}
+      {isLoading && <div className="h-24 bg-muted/50 rounded-2xl animate-pulse" />}
       {!isLoading && (!plans || plans.length === 0) && (
-        <div className="text-center py-10 text-gray-400">
+        <div className="text-center py-10 text-muted-foreground/70">
           <div className="text-4xl mb-2">💰</div>
           <p className="text-sm">Aún no tienes planes de servicio</p>
         </div>
@@ -1071,27 +1071,27 @@ function ServicePlansTab() {
           let includes: string[] = [];
           try { includes = plan.includes ? JSON.parse(plan.includes) : []; } catch { includes = []; }
           return (
-            <div key={plan.id} className={`bg-white rounded-2xl border-2 p-4 shadow-sm ${plan.isPopular ? "border-orange-300" : "border-gray-100"}`}>
+            <div key={plan.id} className={`bg-background rounded-2xl border-2 p-4 shadow-sm ${plan.isPopular ? "border-orange-300" : "border-border/50"}`}>
               <div className="flex items-start justify-between gap-2">
                 <div className="flex-1">
                   <div className="flex items-center gap-2">
-                    <h4 className="font-bold text-gray-900 text-sm">{plan.name}</h4>
+                    <h4 className="font-bold text-foreground text-sm">{plan.name}</h4>
                     {plan.isPopular && <span className="text-xs bg-orange-100 text-orange-600 px-2 py-0.5 rounded-full font-medium">⭐ Popular</span>}
-                    {!plan.isActive && <span className="text-xs bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">Inactivo</span>}
+                    {!plan.isActive && <span className="text-xs bg-muted/50 text-muted-foreground px-2 py-0.5 rounded-full">Inactivo</span>}
                   </div>
-                  <p className="text-lg font-black text-orange-500 mt-0.5">{plan.price === 0 ? "Gratis" : `${plan.price}€`}<span className="text-xs font-normal text-gray-400">/{periodLabel[plan.billingPeriod] ?? plan.billingPeriod}</span></p>
-                  {plan.description && <p className="text-xs text-gray-500 mt-1">{plan.description}</p>}
+                  <p className="text-lg font-black text-orange-500 mt-0.5">{plan.price === 0 ? "Gratis" : `${plan.price}€`}<span className="text-xs font-normal text-muted-foreground/70">/{periodLabel[plan.billingPeriod] ?? plan.billingPeriod}</span></p>
+                  {plan.description && <p className="text-xs text-muted-foreground mt-1">{plan.description}</p>}
                   {includes.length > 0 && (
                     <ul className="mt-2 space-y-0.5">
                       {includes.slice(0, 3).map((item: string, i: number) => (
-                        <li key={i} className="text-xs text-gray-600 flex items-center gap-1"><span className="text-green-500">✓</span>{item}</li>
+                        <li key={i} className="text-xs text-muted-foreground flex items-center gap-1"><span className="text-green-500">✓</span>{item}</li>
                       ))}
-                      {includes.length > 3 && <li className="text-xs text-gray-400">+{includes.length - 3} más...</li>}
+                      {includes.length > 3 && <li className="text-xs text-muted-foreground/70">+{includes.length - 3} más...</li>}
                     </ul>
                   )}
                 </div>
                 <div className="flex flex-col gap-1">
-                  <button onClick={() => openEdit(plan)} className="text-xs bg-gray-100 text-gray-700 px-3 py-1.5 rounded-lg hover:bg-gray-200">✏️ Editar</button>
+                  <button onClick={() => openEdit(plan)} className="text-xs bg-muted/50 text-foreground/80 px-3 py-1.5 rounded-lg hover:bg-muted">✏️ Editar</button>
                   <button onClick={() => { if (confirm("¿Eliminar este plan?")) deleteMut.mutate({ id: plan.id }); }} className="text-xs bg-red-50 text-red-500 px-3 py-1.5 rounded-lg hover:bg-red-100">🗑️</button>
                 </div>
               </div>
@@ -1104,29 +1104,29 @@ function ServicePlansTab() {
       {showForm && (
         <div className="fixed inset-0 z-50 flex items-end sm:items-center justify-center p-0 sm:p-4" onClick={() => setShowForm(false)}>
           <div className="absolute inset-0 bg-black/50 backdrop-blur-sm" />
-          <div className="relative bg-white w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
+          <div className="relative bg-background w-full sm:max-w-lg rounded-t-3xl sm:rounded-3xl overflow-hidden shadow-2xl max-h-[90vh] flex flex-col" onClick={(e) => e.stopPropagation()}>
             <div className="p-5 overflow-y-auto">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="font-bold text-gray-900 text-lg">{editingPlan ? "Editar plan" : "Nuevo plan de servicio"}</h3>
-                <button onClick={() => setShowForm(false)} className="w-8 h-8 flex items-center justify-center rounded-full bg-gray-100 text-gray-500">×</button>
+                <h3 className="font-bold text-foreground text-lg">{editingPlan ? "Editar plan" : "Nuevo plan de servicio"}</h3>
+                <button onClick={() => setShowForm(false)} className="w-8 h-8 flex items-center justify-center rounded-full bg-muted/50 text-muted-foreground">×</button>
               </div>
               <div className="space-y-3">
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Nombre del plan *</label>
-                  <input value={form.name} onChange={e => setForm(f => ({...f, name: e.target.value}))} placeholder="Ej: Plan Seguimiento Mensual" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300" />
+                  <label className="block text-xs font-medium text-foreground/80 mb-1">Nombre del plan *</label>
+                  <input value={form.name} onChange={e => setForm(f => ({...f, name: e.target.value}))} placeholder="Ej: Plan Seguimiento Mensual" className="w-full border border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300" />
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Descripción</label>
-                  <textarea value={form.description} onChange={e => setForm(f => ({...f, description: e.target.value}))} placeholder="Describe qué incluye este plan..." className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange-300" rows={2} />
+                  <label className="block text-xs font-medium text-foreground/80 mb-1">Descripción</label>
+                  <textarea value={form.description} onChange={e => setForm(f => ({...f, description: e.target.value}))} placeholder="Describe qué incluye este plan..." className="w-full border border-border rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange-300" rows={2} />
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Precio (€) *</label>
-                    <input type="number" value={form.price} onChange={e => setForm(f => ({...f, price: e.target.value}))} placeholder="89" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300" />
+                    <label className="block text-xs font-medium text-foreground/80 mb-1">Precio (€) *</label>
+                    <input type="number" value={form.price} onChange={e => setForm(f => ({...f, price: e.target.value}))} placeholder="89" className="w-full border border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300" />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Facturación</label>
-                    <select value={form.billingPeriod} onChange={e => setForm(f => ({...f, billingPeriod: e.target.value}))} className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
+                    <label className="block text-xs font-medium text-foreground/80 mb-1">Facturación</label>
+                    <select value={form.billingPeriod} onChange={e => setForm(f => ({...f, billingPeriod: e.target.value}))} className="w-full border border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300">
                       <option value="monthly">Mensual</option>
                       <option value="quarterly">Trimestral</option>
                       <option value="annual">Anual</option>
@@ -1136,21 +1136,21 @@ function ServicePlansTab() {
                 </div>
                 <div className="grid grid-cols-2 gap-3">
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Duración (meses)</label>
-                    <input type="number" value={form.durationMonths} onChange={e => setForm(f => ({...f, durationMonths: e.target.value}))} placeholder="3" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300" />
+                    <label className="block text-xs font-medium text-foreground/80 mb-1">Duración (meses)</label>
+                    <input type="number" value={form.durationMonths} onChange={e => setForm(f => ({...f, durationMonths: e.target.value}))} placeholder="3" className="w-full border border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300" />
                   </div>
                   <div>
-                    <label className="block text-xs font-medium text-gray-700 mb-1">Consultas incluidas</label>
-                    <input type="number" value={form.maxConsultations} onChange={e => setForm(f => ({...f, maxConsultations: e.target.value}))} placeholder="2" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300" />
+                    <label className="block text-xs font-medium text-foreground/80 mb-1">Consultas incluidas</label>
+                    <input type="number" value={form.maxConsultations} onChange={e => setForm(f => ({...f, maxConsultations: e.target.value}))} placeholder="2" className="w-full border border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300" />
                   </div>
                 </div>
                 <div>
-                  <label className="block text-xs font-medium text-gray-700 mb-1">Qué incluye (una línea por item)</label>
-                  <textarea value={form.includes} onChange={e => setForm(f => ({...f, includes: e.target.value}))} placeholder="Menú semanal personalizado&#10;2 consultas/mes&#10;Chat con la nutricionista" className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange-300" rows={4} />
+                  <label className="block text-xs font-medium text-foreground/80 mb-1">Qué incluye (una línea por item)</label>
+                  <textarea value={form.includes} onChange={e => setForm(f => ({...f, includes: e.target.value}))} placeholder="Menú semanal personalizado&#10;2 consultas/mes&#10;Chat con la nutricionista" className="w-full border border-border rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange-300" rows={4} />
                 </div>
                 <label className="flex items-center gap-2 cursor-pointer">
                   <input type="checkbox" checked={form.isPopular} onChange={e => setForm(f => ({...f, isPopular: e.target.checked}))} className="w-4 h-4 accent-orange-500" />
-                  <span className="text-sm text-gray-700">Marcar como plan popular (⭐)</span>
+                  <span className="text-sm text-foreground/80">Marcar como plan popular (⭐)</span>
                 </label>
               </div>
               <button
@@ -1270,22 +1270,22 @@ function BlogTab({ expertProfile }: { expertProfile: any }) {
 
   if (showForm) {
     return (
-      <form onSubmit={handleSubmit} className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 space-y-4">
+      <form onSubmit={handleSubmit} className="bg-background rounded-3xl p-6 shadow-sm border border-border/50 space-y-4">
         <div className="flex items-center justify-between mb-1">
-          <h2 className="text-base font-black text-gray-900">{editingPost ? "Editar artículo" : "Nuevo artículo"}</h2>
-          <button type="button" onClick={() => { setShowForm(false); setEditingPost(null); resetForm(); }} className="text-gray-400 hover:text-gray-600 text-sm">✕ Cancelar</button>
+          <h2 className="text-base font-black text-foreground">{editingPost ? "Editar artículo" : "Nuevo artículo"}</h2>
+          <button type="button" onClick={() => { setShowForm(false); setEditingPost(null); resetForm(); }} className="text-muted-foreground/70 hover:text-muted-foreground text-sm">✕ Cancelar</button>
         </div>
 
         {/* Cover image */}
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1.5">Imagen de portada</label>
+          <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Imagen de portada</label>
           {form.coverImageUrl ? (
             <div className="relative">
               <img src={form.coverImageUrl} alt="Portada" className="w-full h-40 object-cover rounded-2xl" />
               <button type="button" onClick={() => setForm((f) => ({ ...f, coverImageUrl: "" }))} aria-label="Eliminar imagen" className="absolute top-2 right-2 bg-black/50 text-white rounded-full w-7 h-7 flex items-center justify-center text-xs hover:bg-black/70">✕</button>
             </div>
           ) : (
-            <button type="button" onClick={() => fileRef.current?.click()} className="w-full h-32 border-2 border-dashed border-gray-200 rounded-2xl flex flex-col items-center justify-center gap-2 text-gray-400 hover:border-orange-300 hover:text-orange-400 transition-colors">
+            <button type="button" onClick={() => fileRef.current?.click()} className="w-full h-32 border-2 border-dashed border-border rounded-2xl flex flex-col items-center justify-center gap-2 text-muted-foreground/70 hover:border-orange-300 hover:text-orange-400 transition-colors">
               {uploadCoverMutation.isPending ? <div className="w-5 h-5 border-2 border-orange-400 border-t-transparent rounded-full animate-spin" /> : <>🖼️<span className="text-xs">Subir imagen de portada</span></>}
             </button>
           )}
@@ -1294,41 +1294,41 @@ function BlogTab({ expertProfile }: { expertProfile: any }) {
 
         {/* Title */}
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1.5">Título *</label>
-          <input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} required minLength={5} maxLength={256} placeholder="Escribe un título atractivo..." className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300" />
+          <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Título *</label>
+          <input value={form.title} onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))} required minLength={5} maxLength={256} placeholder="Escribe un título atractivo..." className="w-full px-4 py-3 rounded-2xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-orange-300" />
         </div>
 
         {/* Excerpt */}
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1.5">Resumen (opcional)</label>
-          <textarea value={form.excerpt} onChange={(e) => setForm((f) => ({ ...f, excerpt: e.target.value }))} maxLength={500} rows={2} placeholder="Breve descripción del artículo (aparece en la lista del blog)..." className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 resize-none" />
+          <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Resumen (opcional)</label>
+          <textarea value={form.excerpt} onChange={(e) => setForm((f) => ({ ...f, excerpt: e.target.value }))} maxLength={500} rows={2} placeholder="Breve descripción del artículo (aparece en la lista del blog)..." className="w-full px-4 py-3 rounded-2xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 resize-none" />
         </div>
 
         {/* Content */}
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1.5">Contenido *</label>
-          <textarea value={form.content} onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))} required minLength={10} rows={12} placeholder="Escribe aquí el contenido completo del artículo. Puedes usar Markdown: **negrita**, *cursiva*, ## Títulos, - listas..." className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 resize-y font-mono" />
-          <p className="text-xs text-gray-400 mt-1">Soporta formato Markdown básico</p>
+          <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Contenido *</label>
+          <textarea value={form.content} onChange={(e) => setForm((f) => ({ ...f, content: e.target.value }))} required minLength={10} rows={12} placeholder="Escribe aquí el contenido completo del artículo. Puedes usar Markdown: **negrita**, *cursiva*, ## Títulos, - listas..." className="w-full px-4 py-3 rounded-2xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 resize-y font-mono" />
+          <p className="text-xs text-muted-foreground/70 mt-1">Soporta formato Markdown básico</p>
         </div>
 
         {/* Category + Read time */}
         <div className="grid grid-cols-2 gap-3">
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Categoría</label>
-            <select value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))} className="w-full px-3 py-2.5 rounded-2xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 bg-white">
+            <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Categoría</label>
+            <select value={form.category} onChange={(e) => setForm((f) => ({ ...f, category: e.target.value }))} className="w-full px-3 py-2.5 rounded-2xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-orange-300 bg-background">
               {BLOG_CATEGORIES.map((c) => <option key={c} value={c}>{c}</option>)}
             </select>
           </div>
           <div>
-            <label className="block text-xs font-semibold text-gray-600 mb-1.5">Tiempo de lectura (min)</label>
-            <input type="number" min={1} max={60} value={form.readTimeMinutes} onChange={(e) => setForm((f) => ({ ...f, readTimeMinutes: parseInt(e.target.value) || 5 }))} className="w-full px-3 py-2.5 rounded-2xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300" />
+            <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Tiempo de lectura (min)</label>
+            <input type="number" min={1} max={60} value={form.readTimeMinutes} onChange={(e) => setForm((f) => ({ ...f, readTimeMinutes: parseInt(e.target.value) || 5 }))} className="w-full px-3 py-2.5 rounded-2xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-orange-300" />
           </div>
         </div>
 
         {/* Tags */}
         <div>
-          <label className="block text-xs font-semibold text-gray-600 mb-1.5">Etiquetas (separadas por coma)</label>
-          <input value={form.tags} onChange={(e) => setForm((f) => ({ ...f, tags: e.target.value }))} placeholder="nutrición, proteinas, dieta..." className="w-full px-4 py-3 rounded-2xl border border-gray-200 text-sm focus:outline-none focus:ring-2 focus:ring-orange-300" />
+          <label className="block text-xs font-semibold text-muted-foreground mb-1.5">Etiquetas (separadas por coma)</label>
+          <input value={form.tags} onChange={(e) => setForm((f) => ({ ...f, tags: e.target.value }))} placeholder="nutrición, proteinas, dieta..." className="w-full px-4 py-3 rounded-2xl border border-border text-sm focus:outline-none focus:ring-2 focus:ring-orange-300" />
         </div>
 
         <div className="flex gap-3 pt-2">
@@ -1336,7 +1336,7 @@ function BlogTab({ expertProfile }: { expertProfile: any }) {
             {(createMutation.isPending || updateMutation.isPending) ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Guardando...</> : editingPost ? "✓ Guardar cambios" : "💾 Guardar borrador"}
           </button>
         </div>
-        <p className="text-xs text-gray-400 text-center">* Este contenido no constituye recomendación profesional. Consulta a un profesional de la salud.</p>
+        <p className="text-xs text-muted-foreground/70 text-center">* Este contenido no constituye recomendación profesional. Consulta a un profesional de la salud.</p>
       </form>
     );
   }
@@ -1344,45 +1344,45 @@ function BlogTab({ expertProfile }: { expertProfile: any }) {
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between">
-        <h2 className="text-base font-black text-gray-900">✍️ Mis artículos</h2>
+        <h2 className="text-base font-black text-foreground">✍️ Mis artículos</h2>
         <button onClick={() => { resetForm(); setEditingPost(null); setShowForm(true); }} className="flex items-center gap-1.5 px-4 py-2 rounded-2xl text-sm font-bold text-white" style={{ background: "linear-gradient(135deg, #F97316, #FB923C)" }}>
           + Nuevo artículo
         </button>
       </div>
 
       {!myPosts || myPosts.length === 0 ? (
-        <div className="bg-gray-50 rounded-3xl p-8 text-center space-y-3">
+        <div className="bg-muted/30 rounded-3xl p-8 text-center space-y-3">
           <div className="text-4xl">📝</div>
-          <p className="text-sm font-semibold text-gray-700">Aún no has escrito ningún artículo</p>
-          <p className="text-xs text-gray-400">Comparte tu conocimiento con la comunidad BuddyMarket</p>
+          <p className="text-sm font-semibold text-foreground/80">Aún no has escrito ningún artículo</p>
+          <p className="text-xs text-muted-foreground/70">Comparte tu conocimiento con la comunidad BuddyMarket</p>
         </div>
       ) : (
         <div className="space-y-3">
           {myPosts.map((post) => (
-            <div key={post.id} className="bg-white rounded-2xl p-4 shadow-sm border border-gray-100">
+            <div key={post.id} className="bg-background rounded-2xl p-4 shadow-sm border border-border/50">
               <div className="flex gap-3">
                 {post.coverImageUrl && (
                   <img src={post.coverImageUrl} alt={post.title} className="w-16 h-16 rounded-xl object-cover flex-shrink-0" />
                 )}
                 <div className="flex-1 min-w-0">
                   <div className="flex items-start justify-between gap-2">
-                    <h3 className="text-sm font-bold text-gray-900 line-clamp-2">{post.title}</h3>
+                    <h3 className="text-sm font-bold text-foreground line-clamp-2">{post.title}</h3>
                     <span className={`flex-shrink-0 text-xs px-2 py-0.5 rounded-full font-semibold ${
                       post.status === "published" ? "bg-green-100 text-green-700" :
-                      post.status === "archived" ? "bg-gray-100 text-gray-500" :
+                      post.status === "archived" ? "bg-muted/50 text-muted-foreground" :
                       "bg-yellow-100 text-yellow-700"
                     }`}>
                       {post.status === "published" ? "✅ Publicado" : post.status === "archived" ? "Archivado" : "📝 Borrador"}
                     </span>
                   </div>
-                  <p className="text-xs text-gray-500 mt-1">{post.category} · {post.readTimeMinutes} min lectura</p>
+                  <p className="text-xs text-muted-foreground mt-1">{post.category} · {post.readTimeMinutes} min lectura</p>
                   {post.publishedAt && (
-                    <p className="text-xs text-gray-400">{new Date(post.publishedAt).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}</p>
+                    <p className="text-xs text-muted-foreground/70">{new Date(post.publishedAt).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}</p>
                   )}
                 </div>
               </div>
               <div className="flex gap-2 mt-3">
-                <button onClick={() => openEdit(post)} className="flex-1 py-1.5 rounded-xl text-xs font-semibold bg-gray-100 text-gray-700 hover:bg-gray-200 transition-colors">✏️ Editar</button>
+                <button onClick={() => openEdit(post)} className="flex-1 py-1.5 rounded-xl text-xs font-semibold bg-muted/50 text-foreground/80 hover:bg-muted transition-colors">✏️ Editar</button>
                 <button
                   onClick={() => publishMutation.mutate({ id: post.id, publish: post.status !== "published" })}
                   disabled={publishMutation.isPending}
@@ -1528,8 +1528,8 @@ function PdfPlansTab({ expertProfile }: { expertProfile: any }) {
     <div className="space-y-4">
       {/* Header */}
       <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-100 rounded-2xl p-4">
-        <h3 className="font-black text-gray-900 text-sm mb-1">📄 Planes PDF personalizados</h3>
-        <p className="text-xs text-gray-600">Sube planes nutricionales en PDF para tus clientes. La IA leerá el PDF y generará un menú semanal + lista de la compra adaptado a las preferencias de cada cliente.</p>
+        <h3 className="font-black text-foreground text-sm mb-1">📄 Planes PDF personalizados</h3>
+        <p className="text-xs text-muted-foreground">Sube planes nutricionales en PDF para tus clientes. La IA leerá el PDF y generará un menú semanal + lista de la compra adaptado a las preferencias de cada cliente.</p>
       </div>
 
       {/* Create button / form */}
@@ -1542,32 +1542,32 @@ function PdfPlansTab({ expertProfile }: { expertProfile: any }) {
           + Crear nuevo plan PDF
         </button>
       ) : (
-        <form onSubmit={handleCreate} className="bg-white rounded-2xl p-5 shadow-sm border border-gray-100 space-y-4">
+        <form onSubmit={handleCreate} className="bg-background rounded-2xl p-5 shadow-sm border border-border/50 space-y-4">
           <div className="flex items-center justify-between mb-1">
-            <h3 className="font-black text-gray-900 text-sm">Nuevo plan PDF</h3>
-            <button type="button" onClick={() => { setShowForm(false); resetForm(); }} aria-label="Cerrar formulario" className="text-gray-400 hover:text-gray-600 text-lg">✕</button>
+            <h3 className="font-black text-foreground text-sm">Nuevo plan PDF</h3>
+            <button type="button" onClick={() => { setShowForm(false); resetForm(); }} aria-label="Cerrar formulario" className="text-muted-foreground/70 hover:text-muted-foreground text-lg">✕</button>
           </div>
           <div>
-            <label className="text-xs font-bold text-gray-600 mb-1 block">Título del plan *</label>
-            <input value={form.title} onChange={(e) => setForm(p => ({ ...p, title: e.target.value }))} required placeholder="Ej: Plan Pérdida de Peso — Semana 1" className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
+            <label className="text-xs font-bold text-muted-foreground mb-1 block">Título del plan *</label>
+            <input value={form.title} onChange={(e) => setForm(p => ({ ...p, title: e.target.value }))} required placeholder="Ej: Plan Pérdida de Peso — Semana 1" className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
           </div>
           <div>
-            <label className="text-xs font-bold text-gray-600 mb-1 block">Descripción</label>
-            <textarea value={form.description} onChange={(e) => setForm(p => ({ ...p, description: e.target.value }))} rows={2} placeholder="Breve descripción del plan..." className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none" />
+            <label className="text-xs font-bold text-muted-foreground mb-1 block">Descripción</label>
+            <textarea value={form.description} onChange={(e) => setForm(p => ({ ...p, description: e.target.value }))} rows={2} placeholder="Breve descripción del plan..." className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none" />
           </div>
           <div className="grid grid-cols-2 gap-3">
             <div>
-              <label className="text-xs font-bold text-gray-600 mb-1 block">Semana nº</label>
-              <input type="number" min="1" max="52" value={form.weekNumber} onChange={(e) => setForm(p => ({ ...p, weekNumber: e.target.value }))} placeholder="Ej: 1" className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
+              <label className="text-xs font-bold text-muted-foreground mb-1 block">Semana nº</label>
+              <input type="number" min="1" max="52" value={form.weekNumber} onChange={(e) => setForm(p => ({ ...p, weekNumber: e.target.value }))} placeholder="Ej: 1" className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
             </div>
             <div>
-              <label className="text-xs font-bold text-gray-600 mb-1 block">Año</label>
-              <input type="number" min="2024" max="2030" value={form.year} onChange={(e) => setForm(p => ({ ...p, year: e.target.value }))} className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
+              <label className="text-xs font-bold text-muted-foreground mb-1 block">Año</label>
+              <input type="number" min="2024" max="2030" value={form.year} onChange={(e) => setForm(p => ({ ...p, year: e.target.value }))} className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
             </div>
           </div>
           <div>
-            <label className="text-xs font-bold text-gray-600 mb-1 block">Notas internas</label>
-            <textarea value={form.notes} onChange={(e) => setForm(p => ({ ...p, notes: e.target.value }))} rows={2} placeholder="Notas para el cliente, ajustes especiales..." className="w-full rounded-xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none" />
+            <label className="text-xs font-bold text-muted-foreground mb-1 block">Notas internas</label>
+            <textarea value={form.notes} onChange={(e) => setForm(p => ({ ...p, notes: e.target.value }))} rows={2} placeholder="Notas para el cliente, ajustes especiales..." className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none" />
           </div>
           <button type="submit" disabled={createMutation.isPending} className="w-full py-3.5 rounded-2xl text-sm font-bold text-white flex items-center justify-center gap-2 disabled:opacity-60" style={{ background: "linear-gradient(135deg, #F97316, #FB923C)" }}>
             {createMutation.isPending ? <><div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />Creando...</> : "✓ Crear plan"}
@@ -1577,7 +1577,7 @@ function PdfPlansTab({ expertProfile }: { expertProfile: any }) {
 
       {/* Plans list */}
       {(!myPlans || myPlans.length === 0) ? (
-        <div className="text-center py-12 text-gray-400">
+        <div className="text-center py-12 text-muted-foreground/70">
           <div className="text-5xl mb-3">📄</div>
           <p className="font-semibold">Aún no tienes planes PDF</p>
           <p className="text-sm mt-1">Crea un plan y sube el PDF con el menú nutricional</p>
@@ -1597,19 +1597,19 @@ function PdfPlansTab({ expertProfile }: { expertProfile: any }) {
             try { if (plan.aiGeneratedShoppingList) parsedShopping = JSON.parse(plan.aiGeneratedShoppingList); } catch {}
 
             return (
-              <div key={plan.id} className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
+              <div key={plan.id} className="bg-background rounded-2xl shadow-sm border border-border/50 overflow-hidden">
                 {/* Plan header */}
                 <div className="p-4">
                   <div className="flex items-start justify-between gap-2 mb-3">
                     <div className="flex-1 min-w-0">
-                      <h3 className="font-bold text-gray-900 text-sm truncate">{plan.title}</h3>
-                      {plan.description && <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{plan.description}</p>}
+                      <h3 className="font-bold text-foreground text-sm truncate">{plan.title}</h3>
+                      {plan.description && <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{plan.description}</p>}
                       <div className="flex items-center gap-2 mt-1.5 flex-wrap">
                         {plan.weekNumber && <span className="text-xs bg-blue-50 text-blue-600 rounded-full px-2 py-0.5 font-semibold">Semana {plan.weekNumber}</span>}
                         <select
                           value={plan.status}
                           onChange={(e) => updateStatusMutation.mutate({ planId: plan.id, status: e.target.value as any })}
-                          className={`text-xs rounded-full px-2 py-0.5 font-semibold border-0 cursor-pointer focus:outline-none focus:ring-1 focus:ring-orange-400 ${plan.status === "active" ? "bg-green-100 text-green-700" : plan.status === "archived" ? "bg-gray-100 text-gray-500" : "bg-yellow-100 text-yellow-700"}`}
+                          className={`text-xs rounded-full px-2 py-0.5 font-semibold border-0 cursor-pointer focus:outline-none focus:ring-1 focus:ring-orange-400 ${plan.status === "active" ? "bg-green-100 text-green-700" : plan.status === "archived" ? "bg-muted/50 text-muted-foreground" : "bg-yellow-100 text-yellow-700"}`}
                         >
                           <option value="draft">Borrador</option>
                           <option value="active">✓ Activo</option>
@@ -1621,7 +1621,7 @@ function PdfPlansTab({ expertProfile }: { expertProfile: any }) {
                       </div>
                     </div>
                     <div className="flex items-center gap-1 shrink-0">
-                      <button onClick={() => setExpandedPlan(isExpanded ? null : plan.id)} className="text-gray-400 hover:text-gray-600 text-sm p-1" title={isExpanded ? "Colapsar" : "Expandir"}>
+                      <button onClick={() => setExpandedPlan(isExpanded ? null : plan.id)} className="text-muted-foreground/70 hover:text-muted-foreground text-sm p-1" title={isExpanded ? "Colapsar" : "Expandir"}>
                         {isExpanded ? "▲" : "▼"}
                       </button>
                       <button onClick={() => { if (confirm("¿Eliminar este plan?")) deleteMutation.mutate({ id: plan.id }); }} className="text-red-400 hover:text-red-600 text-sm p-1" title="Eliminar">🗑️</button>
@@ -1630,7 +1630,7 @@ function PdfPlansTab({ expertProfile }: { expertProfile: any }) {
 
                   {/* PDF Upload Zone */}
                   <div
-                    className={`border-2 border-dashed rounded-xl p-3 transition-all ${isDragOver ? "border-orange-400 bg-orange-50" : "border-gray-200 hover:border-orange-300"} ${isUploadingThis ? "opacity-60" : ""}`}
+                    className={`border-2 border-dashed rounded-xl p-3 transition-all ${isDragOver ? "border-orange-400 bg-orange-50" : "border-border hover:border-orange-300"} ${isUploadingThis ? "opacity-60" : ""}`}
                     onDragOver={(e) => { e.preventDefault(); setDragOverPlan(plan.id); }}
                     onDragLeave={() => setDragOverPlan(null)}
                     onDrop={(e) => handleDrop(plan.id, e)}
@@ -1646,7 +1646,7 @@ function PdfPlansTab({ expertProfile }: { expertProfile: any }) {
                           <span>📄</span>
                           <span className="truncate">{plan.pdfFileName ?? "Ver PDF"}</span>
                         </a>
-                        <button onClick={() => handleFileInput(plan.id)} className="text-xs text-gray-500 hover:text-orange-600 font-semibold shrink-0 whitespace-nowrap">
+                        <button onClick={() => handleFileInput(plan.id)} className="text-xs text-muted-foreground hover:text-orange-600 font-semibold shrink-0 whitespace-nowrap">
                           ↻ Reemplazar
                         </button>
                       </div>
@@ -1654,7 +1654,7 @@ function PdfPlansTab({ expertProfile }: { expertProfile: any }) {
                       <button onClick={() => handleFileInput(plan.id)} className="w-full text-center">
                         <div className="text-2xl mb-1">📤</div>
                         <p className="text-xs font-bold text-orange-600">Subir PDF del plan nutricional</p>
-                        <p className="text-xs text-gray-400 mt-0.5">Arrastra aquí o haz clic · Máx. 16 MB</p>
+                        <p className="text-xs text-muted-foreground/70 mt-0.5">Arrastra aquí o haz clic · Máx. 16 MB</p>
                       </button>
                     )}
                   </div>
@@ -1683,24 +1683,24 @@ function PdfPlansTab({ expertProfile }: { expertProfile: any }) {
                       <p className="text-xs font-bold text-purple-700 mb-2">Preferencias para generar el menú</p>
                       <div className="grid grid-cols-2 gap-2">
                         <div>
-                          <label className="text-xs text-gray-600 font-semibold block mb-1">Alergias</label>
+                          <label className="text-xs text-muted-foreground font-semibold block mb-1">Alergias</label>
                           <input value={menuPrefs.allergies} onChange={(e) => setMenuPrefs(p => ({ ...p, allergies: e.target.value }))} placeholder="Ej: gluten, lactosa" className="w-full rounded-lg border border-purple-200 px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-purple-400" />
                         </div>
                         <div>
-                          <label className="text-xs text-gray-600 font-semibold block mb-1">Restricciones</label>
+                          <label className="text-xs text-muted-foreground font-semibold block mb-1">Restricciones</label>
                           <input value={menuPrefs.restrictions} onChange={(e) => setMenuPrefs(p => ({ ...p, restrictions: e.target.value }))} placeholder="Ej: vegetariano" className="w-full rounded-lg border border-purple-200 px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-purple-400" />
                         </div>
                         <div>
-                          <label className="text-xs text-gray-600 font-semibold block mb-1">No le gusta</label>
+                          <label className="text-xs text-muted-foreground font-semibold block mb-1">No le gusta</label>
                           <input value={menuPrefs.dislikedFoods} onChange={(e) => setMenuPrefs(p => ({ ...p, dislikedFoods: e.target.value }))} placeholder="Ej: brócoli, hígado" className="w-full rounded-lg border border-purple-200 px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-purple-400" />
                         </div>
                         <div>
-                          <label className="text-xs text-gray-600 font-semibold block mb-1">Personas</label>
+                          <label className="text-xs text-muted-foreground font-semibold block mb-1">Personas</label>
                           <input type="number" min="1" max="10" value={menuPrefs.persons} onChange={(e) => setMenuPrefs(p => ({ ...p, persons: e.target.value }))} className="w-full rounded-lg border border-purple-200 px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-purple-400" />
                         </div>
                       </div>
                       <div>
-                        <label className="text-xs text-gray-600 font-semibold block mb-1">Tiempo de cocina</label>
+                        <label className="text-xs text-muted-foreground font-semibold block mb-1">Tiempo de cocina</label>
                         <select value={menuPrefs.cookingTime} onChange={(e) => setMenuPrefs(p => ({ ...p, cookingTime: e.target.value }))} className="w-full rounded-lg border border-purple-200 px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-purple-400">
                           <option value="">Sin restricción</option>
                           <option value="rapido">Rápido (&lt;20 min)</option>
@@ -1709,7 +1709,7 @@ function PdfPlansTab({ expertProfile }: { expertProfile: any }) {
                         </select>
                       </div>
                       <div>
-                        <label className="text-xs text-gray-600 font-semibold block mb-1">Notas adicionales</label>
+                        <label className="text-xs text-muted-foreground font-semibold block mb-1">Notas adicionales</label>
                         <textarea value={menuPrefs.notes} onChange={(e) => setMenuPrefs(p => ({ ...p, notes: e.target.value }))} rows={2} placeholder="Cualquier indicación adicional..." className="w-full rounded-lg border border-purple-200 px-3 py-1.5 text-xs focus:outline-none focus:ring-1 focus:ring-purple-400 resize-none" />
                       </div>
                       <button
@@ -1746,7 +1746,7 @@ function PdfPlansTab({ expertProfile }: { expertProfile: any }) {
                         <p className="text-xs text-red-500">No se encontró ningún usuario con ese email.</p>
                       )}
                       {clientSearchEnabled && foundClient && (
-                        <div className="flex items-center justify-between bg-white rounded-lg p-2 border border-teal-200">
+                        <div className="flex items-center justify-between bg-background rounded-lg p-2 border border-teal-200">
                           <div className="flex items-center gap-2">
                             {foundClient.avatarUrl ? (
                               <img src={foundClient.avatarUrl} alt="" className="w-7 h-7 rounded-full object-cover" />
@@ -1756,8 +1756,8 @@ function PdfPlansTab({ expertProfile }: { expertProfile: any }) {
                               </div>
                             )}
                             <div>
-                              <p className="text-xs font-bold text-gray-800">{foundClient.name ?? "Sin nombre"}</p>
-                              <p className="text-xs text-gray-500">{foundClient.email}</p>
+                              <p className="text-xs font-bold text-foreground">{foundClient.name ?? "Sin nombre"}</p>
+                              <p className="text-xs text-muted-foreground">{foundClient.email}</p>
                             </div>
                           </div>
                           <button
@@ -1775,11 +1775,11 @@ function PdfPlansTab({ expertProfile }: { expertProfile: any }) {
 
                 {/* Expanded: AI Generated Menu */}
                 {isExpanded && parsedMenu && (
-                  <div className="border-t border-gray-100 bg-gray-50 p-4">
+                  <div className="border-t border-border/50 bg-muted/30 p-4">
                     <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-bold text-gray-800 text-sm">✨ Menú semanal generado por IA</h4>
+                      <h4 className="font-bold text-foreground text-sm">✨ Menú semanal generado por IA</h4>
                       {plan.aiGeneratedAt && (
-                        <span className="text-xs text-gray-400">
+                        <span className="text-xs text-muted-foreground/70">
                           {new Date(plan.aiGeneratedAt).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
                         </span>
                       )}
@@ -1789,7 +1789,7 @@ function PdfPlansTab({ expertProfile }: { expertProfile: any }) {
                         const dayMenu = parsedMenu[dayKey];
                         if (!dayMenu) return null;
                         return (
-                          <div key={dayKey} className="bg-white rounded-xl p-3 border border-gray-100">
+                          <div key={dayKey} className="bg-background rounded-xl p-3 border border-border/50">
                             <h5 className="font-bold text-orange-600 text-xs uppercase tracking-wide mb-2">{dayLabel}</h5>
                             <div className="space-y-1">
                               {Object.entries(MEALS_ES).map(([mealKey, mealLabel]) => {
@@ -1797,8 +1797,8 @@ function PdfPlansTab({ expertProfile }: { expertProfile: any }) {
                                 if (!meal) return null;
                                 return (
                                   <div key={mealKey} className="flex gap-2 text-xs">
-                                    <span className="text-gray-500 w-28 shrink-0">{mealLabel}</span>
-                                    <span className="text-gray-700">{meal}</span>
+                                    <span className="text-muted-foreground w-28 shrink-0">{mealLabel}</span>
+                                    <span className="text-foreground/80">{meal}</span>
                                   </div>
                                 );
                               })}
@@ -1809,17 +1809,17 @@ function PdfPlansTab({ expertProfile }: { expertProfile: any }) {
                     </div>
                     {parsedShopping && (
                       <div className="mt-4">
-                        <h4 className="font-bold text-gray-800 text-sm mb-3">🛒 Lista de la compra</h4>
+                        <h4 className="font-bold text-foreground text-sm mb-3">🛒 Lista de la compra</h4>
                         <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                           {Object.entries(SHOPPING_ES).map(([catKey, catLabel]) => {
                             const items: string[] = parsedShopping[catKey];
                             if (!items || items.length === 0) return null;
                             return (
-                              <div key={catKey} className="bg-white rounded-xl p-3 border border-gray-100">
-                                <h5 className="font-bold text-gray-700 text-xs mb-2">{catLabel}</h5>
+                              <div key={catKey} className="bg-background rounded-xl p-3 border border-border/50">
+                                <h5 className="font-bold text-foreground/80 text-xs mb-2">{catLabel}</h5>
                                 <ul className="space-y-0.5">
                                   {items.map((item, i) => (
-                                    <li key={i} className="text-xs text-gray-600 flex items-center gap-1.5">
+                                    <li key={i} className="text-xs text-muted-foreground flex items-center gap-1.5">
                                       <span className="w-1.5 h-1.5 rounded-full bg-orange-400 shrink-0" />
                                       {item}
                                     </li>
@@ -1834,7 +1834,7 @@ function PdfPlansTab({ expertProfile }: { expertProfile: any }) {
                   </div>
                 )}
                 {isExpanded && !parsedMenu && (
-                  <div className="border-t border-gray-100 bg-gray-50 p-4 text-center text-xs text-gray-400">
+                  <div className="border-t border-border/50 bg-muted/30 p-4 text-center text-xs text-muted-foreground/70">
                     {plan.pdfUrl ? "Genera el menú con IA usando el botón de arriba." : "Sube el PDF primero para poder generar el menú con IA."}
                   </div>
                 )}

@@ -384,32 +384,32 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
     <div className="vively-page">
       {/* Header */}
       <div className="mb-5 flex items-center gap-3">
-        <button onClick={onBack} className="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm">
-          <ChevronLeftIcon className="h-5 w-5 text-gray-600" />
+        <button onClick={onBack} className="flex h-9 w-9 items-center justify-center rounded-full bg-background shadow-sm">
+          <ChevronLeftIcon className="h-5 w-5 text-muted-foreground" />
         </button>
         <div className="flex-1 min-w-0">
-          <h1 className="text-lg font-bold text-gray-900 truncate">
+          <h1 className="text-lg font-bold text-foreground truncate">
             {(listData as any)?.list?.name ?? (listData as any)?.name ?? "Lista"}
           </h1>
-          <p className="text-xs text-gray-500">{purchasedCount + inPantryCount}/{totalCount} listos</p>
+          <p className="text-xs text-muted-foreground">{purchasedCount + inPantryCount}/{totalCount} listos</p>
         </div>
         <button
           onClick={() => setShowShare(true)}
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm mr-1"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-background shadow-sm mr-1"
           title="Exportar / Compartir lista"
         >
           <ArrowTopRightOnSquareIcon className="h-5 w-5 text-emerald-500" />
         </button>
         <button
           onClick={() => setShowSaveTemplate(true)}
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm mr-1"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-background shadow-sm mr-1"
           title="Guardar como plantilla"
         >
           <BookmarkIcon className="h-5 w-5 text-violet-500" />
         </button>
         <button
           onClick={() => setShowCompare(true)}
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm mr-1"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-background shadow-sm mr-1"
           title="Comparar precios entre supermercados"
         >
           <ScaleIcon className="h-5 w-5 text-purple-500" />
@@ -422,7 +422,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
             }
             setShowExport(true); setSelectedSupermarket(null);
           }}
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm mr-1"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-background shadow-sm mr-1"
           title={can("canConnectSupermarket") ? "Comprar en supermercado online" : "Requiere plan Premium"}
         >
           <BuildingStorefrontIcon className={`h-5 w-5 ${can("canConnectSupermarket") ? "text-[#F97316]" : "text-gray-300"}`} />
@@ -434,7 +434,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
             generateMenuMutation.mutate({ listId });
           }}
           disabled={generateMenuMutation.isPending}
-          className="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm mr-1 relative"
+          className="flex h-9 w-9 items-center justify-center rounded-full bg-background shadow-sm mr-1 relative"
           title="Crear menú semanal con esta lista"
         >
           {generateMenuMutation.isPending ? (
@@ -464,8 +464,8 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
           </div>
           {/* Stats row */}
           <div className="flex gap-3 text-xs">
-            <div className="flex items-center gap-1 text-gray-500">
-              <span className="inline-block h-2 w-2 rounded-full bg-gray-200"></span>
+            <div className="flex items-center gap-1 text-muted-foreground">
+              <span className="inline-block h-2 w-2 rounded-full bg-muted"></span>
               <span>{toBuyCount} por comprar</span>
             </div>
             <div className="flex items-center gap-1 text-green-600">
@@ -499,7 +499,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
                     : tab.id === "purchased"
                     ? "bg-orange-100 text-[#F97316]"
                     : "bg-gray-900 text-white"
-                  : "bg-white text-gray-500 shadow-sm"
+                  : "bg-background text-muted-foreground shadow-sm"
               }`}
             >
               {tab.id === "in_pantry" && <HomeIcon className="h-3 w-3" />}
@@ -507,7 +507,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
               {tab.label}
               {tab.count > 0 && (
                 <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-bold ${
-                  viewFilter === tab.id ? "bg-white/20" : "bg-gray-100"
+                  viewFilter === tab.id ? "bg-background/20" : "bg-muted/50"
                 }`}>{tab.count}</span>
               )}
             </button>
@@ -528,7 +528,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
       {/* Items grouped by category */}
       {Object.entries(grouped).map(([cat, catItems]) => (
         <div key={cat} className="mb-4">
-          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-gray-400">{cat}</h3>
+          <h3 className="mb-2 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">{cat}</h3>
           <div className="space-y-2">
             {catItems.map((item: any) => (
               <div
@@ -545,7 +545,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
                 <button
                   onClick={() => toggleItem.mutate({ id: item.id })}
                   className={`flex h-7 w-7 shrink-0 items-center justify-center rounded-full border-2 transition-all ${
-                    item.isPurchased ? "border-[#F97316] bg-[#F97316]" : "border-gray-200"
+                    item.isPurchased ? "border-[#F97316] bg-[#F97316]" : "border-border"
                   }`}
                   title={item.isPurchased ? "Marcar como no comprado" : "Marcar como comprado"}
                 >
@@ -556,9 +556,9 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5 flex-wrap">
                     <p className={`text-sm font-medium ${
-                      item.isPurchased ? "line-through text-gray-400" :
+                      item.isPurchased ? "line-through text-muted-foreground/70" :
                       item.inPantry ? "text-green-700" :
-                      isInPantry(item) ? "text-emerald-700" : "text-gray-900"
+                      isInPantry(item) ? "text-emerald-700" : "text-foreground"
                     }`}>
                       {item.ingredient?.name ?? item.customName ?? item.name ?? "Producto"}
                     </p>
@@ -575,7 +575,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
                     })()}
                   </div>
                   {(item.amount || item.quantity) && (
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs text-muted-foreground/70">
                       {item.amount ?? item.quantity} {item.measure?.name ?? item.unit ?? ""}
                     </p>
                   )}
@@ -612,8 +612,8 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
 
       {/* Empty state for filtered view */}
       {filteredItems.length === 0 && totalCount > 0 && (
-        <div className="rounded-2xl bg-gray-50 py-8 text-center">
-          <p className="text-sm text-gray-400">
+        <div className="rounded-2xl bg-muted/30 py-8 text-center">
+          <p className="text-sm text-muted-foreground/70">
             {viewFilter === "in_pantry" && "Ningún producto marcado como en despensa"}
             {viewFilter === "purchased" && "Ningún producto marcado como comprado"}
             {viewFilter === "to_buy" && "¡Todo listo! No quedan productos por comprar"}
@@ -624,8 +624,8 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
       {allItems.length === 0 && (
         <div className="empty-state">
           <span className="mb-4 text-5xl">🛒</span>
-          <h3 className="mb-2 text-base font-bold text-gray-900">Lista vacía</h3>
-          <p className="mb-6 text-sm text-gray-500">Añade productos a tu lista</p>
+          <h3 className="mb-2 text-base font-bold text-foreground">Lista vacía</h3>
+          <p className="mb-6 text-sm text-muted-foreground">Añade productos a tu lista</p>
           <button onClick={() => setShowAdd(true)} className="btn-vively">{t("shoppingList.addProduct", "Add product")}</button>
         </div>
       )}
@@ -633,8 +633,8 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
       {/* Add item modal */}
       {showAdd && (
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowAdd(false); }}>
-          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up">
-            <h3 className="mb-4 text-lg font-bold text-gray-900">Añadir producto</h3>
+          <div className="w-full max-w-sm rounded-3xl bg-background p-6 shadow-2xl animate-slide-up">
+            <h3 className="mb-4 text-lg font-bold text-foreground">Añadir producto</h3>
             <input
               value={newItem}
               onChange={(e) => setNewItem(e.target.value)}
@@ -644,7 +644,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
               autoFocus
             />
             <div className="flex gap-3">
-              <button onClick={() => setShowAdd(false)} className="flex-1 rounded-2xl border border-gray-200 py-3 text-sm font-semibold text-gray-600">
+              <button onClick={() => setShowAdd(false)} className="flex-1 rounded-2xl border border-border py-3 text-sm font-semibold text-muted-foreground">
                 Cancelar
               </button>
               <button
@@ -662,14 +662,14 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
       {/* Export to supermarket modal */}
       {showExport && (
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) { setShowExport(false); setSelectedSupermarket(null); } }}>
-          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up max-h-[85vh] overflow-y-auto">
+          <div className="w-full max-w-sm rounded-3xl bg-background p-6 shadow-2xl animate-slide-up max-h-[85vh] overflow-y-auto">
             {!selectedSupermarket ? (
               <>
                 <div className="mb-5 flex items-center justify-between">
-                  <h3 className="text-lg font-bold text-gray-900">{t("shoppingList.buyOnlineBtn", "Buy online")}</h3>
-                  <button onClick={() => setShowExport(false)} aria-label="Cerrar" className="text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
+                  <h3 className="text-lg font-bold text-foreground">{t("shoppingList.buyOnlineBtn", "Buy online")}</h3>
+                  <button onClick={() => setShowExport(false)} aria-label="Cerrar" className="text-muted-foreground/70 hover:text-muted-foreground text-xl font-bold">×</button>
                 </div>
-                <p className="mb-5 text-sm text-gray-500">Elige tu supermercado y abriremos la búsqueda de cada producto en su tienda online.</p>
+                <p className="mb-5 text-sm text-muted-foreground">Elige tu supermercado y abriremos la búsqueda de cada producto en su tienda online.</p>
                 <div className="grid grid-cols-2 gap-3">
                   {SUPERMARKET_OPTIONS.map((s) => (
                     <div key={s.id} className="relative">
@@ -684,10 +684,10 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
                           else if (s.id === "alcampo") { setShowExport(false); setShowAlcampoCart(true); }
                           else { setSelectedSupermarket(s.id); }
                         }}
-                        className={`w-full flex flex-col items-center gap-2 rounded-2xl border-2 border-gray-100 p-4 transition-all ${s.available ? "hover:border-[#F97316] hover:bg-orange-50" : "opacity-50 cursor-not-allowed"}`}
+                        className={`w-full flex flex-col items-center gap-2 rounded-2xl border-2 border-border/50 p-4 transition-all ${s.available ? "hover:border-[#F97316] hover:bg-orange-50" : "opacity-50 cursor-not-allowed"}`}
                       >
                         <span className="text-2xl">{s.emoji}</span>
-                        <span className="text-sm font-semibold text-gray-700">{s.name}</span>
+                        <span className="text-sm font-semibold text-foreground/80">{s.name}</span>
                       </button>
                       {!s.available && (
                         <span className="absolute top-1 right-1 bg-gray-400 text-white text-[8px] font-bold px-1.5 py-0.5 rounded-full leading-none">Pronto</span>
@@ -699,16 +699,16 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
             ) : (
               <>
                 <div className="mb-5 flex items-center gap-3">
-                  <button onClick={() => setSelectedSupermarket(null)} className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-600">
+                  <button onClick={() => setSelectedSupermarket(null)} className="flex h-8 w-8 items-center justify-center rounded-full bg-muted/50 text-muted-foreground">
                     <ChevronLeftIcon className="h-4 w-4" />
                   </button>
-                  <h3 className="text-lg font-bold text-gray-900">
+                  <h3 className="text-lg font-bold text-foreground">
                     {SUPERMARKET_OPTIONS.find(s => s.id === selectedSupermarket)?.emoji}{" "}
                     {SUPERMARKET_OPTIONS.find(s => s.id === selectedSupermarket)?.name}
                   </h3>
-                  <button onClick={() => setShowExport(false)} className="ml-auto text-gray-400 hover:text-gray-600 text-xl font-bold">×</button>
+                  <button onClick={() => setShowExport(false)} className="ml-auto text-muted-foreground/70 hover:text-muted-foreground text-xl font-bold">×</button>
                 </div>
-                <p className="mb-4 text-sm text-gray-500">Pulsa en cada producto para buscarlo, o usa el botón para abrir todos a la vez.</p>
+                <p className="mb-4 text-sm text-muted-foreground">Pulsa en cada producto para buscarlo, o usa el botón para abrir todos a la vez.</p>
                 <button
                   onClick={() => {
                     const searchFn = SUPERMARKET_SEARCH_URLS[selectedSupermarket];
@@ -740,19 +740,19 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
                           href={searchFn ? searchFn(name) : "#"}
                           target="_blank"
                           rel="noopener noreferrer"
-                          className="flex items-center gap-3 rounded-2xl border border-gray-100 p-3 hover:border-[#F97316] hover:bg-orange-50 transition-all"
+                          className="flex items-center gap-3 rounded-2xl border border-border/50 p-3 hover:border-[#F97316] hover:bg-orange-50 transition-all"
                         >
                           <ShoppingCartIcon className="h-4 w-4 shrink-0 text-[#F97316]" />
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-medium text-gray-900 truncate">{name}</p>
-                            {(qty || unit) && <p className="text-xs text-gray-400">{qty} {unit}</p>}
+                            <p className="text-sm font-medium text-foreground truncate">{name}</p>
+                            {(qty || unit) && <p className="text-xs text-muted-foreground/70">{qty} {unit}</p>}
                           </div>
                           <ArrowTopRightOnSquareIcon className="h-4 w-4 shrink-0 text-gray-300" />
                         </a>
                       );
                     })}
                   {(allItems.filter((i: any) => i.isPurchased).length + allItems.filter((i: any) => i.inPantry).length) > 0 && (
-                    <p className="pt-2 text-center text-xs text-gray-400">{allItems.filter((i: any) => i.isPurchased || i.inPantry).length} producto(s) ya marcados (comprados o en despensa) no se muestran</p>
+                    <p className="pt-2 text-center text-xs text-muted-foreground/70">{allItems.filter((i: any) => i.isPurchased || i.inPantry).length} producto(s) ya marcados (comprados o en despensa) no se muestran</p>
                   )}
                 </div>
               </>
@@ -763,8 +763,8 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
       {/* Mercadona integrated cart export */}
       {showMercadonaCart && (
         <div className="fixed inset-0 z-[9000] flex items-end justify-center" style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(2px)' }} onClick={(e) => { if (e.target === e.currentTarget) setShowMercadonaCart(false); }}>
-          <div className="w-full max-w-lg rounded-t-3xl bg-white shadow-2xl animate-slide-up flex flex-col" style={{ maxHeight: 'calc(100dvh - 56px)' }}>
-            <div className="flex justify-center pt-3 pb-1 shrink-0"><div className="w-10 h-1 rounded-full bg-gray-200" /></div>
+          <div className="w-full max-w-lg rounded-t-3xl bg-background shadow-2xl animate-slide-up flex flex-col" style={{ maxHeight: 'calc(100dvh - 56px)' }}>
+            <div className="flex justify-center pt-3 pb-1 shrink-0"><div className="w-10 h-1 rounded-full bg-muted" /></div>
             <div className="flex-1 overflow-y-auto px-5 pb-6 pt-2">
               <MercadonaCartExport
                 items={allItems.map((i: any) => ({ id: i.id, name: i.ingredient?.nameEs ?? i.ingredient?.name ?? i.customName ?? i.name ?? "Producto", qty: String(i.amount ?? i.quantity ?? ""), unit: i.measure?.nameEs ?? i.measure?.name ?? i.unit ?? "", isPurchased: i.isPurchased || i.inPantry }))}
@@ -778,8 +778,8 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
       {/* Lidl integrated cart export */}
       {showLidlCart && (
         <div className="fixed inset-0 z-[9000] flex items-end justify-center" style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(2px)' }} onClick={(e) => { if (e.target === e.currentTarget) setShowLidlCart(false); }}>
-          <div className="w-full max-w-lg rounded-t-3xl bg-white shadow-2xl animate-slide-up flex flex-col" style={{ maxHeight: 'calc(100dvh - 56px)' }}>
-            <div className="flex justify-center pt-3 pb-1 shrink-0"><div className="w-10 h-1 rounded-full bg-gray-200" /></div>
+          <div className="w-full max-w-lg rounded-t-3xl bg-background shadow-2xl animate-slide-up flex flex-col" style={{ maxHeight: 'calc(100dvh - 56px)' }}>
+            <div className="flex justify-center pt-3 pb-1 shrink-0"><div className="w-10 h-1 rounded-full bg-muted" /></div>
             <div className="flex-1 overflow-y-auto px-5 pb-6 pt-2">
               <LidlCartExport
                 items={allItems.map((i: any) => ({ id: i.id, name: i.ingredient?.nameEs ?? i.ingredient?.name ?? i.customName ?? i.name ?? "Producto", qty: String(i.amount ?? i.quantity ?? ""), unit: i.measure?.nameEs ?? i.measure?.name ?? i.unit ?? "", isPurchased: i.isPurchased || i.inPantry }))}
@@ -792,8 +792,8 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
       )}
       {showCarrefourCart && (
         <div className="fixed inset-0 z-[9000] flex items-end justify-center" style={{ background: 'rgba(0,0,0,0.45)', backdropFilter: 'blur(2px)' }} onClick={(e) => { if (e.target === e.currentTarget) setShowCarrefourCart(false); }}>
-          <div className="w-full max-w-lg rounded-t-3xl bg-white shadow-2xl animate-slide-up flex flex-col" style={{ maxHeight: 'calc(100dvh - 56px)' }}>
-            <div className="flex justify-center pt-3 pb-1 shrink-0"><div className="w-10 h-1 rounded-full bg-gray-200" /></div>
+          <div className="w-full max-w-lg rounded-t-3xl bg-background shadow-2xl animate-slide-up flex flex-col" style={{ maxHeight: 'calc(100dvh - 56px)' }}>
+            <div className="flex justify-center pt-3 pb-1 shrink-0"><div className="w-10 h-1 rounded-full bg-muted" /></div>
             <div className="flex-1 overflow-y-auto px-5 pb-6 pt-2">
               <CarrefourCartExport
                 items={allItems.map((i: any) => ({ id: i.id, name: i.ingredient?.nameEs ?? i.ingredient?.name ?? i.customName ?? i.name ?? "Producto", qty: String(i.amount ?? i.quantity ?? ""), unit: i.measure?.nameEs ?? i.measure?.name ?? i.unit ?? "", isPurchased: i.isPurchased || i.inPantry }))}
@@ -806,7 +806,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
       )}
       {showAlcampoCart && (
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowAlcampoCart(false); }}>
-          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up max-h-[85vh] overflow-y-auto">
+          <div className="w-full max-w-sm rounded-3xl bg-background p-6 shadow-2xl animate-slide-up max-h-[85vh] overflow-y-auto">
             <AlcampoCartExport
               items={allItems.map((i: any) => ({ id: i.id, name: i.ingredient?.nameEs ?? i.ingredient?.name ?? i.customName ?? i.name ?? "Producto", qty: String(i.amount ?? i.quantity ?? ""), unit: i.measure?.nameEs ?? i.measure?.name ?? i.unit ?? "", isPurchased: i.isPurchased || i.inPantry }))}
               onBack={() => { setShowAlcampoCart(false); setShowExport(true); }}
@@ -818,7 +818,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
       {/* Basket Comparator Modal */}
       {showCompare && (
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowCompare(false); }}>
-          <div className="w-full max-w-sm rounded-3xl bg-white p-5 shadow-2xl animate-slide-up max-h-[90vh] overflow-y-auto">
+          <div className="w-full max-w-sm rounded-3xl bg-background p-5 shadow-2xl animate-slide-up max-h-[90vh] overflow-y-auto">
             <BasketComparator
               items={allItems
                 .filter((i: any) => !i.isPurchased && !i.inPantry)
@@ -835,70 +835,70 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
       {/* Share / Export Modal */}
       {showShare && (
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowShare(false); }}>
-          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up">
-            <h3 className="mb-1 text-lg font-bold text-gray-900">{t("shoppingList.exportList", "Export list")}</h3>
-            <p className="mb-5 text-sm text-gray-500">Elige cómo quieres compartir o guardar tu lista de la compra.</p>
+          <div className="w-full max-w-sm rounded-3xl bg-background p-6 shadow-2xl animate-slide-up">
+            <h3 className="mb-1 text-lg font-bold text-foreground">{t("shoppingList.exportList", "Export list")}</h3>
+            <p className="mb-5 text-sm text-muted-foreground">Elige cómo quieres compartir o guardar tu lista de la compra.</p>
             <div className="space-y-3">
               <button
                 onClick={generatePDF}
-                className="flex w-full items-center gap-4 rounded-2xl border-2 border-gray-100 bg-gray-50 px-4 py-3.5 text-left hover:border-orange-200 hover:bg-orange-50 transition-colors"
+                className="flex w-full items-center gap-4 rounded-2xl border-2 border-border/50 bg-muted/30 px-4 py-3.5 text-left hover:border-orange-200 hover:bg-orange-50 transition-colors"
               >
                 <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-red-100 text-xl">📄</span>
                 <div>
-                  <p className="font-semibold text-gray-900">Descargar PDF</p>
-                  <p className="text-xs text-gray-500">Archivo PDF listo para imprimir</p>
+                  <p className="font-semibold text-foreground">Descargar PDF</p>
+                  <p className="text-xs text-muted-foreground">Archivo PDF listo para imprimir</p>
                 </div>
               </button>
               <button
                 onClick={shareWhatsApp}
-                className="flex w-full items-center gap-4 rounded-2xl border-2 border-gray-100 bg-gray-50 px-4 py-3.5 text-left hover:border-green-200 hover:bg-green-50 transition-colors"
+                className="flex w-full items-center gap-4 rounded-2xl border-2 border-border/50 bg-muted/30 px-4 py-3.5 text-left hover:border-green-200 hover:bg-green-50 transition-colors"
               >
                 <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-green-100 text-xl">💬</span>
                 <div>
-                  <p className="font-semibold text-gray-900">Compartir por WhatsApp</p>
-                  <p className="text-xs text-gray-500">Envía la lista a familia o amigos</p>
+                  <p className="font-semibold text-foreground">Compartir por WhatsApp</p>
+                  <p className="text-xs text-muted-foreground">Envía la lista a familia o amigos</p>
                 </div>
               </button>
               <button
                 onClick={shareTelegram}
-                className="flex w-full items-center gap-4 rounded-2xl border-2 border-gray-100 bg-gray-50 px-4 py-3.5 text-left hover:border-blue-200 hover:bg-blue-50 transition-colors"
+                className="flex w-full items-center gap-4 rounded-2xl border-2 border-border/50 bg-muted/30 px-4 py-3.5 text-left hover:border-blue-200 hover:bg-blue-50 transition-colors"
               >
                 <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-blue-100 text-xl">✈️</span>
                 <div>
-                  <p className="font-semibold text-gray-900">Compartir por Telegram</p>
-                  <p className="text-xs text-gray-500">Envía la lista por Telegram</p>
+                  <p className="font-semibold text-foreground">Compartir por Telegram</p>
+                  <p className="text-xs text-muted-foreground">Envía la lista por Telegram</p>
                 </div>
               </button>
               <button
                 onClick={copyToClipboard}
-                className="flex w-full items-center gap-4 rounded-2xl border-2 border-gray-100 bg-gray-50 px-4 py-3.5 text-left hover:border-violet-200 hover:bg-violet-50 transition-colors"
+                className="flex w-full items-center gap-4 rounded-2xl border-2 border-border/50 bg-muted/30 px-4 py-3.5 text-left hover:border-violet-200 hover:bg-violet-50 transition-colors"
               >
                 <span className="flex h-10 w-10 items-center justify-center rounded-xl bg-violet-100 text-xl">📋</span>
                 <div>
-                  <p className="font-semibold text-gray-900">Copiar al portapapeles</p>
-                  <p className="text-xs text-gray-500">Pega la lista donde quieras</p>
+                  <p className="font-semibold text-foreground">Copiar al portapapeles</p>
+                  <p className="text-xs text-muted-foreground">Pega la lista donde quieras</p>
                 </div>
               </button>
             </div>
-            <button onClick={() => setShowShare(false)} className="mt-4 w-full rounded-2xl border-2 border-gray-100 py-3 text-sm font-semibold text-gray-600">{t("common.cancel", "Cancel")}</button>
+            <button onClick={() => setShowShare(false)} className="mt-4 w-full rounded-2xl border-2 border-border/50 py-3 text-sm font-semibold text-muted-foreground">{t("common.cancel", "Cancel")}</button>
           </div>
         </div>
       )}
       {showSaveTemplate && (
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowSaveTemplate(false); }}>
-          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up">
-            <h3 className="mb-2 text-lg font-bold text-gray-900">Guardar como plantilla</h3>
-            <p className="mb-4 text-sm text-gray-500">Podrás reutilizar esta lista para crear nuevas listas de la compra rápidamente.</p>
-            <label className="mb-1 block text-xs font-semibold text-gray-600">Nombre de la plantilla</label>
+          <div className="w-full max-w-sm rounded-3xl bg-background p-6 shadow-2xl animate-slide-up">
+            <h3 className="mb-2 text-lg font-bold text-foreground">Guardar como plantilla</h3>
+            <p className="mb-4 text-sm text-muted-foreground">Podrás reutilizar esta lista para crear nuevas listas de la compra rápidamente.</p>
+            <label className="mb-1 block text-xs font-semibold text-muted-foreground">Nombre de la plantilla</label>
             <input
               value={templateName}
               onChange={(e) => setTemplateName(e.target.value)}
               placeholder={(listData as any)?.list?.name ?? "Mi plantilla"}
-              className="mb-4 w-full rounded-2xl border-2 border-gray-100 bg-gray-50 px-4 py-3 text-sm focus:border-violet-400 focus:outline-none"
+              className="mb-4 w-full rounded-2xl border-2 border-border/50 bg-muted/30 px-4 py-3 text-sm focus:border-violet-400 focus:outline-none"
               autoFocus
             />
             <div className="flex gap-3">
-              <button onClick={() => setShowSaveTemplate(false)} className="flex-1 rounded-2xl border-2 border-gray-100 py-3 text-sm font-semibold text-gray-600">Cancelar</button>
+              <button onClick={() => setShowSaveTemplate(false)} className="flex-1 rounded-2xl border-2 border-border/50 py-3 text-sm font-semibold text-muted-foreground">Cancelar</button>
               <button
                 onClick={() => {
                   const name = templateName.trim() || ((listData as any)?.list?.name ?? "Mi plantilla");
@@ -916,26 +916,26 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
       {/* Modal: Menú generado desde lista de la compra */}
       {showMenuFromList && generatedMenu && (
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowMenuFromList(false); }}>
-          <div className="w-full max-w-sm rounded-3xl bg-white shadow-2xl animate-slide-up flex flex-col" style={{ maxHeight: "88vh" }}>
+          <div className="w-full max-w-sm rounded-3xl bg-background shadow-2xl animate-slide-up flex flex-col" style={{ maxHeight: "88vh" }}>
             {/* Header */}
-            <div className="flex items-center justify-between p-5 pb-3 border-b border-gray-100">
+            <div className="flex items-center justify-between p-5 pb-3 border-b border-border/50">
               <div className="flex items-center gap-2">
                 <div className="flex h-9 w-9 items-center justify-center rounded-xl bg-purple-100">
                   <SparklesIcon className="h-5 w-5 text-purple-600" />
                 </div>
                 <div>
-                  <h3 className="text-base font-bold text-gray-900">{generatedMenu.menuName ?? "Menú semanal"}</h3>
-                  <p className="text-xs text-gray-500">Generado con tus ingredientes</p>
+                  <h3 className="text-base font-bold text-foreground">{generatedMenu.menuName ?? "Menú semanal"}</h3>
+                  <p className="text-xs text-muted-foreground">Generado con tus ingredientes</p>
                 </div>
               </div>
-              <button onClick={() => setShowMenuFromList(false)} className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500">
+              <button onClick={() => setShowMenuFromList(false)} className="flex h-8 w-8 items-center justify-center rounded-full bg-muted/50 text-muted-foreground">
                 <XMarkIcon className="h-4 w-4" />
               </button>
             </div>
             {/* Days scroll */}
             <div className="flex-1 overflow-y-auto p-4 space-y-4">
               {(generatedMenu.days ?? []).map((day: any, di: number) => (
-                <div key={di} className="rounded-2xl border border-gray-100 overflow-hidden">
+                <div key={di} className="rounded-2xl border border-border/50 overflow-hidden">
                   <div className="bg-purple-50 px-4 py-2">
                     <p className="text-xs font-bold text-purple-700 uppercase tracking-wide">{day.day}</p>
                   </div>
@@ -950,11 +950,11 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
                               meal.mealType === "comida" ? "bg-green-100 text-green-700" :
                               "bg-blue-100 text-blue-700"
                             }`}>{meal.mealType}</span>
-                            <span className="text-[10px] text-gray-400">{meal.calories} kcal</span>
+                            <span className="text-[10px] text-muted-foreground/70">{meal.calories} kcal</span>
                           </div>
-                          <p className="text-sm font-semibold text-gray-900 leading-tight">{meal.name}</p>
+                          <p className="text-sm font-semibold text-foreground leading-tight">{meal.name}</p>
                           {meal.usedIngredients?.length > 0 && (
-                            <p className="text-[11px] text-gray-400 mt-0.5 truncate">{meal.usedIngredients.slice(0, 3).join(", ")}{meal.usedIngredients.length > 3 ? " +" + (meal.usedIngredients.length - 3) : ""}</p>
+                            <p className="text-[11px] text-muted-foreground/70 mt-0.5 truncate">{meal.usedIngredients.slice(0, 3).join(", ")}{meal.usedIngredients.length > 3 ? " +" + (meal.usedIngredients.length - 3) : ""}</p>
                           )}
                         </div>
                       </div>
@@ -964,7 +964,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
               ))}
             </div>
             {/* Footer actions */}
-            <div className="p-4 border-t border-gray-100 space-y-2">
+            <div className="p-4 border-t border-border/50 space-y-2">
               <button
                 onClick={() => {
                   toast.success("Menú guardado en Mis Menús ✓", { description: "Puedes verlo en la sección Menús" });
@@ -978,7 +978,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
               </button>
               <button
                 onClick={() => setShowMenuFromList(false)}
-                className="w-full rounded-2xl border-2 border-gray-100 py-3 text-sm font-semibold text-gray-600"
+                className="w-full rounded-2xl border-2 border-border/50 py-3 text-sm font-semibold text-muted-foreground"
               >
                 Cerrar
               </button>
@@ -1112,7 +1112,7 @@ export default function ShoppingLists() {
     <div className="vively-page">
       {/* Header */}
       <div className="mb-5 flex items-center justify-between">
-        <h1 className="text-2xl font-bold text-gray-900">Lista de compra</h1>
+        <h1 className="text-2xl font-bold text-foreground">Lista de compra</h1>
         <div className="flex gap-2">
           <button
             onClick={() => setShowFromMenu(true)}
@@ -1140,7 +1140,7 @@ export default function ShoppingLists() {
       {/* How it works banner */}
       <div className="mb-5 rounded-3xl bg-gradient-to-r from-orange-500 to-amber-400 p-4 text-white">
         <div className="flex items-center gap-3">
-          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-white/20">
+          <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-background/20">
             <ShoppingCartIcon className="h-5 w-5 text-white" />
           </div>
           <div>
@@ -1171,15 +1171,15 @@ export default function ShoppingLists() {
                   <span className="text-2xl">{supermarketInfo.emoji}</span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <h3 className="text-sm font-semibold text-gray-900 truncate">{list.name}</h3>
+                  <h3 className="text-sm font-semibold text-foreground truncate">{list.name}</h3>
                   <div className="mt-1 flex items-center gap-2">
                     <div className="macro-bar flex-1">
                       <div className="macro-bar-fill" style={{ width: `${pct}%`, background: "#F97316" }} />
                     </div>
-                    <span className="shrink-0 text-xs text-gray-400">{done}/{total}</span>
+                    <span className="shrink-0 text-xs text-muted-foreground/70">{done}/{total}</span>
                   </div>
                   {list.persons && list.persons > 1 && (
-                    <p className="mt-0.5 text-xs text-gray-400">
+                    <p className="mt-0.5 text-xs text-muted-foreground/70">
                       <UserGroupIcon className="inline h-3 w-3 mr-0.5" />
                       {list.persons} personas
                     </p>
@@ -1215,8 +1215,8 @@ export default function ShoppingLists() {
       ) : (
         <div className="empty-state">
           <span className="mb-4 text-5xl">🛒</span>
-          <h3 className="mb-2 text-base font-bold text-gray-900">Sin listas de compra</h3>
-          <p className="mb-6 text-sm text-gray-500">Crea tu primera lista o genera una desde un menú</p>
+          <h3 className="mb-2 text-base font-bold text-foreground">Sin listas de compra</h3>
+          <p className="mb-6 text-sm text-muted-foreground">Crea tu primera lista o genera una desde un menú</p>
           <div className="flex gap-3">
             <button onClick={() => setShowFromMenu(true)} className="btn-vively-outline">Desde menú</button>
             <button onClick={() => setShowNew(true)} className="btn-vively">Crear lista</button>
@@ -1227,7 +1227,7 @@ export default function ShoppingLists() {
       {/* Templates section */}
       {templates && templates.length > 0 && (
         <div className="mt-6">
-          <h2 className="mb-3 text-sm font-bold text-gray-700 uppercase tracking-wide">Plantillas guardadas</h2>
+          <h2 className="mb-3 text-sm font-bold text-foreground/80 uppercase tracking-wide">Plantillas guardadas</h2>
           <div className="space-y-2">
             {templates.map((tpl: any) => (
               <div key={tpl.id} className="vively-card flex items-center gap-3">
@@ -1235,8 +1235,8 @@ export default function ShoppingLists() {
                   <BookmarkIcon className="h-5 w-5 text-violet-500" />
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 truncate">{tpl.name}</p>
-                  <p className="text-xs text-gray-400">{tpl.itemCount} productos · {tpl.supermarket ?? "General"}</p>
+                  <p className="text-sm font-semibold text-foreground truncate">{tpl.name}</p>
+                  <p className="text-xs text-muted-foreground/70">{tpl.itemCount} productos · {tpl.supermarket ?? "General"}</p>
                 </div>
                 <button
                   onClick={() => createFromTemplate.mutate({ templateId: tpl.id })}
@@ -1260,8 +1260,8 @@ export default function ShoppingLists() {
       {/* New list modal */}
       {showNew && (
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowNew(false); }}>
-          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up">
-            <h3 className="mb-4 text-lg font-bold text-gray-900">{t("shoppingList.newList", "New list")}</h3>
+          <div className="w-full max-w-sm rounded-3xl bg-background p-6 shadow-2xl animate-slide-up">
+            <h3 className="mb-4 text-lg font-bold text-foreground">{t("shoppingList.newList", "New list")}</h3>
             <input
               value={newName}
               onChange={(e) => setNewName(e.target.value)}
@@ -1269,7 +1269,7 @@ export default function ShoppingLists() {
               className="vively-input mb-4"
             />
             <div className="flex gap-3">
-              <button onClick={() => setShowNew(false)} className="flex-1 rounded-2xl border border-gray-200 py-3 text-sm font-semibold text-gray-600">
+              <button onClick={() => setShowNew(false)} className="flex-1 rounded-2xl border border-border py-3 text-sm font-semibold text-muted-foreground">
                 Cancelar
               </button>
               <button
@@ -1287,13 +1287,13 @@ export default function ShoppingLists() {
       {/* Generate from menu modal */}
       {showFromMenu && (
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowFromMenu(false); }}>
-          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up max-h-[85vh] overflow-y-auto">
-            <h3 className="mb-1 text-lg font-bold text-gray-900">Lista desde menú</h3>
-            <p className="mb-5 text-sm text-gray-500">Genera automáticamente todos los ingredientes de tu menú</p>
+          <div className="w-full max-w-sm rounded-3xl bg-background p-6 shadow-2xl animate-slide-up max-h-[85vh] overflow-y-auto">
+            <h3 className="mb-1 text-lg font-bold text-foreground">Lista desde menú</h3>
+            <p className="mb-5 text-sm text-muted-foreground">Genera automáticamente todos los ingredientes de tu menú</p>
 
             {/* Supermarket selector */}
             <div className="mb-4">
-              <label className="mb-2 flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-gray-400">
+              <label className="mb-2 flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
                 <BuildingStorefrontIcon className="h-3.5 w-3.5" />
                 Supermercado
               </label>
@@ -1305,11 +1305,11 @@ export default function ShoppingLists() {
                     className={`flex flex-col items-center gap-1 rounded-2xl border-2 p-2 text-center transition-all ${
                       supermarket === s.id
                         ? "border-[#F97316] bg-orange-50"
-                        : "border-gray-100 bg-white"
+                        : "border-border/50 bg-background"
                     }`}
                   >
                     <span className="text-xl">{s.emoji}</span>
-                    <span className="text-[13px] font-medium text-gray-600 leading-tight">{s.name}</span>
+                    <span className="text-[13px] font-medium text-muted-foreground leading-tight">{s.name}</span>
                   </button>
                 ))}
               </div>
@@ -1317,20 +1317,20 @@ export default function ShoppingLists() {
 
             {/* Persons selector */}
             <div className="mb-4">
-              <label className="mb-2 flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-gray-400">
+              <label className="mb-2 flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
                 <UserGroupIcon className="h-3.5 w-3.5" />
                 Número de personas
               </label>
-              <div className="flex items-center gap-4 rounded-2xl bg-gray-50 p-3">
+              <div className="flex items-center gap-4 rounded-2xl bg-muted/30 p-3">
                 <button
                   onClick={() => setPersons(Math.max(1, persons - 1))}
-                  className="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm text-lg font-bold text-gray-600"
+                  className="flex h-9 w-9 items-center justify-center rounded-full bg-background shadow-sm text-lg font-bold text-muted-foreground"
                 >
                   −
                 </button>
                 <div className="flex-1 text-center">
-                  <span className="text-2xl font-bold text-gray-900">{persons}</span>
-                  <p className="text-xs text-gray-400">{persons === 1 ? "persona" : "personas"}</p>
+                  <span className="text-2xl font-bold text-foreground">{persons}</span>
+                  <p className="text-xs text-muted-foreground/70">{persons === 1 ? "persona" : "personas"}</p>
                 </div>
                 <button
                   onClick={() => setPersons(Math.min(12, persons + 1))}
@@ -1343,7 +1343,7 @@ export default function ShoppingLists() {
 
             {/* Menu selector */}
             <div className="mb-5">
-              <label className="mb-2 flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-gray-400">
+              <label className="mb-2 flex items-center gap-1 text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
                 <CalendarDaysIcon className="h-3.5 w-3.5" />
                 Selecciona un menú
               </label>
@@ -1367,11 +1367,11 @@ export default function ShoppingLists() {
                         key={menu.id}
                         onClick={() => setSelectedMenuId(menu.id)}
                         className={`w-full rounded-2xl border-2 overflow-hidden text-left transition-all ${
-                          isSelected ? "border-[#F97316] shadow-md" : "border-gray-100"
+                          isSelected ? "border-[#F97316] shadow-md" : "border-border/50"
                         }`}
                       >
                         <div className={`flex items-center gap-3 p-3 ${
-                          isSelected ? "bg-orange-50" : "bg-white"
+                          isSelected ? "bg-orange-50" : "bg-background"
                         }`}>
                           <div className={`h-12 w-12 flex-shrink-0 rounded-xl bg-gradient-to-br ${gradient} flex items-center justify-center overflow-hidden`}>
                             {(menu as any).coverImage ? (
@@ -1381,10 +1381,10 @@ export default function ShoppingLists() {
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-gray-900 truncate">{menu.name}</p>
+                            <p className="text-sm font-semibold text-foreground truncate">{menu.name}</p>
                             <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                               {(menu as any).dailyCalories && (
-                                <span className="text-xs text-gray-400">🔥 {(menu as any).dailyCalories} kcal/día</span>
+                                <span className="text-xs text-muted-foreground/70">🔥 {(menu as any).dailyCalories} kcal/día</span>
                               )}
                               {(menu as any).isSeeded && (
                                 <span className="text-xs bg-orange-100 text-orange-600 px-1.5 py-0.5 rounded-full font-medium">Biblioteca</span>
@@ -1402,9 +1402,9 @@ export default function ShoppingLists() {
                   })}
                 </div>
               ) : (
-                <div className="rounded-2xl bg-gray-50 p-4 text-center">
-                  <p className="text-sm text-gray-500">No tienes menús guardados.</p>
-                  <p className="text-xs text-gray-400 mt-1">Ve a Menús para crear uno o explora la biblioteca.</p>
+                <div className="rounded-2xl bg-muted/30 p-4 text-center">
+                  <p className="text-sm text-muted-foreground">No tienes menús guardados.</p>
+                  <p className="text-xs text-muted-foreground/70 mt-1">Ve a Menús para crear uno o explora la biblioteca.</p>
                 </div>
               )}
             </div>
@@ -1412,7 +1412,7 @@ export default function ShoppingLists() {
             <div className="flex gap-3">
               <button
                 onClick={() => { setShowFromMenu(false); setSelectedMenuId(null); }}
-                className="flex-1 rounded-2xl border border-gray-200 py-3 text-sm font-semibold text-gray-600"
+                className="flex-1 rounded-2xl border border-border py-3 text-sm font-semibold text-muted-foreground"
               >
                 Cancelar
               </button>

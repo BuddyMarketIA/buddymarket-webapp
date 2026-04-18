@@ -15,7 +15,7 @@ import { Label } from "@/components/ui/label";
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   invited: { label: "Invitado", color: "bg-yellow-100 text-yellow-700" },
   active: { label: "Activo", color: "bg-green-100 text-green-700" },
-  paused: { label: "Pausado", color: "bg-gray-100 text-gray-600" },
+  paused: { label: "Pausado", color: "bg-muted/50 text-muted-foreground" },
   discharged: { label: "Alta", color: "bg-blue-100 text-blue-700" },
 };
 
@@ -82,8 +82,8 @@ export default function ExpertPatients() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Mis Pacientes</h1>
-            <p className="text-sm text-gray-500 mt-1">
+            <h1 className="text-2xl font-bold text-foreground">Mis Pacientes</h1>
+            <p className="text-sm text-muted-foreground mt-1">
               {totalActive} paciente{totalActive !== 1 ? "s" : ""} activo{totalActive !== 1 ? "s" : ""}
               {totalUnread > 0 && (
                 <span className="ml-2 inline-flex items-center gap-1 text-orange-600 font-medium">
@@ -126,7 +126,7 @@ export default function ExpertPatients() {
                 className={`px-3 py-1.5 rounded-full text-sm font-medium transition-colors ${
                   statusFilter === s
                     ? "bg-orange-500 text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                    : "bg-muted/50 text-muted-foreground hover:bg-muted"
                 }`}
               >
                 {s === "all" ? "Todos" : STATUS_LABELS[s]?.label ?? s}
@@ -139,16 +139,16 @@ export default function ExpertPatients() {
         {isLoading ? (
           <div className="space-y-3">
             {[1, 2, 3].map(i => (
-              <div key={i} className="h-20 bg-gray-100 rounded-xl animate-pulse" />
+              <div key={i} className="h-20 bg-muted/50 rounded-xl animate-pulse" />
             ))}
           </div>
         ) : filteredPatients.length === 0 ? (
-          <div className="text-center py-16 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+          <div className="text-center py-16 bg-muted/30 rounded-2xl border border-dashed border-border">
             <div className="text-5xl mb-4">👥</div>
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">
+            <h3 className="text-lg font-semibold text-foreground/80 mb-2">
               {search ? "No se encontraron pacientes" : "Aún no tienes pacientes"}
             </h3>
-            <p className="text-gray-500 text-sm mb-4">
+            <p className="text-muted-foreground text-sm mb-4">
               {search
                 ? "Prueba con otro término de búsqueda"
                 : "Invita a tus primeros pacientes para empezar a gestionar sus planes nutricionales"
@@ -166,7 +166,7 @@ export default function ExpertPatients() {
         ) : (
           <div className="space-y-3">
             {filteredPatients.map(patient => {
-              const statusInfo = STATUS_LABELS[patient.status] ?? { label: patient.status, color: "bg-gray-100 text-gray-600" };
+              const statusInfo = STATUS_LABELS[patient.status] ?? { label: patient.status, color: "bg-muted/50 text-muted-foreground" };
               const hasUnread = (patient.unreadMessages ?? 0) > 0;
               const nextAppt = patient.nextAppointment ? new Date(patient.nextAppointment) : null;
               const deviation = adherenceData?.[patient.id];
@@ -176,7 +176,7 @@ export default function ExpertPatients() {
                 <div
                   key={patient.id}
                   onClick={() => navigate(`/app/expert/patients/${patient.id}`)}
-                  className="flex items-center gap-4 p-4 bg-white rounded-xl border border-gray-200 hover:border-orange-300 hover:shadow-md transition-all cursor-pointer group"
+                  className="flex items-center gap-4 p-4 bg-background rounded-xl border border-border hover:border-orange-300 hover:shadow-md transition-all cursor-pointer group"
                 >
                   {/* Avatar */}
                   <div className="relative flex-shrink-0">
@@ -201,16 +201,16 @@ export default function ExpertPatients() {
                   {/* Info */}
                   <div className="flex-1 min-w-0">
                     <div className="flex items-center gap-2 flex-wrap">
-                      <span className="font-semibold text-gray-900 group-hover:text-orange-600 transition-colors">
+                      <span className="font-semibold text-foreground group-hover:text-orange-600 transition-colors">
                         {patient.user?.name ?? "Paciente sin nombre"}
                       </span>
                       <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusInfo.color}`}>
                         {statusInfo.label}
                       </span>
                     </div>
-                    <p className="text-sm text-gray-500 truncate">{patient.user?.email ?? "—"}</p>
+                    <p className="text-sm text-muted-foreground truncate">{patient.user?.email ?? "—"}</p>
                     {patient.profile && (
-                      <p className="text-xs text-gray-400 mt-0.5">
+                      <p className="text-xs text-muted-foreground/70 mt-0.5">
                         {patient.profile.weight ? `${patient.profile.weight} kg` : ""}
                         {patient.profile.height ? ` · ${patient.profile.height} cm` : ""}
                         {patient.profile.age ? ` · ${patient.profile.age} años` : ""}
@@ -230,11 +230,11 @@ export default function ExpertPatients() {
                   {/* Próxima cita */}
                   {nextAppt && !hasDeviation && (
                     <div className="hidden sm:flex flex-col items-end text-right flex-shrink-0">
-                      <span className="text-xs text-gray-400">Próxima cita</span>
-                      <span className="text-sm font-medium text-gray-700">
+                      <span className="text-xs text-muted-foreground/70">Próxima cita</span>
+                      <span className="text-sm font-medium text-foreground/80">
                         {nextAppt.toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
                       </span>
-                      <span className="text-xs text-gray-500">
+                      <span className="text-xs text-muted-foreground">
                         {nextAppt.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
                       </span>
                     </div>
@@ -253,7 +253,7 @@ export default function ExpertPatients() {
                     </button>
                   )}
                   {/* Flecha */}
-                  <svg className="w-5 h-5 text-gray-400 group-hover:text-orange-500 transition-colors flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                  <svg className="w-5 h-5 text-muted-foreground/70 group-hover:text-orange-500 transition-colors flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                   </svg>
                 </div>
@@ -280,7 +280,7 @@ export default function ExpertPatients() {
                 onChange={e => setInviteEmail(e.target.value)}
                 className="mt-1"
               />
-              <p className="text-xs text-gray-500 mt-1">
+              <p className="text-xs text-muted-foreground mt-1">
                 Si el paciente ya tiene cuenta en BuddyMarket, se le añadirá directamente. Si no, recibirá un email de invitación.
               </p>
             </div>

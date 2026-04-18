@@ -193,7 +193,7 @@ function MercadonaListModal({ items, supermarket, onClose }: MercadonaListModalP
       className="modal-overlay"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up max-h-[90vh] overflow-y-auto">
+      <div className="w-full max-w-sm rounded-3xl bg-background p-6 shadow-2xl animate-slide-up max-h-[90vh] overflow-y-auto">
         <MercadonaCartExport
           items={items}
           onBack={onClose}
@@ -230,14 +230,14 @@ function GenericListModal({ items, supermarket, supermarketName, onClose }: Gene
       className="modal-overlay"
       onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}
     >
-      <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up max-h-[90vh] overflow-y-auto">
+      <div className="w-full max-w-sm rounded-3xl bg-background p-6 shadow-2xl animate-slide-up max-h-[90vh] overflow-y-auto">
         <div className="mb-5 flex items-center justify-between">
-          <h3 className="text-lg font-bold text-gray-900">
+          <h3 className="text-lg font-bold text-foreground">
             {SUPERMARKETS.find((s) => s.id === supermarket)?.emoji} {supermarketName}
           </h3>
-          <button onClick={onClose} className="text-gray-400 text-xl font-bold" aria-label="Cerrar">×</button>
+          <button onClick={onClose} className="text-muted-foreground/70 text-xl font-bold" aria-label="Cerrar">×</button>
         </div>
-        <p className="mb-4 text-sm text-gray-500">
+        <p className="mb-4 text-sm text-muted-foreground">
           {pending.length} productos de tu menú. Pulsa en cada uno para buscarlo en {supermarketName}.
         </p>
         {searchFn && (
@@ -269,7 +269,7 @@ function GenericListModal({ items, supermarket, supermarketName, onClose }: Gene
               className={`flex items-center gap-3 rounded-2xl border p-3 transition-all ${
                 item.inPantry
                   ? "border-green-200 bg-green-50"
-                  : "border-gray-100 hover:border-orange-300 hover:bg-orange-50"
+                  : "border-border/50 hover:border-orange-300 hover:bg-orange-50"
               }`}
             >
               {/* Link to search */}
@@ -286,11 +286,11 @@ function GenericListModal({ items, supermarket, supermarketName, onClose }: Gene
                 }
                 <div className="flex-1 min-w-0">
                   <div className="flex items-center gap-1.5">
-                    <p className={`text-sm font-medium truncate ${item.inPantry ? "text-green-700" : "text-gray-900"}`}>{item.name}</p>
+                    <p className={`text-sm font-medium truncate ${item.inPantry ? "text-green-700" : "text-foreground"}`}>{item.name}</p>
                     {item.inPantry && <span className="rounded-full bg-green-100 px-1.5 py-0.5 text-[10px] font-semibold text-green-700">despensa</span>}
                   </div>
                   {(item.qty || item.unit) && (
-                    <p className="text-xs text-gray-400">{item.qty} {item.unit}</p>
+                    <p className="text-xs text-muted-foreground/70">{item.qty} {item.unit}</p>
                   )}
                 </div>
                 {!item.inPantry && (
@@ -316,7 +316,7 @@ function GenericListModal({ items, supermarket, supermarketName, onClose }: Gene
           ))}
         </div>
         {localItems.filter(i => i.inPantry).length > 0 && (
-          <p className="mt-3 text-center text-xs text-gray-400">
+          <p className="mt-3 text-center text-xs text-muted-foreground/70">
             {localItems.filter(i => i.inPantry).length} producto(s) marcados como en despensa (no se compran)
           </p>
         )}
@@ -475,9 +475,9 @@ export default function ActiveMenu() {
     return (
       <div className="vively-page">
         <div className="animate-pulse space-y-4">
-          <div className="h-24 rounded-2xl bg-gray-100" />
-          <div className="h-48 rounded-2xl bg-gray-100" />
-          <div className="h-48 rounded-2xl bg-gray-100" />
+          <div className="h-24 rounded-2xl bg-muted/50" />
+          <div className="h-48 rounded-2xl bg-muted/50" />
+          <div className="h-48 rounded-2xl bg-muted/50" />
         </div>
       </div>
     );
@@ -487,8 +487,8 @@ export default function ActiveMenu() {
     return (
       <div className="vively-page flex flex-col items-center justify-center min-h-[60vh] text-center gap-4">
         <div className="text-5xl">📋</div>
-        <h2 className="text-xl font-bold text-gray-800">No tienes ningún menú activo</h2>
-        <p className="text-gray-500 text-sm max-w-xs">
+        <h2 className="text-xl font-bold text-foreground">No tienes ningún menú activo</h2>
+        <p className="text-muted-foreground text-sm max-w-xs">
           Ve a la biblioteca de menús, elige uno y guárdalo para activarlo como tu menú en curso.
         </p>
         <button
@@ -548,8 +548,8 @@ export default function ActiveMenu() {
       {/* Header */}
       <div className="mb-5">
         <div className="flex items-center gap-3 mb-3">
-          <button onClick={() => navigate("/app/menus")} className="flex h-9 w-9 items-center justify-center rounded-full bg-white shadow-sm">
-            <ChevronLeftIcon className="h-5 w-5 text-gray-600" />
+          <button onClick={() => navigate("/app/menus")} className="flex h-9 w-9 items-center justify-center rounded-full bg-background shadow-sm">
+            <ChevronLeftIcon className="h-5 w-5 text-muted-foreground" />
           </button>
           <div className="flex-1 min-w-0">
             <div className="flex items-center gap-2">
@@ -566,21 +566,21 @@ export default function ActiveMenu() {
                     if (e.key === "Enter") renameMenu.mutate({ id: activeMenu.id, name: editNameValue.trim() || activeMenu.name });
                     if (e.key === "Escape") setIsEditingName(false);
                   }}
-                  className="flex-1 min-w-0 rounded-xl border border-[#FF6B35] px-3 py-1.5 text-sm font-bold text-gray-900 outline-none focus:ring-2 focus:ring-[#FF6B35]/30"
+                  className="flex-1 min-w-0 rounded-xl border border-[#FF6B35] px-3 py-1.5 text-sm font-bold text-foreground outline-none focus:ring-2 focus:ring-[#FF6B35]/30"
                 />
                 <button onClick={() => renameMenu.mutate({ id: activeMenu.id, name: editNameValue.trim() || activeMenu.name })} className="flex h-7 w-7 items-center justify-center rounded-full bg-[#FF6B35] text-white">
                   <CheckIcon className="h-4 w-4" />
                 </button>
-                <button onClick={() => setIsEditingName(false)} className="flex h-7 w-7 items-center justify-center rounded-full bg-gray-100 text-gray-500">
+                <button onClick={() => setIsEditingName(false)} className="flex h-7 w-7 items-center justify-center rounded-full bg-muted/50 text-muted-foreground">
                   <XMarkIcon className="h-4 w-4" />
                 </button>
               </div>
             ) : (
               <div className="flex items-center gap-2">
-                <h1 className="text-lg font-bold text-gray-900 truncate">{activeMenu.name}</h1>
+                <h1 className="text-lg font-bold text-foreground truncate">{activeMenu.name}</h1>
                 <button
                   onClick={() => { setEditNameValue(activeMenu.name); setIsEditingName(true); }}
-                  className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-gray-100 text-gray-400 hover:bg-orange-50 hover:text-[#FF6B35] transition-colors"
+                  className="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-muted/50 text-muted-foreground/70 hover:bg-orange-50 hover:text-[#FF6B35] transition-colors"
                   title="Editar nombre"
                 >
                   <PencilIcon className="h-3.5 w-3.5" />
@@ -594,28 +594,28 @@ export default function ActiveMenu() {
         <div className="grid grid-cols-3 gap-3 mb-4">
           <div className="vively-card p-3 text-center">
             <CalendarDaysIcon className="h-5 w-5 text-[#FF6B35] mx-auto mb-1" />
-            <p className="text-lg font-bold text-gray-900">{totalDays}</p>
-            <p className="text-xs text-gray-500">días</p>
+            <p className="text-lg font-bold text-foreground">{totalDays}</p>
+            <p className="text-xs text-muted-foreground">días</p>
           </div>
           <div className="vively-card p-3 text-center">
             <FireIcon className="h-5 w-5 text-orange-500 mx-auto mb-1" />
-            <p className="text-lg font-bold text-gray-900">{activeMenu.dailyCalories ?? "—"}</p>
-            <p className="text-xs text-gray-500">kcal/día</p>
+            <p className="text-lg font-bold text-foreground">{activeMenu.dailyCalories ?? "—"}</p>
+            <p className="text-xs text-muted-foreground">kcal/día</p>
           </div>
           <div className="vively-card p-3 text-center">
             <CheckCircleIcon className="h-5 w-5 text-green-500 mx-auto mb-1" />
-            <p className="text-lg font-bold text-gray-900">{progressPct}%</p>
-            <p className="text-xs text-gray-500">completado</p>
+            <p className="text-lg font-bold text-foreground">{progressPct}%</p>
+            <p className="text-xs text-muted-foreground">completado</p>
           </div>
         </div>
 
         {/* Progress bar */}
         <div className="vively-card p-4 mb-4">
           <div className="flex justify-between items-center mb-2">
-            <span className="text-sm font-semibold text-gray-700">Progreso semanal</span>
-            <span className="text-sm text-gray-500">{completedDps}/{activeMenu.dayParts?.length ?? 0} comidas</span>
+            <span className="text-sm font-semibold text-foreground/80">Progreso semanal</span>
+            <span className="text-sm text-muted-foreground">{completedDps}/{activeMenu.dayParts?.length ?? 0} comidas</span>
           </div>
-          <div className="h-2 bg-gray-100 rounded-full overflow-hidden">
+          <div className="h-2 bg-muted/50 rounded-full overflow-hidden">
             <div
               className="h-full rounded-full transition-all duration-500"
               style={{ width: `${progressPct}%`, background: "linear-gradient(90deg, #FF6B35, #f59e0b)" }}
@@ -661,7 +661,7 @@ export default function ActiveMenu() {
       <div className="space-y-3 mb-6">
         {activeDayParts.length === 0 ? (
           <div className="vively-card p-6 text-center">
-            <p className="text-gray-400 text-sm">No hay comidas planificadas para este día</p>
+            <p className="text-muted-foreground/70 text-sm">No hay comidas planificadas para este día</p>
           </div>
         ) : (
           activeDayParts.map((dp: any) => (
@@ -673,7 +673,7 @@ export default function ActiveMenu() {
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <span className="text-lg">{getMealIcon(dp.dayPartInfo?.apiParam ?? "")}</span>
-                  <span className="text-sm font-bold text-gray-800">
+                  <span className="text-sm font-bold text-foreground">
                     {dp.dayPartInfo?.nameEs ?? dp.dayPartInfo?.apiParam ?? "Comida"}
                   </span>
                 </div>
@@ -703,7 +703,7 @@ export default function ActiveMenu() {
                     const ingredients = r.recipe?.ingredientsJson ? (() => { try { return JSON.parse(r.recipe.ingredientsJson); } catch { return []; } })() : [];
                     const steps = r.recipe?.stepsJson ? (() => { try { return JSON.parse(r.recipe.stepsJson); } catch { return []; } })() : [];
                     return (
-                      <div key={r.id} className="rounded-2xl border border-gray-100 overflow-hidden bg-white">
+                      <div key={r.id} className="rounded-2xl border border-border/50 overflow-hidden bg-background">
                         {/* Recipe header — always visible */}
                         <button
                           className="w-full flex items-center gap-3 p-3 text-left hover:bg-orange-50/50 transition-colors"
@@ -715,10 +715,10 @@ export default function ActiveMenu() {
                             <div className="h-14 w-14 rounded-xl bg-orange-50 flex items-center justify-center flex-shrink-0 text-2xl">🍽️</div>
                           )}
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-bold text-gray-800">{r.recipe?.name ?? "Receta"}</p>
+                            <p className="text-sm font-bold text-foreground">{r.recipe?.name ?? "Receta"}</p>
                             <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                               {r.recipe?.preparationTime && (
-                                <span className="text-xs text-gray-400 flex items-center gap-0.5">
+                                <span className="text-xs text-muted-foreground/70 flex items-center gap-0.5">
                                   <ClockIcon className="h-3 w-3" />{r.recipe.preparationTime}min
                                 </span>
                               )}
@@ -728,31 +728,31 @@ export default function ActiveMenu() {
                                 </span>
                               )}
                               {r.recipe?.difficulty && (
-                                <span className="text-xs bg-gray-100 text-gray-500 px-1.5 py-0.5 rounded-full">{{ easy: "Fácil", facil: "Fácil", medium: "Media", medio: "Media", hard: "Difícil", dificil: "Difícil" }[r.recipe.difficulty as string] ?? r.recipe.difficulty}</span>
+                                <span className="text-xs bg-muted/50 text-muted-foreground px-1.5 py-0.5 rounded-full">{{ easy: "Fácil", facil: "Fácil", medium: "Media", medio: "Media", hard: "Difícil", dificil: "Difícil" }[r.recipe.difficulty as string] ?? r.recipe.difficulty}</span>
                               )}
                               {r.servings && r.servings !== 1 && (
-                                <span className="text-xs text-gray-400">×{r.servings} raciones</span>
+                                <span className="text-xs text-muted-foreground/70">×{r.servings} raciones</span>
                               )}
                             </div>
                           </div>
-                          <div className="flex-shrink-0 text-gray-400">
+                          <div className="flex-shrink-0 text-muted-foreground/70">
                             {isExpanded ? <ChevronUpIcon className="h-4 w-4" /> : <ChevronDownIcon className="h-4 w-4" />}
                           </div>
                         </button>
 
                         {/* Expanded detail */}
                         {isExpanded && (
-                          <div className="border-t border-gray-100 px-3 pb-3 pt-2 space-y-3">
+                          <div className="border-t border-border/50 px-3 pb-3 pt-2 space-y-3">
                             {/* Ingredients */}
                             {ingredients.length > 0 && (
                               <div>
-                                <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">🫙 Ingredientes</p>
+                                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-1.5">🫙 Ingredientes</p>
                                 <div className="space-y-1">
                                   {ingredients.map((ing: any, idx: number) => (
                                     <div key={idx} className="flex items-center gap-2 text-sm">
                                       <span className="h-1.5 w-1.5 rounded-full bg-[#FF6B35] flex-shrink-0" />
-                                      <span className="text-gray-700">
-                                        {ing.amount && <span className="font-semibold text-gray-900">{ing.amount} {ing.unit} </span>}
+                                      <span className="text-foreground/80">
+                                        {ing.amount && <span className="font-semibold text-foreground">{ing.amount} {ing.unit} </span>}
                                         {ing.name ?? ing.ingredient?.name ?? JSON.stringify(ing)}
                                       </span>
                                     </div>
@@ -763,12 +763,12 @@ export default function ActiveMenu() {
                             {/* Instructions */}
                             {steps.length > 0 && (
                               <div>
-                                <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">👨‍🍳 Preparación</p>
+                                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-1.5">👨‍🍳 Preparación</p>
                                 <ol className="space-y-2">
                                   {steps.map((step: any, idx: number) => (
                                     <li key={idx} className="flex gap-2 text-sm">
                                       <span className="flex-shrink-0 h-5 w-5 rounded-full bg-[#FF6B35] text-white text-xs font-bold flex items-center justify-center">{idx + 1}</span>
-                                      <span className="text-gray-700 leading-relaxed">{step.description ?? step.instruction ?? step.step ?? JSON.stringify(step)}</span>
+                                      <span className="text-foreground/80 leading-relaxed">{step.description ?? step.instruction ?? step.step ?? JSON.stringify(step)}</span>
                                     </li>
                                   ))}
                                 </ol>
@@ -777,12 +777,12 @@ export default function ActiveMenu() {
                             {/* Nutrition */}
                             {(r.recipe?.caloriesPerServing || r.recipe?.proteinPerServing || r.recipe?.carbsPerServing || r.recipe?.fatPerServing) && (
                               <div>
-                                <p className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1.5">📊 Valores nutricionales (por ración)</p>
+                                <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-1.5">📊 Valores nutricionales (por ración)</p>
                                 <div className="grid grid-cols-4 gap-2">
                                   {[{label:"Kcal",val:r.recipe.caloriesPerServing,color:"#FF6B35"},{label:"Prot.",val:r.recipe.proteinPerServing ? r.recipe.proteinPerServing+"g" : null,color:"#3b82f6"},{label:"Carbs",val:r.recipe.carbsPerServing ? r.recipe.carbsPerServing+"g" : null,color:"#f59e0b"},{label:"Grasa",val:r.recipe.fatPerServing ? r.recipe.fatPerServing+"g" : null,color:"#10b981"}].filter(n=>n.val).map(n=>(
-                                    <div key={n.label} className="rounded-xl bg-gray-50 p-2 text-center">
+                                    <div key={n.label} className="rounded-xl bg-muted/30 p-2 text-center">
                                       <p className="text-xs font-bold" style={{color:n.color}}>{n.val}</p>
-                                      <p className="text-[10px] text-gray-400">{n.label}</p>
+                                      <p className="text-[10px] text-muted-foreground/70">{n.label}</p>
                                     </div>
                                   ))}
                                 </div>
@@ -790,7 +790,7 @@ export default function ActiveMenu() {
                             )}
                             {/* Fallback if no structured data */}
                             {ingredients.length === 0 && steps.length === 0 && (
-                              <p className="text-xs text-gray-400 italic text-center py-2">No hay detalles disponibles para esta receta</p>
+                              <p className="text-xs text-muted-foreground/70 italic text-center py-2">No hay detalles disponibles para esta receta</p>
                             )}
                           </div>
                         )}
@@ -799,7 +799,7 @@ export default function ActiveMenu() {
                   })}
                 </div>
               ) : (
-                <p className="text-xs text-gray-400 italic">Sin recetas asignadas</p>
+                <p className="text-xs text-muted-foreground/70 italic">Sin recetas asignadas</p>
               )}
             </div>
           ))
@@ -818,15 +818,15 @@ export default function ActiveMenu() {
               <BeakerIcon className="h-4 w-4 text-purple-600" />
             </div>
             <div className="text-left">
-              <p className="text-sm font-bold text-gray-800">Complementos</p>
-              <p className="text-xs text-gray-400">{menuComplements.length} extras • café, batidos, snacks…</p>
+              <p className="text-sm font-bold text-foreground">Complementos</p>
+              <p className="text-xs text-muted-foreground/70">{menuComplements.length} extras • café, batidos, snacks…</p>
             </div>
           </div>
           <div className="flex items-center gap-2">
             {menuComplements.length > 0 && (
               <span className="text-xs font-bold text-purple-600 bg-purple-50 px-2 py-0.5 rounded-full">{menuComplements.length}</span>
             )}
-            {showComplements ? <ChevronUpIcon className="h-4 w-4 text-gray-400" /> : <ChevronDownIcon className="h-4 w-4 text-gray-400" />}
+            {showComplements ? <ChevronUpIcon className="h-4 w-4 text-muted-foreground/70" /> : <ChevronDownIcon className="h-4 w-4 text-muted-foreground/70" />}
           </div>
         </button>
 
@@ -844,18 +844,18 @@ export default function ActiveMenu() {
                   }, {})
                 ).map(([mealTime, items]) => (
                   <div key={mealTime}>
-                    <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-1.5">
+                    <p className="text-xs font-bold text-muted-foreground/70 uppercase tracking-wide mb-1.5">
                       {MEAL_TIME_EMOJIS[mealTime]} {MEAL_TIME_LABELS[mealTime] ?? mealTime}
                     </p>
                     <div className="space-y-1.5">
                       {(items as any[]).map((c: any) => (
-                        <div key={c.id} className="flex items-center gap-3 rounded-xl bg-gray-50 px-3 py-2">
+                        <div key={c.id} className="flex items-center gap-3 rounded-xl bg-muted/30 px-3 py-2">
                           <span className="text-xl flex-shrink-0">{c.emoji ?? "☕"}</span>
                           <div className="flex-1 min-w-0">
-                            <p className="text-sm font-semibold text-gray-800 truncate">
+                            <p className="text-sm font-semibold text-foreground truncate">
                               {c.customName ?? c.complement?.nameEs ?? c.complement?.name ?? "Complemento"}
                             </p>
-                            <p className="text-xs text-gray-400">
+                            <p className="text-xs text-muted-foreground/70">
                               {c.quantity} {c.unit}{c.calories ? ` • ${c.calories} kcal` : ""}
                               {c.isDefault && <span className="ml-1 text-purple-500">• siempre</span>}
                             </p>
@@ -873,20 +873,20 @@ export default function ActiveMenu() {
                 ))}
               </div>
             ) : (
-              <p className="text-xs text-gray-400 text-center py-2">Aún no tienes complementos en este menú</p>
+              <p className="text-xs text-muted-foreground/70 text-center py-2">Aún no tienes complementos en este menú</p>
             )}
 
             {/* Quick-add presets */}
             {!showAddComplement && (
               <div>
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-wide mb-2">Añadir rápido</p>
+                <p className="text-xs font-bold text-muted-foreground/70 uppercase tracking-wide mb-2">Añadir rápido</p>
                 <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
                   {PRESET_COMPLEMENTS.map((p) => (
                     <button
                       key={p.name}
                       onClick={() => addComplement.mutate({ menuId: activeMenu.id, customName: p.name, emoji: p.emoji, mealTime: p.mealTime as any, quantity: 1, unit: p.unit, calories: p.calories })}
                       disabled={addComplement.isPending}
-                      className="flex-shrink-0 flex items-center gap-1.5 rounded-xl border border-gray-200 bg-white px-3 py-2 text-xs font-semibold text-gray-700 hover:border-purple-300 hover:bg-purple-50 transition-colors"
+                      className="flex-shrink-0 flex items-center gap-1.5 rounded-xl border border-border bg-background px-3 py-2 text-xs font-semibold text-foreground/80 hover:border-purple-300 hover:bg-purple-50 transition-colors"
                     >
                       <span>{p.emoji}</span>
                       <span>{p.name}</span>
@@ -904,14 +904,14 @@ export default function ActiveMenu() {
                   <input
                     value={newComplement.emoji}
                     onChange={(e) => setNewComplement(p => ({ ...p, emoji: e.target.value }))}
-                    className="w-14 rounded-xl border border-purple-200 bg-white px-2 py-2 text-center text-lg outline-none"
+                    className="w-14 rounded-xl border border-purple-200 bg-background px-2 py-2 text-center text-lg outline-none"
                     placeholder="☕"
                     maxLength={2}
                   />
                   <input
                     value={newComplement.name}
                     onChange={(e) => setNewComplement(p => ({ ...p, name: e.target.value }))}
-                    className="flex-1 rounded-xl border border-purple-200 bg-white px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-purple-300"
+                    className="flex-1 rounded-xl border border-purple-200 bg-background px-3 py-2 text-sm outline-none focus:ring-2 focus:ring-purple-300"
                     placeholder="Nombre (ej: Café solo)"
                   />
                 </div>
@@ -919,7 +919,7 @@ export default function ActiveMenu() {
                   <select
                     value={newComplement.mealTime}
                     onChange={(e) => setNewComplement(p => ({ ...p, mealTime: e.target.value }))}
-                    className="rounded-xl border border-purple-200 bg-white px-3 py-2 text-sm outline-none"
+                    className="rounded-xl border border-purple-200 bg-background px-3 py-2 text-sm outline-none"
                   >
                     {Object.entries(MEAL_TIME_LABELS).map(([k, v]) => (
                       <option key={k} value={k}>{MEAL_TIME_EMOJIS[k]} {v}</option>
@@ -929,7 +929,7 @@ export default function ActiveMenu() {
                     type="number"
                     value={newComplement.calories}
                     onChange={(e) => setNewComplement(p => ({ ...p, calories: Number(e.target.value) }))}
-                    className="rounded-xl border border-purple-200 bg-white px-3 py-2 text-sm outline-none"
+                    className="rounded-xl border border-purple-200 bg-background px-3 py-2 text-sm outline-none"
                     placeholder="Kcal (opcional)"
                     min={0}
                   />
@@ -956,7 +956,7 @@ export default function ActiveMenu() {
                   >
                     Guardar
                   </button>
-                  <button onClick={() => setShowAddComplement(false)} className="px-4 py-2 rounded-xl bg-white border border-gray-200 text-sm text-gray-500">
+                  <button onClick={() => setShowAddComplement(false)} className="px-4 py-2 rounded-xl bg-background border border-border text-sm text-muted-foreground">
                     Cancelar
                   </button>
                 </div>
@@ -964,7 +964,7 @@ export default function ActiveMenu() {
             ) : (
               <button
                 onClick={() => setShowAddComplement(true)}
-                className="w-full flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-gray-200 py-2.5 text-sm font-semibold text-gray-400 hover:border-purple-300 hover:text-purple-600 transition-colors"
+                className="w-full flex items-center justify-center gap-2 rounded-xl border-2 border-dashed border-border py-2.5 text-sm font-semibold text-muted-foreground/70 hover:border-purple-300 hover:text-purple-600 transition-colors"
               >
                 <PlusIcon className="h-4 w-4" />
                 Añadir complemento personalizado
@@ -979,7 +979,7 @@ export default function ActiveMenu() {
         {/* Header */}
         <div className="p-5" style={{ background: "linear-gradient(135deg, #1a1a2e 0%, #16213e 100%)" }}>
           <div className="flex items-center gap-3 mb-1">
-            <div className="h-10 w-10 rounded-2xl bg-white/10 flex items-center justify-center flex-shrink-0">
+            <div className="h-10 w-10 rounded-2xl bg-background/10 flex items-center justify-center flex-shrink-0">
               <ShoppingCartIcon className="h-5 w-5 text-white" />
             </div>
             <div>
@@ -990,8 +990,8 @@ export default function ActiveMenu() {
         </div>
 
         {/* Supermarket selector */}
-        <div className="bg-white px-4 pt-4 pb-2">
-          <p className="text-xs font-semibold text-gray-500 mb-2 uppercase tracking-wide">Elige tu supermercado</p>
+        <div className="bg-background px-4 pt-4 pb-2">
+          <p className="text-xs font-semibold text-muted-foreground mb-2 uppercase tracking-wide">Elige tu supermercado</p>
           <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
             {SUPERMARKETS.map((s) => (
               <div key={s.id} className="relative flex-shrink-0">
@@ -1017,7 +1017,7 @@ export default function ActiveMenu() {
         </div>
 
         {/* Generate button */}
-        <div className="bg-white px-4 pb-4">
+        <div className="bg-background px-4 pb-4">
           {/* Mercadona badge */}
           {selectedSupermarket === "mercadona" && (
             <div className="mb-3 flex items-center gap-2 rounded-2xl bg-green-50 border border-green-100 px-3 py-2">
@@ -1090,7 +1090,7 @@ export default function ActiveMenu() {
         </button>
         <button
           onClick={() => navigate("/app/menu-library")}
-          className="flex-1 py-3 rounded-2xl font-semibold text-sm text-gray-500 bg-white border border-gray-200"
+          className="flex-1 py-3 rounded-2xl font-semibold text-sm text-muted-foreground bg-background border border-border"
         >
           Cambiar menú
         </button>
@@ -1111,7 +1111,7 @@ export default function ActiveMenu() {
           className="modal-overlay"
           onClick={(e) => { if (e.target === e.currentTarget) setShowLidlModal(false); }}
         >
-          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up max-h-[90vh] overflow-y-auto">
+          <div className="w-full max-w-sm rounded-3xl bg-background p-6 shadow-2xl animate-slide-up max-h-[90vh] overflow-y-auto">
             <LidlCartExport
               items={generatedItems}
               onBack={() => setShowLidlModal(false)}
@@ -1127,7 +1127,7 @@ export default function ActiveMenu() {
           className="modal-overlay"
           onClick={(e) => { if (e.target === e.currentTarget) setShowCarrefourModal(false); }}
         >
-          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up max-h-[90vh] overflow-y-auto">
+          <div className="w-full max-w-sm rounded-3xl bg-background p-6 shadow-2xl animate-slide-up max-h-[90vh] overflow-y-auto">
             <CarrefourCartExport
               items={generatedItems}
               onBack={() => setShowCarrefourModal(false)}
@@ -1143,7 +1143,7 @@ export default function ActiveMenu() {
           className="modal-overlay"
           onClick={(e) => { if (e.target === e.currentTarget) setShowAlcampoModal(false); }}
         >
-          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up max-h-[90vh] overflow-y-auto">
+          <div className="w-full max-w-sm rounded-3xl bg-background p-6 shadow-2xl animate-slide-up max-h-[90vh] overflow-y-auto">
             <AlcampoCartExport
               items={generatedItems}
               onBack={() => setShowAlcampoModal(false)}
@@ -1156,7 +1156,7 @@ export default function ActiveMenu() {
       {/* Basket Comparator modal */}
       {showCompareModal && generatedItems.length > 0 && (
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowCompareModal(false); }}>
-          <div className="w-full max-w-sm rounded-3xl bg-white p-5 shadow-2xl animate-slide-up max-h-[90vh] overflow-y-auto">
+          <div className="w-full max-w-sm rounded-3xl bg-background p-5 shadow-2xl animate-slide-up max-h-[90vh] overflow-y-auto">
             <BasketComparator
               items={generatedItems.map((i) => ({
                 name: i.name,
@@ -1182,11 +1182,11 @@ export default function ActiveMenu() {
       {/* Duplicate list confirmation dialog */}
       {showDuplicateDialog && existingListInfo && (
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowDuplicateDialog(false); }}>
-          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up">
+          <div className="w-full max-w-sm rounded-3xl bg-background p-6 shadow-2xl animate-slide-up">
             <div className="text-center mb-5">
               <div className="text-4xl mb-3">📋</div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">Ya existe una lista</h3>
-              <p className="text-sm text-gray-500">
+              <h3 className="text-lg font-bold text-foreground mb-2">Ya existe una lista</h3>
+              <p className="text-sm text-muted-foreground">
                 Ya tienes una lista de la compra para este menú en <strong>{selectedSupermarketInfo?.name ?? selectedSupermarket}</strong>.
                 ¿Qué quieres hacer?
               </p>
@@ -1204,13 +1204,13 @@ export default function ActiveMenu() {
                   setShowDuplicateDialog(false);
                   navigate("/app/shopping-lists");
                 }}
-                className="w-full py-3 rounded-2xl font-bold text-sm bg-gray-100 text-gray-700"
+                className="w-full py-3 rounded-2xl font-bold text-sm bg-muted/50 text-foreground/80"
               >
                 👁 Ver lista existente
               </button>
               <button
                 onClick={() => setShowDuplicateDialog(false)}
-                className="w-full py-2 text-sm text-gray-400"
+                className="w-full py-2 text-sm text-muted-foreground/70"
               >
                 Cancelar
               </button>

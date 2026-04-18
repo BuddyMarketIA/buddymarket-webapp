@@ -90,7 +90,7 @@ export default function LidlCartExport({ items, onBack, onClose }: Props) {
       {/* Header — Lidl style */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="text-xl font-black text-gray-900">
+          <h3 className="text-xl font-black text-foreground">
             Mi lista —{" "}
             <span style={{ color: LIDL_BLUE }}>
               <span style={{ color: LIDL_RED }}>L</span>
@@ -98,13 +98,13 @@ export default function LidlCartExport({ items, onBack, onClose }: Props) {
             </span>
           </h3>
           {!isSearching && (
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted-foreground">
               {confirmedItems.length} producto{confirmedItems.length !== 1 ? "s" : ""}
               {matched.filter((m) => !m.product).length > 0 && ` · ${matched.filter((m) => !m.product).length} no encontrado${matched.filter((m) => !m.product).length !== 1 ? "s" : ""}`}
             </p>
           )}
         </div>
-        <button onClick={onClose} className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-500 text-lg font-bold" aria-label="Cerrar">×</button>
+        <button onClick={onClose} className="flex h-9 w-9 items-center justify-center rounded-full bg-muted/50 text-muted-foreground text-lg font-bold" aria-label="Cerrar">×</button>
       </div>
 
       {/* Lidl info banner */}
@@ -112,7 +112,7 @@ export default function LidlCartExport({ items, onBack, onClose }: Props) {
         <div className="shrink-0 w-8 h-8 rounded-full flex items-center justify-center font-black text-sm" style={{ background: LIDL_YELLOW, color: LIDL_BLUE }}>L</div>
         <div>
           <p className="text-xs font-bold" style={{ color: LIDL_BLUE }}>Lidl España</p>
-          <p className="text-xs text-gray-500">Los productos encontrados se muestran con precio de referencia. Haz clic en "Ir a Lidl" para añadir al carrito online.</p>
+          <p className="text-xs text-muted-foreground">Los productos encontrados se muestran con precio de referencia. Haz clic en "Ir a Lidl" para añadir al carrito online.</p>
         </div>
       </div>
 
@@ -124,19 +124,19 @@ export default function LidlCartExport({ items, onBack, onClose }: Props) {
               <div key={i} className="w-2.5 h-2.5 rounded-full animate-bounce" style={{ background: LIDL_BLUE, animationDelay: `${i * 0.15}s` }} />
             ))}
           </div>
-          <p className="text-sm text-gray-500">Buscando productos... ({resolved}/{unpurchased.length})</p>
+          <p className="text-sm text-muted-foreground">Buscando productos... ({resolved}/{unpurchased.length})</p>
         </div>
       )}
 
       {/* Product list — Lidl app style */}
       {!isSearching && matched.length > 0 && (
         <>
-          <div className="space-y-0 divide-y divide-gray-100">
+          <div className="space-y-0 divide-y divide-border/50">
             {/* Found products */}
             {confirmedItems.map((m) => (
               <div key={m.itemId} className="flex items-center gap-3 py-4">
                 {/* Product image */}
-                <div className="w-14 h-14 rounded-xl bg-gray-50 flex items-center justify-center shrink-0 overflow-hidden border border-gray-100">
+                <div className="w-14 h-14 rounded-xl bg-muted/30 flex items-center justify-center shrink-0 overflow-hidden border border-border/50">
                   {m.product?.image ? (
                     <img src={m.product.image} alt={m.product.name} className="w-full h-full object-contain p-1" />
                   ) : (
@@ -145,8 +145,8 @@ export default function LidlCartExport({ items, onBack, onClose }: Props) {
                 </div>
                 {/* Product info */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 leading-tight">{m.product!.name}</p>
-                  {m.product!.packaging && <p className="text-xs text-gray-400">{m.product!.packaging}</p>}
+                  <p className="text-sm font-semibold text-foreground leading-tight">{m.product!.name}</p>
+                  {m.product!.packaging && <p className="text-xs text-muted-foreground/70">{m.product!.packaging}</p>}
                   <p className="text-sm font-bold mt-0.5" style={{ color: LIDL_BLUE }}>
                     {m.product!.price != null ? `${m.product!.price.toFixed(2)}€ × ${m.qty} = ${(m.product!.price * m.qty).toFixed(2)}€` : "Precio no disponible"}
                   </p>
@@ -155,11 +155,11 @@ export default function LidlCartExport({ items, onBack, onClose }: Props) {
                 <div className="flex items-center gap-2 shrink-0">
                   <button
                     onClick={() => updateQty(m.itemId, -1)}
-                    className="w-8 h-8 rounded-full border-2 border-gray-200 text-gray-600 text-lg font-bold flex items-center justify-center hover:border-gray-400 transition-colors"
+                    className="w-8 h-8 rounded-full border-2 border-border text-muted-foreground text-lg font-bold flex items-center justify-center hover:border-gray-400 transition-colors"
                   >
                     −
                   </button>
-                  <span className="w-6 text-center text-base font-bold text-gray-900">{m.qty}</span>
+                  <span className="w-6 text-center text-base font-bold text-foreground">{m.qty}</span>
                   <button
                     onClick={() => updateQty(m.itemId, 1)}
                     className="w-8 h-8 rounded-full flex items-center justify-center text-white text-lg font-bold transition-colors"
@@ -174,12 +174,12 @@ export default function LidlCartExport({ items, onBack, onClose }: Props) {
             {/* Not found items */}
             {matched.filter((m) => !m.product).map((m) => (
               <div key={m.itemId} className="flex items-center gap-3 py-3 opacity-40">
-                <div className="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
+                <div className="w-14 h-14 rounded-xl bg-muted/50 flex items-center justify-center shrink-0">
                   <span className="text-xl text-gray-300">?</span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-500 truncate">{m.itemName}</p>
-                  <p className="text-xs text-gray-400 italic">No encontrado en Lidl</p>
+                  <p className="text-sm font-medium text-muted-foreground truncate">{m.itemName}</p>
+                  <p className="text-xs text-muted-foreground/70 italic">No encontrado en Lidl</p>
                 </div>
                 <a
                   href={`https://www.lidl.es/q/search?q=${encodeURIComponent(m.itemName)}`}
@@ -195,9 +195,9 @@ export default function LidlCartExport({ items, onBack, onClose }: Props) {
 
           {/* Total */}
           {confirmedItems.length > 0 && (
-            <div className="mt-4 pt-4 border-t border-gray-200 flex items-center justify-between">
-              <p className="text-base font-bold text-gray-900">Total estimado</p>
-              <p className="text-xl font-black text-gray-900">{totalPrice.toFixed(2)}€</p>
+            <div className="mt-4 pt-4 border-t border-border flex items-center justify-between">
+              <p className="text-base font-bold text-foreground">Total estimado</p>
+              <p className="text-xl font-black text-foreground">{totalPrice.toFixed(2)}€</p>
             </div>
           )}
 
@@ -215,13 +215,13 @@ export default function LidlCartExport({ items, onBack, onClose }: Props) {
             <div className="flex gap-3">
               <button
                 onClick={handleCopyList}
-                className="flex-1 rounded-2xl py-3 text-sm font-bold border-2 border-gray-200 text-gray-700 flex items-center justify-center gap-1.5"
+                className="flex-1 rounded-2xl py-3 text-sm font-bold border-2 border-border text-foreground/80 flex items-center justify-center gap-1.5"
               >
                 Copiar lista
               </button>
               <button
                 onClick={() => window.open("https://www.lidl.es", "_blank")}
-                className="flex-1 rounded-2xl py-3 text-sm font-bold border-2 border-gray-200 text-gray-700 flex items-center justify-center gap-1.5"
+                className="flex-1 rounded-2xl py-3 text-sm font-bold border-2 border-border text-foreground/80 flex items-center justify-center gap-1.5"
               >
                 <ArrowTopRightOnSquareIcon className="h-4 w-4" />
                 Ir a Lidl
@@ -233,7 +233,7 @@ export default function LidlCartExport({ items, onBack, onClose }: Props) {
 
       {!isSearching && matched.length === 0 && (
         <div className="text-center py-8">
-          <p className="text-gray-400 text-sm">No hay productos pendientes en la lista</p>
+          <p className="text-muted-foreground/70 text-sm">No hay productos pendientes en la lista</p>
         </div>
       )}
     </div>

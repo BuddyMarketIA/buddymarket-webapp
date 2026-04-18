@@ -99,8 +99,8 @@ export default function SessionPackages() {
         {/* Header */}
         <div className="flex items-center justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">🎟️ Paquetes de Sesiones</h1>
-            <p className="text-sm text-gray-500 mt-1">Define bonos de sesiones que tus pacientes pueden adquirir</p>
+            <h1 className="text-2xl font-bold text-foreground">🎟️ Paquetes de Sesiones</h1>
+            <p className="text-sm text-muted-foreground mt-1">Define bonos de sesiones que tus pacientes pueden adquirir</p>
           </div>
           <Button onClick={openCreate} className="bg-orange-500 hover:bg-orange-600 text-white">
             + Nuevo paquete
@@ -124,14 +124,14 @@ export default function SessionPackages() {
         {isLoading ? (
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
             {[1, 2, 3].map(i => (
-              <div key={i} className="bg-gray-100 rounded-2xl h-48 animate-pulse" />
+              <div key={i} className="bg-muted/50 rounded-2xl h-48 animate-pulse" />
             ))}
           </div>
         ) : !packages || packages.length === 0 ? (
-          <div className="text-center py-16 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+          <div className="text-center py-16 bg-muted/30 rounded-2xl border border-dashed border-border">
             <div className="text-5xl mb-3">🎟️</div>
-            <p className="text-gray-600 font-semibold text-lg">Sin paquetes todavía</p>
-            <p className="text-sm text-gray-400 mt-1 mb-4">Crea tu primer bono de sesiones para ofrecerlo a tus pacientes</p>
+            <p className="text-muted-foreground font-semibold text-lg">Sin paquetes todavía</p>
+            <p className="text-sm text-muted-foreground/70 mt-1 mb-4">Crea tu primer bono de sesiones para ofrecerlo a tus pacientes</p>
             <Button onClick={openCreate} className="bg-orange-500 hover:bg-orange-600 text-white">
               + Crear primer paquete
             </Button>
@@ -141,27 +141,27 @@ export default function SessionPackages() {
             {packages.map(pkg => (
               <div
                 key={pkg.id}
-                className={`bg-white rounded-2xl border p-5 flex flex-col gap-3 transition-all ${
-                  pkg.isActive ? "border-gray-200 shadow-sm" : "border-gray-100 opacity-60"
+                className={`bg-background rounded-2xl border p-5 flex flex-col gap-3 transition-all ${
+                  pkg.isActive ? "border-border shadow-sm" : "border-border/50 opacity-60"
                 }`}
               >
                 {/* Badge activo/inactivo */}
                 <div className="flex items-start justify-between">
                   <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
-                    pkg.isActive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"
+                    pkg.isActive ? "bg-green-100 text-green-700" : "bg-muted/50 text-muted-foreground"
                   }`}>
                     {pkg.isActive ? "● Activo" : "○ Inactivo"}
                   </span>
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-muted-foreground/70">
                     {new Date(pkg.createdAt).toLocaleDateString("es-ES")}
                   </span>
                 </div>
 
                 {/* Nombre y descripción */}
                 <div>
-                  <h3 className="font-bold text-gray-900 text-base">{pkg.name}</h3>
+                  <h3 className="font-bold text-foreground text-base">{pkg.name}</h3>
                   {pkg.description && (
-                    <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{pkg.description}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{pkg.description}</p>
                   )}
                 </div>
 
@@ -169,20 +169,20 @@ export default function SessionPackages() {
                 <div className="flex gap-3">
                   <div className="flex-1 text-center bg-orange-50 rounded-xl py-2">
                     <div className="text-xl font-bold text-orange-600">{pkg.sessionsCount}</div>
-                    <div className="text-xs text-gray-500">sesiones</div>
+                    <div className="text-xs text-muted-foreground">sesiones</div>
                   </div>
                   <div className="flex-1 text-center bg-green-50 rounded-xl py-2">
                     <div className="text-xl font-bold text-green-600">{pkg.price.toFixed(0)}€</div>
-                    <div className="text-xs text-gray-500">precio total</div>
+                    <div className="text-xs text-muted-foreground">precio total</div>
                   </div>
                   <div className="flex-1 text-center bg-blue-50 rounded-xl py-2">
                     <div className="text-xl font-bold text-blue-600">{pricePerSession(pkg)}€</div>
-                    <div className="text-xs text-gray-500">por sesión</div>
+                    <div className="text-xs text-muted-foreground">por sesión</div>
                   </div>
                 </div>
 
                 {/* Acciones */}
-                <div className="flex gap-2 mt-auto pt-2 border-t border-gray-100">
+                <div className="flex gap-2 mt-auto pt-2 border-t border-border/50">
                   <Button
                     size="sm"
                     variant="outline"

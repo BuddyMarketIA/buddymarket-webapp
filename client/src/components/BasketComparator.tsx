@@ -65,13 +65,13 @@ export default function BasketComparator({ items, onClose }: BasketComparatorPro
             <ScaleIcon className="w-5 h-5 text-white" />
           </div>
           <div>
-            <h2 className="text-base font-bold text-gray-900">Comparador de precios</h2>
-            <p className="text-xs text-gray-500">{filteredItems.length} productos · 4 supermercados</p>
+            <h2 className="text-base font-bold text-foreground">Comparador de precios</h2>
+            <p className="text-xs text-muted-foreground">{filteredItems.length} productos · 4 supermercados</p>
           </div>
         </div>
         <button
           onClick={onClose}
-          className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center hover:bg-gray-200 transition-colors text-gray-500 text-sm font-bold"
+          className="w-8 h-8 rounded-full bg-muted/50 flex items-center justify-center hover:bg-muted transition-colors text-muted-foreground text-sm font-bold"
         >
           ✕
         </button>
@@ -87,13 +87,13 @@ export default function BasketComparator({ items, onClose }: BasketComparatorPro
             </div>
           </div>
           <div className="text-center">
-            <p className="text-sm font-medium text-gray-700">Buscando los mejores precios...</p>
-            <p className="text-xs text-gray-400 mt-1">Consultando Mercadona, Carrefour, Lidl y Alcampo</p>
+            <p className="text-sm font-medium text-foreground/80">Buscando los mejores precios...</p>
+            <p className="text-xs text-muted-foreground/70 mt-1">Consultando Mercadona, Carrefour, Lidl y Alcampo</p>
           </div>
           {/* Skeleton bars */}
           <div className="w-full flex flex-col gap-2">
             {[1, 2, 3, 4].map(i => (
-              <div key={i} className="h-16 rounded-2xl bg-gray-100 animate-pulse" style={{ animationDelay: `${i * 100}ms` }} />
+              <div key={i} className="h-16 rounded-2xl bg-muted/50 animate-pulse" style={{ animationDelay: `${i * 100}ms` }} />
             ))}
           </div>
         </div>
@@ -130,7 +130,7 @@ export default function BasketComparator({ items, onClose }: BasketComparatorPro
                     href={SUPERMARKET_URLS[cheapest.supermarket] ?? "#"}
                     target="_blank"
                     rel="noopener noreferrer"
-                    className="flex items-center gap-1.5 bg-white/20 hover:bg-white/30 transition-colors rounded-xl px-3 py-2 text-xs font-semibold text-white flex-shrink-0"
+                    className="flex items-center gap-1.5 bg-background/20 hover:bg-background/30 transition-colors rounded-xl px-3 py-2 text-xs font-semibold text-white flex-shrink-0"
                   >
                     Ir a comprar
                     <ArrowTopRightOnSquareIcon className="w-3.5 h-3.5" />
@@ -150,13 +150,13 @@ export default function BasketComparator({ items, onClose }: BasketComparatorPro
             <div className="flex items-end justify-center gap-2 px-2 pt-2">
               {/* 2nd place */}
               <div className="flex flex-col items-center flex-1">
-                <div className="text-xs font-bold text-gray-500 mb-1">2°</div>
+                <div className="text-xs font-bold text-muted-foreground mb-1">2°</div>
                 <div
                   className="w-full rounded-t-xl flex flex-col items-center justify-end pb-2 pt-3"
                   style={{ height: 64, backgroundColor: `${SUPERMARKET_COLORS[results[1].supermarket]?.podium ?? "#888"}22`, border: `2px solid ${SUPERMARKET_COLORS[results[1].supermarket]?.podium ?? "#888"}44` }}
                 >
                   <span className="text-lg">{SUPERMARKET_EMOJIS[results[1].supermarket] ?? "🏪"}</span>
-                  <span className="text-xs font-bold text-gray-700 truncate max-w-full px-1">{results[1].supermarket}</span>
+                  <span className="text-xs font-bold text-foreground/80 truncate max-w-full px-1">{results[1].supermarket}</span>
                   <span className="text-xs font-black" style={{ color: SUPERMARKET_COLORS[results[1].supermarket]?.podium ?? "#888" }}>
                     {results[1].total.toFixed(2)}€
                   </span>
@@ -173,7 +173,7 @@ export default function BasketComparator({ items, onClose }: BasketComparatorPro
                   style={{ height: 80, backgroundColor: `${SUPERMARKET_COLORS[results[0].supermarket]?.podium ?? "#888"}22`, border: `2px solid ${SUPERMARKET_COLORS[results[0].supermarket]?.podium ?? "#888"}` }}
                 >
                   <span className="text-xl">{SUPERMARKET_EMOJIS[results[0].supermarket] ?? "🏪"}</span>
-                  <span className="text-xs font-bold text-gray-800 truncate max-w-full px-1">{results[0].supermarket}</span>
+                  <span className="text-xs font-bold text-foreground truncate max-w-full px-1">{results[0].supermarket}</span>
                   <span className="text-sm font-black" style={{ color: SUPERMARKET_COLORS[results[0].supermarket]?.podium ?? "#888" }}>
                     {results[0].total.toFixed(2)}€
                   </span>
@@ -181,13 +181,13 @@ export default function BasketComparator({ items, onClose }: BasketComparatorPro
               </div>
               {/* 3rd place */}
               <div className="flex flex-col items-center flex-1">
-                <div className="text-xs font-bold text-gray-400 mb-1">3°</div>
+                <div className="text-xs font-bold text-muted-foreground/70 mb-1">3°</div>
                 <div
                   className="w-full rounded-t-xl flex flex-col items-center justify-end pb-2 pt-2"
                   style={{ height: 52, backgroundColor: `${SUPERMARKET_COLORS[results[2].supermarket]?.podium ?? "#888"}18`, border: `2px solid ${SUPERMARKET_COLORS[results[2].supermarket]?.podium ?? "#888"}33` }}
                 >
                   <span className="text-base">{SUPERMARKET_EMOJIS[results[2].supermarket] ?? "🏪"}</span>
-                  <span className="text-xs font-bold text-gray-600 truncate max-w-full px-1">{results[2].supermarket}</span>
+                  <span className="text-xs font-bold text-muted-foreground truncate max-w-full px-1">{results[2].supermarket}</span>
                   <span className="text-xs font-black" style={{ color: SUPERMARKET_COLORS[results[2].supermarket]?.podium ?? "#888" }}>
                     {results[2].total.toFixed(2)}€
                   </span>
@@ -199,7 +199,7 @@ export default function BasketComparator({ items, onClose }: BasketComparatorPro
           {/* Supermarket detail cards */}
           <div className="flex flex-col gap-2">
             {results.map((sm, idx) => {
-              const colors = SUPERMARKET_COLORS[sm.supermarket] ?? { bg: "bg-gray-50", border: "border-gray-300", text: "text-gray-700", badge: "bg-gray-100 text-gray-700", podium: "#888" };
+              const colors = SUPERMARKET_COLORS[sm.supermarket] ?? { bg: "bg-muted/30", border: "border-border", text: "text-foreground/80", badge: "bg-muted/50 text-foreground/80", podium: "#888" };
               const isWinner = idx === 0;
               const isExpanded = expandedSupermarket === sm.supermarket;
               const coveragePercent = filteredItems.length > 0 ? Math.round((sm.found / filteredItems.length) * 100) : 0;
@@ -207,19 +207,19 @@ export default function BasketComparator({ items, onClose }: BasketComparatorPro
               return (
                 <div
                   key={sm.supermarket}
-                  className={`rounded-2xl border-2 overflow-hidden transition-all duration-200 ${isWinner ? `${colors.border} ${colors.bg}` : "border-gray-200 bg-white"}`}
+                  className={`rounded-2xl border-2 overflow-hidden transition-all duration-200 ${isWinner ? `${colors.border} ${colors.bg}` : "border-border bg-background"}`}
                 >
                   <div className="p-3.5">
                     <div className="flex items-center gap-3">
                       {/* Rank */}
-                      <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 ${isWinner ? "bg-yellow-400 text-yellow-900" : "bg-gray-100 text-gray-500"}`}>
+                      <div className={`w-8 h-8 rounded-full flex items-center justify-center font-bold text-sm flex-shrink-0 ${isWinner ? "bg-yellow-400 text-yellow-900" : "bg-muted/50 text-muted-foreground"}`}>
                         {isWinner ? <TrophySolid className="w-4 h-4" /> : idx + 1}
                       </div>
 
                       {/* Name + coverage */}
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-bold text-gray-900 text-sm">{sm.supermarket}</span>
+                          <span className="font-bold text-foreground text-sm">{sm.supermarket}</span>
                           {isWinner && (
                             <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${colors.badge}`}>
                               ✓ Más barato
@@ -232,13 +232,13 @@ export default function BasketComparator({ items, onClose }: BasketComparatorPro
                           )}
                         </div>
                         <div className="flex items-center gap-2 mt-1">
-                          <div className="flex-1 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                          <div className="flex-1 h-1.5 bg-muted rounded-full overflow-hidden">
                             <div
                               className="h-full rounded-full transition-all"
                               style={{ width: `${coveragePercent}%`, backgroundColor: colors.podium }}
                             />
                           </div>
-                          <span className="text-xs text-gray-500 flex-shrink-0">
+                          <span className="text-xs text-muted-foreground flex-shrink-0">
                             {sm.found}/{filteredItems.length} productos
                           </span>
                         </div>
@@ -246,7 +246,7 @@ export default function BasketComparator({ items, onClose }: BasketComparatorPro
 
                       {/* Price */}
                       <div className="text-right flex-shrink-0">
-                        <div className={`text-xl font-black ${isWinner ? colors.text : "text-gray-800"}`}>
+                        <div className={`text-xl font-black ${isWinner ? colors.text : "text-foreground"}`}>
                           {sm.total.toFixed(2)}€
                         </div>
                         {idx > 0 && cheapest && (
@@ -261,7 +261,7 @@ export default function BasketComparator({ items, onClose }: BasketComparatorPro
                   {/* Expand toggle */}
                   <button
                     onClick={() => setExpandedSupermarket(isExpanded ? null : sm.supermarket)}
-                    className="w-full px-4 pb-2.5 flex items-center justify-center gap-1 text-xs text-gray-400 hover:text-gray-600 transition-colors"
+                    className="w-full px-4 pb-2.5 flex items-center justify-center gap-1 text-xs text-muted-foreground/70 hover:text-muted-foreground transition-colors"
                   >
                     {isExpanded ? (
                       <>Ocultar productos <ChevronUpIcon className="w-3 h-3" /></>
@@ -272,10 +272,10 @@ export default function BasketComparator({ items, onClose }: BasketComparatorPro
 
                   {/* Expanded product list */}
                   {isExpanded && (
-                    <div className="border-t border-gray-100 divide-y divide-gray-50">
+                    <div className="border-t border-border/50 divide-y divide-gray-50">
                       {sm.items.map((item) => (
                         <div key={item.ingredient} className="flex items-center gap-3 px-4 py-2.5">
-                          <div className="w-8 h-8 rounded-lg bg-gray-100 flex-shrink-0 overflow-hidden flex items-center justify-center">
+                          <div className="w-8 h-8 rounded-lg bg-muted/50 flex-shrink-0 overflow-hidden flex items-center justify-center">
                             {item.thumbnail ? (
                               <img
                                 src={item.thumbnail}
@@ -288,15 +288,15 @@ export default function BasketComparator({ items, onClose }: BasketComparatorPro
                             )}
                           </div>
                           <div className="flex-1 min-w-0">
-                            <p className="text-xs font-semibold text-gray-800 truncate capitalize">{item.ingredient}</p>
+                            <p className="text-xs font-semibold text-foreground truncate capitalize">{item.ingredient}</p>
                             {item.found && item.productName && (
-                              <p className="text-xs text-gray-400 truncate">{item.productName}</p>
+                              <p className="text-xs text-muted-foreground/70 truncate">{item.productName}</p>
                             )}
                           </div>
                           <div className="flex items-center gap-2 flex-shrink-0">
                             {item.found ? (
                               <>
-                                <span className="text-sm font-bold text-gray-900">{item.price.toFixed(2)}€</span>
+                                <span className="text-sm font-bold text-foreground">{item.price.toFixed(2)}€</span>
                                 {item.url && (
                                   <a href={item.url} target="_blank" rel="noopener noreferrer"
                                     className="text-gray-300 hover:text-orange-500 transition-colors">
@@ -305,18 +305,18 @@ export default function BasketComparator({ items, onClose }: BasketComparatorPro
                                 )}
                               </>
                             ) : (
-                              <span className="text-xs text-gray-400 italic">No disponible</span>
+                              <span className="text-xs text-muted-foreground/70 italic">No disponible</span>
                             )}
                           </div>
                         </div>
                       ))}
-                      <div className="flex items-center justify-between px-4 py-3 bg-gray-50">
+                      <div className="flex items-center justify-between px-4 py-3 bg-muted/30">
                         <div className="flex items-center gap-1.5">
                           <StarIcon className="w-3.5 h-3.5 text-orange-400" />
-                          <span className="text-sm font-bold text-gray-700">Total estimado</span>
+                          <span className="text-sm font-bold text-foreground/80">Total estimado</span>
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className={`text-base font-black ${isWinner ? colors.text : "text-gray-900"}`}>
+                          <span className={`text-base font-black ${isWinner ? colors.text : "text-foreground"}`}>
                             {sm.total.toFixed(2)}€
                           </span>
                           <a
@@ -338,7 +338,7 @@ export default function BasketComparator({ items, onClose }: BasketComparatorPro
           </div>
 
           {/* Disclaimer */}
-          <p className="text-xs text-gray-400 text-center leading-relaxed px-2">
+          <p className="text-xs text-muted-foreground/70 text-center leading-relaxed px-2">
             * Precios orientativos basados en nuestro catálogo. Pueden variar según zona y fecha.
             Los productos no encontrados no se incluyen en el total.
           </p>
@@ -347,7 +347,7 @@ export default function BasketComparator({ items, onClose }: BasketComparatorPro
 
       {/* Empty items */}
       {!isLoading && filteredItems.length === 0 && (
-        <div className="text-center py-8 text-gray-400">
+        <div className="text-center py-8 text-muted-foreground/70">
           <ShoppingCartIcon className="w-10 h-10 mx-auto mb-2 opacity-40" />
           <p className="text-sm">No hay productos en la lista para comparar.</p>
         </div>

@@ -110,8 +110,8 @@ export default function SavedEvents() {
 
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">⭐ Mis Eventos Guardados</h1>
-          <p className="text-gray-500 text-sm mt-1">Accede rápidamente a los menús que has generado</p>
+          <h1 className="text-2xl font-bold text-foreground">⭐ Mis Eventos Guardados</h1>
+          <p className="text-muted-foreground text-sm mt-1">Accede rápidamente a los menús que has generado</p>
         </div>
 
         {isLoading ? (
@@ -121,8 +121,8 @@ export default function SavedEvents() {
         ) : !savedList || savedList.length === 0 ? (
           <div className="vively-card text-center py-16">
             <div className="text-6xl mb-4">🎉</div>
-            <h3 className="text-xl font-bold text-gray-700 mb-2">Aún no tienes eventos guardados</h3>
-            <p className="text-gray-500 mb-6">Genera un menú en el asistente de eventos y guárdalo para acceder rápidamente</p>
+            <h3 className="text-xl font-bold text-foreground/80 mb-2">Aún no tienes eventos guardados</h3>
+            <p className="text-muted-foreground mb-6">Genera un menú en el asistente de eventos y guárdalo para acceder rápidamente</p>
             <a href="/app/event-menu" className="vively-btn-primary px-6 py-3 rounded-2xl inline-block">
               Ir al Asistente de Eventos →
             </a>
@@ -139,15 +139,15 @@ export default function SavedEvents() {
                   className={`w-full p-4 rounded-2xl border-2 text-left transition-all ${
                     selectedId === ev.id
                       ? "border-orange-500 bg-orange-50"
-                      : "border-gray-100 bg-white hover:border-orange-200"
+                      : "border-border/50 bg-background hover:border-orange-200"
                   }`}
                 >
                   <div className="flex items-start gap-3">
                     <span className="text-2xl">{EVENT_EMOJIS[ev.eventType] ?? "🎉"}</span>
                     <div className="flex-1 min-w-0">
-                      <div className="font-semibold text-sm text-gray-800 truncate">{ev.eventName}</div>
-                      <div className="text-xs text-gray-400">{EVENT_LABELS[ev.eventType] ?? ev.eventType}</div>
-                      <div className="text-xs text-gray-400 mt-1">
+                      <div className="font-semibold text-sm text-foreground truncate">{ev.eventName}</div>
+                      <div className="text-xs text-muted-foreground/70">{EVENT_LABELS[ev.eventType] ?? ev.eventType}</div>
+                      <div className="text-xs text-muted-foreground/70 mt-1">
                         👥 {ev.persons} personas · {new Date(ev.createdAt).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}
                       </div>
                     </div>
@@ -161,7 +161,7 @@ export default function SavedEvents() {
               {!selectedId ? (
                 <div className="vively-card flex flex-col items-center justify-center py-16 text-center">
                   <div className="text-4xl mb-3">👈</div>
-                  <p className="text-gray-500">Selecciona un evento para ver el menú</p>
+                  <p className="text-muted-foreground">Selecciona un evento para ver el menú</p>
                 </div>
               ) : parsedMenu ? (
                 <div className="space-y-4">
@@ -169,8 +169,8 @@ export default function SavedEvents() {
                   <div className="vively-card">
                     <div className="flex items-start justify-between gap-4">
                       <div>
-                        <h2 className="text-xl font-bold text-gray-900">{parsedMenu.eventTitle || selectedEvent?.eventName}</h2>
-                        <p className="text-gray-500 text-sm mt-1">{parsedMenu.intro}</p>
+                        <h2 className="text-xl font-bold text-foreground">{parsedMenu.eventTitle || selectedEvent?.eventName}</h2>
+                        <p className="text-muted-foreground text-sm mt-1">{parsedMenu.intro}</p>
                         {parsedMenu.estimatedBudget && (
                           <div className="mt-2 inline-flex items-center gap-1.5 bg-green-50 text-green-700 text-sm px-3 py-1 rounded-full">
                             💰 {parsedMenu.estimatedBudget}
@@ -201,7 +201,7 @@ export default function SavedEvents() {
                         className={`px-4 py-2 rounded-xl text-sm font-medium whitespace-nowrap transition-all ${
                           activeTab === tab.id
                             ? "bg-orange-500 text-white shadow-sm"
-                            : "bg-white border border-gray-200 text-gray-600 hover:border-orange-300"
+                            : "bg-background border border-border text-muted-foreground hover:border-orange-300"
                         }`}
                       >
                         {tab.label}
@@ -214,34 +214,34 @@ export default function SavedEvents() {
                     <div className="space-y-4">
                       {parsedMenu.courses?.map((course, ci) => (
                         <div key={ci} className="vively-card">
-                          <h3 className="font-bold text-gray-800 mb-3">{course.name}</h3>
+                          <h3 className="font-bold text-foreground mb-3">{course.name}</h3>
                           <div className="space-y-4">
                             {course.dishes?.map((dish, di) => (
-                              <div key={di} className="border border-gray-100 rounded-xl p-4">
+                              <div key={di} className="border border-border/50 rounded-xl p-4">
                                 <div className="flex items-start justify-between gap-2 mb-2">
-                                  <h4 className="font-semibold text-gray-800">{dish.name}</h4>
+                                  <h4 className="font-semibold text-foreground">{dish.name}</h4>
                                   <div className="flex gap-2 shrink-0">
                                     <span className="text-xs bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full">⏱ {dish.prepTime}</span>
                                     <span className="text-xs bg-orange-50 text-orange-600 px-2 py-0.5 rounded-full">👨‍🍳 {{ easy: "Fácil", facil: "Fácil", medium: "Media", medio: "Media", hard: "Difícil", dificil: "Difícil" }[dish.difficulty] ?? dish.difficulty}</span>
                                   </div>
                                 </div>
-                                <p className="text-sm text-gray-600 mb-3">{dish.description}</p>
+                                <p className="text-sm text-muted-foreground mb-3">{dish.description}</p>
                                 {dish.ingredients?.length > 0 && (
                                   <div className="mb-2">
-                                    <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Ingredientes</p>
+                                    <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Ingredientes</p>
                                     <div className="flex flex-wrap gap-1">
                                       {dish.ingredients.map((ing, ii) => (
-                                        <span key={ii} className="text-xs bg-gray-100 text-gray-600 px-2 py-0.5 rounded-full">{ing}</span>
+                                        <span key={ii} className="text-xs bg-muted/50 text-muted-foreground px-2 py-0.5 rounded-full">{ing}</span>
                                       ))}
                                     </div>
                                   </div>
                                 )}
                                 {dish.steps?.length > 0 && (
                                   <div>
-                                    <p className="text-xs font-semibold text-gray-500 uppercase mb-1">Elaboración</p>
+                                    <p className="text-xs font-semibold text-muted-foreground uppercase mb-1">Elaboración</p>
                                     <ol className="space-y-1">
                                       {dish.steps.map((step, si) => (
-                                        <li key={si} className="text-sm text-gray-600 flex gap-2">
+                                        <li key={si} className="text-sm text-muted-foreground flex gap-2">
                                           <span className="text-orange-500 font-bold shrink-0">{si + 1}.</span>
                                           <span>{step}</span>
                                         </li>
@@ -265,7 +265,7 @@ export default function SavedEvents() {
                   {activeTab === "shopping" && (
                     <div className="vively-card space-y-4">
                       <div className="flex items-center justify-between">
-                        <h3 className="font-bold text-gray-800">Lista de la compra</h3>
+                        <h3 className="font-bold text-foreground">Lista de la compra</h3>
                         <button
                           onClick={() => {
                             const text = parsedMenu!.shoppingList
@@ -282,11 +282,11 @@ export default function SavedEvents() {
                       {parsedMenu.shoppingList?.map((cat, ci) => (
                         cat.items?.length > 0 && (
                           <div key={ci}>
-                            <h4 className="text-sm font-semibold text-gray-600 mb-2">{cat.category}</h4>
+                            <h4 className="text-sm font-semibold text-muted-foreground mb-2">{cat.category}</h4>
                             <ul className="space-y-1">
                               {cat.items.map((item, ii) => (
-                                <li key={ii} className="flex items-center gap-2 text-sm text-gray-700">
-                                  <span className="w-4 h-4 rounded border border-gray-300 shrink-0" />
+                                <li key={ii} className="flex items-center gap-2 text-sm text-foreground/80">
+                                  <span className="w-4 h-4 rounded border border-border shrink-0" />
                                   {item}
                                 </li>
                               ))}
@@ -301,10 +301,10 @@ export default function SavedEvents() {
                     <div className="space-y-3">
                       {parsedMenu.prepSchedule?.map((phase, pi) => (
                         <div key={pi} className="vively-card">
-                          <h3 className="font-bold text-gray-800 mb-3">📅 {phase.when}</h3>
+                          <h3 className="font-bold text-foreground mb-3">📅 {phase.when}</h3>
                           <ul className="space-y-2">
                             {phase.tasks?.map((task, ti) => (
-                              <li key={ti} className="flex items-start gap-2 text-sm text-gray-700">
+                              <li key={ti} className="flex items-start gap-2 text-sm text-foreground/80">
                                 <span className="text-orange-500 mt-0.5">✓</span>
                                 {task}
                               </li>
@@ -317,10 +317,10 @@ export default function SavedEvents() {
 
                   {activeTab === "tips" && (
                     <div className="vively-card">
-                      <h3 className="font-bold text-gray-800 mb-4">💡 Consejos de anfitrión</h3>
+                      <h3 className="font-bold text-foreground mb-4">💡 Consejos de anfitrión</h3>
                       <ul className="space-y-3">
                         {parsedMenu.hostingTips?.map((tip, ti) => (
-                          <li key={ti} className="flex items-start gap-3 text-sm text-gray-700">
+                          <li key={ti} className="flex items-start gap-3 text-sm text-foreground/80">
                             <span className="text-orange-500 font-bold shrink-0">{ti + 1}.</span>
                             {tip}
                           </li>
@@ -331,7 +331,7 @@ export default function SavedEvents() {
                 </div>
               ) : (
                 <div className="vively-card text-center py-10">
-                  <p className="text-gray-500">No se pudo cargar el menú de este evento</p>
+                  <p className="text-muted-foreground">No se pudo cargar el menú de este evento</p>
                 </div>
               )}
             </div>

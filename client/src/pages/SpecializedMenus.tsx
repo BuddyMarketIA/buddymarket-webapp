@@ -143,8 +143,8 @@ export default function SpecializedMenus() {
           {/* Hero */}
           <div className="py-6 text-center">
             <div className="text-4xl mb-2">🏥</div>
-            <h1 className="text-2xl font-bold text-gray-900">Menús Especializados</h1>
-            <p className="text-gray-500 text-sm mt-1">
+            <h1 className="text-2xl font-bold text-foreground">Menús Especializados</h1>
+            <p className="text-muted-foreground text-sm mt-1">
               Menús generados por IA adaptados a tu condición médica o estilo de vida
             </p>
           </div>
@@ -156,7 +156,7 @@ export default function SpecializedMenus() {
                 const cats = CATEGORIES.filter((c) => c.group === group);
                 return (
                   <div key={group} className="mb-4">
-                    <h2 className="text-xs font-extrabold uppercase tracking-widest text-gray-400 mb-2 px-1">{group}</h2>
+                    <h2 className="text-xs font-extrabold uppercase tracking-widest text-muted-foreground/70 mb-2 px-1">{group}</h2>
                     <div className="grid grid-cols-2 gap-2">
                       {cats.slice(0, 4).map((cat) => (
                         <div key={cat.key} className={`flex items-center gap-3 rounded-2xl border p-3 ${cat.color}`}>
@@ -171,24 +171,24 @@ export default function SpecializedMenus() {
             </div>
             {/* Lock overlay */}
             <div className="absolute inset-0 flex flex-col items-center justify-center">
-              <div className="bg-white/95 rounded-3xl shadow-xl border-2 border-orange-200 p-6 mx-4 text-center max-w-xs">
+              <div className="bg-background/95 rounded-3xl shadow-xl border-2 border-orange-200 p-6 mx-4 text-center max-w-xs">
                 <div className="text-4xl mb-3">🔒</div>
-                <h3 className="text-lg font-extrabold text-gray-900 mb-1">Función Pro</h3>
-                <p className="text-sm text-gray-500 mb-4">
+                <h3 className="text-lg font-extrabold text-foreground mb-1">Función Pro</h3>
+                <p className="text-sm text-muted-foreground mb-4">
                   Accede a <strong>24 menús especializados</strong> para embarazo, diabetes, celiaquía, deportistas y mucho más
                 </p>
                 <div className="space-y-2 mb-4 text-left">
                   {["🤰 Embarazo y lactancia", "🩺 Diabetes e hipertensión", "🌱 Vegano y vegetariano", "🏋️ Deportistas", "🎗️ Apoyo oncológico"].map((f, i) => (
-                    <div key={i} className="text-xs text-gray-600 flex items-center gap-2">
+                    <div key={i} className="text-xs text-muted-foreground flex items-center gap-2">
                       <span>{f}</span>
                     </div>
                   ))}
-                  <div className="text-xs text-gray-400 italic">...y 19 más</div>
+                  <div className="text-xs text-muted-foreground/70 italic">...y 19 más</div>
                 </div>
                 <a href="/app/subscription?plan=basic" className="block w-full py-3 rounded-xl bg-[#F97316] text-white text-sm font-extrabold hover:bg-[#ea6c0a] transition-all shadow-md text-center">
                   Activar Pro por 9,99€/mes →
                 </a>
-                <p className="text-xs text-gray-400 mt-2">Sin permanencia · Cancela cuando quieras</p>
+                <p className="text-xs text-muted-foreground/70 mt-2">Sin permanencia · Cancela cuando quieras</p>
               </div>
             </div>
           </div>
@@ -205,8 +205,8 @@ export default function SpecializedMenus() {
           {/* Header */}
           <div className="py-6 text-center">
             <div className="text-4xl mb-2">🏥</div>
-            <h1 className="text-2xl font-bold text-gray-900">Menús Especializados</h1>
-            <p className="text-gray-500 text-sm mt-1">
+            <h1 className="text-2xl font-bold text-foreground">Menús Especializados</h1>
+            <p className="text-muted-foreground text-sm mt-1">
               Menús generados por IA adaptados a tu condición médica o estilo de vida
             </p>
           </div>
@@ -216,7 +216,7 @@ export default function SpecializedMenus() {
             const cats = CATEGORIES.filter((c) => c.group === group);
             return (
               <div key={group} className="mb-6">
-                <h2 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-3 px-1">
+                <h2 className="text-xs font-semibold text-muted-foreground/70 uppercase tracking-wider mb-3 px-1">
                   {group}
                 </h2>
                 <div className="grid grid-cols-2 gap-2">
@@ -236,7 +236,7 @@ export default function SpecializedMenus() {
           })}
 
           {/* Disclaimer */}
-          <div className="mt-4 p-4 bg-gray-50 rounded-xl border border-gray-200 text-xs text-gray-500">
+          <div className="mt-4 p-4 bg-muted/30 rounded-xl border border-border text-xs text-muted-foreground">
             <strong>Aviso importante:</strong> Los menús generados son orientativos y no sustituyen el consejo de un profesional sanitario. Consulta siempre con tu médico o dietista antes de realizar cambios en tu alimentación, especialmente si tienes una condición médica.
           </div>
         </div>
@@ -264,7 +264,7 @@ export default function SpecializedMenus() {
 
           {/* Days */}
           <div className="mb-5">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-foreground/80 mb-2">
               Número de días
             </label>
             <div className="flex gap-2 flex-wrap">
@@ -275,7 +275,7 @@ export default function SpecializedMenus() {
                   className={`px-4 py-2 rounded-xl border text-sm font-medium transition-all ${
                     days === d
                       ? "bg-orange-500 text-white border-orange-500"
-                      : "bg-white text-gray-700 border-gray-200 hover:border-orange-300"
+                      : "bg-background text-foreground/80 border-border hover:border-orange-300"
                   }`}
                 >
                   {d} {d === 1 ? "día" : "días"}
@@ -286,20 +286,20 @@ export default function SpecializedMenus() {
 
           {/* Persons */}
           <div className="mb-5">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
+            <label className="block text-sm font-semibold text-foreground/80 mb-2">
               Número de personas
             </label>
             <div className="flex items-center gap-4">
               <button
                 onClick={() => setPersons(Math.max(1, persons - 1))}
-                className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-xl font-bold text-gray-600 hover:bg-gray-50"
+                className="w-10 h-10 rounded-full border border-border flex items-center justify-center text-xl font-bold text-muted-foreground hover:bg-muted/30"
               >
                 −
               </button>
-              <span className="text-2xl font-bold text-gray-900 w-8 text-center">{persons}</span>
+              <span className="text-2xl font-bold text-foreground w-8 text-center">{persons}</span>
               <button
                 onClick={() => setPersons(Math.min(10, persons + 1))}
-                className="w-10 h-10 rounded-full border border-gray-200 flex items-center justify-center text-xl font-bold text-gray-600 hover:bg-gray-50"
+                className="w-10 h-10 rounded-full border border-border flex items-center justify-center text-xl font-bold text-muted-foreground hover:bg-muted/30"
               >
                 +
               </button>
@@ -308,8 +308,8 @@ export default function SpecializedMenus() {
 
           {/* Extra notes */}
           <div className="mb-6">
-            <label className="block text-sm font-semibold text-gray-700 mb-2">
-              Notas adicionales <span className="font-normal text-gray-400">(opcional)</span>
+            <label className="block text-sm font-semibold text-foreground/80 mb-2">
+              Notas adicionales <span className="font-normal text-muted-foreground/70">(opcional)</span>
             </label>
             <textarea
               value={extraNotes}
@@ -317,9 +317,9 @@ export default function SpecializedMenus() {
               placeholder="Ej: también soy intolerante a la lactosa, no me gusta el pescado azul..."
               maxLength={500}
               rows={3}
-              className="w-full border border-gray-200 rounded-xl p-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange-400"
+              className="w-full border border-border rounded-xl p-3 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-orange-400"
             />
-            <div className="text-right text-xs text-gray-400 mt-1">{extraNotes.length}/500</div>
+            <div className="text-right text-xs text-muted-foreground/70 mt-1">{extraNotes.length}/500</div>
           </div>
 
           {/* Generate button */}
@@ -342,7 +342,7 @@ export default function SpecializedMenus() {
           </Button>
 
           {generateMutation.isPending && (
-            <p className="text-center text-xs text-gray-400 mt-3">
+            <p className="text-center text-xs text-muted-foreground/70 mt-3">
               La IA está creando tu menú especializado. Puede tardar unos segundos...
             </p>
           )}
@@ -374,7 +374,7 @@ export default function SpecializedMenus() {
           {/* Key nutrients */}
           {generatedMenu.keyNutrients?.length > 0 && (
             <div className="mb-4">
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Nutrientes clave</h3>
+              <h3 className="text-xs font-semibold text-muted-foreground/70 uppercase tracking-wider mb-2">Nutrientes clave</h3>
               <div className="flex flex-wrap gap-2">
                 {generatedMenu.keyNutrients.map((n, i) => (
                   <Badge key={i} className="bg-green-100 text-green-800 border-green-200 text-xs">{n}</Badge>
@@ -386,7 +386,7 @@ export default function SpecializedMenus() {
           {/* Avoid list */}
           {generatedMenu.avoidList?.length > 0 && (
             <div className="mb-4">
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Alimentos a evitar</h3>
+              <h3 className="text-xs font-semibold text-muted-foreground/70 uppercase tracking-wider mb-2">Alimentos a evitar</h3>
               <div className="flex flex-wrap gap-2">
                 {generatedMenu.avoidList.map((a, i) => (
                   <Badge key={i} className="bg-red-100 text-red-800 border-red-200 text-xs">{a}</Badge>
@@ -413,7 +413,7 @@ export default function SpecializedMenus() {
           {/* Day selector */}
           {generatedMenu.days?.length > 1 && (
             <div className="mb-4">
-              <h3 className="text-xs font-semibold text-gray-400 uppercase tracking-wider mb-2">Día</h3>
+              <h3 className="text-xs font-semibold text-muted-foreground/70 uppercase tracking-wider mb-2">Día</h3>
               <div className="flex gap-2 overflow-x-auto pb-1">
                 {generatedMenu.days.map((d, i) => (
                   <button
@@ -422,7 +422,7 @@ export default function SpecializedMenus() {
                     className={`flex-shrink-0 px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
                       activeDay === i
                         ? "bg-orange-500 text-white"
-                        : "bg-white border border-gray-200 text-gray-600 hover:border-orange-300"
+                        : "bg-background border border-border text-muted-foreground hover:border-orange-300"
                     }`}
                   >
                     {d.day || DAY_NAMES[i] || `Día ${i + 1}`}
@@ -436,11 +436,11 @@ export default function SpecializedMenus() {
           {currentDay && (
             <div>
               <div className="flex items-center justify-between mb-3">
-                <h3 className="font-bold text-gray-900 text-base">
+                <h3 className="font-bold text-foreground text-base">
                   {currentDay.day || DAY_NAMES[activeDay] || `Día ${activeDay + 1}`}
                 </h3>
                 {currentDay.totalCalories > 0 && (
-                  <span className="text-xs text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                  <span className="text-xs text-muted-foreground bg-muted/50 px-2 py-1 rounded-full">
                     {currentDay.totalCalories} kcal
                   </span>
                 )}
@@ -448,16 +448,16 @@ export default function SpecializedMenus() {
 
               <div className="space-y-3">
                 {currentDay.meals?.map((meal, mi) => (
-                  <div key={mi} className="bg-white rounded-xl border border-gray-100 p-4 shadow-sm">
+                  <div key={mi} className="bg-background rounded-xl border border-border/50 p-4 shadow-sm">
                     <div className="flex items-start justify-between gap-2 mb-1">
                       <span className="text-xs font-semibold text-orange-600 uppercase tracking-wide">
                         {meal.name}
                       </span>
                       {meal.calories > 0 && (
-                        <span className="text-xs text-gray-400 flex-shrink-0">{meal.calories} kcal</span>
+                        <span className="text-xs text-muted-foreground/70 flex-shrink-0">{meal.calories} kcal</span>
                       )}
                     </div>
-                    <p className="text-sm text-gray-800 leading-relaxed">{meal.food}</p>
+                    <p className="text-sm text-foreground leading-relaxed">{meal.food}</p>
 
                     {/* Macros */}
                     {(meal.protein > 0 || meal.carbs > 0 || meal.fat > 0) && (
@@ -482,7 +482,7 @@ export default function SpecializedMenus() {
 
                     {/* Nutrition note */}
                     {meal.nutritionNote && (
-                      <p className="text-xs text-gray-400 mt-2 italic">{meal.nutritionNote}</p>
+                      <p className="text-xs text-muted-foreground/70 mt-2 italic">{meal.nutritionNote}</p>
                     )}
                   </div>
                 ))}
@@ -495,7 +495,7 @@ export default function SpecializedMenus() {
             <Button
               onClick={() => { setView("config"); setGeneratedMenu(null); }}
               variant="outline"
-              className="flex-1 rounded-xl border-gray-200"
+              className="flex-1 rounded-xl border-border"
             >
               Regenerar
             </Button>
@@ -508,7 +508,7 @@ export default function SpecializedMenus() {
           </div>
 
           {/* Disclaimer */}
-          <div className="mt-6 p-4 bg-gray-50 rounded-xl border border-gray-200 text-xs text-gray-500">
+          <div className="mt-6 p-4 bg-muted/30 rounded-xl border border-border text-xs text-muted-foreground">
             <strong>Aviso médico:</strong> Este menú es orientativo y ha sido generado por IA. No sustituye el diagnóstico ni el tratamiento de un profesional sanitario. Consulta siempre con tu médico o dietista.
           </div>
         </div>

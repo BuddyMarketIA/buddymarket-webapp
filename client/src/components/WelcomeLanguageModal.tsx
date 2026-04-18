@@ -80,7 +80,7 @@ export default function WelcomeLanguageModal() {
       >
         {/* Header */}
         <div className="bg-gradient-to-br from-orange-500 to-orange-400 px-6 pt-8 pb-6 text-center">
-          <div className="w-16 h-16 rounded-2xl bg-white/20 flex items-center justify-center text-3xl mx-auto mb-3 shadow-lg">
+          <div className="w-16 h-16 rounded-2xl bg-background/20 flex items-center justify-center text-3xl mx-auto mb-3 shadow-lg">
             🌍
           </div>
           <h2 className="text-xl font-black text-white tracking-tight">

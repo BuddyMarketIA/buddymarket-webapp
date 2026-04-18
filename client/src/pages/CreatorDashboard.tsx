@@ -49,7 +49,7 @@ function ChartsSection({ monthlyTrend, weeklyTrend, projection, stats }: { month
             { label: "Nuevos/mes", value: projection.nextMonthReferrals, icon: Activity, color: "text-purple-600", bg: "bg-purple-50" },
           ].map(({ label, value, icon: Icon, color, bg }) => (
             <div key={label} className={`rounded-xl p-3 ${bg} flex items-center gap-3`}>
-              <div className={`w-8 h-8 rounded-lg bg-white flex items-center justify-center shadow-sm flex-shrink-0`}>
+              <div className={`w-8 h-8 rounded-lg bg-background flex items-center justify-center shadow-sm flex-shrink-0`}>
                 <Icon className={`w-4 h-4 ${color}`} />
               </div>
               <div>
@@ -78,7 +78,7 @@ function ChartsSection({ monthlyTrend, weeklyTrend, projection, stats }: { month
                   key={t}
                   onClick={() => setChartType(t)}
                   className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
-                    chartType === t ? "bg-white shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
+                    chartType === t ? "bg-background shadow-sm text-foreground" : "text-muted-foreground hover:text-foreground"
                   }`}
                 >
                   {t === "earnings" ? "💰 Ganancias" : t === "referrals" ? "👥 Referidos" : "📊 Combinado"}
@@ -644,7 +644,7 @@ export default function CreatorDashboard() {
               {creatorProfile?.avatarUrl ? (
                 <img src={creatorProfile.avatarUrl} alt="" className="w-14 h-14 rounded-2xl object-cover border-2 border-white/30" />
               ) : (
-                <div className="w-14 h-14 rounded-2xl bg-white/20 flex items-center justify-center">
+                <div className="w-14 h-14 rounded-2xl bg-background/20 flex items-center justify-center">
                   {creatorProfile?.type === "expert" ? <ChefHat className="w-7 h-7" /> : <Star className="w-7 h-7" />}
                 </div>
               )}
@@ -652,7 +652,7 @@ export default function CreatorDashboard() {
                 <div className="flex items-center gap-2">
                   <h1 className="text-2xl font-bold">{creatorProfile?.displayName ?? user.name}</h1>
                   {creatorProfile?.verified && (
-                    <Badge className="bg-white/20 text-white border-0 text-xs">✓ Verificado</Badge>
+                    <Badge className="bg-background/20 text-white border-0 text-xs">✓ Verificado</Badge>
                   )}
                 </div>
                 <p className="text-orange-100 text-sm">
@@ -665,13 +665,13 @@ export default function CreatorDashboard() {
                 variant="outline"
                 size="sm"
                 onClick={() => refetch()}
-                className="border-white/30 text-white hover:bg-white/10 bg-transparent"
+                className="border-white/30 text-white hover:bg-background/10 bg-transparent"
               >
                 <RefreshCw className="w-4 h-4 mr-1" />
                 Actualizar
               </Button>
               <Link href="/creators">
-                <Button variant="outline" size="sm" className="border-white/30 text-white hover:bg-white/10 bg-transparent">
+                <Button variant="outline" size="sm" className="border-white/30 text-white hover:bg-background/10 bg-transparent">
                   <ExternalLink className="w-4 h-4 mr-1" />
                   Ver landing
                 </Button>

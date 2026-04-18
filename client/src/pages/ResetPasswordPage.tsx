@@ -50,7 +50,7 @@ export default function ResetPasswordPage() {
     }
   };
 
-  const inputCls = "bg-white/[0.06] border-white/[0.12] text-white placeholder:text-white/25 focus-visible:border-[#F97316] focus-visible:ring-[#F97316]/20 rounded-xl h-12";
+  const inputCls = "bg-background/[0.06] border-white/[0.12] text-white placeholder:text-white/25 focus-visible:border-[#F97316] focus-visible:ring-[#F97316]/20 rounded-xl h-12";
 
   return (
     <div className="min-h-screen flex bg-[#0F0D0B] font-sans">
@@ -145,7 +145,7 @@ export default function ResetPasswordPage() {
                         <div key={i} className={`h-1 flex-1 rounded-full transition-all ${
                           password.length >= i * 3
                             ? i <= 1 ? "bg-red-500" : i <= 2 ? "bg-yellow-500" : i <= 3 ? "bg-blue-500" : "bg-green-500"
-                            : "bg-white/10"
+                            : "bg-background/10"
                         }`} />
                       ))}
                     </div>

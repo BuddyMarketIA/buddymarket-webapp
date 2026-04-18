@@ -16,7 +16,7 @@ function ScaleInput({ label, value, onChange, emoji }: {
     <div className="mb-5">
       <div className="flex items-center gap-2 mb-2">
         {emoji && <span className="text-xl">{emoji}</span>}
-        <span className="text-sm font-semibold text-gray-700">{label}</span>
+        <span className="text-sm font-semibold text-foreground/80">{label}</span>
         {value !== undefined && (
           <span className="ml-auto text-sm font-bold text-orange-600">{value}/10</span>
         )}
@@ -32,7 +32,7 @@ function ScaleInput({ label, value, onChange, emoji }: {
                 ? "bg-orange-500 text-white shadow-md scale-110"
                 : n <= (value ?? 0)
                 ? "bg-orange-100 text-orange-700"
-                : "bg-gray-100 text-gray-400 hover:bg-orange-50"
+                : "bg-muted/50 text-muted-foreground/70 hover:bg-orange-50"
             }`}
           >
             {n}
@@ -108,8 +108,8 @@ export default function WeeklyCheckin() {
       <AppLayout>
         <div className="max-w-lg mx-auto px-4 py-16 text-center">
           <div className="text-6xl mb-4">🎉</div>
-          <h1 className="text-2xl font-bold text-gray-900 mb-2">¡Check-in enviado!</h1>
-          <p className="text-gray-500 mb-6">Tu nutricionista recibirá tu valoración semanal. ¡Sigue así!</p>
+          <h1 className="text-2xl font-bold text-foreground mb-2">¡Check-in enviado!</h1>
+          <p className="text-muted-foreground mb-6">Tu nutricionista recibirá tu valoración semanal. ¡Sigue así!</p>
           <Button onClick={() => navigate("/app")} className="bg-orange-500 hover:bg-orange-600 text-white">
             Volver al inicio
           </Button>
@@ -123,7 +123,7 @@ export default function WeeklyCheckin() {
       <AppLayout>
         <div className="max-w-lg mx-auto px-4 py-16 text-center">
           <div className="animate-spin w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full mx-auto mb-4" />
-          <p className="text-gray-500">Cargando...</p>
+          <p className="text-muted-foreground">Cargando...</p>
         </div>
       </AppLayout>
     );
@@ -134,8 +134,8 @@ export default function WeeklyCheckin() {
       <AppLayout>
         <div className="max-w-lg mx-auto px-4 py-16 text-center">
           <div className="text-5xl mb-4">✅</div>
-          <h1 className="text-xl font-bold text-gray-900 mb-2">Todo al día</h1>
-          <p className="text-gray-500 mb-6">Ya has completado el check-in de esta semana. ¡Buen trabajo!</p>
+          <h1 className="text-xl font-bold text-foreground mb-2">Todo al día</h1>
+          <p className="text-muted-foreground mb-6">Ya has completado el check-in de esta semana. ¡Buen trabajo!</p>
           <Button onClick={() => navigate("/app")} variant="outline">
             Volver al inicio
           </Button>
@@ -160,11 +160,11 @@ export default function WeeklyCheckin() {
               </div>
             )}
             <div>
-              <h1 className="text-xl font-bold text-gray-900">Check-in semanal</h1>
-              <p className="text-sm text-gray-500">Para {currentPending.expertName}</p>
+              <h1 className="text-xl font-bold text-foreground">Check-in semanal</h1>
+              <p className="text-sm text-muted-foreground">Para {currentPending.expertName}</p>
             </div>
           </div>
-          <p className="text-xs text-gray-400 mt-2">
+          <p className="text-xs text-muted-foreground/70 mt-2">
             Semana del {new Date(weekStart + "T12:00:00").toLocaleDateString("es-ES", { day: "numeric", month: "long" })}
           </p>
         </div>
@@ -179,7 +179,7 @@ export default function WeeklyCheckin() {
                 className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${
                   selectedRelId === p.expertPatientId
                     ? "bg-orange-500 text-white"
-                    : "bg-gray-100 text-gray-600 hover:bg-orange-50"
+                    : "bg-muted/50 text-muted-foreground hover:bg-orange-50"
                 }`}
               >
                 {p.expertName}
@@ -191,7 +191,7 @@ export default function WeeklyCheckin() {
         <form onSubmit={handleSubmit} className="space-y-1">
           {/* Peso */}
           <div className="mb-5">
-            <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+            <label className="flex items-center gap-2 text-sm font-semibold text-foreground/80 mb-2">
               <span className="text-xl">⚖️</span> Peso actual (kg)
             </label>
             <input
@@ -202,7 +202,7 @@ export default function WeeklyCheckin() {
               value={weight}
               onChange={e => setWeight(e.target.value)}
               placeholder="Ej: 72.5"
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-400 text-gray-900 text-lg font-semibold"
+              className="w-full px-4 py-3 rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-orange-400 text-foreground text-lg font-semibold"
             />
           </div>
 
@@ -215,7 +215,7 @@ export default function WeeklyCheckin() {
 
           {/* Dificultades */}
           <div className="mb-5">
-            <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+            <label className="flex items-center gap-2 text-sm font-semibold text-foreground/80 mb-2">
               <span className="text-xl">🤔</span> ¿Has tenido alguna dificultad?
             </label>
             <textarea
@@ -223,13 +223,13 @@ export default function WeeklyCheckin() {
               onChange={e => setDifficulties(e.target.value)}
               placeholder="Ej: Me costó resistir los dulces el fin de semana..."
               rows={3}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-400 text-gray-700 resize-none"
+              className="w-full px-4 py-3 rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-orange-400 text-foreground/80 resize-none"
             />
           </div>
 
           {/* Notas adicionales */}
           <div className="mb-6">
-            <label className="flex items-center gap-2 text-sm font-semibold text-gray-700 mb-2">
+            <label className="flex items-center gap-2 text-sm font-semibold text-foreground/80 mb-2">
               <span className="text-xl">💬</span> Notas adicionales para tu nutricionista
             </label>
             <textarea
@@ -237,7 +237,7 @@ export default function WeeklyCheckin() {
               onChange={e => setNotes(e.target.value)}
               placeholder="Cualquier cosa que quieras compartir con tu nutricionista..."
               rows={3}
-              className="w-full px-4 py-3 rounded-xl border border-gray-200 focus:outline-none focus:ring-2 focus:ring-orange-400 text-gray-700 resize-none"
+              className="w-full px-4 py-3 rounded-xl border border-border focus:outline-none focus:ring-2 focus:ring-orange-400 text-foreground/80 resize-none"
             />
           </div>
 

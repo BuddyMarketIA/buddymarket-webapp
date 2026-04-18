@@ -39,7 +39,7 @@ function PasswordStrength({ password }: { password: string }) {
     <div className="space-y-1 mt-1">
       <div className="flex gap-1">
         {[0, 1, 2, 3].map(i => (
-          <div key={i} className={`h-1 flex-1 rounded-full transition-all ${i < score ? colors[score - 1] : "bg-gray-200"}`} />
+          <div key={i} className={`h-1 flex-1 rounded-full transition-all ${i < score ? colors[score - 1] : "bg-muted"}`} />
         ))}
       </div>
       {score > 0 && <p className={`text-[10px] font-medium ${score <= 1 ? "text-red-400" : score === 2 ? "text-orange-400" : score === 3 ? "text-yellow-500" : "text-green-500"}`}>{labels[score - 1]}</p>}
@@ -197,13 +197,13 @@ export default function LoginPage() {
       <div className="min-h-screen flex items-center justify-center bg-[#FAF7F2]">
         <div className="flex flex-col items-center gap-3">
           <Loader2 className="w-8 h-8 animate-spin text-orange-500" />
-          <p className="text-sm text-gray-500">Verificando sesión...</p>
+          <p className="text-sm text-muted-foreground">Verificando sesión...</p>
         </div>
       </div>
     );
   }
 
-  const inp = "bg-gray-50 border border-gray-200 text-gray-900 placeholder:text-gray-400 focus-visible:border-[#F97316] focus-visible:ring-0 focus-visible:ring-offset-0 rounded-2xl h-12 text-sm transition-colors";
+  const inp = "bg-muted/30 border border-border text-foreground placeholder:text-muted-foreground/70 focus-visible:border-[#F97316] focus-visible:ring-0 focus-visible:ring-offset-0 rounded-2xl h-12 text-sm transition-colors";
   const currentSlide = SLIDES[slide];
 
   return (
@@ -226,7 +226,7 @@ export default function LoginPage() {
             <p className="text-white/70 text-lg">{currentSlide.sub}</p>
             <div className="flex gap-2 mt-6">
               {SLIDES.map((_, i) => (
-                <button key={i} onClick={() => setSlide(i)} className={`h-1.5 rounded-full transition-all ${i === slide ? "w-8 bg-[#F97316]" : "w-4 bg-white/30"}`} />
+                <button key={i} onClick={() => setSlide(i)} className={`h-1.5 rounded-full transition-all ${i === slide ? "w-8 bg-[#F97316]" : "w-4 bg-background/30"}`} />
               ))}
             </div>
           </div>
@@ -234,7 +234,7 @@ export default function LoginPage() {
       </div>
 
       {/* ── Right panel: form ── */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 bg-white min-h-screen">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 bg-background min-h-screen">
         <div className="w-full max-w-md">
 
           {/* Logo mobile */}
@@ -245,17 +245,17 @@ export default function LoginPage() {
 
           {/* Back button */}
           {mode !== "login" && mode !== "register" && (
-            <button onClick={() => setMode("login")} className="flex items-center gap-1 text-gray-400 hover:text-gray-700 text-sm mb-6 transition-colors">
+            <button onClick={() => setMode("login")} className="flex items-center gap-1 text-muted-foreground/70 hover:text-foreground/80 text-sm mb-6 transition-colors">
               <ChevronLeft className="w-4 h-4" /> Volver
             </button>
           )}
           {mode === "register" && (
-            <button onClick={() => setMode("login")} className="flex items-center gap-1 text-gray-400 hover:text-gray-700 text-sm mb-6 transition-colors">
+            <button onClick={() => setMode("login")} className="flex items-center gap-1 text-muted-foreground/70 hover:text-foreground/80 text-sm mb-6 transition-colors">
               <ChevronLeft className="w-4 h-4" /> Volver al inicio de sesión
             </button>
           )}
           {mode === "otp-code" && (
-            <button onClick={() => setMode("otp-email")} className="flex items-center gap-1 text-gray-400 hover:text-gray-700 text-sm mb-6 transition-colors">
+            <button onClick={() => setMode("otp-email")} className="flex items-center gap-1 text-muted-foreground/70 hover:text-foreground/80 text-sm mb-6 transition-colors">
               <ChevronLeft className="w-4 h-4" /> Volver
             </button>
           )}
@@ -264,35 +264,35 @@ export default function LoginPage() {
           {mode === "login" && (
             <div className="space-y-5">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Bienvenido de nuevo</h1>
-                <p className="text-gray-400 text-sm mt-1">Accede a tu cuenta BuddyMarket</p>
+                <h1 className="text-2xl font-bold text-foreground">Bienvenido de nuevo</h1>
+                <p className="text-muted-foreground/70 text-sm mt-1">Accede a tu cuenta BuddyMarket</p>
               </div>
 
               {/* SSO */}
               <WebSSOButtons onSuccess={() => { clearLogoutFlag(); afterAuth(); }} onBeforeSSO={(_, action) => { clearLogoutFlag(); action(); }} />
 
               <div className="flex items-center gap-3">
-                <div className="flex-1 h-px bg-gray-200" />
-                <span className="text-xs text-gray-400">o con email</span>
-                <div className="flex-1 h-px bg-gray-200" />
+                <div className="flex-1 h-px bg-muted" />
+                <span className="text-xs text-muted-foreground/70">o con email</span>
+                <div className="flex-1 h-px bg-muted" />
               </div>
 
               <form onSubmit={handleLogin} className="space-y-3">
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/70 pointer-events-none" />
                   <Input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="tu@email.com" className={`${inp} pl-10`} />
                 </div>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/70 pointer-events-none" />
                   <Input type={showPassword ? "text" : "password"} required value={password} onChange={e => setPassword(e.target.value)} placeholder="Contraseña" className={`${inp} pl-10 pr-10`} />
-                  <button type="button" onClick={() => setShowPassword(v => !v)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                  <button type="button" onClick={() => setShowPassword(v => !v)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/70 hover:text-muted-foreground">
                     {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
                 <div className="flex items-center justify-between">
                   <label className="flex items-center gap-2 cursor-pointer">
                     <input type="checkbox" checked={rememberMe} onChange={e => setRememberMe(e.target.checked)} className="w-4 h-4 rounded accent-[#F97316]" />
-                    <span className="text-xs text-gray-500">Recordar sesión</span>
+                    <span className="text-xs text-muted-foreground">Recordar sesión</span>
                   </label>
                   <button type="button" onClick={() => setMode("forgot")} className="text-[#F97316] text-xs hover:underline">
                     ¿Olvidaste la contraseña?
@@ -303,11 +303,11 @@ export default function LoginPage() {
                 </Button>
               </form>
 
-              <button onClick={() => setMode("otp-email")} className="w-full h-11 rounded-2xl border border-gray-200 bg-gray-50 text-gray-700 text-sm font-medium hover:bg-gray-100 transition-colors flex items-center justify-center gap-2">
+              <button onClick={() => setMode("otp-email")} className="w-full h-11 rounded-2xl border border-border bg-muted/30 text-foreground/80 text-sm font-medium hover:bg-muted/50 transition-colors flex items-center justify-center gap-2">
                 <Mail className="w-4 h-4 text-[#F97316]" /> Acceder con código por email
               </button>
 
-              <p className="text-center text-gray-400 text-sm">
+              <p className="text-center text-muted-foreground/70 text-sm">
                 ¿No tienes cuenta?{" "}
                 <button onClick={() => setMode("register")} className="text-[#F97316] font-semibold hover:underline">
                   Regístrate gratis
@@ -320,61 +320,61 @@ export default function LoginPage() {
           {mode === "register" && (
             <div className="space-y-4">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Crea tu cuenta</h1>
-                <p className="text-gray-400 text-sm mt-1">Únete a BuddyMarket — es gratis</p>
+                <h1 className="text-2xl font-bold text-foreground">Crea tu cuenta</h1>
+                <p className="text-muted-foreground/70 text-sm mt-1">Únete a BuddyMarket — es gratis</p>
               </div>
 
               {/* SSO */}
               <WebSSOButtons onSuccess={() => { clearLogoutFlag(); afterAuth(); }} onBeforeSSO={(_, action) => { clearLogoutFlag(); action(); }} />
 
               <div className="flex items-center gap-3">
-                <div className="flex-1 h-px bg-gray-200" />
-                <span className="text-xs text-gray-400">o con email</span>
-                <div className="flex-1 h-px bg-gray-200" />
+                <div className="flex-1 h-px bg-muted" />
+                <span className="text-xs text-muted-foreground/70">o con email</span>
+                <div className="flex-1 h-px bg-muted" />
               </div>
 
               <form onSubmit={handleRegister} className="space-y-3">
                 <div className="relative">
-                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  <User className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/70 pointer-events-none" />
                   <Input type="text" required value={name} onChange={e => setName(e.target.value)} placeholder="Tu nombre completo" className={`${inp} pl-10`} minLength={2} maxLength={100} />
                 </div>
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/70 pointer-events-none" />
                   <Input type="email" required value={email} onChange={e => setEmail(e.target.value)} placeholder="tu@email.com" className={`${inp} pl-10`} />
                 </div>
                 <div>
                   <div className="relative">
-                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                    <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/70 pointer-events-none" />
                     <Input type={showPassword ? "text" : "password"} required value={password} onChange={e => setPassword(e.target.value)} placeholder="Contraseña (mín. 8 caracteres)" className={`${inp} pl-10 pr-10`} minLength={8} />
-                    <button type="button" onClick={() => setShowPassword(v => !v)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                    <button type="button" onClick={() => setShowPassword(v => !v)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/70 hover:text-muted-foreground">
                       {showPassword ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                     </button>
                   </div>
                   <PasswordStrength password={password} />
                 </div>
                 <div className="relative">
-                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  <Lock className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/70 pointer-events-none" />
                   <Input
                     type={showConfirm ? "text" : "password"} required value={confirmPassword} onChange={e => setConfirmPassword(e.target.value)} placeholder="Confirmar contraseña"
                     className={`${inp} pl-10 pr-10 ${confirmPassword && confirmPassword !== password ? "border-red-400" : confirmPassword && confirmPassword === password ? "border-green-400" : ""}`}
                   />
-                  <button type="button" onClick={() => setShowConfirm(v => !v)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                  <button type="button" onClick={() => setShowConfirm(v => !v)} className="absolute right-3.5 top-1/2 -translate-y-1/2 text-muted-foreground/70 hover:text-muted-foreground">
                     {showConfirm ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
                   </button>
                 </div>
                 {confirmPassword && confirmPassword !== password && <p className="text-[10px] text-red-400 -mt-1">Las contraseñas no coinciden</p>}
 
                 {/* Terms */}
-                <div className="space-y-2 pt-1 border-t border-gray-100">
+                <div className="space-y-2 pt-1 border-t border-border/50">
                   <label className="flex items-start gap-2.5 cursor-pointer">
                     <input type="checkbox" checked={acceptTerms} onChange={e => setAcceptTerms(e.target.checked)} className="mt-0.5 w-4 h-4 rounded accent-[#F97316] flex-shrink-0" />
-                    <span className="text-[11px] text-gray-500 leading-relaxed">
+                    <span className="text-[11px] text-muted-foreground leading-relaxed">
                       Acepto los <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-[#F97316] underline">Términos y Condiciones</a> <span className="text-red-500">*</span>
                     </span>
                   </label>
                   <label className="flex items-start gap-2.5 cursor-pointer">
                     <input type="checkbox" checked={acceptPrivacy} onChange={e => setAcceptPrivacy(e.target.checked)} className="mt-0.5 w-4 h-4 rounded accent-[#F97316] flex-shrink-0" />
-                    <span className="text-[11px] text-gray-500 leading-relaxed">
+                    <span className="text-[11px] text-muted-foreground leading-relaxed">
                       Acepto la <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-[#F97316] underline">Política de Privacidad</a> <span className="text-red-500">*</span>
                     </span>
                   </label>
@@ -386,7 +386,7 @@ export default function LoginPage() {
                 </Button>
               </form>
 
-              <p className="text-center text-gray-400 text-sm">
+              <p className="text-center text-muted-foreground/70 text-sm">
                 ¿Ya tienes cuenta?{" "}
                 <button onClick={() => setMode("login")} className="text-[#F97316] font-semibold hover:underline">
                   Iniciar sesión
@@ -399,12 +399,12 @@ export default function LoginPage() {
           {mode === "forgot" && (
             <div className="space-y-5">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Recuperar contraseña</h1>
-                <p className="text-gray-400 text-sm mt-1">Te enviaremos un enlace para restablecer tu contraseña</p>
+                <h1 className="text-2xl font-bold text-foreground">Recuperar contraseña</h1>
+                <p className="text-muted-foreground/70 text-sm mt-1">Te enviaremos un enlace para restablecer tu contraseña</p>
               </div>
               <form onSubmit={handleForgot} className="space-y-3">
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/70 pointer-events-none" />
                   <Input type="email" required value={forgotEmail} onChange={e => setForgotEmail(e.target.value)} placeholder="tu@email.com" className={`${inp} pl-10`} />
                 </div>
                 <Button type="submit" disabled={isLoading} className="w-full h-12 bg-[#F97316] hover:bg-[#ea6c0f] text-white font-semibold rounded-2xl">
@@ -421,8 +421,8 @@ export default function LoginPage() {
                 <svg className="w-8 h-8 text-green-500" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" /></svg>
               </div>
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Email enviado</h1>
-                <p className="text-gray-400 text-sm mt-2">Revisa tu bandeja de entrada y sigue las instrucciones para restablecer tu contraseña.</p>
+                <h1 className="text-2xl font-bold text-foreground">Email enviado</h1>
+                <p className="text-muted-foreground/70 text-sm mt-2">Revisa tu bandeja de entrada y sigue las instrucciones para restablecer tu contraseña.</p>
               </div>
               <button onClick={() => setMode("login")} className="text-[#F97316] text-sm font-semibold hover:underline">
                 Volver al inicio de sesión
@@ -434,12 +434,12 @@ export default function LoginPage() {
           {mode === "otp-email" && (
             <div className="space-y-5">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Acceso sin contraseña</h1>
-                <p className="text-gray-400 text-sm mt-1">Te enviaremos un código de 6 dígitos a tu email</p>
+                <h1 className="text-2xl font-bold text-foreground">Acceso sin contraseña</h1>
+                <p className="text-muted-foreground/70 text-sm mt-1">Te enviaremos un código de 6 dígitos a tu email</p>
               </div>
               <form onSubmit={handleSendOTP} className="space-y-3">
                 <div className="relative">
-                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400 pointer-events-none" />
+                  <Mail className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/70 pointer-events-none" />
                   <Input type="email" required value={otpEmail} onChange={e => setOtpEmail(e.target.value)} placeholder="tu@email.com" className={`${inp} pl-10`} />
                 </div>
                 <Button type="submit" disabled={isLoading} className="w-full h-12 bg-[#F97316] hover:bg-[#ea6c0f] text-white font-semibold rounded-2xl">
@@ -453,8 +453,8 @@ export default function LoginPage() {
           {mode === "otp-code" && (
             <div className="space-y-5">
               <div>
-                <h1 className="text-2xl font-bold text-gray-900">Introduce el código</h1>
-                <p className="text-gray-400 text-sm mt-1">Enviado a <strong className="text-gray-700">{otpEmail}</strong></p>
+                <h1 className="text-2xl font-bold text-foreground">Introduce el código</h1>
+                <p className="text-muted-foreground/70 text-sm mt-1">Enviado a <strong className="text-foreground/80">{otpEmail}</strong></p>
               </div>
               <form onSubmit={handleVerifyOTP} className="space-y-4">
                 <Input
@@ -466,7 +466,7 @@ export default function LoginPage() {
                 <Button type="submit" disabled={isLoading || otpCode.length < 6} className="w-full h-12 bg-[#F97316] hover:bg-[#ea6c0f] text-white font-semibold rounded-2xl">
                   {isLoading ? <Loader2 className="w-4 h-4 animate-spin" /> : "Verificar código"}
                 </Button>
-                <button type="button" onClick={() => { setOtpCode(""); sendOTPMut.mutate({ email: otpEmail }); toast.success("Código reenviado"); }} className="w-full text-center text-gray-400 text-xs hover:text-gray-600">
+                <button type="button" onClick={() => { setOtpCode(""); sendOTPMut.mutate({ email: otpEmail }); toast.success("Código reenviado"); }} className="w-full text-center text-muted-foreground/70 text-xs hover:text-muted-foreground">
                   ¿No recibiste el código? Reenviar
                 </button>
               </form>

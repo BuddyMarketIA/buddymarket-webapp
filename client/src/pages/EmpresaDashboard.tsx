@@ -308,7 +308,7 @@ export default function EmpresaDashboard() {
                   </p>
                   {companyAccess?.accessCode ? (
                     <div className="flex items-center gap-3">
-                      <div className="bg-white border-2 border-orange-300 rounded-xl px-6 py-3 font-mono font-black text-2xl tracking-widest text-orange-900 shadow-sm">
+                      <div className="bg-background border-2 border-orange-300 rounded-xl px-6 py-3 font-mono font-black text-2xl tracking-widest text-orange-900 shadow-sm">
                         {companyAccess.accessCode}
                       </div>
                       <Button
@@ -337,7 +337,7 @@ export default function EmpresaDashboard() {
                     </div>
                   ) : (
                     <div className="flex items-center gap-3">
-                      <div className="bg-white border-2 border-dashed border-orange-300 rounded-xl px-6 py-3 text-orange-400 text-sm font-medium">
+                      <div className="bg-background border-2 border-dashed border-orange-300 rounded-xl px-6 py-3 text-orange-400 text-sm font-medium">
                         Sin código generado aún
                       </div>
                       <Button
@@ -354,7 +354,7 @@ export default function EmpresaDashboard() {
                 <div className="hidden md:block text-6xl">🔑</div>
               </div>
               {companyAccess?.accessCode && (
-                <div className="mt-4 p-3 bg-white/70 rounded-xl border border-orange-200 text-xs text-orange-800">
+                <div className="mt-4 p-3 bg-background/70 rounded-xl border border-orange-200 text-xs text-orange-800">
                   <strong>Enlace directo para empleados:</strong>{" "}
                   <span className="font-mono">{window.location.origin}/activar?code={companyAccess.accessCode}</span>
                 </div>

@@ -28,7 +28,7 @@ function LevelBadge({ level }: { level: string }) {
 
 function StatCard({ label, value, sub, color }: { label: string; value: number | string; sub?: string; color?: string }) {
   return (
-    <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#f0ebe3]">
+    <div className="bg-background rounded-2xl p-5 shadow-sm border border-[#f0ebe3]">
       <p className="text-xs text-[#9c8c7a] font-medium uppercase tracking-wide mb-1">{label}</p>
       <p style={{ color: color ?? "#1a1a1a" }} className="text-3xl font-bold">{value}</p>
       {sub && <p className="text-xs text-[#9c8c7a] mt-1">{sub}</p>}
@@ -106,7 +106,7 @@ export default function AdminLogs() {
             <div className="flex gap-2">
               <button
                 onClick={() => refetch()}
-                className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[#e8e0d5] bg-white text-sm font-medium text-[#5a4a3a] hover:bg-[#faf0e8] transition-colors"
+                className="flex items-center gap-2 px-4 py-2 rounded-xl border border-[#e8e0d5] bg-background text-sm font-medium text-[#5a4a3a] hover:bg-[#faf0e8] transition-colors"
               >
                 <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
@@ -142,7 +142,7 @@ export default function AdminLogs() {
               <StatCard label="Últimas 24h" value={stats.last24h} sub="nuevos" />
               <StatCard label="Últimos 7 días" value={stats.last7d} sub="acumulados" />
               <StatCard label="Errores sin resolver" value={stats.unresolvedErrors} color="#dc2626" />
-              <div className="bg-white rounded-2xl p-5 shadow-sm border border-[#f0ebe3]">
+              <div className="bg-background rounded-2xl p-5 shadow-sm border border-[#f0ebe3]">
                 <p className="text-xs text-[#9c8c7a] font-medium uppercase tracking-wide mb-2">Por nivel</p>
                 <div className="space-y-1">
                   {Object.entries(LEVEL_CONFIG).map(([lvl, cfg]) => (
@@ -157,7 +157,7 @@ export default function AdminLogs() {
           )}
 
           {/* Filters */}
-          <div className="bg-white rounded-2xl p-4 shadow-sm border border-[#f0ebe3] flex flex-wrap gap-3 items-center">
+          <div className="bg-background rounded-2xl p-4 shadow-sm border border-[#f0ebe3] flex flex-wrap gap-3 items-center">
             {/* Level tabs */}
             <div className="flex gap-1 bg-[#faf8f5] rounded-xl p-1">
               {(["all", "error", "warn", "info", "debug", "fatal"] as LogLevel[]).map((l) => (
@@ -213,7 +213,7 @@ export default function AdminLogs() {
           </div>
 
           {/* Table */}
-          <div className="bg-white rounded-2xl shadow-sm border border-[#f0ebe3] overflow-hidden">
+          <div className="bg-background rounded-2xl shadow-sm border border-[#f0ebe3] overflow-hidden">
             {isLoading ? (
               <div className="flex items-center justify-center py-20">
                 <div className="w-8 h-8 border-2 border-[#F97316] border-t-transparent rounded-full animate-spin" />

@@ -33,7 +33,7 @@ const OBJECTIVE_LABELS: Record<string, { label: string; emoji: string; color: st
   ganancia_muscular: { label: "Ganancia muscular",  emoji: "💪", color: "bg-blue-100 text-blue-700 border-blue-200" },
   tonificacion:      { label: "Tonificación",       emoji: "⚡", color: "bg-yellow-100 text-yellow-700 border-yellow-200" },
   perdida_grasa:     { label: "Pérdida de grasa",   emoji: "🎯", color: "bg-orange-100 text-orange-700 border-orange-200" },
-  mantenimiento:     { label: "Mantenimiento",      emoji: "⚖️", color: "bg-gray-100 text-gray-700 border-gray-200" },
+  mantenimiento:     { label: "Mantenimiento",      emoji: "⚖️", color: "bg-muted/50 text-foreground/80 border-border" },
   definicion:        { label: "Definición",         emoji: "🏆", color: "bg-purple-100 text-purple-700 border-purple-200" },
   salud:             { label: "Salud general",      emoji: "💚", color: "bg-green-100 text-green-700 border-green-200" },
   vegano:            { label: "Vegano",             emoji: "🌱", color: "bg-green-100 text-green-700 border-green-200" },
@@ -347,7 +347,7 @@ export default function MyMenus() {
               </p>
             </div>
             <Link href="/app/active-menu">
-              <button className="bg-white/20 hover:bg-white/30 text-white text-xs font-semibold px-3 py-2 rounded-xl transition-colors">
+              <button className="bg-background/20 hover:bg-background/30 text-white text-xs font-semibold px-3 py-2 rounded-xl transition-colors">
                 Ver →
               </button>
             </Link>

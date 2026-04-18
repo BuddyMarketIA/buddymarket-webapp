@@ -180,7 +180,7 @@ export default function Menus() {
       {/* Header */}
       <div className="mb-5">
         <div className="flex items-center justify-between">
-          <h1 className="text-2xl font-bold text-gray-900">Planificador</h1>
+          <h1 className="text-2xl font-bold text-foreground">Planificador</h1>
           <button
             onClick={() => setShowNewMenu(true)}
             className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F97316] shadow-sm"
@@ -233,7 +233,7 @@ export default function Menus() {
                     className={`shrink-0 rounded-2xl px-3 py-1.5 text-xs font-semibold transition-all ${
                       (selectedMenuId ?? menus[0].id) === menu.id
                         ? "bg-[#F97316] text-white"
-                        : "bg-gray-100 text-gray-600"
+                        : "bg-muted/50 text-muted-foreground"
                     }`}
                   >
                     {menu.name}
@@ -262,16 +262,16 @@ export default function Menus() {
       <div className="mb-4 flex items-center justify-between">
         <button
           onClick={() => setWeekOffset((o) => o - 1)}
-          className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200"
+          className="flex h-8 w-8 items-center justify-center rounded-full bg-muted/50 text-muted-foreground hover:bg-muted"
         >
           <ChevronLeftIcon className="h-4 w-4" />
         </button>
-        <span className="text-sm font-semibold text-gray-700">
+        <span className="text-sm font-semibold text-foreground/80">
           {weekDates[0].getDate()} – {weekDates[6].getDate()} {MONTHS_ES[weekDates[6].getMonth()]}
         </span>
         <button
           onClick={() => setWeekOffset((o) => o + 1)}
-          className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200"
+          className="flex h-8 w-8 items-center justify-center rounded-full bg-muted/50 text-muted-foreground hover:bg-muted"
         >
           <ChevronRightIcon className="h-4 w-4" />
         </button>
@@ -290,7 +290,7 @@ export default function Menus() {
               className={`flex shrink-0 flex-col items-center rounded-2xl px-3 py-2 transition-all ${
                 isSelected
                   ? "bg-[#F97316] text-white shadow-sm"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  : "bg-muted/50 text-muted-foreground hover:bg-muted"
               }`}
             >
               <span className="text-[13px] font-medium">{DAYS_ES[date.getDay()]}</span>
@@ -306,8 +306,8 @@ export default function Menus() {
       {!hasMenus ? (
         <div className="empty-state">
           <span className="mb-4 text-5xl">📅</span>
-          <h3 className="mb-2 text-base font-bold text-gray-900">Sin planificador activo</h3>
-          <p className="mb-4 text-sm text-gray-500">Crea tu primer menú semanal o importa uno de la biblioteca de menús predefinidos.</p>
+          <h3 className="mb-2 text-base font-bold text-foreground">Sin planificador activo</h3>
+          <p className="mb-4 text-sm text-muted-foreground">Crea tu primer menú semanal o importa uno de la biblioteca de menús predefinidos.</p>
           <div className="flex flex-col gap-2 w-full max-w-xs">
             <button onClick={() => setShowNewMenu(true)} className="btn-vively w-full">➕ {t("menus.createNewMenu", "Create new menu")}</button>
             <Link href="/app/menu-library">
@@ -322,7 +322,7 @@ export default function Menus() {
         <>
           {/* Selected day meals */}
           <div className="mb-4">
-            <h2 className="mb-3 text-sm font-bold text-gray-700">
+            <h2 className="mb-3 text-sm font-bold text-foreground/80">
               {selectedDate.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })}
             </h2>
 
@@ -333,7 +333,7 @@ export default function Menus() {
                   <div className="mb-2 flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <span className="text-lg">{mealType.emoji}</span>
-                      <span className="text-sm font-semibold text-gray-800">{mealType.label}</span>
+                      <span className="text-sm font-semibold text-foreground">{mealType.label}</span>
                     </div>
                     <button
                       onClick={() => handleAddRecipeToMeal(mealType.apiParam)}
@@ -346,14 +346,14 @@ export default function Menus() {
                   {items.length === 0 ? (
                     <button
                       onClick={() => handleAddRecipeToMeal(mealType.apiParam)}
-                      className="w-full rounded-xl border-2 border-dashed border-gray-200 py-3 text-xs text-gray-400 hover:border-[#F97316]/40 hover:text-[#F97316] transition-all"
+                      className="w-full rounded-xl border-2 border-dashed border-border py-3 text-xs text-muted-foreground/70 hover:border-[#F97316]/40 hover:text-[#F97316] transition-all"
                     >
                       + {t("menus.addRecipe", "Add recipe")}
                     </button>
                   ) : (
                     <div className="space-y-2">
                       {items.map((item: any) => (
-                        <div key={item.id} className="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2">
+                        <div key={item.id} className="flex items-center justify-between rounded-xl bg-muted/30 px-3 py-2">
                           <div className="flex items-center gap-2 min-w-0">
                             <img
                               src={item.recipe?.imageUrl || RECIPE_PLACEHOLDER_IMAGE}
@@ -362,11 +362,11 @@ export default function Menus() {
                               onError={e => { (e.target as HTMLImageElement).src = RECIPE_PLACEHOLDER_IMAGE; }}
                             />
                             <div className="min-w-0">
-                              <p className="text-sm font-medium text-gray-800 truncate">
+                              <p className="text-sm font-medium text-foreground truncate">
                                 {item.recipe?.name ?? t("menus.deletedRecipe", "Deleted recipe")}
                               </p>
                               {item.recipe?.calories && (
-                                <p className="text-xs text-gray-400">{item.recipe.calories} kcal</p>
+                                <p className="text-xs text-muted-foreground/70">{item.recipe.calories} kcal</p>
                               )}
                             </div>
                           </div>
@@ -375,7 +375,7 @@ export default function Menus() {
                               menuOrganizerDayPartId: item.menuOrganizerDayPartId,
                               recipeId: item.recipeId,
                             })}
-                            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-gray-400 hover:bg-red-50 hover:text-red-500"
+                            className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-muted-foreground/70 hover:bg-red-50 hover:text-red-500"
                           >
                             <TrashIcon className="h-4 w-4" />
                           </button>
@@ -393,8 +393,8 @@ export default function Menus() {
             <div className="flex items-center gap-3">
               <CalendarDaysIcon className="h-5 w-5 text-[#F97316] shrink-0" />
               <div className="flex-1 min-w-0">
-                <p className="text-sm font-bold text-gray-800">{t("menus.generateShoppingList", "Generate your shopping list")}</p>
-                <p className="text-xs text-gray-500">{t("menus.basedOnRecipes", "Based on this menu's recipes")}</p>
+                <p className="text-sm font-bold text-foreground">{t("menus.generateShoppingList", "Generate your shopping list")}</p>
+                <p className="text-xs text-muted-foreground">{t("menus.basedOnRecipes", "Based on this menu's recipes")}</p>
               </div>
               <Link href="/app/shopping-lists">
                 <button className="shrink-0 rounded-xl bg-[#F97316] px-3 py-1.5 text-xs font-bold text-white">
@@ -409,9 +409,9 @@ export default function Menus() {
       {/* New menu modal */}
       {showNewMenu && (
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowNewMenu(false); }}>
-          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up">
-            <h3 className="mb-1 text-lg font-bold text-gray-900">Nuevo menú semanal</h3>
-            <p className="mb-4 text-xs text-gray-500">Dale un nombre a tu planificador</p>
+          <div className="w-full max-w-sm rounded-3xl bg-background p-6 shadow-2xl animate-slide-up">
+            <h3 className="mb-1 text-lg font-bold text-foreground">Nuevo menú semanal</h3>
+            <p className="mb-4 text-xs text-muted-foreground">Dale un nombre a tu planificador</p>
             <input
               value={menuName}
               onChange={(e) => setMenuName(e.target.value)}
@@ -429,7 +429,7 @@ export default function Menus() {
             <div className="flex gap-3">
               <button
                 onClick={() => setShowNewMenu(false)}
-                className="flex-1 rounded-2xl border border-gray-200 py-3 text-sm font-semibold text-gray-600"
+                className="flex-1 rounded-2xl border border-border py-3 text-sm font-semibold text-muted-foreground"
               >
                 {t("common.cancel", "Cancel")}
               </button>
@@ -452,14 +452,14 @@ export default function Menus() {
       {/* AI generation modal */}
       {showAI && (
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowAI(false); }}>
-          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up">
+          <div className="w-full max-w-sm rounded-3xl bg-background p-6 shadow-2xl animate-slide-up">
             <div className="mb-4 flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-50">
                 <SparklesIcon className="h-5 w-5 text-blue-600" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">{t("menus.generateWithAI", "Generate with AI")}</h3>
-                <p className="text-xs text-gray-500">{t("menus.aiWillCreate", "AI will create a personalised menu")}</p>
+                <h3 className="text-lg font-bold text-foreground">{t("menus.generateWithAI", "Generate with AI")}</h3>
+                <p className="text-xs text-muted-foreground">{t("menus.aiWillCreate", "AI will create a personalised menu")}</p>
               </div>
             </div>
             {!hasMenus && (
@@ -476,7 +476,7 @@ export default function Menus() {
             <div className="flex gap-3">
               <button
                 onClick={() => setShowAI(false)}
-                className="flex-1 rounded-2xl border border-gray-200 py-3 text-sm font-semibold text-gray-600"
+                className="flex-1 rounded-2xl border border-border py-3 text-sm font-semibold text-muted-foreground"
               >
                 {t("common.cancel", "Cancel")}
               </button>
@@ -495,9 +495,9 @@ export default function Menus() {
       {/* Add recipe modal */}
       {showAddRecipe && (
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) { setShowAddRecipe(null); setRecipeSearch(""); } }}>
-          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl animate-slide-up max-h-[80vh] flex flex-col">
-            <h3 className="mb-1 text-lg font-bold text-gray-900">{t("menus.addRecipe", "Add recipe")}</h3>
-            <p className="mb-4 text-xs text-gray-500">{t("menus.searchRecipeDesc", "Search for a recipe to add to the menu")}</p>
+          <div className="w-full max-w-sm rounded-3xl bg-background p-6 shadow-2xl animate-slide-up max-h-[80vh] flex flex-col">
+            <h3 className="mb-1 text-lg font-bold text-foreground">{t("menus.addRecipe", "Add recipe")}</h3>
+            <p className="mb-4 text-xs text-muted-foreground">{t("menus.searchRecipeDesc", "Search for a recipe to add to the menu")}</p>
             <input
               value={recipeSearch}
               onChange={(e) => setRecipeSearch(e.target.value)}
@@ -507,16 +507,16 @@ export default function Menus() {
             />
             <div className="flex-1 overflow-y-auto space-y-2">
               {recipeSearch.length < 2 ? (
-                <p className="text-center text-sm text-gray-400 py-4">{t("menus.typeToSearch", "Type at least 2 letters to search")}</p>
+                <p className="text-center text-sm text-muted-foreground/70 py-4">{t("menus.typeToSearch", "Type at least 2 letters to search")}</p>
               ) : !recipeResults || (recipeResults as any).recipes?.length === 0 ? (
-                <p className="text-center text-sm text-gray-400 py-4">{t("menus.noResults", "No results for")} "{recipeSearch}"</p>
+                <p className="text-center text-sm text-muted-foreground/70 py-4">{t("menus.noResults", "No results for")} "{recipeSearch}"</p>
               ) : (
                 ((recipeResults as any).recipes ?? []).map((recipe: any) => (
                   <button
                     key={recipe.id}
                     onClick={() => handleAddRecipe(recipe.id)}
                     disabled={addRecipeToDayPart.isPending}
-                    className="w-full flex items-center gap-3 rounded-2xl border border-gray-100 bg-white p-3 text-left hover:border-[#F97316]/30 hover:bg-orange-50 transition-all"
+                    className="w-full flex items-center gap-3 rounded-2xl border border-border/50 bg-background p-3 text-left hover:border-[#F97316]/30 hover:bg-orange-50 transition-all"
                   >
                     <img
                       src={recipe.imageUrl || RECIPE_PLACEHOLDER_IMAGE}
@@ -525,8 +525,8 @@ export default function Menus() {
                       onError={e => { (e.target as HTMLImageElement).src = RECIPE_PLACEHOLDER_IMAGE; }}
                     />
                     <div className="min-w-0">
-                      <p className="text-sm font-semibold text-gray-800 truncate">{recipe.name}</p>
-                      <p className="text-xs text-gray-400">{recipe.calories ? `${recipe.calories} kcal · ` : ""}{recipe.prepTime ? `${recipe.prepTime} min` : ""}</p>
+                      <p className="text-sm font-semibold text-foreground truncate">{recipe.name}</p>
+                      <p className="text-xs text-muted-foreground/70">{recipe.calories ? `${recipe.calories} kcal · ` : ""}{recipe.prepTime ? `${recipe.prepTime} min` : ""}</p>
                     </div>
                   </button>
                 ))
@@ -534,7 +534,7 @@ export default function Menus() {
             </div>
             <button
               onClick={() => { setShowAddRecipe(null); setRecipeSearch(""); }}
-              className="mt-4 w-full rounded-2xl border border-gray-200 py-3 text-sm font-semibold text-gray-600"
+              className="mt-4 w-full rounded-2xl border border-border py-3 text-sm font-semibold text-muted-foreground"
             >
               {t("common.cancel", "Cancel")}
             </button>
@@ -544,32 +544,32 @@ export default function Menus() {
       {/* Apply to Calendar modal */}
       {showApplyModal !== null && (
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowApplyModal(null); }}>
-          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl">
+          <div className="w-full max-w-sm rounded-3xl bg-background p-6 shadow-2xl">
             <div className="mb-4 flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-orange-50">
                 <CalendarDaysIcon className="h-5 w-5 text-orange-500" />
               </div>
               <div>
-                <h3 className="text-lg font-bold text-gray-900">{t("menus.applyToDiary", "Apply to diary")}</h3>
-                <p className="text-xs text-gray-500">{t("menus.applyToDiaryDesc", "Menu meals will be added to your diary")}</p>
+                <h3 className="text-lg font-bold text-foreground">{t("menus.applyToDiary", "Apply to diary")}</h3>
+                <p className="text-xs text-muted-foreground">{t("menus.applyToDiaryDesc", "Menu meals will be added to your diary")}</p>
               </div>
             </div>
             <div className="mb-4">
-              <label className="block text-xs font-semibold text-gray-700 mb-1">{t("menus.startDate", "Start date")}</label>
+              <label className="block text-xs font-semibold text-foreground/80 mb-1">{t("menus.startDate", "Start date")}</label>
               <input
                 type="date"
                 value={applyStartDate}
                 onChange={e => setApplyStartDate(e.target.value)}
                 className="vively-input"
               />
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-muted-foreground/70 mt-1">
                 {t("menus.startDateDesc", "Meals will be distributed from this date according to the menu days.")}
               </p>
             </div>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowApplyModal(null)}
-                className="flex-1 rounded-2xl border border-gray-200 py-3 text-sm font-semibold text-gray-600"
+                className="flex-1 rounded-2xl border border-border py-3 text-sm font-semibold text-muted-foreground"
               >
                 {t("common.cancel", "Cancel")}
               </button>

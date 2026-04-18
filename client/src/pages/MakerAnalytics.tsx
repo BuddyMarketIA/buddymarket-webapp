@@ -28,15 +28,15 @@ function MetricCard({
   accent?: boolean;
 }) {
   return (
-    <div className={`p-4 rounded-2xl border ${accent ? "bg-orange-50 border-orange-200" : "bg-white border-gray-200"}`}>
+    <div className={`p-4 rounded-2xl border ${accent ? "bg-orange-50 border-orange-200" : "bg-background border-border"}`}>
       <div className="flex items-center gap-2 mb-2">
         <span className="text-xl">{icon}</span>
-        <span className="text-sm text-gray-500">{label}</span>
+        <span className="text-sm text-muted-foreground">{label}</span>
       </div>
-      <p className={`text-2xl font-bold ${accent ? "text-orange-600" : "text-gray-900"}`}>
+      <p className={`text-2xl font-bold ${accent ? "text-orange-600" : "text-foreground"}`}>
         {typeof value === "number" ? value.toLocaleString("es-ES") : value}
       </p>
-      {subLabel && <p className="text-xs text-gray-400 mt-1">{subLabel}</p>}
+      {subLabel && <p className="text-xs text-muted-foreground/70 mt-1">{subLabel}</p>}
     </div>
   );
 }
@@ -64,21 +64,21 @@ export default function MakerAnalytics() {
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Analíticas de alcance</h1>
-            <p className="text-sm text-gray-500 mt-1">
+            <h1 className="text-2xl font-bold text-foreground">Analíticas de alcance</h1>
+            <p className="text-sm text-muted-foreground mt-1">
               Estadísticas de vistas e interacciones de tus recetas
             </p>
           </div>
           {/* Selector de período */}
-          <div className="flex gap-1 bg-gray-100 rounded-xl p-1">
+          <div className="flex gap-1 bg-muted/50 rounded-xl p-1">
             {(["7d", "30d", "90d", "all"] as Period[]).map(p => (
               <button
                 key={p}
                 onClick={() => setPeriod(p)}
                 className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-colors ${
                   period === p
-                    ? "bg-white text-orange-600 shadow-sm"
-                    : "text-gray-500 hover:text-gray-700"
+                    ? "bg-background text-orange-600 shadow-sm"
+                    : "text-muted-foreground hover:text-foreground/80"
                 }`}
               >
                 {p === "all" ? "Todo" : p}
@@ -90,14 +90,14 @@ export default function MakerAnalytics() {
         {isLoading ? (
           <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-6 gap-4 mb-8">
             {[1, 2, 3, 4, 5, 6].map(i => (
-              <div key={i} className="h-28 bg-gray-100 rounded-2xl animate-pulse" />
+              <div key={i} className="h-28 bg-muted/50 rounded-2xl animate-pulse" />
             ))}
           </div>
         ) : !data ? (
-          <div className="text-center py-16 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+          <div className="text-center py-16 bg-muted/30 rounded-2xl border border-dashed border-border">
             <div className="text-5xl mb-4">📊</div>
-            <h3 className="text-lg font-semibold text-gray-700 mb-2">Sin datos disponibles</h3>
-            <p className="text-gray-500 text-sm">
+            <h3 className="text-lg font-semibold text-foreground/80 mb-2">Sin datos disponibles</h3>
+            <p className="text-muted-foreground text-sm">
               Las analíticas se generan automáticamente cuando los usuarios visitan tus recetas.
             </p>
           </div>
@@ -120,8 +120,8 @@ export default function MakerAnalytics() {
 
             {/* Gráfica de evolución temporal */}
             {data.dailyData.length > 0 && (
-              <div className="bg-white rounded-2xl border border-gray-200 p-5 mb-8">
-                <h3 className="font-semibold text-gray-700 mb-4">
+              <div className="bg-background rounded-2xl border border-border p-5 mb-8">
+                <h3 className="font-semibold text-foreground/80 mb-4">
                   Evolución de vistas — {PERIOD_LABELS[period]}
                 </h3>
                 <div className="flex items-end gap-0.5 h-40 overflow-x-auto pb-2">
@@ -150,10 +150,10 @@ export default function MakerAnalytics() {
                   })}
                 </div>
                 <div className="flex justify-between mt-2">
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-muted-foreground/70">
                     {new Date(data.dailyData[0].date + "T00:00:00").toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
                   </span>
-                  <span className="text-xs text-gray-400">
+                  <span className="text-xs text-muted-foreground/70">
                     {new Date(data.dailyData[data.dailyData.length - 1].date + "T00:00:00").toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
                   </span>
                 </div>
@@ -162,8 +162,8 @@ export default function MakerAnalytics() {
 
             {/* Top recetas */}
             {data.topRecipes.length > 0 && (
-              <div className="bg-white rounded-2xl border border-gray-200 p-5">
-                <h3 className="font-semibold text-gray-700 mb-4">
+              <div className="bg-background rounded-2xl border border-border p-5">
+                <h3 className="font-semibold text-foreground/80 mb-4">
                   Top recetas por vistas
                 </h3>
                 <div className="space-y-3">
@@ -175,9 +175,9 @@ export default function MakerAnalytics() {
                         {/* Posición */}
                         <span className={`w-7 h-7 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
                           index === 0 ? "bg-yellow-100 text-yellow-700" :
-                          index === 1 ? "bg-gray-100 text-gray-600" :
+                          index === 1 ? "bg-muted/50 text-muted-foreground" :
                           index === 2 ? "bg-orange-100 text-orange-600" :
-                          "bg-gray-50 text-gray-400"
+                          "bg-muted/30 text-muted-foreground/70"
                         }`}>
                           {index + 1}
                         </span>
@@ -190,15 +190,15 @@ export default function MakerAnalytics() {
                         {/* Info */}
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center justify-between gap-2 mb-1">
-                            <span className="text-sm font-medium text-gray-900 truncate">
+                            <span className="text-sm font-medium text-foreground truncate">
                               {recipe.recipe.title}
                             </span>
-                            <span className="text-sm font-bold text-gray-700 flex-shrink-0">
+                            <span className="text-sm font-bold text-foreground/80 flex-shrink-0">
                               {recipe.totalViews.toLocaleString("es-ES")} vistas
                             </span>
                           </div>
                           {/* Barra de progreso */}
-                          <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+                          <div className="h-1.5 bg-muted/50 rounded-full overflow-hidden">
                             <div
                               className="h-full bg-orange-400 rounded-full transition-all"
                               style={{ width: `${barWidth}%` }}
@@ -207,16 +207,16 @@ export default function MakerAnalytics() {
                           {/* Métricas secundarias */}
                           <div className="flex gap-3 mt-1">
                             {recipe.totalLikes > 0 && (
-                              <span className="text-xs text-gray-400">❤️ {recipe.totalLikes}</span>
+                              <span className="text-xs text-muted-foreground/70">❤️ {recipe.totalLikes}</span>
                             )}
                             {recipe.totalSaves > 0 && (
-                              <span className="text-xs text-gray-400">🔖 {recipe.totalSaves}</span>
+                              <span className="text-xs text-muted-foreground/70">🔖 {recipe.totalSaves}</span>
                             )}
                             {recipe.totalShares > 0 && (
-                              <span className="text-xs text-gray-400">↗️ {recipe.totalShares}</span>
+                              <span className="text-xs text-muted-foreground/70">↗️ {recipe.totalShares}</span>
                             )}
                             {recipe.totalViews > 0 && recipe.totalSaves > 0 && (
-                              <span className="text-xs text-gray-400">
+                              <span className="text-xs text-muted-foreground/70">
                                 🎯 {((recipe.totalSaves / recipe.totalViews) * 100).toFixed(1)}%
                               </span>
                             )}
@@ -231,12 +231,12 @@ export default function MakerAnalytics() {
 
             {/* Estado vacío si no hay datos */}
             {data.totals.views === 0 && (
-              <div className="text-center py-12 bg-gray-50 rounded-2xl border border-dashed border-gray-200 mt-6">
+              <div className="text-center py-12 bg-muted/30 rounded-2xl border border-dashed border-border mt-6">
                 <div className="text-5xl mb-4">📊</div>
-                <h3 className="text-lg font-semibold text-gray-700 mb-2">
+                <h3 className="text-lg font-semibold text-foreground/80 mb-2">
                   Sin datos para el período seleccionado
                 </h3>
-                <p className="text-gray-500 text-sm">
+                <p className="text-muted-foreground text-sm">
                   Las vistas e interacciones se registran automáticamente cuando los usuarios acceden a tus recetas.
                   Prueba con un período más amplio.
                 </p>

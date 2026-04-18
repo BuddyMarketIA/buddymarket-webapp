@@ -243,9 +243,9 @@ export default function DidYouKnow() {
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center gap-2">
           <span className="text-lg">🧠</span>
-          <h2 className="text-base font-bold text-gray-900">¿Sabías que...?</h2>
+          <h2 className="text-base font-bold text-foreground">¿Sabías que...?</h2>
         </div>
-        <span className="text-xs text-gray-400 font-medium">
+        <span className="text-xs text-muted-foreground/70 font-medium">
           {currentIndex + 1} / {FACTS.length}
         </span>
       </div>
@@ -278,12 +278,12 @@ export default function DidYouKnow() {
           </span>
 
           {/* Title */}
-          <h3 className="text-sm font-bold text-gray-900 mb-2 leading-snug">
+          <h3 className="text-sm font-bold text-foreground mb-2 leading-snug">
             {fact.title}
           </h3>
 
           {/* Content */}
-          <p className="text-xs text-gray-600 leading-relaxed mb-3">
+          <p className="text-xs text-muted-foreground leading-relaxed mb-3">
             {fact.content}
           </p>
 
@@ -301,7 +301,7 @@ export default function DidYouKnow() {
       <div className="flex items-center justify-between mt-3 px-1">
         <button
           onClick={goPrev}
-          className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-orange-100 hover:text-orange-600 transition-colors text-sm font-bold"
+          className="flex h-8 w-8 items-center justify-center rounded-full bg-muted/50 text-muted-foreground hover:bg-orange-100 hover:text-orange-600 transition-colors text-sm font-bold"
         >
           ‹
         </button>
@@ -328,14 +328,14 @@ export default function DidYouKnow() {
 
         <button
           onClick={goNext}
-          className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-500 hover:bg-orange-100 hover:text-orange-600 transition-colors text-sm font-bold"
+          className="flex h-8 w-8 items-center justify-center rounded-full bg-muted/50 text-muted-foreground hover:bg-orange-100 hover:text-orange-600 transition-colors text-sm font-bold"
         >
           ›
         </button>
       </div>
 
       {/* Swipe hint — shown only first time */}
-      <p className="text-center text-xs text-gray-400 mt-1.5">
+      <p className="text-center text-xs text-muted-foreground/70 mt-1.5">
         Desliza para descubrir más curiosidades
       </p>
     </div>

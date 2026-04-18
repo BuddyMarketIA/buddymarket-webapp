@@ -110,13 +110,13 @@ export default function ExpertChat() {
 
   return (
     <AppLayout>
-      <div className="flex h-[calc(100vh-120px)] bg-white rounded-2xl border border-gray-200 overflow-hidden shadow-sm">
+      <div className="flex h-[calc(100vh-120px)] bg-background rounded-2xl border border-border overflow-hidden shadow-sm">
         {/* ── Panel izquierdo: Lista de pacientes ── */}
-        <div className={`${selectedPatientRelId ? 'hidden md:flex' : 'flex'} w-full md:w-80 flex-shrink-0 border-r border-gray-200 flex-col bg-gray-50`}>
+        <div className={`${selectedPatientRelId ? 'hidden md:flex' : 'flex'} w-full md:w-80 flex-shrink-0 border-r border-border flex-col bg-muted/30`}>
           {/* Header */}
-          <div className="p-4 border-b border-gray-200 bg-white">
+          <div className="p-4 border-b border-border bg-background">
             <div className="flex items-center justify-between mb-3">
-              <h2 className="font-bold text-gray-900 text-lg">Mensajes</h2>
+              <h2 className="font-bold text-foreground text-lg">Mensajes</h2>
               <button
                 onClick={() => navigate("/app/expert/patients")}
                 className="text-xs text-orange-600 hover:text-orange-700 font-medium"
@@ -137,13 +137,13 @@ export default function ExpertChat() {
             {loadingPatients ? (
               <div className="space-y-2 p-3">
                 {[1, 2, 3].map(i => (
-                  <div key={i} className="h-16 bg-gray-200 rounded-xl animate-pulse" />
+                  <div key={i} className="h-16 bg-muted rounded-xl animate-pulse" />
                 ))}
               </div>
             ) : filteredPatients.length === 0 ? (
               <div className="text-center py-12 px-4">
                 <div className="text-4xl mb-3">💬</div>
-                <p className="text-gray-500 text-sm">
+                <p className="text-muted-foreground text-sm">
                   {search ? "No se encontraron pacientes" : "No tienes pacientes activos aún"}
                 </p>
                 {!search && (
@@ -163,10 +163,10 @@ export default function ExpertChat() {
                   <button
                     key={patient.id}
                     onClick={() => handleSelectPatient(patient.id)}
-                    className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors border-b border-gray-100 ${
+                    className={`w-full flex items-center gap-3 px-4 py-3 text-left transition-colors border-b border-border/50 ${
                       isSelected
                         ? "bg-orange-50 border-l-4 border-l-orange-500"
-                        : "hover:bg-white"
+                        : "hover:bg-background"
                     }`}
                   >
                     {/* Avatar */}
@@ -191,11 +191,11 @@ export default function ExpertChat() {
                     {/* Info */}
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center justify-between gap-1">
-                        <span className={`text-sm font-semibold truncate ${hasUnread ? "text-gray-900" : "text-gray-700"}`}>
+                        <span className={`text-sm font-semibold truncate ${hasUnread ? "text-foreground" : "text-foreground/80"}`}>
                           {patient.user?.name ?? "Paciente"}
                         </span>
                       </div>
-                      <p className="text-xs text-gray-400 truncate">{patient.user?.email ?? "—"}</p>
+                      <p className="text-xs text-muted-foreground/70 truncate">{patient.user?.email ?? "—"}</p>
                     </div>
                   </button>
                 );
@@ -209,19 +209,19 @@ export default function ExpertChat() {
           {!selectedPatientRelId ? (
             <div className="flex-1 flex flex-col items-center justify-center text-center p-8">
               <div className="text-6xl mb-4">💬</div>
-              <h3 className="text-xl font-bold text-gray-700 mb-2">Selecciona una conversación</h3>
-              <p className="text-gray-400 text-sm max-w-xs">
+              <h3 className="text-xl font-bold text-foreground/80 mb-2">Selecciona una conversación</h3>
+              <p className="text-muted-foreground/70 text-sm max-w-xs">
                 Elige un paciente de la lista para ver y enviar mensajes
               </p>
             </div>
           ) : (
             <>
               {/* Header de la conversación */}
-              <div className="flex items-center gap-3 px-5 py-4 border-b border-gray-200 bg-white">
+              <div className="flex items-center gap-3 px-5 py-4 border-b border-border bg-background">
                 {/* Botón volver en móvil */}
                 <button
                   onClick={() => setSelectedPatientRelId(null)}
-                  className="md:hidden flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 text-gray-500"
+                  className="md:hidden flex-shrink-0 w-8 h-8 flex items-center justify-center rounded-full hover:bg-muted/50 text-muted-foreground"
                 >
                   <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" /></svg>
                 </button>
@@ -237,10 +237,10 @@ export default function ExpertChat() {
                   </div>
                 )}
                 <div className="flex-1">
-                  <h3 className="font-semibold text-gray-900">
+                  <h3 className="font-semibold text-foreground">
                     {selectedPatient?.user?.name ?? "Paciente"}
                   </h3>
-                  <p className="text-xs text-gray-400">{selectedPatient?.user?.email ?? ""}</p>
+                  <p className="text-xs text-muted-foreground/70">{selectedPatient?.user?.email ?? ""}</p>
                 </div>
                 <button
                   onClick={() => navigate(`/app/expert/patients/${selectedPatientRelId}`)}
@@ -255,8 +255,8 @@ export default function ExpertChat() {
                 {messages.length === 0 ? (
                   <div className="flex flex-col items-center justify-center h-full text-center">
                     <div className="text-5xl mb-3">💬</div>
-                    <p className="text-gray-500 font-medium">Inicia la conversación</p>
-                    <p className="text-gray-400 text-sm mt-1">
+                    <p className="text-muted-foreground font-medium">Inicia la conversación</p>
+                    <p className="text-muted-foreground/70 text-sm mt-1">
                       Envía un mensaje a {selectedPatient?.user?.name ?? "tu paciente"}
                     </p>
                   </div>
@@ -270,11 +270,11 @@ export default function ExpertChat() {
                         <div key={msg.id}>
                           {showDate && (
                             <div className="flex items-center gap-3 my-4">
-                              <div className="flex-1 h-px bg-gray-200" />
-                              <span className="text-xs text-gray-400 font-medium">
+                              <div className="flex-1 h-px bg-muted" />
+                              <span className="text-xs text-muted-foreground/70 font-medium">
                                 {new Date(msg.createdAt).toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })}
                               </span>
-                              <div className="flex-1 h-px bg-gray-200" />
+                              <div className="flex-1 h-px bg-muted" />
                             </div>
                           )}
                           <div className={`flex ${isExpert ? "justify-end" : "justify-start"}`}>
@@ -287,11 +287,11 @@ export default function ExpertChat() {
                               <div className={`rounded-2xl px-4 py-2.5 min-w-0 ${
                                 isExpert
                                   ? "bg-orange-500 text-white rounded-br-sm"
-                                  : "bg-gray-100 text-gray-800 rounded-bl-sm"
+                                  : "bg-muted/50 text-foreground rounded-bl-sm"
                               }`}>
                                 <p className="text-sm whitespace-pre-wrap leading-relaxed break-words overflow-wrap-anywhere">{msg.content}</p>
                               </div>
-                              <p className={`text-xs mt-1 ${isExpert ? "text-right text-gray-400" : "text-gray-400"}`}>
+                              <p className={`text-xs mt-1 ${isExpert ? "text-right text-muted-foreground/70" : "text-muted-foreground/70"}`}>
                                 {formatMessageTime(msg.createdAt)}
                                 {isExpert && msg.isRead && (
                                   <span className="ml-1 text-orange-400">✓✓</span>
@@ -311,7 +311,7 @@ export default function ExpertChat() {
               </div>
 
               {/* Input de mensaje */}
-              <div className="px-5 py-4 border-t border-gray-200 bg-white">
+              <div className="px-5 py-4 border-t border-border bg-background">
                 <div className="flex gap-2 items-end">
                   <div className="flex-1 relative">
                     <Input
@@ -325,7 +325,7 @@ export default function ExpertChat() {
                           handleSend();
                         }
                       }}
-                      className="pr-4 py-3 rounded-xl border-gray-300 focus:border-orange-400 focus:ring-orange-400"
+                      className="pr-4 py-3 rounded-xl border-border focus:border-orange-400 focus:ring-orange-400"
                     />
                   </div>
                   <Button
@@ -342,8 +342,8 @@ export default function ExpertChat() {
                     )}
                   </Button>
                 </div>
-                <p className="text-xs text-gray-400 mt-2">
-                  Pulsa <kbd className="px-1 py-0.5 bg-gray-100 rounded text-gray-500 font-mono">Enter</kbd> para enviar
+                <p className="text-xs text-muted-foreground/70 mt-2">
+                  Pulsa <kbd className="px-1 py-0.5 bg-muted/50 rounded text-muted-foreground font-mono">Enter</kbd> para enviar
                 </p>
               </div>
             </>

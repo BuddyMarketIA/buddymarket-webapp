@@ -99,7 +99,7 @@ function RecipeCard({ assignment, memberColor, memberName, onToggleComplete, hou
     <div
       className={`group relative rounded-lg border overflow-hidden transition-all hover:shadow-md ${
         assignment.isCompleted ? "opacity-60" : ""
-      } bg-white border-gray-200`}
+      } bg-background border-border`}
     >
       {/* Recipe image */}
       {assignment.recipe.imageUrl ? (
@@ -124,7 +124,7 @@ function RecipeCard({ assignment, memberColor, memberName, onToggleComplete, hou
       {/* Content */}
       <div className="p-2">
         <Link href={`/app/recipes/${assignment.recipe.id}`}>
-          <p className={`text-xs font-semibold leading-tight hover:text-orange-600 transition-colors line-clamp-2 ${assignment.isCompleted ? "line-through text-gray-400" : "text-gray-800"}`}>
+          <p className={`text-xs font-semibold leading-tight hover:text-orange-600 transition-colors line-clamp-2 ${assignment.isCompleted ? "line-through text-muted-foreground/70" : "text-foreground"}`}>
             {assignment.recipe.name}
           </p>
         </Link>
@@ -132,14 +132,14 @@ function RecipeCard({ assignment, memberColor, memberName, onToggleComplete, hou
         {/* Meta */}
         <div className="flex items-center gap-1 mt-1 flex-wrap">
           {assignment.recipe.caloriesPerServing && (
-            <span className="flex items-center gap-0.5 text-[10px] text-gray-500">
+            <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
               <Flame className="w-2.5 h-2.5 text-orange-400" />
               {assignment.recipe.caloriesPerServing} kcal
             </span>
           )}
           {totalTime > 0 && (
-            <span className="flex items-center gap-0.5 text-[10px] text-gray-500">
-              <Clock className="w-2.5 h-2.5 text-gray-400" />
+            <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground">
+              <Clock className="w-2.5 h-2.5 text-muted-foreground/70" />
               {totalTime}min
             </span>
           )}
@@ -155,7 +155,7 @@ function RecipeCard({ assignment, memberColor, memberName, onToggleComplete, hou
         {assignment.note && (
           <Tooltip>
             <TooltipTrigger asChild>
-              <p className="text-[10px] text-gray-400 italic mt-1 line-clamp-1 cursor-help">
+              <p className="text-[10px] text-muted-foreground/70 italic mt-1 line-clamp-1 cursor-help">
                 "{assignment.note}"
               </p>
             </TooltipTrigger>
@@ -170,8 +170,8 @@ function RecipeCard({ assignment, memberColor, memberName, onToggleComplete, hou
           onClick={() => onToggleComplete(assignment.id, householdId, !assignment.isCompleted)}
           className={`mt-1.5 w-full flex items-center justify-center gap-1 text-[10px] py-1 rounded transition-colors ${
             assignment.isCompleted
-              ? "text-green-600 hover:text-gray-500"
-              : "text-gray-400 hover:text-green-600"
+              ? "text-green-600 hover:text-muted-foreground"
+              : "text-muted-foreground/70 hover:text-green-600"
           }`}
           aria-label={assignment.isCompleted ? "Marcar como pendiente" : "Marcar como completada"}
         >
@@ -284,8 +284,8 @@ export default function FamiliaCalendario() {
       <AppLayout>
         <div className="max-w-lg mx-auto px-4 py-16 text-center">
           <Home className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-          <h2 className="text-xl font-bold text-gray-800 mb-2">Sin hogar configurado</h2>
-          <p className="text-gray-500 mb-6">Crea o únete a un hogar para ver el calendario familiar.</p>
+          <h2 className="text-xl font-bold text-foreground mb-2">Sin hogar configurado</h2>
+          <p className="text-muted-foreground mb-6">Crea o únete a un hogar para ver el calendario familiar.</p>
           <Link href="/familia">
             <Button className="bg-orange-500 hover:bg-orange-600 text-white">
               Ir a Mi Hogar
@@ -303,17 +303,17 @@ export default function FamiliaCalendario() {
         <div className="flex items-center justify-between mb-4 flex-wrap gap-2">
           <div className="flex items-center gap-3">
             <Link href="/familia">
-              <Button variant="ghost" size="sm" className="gap-1 text-gray-600">
+              <Button variant="ghost" size="sm" className="gap-1 text-muted-foreground">
                 <ArrowLeft className="w-4 h-4" />
                 <span className="hidden sm:inline">Mi Hogar</span>
               </Button>
             </Link>
             <div>
-              <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+              <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
                 <Calendar className="w-5 h-5 text-orange-500" />
                 Calendario del Hogar
               </h1>
-              <p className="text-sm text-gray-500">{householdData?.name}</p>
+              <p className="text-sm text-muted-foreground">{householdData?.name}</p>
             </div>
           </div>
 
@@ -321,10 +321,10 @@ export default function FamiliaCalendario() {
           {totalAssignments > 0 && (
             <div className="flex items-center gap-3">
               <div className="text-center">
-                <p className="text-lg font-bold text-gray-900">{completedCount}/{totalAssignments}</p>
-                <p className="text-xs text-gray-500">completadas</p>
+                <p className="text-lg font-bold text-foreground">{completedCount}/{totalAssignments}</p>
+                <p className="text-xs text-muted-foreground">completadas</p>
               </div>
-              <div className="w-16 h-2 bg-gray-200 rounded-full overflow-hidden">
+              <div className="w-16 h-2 bg-muted rounded-full overflow-hidden">
                 <div
                   className="h-full bg-green-500 rounded-full transition-all"
                   style={{ width: `${totalAssignments > 0 ? (completedCount / totalAssignments) * 100 : 0}%` }}
@@ -335,7 +335,7 @@ export default function FamiliaCalendario() {
         </div>
 
         {/* Week navigation */}
-        <div className="flex items-center justify-between mb-4 bg-white rounded-xl border border-gray-200 px-4 py-2.5 shadow-sm">
+        <div className="flex items-center justify-between mb-4 bg-background rounded-xl border border-border px-4 py-2.5 shadow-sm">
           <Button
             variant="ghost"
             size="sm"
@@ -350,7 +350,7 @@ export default function FamiliaCalendario() {
           </Button>
 
           <div className="text-center">
-            <p className="font-semibold text-gray-900 text-sm">{formatWeekRange(weekMonday)}</p>
+            <p className="font-semibold text-foreground text-sm">{formatWeekRange(weekMonday)}</p>
             <button
               onClick={() => setWeekMonday(getWeekMonday(new Date()))}
               className="text-xs text-orange-500 hover:underline"
@@ -375,8 +375,8 @@ export default function FamiliaCalendario() {
 
         {/* Member filter + legend */}
         {calendarData?.members && calendarData.members.length > 0 && (
-          <div className="flex items-center gap-2 mb-4 flex-wrap bg-white rounded-xl border border-gray-200 px-3 py-2 shadow-sm">
-            <span className="flex items-center gap-1 text-xs text-gray-500 font-medium mr-1">
+          <div className="flex items-center gap-2 mb-4 flex-wrap bg-background rounded-xl border border-border px-3 py-2 shadow-sm">
+            <span className="flex items-center gap-1 text-xs text-muted-foreground font-medium mr-1">
               <Filter className="w-3.5 h-3.5" />
               Filtrar:
             </span>
@@ -386,7 +386,7 @@ export default function FamiliaCalendario() {
               className={`inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-medium border transition-all ${
                 selectedMemberId === null
                   ? "bg-gray-800 text-white border-gray-800"
-                  : "bg-gray-100 text-gray-600 border-gray-200 hover:border-gray-400"
+                  : "bg-muted/50 text-muted-foreground border-border hover:border-gray-400"
               }`}
             >
               <Users className="w-3 h-3" />
@@ -443,11 +443,11 @@ export default function FamiliaCalendario() {
                         className={`text-center py-2 rounded-lg text-sm font-semibold ${
                           today
                             ? "bg-orange-500 text-white"
-                            : "bg-gray-100 text-gray-600"
+                            : "bg-muted/50 text-muted-foreground"
                         }`}
                       >
                         <div>{DAYS_ES[i]}</div>
-                        <div className={`text-lg font-bold ${today ? "text-white" : "text-gray-900"}`}>
+                        <div className={`text-lg font-bold ${today ? "text-white" : "text-foreground"}`}>
                           {d.getDate()}
                         </div>
                       </div>
@@ -459,9 +459,9 @@ export default function FamiliaCalendario() {
                 {MEAL_TYPES.map((meal) => (
                   <div key={meal.key} className="mb-3">
                     {/* Meal type header */}
-                    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-t-lg border-b-2 border-gray-200 mb-1 ${meal.color}`}>
+                    <div className={`flex items-center gap-2 px-3 py-1.5 rounded-t-lg border-b-2 border-border mb-1 ${meal.color}`}>
                       <span className="text-base">{meal.emoji}</span>
-                      <span className="text-sm font-semibold text-gray-700">{meal.label}</span>
+                      <span className="text-sm font-semibold text-foreground/80">{meal.label}</span>
                     </div>
 
                     {/* 7-day row */}
@@ -477,8 +477,8 @@ export default function FamiliaCalendario() {
                           <div
                             key={i}
                             className={`min-h-[80px] rounded-lg p-1.5 ${
-                              today ? "ring-2 ring-orange-300 ring-offset-1" : "bg-gray-50"
-                            } border border-gray-100`}
+                              today ? "ring-2 ring-orange-300 ring-offset-1" : "bg-muted/30"
+                            } border border-border/50`}
                           >
                             {dayAssignments.length === 0 ? (
                               <div className="h-full flex items-center justify-center">
@@ -519,19 +519,19 @@ export default function FamiliaCalendario() {
                 );
 
                 return (
-                  <div key={i} className={`rounded-xl border overflow-hidden ${today ? "border-orange-400 shadow-md" : "border-gray-200"}`}>
+                  <div key={i} className={`rounded-xl border overflow-hidden ${today ? "border-orange-400 shadow-md" : "border-border"}`}>
                     {/* Day header */}
-                    <div className={`px-4 py-2.5 flex items-center justify-between ${today ? "bg-orange-500 text-white" : "bg-gray-50 text-gray-700"}`}>
+                    <div className={`px-4 py-2.5 flex items-center justify-between ${today ? "bg-orange-500 text-white" : "bg-muted/30 text-foreground/80"}`}>
                       <span className="font-bold">{DAYS_FULL[i]}</span>
-                      <span className={`text-sm ${today ? "text-orange-100" : "text-gray-500"}`}>
+                      <span className={`text-sm ${today ? "text-orange-100" : "text-muted-foreground"}`}>
                         {d.toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
                       </span>
                     </div>
 
                     {!dayHasAssignments ? (
-                      <div className="px-4 py-3 text-sm text-gray-400 italic">Sin recetas asignadas</div>
+                      <div className="px-4 py-3 text-sm text-muted-foreground/70 italic">Sin recetas asignadas</div>
                     ) : (
-                      <div className="divide-y divide-gray-100">
+                      <div className="divide-y divide-border/50">
                         {MEAL_TYPES.map((meal) => {
                           const dayAssignments = grid[dateKey]?.[meal.key as MealKey] ?? [];
                           if (dayAssignments.length === 0) return null;
@@ -539,7 +539,7 @@ export default function FamiliaCalendario() {
                             <div key={meal.key} className="px-3 py-2">
                               <div className="flex items-center gap-1.5 mb-2">
                                 <span>{meal.emoji}</span>
-                                <span className="text-xs font-semibold text-gray-600 uppercase tracking-wide">{meal.label}</span>
+                                <span className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">{meal.label}</span>
                               </div>
                               <div className="grid grid-cols-2 gap-2">
                                 {dayAssignments.map((a) => (
@@ -569,8 +569,8 @@ export default function FamiliaCalendario() {
                 <Calendar className="w-12 h-12 text-gray-300 mx-auto mb-4" />
                 {selectedMemberId !== null ? (
                   <>
-                    <h3 className="text-lg font-semibold text-gray-700 mb-2">Sin recetas para este miembro</h3>
-                    <p className="text-gray-500 text-sm mb-6 max-w-sm mx-auto">
+                    <h3 className="text-lg font-semibold text-foreground/80 mb-2">Sin recetas para este miembro</h3>
+                    <p className="text-muted-foreground text-sm mb-6 max-w-sm mx-auto">
                       No hay recetas asignadas a este miembro esta semana.
                     </p>
                     <Button
@@ -585,8 +585,8 @@ export default function FamiliaCalendario() {
                   </>
                 ) : (
                   <>
-                    <h3 className="text-lg font-semibold text-gray-700 mb-2">Sin recetas esta semana</h3>
-                    <p className="text-gray-500 text-sm mb-6 max-w-sm mx-auto">
+                    <h3 className="text-lg font-semibold text-foreground/80 mb-2">Sin recetas esta semana</h3>
+                    <p className="text-muted-foreground text-sm mb-6 max-w-sm mx-auto">
                       Asigna recetas a los miembros del hogar con fecha programada para verlas aquí.
                     </p>
                     <Link href="/familia">
@@ -602,7 +602,7 @@ export default function FamiliaCalendario() {
 
             {/* Info tip */}
             {totalAssignments > 0 && (
-              <div className="mt-4 flex items-start gap-2 text-xs text-gray-500 bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
+              <div className="mt-4 flex items-start gap-2 text-xs text-muted-foreground bg-blue-50 border border-blue-100 rounded-lg px-3 py-2">
                 <AlertCircle className="w-3.5 h-3.5 text-blue-400 mt-0.5 shrink-0" />
                 <span>Solo se muestran recetas con fecha programada. Para asignar recetas a días concretos, usa el botón "Asignar receta" en la página de Mi Hogar.</span>
               </div>

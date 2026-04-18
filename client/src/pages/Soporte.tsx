@@ -48,11 +48,11 @@ const STATUS_CONFIG: Record<string, { label: string; color: string; icon: React.
   in_progress: { label: "En progreso", color: "bg-orange-100 text-orange-700 border-orange-200", icon: <Clock className="h-3 w-3" /> },
   waiting_user: { label: "Esperando tu respuesta", color: "bg-yellow-100 text-yellow-700 border-yellow-200", icon: <AlertCircle className="h-3 w-3" /> },
   resolved: { label: "Resuelto", color: "bg-green-100 text-green-700 border-green-200", icon: <CheckCircle2 className="h-3 w-3" /> },
-  closed: { label: "Cerrado", color: "bg-gray-100 text-gray-600 border-gray-200", icon: <XCircle className="h-3 w-3" /> },
+  closed: { label: "Cerrado", color: "bg-muted/50 text-muted-foreground border-border", icon: <XCircle className="h-3 w-3" /> },
 };
 
 const PRIORITY_CONFIG: Record<string, { label: string; color: string }> = {
-  low: { label: "Baja", color: "bg-gray-100 text-gray-600" },
+  low: { label: "Baja", color: "bg-muted/50 text-muted-foreground" },
   medium: { label: "Media", color: "bg-blue-100 text-blue-700" },
   high: { label: "Alta", color: "bg-orange-100 text-orange-700" },
   urgent: { label: "Urgente", color: "bg-red-100 text-red-700" },

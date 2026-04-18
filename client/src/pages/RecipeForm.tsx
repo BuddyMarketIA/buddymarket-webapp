@@ -217,9 +217,9 @@ export default function RecipeForm() {
           <p className="text-muted-foreground text-sm">Crea y comparte tus propias recetas con la comunidad</p>
         </div>
         <div className="blur-sm pointer-events-none select-none opacity-50 space-y-4">
-          <div className="h-10 bg-gray-100 rounded-lg" />
-          <div className="h-24 bg-gray-100 rounded-lg" />
-          <div className="h-10 bg-gray-100 rounded-lg w-2/3" />
+          <div className="h-10 bg-muted/50 rounded-lg" />
+          <div className="h-24 bg-muted/50 rounded-lg" />
+          <div className="h-10 bg-muted/50 rounded-lg w-2/3" />
         </div>
         <UpgradeGate feature="canCreateRecipes">{null}</UpgradeGate>
       </div>
@@ -352,7 +352,7 @@ export default function RecipeForm() {
                     />
                   </div>
                   {showDropdown === index && filteredIngredients(index).length > 0 && (
-                    <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-white border border-border rounded-lg shadow-lg overflow-hidden">
+                    <div className="absolute z-50 top-full left-0 right-0 mt-1 bg-background border border-border rounded-lg shadow-lg overflow-hidden">
                       {filteredIngredients(index).map((item) => (
                         <button
                           key={item.id}

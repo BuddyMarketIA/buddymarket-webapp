@@ -55,7 +55,7 @@ function StarRating({ rating }: { rating: number }) {
           <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
         </svg>
       ))}
-      <span className="text-[10px] font-bold text-gray-500 ml-0.5">{rating > 0 ? Number(rating).toFixed(1) : '—'}</span>
+      <span className="text-[10px] font-bold text-muted-foreground ml-0.5">{rating > 0 ? Number(rating).toFixed(1) : '—'}</span>
     </div>
   );
 }
@@ -87,7 +87,7 @@ function ExpertCard({
 
   return (
     <div
-      className="group relative bg-white rounded-[28px] overflow-hidden cursor-pointer flex flex-col"
+      className="group relative bg-background rounded-[28px] overflow-hidden cursor-pointer flex flex-col"
       style={{
         boxShadow: "0 1px 3px rgba(0,0,0,0.04), 0 6px 24px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03)",
         transition: "box-shadow 0.35s cubic-bezier(.4,0,.2,1), transform 0.35s cubic-bezier(.4,0,.2,1)",
@@ -105,9 +105,9 @@ function ExpertCard({
       {/* ── Gradient header ── */}
       <div className={`relative bg-gradient-to-br ${gradient} h-[110px] overflow-visible`}>
         {/* Decorative blobs */}
-        <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/20 blur-3xl" />
+        <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-background/20 blur-3xl" />
         <div className="absolute -bottom-10 -left-10 w-44 h-44 rounded-full bg-black/15 blur-3xl" />
-        <div className="absolute top-4 right-12 w-16 h-16 rounded-full bg-white/10 blur-2xl" />
+        <div className="absolute top-4 right-12 w-16 h-16 rounded-full bg-background/10 blur-2xl" />
         {/* Dot grid */}
         <div className="absolute inset-0 opacity-[0.07]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, white 1.5px, transparent 0)", backgroundSize: "14px 14px" }} />
         {/* Animated shine on hover */}
@@ -117,7 +117,7 @@ function ExpertCard({
         <div className="relative flex justify-between items-start p-3">
           <div className="flex gap-1.5">
             {expert.verified && (
-              <span className="flex items-center gap-1 bg-white/25 backdrop-blur-md text-white text-[10px] font-bold px-2 py-0.5 rounded-full border border-white/40 shadow-sm">
+              <span className="flex items-center gap-1 bg-background/25 backdrop-blur-md text-white text-[10px] font-bold px-2 py-0.5 rounded-full border border-white/40 shadow-sm">
                 <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd" /></svg>
                 Verificado
               </span>
@@ -132,17 +132,17 @@ function ExpertCard({
         {/* Avatar */}
         <div className="absolute -bottom-10 left-1/2 -translate-x-1/2">
           <div className="relative">
-            <div className="absolute inset-0 rounded-2xl bg-white/40 blur-md scale-110" />
+            <div className="absolute inset-0 rounded-2xl bg-background/40 blur-md scale-110" />
             {expertAvatar ? (
               <img src={expertAvatar} alt={expert.displayName}
                 className="relative w-[80px] h-[80px] rounded-2xl object-cover ring-[3px] ring-white shadow-2xl group-hover:scale-105 transition-transform duration-500"
               />
             ) : (
-              <div className="relative w-[80px] h-[80px] rounded-2xl bg-white/30 backdrop-blur-sm flex items-center justify-center text-3xl font-black text-white ring-[3px] ring-white shadow-2xl">
+              <div className="relative w-[80px] h-[80px] rounded-2xl bg-background/30 backdrop-blur-sm flex items-center justify-center text-3xl font-black text-white ring-[3px] ring-white shadow-2xl">
                 {expert.displayName?.[0]?.toUpperCase() ?? "?"}
               </div>
             )}
-            <span className="absolute -bottom-2 -right-2 w-7 h-7 rounded-full bg-white shadow-lg flex items-center justify-center text-base border border-gray-100">
+            <span className="absolute -bottom-2 -right-2 w-7 h-7 rounded-full bg-background shadow-lg flex items-center justify-center text-base border border-border/50">
               {categoryEmoji}
             </span>
           </div>
@@ -151,7 +151,7 @@ function ExpertCard({
 
       {/* ── Body ── */}
       <div className="pt-14 px-4 pb-4 flex flex-col items-center text-center gap-1 flex-1">
-        <h3 className="font-black text-gray-900 text-[15px] leading-tight line-clamp-1 w-full tracking-tight">
+        <h3 className="font-black text-foreground text-[15px] leading-tight line-clamp-1 w-full tracking-tight">
           {expert.displayName}
         </h3>
         <p className="text-[11px] text-indigo-500 font-bold line-clamp-1 tracking-widest uppercase w-full">
@@ -162,32 +162,32 @@ function ExpertCard({
         <div className="flex items-center justify-center mt-0.5 mb-1">
           <StarRating rating={expert.rating ?? 0} />
           {expert.reviewsCount > 0 && (
-            <span className="text-[10px] text-gray-400 ml-1">({fmtCount(expert.reviewsCount ?? 0)})</span>
+            <span className="text-[10px] text-muted-foreground/70 ml-1">({fmtCount(expert.reviewsCount ?? 0)})</span>
           )}
         </div>
 
         {/* Bio */}
         {expert.bio && (
-          <p className="text-[11px] text-gray-400 line-clamp-2 leading-relaxed mb-1 w-full">{expert.bio}</p>
+          <p className="text-[11px] text-muted-foreground/70 line-clamp-2 leading-relaxed mb-1 w-full">{expert.bio}</p>
         )}
 
         {/* Stats bar */}
-        <div className="flex items-stretch w-full mt-1 mb-3 bg-gray-50/80 rounded-2xl overflow-hidden border border-gray-100/80">
+        <div className="flex items-stretch w-full mt-1 mb-3 bg-muted/30/80 rounded-2xl overflow-hidden border border-border/50/80">
           <div className="flex-1 flex flex-col items-center py-2">
-            <span className="font-black text-gray-900 text-[13px]">{fmtCount(expert.followersCount ?? 0)}</span>
-            <span className="text-[9px] text-gray-400 font-semibold uppercase tracking-wider">Seguid.</span>
+            <span className="font-black text-foreground text-[13px]">{fmtCount(expert.followersCount ?? 0)}</span>
+            <span className="text-[9px] text-muted-foreground/70 font-semibold uppercase tracking-wider">Seguid.</span>
           </div>
-          <div className="w-px bg-gray-200" />
+          <div className="w-px bg-muted" />
           <div className="flex-1 flex flex-col items-center py-2">
-            <span className="font-black text-gray-900 text-[13px]">{expert.plansCount ?? 0}</span>
-            <span className="text-[9px] text-gray-400 font-semibold uppercase tracking-wider">Planes</span>
+            <span className="font-black text-foreground text-[13px]">{expert.plansCount ?? 0}</span>
+            <span className="text-[9px] text-muted-foreground/70 font-semibold uppercase tracking-wider">Planes</span>
           </div>
           {monthlyPrice != null && (
             <>
-              <div className="w-px bg-gray-200" />
+              <div className="w-px bg-muted" />
               <div className="flex-1 flex flex-col items-center py-2">
                 <span className="font-black text-indigo-600 text-[13px]">{monthlyPrice}€</span>
-                <span className="text-[9px] text-gray-400 font-semibold uppercase tracking-wider">/mes</span>
+                <span className="text-[9px] text-muted-foreground/70 font-semibold uppercase tracking-wider">/mes</span>
               </div>
             </>
           )}
@@ -207,7 +207,7 @@ function ExpertCard({
           </button>
           <button
             onClick={() => navigate(`/app/buddy-experts/${expert.id}`)}
-            className="flex-1 py-2.5 rounded-2xl text-[12px] font-black bg-gray-50 text-gray-700 hover:bg-gray-100 transition-all duration-200 border border-gray-200 active:scale-95"
+            className="flex-1 py-2.5 rounded-2xl text-[12px] font-black bg-muted/30 text-foreground/80 hover:bg-muted/50 transition-all duration-200 border border-border active:scale-95"
           >
             Ver perfil
           </button>
@@ -221,18 +221,18 @@ function ExpertCard({
 function SkeletonCard() {
   return (
     <div
-      className="bg-white rounded-[28px] overflow-hidden animate-pulse"
+      className="bg-background rounded-[28px] overflow-hidden animate-pulse"
       style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.06)" }}
     >
       <div className="h-32 bg-gradient-to-br from-gray-200 to-gray-100" />
       <div className="p-4 flex flex-col items-center gap-3">
-        <div className="w-20 h-20 rounded-2xl bg-gray-200 -mt-10" />
-        <div className="h-4 w-28 bg-gray-200 rounded-full" />
-        <div className="h-3 w-20 bg-gray-100 rounded-full" />
-        <div className="h-10 w-full bg-gray-100 rounded-2xl" />
+        <div className="w-20 h-20 rounded-2xl bg-muted -mt-10" />
+        <div className="h-4 w-28 bg-muted rounded-full" />
+        <div className="h-3 w-20 bg-muted/50 rounded-full" />
+        <div className="h-10 w-full bg-muted/50 rounded-2xl" />
         <div className="flex gap-2 w-full">
-          <div className="flex-1 h-11 bg-gray-200 rounded-2xl" />
-          <div className="flex-1 h-11 bg-gray-100 rounded-2xl" />
+          <div className="flex-1 h-11 bg-muted rounded-2xl" />
+          <div className="flex-1 h-11 bg-muted/50 rounded-2xl" />
         </div>
       </div>
     </div>
@@ -294,11 +294,11 @@ export default function BuddyExperts() {
   return (
     <div className="min-h-screen bg-[#F7F3EF]">
       {/* Header */}
-      <div className="bg-white/80 backdrop-blur-xl border-b border-gray-100/80 px-4 pt-4 pb-3 sticky top-0 z-10">
+      <div className="bg-background/80 backdrop-blur-xl border-b border-border/50/80 px-4 pt-4 pb-3 sticky top-0 z-10">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h1 className="text-[22px] font-black text-gray-900 tracking-tight">{t("buddyExperts.title", "BuddyExperts")}</h1>
-            <p className="text-sm text-gray-400 font-medium">{t("buddyExperts.subtitle", "Certified nutritionists and dietitians")}</p>
+            <h1 className="text-[22px] font-black text-foreground tracking-tight">{t("buddyExperts.title", "BuddyExperts")}</h1>
+            <p className="text-sm text-muted-foreground/70 font-medium">{t("buddyExperts.subtitle", "Certified nutritionists and dietitians")}</p>
           </div>
           <span className="bg-indigo-50 text-indigo-600 text-[13px] font-black px-3 py-1.5 rounded-full border border-indigo-100">
             {experts.length} expertos
@@ -308,7 +308,7 @@ export default function BuddyExperts() {
         {/* Search */}
         <div className="relative mb-3">
           <svg
-            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400"
+            className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/70"
             fill="none"
             stroke="currentColor"
             viewBox="0 0 24 24"
@@ -325,12 +325,12 @@ export default function BuddyExperts() {
             placeholder={t("buddyExperts.searchPlaceholder", "Search experts...")}
             value={search}
             onChange={(e) => setSearch(e.target.value)}
-            className="w-full pl-9 pr-4 py-2.5 bg-gray-100 rounded-2xl text-[13px] text-gray-800 placeholder-gray-400 outline-none focus:ring-2 focus:ring-indigo-300 transition"
+            className="w-full pl-9 pr-4 py-2.5 bg-muted/50 rounded-2xl text-[13px] text-foreground placeholder-gray-400 outline-none focus:ring-2 focus:ring-indigo-300 transition"
           />
           {search && (
             <button
               onClick={() => setSearch("")}
-              className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600"
+              className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/70 hover:text-muted-foreground"
             >
               ✕
             </button>
@@ -344,7 +344,7 @@ export default function BuddyExperts() {
             className={`shrink-0 px-3 py-1.5 rounded-full text-[13px] font-black transition-all ${
               !selectedCategory
                 ? "bg-indigo-500 text-white shadow-md shadow-indigo-200"
-                : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                : "bg-muted/50 text-muted-foreground hover:bg-muted"
             }`}
           >
             Todos
@@ -356,7 +356,7 @@ export default function BuddyExperts() {
               className={`shrink-0 flex items-center gap-1 px-3 py-1.5 rounded-full text-[13px] font-black transition-all ${
                 selectedCategory === key
                   ? "bg-indigo-500 text-white shadow-md shadow-indigo-200"
-                  : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                  : "bg-muted/50 text-muted-foreground hover:bg-muted"
               }`}
             >
               {CATEGORY_EMOJIS[key]} {label}
@@ -365,13 +365,13 @@ export default function BuddyExperts() {
         </div>
 
         {/* Tabs */}
-        <div className="flex gap-1 bg-gray-100 rounded-2xl p-1">
+        <div className="flex gap-1 bg-muted/50 rounded-2xl p-1">
           {(["experts", "testimonials"] as Tab[]).map((t) => (
             <button
               key={t}
               onClick={() => setTab(t)}
               className={`flex-1 py-2 rounded-xl text-[13px] font-black transition-all duration-200 ${
-                tab === t ? "bg-white text-gray-900 shadow-sm" : "text-gray-400 hover:text-gray-600"
+                tab === t ? "bg-background text-foreground shadow-sm" : "text-muted-foreground/70 hover:text-muted-foreground"
               }`}
             >
               {t === "experts" ? "🎓 Expertos" : "💬 Testimonios"}
@@ -392,10 +392,10 @@ export default function BuddyExperts() {
             ) : experts.length === 0 ? (
               <div className="text-center py-16 space-y-4">
                 <div className="text-6xl">{search || selectedCategory ? "🔍" : "🎓"}</div>
-                <h3 className="text-lg font-black text-gray-800">
+                <h3 className="text-lg font-black text-foreground">
                   {search || selectedCategory ? t("buddyExperts.noResults", "No results") : t("buddyExperts.noExperts", "No BuddyExperts yet")}
                 </h3>
-                <p className="text-sm text-gray-500 max-w-xs mx-auto">
+                <p className="text-sm text-muted-foreground max-w-xs mx-auto">
                   {search
                     ? `No se encontraron expertos para "${search}"`
                     : selectedCategory
@@ -440,8 +440,8 @@ export default function BuddyExperts() {
             {/* Testimonials are community-generated; show placeholder until real reviews exist */}
             <div className="text-center py-12 space-y-3">
               <div className="text-5xl">💬</div>
-              <h3 className="text-base font-black text-gray-800">{t("buddyExperts.testimonials", "Community testimonials")}</h3>
-              <p className="text-sm text-gray-500 max-w-xs mx-auto">
+              <h3 className="text-base font-black text-foreground">{t("buddyExperts.testimonials", "Community testimonials")}</h3>
+              <p className="text-sm text-muted-foreground max-w-xs mx-auto">
                 {t("buddyExperts.testimonialsEmpty", "Testimonials will appear here when users rate the experts' plans.")}
               </p>
               <button

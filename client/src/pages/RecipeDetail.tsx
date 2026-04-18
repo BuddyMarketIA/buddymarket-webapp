@@ -265,7 +265,7 @@ export default function RecipeDetail() {
   if (!recipe) {
     return (
       <div className="vively-page container text-center">
-        <p className="text-gray-500">{t("recipes.notFound", "Recipe not found")}</p>
+        <p className="text-muted-foreground">{t("recipes.notFound", "Recipe not found")}</p>
         <Link href="/app/recipes" className="btn-vively mt-4 inline-block">
           Volver a recetas
         </Link>
@@ -307,7 +307,7 @@ export default function RecipeDetail() {
       <div className="flex items-center justify-between mb-2">
         <button
           onClick={() => navigate("/app/recipes")}
-          className="flex items-center gap-1.5 text-sm font-semibold text-gray-500 hover:text-gray-900"
+          className="flex items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground"
         >
           <ArrowLeftIcon className="h-4 w-4" />
           Volver
@@ -321,7 +321,7 @@ export default function RecipeDetail() {
             {isFavoriteData ? (
               <HeartSolid className="h-5 w-5 text-orange-500" />
             ) : (
-              <HeartIcon className="h-5 w-5 text-gray-400" />
+              <HeartIcon className="h-5 w-5 text-muted-foreground/70" />
             )}
           </button>
           {user && (
@@ -333,10 +333,10 @@ export default function RecipeDetail() {
               {likeStatus?.liked ? (
                 <HeartSolid className="h-5 w-5 text-red-500" />
               ) : (
-                <HeartIcon className="h-5 w-5 text-gray-400" />
+                <HeartIcon className="h-5 w-5 text-muted-foreground/70" />
               )}
               {likeStatus?.likesCount !== undefined && likeStatus.likesCount > 0 && (
-                <span className="text-xs font-medium text-gray-500">{likeStatus.likesCount}</span>
+                <span className="text-xs font-medium text-muted-foreground">{likeStatus.likesCount}</span>
               )}
             </button>
           )}
@@ -352,7 +352,7 @@ export default function RecipeDetail() {
                 href={`/app/recipes/${recipe.id}/edit`}
                 className="rounded-full p-2 hover:bg-orange-50"
               >
-                <PencilIcon className="h-5 w-5 text-gray-400" />
+                <PencilIcon className="h-5 w-5 text-muted-foreground/70" />
               </Link>
               <button
                 onClick={() => {
@@ -379,9 +379,9 @@ export default function RecipeDetail() {
 
       {/* Title & description */}
       <div className="mb-3 px-1">
-        <h1 className="text-xl font-extrabold text-gray-900 mb-1">{recipe.name}</h1>
+        <h1 className="text-xl font-extrabold text-foreground mb-1">{recipe.name}</h1>
         {recipe.description && (
-          <p className="text-sm text-gray-500 leading-relaxed">{recipe.description}</p>
+          <p className="text-sm text-muted-foreground leading-relaxed">{recipe.description}</p>
         )}
       </div>
 
@@ -497,7 +497,7 @@ export default function RecipeDetail() {
               media_manana: "Media mañana",
             } as Record<string, string>
           )[recipe.mealTime] && (
-            <span className="rounded-full border border-gray-300 px-3 py-1 text-xs font-semibold text-gray-600">
+            <span className="rounded-full border border-border px-3 py-1 text-xs font-semibold text-muted-foreground">
               {
                 (
                   {
@@ -515,7 +515,7 @@ export default function RecipeDetail() {
       )}
 
       {/* 3-tab selector */}
-      <div className="mb-4 rounded-2xl overflow-hidden border border-gray-100 bg-white shadow-sm">
+      <div className="mb-4 rounded-2xl overflow-hidden border border-border/50 bg-background shadow-sm">
         <div className="grid grid-cols-3">
           {tabs.map((tab, idx) => {
             const isActive = activeTab === tab.key;
@@ -524,8 +524,8 @@ export default function RecipeDetail() {
                 key={tab.key}
                 onClick={() => setActiveTab(tab.key)}
                 className={`relative flex flex-col items-center justify-center py-3 px-2 text-center transition-all ${
-                  isActive ? "bg-[#F97316] text-white" : "bg-white text-[#F97316]"
-                } ${idx < 2 ? "border-r border-gray-100" : ""}`}
+                  isActive ? "bg-[#F97316] text-white" : "bg-background text-[#F97316]"
+                } ${idx < 2 ? "border-r border-border/50" : ""}`}
               >
                 {tab.icon && <span className="text-base mb-0.5">{tab.icon}</span>}
                 {tab.extra && (
@@ -539,7 +539,7 @@ export default function RecipeDetail() {
                 )}
                 <span
                   className={`text-xs font-semibold leading-tight whitespace-pre-line ${
-                    isActive ? "text-white" : "text-gray-700"
+                    isActive ? "text-white" : "text-foreground/80"
                   }`}
                 >
                   {tab.label}
@@ -552,7 +552,7 @@ export default function RecipeDetail() {
 
       {/* ── TAB: Ingredients ── */}
       {activeTab === "ingredients" && (
-        <div className="rounded-2xl bg-white shadow-sm p-4">
+        <div className="rounded-2xl bg-background shadow-sm p-4">
           {/* Servings selector */}
           <div className="flex items-center gap-4 mb-5">
             <button
@@ -561,7 +561,7 @@ export default function RecipeDetail() {
             >
               −
             </button>
-            <span className="text-lg font-bold text-gray-900">{currentServings} raciones</span>
+            <span className="text-lg font-bold text-foreground">{currentServings} raciones</span>
             <button
               onClick={() => setServings(currentServings + 1)}
               className="h-9 w-9 rounded-full border-2 border-[#F97316] flex items-center justify-center text-[#F97316] text-xl font-bold hover:bg-orange-50"
@@ -589,7 +589,7 @@ export default function RecipeDetail() {
                 return (
                   <li key={i} className="flex items-center justify-between py-3">
                     <div className="flex items-center gap-2 flex-1 min-w-0">
-                      <span className="font-semibold text-gray-900 text-sm truncate">
+                      <span className="font-semibold text-foreground text-sm truncate">
                         {ing.name}
                       </span>
                       {user &&
@@ -608,7 +608,7 @@ export default function RecipeDetail() {
                     {displayAmount != null && (
                       <span className="ml-3 text-sm font-bold text-[#F97316] shrink-0">
                         {displayAmount}{" "}
-                        <span className="font-normal text-gray-500">{ing.unit}</span>
+                        <span className="font-normal text-muted-foreground">{ing.unit}</span>
                       </span>
                     )}
                   </li>
@@ -616,7 +616,7 @@ export default function RecipeDetail() {
               })}
             </ul>
           ) : (
-            <p className="text-sm text-gray-400 text-center py-4">
+            <p className="text-sm text-muted-foreground/70 text-center py-4">
               Sin ingredientes registrados
             </p>
           )}
@@ -648,23 +648,23 @@ export default function RecipeDetail() {
         <div className="space-y-3">
           {structuredSteps.length > 0 ? (
             structuredSteps.map((step) => (
-              <div key={step.stepNumber} className="rounded-2xl bg-white shadow-sm p-4">
+              <div key={step.stepNumber} className="rounded-2xl bg-background shadow-sm p-4">
                 <div className="flex items-center gap-3 mb-2">
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-[#F97316] text-sm font-bold text-white">
                     {step.stepNumber}
                   </div>
-                  <span className="font-bold text-gray-900 text-sm">
+                  <span className="font-bold text-foreground text-sm">
                     Paso {step.stepNumber}
                   </span>
                 </div>
-                <p className="text-sm leading-relaxed text-gray-700 pl-11">
+                <p className="text-sm leading-relaxed text-foreground/80 pl-11">
                   {step.instruction}
                 </p>
               </div>
             ))
           ) : (
-            <div className="rounded-2xl bg-white shadow-sm p-6 text-center">
-              <p className="text-sm text-gray-400">Sin instrucciones registradas</p>
+            <div className="rounded-2xl bg-background shadow-sm p-6 text-center">
+              <p className="text-sm text-muted-foreground/70">Sin instrucciones registradas</p>
             </div>
           )}
         </div>
@@ -672,7 +672,7 @@ export default function RecipeDetail() {
 
       {/* ── TAB: Nutritional values ── */}
       {activeTab === "nutrition" && (
-        <div className="rounded-2xl bg-white shadow-sm p-4">
+        <div className="rounded-2xl bg-background shadow-sm p-4">
           {hasNutrition ? (
             <>
               <p className="text-sm font-bold text-[#F97316] mb-4">
@@ -691,10 +691,10 @@ export default function RecipeDetail() {
                 ).map((row) =>
                   row.value != null ? (
                     <li key={row.label} className="flex items-center justify-between py-3">
-                      <span className="text-sm text-gray-700">{row.label}</span>
+                      <span className="text-sm text-foreground/80">{row.label}</span>
                       <span
                         className={`text-sm font-bold ${
-                          row.highlight ? "text-[#F97316] text-base" : "text-gray-900"
+                          row.highlight ? "text-[#F97316] text-base" : "text-foreground"
                         }`}
                       >
                         {row.value} {row.unit}
@@ -707,10 +707,10 @@ export default function RecipeDetail() {
           ) : (
             <div className="py-8 text-center">
               <p className="text-2xl mb-2">🍽️</p>
-              <p className="text-sm font-semibold text-gray-700 mb-1">
+              <p className="text-sm font-semibold text-foreground/80 mb-1">
                 Sin datos nutricionales
               </p>
-              <p className="text-xs text-gray-400">
+              <p className="text-xs text-muted-foreground/70">
                 Esta receta aún no tiene información nutricional calculada.
               </p>
             </div>
@@ -718,8 +718,8 @@ export default function RecipeDetail() {
 
           {/* Allergens */}
           {recipe.allergies && recipe.allergies.length > 0 && (
-            <div className="mt-5 pt-4 border-t border-gray-100">
-              <h3 className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-2">
+            <div className="mt-5 pt-4 border-t border-border/50">
+              <h3 className="text-xs font-bold text-muted-foreground uppercase tracking-wide mb-2">
                 Contiene alérgenos
               </h3>
               <div className="flex flex-wrap gap-1.5">
@@ -740,29 +740,29 @@ export default function RecipeDetail() {
       {/* Log meal dialog */}
       {showLogDialog && (
         <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setShowLogDialog(false); }}>
-          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl">
+          <div className="w-full max-w-sm rounded-3xl bg-background p-6 shadow-2xl">
             <div className="mb-5 flex items-center justify-between">
-              <h3 className="text-lg font-bold text-gray-900">¿Cuándo lo comiste?</h3>
+              <h3 className="text-lg font-bold text-foreground">¿Cuándo lo comiste?</h3>
               <button
                 onClick={() => setShowLogDialog(false)}
-                className="rounded-full p-1 hover:bg-gray-100"
+                className="rounded-full p-1 hover:bg-muted/50"
               >
-                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
+                <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5 text-muted-foreground/70" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" /></svg>
               </button>
             </div>
             <div className="space-y-4">
               <div>
-                <label className="mb-1.5 block text-xs font-semibold text-gray-500">📅 Día</label>
+                <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">📅 Día</label>
                 <input
                   type="date"
                   value={logDate}
                   onChange={(e) => setLogDate(e.target.value)}
                   max={new Date().toISOString().slice(0, 10)}
-                  className="w-full rounded-2xl border-2 border-gray-100 bg-gray-50 px-4 py-3 text-sm font-semibold text-gray-800 outline-none focus:border-[#F97316]"
+                  className="w-full rounded-2xl border-2 border-border/50 bg-muted/30 px-4 py-3 text-sm font-semibold text-foreground outline-none focus:border-[#F97316]"
                 />
               </div>
               <div>
-                <label className="mb-1.5 block text-xs font-semibold text-gray-500">🕐 Momento del día</label>
+                <label className="mb-1.5 block text-xs font-semibold text-muted-foreground">🕐 Momento del día</label>
                 <div className="grid grid-cols-2 gap-2">
                   {(dayParts ?? [
                     { id: 1, nameEs: "Desayuno" },
@@ -787,7 +787,7 @@ export default function RecipeDetail() {
                         className={`flex items-center gap-2 rounded-2xl border-2 px-3 py-2.5 text-sm font-semibold transition-all ${
                           isSelected
                             ? "border-[#F97316] bg-orange-50 text-[#F97316]"
-                            : "border-gray-100 bg-gray-50 text-gray-600 hover:border-orange-200"
+                            : "border-border/50 bg-muted/30 text-muted-foreground hover:border-orange-200"
                         }`}
                       >
                         <span>{emojis[dp.nameEs] ?? "🍴"}</span>
@@ -797,14 +797,14 @@ export default function RecipeDetail() {
                   })}
                 </div>
               </div>
-              <p className="text-xs text-gray-400 text-center">
+              <p className="text-xs text-muted-foreground/70 text-center">
                 Se registrarán <strong>{currentServings} ración{currentServings !== 1 ? "es" : ""}</strong> de <strong>{recipe.name}</strong>
               </p>
             </div>
             <div className="mt-5 flex gap-3">
               <button
                 onClick={() => setShowLogDialog(false)}
-                className="flex-1 rounded-2xl border-2 border-gray-200 py-3 text-sm font-semibold text-gray-600"
+                className="flex-1 rounded-2xl border-2 border-border py-3 text-sm font-semibold text-muted-foreground"
               >
                 Cancelar
               </button>

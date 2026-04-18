@@ -107,7 +107,7 @@ const sectionVariants: any = {
 
 function MenuCardSkeleton() {
   return (
-    <div className="bg-white rounded-2xl overflow-hidden shadow-sm border border-gray-100">
+    <div className="bg-background rounded-2xl overflow-hidden shadow-sm border border-border/50">
       {/* Header skeleton */}
       <div className="h-36 skeleton" />
       {/* Body skeleton */}
@@ -222,7 +222,7 @@ function MenuQuickView({
   ];
 
   return (
-    <div className="w-80 overflow-hidden rounded-xl shadow-2xl border-0 bg-white">
+    <div className="w-80 overflow-hidden rounded-xl shadow-2xl border-0 bg-background">
       {/* Image header */}
       <div className={`relative h-40 bg-gradient-to-br ${gradient} overflow-hidden`}>
         {image && (
@@ -237,7 +237,7 @@ function MenuQuickView({
           <h3 className="text-white font-bold text-sm leading-tight drop-shadow">{menu.name}</h3>
           <div className="flex gap-1.5 mt-1.5 flex-wrap">
             {menu.goal && (
-              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${GOAL_COLORS[menu.goal] || "bg-gray-100 text-gray-800"}`}>
+              <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${GOAL_COLORS[menu.goal] || "bg-muted/50 text-foreground"}`}>
                 {GOAL_LABELS[menu.goal] || menu.goal}
               </span>
             )}
@@ -251,38 +251,38 @@ function MenuQuickView({
       </div>
 
       {/* Stats row */}
-      <div className="flex divide-x divide-gray-100 border-b border-gray-100">
+      <div className="flex divide-x divide-border/50 border-b border-border/50">
         {menu.dailyCalories && (
           <div className="flex-1 text-center py-2.5">
             <p className="text-base font-bold text-[#FF6B35]">{menu.dailyCalories}</p>
-            <p className="text-xs text-gray-500">kcal/día</p>
+            <p className="text-xs text-muted-foreground">kcal/día</p>
           </div>
         )}
         {menu.dailyMealsCount && (
           <div className="flex-1 text-center py-2.5">
-            <p className="text-base font-bold text-gray-800">{menu.dailyMealsCount}</p>
-            <p className="text-xs text-gray-500">comidas</p>
+            <p className="text-base font-bold text-foreground">{menu.dailyMealsCount}</p>
+            <p className="text-xs text-muted-foreground">comidas</p>
           </div>
         )}
         <div className="flex-1 text-center py-2.5">
-          <p className="text-base font-bold text-gray-800">7</p>
-          <p className="text-xs text-gray-500">días</p>
+          <p className="text-base font-bold text-foreground">7</p>
+          <p className="text-xs text-muted-foreground">días</p>
         </div>
         {menu.persons && (
           <div className="flex-1 text-center py-2.5">
-            <p className="text-base font-bold text-gray-800">{menu.persons}</p>
-            <p className="text-xs text-gray-500">{menu.persons === 1 ? "persona" : "personas"}</p>
+            <p className="text-base font-bold text-foreground">{menu.persons}</p>
+            <p className="text-xs text-muted-foreground">{menu.persons === 1 ? "persona" : "personas"}</p>
           </div>
         )}
       </div>
 
       {/* Highlights */}
       <div className="p-3 space-y-1.5">
-        <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Características</p>
+        <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Características</p>
         {highlights.map((h, i) => (
           <div key={i} className="flex items-center gap-2 text-sm">
             <span className="text-base">{h.icon}</span>
-            <span className="text-gray-700">{h.text}</span>
+            <span className="text-foreground/80">{h.text}</span>
           </div>
         ))}
       </div>
@@ -292,7 +292,7 @@ function MenuQuickView({
         <Button
           variant="outline"
           size="sm"
-          className="flex-1 text-xs h-9 border-gray-200"
+          className="flex-1 text-xs h-9 border-border"
           onClick={() => onDetail(menu.id)}
         >
           Ver detalles
@@ -343,7 +343,7 @@ function MenuCard({
       <HoverCardTrigger asChild>
         <motion.div
           variants={cardVariants}
-          className="bg-white rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300 border border-gray-100 group cursor-pointer"
+          className="bg-background rounded-2xl overflow-hidden shadow-sm hover:shadow-lg transition-shadow duration-300 border border-border/50 group cursor-pointer"
         >
           {/* Visual header */}
           <div className={`relative h-44 bg-gradient-to-br ${gradient} overflow-hidden`}>
@@ -358,14 +358,14 @@ function MenuCard({
             <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent" />
             {/* Quick view hint on hover */}
             <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-              <span className="bg-white/20 backdrop-blur-sm text-white text-xs font-medium px-3 py-1.5 rounded-full border border-white/30">
+              <span className="bg-background/20 backdrop-blur-sm text-white text-xs font-medium px-3 py-1.5 rounded-full border border-white/30">
                 Vista rápida
               </span>
             </div>
             <div className="absolute inset-0 p-4 flex flex-col justify-between">
               <div className="flex items-start justify-between">
                 {isRecommended && (
-                  <span className="bg-white/20 backdrop-blur-sm text-white text-xs font-semibold px-2.5 py-1 rounded-full border border-white/30">
+                  <span className="bg-background/20 backdrop-blur-sm text-white text-xs font-semibold px-2.5 py-1 rounded-full border border-white/30">
                     ✨ Para ti
                   </span>
                 )}
@@ -387,17 +387,17 @@ function MenuCard({
           <div className="p-4">
             <div className="flex flex-wrap gap-1.5 mb-3">
               {menu.goal && (
-                <Badge className={`text-xs ${GOAL_COLORS[menu.goal] || "bg-gray-100 text-gray-800"}`}>
+                <Badge className={`text-xs ${GOAL_COLORS[menu.goal] || "bg-muted/50 text-foreground"}`}>
                   {GOAL_LABELS[menu.goal] || menu.goal}
                 </Badge>
               )}
               {menu.dailyCalories && (
-                <span className="text-xs text-muted-foreground bg-gray-50 px-2 py-0.5 rounded-full">
+                <span className="text-xs text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-full">
                   🔥 {menu.dailyCalories} kcal
                 </span>
               )}
               {menu.dailyMealsCount && (
-                <span className="text-xs text-muted-foreground bg-gray-50 px-2 py-0.5 rounded-full">
+                <span className="text-xs text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-full">
                   🍽️ {menu.dailyMealsCount} comidas
                 </span>
               )}
@@ -419,7 +419,7 @@ function MenuCard({
                     <Button
                       variant="outline"
                       size="sm"
-                      className="h-9 w-9 shrink-0 p-0 border-gray-200 hover:border-[#FF6B35] hover:text-[#FF6B35]"
+                      className="h-9 w-9 shrink-0 p-0 border-border hover:border-[#FF6B35] hover:text-[#FF6B35]"
                       title="Generar lista de la compra"
                       onClick={() => onShoppingList({ id: menu.id, name: menu.name })}
                     >
@@ -463,10 +463,10 @@ function EmptyState({ onExplore, onCreateAI }: { onExplore: () => void; onCreate
       <div className="w-24 h-24 bg-gradient-to-br from-orange-100 to-orange-50 rounded-full flex items-center justify-center mb-6 shadow-inner">
         <span className="text-4xl">🍽️</span>
       </div>
-      <h3 className="text-xl font-bold text-gray-900 mb-2">
+      <h3 className="text-xl font-bold text-foreground mb-2">
         Actualmente no hay menús adaptados para ti
       </h3>
-      <p className="text-gray-500 text-sm max-w-xs mb-8 leading-relaxed">
+      <p className="text-muted-foreground text-sm max-w-xs mb-8 leading-relaxed">
         No encontramos menús que coincidan exactamente con tu perfil nutricional y preferencias.
       </p>
       <div className="flex flex-col gap-3 w-full max-w-xs">
@@ -478,7 +478,7 @@ function EmptyState({ onExplore, onCreateAI }: { onExplore: () => void; onCreate
         </Button>
         <Button
           variant="outline"
-          className="w-full h-12 rounded-xl font-semibold border-gray-200"
+          className="w-full h-12 rounded-xl font-semibold border-border"
           onClick={onExplore}
         >
           🔍 Explorar todos los menús disponibles
@@ -632,17 +632,17 @@ function MenuDetailDialog({
             {menu && (
               <div className="flex gap-2 flex-wrap mt-1.5">
                 {menu.goal && (
-                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${GOAL_COLORS[menu.goal] || "bg-gray-100 text-gray-800"}`}>
+                  <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${GOAL_COLORS[menu.goal] || "bg-muted/50 text-foreground"}`}>
                     {GOAL_LABELS[menu.goal] || menu.goal}
                   </span>
                 )}
                 {menu.dailyCalories && (
-                  <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-white/20 text-white backdrop-blur-sm">
+                  <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-background/20 text-white backdrop-blur-sm">
                     🔥 {menu.dailyCalories} kcal/día
                   </span>
                 )}
                 {menu.difficulty && (
-                  <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-white/20 text-white backdrop-blur-sm">
+                  <span className="text-xs px-2 py-0.5 rounded-full font-medium bg-background/20 text-white backdrop-blur-sm">
                     {DIFF_LABELS[menu.difficulty] || menu.difficulty}
                   </span>
                 )}
@@ -669,7 +669,7 @@ function MenuDetailDialog({
                     className={`shrink-0 flex flex-col items-center px-3 py-1.5 rounded-xl text-xs font-medium transition-all border ${
                       selectedDay === day
                         ? "bg-[#FF6B35] text-white border-[#FF6B35] shadow-sm"
-                        : "bg-gray-50 text-gray-600 border-gray-100 hover:border-[#FF6B35] hover:text-[#FF6B35]"
+                        : "bg-muted/30 text-muted-foreground border-border/50 hover:border-[#FF6B35] hover:text-[#FF6B35]"
                     }`}
                   >
                     <span className="text-[10px] opacity-70">{DAY_NAMES[day - 1]?.slice(0, 3) || `D${day}`}</span>
@@ -683,7 +683,7 @@ function MenuDetailDialog({
             <div className="flex-1 overflow-y-auto px-4 pb-4">
               {/* Day header */}
               <div className="flex items-center justify-between py-3">
-                <h3 className="font-bold text-gray-900">
+                <h3 className="font-bold text-foreground">
                   {DAY_NAMES[selectedDay - 1] || `Día ${selectedDay}`}
                 </h3>
                 {dayKcal > 0 && (
@@ -702,18 +702,18 @@ function MenuDetailDialog({
                     const mealLabel = MEAL_LABELS[dp.name] || dp.name;
                     const mealKcal = dp.recipes.reduce((s: number, r: any) => s + (r.caloriesPerServing || 0), 0);
                     return (
-                      <div key={dp.id} className="bg-gray-50 rounded-xl overflow-hidden border border-gray-100">
-                        <div className="flex items-center justify-between px-3 py-2 bg-white border-b border-gray-100">
+                      <div key={dp.id} className="bg-muted/30 rounded-xl overflow-hidden border border-border/50">
+                        <div className="flex items-center justify-between px-3 py-2 bg-background border-b border-border/50">
                           <div className="flex items-center gap-2">
                             <span className="text-base">{mealIcon}</span>
-                            <span className="text-sm font-semibold text-gray-800">{mealLabel}</span>
+                            <span className="text-sm font-semibold text-foreground">{mealLabel}</span>
                           </div>
                           {mealKcal > 0 && (
                             <span className="text-xs text-[#FF6B35] font-medium">{mealKcal} kcal</span>
                           )}
                         </div>
                         {dp.recipes.length === 0 ? (
-                          <div className="px-3 py-3 text-xs text-gray-400 italic">Sin receta asignada</div>
+                          <div className="px-3 py-3 text-xs text-muted-foreground/70 italic">Sin receta asignada</div>
                         ) : (
                           dp.recipes.map((r: any) => {
                             const isExpanded = expandedRecipeId === r.id;
@@ -730,7 +730,7 @@ function MenuDetailDialog({
                                   <div className="flex items-start justify-between gap-3">
                                     <div className="flex-1 min-w-0">
                                       <div className="flex items-center gap-1.5">
-                                        <p className="text-sm font-medium text-gray-900 leading-tight">{r.name}</p>
+                                        <p className="text-sm font-medium text-foreground leading-tight">{r.name}</p>
                                         {ingredients.length > 0 && (
                                           <span className="text-[10px] text-[#FF6B35] bg-orange-50 px-1.5 py-0.5 rounded-full font-medium">
                                             {ingredients.length} ing.
@@ -738,12 +738,12 @@ function MenuDetailDialog({
                                         )}
                                       </div>
                                       {r.description && (
-                                        <p className="text-xs text-gray-500 mt-0.5 line-clamp-2 leading-relaxed">{r.description}</p>
+                                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2 leading-relaxed">{r.description}</p>
                                       )}
                                     </div>
                                     <div className="shrink-0 text-right flex flex-col items-end gap-0.5">
                                       {r.caloriesPerServing && (
-                                        <span className="text-xs font-semibold text-gray-700">{r.caloriesPerServing} kcal</span>
+                                        <span className="text-xs font-semibold text-foreground/80">{r.caloriesPerServing} kcal</span>
                                       )}
                                       <div className="flex gap-2">
                                         {r.proteinsPerServing && (
@@ -757,7 +757,7 @@ function MenuDetailDialog({
                                         )}
                                       </div>
                                       {ingredients.length > 0 && (
-                                        <span className="text-[10px] text-gray-400 mt-0.5">
+                                        <span className="text-[10px] text-muted-foreground/70 mt-0.5">
                                           {isExpanded ? '▲ Ocultar' : '▼ Ingredientes'}
                                         </span>
                                       )}
@@ -774,8 +774,8 @@ function MenuDetailDialog({
                                     <div className="divide-y divide-orange-100/60">
                                       {ingredients.map((ing, idx) => (
                                         <div key={idx} className="flex items-center justify-between px-3 py-1.5">
-                                          <span className="text-xs text-gray-700">{ing.name}</span>
-                                          <span className="text-xs font-semibold text-gray-900 bg-white px-2 py-0.5 rounded-lg border border-orange-100">
+                                          <span className="text-xs text-foreground/80">{ing.name}</span>
+                                          <span className="text-xs font-semibold text-foreground bg-background px-2 py-0.5 rounded-lg border border-orange-100">
                                             {ing.amount} {ing.unit}
                                           </span>
                                         </div>
@@ -794,7 +794,7 @@ function MenuDetailDialog({
             </div>
 
             {/* Footer CTA */}
-            <div className="px-4 pb-4 pt-2 border-t border-gray-100 shrink-0 bg-white">
+            <div className="px-4 pb-4 pt-2 border-t border-border/50 shrink-0 bg-background">
               <Button
                 className="w-full bg-[#FF6B35] hover:bg-[#e55a25] text-white h-11 rounded-xl font-semibold"
                 onClick={() => { onClose(); onSave({ id: menu.id, name: menu.name }); }}
@@ -874,7 +874,7 @@ export default function MenuLibrary() {
   return (
     <div className="min-h-screen bg-[#FFF8F5]">
       {/* Header */}
-      <div className="bg-white border-b sticky top-0 z-10">
+      <div className="bg-background border-b sticky top-0 z-10">
         <div className="max-w-4xl mx-auto px-4 py-4 flex items-center gap-3">
           <Link href="/app/menus">
             <button className="text-muted-foreground hover:text-foreground">← Volver</button>
@@ -939,8 +939,8 @@ export default function MenuLibrary() {
             >
               <div className="flex items-center justify-between mb-4">
                 <div>
-                  <h2 className="text-lg font-bold text-gray-900">✨ Recomendados para ti</h2>
-                  <p className="text-sm text-gray-500">Basados en tu objetivo y preferencias</p>
+                  <h2 className="text-lg font-bold text-foreground">✨ Recomendados para ti</h2>
+                  <p className="text-sm text-muted-foreground">Basados en tu objetivo y preferencias</p>
                 </div>
                 <button
                   className="text-sm text-[#FF6B35] font-medium hover:underline"
@@ -976,8 +976,8 @@ export default function MenuLibrary() {
                 animate={{ opacity: 1, y: 0, transition: { delay: 0.4, duration: 0.35 } }}
               >
                 <div className="flex-1">
-                  <p className="font-semibold text-gray-900 text-sm">¿Quieres un menú 100% personalizado?</p>
-                  <p className="text-xs text-gray-500 mt-0.5">Crea tu menú con IA basado en tus restricciones y objetivos nutricionales</p>
+                  <p className="font-semibold text-foreground text-sm">¿Quieres un menú 100% personalizado?</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">Crea tu menú con IA basado en tus restricciones y objetivos nutricionales</p>
                 </div>
                 <Button
                   className="bg-[#FF6B35] hover:bg-[#e55a25] text-white rounded-xl shrink-0"
@@ -1002,10 +1002,10 @@ export default function MenuLibrary() {
               className="text-center py-10 px-6"
             >
               <div className="text-4xl mb-3">🍽️</div>
-              <h3 className="text-lg font-bold text-gray-900 mb-2">
+              <h3 className="text-lg font-bold text-foreground mb-2">
                 Actualmente no hay menús adaptados para ti
               </h3>
-              <p className="text-gray-500 text-sm max-w-xs mx-auto mb-6">
+              <p className="text-muted-foreground text-sm max-w-xs mx-auto mb-6">
                 No encontramos menús que coincidan con tu perfil. ¿Quieres explorar todos o crear uno con IA?
               </p>
               <div className="flex flex-col sm:flex-row gap-3 justify-center">
@@ -1041,7 +1041,7 @@ export default function MenuLibrary() {
                   >
                     ← Volver a mis recomendados
                   </button>
-                  <h2 className="text-lg font-bold text-gray-900">Todos los menús</h2>
+                  <h2 className="text-lg font-bold text-foreground">Todos los menús</h2>
                 </div>
               )}
 
@@ -1050,7 +1050,7 @@ export default function MenuLibrary() {
                 placeholder="Buscar un menú..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="bg-white mb-4"
+                className="bg-background mb-4"
               />
 
               {/* Goal filter */}
@@ -1064,7 +1064,7 @@ export default function MenuLibrary() {
                       className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all border ${
                         selectedGoal === g.id
                           ? "bg-[#FF6B35] text-white border-[#FF6B35]"
-                          : "bg-white text-gray-700 border-gray-200 hover:border-[#FF6B35]"
+                          : "bg-background text-foreground/80 border-border hover:border-[#FF6B35]"
                       }`}
                     >
                       {g.emoji} {g.label}
@@ -1084,7 +1084,7 @@ export default function MenuLibrary() {
                       className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all border ${
                         selectedDifficulty === d.id
                           ? "bg-[#FF6B35] text-white border-[#FF6B35]"
-                          : "bg-white text-gray-700 border-gray-200 hover:border-[#FF6B35]"
+                          : "bg-background text-foreground/80 border-border hover:border-[#FF6B35]"
                       }`}
                     >
                       {d.label}
@@ -1166,20 +1166,20 @@ export default function MenuLibrary() {
           className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
           onClick={(e) => { if (e.target === e.currentTarget) setShoppingMenu(null); }}
         >
-          <div className="w-full max-w-sm rounded-3xl bg-white p-6 shadow-2xl">
+          <div className="w-full max-w-sm rounded-3xl bg-background p-6 shadow-2xl">
             <div className="flex items-center gap-3 mb-4">
               <div className="h-10 w-10 rounded-2xl bg-orange-100 flex items-center justify-center text-xl">🛒</div>
               <div>
-                <h3 className="text-base font-bold text-gray-900">Generar lista de la compra</h3>
-                <p className="text-xs text-gray-500 truncate max-w-[200px]">{shoppingMenu.name}</p>
+                <h3 className="text-base font-bold text-foreground">Generar lista de la compra</h3>
+                <p className="text-xs text-muted-foreground truncate max-w-[200px]">{shoppingMenu.name}</p>
               </div>
             </div>
 
             <div className="mb-5">
-              <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-gray-400">
+              <label className="mb-2 block text-xs font-semibold uppercase tracking-wider text-muted-foreground/70">
                 Número de personas
               </label>
-              <div className="flex items-center gap-4 rounded-2xl bg-gray-50 p-3">
+              <div className="flex items-center gap-4 rounded-2xl bg-muted/30 p-3">
                 <button
                   onClick={() => setShoppingPersons(Math.max(1, shoppingPersons - 1))}
                   className="flex h-9 w-9 items-center justify-center rounded-full bg-[#F97316] shadow-sm text-lg font-bold text-white"
@@ -1187,8 +1187,8 @@ export default function MenuLibrary() {
                   −
                 </button>
                 <div className="flex-1 text-center">
-                  <span className="text-2xl font-bold text-gray-900">{shoppingPersons}</span>
-                  <p className="text-xs text-gray-400">{shoppingPersons === 1 ? "persona" : "personas"}</p>
+                  <span className="text-2xl font-bold text-foreground">{shoppingPersons}</span>
+                  <p className="text-xs text-muted-foreground/70">{shoppingPersons === 1 ? "persona" : "personas"}</p>
                 </div>
                 <button
                   onClick={() => setShoppingPersons(Math.min(12, shoppingPersons + 1))}
@@ -1202,7 +1202,7 @@ export default function MenuLibrary() {
             <div className="flex gap-3">
               <button
                 onClick={() => setShoppingMenu(null)}
-                className="flex-1 rounded-2xl border border-gray-200 py-3 text-sm font-semibold text-gray-600"
+                className="flex-1 rounded-2xl border border-border py-3 text-sm font-semibold text-muted-foreground"
               >
                 Cancelar
               </button>

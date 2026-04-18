@@ -45,7 +45,7 @@ export default function BuddyShop() {
                   .app
                 </span>
               </div>
-              <p className="text-sm text-gray-400 mt-0.5">Marketplace de cocina y nutrición</p>
+              <p className="text-sm text-muted-foreground/70 mt-0.5">Marketplace de cocina y nutrición</p>
             </div>
           </div>
 
@@ -67,18 +67,18 @@ export default function BuddyShop() {
             </svg>
           </button>
 
-          <p className="text-xs text-gray-500 text-center mt-3">buddyshop.app · Abre en nueva pestaña</p>
+          <p className="text-xs text-muted-foreground text-center mt-3">buddyshop.app · Abre en nueva pestaña</p>
         </div>
       </div>
 
       {/* Features */}
-      <div className="bg-white rounded-3xl p-5 mb-5 shadow-sm border border-gray-100">
-        <h2 className="text-base font-900 text-gray-900 mb-4">¿Por qué BuddyShop?</h2>
+      <div className="bg-background rounded-3xl p-5 mb-5 shadow-sm border border-border/50">
+        <h2 className="text-base font-900 text-foreground mb-4">¿Por qué BuddyShop?</h2>
         <div className="flex flex-col gap-3">
           {FEATURES.map((f, i) => (
             <div key={i} className="flex items-center gap-3">
               <span className="text-xl">{f.emoji}</span>
-              <p className="text-sm font-600 text-gray-700">{f.text}</p>
+              <p className="text-sm font-600 text-foreground/80">{f.text}</p>
             </div>
           ))}
         </div>
@@ -86,17 +86,17 @@ export default function BuddyShop() {
 
       {/* Categories */}
       <div className="mb-5">
-        <h2 className="text-base font-900 text-gray-900 mb-3">Categorías destacadas</h2>
+        <h2 className="text-base font-900 text-foreground mb-3">Categorías destacadas</h2>
         <div className="grid grid-cols-2 gap-3">
           {CATEGORIES.map((cat, i) => (
             <button
               key={i}
               onClick={handleVisit}
-              className="bg-white rounded-2xl p-4 text-left shadow-sm border border-gray-100 transition-all active:scale-95"
+              className="bg-background rounded-2xl p-4 text-left shadow-sm border border-border/50 transition-all active:scale-95"
             >
               <span className="text-2xl block mb-2">{cat.emoji}</span>
-              <p className="text-sm font-800 text-gray-900 mb-1">{cat.name}</p>
-              <p className="text-xs text-gray-400 leading-tight">{cat.desc}</p>
+              <p className="text-sm font-800 text-foreground mb-1">{cat.name}</p>
+              <p className="text-xs text-muted-foreground/70 leading-tight">{cat.desc}</p>
             </button>
           ))}
         </div>
@@ -109,8 +109,8 @@ export default function BuddyShop() {
       >
         <span className="text-3xl shrink-0">🎁</span>
         <div className="flex-1">
-          <p className="text-sm font-900 text-gray-900 mb-1">Descuento exclusivo</p>
-          <p className="text-xs text-gray-600">Usa el código <span className="font-900 text-[#F97316]">BUDDY10</span> para un 10% de descuento en tu primera compra</p>
+          <p className="text-sm font-900 text-foreground mb-1">Descuento exclusivo</p>
+          <p className="text-xs text-muted-foreground">Usa el código <span className="font-900 text-[#F97316]">BUDDY10</span> para un 10% de descuento en tu primera compra</p>
         </div>
       </div>
     </div>

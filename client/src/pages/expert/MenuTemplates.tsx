@@ -22,7 +22,7 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 const CATEGORY_LABELS: Record<string, { label: string; color: string; icon: string }> = {
-  general: { label: "General", color: "bg-gray-100 text-gray-700", icon: "🍽️" },
+  general: { label: "General", color: "bg-muted/50 text-foreground/80", icon: "🍽️" },
   weight_loss: { label: "Pérdida de peso", color: "bg-green-100 text-green-700", icon: "📉" },
   muscle_gain: { label: "Ganancia muscular", color: "bg-blue-100 text-blue-700", icon: "💪" },
   maintenance: { label: "Mantenimiento", color: "bg-yellow-100 text-yellow-700", icon: "⚖️" },
@@ -208,8 +208,8 @@ export default function MenuTemplates() {
         {/* Header */}
         <div className="flex items-start justify-between mb-6">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">🗂️ Plantillas de Menús</h1>
-            <p className="text-sm text-gray-500 mt-1">Crea plantillas reutilizables para asignar a tus pacientes con un clic</p>
+            <h1 className="text-2xl font-bold text-foreground">🗂️ Plantillas de Menús</h1>
+            <p className="text-sm text-muted-foreground mt-1">Crea plantillas reutilizables para asignar a tus pacientes con un clic</p>
           </div>
           <Button onClick={() => handleOpenEditor()} className="bg-orange-500 hover:bg-orange-600 text-white">
             + Nueva plantilla
@@ -243,10 +243,10 @@ export default function MenuTemplates() {
             <div className="animate-spin w-8 h-8 border-4 border-orange-500 border-t-transparent rounded-full" />
           </div>
         ) : filteredTemplates.length === 0 ? (
-          <div className="text-center py-16 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+          <div className="text-center py-16 bg-muted/30 rounded-2xl border border-dashed border-border">
             <div className="text-5xl mb-3">🗂️</div>
-            <p className="text-gray-500 font-medium text-lg">Sin plantillas de menús</p>
-            <p className="text-sm text-gray-400 mt-1 max-w-sm mx-auto">
+            <p className="text-muted-foreground font-medium text-lg">Sin plantillas de menús</p>
+            <p className="text-sm text-muted-foreground/70 mt-1 max-w-sm mx-auto">
               Crea plantillas para reutilizar menús completos con tus pacientes. Ahorra tiempo y mantén consistencia.
             </p>
             <Button onClick={() => handleOpenEditor()} className="mt-4 bg-orange-500 hover:bg-orange-600 text-white">
@@ -264,23 +264,23 @@ export default function MenuTemplates() {
               );
 
               return (
-                <div key={template.id} className="bg-white rounded-2xl border border-gray-200 p-4 hover:shadow-md transition-shadow group">
+                <div key={template.id} className="bg-background rounded-2xl border border-border p-4 hover:shadow-md transition-shadow group">
                   <div className="flex items-start justify-between gap-2 mb-3">
                     <div className="flex-1">
-                      <h3 className="font-semibold text-gray-900 text-base">{template.name}</h3>
+                      <h3 className="font-semibold text-foreground text-base">{template.name}</h3>
                       {template.description && (
-                        <p className="text-xs text-gray-500 mt-0.5 line-clamp-2">{template.description}</p>
+                        <p className="text-xs text-muted-foreground mt-0.5 line-clamp-2">{template.description}</p>
                       )}
                     </div>
                     <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
                       <button
                         onClick={() => handleOpenEditor(template)}
-                        className="text-gray-400 hover:text-orange-600 transition-colors p-1 text-sm"
+                        className="text-muted-foreground/70 hover:text-orange-600 transition-colors p-1 text-sm"
                         title="Editar"
                       >✏️</button>
                       <button
                         onClick={() => { if (confirm("¿Eliminar esta plantilla?")) deleteTemplateMutation.mutate({ templateId: template.id }); }}
-                        className="text-gray-400 hover:text-red-500 transition-colors p-1 text-sm"
+                        className="text-muted-foreground/70 hover:text-red-500 transition-colors p-1 text-sm"
                         title="Eliminar"
                       >🗑️</button>
                     </div>
@@ -302,7 +302,7 @@ export default function MenuTemplates() {
                     )}
                   </div>
 
-                  <div className="flex items-center justify-between text-xs text-gray-400 border-t border-gray-100 pt-3">
+                  <div className="flex items-center justify-between text-xs text-muted-foreground/70 border-t border-border/50 pt-3">
                     <span>{totalMeals} comidas definidas · {template.usageCount} usos</span>
                     <span>{new Date(template.createdAt).toLocaleDateString("es-ES")}</span>
                   </div>
@@ -314,12 +314,12 @@ export default function MenuTemplates() {
                       const mealsCount = Object.values(dayData).filter(v => v.trim()).length;
                       return (
                         <div key={day} className="text-center">
-                          <div className="text-xs text-gray-400">{day.slice(0, 2)}</div>
+                          <div className="text-xs text-muted-foreground/70">{day.slice(0, 2)}</div>
                           <div className={`w-full h-1.5 rounded-full mt-0.5 ${
                             mealsCount >= 4 ? 'bg-green-400' :
                             mealsCount >= 2 ? 'bg-yellow-400' :
                             mealsCount >= 1 ? 'bg-orange-300' :
-                            'bg-gray-200'
+                            'bg-muted'
                           }`} />
                         </div>
                       );
@@ -397,7 +397,7 @@ export default function MenuTemplates() {
             {/* Editor semanal drag & drop */}
             <div>
               <Label className="text-base font-semibold">📅 Editor semanal (drag & drop)</Label>
-              <p className="text-xs text-gray-400 mt-0.5 mb-2">Arrastra recetas rápidas a las celdas o escribe directamente</p>
+              <p className="text-xs text-muted-foreground/70 mt-0.5 mb-2">Arrastra recetas rápidas a las celdas o escribe directamente</p>
               {/* Recetas rápidas para arrastrar */}
               <DndContext sensors={sensors} onDragStart={handleDragStart} onDragEnd={handleDragEnd}>
                 <div className="mb-3 p-3 bg-orange-50 rounded-xl border border-orange-100">
@@ -412,17 +412,17 @@ export default function MenuTemplates() {
                 <table className="w-full text-sm border-collapse">
                   <thead>
                     <tr>
-                      <th className="text-left py-2 pr-3 text-gray-500 font-medium w-24">Comida</th>
+                      <th className="text-left py-2 pr-3 text-muted-foreground font-medium w-24">Comida</th>
                       {DAYS.map(day => (
-                        <th key={day} className="text-center py-2 px-1 text-gray-500 font-medium text-xs">{day.slice(0, 3)}</th>
+                        <th key={day} className="text-center py-2 px-1 text-muted-foreground font-medium text-xs">{day.slice(0, 3)}</th>
                       ))}
                     </tr>
                   </thead>
                   <tbody>
                     {MEALS.map(meal => (
-                      <tr key={meal.key} className="border-t border-gray-100">
+                      <tr key={meal.key} className="border-t border-border/50">
                         <td className="py-2 pr-3">
-                          <span className="text-xs font-medium text-gray-600">{meal.icon} {meal.label}</span>
+                          <span className="text-xs font-medium text-muted-foreground">{meal.icon} {meal.label}</span>
                         </td>
                         {DAYS.map(day => (
                           <td key={day} className="py-1 px-1">

@@ -77,7 +77,7 @@ export default function ActivarCodigo() {
       <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-orange-50 to-white">
         <div className="text-center">
           <div className="w-12 h-12 border-4 border-orange-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-gray-500 font-medium">Cargando...</p>
+          <p className="text-muted-foreground font-medium">Cargando...</p>
         </div>
       </div>
     );
@@ -125,7 +125,7 @@ export default function ActivarCodigo() {
                 </p>
               </div>
             )}
-            <p className="text-gray-600 mb-6">
+            <p className="text-muted-foreground mb-6">
               Tu cuenta ya tiene acceso <strong>Pro Max</strong> activado. Disfruta de todas las funcionalidades sin coste adicional.
             </p>
             <div className="grid grid-cols-2 gap-3 mb-6">
@@ -171,7 +171,7 @@ export default function ActivarCodigo() {
           <CardContent className="p-6 space-y-5">
             {/* Campo de código */}
             <div>
-              <label className="block text-sm font-bold text-gray-700 mb-2">
+              <label className="block text-sm font-bold text-foreground/80 mb-2">
                 Código de acceso
               </label>
               <div className="relative">
@@ -184,7 +184,7 @@ export default function ActivarCodigo() {
                   className={`font-mono font-black text-lg tracking-widest pr-12 h-14 text-center uppercase border-2 ${
                     codeValid ? "border-green-500 bg-green-50" :
                     codeInvalid || codeNoCapacity ? "border-red-400 bg-red-50" :
-                    "border-gray-300"
+                    "border-border"
                   }`}
                 />
                 <span className="absolute right-4 top-1/2 -translate-y-1/2 text-xl">
@@ -279,8 +279,8 @@ export default function ActivarCodigo() {
             )}
 
             {/* Separador */}
-            <div className="border-t border-gray-100 pt-4">
-              <p className="text-xs text-gray-400 text-center">
+            <div className="border-t border-border/50 pt-4">
+              <p className="text-xs text-muted-foreground/70 text-center">
                 ¿Eres una empresa y quieres ofrecer BuddyMarket a tus empleados?{" "}
                 <a href="/empresas" className="text-orange-500 font-bold hover:underline">
                   Ver planes empresariales →
@@ -297,7 +297,7 @@ export default function ActivarCodigo() {
             { icon: "📅", title: "Menús", desc: "Personalizados" },
             { icon: "🛒", title: "Compra", desc: "Inteligente" },
           ].map(item => (
-            <div key={item.title} className="bg-white/10 backdrop-blur rounded-xl p-3 text-center border border-white/20">
+            <div key={item.title} className="bg-background/10 backdrop-blur rounded-xl p-3 text-center border border-white/20">
               <div className="text-2xl mb-1">{item.icon}</div>
               <div className="text-white font-bold text-xs">{item.title}</div>
               <div className="text-white/60 text-xs">{item.desc}</div>

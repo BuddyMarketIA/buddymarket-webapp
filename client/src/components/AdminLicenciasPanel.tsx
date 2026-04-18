@@ -15,7 +15,7 @@ const PLAN_COLORS: Record<string, string> = {
   starter:    "bg-blue-100 text-blue-700",
   business:   "bg-purple-100 text-purple-700",
   enterprise: "bg-amber-100 text-amber-700",
-  corporate:  "bg-gray-100 text-gray-700",
+  corporate:  "bg-muted/50 text-foreground/80",
 };
 
 const STATUS_COLORS: Record<string, string> = {
@@ -23,7 +23,7 @@ const STATUS_COLORS: Record<string, string> = {
   trial:     "bg-blue-100 text-blue-700",
   pending:   "bg-yellow-100 text-yellow-700",
   suspended: "bg-red-100 text-red-700",
-  cancelled: "bg-gray-100 text-gray-500",
+  cancelled: "bg-muted/50 text-muted-foreground",
 };
 
 function KpiCard({ label, value, sub, color }: { label: string; value: string | number; sub?: string; color: string }) {
@@ -40,7 +40,7 @@ function KpiCard({ label, value, sub, color }: { label: string; value: string | 
 function LicenciasResumen() {
   const { data, isLoading, refetch } = trpc.company.adminGetLicensesOverview.useQuery();
 
-  if (isLoading) return <div className="py-12 text-center text-sm text-gray-400">Cargando resumen...</div>;
+  if (isLoading) return <div className="py-12 text-center text-sm text-muted-foreground/70">Cargando resumen...</div>;
   if (!data) return <div className="py-12 text-center text-sm text-red-400">Error al cargar datos</div>;
 
   const { summary, byPlan, monthlyEvolution, topCompanies } = data;
@@ -57,11 +57,11 @@ function LicenciasResumen() {
 
       {/* Distribución por plan */}
       <div className="vively-card">
-        <h4 className="text-sm font-bold text-gray-700 mb-4">Distribución por plan</h4>
+        <h4 className="text-sm font-bold text-foreground/80 mb-4">Distribución por plan</h4>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead>
-              <tr className="text-gray-400 border-b border-gray-100">
+              <tr className="text-muted-foreground/70 border-b border-border/50">
                 <th className="text-left py-2 font-semibold">Plan</th>
                 <th className="text-center py-2 font-semibold">Empresas</th>
                 <th className="text-center py-2 font-semibold">Licencias contratadas</th>
@@ -74,14 +74,14 @@ function LicenciasResumen() {
               {byPlan.map(p => (
                 <tr key={p.plan} className="border-b border-gray-50">
                   <td className="py-2">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${PLAN_COLORS[p.plan] || "bg-gray-100 text-gray-600"}`}>{p.plan}</span>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${PLAN_COLORS[p.plan] || "bg-muted/50 text-muted-foreground"}`}>{p.plan}</span>
                   </td>
-                  <td className="py-2 text-center text-gray-700">{p.activeCompanies} / {p.totalCompanies}</td>
-                  <td className="py-2 text-center text-gray-700">{p.licensesContracted}</td>
+                  <td className="py-2 text-center text-foreground/80">{p.activeCompanies} / {p.totalCompanies}</td>
+                  <td className="py-2 text-center text-foreground/80">{p.licensesContracted}</td>
                   <td className="py-2 text-center">
-                    <span className={p.licensesActive > 0 ? "text-green-700 font-semibold" : "text-gray-400"}>{p.licensesActive}</span>
+                    <span className={p.licensesActive > 0 ? "text-green-700 font-semibold" : "text-muted-foreground/70"}>{p.licensesActive}</span>
                   </td>
-                  <td className="py-2 text-center text-gray-600">{p.pricePerLicense > 0 ? `${p.pricePerLicense} €` : "A medida"}</td>
+                  <td className="py-2 text-center text-muted-foreground">{p.pricePerLicense > 0 ? `${p.pricePerLicense} €` : "A medida"}</td>
                   <td className="py-2 text-right font-bold text-green-700">{p.mrr.toFixed(0)} €</td>
                 </tr>
               ))}
@@ -93,7 +93,7 @@ function LicenciasResumen() {
       {/* Gráfico de evolución mensual */}
       {monthlyEvolution.length > 0 ? (
         <div className="vively-card">
-          <h4 className="text-sm font-bold text-gray-700 mb-4">Evolución mensual de licencias y facturación</h4>
+          <h4 className="text-sm font-bold text-foreground/80 mb-4">Evolución mensual de licencias y facturación</h4>
           <ResponsiveContainer width="100%" height={220}>
             <LineChart data={monthlyEvolution} margin={{ top: 5, right: 10, left: 0, bottom: 5 }}>
               <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -114,7 +114,7 @@ function LicenciasResumen() {
         </div>
       ) : (
         <div className="vively-card text-center py-8">
-          <p className="text-sm text-gray-400">Sin datos históricos de facturación aún</p>
+          <p className="text-sm text-muted-foreground/70">Sin datos históricos de facturación aún</p>
           <p className="text-xs text-gray-300 mt-1">Los snapshots mensuales aparecerán aquí tras el primer ciclo de facturación</p>
         </div>
       )}
@@ -122,7 +122,7 @@ function LicenciasResumen() {
       {/* Gráfico de barras por empresa */}
       {topCompanies.length > 0 && (
         <div className="vively-card">
-          <h4 className="text-sm font-bold text-gray-700 mb-4">Licencias activas por empresa</h4>
+          <h4 className="text-sm font-bold text-foreground/80 mb-4">Licencias activas por empresa</h4>
           <ResponsiveContainer width="100%" height={Math.max(180, topCompanies.length * 36)}>
             <BarChart
               data={topCompanies}
@@ -181,7 +181,7 @@ function LicenciasListado({ onSelectCompany }: { onSelectCompany: (id: number, n
       {/* Filtros */}
       <div className="vively-card flex flex-wrap gap-3 items-center">
         <div className="relative flex-1 min-w-[200px]">
-          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
           <input
             value={search}
             onChange={e => { setSearch(e.target.value); setOffset(0); }}
@@ -201,26 +201,26 @@ function LicenciasListado({ onSelectCompany }: { onSelectCompany: (id: number, n
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors ${
                 isActiveFilter === opt.value
                   ? "bg-gray-900 text-white"
-                  : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                  : "bg-muted/50 text-muted-foreground hover:bg-muted"
               }`}
             >
               {opt.label}
             </button>
           ))}
         </div>
-        <span className="text-xs text-gray-400 ml-auto">{total} licencias</span>
+        <span className="text-xs text-muted-foreground/70 ml-auto">{total} licencias</span>
       </div>
 
       {/* Tabla */}
       <div className="vively-card overflow-x-auto">
         {isLoading ? (
-          <div className="py-8 text-center text-sm text-gray-400">Cargando licencias...</div>
+          <div className="py-8 text-center text-sm text-muted-foreground/70">Cargando licencias...</div>
         ) : licenses.length === 0 ? (
-          <div className="py-8 text-center text-sm text-gray-400">Sin resultados</div>
+          <div className="py-8 text-center text-sm text-muted-foreground/70">Sin resultados</div>
         ) : (
           <table className="w-full text-xs min-w-[640px]">
             <thead>
-              <tr className="text-gray-400 border-b border-gray-100">
+              <tr className="text-muted-foreground/70 border-b border-border/50">
                 <th className="text-left py-2 pr-3 font-semibold min-w-[140px]">Empleado</th>
                 <th className="text-left py-2 pr-3 font-semibold min-w-[130px]">Empresa</th>
                 <th className="text-center py-2 font-semibold w-24">Plan</th>
@@ -232,10 +232,10 @@ function LicenciasListado({ onSelectCompany }: { onSelectCompany: (id: number, n
             </thead>
             <tbody>
               {licenses.map(lic => (
-                <tr key={lic.memberId} className="border-b border-gray-50 hover:bg-gray-50">
+                <tr key={lic.memberId} className="border-b border-gray-50 hover:bg-muted/30">
                   <td className="py-2 pr-3">
-                    <p className="font-semibold text-gray-800 truncate max-w-[140px]">{lic.userName || "—"}</p>
-                    <p className="text-gray-400 truncate max-w-[140px]">{lic.userEmail}</p>
+                    <p className="font-semibold text-foreground truncate max-w-[140px]">{lic.userName || "—"}</p>
+                    <p className="text-muted-foreground/70 truncate max-w-[140px]">{lic.userEmail}</p>
                   </td>
                   <td className="py-2">
                     <button
@@ -246,19 +246,19 @@ function LicenciasListado({ onSelectCompany }: { onSelectCompany: (id: number, n
                     </button>
                   </td>
                   <td className="py-2 text-center">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${PLAN_COLORS[lic.companyPlan || ""] || "bg-gray-100 text-gray-600"}`}>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${PLAN_COLORS[lic.companyPlan || ""] || "bg-muted/50 text-muted-foreground"}`}>
                       {lic.companyPlan || "—"}
                     </span>
                   </td>
                   <td className="py-2 text-center">
-                    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${lic.isActive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
+                    <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${lic.isActive ? "bg-green-100 text-green-700" : "bg-muted/50 text-muted-foreground"}`}>
                       {lic.isActive ? "activa" : "inactiva"}
                     </span>
                   </td>
-                  <td className="py-2 text-center text-gray-500">
+                  <td className="py-2 text-center text-muted-foreground">
                     {lic.joinedAt ? new Date(lic.joinedAt).toLocaleDateString("es-ES") : "—"}
                   </td>
-                  <td className="py-2 text-center text-gray-500">
+                  <td className="py-2 text-center text-muted-foreground">
                     {lic.lastActiveAt ? new Date(lic.lastActiveAt).toLocaleDateString("es-ES") : "Nunca"}
                   </td>
                   <td className="py-2 text-center">
@@ -301,17 +301,17 @@ function LicenciasListado({ onSelectCompany }: { onSelectCompany: (id: number, n
           <button
             onClick={() => setOffset(Math.max(0, offset - LIMIT))}
             disabled={offset === 0}
-            className="px-3 py-1.5 rounded-xl bg-gray-100 text-xs font-semibold text-gray-600 disabled:opacity-40"
+            className="px-3 py-1.5 rounded-xl bg-muted/50 text-xs font-semibold text-muted-foreground disabled:opacity-40"
           >
             ← Anterior
           </button>
-          <span className="text-xs text-gray-500">
+          <span className="text-xs text-muted-foreground">
             {offset + 1}–{Math.min(offset + LIMIT, total)} de {total}
           </span>
           <button
             onClick={() => setOffset(offset + LIMIT)}
             disabled={offset + LIMIT >= total}
-            className="px-3 py-1.5 rounded-xl bg-gray-100 text-xs font-semibold text-gray-600 disabled:opacity-40"
+            className="px-3 py-1.5 rounded-xl bg-muted/50 text-xs font-semibold text-muted-foreground disabled:opacity-40"
           >
             Siguiente →
           </button>
@@ -366,7 +366,7 @@ function LicenciasEmpresaDetalle({ companyId, companyName, onBack }: { companyId
   const activeCount = licenses.filter(l => l.isActive).length;
   const inactiveCount = licenses.filter(l => !l.isActive).length;
 
-  if (isLoading) return <div className="py-12 text-center text-sm text-gray-400">Cargando empresa...</div>;
+  if (isLoading) return <div className="py-12 text-center text-sm text-muted-foreground/70">Cargando empresa...</div>;
   if (!detail) return <div className="py-12 text-center text-sm text-red-400">Empresa no encontrada</div>;
 
   const company = detail.company;
@@ -378,17 +378,17 @@ function LicenciasEmpresaDetalle({ companyId, companyName, onBack }: { companyId
     <div className="space-y-4">
       {/* Cabecera */}
       <div className="flex items-center gap-3">
-        <button onClick={onBack} className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800">
+        <button onClick={onBack} className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground">
           ← Volver
         </button>
-        <h3 className="text-sm font-bold text-gray-800 flex-1">{companyName}</h3>
-        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${PLAN_COLORS[company.plan] || "bg-gray-100 text-gray-600"}`}>{company.plan}</span>
-        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${STATUS_COLORS[company.status] || "bg-gray-100 text-gray-600"}`}>{company.status}</span>
+        <h3 className="text-sm font-bold text-foreground flex-1">{companyName}</h3>
+        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${PLAN_COLORS[company.plan] || "bg-muted/50 text-muted-foreground"}`}>{company.plan}</span>
+        <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${STATUS_COLORS[company.status] || "bg-muted/50 text-muted-foreground"}`}>{company.status}</span>
       </div>
 
       {/* KPIs de la empresa */}
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
-        <KpiCard label="Licencias contratadas" value={company.licensesTotal || 0} color="bg-gray-50 text-gray-800" />
+        <KpiCard label="Licencias contratadas" value={company.licensesTotal || 0} color="bg-muted/30 text-foreground" />
         <KpiCard label="Licencias activas" value={company.licensesActive || 0} sub={`${usageRate}% de uso`} color="bg-green-50 text-green-800" />
         <KpiCard label="MRR empresa" value={`${mrr.toFixed(0)} €`} color="bg-amber-50 text-amber-800" />
         <KpiCard label="Total facturado" value={`${detail.stats.totalBilled.toFixed(0)} €`} color="bg-blue-50 text-blue-800" />
@@ -397,10 +397,10 @@ function LicenciasEmpresaDetalle({ companyId, companyName, onBack }: { companyId
       {/* Barra de uso */}
       <div className="vively-card">
         <div className="flex items-center justify-between mb-2">
-          <span className="text-xs font-semibold text-gray-700">Uso de licencias</span>
-          <span className="text-xs text-gray-500">{company.licensesActive || 0} / {company.licensesTotal || 0}</span>
+          <span className="text-xs font-semibold text-foreground/80">Uso de licencias</span>
+          <span className="text-xs text-muted-foreground">{company.licensesActive || 0} / {company.licensesTotal || 0}</span>
         </div>
-        <div className="w-full bg-gray-100 rounded-full h-3">
+        <div className="w-full bg-muted/50 rounded-full h-3">
           <div
             className={`h-3 rounded-full transition-all ${usageRate >= 90 ? "bg-red-500" : usageRate >= 70 ? "bg-amber-500" : "bg-[#F97316]"}`}
             style={{ width: `${Math.min(100, usageRate)}%` }}
@@ -430,41 +430,41 @@ function LicenciasEmpresaDetalle({ companyId, companyName, onBack }: { companyId
           <RefreshCw className={`h-3.5 w-3.5 ${triggerSync.isPending ? "animate-spin" : ""}`} />
           Sincronizar facturación
         </button>
-        <div className="ml-auto text-xs text-gray-400 flex items-center gap-1">
-          Código: <span className="font-mono font-bold text-gray-700">{company.accessCode || "—"}</span>
+        <div className="ml-auto text-xs text-muted-foreground/70 flex items-center gap-1">
+          Código: <span className="font-mono font-bold text-foreground/80">{company.accessCode || "—"}</span>
         </div>
       </div>
 
       {/* Listado de empleados con licencias */}
       <div className="vively-card">
         <div className="flex items-center justify-between mb-3">
-          <h4 className="text-sm font-bold text-gray-700">
+          <h4 className="text-sm font-bold text-foreground/80">
             Empleados con licencia
-            <span className="ml-2 text-xs font-normal text-gray-400">
+            <span className="ml-2 text-xs font-normal text-muted-foreground/70">
               {activeCount} activas · {inactiveCount} inactivas
             </span>
           </h4>
         </div>
         <div className="max-h-80 overflow-y-auto space-y-1.5">
           {licenses.length === 0 ? (
-            <p className="text-xs text-gray-400 text-center py-6">Sin empleados registrados aún</p>
+            <p className="text-xs text-muted-foreground/70 text-center py-6">Sin empleados registrados aún</p>
           ) : licenses.map(lic => (
-            <div key={lic.memberId} className={`flex items-center justify-between rounded-xl px-3 py-2 ${lic.isActive ? "bg-gray-50" : "bg-red-50/40"}`}>
+            <div key={lic.memberId} className={`flex items-center justify-between rounded-xl px-3 py-2 ${lic.isActive ? "bg-muted/30" : "bg-red-50/40"}`}>
               <div className="flex items-center gap-2 min-w-0">
-                <div className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${lic.isActive ? "bg-[#F97316]/10 text-[#F97316]" : "bg-gray-200 text-gray-400"}`}>
+                <div className={`h-7 w-7 rounded-full flex items-center justify-center text-xs font-bold shrink-0 ${lic.isActive ? "bg-[#F97316]/10 text-[#F97316]" : "bg-muted text-muted-foreground/70"}`}>
                   {lic.userName?.[0]?.toUpperCase() || "?"}
                 </div>
                 <div className="min-w-0">
-                  <p className="text-xs font-semibold text-gray-800 truncate">{lic.userName || "Sin nombre"}</p>
-                  <p className="text-xs text-gray-400 truncate">{lic.userEmail}</p>
+                  <p className="text-xs font-semibold text-foreground truncate">{lic.userName || "Sin nombre"}</p>
+                  <p className="text-xs text-muted-foreground/70 truncate">{lic.userEmail}</p>
                 </div>
               </div>
               <div className="flex items-center gap-2 shrink-0 ml-2">
                 <div className="text-right">
-                  <span className={`text-xs px-1.5 py-0.5 rounded-full ${lic.isActive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
+                  <span className={`text-xs px-1.5 py-0.5 rounded-full ${lic.isActive ? "bg-green-100 text-green-700" : "bg-muted/50 text-muted-foreground"}`}>
                     {lic.isActive ? "activa" : "inactiva"}
                   </span>
-                  <p className="text-xs text-gray-400 mt-0.5">
+                  <p className="text-xs text-muted-foreground/70 mt-0.5">
                     {lic.lastActiveAt ? new Date(lic.lastActiveAt).toLocaleDateString("es-ES") : "Nunca"}
                   </p>
                 </div>
@@ -500,10 +500,10 @@ function LicenciasEmpresaDetalle({ companyId, companyName, onBack }: { companyId
       {/* Historial de facturación */}
       {detail.snapshots.length > 0 && (
         <div className="vively-card overflow-x-auto">
-          <h4 className="text-sm font-bold text-gray-700 mb-3">Historial de facturación</h4>
+          <h4 className="text-sm font-bold text-foreground/80 mb-3">Historial de facturación</h4>
           <table className="w-full text-xs">
             <thead>
-              <tr className="text-gray-400 border-b border-gray-100">
+              <tr className="text-muted-foreground/70 border-b border-border/50">
                 <th className="text-left py-2 font-semibold">Período</th>
                 <th className="text-center py-2 font-semibold">Licencias</th>
                 <th className="text-center py-2 font-semibold">€/licencia</th>
@@ -514,12 +514,12 @@ function LicenciasEmpresaDetalle({ companyId, companyName, onBack }: { companyId
             <tbody>
               {detail.snapshots.map((s: any) => (
                 <tr key={s.id} className="border-b border-gray-50">
-                  <td className="py-2 text-gray-700">
+                  <td className="py-2 text-foreground/80">
                     {new Date(s.billingPeriodStart).toLocaleDateString("es-ES", { month: "long", year: "numeric" })}
                   </td>
-                  <td className="py-2 text-center text-gray-700">{s.activeLicenses}</td>
-                  <td className="py-2 text-center text-gray-600">{s.pricePerLicense.toFixed(2)} €</td>
-                  <td className="py-2 text-right font-bold text-gray-900">{s.totalAmount.toFixed(2)} €</td>
+                  <td className="py-2 text-center text-foreground/80">{s.activeLicenses}</td>
+                  <td className="py-2 text-center text-muted-foreground">{s.pricePerLicense.toFixed(2)} €</td>
+                  <td className="py-2 text-right font-bold text-foreground">{s.totalAmount.toFixed(2)} €</td>
                   <td className="py-2 text-center">
                     <span className={`px-1.5 py-0.5 rounded-full text-xs font-semibold ${
                       s.status === "paid" ? "bg-green-100 text-green-700" :
@@ -538,20 +538,20 @@ function LicenciasEmpresaDetalle({ companyId, companyName, onBack }: { companyId
       {/* Modal ajuste de licencias */}
       {showAdjustModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 p-4">
-          <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-4">
+          <div className="bg-background rounded-2xl shadow-xl w-full max-w-sm p-6 space-y-4">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-gray-800">Ajustar licencias contratadas</h3>
-              <button onClick={() => setShowAdjustModal(false)} className="text-gray-400 hover:text-gray-600">
+              <h3 className="text-sm font-bold text-foreground">Ajustar licencias contratadas</h3>
+              <button onClick={() => setShowAdjustModal(false)} className="text-muted-foreground/70 hover:text-muted-foreground">
                 <X className="h-4 w-4" />
               </button>
             </div>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-muted-foreground">
               Empresa: <strong>{companyName}</strong><br />
               Licencias actuales: <strong>{company.licensesTotal}</strong>
             </p>
             <div className="space-y-3">
               <div>
-                <label className="text-xs font-semibold text-gray-700 block mb-1">Nuevo número de licencias</label>
+                <label className="text-xs font-semibold text-foreground/80 block mb-1">Nuevo número de licencias</label>
                 <input
                   type="number"
                   min="1"
@@ -563,7 +563,7 @@ function LicenciasEmpresaDetalle({ companyId, companyName, onBack }: { companyId
                 />
               </div>
               <div>
-                <label className="text-xs font-semibold text-gray-700 block mb-1">Motivo del ajuste (opcional)</label>
+                <label className="text-xs font-semibold text-foreground/80 block mb-1">Motivo del ajuste (opcional)</label>
                 <textarea
                   value={adjustReason}
                   onChange={e => setAdjustReason(e.target.value)}
@@ -576,7 +576,7 @@ function LicenciasEmpresaDetalle({ companyId, companyName, onBack }: { companyId
             <div className="flex gap-2 pt-2">
               <button
                 onClick={() => setShowAdjustModal(false)}
-                className="flex-1 py-2 rounded-xl bg-gray-100 text-xs font-semibold text-gray-600 hover:bg-gray-200"
+                className="flex-1 py-2 rounded-xl bg-muted/50 text-xs font-semibold text-muted-foreground hover:bg-muted"
               >
                 Cancelar
               </button>
@@ -629,7 +629,7 @@ export default function AdminLicenciasPanel() {
               key={t.key}
               onClick={() => setSubTab(t.key)}
               className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-colors ${
-                subTab === t.key ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                subTab === t.key ? "bg-gray-900 text-white" : "bg-muted/50 text-muted-foreground hover:bg-muted"
               }`}
             >
               {t.label}

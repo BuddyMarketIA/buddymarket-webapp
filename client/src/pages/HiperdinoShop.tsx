@@ -117,17 +117,17 @@ export default function HiperdinoShop() {
               placeholder="Buscar productos..."
               value={searchQuery}
               onChange={e => setSearchQuery(e.target.value)}
-              className="w-full px-4 py-2 rounded-full text-sm text-gray-800 bg-white/95 focus:outline-none focus:ring-2 focus:ring-white/50"
+              className="w-full px-4 py-2 rounded-full text-sm text-foreground bg-background/95 focus:outline-none focus:ring-2 focus:ring-white/50"
             />
           </div>
           {/* Cart button */}
           <button
             onClick={() => setShowCart(true)}
-            className="relative flex items-center gap-2 bg-white/20 hover:bg-white/30 transition-colors px-4 py-2 rounded-full text-sm font-medium"
+            className="relative flex items-center gap-2 bg-background/20 hover:bg-background/30 transition-colors px-4 py-2 rounded-full text-sm font-medium"
           >
             🛒 Carrito
             {totalItems > 0 && (
-              <span className="absolute -top-1 -right-1 bg-white text-red-600 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
+              <span className="absolute -top-1 -right-1 bg-background text-red-600 text-xs font-bold rounded-full w-5 h-5 flex items-center justify-center">
                 {totalItems}
               </span>
             )}
@@ -139,9 +139,9 @@ export default function HiperdinoShop() {
         {/* Category selector */}
         {!searchQuery && (
           <div className="mb-6">
-            <h2 className="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Categorías</h2>
+            <h2 className="text-sm font-semibold text-muted-foreground uppercase tracking-wide mb-3">Categorías</h2>
             {loadingCats ? (
-              <div className="text-gray-400 text-sm">Cargando categorías...</div>
+              <div className="text-muted-foreground/70 text-sm">Cargando categorías...</div>
             ) : (
               <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-7 gap-2">
                 {categories.map((cat) => {
@@ -160,7 +160,7 @@ export default function HiperdinoShop() {
                     >
                       <span className="text-2xl">{icon}</span>
                       <span className="text-xs font-medium leading-tight line-clamp-2">{cat.category}</span>
-                      <span className="text-xs text-gray-400">{cat.count}</span>
+                      <span className="text-xs text-muted-foreground/70">{cat.count}</span>
                     </button>
                   );
                 })}
@@ -173,26 +173,26 @@ export default function HiperdinoShop() {
         {(selectedCategory || searchQuery.length >= 2) && (
           <div>
             <div className="flex items-center justify-between mb-4">
-              <h2 className="font-semibold text-gray-700">
+              <h2 className="font-semibold text-foreground/80">
                 {searchQuery.length >= 2
                   ? `Resultados para "${searchQuery}"`
                   : selectedCategory}
               </h2>
-              <span className="text-sm text-gray-400">{displayProducts.length} productos</span>
+              <span className="text-sm text-muted-foreground/70">{displayProducts.length} productos</span>
             </div>
 
             {isLoading ? (
               <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-4">
                 {[...Array(8)].map((_, i) => (
-                  <div key={i} className="bg-white rounded-2xl p-4 animate-pulse">
-                    <div className="w-full h-32 bg-gray-200 rounded-xl mb-3" />
-                    <div className="h-4 bg-gray-200 rounded mb-2" />
-                    <div className="h-4 bg-gray-200 rounded w-2/3" />
+                  <div key={i} className="bg-background rounded-2xl p-4 animate-pulse">
+                    <div className="w-full h-32 bg-muted rounded-xl mb-3" />
+                    <div className="h-4 bg-muted rounded mb-2" />
+                    <div className="h-4 bg-muted rounded w-2/3" />
                   </div>
                 ))}
               </div>
             ) : displayProducts.length === 0 ? (
-              <div className="text-center py-12 text-gray-400">
+              <div className="text-center py-12 text-muted-foreground/70">
                 <span className="text-4xl block mb-2">🔍</span>
                 No se encontraron productos
               </div>
@@ -201,9 +201,9 @@ export default function HiperdinoShop() {
                 {displayProducts.map((product) => (
                   <div
                     key={product.id}
-                    className="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden hover:shadow-md transition-shadow flex flex-col"
+                    className="bg-background rounded-2xl shadow-sm border border-border/50 overflow-hidden hover:shadow-md transition-shadow flex flex-col"
                   >
-                    <div className="w-full h-36 bg-gray-50 flex items-center justify-center">
+                    <div className="w-full h-36 bg-muted/30 flex items-center justify-center">
                       <ProductImage
                         src={product.image}
                         name={product.name}
@@ -211,9 +211,9 @@ export default function HiperdinoShop() {
                       />
                     </div>
                     <div className="p-3 flex flex-col flex-1">
-                      <p className="text-xs text-gray-400 mb-1">{product.brand}</p>
-                      <p className="text-sm font-medium text-gray-800 line-clamp-2 flex-1 mb-2">{product.name}</p>
-                      <p className="text-xs text-gray-400 mb-2">{product.packaging}</p>
+                      <p className="text-xs text-muted-foreground/70 mb-1">{product.brand}</p>
+                      <p className="text-sm font-medium text-foreground line-clamp-2 flex-1 mb-2">{product.name}</p>
+                      <p className="text-xs text-muted-foreground/70 mb-2">{product.packaging}</p>
                       {product.price != null && (
                         <p className="text-base font-bold mb-2" style={{ color: HD_RED }}>
                           {product.price.toFixed(2)}€
@@ -238,8 +238,8 @@ export default function HiperdinoShop() {
         {!selectedCategory && searchQuery.length < 2 && (
           <div className="text-center py-16">
             <div className="text-6xl mb-4">🌴</div>
-            <h3 className="text-xl font-semibold text-gray-700 mb-2">Bienvenido a Hiperdino</h3>
-            <p className="text-gray-400 text-sm max-w-sm mx-auto">
+            <h3 className="text-xl font-semibold text-foreground/80 mb-2">Bienvenido a Hiperdino</h3>
+            <p className="text-muted-foreground/70 text-sm max-w-sm mx-auto">
               Selecciona una categoría o busca un producto para empezar a comprar
             </p>
           </div>
@@ -252,29 +252,29 @@ export default function HiperdinoShop() {
           className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-4"
           onClick={e => { if (e.target === e.currentTarget) setShowCart(false); }}
         >
-          <div className="bg-white rounded-2xl w-full max-w-md max-h-[80vh] flex flex-col shadow-2xl">
+          <div className="bg-background rounded-2xl w-full max-w-md max-h-[80vh] flex flex-col shadow-2xl">
             <div className="flex items-center justify-between p-4 border-b">
-              <h3 className="font-semibold text-gray-800">🛒 Carrito Hiperdino</h3>
-              <button onClick={() => setShowCart(false)} aria-label="Cerrar carrito" className="text-gray-400 hover:text-gray-600">✕</button>
+              <h3 className="font-semibold text-foreground">🛒 Carrito Hiperdino</h3>
+              <button onClick={() => setShowCart(false)} aria-label="Cerrar carrito" className="text-muted-foreground/70 hover:text-muted-foreground">✕</button>
             </div>
             <div className="flex-1 overflow-y-auto p-4 space-y-3">
               {cart.length === 0 ? (
-                <p className="text-center text-gray-400 py-8">El carrito está vacío</p>
+                <p className="text-center text-muted-foreground/70 py-8">El carrito está vacío</p>
               ) : (
                 cart.map(item => (
                   <div key={item.id} className="flex items-center gap-3">
-                    <div className="w-12 h-12 bg-gray-50 rounded-lg flex items-center justify-center flex-shrink-0">
+                    <div className="w-12 h-12 bg-muted/30 rounded-lg flex items-center justify-center flex-shrink-0">
                       <ProductImage src={item.image} name={item.name} category={item.category} />
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-medium text-gray-800 truncate">{item.name}</p>
-                      <p className="text-xs text-gray-400">{item.packaging}</p>
+                      <p className="text-sm font-medium text-foreground truncate">{item.name}</p>
+                      <p className="text-xs text-muted-foreground/70">{item.packaging}</p>
                     </div>
                     <div className="flex items-center gap-2 text-sm">
                       <span className="font-bold" style={{ color: HD_RED }}>
                         {((item.price ?? 0) * item.qty).toFixed(2)}€
                       </span>
-                      <span className="text-gray-400">x{item.qty}</span>
+                      <span className="text-muted-foreground/70">x{item.qty}</span>
                       <button
                         onClick={() => removeFromCart(item.id)}
                         className="text-gray-300 hover:text-red-500 transition-colors"
@@ -289,7 +289,7 @@ export default function HiperdinoShop() {
             {cart.length > 0 && (
               <div className="p-4 border-t">
                 <div className="flex justify-between items-center mb-3">
-                  <span className="font-semibold text-gray-700">Total estimado</span>
+                  <span className="font-semibold text-foreground/80">Total estimado</span>
                   <span className="text-xl font-bold" style={{ color: HD_RED }}>{totalPrice.toFixed(2)}€</span>
                 </div>
                 <button

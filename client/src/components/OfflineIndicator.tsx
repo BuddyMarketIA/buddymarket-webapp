@@ -40,7 +40,7 @@ export default function OfflineIndicator() {
           <WifiIcon className="h-4 w-4" />
           Conexión restaurada
           {pendingCount > 0 && (
-            <span className="ml-1 rounded-full bg-white/20 px-2 py-0.5 text-xs">
+            <span className="ml-1 rounded-full bg-background/20 px-2 py-0.5 text-xs">
               Sincronizando {pendingCount} acción{pendingCount > 1 ? "es" : ""}…
             </span>
           )}
@@ -57,7 +57,7 @@ export default function OfflineIndicator() {
           <ExclamationTriangleIcon className="h-4 w-4 text-yellow-400 shrink-0" />
           <span>Sin conexión — modo offline</span>
           {pendingCount > 0 && (
-            <span className="ml-1 rounded-full bg-white/10 px-2 py-0.5 text-xs text-gray-300">
+            <span className="ml-1 rounded-full bg-background/10 px-2 py-0.5 text-xs text-gray-300">
               {pendingCount} pendiente{pendingCount > 1 ? "s" : ""}
             </span>
           )}

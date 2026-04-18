@@ -127,22 +127,22 @@ function ManualSearchRow({ itemName, onSelect }: { itemName: string; onSelect: (
     <div className="mt-2 space-y-2">
       <div className="flex gap-2">
         <div className="relative flex-1">
-          <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+          <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
           <input
             value={query}
             onChange={(e) => { setQuery(e.target.value); setSearching(true); }}
             onFocus={() => setSearching(true)}
             placeholder="Buscar en Mercadona..."
-            className="w-full rounded-xl border border-gray-200 pl-9 pr-3 py-2 text-sm focus:outline-none focus:border-orange-400"
+            className="w-full rounded-xl border border-border pl-9 pr-3 py-2 text-sm focus:outline-none focus:border-orange-400"
           />
         </div>
         {query !== (normalizeSearchTerm(itemName) || itemName) && (
-          <button onClick={() => { setQuery(normalizeSearchTerm(itemName) || itemName); setSearching(true); }} className="flex h-9 w-9 items-center justify-center rounded-xl bg-gray-100 text-gray-500">
+          <button onClick={() => { setQuery(normalizeSearchTerm(itemName) || itemName); setSearching(true); }} className="flex h-9 w-9 items-center justify-center rounded-xl bg-muted/50 text-muted-foreground">
             <XMarkIcon className="h-4 w-4" />
           </button>
         )}
       </div>
-      {searching && isLoading && <p className="text-xs text-gray-400 pl-1">Buscando...</p>}
+      {searching && isLoading && <p className="text-xs text-muted-foreground/70 pl-1">Buscando...</p>}
       {searching && !isLoading && data && data.length === 0 && (
         <p className="text-xs text-amber-600 pl-1">No encontrado en Mercadona. <a href={`https://tienda.mercadona.es/search-results?query=${encodeURIComponent(query)}`} target="_blank" rel="noopener noreferrer" className="underline font-semibold">Ver en tienda web →</a></p>
       )}
@@ -152,11 +152,11 @@ function ManualSearchRow({ itemName, onSelect }: { itemName: string; onSelect: (
             <button
               key={p.id}
               onClick={() => onSelect(p)}
-              className="flex w-full items-center gap-2 rounded-xl bg-gray-50 border border-gray-200 px-3 py-2 text-left hover:bg-orange-50 hover:border-orange-200 transition-colors"
+              className="flex w-full items-center gap-2 rounded-xl bg-muted/30 border border-border px-3 py-2 text-left hover:bg-orange-50 hover:border-orange-200 transition-colors"
             >
               {p.thumbnail && <img src={p.thumbnail} alt={p.name} className="w-8 h-8 object-contain rounded shrink-0" />}
               <div className="flex-1 min-w-0">
-                <p className="text-xs font-medium text-gray-800 truncate">{p.name}</p>
+                <p className="text-xs font-medium text-foreground truncate">{p.name}</p>
                 <p className="text-xs font-bold" style={{ color: "#00A650" }}>{p.priceStr}</p>
               </div>
               <span className="text-xs text-orange-500 font-bold shrink-0">+ Añadir</span>
@@ -234,27 +234,27 @@ export default function MercadonaCartExport({ items, onBack, onClose }: Props) {
   if (showLogin) return (
     <div className="flex flex-col gap-4">
       <div className="flex items-center gap-3 mb-2">
-        <button onClick={() => setShowLogin(false)} className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-600">
+        <button onClick={() => setShowLogin(false)} className="flex h-8 w-8 items-center justify-center rounded-full bg-muted/50 text-muted-foreground">
           <ChevronLeftIcon className="h-4 w-4" />
         </button>
-        <h3 className="text-lg font-bold text-gray-900">Conectar Mercadona</h3>
-        <button onClick={onClose} aria-label="Cerrar" className="ml-auto text-gray-400 text-xl font-bold" aria-hidden="false">×</button>
+        <h3 className="text-lg font-bold text-foreground">Conectar Mercadona</h3>
+        <button onClick={onClose} aria-label="Cerrar" className="ml-auto text-muted-foreground/70 text-xl font-bold" aria-hidden="false">×</button>
       </div>
       <div className="rounded-2xl bg-orange-50 border border-orange-100 p-4">
         <p className="text-xs text-orange-700 font-medium">🔒 Tus credenciales se usan solo para añadir al carrito. No se almacenan en ningún servidor.</p>
       </div>
       <div className="space-y-3">
         <div>
-          <label htmlFor="merc-email" className="text-xs font-semibold text-gray-500 mb-1 block">Email de Mercadona</label>
-          <input id="merc-email" type="email" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} placeholder="tu@email.com" className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:border-orange-400" />
+          <label htmlFor="merc-email" className="text-xs font-semibold text-muted-foreground mb-1 block">Email de Mercadona</label>
+          <input id="merc-email" type="email" value={loginEmail} onChange={(e) => setLoginEmail(e.target.value)} placeholder="tu@email.com" className="w-full rounded-2xl border border-border px-4 py-3 text-sm focus:outline-none focus:border-orange-400" />
         </div>
         <div>
-          <label htmlFor="merc-password" className="text-xs font-semibold text-gray-500 mb-1 block">Contraseña</label>
-          <input id="merc-password" type="password" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} placeholder="••••••••" className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:border-orange-400" />
+          <label htmlFor="merc-password" className="text-xs font-semibold text-muted-foreground mb-1 block">Contraseña</label>
+          <input id="merc-password" type="password" value={loginPassword} onChange={(e) => setLoginPassword(e.target.value)} placeholder="••••••••" className="w-full rounded-2xl border border-border px-4 py-3 text-sm focus:outline-none focus:border-orange-400" />
         </div>
         <div>
-          <label htmlFor="merc-postal" className="text-xs font-semibold text-gray-500 mb-1 block">Código postal</label>
-          <input id="merc-postal" type="text" value={loginPostal} onChange={(e) => setLoginPostal(e.target.value)} placeholder="28001" className="w-full rounded-2xl border border-gray-200 px-4 py-3 text-sm focus:outline-none focus:border-orange-400" />
+          <label htmlFor="merc-postal" className="text-xs font-semibold text-muted-foreground mb-1 block">Código postal</label>
+          <input id="merc-postal" type="text" value={loginPostal} onChange={(e) => setLoginPostal(e.target.value)} placeholder="28001" className="w-full rounded-2xl border border-border px-4 py-3 text-sm focus:outline-none focus:border-orange-400" />
         </div>
       </div>
       <button
@@ -272,12 +272,12 @@ export default function MercadonaCartExport({ items, onBack, onClose }: Props) {
   if (transferDone) return (
     <div className="flex flex-col items-center gap-4 py-4">
       <div className="text-6xl">✅</div>
-      <h3 className="text-xl font-black text-gray-900">¡Lista enviada!</h3>
-      <p className="text-sm text-gray-500 text-center">{confirmedItems.length} producto{confirmedItems.length !== 1 ? "s" : ""} en tu carrito de Mercadona</p>
+      <h3 className="text-xl font-black text-foreground">¡Lista enviada!</h3>
+      <p className="text-sm text-muted-foreground text-center">{confirmedItems.length} producto{confirmedItems.length !== 1 ? "s" : ""} en tu carrito de Mercadona</p>
       <button onClick={() => window.open("https://tienda.mercadona.es", "_blank")} className="w-full rounded-2xl py-3.5 text-sm font-bold text-white" style={{ background: "linear-gradient(135deg, #00A650, #00C65A)" }}>
         Ir a finalizar la compra →
       </button>
-      <button onClick={onClose} className="w-full rounded-2xl py-3 text-sm font-bold text-gray-600 bg-gray-100">Cerrar</button>
+      <button onClick={onClose} className="w-full rounded-2xl py-3 text-sm font-bold text-muted-foreground bg-muted/50">Cerrar</button>
     </div>
   );
 
@@ -287,8 +287,8 @@ export default function MercadonaCartExport({ items, onBack, onClose }: Props) {
       <div className="w-20 h-20 rounded-full flex items-center justify-center" style={{ background: "linear-gradient(135deg, #00A650, #00C65A)" }}>
         <ShoppingCartIcon className="w-10 h-10 text-white" />
       </div>
-      <p className="text-gray-900 font-black text-lg">Enviando al carrito...</p>
-      <p className="text-gray-500 text-sm text-center">Añadiendo {confirmedItems.length} producto{confirmedItems.length !== 1 ? "s" : ""}</p>
+      <p className="text-foreground font-black text-lg">Enviando al carrito...</p>
+      <p className="text-muted-foreground text-sm text-center">Añadiendo {confirmedItems.length} producto{confirmedItems.length !== 1 ? "s" : ""}</p>
     </div>
   );
 
@@ -303,17 +303,17 @@ export default function MercadonaCartExport({ items, onBack, onClose }: Props) {
       {/* Header */}
       <div className="flex items-center justify-between mb-4">
         <div>
-          <h3 className="text-xl font-black text-gray-900">
+          <h3 className="text-xl font-black text-foreground">
             Mi lista — <span style={{ color: "#00A650" }}>Mercadona</span>
           </h3>
           {!isSearching && (
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-muted-foreground">
               {confirmedItems.length} encontrado{confirmedItems.length !== 1 ? "s" : ""}
               {notFoundItems.length > 0 && ` · ${notFoundItems.length} sin coincidencia`}
             </p>
           )}
         </div>
-        <button onClick={onClose} aria-label="Cerrar" className="flex h-9 w-9 items-center justify-center rounded-full bg-gray-100 text-gray-500 text-lg font-bold">×</button>
+        <button onClick={onClose} aria-label="Cerrar" className="flex h-9 w-9 items-center justify-center rounded-full bg-muted/50 text-muted-foreground text-lg font-bold">×</button>
       </div>
 
       {/* Account status */}
@@ -328,7 +328,7 @@ export default function MercadonaCartExport({ items, onBack, onClose }: Props) {
         <div className="mb-3 flex items-center gap-2 rounded-2xl bg-green-50 border border-green-100 px-3 py-2">
           <span className="text-green-600 text-sm">✓</span>
           <p className="text-xs text-green-700 font-semibold">{session.customerName ?? "Conectado"}</p>
-          <button onClick={() => { setSession(null); sessionStorage.removeItem("mercadona_session"); }} className="ml-auto text-xs text-gray-400 underline">Desconectar</button>
+          <button onClick={() => { setSession(null); sessionStorage.removeItem("mercadona_session"); }} className="ml-auto text-xs text-muted-foreground/70 underline">Desconectar</button>
         </div>
       )}
 
@@ -340,8 +340,8 @@ export default function MercadonaCartExport({ items, onBack, onClose }: Props) {
               <div key={i} className="w-2.5 h-2.5 rounded-full animate-bounce" style={{ background: "#00A650", animationDelay: `${i * 0.15}s` }} />
             ))}
           </div>
-          <p className="text-sm text-gray-500">Buscando productos... ({resolved}/{unpurchased.length})</p>
-          <p className="text-xs text-gray-400">Esto puede tardar unos segundos</p>
+          <p className="text-sm text-muted-foreground">Buscando productos... ({resolved}/{unpurchased.length})</p>
+          <p className="text-xs text-muted-foreground/70">Esto puede tardar unos segundos</p>
         </div>
       )}
 
@@ -351,11 +351,11 @@ export default function MercadonaCartExport({ items, onBack, onClose }: Props) {
           {/* Found products */}
           {confirmedItems.length > 0 && (
             <div className="mb-4">
-              <p className="text-xs font-semibold uppercase tracking-wider text-gray-400 mb-2">✅ Encontrados ({confirmedItems.length})</p>
-              <div className="space-y-0 divide-y divide-gray-100 rounded-2xl border border-gray-100 overflow-hidden">
+              <p className="text-xs font-semibold uppercase tracking-wider text-muted-foreground/70 mb-2">✅ Encontrados ({confirmedItems.length})</p>
+              <div className="space-y-0 divide-y divide-border/50 rounded-2xl border border-border/50 overflow-hidden">
                 {matched.filter((m) => m.product).map((m) => (
-                  <div key={m.itemId} className="flex items-center gap-3 px-3 py-3 bg-white">
-                    <div className="w-12 h-12 rounded-xl bg-gray-50 flex items-center justify-center shrink-0 overflow-hidden border border-gray-100">
+                  <div key={m.itemId} className="flex items-center gap-3 px-3 py-3 bg-background">
+                    <div className="w-12 h-12 rounded-xl bg-muted/30 flex items-center justify-center shrink-0 overflow-hidden border border-border/50">
                       {m.product?.thumbnail ? (
                         <img src={m.product.thumbnail} alt={m.product.name} className="w-full h-full object-contain p-1" />
                       ) : (
@@ -363,16 +363,16 @@ export default function MercadonaCartExport({ items, onBack, onClose }: Props) {
                       )}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="text-xs text-gray-400 truncate">{m.itemName}</p>
-                      <p className="text-sm font-semibold text-gray-900 leading-tight truncate">{m.product!.name}</p>
+                      <p className="text-xs text-muted-foreground/70 truncate">{m.itemName}</p>
+                      <p className="text-sm font-semibold text-foreground leading-tight truncate">{m.product!.name}</p>
                       <p className="text-sm font-bold mt-0.5" style={{ color: "#00A650" }}>
                         {m.product!.priceStr} × {m.qty} = {(m.product!.price * m.qty).toFixed(2)}€
                       </p>
                     </div>
                     <div className="flex flex-col items-center gap-1 shrink-0">
                       <div className="flex items-center gap-1.5">
-                        <button onClick={() => updateQty(m.itemId, -1)} className="w-7 h-7 rounded-full border-2 border-gray-200 text-gray-600 text-base font-bold flex items-center justify-center">−</button>
-                        <span className="w-5 text-center text-sm font-bold text-gray-900">{m.qty}</span>
+                        <button onClick={() => updateQty(m.itemId, -1)} className="w-7 h-7 rounded-full border-2 border-border text-muted-foreground text-base font-bold flex items-center justify-center">−</button>
+                        <span className="w-5 text-center text-sm font-bold text-foreground">{m.qty}</span>
                         <button onClick={() => updateQty(m.itemId, 1)} className="w-7 h-7 rounded-full flex items-center justify-center text-white text-base font-bold" style={{ background: "#00A650" }}>+</button>
                       </div>
                       <button onClick={() => removeProduct(m.itemId)} className="text-[10px] text-gray-300 hover:text-red-400 transition-colors">quitar</button>
@@ -387,12 +387,12 @@ export default function MercadonaCartExport({ items, onBack, onClose }: Props) {
           {notFoundItems.length > 0 && (
             <div className="mb-4">
               <p className="text-xs font-semibold uppercase tracking-wider text-amber-500 mb-2">🔍 Sin coincidencia automática ({notFoundItems.length})</p>
-              <p className="text-xs text-gray-400 mb-3">Busca manualmente el producto equivalente en Mercadona:</p>
+              <p className="text-xs text-muted-foreground/70 mb-3">Busca manualmente el producto equivalente en Mercadona:</p>
               <div className="space-y-3">
                 {notFoundItems.map((m) => (
                   <div key={m.itemId} className="rounded-2xl border border-dashed border-amber-200 bg-amber-50/40 p-3">
                     <div className="flex items-center justify-between mb-1">
-                      <p className="text-sm font-semibold text-gray-700">{m.itemName}</p>
+                      <p className="text-sm font-semibold text-foreground/80">{m.itemName}</p>
                       <button
                         onClick={() => setExpandedManual(prev => { const s = new Set(prev); s.has(m.itemId) ? s.delete(m.itemId) : s.add(m.itemId); return s; })}
                         className="text-xs font-bold text-orange-500 flex items-center gap-1"
@@ -412,9 +412,9 @@ export default function MercadonaCartExport({ items, onBack, onClose }: Props) {
 
           {/* Total */}
           {confirmedItems.length > 0 && (
-            <div className="mt-2 pt-4 border-t border-gray-200 flex items-center justify-between">
-              <p className="text-base font-bold text-gray-900">Total estimado</p>
-              <p className="text-xl font-black text-gray-900">{totalPrice.toFixed(2)}€</p>
+            <div className="mt-2 pt-4 border-t border-border flex items-center justify-between">
+              <p className="text-base font-bold text-foreground">Total estimado</p>
+              <p className="text-xl font-black text-foreground">{totalPrice.toFixed(2)}€</p>
             </div>
           )}
 
@@ -446,13 +446,13 @@ export default function MercadonaCartExport({ items, onBack, onClose }: Props) {
                   const text = confirmedItems.map((m) => `• ${m.product!.name} ×${m.qty}`).join("\n");
                   navigator.clipboard.writeText(text).then(() => toast.success("Lista copiada"));
                 }}
-                className="flex-1 rounded-2xl py-3 text-sm font-bold border-2 border-gray-200 text-gray-700 flex items-center justify-center gap-1.5"
+                className="flex-1 rounded-2xl py-3 text-sm font-bold border-2 border-border text-foreground/80 flex items-center justify-center gap-1.5"
               >
                 Copiar lista
               </button>
               <button
                 onClick={() => window.open("https://tienda.mercadona.es", "_blank")}
-                className="flex-1 rounded-2xl py-3 text-sm font-bold border-2 border-gray-200 text-gray-700 flex items-center justify-center gap-1.5"
+                className="flex-1 rounded-2xl py-3 text-sm font-bold border-2 border-border text-foreground/80 flex items-center justify-center gap-1.5"
               >
                 <ArrowTopRightOnSquareIcon className="h-4 w-4" />
                 Ir a Mercadona
@@ -464,7 +464,7 @@ export default function MercadonaCartExport({ items, onBack, onClose }: Props) {
 
       {!isSearching && matched.length === 0 && (
         <div className="text-center py-8">
-          <p className="text-gray-400 text-sm">No hay productos pendientes en la lista</p>
+          <p className="text-muted-foreground/70 text-sm">No hay productos pendientes en la lista</p>
         </div>
       )}
     </div>

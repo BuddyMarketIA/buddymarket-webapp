@@ -168,26 +168,26 @@ export default function CarrefourShop() {
         <div className="flex items-center gap-3">
           <button
             onClick={() => navigate("/app/supermercados")}
-            className="w-9 h-9 rounded-2xl bg-white shadow-sm border border-gray-100 flex items-center justify-center"
+            className="w-9 h-9 rounded-2xl bg-background shadow-sm border border-border/50 flex items-center justify-center"
           >
-            <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-5 h-5 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
             </svg>
           </button>
           <div>
             <div className="flex items-center gap-2">
               <div className="w-8 h-8 rounded-xl flex items-center justify-center text-sm font-black text-white" style={{ background: CARR_BLUE }}>C</div>
-              <h1 className="text-lg font-black text-gray-900">Carrefour</h1>
+              <h1 className="text-lg font-black text-foreground">Carrefour</h1>
             </div>
-            <p className="text-xs text-gray-400">14.500+ productos disponibles</p>
+            <p className="text-xs text-muted-foreground/70">14.500+ productos disponibles</p>
           </div>
         </div>
         {/* Cart button */}
         <button
           onClick={() => setShowCart(true)}
-          className="relative w-10 h-10 rounded-2xl flex items-center justify-center shadow-sm border border-gray-100 bg-white"
+          className="relative w-10 h-10 rounded-2xl flex items-center justify-center shadow-sm border border-border/50 bg-background"
         >
-          <svg className="w-5 h-5 text-gray-700" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+          <svg className="w-5 h-5 text-foreground/80" fill="none" viewBox="0 0 24 24" stroke="currentColor">
             <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
           </svg>
           {cartCount > 0 && (
@@ -200,7 +200,7 @@ export default function CarrefourShop() {
 
       {/* ── Search bar ──────────────────────────────────────────────────────── */}
       <div className="relative mb-5">
-        <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-gray-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+        <svg className="absolute left-4 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/70" fill="none" viewBox="0 0 24 24" stroke="currentColor">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
         </svg>
         <input
@@ -208,14 +208,14 @@ export default function CarrefourShop() {
           placeholder="Buscar en Carrefour..."
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
-          className="w-full pl-10 pr-4 py-3 rounded-2xl bg-white border border-gray-100 shadow-sm text-sm font-medium text-gray-900 placeholder-gray-400 focus:outline-none"
+          className="w-full pl-10 pr-4 py-3 rounded-2xl bg-background border border-border/50 shadow-sm text-sm font-medium text-foreground placeholder-gray-400 focus:outline-none"
         />
         {searchQuery && (
           <button
             onClick={() => setSearchQuery("")}
-            className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-gray-200 flex items-center justify-center"
+            className="absolute right-4 top-1/2 -translate-y-1/2 w-5 h-5 rounded-full bg-muted flex items-center justify-center"
           >
-            <svg className="w-3 h-3 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+            <svg className="w-3 h-3 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
               <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
             </svg>
           </button>
@@ -227,7 +227,7 @@ export default function CarrefourShop() {
         <div className="mb-5">
           {loadingCats ? (
             <div className="grid grid-cols-4 gap-2">
-              {Array.from({ length: 8 }).map((_, i) => <div key={i} className="bg-white rounded-2xl p-3 h-20 animate-pulse" />)}
+              {Array.from({ length: 8 }).map((_, i) => <div key={i} className="bg-background rounded-2xl p-3 h-20 animate-pulse" />)}
             </div>
           ) : (
             <div className="grid grid-cols-4 gap-2">
@@ -236,7 +236,7 @@ export default function CarrefourShop() {
                   key={cat}
                   onClick={() => { setSelectedCategory(selectedCategory === cat ? null : cat); setSelectedSubcategory(null); }}
                   className={`rounded-2xl p-3 flex flex-col items-center gap-1.5 transition-all active:scale-95 ${
-                    selectedCategory === cat ? "text-white shadow-md" : "bg-white text-gray-700 shadow-sm border border-gray-100"
+                    selectedCategory === cat ? "text-white shadow-md" : "bg-background text-foreground/80 shadow-sm border border-border/50"
                   }`}
                   style={selectedCategory === cat ? { background: CARR_BLUE } : {}}
                 >
@@ -254,14 +254,14 @@ export default function CarrefourShop() {
         <div className="mb-4 flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
           <button
             onClick={() => setSelectedSubcategory(null)}
-            className={`shrink-0 rounded-full px-4 py-2 text-xs font-bold transition-all ${!selectedSubcategory ? "text-white" : "bg-white text-gray-600 border border-gray-200"}`}
+            className={`shrink-0 rounded-full px-4 py-2 text-xs font-bold transition-all ${!selectedSubcategory ? "text-white" : "bg-background text-muted-foreground border border-border"}`}
             style={!selectedSubcategory ? { background: CARR_BLUE } : {}}
           >Todos</button>
           {subcategories.map((sub) => (
             <button
               key={sub}
               onClick={() => setSelectedSubcategory(sub)}
-              className={`shrink-0 rounded-full px-4 py-2 text-xs font-bold transition-all ${selectedSubcategory === sub ? "text-white" : "bg-white text-gray-600 border border-gray-200"}`}
+              className={`shrink-0 rounded-full px-4 py-2 text-xs font-bold transition-all ${selectedSubcategory === sub ? "text-white" : "bg-background text-muted-foreground border border-border"}`}
               style={selectedSubcategory === sub ? { background: CARR_BLUE } : {}}
             >{sub}</button>
           ))}
@@ -274,42 +274,42 @@ export default function CarrefourShop() {
           {isLoading ? (
             <div className="grid grid-cols-2 gap-3">
               {Array.from({ length: 6 }).map((_, i) => (
-                <div key={i} className="bg-white rounded-2xl p-3 shadow-sm animate-pulse">
-                  <div className="w-full h-28 bg-gray-100 rounded-xl mb-3" />
-                  <div className="h-3 bg-gray-100 rounded w-3/4 mb-2" />
-                  <div className="h-3 bg-gray-100 rounded w-1/2" />
+                <div key={i} className="bg-background rounded-2xl p-3 shadow-sm animate-pulse">
+                  <div className="w-full h-28 bg-muted/50 rounded-xl mb-3" />
+                  <div className="h-3 bg-muted/50 rounded w-3/4 mb-2" />
+                  <div className="h-3 bg-muted/50 rounded w-1/2" />
                 </div>
               ))}
             </div>
           ) : displayedProducts.length === 0 ? (
             <div className="flex flex-col items-center justify-center py-16 text-center">
               <div className="text-5xl mb-4">🔍</div>
-              <p className="text-base font-bold text-gray-700">No se encontraron productos</p>
-              <p className="text-sm text-gray-400 mt-1">Prueba con otra búsqueda o categoría</p>
+              <p className="text-base font-bold text-foreground/80">No se encontraron productos</p>
+              <p className="text-sm text-muted-foreground/70 mt-1">Prueba con otra búsqueda o categoría</p>
             </div>
           ) : (
             <>
-              <p className="text-xs text-gray-400 mb-3">{displayedProducts.length} productos</p>
+              <p className="text-xs text-muted-foreground/70 mb-3">{displayedProducts.length} productos</p>
               <div className="grid grid-cols-2 gap-3">
                 {(displayedProducts as any[]).map((product) => {
                   const inCart = cart.find((c) => c.id === product.id);
                   return (
-                    <div key={product.id} className="bg-white rounded-2xl p-3 shadow-sm border border-gray-100 flex flex-col">
-                      <div className="w-full h-28 bg-gray-50 rounded-xl mb-3 flex items-center justify-center overflow-hidden">
+                    <div key={product.id} className="bg-background rounded-2xl p-3 shadow-sm border border-border/50 flex flex-col">
+                      <div className="w-full h-28 bg-muted/30 rounded-xl mb-3 flex items-center justify-center overflow-hidden">
                         <ProductImage src={product.image} name={product.name} category={product.category} />
                       </div>
                       <div className="flex-1">
-                        <p className="text-xs font-bold text-gray-900 leading-tight line-clamp-2 mb-1">{product.name}</p>
-                        {product.brand && <p className="text-xs text-gray-400 mb-0.5">{product.brand}</p>}
-                        {product.packaging && <p className="text-xs text-gray-400 mb-1">{product.packaging}</p>}
+                        <p className="text-xs font-bold text-foreground leading-tight line-clamp-2 mb-1">{product.name}</p>
+                        {product.brand && <p className="text-xs text-muted-foreground/70 mb-0.5">{product.brand}</p>}
+                        {product.packaging && <p className="text-xs text-muted-foreground/70 mb-1">{product.packaging}</p>}
                         <p className="text-base font-black mb-3" style={{ color: CARR_BLUE }}>
                           {product.price != null ? `${product.price.toFixed(2)}€` : "—"}
-                          {product.pricePerUnit && <span className="text-xs font-normal text-gray-400 ml-1">({product.pricePerUnit})</span>}
+                          {product.pricePerUnit && <span className="text-xs font-normal text-muted-foreground/70 ml-1">({product.pricePerUnit})</span>}
                         </p>
                       </div>
                       {inCart ? (
                         <div className="flex items-center justify-between rounded-xl px-2 py-1.5" style={{ background: CARR_BG }}>
-                          <button onClick={() => updateQty(product.id, -1)} className="w-7 h-7 rounded-lg bg-white font-black flex items-center justify-center shadow-sm" style={{ color: CARR_BLUE }}>−</button>
+                          <button onClick={() => updateQty(product.id, -1)} className="w-7 h-7 rounded-lg bg-background font-black flex items-center justify-center shadow-sm" style={{ color: CARR_BLUE }}>−</button>
                           <span className="text-sm font-bold" style={{ color: CARR_BLUE }}>{inCart.quantity}</span>
                           <button onClick={() => updateQty(product.id, 1)} className="w-7 h-7 rounded-lg text-white font-black flex items-center justify-center" style={{ background: CARR_BLUE }}>+</button>
                         </div>
@@ -335,8 +335,8 @@ export default function CarrefourShop() {
           <div className="w-20 h-20 rounded-3xl flex items-center justify-center mb-4 shadow-lg" style={{ background: `linear-gradient(135deg, ${CARR_BLUE}, #0066CC)` }}>
             <span className="text-4xl">🛒</span>
           </div>
-          <h2 className="text-lg font-black text-gray-900 mb-2">Compra en Carrefour</h2>
-          <p className="text-sm text-gray-500 max-w-xs">Selecciona una categoría o busca un producto para empezar a añadir al carrito</p>
+          <h2 className="text-lg font-black text-foreground mb-2">Compra en Carrefour</h2>
+          <p className="text-sm text-muted-foreground max-w-xs">Selecciona una categoría o busca un producto para empezar a añadir al carrito</p>
         </div>
       )}
 
@@ -349,7 +349,7 @@ export default function CarrefourShop() {
             style={{ background: `linear-gradient(135deg, ${CARR_BLUE}, #0066CC)` }}
           >
             <div className="flex items-center gap-3">
-              <div className="w-7 h-7 rounded-xl bg-white flex items-center justify-center font-black text-sm" style={{ color: CARR_BLUE }}>
+              <div className="w-7 h-7 rounded-xl bg-background flex items-center justify-center font-black text-sm" style={{ color: CARR_BLUE }}>
                 {cartCount}
               </div>
               <span>Ver carrito</span>
@@ -363,14 +363,14 @@ export default function CarrefourShop() {
       {showCart && (
         <div className="fixed inset-0 z-50 flex flex-col justify-end">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowCart(false)} />
-          <div className="relative bg-white rounded-t-3xl shadow-2xl max-h-[80vh] flex flex-col">
-            <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
+          <div className="relative bg-background rounded-t-3xl shadow-2xl max-h-[80vh] flex flex-col">
+            <div className="flex items-center justify-between px-5 py-4 border-b border-border/50">
               <div>
-                <h2 className="text-lg font-black text-gray-900">Mi carrito Carrefour</h2>
-                <p className="text-xs text-gray-400">{cartCount} artículo{cartCount !== 1 ? "s" : ""}</p>
+                <h2 className="text-lg font-black text-foreground">Mi carrito Carrefour</h2>
+                <p className="text-xs text-muted-foreground/70">{cartCount} artículo{cartCount !== 1 ? "s" : ""}</p>
               </div>
-              <button onClick={() => setShowCart(false)} className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center">
-                <svg className="w-5 h-5 text-gray-600" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <button onClick={() => setShowCart(false)} className="w-9 h-9 rounded-full bg-muted/50 flex items-center justify-center">
+                <svg className="w-5 h-5 text-muted-foreground" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
                 </svg>
               </button>
@@ -378,29 +378,29 @@ export default function CarrefourShop() {
             <div className="flex-1 overflow-y-auto px-5 py-3 divide-y divide-gray-50">
               {cart.map((item) => (
                 <div key={item.id} className="flex items-center gap-3 py-3">
-                  <div className="w-12 h-12 bg-gray-50 rounded-xl flex items-center justify-center shrink-0 overflow-hidden">
+                  <div className="w-12 h-12 bg-muted/30 rounded-xl flex items-center justify-center shrink-0 overflow-hidden">
                     {item.image
                       ? <img src={item.image} alt={item.name} className="w-full h-full object-contain p-1" />
                       : <span className="text-xl">🛒</span>}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <p className="text-sm font-bold text-gray-900 line-clamp-1">{item.name}</p>
+                    <p className="text-sm font-bold text-foreground line-clamp-1">{item.name}</p>
                     <p className="text-xs font-bold" style={{ color: CARR_BLUE }}>
                       {(item.price ?? 0).toFixed(2)}€ × {item.quantity} = {((item.price ?? 0) * item.quantity).toFixed(2)}€
                     </p>
                   </div>
                   <div className="flex items-center gap-1.5 shrink-0">
-                    <button onClick={() => updateQty(item.id, -1)} className="w-7 h-7 rounded-lg bg-gray-100 text-gray-700 font-black flex items-center justify-center text-sm">−</button>
+                    <button onClick={() => updateQty(item.id, -1)} className="w-7 h-7 rounded-lg bg-muted/50 text-foreground/80 font-black flex items-center justify-center text-sm">−</button>
                     <span className="text-sm font-bold w-5 text-center">{item.quantity}</span>
                     <button onClick={() => updateQty(item.id, 1)} className="w-7 h-7 rounded-lg text-white font-black flex items-center justify-center text-sm" style={{ background: CARR_BLUE }}>+</button>
                   </div>
                 </div>
               ))}
             </div>
-            <div className="px-5 pt-4 pb-8 border-t border-gray-100">
+            <div className="px-5 pt-4 pb-8 border-t border-border/50">
               <div className="flex items-center justify-between mb-4">
-                <span className="text-base font-bold text-gray-700">Total estimado</span>
-                <span className="text-xl font-black text-gray-900">{cartTotal.toFixed(2)}€</span>
+                <span className="text-base font-bold text-foreground/80">Total estimado</span>
+                <span className="text-xl font-black text-foreground">{cartTotal.toFixed(2)}€</span>
               </div>
               <button
                 onClick={handleGoToCarrefour}
@@ -422,7 +422,7 @@ export default function CarrefourShop() {
                 </button>
                 <button
                   onClick={() => window.open("https://www.carrefour.es/supermercado", "_blank")}
-                  className="flex-1 rounded-2xl py-3 text-sm font-bold bg-gray-100 text-gray-700"
+                  className="flex-1 rounded-2xl py-3 text-sm font-bold bg-muted/50 text-foreground/80"
                 >
                   Ir a Carrefour
                 </button>

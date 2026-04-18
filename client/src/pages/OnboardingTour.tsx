@@ -272,7 +272,7 @@ export default function OnboardingTour() {
                   <span className="text-xs text-white/40 font-medium">{current + 1} de {CARDS.length} pasos</span>
                   <span className="text-xs font-semibold" style={{ color: card.accent }}>{Math.round(((current + 1) / CARDS.length) * 100)}%</span>
                 </div>
-                <div className="w-full h-1.5 rounded-full bg-white/10 overflow-hidden">
+                <div className="w-full h-1.5 rounded-full bg-background/10 overflow-hidden">
                   <div
                     className="h-full rounded-full transition-all duration-500 ease-out"
                     style={{

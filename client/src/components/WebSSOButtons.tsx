@@ -244,7 +244,7 @@ export default function WebSSOButtons({
         type="button"
         onClick={handleGoogleClick}
         disabled={googleLoading}
-        className="w-full flex items-center justify-center gap-3 h-11 rounded-xl border border-gray-200 bg-white text-gray-700 text-sm font-semibold hover:bg-gray-50 active:scale-[0.98] transition-all shadow-sm disabled:opacity-60 cursor-pointer"
+        className="w-full flex items-center justify-center gap-3 h-11 rounded-xl border border-border bg-background text-foreground/80 text-sm font-semibold hover:bg-muted/30 active:scale-[0.98] transition-all shadow-sm disabled:opacity-60 cursor-pointer"
       >
         {googleLoading ? <Spinner /> : <GoogleIcon />}
         <span>{googleLoading ? "Iniciando sesión..." : "Continuar con Google"}</span>

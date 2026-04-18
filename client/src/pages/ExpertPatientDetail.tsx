@@ -19,7 +19,7 @@ import { ChatMarkdown } from "@/lib/renderChatMarkdown";
 type Tab = "messages" | "menus" | "appointments" | "progress" | "notes" | "profile" | "diary" | "sessions" | "analysis" | "checkins";
 
 const NOTE_TYPE_LABELS: Record<string, { label: string; color: string; icon: string }> = {
-  general: { label: "General", color: "bg-gray-100 text-gray-700", icon: "📝" },
+  general: { label: "General", color: "bg-muted/50 text-foreground/80", icon: "📝" },
   clinical: { label: "Clínica", color: "bg-blue-100 text-blue-700", icon: "🏥" },
   diet: { label: "Dieta", color: "bg-green-100 text-green-700", icon: "🥗" },
   goal: { label: "Objetivo", color: "bg-purple-100 text-purple-700", icon: "🎯" },
@@ -281,7 +281,7 @@ export default function ExpertPatientDetail() {
   if (!detail) return (
     <AppLayout>
       <div className="text-center py-16">
-        <p className="text-gray-500">Paciente no encontrado</p>
+        <p className="text-muted-foreground">Paciente no encontrado</p>
         <Button onClick={() => navigate("/app/expert/patients")} className="mt-4">Volver</Button>
       </div>
     </AppLayout>
@@ -352,7 +352,7 @@ export default function ExpertPatientDetail() {
         <div className="mb-6">
           {/* Fila 1: avatar + nombre */}
           <div className="flex items-center gap-3 mb-3">
-            <button onClick={() => navigate("/app/expert/patients")} className="text-gray-400 hover:text-gray-600 transition-colors flex-shrink-0">
+            <button onClick={() => navigate("/app/expert/patients")} className="text-muted-foreground/70 hover:text-muted-foreground transition-colors flex-shrink-0">
               <svg className="w-6 h-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
               </svg>
@@ -365,10 +365,10 @@ export default function ExpertPatientDetail() {
               </div>
             )}
             <div className="flex-1 min-w-0">
-              <h1 className="text-lg font-bold text-gray-900 truncate">{patientUser?.name ?? "Paciente"}</h1>
-              <p className="text-xs text-gray-500 truncate">{patientUser?.email}</p>
+              <h1 className="text-lg font-bold text-foreground truncate">{patientUser?.name ?? "Paciente"}</h1>
+              <p className="text-xs text-muted-foreground truncate">{patientUser?.email}</p>
               {profile && (
-                <p className="text-xs text-gray-400 mt-0.5">
+                <p className="text-xs text-muted-foreground/70 mt-0.5">
                   {profile.weight ? `${profile.weight} kg` : ""}
                   {profile.height ? ` · ${profile.height} cm` : ""}
                   {profile.age ? ` · ${profile.age} años` : ""}
@@ -395,7 +395,7 @@ export default function ExpertPatientDetail() {
                 });
                 toast.success("📄 Informe PDF generado");
               }}
-              className="border-gray-300 text-gray-600 hover:bg-gray-50"
+              className="border-border text-muted-foreground hover:bg-muted/30"
               title="Generar informe PDF"
             >
               📄 PDF
@@ -448,7 +448,7 @@ export default function ExpertPatientDetail() {
 
         {/* Tabs — solo iconos en mobile con scroll horizontal */}
         <div
-          className="flex border-b border-gray-200 mb-6 -mx-4 px-2"
+          className="flex border-b border-border mb-6 -mx-4 px-2"
           style={{ overflowX: 'auto', scrollbarWidth: 'none', WebkitOverflowScrolling: 'touch' } as React.CSSProperties}
         >
           {TABS.map(tab => (
@@ -459,7 +459,7 @@ export default function ExpertPatientDetail() {
               className={`relative flex flex-col items-center justify-center gap-0.5 min-w-[52px] px-1 py-2.5 border-b-2 transition-colors flex-shrink-0 ${
                 activeTab === tab.id
                   ? "border-orange-500 text-orange-600"
-                  : "border-transparent text-gray-400 hover:text-gray-600"
+                  : "border-transparent text-muted-foreground/70 hover:text-muted-foreground"
               }`}
             >
               <span className="text-xl leading-none">{tab.icon}</span>
@@ -478,7 +478,7 @@ export default function ExpertPatientDetail() {
           <div className="flex flex-col h-[500px]">
             <div className="flex-1 overflow-y-auto space-y-3 pr-2 mb-4">
               {messages.length === 0 ? (
-                <div className="text-center py-12 text-gray-400">
+                <div className="text-center py-12 text-muted-foreground/70">
                   <div className="text-4xl mb-2">💬</div>
                   <p>Aún no hay mensajes. Inicia la conversación.</p>
                 </div>
@@ -491,11 +491,11 @@ export default function ExpertPatientDetail() {
                     <div key={msg.id}>
                       {showDate && (
                         <div className="flex items-center gap-3 my-3">
-                          <div className="flex-1 h-px bg-gray-200" />
-                          <span className="text-xs text-gray-400 font-medium">
+                          <div className="flex-1 h-px bg-muted" />
+                          <span className="text-xs text-muted-foreground/70 font-medium">
                             {new Date(msg.createdAt).toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })}
                           </span>
-                          <div className="flex-1 h-px bg-gray-200" />
+                          <div className="flex-1 h-px bg-muted" />
                         </div>
                       )}
                       <div className={`flex ${isExpert ? "justify-end" : "justify-start"}`}>
@@ -507,10 +507,10 @@ export default function ExpertPatientDetail() {
                         <div className={`max-w-[70%] rounded-2xl px-4 py-2.5 ${
                           isExpert
                             ? "bg-orange-500 text-white rounded-br-sm"
-                            : "bg-gray-100 text-gray-800 rounded-bl-sm"
+                            : "bg-muted/50 text-foreground rounded-bl-sm"
                         }`}>
                           <ChatMarkdown content={msg.content} isExpert={isExpert} />
-                          <p className={`text-xs mt-1 ${isExpert ? "text-orange-100" : "text-gray-400"}`}>
+                          <p className={`text-xs mt-1 ${isExpert ? "text-orange-100" : "text-muted-foreground/70"}`}>
                             {new Date(msg.createdAt).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
                             {isExpert && msg.isRead && <span className="ml-1">✓✓ Leído</span>}
                             {isExpert && !msg.isRead && <span className="ml-1 opacity-60">✓</span>}
@@ -553,16 +553,16 @@ export default function ExpertPatientDetail() {
             {/* Selector de rango de fechas */}
             <div className="flex flex-wrap items-center gap-3 mb-5">
               <div className="flex items-center gap-2">
-                <label className="text-sm text-gray-500">Desde</label>
+                <label className="text-sm text-muted-foreground">Desde</label>
                 <input type="date" value={diaryDateRange.start}
                   onChange={e => setDiaryDateRange(prev => ({ ...prev, start: e.target.value }))}
-                  className="text-sm border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-orange-300" />
+                  className="text-sm border border-border rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-orange-300" />
               </div>
               <div className="flex items-center gap-2">
-                <label className="text-sm text-gray-500">Hasta</label>
+                <label className="text-sm text-muted-foreground">Hasta</label>
                 <input type="date" value={diaryDateRange.end}
                   onChange={e => setDiaryDateRange(prev => ({ ...prev, end: e.target.value }))}
-                  className="text-sm border border-gray-200 rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-orange-300" />
+                  className="text-sm border border-border rounded-lg px-2 py-1.5 focus:outline-none focus:ring-2 focus:ring-orange-300" />
               </div>
               <div className="flex gap-1.5 ml-auto">
                 {[7, 14, 30].map(days => (
@@ -581,10 +581,10 @@ export default function ExpertPatientDetail() {
             {isDiaryLoading ? (
               <div className="flex justify-center py-12"><div className="animate-spin w-6 h-6 border-4 border-orange-500 border-t-transparent rounded-full" /></div>
             ) : !diaryData || diaryData.days.length === 0 ? (
-              <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+              <div className="text-center py-12 bg-muted/30 rounded-xl border border-dashed border-border">
                 <div className="text-4xl mb-2">📓</div>
-                <p className="text-gray-500 font-medium">Sin registros en este periodo</p>
-                <p className="text-sm text-gray-400 mt-1">El paciente aún no ha registrado comidas en estas fechas</p>
+                <p className="text-muted-foreground font-medium">Sin registros en este periodo</p>
+                <p className="text-sm text-muted-foreground/70 mt-1">El paciente aún no ha registrado comidas en estas fechas</p>
               </div>
             ) : (
               <div className="space-y-3">
@@ -597,15 +597,15 @@ export default function ExpertPatientDetail() {
                   return (
                     <div className="grid grid-cols-3 gap-3 mb-4">
                       <div className="p-3 bg-orange-50 rounded-xl text-center">
-                        <p className="text-xs text-gray-500">Días registrados</p>
+                        <p className="text-xs text-muted-foreground">Días registrados</p>
                         <p className="text-xl font-bold text-orange-600">{daysWithMeals}/{days.length}</p>
                       </div>
                       <div className="p-3 rounded-xl text-center" style={{ background: avgAdherence >= 70 ? '#f0fdf4' : avgAdherence >= 40 ? '#fefce8' : '#fef2f2' }}>
-                        <p className="text-xs text-gray-500">Adherencia media</p>
+                        <p className="text-xs text-muted-foreground">Adherencia media</p>
                         <p className="text-xl font-bold" style={{ color: avgAdherence >= 70 ? '#16a34a' : avgAdherence >= 40 ? '#ca8a04' : '#dc2626' }}>{avgAdherence}%</p>
                       </div>
                       <div className="p-3 bg-blue-50 rounded-xl text-center">
-                        <p className="text-xs text-gray-500">Kcal media/día</p>
+                        <p className="text-xs text-muted-foreground">Kcal media/día</p>
                         <p className="text-xl font-bold text-blue-600">{avgCalories > 0 ? avgCalories : '—'}</p>
                       </div>
                     </div>
@@ -618,23 +618,23 @@ export default function ExpertPatientDetail() {
                   const isExpanded = expandedDiaryDay === day.date;
                   const dateLabel = new Date(day.date + 'T12:00:00').toLocaleDateString('es-ES', { weekday: 'short', day: 'numeric', month: 'short' });
                   return (
-                    <div key={day.date} className="bg-white rounded-xl border border-gray-200 overflow-hidden">
+                    <div key={day.date} className="bg-background rounded-xl border border-border overflow-hidden">
                       <button
                         onClick={() => setExpandedDiaryDay(isExpanded ? null : day.date)}
-                        className="w-full flex items-center gap-3 p-3 hover:bg-gray-50 transition-colors"
+                        className="w-full flex items-center gap-3 p-3 hover:bg-muted/30 transition-colors"
                       >
                         {/* Semáforo de adherencia */}
                         <div className={`w-3 h-3 rounded-full flex-shrink-0 ${adherenceColor}`} />
-                        <span className="text-sm font-medium text-gray-700 w-28 text-left capitalize">{dateLabel}</span>
+                        <span className="text-sm font-medium text-foreground/80 w-28 text-left capitalize">{dateLabel}</span>
                         <div className="flex-1 flex items-center gap-2">
                           {day.mealCount > 0 ? (
                             <>
-                              <span className="text-xs text-gray-500">{day.mealCount} comidas</span>
-                              {day.totalCalories > 0 && <span className="text-xs text-gray-400">· {day.totalCalories} kcal</span>}
-                              {day.totalProtein > 0 && <span className="text-xs text-gray-400">· {day.totalProtein.toFixed(0)}g prot</span>}
+                              <span className="text-xs text-muted-foreground">{day.mealCount} comidas</span>
+                              {day.totalCalories > 0 && <span className="text-xs text-muted-foreground/70">· {day.totalCalories} kcal</span>}
+                              {day.totalProtein > 0 && <span className="text-xs text-muted-foreground/70">· {day.totalProtein.toFixed(0)}g prot</span>}
                             </>
                           ) : (
-                            <span className="text-xs text-gray-400 italic">Sin registros</span>
+                            <span className="text-xs text-muted-foreground/70 italic">Sin registros</span>
                           )}
                         </div>
                         {day.wellbeing && (
@@ -643,46 +643,46 @@ export default function ExpertPatientDetail() {
                             {day.wellbeing.moodLevel && <span title="Ánimo">😊{day.wellbeing.moodLevel}/5</span>}
                           </div>
                         )}
-                        <span className="text-gray-400 text-xs">{isExpanded ? '▲' : '▼'}</span>
+                        <span className="text-muted-foreground/70 text-xs">{isExpanded ? '▲' : '▼'}</span>
                       </button>
 
                       {isExpanded && (
-                        <div className="border-t border-gray-100 p-3 bg-gray-50">
+                        <div className="border-t border-border/50 p-3 bg-muted/30">
                           {day.meals.length > 0 ? (
                             <div className="space-y-2">
                               {day.meals.map((meal: any) => (
                                 <div key={meal.id} className="flex items-center gap-2 text-sm">
-                                  <span className="text-gray-400 text-xs w-16 flex-shrink-0">
+                                  <span className="text-muted-foreground/70 text-xs w-16 flex-shrink-0">
                                     {meal.mealType === 'breakfast' ? '🌅 Desayuno' :
                                      meal.mealType === 'lunch' ? '🍽️ Comida' :
                                      meal.mealType === 'dinner' ? '🌙 Cena' :
                                      meal.mealType === 'snack' ? '🍎 Snack' : '🍴 Otro'}
                                   </span>
-                                  <span className="flex-1 text-gray-700">{meal.foodName || meal.recipeName || 'Alimento'}</span>
-                                  {meal.calories && <span className="text-xs text-gray-400">{meal.calories} kcal</span>}
+                                  <span className="flex-1 text-foreground/80">{meal.foodName || meal.recipeName || 'Alimento'}</span>
+                                  {meal.calories && <span className="text-xs text-muted-foreground/70">{meal.calories} kcal</span>}
                                 </div>
                               ))}
-                              <div className="mt-2 pt-2 border-t border-gray-200 grid grid-cols-4 gap-2 text-xs text-center">
-                                <div><p className="text-gray-400">Kcal</p><p className="font-semibold text-gray-700">{day.totalCalories}</p></div>
-                                <div><p className="text-gray-400">Prot</p><p className="font-semibold text-gray-700">{day.totalProtein.toFixed(1)}g</p></div>
-                                <div><p className="text-gray-400">Carbos</p><p className="font-semibold text-gray-700">{day.totalCarbs.toFixed(1)}g</p></div>
-                                <div><p className="text-gray-400">Grasa</p><p className="font-semibold text-gray-700">{day.totalFat.toFixed(1)}g</p></div>
+                              <div className="mt-2 pt-2 border-t border-border grid grid-cols-4 gap-2 text-xs text-center">
+                                <div><p className="text-muted-foreground/70">Kcal</p><p className="font-semibold text-foreground/80">{day.totalCalories}</p></div>
+                                <div><p className="text-muted-foreground/70">Prot</p><p className="font-semibold text-foreground/80">{day.totalProtein.toFixed(1)}g</p></div>
+                                <div><p className="text-muted-foreground/70">Carbos</p><p className="font-semibold text-foreground/80">{day.totalCarbs.toFixed(1)}g</p></div>
+                                <div><p className="text-muted-foreground/70">Grasa</p><p className="font-semibold text-foreground/80">{day.totalFat.toFixed(1)}g</p></div>
                               </div>
                             </div>
                           ) : (
-                            <p className="text-sm text-gray-400 italic text-center py-2">El paciente no registró comidas este día</p>
+                            <p className="text-sm text-muted-foreground/70 italic text-center py-2">El paciente no registró comidas este día</p>
                           )}
                           {day.wellbeing && (
-                            <div className="mt-3 pt-3 border-t border-gray-200">
-                              <p className="text-xs font-semibold text-gray-600 mb-2">📊 Bienestar del paciente</p>
+                            <div className="mt-3 pt-3 border-t border-border">
+                              <p className="text-xs font-semibold text-muted-foreground mb-2">📊 Bienestar del paciente</p>
                               <div className="grid grid-cols-5 gap-2 text-xs text-center">
-                                {day.wellbeing.energyLevel && <div><p className="text-gray-400">⚡ Energía</p><p className="font-semibold">{day.wellbeing.energyLevel}/5</p></div>}
-                                {day.wellbeing.moodLevel && <div><p className="text-gray-400">😊 Ánimo</p><p className="font-semibold">{day.wellbeing.moodLevel}/5</p></div>}
-                                {day.wellbeing.sleepQuality && <div><p className="text-gray-400">💤 Sueño</p><p className="font-semibold">{day.wellbeing.sleepQuality}/5</p></div>}
-                                {day.wellbeing.hungerLevel && <div><p className="text-gray-400">🥤 Hambre</p><p className="font-semibold">{day.wellbeing.hungerLevel}/5</p></div>}
-                                {day.wellbeing.digestiveComfort && <div><p className="text-gray-400">💚 Digest.</p><p className="font-semibold">{day.wellbeing.digestiveComfort}/5</p></div>}
+                                {day.wellbeing.energyLevel && <div><p className="text-muted-foreground/70">⚡ Energía</p><p className="font-semibold">{day.wellbeing.energyLevel}/5</p></div>}
+                                {day.wellbeing.moodLevel && <div><p className="text-muted-foreground/70">😊 Ánimo</p><p className="font-semibold">{day.wellbeing.moodLevel}/5</p></div>}
+                                {day.wellbeing.sleepQuality && <div><p className="text-muted-foreground/70">💤 Sueño</p><p className="font-semibold">{day.wellbeing.sleepQuality}/5</p></div>}
+                                {day.wellbeing.hungerLevel && <div><p className="text-muted-foreground/70">🥤 Hambre</p><p className="font-semibold">{day.wellbeing.hungerLevel}/5</p></div>}
+                                {day.wellbeing.digestiveComfort && <div><p className="text-muted-foreground/70">💚 Digest.</p><p className="font-semibold">{day.wellbeing.digestiveComfort}/5</p></div>}
                               </div>
-                              {day.wellbeing.notes && <p className="text-xs text-gray-500 mt-2 italic">"{day.wellbeing.notes}"</p>}
+                              {day.wellbeing.notes && <p className="text-xs text-muted-foreground mt-2 italic">"{day.wellbeing.notes}"</p>}
                             </div>
                           )}
                         </div>
@@ -696,14 +696,14 @@ export default function ExpertPatientDetail() {
             {/* Hitos del paciente */}
             <div className="mt-6">
               <div className="flex justify-between items-center mb-3">
-                <h4 className="font-semibold text-gray-700">🏆 Hitos y logros</h4>
+                <h4 className="font-semibold text-foreground/80">🏆 Hitos y logros</h4>
                 <Button size="sm" onClick={() => setShowMilestoneModal(true)} className="bg-orange-500 hover:bg-orange-600 text-white">
                   + Hito
                 </Button>
               </div>
               {!milestones || milestones.length === 0 ? (
-                <div className="text-center py-6 bg-gray-50 rounded-xl border border-dashed border-gray-200">
-                  <p className="text-sm text-gray-400">Añade hitos para celebrar los logros del paciente</p>
+                <div className="text-center py-6 bg-muted/30 rounded-xl border border-dashed border-border">
+                  <p className="text-sm text-muted-foreground/70">Añade hitos para celebrar los logros del paciente</p>
                 </div>
               ) : (
                 <div className="flex flex-wrap gap-2">
@@ -731,15 +731,15 @@ export default function ExpertPatientDetail() {
         {activeTab === "menus" && (
           <div>
             <div className="flex justify-between items-center mb-4">
-              <h3 className="font-semibold text-gray-700">Menús asignados ({assignedMenus.length})</h3>
+              <h3 className="font-semibold text-foreground/80">Menús asignados ({assignedMenus.length})</h3>
               <Button size="sm" onClick={() => { setSelectedMenuId(null); setAssignMenuTitle(""); setAssignMenuNotes(""); setAssignWeekStart(""); setMenuPickerSearch(""); setShowMenuPickerModal(true); }} className="bg-orange-500 hover:bg-orange-600 text-white">
                 + Asignar menú
               </Button>
             </div>
             {assignedMenus.length === 0 ? (
-              <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+              <div className="text-center py-12 bg-muted/30 rounded-xl border border-dashed border-border">
                 <div className="text-4xl mb-2">🥗</div>
-                <p className="text-gray-500">No hay menús asignados aún</p>
+                <p className="text-muted-foreground">No hay menús asignados aún</p>
                 <Button onClick={() => { setSelectedMenuId(null); setAssignMenuTitle(""); setAssignMenuNotes(""); setAssignWeekStart(""); setMenuPickerSearch(""); setShowMenuPickerModal(true); }} className="mt-3 bg-orange-500 hover:bg-orange-600 text-white" size="sm">
                   Asignar primer menú
                 </Button>
@@ -751,7 +751,7 @@ export default function ExpertPatientDetail() {
                     pending_adaptation: "bg-yellow-100 text-yellow-700",
                     adapted: "bg-green-100 text-green-700",
                     active: "bg-blue-100 text-blue-700",
-                    archived: "bg-gray-100 text-gray-500",
+                    archived: "bg-muted/50 text-muted-foreground",
                   };
                   const statusLabels = {
                     pending_adaptation: "Adaptando...",
@@ -760,33 +760,33 @@ export default function ExpertPatientDetail() {
                     archived: "Archivado",
                   };
                   return (
-                    <div key={am.id} className="p-4 bg-white rounded-xl border border-gray-200">
+                    <div key={am.id} className="p-4 bg-background rounded-xl border border-border">
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-semibold text-gray-900">{am.originalMenuTitle ?? "Menú personalizado"}</span>
+                            <span className="font-semibold text-foreground">{am.originalMenuTitle ?? "Menú personalizado"}</span>
                             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColors[am.status]}`}>
                               {statusLabels[am.status]}
                             </span>
                           </div>
                           {am.weekStartDate && (
-                            <p className="text-sm text-gray-500 mt-1">
+                            <p className="text-sm text-muted-foreground mt-1">
                               Semana del {new Date(am.weekStartDate).toLocaleDateString("es-ES", { day: "numeric", month: "long" })}
                             </p>
                           )}
                           {am.expertNotes && (
-                            <p className="text-sm text-gray-600 mt-1 italic">"{am.expertNotes}"</p>
+                            <p className="text-sm text-muted-foreground mt-1 italic">"{am.expertNotes}"</p>
                           )}
                           {am.adaptationNotes && (
                             <details className="mt-2">
                               <summary className="text-xs text-orange-600 cursor-pointer hover:underline">Ver cambios de la IA</summary>
-                              <p className="text-xs text-gray-500 mt-1 bg-orange-50 p-2 rounded">
+                              <p className="text-xs text-muted-foreground mt-1 bg-orange-50 p-2 rounded">
                                 • {am.adaptationNotes.split("\n").join("\n• ")}
                               </p>
                             </details>
                           )}
                         </div>
-                        <span className="text-xs text-gray-400 flex-shrink-0">
+                        <span className="text-xs text-muted-foreground/70 flex-shrink-0">
                           {new Date(am.createdAt).toLocaleDateString("es-ES")}
                         </span>
                       </div>
@@ -796,7 +796,7 @@ export default function ExpertPatientDetail() {
                             <span key={s} className={s <= am.patientRating! ? "text-yellow-400" : "text-gray-200"}>★</span>
                           ))}
                           {am.patientFeedback && (
-                            <span className="text-xs text-gray-500 ml-1">"{am.patientFeedback}"</span>
+                            <span className="text-xs text-muted-foreground ml-1">"{am.patientFeedback}"</span>
                           )}
                         </div>
                       )}
@@ -812,15 +812,15 @@ export default function ExpertPatientDetail() {
         {activeTab === "appointments" && (
           <div>
             <div className="flex justify-between items-center mb-4">
-              <h3 className="font-semibold text-gray-700">Citas ({appointments.length})</h3>
+              <h3 className="font-semibold text-foreground/80">Citas ({appointments.length})</h3>
               <Button size="sm" onClick={() => setShowAppointmentModal(true)} className="bg-orange-500 hover:bg-orange-600 text-white">
                 + Nueva cita
               </Button>
             </div>
             {appointments.length === 0 ? (
-              <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+              <div className="text-center py-12 bg-muted/30 rounded-xl border border-dashed border-border">
                 <div className="text-4xl mb-2">📅</div>
-                <p className="text-gray-500">No hay citas programadas</p>
+                <p className="text-muted-foreground">No hay citas programadas</p>
                 <Button onClick={() => setShowAppointmentModal(true)} className="mt-3 bg-orange-500 hover:bg-orange-600 text-white" size="sm">
                   Programar primera cita
                 </Button>
@@ -833,27 +833,27 @@ export default function ExpertPatientDetail() {
                   const statusColors = {
                     scheduled: "bg-blue-100 text-blue-700",
                     confirmed: "bg-green-100 text-green-700",
-                    completed: "bg-gray-100 text-gray-600",
+                    completed: "bg-muted/50 text-muted-foreground",
                     cancelled: "bg-red-100 text-red-600",
                     no_show: "bg-orange-100 text-orange-600",
                   };
                   return (
-                    <div key={appt.id} className={`p-4 bg-white rounded-xl border ${isPast && appt.status === "scheduled" ? "border-orange-200 bg-orange-50" : "border-gray-200"}`}>
+                    <div key={appt.id} className={`p-4 bg-background rounded-xl border ${isPast && appt.status === "scheduled" ? "border-orange-200 bg-orange-50" : "border-border"}`}>
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <span className="font-semibold text-gray-900">{appt.title}</span>
+                            <span className="font-semibold text-foreground">{appt.title}</span>
                             <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColors[appt.status]}`}>
                               {appt.status === "scheduled" ? "Programada" :
                                appt.status === "confirmed" ? "Confirmada" :
                                appt.status === "completed" ? "Completada" :
                                appt.status === "cancelled" ? "Cancelada" : "No asistió"}
                             </span>
-                            <span className="text-xs text-gray-500">
+                            <span className="text-xs text-muted-foreground">
                               {appt.modality === "online" ? "🌐 Online" : "📍 Presencial"}
                             </span>
                           </div>
-                          <p className="text-sm text-gray-600 mt-1">
+                          <p className="text-sm text-muted-foreground mt-1">
                             {start.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })} · {start.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
                           </p>
                           {appt.meetingUrl && (
@@ -892,7 +892,7 @@ export default function ExpertPatientDetail() {
         {activeTab === "progress" && (
           <div>
             <div className="flex justify-between items-center mb-4">
-              <h3 className="font-semibold text-gray-700">Evolución ({progressRecords.length} registros)</h3>
+              <h3 className="font-semibold text-foreground/80">Evolución ({progressRecords.length} registros)</h3>
               <Button size="sm" onClick={() => setShowProgressModal(true)} className="bg-orange-500 hover:bg-orange-600 text-white">
                 + Nuevo registro
               </Button>
@@ -900,8 +900,8 @@ export default function ExpertPatientDetail() {
 
             {/* Gráfico de peso con Recharts */}
             {combinedWeightData.length > 1 && (
-              <div className="p-4 bg-white rounded-xl border border-gray-200 mb-4">
-                <h4 className="text-sm font-semibold text-gray-700 mb-3">📈 Evolución del peso y composición corporal</h4>
+              <div className="p-4 bg-background rounded-xl border border-border mb-4">
+                <h4 className="text-sm font-semibold text-foreground/80 mb-3">📈 Evolución del peso y composición corporal</h4>
                 <ResponsiveContainer width="100%" height={220}>
                   <LineChart data={combinedWeightData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
                     <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -935,21 +935,21 @@ export default function ExpertPatientDetail() {
                   return (
                     <>
                       <div className="p-3 bg-orange-50 rounded-xl text-center">
-                        <p className="text-xs text-gray-500">Peso inicial</p>
+                        <p className="text-xs text-muted-foreground">Peso inicial</p>
                         <p className="text-lg font-bold text-orange-600">{first ? `${first} kg` : "—"}</p>
                       </div>
                       <div className="p-3 bg-orange-50 rounded-xl text-center">
-                        <p className="text-xs text-gray-500">Peso actual</p>
+                        <p className="text-xs text-muted-foreground">Peso actual</p>
                         <p className="text-lg font-bold text-orange-600">{last ? `${last} kg` : "—"}</p>
                       </div>
                       <div className="p-3 bg-orange-50 rounded-xl text-center">
-                        <p className="text-xs text-gray-500">Cambio total</p>
-                        <p className={`text-lg font-bold ${diff && parseFloat(diff) < 0 ? "text-green-600" : diff && parseFloat(diff) > 0 ? "text-red-500" : "text-gray-600"}`}>
+                        <p className="text-xs text-muted-foreground">Cambio total</p>
+                        <p className={`text-lg font-bold ${diff && parseFloat(diff) < 0 ? "text-green-600" : diff && parseFloat(diff) > 0 ? "text-red-500" : "text-muted-foreground"}`}>
                           {diff ? `${parseFloat(diff) > 0 ? "+" : ""}${diff} kg` : "—"}
                         </p>
                       </div>
                       <div className="p-3 bg-orange-50 rounded-xl text-center">
-                        <p className="text-xs text-gray-500">Registros</p>
+                        <p className="text-xs text-muted-foreground">Registros</p>
                         <p className="text-lg font-bold text-orange-600">{progressRecords.length}</p>
                       </div>
                     </>
@@ -959,9 +959,9 @@ export default function ExpertPatientDetail() {
             )}
 
             {progressRecords.length === 0 ? (
-              <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+              <div className="text-center py-12 bg-muted/30 rounded-xl border border-dashed border-border">
                 <div className="text-4xl mb-2">📈</div>
-                <p className="text-gray-500">No hay registros de evolución aún</p>
+                <p className="text-muted-foreground">No hay registros de evolución aún</p>
                 <Button onClick={() => setShowProgressModal(true)} className="mt-3 bg-orange-500 hover:bg-orange-600 text-white" size="sm">
                   Añadir primer registro
                 </Button>
@@ -969,18 +969,18 @@ export default function ExpertPatientDetail() {
             ) : (
               <div className="space-y-3">
                 {progressRecords.map(record => (
-                  <div key={record.id} className="p-4 bg-white rounded-xl border border-gray-200">
-                    <p className="text-sm font-medium text-gray-700">
+                  <div key={record.id} className="p-4 bg-background rounded-xl border border-border">
+                    <p className="text-sm font-medium text-foreground/80">
                       {new Date(record.recordedAt).toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
                     </p>
                     <div className="flex flex-wrap gap-3 mt-2">
-                      {record.weight && <span className="text-sm text-gray-600">⚖️ <strong>{record.weight}</strong> kg</span>}
-                      {record.bodyFat && <span className="text-sm text-gray-600">💧 <strong>{record.bodyFat}</strong>% grasa</span>}
-                      {record.muscleMass && <span className="text-sm text-gray-600">💪 <strong>{record.muscleMass}</strong> kg músculo</span>}
-                      {record.waist && <span className="text-sm text-gray-600">📏 Cintura: <strong>{record.waist}</strong> cm</span>}
-                      {record.hip && <span className="text-sm text-gray-600">Cadera: <strong>{record.hip}</strong> cm</span>}
+                      {record.weight && <span className="text-sm text-muted-foreground">⚖️ <strong>{record.weight}</strong> kg</span>}
+                      {record.bodyFat && <span className="text-sm text-muted-foreground">💧 <strong>{record.bodyFat}</strong>% grasa</span>}
+                      {record.muscleMass && <span className="text-sm text-muted-foreground">💪 <strong>{record.muscleMass}</strong> kg músculo</span>}
+                      {record.waist && <span className="text-sm text-muted-foreground">📏 Cintura: <strong>{record.waist}</strong> cm</span>}
+                      {record.hip && <span className="text-sm text-muted-foreground">Cadera: <strong>{record.hip}</strong> cm</span>}
                     </div>
-                    {record.notes && <p className="text-sm text-gray-500 mt-2 italic">"{record.notes}"</p>}
+                    {record.notes && <p className="text-sm text-muted-foreground mt-2 italic">"{record.notes}"</p>}
                     {record.expertComment && (
                       <p className="text-sm text-orange-600 mt-1 bg-orange-50 px-2 py-1 rounded">💬 {record.expertComment}</p>
                     )}
@@ -996,8 +996,8 @@ export default function ExpertPatientDetail() {
           <div>
             <div className="flex justify-between items-center mb-4">
               <div>
-                <h3 className="font-semibold text-gray-700">Notas internas ({notes.length})</h3>
-                <p className="text-xs text-gray-400 mt-0.5">🔒 Solo visibles para ti. El paciente no puede verlas.</p>
+                <h3 className="font-semibold text-foreground/80">Notas internas ({notes.length})</h3>
+                <p className="text-xs text-muted-foreground/70 mt-0.5">🔒 Solo visibles para ti. El paciente no puede verlas.</p>
               </div>
               <Button
                 size="sm"
@@ -1015,10 +1015,10 @@ export default function ExpertPatientDetail() {
             </div>
 
             {notes.length === 0 ? (
-              <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+              <div className="text-center py-12 bg-muted/30 rounded-xl border border-dashed border-border">
                 <div className="text-4xl mb-2">🔒</div>
-                <p className="text-gray-500 font-medium">Sin notas internas</p>
-                <p className="text-sm text-gray-400 mt-1">Añade notas clínicas, objetivos o alertas sobre este paciente</p>
+                <p className="text-muted-foreground font-medium">Sin notas internas</p>
+                <p className="text-sm text-muted-foreground/70 mt-1">Añade notas clínicas, objetivos o alertas sobre este paciente</p>
                 <Button
                   onClick={() => { setEditingNoteId(null); setNoteContent(""); setNoteType("general"); setNotePinned(false); setShowNoteModal(true); }}
                   className="mt-3 bg-orange-500 hover:bg-orange-600 text-white"
@@ -1032,7 +1032,7 @@ export default function ExpertPatientDetail() {
                 {notes.map(note => {
                   const typeInfo = NOTE_TYPE_LABELS[note.noteType] ?? NOTE_TYPE_LABELS.general;
                   return (
-                    <div key={note.id} className={`p-4 bg-white rounded-xl border ${note.noteType === "alert" ? "border-red-200" : note.isPinned ? "border-yellow-200" : "border-gray-200"}`}>
+                    <div key={note.id} className={`p-4 bg-background rounded-xl border ${note.noteType === "alert" ? "border-red-200" : note.isPinned ? "border-yellow-200" : "border-border"}`}>
                       <div className="flex items-start justify-between gap-3">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 flex-wrap mb-2">
@@ -1044,14 +1044,14 @@ export default function ExpertPatientDetail() {
                                 📌 Fijada
                               </span>
                             )}
-                            <span className="text-xs text-gray-400 ml-auto">
+                            <span className="text-xs text-muted-foreground/70 ml-auto">
                               {new Date(note.createdAt).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}
                             </span>
                           </div>
-                          <p className="text-sm text-gray-800 whitespace-pre-wrap">{note.content}</p>
+                          <p className="text-sm text-foreground whitespace-pre-wrap">{note.content}</p>
                         </div>
                       </div>
-                      <div className="flex gap-2 mt-3 pt-3 border-t border-gray-100">
+                      <div className="flex gap-2 mt-3 pt-3 border-t border-border/50">
                         <button
                           onClick={() => {
                             setEditingNoteId(note.id);
@@ -1060,13 +1060,13 @@ export default function ExpertPatientDetail() {
                             setNotePinned(note.isPinned);
                             setShowNoteModal(true);
                           }}
-                          className="text-xs text-gray-500 hover:text-orange-600 transition-colors"
+                          className="text-xs text-muted-foreground hover:text-orange-600 transition-colors"
                         >
                           ✏️ Editar
                         </button>
                         <button
                           onClick={() => updateNoteMutation.mutate({ noteId: note.id, isPinned: !note.isPinned })}
-                          className="text-xs text-gray-500 hover:text-yellow-600 transition-colors"
+                          className="text-xs text-muted-foreground hover:text-yellow-600 transition-colors"
                         >
                           {note.isPinned ? "📌 Desfijar" : "📌 Fijar"}
                         </button>
@@ -1076,7 +1076,7 @@ export default function ExpertPatientDetail() {
                               deleteNoteMutation.mutate({ noteId: note.id });
                             }
                           }}
-                          className="text-xs text-gray-400 hover:text-red-500 transition-colors ml-auto"
+                          className="text-xs text-muted-foreground/70 hover:text-red-500 transition-colors ml-auto"
                         >
                           🗑️ Eliminar
                         </button>
@@ -1094,8 +1094,8 @@ export default function ExpertPatientDetail() {
           <div>
             <div className="flex justify-between items-center mb-4">
               <div>
-                <h3 className="font-semibold text-gray-700">Historial de sesiones ({sessionNotes?.length ?? 0})</h3>
-                <p className="text-xs text-gray-400 mt-0.5">📋 Actas de consulta y seguimiento del paciente</p>
+                <h3 className="font-semibold text-foreground/80">Historial de sesiones ({sessionNotes?.length ?? 0})</h3>
+                <p className="text-xs text-muted-foreground/70 mt-0.5">📋 Actas de consulta y seguimiento del paciente</p>
               </div>
               <Button
                 size="sm"
@@ -1111,10 +1111,10 @@ export default function ExpertPatientDetail() {
             </div>
 
             {!sessionNotes || sessionNotes.length === 0 ? (
-              <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+              <div className="text-center py-12 bg-muted/30 rounded-xl border border-dashed border-border">
                 <div className="text-4xl mb-2">📋</div>
-                <p className="text-gray-500 font-medium">Sin sesiones registradas</p>
-                <p className="text-sm text-gray-400 mt-1">Registra el acta de cada consulta para llevar un seguimiento completo</p>
+                <p className="text-muted-foreground font-medium">Sin sesiones registradas</p>
+                <p className="text-sm text-muted-foreground/70 mt-1">Registra el acta de cada consulta para llevar un seguimiento completo</p>
                 <Button
                   onClick={() => { setEditingSessionId(null); setSessionForm({ sessionDate: new Date().toISOString().split("T")[0], summary: "", agreements: "", nextObjectives: "", nextAppointmentDate: "", patientWeight: "", patientMood: "", adherenceScore: "", privateNotes: "" }); setShowSessionModal(true); }}
                   className="mt-3 bg-orange-500 hover:bg-orange-600 text-white"
@@ -1126,7 +1126,7 @@ export default function ExpertPatientDetail() {
             ) : (
               <div className="relative">
                 {/* Timeline line */}
-                <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-gray-200" />
+                <div className="absolute left-5 top-0 bottom-0 w-0.5 bg-muted" />
                 <div className="space-y-4">
                   {sessionNotes.map((session: any) => (
                     <div key={session.id} className="relative flex gap-4">
@@ -1135,10 +1135,10 @@ export default function ExpertPatientDetail() {
                         <span className="text-orange-600 text-sm font-bold">{new Date(session.sessionDate + 'T12:00:00').getDate()}</span>
                       </div>
                       <div className="flex-1 pb-4">
-                        <div className="bg-white rounded-xl border border-gray-200 p-4">
+                        <div className="bg-background rounded-xl border border-border p-4">
                           <div className="flex items-start justify-between gap-3 mb-3">
                             <div>
-                              <p className="font-semibold text-gray-900">
+                              <p className="font-semibold text-foreground">
                                 {new Date(session.sessionDate + 'T12:00:00').toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
                               </p>
                               <div className="flex gap-2 mt-1 flex-wrap">
@@ -1180,43 +1180,43 @@ export default function ExpertPatientDetail() {
                                   });
                                   setShowSessionModal(true);
                                 }}
-                                className="text-xs text-gray-400 hover:text-orange-600 transition-colors p-1"
+                                className="text-xs text-muted-foreground/70 hover:text-orange-600 transition-colors p-1"
                               >✏️</button>
                               <button
                                 onClick={() => { if (confirm('¿Eliminar esta sesión?')) deleteSessionMutation.mutate({ noteId: session.id }); }}
-                                className="text-xs text-gray-400 hover:text-red-500 transition-colors p-1"
+                                className="text-xs text-muted-foreground/70 hover:text-red-500 transition-colors p-1"
                               >🗑️</button>
                             </div>
                           </div>
                           <div className="space-y-2">
                             <div>
-                              <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Resumen de la sesión</p>
-                              <p className="text-sm text-gray-700 whitespace-pre-wrap">{session.summary}</p>
+                              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">Resumen de la sesión</p>
+                              <p className="text-sm text-foreground/80 whitespace-pre-wrap">{session.summary}</p>
                             </div>
                             {session.agreements && (
-                              <div className="mt-2 pt-2 border-t border-gray-100">
-                                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">✅ Acuerdos y cambios</p>
-                                <p className="text-sm text-gray-700 whitespace-pre-wrap">{session.agreements}</p>
+                              <div className="mt-2 pt-2 border-t border-border/50">
+                                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">✅ Acuerdos y cambios</p>
+                                <p className="text-sm text-foreground/80 whitespace-pre-wrap">{session.agreements}</p>
                               </div>
                             )}
                             {session.nextObjectives && (
-                              <div className="mt-2 pt-2 border-t border-gray-100">
-                                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">🎯 Objetivos próxima visita</p>
-                                <p className="text-sm text-gray-700 whitespace-pre-wrap">{session.nextObjectives}</p>
+                              <div className="mt-2 pt-2 border-t border-border/50">
+                                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">🎯 Objetivos próxima visita</p>
+                                <p className="text-sm text-foreground/80 whitespace-pre-wrap">{session.nextObjectives}</p>
                               </div>
                             )}
                             {session.nextAppointmentDate && (
-                              <div className="mt-2 pt-2 border-t border-gray-100">
-                                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">📅 Próxima cita</p>
+                              <div className="mt-2 pt-2 border-t border-border/50">
+                                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">📅 Próxima cita</p>
                                 <p className="text-sm text-orange-600 font-medium">
                                   {new Date(session.nextAppointmentDate + 'T12:00:00').toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long', year: 'numeric' })}
                                 </p>
                               </div>
                             )}
                             {session.privateNotes && (
-                              <div className="mt-2 pt-2 border-t border-gray-100">
-                                <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">🔒 Notas privadas</p>
-                                <p className="text-sm text-gray-500 italic whitespace-pre-wrap">{session.privateNotes}</p>
+                              <div className="mt-2 pt-2 border-t border-border/50">
+                                <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-1">🔒 Notas privadas</p>
+                                <p className="text-sm text-muted-foreground italic whitespace-pre-wrap">{session.privateNotes}</p>
                               </div>
                             )}
                           </div>
@@ -1234,21 +1234,21 @@ export default function ExpertPatientDetail() {
         {activeTab === "profile" && (
           <div className="space-y-4">
             <div className="grid grid-cols-2 gap-4">
-              <div className="p-4 bg-white rounded-xl border border-gray-200">
-                <h4 className="text-sm font-semibold text-gray-700 mb-3">Datos físicos</h4>
+              <div className="p-4 bg-background rounded-xl border border-border">
+                <h4 className="text-sm font-semibold text-foreground/80 mb-3">Datos físicos</h4>
                 <div className="space-y-2 text-sm">
-                  <div className="flex justify-between"><span className="text-gray-500">Peso</span><span className="font-medium">{profile?.weight ? `${profile.weight} kg` : "—"}</span></div>
-                  <div className="flex justify-between"><span className="text-gray-500">Altura</span><span className="font-medium">{profile?.height ? `${profile.height} cm` : "—"}</span></div>
-                  <div className="flex justify-between"><span className="text-gray-500">Edad</span><span className="font-medium">{profile?.age ? `${profile.age} años` : "—"}</span></div>
-                  <div className="flex justify-between"><span className="text-gray-500">Objetivo</span><span className="font-medium">{profile?.mainGoal ?? "—"}</span></div>
-                  <div className="flex justify-between"><span className="text-gray-500">Actividad</span><span className="font-medium">{profile?.activityLevel ?? "—"}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Peso</span><span className="font-medium">{profile?.weight ? `${profile.weight} kg` : "—"}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Altura</span><span className="font-medium">{profile?.height ? `${profile.height} cm` : "—"}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Edad</span><span className="font-medium">{profile?.age ? `${profile.age} años` : "—"}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Objetivo</span><span className="font-medium">{profile?.mainGoal ?? "—"}</span></div>
+                  <div className="flex justify-between"><span className="text-muted-foreground">Actividad</span><span className="font-medium">{profile?.activityLevel ?? "—"}</span></div>
                 </div>
               </div>
-              <div className="p-4 bg-white rounded-xl border border-gray-200">
-                <h4 className="text-sm font-semibold text-gray-700 mb-3">Restricciones</h4>
+              <div className="p-4 bg-background rounded-xl border border-border">
+                <h4 className="text-sm font-semibold text-foreground/80 mb-3">Restricciones</h4>
                 <div className="space-y-2 text-sm">
                   <div>
-                    <span className="text-gray-500">Alergias: </span>
+                    <span className="text-muted-foreground">Alergias: </span>
                     <span className="font-medium">
                       {profile?.menuAllergies
                         ? (() => { try { return JSON.parse(profile.menuAllergies).join(", ") || "Ninguna"; } catch { return profile.menuAllergies || "Ninguna"; } })()
@@ -1256,7 +1256,7 @@ export default function ExpertPatientDetail() {
                     </span>
                   </div>
                   <div>
-                    <span className="text-gray-500">Restricciones: </span>
+                    <span className="text-muted-foreground">Restricciones: </span>
                     <span className="font-medium">
                       {profile?.menuRestrictions
                         ? (() => { try { return JSON.parse(profile.menuRestrictions).join(", ") || "Ninguna"; } catch { return profile.menuRestrictions || "Ninguna"; } })()
@@ -1264,32 +1264,32 @@ export default function ExpertPatientDetail() {
                     </span>
                   </div>
                   <div>
-                    <span className="text-gray-500">Tipo dieta: </span>
+                    <span className="text-muted-foreground">Tipo dieta: </span>
                     <span className="font-medium">{profile?.menuDietType ?? "—"}</span>
                   </div>
                 </div>
               </div>
             </div>
             {medicalProfile && (
-              <div className="p-4 bg-white rounded-xl border border-gray-200">
-                <h4 className="text-sm font-semibold text-gray-700 mb-3">Perfil médico</h4>
-                <div className="text-sm text-gray-600 space-y-1">
-                  {medicalProfile.medicalConditions && <p><span className="text-gray-500">Condiciones: </span>{medicalProfile.medicalConditions}</p>}
-                  {medicalProfile.medications && <p><span className="text-gray-500">Medicación: </span>{medicalProfile.medications}</p>}
+              <div className="p-4 bg-background rounded-xl border border-border">
+                <h4 className="text-sm font-semibold text-foreground/80 mb-3">Perfil médico</h4>
+                <div className="text-sm text-muted-foreground space-y-1">
+                  {medicalProfile.medicalConditions && <p><span className="text-muted-foreground">Condiciones: </span>{medicalProfile.medicalConditions}</p>}
+                  {medicalProfile.medications && <p><span className="text-muted-foreground">Medicación: </span>{medicalProfile.medications}</p>}
                 </div>
               </div>
             )}
-            <div className="p-4 bg-white rounded-xl border border-gray-200">
-              <h4 className="text-sm font-semibold text-gray-700 mb-2">Notas de la relación</h4>
-              <p className="text-sm text-gray-600">{relation.notes || "Sin notas"}</p>
+            <div className="p-4 bg-background rounded-xl border border-border">
+              <h4 className="text-sm font-semibold text-foreground/80 mb-2">Notas de la relación</h4>
+              <p className="text-sm text-muted-foreground">{relation.notes || "Sin notas"}</p>
             </div>
-            <div className="p-4 bg-white rounded-xl border border-gray-200">
-              <h4 className="text-sm font-semibold text-gray-700 mb-2">Objetivos calóricos</h4>
+            <div className="p-4 bg-background rounded-xl border border-border">
+              <h4 className="text-sm font-semibold text-foreground/80 mb-2">Objetivos calóricos</h4>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-sm">
-                <div><span className="text-gray-500">Calorías: </span><span className="font-medium">{profile?.dailyCalorieGoal ? `${profile.dailyCalorieGoal} kcal` : "—"}</span></div>
-                <div><span className="text-gray-500">Proteína: </span><span className="font-medium">{profile?.dailyProteinGoal ? `${profile.dailyProteinGoal}g` : "—"}</span></div>
-                <div><span className="text-gray-500">Carbos: </span><span className="font-medium">{profile?.dailyCarbsGoal ? `${profile.dailyCarbsGoal}g` : "—"}</span></div>
-                <div><span className="text-gray-500">Grasa: </span><span className="font-medium">{profile?.dailyFatGoal ? `${profile.dailyFatGoal}g` : "—"}</span></div>
+                <div><span className="text-muted-foreground">Calorías: </span><span className="font-medium">{profile?.dailyCalorieGoal ? `${profile.dailyCalorieGoal} kcal` : "—"}</span></div>
+                <div><span className="text-muted-foreground">Proteína: </span><span className="font-medium">{profile?.dailyProteinGoal ? `${profile.dailyProteinGoal}g` : "—"}</span></div>
+                <div><span className="text-muted-foreground">Carbos: </span><span className="font-medium">{profile?.dailyCarbsGoal ? `${profile.dailyCarbsGoal}g` : "—"}</span></div>
+                <div><span className="text-muted-foreground">Grasa: </span><span className="font-medium">{profile?.dailyFatGoal ? `${profile.dailyFatGoal}g` : "—"}</span></div>
               </div>
             </div>
           </div>
@@ -1300,23 +1300,23 @@ export default function ExpertPatientDetail() {
           <div className="space-y-4">
             <div className="flex items-center justify-between">
               <div>
-                <h3 className="font-semibold text-gray-700">✅ Check-ins Semanales</h3>
-                <p className="text-xs text-gray-400 mt-0.5">Valoraciones semanales del paciente</p>
+                <h3 className="font-semibold text-foreground/80">✅ Check-ins Semanales</h3>
+                <p className="text-xs text-muted-foreground/70 mt-0.5">Valoraciones semanales del paciente</p>
               </div>
             </div>
             {!weeklyCheckinsData || weeklyCheckinsData.length === 0 ? (
-              <div className="text-center py-12 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+              <div className="text-center py-12 bg-muted/30 rounded-2xl border border-dashed border-border">
                 <div className="text-4xl mb-3">✅</div>
-                <p className="text-gray-500 font-medium">Sin check-ins todavía</p>
-                <p className="text-sm text-gray-400 mt-1">El paciente completará su primer check-in semanal en breve</p>
+                <p className="text-muted-foreground font-medium">Sin check-ins todavía</p>
+                <p className="text-sm text-muted-foreground/70 mt-1">El paciente completará su primer check-in semanal en breve</p>
               </div>
             ) : (
               <div className="space-y-3">
                 {weeklyCheckinsData.map(ci => (
-                  <div key={ci.id} className="bg-white rounded-xl border border-gray-200 p-4">
+                  <div key={ci.id} className="bg-background rounded-xl border border-border p-4">
                     <div className="flex items-center justify-between mb-3">
                       <div>
-                        <span className="font-semibold text-gray-800 text-sm">
+                        <span className="font-semibold text-foreground text-sm">
                           Semana del {new Date(ci.weekStart + "T12:00:00").toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })}
                         </span>
                         {ci.completedAt && (
@@ -1330,42 +1330,42 @@ export default function ExpertPatientDetail() {
                     <div className="grid grid-cols-5 gap-2 mb-3">
                       {ci.energyLevel !== null && ci.energyLevel !== undefined && (
                         <div className="text-center bg-yellow-50 rounded-lg p-2">
-                          <div className="text-xs text-gray-500">Energía</div>
+                          <div className="text-xs text-muted-foreground">Energía</div>
                           <div className="font-bold text-yellow-600">{ci.energyLevel}/10</div>
                         </div>
                       )}
                       {ci.adherenceScore !== null && ci.adherenceScore !== undefined && (
                         <div className="text-center bg-green-50 rounded-lg p-2">
-                          <div className="text-xs text-gray-500">Adherencia</div>
+                          <div className="text-xs text-muted-foreground">Adherencia</div>
                           <div className="font-bold text-green-600">{ci.adherenceScore}/10</div>
                         </div>
                       )}
                       {ci.hunger !== null && ci.hunger !== undefined && (
                         <div className="text-center bg-orange-50 rounded-lg p-2">
-                          <div className="text-xs text-gray-500">Saciedad</div>
+                          <div className="text-xs text-muted-foreground">Saciedad</div>
                           <div className="font-bold text-orange-600">{ci.hunger}/10</div>
                         </div>
                       )}
                       {ci.mood !== null && ci.mood !== undefined && (
                         <div className="text-center bg-blue-50 rounded-lg p-2">
-                          <div className="text-xs text-gray-500">Ánimo</div>
+                          <div className="text-xs text-muted-foreground">Ánimo</div>
                           <div className="font-bold text-blue-600">{ci.mood}/10</div>
                         </div>
                       )}
                       {ci.sleepQuality !== null && ci.sleepQuality !== undefined && (
                         <div className="text-center bg-purple-50 rounded-lg p-2">
-                          <div className="text-xs text-gray-500">Sueño</div>
+                          <div className="text-xs text-muted-foreground">Sueño</div>
                           <div className="font-bold text-purple-600">{ci.sleepQuality}/10</div>
                         </div>
                       )}
                     </div>
                     {ci.difficulties && (
-                      <div className="mt-2 text-sm text-gray-600 bg-red-50 rounded-lg p-2">
+                      <div className="mt-2 text-sm text-muted-foreground bg-red-50 rounded-lg p-2">
                         <span className="font-medium text-red-700">Dificultades:</span> {ci.difficulties}
                       </div>
                     )}
                     {ci.notes && (
-                      <div className="mt-2 text-sm text-gray-600 bg-gray-50 rounded-lg p-2">
+                      <div className="mt-2 text-sm text-muted-foreground bg-muted/30 rounded-lg p-2">
                         <span className="font-medium">Notas:</span> {ci.notes}
                       </div>
                     )}
@@ -1382,8 +1382,8 @@ export default function ExpertPatientDetail() {
             {/* Header */}
             <div className="flex items-start justify-between">
               <div>
-                <h3 className="font-semibold text-gray-700">🧠 Análisis de Tendencias con IA</h3>
-                <p className="text-xs text-gray-400 mt-0.5">Análisis clínico basado en los últimos 90 días de datos del paciente</p>
+                <h3 className="font-semibold text-foreground/80">🧠 Análisis de Tendencias con IA</h3>
+                <p className="text-xs text-muted-foreground/70 mt-0.5">Análisis clínico basado en los últimos 90 días de datos del paciente</p>
               </div>
               <Button
                 onClick={() => analyzePatientMutation.mutate({ expertPatientId: patientRelId, patientUserId: patientUser?.id ?? 0 })}
@@ -1404,16 +1404,16 @@ export default function ExpertPatientDetail() {
             {!aiAnalysisResult && !analyzePatientMutation.isPending && (
               <div className="text-center py-16 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl border border-purple-200">
                 <div className="text-5xl mb-3">🧠</div>
-                <p className="text-gray-700 font-semibold text-lg">Análisis inteligente del paciente</p>
-                <p className="text-sm text-gray-500 mt-2 max-w-md mx-auto">
+                <p className="text-foreground/80 font-semibold text-lg">Análisis inteligente del paciente</p>
+                <p className="text-sm text-muted-foreground mt-2 max-w-md mx-auto">
                   La IA analizará los registros de peso, bienestar, adherencia y sesiones de los últimos 90 días
                   para generar insights clínicos personalizados.
                 </p>
                 <div className="mt-4 flex flex-wrap gap-2 justify-center text-xs">
-                  <span className="px-3 py-1 bg-white rounded-full border border-purple-200 text-purple-700">⚖️ Evolución del peso</span>
-                  <span className="px-3 py-1 bg-white rounded-full border border-purple-200 text-purple-700">😊 Bienestar y ánimo</span>
-                  <span className="px-3 py-1 bg-white rounded-full border border-purple-200 text-purple-700">🎯 Adherencia al plan</span>
-                  <span className="px-3 py-1 bg-white rounded-full border border-purple-200 text-purple-700">📋 Historial de sesiones</span>
+                  <span className="px-3 py-1 bg-background rounded-full border border-purple-200 text-purple-700">⚖️ Evolución del peso</span>
+                  <span className="px-3 py-1 bg-background rounded-full border border-purple-200 text-purple-700">😊 Bienestar y ánimo</span>
+                  <span className="px-3 py-1 bg-background rounded-full border border-purple-200 text-purple-700">🎯 Adherencia al plan</span>
+                  <span className="px-3 py-1 bg-background rounded-full border border-purple-200 text-purple-700">📋 Historial de sesiones</span>
                 </div>
                 <Button
                   onClick={() => analyzePatientMutation.mutate({ expertPatientId: patientRelId, patientUserId: patientUser?.id ?? 0 })}
@@ -1428,8 +1428,8 @@ export default function ExpertPatientDetail() {
             {analyzePatientMutation.isPending && (
               <div className="text-center py-16 bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl border border-purple-200">
                 <div className="w-12 h-12 border-4 border-purple-500 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-                <p className="text-gray-700 font-medium">Analizando datos del paciente...</p>
-                <p className="text-sm text-gray-500 mt-1">Esto puede tardar unos segundos</p>
+                <p className="text-foreground/80 font-medium">Analizando datos del paciente...</p>
+                <p className="text-sm text-muted-foreground mt-1">Esto puede tardar unos segundos</p>
               </div>
             )}
 
@@ -1437,26 +1437,26 @@ export default function ExpertPatientDetail() {
             {aiAnalysisResult && !analyzePatientMutation.isPending && (
               <div className="space-y-3">
                 {aiAnalysisDate && (
-                  <div className="flex items-center gap-2 text-xs text-gray-400">
+                  <div className="flex items-center gap-2 text-xs text-muted-foreground/70">
                     <span>⏰ Generado el {new Date(aiAnalysisDate).toLocaleString('es-ES')}</span>
                     <span className="px-2 py-0.5 bg-purple-100 text-purple-700 rounded-full font-medium">IA</span>
                   </div>
                 )}
-                <div className="bg-white rounded-2xl border border-gray-200 p-5">
-                  <div className="prose prose-sm max-w-none text-gray-700 whitespace-pre-wrap leading-relaxed">
+                <div className="bg-background rounded-2xl border border-border p-5">
+                  <div className="prose prose-sm max-w-none text-foreground/80 whitespace-pre-wrap leading-relaxed">
                     {aiAnalysisResult.split('\n').map((line, i) => {
                       if (line.match(/^\d+\. [A-ZÁ-Ú ]+$/)) {
-                        return <p key={i} className="font-bold text-gray-900 mt-4 mb-1 text-base">{line}</p>;
+                        return <p key={i} className="font-bold text-foreground mt-4 mb-1 text-base">{line}</p>;
                       }
                       if (line.startsWith('- ') || line.startsWith('• ')) {
-                        return <p key={i} className="ml-3 text-gray-700">{line}</p>;
+                        return <p key={i} className="ml-3 text-foreground/80">{line}</p>;
                       }
                       if (line.trim() === '') return <br key={i} />;
-                      return <p key={i} className="text-gray-700">{line}</p>;
+                      return <p key={i} className="text-foreground/80">{line}</p>;
                     })}
                   </div>
                 </div>
-                <p className="text-xs text-gray-400 italic">
+                <p className="text-xs text-muted-foreground/70 italic">
                   ⚠️ Este análisis es orientativo y no sustituye el criterio clínico profesional.
                 </p>
               </div>
@@ -1590,7 +1590,7 @@ export default function ExpertPatientDetail() {
               {['🏆', '🌟', '💪', '❤️', '🎯', '📉', '🔥', '👏', '🎉', '✅'].map(icon => (
                 <button key={icon} onClick={() => setMilestoneForm(prev => ({ ...prev, icon }))}
                   className={`text-xl p-1.5 rounded-lg transition-colors ${
-                    milestoneForm.icon === icon ? 'bg-orange-100 ring-2 ring-orange-400' : 'hover:bg-gray-100'
+                    milestoneForm.icon === icon ? 'bg-orange-100 ring-2 ring-orange-400' : 'hover:bg-muted/50'
                   }`}>{icon}</button>
               ))}
             </div>
@@ -1647,7 +1647,7 @@ export default function ExpertPatientDetail() {
                     key={key}
                     onClick={() => setNoteType(key as any)}
                     className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                      noteType === key ? val.color + " ring-2 ring-offset-1 ring-orange-400" : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      noteType === key ? val.color + " ring-2 ring-offset-1 ring-orange-400" : "bg-muted/50 text-muted-foreground hover:bg-muted"
                     }`}
                   >
                     {val.icon} {val.label}
@@ -1702,7 +1702,7 @@ export default function ExpertPatientDetail() {
         <DialogContent className="max-w-2xl w-[95vw] max-h-[90vh] flex flex-col p-0 gap-0">
           <DialogHeader className="px-5 pt-5 pb-3 border-b">
             <DialogTitle>Seleccionar menú para asignar</DialogTitle>
-            <p className="text-sm text-gray-500 mt-1">Elige el menú que mejor se adapte a las necesidades del paciente</p>
+            <p className="text-sm text-muted-foreground mt-1">Elige el menú que mejor se adapte a las necesidades del paciente</p>
           </DialogHeader>
           {/* Buscador */}
           <div className="px-5 py-3 border-b">
@@ -1710,13 +1710,13 @@ export default function ExpertPatientDetail() {
               placeholder="🔍 Buscar por nombre, categoría..."
               value={menuPickerSearch}
               onChange={e => setMenuPickerSearch(e.target.value)}
-              className="bg-gray-50"
+              className="bg-muted/30"
             />
           </div>
           {/* Grid de tarjetas */}
           <div className="flex-1 overflow-y-auto p-5">
             {!myMenus || myMenus.length === 0 ? (
-              <div className="text-center py-12 text-gray-400">
+              <div className="text-center py-12 text-muted-foreground/70">
                 <p className="text-4xl mb-3">🥗</p>
                 <p className="font-medium">Aún no tienes menús creados</p>
                 <p className="text-sm mt-1">Crea menús en tu panel de contenido para poder asignarlos a pacientes</p>
@@ -1769,7 +1769,7 @@ export default function ExpertPatientDetail() {
                       className={`text-left rounded-xl border-2 p-4 transition-all ${
                         isSelected
                           ? "border-orange-500 bg-orange-50 shadow-md"
-                          : "border-gray-200 bg-white hover:border-orange-300 hover:bg-orange-50/30"
+                          : "border-border bg-background hover:border-orange-300 hover:bg-orange-50/30"
                       }`}
                     >
                       {/* Cover image or placeholder */}
@@ -1781,19 +1781,19 @@ export default function ExpertPatientDetail() {
                         </div>
                       )}
                       {/* Title */}
-                      <h3 className="font-semibold text-gray-900 text-sm leading-tight mb-1.5">{m.title ?? `Menú ${m.id}`}</h3>
+                      <h3 className="font-semibold text-foreground text-sm leading-tight mb-1.5">{m.title ?? `Menú ${m.id}`}</h3>
                       {/* Category badge */}
                       {m.category && (
-                        <span className={`inline-block text-[10px] font-medium px-2 py-0.5 rounded-full mb-2 ${CATEGORY_COLORS[m.category] ?? "bg-gray-100 text-gray-600"}`}>
+                        <span className={`inline-block text-[10px] font-medium px-2 py-0.5 rounded-full mb-2 ${CATEGORY_COLORS[m.category] ?? "bg-muted/50 text-muted-foreground"}`}>
                           {CATEGORY_LABELS[m.category] ?? m.category}
                         </span>
                       )}
                       {/* Description */}
                       {m.description && (
-                        <p className="text-xs text-gray-500 line-clamp-2 mb-2">{m.description}</p>
+                        <p className="text-xs text-muted-foreground line-clamp-2 mb-2">{m.description}</p>
                       )}
                       {/* Stats row */}
-                      <div className="flex items-center gap-3 text-xs text-gray-500">
+                      <div className="flex items-center gap-3 text-xs text-muted-foreground">
                         {m.dailyCalories && (
                           <span className="flex items-center gap-1">🔥 {m.dailyCalories} kcal/día</span>
                         )}
@@ -1805,7 +1805,7 @@ export default function ExpertPatientDetail() {
                       {mealPreview.length > 0 && (
                         <div className="mt-2 flex flex-wrap gap-1">
                           {mealPreview.map((meal, i) => (
-                            <span key={i} className="text-[10px] bg-gray-100 text-gray-600 px-1.5 py-0.5 rounded">{meal}</span>
+                            <span key={i} className="text-[10px] bg-muted/50 text-muted-foreground px-1.5 py-0.5 rounded">{meal}</span>
                           ))}
                         </div>
                       )}
@@ -1822,7 +1822,7 @@ export default function ExpertPatientDetail() {
             )}
           </div>
           {/* Footer con acción */}
-          <div className="px-5 py-4 border-t bg-gray-50 flex items-center justify-between gap-3">
+          <div className="px-5 py-4 border-t bg-muted/30 flex items-center justify-between gap-3">
             <Button variant="outline" onClick={() => { setShowMenuPickerModal(false); setSelectedMenuId(null); setMenuPickerSearch(""); }}>
               Cancelar
             </Button>
@@ -1855,8 +1855,8 @@ export default function ExpertPatientDetail() {
                 <div className="flex items-center gap-3 p-3 bg-orange-50 border border-orange-200 rounded-xl">
                   <span className="text-2xl">🥗</span>
                   <div>
-                    <p className="font-semibold text-gray-900 text-sm">{sel.title}</p>
-                    {sel.dailyCalories && <p className="text-xs text-gray-500">🔥 {sel.dailyCalories} kcal/día</p>}
+                    <p className="font-semibold text-foreground text-sm">{sel.title}</p>
+                    {sel.dailyCalories && <p className="text-xs text-muted-foreground">🔥 {sel.dailyCalories} kcal/día</p>}
                   </div>
                   <button
                     onClick={() => { setShowAssignMenuModal(false); setShowMenuPickerModal(true); }}

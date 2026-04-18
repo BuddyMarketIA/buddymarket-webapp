@@ -73,8 +73,8 @@ function CatalogSection({
   return (
     <div className="vively-card space-y-4">
       <div className="flex items-center justify-between">
-        <h3 className="text-sm font-bold text-gray-700">{title}</h3>
-        <span className="rounded-full bg-gray-100 px-2.5 py-0.5 text-xs font-semibold text-gray-500">
+        <h3 className="text-sm font-bold text-foreground/80">{title}</h3>
+        <span className="rounded-full bg-muted/50 px-2.5 py-0.5 text-xs font-semibold text-muted-foreground">
           {items?.length ?? 0}
         </span>
       </div>
@@ -118,10 +118,10 @@ function CatalogSection({
       <div className="max-h-48 overflow-y-auto space-y-1.5">
         {items && items.length > 0 ? (
           items.map((item) => (
-            <div key={item.id} className="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2">
+            <div key={item.id} className="flex items-center justify-between rounded-xl bg-muted/30 px-3 py-2">
               <div>
-                <p className="text-sm font-medium text-gray-800">{item.nameEs}</p>
-                {item.nameEn && <p className="text-xs text-gray-400">{item.nameEn}</p>}
+                <p className="text-sm font-medium text-foreground">{item.nameEs}</p>
+                {item.nameEn && <p className="text-xs text-muted-foreground/70">{item.nameEn}</p>}
               </div>
               <button
                 onClick={() => onDelete(item.id)}
@@ -132,7 +132,7 @@ function CatalogSection({
             </div>
           ))
         ) : (
-          <p className="py-3 text-center text-xs text-gray-400">Sin elementos. Añade el primero.</p>
+          <p className="py-3 text-center text-xs text-muted-foreground/70">Sin elementos. Añade el primero.</p>
         )}
       </div>
     </div>
@@ -177,7 +177,7 @@ function RecipeRow({ recipe, onUpdated }: { recipe: any; onUpdated: () => void }
   };
 
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-3 shadow-sm">
+    <div className="rounded-2xl border border-border/50 bg-background p-3 shadow-sm">
       <div className="flex gap-3">
         {/* Image */}
         <div className="relative shrink-0">
@@ -234,7 +234,7 @@ function RecipeRow({ recipe, onUpdated }: { recipe: any; onUpdated: () => void }
                 </button>
                 <button
                   onClick={() => { setEditing(false); setEditName(recipe.name ?? ""); setEditDesc(recipe.description ?? ""); }}
-                  className="flex items-center gap-1 rounded-lg bg-gray-100 px-2.5 py-1 text-xs font-semibold text-gray-600 hover:bg-gray-200"
+                  className="flex items-center gap-1 rounded-lg bg-muted/50 px-2.5 py-1 text-xs font-semibold text-muted-foreground hover:bg-muted"
                 >
                   <XMarkIcon className="h-3 w-3" /> Cancelar
                 </button>
@@ -243,13 +243,13 @@ function RecipeRow({ recipe, onUpdated }: { recipe: any; onUpdated: () => void }
           ) : (
             <div className="flex items-start justify-between gap-1">
               <div className="min-w-0">
-                <p className="truncate text-sm font-semibold text-gray-800">{recipe.name}</p>
-                <p className="line-clamp-2 text-xs text-gray-400">{recipe.description || "Sin descripción"}</p>
+                <p className="truncate text-sm font-semibold text-foreground">{recipe.name}</p>
+                <p className="line-clamp-2 text-xs text-muted-foreground/70">{recipe.description || "Sin descripción"}</p>
                 <p className="mt-0.5 text-xs text-gray-300">ID #{recipe.id} · {recipe.userName ?? "—"}</p>
               </div>
               <button
                 onClick={() => setEditing(true)}
-                className="shrink-0 flex h-7 w-7 items-center justify-center rounded-lg text-gray-400 hover:bg-gray-100"
+                className="shrink-0 flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground/70 hover:bg-muted/50"
                 title="Editar"
               >
                 <PencilSquareIcon className="h-4 w-4" />
@@ -384,8 +384,8 @@ export default function Admin() {
     return (
       <div className="vively-page container text-center">
         <ShieldCheckIcon className="mx-auto mb-3 h-12 w-12 text-gray-300" />
-        <h2 className="text-lg font-bold text-gray-700">Acceso restringido</h2>
-        <p className="mt-1 text-sm text-gray-500">Solo los administradores pueden acceder a esta sección.</p>
+        <h2 className="text-lg font-bold text-foreground/80">Acceso restringido</h2>
+        <p className="mt-1 text-sm text-muted-foreground">Solo los administradores pueden acceder a esta sección.</p>
         <Link href="/app/dashboard" className="btn-vively mt-4 inline-block">
           Ir al dashboard
         </Link>
@@ -401,8 +401,8 @@ export default function Admin() {
           <ShieldCheckIcon className="h-5 w-5 text-white" />
         </div>
         <div>
-          <h1 className="text-xl font-extrabold text-gray-900">Panel Admin</h1>
-          <p className="text-xs text-gray-400">Gestión de BuddyMarket</p>
+          <h1 className="text-xl font-extrabold text-foreground">Panel Admin</h1>
+          <p className="text-xs text-muted-foreground/70">Gestión de BuddyMarket</p>
         </div>
       </div>
 
@@ -415,7 +415,7 @@ export default function Admin() {
             className={`flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all ${
               activeTab === tab.key
                 ? "bg-gray-900 text-white"
-                : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                : "bg-muted/50 text-muted-foreground hover:bg-muted"
             }`}
           >
             <tab.icon className="h-3.5 w-3.5" />
@@ -436,13 +436,13 @@ export default function Admin() {
             ].map((stat) => (
               <div key={stat.label} className="vively-card text-center">
                 <p className="text-2xl">{stat.icon}</p>
-                <p className="text-xl font-extrabold text-gray-900">{stat.value}</p>
-                <p className="text-xs text-gray-500">{stat.label}</p>
+                <p className="text-xl font-extrabold text-foreground">{stat.value}</p>
+                <p className="text-xs text-muted-foreground">{stat.label}</p>
               </div>
             ))}
           </div>
           <div className="vively-card">
-            <h3 className="mb-2 text-sm font-bold text-gray-700">Accesos rápidos</h3>
+            <h3 className="mb-2 text-sm font-bold text-foreground/80">Accesos rápidos</h3>
             <div className="space-y-2">
               <Link
                 href="/app/admin/content"
@@ -468,10 +468,10 @@ export default function Admin() {
                 <button
                   key={item.tab}
                   onClick={() => setActiveTab(item.tab)}
-                  className="flex w-full items-center justify-between rounded-xl bg-gray-50 px-4 py-2.5 text-sm font-medium text-gray-700 hover:bg-gray-100"
+                  className="flex w-full items-center justify-between rounded-xl bg-muted/30 px-4 py-2.5 text-sm font-medium text-foreground/80 hover:bg-muted/50"
                 >
                   {item.label}
-                  <span className="text-gray-400">→</span>
+                  <span className="text-muted-foreground/70">→</span>
                 </button>
               ))}
             </div>
@@ -493,17 +493,17 @@ export default function Admin() {
         <div className="space-y-3">
           <div className="vively-card">
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-sm font-bold text-gray-700">
+              <h3 className="text-sm font-bold text-foreground/80">
                 Recetas
-                <span className="ml-2 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-500">
+                <span className="ml-2 rounded-full bg-muted/50 px-2 py-0.5 text-xs font-semibold text-muted-foreground">
                   {recipesData?.total ?? "…"}
                 </span>
               </h3>
-              <p className="text-xs text-gray-400">Toca 📷 para añadir foto · ✏️ para editar</p>
+              <p className="text-xs text-muted-foreground/70">Toca 📷 para añadir foto · ✏️ para editar</p>
             </div>
             {/* Search */}
             <div className="relative mb-3">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
               <input
                 value={recipeSearch}
                 onChange={(e) => { setRecipeSearch(e.target.value); setRecipeOffset(0); }}
@@ -518,7 +518,7 @@ export default function Admin() {
                   <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900" />
                 </div>
               ) : recipesData.recipes.length === 0 ? (
-                <p className="py-6 text-center text-sm text-gray-400">No se encontraron recetas</p>
+                <p className="py-6 text-center text-sm text-muted-foreground/70">No se encontraron recetas</p>
               ) : (
                 recipesData.recipes.map((r: any) => (
                   <RecipeRow key={r.id} recipe={r} onUpdated={() => refetchRecipes()} />
@@ -531,17 +531,17 @@ export default function Admin() {
                 <button
                   onClick={() => setRecipeOffset(Math.max(0, recipeOffset - RECIPE_LIMIT))}
                   disabled={recipeOffset === 0}
-                  className="rounded-xl bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-600 disabled:opacity-40 hover:bg-gray-200"
+                  className="rounded-xl bg-muted/50 px-3 py-1.5 text-xs font-semibold text-muted-foreground disabled:opacity-40 hover:bg-muted"
                 >
                   ← Anterior
                 </button>
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-muted-foreground/70">
                   {recipeOffset + 1}–{Math.min(recipeOffset + RECIPE_LIMIT, recipesData.total)} de {recipesData.total}
                 </span>
                 <button
                   onClick={() => setRecipeOffset(recipeOffset + RECIPE_LIMIT)}
                   disabled={recipeOffset + RECIPE_LIMIT >= recipesData.total}
-                  className="rounded-xl bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-600 disabled:opacity-40 hover:bg-gray-200"
+                  className="rounded-xl bg-muted/50 px-3 py-1.5 text-xs font-semibold text-muted-foreground disabled:opacity-40 hover:bg-muted"
                 >
                   Siguiente →
                 </button>
@@ -594,7 +594,7 @@ export default function Admin() {
                 key={s}
                 onClick={() => setAppFilter(s)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                  appFilter === s ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                  appFilter === s ? "bg-gray-900 text-white" : "bg-muted/50 text-muted-foreground hover:bg-muted"
                 }`}
               >
                 {s === "pending" ? "⏳ Pendientes" : s === "approved" ? "✅ Aprobadas" : "❌ Rechazadas"}
@@ -605,7 +605,7 @@ export default function Admin() {
           {appsLoading ? (
             <div className="flex justify-center py-8"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900" /></div>
           ) : !applications?.length ? (
-            <div className="vively-card text-center py-8 text-gray-400">
+            <div className="vively-card text-center py-8 text-muted-foreground/70">
               <p className="text-2xl mb-2">📥</p>
               <p className="text-sm">No hay solicitudes {appFilter === "pending" ? "pendientes" : appFilter === "approved" ? "aprobadas" : "rechazadas"}</p>
             </div>
@@ -620,8 +620,8 @@ export default function Admin() {
                     <div className="flex items-center gap-2">
                       <span className="text-2xl">{app.type === "expert" ? "🎓" : "👨‍🍳"}</span>
                       <div>
-                        <p className="font-bold text-sm text-gray-900">{app.displayName || appUser.name || "Sin nombre"}</p>
-                        <p className="text-xs text-gray-400">{appUser.email} · {app.type === "expert" ? "BuddyExpert" : "BuddyMaker"}</p>
+                        <p className="font-bold text-sm text-foreground">{app.displayName || appUser.name || "Sin nombre"}</p>
+                        <p className="text-xs text-muted-foreground/70">{appUser.email} · {app.type === "expert" ? "BuddyExpert" : "BuddyMaker"}</p>
                       </div>
                     </div>
                     <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
@@ -630,25 +630,25 @@ export default function Admin() {
                     }`}>{app.status}</span>
                   </div>
 
-                  {app.specialty && <p className="text-xs text-gray-600"><span className="font-medium">Especialidad:</span> {app.specialty}</p>}
-                  {app.expertCategory && <p className="text-xs text-gray-600"><span className="font-medium">Categoría:</span> {app.expertCategory}</p>}
+                  {app.specialty && <p className="text-xs text-muted-foreground"><span className="font-medium">Especialidad:</span> {app.specialty}</p>}
+                  {app.expertCategory && <p className="text-xs text-muted-foreground"><span className="font-medium">Categoría:</span> {app.expertCategory}</p>}
                   {app.motivation && (
-                    <div className="bg-gray-50 rounded-xl p-3">
-                      <p className="text-xs font-medium text-gray-500 mb-1">Motivación</p>
-                      <p className="text-xs text-gray-700">{app.motivation}</p>
+                    <div className="bg-muted/30 rounded-xl p-3">
+                      <p className="text-xs font-medium text-muted-foreground mb-1">Motivación</p>
+                      <p className="text-xs text-foreground/80">{app.motivation}</p>
                     </div>
                   )}
                   {app.experience && (
-                    <div className="bg-gray-50 rounded-xl p-3">
-                      <p className="text-xs font-medium text-gray-500 mb-1">Experiencia</p>
-                      <p className="text-xs text-gray-700">{app.experience}</p>
+                    <div className="bg-muted/30 rounded-xl p-3">
+                      <p className="text-xs font-medium text-muted-foreground mb-1">Experiencia</p>
+                      <p className="text-xs text-foreground/80">{app.experience}</p>
                     </div>
                   )}
-                  {app.certifications && <p className="text-xs text-gray-600"><span className="font-medium">Certificaciones:</span> {app.certifications}</p>}
-                  {app.instagramHandle && <p className="text-xs text-gray-600">📸 {app.instagramHandle}</p>}
+                  {app.certifications && <p className="text-xs text-muted-foreground"><span className="font-medium">Certificaciones:</span> {app.certifications}</p>}
+                  {app.instagramHandle && <p className="text-xs text-muted-foreground">📸 {app.instagramHandle}</p>}
 
                   {app.status === "pending" && (
-                    <div className="space-y-2 pt-1 border-t border-gray-100">
+                    <div className="space-y-2 pt-1 border-t border-border/50">
                       <input
                         placeholder="Nota para el usuario (opcional)"
                         value={adminNote[app.id] ?? ""}
@@ -675,7 +675,7 @@ export default function Admin() {
                   )}
 
                   {app.adminNote && (
-                    <p className="text-xs text-gray-500 italic border-t border-gray-100 pt-2">Nota admin: "{app.adminNote}"</p>
+                    <p className="text-xs text-muted-foreground italic border-t border-border/50 pt-2">Nota admin: "{app.adminNote}"</p>
                   )}
                 </div>
               );
@@ -685,14 +685,14 @@ export default function Admin() {
 
           {/* Role Requests sub-section */}
           <div className="space-y-4">
-          <h3 className="text-sm font-bold text-gray-700 flex items-center gap-2">🎭 Solicitudes de cambio de rol</h3>
+          <h3 className="text-sm font-bold text-foreground/80 flex items-center gap-2">🎭 Solicitudes de cambio de rol</h3>
           <div className="flex gap-2">
             {(["pending", "approved", "rejected"] as const).map(s => (
               <button
                 key={s}
                 onClick={() => setRoleReqFilter(s)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                  roleReqFilter === s ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                  roleReqFilter === s ? "bg-gray-900 text-white" : "bg-muted/50 text-muted-foreground hover:bg-muted"
                 }`}
               >
                 {s === "pending" ? "⏳ Pendientes" : s === "approved" ? "✅ Aprobadas" : "❌ Rechazadas"}
@@ -702,7 +702,7 @@ export default function Admin() {
           {roleReqLoading ? (
             <div className="flex justify-center py-6"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900" /></div>
           ) : !roleRequests?.length ? (
-            <div className="vively-card text-center py-6 text-gray-400">
+            <div className="vively-card text-center py-6 text-muted-foreground/70">
               <p className="text-2xl mb-2">🎭</p>
               <p className="text-sm">No hay solicitudes de rol {roleReqFilter === "pending" ? "pendientes" : roleReqFilter === "approved" ? "aprobadas" : "rechazadas"}</p>
             </div>
@@ -714,8 +714,8 @@ export default function Admin() {
                     <div className="flex items-center gap-2">
                       <span className="text-2xl">{req.roleType === "buddyexpert" ? "🎓" : "👨‍🍳"}</span>
                       <div>
-                        <p className="font-bold text-sm text-gray-900">{req.user?.name || "Sin nombre"}</p>
-                        <p className="text-xs text-gray-400">{req.user?.email} · {req.roleType === "buddyexpert" ? "BuddyExpert" : "BuddyMaker"}</p>
+                        <p className="font-bold text-sm text-foreground">{req.user?.name || "Sin nombre"}</p>
+                        <p className="text-xs text-muted-foreground/70">{req.user?.email} · {req.roleType === "buddyexpert" ? "BuddyExpert" : "BuddyMaker"}</p>
                       </div>
                     </div>
                     <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${
@@ -724,13 +724,13 @@ export default function Admin() {
                     }`}>{req.status}</span>
                   </div>
                   {req.motivation && (
-                    <div className="bg-gray-50 rounded-xl p-3">
-                      <p className="text-xs font-medium text-gray-500 mb-1">Motivación</p>
-                      <p className="text-xs text-gray-700">{req.motivation}</p>
+                    <div className="bg-muted/30 rounded-xl p-3">
+                      <p className="text-xs font-medium text-muted-foreground mb-1">Motivación</p>
+                      <p className="text-xs text-foreground/80">{req.motivation}</p>
                     </div>
                   )}
                   {req.specialties?.length > 0 && (
-                    <p className="text-xs text-gray-600"><span className="font-medium">Especialidades:</span> {req.specialties.join(", ")}</p>
+                    <p className="text-xs text-muted-foreground"><span className="font-medium">Especialidades:</span> {req.specialties.join(", ")}</p>
                   )}
                   {req.socialLinks && (
                     <div className="flex gap-3 text-xs text-blue-500">
@@ -740,7 +740,7 @@ export default function Admin() {
                     </div>
                   )}
                   {req.status === "pending" && (
-                    <div className="space-y-2 pt-1 border-t border-gray-100">
+                    <div className="space-y-2 pt-1 border-t border-border/50">
                       <input
                         placeholder="Nota para el usuario (opcional)"
                         value={roleReqNote[req.id] ?? ""}
@@ -766,7 +766,7 @@ export default function Admin() {
                     </div>
                   )}
                   {req.reviewNote && (
-                    <p className="text-xs text-gray-500 italic border-t border-gray-100 pt-2">Nota admin: "{req.reviewNote}"</p>
+                    <p className="text-xs text-muted-foreground italic border-t border-border/50 pt-2">Nota admin: "{req.reviewNote}"</p>
                   )}
                 </div>
               ))}
@@ -804,15 +804,15 @@ export default function Admin() {
       {/* Users */}
       {activeTab === "duplicates" && (
         <div className="vively-card space-y-4">
-          <h3 className="text-sm font-bold text-gray-700">🔍 Buscar cuentas duplicadas</h3>
-          <p className="text-xs text-gray-400">Busca por email para ver todas las cuentas asociadas a ese correo. Puedes elegir cuál conservar y eliminar las duplicadas.</p>
+          <h3 className="text-sm font-bold text-foreground/80">🔍 Buscar cuentas duplicadas</h3>
+          <p className="text-xs text-muted-foreground/70">Busca por email para ver todas las cuentas asociadas a ese correo. Puedes elegir cuál conservar y eliminar las duplicadas.</p>
           <div className="flex gap-2">
             <input
               type="email"
               value={dupEmail}
               onChange={(e) => setDupEmail(e.target.value)}
               placeholder="luismariaccc@gmail.com"
-              className="flex-1 rounded-xl border border-gray-200 bg-gray-50 px-3 py-2 text-sm"
+              className="flex-1 rounded-xl border border-border bg-muted/30 px-3 py-2 text-sm"
             />
             <button
               onClick={() => setDupSearchEmail(dupEmail)}
@@ -821,25 +821,25 @@ export default function Admin() {
               Buscar
             </button>
           </div>
-          {dupLoading && <p className="text-xs text-gray-400">Buscando...</p>}
-          {dupAccounts && dupAccounts.length === 0 && <p className="text-xs text-gray-400">No se encontraron cuentas con ese email.</p>}
+          {dupLoading && <p className="text-xs text-muted-foreground/70">Buscando...</p>}
+          {dupAccounts && dupAccounts.length === 0 && <p className="text-xs text-muted-foreground/70">No se encontraron cuentas con ese email.</p>}
           {dupAccounts && dupAccounts.length > 0 && (
             <div className="space-y-3">
               <p className="text-xs font-semibold text-orange-600">{dupAccounts.length} cuenta(s) encontrada(s) con este email:</p>
               {dupAccounts.map((acc: any) => (
-                <div key={acc.id} className="rounded-2xl border border-gray-100 bg-white p-3 shadow-sm space-y-2">
+                <div key={acc.id} className="rounded-2xl border border-border/50 bg-background p-3 shadow-sm space-y-2">
                   <div className="flex items-center gap-3">
                     {acc.imageUrl ? (
                       <img src={acc.imageUrl} alt="" className="h-10 w-10 rounded-full object-cover" />
                     ) : (
-                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-gray-100 text-sm font-bold text-gray-500">
+                      <div className="flex h-10 w-10 items-center justify-center rounded-full bg-muted/50 text-sm font-bold text-muted-foreground">
                         {acc.name?.[0]?.toUpperCase() ?? "?"}
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-800">{acc.name || "Sin nombre"}</p>
-                      <p className="text-xs text-gray-400">ID: {acc.id} · {acc.loginMethod ?? "desconocido"} · {acc.role}</p>
-                      <p className="text-xs text-gray-400">Creada: {acc.createdAt ? new Date(acc.createdAt).toLocaleDateString("es-ES") : "?"}</p>
+                      <p className="text-sm font-semibold text-foreground">{acc.name || "Sin nombre"}</p>
+                      <p className="text-xs text-muted-foreground/70">ID: {acc.id} · {acc.loginMethod ?? "desconocido"} · {acc.role}</p>
+                      <p className="text-xs text-muted-foreground/70">Creada: {acc.createdAt ? new Date(acc.createdAt).toLocaleDateString("es-ES") : "?"}</p>
                       {acc.deletedAt && <p className="text-xs text-red-400">⚠️ Eliminada el {new Date(acc.deletedAt).toLocaleDateString("es-ES")}</p>}
                     </div>
                     <div className="flex flex-col gap-1">
@@ -871,9 +871,9 @@ export default function Admin() {
       )}
       {activeTab === "users" && (
         <div className="vively-card space-y-3">
-          <h3 className="text-sm font-bold text-gray-700">
+          <h3 className="text-sm font-bold text-foreground/80">
             Usuarios registrados
-            <span className="ml-2 rounded-full bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-500">
+            <span className="ml-2 rounded-full bg-muted/50 px-2 py-0.5 text-xs font-semibold text-muted-foreground">
               {users?.length ?? 0}
             </span>
           </h3>
@@ -884,17 +884,17 @@ export default function Admin() {
                 : "Free";
               const planColor = u.subscription?.status === "active"
                 ? (u.subscription?.plan === "pro_max" ? "bg-purple-100 text-purple-700" : "bg-orange-100 text-orange-700")
-                : "bg-gray-100 text-gray-500";
+                : "bg-muted/50 text-muted-foreground";
               return (
-                <div key={u.id} className="rounded-2xl border border-gray-100 bg-white p-3 shadow-sm space-y-3">
+                <div key={u.id} className="rounded-2xl border border-border/50 bg-background p-3 shadow-sm space-y-3">
                   {/* User info row */}
                   <div className="flex items-center gap-3">
                     <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-full bg-[#F97316]/10 text-sm font-bold text-[#F97316]">
                       {u.name ? u.name[0].toUpperCase() : "?"}
                     </div>
                     <div className="flex-1 min-w-0">
-                      <p className="truncate text-sm font-semibold text-gray-800">{u.name || "Sin nombre"}</p>
-                      <p className="truncate text-xs text-gray-400">{u.email || u.openId}</p>
+                      <p className="truncate text-sm font-semibold text-foreground">{u.name || "Sin nombre"}</p>
+                      <p className="truncate text-xs text-muted-foreground/70">{u.email || u.openId}</p>
                     </div>
                     <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-bold ${planColor}`}>
                       {planLabel}
@@ -904,11 +904,11 @@ export default function Admin() {
                   <div className="grid grid-cols-3 gap-2">
                     {/* Rol del sistema */}
                     <div className="space-y-1">
-                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Rol</p>
+                      <p className="text-xs font-semibold text-muted-foreground/70 uppercase tracking-wide">Rol</p>
                       <select
                         value={u.role}
                         onChange={(e) => updateRole.mutate({ userId: u.id, role: e.target.value as any })}
-                        className="w-full rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-xs font-semibold text-gray-700"
+                        className="w-full rounded-lg border border-border bg-muted/30 px-2 py-1.5 text-xs font-semibold text-foreground/80"
                       >
                         <option value="user">Usuario</option>
                         <option value="admin">Admin</option>
@@ -917,11 +917,11 @@ export default function Admin() {
                     </div>
                     {/* Tipo de cuenta */}
                     <div className="space-y-1">
-                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Tipo</p>
+                      <p className="text-xs font-semibold text-muted-foreground/70 uppercase tracking-wide">Tipo</p>
                       <select
                         value={(u as any).accountType ?? "user"}
                         onChange={(e) => setUserAccountType.mutate({ userId: u.id, accountType: e.target.value as any })}
-                        className="w-full rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-xs font-semibold text-gray-700"
+                        className="w-full rounded-lg border border-border bg-muted/30 px-2 py-1.5 text-xs font-semibold text-foreground/80"
                       >
                         <option value="user">Usuario</option>
                         <option value="buddymaker">BuddyMaker</option>
@@ -931,7 +931,7 @@ export default function Admin() {
                     </div>
                     {/* Plan */}
                     <div className="space-y-1">
-                      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Plan</p>
+                      <p className="text-xs font-semibold text-muted-foreground/70 uppercase tracking-wide">Plan</p>
                       <select
                         value={
                           u.subscription?.status === "active"
@@ -939,7 +939,7 @@ export default function Admin() {
                             : "free"
                         }
                         onChange={(e) => setUserPlan.mutate({ userId: u.id, plan: e.target.value as any })}
-                        className="w-full rounded-lg border border-gray-200 bg-gray-50 px-2 py-1.5 text-xs font-semibold text-gray-700"
+                        className="w-full rounded-lg border border-border bg-muted/30 px-2 py-1.5 text-xs font-semibold text-foreground/80"
                       >
                         <option value="free">Free</option>
                         <option value="basic">Pro (Basic)</option>
@@ -993,44 +993,44 @@ function TermsAcceptancePanel() {
       {/* Summary */}
       <div className="grid grid-cols-3 gap-3">
         <div className="vively-card text-center">
-          <p className="text-2xl font-bold text-gray-900">{users?.length ?? 0}</p>
-          <p className="text-xs text-gray-400 mt-1">Total usuarios</p>
+          <p className="text-2xl font-bold text-foreground">{users?.length ?? 0}</p>
+          <p className="text-xs text-muted-foreground/70 mt-1">Total usuarios</p>
         </div>
         <div className="vively-card text-center">
           <p className="text-2xl font-bold text-green-600">{accepted.length}</p>
-          <p className="text-xs text-gray-400 mt-1">Han aceptado</p>
+          <p className="text-xs text-muted-foreground/70 mt-1">Han aceptado</p>
         </div>
         <div className="vively-card text-center">
           <p className="text-2xl font-bold text-orange-500">{notAccepted.length}</p>
-          <p className="text-xs text-gray-400 mt-1">Sin aceptar</p>
+          <p className="text-xs text-muted-foreground/70 mt-1">Sin aceptar</p>
         </div>
       </div>
 
       {/* Users who accepted */}
       <div className="vively-card space-y-3">
-        <h3 className="text-sm font-bold text-gray-700 flex items-center gap-2">
+        <h3 className="text-sm font-bold text-foreground/80 flex items-center gap-2">
           <span className="h-2 w-2 rounded-full bg-green-500" />
           Usuarios que han aceptado los TyC
           <span className="ml-auto rounded-full bg-green-100 px-2 py-0.5 text-xs font-semibold text-green-700">{accepted.length}</span>
         </h3>
         <div className="max-h-72 overflow-y-auto space-y-2">
           {accepted.length === 0 ? (
-            <p className="text-center text-xs text-gray-400 py-4">Ningún usuario ha aceptado los TyC todavía.</p>
+            <p className="text-center text-xs text-muted-foreground/70 py-4">Ningún usuario ha aceptado los TyC todavía.</p>
           ) : (
             accepted.map((u: any) => (
-              <div key={u.id} className="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2">
+              <div key={u.id} className="flex items-center justify-between rounded-xl bg-muted/30 px-3 py-2">
                 <div className="flex items-center gap-2">
                   <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-green-100 text-xs font-bold text-green-700">
                     {u.name ? u.name[0].toUpperCase() : "?"}
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-gray-800">{u.name || "Sin nombre"}</p>
-                    <p className="text-xs text-gray-400">{u.email || u.openId}</p>
+                    <p className="text-sm font-semibold text-foreground">{u.name || "Sin nombre"}</p>
+                    <p className="text-xs text-muted-foreground/70">{u.email || u.openId}</p>
                   </div>
                 </div>
                 <div className="text-right">
                   <p className="text-xs font-semibold text-green-600">v{u.termsVersion ?? "1.0"}</p>
-                  <p className="text-xs text-gray-400">
+                  <p className="text-xs text-muted-foreground/70">
                     {u.termsAcceptedAt ? new Date(u.termsAcceptedAt).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "—"}
                   </p>
                   {u.marketingConsent && (
@@ -1046,20 +1046,20 @@ function TermsAcceptancePanel() {
       {/* Users who have NOT accepted */}
       {notAccepted.length > 0 && (
         <div className="vively-card space-y-3">
-          <h3 className="text-sm font-bold text-gray-700 flex items-center gap-2">
+          <h3 className="text-sm font-bold text-foreground/80 flex items-center gap-2">
             <span className="h-2 w-2 rounded-full bg-orange-400" />
             Usuarios sin aceptar
             <span className="ml-auto rounded-full bg-orange-100 px-2 py-0.5 text-xs font-semibold text-orange-600">{notAccepted.length}</span>
           </h3>
           <div className="max-h-48 overflow-y-auto space-y-2">
             {notAccepted.map((u: any) => (
-              <div key={u.id} className="flex items-center gap-2 rounded-xl bg-gray-50 px-3 py-2">
+              <div key={u.id} className="flex items-center gap-2 rounded-xl bg-muted/30 px-3 py-2">
                 <div className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-orange-100 text-xs font-bold text-orange-600">
                   {u.name ? u.name[0].toUpperCase() : "?"}
                 </div>
                 <div>
-                  <p className="text-sm font-semibold text-gray-800">{u.name || "Sin nombre"}</p>
-                  <p className="text-xs text-gray-400">{u.email || u.openId}</p>
+                  <p className="text-sm font-semibold text-foreground">{u.name || "Sin nombre"}</p>
+                  <p className="text-xs text-muted-foreground/70">{u.email || u.openId}</p>
                 </div>
               </div>
             ))}
@@ -1097,16 +1097,16 @@ function FoundersPanel() {
       {/* Stats */}
       <div className="grid grid-cols-3 gap-3">
         <div className="vively-card text-center">
-          <p className="text-2xl font-black text-gray-800">{stats?.total ?? 0}</p>
-          <p className="text-xs text-gray-400 mt-1">Total fundadores</p>
+          <p className="text-2xl font-black text-foreground">{stats?.total ?? 0}</p>
+          <p className="text-xs text-muted-foreground/70 mt-1">Total fundadores</p>
         </div>
         <div className="vively-card text-center">
           <p className="text-2xl font-black text-green-600">{stats?.claimed ?? 0}</p>
-          <p className="text-xs text-gray-400 mt-1">PRO activado</p>
+          <p className="text-xs text-muted-foreground/70 mt-1">PRO activado</p>
         </div>
         <div className="vively-card text-center">
           <p className="text-2xl font-black text-orange-500">{stats?.pending ?? 0}</p>
-          <p className="text-xs text-gray-400 mt-1">Pendientes</p>
+          <p className="text-xs text-muted-foreground/70 mt-1">Pendientes</p>
         </div>
       </div>
 
@@ -1114,22 +1114,22 @@ function FoundersPanel() {
       {stats && stats.total > 0 && (
         <div className="vively-card">
           <div className="flex items-center justify-between mb-2">
-            <p className="text-xs font-semibold text-gray-600">Tasa de conversión</p>
+            <p className="text-xs font-semibold text-muted-foreground">Tasa de conversión</p>
             <p className="text-xs font-bold text-green-600">{Math.round((stats.claimed / stats.total) * 100)}%</p>
           </div>
-          <div className="h-2 w-full rounded-full bg-gray-100 overflow-hidden">
+          <div className="h-2 w-full rounded-full bg-muted/50 overflow-hidden">
             <div
               className="h-full rounded-full bg-gradient-to-r from-green-400 to-green-500 transition-all duration-500"
               style={{ width: `${(stats.claimed / stats.total) * 100}%` }}
             />
           </div>
-          <p className="text-xs text-gray-400 mt-1">{stats.claimed} de {stats.total} usuarios originales ya se han registrado</p>
+          <p className="text-xs text-muted-foreground/70 mt-1">{stats.claimed} de {stats.total} usuarios originales ya se han registrado</p>
         </div>
       )}
 
       {/* Add email */}
       <div className="vively-card">
-        <p className="text-xs font-semibold text-gray-600 mb-2">Añadir email fundador</p>
+        <p className="text-xs font-semibold text-muted-foreground mb-2">Añadir email fundador</p>
         <div className="flex gap-2">
           <input
             value={newEmail}
@@ -1155,7 +1155,7 @@ function FoundersPanel() {
             key={f}
             onClick={() => setFilter(f)}
             className={`rounded-full px-3 py-1 text-xs font-semibold transition-colors ${
-              filter === f ? "bg-[#F97316] text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+              filter === f ? "bg-[#F97316] text-white" : "bg-muted/50 text-muted-foreground hover:bg-muted"
             }`}
           >
             {f === "all" ? "Todos" : f === "claimed" ? "✅ Activados" : "⏳ Pendientes"}
@@ -1166,21 +1166,21 @@ function FoundersPanel() {
       {/* List */}
       <div className="vively-card space-y-2">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold text-gray-700">Lista de emails fundadores</h3>
-          <span className="rounded-full bg-gray-100 px-2 py-0.5 text-xs font-semibold text-gray-500">{filtered.length}</span>
+          <h3 className="text-sm font-bold text-foreground/80">Lista de emails fundadores</h3>
+          <span className="rounded-full bg-muted/50 px-2 py-0.5 text-xs font-semibold text-muted-foreground">{filtered.length}</span>
         </div>
         {isLoading ? (
-          <p className="text-center text-xs text-gray-400 py-4">Cargando...</p>
+          <p className="text-center text-xs text-muted-foreground/70 py-4">Cargando...</p>
         ) : filtered.length === 0 ? (
-          <p className="text-center text-xs text-gray-400 py-4">No hay emails en esta categoría.</p>
+          <p className="text-center text-xs text-muted-foreground/70 py-4">No hay emails en esta categoría.</p>
         ) : (
           <div className="max-h-[50vh] overflow-y-auto space-y-1.5">
             {filtered.map((f) => (
-              <div key={f.id} className="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2">
+              <div key={f.id} className="flex items-center justify-between rounded-xl bg-muted/30 px-3 py-2">
                 <div className="flex items-center gap-2">
                   <span className={`h-2 w-2 rounded-full ${f.claimedAt ? "bg-green-500" : "bg-orange-400"}`} />
                   <div>
-                    <p className="text-sm font-medium text-gray-800">{f.email}</p>
+                    <p className="text-sm font-medium text-foreground">{f.email}</p>
                     {f.claimedAt && (
                       <p className="text-xs text-green-600">
                         PRO activado el {new Date(f.claimedAt).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" })}
@@ -1229,7 +1229,7 @@ function ApiMonitorPanel() {
     if (status === "ok") return "bg-green-100 text-green-700";
     if (status === "down") return "bg-red-100 text-red-700";
     if (status === "degraded") return "bg-yellow-100 text-yellow-700";
-    return "bg-gray-100 text-gray-500";
+    return "bg-muted/50 text-muted-foreground";
   };
 
   const statusDot = (status: string | null) => {
@@ -1256,28 +1256,28 @@ function ApiMonitorPanel() {
       <div className="grid grid-cols-3 gap-3">
         <div className="vively-card text-center">
           <p className="text-2xl font-extrabold text-green-600">{okCount}</p>
-          <p className="text-xs text-gray-500">Operativos</p>
+          <p className="text-xs text-muted-foreground">Operativos</p>
         </div>
         <div className="vively-card text-center">
           <p className="text-2xl font-extrabold text-red-500">{errorCount}</p>
-          <p className="text-xs text-gray-500">Con fallos</p>
+          <p className="text-xs text-muted-foreground">Con fallos</p>
         </div>
         <div className="vively-card text-center">
-          <p className="text-2xl font-extrabold text-gray-400">{pendingCount}</p>
-          <p className="text-xs text-gray-500">Sin comprobar</p>
+          <p className="text-2xl font-extrabold text-muted-foreground/70">{pendingCount}</p>
+          <p className="text-xs text-muted-foreground">Sin comprobar</p>
         </div>
       </div>
 
       {/* Monitors list */}
       <div className="vively-card space-y-2">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-bold text-gray-700 flex items-center gap-1.5">
+          <h3 className="text-sm font-bold text-foreground/80 flex items-center gap-1.5">
             <SignalIcon className="h-4 w-4 text-[#F97316]" />
             Monitores de API
           </h3>
           <button
             onClick={() => refetchMonitors()}
-            className="flex items-center gap-1 rounded-lg bg-gray-100 px-2.5 py-1.5 text-xs font-semibold text-gray-600 hover:bg-gray-200"
+            className="flex items-center gap-1 rounded-lg bg-muted/50 px-2.5 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-muted"
           >
             <ArrowPathIcon className="h-3.5 w-3.5" />
             Actualizar
@@ -1291,22 +1291,22 @@ function ApiMonitorPanel() {
         )}
 
         {!isLoading && (!monitors || monitors.length === 0) && (
-          <p className="py-4 text-center text-xs text-gray-400">No hay monitores configurados.</p>
+          <p className="py-4 text-center text-xs text-muted-foreground/70">No hay monitores configurados.</p>
         )}
 
         {monitors?.map((monitor) => (
           <div
             key={monitor.id}
             className={`rounded-xl border p-3 transition-all ${
-              selectedMonitorId === monitor.id ? "border-[#F97316] bg-orange-50" : "border-gray-100 bg-gray-50"
+              selectedMonitorId === monitor.id ? "border-[#F97316] bg-orange-50" : "border-border/50 bg-muted/30"
             }`}
           >
             <div className="flex items-start justify-between gap-2">
               <div className="flex items-start gap-2 min-w-0">
                 <span className={`mt-1 h-2.5 w-2.5 shrink-0 rounded-full ${statusDot(monitor.lastStatus)}`} />
                 <div className="min-w-0">
-                  <p className="truncate text-sm font-semibold text-gray-800">{monitor.name}</p>
-                  <p className="truncate text-xs text-gray-400">{monitor.endpoint}</p>
+                  <p className="truncate text-sm font-semibold text-foreground">{monitor.name}</p>
+                  <p className="truncate text-xs text-muted-foreground/70">{monitor.endpoint}</p>
                   {monitor.lastCheckedAt && (
                     <p className="mt-0.5 flex items-center gap-1 text-xs text-gray-300">
                       <ClockIcon className="h-3 w-3" />
@@ -1327,14 +1327,14 @@ function ApiMonitorPanel() {
                   onClick={() => recheckMutation.mutate({ monitorId: monitor.id })}
                   disabled={recheckMutation.isPending}
                   title="Recheck ahora"
-                  className="flex h-7 w-7 items-center justify-center rounded-lg bg-white text-gray-500 shadow-sm hover:bg-gray-100 disabled:opacity-50"
+                  className="flex h-7 w-7 items-center justify-center rounded-lg bg-background text-muted-foreground shadow-sm hover:bg-muted/50 disabled:opacity-50"
                 >
                   <ArrowPathIcon className={`h-3.5 w-3.5 ${recheckMutation.isPending ? "animate-spin" : ""}`} />
                 </button>
                 <button
                   onClick={() => setSelectedMonitorId(selectedMonitorId === monitor.id ? null : monitor.id)}
                   title="Ver historial"
-                  className="flex h-7 w-7 items-center justify-center rounded-lg bg-white text-gray-500 shadow-sm hover:bg-gray-100"
+                  className="flex h-7 w-7 items-center justify-center rounded-lg bg-background text-muted-foreground shadow-sm hover:bg-muted/50"
                 >
                   <ClockIcon className="h-3.5 w-3.5" />
                 </button>
@@ -1342,7 +1342,7 @@ function ApiMonitorPanel() {
                   onClick={() => toggleMutation.mutate({ monitorId: monitor.id, isActive: !monitor.isActive })}
                   title={monitor.isActive ? "Pausar monitor" : "Activar monitor"}
                   className={`flex h-7 w-7 items-center justify-center rounded-lg shadow-sm ${
-                    monitor.isActive ? "bg-green-100 text-green-600 hover:bg-green-200" : "bg-gray-100 text-gray-400 hover:bg-gray-200"
+                    monitor.isActive ? "bg-green-100 text-green-600 hover:bg-green-200" : "bg-muted/50 text-muted-foreground/70 hover:bg-muted"
                   }`}
                 >
                   {monitor.isActive ? <CheckIcon className="h-3.5 w-3.5" /> : <XMarkIcon className="h-3.5 w-3.5" />}
@@ -1353,18 +1353,18 @@ function ApiMonitorPanel() {
             {/* Logs panel */}
             {selectedMonitorId === monitor.id && (
               <div className="mt-3 border-t border-orange-100 pt-3">
-                <p className="mb-2 text-xs font-semibold text-gray-500">Últimas comprobaciones</p>
+                <p className="mb-2 text-xs font-semibold text-muted-foreground">Últimas comprobaciones</p>
                 {!logs || logs.length === 0 ? (
-                  <p className="text-xs text-gray-400">Sin historial todavía.</p>
+                  <p className="text-xs text-muted-foreground/70">Sin historial todavía.</p>
                 ) : (
                   <div className="max-h-40 overflow-y-auto space-y-1">
                     {logs.map((log) => (
-                      <div key={log.id} className="flex items-center justify-between rounded-lg bg-white px-2.5 py-1.5 text-xs">
+                      <div key={log.id} className="flex items-center justify-between rounded-lg bg-background px-2.5 py-1.5 text-xs">
                         <div className="flex items-center gap-2">
                           <span className={`h-2 w-2 rounded-full ${statusDot(log.status)}`} />
-                          <span className="font-semibold text-gray-700">{statusLabel(log.status)}</span>
-                          {log.httpStatus && <span className="text-gray-400">HTTP {log.httpStatus}</span>}
-                          {log.latencyMs != null && <span className="text-gray-400">{log.latencyMs}ms</span>}
+                          <span className="font-semibold text-foreground/80">{statusLabel(log.status)}</span>
+                          {log.httpStatus && <span className="text-muted-foreground/70">HTTP {log.httpStatus}</span>}
+                          {log.latencyMs != null && <span className="text-muted-foreground/70">{log.latencyMs}ms</span>}
                         </div>
                         <span className="text-gray-300">
                           {new Date(log.checkedAt!).toLocaleTimeString("es-ES")}
@@ -1379,7 +1379,7 @@ function ApiMonitorPanel() {
         ))}
       </div>
 
-      <p className="text-center text-xs text-gray-400">
+      <p className="text-center text-xs text-muted-foreground/70">
         Los monitores se comprueban automáticamente cada 5 minutos. Recibirás una notificación cuando falle un endpoint.
       </p>
     </div>
@@ -1392,7 +1392,7 @@ function AdminBadgesPanel() {
   const { data: leaderboard, isLoading: loadingLeaderboard } = trpc.badges.getLeaderboard.useQuery();
 
   const RARITY_COLORS: Record<string, string> = {
-    common: "bg-gray-100 text-gray-600",
+    common: "bg-muted/50 text-muted-foreground",
     rare: "bg-blue-100 text-blue-700",
     epic: "bg-purple-100 text-purple-700",
     legendary: "bg-amber-100 text-amber-700",
@@ -1407,49 +1407,49 @@ function AdminBadgesPanel() {
       <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
         <div className="vively-card text-center">
           <div className="text-3xl font-bold text-amber-500">{totalBadges}</div>
-          <div className="text-xs text-gray-500 mt-1">Insignias en catálogo</div>
+          <div className="text-xs text-muted-foreground mt-1">Insignias en catálogo</div>
         </div>
         <div className="vively-card text-center">
           <div className="text-3xl font-bold text-violet-600">{leaderboard?.length ?? 0}</div>
-          <div className="text-xs text-gray-500 mt-1">Usuarios con insignias</div>
+          <div className="text-xs text-muted-foreground mt-1">Usuarios con insignias</div>
         </div>
         <div className="vively-card text-center overflow-hidden">
           <div className="text-xl font-bold text-emerald-600 truncate">
             {(leaderboard?.reduce((sum: number, u: any) => sum + (u.badgeCount ?? 0), 0) ?? 0).toLocaleString("es-ES")}
           </div>
-          <div className="text-xs text-gray-500 mt-1">Total insignias</div>
+          <div className="text-xs text-muted-foreground mt-1">Total insignias</div>
         </div>
         <div className="vively-card text-center overflow-hidden">
           <div className="text-xl font-bold text-orange-500 truncate">
             {(leaderboard?.reduce((sum: number, u: any) => sum + (u.totalPoints ?? 0), 0) ?? 0).toLocaleString("es-ES")}
           </div>
-          <div className="text-xs text-gray-500 mt-1">Puntos totales</div>
+          <div className="text-xs text-muted-foreground mt-1">Puntos totales</div>
         </div>
       </div>
 
       {/* Catalog overview */}
       <div className="vively-card">
-        <h3 className="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2">
+        <h3 className="text-sm font-bold text-foreground/80 mb-4 flex items-center gap-2">
           <TrophyIcon className="w-4 h-4 text-amber-500" />
           Catálogo de insignias ({totalBadges})
         </h3>
         {loadingCatalog ? (
           <div className="space-y-2">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-10 bg-gray-100 rounded-lg animate-pulse" />
+              <div key={i} className="h-10 bg-muted/50 rounded-lg animate-pulse" />
             ))}
           </div>
         ) : (
           <div className="space-y-2 max-h-96 overflow-y-auto">
             {catalog?.map((badge: any) => (
-              <div key={badge.id} className="flex items-center gap-3 rounded-xl bg-gray-50 px-3 py-2">
+              <div key={badge.id} className="flex items-center gap-3 rounded-xl bg-muted/30 px-3 py-2">
                 <span className="text-2xl">{badge.icon}</span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-800">{badge.nameEs}</p>
-                  <p className="text-xs text-gray-400 truncate">{badge.descriptionEs}</p>
+                  <p className="text-sm font-semibold text-foreground">{badge.nameEs}</p>
+                  <p className="text-xs text-muted-foreground/70 truncate">{badge.descriptionEs}</p>
                 </div>
                 <div className="flex items-center gap-2 shrink-0">
-                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${RARITY_COLORS[badge.rarity] ?? "bg-gray-100 text-gray-600"}`}>
+                  <span className={`text-xs font-semibold px-2 py-0.5 rounded-full ${RARITY_COLORS[badge.rarity] ?? "bg-muted/50 text-muted-foreground"}`}>
                     {badge.rarity}
                   </span>
                   <span className="text-xs font-bold text-amber-600">+{badge.points}pts</span>
@@ -1462,37 +1462,37 @@ function AdminBadgesPanel() {
 
       {/* Leaderboard */}
       <div className="vively-card">
-        <h3 className="text-sm font-bold text-gray-700 mb-4 flex items-center gap-2">
+        <h3 className="text-sm font-bold text-foreground/80 mb-4 flex items-center gap-2">
           <StarIcon className="w-4 h-4 text-amber-500" />
           Ranking de usuarios por insignias
         </h3>
         {loadingLeaderboard ? (
           <div className="space-y-2">
             {Array.from({ length: 5 }).map((_, i) => (
-              <div key={i} className="h-12 bg-gray-100 rounded-lg animate-pulse" />
+              <div key={i} className="h-12 bg-muted/50 rounded-lg animate-pulse" />
             ))}
           </div>
         ) : leaderboard?.length === 0 ? (
-          <p className="text-center text-xs text-gray-400 py-6">Aún no hay usuarios con insignias</p>
+          <p className="text-center text-xs text-muted-foreground/70 py-6">Aún no hay usuarios con insignias</p>
         ) : (
           <div className="space-y-2 max-h-96 overflow-y-auto">
             {leaderboard?.map((entry: any, index: number) => (
-              <div key={entry.userId} className="flex items-center gap-3 rounded-xl bg-gray-50 px-3 py-2">
+              <div key={entry.userId} className="flex items-center gap-3 rounded-xl bg-muted/30 px-3 py-2">
                 <span className={`w-7 h-7 rounded-full flex items-center justify-center text-xs font-bold ${
                   index === 0 ? "bg-amber-400 text-white" :
                   index === 1 ? "bg-gray-400 text-white" :
                   index === 2 ? "bg-orange-400 text-white" :
-                  "bg-gray-200 text-gray-600"
+                  "bg-muted text-muted-foreground"
                 }`}>
                   {index + 1}
                 </span>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-800 truncate">{entry.userName ?? "Usuario"}</p>
-                  <p className="text-xs text-gray-400">{entry.userEmail}</p>
+                  <p className="text-sm font-semibold text-foreground truncate">{entry.userName ?? "Usuario"}</p>
+                  <p className="text-xs text-muted-foreground/70">{entry.userEmail}</p>
                 </div>
                 <div className="text-right shrink-0">
                   <p className="text-sm font-bold text-amber-600">{entry.totalPoints} pts</p>
-                  <p className="text-xs text-gray-400">{entry.badgeCount} insignias</p>
+                  <p className="text-xs text-muted-foreground/70">{entry.badgeCount} insignias</p>
                 </div>
               </div>
             ))}
@@ -1546,7 +1546,7 @@ function AdminEmpresasPanel() {
     cancelled: "bg-red-100 text-red-700",
   };
   const PLAN_COLORS: Record<string, string> = {
-    starter: "bg-gray-100 text-gray-700",
+    starter: "bg-muted/50 text-foreground/80",
     business: "bg-blue-100 text-blue-700",
     enterprise: "bg-purple-100 text-purple-700",
     corporate: "bg-amber-100 text-amber-700",
@@ -1565,7 +1565,7 @@ function AdminEmpresasPanel() {
             key={t.key}
             onClick={() => { setSubTab(t.key); setSelectedCompanyId(null); }}
             className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-              subTab === t.key ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+              subTab === t.key ? "bg-gray-900 text-white" : "bg-muted/50 text-muted-foreground hover:bg-muted"
             }`}
           >
             {t.label}
@@ -1594,7 +1594,7 @@ function AdminEmpresasPanel() {
 
           {/* Distribución por plan */}
           <div className="vively-card">
-            <h4 className="text-sm font-bold text-gray-700 mb-3">Distribución por plan</h4>
+            <h4 className="text-sm font-bold text-foreground/80 mb-3">Distribución por plan</h4>
             <div className="space-y-2">
               {(["starter", "business", "enterprise", "corporate"] as const).map(plan => {
                 const count = companiesData.companies.filter(c => c.plan === plan).length;
@@ -1602,10 +1602,10 @@ function AdminEmpresasPanel() {
                 return (
                   <div key={plan} className="flex items-center gap-3">
                     <span className={`text-xs font-semibold px-2 py-0.5 rounded-full w-20 text-center ${PLAN_COLORS[plan]}`}>{plan}</span>
-                    <div className="flex-1 bg-gray-100 rounded-full h-2">
+                    <div className="flex-1 bg-muted/50 rounded-full h-2">
                       <div className="bg-[#F97316] h-2 rounded-full transition-all" style={{ width: `${pct}%` }} />
                     </div>
-                    <span className="text-xs text-gray-500 w-8 text-right">{count}</span>
+                    <span className="text-xs text-muted-foreground w-8 text-right">{count}</span>
                   </div>
                 );
               })}
@@ -1614,10 +1614,10 @@ function AdminEmpresasPanel() {
 
           {/* Tabla resumen de empresas activas */}
           <div className="vively-card overflow-x-auto">
-            <h4 className="text-sm font-bold text-gray-700 mb-3">Empresas activas — MRR por empresa</h4>
+            <h4 className="text-sm font-bold text-foreground/80 mb-3">Empresas activas — MRR por empresa</h4>
             <table className="w-full text-xs">
               <thead>
-                <tr className="text-gray-400 border-b border-gray-100">
+                <tr className="text-muted-foreground/70 border-b border-border/50">
                   <th className="text-left py-2 font-semibold">Empresa</th>
                   <th className="text-center py-2 font-semibold">Plan</th>
                   <th className="text-center py-2 font-semibold">Licencias</th>
@@ -1626,15 +1626,15 @@ function AdminEmpresasPanel() {
               </thead>
               <tbody>
                 {companiesData.companies.filter(c => c.status === "active").map(c => (
-                  <tr key={c.id} className="border-b border-gray-50 hover:bg-gray-50 cursor-pointer" onClick={() => { setSubTab("empresas"); setSelectedCompanyId(c.id); }}>
+                  <tr key={c.id} className="border-b border-gray-50 hover:bg-muted/30 cursor-pointer" onClick={() => { setSubTab("empresas"); setSelectedCompanyId(c.id); }}>
                     <td className="py-2">
-                      <p className="font-semibold text-gray-800">{c.name}</p>
-                      <p className="text-gray-400">{c.contactEmail}</p>
+                      <p className="font-semibold text-foreground">{c.name}</p>
+                      <p className="text-muted-foreground/70">{c.contactEmail}</p>
                     </td>
                     <td className="py-2 text-center">
                       <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${PLAN_COLORS[c.plan]}`}>{c.plan}</span>
                     </td>
-                    <td className="py-2 text-center text-gray-700">{c.licensesActive}/{c.licensesTotal}</td>
+                    <td className="py-2 text-center text-foreground/80">{c.licensesActive}/{c.licensesTotal}</td>
                     <td className="py-2 text-right font-bold text-green-700">{c.estimatedMRR.toFixed(0)} €</td>
                   </tr>
                 ))}
@@ -1652,7 +1652,7 @@ function AdminEmpresasPanel() {
             <div className="space-y-4">
               <button
                 onClick={() => setSelectedCompanyId(null)}
-                className="flex items-center gap-1 text-xs text-gray-500 hover:text-gray-800"
+                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
               >
                 ← Volver al listado
               </button>
@@ -1661,10 +1661,10 @@ function AdminEmpresasPanel() {
               <div className="vively-card space-y-3">
                 <div className="flex items-start justify-between gap-2 flex-wrap">
                   <div>
-                    <h3 className="text-base font-bold text-gray-900">{companyDetail.company.name}</h3>
-                    <p className="text-xs text-gray-400">{companyDetail.company.contactEmail} · {companyDetail.company.industry || "Sin sector"}</p>
+                    <h3 className="text-base font-bold text-foreground">{companyDetail.company.name}</h3>
+                    <p className="text-xs text-muted-foreground/70">{companyDetail.company.contactEmail} · {companyDetail.company.industry || "Sin sector"}</p>
                     {companyDetail.company.accessCode && (
-                      <p className="text-xs font-mono bg-gray-100 px-2 py-0.5 rounded mt-1 inline-block">
+                      <p className="text-xs font-mono bg-muted/50 px-2 py-0.5 rounded mt-1 inline-block">
                         Código: {companyDetail.company.accessCode}
                       </p>
                     )}
@@ -1681,23 +1681,23 @@ function AdminEmpresasPanel() {
 
                 {/* Stats */}
                 <div className="grid grid-cols-3 gap-3">
-                  <div className="bg-gray-50 rounded-xl p-3 text-center">
-                    <p className="text-lg font-bold text-gray-900">{companyDetail.stats.activeMembers}</p>
-                    <p className="text-xs text-gray-400">Miembros activos</p>
+                  <div className="bg-muted/30 rounded-xl p-3 text-center">
+                    <p className="text-lg font-bold text-foreground">{companyDetail.stats.activeMembers}</p>
+                    <p className="text-xs text-muted-foreground/70">Miembros activos</p>
                   </div>
-                  <div className="bg-gray-50 rounded-xl p-3 text-center">
-                    <p className="text-lg font-bold text-gray-900">{companyDetail.company.licensesTotal}</p>
-                    <p className="text-xs text-gray-400">Licencias contratadas</p>
+                  <div className="bg-muted/30 rounded-xl p-3 text-center">
+                    <p className="text-lg font-bold text-foreground">{companyDetail.company.licensesTotal}</p>
+                    <p className="text-xs text-muted-foreground/70">Licencias contratadas</p>
                   </div>
                   <div className="bg-green-50 rounded-xl p-3 text-center">
                     <p className="text-lg font-bold text-green-700">{companyDetail.stats.totalBilled.toFixed(0)} €</p>
-                    <p className="text-xs text-gray-400">Total facturado</p>
+                    <p className="text-xs text-muted-foreground/70">Total facturado</p>
                   </div>
                 </div>
 
                 {/* Acciones admin */}
-                <div className="border-t border-gray-100 pt-3 space-y-3">
-                  <p className="text-xs font-bold text-gray-500 uppercase tracking-wide">Acciones de administración</p>
+                <div className="border-t border-border/50 pt-3 space-y-3">
+                  <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Acciones de administración</p>
                   <div className="grid grid-cols-2 gap-2 sm:grid-cols-4">
                     {(["pending", "trial", "active", "suspended", "cancelled"] as const).map(s => (
                       <button
@@ -1707,7 +1707,7 @@ function AdminEmpresasPanel() {
                         className={`py-1.5 rounded-xl text-xs font-semibold transition-all disabled:opacity-40 ${
                           companyDetail.company.status === s
                             ? STATUS_COLORS[s] + " cursor-default"
-                            : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                            : "bg-muted/50 text-muted-foreground hover:bg-muted"
                         }`}
                       >
                         {s === "active" ? "✅ Activar" : s === "suspended" ? "⏸ Suspender" : s === "cancelled" ? "❌ Cancelar" : s === "trial" ? "🔬 Trial" : "⏳ Pendiente"}
@@ -1736,28 +1736,28 @@ function AdminEmpresasPanel() {
 
               {/* Miembros */}
               <div className="vively-card">
-                <h4 className="text-sm font-bold text-gray-700 mb-3">
+                <h4 className="text-sm font-bold text-foreground/80 mb-3">
                   Miembros ({companyDetail.stats.totalMembers})
                 </h4>
                 <div className="max-h-60 overflow-y-auto space-y-1.5">
                   {companyDetail.members.length === 0 ? (
-                    <p className="text-xs text-gray-400 text-center py-4">Sin miembros aún</p>
+                    <p className="text-xs text-muted-foreground/70 text-center py-4">Sin miembros aún</p>
                   ) : companyDetail.members.map((m: any) => (
-                    <div key={m.id} className="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2">
+                    <div key={m.id} className="flex items-center justify-between rounded-xl bg-muted/30 px-3 py-2">
                       <div className="flex items-center gap-2 min-w-0">
                         <div className="h-7 w-7 rounded-full bg-[#F97316]/10 flex items-center justify-center text-xs font-bold text-[#F97316] shrink-0">
                           {m.userName?.[0]?.toUpperCase() || "?"}
                         </div>
                         <div className="min-w-0">
-                          <p className="text-xs font-semibold text-gray-800 truncate">{m.userName || "Sin nombre"}</p>
-                          <p className="text-xs text-gray-400 truncate">{m.userEmail}</p>
+                          <p className="text-xs font-semibold text-foreground truncate">{m.userName || "Sin nombre"}</p>
+                          <p className="text-xs text-muted-foreground/70 truncate">{m.userEmail}</p>
                         </div>
                       </div>
                       <div className="text-right shrink-0 ml-2">
-                        <span className={`text-xs px-1.5 py-0.5 rounded-full ${m.isActive ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-500"}`}>
+                        <span className={`text-xs px-1.5 py-0.5 rounded-full ${m.isActive ? "bg-green-100 text-green-700" : "bg-muted/50 text-muted-foreground"}`}>
                           {m.isActive ? "activo" : "inactivo"}
                         </span>
-                        <p className="text-xs text-gray-400 mt-0.5">
+                        <p className="text-xs text-muted-foreground/70 mt-0.5">
                           {m.lastActiveAt ? new Date(m.lastActiveAt).toLocaleDateString("es-ES") : "Nunca"}
                         </p>
                       </div>
@@ -1768,13 +1768,13 @@ function AdminEmpresasPanel() {
 
               {/* Historial de facturación */}
               <div className="vively-card overflow-x-auto">
-                <h4 className="text-sm font-bold text-gray-700 mb-3">Historial de facturación</h4>
+                <h4 className="text-sm font-bold text-foreground/80 mb-3">Historial de facturación</h4>
                 {companyDetail.snapshots.length === 0 ? (
-                  <p className="text-xs text-gray-400 text-center py-4">Sin snapshots de facturación aún</p>
+                  <p className="text-xs text-muted-foreground/70 text-center py-4">Sin snapshots de facturación aún</p>
                 ) : (
                   <table className="w-full text-xs">
                     <thead>
-                      <tr className="text-gray-400 border-b border-gray-100">
+                      <tr className="text-muted-foreground/70 border-b border-border/50">
                         <th className="text-left py-2 font-semibold">Período</th>
                         <th className="text-center py-2 font-semibold">Licencias</th>
                         <th className="text-center py-2 font-semibold">€/licencia</th>
@@ -1785,12 +1785,12 @@ function AdminEmpresasPanel() {
                     <tbody>
                       {companyDetail.snapshots.map((s: any) => (
                         <tr key={s.id} className="border-b border-gray-50">
-                          <td className="py-2 text-gray-700">
+                          <td className="py-2 text-foreground/80">
                             {new Date(s.billingPeriodStart).toLocaleDateString("es-ES", { month: "short", year: "numeric" })}
                           </td>
-                          <td className="py-2 text-center text-gray-700">{s.activeLicenses}</td>
-                          <td className="py-2 text-center text-gray-700">{s.pricePerLicense.toFixed(2)} €</td>
-                          <td className="py-2 text-right font-bold text-gray-900">{s.totalAmount.toFixed(2)} €</td>
+                          <td className="py-2 text-center text-foreground/80">{s.activeLicenses}</td>
+                          <td className="py-2 text-center text-foreground/80">{s.pricePerLicense.toFixed(2)} €</td>
+                          <td className="py-2 text-right font-bold text-foreground">{s.totalAmount.toFixed(2)} €</td>
                           <td className="py-2 text-center">
                             <span className={`px-1.5 py-0.5 rounded-full text-xs font-semibold ${
                               s.status === "paid" ? "bg-green-100 text-green-700" :
@@ -1845,7 +1845,7 @@ function AdminEmpresasPanel() {
               {!companiesData ? (
                 <div className="flex justify-center py-8"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900" /></div>
               ) : companiesData.companies.length === 0 ? (
-                <div className="vively-card text-center py-8 text-gray-400">
+                <div className="vively-card text-center py-8 text-muted-foreground/70">
                   <p className="text-2xl mb-2">🏢</p>
                   <p className="text-sm">No hay empresas con estos filtros</p>
                 </div>
@@ -1860,19 +1860,19 @@ function AdminEmpresasPanel() {
                       <div className="flex items-start justify-between gap-2">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 flex-wrap">
-                            <p className="text-sm font-bold text-gray-900">{c.name}</p>
+                            <p className="text-sm font-bold text-foreground">{c.name}</p>
                             <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${STATUS_COLORS[c.status]}`}>{c.status}</span>
                             <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${PLAN_COLORS[c.plan]}`}>{c.plan}</span>
                           </div>
-                          <p className="text-xs text-gray-400 mt-0.5">{c.contactEmail} · {c.industry || "Sin sector"}</p>
+                          <p className="text-xs text-muted-foreground/70 mt-0.5">{c.contactEmail} · {c.industry || "Sin sector"}</p>
                           {c.accessCode && (
-                            <p className="text-xs font-mono text-gray-500 mt-0.5">Código: {c.accessCode}</p>
+                            <p className="text-xs font-mono text-muted-foreground mt-0.5">Código: {c.accessCode}</p>
                           )}
                         </div>
                         <div className="text-right shrink-0">
                           <p className="text-sm font-bold text-green-700">{c.estimatedMRR.toFixed(0)} €/mes</p>
-                          <p className="text-xs text-gray-400">{c.licensesActive}/{c.licensesTotal} lic.</p>
-                          <p className="text-xs text-gray-400">{c.activeMembersCount} miembros</p>
+                          <p className="text-xs text-muted-foreground/70">{c.licensesActive}/{c.licensesTotal} lic.</p>
+                          <p className="text-xs text-muted-foreground/70">{c.activeMembersCount} miembros</p>
                         </div>
                       </div>
                     </div>
@@ -1897,7 +1897,7 @@ function AdminEmpresasPanel() {
                 key={String(f.value)}
                 onClick={() => setLeadFilter(f.value)}
                 className={`px-3 py-1.5 rounded-xl text-xs font-semibold transition-all ${
-                  leadFilter === f.value ? "bg-gray-900 text-white" : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                  leadFilter === f.value ? "bg-gray-900 text-white" : "bg-muted/50 text-muted-foreground hover:bg-muted"
                 }`}
               >
                 {f.label}
@@ -1908,7 +1908,7 @@ function AdminEmpresasPanel() {
           {!leads ? (
             <div className="flex justify-center py-8"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-gray-900" /></div>
           ) : leads.length === 0 ? (
-            <div className="vively-card text-center py-8 text-gray-400">
+            <div className="vively-card text-center py-8 text-muted-foreground/70">
               <p className="text-2xl mb-2">📋</p>
               <p className="text-sm">No hay leads con estos filtros</p>
             </div>
@@ -1918,28 +1918,28 @@ function AdminEmpresasPanel() {
                 <div key={lead.id} className="vively-card space-y-2">
                   <div className="flex items-start justify-between gap-2">
                     <div>
-                      <p className="text-sm font-bold text-gray-900">{lead.companyName}</p>
-                      <p className="text-xs text-gray-500">{lead.contactName} · {lead.contactEmail}</p>
-                      {lead.contactPhone && <p className="text-xs text-gray-400">{lead.contactPhone}</p>}
+                      <p className="text-sm font-bold text-foreground">{lead.companyName}</p>
+                      <p className="text-xs text-muted-foreground">{lead.contactName} · {lead.contactEmail}</p>
+                      {lead.contactPhone && <p className="text-xs text-muted-foreground/70">{lead.contactPhone}</p>}
                     </div>
                     <div className="text-right shrink-0">
                       <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${lead.contacted ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>
                         {lead.contacted ? "Contactado" : "Pendiente"}
                       </span>
-                      <p className="text-xs text-gray-400 mt-1">{new Date(lead.createdAt).toLocaleDateString("es-ES")}</p>
+                      <p className="text-xs text-muted-foreground/70 mt-1">{new Date(lead.createdAt).toLocaleDateString("es-ES")}</p>
                     </div>
                   </div>
-                  <div className="flex gap-3 text-xs text-gray-500 flex-wrap">
+                  <div className="flex gap-3 text-xs text-muted-foreground flex-wrap">
                     {lead.employeeCount && <span>👥 {lead.employeeCount} empleados</span>}
                     {lead.industry && <span>🏭 {lead.industry}</span>}
                     {lead.planInterest && <span className={`px-1.5 py-0.5 rounded-full ${PLAN_COLORS[lead.planInterest]}`}>{lead.planInterest}</span>}
                   </div>
                   {lead.message && (
-                    <div className="bg-gray-50 rounded-xl p-2">
-                      <p className="text-xs text-gray-600">{lead.message}</p>
+                    <div className="bg-muted/30 rounded-xl p-2">
+                      <p className="text-xs text-muted-foreground">{lead.message}</p>
                     </div>
                   )}
-                  <div className="flex gap-2 pt-1 border-t border-gray-100">
+                  <div className="flex gap-2 pt-1 border-t border-border/50">
                     <a
                       href={`mailto:${lead.contactEmail}?subject=BuddyMarket for Business — ${lead.companyName}`}
                       className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700"
@@ -1952,7 +1952,7 @@ function AdminEmpresasPanel() {
                       disabled={updateLead.isPending}
                       className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold disabled:opacity-50 ${
                         lead.contacted
-                          ? "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                          ? "bg-muted/50 text-muted-foreground hover:bg-muted"
                           : "bg-green-500 text-white hover:bg-green-600"
                       }`}
                     >
@@ -1977,7 +1977,7 @@ function AdminCompanyNotes({
   const [notes, setNotes] = useState(currentNotes);
   return (
     <div className="space-y-2">
-      <p className="text-xs font-semibold text-gray-400 uppercase tracking-wide">Notas internas</p>
+      <p className="text-xs font-semibold text-muted-foreground/70 uppercase tracking-wide">Notas internas</p>
       <textarea
         value={notes}
         onChange={e => setNotes(e.target.value)}
@@ -1998,7 +1998,7 @@ function AdminCompanyNotes({
 
 // ── AdminSoportePanel ─────────────────────────────────────────────────────────
 const PRIORITY_LABELS: Record<string, { label: string; color: string }> = {
-  low:      { label: "Baja",     color: "bg-gray-100 text-gray-600" },
+  low:      { label: "Baja",     color: "bg-muted/50 text-muted-foreground" },
   medium:   { label: "Media",    color: "bg-yellow-100 text-yellow-700" },
   high:     { label: "Alta",     color: "bg-orange-100 text-orange-700" },
   critical: { label: "Crítica",  color: "bg-red-100 text-red-700" },
@@ -2008,7 +2008,7 @@ const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   in_progress: { label: "En curso",    color: "bg-purple-100 text-purple-700" },
   waiting:     { label: "Esperando",   color: "bg-yellow-100 text-yellow-700" },
   resolved:    { label: "Resuelto",    color: "bg-green-100 text-green-700" },
-  closed:      { label: "Cerrado",     color: "bg-gray-100 text-gray-500" },
+  closed:      { label: "Cerrado",     color: "bg-muted/50 text-muted-foreground" },
 };
 const CATEGORY_LABELS_ADMIN: Record<string, string> = {
   billing:       "Facturación",
@@ -2070,7 +2070,7 @@ function AdminSoportePanel() {
       {summary && (
         <div className="grid grid-cols-2 sm:grid-cols-5 gap-3">
           {[
-            { label: "Total", value: summary.total, color: "bg-gray-50 text-gray-700" },
+            { label: "Total", value: summary.total, color: "bg-muted/30 text-foreground/80" },
             { label: "Abiertos", value: summary.open, color: "bg-blue-50 text-blue-700" },
             { label: "En curso", value: summary.in_progress, color: "bg-purple-50 text-purple-700" },
             { label: "Esperando", value: summary.waiting_user, color: "bg-yellow-50 text-yellow-700" },
@@ -2090,7 +2090,7 @@ function AdminSoportePanel() {
           {/* Filters */}
           <div className="vively-card space-y-2">
             <div className="relative">
-              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+              <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
               <input
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
@@ -2106,7 +2106,7 @@ function AdminSoportePanel() {
                   className={`px-2.5 py-1 rounded-xl text-xs font-semibold transition-colors ${
                     statusFilter === s
                       ? "bg-gray-900 text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      : "bg-muted/50 text-muted-foreground hover:bg-muted"
                   }`}
                 >
                   {s === "all" ? "Todos" : STATUS_LABELS[s]?.label ?? s}
@@ -2121,7 +2121,7 @@ function AdminSoportePanel() {
                   className={`px-2.5 py-1 rounded-xl text-xs font-semibold transition-colors ${
                     priorityFilter === p
                       ? "bg-gray-900 text-white"
-                      : "bg-gray-100 text-gray-600 hover:bg-gray-200"
+                      : "bg-muted/50 text-muted-foreground hover:bg-muted"
                   }`}
                 >
                   {p === "all" ? "Todas" : PRIORITY_LABELS[p]?.label ?? p}
@@ -2133,9 +2133,9 @@ function AdminSoportePanel() {
           {/* Ticket list */}
           <div className="space-y-2 max-h-[60vh] overflow-y-auto">
             {isLoading ? (
-              <div className="text-center py-8 text-sm text-gray-400">Cargando tickets...</div>
+              <div className="text-center py-8 text-sm text-muted-foreground/70">Cargando tickets...</div>
             ) : tickets.length === 0 ? (
-              <div className="text-center py-8 text-sm text-gray-400">No hay tickets con estos filtros.</div>
+              <div className="text-center py-8 text-sm text-muted-foreground/70">No hay tickets con estos filtros.</div>
             ) : (
               tickets.map((ticket: any) => (
                 <button
@@ -2144,14 +2144,14 @@ function AdminSoportePanel() {
                   className={`w-full text-left rounded-2xl border p-3 transition-all ${
                     selectedTicket?.id === ticket.id
                       ? "border-orange-300 bg-orange-50"
-                      : "border-gray-100 bg-white hover:border-gray-200 hover:bg-gray-50"
+                      : "border-border/50 bg-background hover:border-border hover:bg-muted/30"
                   }`}
                 >
                   <div className="flex items-start justify-between gap-2">
                     <div className="flex-1 min-w-0">
-                      <p className="text-sm font-semibold text-gray-800 truncate">{ticket.subject}</p>
-                      <p className="text-xs text-gray-500 mt-0.5">{ticket.userName} · #{ticket.id}</p>
-                      <p className="text-xs text-gray-400 mt-0.5 truncate">{ticket.lastMessage || ticket.description}</p>
+                      <p className="text-sm font-semibold text-foreground truncate">{ticket.subject}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">{ticket.userName} · #{ticket.id}</p>
+                      <p className="text-xs text-muted-foreground/70 mt-0.5 truncate">{ticket.lastMessage || ticket.description}</p>
                     </div>
                     <div className="flex flex-col items-end gap-1 shrink-0">
                       <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${STATUS_LABELS[ticket.status]?.color}`}>
@@ -2181,27 +2181,27 @@ function AdminSoportePanel() {
           {!selectedTicket ? (
             <div className="vively-card flex flex-col items-center justify-center py-16 text-center">
               <ChatBubbleLeftRightIcon className="h-12 w-12 text-gray-200 mb-3" />
-              <p className="text-sm text-gray-400">Selecciona un ticket para ver el detalle</p>
+              <p className="text-sm text-muted-foreground/70">Selecciona un ticket para ver el detalle</p>
             </div>
           ) : detailLoading ? (
-            <div className="vively-card py-12 text-center text-sm text-gray-400">Cargando...</div>
+            <div className="vively-card py-12 text-center text-sm text-muted-foreground/70">Cargando...</div>
           ) : ticketDetail ? (
             <div className="vively-card space-y-4">
               {/* Header */}
               <div className="flex items-start justify-between gap-3">
                 <div>
-                  <h3 className="text-base font-bold text-gray-800">{ticketDetail.ticket.subject}</h3>
-                  <p className="text-xs text-gray-500 mt-0.5">
+                  <h3 className="text-base font-bold text-foreground">{ticketDetail.ticket.subject}</h3>
+                  <p className="text-xs text-muted-foreground mt-0.5">
                     {ticketDetail.ticket.userName} · {ticketDetail.ticket.userEmail} · #{ticketDetail.ticket.id}
                   </p>
-                  <p className="text-xs text-gray-400 mt-0.5">
+                  <p className="text-xs text-muted-foreground/70 mt-0.5">
                     Categoría: {CATEGORY_LABELS_ADMIN[ticketDetail.ticket.category] ?? ticketDetail.ticket.category}
                     
                   </p>
                 </div>
                 <button
                   onClick={() => setSelectedTicket(null)}
-                  className="text-gray-400 hover:text-gray-600 shrink-0"
+                  className="text-muted-foreground/70 hover:text-muted-foreground shrink-0"
                 >
                   <XMarkIcon className="h-5 w-5" />
                 </button>
@@ -2242,12 +2242,12 @@ function AdminSoportePanel() {
               {/* Messages thread */}
               <div className="space-y-3 max-h-[40vh] overflow-y-auto">
                 {/* Initial description */}
-                <div className="rounded-2xl bg-gray-50 p-3">
+                <div className="rounded-2xl bg-muted/30 p-3">
                   <div className="flex items-center justify-between mb-1">
-                    <p className="text-xs font-semibold text-gray-700">{ticketDetail.ticket.userName} <span className="font-normal text-gray-400">(usuario)</span></p>
-                    <p className="text-xs text-gray-400">{new Date(ticketDetail.ticket.createdAt).toLocaleDateString("es-ES", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</p>
+                    <p className="text-xs font-semibold text-foreground/80">{ticketDetail.ticket.userName} <span className="font-normal text-muted-foreground/70">(usuario)</span></p>
+                    <p className="text-xs text-muted-foreground/70">{new Date(ticketDetail.ticket.createdAt).toLocaleDateString("es-ES", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</p>
                   </div>
-                  <p className="text-sm text-gray-700 whitespace-pre-wrap">{(ticketDetail.messages?.[0] as any)?.message ?? ""}</p>
+                  <p className="text-sm text-foreground/80 whitespace-pre-wrap">{(ticketDetail.messages?.[0] as any)?.message ?? ""}</p>
                 </div>
                 {/* Messages */}
                 {(ticketDetail.messages ?? []).map((msg: any) => (
@@ -2258,18 +2258,18 @@ function AdminSoportePanel() {
                         ? "bg-yellow-50 border border-yellow-200"
                         : msg.senderRole === "admin"
                         ? "bg-orange-50 border border-orange-100"
-                        : "bg-gray-50"
+                        : "bg-muted/30"
                     }`}
                   >
                     <div className="flex items-center justify-between mb-1">
-                      <p className="text-xs font-semibold text-gray-700">
+                      <p className="text-xs font-semibold text-foreground/80">
                         {msg.senderName}
                         {msg.senderRole === "admin" && <span className="ml-1 text-orange-500">(Admin)</span>}
                         {msg.isInternal && <span className="ml-1 text-yellow-600">(Nota interna)</span>}
                       </p>
-                      <p className="text-xs text-gray-400">{new Date(msg.createdAt).toLocaleDateString("es-ES", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</p>
+                      <p className="text-xs text-muted-foreground/70">{new Date(msg.createdAt).toLocaleDateString("es-ES", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}</p>
                     </div>
-                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{msg.content}</p>
+                    <p className="text-sm text-foreground/80 whitespace-pre-wrap">{msg.content}</p>
                   </div>
                 ))}
               </div>
@@ -2277,7 +2277,7 @@ function AdminSoportePanel() {
               {/* Reply box */}
               <div className="space-y-2 border-t pt-3">
                 <div className="flex items-center gap-3">
-                  <label className="flex items-center gap-1.5 text-xs text-gray-600 cursor-pointer">
+                  <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
                     <input
                       type="checkbox"
                       checked={isInternal}

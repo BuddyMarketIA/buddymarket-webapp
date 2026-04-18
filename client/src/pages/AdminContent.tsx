@@ -152,14 +152,14 @@ function RecipeForm({
     });
   };
 
-  const inputCls = "w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400";
-  const labelCls = "block text-xs font-semibold text-gray-500 mb-1";
+  const inputCls = "w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400";
+  const labelCls = "block text-xs font-semibold text-muted-foreground mb-1";
 
   return (
     <div className="space-y-5">
       {/* Basic info */}
-      <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm space-y-3">
-        <h4 className="text-sm font-bold text-gray-700">Información básica</h4>
+      <div className="rounded-2xl border border-border/50 bg-background p-4 shadow-sm space-y-3">
+        <h4 className="text-sm font-bold text-foreground/80">Información básica</h4>
         <div>
           <label className={labelCls}>Nombre *</label>
           <input value={name} onChange={e => setName(e.target.value)} className={inputCls} placeholder="Ej: Ensalada mediterránea" />
@@ -220,7 +220,7 @@ function RecipeForm({
             { label: "Apto niños", val: isKidFriendly, set: setIsKidFriendly },
             { label: "Apto bebés", val: isBabyFriendly, set: setIsBabyFriendly },
           ].map(({ label, val, set }) => (
-            <label key={label} className="flex items-center gap-2 text-xs font-medium text-gray-600 cursor-pointer">
+            <label key={label} className="flex items-center gap-2 text-xs font-medium text-muted-foreground cursor-pointer">
               <input type="checkbox" checked={val} onChange={e => set(e.target.checked)} className="rounded" />
               {label}
             </label>
@@ -229,8 +229,8 @@ function RecipeForm({
       </div>
 
       {/* Image */}
-      <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm space-y-3">
-        <h4 className="text-sm font-bold text-gray-700">Imagen</h4>
+      <div className="rounded-2xl border border-border/50 bg-background p-4 shadow-sm space-y-3">
+        <h4 className="text-sm font-bold text-foreground/80">Imagen</h4>
         {imageUrl && (
           <img src={imageUrl} alt="preview" className="h-32 w-full object-cover rounded-xl" />
         )}
@@ -248,12 +248,12 @@ function RecipeForm({
           )}
           <input ref={fileInputRef} type="file" accept="image/*" className="hidden" onChange={handleFileChange} />
         </div>
-        {!initial?.id && <p className="text-xs text-gray-400">Guarda primero la receta para poder subir imagen desde el dispositivo.</p>}
+        {!initial?.id && <p className="text-xs text-muted-foreground/70">Guarda primero la receta para poder subir imagen desde el dispositivo.</p>}
       </div>
 
       {/* Nutritional values */}
-      <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm space-y-3">
-        <h4 className="text-sm font-bold text-gray-700">Valores nutricionales (por ración)</h4>
+      <div className="rounded-2xl border border-border/50 bg-background p-4 shadow-sm space-y-3">
+        <h4 className="text-sm font-bold text-foreground/80">Valores nutricionales (por ración)</h4>
         <div className="grid grid-cols-2 gap-3 sm:grid-cols-5">
           {[
             { label: "Calorías (kcal)", val: calories, set: setCalories },
@@ -271,15 +271,15 @@ function RecipeForm({
       </div>
 
       {/* Ingredients */}
-      <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm space-y-3">
+      <div className="rounded-2xl border border-border/50 bg-background p-4 shadow-sm space-y-3">
         <div className="flex items-center justify-between">
-          <h4 className="text-sm font-bold text-gray-700">Ingredientes ({ingredients.length})</h4>
+          <h4 className="text-sm font-bold text-foreground/80">Ingredientes ({ingredients.length})</h4>
           <button onClick={addIngredient} className="flex items-center gap-1 rounded-lg bg-orange-50 px-2.5 py-1 text-xs font-semibold text-orange-600 hover:bg-orange-100">
             <PlusIcon className="h-3.5 w-3.5" /> Añadir
           </button>
         </div>
         {ingredients.length === 0 && (
-          <p className="text-xs text-gray-400 text-center py-2">No hay ingredientes. Pulsa "Añadir" para empezar.</p>
+          <p className="text-xs text-muted-foreground/70 text-center py-2">No hay ingredientes. Pulsa "Añadir" para empezar.</p>
         )}
         <div className="space-y-2 max-h-64 overflow-y-auto">
           {ingredients.map((ing, i) => (
@@ -311,15 +311,15 @@ function RecipeForm({
       </div>
 
       {/* Steps */}
-      <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm space-y-3">
+      <div className="rounded-2xl border border-border/50 bg-background p-4 shadow-sm space-y-3">
         <div className="flex items-center justify-between">
-          <h4 className="text-sm font-bold text-gray-700">Instrucciones ({steps.length} pasos)</h4>
+          <h4 className="text-sm font-bold text-foreground/80">Instrucciones ({steps.length} pasos)</h4>
           <button onClick={addStep} className="flex items-center gap-1 rounded-lg bg-orange-50 px-2.5 py-1 text-xs font-semibold text-orange-600 hover:bg-orange-100">
             <PlusIcon className="h-3.5 w-3.5" /> Añadir paso
           </button>
         </div>
         {steps.length === 0 && (
-          <p className="text-xs text-gray-400 text-center py-2">No hay pasos. Pulsa "Añadir paso" para empezar.</p>
+          <p className="text-xs text-muted-foreground/70 text-center py-2">No hay pasos. Pulsa "Añadir paso" para empezar.</p>
         )}
         <div className="space-y-2 max-h-64 overflow-y-auto">
           {steps.map((step, i) => (
@@ -354,7 +354,7 @@ function RecipeForm({
         </button>
         <button
           onClick={onCancel}
-          className="flex items-center gap-2 rounded-2xl border border-gray-200 px-5 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50"
+          className="flex items-center gap-2 rounded-2xl border border-border px-5 py-3 text-sm font-semibold text-muted-foreground hover:bg-muted/30"
         >
           <XMarkIcon className="h-4 w-4" /> Cancelar
         </button>
@@ -387,8 +387,8 @@ function MenuForm({
   const [durationDays, setDurationDays] = useState("7");
   const [isPublic, setIsPublic] = useState(initial?.isPublic ?? true);
 
-  const inputCls = "w-full rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400";
-  const labelCls = "block text-xs font-semibold text-gray-500 mb-1";
+  const inputCls = "w-full rounded-xl border border-border bg-background px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400";
+  const labelCls = "block text-xs font-semibold text-muted-foreground mb-1";
 
   const handleSubmit = () => {
     if (!name.trim()) { toast.error("El nombre es obligatorio"); return; }
@@ -408,8 +408,8 @@ function MenuForm({
 
   return (
     <div className="space-y-5">
-      <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm space-y-3">
-        <h4 className="text-sm font-bold text-gray-700">Información del menú</h4>
+      <div className="rounded-2xl border border-border/50 bg-background p-4 shadow-sm space-y-3">
+        <h4 className="text-sm font-bold text-foreground/80">Información del menú</h4>
         <div>
           <label className={labelCls}>Nombre *</label>
           <input value={name} onChange={e => setName(e.target.value)} className={inputCls} placeholder="Ej: Menú pérdida de peso 7 días" />
@@ -468,7 +468,7 @@ function MenuForm({
         {coverImage && (
           <img src={coverImage} alt="portada" className="h-32 w-full object-cover rounded-xl" />
         )}
-        <label className="flex items-center gap-2 text-xs font-medium text-gray-600 cursor-pointer">
+        <label className="flex items-center gap-2 text-xs font-medium text-muted-foreground cursor-pointer">
           <input type="checkbox" checked={isPublic} onChange={e => setIsPublic(e.target.checked)} className="rounded" />
           Menú público (visible en la biblioteca)
         </label>
@@ -485,7 +485,7 @@ function MenuForm({
         </button>
         <button
           onClick={onCancel}
-          className="flex items-center gap-2 rounded-2xl border border-gray-200 px-5 py-3 text-sm font-semibold text-gray-600 hover:bg-gray-50"
+          className="flex items-center gap-2 rounded-2xl border border-border px-5 py-3 text-sm font-semibold text-muted-foreground hover:bg-muted/30"
         >
           <XMarkIcon className="h-4 w-4" /> Cancelar
         </button>
@@ -557,7 +557,7 @@ export default function AdminContent() {
   if (isLoading) return <div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500" /></div>;
   if (!user || user.role !== "admin") return (
     <div className="flex flex-col items-center justify-center min-h-screen gap-4">
-      <p className="text-gray-500">Acceso restringido a administradores.</p>
+      <p className="text-muted-foreground">Acceso restringido a administradores.</p>
       <Link href="/app/dashboard" className="text-orange-500 underline text-sm">Volver al inicio</Link>
     </div>
   );
@@ -598,25 +598,25 @@ export default function AdminContent() {
   return (
     <div className="min-h-screen bg-[#FFF8F0]">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-white border-b border-gray-100 px-4 py-3 flex items-center gap-3">
+      <div className="sticky top-0 z-10 bg-background border-b border-border/50 px-4 py-3 flex items-center gap-3">
         {isFormView ? (
-          <button onClick={() => { setView("list"); setEditTarget(null); }} className="flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-gray-900">
+          <button onClick={() => { setView("list"); setEditTarget(null); }} className="flex items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground">
             <ChevronLeftIcon className="h-4 w-4" /> Volver
           </button>
         ) : (
-          <Link href="/app/admin" className="flex items-center gap-1.5 text-sm font-semibold text-gray-600 hover:text-gray-900">
+          <Link href="/app/admin" className="flex items-center gap-1.5 text-sm font-semibold text-muted-foreground hover:text-foreground">
             <ChevronLeftIcon className="h-4 w-4" /> Admin
           </Link>
         )}
         <div className="flex-1">
-          <h1 className="text-base font-bold text-gray-900">
+          <h1 className="text-base font-bold text-foreground">
             {view === "list" && "Gestión de contenido"}
             {view === "new-recipe" && "Nueva receta"}
             {view === "edit-recipe" && `Editar: ${editTarget?.name}`}
             {view === "new-menu" && "Nuevo menú"}
             {view === "edit-menu" && `Editar: ${editTarget?.name}`}
           </h1>
-          <p className="text-xs text-gray-400">Añade o edita contenido sin redesplegar la app</p>
+          <p className="text-xs text-muted-foreground/70">Añade o edita contenido sin redesplegar la app</p>
         </div>
       </div>
 
@@ -626,14 +626,14 @@ export default function AdminContent() {
           <div className="flex gap-2 mb-4">
             <button
               onClick={() => setActiveTab("recipes")}
-              className={`flex items-center gap-2 flex-1 rounded-2xl py-2.5 text-sm font-semibold transition-colors ${activeTab === "recipes" ? "bg-orange-500 text-white" : "bg-white text-gray-600 border border-gray-200"}`}
+              className={`flex items-center gap-2 flex-1 rounded-2xl py-2.5 text-sm font-semibold transition-colors ${activeTab === "recipes" ? "bg-orange-500 text-white" : "bg-background text-muted-foreground border border-border"}`}
             >
               <BookOpenIcon className="h-4 w-4 mx-auto" />
               <span>Recetas</span>
             </button>
             <button
               onClick={() => setActiveTab("menus")}
-              className={`flex items-center gap-2 flex-1 rounded-2xl py-2.5 text-sm font-semibold transition-colors ${activeTab === "menus" ? "bg-orange-500 text-white" : "bg-white text-gray-600 border border-gray-200"}`}
+              className={`flex items-center gap-2 flex-1 rounded-2xl py-2.5 text-sm font-semibold transition-colors ${activeTab === "menus" ? "bg-orange-500 text-white" : "bg-background text-muted-foreground border border-border"}`}
             >
               <CalendarDaysIcon className="h-4 w-4 mx-auto" />
               <span>Menús</span>
@@ -646,12 +646,12 @@ export default function AdminContent() {
           <div className="space-y-3">
             <div className="flex gap-2">
               <div className="relative flex-1">
-                <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
                 <input
                   value={recipeSearch}
                   onChange={e => { setRecipeSearch(e.target.value); setRecipeOffset(0); }}
                   placeholder="Buscar receta…"
-                  className="w-full rounded-2xl border border-gray-200 bg-white pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                  className="w-full rounded-2xl border border-border bg-background pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
                 />
               </div>
               <button
@@ -662,31 +662,31 @@ export default function AdminContent() {
               </button>
             </div>
 
-            <p className="text-xs text-gray-400">{recipesData?.total ?? "…"} recetas en total</p>
+            <p className="text-xs text-muted-foreground/70">{recipesData?.total ?? "…"} recetas en total</p>
 
             {!recipesData ? (
               <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500" /></div>
             ) : recipesData.recipes.length === 0 ? (
-              <div className="rounded-2xl bg-white border border-gray-100 p-8 text-center">
-                <p className="text-sm text-gray-400">No se encontraron recetas</p>
+              <div className="rounded-2xl bg-background border border-border/50 p-8 text-center">
+                <p className="text-sm text-muted-foreground/70">No se encontraron recetas</p>
               </div>
             ) : (
               <div className="space-y-2">
                 {recipesData.recipes.map((r: any) => (
-                  <div key={r.id} className="flex items-center gap-3 rounded-2xl bg-white border border-gray-100 p-3 shadow-sm">
+                  <div key={r.id} className="flex items-center gap-3 rounded-2xl bg-background border border-border/50 p-3 shadow-sm">
                     <img
                       src={r.imageUrl || "https://placehold.co/64x64/FFF0E0/F97316?text=🍽️"}
                       alt={r.name}
                       className="h-12 w-12 rounded-xl object-cover shrink-0"
                     />
                     <div className="flex-1 min-w-0">
-                      <p className="truncate text-sm font-semibold text-gray-800">{r.name}</p>
-                      <p className="text-xs text-gray-400">ID #{r.id} · {r.userName ?? "sistema"}</p>
+                      <p className="truncate text-sm font-semibold text-foreground">{r.name}</p>
+                      <p className="text-xs text-muted-foreground/70">ID #{r.id} · {r.userName ?? "sistema"}</p>
                     </div>
                     <div className="flex gap-1 shrink-0">
                       <button
                         onClick={() => { setEditTarget(r); setView("edit-recipe"); }}
-                        className="flex h-8 w-8 items-center justify-center rounded-xl text-gray-400 hover:bg-orange-50 hover:text-orange-500"
+                        className="flex h-8 w-8 items-center justify-center rounded-xl text-muted-foreground/70 hover:bg-orange-50 hover:text-orange-500"
                         title="Editar"
                       >
                         <PencilSquareIcon className="h-4 w-4" />
@@ -694,7 +694,7 @@ export default function AdminContent() {
                       <button
                         onClick={() => handleDeleteRecipe(r.id, r.name)}
                         disabled={deleteRecipe.isPending}
-                        className="flex h-8 w-8 items-center justify-center rounded-xl text-gray-400 hover:bg-red-50 hover:text-red-500 disabled:opacity-40"
+                        className="flex h-8 w-8 items-center justify-center rounded-xl text-muted-foreground/70 hover:bg-red-50 hover:text-red-500 disabled:opacity-40"
                         title="Eliminar"
                       >
                         <TrashIcon className="h-4 w-4" />
@@ -710,17 +710,17 @@ export default function AdminContent() {
                 <button
                   onClick={() => setRecipeOffset(Math.max(0, recipeOffset - LIMIT))}
                   disabled={recipeOffset === 0}
-                  className="rounded-xl bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-600 disabled:opacity-40 hover:bg-gray-200"
+                  className="rounded-xl bg-muted/50 px-3 py-1.5 text-xs font-semibold text-muted-foreground disabled:opacity-40 hover:bg-muted"
                 >
                   ← Anterior
                 </button>
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-muted-foreground/70">
                   {recipeOffset + 1}–{Math.min(recipeOffset + LIMIT, recipesData.total)} de {recipesData.total}
                 </span>
                 <button
                   onClick={() => setRecipeOffset(recipeOffset + LIMIT)}
                   disabled={recipeOffset + LIMIT >= recipesData.total}
-                  className="rounded-xl bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-600 disabled:opacity-40 hover:bg-gray-200"
+                  className="rounded-xl bg-muted/50 px-3 py-1.5 text-xs font-semibold text-muted-foreground disabled:opacity-40 hover:bg-muted"
                 >
                   Siguiente →
                 </button>
@@ -734,12 +734,12 @@ export default function AdminContent() {
           <div className="space-y-3">
             <div className="flex gap-2">
               <div className="relative flex-1">
-                <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/70" />
                 <input
                   value={menuSearch}
                   onChange={e => { setMenuSearch(e.target.value); setMenuOffset(0); }}
                   placeholder="Buscar menú…"
-                  className="w-full rounded-2xl border border-gray-200 bg-white pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                  className="w-full rounded-2xl border border-border bg-background pl-9 pr-3 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
                 />
               </div>
               <button
@@ -750,18 +750,18 @@ export default function AdminContent() {
               </button>
             </div>
 
-            <p className="text-xs text-gray-400">{menusData?.total ?? "…"} menús en total</p>
+            <p className="text-xs text-muted-foreground/70">{menusData?.total ?? "…"} menús en total</p>
 
             {!menusData ? (
               <div className="flex justify-center py-12"><div className="animate-spin rounded-full h-6 w-6 border-b-2 border-orange-500" /></div>
             ) : menusData.menus.length === 0 ? (
-              <div className="rounded-2xl bg-white border border-gray-100 p-8 text-center">
-                <p className="text-sm text-gray-400">No se encontraron menús</p>
+              <div className="rounded-2xl bg-background border border-border/50 p-8 text-center">
+                <p className="text-sm text-muted-foreground/70">No se encontraron menús</p>
               </div>
             ) : (
               <div className="space-y-2">
                 {menusData.menus.map((m: any) => (
-                  <div key={m.id} className="flex items-center gap-3 rounded-2xl bg-white border border-gray-100 p-3 shadow-sm">
+                  <div key={m.id} className="flex items-center gap-3 rounded-2xl bg-background border border-border/50 p-3 shadow-sm">
                     {m.coverImage ? (
                       <img src={m.coverImage} alt={m.name} className="h-12 w-12 rounded-xl object-cover shrink-0" />
                     ) : (
@@ -770,15 +770,15 @@ export default function AdminContent() {
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="truncate text-sm font-semibold text-gray-800">{m.name}</p>
-                      <p className="text-xs text-gray-400">
+                      <p className="truncate text-sm font-semibold text-foreground">{m.name}</p>
+                      <p className="text-xs text-muted-foreground/70">
                         ID #{m.id} · {m.goal ?? "sin objetivo"} · {m.isPublic ? "público" : "privado"}
                       </p>
                     </div>
                     <div className="flex gap-1 shrink-0">
                       <button
                         onClick={() => { setEditTarget(m); setView("edit-menu"); }}
-                        className="flex h-8 w-8 items-center justify-center rounded-xl text-gray-400 hover:bg-orange-50 hover:text-orange-500"
+                        className="flex h-8 w-8 items-center justify-center rounded-xl text-muted-foreground/70 hover:bg-orange-50 hover:text-orange-500"
                         title="Editar"
                       >
                         <PencilSquareIcon className="h-4 w-4" />
@@ -786,7 +786,7 @@ export default function AdminContent() {
                       <button
                         onClick={() => handleDeleteMenu(m.id, m.name)}
                         disabled={deleteMenu.isPending}
-                        className="flex h-8 w-8 items-center justify-center rounded-xl text-gray-400 hover:bg-red-50 hover:text-red-500 disabled:opacity-40"
+                        className="flex h-8 w-8 items-center justify-center rounded-xl text-muted-foreground/70 hover:bg-red-50 hover:text-red-500 disabled:opacity-40"
                         title="Eliminar"
                       >
                         <TrashIcon className="h-4 w-4" />
@@ -802,17 +802,17 @@ export default function AdminContent() {
                 <button
                   onClick={() => setMenuOffset(Math.max(0, menuOffset - LIMIT))}
                   disabled={menuOffset === 0}
-                  className="rounded-xl bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-600 disabled:opacity-40 hover:bg-gray-200"
+                  className="rounded-xl bg-muted/50 px-3 py-1.5 text-xs font-semibold text-muted-foreground disabled:opacity-40 hover:bg-muted"
                 >
                   ← Anterior
                 </button>
-                <span className="text-xs text-gray-400">
+                <span className="text-xs text-muted-foreground/70">
                   {menuOffset + 1}–{Math.min(menuOffset + LIMIT, menusData.total)} de {menusData.total}
                 </span>
                 <button
                   onClick={() => setMenuOffset(menuOffset + LIMIT)}
                   disabled={menuOffset + LIMIT >= menusData.total}
-                  className="rounded-xl bg-gray-100 px-3 py-1.5 text-xs font-semibold text-gray-600 disabled:opacity-40 hover:bg-gray-200"
+                  className="rounded-xl bg-muted/50 px-3 py-1.5 text-xs font-semibold text-muted-foreground disabled:opacity-40 hover:bg-muted"
                 >
                   Siguiente →
                 </button>

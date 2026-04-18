@@ -152,8 +152,8 @@ export default function MyExpert() {
       <AppLayout>
         <div className="max-w-2xl mx-auto px-4 py-16 text-center">
           <div className="text-6xl mb-4">👩‍⚕️</div>
-          <h2 className="text-2xl font-bold text-gray-900 mb-3">Sin nutricionista asignado</h2>
-          <p className="text-gray-500 mb-6">
+          <h2 className="text-2xl font-bold text-foreground mb-3">Sin nutricionista asignado</h2>
+          <p className="text-muted-foreground mb-6">
             Aún no tienes un BuddyExpert asignado. Cuando un nutricionista te invite, podrás ver aquí tus menús personalizados, mensajes y citas.
           </p>
           <Button onClick={() => window.location.href = "/app/buddy-experts"} className="bg-orange-500 hover:bg-orange-600 text-white">
@@ -182,43 +182,43 @@ export default function MyExpert() {
   // ─── MODAL PEDIR CITA ──────────────────────────────────────────────────────
   const RequestAppointmentModal = () => (
     <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-4">
-      <div className="bg-white rounded-2xl w-full max-w-md shadow-2xl">
-        <div className="p-5 border-b border-gray-100 flex items-center justify-between">
-          <h3 className="text-lg font-bold text-gray-900">📅 Pedir cita</h3>
-          <button onClick={() => setShowRequestModal(false)} className="text-gray-400 hover:text-gray-600 text-xl">✕</button>
+      <div className="bg-background rounded-2xl w-full max-w-md shadow-2xl">
+        <div className="p-5 border-b border-border/50 flex items-center justify-between">
+          <h3 className="text-lg font-bold text-foreground">📅 Pedir cita</h3>
+          <button onClick={() => setShowRequestModal(false)} className="text-muted-foreground/70 hover:text-muted-foreground text-xl">✕</button>
         </div>
         <div className="p-5 space-y-4">
-          <p className="text-sm text-gray-500">
+          <p className="text-sm text-muted-foreground">
             Indica tu preferencia y tu nutricionista <strong>{activeRelation?.expertUser?.name ?? "te"}</strong> confirmará la cita.
           </p>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Fecha preferida</label>
+            <label className="block text-sm font-medium text-foreground/80 mb-1">Fecha preferida</label>
             <input
               type="date"
               value={reqDate}
               onChange={e => setReqDate(e.target.value)}
               min={new Date().toISOString().split("T")[0]}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+              className="w-full border border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Hora preferida</label>
+            <label className="block text-sm font-medium text-foreground/80 mb-1">Hora preferida</label>
             <input
               type="time"
               value={reqTime}
               onChange={e => setReqTime(e.target.value)}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+              className="w-full border border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
             />
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Modalidad</label>
+            <label className="block text-sm font-medium text-foreground/80 mb-1">Modalidad</label>
             <div className="flex gap-2">
               {[{ value: "online", label: "🌐 Online", desc: "Videollamada" }, { value: "in_person", label: "📍 Presencial", desc: "En consulta" }].map(opt => (
                 <button
                   key={opt.value}
                   onClick={() => setReqModality(opt.value as "online" | "in_person")}
                   className={`flex-1 py-2 px-3 rounded-xl border text-sm font-medium transition-colors ${
-                    reqModality === opt.value ? "bg-orange-500 text-white border-orange-500" : "bg-white text-gray-700 border-gray-200 hover:border-orange-300"
+                    reqModality === opt.value ? "bg-orange-500 text-white border-orange-500" : "bg-background text-foreground/80 border-border hover:border-orange-300"
                   }`}
                 >
                   {opt.label}<br /><span className="text-xs opacity-75">{opt.desc}</span>
@@ -227,13 +227,13 @@ export default function MyExpert() {
             </div>
           </div>
           <div>
-            <label className="block text-sm font-medium text-gray-700 mb-1">Notas adicionales <span className="text-gray-400">(opcional)</span></label>
+            <label className="block text-sm font-medium text-foreground/80 mb-1">Notas adicionales <span className="text-muted-foreground/70">(opcional)</span></label>
             <textarea
               value={reqNotes}
               onChange={e => setReqNotes(e.target.value)}
               placeholder="Ej: Quiero revisar mi progreso de este mes..."
               rows={2}
-              className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
+              className="w-full border border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
             />
           </div>
         </div>
@@ -277,16 +277,16 @@ export default function MyExpert() {
       <AppLayout>
         {showRequestModal && <RequestAppointmentModal />}
         <div className="max-w-2xl mx-auto px-4 py-6">
-          <button onClick={() => setView("menus")} className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-orange-600 transition-colors mb-4">
+          <button onClick={() => setView("menus")} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-orange-600 transition-colors mb-4">
             ← Volver a mis menús
           </button>
 
           {/* Header del menú */}
-          <div className="bg-white rounded-2xl border border-gray-200 shadow-sm p-5 mb-4">
+          <div className="bg-background rounded-2xl border border-border shadow-sm p-5 mb-4">
             <div className="flex items-start justify-between gap-3 mb-3">
               <div>
-                <h2 className="text-xl font-bold text-gray-900">{menuItem.menu.originalMenuTitle ?? "Menú personalizado"}</h2>
-                <p className="text-sm text-gray-500 mt-0.5">
+                <h2 className="text-xl font-bold text-foreground">{menuItem.menu.originalMenuTitle ?? "Menú personalizado"}</h2>
+                <p className="text-sm text-muted-foreground mt-0.5">
                   De <strong>{menuItem.expertUser?.name ?? "tu nutricionista"}</strong>
                   {menuItem.menu.weekStartDate && (
                     <> · Semana del {new Date(menuItem.menu.weekStartDate).toLocaleDateString("es-ES", { day: "numeric", month: "long" })}</>
@@ -301,11 +301,11 @@ export default function MyExpert() {
             </div>
 
             {menuItem.originalMenu?.description && (
-              <p className="text-sm text-gray-600 mb-3">{menuItem.originalMenu.description}</p>
+              <p className="text-sm text-muted-foreground mb-3">{menuItem.originalMenu.description}</p>
             )}
 
             {menuItem.originalMenu?.targetCalories && (
-              <div className="flex items-center gap-1.5 text-sm text-gray-600 mb-3">
+              <div className="flex items-center gap-1.5 text-sm text-muted-foreground mb-3">
                 <span className="text-base">🔥</span>
                 <span>~{menuItem.originalMenu.targetCalories} kcal/día</span>
               </div>
@@ -314,7 +314,7 @@ export default function MyExpert() {
             {menuItem.menu.expertNotes && (
               <div className="bg-orange-50 border-l-2 border-orange-400 rounded-r-xl p-3">
                 <p className="text-xs font-semibold text-orange-700 mb-1">💬 Nota de tu nutricionista</p>
-                <p className="text-sm text-gray-700">{menuItem.menu.expertNotes}</p>
+                <p className="text-sm text-foreground/80">{menuItem.menu.expertNotes}</p>
               </div>
             )}
           </div>
@@ -358,14 +358,14 @@ export default function MyExpert() {
           {/* Contenido del menú por días */}
           {menuData && days.length > 0 ? (
             <div className="space-y-3 mb-4">
-              <h3 className="font-semibold text-gray-900 text-base">📋 Contenido del menú</h3>
+              <h3 className="font-semibold text-foreground text-base">📋 Contenido del menú</h3>
               {days.map(day => {
                 const dayMeals = menuData[day];
                 const dayIssues = issues.filter(i => i.day === day);
                 return (
-                  <div key={day} className={`bg-white rounded-xl border p-4 ${dayIssues.length > 0 ? "border-red-200" : "border-gray-200"}`}>
+                  <div key={day} className={`bg-background rounded-xl border p-4 ${dayIssues.length > 0 ? "border-red-200" : "border-border"}`}>
                     <div className="flex items-center justify-between mb-3">
-                      <h4 className="font-semibold text-gray-900">{DAY_LABELS[day] ?? day}</h4>
+                      <h4 className="font-semibold text-foreground">{DAY_LABELS[day] ?? day}</h4>
                       {dayIssues.length > 0 && (
                         <span className="text-xs bg-red-100 text-red-600 px-2 py-0.5 rounded-full">⚠️ {dayIssues.length} aviso</span>
                       )}
@@ -375,10 +375,10 @@ export default function MyExpert() {
                         const hasIssue = issues.some(i => i.day === day && i.meal === meal);
                         return (
                           <div key={meal} className={`flex gap-2 text-sm ${hasIssue ? "bg-red-50 rounded-lg px-2 py-1" : ""}`}>
-                            <span className="flex-shrink-0 text-gray-500 w-28 text-xs pt-0.5">
+                            <span className="flex-shrink-0 text-muted-foreground w-28 text-xs pt-0.5">
                               {MEAL_LABELS[meal] ?? meal}
                             </span>
-                            <span className={`flex-1 ${hasIssue ? "text-red-700" : "text-gray-700"}`}>{text}</span>
+                            <span className={`flex-1 ${hasIssue ? "text-red-700" : "text-foreground/80"}`}>{text}</span>
                           </div>
                         );
                       })}
@@ -388,16 +388,16 @@ export default function MyExpert() {
               })}
             </div>
           ) : (
-            <div className="bg-gray-50 rounded-xl border border-dashed border-gray-200 p-6 text-center mb-4">
-              <p className="text-gray-500 text-sm">El contenido detallado de este menú no está disponible aún.</p>
-              <p className="text-xs text-gray-400 mt-1">Consulta con tu nutricionista para más detalles.</p>
+            <div className="bg-muted/30 rounded-xl border border-dashed border-border p-6 text-center mb-4">
+              <p className="text-muted-foreground text-sm">El contenido detallado de este menú no está disponible aún.</p>
+              <p className="text-xs text-muted-foreground/70 mt-1">Consulta con tu nutricionista para más detalles.</p>
             </div>
           )}
 
           {/* Valorar el menú */}
           {!existingRating && (
-            <div className="bg-white rounded-2xl border border-gray-200 p-4 mb-4">
-              <h4 className="font-semibold text-gray-900 mb-3">⭐ ¿Qué te parece este menú?</h4>
+            <div className="bg-background rounded-2xl border border-border p-4 mb-4">
+              <h4 className="font-semibold text-foreground mb-3">⭐ ¿Qué te parece este menú?</h4>
               <div className="flex gap-2 mb-3">
                 {[1, 2, 3, 4, 5].map(star => (
                   <button key={star} onClick={() => setMenuRating(star)} className={`text-2xl transition-transform hover:scale-110 ${star <= menuRating ? "opacity-100" : "opacity-30"}`}>
@@ -412,7 +412,7 @@ export default function MyExpert() {
                     onChange={e => setMenuFeedbackText(e.target.value)}
                     placeholder="Cuéntale a tu nutricionista qué te ha parecido (opcional)..."
                     rows={2}
-                    className="w-full border border-gray-200 rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none mb-2"
+                    className="w-full border border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none mb-2"
                   />
                   <Button
                     onClick={() => submitFeedbackMutation.mutate({ assignedMenuId: selectedMenuId, rating: menuRating, feedback: menuFeedbackText || undefined })}
@@ -428,7 +428,7 @@ export default function MyExpert() {
           {existingRating && (
             <div className="bg-amber-50 border border-amber-200 rounded-xl p-3 mb-4 text-sm text-amber-700">
               ⭐ Ya valoraste este menú con {existingRating}/5 estrellas.
-              {menuItem.menu.patientFeedback && <p className="mt-1 text-gray-600 italic">"{menuItem.menu.patientFeedback}"</p>}
+              {menuItem.menu.patientFeedback && <p className="mt-1 text-muted-foreground italic">"{menuItem.menu.patientFeedback}"</p>}
             </div>
           )}
 
@@ -453,10 +453,10 @@ export default function MyExpert() {
         <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
 
           <div className="flex items-center justify-between">
-            <h1 className="text-2xl font-bold text-gray-900">Mi Nutricionista</h1>
+            <h1 className="text-2xl font-bold text-foreground">Mi Nutricionista</h1>
             {myExperts.length > 1 && (
               <select value={activeRelId ?? ""} onChange={e => setActiveRelId(Number(e.target.value))}
-                className="text-sm border border-gray-200 rounded-lg px-2 py-1 text-gray-700">
+                className="text-sm border border-border rounded-lg px-2 py-1 text-foreground/80">
                 {myExperts.map(e => (
                   <option key={e.relation.id} value={e.relation.id}>{e.expertUser?.name ?? "Nutricionista"}</option>
                 ))}
@@ -471,35 +471,35 @@ export default function MyExpert() {
                 {activeRelation.expertUser?.imageUrl ? (
                   <img src={activeRelation.expertUser.imageUrl} alt="" className="w-16 h-16 rounded-full object-cover border-2 border-white/40" />
                 ) : (
-                  <div className="w-16 h-16 rounded-full bg-white/20 flex items-center justify-center text-white font-bold text-2xl border-2 border-white/40">
+                  <div className="w-16 h-16 rounded-full bg-background/20 flex items-center justify-center text-white font-bold text-2xl border-2 border-white/40">
                     {(activeRelation.expertUser?.name ?? "N").charAt(0)}
                   </div>
                 )}
                 <div className="flex-1 min-w-0">
                   <p className="text-white/80 text-sm font-medium">Tu nutricionista</p>
                   <h2 className="text-xl font-bold truncate">{activeRelation.expertUser?.name ?? "Tu nutricionista"}</h2>
-                  <span className="inline-flex items-center gap-1 text-xs bg-white/20 px-2 py-0.5 rounded-full mt-1">✓ BuddyExpert verificado</span>
+                  <span className="inline-flex items-center gap-1 text-xs bg-background/20 px-2 py-0.5 rounded-full mt-1">✓ BuddyExpert verificado</span>
                 </div>
               </div>
               {/* Acciones rápidas */}
               <div className="grid grid-cols-2 gap-2">
                 <button onClick={() => setView("messages")}
-                  className="flex items-center justify-center gap-1.5 bg-white/20 hover:bg-white/30 transition-colors rounded-xl py-2.5 text-sm font-semibold">
+                  className="flex items-center justify-center gap-1.5 bg-background/20 hover:bg-background/30 transition-colors rounded-xl py-2.5 text-sm font-semibold">
                   💬 Chat
                   {unreadCount > 0 && (
                     <span className="bg-red-500 text-white text-xs rounded-full min-w-[18px] px-1 font-bold">{unreadCount}</span>
                   )}
                 </button>
                 <button onClick={() => setShowRequestModal(true)}
-                  className="flex items-center justify-center gap-1.5 bg-white text-orange-600 hover:bg-white/90 transition-colors rounded-xl py-2.5 text-sm font-bold shadow-sm">
+                  className="flex items-center justify-center gap-1.5 bg-background text-orange-600 hover:bg-background/90 transition-colors rounded-xl py-2.5 text-sm font-bold shadow-sm">
                   📅 Pedir cita
                 </button>
                 <button onClick={() => setView("appointments")}
-                  className="flex items-center justify-center gap-1.5 bg-white/20 hover:bg-white/30 transition-colors rounded-xl py-2.5 text-sm font-semibold">
+                  className="flex items-center justify-center gap-1.5 bg-background/20 hover:bg-background/30 transition-colors rounded-xl py-2.5 text-sm font-semibold">
                   🗓️ Mis citas
                 </button>
                 <button onClick={() => setView("menus")}
-                  className="flex items-center justify-center gap-1.5 bg-white/20 hover:bg-white/30 transition-colors rounded-xl py-2.5 text-sm font-semibold">
+                  className="flex items-center justify-center gap-1.5 bg-background/20 hover:bg-background/30 transition-colors rounded-xl py-2.5 text-sm font-semibold">
                   🥗 Mis menús
                 </button>
               </div>
@@ -509,11 +509,11 @@ export default function MyExpert() {
           {/* Último mensaje */}
           {lastMessage && (
             <button onClick={() => setView("messages")}
-              className="w-full text-left p-4 bg-white rounded-2xl border border-gray-100 shadow-sm hover:border-orange-200 transition-colors">
+              className="w-full text-left p-4 bg-background rounded-2xl border border-border/50 shadow-sm hover:border-orange-200 transition-colors">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <span className="text-base">💬</span>
-                  <span className="font-semibold text-gray-900 text-sm">Último mensaje</span>
+                  <span className="font-semibold text-foreground text-sm">Último mensaje</span>
                   {unreadCount > 0 && (
                     <span className="bg-orange-500 text-white text-xs rounded-full px-1.5 py-0.5 font-bold">
                       {unreadCount} nuevo{unreadCount > 1 ? "s" : ""}
@@ -522,11 +522,11 @@ export default function MyExpert() {
                 </div>
                 <span className="text-xs text-orange-500 font-medium">Ver chat →</span>
               </div>
-              <p className="text-sm text-gray-600 line-clamp-2">
+              <p className="text-sm text-muted-foreground line-clamp-2">
                 {lastMessage.senderRole === "expert" ? "👩‍⚕️ " : "Tú: "}
                 {lastMessage.content.replace(/\*\*/g, "").replace(/\*/g, "").replace(/^#+\s/gm, "")}
               </p>
-              <p className="text-xs text-gray-400 mt-1">
+              <p className="text-xs text-muted-foreground/70 mt-1">
                 {new Date(lastMessage.createdAt).toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })}
               </p>
             </button>
@@ -535,16 +535,16 @@ export default function MyExpert() {
           {/* Próxima cita */}
           {nextAppointment ? (
             <button onClick={() => setView("appointments")}
-              className="w-full text-left p-4 bg-white rounded-2xl border border-blue-100 shadow-sm hover:border-blue-200 transition-colors">
+              className="w-full text-left p-4 bg-background rounded-2xl border border-blue-100 shadow-sm hover:border-blue-200 transition-colors">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <span className="text-base">📅</span>
-                  <span className="font-semibold text-gray-900 text-sm">Próxima cita</span>
+                  <span className="font-semibold text-foreground text-sm">Próxima cita</span>
                 </div>
                 <span className="text-xs text-blue-500 font-medium">Ver todas →</span>
               </div>
-              <p className="text-sm font-medium text-gray-800">{nextAppointment.title}</p>
-              <p className="text-sm text-gray-500 mt-0.5">
+              <p className="text-sm font-medium text-foreground">{nextAppointment.title}</p>
+              <p className="text-sm text-muted-foreground mt-0.5">
                 {new Date(nextAppointment.startTime).toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })}
                 {" · "}{new Date(nextAppointment.startTime).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
               </p>
@@ -552,7 +552,7 @@ export default function MyExpert() {
                 <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${nextAppointment.status === "confirmed" ? "bg-green-100 text-green-700" : "bg-blue-100 text-blue-700"}`}>
                   {nextAppointment.status === "confirmed" ? "✓ Confirmada" : "Pendiente de confirmar"}
                 </span>
-                <span className="text-xs text-gray-500">{nextAppointment.modality === "online" ? "🌐 Online" : "📍 Presencial"}</span>
+                <span className="text-xs text-muted-foreground">{nextAppointment.modality === "online" ? "🌐 Online" : "📍 Presencial"}</span>
               </div>
               {nextAppointment.status === "scheduled" && (
                 <div className="mt-2">
@@ -564,9 +564,9 @@ export default function MyExpert() {
               )}
             </button>
           ) : (
-            <div className="p-4 bg-gray-50 rounded-2xl border border-dashed border-gray-200">
+            <div className="p-4 bg-muted/30 rounded-2xl border border-dashed border-border">
               <div className="flex items-center justify-between">
-                <p className="text-sm text-gray-400">📅 No tienes citas próximas</p>
+                <p className="text-sm text-muted-foreground/70">📅 No tienes citas próximas</p>
                 <button onClick={() => setShowRequestModal(true)}
                   className="text-xs text-orange-600 font-semibold hover:underline">
                   + Pedir cita
@@ -578,38 +578,38 @@ export default function MyExpert() {
           {/* Menú activo */}
           {activeMenu ? (
             <button onClick={() => { setSelectedMenuId(activeMenu.menu.id); setView("menu_detail"); }}
-              className="w-full text-left p-4 bg-white rounded-2xl border border-green-100 shadow-sm hover:border-green-200 transition-colors">
+              className="w-full text-left p-4 bg-background rounded-2xl border border-green-100 shadow-sm hover:border-green-200 transition-colors">
               <div className="flex items-center justify-between mb-2">
                 <div className="flex items-center gap-2">
                   <span className="text-base">🥗</span>
-                  <span className="font-semibold text-gray-900 text-sm">Menú activo</span>
+                  <span className="font-semibold text-foreground text-sm">Menú activo</span>
                   <span className="text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium">Esta semana</span>
                 </div>
                 <span className="text-xs text-green-600 font-medium">Ver contenido →</span>
               </div>
-              <p className="text-sm font-medium text-gray-800">{activeMenu.menu.originalMenuTitle ?? "Menú personalizado"}</p>
-              <p className="text-sm text-gray-500 mt-0.5">De: <strong>{activeMenu.expertUser?.name ?? "Tu nutricionista"}</strong></p>
+              <p className="text-sm font-medium text-foreground">{activeMenu.menu.originalMenuTitle ?? "Menú personalizado"}</p>
+              <p className="text-sm text-muted-foreground mt-0.5">De: <strong>{activeMenu.expertUser?.name ?? "Tu nutricionista"}</strong></p>
               {activeMenu.menu.expertNotes && (
                 <p className="text-xs text-orange-600 mt-2 bg-orange-50 px-2 py-1.5 rounded-lg border-l-2 border-orange-300 line-clamp-2">
                   💬 {activeMenu.menu.expertNotes}
                 </p>
               )}
-              <p className="text-xs text-gray-400 mt-2">Toca para ver el contenido completo y verificar compatibilidad</p>
+              <p className="text-xs text-muted-foreground/70 mt-2">Toca para ver el contenido completo y verificar compatibilidad</p>
             </button>
           ) : (
-            <div className="p-4 bg-gray-50 rounded-2xl border border-dashed border-gray-200 text-center">
-              <p className="text-sm text-gray-400">🥗 Tu nutricionista aún no te ha asignado ningún menú</p>
+            <div className="p-4 bg-muted/30 rounded-2xl border border-dashed border-border text-center">
+              <p className="text-sm text-muted-foreground/70">🥗 Tu nutricionista aún no te ha asignado ningún menú</p>
             </div>
           )}
 
           {/* Mi evolución */}
           {progressRecords.length > 0 && (
             <button onClick={() => setView("progress")}
-              className="w-full text-left p-4 bg-white rounded-2xl border border-purple-100 shadow-sm hover:border-purple-200 transition-colors">
+              className="w-full text-left p-4 bg-background rounded-2xl border border-purple-100 shadow-sm hover:border-purple-200 transition-colors">
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-2">
                   <span className="text-base">📈</span>
-                  <span className="font-semibold text-gray-900 text-sm">Mi evolución</span>
+                  <span className="font-semibold text-foreground text-sm">Mi evolución</span>
                 </div>
                 <span className="text-xs text-purple-500 font-medium">Ver detalle →</span>
               </div>
@@ -622,7 +622,7 @@ export default function MyExpert() {
                     const isLast = i === arr.length - 1;
                     return (
                       <div key={r.id} className="flex-1 flex flex-col items-center gap-0.5">
-                        {isLast && <span className="text-[9px] text-gray-500 font-bold">{r.weight}</span>}
+                        {isLast && <span className="text-[9px] text-muted-foreground font-bold">{r.weight}</span>}
                         <div className={`w-full rounded-t ${isLast ? "bg-orange-500" : "bg-orange-200"}`} style={{ height: `${height}%` }} />
                       </div>
                     );
@@ -633,15 +633,15 @@ export default function MyExpert() {
                 {latestProgress?.weight && (
                   <div className="flex items-center gap-1">
                     <span>⚖️</span>
-                    <div><p className="text-xs text-gray-500">Peso actual</p><p className="text-sm font-bold text-gray-900">{latestProgress.weight} kg</p></div>
+                    <div><p className="text-xs text-muted-foreground">Peso actual</p><p className="text-sm font-bold text-foreground">{latestProgress.weight} kg</p></div>
                   </div>
                 )}
                 {weightDiff !== null && (
-                  <div className={`flex items-center gap-1 px-2 py-1 rounded-lg ${weightDiff < 0 ? "bg-green-50" : weightDiff > 0 ? "bg-red-50" : "bg-gray-50"}`}>
-                    <span className={`text-sm font-bold ${weightDiff < 0 ? "text-green-600" : weightDiff > 0 ? "text-red-500" : "text-gray-500"}`}>
+                  <div className={`flex items-center gap-1 px-2 py-1 rounded-lg ${weightDiff < 0 ? "bg-green-50" : weightDiff > 0 ? "bg-red-50" : "bg-muted/30"}`}>
+                    <span className={`text-sm font-bold ${weightDiff < 0 ? "text-green-600" : weightDiff > 0 ? "text-red-500" : "text-muted-foreground"}`}>
                       {weightDiff < 0 ? `↓ ${Math.abs(weightDiff).toFixed(1)} kg` : weightDiff > 0 ? `↑ ${weightDiff.toFixed(1)} kg` : "Estable"}
                     </span>
-                    <span className="text-xs text-gray-400">desde el inicio</span>
+                    <span className="text-xs text-muted-foreground/70">desde el inicio</span>
                   </div>
                 )}
               </div>
@@ -654,7 +654,7 @@ export default function MyExpert() {
 
   // ─── VISTAS DE DETALLE ────────────────────────────────────────────────────
   const BackButton = ({ to = "dashboard" as View, label = "Volver al dashboard" }) => (
-    <button onClick={() => setView(to)} className="flex items-center gap-1.5 text-sm text-gray-500 hover:text-orange-600 transition-colors mb-4">
+    <button onClick={() => setView(to)} className="flex items-center gap-1.5 text-sm text-muted-foreground hover:text-orange-600 transition-colors mb-4">
       ← {label}
     </button>
   );
@@ -675,7 +675,7 @@ export default function MyExpert() {
               </div>
             )}
             <div className="flex-1">
-              <h2 className="font-bold text-gray-900">{activeRelation?.expertUser?.name ?? "Tu nutricionista"}</h2>
+              <h2 className="font-bold text-foreground">{activeRelation?.expertUser?.name ?? "Tu nutricionista"}</h2>
               <p className="text-xs text-green-600 font-medium">● En línea</p>
             </div>
             <button onClick={() => setShowRequestModal(true)} className="text-xs text-orange-600 font-semibold border border-orange-300 rounded-lg px-2 py-1 hover:bg-orange-50">
@@ -685,7 +685,7 @@ export default function MyExpert() {
 
           <div className="flex-1 overflow-y-auto space-y-3 pr-1 mb-4">
             {messages.length === 0 ? (
-              <div className="text-center py-12 text-gray-400">
+              <div className="text-center py-12 text-muted-foreground/70">
                 <div className="text-4xl mb-2">💬</div>
                 <p>Aún no hay mensajes. Inicia la conversación.</p>
               </div>
@@ -698,17 +698,17 @@ export default function MyExpert() {
                   <div key={msg.id}>
                     {showDate && (
                       <div className="flex items-center gap-3 my-3">
-                        <div className="flex-1 h-px bg-gray-200" />
-                        <span className="text-xs text-gray-400 font-medium">
+                        <div className="flex-1 h-px bg-muted" />
+                        <span className="text-xs text-muted-foreground/70 font-medium">
                           {new Date(msg.createdAt).toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })}
                         </span>
-                        <div className="flex-1 h-px bg-gray-200" />
+                        <div className="flex-1 h-px bg-muted" />
                       </div>
                     )}
                     <div className={`flex ${isMe ? "justify-end" : "justify-start"}`}>
-                      <div className={`max-w-[78%] rounded-2xl px-4 py-2.5 ${isMe ? "bg-orange-500 text-white rounded-br-sm" : "bg-gray-100 text-gray-800 rounded-bl-sm"}`}>
+                      <div className={`max-w-[78%] rounded-2xl px-4 py-2.5 ${isMe ? "bg-orange-500 text-white rounded-br-sm" : "bg-muted/50 text-foreground rounded-bl-sm"}`}>
                         <ChatMarkdown content={msg.content} isExpert={msg.senderRole === "expert"} />
-                        <p className={`text-xs mt-1 ${isMe ? "text-orange-100" : "text-gray-400"}`}>
+                        <p className={`text-xs mt-1 ${isMe ? "text-orange-100" : "text-muted-foreground/70"}`}>
                           {new Date(msg.createdAt).toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
                           {isMe && msg.isRead && <span className="ml-1">✓✓ Leído</span>}
                         </p>
@@ -741,11 +741,11 @@ export default function MyExpert() {
         {showRequestModal && <RequestAppointmentModal />}
         <div className="max-w-2xl mx-auto px-4 py-6">
           <BackButton />
-          <h2 className="text-xl font-bold text-gray-900 mb-4">🥗 Mis menús personalizados</h2>
+          <h2 className="text-xl font-bold text-foreground mb-4">🥗 Mis menús personalizados</h2>
           {!myAssignedMenus || myAssignedMenus.length === 0 ? (
-            <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+            <div className="text-center py-12 bg-muted/30 rounded-xl border border-dashed border-border">
               <div className="text-4xl mb-2">🥗</div>
-              <p className="text-gray-500">Tu nutricionista aún no te ha asignado ningún menú</p>
+              <p className="text-muted-foreground">Tu nutricionista aún no te ha asignado ningún menú</p>
             </div>
           ) : (
             <div className="space-y-3">
@@ -759,18 +759,18 @@ export default function MyExpert() {
                 const hasPrefs = allergies.length > 0 || restrictions.length > 0 || dislikedFoods.length > 0;
                 return (
                   <button key={am.menu.id} onClick={() => { setSelectedMenuId(am.menu.id); setView("menu_detail"); }}
-                    className={`w-full text-left p-4 bg-white rounded-xl border hover:border-orange-200 transition-colors ${idx === 0 ? "border-green-200 shadow-sm" : "border-gray-200"}`}>
+                    className={`w-full text-left p-4 bg-background rounded-xl border hover:border-orange-200 transition-colors ${idx === 0 ? "border-green-200 shadow-sm" : "border-border"}`}>
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1">
                         {idx === 0 && <span className="inline-block text-xs bg-green-100 text-green-700 px-2 py-0.5 rounded-full font-medium mb-1.5">✓ Menú activo</span>}
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-semibold text-gray-900">{am.menu.originalMenuTitle ?? "Menú personalizado"}</span>
+                          <span className="font-semibold text-foreground">{am.menu.originalMenuTitle ?? "Menú personalizado"}</span>
                           {hasPrefs && issues.length === 0 && menuData && <span className="text-xs text-green-600">✅ Compatible</span>}
                           {hasPrefs && issues.length > 0 && <span className="text-xs text-red-600">⚠️ {issues.length} aviso{issues.length > 1 ? "s" : ""}</span>}
                         </div>
-                        <p className="text-sm text-gray-500 mt-0.5">De: <strong>{am.expertUser?.name ?? "Tu nutricionista"}</strong></p>
+                        <p className="text-sm text-muted-foreground mt-0.5">De: <strong>{am.expertUser?.name ?? "Tu nutricionista"}</strong></p>
                         {am.originalMenu?.targetCalories && (
-                          <p className="text-xs text-gray-400 mt-0.5">🔥 ~{am.originalMenu.targetCalories} kcal/día</p>
+                          <p className="text-xs text-muted-foreground/70 mt-0.5">🔥 ~{am.originalMenu.targetCalories} kcal/día</p>
                         )}
                         {am.menu.expertNotes && (
                           <p className="text-xs text-orange-600 mt-1.5 line-clamp-1">💬 {am.menu.expertNotes}</p>
@@ -796,15 +796,15 @@ export default function MyExpert() {
         <div className="max-w-2xl mx-auto px-4 py-6">
           <BackButton />
           <div className="flex items-center justify-between mb-4">
-            <h2 className="text-xl font-bold text-gray-900">📅 Mis citas</h2>
+            <h2 className="text-xl font-bold text-foreground">📅 Mis citas</h2>
             <Button onClick={() => setShowRequestModal(true)} size="sm" className="bg-orange-500 hover:bg-orange-600 text-white">
               + Pedir cita
             </Button>
           </div>
           {appointments.length === 0 ? (
-            <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+            <div className="text-center py-12 bg-muted/30 rounded-xl border border-dashed border-border">
               <div className="text-4xl mb-2">📅</div>
-              <p className="text-gray-500">No tienes citas programadas</p>
+              <p className="text-muted-foreground">No tienes citas programadas</p>
               <Button onClick={() => setShowRequestModal(true)} className="mt-4 bg-orange-500 hover:bg-orange-600 text-white">
                 Pedir mi primera cita
               </Button>
@@ -814,22 +814,22 @@ export default function MyExpert() {
               {appointments.sort((a, b) => new Date(b.startTime).getTime() - new Date(a.startTime).getTime()).map(appt => {
                 const start = new Date(appt.startTime);
                 const isUpcoming = start > new Date();
-                const statusColors = { scheduled: "bg-blue-100 text-blue-700", confirmed: "bg-green-100 text-green-700", completed: "bg-gray-100 text-gray-600", cancelled: "bg-red-100 text-red-600", no_show: "bg-orange-100 text-orange-600" };
+                const statusColors = { scheduled: "bg-blue-100 text-blue-700", confirmed: "bg-green-100 text-green-700", completed: "bg-muted/50 text-muted-foreground", cancelled: "bg-red-100 text-red-600", no_show: "bg-orange-100 text-orange-600" };
                 return (
-                  <div key={appt.id} className={`p-4 bg-white rounded-xl border ${isUpcoming ? "border-orange-200 shadow-sm" : "border-gray-200"}`}>
+                  <div key={appt.id} className={`p-4 bg-background rounded-xl border ${isUpcoming ? "border-orange-200 shadow-sm" : "border-border"}`}>
                     {isUpcoming && <span className="inline-block text-xs bg-orange-100 text-orange-700 px-2 py-0.5 rounded-full font-medium mb-2">Próxima</span>}
                     <div className="flex items-start justify-between gap-3">
                       <div className="flex-1">
                         <div className="flex items-center gap-2 flex-wrap">
-                          <span className="font-semibold text-gray-900">{appt.title}</span>
+                          <span className="font-semibold text-foreground">{appt.title}</span>
                           <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColors[appt.status]}`}>
                             {appt.status === "scheduled" ? "Programada" : appt.status === "confirmed" ? "Confirmada" : appt.status === "completed" ? "Completada" : appt.status === "cancelled" ? "Cancelada" : "No asistí"}
                           </span>
                         </div>
-                        <p className="text-sm text-gray-600 mt-1">
+                        <p className="text-sm text-muted-foreground mt-1">
                           {start.toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })} · {start.toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
                         </p>
-                        <p className="text-sm text-gray-500">{appt.modality === "online" ? "🌐 Online" : "📍 Presencial"}</p>
+                        <p className="text-sm text-muted-foreground">{appt.modality === "online" ? "🌐 Online" : "📍 Presencial"}</p>
                         {appt.meetingUrl && isUpcoming && (
                           <a href={appt.meetingUrl} target="_blank" rel="noopener noreferrer" className="text-sm text-orange-600 hover:underline mt-1 inline-block font-medium">🔗 Unirse a la reunión</a>
                         )}
@@ -860,17 +860,17 @@ export default function MyExpert() {
       <AppLayout>
         <div className="max-w-2xl mx-auto px-4 py-6">
           <BackButton />
-          <h2 className="text-xl font-bold text-gray-900 mb-4">📈 Mi evolución</h2>
+          <h2 className="text-xl font-bold text-foreground mb-4">📈 Mi evolución</h2>
           {progressRecords.length === 0 ? (
-            <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+            <div className="text-center py-12 bg-muted/30 rounded-xl border border-dashed border-border">
               <div className="text-4xl mb-2">📈</div>
-              <p className="text-gray-500">Aún no hay registros de evolución</p>
+              <p className="text-muted-foreground">Aún no hay registros de evolución</p>
             </div>
           ) : (
             <div className="space-y-3">
               {progressRecords.filter(r => r.weight).length > 1 && (
-                <div className="p-4 bg-white rounded-xl border border-gray-200 mb-4">
-                  <h4 className="text-sm font-semibold text-gray-700 mb-3">Evolución de peso</h4>
+                <div className="p-4 bg-background rounded-xl border border-border mb-4">
+                  <h4 className="text-sm font-semibold text-foreground/80 mb-3">Evolución de peso</h4>
                   <div className="flex items-end gap-1 h-24">
                     {progressRecords.filter(r => r.weight).slice(-12).map((r, i, arr) => {
                       const weights = arr.map(x => x.weight!);
@@ -879,34 +879,34 @@ export default function MyExpert() {
                       const isLast = i === arr.length - 1;
                       return (
                         <div key={r.id} className="flex-1 flex flex-col items-center gap-1">
-                          <span className="text-xs text-gray-500">{isLast ? r.weight : ""}</span>
+                          <span className="text-xs text-muted-foreground">{isLast ? r.weight : ""}</span>
                           <div className={`w-full rounded-t ${isLast ? "bg-orange-500" : "bg-orange-200"}`} style={{ height: `${height}%` }} />
                         </div>
                       );
                     })}
                   </div>
                   {weightDiff !== null && (
-                    <p className={`text-sm font-medium mt-2 ${weightDiff < 0 ? "text-green-600" : weightDiff > 0 ? "text-red-500" : "text-gray-500"}`}>
+                    <p className={`text-sm font-medium mt-2 ${weightDiff < 0 ? "text-green-600" : weightDiff > 0 ? "text-red-500" : "text-muted-foreground"}`}>
                       {weightDiff < 0 ? `↓ Has perdido ${Math.abs(weightDiff).toFixed(1)} kg desde el inicio` : weightDiff > 0 ? `↑ Has ganado ${weightDiff.toFixed(1)} kg desde el inicio` : "Peso estable"}
                     </p>
                   )}
                 </div>
               )}
               {progressRecords.map(record => (
-                <div key={record.id} className="p-4 bg-white rounded-xl border border-gray-200">
-                  <p className="text-sm font-medium text-gray-700 mb-2">
+                <div key={record.id} className="p-4 bg-background rounded-xl border border-border">
+                  <p className="text-sm font-medium text-foreground/80 mb-2">
                     {new Date(record.recordedAt).toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long", year: "numeric" })}
                   </p>
                   <div className="flex flex-wrap gap-3">
-                    {record.weight && <span className="text-sm text-gray-600">⚖️ <strong>{record.weight}</strong> kg</span>}
-                    {record.bodyFat && <span className="text-sm text-gray-600">💧 <strong>{record.bodyFat}</strong>% grasa</span>}
-                    {record.muscleMass && <span className="text-sm text-gray-600">💪 <strong>{record.muscleMass}</strong> kg músculo</span>}
-                    {record.waist && <span className="text-sm text-gray-600">📏 Cintura: <strong>{record.waist}</strong> cm</span>}
+                    {record.weight && <span className="text-sm text-muted-foreground">⚖️ <strong>{record.weight}</strong> kg</span>}
+                    {record.bodyFat && <span className="text-sm text-muted-foreground">💧 <strong>{record.bodyFat}</strong>% grasa</span>}
+                    {record.muscleMass && <span className="text-sm text-muted-foreground">💪 <strong>{record.muscleMass}</strong> kg músculo</span>}
+                    {record.waist && <span className="text-sm text-muted-foreground">📏 Cintura: <strong>{record.waist}</strong> cm</span>}
                   </div>
                   {record.expertComment && (
                     <p className="text-sm text-orange-600 mt-2 bg-orange-50 px-2 py-1 rounded">💬 Tu nutricionista: {record.expertComment}</p>
                   )}
-                  {record.notes && <p className="text-sm text-gray-500 mt-1 italic">"{record.notes}"</p>}
+                  {record.notes && <p className="text-sm text-muted-foreground mt-1 italic">"{record.notes}"</p>}
                 </div>
               ))}
             </div>

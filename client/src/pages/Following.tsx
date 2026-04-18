@@ -65,7 +65,7 @@ function FollowCard({
   const [, navigate] = useLocation();
 
   return (
-    <div className="bg-white rounded-2xl border border-orange-100 shadow-sm hover:shadow-md transition-all overflow-hidden">
+    <div className="bg-background rounded-2xl border border-orange-100 shadow-sm hover:shadow-md transition-all overflow-hidden">
       <div className={`h-1.5 bg-gradient-to-r ${badgeColor}`} />
       <div className="p-4 flex items-center gap-3">
         <button onClick={() => navigate(href)} className="relative flex-shrink-0">
@@ -85,13 +85,13 @@ function FollowCard({
 
         <button onClick={() => navigate(href)} className="flex-1 min-w-0 text-left">
           <div className="flex items-center gap-1.5 mb-0.5">
-            <p className="font-bold text-gray-900 text-sm truncate">{name}</p>
+            <p className="font-bold text-foreground text-sm truncate">{name}</p>
             <span className={`text-xs font-bold px-1.5 py-0.5 rounded-full bg-gradient-to-r ${badgeColor} text-white flex-shrink-0`}>
               {badge}
             </span>
           </div>
           {specialty && <p className="text-xs text-orange-600 font-medium truncate">{specialty}</p>}
-          <p className="text-xs text-gray-400 mt-0.5">
+          <p className="text-xs text-muted-foreground/70 mt-0.5">
             {followersCount >= 1000 ? `${(followersCount / 1000).toFixed(1)}k` : followersCount} seguidores
           </p>
         </button>
@@ -106,7 +106,7 @@ function FollowCard({
           <button
             onClick={onUnfollow}
             disabled={unfollowLoading}
-            className="text-xs font-semibold text-gray-500 border border-gray-200 px-3 py-1.5 rounded-xl hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors"
+            className="text-xs font-semibold text-muted-foreground border border-border px-3 py-1.5 rounded-xl hover:bg-red-50 hover:text-red-600 hover:border-red-200 transition-colors"
           >
             {unfollowLoading ? "..." : "Dejar de seguir"}
           </button>
@@ -186,8 +186,8 @@ export default function Following() {
     return (
       <div className="min-h-screen bg-[#FFF8F0] flex flex-col items-center justify-center gap-4 px-4 text-center">
         <div className="text-6xl">👥</div>
-        <h2 className="text-xl font-bold text-gray-800">Inicia sesión para ver a quién sigues</h2>
-        <p className="text-gray-500">Sigue a BuddyExperts y BuddyMakers para ver su contenido aquí.</p>
+        <h2 className="text-xl font-bold text-foreground">Inicia sesión para ver a quién sigues</h2>
+        <p className="text-muted-foreground">Sigue a BuddyExperts y BuddyMakers para ver su contenido aquí.</p>
         <a href="/login" className="bg-orange-500 text-white font-bold px-6 py-3 rounded-2xl hover:bg-orange-600 transition-colors">
           Iniciar sesión
         </a>
@@ -209,11 +209,11 @@ export default function Following() {
   return (
     <div className="min-h-screen bg-[#FFF8F0]">
       {/* ── Header ── */}
-      <div className="bg-white border-b border-orange-100 px-4 pt-4 pb-0 sticky top-0 z-20">
+      <div className="bg-background border-b border-orange-100 px-4 pt-4 pb-0 sticky top-0 z-20">
         <div className="flex items-center justify-between mb-3">
           <div>
-            <h1 className="text-xl font-bold text-gray-900">Siguiendo</h1>
-            <p className="text-xs text-gray-500">
+            <h1 className="text-xl font-bold text-foreground">Siguiendo</h1>
+            <p className="text-xs text-muted-foreground">
               {followingExperts.length + followingMakers.length} buddies seguidos
             </p>
           </div>
@@ -231,12 +231,12 @@ export default function Following() {
               className={`flex items-center gap-1.5 px-3 py-2.5 text-xs font-semibold whitespace-nowrap border-b-2 transition-colors ${
                 activeTab === tab.id
                   ? "border-orange-500 text-orange-600"
-                  : "border-transparent text-gray-500 hover:text-gray-700"
+                  : "border-transparent text-muted-foreground hover:text-foreground/80"
               }`}
             >
               <span>{tab.icon}</span>
               <span>{tab.label}</span>
-              <span className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${activeTab === tab.id ? "bg-orange-100 text-orange-600" : "bg-gray-100 text-gray-500"}`}>
+              <span className={`text-xs px-1.5 py-0.5 rounded-full font-bold ${activeTab === tab.id ? "bg-orange-100 text-orange-600" : "bg-muted/50 text-muted-foreground"}`}>
                 {tab.count}
               </span>
             </button>
@@ -245,10 +245,10 @@ export default function Following() {
       </div>
 
       {/* ── Filters bar ── */}
-      <div className="bg-white border-b border-orange-50 px-4 py-3 space-y-3">
+      <div className="bg-background border-b border-orange-50 px-4 py-3 space-y-3">
         {/* Sort selector */}
         <div className="flex items-center justify-between">
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide">Ordenar por</p>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide">Ordenar por</p>
           <div className="relative">
             <button
               onClick={() => setShowSortMenu((v) => !v)}
@@ -259,7 +259,7 @@ export default function Following() {
               <svg className={`w-3 h-3 transition-transform ${showSortMenu ? "rotate-180" : ""}`} fill="none" stroke="currentColor" strokeWidth="2.5" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M19 9l-7 7-7-7" /></svg>
             </button>
             {showSortMenu && (
-              <div className="absolute right-0 top-full mt-1 bg-white border border-orange-100 rounded-2xl shadow-lg z-30 overflow-hidden min-w-[160px]">
+              <div className="absolute right-0 top-full mt-1 bg-background border border-orange-100 rounded-2xl shadow-lg z-30 overflow-hidden min-w-[160px]">
                 {SORT_OPTIONS.map((opt) => (
                   <button
                     key={opt.value}
@@ -267,7 +267,7 @@ export default function Following() {
                     className={`w-full flex items-center gap-2 px-4 py-3 text-sm font-semibold text-left transition-colors ${
                       sortOrder === opt.value
                         ? "bg-orange-50 text-orange-600"
-                        : "text-gray-700 hover:bg-gray-50"
+                        : "text-foreground/80 hover:bg-muted/30"
                     }`}
                   >
                     <span>{opt.icon}</span>
@@ -286,7 +286,7 @@ export default function Following() {
 
         {/* Specialty chips */}
         <div>
-          <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2">Especialidad</p>
+          <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">Especialidad</p>
           <div className="flex gap-2 overflow-x-auto scrollbar-hide pb-1">
             {specialties.map((sp) => (
               <button
@@ -295,7 +295,7 @@ export default function Following() {
                 className={`flex-shrink-0 text-xs font-semibold px-3 py-1.5 rounded-full border transition-all ${
                   specialtyFilter === sp.value
                     ? "bg-orange-500 text-white border-orange-500 shadow-sm"
-                    : "bg-white text-gray-600 border-gray-200 hover:border-orange-300 hover:text-orange-600"
+                    : "bg-background text-muted-foreground border-border hover:border-orange-300 hover:text-orange-600"
                 }`}
               >
                 {sp.label}
@@ -307,10 +307,10 @@ export default function Following() {
 
       {/* ── Results counter ── */}
       <div className="px-4 pt-3 pb-1 flex items-center justify-between">
-        <p className="text-xs text-gray-500">
+        <p className="text-xs text-muted-foreground">
           {isLoading ? "Cargando..." : (
             <>
-              <span className="font-bold text-gray-800">{currentList.length}</span>
+              <span className="font-bold text-foreground">{currentList.length}</span>
               {specialtyFilter !== "all" || sortOrder !== "popularity"
                 ? ` de ${totalFollowing} resultados`
                 : ` ${activeTab === "experts" ? "expertos" : "makers"} seguidos`}
@@ -333,7 +333,7 @@ export default function Following() {
         {isLoading ? (
           <>
             {[1, 2, 3].map((i) => (
-              <div key={i} className="bg-white rounded-2xl h-24 animate-pulse border border-orange-100" />
+              <div key={i} className="bg-background rounded-2xl h-24 animate-pulse border border-orange-100" />
             ))}
           </>
         ) : currentList.length === 0 ? (
@@ -341,12 +341,12 @@ export default function Following() {
             <div className="text-5xl mb-4">
               {specialtyFilter !== "all" ? "🔍" : (activeTab === "experts" ? "👨‍⚕️" : "👨‍🍳")}
             </div>
-            <h3 className="text-lg font-bold text-gray-700 mb-2">
+            <h3 className="text-lg font-bold text-foreground/80 mb-2">
               {specialtyFilter !== "all"
                 ? "Sin resultados para este filtro"
                 : `Aún no sigues a ningún ${activeTab === "experts" ? "experto" : "maker"}`}
             </h3>
-            <p className="text-sm text-gray-500 mb-5">
+            <p className="text-sm text-muted-foreground mb-5">
               {specialtyFilter !== "all"
                 ? "Prueba con otra especialidad o elimina el filtro."
                 : `Descubre ${activeTab === "experts" ? "nutricionistas y dietistas" : "creadores de recetas"} verificados y síguelos para verlos aquí.`}
@@ -354,7 +354,7 @@ export default function Following() {
             {specialtyFilter !== "all" ? (
               <button
                 onClick={() => setSpecialtyFilter("all")}
-                className="inline-block bg-white border border-orange-300 text-orange-600 font-bold px-6 py-2.5 rounded-2xl hover:bg-orange-50 transition-colors"
+                className="inline-block bg-background border border-orange-300 text-orange-600 font-bold px-6 py-2.5 rounded-2xl hover:bg-orange-50 transition-colors"
               >
                 Ver todos
               </button>

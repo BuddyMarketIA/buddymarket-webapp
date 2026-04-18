@@ -71,8 +71,8 @@ export default function BuddyMakerStats() {
               <StarIcon className="h-10 w-10 text-[#FF6B35]" />
             </div>
           </div>
-          <h1 className="mb-3 text-2xl font-bold text-gray-900">Panel de BuddyMaker</h1>
-          <p className="mb-8 text-gray-500">Primero completa tu perfil de BuddyMaker para acceder a las estadísticas.</p>
+          <h1 className="mb-3 text-2xl font-bold text-foreground">Panel de BuddyMaker</h1>
+          <p className="mb-8 text-muted-foreground">Primero completa tu perfil de BuddyMaker para acceder a las estadísticas.</p>
           <a href="/app/buddy-maker-dashboard" className="inline-flex items-center gap-2 rounded-2xl bg-[#FF6B35] px-6 py-3 font-semibold text-white shadow-md hover:bg-orange-600 transition-colors">
             Ir a mi perfil de creador
           </a>
@@ -102,12 +102,12 @@ export default function BuddyMakerStats() {
           )}
           <div className="flex-1">
             <div className="flex items-center gap-2">
-              <h1 className="text-xl font-bold text-gray-900">{myProfile?.displayName ?? user?.name ?? "Mi Panel"}</h1>
+              <h1 className="text-xl font-bold text-foreground">{myProfile?.displayName ?? user?.name ?? "Mi Panel"}</h1>
               {myProfile?.verified && <CheckCircleSolid className="h-5 w-5 text-[#FF6B35]" />}
             </div>
-            <p className="text-sm text-gray-500">{myProfile?.specialty ?? "BuddyMaker"}</p>
+            <p className="text-sm text-muted-foreground">{myProfile?.specialty ?? "BuddyMaker"}</p>
             <span className={`mt-1 inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs font-medium ${
-              connectStatus?.onboardingCompleted ? "bg-green-100 text-green-700" : connectStatus?.connected ? "bg-yellow-100 text-yellow-700" : "bg-gray-100 text-gray-500"
+              connectStatus?.onboardingCompleted ? "bg-green-100 text-green-700" : connectStatus?.connected ? "bg-yellow-100 text-yellow-700" : "bg-muted/50 text-muted-foreground"
             }`}>
               {connectStatus?.onboardingCompleted ? "✓ Stripe activo" : connectStatus?.connected ? "⏳ Onboarding pendiente" : "Stripe no conectado"}
             </span>
@@ -125,11 +125,11 @@ export default function BuddyMakerStats() {
           </a>
         </div>
         {/* Tabs */}
-        <div className="mb-6 flex gap-1 overflow-x-auto rounded-2xl bg-gray-100 p-1">
+        <div className="mb-6 flex gap-1 overflow-x-auto rounded-2xl bg-muted/50 p-1">
           {tabs.map((tab) => (
             <button key={tab.id} onClick={() => setActiveTab(tab.id)}
               className={`flex flex-1 items-center justify-center gap-1.5 rounded-xl px-3 py-2 text-sm font-medium transition-all whitespace-nowrap ${
-                activeTab === tab.id ? "bg-white text-[#FF6B35] shadow-sm" : "text-gray-500 hover:text-gray-700"
+                activeTab === tab.id ? "bg-background text-[#FF6B35] shadow-sm" : "text-muted-foreground hover:text-foreground/80"
               }`}>
               <tab.icon className="h-4 w-4 shrink-0" />
               <span className="hidden sm:inline">{tab.label}</span>
@@ -152,14 +152,14 @@ export default function BuddyMakerStats() {
               onboardingLoading={getOnboardingLink.isPending} dashboardLoading={getStripeDashboard.isPending}
               onRefresh={() => refetchConnect()} />
             {(stats?.recentEarnings?.length ?? 0) > 0 && (
-              <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-                <h3 className="mb-3 font-semibold text-gray-800">Últimas comisiones</h3>
+              <div className="rounded-2xl border border-border/50 bg-background p-4 shadow-sm">
+                <h3 className="mb-3 font-semibold text-foreground">Últimas comisiones</h3>
                 <div className="space-y-2">
                   {stats!.recentEarnings.map((e) => (
-                    <div key={e.id} className="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2">
+                    <div key={e.id} className="flex items-center justify-between rounded-xl bg-muted/30 px-3 py-2">
                       <div>
-                        <p className="text-sm font-medium text-gray-700">{new Date(e.createdAt).toLocaleDateString("es-ES")}</p>
-                        <p className="text-xs text-gray-400">Comisión: {(e.commissionRate * 100).toFixed(0)}%</p>
+                        <p className="text-sm font-medium text-foreground/80">{new Date(e.createdAt).toLocaleDateString("es-ES")}</p>
+                        <p className="text-xs text-muted-foreground/70">Comisión: {(e.commissionRate * 100).toFixed(0)}%</p>
                       </div>
                       <div className="text-right">
                         <p className={`text-sm font-bold ${e.status === ("paid" as any) ? "text-green-600" : e.status === "pending" ? "text-yellow-600" : "text-red-500"}`}>+{e.commissionAmount.toFixed(2)} €</p>
@@ -177,16 +177,16 @@ export default function BuddyMakerStats() {
 
         {/* FOLLOWERS */}
         {activeTab === "followers" && (
-          <div className="rounded-2xl border border-gray-100 bg-white shadow-sm">
-            <div className="flex items-center justify-between border-b border-gray-100 px-4 py-3">
-              <h3 className="font-semibold text-gray-800">
+          <div className="rounded-2xl border border-border/50 bg-background shadow-sm">
+            <div className="flex items-center justify-between border-b border-border/50 px-4 py-3">
+              <h3 className="font-semibold text-foreground">
                 Seguidores <span className="ml-1 rounded-full bg-orange-100 px-2 py-0.5 text-xs font-bold text-[#FF6B35]">{followersData?.total ?? 0}</span>
               </h3>
             </div>
             {followersLoading ? (
               <div className="flex justify-center py-10"><div className="h-8 w-8 animate-spin rounded-full border-4 border-[#FF6B35] border-t-transparent" /></div>
             ) : (followersData?.followers?.length ?? 0) === 0 ? (
-              <div className="py-12 text-center text-gray-400">
+              <div className="py-12 text-center text-muted-foreground/70">
                 <UsersIcon className="mx-auto mb-3 h-10 w-10 opacity-30" />
                 <p className="text-sm">Aún no tienes seguidores.</p>
                 <p className="mt-1 text-xs">Publica más recetas para ganar visibilidad.</p>
@@ -203,10 +203,10 @@ export default function BuddyMakerStats() {
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="truncate text-sm font-medium text-gray-800">{row.user?.name ?? "Usuario"}</p>
-                      <p className="truncate text-xs text-gray-400">{row.user?.email}</p>
+                      <p className="truncate text-sm font-medium text-foreground">{row.user?.name ?? "Usuario"}</p>
+                      <p className="truncate text-xs text-muted-foreground/70">{row.user?.email}</p>
                     </div>
-                    <p className="shrink-0 text-xs text-gray-400">{new Date(row.followedAt).toLocaleDateString("es-ES")}</p>
+                    <p className="shrink-0 text-xs text-muted-foreground/70">{new Date(row.followedAt).toLocaleDateString("es-ES")}</p>
                   </li>
                 ))}
               </ul>
@@ -218,7 +218,7 @@ export default function BuddyMakerStats() {
         {activeTab === "recipes" && (
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="font-semibold text-gray-800">Mis recetas ({myRecipes?.length ?? 0})</h3>
+              <h3 className="font-semibold text-foreground">Mis recetas ({myRecipes?.length ?? 0})</h3>
               <a href="/app/buddy-maker-dashboard" className="flex items-center gap-1.5 rounded-xl bg-[#FF6B35] px-3 py-1.5 text-sm font-semibold text-white hover:bg-orange-600">
                 <PencilSquareIcon className="h-4 w-4" /> Gestionar recetas
               </a>
@@ -226,14 +226,14 @@ export default function BuddyMakerStats() {
             {recipesLoading ? (
               <div className="flex justify-center py-10"><div className="h-8 w-8 animate-spin rounded-full border-4 border-[#FF6B35] border-t-transparent" /></div>
             ) : (myRecipes?.length ?? 0) === 0 ? (
-              <div className="rounded-2xl border border-dashed border-gray-200 py-12 text-center text-gray-400">
+              <div className="rounded-2xl border border-dashed border-border py-12 text-center text-muted-foreground/70">
                 <BookOpenIcon className="mx-auto mb-3 h-10 w-10 opacity-30" />
                 <p className="text-sm">Aún no has publicado recetas.</p>
               </div>
             ) : (
               <div className="grid gap-3 sm:grid-cols-2">
                 {myRecipes!.map((recipe) => (
-                  <div key={recipe.id} className="flex gap-3 rounded-2xl border border-gray-100 bg-white p-3 shadow-sm">
+                  <div key={recipe.id} className="flex gap-3 rounded-2xl border border-border/50 bg-background p-3 shadow-sm">
                     {recipe.imageUrl ? (
                       <img src={recipe.imageUrl} alt={recipe.name} className="h-16 w-16 shrink-0 rounded-xl object-cover" />
                     ) : (
@@ -242,8 +242,8 @@ export default function BuddyMakerStats() {
                       </div>
                     )}
                     <div className="flex-1 min-w-0">
-                      <p className="truncate text-sm font-semibold text-gray-800">{recipe.name}</p>
-                      <p className="text-xs text-gray-400">{recipe.caloriesPerServing ? `${recipe.caloriesPerServing} kcal` : ""}</p>
+                      <p className="truncate text-sm font-semibold text-foreground">{recipe.name}</p>
+                      <p className="text-xs text-muted-foreground/70">{recipe.caloriesPerServing ? `${recipe.caloriesPerServing} kcal` : ""}</p>
                       <div className="mt-1.5 flex gap-1.5">
                         <a href={`/app/recipes/${recipe.id}`} className="rounded-lg bg-orange-50 px-2 py-0.5 text-xs font-medium text-[#FF6B35] hover:bg-orange-100">Ver</a>
                         <button onClick={() => { if (confirm("¿Eliminar receta?")) deleteRecipe.mutate({ id: recipe.id }); }}
@@ -265,8 +265,8 @@ export default function BuddyMakerStats() {
               onDashboard={() => getStripeDashboard.mutate({ creatorType: "buddymaker" })}
               onboardingLoading={getOnboardingLink.isPending} dashboardLoading={getStripeDashboard.isPending}
               onRefresh={() => refetchConnect()} />
-            <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-              <h3 className="mb-3 font-semibold text-gray-800">Resumen de ganancias</h3>
+            <div className="rounded-2xl border border-border/50 bg-background p-4 shadow-sm">
+              <h3 className="mb-3 font-semibold text-foreground">Resumen de ganancias</h3>
               <div className="grid grid-cols-2 gap-3">
                 <div className="rounded-xl bg-green-50 p-3 text-center">
                   <p className="text-2xl font-bold text-green-600">{(stats?.totalPaid ?? 0).toFixed(2)} €</p>
@@ -277,19 +277,19 @@ export default function BuddyMakerStats() {
                   <p className="text-xs text-yellow-500">Pendiente de cobro</p>
                 </div>
               </div>
-              <p className="mt-3 text-xs text-gray-400">
+              <p className="mt-3 text-xs text-muted-foreground/70">
                 BuddyMarket aplica una comisión del {((stats?.maker?.commissionRate ?? 0.2) * 100).toFixed(0)}% sobre cada venta. Los pagos se transfieren a tu cuenta de Stripe Connect.
               </p>
             </div>
             {(stats?.recentEarnings?.length ?? 0) > 0 && (
-              <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
-                <h3 className="mb-3 font-semibold text-gray-800">Historial de comisiones</h3>
+              <div className="rounded-2xl border border-border/50 bg-background p-4 shadow-sm">
+                <h3 className="mb-3 font-semibold text-foreground">Historial de comisiones</h3>
                 <div className="space-y-2">
                   {stats!.recentEarnings.map((e) => (
-                    <div key={e.id} className="flex items-center justify-between rounded-xl bg-gray-50 px-3 py-2">
+                    <div key={e.id} className="flex items-center justify-between rounded-xl bg-muted/30 px-3 py-2">
                       <div>
-                        <p className="text-sm font-medium text-gray-700">{new Date(e.createdAt).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" })}</p>
-                        <p className="text-xs text-gray-400">Importe bruto: {e.amount.toFixed(2)} € · Comisión {(e.commissionRate * 100).toFixed(0)}%</p>
+                        <p className="text-sm font-medium text-foreground/80">{new Date(e.createdAt).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" })}</p>
+                        <p className="text-xs text-muted-foreground/70">Importe bruto: {e.amount.toFixed(2)} € · Comisión {(e.commissionRate * 100).toFixed(0)}%</p>
                       </div>
                       <div className="text-right">
                         <p className={`text-sm font-bold ${e.status === ("paid" as any) ? "text-green-600" : e.status === "pending" ? "text-yellow-600" : "text-red-500"}`}>+{e.commissionAmount.toFixed(2)} €</p>
@@ -312,10 +312,10 @@ export default function BuddyMakerStats() {
 function StatCard({ icon: Icon, label, value, color }: { icon: React.ElementType; label: string; value: string | number; color: "orange" | "blue" | "green" | "yellow" }) {
   const colors = { orange: "bg-orange-50 text-[#FF6B35]", blue: "bg-blue-50 text-blue-600", green: "bg-green-50 text-green-600", yellow: "bg-yellow-50 text-yellow-600" };
   return (
-    <div className="rounded-2xl border border-gray-100 bg-white p-4 shadow-sm">
+    <div className="rounded-2xl border border-border/50 bg-background p-4 shadow-sm">
       <div className={`mb-2 flex h-9 w-9 items-center justify-center rounded-xl ${colors[color]}`}><Icon className="h-5 w-5" /></div>
-      <p className="text-xl font-bold text-gray-900">{value}</p>
-      <p className="text-xs text-gray-400">{label}</p>
+      <p className="text-xl font-bold text-foreground">{value}</p>
+      <p className="text-xs text-muted-foreground/70">{label}</p>
     </div>
   );
 }
@@ -333,10 +333,10 @@ function StripeConnectCard({ connectStatus, creatorType, onOnboard, onDashboard,
           {connectStatus?.onboardingCompleted ? <CheckCircleIcon className="h-6 w-6 text-green-600" /> : <ExclamationCircleIcon className="h-6 w-6 text-[#FF6B35]" />}
         </div>
         <div className="flex-1">
-          <h3 className="font-semibold text-gray-800">
+          <h3 className="font-semibold text-foreground">
             {connectStatus?.onboardingCompleted ? "Stripe Connect activo" : connectStatus?.connected ? "Completa el onboarding de Stripe" : "Conecta tu cuenta de Stripe"}
           </h3>
-          <p className="mt-0.5 text-sm text-gray-600">
+          <p className="mt-0.5 text-sm text-muted-foreground">
             {connectStatus?.onboardingCompleted
               ? "Recibirás pagos automáticamente cuando los usuarios compren tu contenido."
               : connectStatus?.connected
@@ -358,7 +358,7 @@ function StripeConnectCard({ connectStatus, creatorType, onOnboard, onDashboard,
                   {onboardingLoading ? "Cargando..." : connectStatus?.connected ? "Continuar onboarding" : "Conectar Stripe"}
                 </button>
                 {connectStatus?.connected && (
-                  <button onClick={onRefresh} className="rounded-xl border border-gray-200 bg-white px-3 py-2 text-sm font-medium text-gray-600 hover:bg-gray-50">
+                  <button onClick={onRefresh} className="rounded-xl border border-border bg-background px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted/30">
                     Verificar estado
                   </button>
                 )}

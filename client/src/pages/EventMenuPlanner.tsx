@@ -227,8 +227,8 @@ export default function EventMenuPlanner() {
 
         {/* Header */}
         <div className="mb-6">
-          <h1 className="text-2xl font-bold text-gray-900">🎉 Asistente de Eventos</h1>
-          <p className="text-gray-500 text-sm mt-1">La IA te crea el menú perfecto para ser un anfitrión 10</p>
+          <h1 className="text-2xl font-bold text-foreground">🎉 Asistente de Eventos</h1>
+          <p className="text-muted-foreground text-sm mt-1">La IA te crea el menú perfecto para ser un anfitrión 10</p>
         </div>
 
         {/* Plan limit banner */}
@@ -267,15 +267,15 @@ export default function EventMenuPlanner() {
                   <div className={`w-8 h-8 rounded-full flex items-center justify-center text-sm font-bold transition-all ${
                     i < step ? "bg-orange-500 text-white" :
                     i === step ? "bg-orange-100 text-orange-600 ring-2 ring-orange-400" :
-                    "bg-gray-100 text-gray-400"
+                    "bg-muted/50 text-muted-foreground/70"
                   }`}>
                     {i < step ? "✓" : s.icon}
                   </div>
-                  <span className={`text-xs hidden sm:block ${i === step ? "text-orange-600 font-semibold" : "text-gray-400"}`}>{s.label}</span>
+                  <span className={`text-xs hidden sm:block ${i === step ? "text-orange-600 font-semibold" : "text-muted-foreground/70"}`}>{s.label}</span>
                 </div>
               ))}
             </div>
-            <div className="h-1.5 bg-gray-100 rounded-full overflow-hidden">
+            <div className="h-1.5 bg-muted/50 rounded-full overflow-hidden">
               <div
                 className="h-full bg-orange-500 rounded-full transition-all duration-500"
                 style={{ width: `${(step / 5) * 100}%` }}
@@ -287,7 +287,7 @@ export default function EventMenuPlanner() {
         {/* ── STEP 0: Tipo de evento ── */}
         {step === 0 && (
           <div className="space-y-4">
-            <h2 className="text-lg font-bold text-gray-800">¿Qué tipo de evento vas a celebrar?</h2>
+            <h2 className="text-lg font-bold text-foreground">¿Qué tipo de evento vas a celebrar?</h2>
 
             {/* Category filter chips */}
             <div className="flex flex-wrap gap-2">
@@ -305,7 +305,7 @@ export default function EventMenuPlanner() {
                   className={`flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium border-2 transition-all ${
                     activeCategory === cat.id
                       ? "bg-orange-500 border-orange-500 text-white shadow-sm"
-                      : "bg-white border-gray-200 text-gray-600 hover:border-orange-300"
+                      : "bg-background border-border text-muted-foreground hover:border-orange-300"
                   }`}
                 >
                   <span>{cat.emoji}</span>
@@ -322,12 +322,12 @@ export default function EventMenuPlanner() {
                   className={`p-4 rounded-2xl border-2 text-left transition-all ${
                     eventType === e.id
                       ? "border-orange-500 bg-orange-50"
-                      : "border-gray-100 bg-white hover:border-orange-200"
+                      : "border-border/50 bg-background hover:border-orange-200"
                   }`}
                 >
                   <div className="text-2xl mb-1">{e.emoji}</div>
-                  <div className="font-semibold text-sm text-gray-800">{e.label}</div>
-                  <div className="text-xs text-gray-400">{e.desc}</div>
+                  <div className="font-semibold text-sm text-foreground">{e.label}</div>
+                  <div className="text-xs text-muted-foreground/70">{e.desc}</div>
                 </button>
               ))}
             </div>
@@ -355,17 +355,17 @@ export default function EventMenuPlanner() {
         {step === 1 && (
           <div className="space-y-6">
             <div>
-              <h2 className="text-lg font-bold text-gray-800">¿Cuántas personas vais a ser?</h2>
-              <p className="text-gray-500 text-sm">Incluyendo anfitriones</p>
+              <h2 className="text-lg font-bold text-foreground">¿Cuántas personas vais a ser?</h2>
+              <p className="text-muted-foreground text-sm">Incluyendo anfitriones</p>
             </div>
 
             <div className="vively-card text-center py-8">
               <div className="text-6xl font-bold text-orange-500 mb-2">{persons}</div>
-              <div className="text-gray-500 mb-6">personas</div>
+              <div className="text-muted-foreground mb-6">personas</div>
               <div className="flex items-center justify-center gap-4">
                 <button
                   onClick={() => setPersons(p => Math.max(1, p - 1))}
-                  className="w-12 h-12 rounded-full bg-gray-100 text-xl font-bold hover:bg-gray-200 transition-colors"
+                  className="w-12 h-12 rounded-full bg-muted/50 text-xl font-bold hover:bg-muted transition-colors"
                 >−</button>
                 <input
                   type="range" min={1} max={200} value={persons}
@@ -374,7 +374,7 @@ export default function EventMenuPlanner() {
                 />
                 <button
                   onClick={() => setPersons(p => Math.min(200, p + 1))}
-                  className="w-12 h-12 rounded-full bg-gray-100 text-xl font-bold hover:bg-gray-200 transition-colors"
+                  className="w-12 h-12 rounded-full bg-muted/50 text-xl font-bold hover:bg-muted transition-colors"
                 >+</button>
               </div>
               <div className="flex gap-2 justify-center mt-4 flex-wrap">
@@ -383,7 +383,7 @@ export default function EventMenuPlanner() {
                     key={n}
                     onClick={() => setPersons(n)}
                     className={`px-3 py-1 rounded-full text-sm font-semibold transition-colors ${
-                      persons === n ? "bg-orange-500 text-white" : "bg-gray-100 text-gray-600 hover:bg-orange-100"
+                      persons === n ? "bg-orange-500 text-white" : "bg-muted/50 text-muted-foreground hover:bg-orange-100"
                     }`}
                   >{n}</button>
                 ))}
@@ -399,17 +399,17 @@ export default function EventMenuPlanner() {
               <span className="text-2xl">👶</span>
               <div className="flex-1">
                 <div className="font-semibold text-sm">¿Habrá niños?</div>
-                <div className="text-xs text-gray-400">Incluiremos opciones para los más pequeños</div>
+                <div className="text-xs text-muted-foreground/70">Incluiremos opciones para los más pequeños</div>
               </div>
               <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                hasChildren ? "bg-orange-500 border-orange-500 text-white" : "border-gray-300"
+                hasChildren ? "bg-orange-500 border-orange-500 text-white" : "border-border"
               }`}>
                 {hasChildren && "✓"}
               </div>
             </div>
 
             <div className="flex gap-3">
-              <button onClick={() => setStep(0)} className="flex-1 py-3 rounded-2xl border border-gray-200 text-gray-600 font-semibold">← Atrás</button>
+              <button onClick={() => setStep(0)} className="flex-1 py-3 rounded-2xl border border-border text-muted-foreground font-semibold">← Atrás</button>
               <button onClick={() => setStep(2)} className="flex-1 vively-btn-primary py-3 rounded-2xl">Continuar →</button>
             </div>
           </div>
@@ -419,8 +419,8 @@ export default function EventMenuPlanner() {
         {step === 2 && (
           <div className="space-y-5">
             <div>
-              <h2 className="text-lg font-bold text-gray-800">¿Hay alguna intolerancia o alergia?</h2>
-              <p className="text-gray-500 text-sm">Selecciona todas las que apliquen entre tus invitados</p>
+              <h2 className="text-lg font-bold text-foreground">¿Hay alguna intolerancia o alergia?</h2>
+              <p className="text-muted-foreground text-sm">Selecciona todas las que apliquen entre tus invitados</p>
             </div>
 
             <div className="flex flex-wrap gap-2">
@@ -431,7 +431,7 @@ export default function EventMenuPlanner() {
                   className={`px-4 py-2 rounded-full text-sm font-semibold border-2 transition-all ${
                     intolerances.includes(i)
                       ? "bg-red-500 border-red-500 text-white"
-                      : "bg-white border-gray-200 text-gray-600 hover:border-red-300"
+                      : "bg-background border-border text-muted-foreground hover:border-red-300"
                   }`}
                 >
                   {intolerances.includes(i) ? "✓ " : ""}{i}
@@ -452,7 +452,7 @@ export default function EventMenuPlanner() {
             )}
 
             <div className="flex gap-3">
-              <button onClick={() => setStep(1)} className="flex-1 py-3 rounded-2xl border border-gray-200 text-gray-600 font-semibold">← Atrás</button>
+              <button onClick={() => setStep(1)} className="flex-1 py-3 rounded-2xl border border-border text-muted-foreground font-semibold">← Atrás</button>
               <button onClick={() => setStep(3)} className="flex-1 vively-btn-primary py-3 rounded-2xl">Continuar →</button>
             </div>
           </div>
@@ -462,36 +462,36 @@ export default function EventMenuPlanner() {
         {step === 3 && (
           <div className="space-y-5">
             <div>
-              <h2 className="text-lg font-bold text-gray-800">¿Se servirá alcohol?</h2>
-              <p className="text-gray-500 text-sm">Incluiremos maridajes y sugerencias de bebidas</p>
+              <h2 className="text-lg font-bold text-foreground">¿Se servirá alcohol?</h2>
+              <p className="text-muted-foreground text-sm">Incluiremos maridajes y sugerencias de bebidas</p>
             </div>
 
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => setServesAlcohol(true)}
                 className={`p-5 rounded-2xl border-2 text-center transition-all ${
-                  servesAlcohol ? "border-orange-500 bg-orange-50" : "border-gray-100 bg-white"
+                  servesAlcohol ? "border-orange-500 bg-orange-50" : "border-border/50 bg-background"
                 }`}
               >
                 <div className="text-3xl mb-2">🥂</div>
                 <div className="font-bold text-sm">Sí, con alcohol</div>
-                <div className="text-xs text-gray-400 mt-1">Vinos, cavas, cócteles...</div>
+                <div className="text-xs text-muted-foreground/70 mt-1">Vinos, cavas, cócteles...</div>
               </button>
               <button
                 onClick={() => setServesAlcohol(false)}
                 className={`p-5 rounded-2xl border-2 text-center transition-all ${
-                  !servesAlcohol ? "border-orange-500 bg-orange-50" : "border-gray-100 bg-white"
+                  !servesAlcohol ? "border-orange-500 bg-orange-50" : "border-border/50 bg-background"
                 }`}
               >
                 <div className="text-3xl mb-2">🍹</div>
                 <div className="font-bold text-sm">Sin alcohol</div>
-                <div className="text-xs text-gray-400 mt-1">Bebidas sin alcohol</div>
+                <div className="text-xs text-muted-foreground/70 mt-1">Bebidas sin alcohol</div>
               </button>
             </div>
 
             {servesAlcohol && (
               <div className="space-y-3">
-                <p className="text-sm font-semibold text-gray-700">¿Qué tipo de bebidas?</p>
+                <p className="text-sm font-semibold text-foreground/80">¿Qué tipo de bebidas?</p>
                 <div className="flex flex-wrap gap-2">
                   {ALCOHOL_TYPES.map(a => (
                     <button
@@ -500,7 +500,7 @@ export default function EventMenuPlanner() {
                       className={`px-3 py-2 rounded-full text-sm font-semibold border-2 transition-all ${
                         alcoholTypes.includes(a)
                           ? "bg-orange-500 border-orange-500 text-white"
-                          : "bg-white border-gray-200 text-gray-600 hover:border-orange-300"
+                          : "bg-background border-border text-muted-foreground hover:border-orange-300"
                       }`}
                     >
                       {a}
@@ -511,7 +511,7 @@ export default function EventMenuPlanner() {
             )}
 
             <div className="flex gap-3">
-              <button onClick={() => setStep(2)} className="flex-1 py-3 rounded-2xl border border-gray-200 text-gray-600 font-semibold">← Atrás</button>
+              <button onClick={() => setStep(2)} className="flex-1 py-3 rounded-2xl border border-border text-muted-foreground font-semibold">← Atrás</button>
               <button onClick={() => setStep(4)} className="flex-1 vively-btn-primary py-3 rounded-2xl">Continuar →</button>
             </div>
           </div>
@@ -521,8 +521,8 @@ export default function EventMenuPlanner() {
         {step === 4 && (
           <div className="space-y-5">
             <div>
-              <h2 className="text-lg font-bold text-gray-800">¿Qué momentos quieres incluir?</h2>
-              <p className="text-gray-500 text-sm">Selecciona los platos del menú</p>
+              <h2 className="text-lg font-bold text-foreground">¿Qué momentos quieres incluir?</h2>
+              <p className="text-muted-foreground text-sm">Selecciona los platos del menú</p>
             </div>
 
             <div className="space-y-3">
@@ -543,12 +543,12 @@ export default function EventMenuPlanner() {
                   <span className="text-2xl">{emoji}</span>
                   <div className="flex-1">
                     <div className="font-semibold text-sm">{label}</div>
-                    <div className="text-xs text-gray-400">{desc}</div>
+                    <div className="text-xs text-muted-foreground/70">{desc}</div>
                   </div>
                   <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center flex-shrink-0 ${
                     courses[key as keyof typeof courses]
                       ? "bg-orange-500 border-orange-500 text-white"
-                      : "border-gray-300"
+                      : "border-border"
                   }`}>
                     {courses[key as keyof typeof courses] && "✓"}
                   </div>
@@ -557,7 +557,7 @@ export default function EventMenuPlanner() {
             </div>
 
             <div className="flex gap-3">
-              <button onClick={() => setStep(3)} className="flex-1 py-3 rounded-2xl border border-gray-200 text-gray-600 font-semibold">← Atrás</button>
+              <button onClick={() => setStep(3)} className="flex-1 py-3 rounded-2xl border border-border text-muted-foreground font-semibold">← Atrás</button>
               <button onClick={() => setStep(5)} className="flex-1 vively-btn-primary py-3 rounded-2xl">Continuar →</button>
             </div>
           </div>
@@ -567,13 +567,13 @@ export default function EventMenuPlanner() {
         {step === 5 && (
           <div className="space-y-5">
             <div>
-              <h2 className="text-lg font-bold text-gray-800">Últimos detalles</h2>
-              <p className="text-gray-500 text-sm">Para personalizar aún más tu menú</p>
+              <h2 className="text-lg font-bold text-foreground">Últimos detalles</h2>
+              <p className="text-muted-foreground text-sm">Para personalizar aún más tu menú</p>
             </div>
 
             {/* Estilo de cocina */}
             <div>
-              <p className="text-sm font-semibold text-gray-700 mb-2">Estilo de cocina</p>
+              <p className="text-sm font-semibold text-foreground/80 mb-2">Estilo de cocina</p>
               <div className="grid grid-cols-3 gap-2">
                 {CUISINE_STYLES.map(c => (
                   <button
@@ -582,7 +582,7 @@ export default function EventMenuPlanner() {
                     className={`py-2 px-3 rounded-xl text-sm font-semibold border-2 transition-all ${
                       cuisineStyle === c.id
                         ? "border-orange-500 bg-orange-50 text-orange-700"
-                        : "border-gray-100 bg-white text-gray-600 hover:border-orange-200"
+                        : "border-border/50 bg-background text-muted-foreground hover:border-orange-200"
                     }`}
                   >
                     {c.label}
@@ -593,7 +593,7 @@ export default function EventMenuPlanner() {
 
             {/* Presupuesto */}
             <div>
-              <p className="text-sm font-semibold text-gray-700 mb-2">Presupuesto</p>
+              <p className="text-sm font-semibold text-foreground/80 mb-2">Presupuesto</p>
               <div className="grid grid-cols-3 gap-2">
                 {BUDGETS.map(b => (
                   <button
@@ -602,11 +602,11 @@ export default function EventMenuPlanner() {
                     className={`py-3 px-2 rounded-xl text-center border-2 transition-all ${
                       budget === b.id
                         ? "border-orange-500 bg-orange-50"
-                        : "border-gray-100 bg-white hover:border-orange-200"
+                        : "border-border/50 bg-background hover:border-orange-200"
                     }`}
                   >
-                    <div className="text-xs font-bold text-gray-800">{b.label}</div>
-                    <div className="text-xs text-gray-400">{b.desc}</div>
+                    <div className="text-xs font-bold text-foreground">{b.label}</div>
+                    <div className="text-xs text-muted-foreground/70">{b.desc}</div>
                   </button>
                 ))}
               </div>
@@ -614,7 +614,7 @@ export default function EventMenuPlanner() {
 
             {/* Notas adicionales */}
             <div>
-              <p className="text-sm font-semibold text-gray-700 mb-2">¿Algo más que quieras añadir? (opcional)</p>
+              <p className="text-sm font-semibold text-foreground/80 mb-2">¿Algo más que quieras añadir? (opcional)</p>
               <textarea
                 className="vively-input w-full h-24 resize-none"
                 placeholder="Ej: quiero que sea un menú ligero, que incluya un plato sorpresa, que tenga opciones veganas..."
@@ -635,7 +635,7 @@ export default function EventMenuPlanner() {
             </div>
 
             <div className="flex gap-3">
-              <button onClick={() => setStep(4)} className="flex-1 py-3 rounded-2xl border border-gray-200 text-gray-600 font-semibold">← Atrás</button>
+              <button onClick={() => setStep(4)} className="flex-1 py-3 rounded-2xl border border-border text-muted-foreground font-semibold">← Atrás</button>
               <button
                 onClick={handleGenerate}
                 className="flex-1 vively-btn-primary py-3 rounded-2xl font-bold text-base"
@@ -655,10 +655,10 @@ export default function EventMenuPlanner() {
               <div className="absolute inset-0 flex items-center justify-center text-3xl">👨‍🍳</div>
             </div>
             <div>
-              <h2 className="text-xl font-bold text-gray-800 mb-2">Creando tu menú perfecto...</h2>
-              <p className="text-gray-500 text-sm">La IA está diseñando un menú a medida para {persons} personas</p>
+              <h2 className="text-xl font-bold text-foreground mb-2">Creando tu menú perfecto...</h2>
+              <p className="text-muted-foreground text-sm">La IA está diseñando un menú a medida para {persons} personas</p>
             </div>
-            <div className="space-y-2 text-sm text-gray-400">
+            <div className="space-y-2 text-sm text-muted-foreground/70">
               <p>🍽️ Seleccionando los mejores platos...</p>
               <p>📝 Calculando cantidades para {persons} personas...</p>
               <p>🛒 Preparando la lista de la compra...</p>
@@ -689,7 +689,7 @@ export default function EventMenuPlanner() {
             </div>
 
             {/* Tabs */}
-            <div className="flex gap-1 bg-gray-100 p-1 rounded-2xl">
+            <div className="flex gap-1 bg-muted/50 p-1 rounded-2xl">
               {[
                 { id: "menu", label: "🍽️ Menú" },
                 { id: "shopping", label: "🛒 Compra" },
@@ -700,7 +700,7 @@ export default function EventMenuPlanner() {
                   key={t.id}
                   onClick={() => setActiveTab(t.id as typeof activeTab)}
                   className={`flex-1 py-2 rounded-xl text-xs font-bold transition-all ${
-                    activeTab === t.id ? "bg-white text-orange-600 shadow-sm" : "text-gray-500"
+                    activeTab === t.id ? "bg-background text-orange-600 shadow-sm" : "text-muted-foreground"
                   }`}
                 >
                   {t.label}
@@ -719,16 +719,16 @@ export default function EventMenuPlanner() {
                     >
                       <span className="text-2xl">{course.emoji}</span>
                       <div className="flex-1">
-                        <h3 className="font-bold text-gray-800">{course.name}</h3>
-                        {course.description && <p className="text-xs text-gray-400">{course.description}</p>}
+                        <h3 className="font-bold text-foreground">{course.name}</h3>
+                        {course.description && <p className="text-xs text-muted-foreground/70">{course.description}</p>}
                       </div>
-                      <span className="text-gray-400">{expandedCourse === course.name ? "▲" : "▼"}</span>
+                      <span className="text-muted-foreground/70">{expandedCourse === course.name ? "▲" : "▼"}</span>
                     </button>
 
                     {expandedCourse === course.name && (
-                      <div className="mt-4 space-y-3 border-t border-gray-100 pt-4">
+                      <div className="mt-4 space-y-3 border-t border-border/50 pt-4">
                         {course.dishes?.map((dish, di) => (
-                          <div key={di} className="bg-gray-50 rounded-2xl p-4">
+                          <div key={di} className="bg-muted/30 rounded-2xl p-4">
                             <button
                               className="w-full flex items-start justify-between gap-2 text-left"
                               onClick={() => {
@@ -737,25 +737,25 @@ export default function EventMenuPlanner() {
                               }}
                             >
                               <div className="flex-1">
-                                <h4 className="font-bold text-sm text-gray-800">{dish.name}</h4>
-                                <p className="text-xs text-gray-500 mt-0.5">{dish.description}</p>
+                                <h4 className="font-bold text-sm text-foreground">{dish.name}</h4>
+                                <p className="text-xs text-muted-foreground mt-0.5">{dish.description}</p>
                                 <div className="flex flex-wrap gap-2 mt-2">
                                   {dish.prepTime && (
-                                    <span className="text-xs bg-white px-2 py-0.5 rounded-full text-gray-500">⏱ {dish.prepTime}</span>
+                                    <span className="text-xs bg-background px-2 py-0.5 rounded-full text-muted-foreground">⏱ {dish.prepTime}</span>
                                   )}
                                   {dish.difficulty && (
-                                    <span className="text-xs bg-white px-2 py-0.5 rounded-full text-gray-500">📊 {{ easy: "Fácil", facil: "Fácil", medium: "Media", medio: "Media", hard: "Difícil", dificil: "Difícil" }[dish.difficulty] ?? dish.difficulty}</span>
+                                    <span className="text-xs bg-background px-2 py-0.5 rounded-full text-muted-foreground">📊 {{ easy: "Fácil", facil: "Fácil", medium: "Media", medio: "Media", hard: "Difícil", dificil: "Difícil" }[dish.difficulty] ?? dish.difficulty}</span>
                                   )}
                                   {dish.canPrepAhead && (
                                     <span className="text-xs bg-green-100 px-2 py-0.5 rounded-full text-green-700">✓ Preparar antes</span>
                                   )}
                                 </div>
                               </div>
-                              <span className="text-gray-400 text-sm">{expandedDish === `${ci}-${di}` ? "▲" : "▼"}</span>
+                              <span className="text-muted-foreground/70 text-sm">{expandedDish === `${ci}-${di}` ? "▲" : "▼"}</span>
                             </button>
 
                             {expandedDish === `${ci}-${di}` && (
-                              <div className="mt-3 space-y-3 border-t border-gray-200 pt-3">
+                              <div className="mt-3 space-y-3 border-t border-border pt-3">
                                 {dish.servingTip && (
                                   <div className="bg-amber-50 rounded-xl p-3">
                                     <p className="text-xs font-semibold text-amber-700 mb-1">💡 Consejo de presentación</p>
@@ -764,10 +764,10 @@ export default function EventMenuPlanner() {
                                 )}
                                 {dish.ingredients && dish.ingredients.length > 0 && (
                                   <div>
-                                    <p className="text-xs font-bold text-gray-600 mb-2">🧾 Ingredientes ({persons} personas)</p>
+                                    <p className="text-xs font-bold text-muted-foreground mb-2">🧾 Ingredientes ({persons} personas)</p>
                                     <ul className="space-y-1">
                                       {dish.ingredients.map((ing, ii) => (
-                                        <li key={ii} className="text-xs text-gray-600 flex items-start gap-1">
+                                        <li key={ii} className="text-xs text-muted-foreground flex items-start gap-1">
                                           <span className="text-orange-400 mt-0.5">•</span> {ing}
                                         </li>
                                       ))}
@@ -776,10 +776,10 @@ export default function EventMenuPlanner() {
                                 )}
                                 {dish.steps && dish.steps.length > 0 && (
                                   <div>
-                                    <p className="text-xs font-bold text-gray-600 mb-2">👨‍🍳 Elaboración</p>
+                                    <p className="text-xs font-bold text-muted-foreground mb-2">👨‍🍳 Elaboración</p>
                                     <ol className="space-y-2">
                                       {dish.steps.map((step, si) => (
-                                        <li key={si} className="text-xs text-gray-600 flex items-start gap-2">
+                                        <li key={si} className="text-xs text-muted-foreground flex items-start gap-2">
                                           <span className="w-5 h-5 rounded-full bg-orange-100 text-orange-600 font-bold flex items-center justify-center flex-shrink-0 text-xs">{si + 1}</span>
                                           {step}
                                         </li>
@@ -799,10 +799,10 @@ export default function EventMenuPlanner() {
                 {/* Bebidas */}
                 {generatedMenu.drinks && (
                   <div className="vively-card">
-                    <h3 className="font-bold text-gray-800 mb-3">🥤 Bebidas</h3>
+                    <h3 className="font-bold text-foreground mb-3">🥤 Bebidas</h3>
                     {generatedMenu.drinks.nonAlcoholic?.length > 0 && (
                       <div className="mb-2">
-                        <p className="text-xs font-semibold text-gray-500 mb-1">Sin alcohol</p>
+                        <p className="text-xs font-semibold text-muted-foreground mb-1">Sin alcohol</p>
                         <div className="flex flex-wrap gap-2">
                           {generatedMenu.drinks.nonAlcoholic.map((d, i) => (
                             <span key={i} className="text-xs bg-blue-50 text-blue-700 px-3 py-1 rounded-full">{d}</span>
@@ -812,7 +812,7 @@ export default function EventMenuPlanner() {
                     )}
                     {generatedMenu.drinks.alcoholic && generatedMenu.drinks.alcoholic.length > 0 && (
                       <div>
-                        <p className="text-xs font-semibold text-gray-500 mb-1">Con alcohol</p>
+                        <p className="text-xs font-semibold text-muted-foreground mb-1">Con alcohol</p>
                         <div className="flex flex-wrap gap-2">
                           {generatedMenu.drinks.alcoholic.map((d, i) => (
                             <span key={i} className="text-xs bg-purple-50 text-purple-700 px-3 py-1 rounded-full">{d}</span>
@@ -831,10 +831,10 @@ export default function EventMenuPlanner() {
                 {generatedMenu.shoppingList?.map((cat, ci) => (
                   cat.items?.length > 0 && (
                     <div key={ci} className="vively-card">
-                      <h3 className="font-bold text-sm text-gray-800 mb-3">{cat.category}</h3>
+                      <h3 className="font-bold text-sm text-foreground mb-3">{cat.category}</h3>
                       <ul className="space-y-2">
                         {cat.items.map((item, ii) => (
-                          <li key={ii} className="flex items-start gap-2 text-sm text-gray-600">
+                          <li key={ii} className="flex items-start gap-2 text-sm text-muted-foreground">
                             <span className="text-orange-400 mt-0.5">•</span> {item}
                           </li>
                         ))}
@@ -865,7 +865,7 @@ export default function EventMenuPlanner() {
                     <h3 className="font-bold text-sm text-orange-600 mb-3">📅 {p.when}</h3>
                     <ul className="space-y-2">
                       {p.tasks?.map((task, ti) => (
-                        <li key={ti} className="flex items-start gap-2 text-sm text-gray-600">
+                        <li key={ti} className="flex items-start gap-2 text-sm text-muted-foreground">
                           <span className="w-5 h-5 rounded-full bg-orange-100 text-orange-600 font-bold flex items-center justify-center flex-shrink-0 text-xs">{ti + 1}</span>
                           {task}
                         </li>
@@ -874,7 +874,7 @@ export default function EventMenuPlanner() {
                   </div>
                 ))}
                 {(!generatedMenu.prepSchedule || generatedMenu.prepSchedule.length === 0) && (
-                  <div className="text-center text-gray-400 py-8">No hay planificación disponible</div>
+                  <div className="text-center text-muted-foreground/70 py-8">No hay planificación disponible</div>
                 )}
               </div>
             )}
@@ -885,7 +885,7 @@ export default function EventMenuPlanner() {
                 {generatedMenu.hostingTips?.map((tip, ti) => (
                   <div key={ti} className="vively-card flex gap-3">
                     <span className="text-2xl flex-shrink-0">💡</span>
-                    <p className="text-sm text-gray-700">{tip}</p>
+                    <p className="text-sm text-foreground/80">{tip}</p>
                   </div>
                 ))}
               </div>
@@ -910,7 +910,7 @@ export default function EventMenuPlanner() {
                   setAlcoholTypes(["Vino tinto", "Vino blanco", "Cava / Champán"]);
                   setExtraNotes("");
                 }}
-                className="flex-1 py-3 rounded-2xl border-2 border-gray-200 text-gray-600 font-bold text-sm hover:bg-gray-50 transition-colors"
+                className="flex-1 py-3 rounded-2xl border-2 border-border text-muted-foreground font-bold text-sm hover:bg-muted/30 transition-colors"
               >
                 🔄 Planificar otro
               </button>
@@ -922,8 +922,8 @@ export default function EventMenuPlanner() {
         {step === 7 && generatedMenu?.error && (
           <div className="text-center py-12 space-y-4">
             <span className="text-5xl">😕</span>
-            <h2 className="text-xl font-bold text-gray-800">No se pudo generar el menú</h2>
-            <p className="text-gray-500 text-sm">{generatedMenu.error}</p>
+            <h2 className="text-xl font-bold text-foreground">No se pudo generar el menú</h2>
+            <p className="text-muted-foreground text-sm">{generatedMenu.error}</p>
             <button onClick={() => setStep(5)} className="vively-btn-primary px-6 py-3 rounded-2xl">
               Intentar de nuevo
             </button>

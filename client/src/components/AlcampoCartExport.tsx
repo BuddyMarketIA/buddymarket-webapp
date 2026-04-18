@@ -84,14 +84,14 @@ export default function AlcampoCartExport({ items, onBack, onClose }: Props) {
     <div className="flex flex-col gap-4">
       {/* Header */}
       <div className="flex items-center gap-3">
-        <button onClick={onBack} className="flex h-8 w-8 items-center justify-center rounded-full bg-gray-100 text-gray-600 hover:bg-gray-200">
+        <button onClick={onBack} className="flex h-8 w-8 items-center justify-center rounded-full bg-muted/50 text-muted-foreground hover:bg-muted">
           <ChevronLeftIcon className="h-4 w-4" />
         </button>
         <div className="flex items-center gap-2">
           <span className="text-xl">🟠</span>
-          <h3 className="text-lg font-bold text-gray-900">Alcampo</h3>
+          <h3 className="text-lg font-bold text-foreground">Alcampo</h3>
         </div>
-        <button onClick={onClose} className="ml-auto text-gray-400 hover:text-gray-600 text-xl font-bold" aria-label="Cerrar">×</button>
+        <button onClick={onClose} className="ml-auto text-muted-foreground/70 hover:text-muted-foreground text-xl font-bold" aria-label="Cerrar">×</button>
       </div>
 
       {/* Hidden search components */}
@@ -103,7 +103,7 @@ export default function AlcampoCartExport({ items, onBack, onClose }: Props) {
       {isSearching && (
         <div className="flex flex-col items-center gap-3 py-6">
           <div className="h-8 w-8 animate-spin rounded-full border-4 border-t-transparent" style={{ borderColor: `${alcampoColor} transparent ${alcampoColor} ${alcampoColor}` }} />
-          <p className="text-sm text-gray-500">Buscando productos en Alcampo… {resolved}/{unpurchased.length}</p>
+          <p className="text-sm text-muted-foreground">Buscando productos en Alcampo… {resolved}/{unpurchased.length}</p>
         </div>
       )}
 
@@ -115,7 +115,7 @@ export default function AlcampoCartExport({ items, onBack, onClose }: Props) {
               <div>
                 <p className="text-sm font-semibold" style={{ color: alcampoColor }}>{confirmedItems.length} productos encontrados</p>
                 {notFoundItems.length > 0 && (
-                  <p className="text-xs text-gray-500">{notFoundItems.length} no encontrados en Alcampo</p>
+                  <p className="text-xs text-muted-foreground">{notFoundItems.length} no encontrados en Alcampo</p>
                 )}
               </div>
               {totalPrice > 0 && (
@@ -127,9 +127,9 @@ export default function AlcampoCartExport({ items, onBack, onClose }: Props) {
           {/* Product list */}
           <div className="space-y-3 max-h-[45vh] overflow-y-auto pr-1">
             {confirmedItems.map((m) => (
-              <div key={m.itemId} className="flex items-center gap-3 rounded-2xl border border-gray-100 p-3 hover:border-orange-200 transition-all">
+              <div key={m.itemId} className="flex items-center gap-3 rounded-2xl border border-border/50 p-3 hover:border-orange-200 transition-all">
                 {/* Product image */}
-                <div className="w-14 h-14 rounded-xl bg-gray-50 flex items-center justify-center shrink-0 overflow-hidden border border-gray-100">
+                <div className="w-14 h-14 rounded-xl bg-muted/30 flex items-center justify-center shrink-0 overflow-hidden border border-border/50">
                   {m.product?.image ? (
                     <img
                       src={m.product.image}
@@ -143,8 +143,8 @@ export default function AlcampoCartExport({ items, onBack, onClose }: Props) {
                 </div>
                 {/* Product info */}
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-semibold text-gray-900 leading-tight truncate">{m.product!.name}</p>
-                  {m.product?.brand && <p className="text-xs text-gray-400">{m.product.brand}</p>}
+                  <p className="text-sm font-semibold text-foreground leading-tight truncate">{m.product!.name}</p>
+                  {m.product?.brand && <p className="text-xs text-muted-foreground/70">{m.product.brand}</p>}
                   {m.product?.price && (
                     <p className="text-sm font-bold mt-0.5" style={{ color: alcampoColor }}>
                       {m.product.priceStr} × {m.qty} = {((m.product.price ?? 0) * m.qty).toFixed(2)}€
@@ -153,8 +153,8 @@ export default function AlcampoCartExport({ items, onBack, onClose }: Props) {
                 </div>
                 {/* Qty controls */}
                 <div className="flex items-center gap-1.5 shrink-0">
-                  <button onClick={() => updateQty(m.itemId, -1)} className="w-7 h-7 rounded-full border-2 border-gray-200 text-gray-600 font-bold flex items-center justify-center hover:border-gray-400">−</button>
-                  <span className="w-5 text-center text-sm font-bold text-gray-900">{m.qty}</span>
+                  <button onClick={() => updateQty(m.itemId, -1)} className="w-7 h-7 rounded-full border-2 border-border text-muted-foreground font-bold flex items-center justify-center hover:border-gray-400">−</button>
+                  <span className="w-5 text-center text-sm font-bold text-foreground">{m.qty}</span>
                   <button onClick={() => updateQty(m.itemId, 1)} className="w-7 h-7 rounded-full flex items-center justify-center text-white font-bold" style={{ background: alcampoColor }}>+</button>
                 </div>
               </div>
@@ -163,12 +163,12 @@ export default function AlcampoCartExport({ items, onBack, onClose }: Props) {
             {/* Not found items */}
             {notFoundItems.map((m) => (
               <div key={m.itemId} className="flex items-center gap-3 py-2 opacity-40">
-                <div className="w-14 h-14 rounded-xl bg-gray-100 flex items-center justify-center shrink-0">
+                <div className="w-14 h-14 rounded-xl bg-muted/50 flex items-center justify-center shrink-0">
                   <span className="text-xl text-gray-300">?</span>
                 </div>
                 <div className="flex-1 min-w-0">
-                  <p className="text-sm font-medium text-gray-500 truncate">{m.itemName}</p>
-                  <p className="text-xs text-gray-400 italic">No encontrado en Alcampo</p>
+                  <p className="text-sm font-medium text-muted-foreground truncate">{m.itemName}</p>
+                  <p className="text-xs text-muted-foreground/70 italic">No encontrado en Alcampo</p>
                 </div>
                 <a
                   href={`https://www.alcampo.es/compra-online/buscar?q=${encodeURIComponent(m.itemName)}`}
@@ -185,9 +185,9 @@ export default function AlcampoCartExport({ items, onBack, onClose }: Props) {
 
           {/* Total */}
           {confirmedItems.length > 0 && totalPrice > 0 && (
-            <div className="pt-3 border-t border-gray-200 flex items-center justify-between">
-              <p className="text-base font-bold text-gray-900">Total estimado</p>
-              <p className="text-xl font-black text-gray-900">{totalPrice.toFixed(2)}€</p>
+            <div className="pt-3 border-t border-border flex items-center justify-between">
+              <p className="text-base font-bold text-foreground">Total estimado</p>
+              <p className="text-xl font-black text-foreground">{totalPrice.toFixed(2)}€</p>
             </div>
           )}
 
@@ -214,13 +214,13 @@ export default function AlcampoCartExport({ items, onBack, onClose }: Props) {
                   const text = confirmedItems.map((m) => `• ${m.product!.name} ×${m.qty}`).join("\n");
                   navigator.clipboard.writeText(text).then(() => toast.success("Lista copiada"));
                 }}
-                className="flex-1 rounded-2xl py-3 text-sm font-bold border-2 border-gray-200 text-gray-700 flex items-center justify-center gap-1.5"
+                className="flex-1 rounded-2xl py-3 text-sm font-bold border-2 border-border text-foreground/80 flex items-center justify-center gap-1.5"
               >
                 Copiar lista
               </button>
               <button
                 onClick={() => window.open("https://www.alcampo.es/compra-online", "_blank")}
-                className="flex-1 rounded-2xl py-3 text-sm font-bold border-2 border-gray-200 text-gray-700 flex items-center justify-center gap-1.5"
+                className="flex-1 rounded-2xl py-3 text-sm font-bold border-2 border-border text-foreground/80 flex items-center justify-center gap-1.5"
               >
                 <ArrowTopRightOnSquareIcon className="h-4 w-4" />
                 Ir a Alcampo
