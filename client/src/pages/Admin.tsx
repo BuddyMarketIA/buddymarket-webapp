@@ -947,6 +947,7 @@ export default function Admin() {
                         <option value="pro_max">Pro Max</option>
                       </select>
                     </div>
+                  </div>
                   {/* Borrar usuario */}
                   <div className="flex justify-end pt-1">
                     <button
