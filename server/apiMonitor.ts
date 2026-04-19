@@ -4,8 +4,9 @@
  */
 import * as db from "./db";
 
-const FAIL_THRESHOLD = 3; // Notify after 3 consecutive failures
+const FAIL_THRESHOLD = 10; // Notify after 10 consecutive failures
 const CHECK_INTERVAL_MS = 5 * 60 * 1000; // 5 minutes
+const NOTIFY_COOLDOWN_MS = 24 * 60 * 60 * 1000; // 24h between notifications per monitor
 
 let monitorInterval: ReturnType<typeof setInterval> | null = null;
 
@@ -79,7 +80,7 @@ export async function runAllMonitors(baseUrl: string = "http://localhost:3000"):
     const shouldNotify =
       result.status !== "ok" &&
       newFailCount >= FAIL_THRESHOLD &&
-      (!monitor.notifiedAt || Date.now() - new Date(monitor.notifiedAt).getTime() > 30 * 60 * 1000);
+      (!monitor.notifiedAt || Date.now() - new Date(monitor.notifiedAt).getTime() > NOTIFY_COOLDOWN_MS);
 
     await drizzleDb
       .update(apiMonitors)

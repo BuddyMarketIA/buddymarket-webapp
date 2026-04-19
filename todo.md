@@ -2888,6 +2888,10 @@
 ### Bloque 6 - Stripe
 - [ ] Página de historial de pagos (/app/payments) con suscripciones y pagos anteriores
 
+## Ingredientes extra añadidos (19 Abril 2026)
+- [x] Añadir 284 ingredientes nuevos: salsas (107), aceites (20), vinagres (13), aderezos (15), semillas (20), pasta/cereales (34), harinas (14), lácteos alternativos (15), dulces (35), proteínas vegetales (11)
+- [x] Total ingredientes en BD: 2637 (antes: 2425)
+
 ## Mejoras masivas implementadas (19 Abril 2026)
 
 - [x] Calorías automáticas con IA en registro manual del diario (endpoint estimateFromText + debounce en frontend)
