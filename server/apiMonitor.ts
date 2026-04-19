@@ -21,7 +21,7 @@ export async function checkEndpoint(
   const start = Date.now();
   try {
     const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 10_000);
+    const timeout = setTimeout(() => controller.abort(), 20_000);
     const res = await fetch(url, {
       method,
       signal: controller.signal,
@@ -45,7 +45,7 @@ export async function checkEndpoint(
       status: "down",
       latencyMs,
       httpStatus: null,
-      errorMessage: isTimeout ? "Timeout (>10s)" : (err?.message ?? "Unknown error"),
+      errorMessage: isTimeout ? "Timeout (>20s)" : (err?.message ?? "Unknown error"),
     };
   }
 }
