@@ -271,7 +271,7 @@ export default function BuddyMakers() {
 
   const makersQuery = trpc.buddyMakers.list.useQuery({});
   const recipesQuery = trpc.recipes.list.useQuery(
-    { isPublic: true, limit: 30 },
+    { isPublic: true, limit: 30, excludeUserAllergens: true },
     { enabled: tab === "recipes" }
   );
 

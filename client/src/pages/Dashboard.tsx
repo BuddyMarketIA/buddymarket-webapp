@@ -214,7 +214,7 @@ export default function Dashboard() {
   const dailySummary = trpc.mealLogs.dailySummary.useQuery({ date: today });
   const streakData = trpc.mealLogs.getStreak.useQuery();
   const inventoryList = trpc.inventory.list.useQuery();
-  const recentRecipes = trpc.recipes.list.useQuery(useMemo(() => ({ limit: 3, isPublic: true }), []));
+  const recentRecipes = trpc.recipes.list.useQuery(useMemo(() => ({ limit: 3, isPublic: true, excludeUserAllergens: true }), []));
   const _menusList = trpc.menus.list.useQuery();
   const activeMenuData = trpc.menus.getActive.useQuery();
   const activeMenu = activeMenuData.data;
@@ -321,7 +321,7 @@ export default function Dashboard() {
   // Recommendations: recipes personalized by meal time and user goal
   const userGoal = profileData.data?.profile?.mainGoal;
   const recommendedRecipes = trpc.recipes.list.useQuery(
-    { limit: 5, isPublic: true, isSeeded: true },
+    { limit: 5, isPublic: true, isSeeded: true, excludeUserAllergens: true },
     { enabled: true }
   );
   // Suggested menus from library

@@ -73,7 +73,7 @@ export default function Menus() {
   );
 
   const { data: recipeResults } = trpc.recipes.list.useQuery(
-    { search: recipeSearch, limit: 20 },
+    { search: recipeSearch, limit: 20, excludeUserAllergens: true },
     { enabled: showAddRecipe !== null && recipeSearch.length > 1 }
   );
 

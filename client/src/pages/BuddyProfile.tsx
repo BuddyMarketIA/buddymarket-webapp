@@ -754,7 +754,7 @@ function MakerProfile({ id }: { id: number }) {
     { enabled: !!user }
   );
   const { data: recipesData } = trpc.recipes.list.useQuery(
-    { buddyMakerId: id, isPublic: true, limit: 20 },
+    { buddyMakerId: id, isPublic: true, limit: 20, excludeUserAllergens: true },
     { enabled: !!id }
   );
 
