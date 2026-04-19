@@ -8,7 +8,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useTranslation } from "react-i18next";
 import LanguageSelector from "@/components/LanguageSelector";
 import LogoutConfirmDialog from "@/components/LogoutConfirmDialog";
-import OnboardingModal from "@/components/OnboardingModal";
+import { OnboardingModal } from "@/components/OnboardingModal";
 
 // ─── Hook: detecta si estamos en desktop (≥1024px) ───────────────────────────
 function useIsDesktop() {

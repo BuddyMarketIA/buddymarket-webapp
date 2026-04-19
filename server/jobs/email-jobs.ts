@@ -132,14 +132,14 @@ export async function runInactivityEmails() {
 
     // Usuarios con lastActiveAt entre 3 y 4 días (primer recordatorio)
     const inactiveThreeDays = await db
-      .select({ id: users.id, name: users.name, email: users.email, lastActiveAt: users.lastActiveAt })
+      .select({ id: users.id, name: users.name, email: users.email, lastSignedIn: users.lastSignedIn })
       .from(users)
       .where(
         and(
           isNotNull(users.email),
-          isNotNull(users.lastActiveAt),
-          gte(users.lastActiveAt, sevenDaysAgo),
-          lte(users.lastActiveAt, threeDaysAgo),
+          isNotNull(users.lastSignedIn),
+          gte(users.lastSignedIn, sevenDaysAgo),
+          lte(users.lastSignedIn, threeDaysAgo),
           ne(users.role, "buddyexpert"),
           ne(users.role, "admin"),
         )
@@ -163,14 +163,14 @@ export async function runInactivityEmails() {
 
     // Usuarios con lastActiveAt entre 7 y 8 días (segundo recordatorio)
     const inactiveSevenDays = await db
-      .select({ id: users.id, name: users.name, email: users.email, lastActiveAt: users.lastActiveAt })
+      .select({ id: users.id, name: users.name, email: users.email, lastSignedIn: users.lastSignedIn })
       .from(users)
       .where(
         and(
           isNotNull(users.email),
-          isNotNull(users.lastActiveAt),
-          gte(users.lastActiveAt, eightDaysAgo),
-          lte(users.lastActiveAt, sevenDaysAgo),
+          isNotNull(users.lastSignedIn),
+          gte(users.lastSignedIn, eightDaysAgo),
+          lte(users.lastSignedIn, sevenDaysAgo),
           ne(users.role, "buddyexpert"),
           ne(users.role, "admin"),
         )
@@ -196,14 +196,14 @@ export async function runInactivityEmails() {
     const thirtyOneDaysAgo = new Date(now.getTime() - 31 * 24 * 60 * 60 * 1000);
     const thirtyDaysAgo = new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000);
     const inactiveThirtyDays = await db
-      .select({ id: users.id, name: users.name, email: users.email, lastActiveAt: users.lastActiveAt })
+      .select({ id: users.id, name: users.name, email: users.email, lastSignedIn: users.lastSignedIn })
       .from(users)
       .where(
         and(
           isNotNull(users.email),
-          isNotNull(users.lastActiveAt),
-          gte(users.lastActiveAt, thirtyOneDaysAgo),
-          lte(users.lastActiveAt, thirtyDaysAgo),
+          isNotNull(users.lastSignedIn),
+          gte(users.lastSignedIn, thirtyOneDaysAgo),
+          lte(users.lastSignedIn, thirtyDaysAgo),
           ne(users.role, "buddyexpert"),
           ne(users.role, "admin"),
         )
@@ -311,8 +311,8 @@ export async function runUserWeeklyProgress() {
       .where(
         and(
           isNotNull(users.email),
-          isNotNull(users.lastActiveAt),
-          gte(users.lastActiveAt, new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)),
+          isNotNull(users.lastSignedIn),
+          gte(users.lastSignedIn, new Date(now.getTime() - 30 * 24 * 60 * 60 * 1000)),
           ne(users.role, "admin"),
         )
       )

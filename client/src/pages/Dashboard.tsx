@@ -997,6 +997,7 @@ export default function Dashboard() {
           BuddyMarket no constituye asesoramiento médico o nutricional profesional. Consulta a un profesional.
         </p>
       </div>
+    </div>
     );
   }
 
