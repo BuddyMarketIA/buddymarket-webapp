@@ -2843,3 +2843,10 @@
 ## Correcciones sidebar (Abril 2026)
 - [x] Restaurar elementos del sidebar desaparecidos: Menús Especializados, Menú para Eventos, Mis Eventos Guardados, Mis Insignias, Mis Favoritas, Salud Conectada, Estadísticas, Calendario Familiar, Mis Recetas Asignadas, Recordatorios
 - [x] Reorganizar sidebar en grupos: Inicio, Nutrición, Menús, Compra, Familia, Comunidad, Mi Cuenta
+
+## Revisión de menús biblioteca (Abril 2026)
+- [ ] Revisar y regenerar todos los menús de la biblioteca con comidas cotidianas españolas reales (sin platos raros o poco habituales)
+- [ ] Asegurar que los desayunos sean típicos españoles (tostadas, cereales, yogur, fruta, huevos revueltos...)
+- [ ] Asegurar que las comidas sean platos del día a día (lentejas, pollo al horno, pasta, arroz, ensalada, tortilla...)
+- [ ] Asegurar que las cenas sean ligeras y cotidianas (sopa, crema, tortilla, pechuga, pescado a la plancha...)
+- [ ] Eliminar platos con nombres rebuscados o combinaciones poco habituales
