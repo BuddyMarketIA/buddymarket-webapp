@@ -2850,3 +2850,15 @@
 - [ ] Asegurar que las comidas sean platos del día a día (lentejas, pollo al horno, pasta, arroz, ensalada, tortilla...)
 - [ ] Asegurar que las cenas sean ligeras y cotidianas (sopa, crema, tortilla, pechuga, pescado a la plancha...)
 - [ ] Eliminar platos con nombres rebuscados o combinaciones poco habituales
+
+## Auditoría completa de consistencia (19 Abr 2026)
+- [ ] Revisar cálculos de calorías objetivo (TMB + TDEE) y que sean coherentes con el perfil
+- [ ] Revisar que los menús de biblioteca tengan calorías totales coherentes con su objetivo
+- [ ] Revisar recetas con 0 calorías o valores nutricionales incorrectos
+- [ ] Revisar que los mensajes de progreso/racha sean positivos y motivadores
+- [ ] Revisar flujos de onboarding (perfil incompleto → qué ve el usuario)
+- [ ] Revisar estados vacíos en diario, recetas, menús
+- [ ] Revisar que no haya recetas duplicadas en los menús
+- [ ] Revisar que los macros (proteínas/carbos/grasas) sumen correctamente a las calorías
+- [ ] Revisar que los desayunos/meriendas no tengan platos de comida principal
+- [ ] Revisar textos de IA para que sean positivos y motivadores
