@@ -980,6 +980,13 @@ export const appRouter = router({
                 : '';
               const prompt = `Eres un nutricionista experto. Genera un menú semanal personalizado en JSON para un usuario con objetivo: ${goalLabel[input.mainGoal ?? ""] ?? input.mainGoal}. ${physicalInfo} ${calorieInfo} Restricciones: ${(input.restrictions ?? []).join(", ") || "ninguna"}. Comidas al día: ${input.dailyMeals ?? 3} (${(input.mealTimes ?? []).join(", ")}). Tiempo de cocina: ${input.mealPrepTime ?? "15_30"} min. Presupuesto: ${input.budgetPerWeek ?? 60}€/semana. Nivel: ${input.cookingLevel ?? "intermediate"}.
 
+REGLAS OBLIGATORIAS POR FRANJA HORARIA:
+- DESAYUNO: tostadas, cereales, avena, yogur, fruta, huevos revueltos, smoothie, batido, pan con aceite. NUNCA ensaladas, guisos, arroces, pastas, carnes asadas, pescados al horno, legumbres.
+- MEDIA MAÑANA: snack pequeño (fruta, yogur, frutos secos, barrita). NUNCA platos completos.
+- COMIDA: plato principal completo con proteína + carbohidrato + verdura. Aquí sí pueden ir ensaladas, arroces, pastas, carnes, pescados, legumbres.
+- MERIENDA: snack pequeño (fruta, yogur, tostada). NUNCA platos completos.
+- CENA: comida ligera (ensalada, crema de verduras, pescado a la plancha, tortilla, revueltos). Evitar platos muy pesados.
+
 Devuelve SOLO JSON válido con esta estructura:
 {
   "name": "Menú personalizado - [objetivo]",
@@ -8508,6 +8515,33 @@ ${input.cookingStyle === "batch_cooking" ? "- Agrupa ingredientes para cocinar e
 ${input.cookingStyle === "tuppers" ? "- Todas las comidas deben ser aptas para tupper y microondas\n- Evita ensaladas que se pongan malas, prioriza guisos y platos calientes" : ""}
 ${input.cookingStyle === "rapido" ? "- Tiempo máximo de preparación: 20 minutos\n- Usa ingredientes fáciles de encontrar y preparar" : ""}
 ${input.cookingStyle === "restaurante" ? "- Los días de restaurante: sugiere qué pedir en un menú del día típico español (primer plato, segundo, postre) que sea saludable y se ajuste al objetivo" : ""}
+
+⚠️ REGLAS ESTRICTAS POR FRANJA HORARIA (OBLIGATORIO - INCUMPLIRLAS ES UN ERROR GRAVE):
+
+🌅 DESAYUNO (7:00-9:30h) - Comida LIGERA para empezar el día:
+- SÍ permitido: tostadas, cereales, avena, porridge, yogur, fruta fresca, zumo natural, huevos revueltos/tortilla francesa, smoothie, batido, leche con cacao, bizcocho casero, magdalenas, pan con aceite, queso fresco con miel, granola
+- NO permitido: ensaladas, guisos, carnes asadas, pescados al horno, arroces, pastas, legumbres, sopas, potajes, platos de cuchara
+- Las calorías del desayuno deben ser entre el 15-25% del total diario
+
+🍎 MEDIA MAÑANA (10:00-11:30h) - Snack PEQUEÑO:
+- SÍ permitido: fruta, yogur, frutos secos (puñado), barrita de cereales, tostada pequeña, batido de proteínas, infusión con galletas, queso con fruta
+- NO permitido: platos completos, ensaladas grandes, carnes, pescados, arroces, pastas
+- Las calorías deben ser entre el 5-15% del total diario
+
+🍽️ COMIDA (13:30-15:30h) - Comida PRINCIPAL y más abundante:
+- SÍ permitido: cualquier plato completo (ensaladas, arroces, pastas, carnes, pescados, legumbres, guisos, sopas, verduras con proteína)
+- Debe incluir: proteína + carbohidrato + verdura/ensalada
+- Las calorías deben ser entre el 30-40% del total diario
+
+🍊 MERIENDA (17:00-18:30h) - Snack PEQUEÑO de tarde:
+- SÍ permitido: fruta, yogur, frutos secos, tostada con algo, batido, infusión con algo dulce, hummus con crudités
+- NO permitido: platos completos, carnes, pescados
+- Las calorías deben ser entre el 5-15% del total diario
+
+🌙 CENA (20:00-22:00h) - Comida LIGERA y digestiva:
+- SÍ permitido: ensaladas, cremas de verduras, sopas, pescado a la plancha, tortilla, revueltos, verduras salteadas, pechuga de pollo, queso con fruta
+- EVITAR: platos muy pesados, fritos, legumbres en grandes cantidades, carnes rojas en exceso
+- Las calorías deben ser entre el 20-30% del total diario
 
 IMPORTANTE: Debes generar EXACTAMENTE ${input.daysCount} días diferentes, uno por cada día a partir de ${input.startDate}. Cada día debe tener platos DISTINTOS (no repitas el mismo plato en el mismo momento del día en días diferentes). Calcula las fechas sumando 1 día por cada elemento del array.
 
