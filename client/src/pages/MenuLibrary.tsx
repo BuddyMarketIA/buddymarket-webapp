@@ -96,6 +96,45 @@ const DIFF_LABELS: Record<string, string> = {
   hard: "Difícil",
 };
 
+const DIET_TYPES = [
+  { id: undefined, label: "Todos", emoji: "🍽️" },
+  { id: "mediterraneo", label: "Mediterráneo", emoji: "🌊" },
+  { id: "keto", label: "Keto / Low Carb", emoji: "🥑" },
+  { id: "sin_gluten", label: "Sin Gluten", emoji: "🌾" },
+  { id: "vegetariano", label: "Vegetariano", emoji: "🥦" },
+  { id: "familiar", label: "Familiar", emoji: "👨‍👩‍👧" },
+  { id: "deportista", label: "Deportista", emoji: "🏃" },
+  { id: "clinico", label: "Clínico", emoji: "🏥" },
+  { id: "economico", label: "Económico", emoji: "💰" },
+  { id: "oficina", label: "Oficina / Tupper", emoji: "🍱" },
+  { id: "batch", label: "Batch Cooking", emoji: "🥘" },
+] as const;
+
+const CALORIE_RANGES = [
+  { id: undefined, label: "Todas" },
+  { id: "low", label: "< 1500 kcal", min: 0, max: 1499 },
+  { id: "medium", label: "1500–2000 kcal", min: 1500, max: 2000 },
+  { id: "high", label: "2000–2500 kcal", min: 2001, max: 2500 },
+  { id: "very_high", label: "> 2500 kcal", min: 2501, max: 9999 },
+] as const;
+
+function matchesDietType(name: string, dietId: string): boolean {
+  const n = name.toLowerCase();
+  switch (dietId) {
+    case "mediterraneo": return n.includes("mediterr");
+    case "keto": return n.includes("keto") || n.includes("cetog") || n.includes("bajo en carboh");
+    case "sin_gluten": return n.includes("sin gluten") || n.includes("celiaco") || n.includes("gluten free");
+    case "vegetariano": return n.includes("vegetariano");
+    case "familiar": return n.includes("familiar");
+    case "deportista": return n.includes("deportista") || n.includes("deporte") || n.includes("atleta") || n.includes("rendimiento");
+    case "clinico": return n.includes("cl\u00ednico") || n.includes("clinico") || n.includes("cardio") || n.includes("gluc\u00e9mico") || n.includes("hormonal");
+    case "economico": return n.includes("econ\u00f3mico") || n.includes("economico") || n.includes("5\u20ac") || n.includes("5€");
+    case "oficina": return n.includes("oficina") || n.includes("tupper");
+    case "batch": return n.includes("batch");
+    default: return true;
+  }
+}
+
 // ─── Animation variants ───────────────────────────────────────────────────────
 
 const containerVariants: any = { // @ts-ignore
@@ -835,6 +874,8 @@ export default function MenuLibrary() {
   const { user } = useAuth();
   const [selectedGoal, setSelectedGoal] = useState<string | undefined>(undefined);
   const [selectedDifficulty, setSelectedDifficulty] = useState<string | undefined>(undefined);
+  const [selectedDietType, setSelectedDietType] = useState<string | undefined>(undefined);
+  const [selectedCalorieRange, setSelectedCalorieRange] = useState<string | undefined>(undefined);
   const [search, setSearch] = useState("");
   const [detailMenuId, setDetailMenuId] = useState<number | null>(null);
   const [saveMenu, setSaveMenu] = useState<{ id: number; name: string } | null>(null);
@@ -877,9 +918,25 @@ export default function MenuLibrary() {
     limit: 50,
   });
 
-  const filtered = allMenus.filter((m) =>
-    search ? m.name.toLowerCase().includes(search.toLowerCase()) : true
-  );
+  const filtered = allMenus.filter((m) => {
+    if (search && !m.name.toLowerCase().includes(search.toLowerCase())) return false;
+    if (selectedDietType && !matchesDietType(m.name, selectedDietType)) return false;
+    if (selectedCalorieRange) {
+      const range = CALORIE_RANGES.find((r) => r.id === selectedCalorieRange);
+      if (range && range.min !== undefined && m.dailyCalories) {
+        if (m.dailyCalories < range.min || m.dailyCalories > range.max) return false;
+      }
+    }
+    return true;
+  });
+  const hasActiveFilters = !!(selectedGoal || selectedDifficulty || selectedDietType || selectedCalorieRange || search);
+  function clearAllFilters() {
+    setSelectedGoal(undefined);
+    setSelectedDifficulty(undefined);
+    setSelectedDietType(undefined);
+    setSelectedCalorieRange(undefined);
+    setSearch("");
+  }
 
   const recommendedMenus = recommendedData?.recommended ?? [];
   const totalMenus = recommendedData?.totalMenus ?? allMenus.length;
@@ -1094,7 +1151,7 @@ export default function MenuLibrary() {
               </div>
 
               {/* Difficulty filter */}
-              <div className="mb-6">
+              <div className="mb-3">
                 <p className="text-sm font-medium mb-2 text-muted-foreground">Dificultad</p>
                 <div className="flex gap-2">
                   {DIFFICULTIES.map((d) => (
@@ -1112,6 +1169,59 @@ export default function MenuLibrary() {
                   ))}
                 </div>
               </div>
+
+              {/* Diet type filter */}
+              <div className="mb-3">
+                <p className="text-sm font-medium mb-2 text-muted-foreground">Tipo de dieta</p>
+                <div className="flex gap-2 flex-wrap">
+                  {DIET_TYPES.map((dt) => (
+                    <button
+                      key={String(dt.id)}
+                      onClick={() => setSelectedDietType(dt.id as any)}
+                      className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all border ${
+                        selectedDietType === dt.id
+                          ? "bg-[#FF6B35] text-white border-[#FF6B35]"
+                          : "bg-background text-foreground/80 border-border hover:border-[#FF6B35]"
+                      }`}
+                    >
+                      {dt.emoji} {dt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Calorie range filter */}
+              <div className="mb-4">
+                <p className="text-sm font-medium mb-2 text-muted-foreground">Calorías diarias</p>
+                <div className="flex gap-2 flex-wrap">
+                  {CALORIE_RANGES.map((cr) => (
+                    <button
+                      key={String(cr.id)}
+                      onClick={() => setSelectedCalorieRange(cr.id as any)}
+                      className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all border ${
+                        selectedCalorieRange === cr.id
+                          ? "bg-[#FF6B35] text-white border-[#FF6B35]"
+                          : "bg-background text-foreground/80 border-border hover:border-[#FF6B35]"
+                      }`}
+                    >
+                      {cr.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Clear filters button */}
+              {hasActiveFilters && (
+                <div className="mb-4 flex items-center justify-between">
+                  <span className="text-sm text-muted-foreground">{filtered.length} menús encontrados</span>
+                  <button
+                    onClick={clearAllFilters}
+                    className="text-sm text-[#FF6B35] font-medium hover:underline"
+                  >
+                    ✕ Limpiar filtros
+                  </button>
+                </div>
+              )}
 
               {/* Menu grid */}
               {isLoadingAll ? (
