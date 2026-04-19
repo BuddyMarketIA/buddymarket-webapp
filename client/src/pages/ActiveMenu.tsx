@@ -31,99 +31,208 @@ import AlcampoCartExport from "@/components/AlcampoCartExport";
 import BasketComparator from "@/components/BasketComparator";
 
 // ─── Export menu to PDF ─────────────────────────────────────────────────────
-function exportMenuToPDF(activeMenu: any, dayGroups: Record<number, any[]>, getDayDate: (n: number) => Date) {
+function exportMenuToPDF(
+  activeMenu: any,
+  dayGroups: Record<number, any[]>,
+  getDayDate: (n: number) => Date,
+  shoppingItems?: Array<{ id: number; name: string; qty?: string; unit?: string; isPurchased: boolean }>
+) {
   const doc = new jsPDF({ orientation: "portrait", unit: "mm", format: "a4" });
   const pageW = doc.internal.pageSize.getWidth();
+  const pageH = doc.internal.pageSize.getHeight();
   const margin = 14;
   let y = 20;
 
-  // Header
-  doc.setFillColor(249, 115, 22); // orange-500
-  doc.rect(0, 0, pageW, 14, "F");
-  doc.setTextColor(255, 255, 255);
-  doc.setFontSize(10);
-  doc.setFont("helvetica", "bold");
-  doc.text("BuddyMarket — Menú Semanal", margin, 9);
-  doc.setFont("helvetica", "normal");
-  doc.text(new Date().toLocaleDateString("es-ES", { day: "2-digit", month: "long", year: "numeric" }), pageW - margin, 9, { align: "right" });
+  function addPageHeader() {
+    doc.setFillColor(249, 115, 22);
+    doc.rect(0, 0, pageW, 14, "F");
+    doc.setTextColor(255, 255, 255);
+    doc.setFontSize(10);
+    doc.setFont("helvetica", "bold");
+    doc.text("BuddyMarket — Menú Semanal", margin, 9);
+    doc.setFont("helvetica", "normal");
+    doc.text(new Date().toLocaleDateString("es-ES", { day: "2-digit", month: "long", year: "numeric" }), pageW - margin, 9, { align: "right" });
+  }
 
+  function checkPage(needed = 20) {
+    if (y > pageH - needed) {
+      doc.addPage();
+      addPageHeader();
+      y = 22;
+    }
+  }
+
+  const MEAL_ORDER_ES: Record<string, number> = { desayuno: 1, media_manana: 2, almuerzo: 2, comida: 3, merienda: 4, cena: 5, snack: 6 };
+  const allIngredients: Record<string, { qty: number; unit: string }> = {};
+
+  addPageHeader();
   y = 24;
   doc.setTextColor(30, 30, 30);
   doc.setFontSize(16);
   doc.setFont("helvetica", "bold");
   doc.text(activeMenu.name ?? "Mi Menú", margin, y);
-  y += 5;
+  y += 6;
   doc.setFontSize(9);
   doc.setFont("helvetica", "normal");
   doc.setTextColor(120, 120, 120);
   if (activeMenu.dailyCalories) doc.text(`${activeMenu.dailyCalories} kcal/día · ${Object.keys(dayGroups).length} días`, margin, y);
-  y += 8;
+  y += 10;
 
-  const DAY_NAMES = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
+  const DAY_NAMES_FULL = ["Lunes", "Martes", "Miércoles", "Jueves", "Viernes", "Sábado", "Domingo"];
   const allDays = Object.keys(dayGroups).map(Number).sort((a, b) => a - b);
 
   for (const dayNum of allDays) {
-    const parts = dayGroups[dayNum] ?? [];
+    const parts = (dayGroups[dayNum] ?? []).sort((a: any, b: any) => {
+      const ao = MEAL_ORDER_ES[a.dayPartInfo?.apiParam ?? ""] ?? 99;
+      const bo = MEAL_ORDER_ES[b.dayPartInfo?.apiParam ?? ""] ?? 99;
+      return ao - bo;
+    });
     if (parts.length === 0) continue;
 
-    // Check if we need a new page
-    if (y > 260) { doc.addPage(); y = 20; }
-
-    // Day header
+    checkPage(30);
     const dayDate = getDayDate(dayNum);
-    const dayName = DAY_NAMES[dayDate.getDay() === 0 ? 6 : dayDate.getDay() - 1] ?? `Día ${dayNum}`;
+    const dayName = DAY_NAMES_FULL[dayDate.getDay() === 0 ? 6 : dayDate.getDay() - 1] ?? `Día ${dayNum}`;
     const dateStr = dayDate.toLocaleDateString("es-ES", { day: "2-digit", month: "short" });
-    doc.setFillColor(255, 237, 213); // orange-100
-    doc.roundedRect(margin, y, pageW - margin * 2, 8, 2, 2, "F");
-    doc.setFontSize(10);
+
+    doc.setFillColor(255, 237, 213);
+    doc.roundedRect(margin, y, pageW - margin * 2, 9, 2, 2, "F");
+    doc.setFontSize(10.5);
     doc.setFont("helvetica", "bold");
-    doc.setTextColor(194, 65, 12); // orange-700
-    doc.text(`${dayName} — ${dateStr}`, margin + 3, y + 5.5);
-    y += 11;
+    doc.setTextColor(194, 65, 12);
+    doc.text(`${dayName} — ${dateStr}`, margin + 3, y + 6);
+    y += 13;
 
     for (const dp of parts) {
-      if (y > 270) { doc.addPage(); y = 20; }
-      // Meal name
-      doc.setFontSize(8.5);
+      checkPage(25);
+      // Meal type — use nameEs (correct field from DB join)
+      const mealLabel = dp.dayPartInfo?.nameEs ?? dp.dayPartInfo?.name ?? dp.dayPartName ?? "Comida";
+      doc.setFontSize(9);
       doc.setFont("helvetica", "bold");
-      doc.setTextColor(80, 80, 80);
-      const mealLabel = dp.dayPartInfo?.name ?? dp.dayPartName ?? "Comida";
-      doc.text(`• ${mealLabel}`, margin + 2, y);
-      y += 4.5;
-      // Recipes
+      doc.setTextColor(100, 100, 100);
+      doc.text(`  ${mealLabel}`, margin + 2, y);
+      y += 5;
+
       if (dp.recipes?.length > 0) {
         for (const r of dp.recipes) {
-          if (y > 275) { doc.addPage(); y = 20; }
-          doc.setFontSize(8);
-          doc.setFont("helvetica", "normal");
-          doc.setTextColor(50, 50, 50);
-          const recipeName = r.name ?? r.recipeName ?? "Receta";
-          const kcal = r.calories ? ` (${r.calories} kcal)` : "";
-          doc.text(`   ${recipeName}${kcal}`, margin + 4, y);
-          y += 4;
+          checkPage(18);
+          // Recipe data is nested under r.recipe (from DB join in getActive)
+          const recipe = r.recipe ?? r;
+          const recipeName = recipe.name ?? r.recipeName ?? r.name ?? "Receta";
+          const kcal = recipe.caloriesPerServing ? ` · ${recipe.caloriesPerServing} kcal` : "";
+
+          doc.setFontSize(9);
+          doc.setFont("helvetica", "bold");
+          doc.setTextColor(30, 30, 30);
+          doc.text(`    ▸ ${recipeName}${kcal}`, margin + 4, y);
+          y += 5;
+
+          // Macros line
+          const macros = [
+            recipe.proteinsPerServing ? `P: ${Math.round(recipe.proteinsPerServing)}g` : "",
+            recipe.carbsPerServing ? `C: ${Math.round(recipe.carbsPerServing)}g` : "",
+            recipe.fatsPerServing ? `G: ${Math.round(recipe.fatsPerServing)}g` : "",
+          ].filter(Boolean).join("  ");
+          if (macros) {
+            doc.setFontSize(7.5);
+            doc.setFont("helvetica", "normal");
+            doc.setTextColor(150, 150, 150);
+            doc.text(`      ${macros}`, margin + 6, y);
+            y += 4;
+          }
+
+          // Ingredients from ingredientsJson
+          let ingredients: any[] = [];
+          try { if (recipe.ingredientsJson) ingredients = JSON.parse(recipe.ingredientsJson); } catch { /* ignore */ }
+          if (ingredients.length > 0) {
+            checkPage(8);
+            const ingParts = ingredients.map((ing: any) => {
+              const name = ing.name ?? ing.ingredient ?? "";
+              const amt = ing.amount ?? ing.quantity ?? "";
+              const unit = ing.unit ?? "";
+              if (name) {
+                const key = name.toLowerCase();
+                if (!allIngredients[key]) allIngredients[key] = { qty: 0, unit };
+                allIngredients[key].qty += Number(amt) || 0;
+              }
+              return amt ? `${amt}${unit ? " " + unit : ""} ${name}`.trim() : name;
+            }).filter(Boolean);
+            const ingText = `      Ing: ${ingParts.join(" · ")}`;
+            const lines = doc.splitTextToSize(ingText, pageW - margin * 2 - 8);
+            doc.setFontSize(7.5);
+            doc.setFont("helvetica", "normal");
+            doc.setTextColor(110, 110, 110);
+            for (const line of lines) { checkPage(6); doc.text(line, margin + 6, y); y += 4; }
+          }
+          y += 2;
         }
       } else {
         doc.setFontSize(7.5);
         doc.setFont("helvetica", "italic");
-        doc.setTextColor(150, 150, 150);
-        doc.text("   Sin receta asignada", margin + 4, y);
-        y += 4;
+        doc.setTextColor(170, 170, 170);
+        doc.text("    Sin receta asignada", margin + 4, y);
+        y += 5;
       }
-      y += 1;
+      y += 2;
     }
-    y += 4;
+    y += 5;
   }
 
-  // Footer
+  // ── SHOPPING LIST PAGE ────────────────────────────────────────────────────
+  doc.addPage();
+  addPageHeader();
+  y = 22;
+
+  doc.setFontSize(14);
+  doc.setFont("helvetica", "bold");
+  doc.setTextColor(249, 115, 22);
+  doc.text("Lista de la Compra", margin, y);
+  y += 5;
+  doc.setFontSize(8.5);
+  doc.setFont("helvetica", "normal");
+  doc.setTextColor(140, 140, 140);
+  doc.text("Ingredientes necesarios para todo el menú", margin, y);
+  y += 9;
+
+  if (shoppingItems && shoppingItems.length > 0) {
+    shoppingItems.forEach((item) => {
+      checkPage(8);
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "normal");
+      doc.setTextColor(50, 50, 50);
+      const qty = item.qty ? `${item.qty}${item.unit ? " " + item.unit : ""}` : "";
+      doc.text(qty ? `  ☐  ${item.name}  —  ${qty}` : `  ☐  ${item.name}`, margin + 2, y);
+      y += 5.5;
+    });
+  } else {
+    const ingEntries = Object.entries(allIngredients);
+    if (ingEntries.length === 0) {
+      doc.setFontSize(9);
+      doc.setFont("helvetica", "italic");
+      doc.setTextColor(160, 160, 160);
+      doc.text("Genera la lista de la compra desde la app para ver los ingredientes aquí.", margin, y);
+    } else {
+      ingEntries.sort((a, b) => a[0].localeCompare(b[0])).forEach(([name, { qty, unit }]) => {
+        checkPage(8);
+        doc.setFontSize(9);
+        doc.setFont("helvetica", "normal");
+        doc.setTextColor(50, 50, 50);
+        const qtyStr = qty > 0 ? `${Math.round(qty * 10) / 10}${unit ? " " + unit : ""}` : "";
+        const capName = name.charAt(0).toUpperCase() + name.slice(1);
+        doc.text(qtyStr ? `  ☐  ${capName}  —  ${qtyStr}` : `  ☐  ${capName}`, margin + 2, y);
+        y += 5.5;
+      });
+    }
+  }
+
+  // ── PAGE NUMBERS ─────────────────────────────────────────────────────────
   const pageCount = (doc.internal as any).getNumberOfPages();
   for (let i = 1; i <= pageCount; i++) {
     doc.setPage(i);
     doc.setFontSize(7);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(180, 180, 180);
-    doc.text(`BuddyMarket · buddymarket.io · Página ${i} de ${pageCount}`, pageW / 2, 292, { align: "center" });
+    doc.text(`BuddyMarket · buddymarketapp.com · Página ${i} de ${pageCount}`, pageW / 2, 292, { align: "center" });
   }
-
   doc.save(`menu-${(activeMenu.name ?? "semanal").replace(/\s+/g, "-").toLowerCase()}.pdf`);
 }
 // ─────────────────────────────────────────────────────────────────────────────
@@ -1073,7 +1182,7 @@ export default function ActiveMenu() {
         <button
           onClick={() => {
             try {
-              exportMenuToPDF(activeMenu, dayGroups, getDayDate);
+              exportMenuToPDF(activeMenu, dayGroups, getDayDate, generatedItems.length > 0 ? generatedItems : undefined);
               toast.success("PDF descargado correctamente");
             } catch {
               toast.error("Error al generar el PDF");

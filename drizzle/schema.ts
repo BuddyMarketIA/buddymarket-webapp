@@ -436,7 +436,7 @@ export const userBannedIngredients = pgTable("user_banned_ingredients", {
 
 export const recipes = pgTable("recipes", {
   id: serial("id").primaryKey(),
-  userId: integer("userId").notNull(),
+  userId: integer("userId"), // nullable: seeded/BuddyMarket recipes have no owner
   name: varchar("name", { length: 256 }).notNull(),
   imageUrl: text("imageUrl"),
   description: text("description"),

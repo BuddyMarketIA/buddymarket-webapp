@@ -323,6 +323,13 @@
       "when": 1776494170756,
       "tag": "0045_flimsy_shockwave",
       "breakpoints": true
+    },
+    {
+      "idx": 46,
+      "version": "7",
+      "when": 1776639185820,
+      "tag": "0046_dapper_pet_avengers",
+      "breakpoints": true
     }
   ]
 }

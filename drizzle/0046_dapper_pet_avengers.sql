@@ -1,0 +1,1 @@
+ALTER TABLE "recipes" ALTER COLUMN "userId" DROP NOT NULL;
