@@ -419,10 +419,20 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       label: "Nutrición",
       items: [
         { key: "/app/meal-log", label: t("sidebar.nutritionalDiary"), to: "/app/meal-log", emoji: "📊" },
+        { key: "/app/meal-notifications", label: t("sidebar.reminders"), to: "/app/meal-notifications", emoji: "🔔" },
         { key: "/app/recipes", label: t("nav.recipes"), to: "/app/recipes", emoji: "📖" },
+        { key: "/app/favorites", label: t("sidebar.myFavorites"), to: "/app/favorites", emoji: "❤️" },
+        { key: "/app/inventory", label: t("nav.inventory"), to: "/app/inventory", emoji: "📦" },
+      ],
+    },
+    {
+      label: "Menús",
+      items: [
         { key: "/app/menus", label: "Mis Menús", to: "/app/menus", emoji: "📅" },
         { key: "/app/menu-library", label: t("sidebar.menuLibrary"), to: "/app/menu-library", emoji: "📚" },
-        { key: "/app/inventory", label: t("nav.inventory"), to: "/app/inventory", emoji: "📦" },
+        { key: "/app/specialized-menus", label: t("sidebar.specializedMenus"), to: "/app/specialized-menus", emoji: "🏥" },
+        { key: "/app/event-menu", label: t("sidebar.eventMenu"), to: "/app/event-menu", emoji: "🎉" },
+        { key: "/app/saved-events", label: "Mis Eventos Guardados", to: "/app/saved-events", emoji: "⭐" },
       ],
     },
     {
@@ -430,7 +440,14 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       items: [
         { key: "shopping", label: t("sidebar.shoppingList"), to: "/app/shopping-lists", emoji: "🛒" },
         { key: "/app/supermercados", label: t("sidebar.supermarkets"), to: "/app/supermercados", emoji: "🏪" },
+      ],
+    },
+    {
+      label: "Familia",
+      items: [
         { key: "/familia", label: "Mi Hogar", to: "/familia", emoji: "🏡" },
+        { key: "/familia/calendario", label: "Calendario Familiar", to: "/familia/calendario", emoji: "📅" },
+        { key: "/familia/mis-recetas", label: "Mis Recetas Asignadas", to: "/familia/mis-recetas", emoji: "🍽️" },
       ],
     },
     {
@@ -446,8 +463,11 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       items: [
         { key: "/app/profile", label: t("sidebar.myProfile"), to: "/app/profile", emoji: "👤" },
         { key: "/app/metrics", label: t("nav.metrics"), to: "/app/metrics", emoji: "📏" },
+        { key: "/app/connected-health", label: t("nav.connectedHealth"), to: "/app/connected-health", emoji: "💪" },
         { key: "/app/progress", label: t("nav.progress"), to: "/app/progress", emoji: "📉" },
+        { key: "/app/stats", label: t("sidebar.stats"), to: "/app/stats", emoji: "📈" },
         { key: "/app/achievements", label: t("sidebar.myAchievements"), to: "/app/achievements", emoji: "🏆" },
+        { key: "/app/badges", label: "Mis Insignias", to: "/app/badges", emoji: "🎖️" },
         { key: "/app/challenges", label: "Retos", to: "/app/challenges", emoji: "🔥" },
         { key: "/app/monthly-reports", label: "Informes mensuales", to: "/app/monthly-reports", emoji: "📊" },
         { key: "/app/referrals", label: "Invita amigos 🎁", to: "/app/referrals", emoji: "👥" },

@@ -2831,3 +2831,15 @@
 - [ ] Informe de transformación al finalizar los 30 días
 - [ ] Badge exclusivo "Transformación Completada" al terminar
 - [x] Endpoint `retention.startThirtyDayChallenge` y `retention.checkInThirtyDay`
+
+## Registro manual con calorías automáticas (IA)
+
+- [ ] Endpoint tRPC `mealLogs.estimateNutrition` que recibe nombre de alimento + cantidad y devuelve calorías/macros estimados por IA
+- [ ] Al escribir nombre manual en el diario, llamar al endpoint y pre-rellenar calorías/proteínas/carbos/grasas
+- [ ] Mostrar badge "Estimado por IA" junto a los valores nutricionales pre-rellenados
+- [ ] Permitir al usuario editar los valores antes de guardar
+- [ ] Guardar los macros estimados (proteínas, carbohidratos, grasas) junto con las calorías en mealLogs
+
+## Correcciones sidebar (Abril 2026)
+- [x] Restaurar elementos del sidebar desaparecidos: Menús Especializados, Menú para Eventos, Mis Eventos Guardados, Mis Insignias, Mis Favoritas, Salud Conectada, Estadísticas, Calendario Familiar, Mis Recetas Asignadas, Recordatorios
+- [x] Reorganizar sidebar en grupos: Inicio, Nutrición, Menús, Compra, Familia, Comunidad, Mi Cuenta
