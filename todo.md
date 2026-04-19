@@ -2721,18 +2721,18 @@
 ### DÍA 1 — Hábito Diario y Gamificación Base
 
 #### Mejora 1: Racha Diaria con Consecuencias Reales
-- [ ] Notificación push a las 20:00 si el usuario no ha registrado nada ese día ("⚠️ Tu racha de X días está en peligro")
+- [x] Notificación push a las 20:00 si el usuario no ha registrado nada ese día ("⚠️ Tu racha de X días está en peligro")
 - [ ] Animación de fuego (Lottie o CSS) al mantener racha en el Dashboard
 - [x] "Escudo de racha" consumible: 1 por semana para no perder la racha si fallas un día
 - [ ] Banner de celebración al superar récord personal de racha
 - [x] Endpoint `retention.useStreakShield` para consumir el escudo (router retention.ts)
 
 #### Mejora 2: Resumen Diario Nocturno (job a las 21:00)
-- [ ] Job programado nocturno (21:00 hora España) que genera resumen personalizado
-- [ ] Email con: calorías del día vs objetivo, puntuación IA, receta del día siguiente, micro-tip nutricional
+- [x] Job programado nocturno (21:00 hora España) que genera resumen personalizado
+- [x] Email con: calorías del día vs objetivo, puntuación IA, receta del día siguiente, micro-tip nutricional
 - [ ] Notificación push complementaria al email
-- [ ] Endpoint `mealLogs.getDailySummaryEmail` para generar el contenido
-- [ ] Template HTML de email para el resumen nocturno
+- [x] Endpoint `mealLogs.getDailySummaryEmail` para generar el contenido (implementado en email-jobs.ts)
+- [x] Template HTML de email para el resumen nocturno
 
 #### Mejora 3: Check-in de Peso Semanal en Dashboard
 - [ ] Card prominente en Dashboard cada lunes: "¿Cuánto pesas hoy?" con campo numérico inline

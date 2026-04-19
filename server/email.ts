@@ -2310,3 +2310,212 @@ export async function sendUserWeeklyProgress(params: {
     return true;
   } catch (err) { console.error("[Email] Error sending user weekly progress:", err); return false; }
 }
+
+// ─── Email de Recordatorio de Racha en Peligro (20:00) ───────────────────────
+
+function streakReminderHtml(name: string, streakDays: number, caloriesLogged: number, dailyGoal: number): string {
+  const firstName = name?.split(" ")[0] || "amigo";
+  const pct = Math.min(100, Math.round((caloriesLogged / (dailyGoal || 2000)) * 100));
+  const body = `
+  ${emailHeader("⚠️", `¡Tu racha de ${streakDays} días está en peligro!`, "Aún estás a tiempo de registrar hoy", "linear-gradient(135deg,#F97316 0%,#EA580C 100%)")}
+  <tr>
+    <td style="padding:40px 40px 32px;">
+      <p style="color:#374151;font-size:16px;line-height:1.7;margin:0 0 20px;">
+        Hola, <strong>${firstName}</strong> 👋
+      </p>
+      <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 20px;">
+        Llevas <strong>${streakDays} días</strong> registrando tus comidas en BuddyMarket. ¡Es un logro increíble! Pero hoy aún no has registrado nada y son las 20:00. Tienes tiempo para hacerlo.
+      </p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#FFF7ED;border:2px solid #FED7AA;border-radius:16px;padding:24px;margin:0 0 24px;text-align:center;">
+        <tr><td>
+          <div style="font-size:40px;margin-bottom:8px;">🔥</div>
+          <p style="color:#92400E;font-size:24px;font-weight:800;margin:0 0 4px;">${streakDays} días de racha</p>
+          <p style="color:#B45309;font-size:14px;margin:0;">No la pierdas ahora</p>
+        </td></tr>
+      </table>
+      ${caloriesLogged > 0 ? `
+      <p style="color:#555;font-size:14px;line-height:1.6;margin:0 0 16px;">
+        Hoy llevas <strong>${caloriesLogged} kcal</strong> registradas (${pct}% de tu objetivo diario de ${dailyGoal} kcal). ¡Solo falta completar el día!
+      </p>
+      ` : `
+      <p style="color:#555;font-size:14px;line-height:1.6;margin:0 0 16px;">
+        Hoy aún no has registrado ninguna comida. Solo necesitas añadir lo que has comido para mantener tu racha. ¡Son 2 minutos!
+      </p>
+      `}
+      ${ctaButton("Registrar mis comidas ahora 🍽️", `${APP_URL}/app/diary`)}
+      <p style="color:#9CA3AF;font-size:13px;text-align:center;margin:16px 0 0;">
+        Si usas el escudo de racha, puedes proteger tu racha aunque no registres hoy.
+      </p>
+    </td>
+  </tr>`;
+  return emailWrapper(body);
+}
+
+export async function sendStreakReminderEmail(params: {
+  userEmail: string;
+  userName: string;
+  streakDays: number;
+  caloriesLogged: number;
+  dailyGoal: number;
+}): Promise<boolean> {
+  if (!process.env.RESEND_API_KEY) return false;
+  try {
+    const firstName = params.userName?.split(" ")[0] || "amigo";
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: params.userEmail,
+      subject: `⚠️ ${firstName}, tu racha de ${params.streakDays} días está en peligro`,
+      html: streakReminderHtml(params.userName, params.streakDays, params.caloriesLogged, params.dailyGoal),
+    });
+    if (error) { console.error("[Email] Streak reminder failed:", error); return false; }
+    console.log("[Email] Streak reminder sent:", data?.id, "→", params.userEmail);
+    return true;
+  } catch (err) { console.error("[Email] Error sending streak reminder:", err); return false; }
+}
+
+// ─── Email de Resumen Diario Nocturno (21:00) ────────────────────────────────
+
+function dailySummaryHtml(params: {
+  userName: string;
+  caloriesLogged: number;
+  dailyGoal: number;
+  proteinsLogged: number;
+  carbsLogged: number;
+  fatsLogged: number;
+  mealsLogged: number;
+  streakDays: number;
+  tomorrowRecipeName: string | null;
+  tomorrowRecipeUrl: string | null;
+  microTip: string;
+}): string {
+  const firstName = params.userName?.split(" ")[0] || "amigo";
+  const pct = Math.min(100, Math.round((params.caloriesLogged / (params.dailyGoal || 2000)) * 100));
+  const remaining = Math.max(0, params.dailyGoal - params.caloriesLogged);
+  const statusEmoji = pct >= 90 ? "🎯" : pct >= 60 ? "👍" : "💪";
+  const statusMsg = pct >= 90 ? "¡Objetivo casi alcanzado!" : pct >= 60 ? "Buen progreso hoy" : "Puedes mejorar mañana";
+
+  const body = `
+  ${emailHeader("🌙", `Tu resumen de hoy, ${firstName}`, "Así ha ido tu día nutricional", "linear-gradient(135deg,#1E40AF 0%,#1D4ED8 100%)")}
+  <tr>
+    <td style="padding:40px 40px 32px;">
+      <!-- Resumen de calorías -->
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#EFF6FF;border:2px solid #BFDBFE;border-radius:16px;padding:24px;margin:0 0 24px;text-align:center;">
+        <tr><td>
+          <div style="font-size:36px;margin-bottom:8px;">${statusEmoji}</div>
+          <p style="color:#1E3A8A;font-size:28px;font-weight:800;margin:0 0 4px;">${params.caloriesLogged} kcal</p>
+          <p style="color:#3B82F6;font-size:14px;margin:0 0 12px;">de ${params.dailyGoal} kcal objetivo · ${statusMsg}</p>
+          <!-- Barra de progreso -->
+          <table width="100%" cellpadding="0" cellspacing="0" style="background:#DBEAFE;border-radius:8px;height:12px;overflow:hidden;">
+            <tr>
+              <td width="${pct}%" style="background:linear-gradient(90deg,#3B82F6,#1D4ED8);height:12px;border-radius:8px;"></td>
+              <td width="${100 - pct}%" style="height:12px;"></td>
+            </tr>
+          </table>
+          ${remaining > 0 ? `<p style="color:#6B7280;font-size:13px;margin:8px 0 0;">Te quedan ${remaining} kcal para completar el objetivo</p>` : `<p style="color:#16A34A;font-size:13px;margin:8px 0 0;">✅ ¡Objetivo alcanzado!</p>`}
+        </td></tr>
+      </table>
+      <!-- Macros -->
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+        <tr>
+          <td width="33%" style="padding:0 4px 0 0;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:12px;padding:16px;text-align:center;">
+              <tr><td>
+                <p style="color:#166534;font-size:20px;font-weight:800;margin:0 0 2px;">${Math.round(params.proteinsLogged)}g</p>
+                <p style="color:#16A34A;font-size:12px;margin:0;">Proteínas</p>
+              </td></tr>
+            </table>
+          </td>
+          <td width="33%" style="padding:0 2px;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:12px;padding:16px;text-align:center;">
+              <tr><td>
+                <p style="color:#92400E;font-size:20px;font-weight:800;margin:0 0 2px;">${Math.round(params.carbsLogged)}g</p>
+                <p style="color:#B45309;font-size:12px;margin:0;">Carbos</p>
+              </td></tr>
+            </table>
+          </td>
+          <td width="33%" style="padding:0 0 0 4px;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:#FDF4FF;border:1px solid #E9D5FF;border-radius:12px;padding:16px;text-align:center;">
+              <tr><td>
+                <p style="color:#581C87;font-size:20px;font-weight:800;margin:0 0 2px;">${Math.round(params.fatsLogged)}g</p>
+                <p style="color:#7C3AED;font-size:12px;margin:0;">Grasas</p>
+              </td></tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+      <!-- Racha y comidas -->
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+        <tr>
+          <td width="50%" style="padding:0 4px 0 0;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:#FFF7ED;border:1px solid #FED7AA;border-radius:12px;padding:16px;text-align:center;">
+              <tr><td>
+                <p style="font-size:24px;margin:0 0 4px;">🔥</p>
+                <p style="color:#92400E;font-size:18px;font-weight:800;margin:0 0 2px;">${params.streakDays} días</p>
+                <p style="color:#B45309;font-size:12px;margin:0;">Racha actual</p>
+              </td></tr>
+            </table>
+          </td>
+          <td width="50%" style="padding:0 0 0 4px;">
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:#F0FDF4;border:1px solid #BBF7D0;border-radius:12px;padding:16px;text-align:center;">
+              <tr><td>
+                <p style="font-size:24px;margin:0 0 4px;">🍽️</p>
+                <p style="color:#166534;font-size:18px;font-weight:800;margin:0 0 2px;">${params.mealsLogged} comidas</p>
+                <p style="color:#16A34A;font-size:12px;margin:0;">Registradas hoy</p>
+              </td></tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+      <!-- Receta de mañana -->
+      ${params.tomorrowRecipeName ? `
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:12px;padding:20px;margin:0 0 24px;">
+        <tr><td>
+          <p style="color:#374151;font-size:14px;font-weight:700;margin:0 0 8px;">🍳 Receta sugerida para mañana</p>
+          <p style="color:#F97316;font-size:16px;font-weight:800;margin:0 0 12px;">${params.tomorrowRecipeName}</p>
+          ${params.tomorrowRecipeUrl ? `<a href="${params.tomorrowRecipeUrl}" style="color:#F97316;font-size:13px;text-decoration:none;font-weight:600;">Ver receta completa →</a>` : ''}
+        </td></tr>
+      </table>
+      ` : ''}
+      <!-- Micro-tip -->
+      <table width="100%" cellpadding="0" cellspacing="0" style="background:#FFFBEB;border-left:4px solid #F59E0B;border-radius:0 12px 12px 0;padding:16px 20px;margin:0 0 24px;">
+        <tr><td>
+          <p style="color:#92400E;font-size:13px;font-weight:700;margin:0 0 4px;">💡 Tip nutricional del día</p>
+          <p style="color:#78350F;font-size:14px;line-height:1.6;margin:0;">${params.microTip}</p>
+        </td></tr>
+      </table>
+      ${ctaButton("Ver mi diario completo 📊", `${APP_URL}/app/diary`)}
+    </td>
+  </tr>`;
+  return emailWrapper(body);
+}
+
+export async function sendDailySummaryEmail(params: {
+  userEmail: string;
+  userName: string;
+  caloriesLogged: number;
+  dailyGoal: number;
+  proteinsLogged: number;
+  carbsLogged: number;
+  fatsLogged: number;
+  mealsLogged: number;
+  streakDays: number;
+  tomorrowRecipeName: string | null;
+  tomorrowRecipeUrl: string | null;
+  microTip: string;
+}): Promise<boolean> {
+  if (!process.env.RESEND_API_KEY) return false;
+  try {
+    const firstName = params.userName?.split(" ")[0] || "amigo";
+    const pct = Math.min(100, Math.round((params.caloriesLogged / (params.dailyGoal || 2000)) * 100));
+    const subjectEmoji = pct >= 90 ? "🎯" : pct >= 60 ? "📊" : "💪";
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: params.userEmail,
+      subject: `${subjectEmoji} ${firstName}, tu resumen nutricional de hoy`,
+      html: dailySummaryHtml(params),
+    });
+    if (error) { console.error("[Email] Daily summary failed:", error); return false; }
+    console.log("[Email] Daily summary sent:", data?.id, "→", params.userEmail);
+    return true;
+  } catch (err) { console.error("[Email] Error sending daily summary:", err); return false; }
+}
