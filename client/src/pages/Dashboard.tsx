@@ -1619,20 +1619,22 @@ export default function Dashboard() {
             </div>
           </Link>
 
-          {/* Small — Inventario */}
-          <Link href={QUICK_ACCESS[3].to}>
+          {/* Wide — Inventario — spans full row */}
+          <Link href={QUICK_ACCESS[3].to} style={{ gridColumn: "1 / 3" }}>
             <div style={{ height: "90px", borderRadius: "18px", overflow: "hidden", position: "relative", cursor: "pointer", boxShadow: "0 4px 14px rgba(0,0,0,0.15)", transition: "transform 0.2s" }}
               onMouseEnter={e => (e.currentTarget.style.transform = "scale(1.02)")}
               onMouseLeave={e => (e.currentTarget.style.transform = "scale(1)")}
             >
               <div style={{ position: "absolute", inset: 0, backgroundImage: `url(${QUICK_ACCESS[3].img})`, backgroundSize: "cover", backgroundPosition: "center" }} />
-              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(180deg, rgba(0,0,0,0.1) 0%, rgba(0,0,0,0.72) 100%)" }} />
-              <div style={{ position: "absolute", top: "10px", left: "10px", background: QUICK_ACCESS[3].accent, borderRadius: "8px", padding: "3px 8px" }}>
-                <span style={{ fontSize: "13px", fontWeight: 800, color: "white" }}>{QUICK_ACCESS[3].emoji}</span>
-              </div>
-              <div style={{ position: "absolute", bottom: "10px", left: "10px", right: "6px" }}>
-                <p style={{ margin: 0, fontSize: "14px", fontWeight: 800, color: "white" }}>{QUICK_ACCESS[3].label}</p>
-                <p style={{ margin: 0, fontSize: "9px", color: "rgba(255,255,255,0.7)" }}>{QUICK_ACCESS[3].subtitle}</p>
+              <div style={{ position: "absolute", inset: 0, background: "linear-gradient(90deg, rgba(245,158,11,0.85) 0%, rgba(0,0,0,0.4) 100%)" }} />
+              <div style={{ position: "absolute", inset: 0, display: "flex", alignItems: "center", padding: "0 16px", gap: "12px" }}>
+                <div style={{ width: "42px", height: "42px", borderRadius: "14px", background: "rgba(255,255,255,0.2)", backdropFilter: "blur(8px)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px", flexShrink: 0 }}>
+                  {QUICK_ACCESS[3].emoji}
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <p style={{ margin: 0, fontSize: "13px", fontWeight: 900, color: "white", letterSpacing: "-0.02em", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{QUICK_ACCESS[3].label}</p>
+                  <p style={{ margin: 0, fontSize: "11px", color: "rgba(255,255,255,0.8)", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{QUICK_ACCESS[3].subtitle}</p>
+                </div>
               </div>
             </div>
           </Link>
