@@ -673,6 +673,30 @@ export default function Profile() {
             <LanguageSelectorInProfile />
           </div>
 
+          <div style={card}>
+            <SectionTitle>Suscripción y pagos</SectionTitle>
+            <button
+              onClick={() => setLocation("/app/subscription")}
+              style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "12px 0", background: "none", border: "none", borderBottom: "1px solid #f3f4f6", cursor: "pointer", fontSize: "15px", color: "#374151" }}
+            >
+              <span style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <span style={{ fontSize: "20px" }}>⭐</span>
+                <span>Mi plan y suscripción</span>
+              </span>
+              <span style={{ color: "#9ca3af", fontSize: "18px" }}>›</span>
+            </button>
+            <button
+              onClick={() => setLocation("/app/payment-history")}
+              style={{ display: "flex", alignItems: "center", justifyContent: "space-between", width: "100%", padding: "12px 0", background: "none", border: "none", cursor: "pointer", fontSize: "15px", color: "#374151" }}
+            >
+              <span style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                <span style={{ fontSize: "20px" }}>🧾</span>
+                <span>Historial de pagos y facturas</span>
+              </span>
+              <span style={{ color: "#9ca3af", fontSize: "18px" }}>›</span>
+            </button>
+          </div>
+
           <DeleteAccountSection />
         </div>
       )}

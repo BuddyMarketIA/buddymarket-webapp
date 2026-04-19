@@ -8,6 +8,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { useTranslation } from "react-i18next";
 import LanguageSelector from "@/components/LanguageSelector";
 import LogoutConfirmDialog from "@/components/LogoutConfirmDialog";
+import OnboardingModal from "@/components/OnboardingModal";
 
 // ─── Hook: detecta si estamos en desktop (≥1024px) ───────────────────────────
 function useIsDesktop() {
@@ -643,6 +644,10 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
   // ─── MÓVIL LAYOUT (igual que antes) ──────────────────────────────────────────
   return (
     <ExpertModeContext.Provider value={expertModeValue}><div style={{ width: "100%", maxWidth: "480px", margin: "0 auto", minHeight: "100dvh", background: "#FFF8F0", position: "relative" }}>
+      {/* Onboarding modal — shown automatically to new users who haven't completed it */}
+      {user && profileData.data && profileData.data.user?.onboardingCompleted === false && (
+        <OnboardingModal onClose={() => { /* will re-query profile */ }} />
+      )}
       <a href="#main-content" style={{ position: "fixed", top: "-200px", left: "16px", zIndex: 9999, padding: "8px 16px", background: "#F97316", color: "white", borderRadius: "8px", fontWeight: 700, fontSize: "14px", textDecoration: "none", clip: "rect(0,0,0,0)", overflow: "hidden" }}
         onFocus={(e) => { e.currentTarget.style.top = "16px"; e.currentTarget.style.clip = "auto"; e.currentTarget.style.overflow = "visible"; }}
         onBlur={(e) => { e.currentTarget.style.top = "-200px"; e.currentTarget.style.clip = "rect(0,0,0,0)"; e.currentTarget.style.overflow = "hidden"; }}

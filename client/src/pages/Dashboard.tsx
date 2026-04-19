@@ -157,7 +157,7 @@ export default function Dashboard() {
   const [stepsHidden, setStepsHidden] = useState(() => {
     try { return localStorage.getItem("bm_steps_hidden") === "true"; } catch { return false; }
   });
-  type CustomWidgetType = "racha" | "agua" | "proxima_comida" | "lista_compra" | "buddy_scan";
+  type CustomWidgetType = "racha" | "agua" | "proxima_comida" | "lista_compra" | "buddy_scan" | "progreso_semanal";
   const [customWidgetType, setCustomWidgetType] = useState<CustomWidgetType>(() => {
     try { return (localStorage.getItem("bm_custom_widget") as CustomWidgetType) || "racha"; } catch { return "racha"; }
   });
@@ -225,6 +225,21 @@ export default function Dashboard() {
   const goalCalories = goalCaloriesOverride ?? profileCalorieGoal ?? 2000;
   const waterGoal = 8; // default 8 glasses/day
   const shoppingLists = trpc.shoppingLists.list.useQuery(undefined, { enabled: customWidgetType === "lista_compra" });
+  // Weekly progress data
+  const weekStart = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - d.getDay() + (d.getDay() === 0 ? -6 : 1)); // Monday
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }, []);
+  const weekEnd = useMemo(() => {
+    const d = new Date();
+    d.setDate(d.getDate() - d.getDay() + (d.getDay() === 0 ? 0 : 7)); // Sunday
+    return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+  }, []);
+  const weeklyLogs = trpc.mealLogs.list.useQuery(
+    { startDate: weekStart, endDate: weekEnd },
+    { enabled: customWidgetType === "progreso_semanal" }
+  );
   const levelInfo = trpc.retention.getLevelInfo.useQuery();
   const streakShield = trpc.retention.getStreakShield.useQuery();
   const weeklyChallenges = trpc.retention.getWeeklyChallenges.useQuery();
@@ -663,6 +678,7 @@ export default function Dashboard() {
                     { id: "proxima_comida", emoji: "🍽️", label: "Próxima comida" },
                     { id: "lista_compra", emoji: "🛒", label: "Lista compra" },
                     { id: "buddy_scan", emoji: "📷", label: "BuddyScan" },
+                    { id: "progreso_semanal", emoji: "📊", label: "Semana" },
                   ] as { id: CustomWidgetType; emoji: string; label: string }[]).map(opt => (
                     <button key={opt.id} onClick={() => { setCustomWidgetType(opt.id); try { localStorage.setItem("bm_custom_widget", opt.id); } catch {} setShowWidgetPicker(false); }}
                       style={{ background: customWidgetType === opt.id ? "#FFF7ED" : "#f9fafb", border: customWidgetType === opt.id ? "2px solid #F97316" : "2px solid transparent", borderRadius: "12px", padding: "8px 6px", cursor: "pointer", textAlign: "center", fontSize: "11px", fontWeight: 700, color: customWidgetType === opt.id ? "#F97316" : "#6b7280" }}>
@@ -768,21 +784,74 @@ export default function Dashboard() {
                 );
               })()}
               {customWidgetType === "buddy_scan" && (
-                <Link href="/app/buddy-scan">
-                  <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                    <div style={{ width: "52px", height: "52px", borderRadius: "14px", background: "rgba(139,92,246,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", flexShrink: 0 }}>📷</div>
-                    <div style={{ flex: 1 }}>
-                      <p style={{ margin: 0, fontSize: "11px", color: C.textSecond, fontWeight: 600, textTransform: "uppercase" }}>BuddyScan IA</p>
-                      <p style={{ margin: "2px 0 0", fontSize: "15px", fontWeight: 800, color: C.textPrimary }}>Escanear alimento</p>
-                      <p style={{ margin: "4px 0 0", fontSize: "13px", color: "#8B5CF6", fontWeight: 600 }}>Abrir cámara →</p>
+                <div>
+                  <Link href="/app/buddy-scan">
+                    <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
+                      <div style={{ width: "52px", height: "52px", borderRadius: "14px", background: "rgba(139,92,246,0.12)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "24px", flexShrink: 0 }}>📷</div>
+                      <div style={{ flex: 1 }}>
+                        <p style={{ margin: 0, fontSize: "11px", color: C.textSecond, fontWeight: 600, textTransform: "uppercase" }}>BuddyScan IA</p>
+                        <p style={{ margin: "2px 0 0", fontSize: "15px", fontWeight: 800, color: C.textPrimary }}>Escanear alimento</p>
+                        <p style={{ margin: "4px 0 0", fontSize: "13px", color: "#8B5CF6", fontWeight: 600 }}>Abrir cámara →</p>
+                      </div>
+                    </div>
+                  </Link>
+                </div>
+              )}
+              {customWidgetType === "progreso_semanal" && (() => {
+                const calorieGoal = profileData.data?.dailyCalorieGoal ?? 2000;
+                // Build a map of calories per day this week
+                const dayNames = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
+                const today = new Date();
+                const mondayOffset = today.getDay() === 0 ? -6 : 1 - today.getDay();
+                const days = Array.from({ length: 7 }, (_, i) => {
+                  const d = new Date(today);
+                  d.setDate(today.getDate() + mondayOffset + i);
+                  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;
+                });
+                const calsByDay: Record<string, number> = {};
+                (weeklyLogs.data ?? []).forEach((log: any) => {
+                  const d = log.logDate?.split('T')[0] ?? log.logDate;
+                  calsByDay[d] = (calsByDay[d] ?? 0) + (log.calories ?? 0);
+                });
+                const todayStr = `${today.getFullYear()}-${String(today.getMonth()+1).padStart(2,'0')}-${String(today.getDate()).padStart(2,'0')}`;
+                const totalThisWeek = days.reduce((s, d) => s + (calsByDay[d] ?? 0), 0);
+                const daysLogged = days.filter(d => (calsByDay[d] ?? 0) > 0 && d <= todayStr).length;
+                return (
+                  <div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '12px' }}>
+                      <div>
+                        <p style={{ margin: 0, fontSize: '13px', color: C.textSecond, fontWeight: 600 }}>Esta semana</p>
+                        <p style={{ margin: '2px 0 0', fontSize: '22px', fontWeight: 900, color: C.textPrimary, letterSpacing: '-0.03em' }}>{totalThisWeek.toLocaleString()} <span style={{ fontSize: '13px', fontWeight: 600, color: C.textSecond }}>kcal</span></p>
+                      </div>
+                      <span style={{ fontSize: '28px' }}>📊</span>
+                    </div>
+                    <div style={{ display: 'flex', gap: '4px', alignItems: 'flex-end', height: '60px', marginBottom: '8px' }}>
+                      {days.map((d, i) => {
+                        const cals = calsByDay[d] ?? 0;
+                        const pct = calorieGoal > 0 ? Math.min(cals / calorieGoal, 1.3) : 0;
+                        const isToday = d === todayStr;
+                        const isFuture = d > todayStr;
+                        const barColor = isFuture ? (isDark ? 'rgba(255,255,255,0.06)' : '#F3F4F6') :
+                          cals === 0 ? (isDark ? 'rgba(255,255,255,0.1)' : '#E5E7EB') :
+                          pct > 1.05 ? '#EF4444' :
+                          pct >= 0.85 ? '#22C55E' : '#F97316';
+                        return (
+                          <div key={d} style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '3px' }}>
+                            <div style={{ width: '100%', height: '48px', borderRadius: '6px', background: isDark ? 'rgba(255,255,255,0.06)' : '#F3F4F6', display: 'flex', alignItems: 'flex-end', overflow: 'hidden', border: isToday ? '2px solid #F97316' : '2px solid transparent' }}>
+                              {pct > 0 && <div style={{ width: '100%', height: `${Math.max(pct * 100, 8)}%`, background: barColor, borderRadius: '4px', transition: 'height 0.5s' }} />}
+                            </div>
+                            <span style={{ fontSize: '10px', fontWeight: isToday ? 800 : 600, color: isToday ? '#F97316' : C.textMuted }}>{dayNames[i]}</span>
+                          </div>
+                        );
+                      })}
+                    </div>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '8px 10px', borderRadius: '10px', background: isDark ? 'rgba(255,255,255,0.04)' : '#F9FAFB', border: `1px solid ${C.cardBorder}` }}>
+                      <span style={{ fontSize: '12px', color: C.textMuted }}>{daysLogged} días registrados</span>
+                      <Link href="/app/meal-log"><span style={{ fontSize: '12px', fontWeight: 700, color: '#F97316' }}>Registrar hoy →</span></Link>
                     </div>
                   </div>
-                </Link>
-              )}
-            </div>
-
-            {/* Expiring items alert */}
-            {((inventoryList.data?.filter((item: any) => {
+                );
+              })()}            {((inventoryList.data?.filter((item: any) => {
               if (!item.item?.expirationDate) return false;
               const exp = new Date(item.item.expirationDate);
               const diff = (exp.getTime() - Date.now()) / (1000 * 60 * 60 * 24);

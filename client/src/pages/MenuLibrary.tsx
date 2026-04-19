@@ -51,6 +51,21 @@ const GOAL_LABELS: Record<string, string> = {
   vegano: "Vegano",
 };
 
+// Detect special diet badges from menu name
+function getDietBadges(name: string): Array<{ label: string; color: string; emoji: string }> {
+  const n = name.toLowerCase();
+  const badges: Array<{ label: string; color: string; emoji: string }> = [];
+  if (n.includes('keto') || n.includes('cetogénico')) badges.push({ label: 'Keto', color: 'bg-yellow-100 text-yellow-800', emoji: '🥑' });
+  if (n.includes('sin gluten') || n.includes('gluten free') || n.includes('celiaco')) badges.push({ label: 'Sin Gluten', color: 'bg-amber-100 text-amber-800', emoji: '🌾' });
+  if (n.includes('vegano') || n.includes('vegan')) badges.push({ label: 'Vegano', color: 'bg-green-100 text-green-800', emoji: '🌱' });
+  if (n.includes('vegetariano')) badges.push({ label: 'Vegetariano', color: 'bg-lime-100 text-lime-800', emoji: '🥦' });
+  if (n.includes('familiar') || n.includes('familia')) badges.push({ label: 'Familiar', color: 'bg-blue-100 text-blue-800', emoji: '👨‍👩‍👧' });
+  if (n.includes('deportista') || n.includes('deporte') || n.includes('atleta')) badges.push({ label: 'Deportista', color: 'bg-red-100 text-red-800', emoji: '🏃' });
+  if (n.includes('mediterráneo') || n.includes('mediterraneo')) badges.push({ label: 'Mediterráneo', color: 'bg-cyan-100 text-cyan-800', emoji: '🌊' });
+  if (n.includes('alto en proteína') || n.includes('alto proteína') || n.includes('proteico')) badges.push({ label: 'Alto en Proteínas', color: 'bg-purple-100 text-purple-800', emoji: '💪' });
+  return badges;
+}
+
 const GOAL_GRADIENTS: Record<string, string> = {
   perdida_peso: "from-blue-500 to-cyan-400",
   ganancia_muscular: "from-red-500 to-orange-400",
@@ -391,6 +406,11 @@ function MenuCard({
                   {GOAL_LABELS[menu.goal] || menu.goal}
                 </Badge>
               )}
+              {getDietBadges(menu.name).map((b) => (
+                <Badge key={b.label} className={`text-xs ${b.color}`}>
+                  {b.emoji} {b.label}
+                </Badge>
+              ))}
               {menu.dailyCalories && (
                 <span className="text-xs text-muted-foreground bg-muted/30 px-2 py-0.5 rounded-full">
                   🔥 {menu.dailyCalories} kcal

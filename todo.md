@@ -2862,3 +2862,42 @@
 - [ ] Revisar que los macros (proteínas/carbos/grasas) sumen correctamente a las calorías
 - [ ] Revisar que los desayunos/meriendas no tengan platos de comida principal
 - [ ] Revisar textos de IA para que sean positivos y motivadores
+
+## Mejoras masivas (Abril 2026)
+
+### Bloque 1 - Diario
+- [ ] Calorías automáticas con IA en registro manual del diario (estimar kcal/macros al escribir nombre del alimento)
+- [ ] Registro por voz en el diario (botón micrófono → transcripción → cálculo de calorías)
+
+### Bloque 2 - Menús
+- [ ] Filtros en biblioteca de menús (chips por tipo: Keto, Vegano, Sin Gluten, Familiar, Deportista, Pérdida de peso)
+- [ ] Etiquetas/badges en tarjetas de menú (Vegano, Sin Gluten, Keto, Alto en Proteínas)
+- [ ] Lista de la compra inteligente desde menú semanal activo (agrupada por sección del supermercado)
+
+### Bloque 3 - Dashboard
+- [ ] Widget de progreso semanal en dashboard (gráfico de barras calorías día a día vs objetivo)
+- [ ] Notificaciones push web (complementar emails de retención con push del navegador)
+
+### Bloque 4 - Onboarding
+- [ ] Onboarding guiado para nuevos usuarios (flujo 4 pasos: objetivo → restricciones → actividad → primer menú recomendado)
+
+### Bloque 5 - Contenido
+- [ ] Más recetas en categorías escasas (Sushi, Pizzas, Mariscos, Bowls - 10-15 recetas por categoría)
+- [ ] Campo tiempo de preparación en recetas + filtro "menos de 20 min" en biblioteca
+
+### Bloque 6 - Stripe
+- [ ] Página de historial de pagos (/app/payments) con suscripciones y pagos anteriores
+
+## Mejoras masivas implementadas (19 Abril 2026)
+
+- [x] Calorías automáticas con IA en registro manual del diario (endpoint estimateFromText + debounce en frontend)
+- [x] Registro por voz en el diario (botón de micrófono + endpoint transcribeVoice)
+- [x] Badges de dieta en tarjetas de menú (Keto, Sin Gluten, Vegano, Familiar)
+- [x] Onboarding guiado integrado en AppLayout (se muestra automáticamente a nuevos usuarios)
+- [x] Widget de progreso semanal en Dashboard (calorías día a día vs objetivo)
+- [x] Página de historial de pagos Stripe (/app/payment-history)
+- [x] Enlace a historial de pagos en perfil de usuario
+- [x] 18 recetas nuevas generadas con IA e imágenes (Sushi, Pizzas, Mariscos, Guisos, Smoothie bowls, Parrilla, Postres)
+- [x] Total recetas: 320 (todas con imagen y categoría)
+- [ ] Notificaciones push web para recordatorio de racha (pendiente)
+- [ ] Lista de la compra inteligente desde menú activo con agrupación por sección (pendiente)

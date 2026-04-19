@@ -99,6 +99,7 @@ const EventMenuPlanner = lazy(() => import("./pages/EventMenuPlanner"));
 const SavedEvents = lazy(() => import("./pages/SavedEvents"));
 const Complements = lazy(() => import("./pages/Complements"));
 const Badges = lazy(() => import("./pages/Badges"));
+const PaymentHistory = lazy(() => import("./pages/PaymentHistory"));
 const BuddyScan = lazy(() => import("./pages/BuddyScan"));
 const InstallAppBanner = lazy(() => import("./components/InstallAppBanner"));
 const Herramientas = lazy(() => import("./pages/Herramientas"));
@@ -213,6 +214,7 @@ function Router() {
       <Route path="/app/admin/content">{() => <ProtectedRoute component={AdminContent} />}</Route>
       <Route path="/app/admin/logs">{() => <ProtectedRoute component={AdminLogs} />}</Route>
       <Route path="/app/subscription">{() => <ProtectedRoute component={Subscription} />}</Route>
+      <Route path="/app/payment-history">{() => <ProtectedRoute component={PaymentHistory} />}</Route>
       <Route path="/app/buddy-experts">{() => <ProtectedRoute component={BuddyExperts} />}</Route>
       <Route path="/app/buddy-makers">{() => <ProtectedRoute component={BuddyMakers} />}</Route>
       <Route path="/app/buddy-ia">{() => <ProtectedRoute component={BuddyIA} />}</Route>

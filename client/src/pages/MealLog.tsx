@@ -184,7 +184,59 @@ export default function MealLog() {
   const [dateOffset, setDateOffset] = useState(0);
   const [showCalendar, setShowCalendar] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
-  const [addMode, setAddMode] = useState<"manual" | "photo" | "barcode">("manual");
+  const [addMode, setAddMode] = useState<"manual" | "photo" | "barcode" | "voice">("manual");
+  const [isRecording, setIsRecording] = useState(false);
+  const [voiceTranscript, setVoiceTranscript] = useState("");
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+
+  const transcribeAndEstimate = trpc.mealLogs.transcribeVoice.useMutation({
+    onSuccess: (data) => {
+      if (data.transcript) {
+        setVoiceTranscript(data.transcript);
+        setMealName(data.mealName || data.transcript);
+        setCalories(String(data.calories || ""));
+        setProteins(String(data.proteins || ""));
+        setCarbs(String(data.carbs || ""));
+        setFats(String(data.fats || ""));
+        setEstimateApplied(true);
+        setAddMode("manual");
+        toast.success(`🎙️ Voz reconocida: ${data.transcript}`);
+      }
+    },
+    onError: () => {
+      toast.error("No se pudo transcribir el audio. Inténtalo de nuevo.");
+    },
+  });
+
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      audioChunksRef.current = [];
+      const recorder = new MediaRecorder(stream, { mimeType: 'audio/webm' });
+      recorder.ondataavailable = (e) => { if (e.data.size > 0) audioChunksRef.current.push(e.data); };
+      recorder.onstop = async () => {
+        const blob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          const base64 = (reader.result as string).split(',')[1];
+          transcribeAndEstimate.mutate({ audioBase64: base64 });
+        };
+        reader.readAsDataURL(blob);
+        stream.getTracks().forEach(t => t.stop());
+      };
+      mediaRecorderRef.current = recorder;
+      recorder.start();
+      setIsRecording(true);
+    } catch {
+      toast.error("No se pudo acceder al micrófono. Comprueba los permisos.");
+    }
+  };
+
+  const stopRecording = () => {
+    mediaRecorderRef.current?.stop();
+    setIsRecording(false);
+  };
   const [showBarcodeScanner, setShowBarcodeScanner] = useState(false);
 
   // Manual form state
@@ -194,6 +246,26 @@ export default function MealLog() {
   const [carbs, setCarbs] = useState("");
   const [fats, setFats] = useState("");
   const [selectedDayPart, setSelectedDayPart] = useState("1");
+
+  // AI text estimation state
+  const [isEstimating, setIsEstimating] = useState(false);
+  const [estimateApplied, setEstimateApplied] = useState(false);
+  const estimateDebounceRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  const estimateFromText = trpc.mealLogs.estimateFromText.useMutation({
+    onSuccess: (data) => {
+      setCalories(String(data.calories));
+      setProteins(String(data.proteins));
+      setCarbs(String(data.carbs));
+      setFats(String(data.fats));
+      setMealName(data.mealName);
+      setEstimateApplied(true);
+      setIsEstimating(false);
+    },
+    onError: () => {
+      setIsEstimating(false);
+    },
+  });
 
   // Photo/AI state
   const [photoPreview, setPhotoPreview] = useState<string | null>(null);
@@ -313,6 +385,9 @@ export default function MealLog() {
     setPhotoBase64(null);
     setAiResult(null);
     setAddMode("manual");
+    setIsEstimating(false);
+    setEstimateApplied(false);
+    if (estimateDebounceRef.current) clearTimeout(estimateDebounceRef.current);
     setFeedbackRating(0);
     setFeedbackAccurate(null);
     setFeedbackComment("");
@@ -848,26 +923,65 @@ export default function MealLog() {
             </div>
 
             {/* Mode selector */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: "8px", marginBottom: "16px", width: "100%" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "6px", marginBottom: "16px", width: "100%" }}>
               <button
                 onClick={() => setAddMode("manual")}
-                style={{ padding: "10px 4px", borderRadius: "14px", border: "none", cursor: "pointer", fontSize: "13px", fontWeight: 700, background: addMode === "manual" ? "#F97316" : "#f3f4f6", color: addMode === "manual" ? "white" : "#6b7280", transition: "all 0.2s", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
+                style={{ padding: "10px 4px", borderRadius: "14px", border: "none", cursor: "pointer", fontSize: "12px", fontWeight: 700, background: addMode === "manual" ? "#F97316" : "#f3f4f6", color: addMode === "manual" ? "white" : "#6b7280", transition: "all 0.2s", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
               >
                 ✏️ Manual
               </button>
               <button
+                onClick={() => setAddMode("voice")}
+                style={{ padding: "10px 4px", borderRadius: "14px", border: "none", cursor: "pointer", fontSize: "12px", fontWeight: 700, background: addMode === "voice" ? "#8B5CF6" : "#f3f4f6", color: addMode === "voice" ? "white" : "#6b7280", transition: "all 0.2s", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
+              >
+                🎙️ Voz
+              </button>
+              <button
                 onClick={() => setAddMode("photo")}
-                style={{ padding: "10px 4px", borderRadius: "14px", border: "none", cursor: "pointer", fontSize: "13px", fontWeight: 700, background: addMode === "photo" ? "#F97316" : "#f3f4f6", color: addMode === "photo" ? "white" : "#6b7280", transition: "all 0.2s", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
+                style={{ padding: "10px 4px", borderRadius: "14px", border: "none", cursor: "pointer", fontSize: "12px", fontWeight: 700, background: addMode === "photo" ? "#F97316" : "#f3f4f6", color: addMode === "photo" ? "white" : "#6b7280", transition: "all 0.2s", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
               >
                 📸 Foto IA
               </button>
               <button
                 onClick={() => { setAddMode("barcode"); setShowBarcodeScanner(true); }}
-                style={{ padding: "10px 4px", borderRadius: "14px", border: "none", cursor: "pointer", fontSize: "13px", fontWeight: 700, background: addMode === "barcode" ? "#F97316" : "#f3f4f6", color: addMode === "barcode" ? "white" : "#6b7280", transition: "all 0.2s", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
+                style={{ padding: "10px 4px", borderRadius: "14px", border: "none", cursor: "pointer", fontSize: "12px", fontWeight: 700, background: addMode === "barcode" ? "#F97316" : "#f3f4f6", color: addMode === "barcode" ? "white" : "#6b7280", transition: "all 0.2s", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}
               >
                 🔍 Código
               </button>
             </div>
+
+            {/* Voice mode */}
+            {addMode === "voice" && (
+              <div style={{ marginBottom: "16px", textAlign: "center" }}>
+                <div style={{ background: isRecording ? "#FEF2F2" : "#F5F3FF", borderRadius: 20, padding: "28px 20px", border: `2px solid ${isRecording ? "#FECACA" : "#DDD6FE"}` }}>
+                  <div style={{ fontSize: 56, marginBottom: 12 }}>{isRecording ? "🔴" : "🎙️"}</div>
+                  <p style={{ margin: "0 0 8px", fontWeight: 800, fontSize: 16, color: isRecording ? "#DC2626" : "#7C3AED" }}>
+                    {isRecording ? "Grabando... habla ahora" : "Pulsa para hablar"}
+                  </p>
+                  <p style={{ margin: "0 0 20px", fontSize: 13, color: "#6b7280" }}>
+                    {isRecording ? "Di lo que has comido, ej: \"dos huevos revueltos con tostadas\"" : "La IA transcribirá y calculará las calorías automáticamente"}
+                  </p>
+                  {transcribeAndEstimate.isPending ? (
+                    <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 8, color: "#7C3AED", fontWeight: 700 }}>
+                      <div style={{ width: 20, height: 20, border: "2px solid #7C3AED", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+                      Analizando audio...
+                    </div>
+                  ) : (
+                    <button
+                      onClick={isRecording ? stopRecording : startRecording}
+                      style={{ background: isRecording ? "#DC2626" : "#7C3AED", color: "white", border: "none", borderRadius: 16, padding: "14px 32px", fontSize: 15, fontWeight: 800, cursor: "pointer", boxShadow: `0 4px 16px ${isRecording ? "rgba(220,38,38,0.4)" : "rgba(124,58,237,0.4)"}` }}
+                    >
+                      {isRecording ? "⏹️ Detener y analizar" : "🎙️ Iniciar grabación"}
+                    </button>
+                  )}
+                  {voiceTranscript && (
+                    <p style={{ marginTop: 16, fontSize: 13, color: "#374151", background: "white", borderRadius: 10, padding: "8px 12px", fontStyle: "italic" }}>
+                      "{voiceTranscript}"
+                    </p>
+                  )}
+                </div>
+              </div>
+            )}
 
             {/* Photo mode */}
             {addMode === "photo" && (
@@ -1219,12 +1333,41 @@ export default function MealLog() {
             {/* Common form fields (shown in both modes, or after AI analysis) */}
             {(addMode === "manual" || aiResult) && (
               <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-                <input
-                  value={mealName}
-                  onChange={e => setMealName(e.target.value)}
-                  placeholder={t("mealLog.whatDidYouEat", "What did you eat? (e.g.: Chicken salad)")}
-                  style={{ width: "100%", padding: "12px 14px", borderRadius: "14px", border: "2px solid #f3f4f6", fontSize: "14px", outline: "none", boxSizing: "border-box", fontWeight: 600 }}
-                />
+                <div style={{ position: "relative" }}>
+                  <input
+                    value={mealName}
+                    onChange={e => {
+                      const val = e.target.value;
+                      setMealName(val);
+                      setEstimateApplied(false);
+                      if (estimateDebounceRef.current) clearTimeout(estimateDebounceRef.current);
+                      if (val.trim().length >= 3) {
+                        setIsEstimating(true);
+                        estimateDebounceRef.current = setTimeout(() => {
+                          estimateFromText.mutate({ text: val.trim() });
+                        }, 1200);
+                      } else {
+                        setIsEstimating(false);
+                      }
+                    }}
+                    placeholder="¿Qué has comido? (ej: 2 huevos revueltos, pizza margarita...)"
+                    style={{ width: "100%", padding: "12px 44px 12px 14px", borderRadius: "14px", border: `2px solid ${estimateApplied ? '#10B981' : '#f3f4f6'}`, fontSize: "14px", outline: "none", boxSizing: "border-box", fontWeight: 600, transition: "border-color 0.2s" }}
+                  />
+                  <div style={{ position: "absolute", right: "12px", top: "50%", transform: "translateY(-50%)", pointerEvents: "none" }}>
+                    {isEstimating ? (
+                      <div style={{ width: 20, height: 20, border: "2px solid #F97316", borderTopColor: "transparent", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+                    ) : estimateApplied ? (
+                      <span style={{ fontSize: 18 }}>✅</span>
+                    ) : mealName.trim().length >= 3 ? (
+                      <span style={{ fontSize: 16 }}>🤖</span>
+                    ) : null}
+                  </div>
+                </div>
+                {estimateApplied && (
+                  <div style={{ background: "#F0FDF4", border: "1.5px solid #86EFAC", borderRadius: 12, padding: "8px 12px", fontSize: 12, color: "#166534", fontWeight: 600 }}>
+                    ✨ Calorías estimadas por IA — puedes ajustar los valores si lo necesitas
+                  </div>
+                )}
                 <select
                   value={selectedDayPart}
                   onChange={e => setSelectedDayPart(e.target.value)}

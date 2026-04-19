@@ -4172,6 +4172,125 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
         }
       }),
 
+    transcribeVoice: protectedProcedure
+      .input(z.object({
+        audioBase64: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        try {
+          // Upload audio to S3 temporarily
+          const { storagePut } = await import('./storage');
+          const audioBuffer = Buffer.from(input.audioBase64, 'base64');
+          const fileKey = `voice-logs/tmp-${Date.now()}.webm`;
+          const { url: audioUrl } = await storagePut(fileKey, audioBuffer, 'audio/webm');
+
+          // Transcribe with Whisper
+          const { transcribeAudio } = await import('./_core/voiceTranscription');
+          const transcription = await transcribeAudio({ audioUrl, language: 'es' });
+          const transcript = transcription.text?.trim() || '';
+
+          if (!transcript) {
+            return { transcript: '', mealName: '', calories: 0, proteins: 0, carbs: 0, fats: 0 };
+          }
+
+          // Estimate nutrition from transcript
+          const { invokeLLM } = await import('./_core/llm');
+          const response = await invokeLLM({
+            messages: [
+              { role: 'system', content: 'Eres un nutricionista experto. Responde siempre con JSON válido.' },
+              { role: 'user', content: `El usuario ha dicho: "${transcript}". Estima los valores nutricionales.\nResponde SOLO con JSON: {"mealName":"...","calories":0,"proteins":0,"carbs":0,"fats":0}` },
+            ],
+            response_format: { type: 'json_schema', json_schema: {
+              name: 'voice_nutrition',
+              strict: true,
+              schema: {
+                type: 'object',
+                properties: {
+                  mealName: { type: 'string' },
+                  calories: { type: 'number' },
+                  proteins: { type: 'number' },
+                  carbs: { type: 'number' },
+                  fats: { type: 'number' },
+                },
+                required: ['mealName', 'calories', 'proteins', 'carbs', 'fats'],
+                additionalProperties: false,
+              },
+            }},
+          });
+          const content = response.choices?.[0]?.message?.content;
+          const data = typeof content === 'string' ? JSON.parse(content) : (content || {});
+          return {
+            transcript,
+            mealName: String(data.mealName || transcript),
+            calories: Math.round(Number(data.calories) || 0),
+            proteins: Math.round(Number(data.proteins) || 0),
+            carbs: Math.round(Number(data.carbs) || 0),
+            fats: Math.round(Number(data.fats) || 0),
+          };
+        } catch (e) {
+          console.error('[transcribeVoice] error:', e);
+          throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'Error al procesar el audio' });
+        }
+      }),
+
+    estimateFromText: protectedProcedure
+      .input(z.object({
+        text: z.string().min(2).max(300),
+      }))
+      .mutation(async ({ input }) => {
+        const { invokeLLM } = await import('./_core/llm');
+        const prompt = `Eres un nutricionista experto. El usuario ha escrito: "${input.text}".
+Estima los valores nutricionales aproximados para esa comida/alimento.
+Responde SOLO con JSON válido, sin texto adicional:
+{
+  "mealName": "nombre normalizado del alimento",
+  "calories": número,
+  "proteins": número en gramos,
+  "carbs": número en gramos,
+  "fats": número en gramos,
+  "confidence": "alta" | "media" | "baja"
+}`;
+        try {
+          const response = await invokeLLM({
+            messages: [
+              { role: 'system', content: 'Eres un nutricionista experto. Responde siempre con JSON válido.' },
+              { role: 'user', content: prompt },
+            ],
+            response_format: { type: 'json_schema', json_schema: {
+              name: 'nutrition_estimate',
+              strict: true,
+              schema: {
+                type: 'object',
+                properties: {
+                  mealName: { type: 'string' },
+                  calories: { type: 'number' },
+                  proteins: { type: 'number' },
+                  carbs: { type: 'number' },
+                  fats: { type: 'number' },
+                  confidence: { type: 'string' },
+                },
+                required: ['mealName', 'calories', 'proteins', 'carbs', 'fats', 'confidence'],
+                additionalProperties: false,
+              },
+            }},
+          });
+          const content = response.choices?.[0]?.message?.content;
+          if (!content) throw new Error('No response from LLM');
+          const data = typeof content === 'string' ? JSON.parse(content) : content;
+          return {
+            mealName: String(data.mealName || input.text),
+            calories: Math.round(Number(data.calories) || 0),
+            proteins: Math.round(Number(data.proteins) || 0),
+            carbs: Math.round(Number(data.carbs) || 0),
+            fats: Math.round(Number(data.fats) || 0),
+            confidence: String(data.confidence || 'media'),
+          };
+        } catch (e) {
+          console.error('[estimateFromText] error:', e);
+          throw new TRPCError({ code: 'INTERNAL_SERVER_ERROR', message: 'No se pudo estimar las calorías' });
+        }
+      }),
+
     submitAIFeedback: protectedProcedure
       .input(z.object({
         mealLogId: z.number().optional(),
@@ -4428,6 +4547,65 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
         console.log(`[Google IAP] Activated plan=${result.plan} env=${result.environment} for user=${ctx.user.id} orderId=${result.orderId}`);
         return { success: true, plan: result.plan, environment: result.environment, expiresAt: result.expiresAt };
       }),
+
+    // ── Historial de pagos del usuario normal ─────────────────────────────────
+    getUserPayments: protectedProcedure.query(async ({ ctx }) => {
+      try {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return { payments: [], subscription: null };
+        const { userSubscriptions } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        // Get subscription from DB
+        const sub = await db.getUserSubscription(ctx.user.id);
+        // If user has a stripeCustomerId, fetch invoices from Stripe
+        const [subRow] = await drizzleDb.select().from(userSubscriptions).where(eq(userSubscriptions.userId, ctx.user.id)).limit(1);
+        let stripePayments: any[] = [];
+        if (subRow?.stripeCustomerId) {
+          try {
+            const Stripe = (await import("stripe")).default;
+            const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
+            const invoices = await stripe.invoices.list({ customer: subRow.stripeCustomerId, limit: 24 });
+            stripePayments = invoices.data
+              .filter(inv => inv.status === 'paid')
+              .map(inv => ({
+                id: inv.id,
+                amount: inv.amount_paid,
+                currency: inv.currency,
+                status: inv.status,
+                description: inv.lines?.data?.[0]?.description ?? 'Suscripción BuddyMarket',
+                created: inv.created,
+                receiptUrl: inv.hosted_invoice_url ?? null,
+                pdfUrl: inv.invoice_pdf ?? null,
+                periodStart: inv.period_start,
+                periodEnd: inv.period_end,
+              }));
+          } catch (e: any) {
+            console.error('[Stripe] getUserPayments invoices error:', e.message);
+          }
+        }
+        // Also include IAP payments from DB if any
+        const iapPayments = subRow?.iapPlatform ? [{
+          id: subRow.iapTransactionId ?? 'iap-' + subRow.id,
+          amount: null,
+          currency: null,
+          status: subRow.status,
+          description: `Suscripción ${subRow.plan} (${subRow.iapPlatform === 'apple' ? 'App Store' : 'Google Play'})`,
+          created: subRow.createdAt ? Math.floor(new Date(subRow.createdAt).getTime() / 1000) : null,
+          receiptUrl: null,
+          pdfUrl: null,
+          periodStart: subRow.currentPeriodStart ? Math.floor(new Date(subRow.currentPeriodStart).getTime() / 1000) : null,
+          periodEnd: subRow.currentPeriodEnd ? Math.floor(new Date(subRow.currentPeriodEnd).getTime() / 1000) : null,
+          platform: subRow.iapPlatform,
+        }] : [];
+        return {
+          payments: [...stripePayments, ...iapPayments],
+          subscription: sub ?? null,
+        };
+      } catch (err: any) {
+        console.error('[Stripe] getUserPayments error:', err?.message);
+        return { payments: [], subscription: null };
+      }
+    }),
   }),
   // ---------------------------------------------------------------------------
   // HEALTH METRICS
