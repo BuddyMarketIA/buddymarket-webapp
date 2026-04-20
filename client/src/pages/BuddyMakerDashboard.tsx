@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "@/components/sonner-a11y-shim";
@@ -98,21 +98,21 @@ export default function BuddyMakerDashboard() {
     onError: (e) => { toast.error("Error al abrir el dashboard: " + e.message); },
   });
 
-  // Populate form when profile loads
-  const [profileLoaded, setProfileLoaded] = useState(false);
-  if (myProfile && !profileLoaded) {
-    setProfileLoaded(true);
-    setProfileForm({
-      displayName: myProfile.displayName ?? "",
-      bio: myProfile.bio ?? "",
-      specialty: myProfile.specialty ?? "",
-      avatarUrl: myProfile.avatarUrl ?? "",
-      coverUrl: myProfile.coverUrl ?? "",
-      instagramHandle: myProfile.instagramHandle ?? "",
-      youtubeHandle: myProfile.youtubeHandle ?? "",
-      tiktokHandle: myProfile.tiktokHandle ?? "",
-    });
-  }
+  // Populate form when profile loads — use useEffect to avoid setState during render
+  useEffect(() => {
+    if (myProfile) {
+      setProfileForm({
+        displayName: myProfile.displayName ?? "",
+        bio: myProfile.bio ?? "",
+        specialty: myProfile.specialty ?? "",
+        avatarUrl: myProfile.avatarUrl ?? "",
+        coverUrl: myProfile.coverUrl ?? "",
+        instagramHandle: myProfile.instagramHandle ?? "",
+        youtubeHandle: myProfile.youtubeHandle ?? "",
+        tiktokHandle: myProfile.tiktokHandle ?? "",
+      });
+    }
+  }, [myProfile]);
 
   const { data: myRecipes, refetch: refetchRecipes } = trpc.buddyMakers.getMyRecipes.useQuery(undefined, {
     enabled: !!user && !!myProfile,

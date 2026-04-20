@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "@/components/sonner-a11y-shim";
@@ -92,21 +92,21 @@ export default function BuddyExpertDashboard() {
     onError: (e) => { toast.error("Error al abrir el dashboard: " + e.message); },
   });
 
-  // Populate form when profile loads
-  const [profileLoaded, setProfileLoaded] = useState(false);
-  if (myProfile && !profileLoaded) {
-    setProfileLoaded(true);
-    setProfileForm({
-      displayName: myProfile.displayName ?? "",
-      bio: myProfile.bio ?? "",
-      specialty: myProfile.specialty ?? "",
-      avatarUrl: myProfile.avatarUrl ?? "",
-      coverUrl: myProfile.coverUrl ?? "",
-      category: (myProfile.category as Category) ?? "dieta_equilibrada",
-      instagramHandle: myProfile.instagramHandle ?? "",
-      websiteUrl: myProfile.websiteUrl ?? "",
-    });
-  }
+  // Populate form when profile loads — use useEffect to avoid setState during render
+  useEffect(() => {
+    if (myProfile) {
+      setProfileForm({
+        displayName: myProfile.displayName ?? "",
+        bio: myProfile.bio ?? "",
+        specialty: myProfile.specialty ?? "",
+        avatarUrl: myProfile.avatarUrl ?? "",
+        coverUrl: myProfile.coverUrl ?? "",
+        category: (myProfile.category as Category) ?? "dieta_equilibrada",
+        instagramHandle: myProfile.instagramHandle ?? "",
+        websiteUrl: myProfile.websiteUrl ?? "",
+      });
+    }
+  }, [myProfile]);
 
   const { data: myMenus, refetch: refetchMenus } = trpc.buddyExperts.getMyMenus.useQuery(undefined, {
     enabled: !!user && !!myProfile,
