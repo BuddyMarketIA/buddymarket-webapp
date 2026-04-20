@@ -428,11 +428,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
     {
       label: "Menús",
       items: [
-        { key: "/app/menus", label: "Mis Menús", to: "/app/menus", emoji: "📅" },
-        { key: "/app/menu-library", label: t("sidebar.menuLibrary"), to: "/app/menu-library", emoji: "📚" },
-        { key: "/app/specialized-menus", label: t("sidebar.specializedMenus"), to: "/app/specialized-menus", emoji: "🏥" },
-        { key: "/app/event-menu", label: t("sidebar.eventMenu"), to: "/app/event-menu", emoji: "🎉" },
-        { key: "/app/saved-events", label: "Mis Eventos Guardados", to: "/app/saved-events", emoji: "⭐" },
+        { key: "/app/menus", label: "Mis Menús", to: "/app/menus", emoji: "📅", matches: ["/app/menus", "/app/menu-library", "/app/active-menu", "/app/my-menus", "/app/specialized-menus", "/app/event-menu", "/app/saved-events"] },
       ],
     },
     {

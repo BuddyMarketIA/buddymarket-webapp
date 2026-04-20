@@ -2911,3 +2911,11 @@
 - [ ] Generar imágenes únicas con IA para cada receta (generación en paralelo)
 - [ ] Subir imágenes a S3 y actualizar imageUrl en BD
 - [ ] Verificar resultado visual en la app
+
+## Sprint Rediseño Menús con 3 Tabs (completado)
+- [x] Rediseñar Menus.tsx con 3 tabs claras: "En curso", "Mis menús guardados", "Explorar todos los menús"
+- [x] Tab "En curso": menú activo con planificador semanal, slots de comidas, botón "Aplicar al diario"
+- [x] Tab "Mis menús": lista de menús guardados con acciones (activar, renombrar, duplicar, eliminar, aplicar al diario)
+- [x] Tab "Explorar": búsqueda y filtros por categoría, accesos rápidos a menús médicos y eventos, botón "Guardar"
+- [x] Simplificar sidebar: de 5 entradas de menús a 1 sola entrada "Mis Menús"
+- [x] Corregir toggle Usuario/Profesional: solo visible para usuarios con role === "buddyexpert"
