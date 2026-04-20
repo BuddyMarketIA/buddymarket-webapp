@@ -877,17 +877,38 @@ export default function Dashboard() {
             {(() => {
               const cr = contextualRecipe.data?.recipe;
               const contextMsg = contextualRecipe.data?.contextMsg || '';
+              const isLoadingRecipe = contextualRecipe.isLoading;
+              const hasError = contextualRecipe.isError;
               return (
                 <div style={{ background: C.cardBg, borderRadius: "20px", overflow: "hidden", boxShadow: C.shadow2 }}>
                   <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", padding: "16px 16px 12px" }}>
                     <div>
                       <h2 style={{ margin: 0, fontSize: "16px", fontWeight: 800, color: C.textPrimary }}>{t("dashboard.recipeOfDay")}</h2>
-                      {contextMsg && <p style={{ margin: "2px 0 0", fontSize: "11px", color: C.textMuted, fontWeight: 600 }}>{contextMsg}</p>}
+                      {contextMsg && !hasError && <p style={{ margin: "2px 0 0", fontSize: "11px", color: C.textMuted, fontWeight: 600 }}>{contextMsg}</p>}
                     </div>
                     <Link href="/app/recipes"><span style={{ fontSize: "13px", fontWeight: 600, color: "#F97316" }}>Ver más →</span></Link>
                   </div>
                   <div style={{ position: "relative", height: "180px" }}>
-                    {cr ? (
+                    {isLoadingRecipe ? (
+                      // Estado de carga
+                      <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "10px", background: C.cardBg2 || "rgba(249,115,22,0.04)" }}>
+                        <div style={{ width: "32px", height: "32px", borderRadius: "50%", border: "3px solid rgba(249,115,22,0.2)", borderTopColor: "#F97316", animation: "spin 0.9s linear infinite" }} />
+                        <p style={{ margin: 0, fontSize: "13px", color: C.textMuted, fontWeight: 500 }}>Buscando tu receta del día...</p>
+                      </div>
+                    ) : hasError ? (
+                      // Estado de error amigable
+                      <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "10px", padding: "16px", background: "rgba(249,115,22,0.04)", borderTop: "1px solid rgba(249,115,22,0.1)" }}>
+                        <span style={{ fontSize: "32px" }}>🍽️</span>
+                        <p style={{ margin: 0, fontSize: "14px", fontWeight: 700, color: C.textPrimary, textAlign: "center" }}>No pudimos cargar la receta de hoy</p>
+                        <p style={{ margin: 0, fontSize: "12px", color: C.textMuted, textAlign: "center", lineHeight: 1.4 }}>Puede que haya un problema de conexión. Prueba a recargar la página.</p>
+                        <button
+                          onClick={() => contextualRecipe.refetch()}
+                          style={{ marginTop: "4px", padding: "8px 16px", borderRadius: "10px", border: "1.5px solid #F97316", background: "transparent", color: "#F97316", fontSize: "13px", fontWeight: 700, cursor: "pointer" }}
+                        >
+                          🔄 Reintentar
+                        </button>
+                      </div>
+                    ) : cr ? (
                       <Link href={`/app/recipes/${cr.id}`} style={{ display: "block", position: "absolute", inset: 0 }}>
                         <div style={{ position: "absolute", inset: 0, background: `linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.75) 100%), url(${cr.imageUrl || 'https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/recipes_afa44a0e.jpg'}) center/cover`, display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "16px", cursor: "pointer" }}>
                           <span style={{ display: "inline-block", background: "#F97316", color: "white", fontSize: "13px", fontWeight: 800, borderRadius: "8px", padding: "3px 8px", marginBottom: "6px", width: "fit-content" }}>Hoy</span>
@@ -1806,8 +1827,41 @@ export default function Dashboard() {
           <h2 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: C.textPrimary, letterSpacing: "-0.02em" }}>{t("dashboard.recipeOfDay")}</h2>
           <Link href="/app/recipes"><span style={{ fontSize: "13px", fontWeight: 600, color: "#F97316" }}>{t("common.seeMore")} →</span></Link>
         </div>
-        <div style={{ position: "relative", borderRadius: "22px", overflow: "hidden", height: "180px", boxShadow: "0 8px 24px rgba(0,0,0,0.15)" }}>
-          {RECIPE_OF_DAY.map((recipe, idx) => (
+        <div style={{ position: "relative", borderRadius: "22px", overflow: "hidden", height: "180px", boxShadow: "0 8px 24px rgba(0,0,0,0.15)", background: C.cardBg }}>
+          {contextualRecipe.isLoading ? (
+            // Estado de carga móvil
+            <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "10px" }}>
+              <div style={{ width: "32px", height: "32px", borderRadius: "50%", border: "3px solid rgba(249,115,22,0.2)", borderTopColor: "#F97316", animation: "spin 0.9s linear infinite" }} />
+              <p style={{ margin: 0, fontSize: "13px", color: C.textMuted, fontWeight: 500 }}>Buscando tu receta del día...</p>
+            </div>
+          ) : contextualRecipe.isError ? (
+            // Estado de error amigable móvil
+            <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "8px", padding: "16px", background: "rgba(249,115,22,0.04)" }}>
+              <span style={{ fontSize: "28px" }}>🍽️</span>
+              <p style={{ margin: 0, fontSize: "14px", fontWeight: 700, color: C.textPrimary, textAlign: "center" }}>No pudimos cargar la receta de hoy</p>
+              <p style={{ margin: 0, fontSize: "12px", color: C.textMuted, textAlign: "center", lineHeight: 1.4 }}>Revisa tu conexión e inténtalo de nuevo.</p>
+              <button
+                onClick={() => contextualRecipe.refetch()}
+                style={{ marginTop: "4px", padding: "7px 14px", borderRadius: "10px", border: "1.5px solid #F97316", background: "transparent", color: "#F97316", fontSize: "13px", fontWeight: 700, cursor: "pointer" }}
+              >
+                🔄 Reintentar
+              </button>
+            </div>
+          ) : contextualRecipe.data?.recipe ? (
+            // Receta contextual de la IA
+            <Link href={`/app/recipes/${contextualRecipe.data.recipe.id}`} style={{ display: "block", position: "absolute", inset: 0 }}>
+              <div style={{ position: "absolute", inset: 0, background: `linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.75) 100%), url(${contextualRecipe.data.recipe.imageUrl || 'https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/recipes_afa44a0e.jpg'}) center/cover`, display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "16px", cursor: "pointer" }}>
+                <span style={{ display: "inline-block", background: "#F97316", color: "white", fontSize: "13px", fontWeight: 800, borderRadius: "8px", padding: "3px 8px", marginBottom: "6px", width: "fit-content" }}>Hoy</span>
+                <p style={{ margin: 0, fontSize: "18px", fontWeight: 900, color: "white", letterSpacing: "-0.02em", textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>{contextualRecipe.data.recipe.name}</p>
+                <div style={{ display: "flex", gap: "12px", marginTop: "4px" }}>
+                  {contextualRecipe.data.recipe.caloriesPerServing && <span style={{ fontSize: "14px", color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>🔥 {contextualRecipe.data.recipe.caloriesPerServing} kcal</span>}
+                  {contextualRecipe.data.recipe.prepTime && <span style={{ fontSize: "14px", color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>⏱ {contextualRecipe.data.recipe.prepTime} min</span>}
+                </div>
+              </div>
+            </Link>
+          ) : null}
+          {/* Fallback carrusel estático (solo si no hay receta IA y no hay error) */}
+          {!contextualRecipe.isLoading && !contextualRecipe.isError && !contextualRecipe.data?.recipe && RECIPE_OF_DAY.map((recipe, idx) => (
             <Link key={idx} href={`/app/recipes/${recipe.id}`} style={{ display: "block", position: "absolute", inset: 0, pointerEvents: idx === recipeIdx ? "auto" : "none" }}>
             <div
               style={{
