@@ -1178,130 +1178,198 @@ export default function Familia() {
   const isOwnerOrAdmin = myMember?.role === "owner" || myMember?.role === "admin";
 
   return (
-    <div className="container max-w-3xl py-8 space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <div className="flex items-center gap-2 mb-1">
-            <Home className="w-5 h-5 text-orange-500" />
-            <h1 className="text-2xl font-bold text-foreground">{household.name}</h1>
-            {isOwnerOrAdmin && (
-              <button
-                onClick={() => { setNewName(household.name); setShowRename(true); }}
-                className="text-muted-foreground hover:text-foreground transition-colors"
-                aria-label="Renombrar hogar"
+    <div className="container max-w-3xl py-6 space-y-5">
+
+      {/* ── Hero banner ─────────────────────────────────────────────────── */}
+      <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-orange-400 via-amber-400 to-orange-500 shadow-lg">
+        {/* decorative circles */}
+        <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/10" />
+        <div className="absolute -bottom-10 -left-6 w-32 h-32 rounded-full bg-white/10" />
+        <div className="relative px-6 py-6">
+          <div className="flex items-start justify-between gap-3">
+            {/* left: name + meta */}
+            <div className="min-w-0">
+              <div className="flex items-center gap-2 mb-1">
+                <div className="w-9 h-9 rounded-xl bg-white/25 flex items-center justify-center shrink-0">
+                  <Home className="w-5 h-5 text-white" />
+                </div>
+                <h1 className="text-2xl font-bold text-white leading-tight truncate">{household.name}</h1>
+                {isOwnerOrAdmin && (
+                  <button
+                    onClick={() => { setNewName(household.name); setShowRename(true); }}
+                    className="text-white/70 hover:text-white transition-colors shrink-0"
+                    aria-label="Renombrar hogar"
+                  >
+                    <Settings className="w-4 h-4" />
+                  </button>
+                )}
+              </div>
+              <p className="text-white/80 text-sm">
+                {household.members.length} miembro{household.members.length !== 1 ? "s" : ""}
+                {household.pendingInvitations.length > 0 && (
+                  <span className="ml-2 bg-white/20 rounded-full px-2 py-0.5 text-xs font-medium">
+                    {household.pendingInvitations.length} invitación{household.pendingInvitations.length !== 1 ? "es" : ""} pendiente{household.pendingInvitations.length !== 1 ? "s" : ""}
+                  </span>
+                )}
+              </p>
+            </div>
+            {/* right: action buttons */}
+            <div className="flex flex-col gap-2 shrink-0">
+              <Button
+                size="sm"
+                onClick={() => setShowPrefs(true)}
+                className="bg-white/20 hover:bg-white/30 text-white border-0 gap-1.5 text-xs h-8"
               >
-                <Settings className="w-4 h-4" />
-              </button>
-            )}
+                <Settings className="w-3.5 h-3.5" /> Mis preferencias
+              </Button>
+              {isOwnerOrAdmin && (
+                <div className="flex gap-1.5">
+                  <Button
+                    size="sm"
+                    onClick={() => setShowFamilyMenu(true)}
+                    className="bg-white/20 hover:bg-white/30 text-white border-0 gap-1 text-xs h-8 flex-1"
+                  >
+                    <Sparkles className="w-3.5 h-3.5" /> Menú IA
+                  </Button>
+                  <Button
+                    size="sm"
+                    onClick={() => setShowInvite(true)}
+                    className="bg-white hover:bg-white/90 text-orange-600 border-0 gap-1 text-xs h-8 font-semibold flex-1"
+                  >
+                    <UserPlus className="w-3.5 h-3.5" /> Invitar
+                  </Button>
+                </div>
+              )}
+            </div>
           </div>
-          <p className="text-sm text-muted-foreground">
-            {household.members.length} miembro{household.members.length !== 1 ? "s" : ""}
-            {household.pendingInvitations.length > 0 && (
-              <span className="ml-2 text-orange-500">
-                · {household.pendingInvitations.length} invitación{household.pendingInvitations.length !== 1 ? "es" : ""} pendiente{household.pendingInvitations.length !== 1 ? "s" : ""}
-              </span>
-            )}
-          </p>
-        </div>
-        <div className="flex gap-2">
-          <Button
-            variant="outline"
-            size="sm"
-            onClick={() => setShowPrefs(true)}
-            className="gap-1"
-          >
-            <Settings className="w-4 h-4" /> Mis preferencias
-          </Button>
-          {isOwnerOrAdmin && (
-            <>
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setShowFamilyMenu(true)}
-                className="gap-1 border-purple-300 text-purple-700 hover:bg-purple-50"
-              >
-                <Sparkles className="w-4 h-4" /> Menú IA
-              </Button>
-              <Button
-                size="sm"
-                onClick={() => setShowInvite(true)}
-                className="bg-orange-500 hover:bg-orange-600 text-white gap-1"
-              >
-                <UserPlus className="w-4 h-4" /> Invitar
-              </Button>
-            </>
-          )}
+
+          {/* Member avatars strip */}
+          <div className="flex items-center gap-2 mt-4">
+            <div className="flex -space-x-2">
+              {household.members.slice(0, 5).map((m) => (
+                <Avatar key={m.id} className="w-8 h-8 border-2 border-white/60 shrink-0">
+                  <AvatarImage src={m.userAvatar ?? undefined} />
+                  <AvatarFallback className="bg-orange-200 text-orange-800 text-xs font-bold">
+                    {(m.displayName ?? m.userName ?? "?")[0].toUpperCase()}
+                  </AvatarFallback>
+                </Avatar>
+              ))}
+              {household.members.length > 5 && (
+                <div className="w-8 h-8 rounded-full border-2 border-white/60 bg-white/20 flex items-center justify-center">
+                  <span className="text-white text-xs font-bold">+{household.members.length - 5}</span>
+                </div>
+              )}
+            </div>
+            <span className="text-white/70 text-xs">
+              {household.members.map((m) => m.displayName ?? m.userName ?? "?").slice(0, 3).join(", ")}
+              {household.members.length > 3 ? " y más" : ""}
+            </span>
+          </div>
         </div>
       </div>
 
-      {/* Members */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base flex items-center gap-2">
+      {/* ── Quick access cards ──────────────────────────────────────────── */}
+      <div className="grid grid-cols-2 gap-3">
+        {[
+          { href: "/app/menus",        label: "Menú semanal",       icon: "🍽️",  color: "from-orange-50 to-amber-50",   border: "border-orange-200",   text: "text-orange-700" },
+          { href: "/app/shopping-list",label: "Lista de la compra", icon: "🛒",  color: "from-green-50 to-emerald-50",  border: "border-green-200",    text: "text-green-700" },
+          { href: "/familia/calendario",label: "Calendario",        icon: "📅",  color: "from-blue-50 to-indigo-50",    border: "border-blue-200",     text: "text-blue-700" },
+          { href: "/familia/mis-recetas",label: "Mis recetas",      icon: "📖",  color: "from-purple-50 to-violet-50",  border: "border-purple-200",   text: "text-purple-700" },
+        ].map((link) => (
+          <Link key={link.href} href={link.href}>
+            <div className={`flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-gradient-to-br ${link.color} border ${link.border} hover:shadow-md transition-all cursor-pointer group min-h-[90px]`}>
+              <span className="text-3xl">{link.icon}</span>
+              <span className={`text-xs font-semibold ${link.text} text-center leading-tight`}>{link.label}</span>
+            </div>
+          </Link>
+        ))}
+      </div>
+
+      {/* ── Members ─────────────────────────────────────────────────────── */}
+      <div>
+        <div className="flex items-center justify-between mb-3">
+          <h2 className="text-base font-bold text-foreground flex items-center gap-2">
             <Users className="w-4 h-4 text-orange-500" /> Miembros del hogar
-          </CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-3">
+          </h2>
+          {isOwnerOrAdmin && (
+            <Button size="sm" variant="outline" onClick={() => setShowInvite(true)} className="gap-1 h-7 text-xs">
+              <UserPlus className="w-3.5 h-3.5" /> Añadir
+            </Button>
+          )}
+        </div>
+        <div className="space-y-2">
           {household.members.map((member) => {
             const isMe = member.userId === user.id;
             const restrictions: string[] = member.dietaryRestrictions ?? [];
             const prefs = member.preferences as { goal?: string; calories?: number } | null;
+            const memberType = (member as { memberType?: string }).memberType;
 
             return (
               <div
                 key={member.id}
-                className="flex items-start gap-3 p-3 rounded-xl bg-muted/40 hover:bg-muted/60 transition-colors"
+                className={`flex items-center gap-3 p-3.5 rounded-2xl border transition-all ${
+                  isMe
+                    ? "bg-orange-50 border-orange-200 shadow-sm"
+                    : "bg-card border-border/60 hover:border-border hover:shadow-sm"
+                }`}
               >
-                <Avatar className="w-10 h-10 shrink-0">
+                {/* Avatar */}
+                <Avatar className="w-12 h-12 shrink-0">
                   <AvatarImage src={member.userAvatar ?? undefined} />
-                  <AvatarFallback className="bg-orange-100 text-orange-700 font-semibold">
+                  <AvatarFallback className={`font-bold text-base ${
+                    isMe ? "bg-orange-200 text-orange-800" : "bg-muted text-muted-foreground"
+                  }`}>
                     {(member.displayName ?? member.userName ?? "?")[0].toUpperCase()}
                   </AvatarFallback>
                 </Avatar>
+
+                {/* Info */}
                 <div className="flex-1 min-w-0">
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <span className="font-medium text-foreground truncate">
+                  <div className="flex items-center gap-1.5 flex-wrap mb-0.5">
+                    <span className="font-semibold text-sm text-foreground truncate max-w-[140px]">
                       {member.displayName ?? member.userName ?? "Sin nombre"}
                     </span>
-                    {isMe && <Badge variant="outline" className="text-xs">Tú</Badge>}
-                    <RoleBadge role={member.role} />
-                    {/* Tipo de miembro badge */}
-                    {(member as { memberType?: string }).memberType === "child" && (
-                      <Badge className="text-xs bg-blue-100 text-blue-700 border-blue-200">
-                        <User className="w-3 h-3 mr-1" />Niño
-                      </Badge>
+                    {isMe && (
+                      <span className="text-[10px] font-semibold bg-orange-100 text-orange-700 rounded-full px-1.5 py-0.5">Tú</span>
                     )}
-                    {(member as { memberType?: string }).memberType === "baby" && (
-                      <Badge className="text-xs bg-pink-100 text-pink-700 border-pink-200">
-                        <Baby className="w-3 h-3 mr-1" />Bebé
-                      </Badge>
+                    <RoleBadge role={member.role} />
+                    {memberType === "child" && (
+                      <span className="text-[10px] font-semibold bg-blue-100 text-blue-700 rounded-full px-1.5 py-0.5 flex items-center gap-0.5">
+                        <User className="w-2.5 h-2.5" /> Niño
+                      </span>
+                    )}
+                    {memberType === "baby" && (
+                      <span className="text-[10px] font-semibold bg-pink-100 text-pink-700 rounded-full px-1.5 py-0.5 flex items-center gap-0.5">
+                        <Baby className="w-2.5 h-2.5" /> Bebé
+                      </span>
                     )}
                   </div>
                   {member.userEmail && (
-                    <p className="text-xs text-muted-foreground mt-0.5">{member.userEmail}</p>
+                    <p className="text-xs text-muted-foreground truncate">{member.userEmail}</p>
                   )}
-                  {restrictions.length > 0 && (
-                    <div className="flex flex-wrap gap-1 mt-2">
-                      {restrictions.slice(0, 4).map((r) => (
-                        <Badge key={r} variant="secondary" className="text-xs py-0">
+                  {(restrictions.length > 0 || prefs?.goal) && (
+                    <div className="flex flex-wrap gap-1 mt-1.5">
+                      {prefs?.goal && (
+                        <span className="text-[10px] bg-muted text-muted-foreground rounded-full px-2 py-0.5">
+                          {GOAL_OPTIONS.find((o) => o.value === prefs.goal)?.label ?? prefs.goal}
+                          {prefs.calories ? ` · ${prefs.calories} kcal` : ""}
+                        </span>
+                      )}
+                      {restrictions.slice(0, 3).map((r) => (
+                        <span key={r} className="text-[10px] bg-muted text-muted-foreground rounded-full px-2 py-0.5">
                           {DIETARY_OPTIONS.find((o) => o.id === r)?.label ?? r}
-                        </Badge>
+                        </span>
                       ))}
-                      {restrictions.length > 4 && (
-                        <Badge variant="secondary" className="text-xs py-0">
-                          +{restrictions.length - 4} más
-                        </Badge>
+                      {restrictions.length > 3 && (
+                        <span className="text-[10px] bg-muted text-muted-foreground rounded-full px-2 py-0.5">
+                          +{restrictions.length - 3} más
+                        </span>
                       )}
                     </div>
                   )}
-                  {prefs?.goal && (
-                    <p className="text-xs text-muted-foreground mt-1">
-                      Objetivo: {GOAL_OPTIONS.find((o) => o.value === prefs.goal)?.label ?? prefs.goal}
-                      {prefs.calories ? ` · ${prefs.calories} kcal/día` : ""}
-                    </p>
-                  )}
                 </div>
+
+                {/* Actions */}
                 {(isMe || (isOwnerOrAdmin && member.role !== "owner")) && (
                   <button
                     onClick={() => {
@@ -1309,7 +1377,7 @@ export default function Familia() {
                         removeMember.mutate({ memberId: member.id });
                       }
                     }}
-                    className="text-muted-foreground hover:text-destructive transition-colors shrink-0 mt-1"
+                    className="text-muted-foreground hover:text-destructive transition-colors shrink-0 p-1 rounded-lg hover:bg-destructive/10"
                     aria-label={isMe ? "Salir del hogar" : "Eliminar miembro"}
                   >
                     {isMe ? <LogOut className="w-4 h-4" /> : <Trash2 className="w-4 h-4" />}
@@ -1318,27 +1386,24 @@ export default function Familia() {
               </div>
             );
           })}
-        </CardContent>
-      </Card>
+        </div>
+      </div>
 
-      {/* Pending invitations */}
+      {/* ── Pending invitations ──────────────────────────────────────────── */}
       {household.pendingInvitations.length > 0 && (
-        <Card>
-          <CardHeader className="pb-3">
-            <CardTitle className="text-base flex items-center gap-2">
-              <Mail className="w-4 h-4 text-orange-500" /> Invitaciones pendientes
-            </CardTitle>
-            <CardDescription>Esperando que acepten la invitación</CardDescription>
-          </CardHeader>
-          <CardContent className="space-y-2">
+        <div>
+          <h2 className="text-base font-bold text-foreground flex items-center gap-2 mb-3">
+            <Mail className="w-4 h-4 text-orange-500" /> Invitaciones pendientes
+          </h2>
+          <div className="space-y-2">
             {household.pendingInvitations.map((inv) => (
-              <div key={inv.id} className="flex items-center justify-between p-3 rounded-xl bg-muted/40">
-                <div className="flex items-center gap-3">
-                  <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center">
-                    <Mail className="w-4 h-4 text-orange-500" />
+              <div key={inv.id} className="flex items-center justify-between p-3.5 rounded-2xl border border-amber-200 bg-amber-50">
+                <div className="flex items-center gap-3 min-w-0">
+                  <div className="w-9 h-9 rounded-xl bg-amber-100 flex items-center justify-center shrink-0">
+                    <Mail className="w-4 h-4 text-amber-600" />
                   </div>
-                  <div>
-                    <p className="text-sm font-medium text-foreground">{inv.invitedEmail}</p>
+                  <div className="min-w-0">
+                    <p className="text-sm font-medium text-foreground truncate">{inv.invitedEmail}</p>
                     <p className="text-xs text-muted-foreground">
                       Expira: {new Date(inv.expiresAt).toLocaleDateString("es-ES")}
                     </p>
@@ -1347,7 +1412,7 @@ export default function Familia() {
                 {isOwnerOrAdmin && (
                   <button
                     onClick={() => cancelInvite.mutate({ invitationId: inv.id })}
-                    className="text-muted-foreground hover:text-destructive transition-colors"
+                    className="text-muted-foreground hover:text-destructive transition-colors shrink-0 p-1 rounded-lg hover:bg-destructive/10 ml-2"
                     aria-label="Cancelar invitación"
                   >
                     <X className="w-4 h-4" />
@@ -1355,11 +1420,11 @@ export default function Familia() {
                 )}
               </div>
             ))}
-          </CardContent>
-        </Card>
+          </div>
+        </div>
       )}
 
-      {/* Assigned Recipes Section */}
+      {/* ── Assigned Recipes Section ─────────────────────────────────────── */}
       {isOwnerOrAdmin && (
         <HouseholdAssignedRecipes
           householdId={household.id}
@@ -1367,29 +1432,6 @@ export default function Familia() {
           isOwnerOrAdmin={isOwnerOrAdmin}
         />
       )}
-
-      {/* Quick links */}
-      <Card>
-        <CardHeader className="pb-3">
-          <CardTitle className="text-base">Accesos rápidos del hogar</CardTitle>
-        </CardHeader>
-        <CardContent className="space-y-2">
-          {[
-            { href: "/menu", label: "Menú semanal compartido", icon: "🍽️" },
-            { href: "/lista-compra", label: "Lista de la compra del hogar", icon: "🛒" },
-          ].map((link) => (
-            <Link key={link.href} href={link.href}>
-              <div className="flex items-center justify-between p-3 rounded-xl hover:bg-muted/60 transition-colors cursor-pointer group">
-                <div className="flex items-center gap-3">
-                  <span className="text-xl">{link.icon}</span>
-                  <span className="font-medium text-foreground">{link.label}</span>
-                </div>
-                <ChevronRight className="w-4 h-4 text-muted-foreground group-hover:text-foreground transition-colors" />
-              </div>
-            </Link>
-          ))}
-        </CardContent>
-      </Card>
 
       {/* Modals */}
       <FamilyMenuModal open={showFamilyMenu} onClose={() => setShowFamilyMenu(false)} />
