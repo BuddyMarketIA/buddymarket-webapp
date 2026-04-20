@@ -18,7 +18,6 @@ import { trpc } from "@/lib/trpc";
   }
 })();
 
-import { UNAUTHED_ERR_MSG } from '@shared/const';
 
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink, TRPCClientError } from "@trpc/client";
@@ -92,20 +91,18 @@ const queryClient = new QueryClient({
   },
 });
 
-const redirectToLoginIfUnauthorized = (error: unknown) => {
-  if (!(error instanceof TRPCClientError)) return;
-  if (typeof window === "undefined") return;
-  const isUnauthorized = error.message === UNAUTHED_ERR_MSG;
-  if (!isUnauthorized) return;
-  window.location.href = "/login";
-};
+// NOTE: We intentionally do NOT redirect to /login on UNAUTHORIZED errors here.
+// Transient network errors, server cold-starts, and background refetches can
+// temporarily return 401 even for authenticated users. The session is managed
+// by the cookie (1-year expiry) and the useAuth hook, which only redirects
+// on a definitive 401 after the user has never authenticated.
+// Redirecting here would log users out every ~2 minutes on any network blip.
 
 queryClient.getQueryCache().subscribe(event => {
   if (event.type === "updated" && event.action.type === "error") {
     const error = event.query.state.error;
-    redirectToLoginIfUnauthorized(error);
     if (!isServerDownError(error)) {
-      console.error("[API Query Error]", error);
+      console.warn("[API Query Error]", error);
     }
   }
 });
@@ -113,9 +110,8 @@ queryClient.getQueryCache().subscribe(event => {
 queryClient.getMutationCache().subscribe(event => {
   if (event.type === "updated" && event.action.type === "error") {
     const error = event.mutation.state.error;
-    redirectToLoginIfUnauthorized(error);
     if (!isServerDownError(error)) {
-      console.error("[API Mutation Error]", error);
+      console.warn("[API Mutation Error]", error);
     }
   }
 });

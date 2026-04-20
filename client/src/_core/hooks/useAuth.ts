@@ -1,6 +1,6 @@
 import { trpc } from "@/lib/trpc";
 import { TRPCClientError } from "@trpc/client";
-import { useCallback, useEffect, useMemo } from "react";
+import { useCallback, useEffect, useMemo, useRef } from "react";
 
 type UseAuthOptions = {
   redirectOnUnauthenticated?: boolean;
@@ -12,10 +12,32 @@ export function useAuth(options?: UseAuthOptions) {
     options ?? {};
   const utils = trpc.useUtils();
 
+  // Track whether we have EVER successfully authenticated in this session.
+  // This prevents transient errors (network blips, server cold-start) from
+  // kicking the user out after they are already logged in.
+  const hasEverAuthenticated = useRef(false);
+
   const meQuery = trpc.auth.me.useQuery(undefined, {
+    // Never retry auth.me — a real 401 should not be retried.
     retry: false,
+    // Do NOT refetch when the window regains focus — this was causing
+    // the query to fire again after the tab was backgrounded and then
+    // resumed, and a transient error would log the user out.
     refetchOnWindowFocus: false,
+    // Keep the cached data for 10 minutes so the user is not re-checked
+    // every 30 seconds. The cookie is the source of truth; if it is valid
+    // the server will return the user on the next real navigation.
+    staleTime: 10 * 60 * 1000, // 10 minutes
+    // Keep the data in cache for 30 minutes even when the component unmounts.
+    gcTime: 30 * 60 * 1000,
   });
+
+  // Once we get a valid user, mark that we have authenticated.
+  useEffect(() => {
+    if (meQuery.data) {
+      hasEverAuthenticated.current = true;
+    }
+  }, [meQuery.data]);
 
   const logoutMutation = trpc.auth.logout.useMutation({
     onSuccess: () => {
@@ -47,27 +69,47 @@ export function useAuth(options?: UseAuthOptions) {
       document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax`;
       document.cookie = `${cookieName}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
 
+      // Reset the "has ever authenticated" flag so the redirect logic works
+      // correctly on the next login.
+      hasEverAuthenticated.current = false;
+
       // Set localStorage flag so LoginPage never auto-redirects after logout.
-      // localStorage persists across reloads (unlike sessionStorage) — cleared
-      // only when user actively interacts with the login form.
       localStorage.setItem("bm_just_logged_out", "1");
 
       // Force a full page reload to /login to clear ALL React state and tRPC cache
-      // Using replace() so the user can't go "back" to the authenticated page
       window.location.replace("/login");
     }
   }, [logoutMutation, utils]);
 
   const state = useMemo(() => {
+    // isAuthenticated is true if:
+    // 1. We have current data from the server, OR
+    // 2. We have previously authenticated AND the query is not in a definitive
+    //    error state (i.e., it's just loading/stale, not a real 401).
+    //
+    // This prevents transient network errors from flipping isAuthenticated to
+    // false and triggering an unwanted redirect.
+    const hasData = Boolean(meQuery.data);
+    const isDefinitiveError =
+      meQuery.isError &&
+      meQuery.error instanceof TRPCClientError &&
+      (meQuery.error.data?.code === "UNAUTHORIZED" ||
+        meQuery.error.data?.httpStatus === 401);
+
+    const isAuthenticated =
+      hasData ||
+      (hasEverAuthenticated.current && !isDefinitiveError);
+
     return {
       user: meQuery.data ?? null,
       loading: meQuery.isLoading || logoutMutation.isPending,
       error: meQuery.error ?? logoutMutation.error ?? null,
-      isAuthenticated: Boolean(meQuery.data),
+      isAuthenticated,
     };
   }, [
     meQuery.data,
     meQuery.error,
+    meQuery.isError,
     meQuery.isLoading,
     logoutMutation.error,
     logoutMutation.isPending,
@@ -79,6 +121,13 @@ export function useAuth(options?: UseAuthOptions) {
     if (state.user) return;
     if (typeof window === "undefined") return;
     if (window.location.pathname === redirectPath) return;
+    // Only redirect if we have a definitive error (real 401), not a transient one.
+    const isDefinitiveError =
+      meQuery.isError &&
+      meQuery.error instanceof TRPCClientError &&
+      (meQuery.error.data?.code === "UNAUTHORIZED" ||
+        meQuery.error.data?.httpStatus === 401);
+    if (!isDefinitiveError && hasEverAuthenticated.current) return;
 
     window.location.href = redirectPath;
   }, [
@@ -86,6 +135,8 @@ export function useAuth(options?: UseAuthOptions) {
     redirectPath,
     logoutMutation.isPending,
     meQuery.isLoading,
+    meQuery.isError,
+    meQuery.error,
     state.user,
   ]);
 

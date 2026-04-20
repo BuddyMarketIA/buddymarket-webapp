@@ -495,7 +495,10 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
     );
   }
 
-  if (!isAuthenticated) { window.location.href = "/login"; return null; }
+  // Only redirect to /login if we are definitively NOT authenticated.
+  // Do NOT redirect while loading — this would kick users out during a
+  // transient server cold-start or network blip.
+  if (!loading && !isAuthenticated) { window.location.href = "/login"; return null; }
 
   const shouldShowNav = !hideNav;
   const pageTitle = title || currentNavItem?.label || currentSidebarItem?.label || "BuddyMarket";
