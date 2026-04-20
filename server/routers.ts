@@ -11619,6 +11619,39 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
         await drizzleDb.update(serverLogs).set({ resolved: true }).where(where);
         return { success: true };
       }),
+    analyzeAndFix: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { serverLogs } = await import("../drizzle/schema.js");
+        const { eq } = await import("drizzle-orm");
+        const [log] = await drizzleDb.select().from(serverLogs).where(eq(serverLogs.id, input.id)).limit(1);
+        if (!log) throw new TRPCError({ code: "NOT_FOUND" });
+        const prompt = [
+          `Eres un experto en debugging de aplicaciones Node.js/TypeScript/React.`,
+          `Analiza el siguiente error de servidor y proporciona:`,
+          `1. **Diagnóstico** (1-2 frases)`,
+          `2. **Causa probable**`,
+          `3. **Pasos para corregirlo** (concretos y accionables)`,
+          ``,
+          `Nivel: ${log.level.toUpperCase()}`,
+          `Mensaje: ${log.message}`,
+          log.path ? `Ruta: ${log.method ?? ''} ${log.path}` : '',
+          log.statusCode ? `Código HTTP: ${log.statusCode}` : '',
+          log.stack ? `\nStack trace:\n${log.stack.slice(0, 1500)}` : '',
+          log.metadata ? `\nMetadata: ${log.metadata.slice(0, 500)}` : '',
+        ].filter(Boolean).join('\n');
+        const response = await invokeLLM({
+          messages: [
+            { role: "system", content: "Responde siempre en español. Sé conciso y práctico. Usa formato markdown con negritas." },
+            { role: "user", content: prompt },
+          ],
+        });
+        const analysis = response.choices?.[0]?.message?.content ?? "No se pudo analizar el error.";
+        return { analysis };
+      }),
   }),
 
   // -- Ingredient Nutrition --
