@@ -1,4 +1,5 @@
 import { useAuth } from "@/_core/hooks/useAuth";
+import { hasRole } from "@/lib/utils";
 import { ExpertModeContext } from "../contexts/ExpertModeContext";
 import { useState, useEffect, useRef, useCallback } from "react";
 import { Link, useLocation } from "wouter";
