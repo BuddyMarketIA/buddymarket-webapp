@@ -442,7 +442,25 @@ export default function MealLog() {
     ? "¡Vas muy bien! Casi en tu objetivo."
     : calPct <= 100
     ? "¡Objetivo alcanzado! Excelente día."
-    : "¡Has superado tu objetivo calrico hoy.";
+    : "¡Has superado tu objetivo calórico hoy.";
+
+  // Macro exceeded warnings
+  const protExceeded = totalProteins > targetProteins * 1.1;
+  const carbExceeded = totalCarbs > targetCarbs * 1.1;
+  const fatExceeded = totalFats > targetFats * 1.1;
+  const anyMacroExceeded = protExceeded || carbExceeded || fatExceeded;
+
+  // Day status badge (estado del día)
+  const dayStatus = (() => {
+    if (totalCals === 0) return null;
+    if (calPct > 110) return { icon: '⚠️', label: 'Exceso calórico', color: '#ef4444', bg: '#fef2f2' };
+    if (fatExceeded && !carbExceeded) return { icon: '⚠️', label: 'Alto en grasas', color: '#f97316', bg: '#fff7ed' };
+    if (carbExceeded && !fatExceeded) return { icon: '⚠️', label: 'Alto en carbos', color: '#f59e0b', bg: '#fffbeb' };
+    if (anyMacroExceeded) return { icon: '⚠️', label: 'Macros elevados', color: '#f97316', bg: '#fff7ed' };
+    if (calPct >= 90 && calPct <= 110) return { icon: '⚖️', label: 'Día equilibrado', color: '#22c55e', bg: '#f0fdf4' };
+    if (calPct >= 60) return { icon: '🔥', label: 'Buen progreso', color: '#3b82f6', bg: '#eff6ff' };
+    return { icon: '🌱', label: 'Empezando el día', color: '#9ca3af', bg: '#f9fafb' };
+  })();
 
   // Group by day part
   const grouped: Record<string, any[]> = {};
@@ -628,8 +646,8 @@ export default function MealLog() {
               )}
             </svg>
             <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-              <span style={{ fontSize: "16px", fontWeight: 900, color: "#1a1a1a", lineHeight: 1 }}>{calPct}%</span>
-              <span style={{ fontSize: "9px", color: "#9ca3af", fontWeight: 600, marginTop: "1px" }}>objetivo</span>
+              <span style={{ fontSize: "16px", fontWeight: 900, color: calPct > 100 ? "#ef4444" : "#1a1a1a", lineHeight: 1 }}>{calPct}%</span>
+              <span style={{ fontSize: "8px", color: "#9ca3af", fontWeight: 600, marginTop: "1px", textAlign: "center", lineHeight: 1.2 }}>kcal<br/>diarias</span>
             </div>
           </div>
         </div>
@@ -646,33 +664,48 @@ export default function MealLog() {
         <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
           {/* Proteins */}
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <div style={{ width: "10px", height: "10px", borderRadius: "3px", background: "#3b82f6", flexShrink: 0 }} />
-            <span style={{ fontSize: "12px", fontWeight: 600, color: "#374151", width: "60px", flexShrink: 0 }}>Proteína</span>
+            <div style={{ width: "10px", height: "10px", borderRadius: "3px", background: protExceeded ? "#ef4444" : "#3b82f6", flexShrink: 0 }} />
+            <span style={{ fontSize: "12px", fontWeight: 600, color: protExceeded ? "#ef4444" : "#374151", width: "60px", flexShrink: 0 }}>Proteína{protExceeded ? " ⚠️" : ""}</span>
             <div style={{ flex: 1, background: "#eff6ff", borderRadius: "999px", height: "6px", overflow: "hidden" }}>
-              <div style={{ background: "#3b82f6", borderRadius: "999px", height: "100%", width: `${protPct}%`, transition: "width 0.6s ease" }} />
+              <div style={{ background: protExceeded ? "#ef4444" : "#3b82f6", borderRadius: "999px", height: "100%", width: `${Math.min(100, protPct)}%`, transition: "width 0.6s ease" }} />
             </div>
-            <span style={{ fontSize: "11px", color: "#6b7280", width: "70px", textAlign: "right", flexShrink: 0 }}>{totalProteins}g / {targetProteins}g</span>
+            <span style={{ fontSize: "11px", color: protExceeded ? "#ef4444" : "#6b7280", width: "70px", textAlign: "right", flexShrink: 0, fontWeight: protExceeded ? 700 : 400 }}>{totalProteins}g / {targetProteins}g</span>
           </div>
           {/* Carbs */}
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <div style={{ width: "10px", height: "10px", borderRadius: "3px", background: "#f59e0b", flexShrink: 0 }} />
-            <span style={{ fontSize: "12px", fontWeight: 600, color: "#374151", width: "60px", flexShrink: 0 }}>Carbos</span>
+            <div style={{ width: "10px", height: "10px", borderRadius: "3px", background: carbExceeded ? "#ef4444" : "#f59e0b", flexShrink: 0 }} />
+            <span style={{ fontSize: "12px", fontWeight: 600, color: carbExceeded ? "#ef4444" : "#374151", width: "60px", flexShrink: 0 }}>Carbos{carbExceeded ? " ⚠️" : ""}</span>
             <div style={{ flex: 1, background: "#fffbeb", borderRadius: "999px", height: "6px", overflow: "hidden" }}>
-              <div style={{ background: "#f59e0b", borderRadius: "999px", height: "100%", width: `${carbPct}%`, transition: "width 0.6s ease" }} />
+              <div style={{ background: carbExceeded ? "#ef4444" : "#f59e0b", borderRadius: "999px", height: "100%", width: `${Math.min(100, carbPct)}%`, transition: "width 0.6s ease" }} />
             </div>
-            <span style={{ fontSize: "11px", color: "#6b7280", width: "70px", textAlign: "right", flexShrink: 0 }}>{totalCarbs}g / {targetCarbs}g</span>
+            <span style={{ fontSize: "11px", color: carbExceeded ? "#ef4444" : "#6b7280", width: "70px", textAlign: "right", flexShrink: 0, fontWeight: carbExceeded ? 700 : 400 }}>{totalCarbs}g / {targetCarbs}g</span>
           </div>
           {/* Fats */}
           <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-            <div style={{ width: "10px", height: "10px", borderRadius: "3px", background: "#f43f5e", flexShrink: 0 }} />
-            <span style={{ fontSize: "12px", fontWeight: 600, color: "#374151", width: "60px", flexShrink: 0 }}>{t("mealLog.fat", "Fat")}</span>
+            <div style={{ width: "10px", height: "10px", borderRadius: "3px", background: fatExceeded ? "#ef4444" : "#f43f5e", flexShrink: 0 }} />
+            <span style={{ fontSize: "12px", fontWeight: 600, color: fatExceeded ? "#ef4444" : "#374151", width: "60px", flexShrink: 0 }}>Grasas{fatExceeded ? " ⚠️" : ""}</span>
             <div style={{ flex: 1, background: "#fff1f2", borderRadius: "999px", height: "6px", overflow: "hidden" }}>
-              <div style={{ background: "#f43f5e", borderRadius: "999px", height: "100%", width: `${fatPct}%`, transition: "width 0.6s ease" }} />
+              <div style={{ background: fatExceeded ? "#ef4444" : "#f43f5e", borderRadius: "999px", height: "100%", width: `${Math.min(100, fatPct)}%`, transition: "width 0.6s ease" }} />
             </div>
-            <span style={{ fontSize: "11px", color: "#6b7280", width: "70px", textAlign: "right", flexShrink: 0 }}>{totalFats}g / {targetFats}g</span>
+            <span style={{ fontSize: "11px", color: fatExceeded ? "#ef4444" : "#6b7280", width: "70px", textAlign: "right", flexShrink: 0, fontWeight: fatExceeded ? 700 : 400 }}>{totalFats}g / {targetFats}g</span>
           </div>
+          {/* Macro warning messages */}
+          {anyMacroExceeded && (
+            <div style={{ marginTop: "6px", padding: "8px 10px", background: "#fff7ed", borderRadius: "10px", border: "1px solid #fed7aa" }}>
+              {fatExceeded && <p style={{ margin: 0, fontSize: "11px", color: "#9a3412", fontWeight: 600, lineHeight: 1.5 }}>• Has superado las grasas hoy. Intenta equilibrar con más proteína.</p>}
+              {carbExceeded && <p style={{ margin: 0, fontSize: "11px", color: "#92400e", fontWeight: 600, lineHeight: 1.5 }}>• Has superado los carbohidratos. Considera reducir azúcares en la próxima comida.</p>}
+              {protExceeded && <p style={{ margin: 0, fontSize: "11px", color: "#1e3a5f", fontWeight: 600, lineHeight: 1.5 }}>• Proteína por encima del objetivo. Asegúrate de hidratarte bien.</p>}
+            </div>
+          )}
         </div>
 
+        {/* Day status badge */}
+        {dayStatus && (
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: "6px", marginTop: "10px", padding: "6px 14px", background: dayStatus.bg, borderRadius: "999px", border: `1px solid ${dayStatus.color}22`, alignSelf: "center", width: "fit-content", margin: "10px auto 0" }}>
+            <span style={{ fontSize: "14px" }}>{dayStatus.icon}</span>
+            <span style={{ fontSize: "12px", fontWeight: 700, color: dayStatus.color }}>{dayStatus.label}</span>
+          </div>
+        )}
         {/* Legend */}
         <div style={{ display: "flex", gap: "12px", marginTop: "12px", paddingTop: "12px", borderTop: "1px solid #f3f4f6", justifyContent: "center" }}>
           <div style={{ display: "flex", alignItems: "center", gap: "4px" }}>
@@ -705,7 +738,13 @@ export default function MealLog() {
                 <span style={{ fontSize: "20px" }}>{isDeficit ? '📉' : isSurplus ? '📈' : '✅'}</span>
                 <div>
                   <p style={{ margin: 0, fontSize: "13px", fontWeight: 800, color: "#1a1a1a" }}>
-                    {isDeficit ? `Déficit: ${deficit} kcal restantes` : isSurplus ? `Superávit: +${Math.abs(deficit)} kcal` : '¡Objetivo alcanzado!'}
+                    {isDeficit
+                    ? goalType === 'maintenance'
+                      ? `Te quedan ${deficit} kcal para tu objetivo`
+                      : `Déficit: ${deficit} kcal restantes`
+                    : isSurplus
+                    ? `Superávit: +${Math.abs(deficit)} kcal`
+                    : '¡Objetivo alcanzado!'}
                   </p>
                   <p style={{ margin: 0, fontSize: "11px", color: "#6b7280", marginTop: "1px" }}>Objetivo: {goalLabel}</p>
                 </div>
@@ -734,7 +773,7 @@ export default function MealLog() {
               onMouseLeave={e => { e.currentTarget.style.borderColor = '#e5e7eb'; e.currentTarget.style.color = '#374151'; }}
             >
               <span style={{ fontSize: '16px' }}>🤖</span>
-              <span>Analizar mi día con IA</span>
+              <span>Optimiza tu día con IA →</span>
             </button>
           </div>
         );
