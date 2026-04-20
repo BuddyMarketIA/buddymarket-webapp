@@ -8,6 +8,7 @@ import { UpgradeGate } from "@/components/UpgradeGate";
 import BarcodeScanner from "@/components/BarcodeScanner";
 import NutritionCalendar from "@/components/NutritionCalendar";
 import ProductNutritionCard from "@/components/ProductNutritionCard";
+import { useImageCompressor } from "@/hooks/useImageCompressor";
 
 // ─── AI Loading Animation ───────────────────────────────────────────────────
 const AI_STEPS = [
@@ -470,36 +471,22 @@ export default function MealLog() {
     grouped[part].push(log);
   });
 
-  // Handle file selection
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const { compress: compressImage, compressing: isCompressingPhoto } = useImageCompressor();
+  // Handle file selection — comprime automáticamente a ≤1MB/1200px sin límite de tamaño
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (!file) return;
-    if (file.size > 10 * 1024 * 1024) {
-      toast.error("La imagen es demasiado grande (máx 10MB)");
-      return;
-    }
-    const reader = new FileReader();
-    reader.onload = (ev) => {
-      const dataUrl = ev.target?.result as string;
+    try {
+      const { dataUrl, base64, sizeKB, originalSizeKB } = await compressImage(file);
       setPhotoPreview(dataUrl);
       setAiResult(null);
-      // Compress image to max 800px before sending to AI (reduces latency)
-      const img = new Image();
-      img.onload = () => {
-        const MAX = 800;
-        const scale = Math.min(1, MAX / Math.max(img.width, img.height));
-        const canvas = document.createElement("canvas");
-        canvas.width = Math.round(img.width * scale);
-        canvas.height = Math.round(img.height * scale);
-        const ctx2d = canvas.getContext("2d");
-        if (!ctx2d) { setPhotoBase64(dataUrl.split(",")[1]); return; }
-        ctx2d.drawImage(img, 0, 0, canvas.width, canvas.height);
-        const compressed = canvas.toDataURL("image/jpeg", 0.75);
-        setPhotoBase64(compressed.split(",")[1]);
-      };
-      img.src = dataUrl;
-    };
-    reader.readAsDataURL(file);
+      setPhotoBase64(base64);
+      if (originalSizeKB > 1024) {
+        toast.success(`✅ Imagen optimizada: ${Math.round(originalSizeKB / 1024 * 10) / 10} MB → ${sizeKB} KB`);
+      }
+    } catch {
+      toast.error("No se pudo procesar la imagen. Prueba con otra.");
+    }
   };
 
   const handleAnalyze = () => {
@@ -1058,7 +1045,13 @@ export default function MealLog() {
                 <input ref={fileInputRef} type="file" accept="image/*" onChange={handleFileChange} style={{ display: "none" }} />
                 <input ref={cameraInputRef} type="file" accept="image/*" capture="environment" onChange={handleFileChange} style={{ display: "none" }} />
 
-                {!photoPreview ? (
+                {isCompressingPhoto ? (
+                  <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "10px", padding: "24px 0", background: "#FFF7ED", borderRadius: "16px", border: "2px dashed #FED7AA" }}>
+                    <span style={{ fontSize: "28px" }}>⚙️</span>
+                    <p style={{ margin: 0, fontSize: "14px", fontWeight: 700, color: "#F97316" }}>Optimizando imagen...</p>
+                    <p style={{ margin: 0, fontSize: "12px", color: "#9CA3AF" }}>Comprimiendo para un análisis más rápido</p>
+                  </div>
+                ) : !photoPreview ? (
                   <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
                     <button
                       onClick={() => cameraInputRef.current?.click()}
@@ -1074,6 +1067,7 @@ export default function MealLog() {
                       <span style={{ fontSize: "20px" }}>🖼️</span>
                       <span>{t("mealLog.chooseGallery", "Choose from gallery")}</span>
                     </button>
+                    <p style={{ margin: 0, fontSize: "11px", color: "#9CA3AF", textAlign: "center" }}>Cualquier tamaño — se comprime automáticamente</p>
                   </div>
                 ) : (
                   <div>

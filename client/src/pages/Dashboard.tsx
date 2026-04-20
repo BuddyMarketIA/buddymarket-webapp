@@ -1759,8 +1759,8 @@ export default function Dashboard() {
         if (hourRecipe) {
           cards.push({ id: "recipe-hour", node: (
             <Link href={`/app/recipes/${hourRecipe.id}`}>
-              <div style={{ width: "152px", flexShrink: 0, borderRadius: "18px", overflow: "hidden", cursor: "pointer", boxShadow: "0 4px 16px rgba(0,0,0,0.12)", border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "#f3f4f6"}` }}>
-                <div style={{ height: "108px", background: `linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.72) 100%), url(${hourRecipe.imageUrl || FOOD_IMAGES[0]}) center/cover` }}>
+              <div style={{ width: "152px", height: "190px", flexShrink: 0, borderRadius: "18px", overflow: "hidden", cursor: "pointer", boxShadow: "0 4px 16px rgba(0,0,0,0.12)", border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "#f3f4f6"}`, display: "flex", flexDirection: "column" }}>
+                <div style={{ flex: 1, background: `linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.72) 100%), url(${hourRecipe.imageUrl || FOOD_IMAGES[0]}) center/cover` }}>
                   <div style={{ position: "relative", height: "100%", display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "8px 10px" }}>
                     <span style={{ position: "absolute", top: "8px", left: "8px", background: "rgba(249,115,22,0.9)", borderRadius: "8px", padding: "2px 8px", fontSize: "10px", fontWeight: 800, color: "white" }}>{mealTimeLabel}</span>
                     <p style={{ margin: 0, fontSize: "12px", fontWeight: 800, color: "white", lineHeight: 1.25, textShadow: "0 1px 4px rgba(0,0,0,0.7)", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{hourRecipe.name}</p>
@@ -1777,7 +1777,7 @@ export default function Dashboard() {
 
         // Card B: Tip nutricional del día
         cards.push({ id: "tip", node: (
-          <div style={{ width: "152px", flexShrink: 0, borderRadius: "18px", background: isDark ? "rgba(99,102,241,0.12)" : "#EEF2FF", border: `1px solid ${isDark ? "rgba(99,102,241,0.25)" : "#C7D2FE"}`, padding: "14px 12px", display: "flex", flexDirection: "column", gap: "8px", cursor: "default" }}>
+          <div style={{ width: "152px", height: "190px", flexShrink: 0, borderRadius: "18px", background: isDark ? "rgba(99,102,241,0.12)" : "#EEF2FF", border: `1px solid ${isDark ? "rgba(99,102,241,0.25)" : "#C7D2FE"}`, padding: "14px 12px", display: "flex", flexDirection: "column", gap: "8px", cursor: "default", boxSizing: "border-box" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
               <span style={{ fontSize: "22px" }}>{todayTip.emoji}</span>
               <span style={{ fontSize: "10px", fontWeight: 800, color: isDark ? "#a5b4fc" : "#4338ca", background: isDark ? "rgba(99,102,241,0.2)" : "#E0E7FF", borderRadius: "6px", padding: "2px 7px" }}>{todayTip.tag}</span>
@@ -1791,7 +1791,7 @@ export default function Dashboard() {
         if (activeChallenge) {
           cards.push({ id: "challenge", node: (
             <Link href="/app/challenges">
-              <div style={{ width: "152px", flexShrink: 0, borderRadius: "18px", background: isDark ? "rgba(16,185,129,0.12)" : "#ECFDF5", border: `1px solid ${isDark ? "rgba(16,185,129,0.25)" : "#A7F3D0"}`, padding: "14px 12px", display: "flex", flexDirection: "column", gap: "8px", cursor: "pointer" }}>
+              <div style={{ width: "152px", height: "190px", flexShrink: 0, borderRadius: "18px", background: isDark ? "rgba(16,185,129,0.12)" : "#ECFDF5", border: `1px solid ${isDark ? "rgba(16,185,129,0.25)" : "#A7F3D0"}`, padding: "14px 12px", display: "flex", flexDirection: "column", gap: "8px", cursor: "pointer", boxSizing: "border-box" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                   <span style={{ fontSize: "22px" }}>{activeChallenge.emoji ?? "🏆"}</span>
                   <span style={{ fontSize: "10px", fontWeight: 800, color: "#059669", background: "rgba(16,185,129,0.15)", borderRadius: "6px", padding: "2px 7px" }}>Reto semanal</span>
@@ -1810,7 +1810,7 @@ export default function Dashboard() {
         if (thirtyDay) {
           cards.push({ id: "30day", node: (
             <Link href="/app/challenges">
-              <div style={{ width: "152px", flexShrink: 0, borderRadius: "18px", background: isDark ? "rgba(249,115,22,0.12)" : "#FFF7ED", border: `1px solid ${isDark ? "rgba(249,115,22,0.25)" : "#FED7AA"}`, padding: "14px 12px", display: "flex", flexDirection: "column", gap: "8px", cursor: "pointer" }}>
+              <div style={{ width: "152px", height: "190px", flexShrink: 0, borderRadius: "18px", background: isDark ? "rgba(249,115,22,0.12)" : "#FFF7ED", border: `1px solid ${isDark ? "rgba(249,115,22,0.25)" : "#FED7AA"}`, padding: "14px 12px", display: "flex", flexDirection: "column", gap: "8px", cursor: "pointer", boxSizing: "border-box" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                   <span style={{ fontSize: "22px" }}>🗓️</span>
                   <span style={{ fontSize: "10px", fontWeight: 800, color: "#EA580C", background: "rgba(249,115,22,0.15)", borderRadius: "6px", padding: "2px 7px" }}>Día {thirtyDay.currentDay}/30</span>
@@ -1829,7 +1829,7 @@ export default function Dashboard() {
         if (level) {
           cards.push({ id: "level", node: (
             <Link href="/app/achievements">
-              <div style={{ width: "152px", flexShrink: 0, borderRadius: "18px", background: isDark ? "rgba(139,92,246,0.12)" : "#F5F3FF", border: `1px solid ${isDark ? "rgba(139,92,246,0.25)" : "#DDD6FE"}`, padding: "14px 12px", display: "flex", flexDirection: "column", gap: "8px", cursor: "pointer" }}>
+              <div style={{ width: "152px", height: "190px", flexShrink: 0, borderRadius: "18px", background: isDark ? "rgba(139,92,246,0.12)" : "#F5F3FF", border: `1px solid ${isDark ? "rgba(139,92,246,0.25)" : "#DDD6FE"}`, padding: "14px 12px", display: "flex", flexDirection: "column", gap: "8px", cursor: "pointer", boxSizing: "border-box" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
                   <span style={{ fontSize: "22px" }}>{level.currentLevel.emoji ?? "⭐"}</span>
                   <span style={{ fontSize: "10px", fontWeight: 800, color: "#7C3AED", background: "rgba(139,92,246,0.15)", borderRadius: "6px", padding: "2px 7px" }}>Nivel</span>
@@ -1850,7 +1850,7 @@ export default function Dashboard() {
         // Card F: Estadísticas nutricionales (no hay link en el Dashboard)
         cards.push({ id: "stats", node: (
           <Link href="/app/stats">
-            <div style={{ width: "152px", flexShrink: 0, borderRadius: "18px", background: isDark ? "rgba(239,68,68,0.10)" : "#FFF1F2", border: `1px solid ${isDark ? "rgba(239,68,68,0.22)" : "#FECDD3"}`, padding: "14px 12px", display: "flex", flexDirection: "column", gap: "8px", cursor: "pointer" }}>
+            <div style={{ width: "152px", height: "190px", flexShrink: 0, borderRadius: "18px", background: isDark ? "rgba(239,68,68,0.10)" : "#FFF1F2", border: `1px solid ${isDark ? "rgba(239,68,68,0.22)" : "#FECDD3"}`, padding: "14px 12px", display: "flex", flexDirection: "column", gap: "8px", cursor: "pointer", boxSizing: "border-box" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
               <span style={{ fontSize: "22px" }}>📊</span>
               <span style={{ fontSize: "10px", fontWeight: 800, color: "#DC2626", background: "rgba(239,68,68,0.12)", borderRadius: "6px", padding: "2px 7px" }}>Estadísticas</span>
@@ -1865,7 +1865,7 @@ export default function Dashboard() {
         // Card G: Informe mensual
         cards.push({ id: "monthly", node: (
           <Link href="/app/monthly-reports">
-            <div style={{ width: "152px", flexShrink: 0, borderRadius: "18px", background: isDark ? "rgba(59,130,246,0.10)" : "#EFF6FF", border: `1px solid ${isDark ? "rgba(59,130,246,0.22)" : "#BFDBFE"}`, padding: "14px 12px", display: "flex", flexDirection: "column", gap: "8px", cursor: "pointer" }}>
+            <div style={{ width: "152px", height: "190px", flexShrink: 0, borderRadius: "18px", background: isDark ? "rgba(59,130,246,0.10)" : "#EFF6FF", border: `1px solid ${isDark ? "rgba(59,130,246,0.22)" : "#BFDBFE"}`, padding: "14px 12px", display: "flex", flexDirection: "column", gap: "8px", cursor: "pointer", boxSizing: "border-box" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
               <span style={{ fontSize: "22px" }}>📋</span>
               <span style={{ fontSize: "10px", fontWeight: 800, color: "#1D4ED8", background: "rgba(59,130,246,0.12)", borderRadius: "6px", padding: "2px 7px" }}>Informe</span>
@@ -1880,7 +1880,7 @@ export default function Dashboard() {
         // Card H: Favoritos
         cards.push({ id: "favorites", node: (
           <Link href="/app/favorites">
-            <div style={{ width: "152px", flexShrink: 0, borderRadius: "18px", background: isDark ? "rgba(236,72,153,0.10)" : "#FDF2F8", border: `1px solid ${isDark ? "rgba(236,72,153,0.22)" : "#FBCFE8"}`, padding: "14px 12px", display: "flex", flexDirection: "column", gap: "8px", cursor: "pointer" }}>
+            <div style={{ width: "152px", height: "190px", flexShrink: 0, borderRadius: "18px", background: isDark ? "rgba(236,72,153,0.10)" : "#FDF2F8", border: `1px solid ${isDark ? "rgba(236,72,153,0.22)" : "#FBCFE8"}`, padding: "14px 12px", display: "flex", flexDirection: "column", gap: "8px", cursor: "pointer", boxSizing: "border-box" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
               <span style={{ fontSize: "22px" }}>❤️</span>
               <span style={{ fontSize: "10px", fontWeight: 800, color: "#BE185D", background: "rgba(236,72,153,0.12)", borderRadius: "6px", padding: "2px 7px" }}>Favoritos</span>
