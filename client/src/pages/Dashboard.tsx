@@ -1,7 +1,7 @@
+import React, { useState, useMemo, useEffect, useRef, useCallback, lazy, Suspense } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Link } from "wouter";
-import { useState, useMemo, useEffect, useRef, useCallback, lazy, Suspense } from "react";
 import { useExpertMode } from "@/contexts/ExpertModeContext";
 const BuddyExpertDashboard = lazy(() => import("./BuddyExpertDashboard"));
 
@@ -1717,57 +1717,193 @@ export default function Dashboard() {
         </Link>
       )}
 
-      {/* Recommendations Section */}
-      <div style={{ marginBottom: "20px" }}>
-        <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
-          <h2 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: C.textPrimary, letterSpacing: "-0.02em" }}>
-            ✨ Recomendaciones para ti
-          </h2>
-          <Link href="/app/recipes"><span style={{ fontSize: "13px", fontWeight: 600, color: "#F97316" }}>Ver todas →</span></Link>
-        </div>
-        {recommendedRecipes.isLoading ? (
-          <div style={{ display: "flex", gap: "12px", overflowX: "auto", paddingBottom: "4px" }}>
-            {[0, 1, 2, 3].map((i) => (
-              <div key={i} style={{ width: "150px", height: "130px", borderRadius: "18px", background: "#f3f4f6", flexShrink: 0, animation: "pulse 1.5s infinite" }} />
-            ))}
-          </div>
-        ) : recommendedRecipes.data && recommendedRecipes.data.recipes.length > 0 ? (
-          <div style={{ display: "flex", gap: "12px", overflowX: "auto", paddingBottom: "4px" }}>
-            {recommendedRecipes.data.recipes.map((recipe: any, i: number) => (
-              <Link key={recipe.id} href={`/app/recipes/${recipe.id}`}>
-                <div style={{ width: "150px", flexShrink: 0, borderRadius: "18px", overflow: "hidden", cursor: "pointer", position: "relative", boxShadow: "0 4px 16px rgba(0,0,0,0.12)" }}>
-                  <div style={{ height: "110px", position: "relative", background: `linear-gradient(180deg, rgba(0,0,0,0.08) 0%, rgba(0,0,0,0.70) 100%), url(${recipe.imageUrl || FOOD_IMAGES[i % FOOD_IMAGES.length]}) center/cover` }}>
-                    <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, padding: "8px 10px" }}>
-                      <p style={{ margin: 0, fontSize: "12px", fontWeight: 800, color: "white", lineHeight: 1.25, textShadow: "0 1px 4px rgba(0,0,0,0.7)", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{recipe.name}</p>
-                      <p style={{ margin: "2px 0 0", fontSize: "11px", color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>🔥 {recipe.caloriesPerServing ? `${recipe.caloriesPerServing} kcal` : "—"}</p>
-                    </div>
-                  </div>
-                  <div style={{ background: C.cardBg, padding: "6px 10px" }}>
-                    <p style={{ margin: 0, fontSize: "13px", color: C.textSecond, fontWeight: 600 }}>
-                      {recipe.mealTime === "desayuno" ? "☀️ Desayuno" :
-                       recipe.mealTime === "comida" ? "🍽️ Comida" :
-                       recipe.mealTime === "cena" ? "🌙 Cena" :
-                       recipe.mealTime === "merienda" ? "🍎 Merienda" :
-                       recipe.mealTime === "media_manana" ? "🥐 Media mañana" : "🍴 Cualquiera"}
-                    </p>
+      {/* Mixed Recommendations Carousel — no repite contenido ya visible en el Dashboard */}
+      {(() => {
+        const hour = new Date().getHours();
+        const mealTimeLabel = hour < 11 ? "☀️ Desayuno" : hour < 15 ? "🍽️ Comida" : hour < 19 ? "🍎 Merienda" : "🌙 Cena";
+        const mealTimeFilter = hour < 11 ? "desayuno" : hour < 15 ? "comida" : hour < 19 ? "merienda" : "cena";
+
+        // Tarjeta 1: Receta por hora del día (diferente de la receta del día)
+        const hourRecipe = recommendedRecipes.data?.recipes.find((r: any) => r.mealTime === mealTimeFilter)
+          ?? recommendedRecipes.data?.recipes[0];
+
+        // Tarjeta 2: Reto semanal activo (no visible en el Dashboard principal)
+        const activeChallenge = weeklyChallenges.data?.find((c: any) => !c.completed);
+
+        // Tarjeta 3: Reto 30 días (solo si está activo)
+        const thirtyDay = thirtyDayChallenge.data;
+
+        // Tarjeta 4: Progreso de nivel (acceso a logros)
+        const level = levelInfo.data;
+
+        // Tarjeta 5: Acceso a Estadísticas nutricionales (no hay link en el Dashboard)
+        // Tarjeta 6: Acceso a Informe mensual
+        // Tarjeta 7: Acceso a Favoritos
+        // Tarjeta 8: Acceso a Menús especializados
+
+        const NUTRITION_TIPS = [
+          { emoji: "🥩", tip: "La proteína reduce el hambre hasta un 35% más que los carbohidratos", tag: "Proteína" },
+          { emoji: "💧", tip: "Beber agua antes de comer reduce la ingesta calórica en un 13%", tag: "Hidratación" },
+          { emoji: "🥦", tip: "Comer fibra antes de carbohidratos reduce el pico de glucosa un 40%", tag: "Glucosa" },
+          { emoji: "🫐", tip: "Los antioxidantes de los frutos rojos mejoran la recuperación muscular", tag: "Recuperación" },
+          { emoji: "🥚", tip: "Los huevos tienen todos los aminoácidos esenciales en proporciones ideales", tag: "Aminoácidos" },
+          { emoji: "🫒", tip: "El aceite de oliva virgen extra reduce la inflamación muscular post-entreno", tag: "Inflamación" },
+          { emoji: "🍌", tip: "El plátano antes de entrenar aporta energía rápida y potasio para evitar calambres", tag: "Energía" },
+          { emoji: "🥛", tip: "La caseína de la leche antes de dormir favorece la síntesis proteica nocturna", tag: "Recuperación" },
+        ];
+        const todayTip = NUTRITION_TIPS[new Date().getDate() % NUTRITION_TIPS.length]!;
+
+        const cards: Array<{ id: string; node: React.ReactNode }> = [];
+
+        // Card A: Receta por hora del día
+        if (hourRecipe) {
+          cards.push({ id: "recipe-hour", node: (
+            <Link href={`/app/recipes/${hourRecipe.id}`}>
+              <div style={{ width: "152px", flexShrink: 0, borderRadius: "18px", overflow: "hidden", cursor: "pointer", boxShadow: "0 4px 16px rgba(0,0,0,0.12)", border: `1px solid ${isDark ? "rgba(255,255,255,0.08)" : "#f3f4f6"}` }}>
+                <div style={{ height: "108px", background: `linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.72) 100%), url(${hourRecipe.imageUrl || FOOD_IMAGES[0]}) center/cover` }}>
+                  <div style={{ position: "relative", height: "100%", display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "8px 10px" }}>
+                    <span style={{ position: "absolute", top: "8px", left: "8px", background: "rgba(249,115,22,0.9)", borderRadius: "8px", padding: "2px 8px", fontSize: "10px", fontWeight: 800, color: "white" }}>{mealTimeLabel}</span>
+                    <p style={{ margin: 0, fontSize: "12px", fontWeight: 800, color: "white", lineHeight: 1.25, textShadow: "0 1px 4px rgba(0,0,0,0.7)", display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{hourRecipe.name}</p>
+                    <p style={{ margin: "2px 0 0", fontSize: "11px", color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>🔥 {hourRecipe.caloriesPerServing ?? "—"} kcal</p>
                   </div>
                 </div>
-              </Link>
-            ))}
-          </div>
-        ) : (
-          <Link href="/app/profile">
-            <div style={{ background: isDark ? "rgba(249,115,22,0.10)" : "linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%)", borderRadius: "18px", padding: "20px", textAlign: "center", boxShadow: "0 2px 8px rgba(249,115,22,0.08)", border: "1px solid rgba(249,115,22,0.15)", cursor: "pointer" }}>
-              <p style={{ margin: "0 0 6px", fontSize: "28px" }}>🍽️</p>
-              <p style={{ margin: "0 0 4px", fontSize: "14px", fontWeight: 800, color: C.textPrimary }}>Personaliza tus recomendaciones</p>
-              <p style={{ margin: "0 0 12px", fontSize: "14px", color: C.textSecond }}>Completa tu perfil para recibir recetas adaptadas a tus objetivos y preferencias</p>
-              <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "#F97316", borderRadius: "12px", padding: "8px 16px" }}>
-                <span style={{ fontSize: "14px", fontWeight: 700, color: "white" }}>Completar perfil →</span>
+                <div style={{ background: C.cardBg, padding: "6px 10px" }}>
+                  <p style={{ margin: 0, fontSize: "11px", color: C.textMuted, fontWeight: 600 }}>Ideal para ahora</p>
+                </div>
               </div>
+            </Link>
+          )});
+        }
+
+        // Card B: Tip nutricional del día
+        cards.push({ id: "tip", node: (
+          <div style={{ width: "152px", flexShrink: 0, borderRadius: "18px", background: isDark ? "rgba(99,102,241,0.12)" : "#EEF2FF", border: `1px solid ${isDark ? "rgba(99,102,241,0.25)" : "#C7D2FE"}`, padding: "14px 12px", display: "flex", flexDirection: "column", gap: "8px", cursor: "default" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <span style={{ fontSize: "22px" }}>{todayTip.emoji}</span>
+              <span style={{ fontSize: "10px", fontWeight: 800, color: isDark ? "#a5b4fc" : "#4338ca", background: isDark ? "rgba(99,102,241,0.2)" : "#E0E7FF", borderRadius: "6px", padding: "2px 7px" }}>{todayTip.tag}</span>
             </div>
+            <p style={{ margin: 0, fontSize: "12px", fontWeight: 700, color: C.textPrimary, lineHeight: 1.4, display: "-webkit-box", WebkitLineClamp: 4, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{todayTip.tip}</p>
+            <p style={{ margin: 0, fontSize: "10px", color: C.textMuted, fontWeight: 600 }}>💡 Tip del día</p>
+          </div>
+        )});
+
+        // Card C: Reto semanal activo
+        if (activeChallenge) {
+          cards.push({ id: "challenge", node: (
+            <Link href="/app/challenges">
+              <div style={{ width: "152px", flexShrink: 0, borderRadius: "18px", background: isDark ? "rgba(16,185,129,0.12)" : "#ECFDF5", border: `1px solid ${isDark ? "rgba(16,185,129,0.25)" : "#A7F3D0"}`, padding: "14px 12px", display: "flex", flexDirection: "column", gap: "8px", cursor: "pointer" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <span style={{ fontSize: "22px" }}>{activeChallenge.emoji ?? "🏆"}</span>
+                  <span style={{ fontSize: "10px", fontWeight: 800, color: "#059669", background: "rgba(16,185,129,0.15)", borderRadius: "6px", padding: "2px 7px" }}>Reto semanal</span>
+                </div>
+                <p style={{ margin: 0, fontSize: "12px", fontWeight: 800, color: C.textPrimary, lineHeight: 1.3, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{activeChallenge.nameEs ?? activeChallenge.name}</p>
+                <div style={{ height: "5px", borderRadius: "3px", background: isDark ? "rgba(255,255,255,0.1)" : "#D1FAE5", overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: `${activeChallenge.progressPct ?? 0}%`, background: "linear-gradient(90deg, #10B981, #059669)", borderRadius: "3px" }} />
+                </div>
+                <p style={{ margin: 0, fontSize: "10px", color: "#059669", fontWeight: 700 }}>{activeChallenge.progressPct ?? 0}% completado →</p>
+              </div>
+            </Link>
+          )});
+        }
+
+        // Card D: Reto 30 días (si activo)
+        if (thirtyDay) {
+          cards.push({ id: "30day", node: (
+            <Link href="/app/challenges">
+              <div style={{ width: "152px", flexShrink: 0, borderRadius: "18px", background: isDark ? "rgba(249,115,22,0.12)" : "#FFF7ED", border: `1px solid ${isDark ? "rgba(249,115,22,0.25)" : "#FED7AA"}`, padding: "14px 12px", display: "flex", flexDirection: "column", gap: "8px", cursor: "pointer" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <span style={{ fontSize: "22px" }}>🗓️</span>
+                  <span style={{ fontSize: "10px", fontWeight: 800, color: "#EA580C", background: "rgba(249,115,22,0.15)", borderRadius: "6px", padding: "2px 7px" }}>Día {thirtyDay.currentDay}/30</span>
+                </div>
+                <p style={{ margin: 0, fontSize: "12px", fontWeight: 800, color: C.textPrimary, lineHeight: 1.3 }}>Reto 30 días</p>
+                {thirtyDay.todayTask && <p style={{ margin: 0, fontSize: "11px", color: C.textSecond, lineHeight: 1.4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{thirtyDay.todayTask}</p>}
+                <div style={{ height: "5px", borderRadius: "3px", background: isDark ? "rgba(255,255,255,0.1)" : "#FFEDD5", overflow: "hidden" }}>
+                  <div style={{ height: "100%", width: `${thirtyDay.progressPct}%`, background: "linear-gradient(90deg, #F97316, #EA580C)", borderRadius: "3px" }} />
+                </div>
+              </div>
+            </Link>
+          )});
+        }
+
+        // Card E: Nivel y puntos → acceso a logros (no hay link en el Dashboard)
+        if (level) {
+          cards.push({ id: "level", node: (
+            <Link href="/app/achievements">
+              <div style={{ width: "152px", flexShrink: 0, borderRadius: "18px", background: isDark ? "rgba(139,92,246,0.12)" : "#F5F3FF", border: `1px solid ${isDark ? "rgba(139,92,246,0.25)" : "#DDD6FE"}`, padding: "14px 12px", display: "flex", flexDirection: "column", gap: "8px", cursor: "pointer" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                  <span style={{ fontSize: "22px" }}>{level.currentLevel.emoji ?? "⭐"}</span>
+                  <span style={{ fontSize: "10px", fontWeight: 800, color: "#7C3AED", background: "rgba(139,92,246,0.15)", borderRadius: "6px", padding: "2px 7px" }}>Nivel</span>
+                </div>
+                <p style={{ margin: 0, fontSize: "13px", fontWeight: 900, color: C.textPrimary }}>{level.currentLevel.nameEs}</p>
+                <p style={{ margin: 0, fontSize: "11px", color: isDark ? "#a78bfa" : "#7C3AED", fontWeight: 700 }}>{level.totalPoints} pts</p>
+                {level.nextLevel && (
+                  <div style={{ height: "5px", borderRadius: "3px", background: isDark ? "rgba(255,255,255,0.1)" : "#EDE9FE", overflow: "hidden" }}>
+                    <div style={{ height: "100%", width: `${level.progressPct}%`, background: "linear-gradient(90deg, #8B5CF6, #7C3AED)", borderRadius: "3px" }} />
+                  </div>
+                )}
+                <p style={{ margin: 0, fontSize: "10px", color: isDark ? "#a78bfa" : "#7C3AED", fontWeight: 600 }}>Ver logros →</p>
+              </div>
+            </Link>
+          )});
+        }
+
+        // Card F: Estadísticas nutricionales (no hay link en el Dashboard)
+        cards.push({ id: "stats", node: (
+          <Link href="/app/stats">
+            <div style={{ width: "152px", flexShrink: 0, borderRadius: "18px", background: isDark ? "rgba(239,68,68,0.10)" : "#FFF1F2", border: `1px solid ${isDark ? "rgba(239,68,68,0.22)" : "#FECDD3"}`, padding: "14px 12px", display: "flex", flexDirection: "column", gap: "8px", cursor: "pointer" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <span style={{ fontSize: "22px" }}>📊</span>
+              <span style={{ fontSize: "10px", fontWeight: 800, color: "#DC2626", background: "rgba(239,68,68,0.12)", borderRadius: "6px", padding: "2px 7px" }}>Estadísticas</span>
+            </div>
+            <p style={{ margin: 0, fontSize: "13px", fontWeight: 800, color: C.textPrimary, lineHeight: 1.3 }}>Tu evolución nutricional</p>
+            <p style={{ margin: 0, fontSize: "11px", color: C.textSecond, lineHeight: 1.4 }}>Gráficas, tendencias y análisis de tus datos</p>
+            <p style={{ margin: 0, fontSize: "10px", color: "#DC2626", fontWeight: 700 }}>Ver estadísticas →</p>
+          </div>
           </Link>
-        )}
-      </div>
+        )});
+
+        // Card G: Informe mensual
+        cards.push({ id: "monthly", node: (
+          <Link href="/app/monthly-reports">
+            <div style={{ width: "152px", flexShrink: 0, borderRadius: "18px", background: isDark ? "rgba(59,130,246,0.10)" : "#EFF6FF", border: `1px solid ${isDark ? "rgba(59,130,246,0.22)" : "#BFDBFE"}`, padding: "14px 12px", display: "flex", flexDirection: "column", gap: "8px", cursor: "pointer" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <span style={{ fontSize: "22px" }}>📋</span>
+              <span style={{ fontSize: "10px", fontWeight: 800, color: "#1D4ED8", background: "rgba(59,130,246,0.12)", borderRadius: "6px", padding: "2px 7px" }}>Informe</span>
+            </div>
+            <p style={{ margin: 0, fontSize: "13px", fontWeight: 800, color: C.textPrimary, lineHeight: 1.3 }}>Informe mensual</p>
+            <p style={{ margin: 0, fontSize: "11px", color: C.textSecond, lineHeight: 1.4 }}>Resumen completo de tu nutrición este mes</p>
+            <p style={{ margin: 0, fontSize: "10px", color: "#1D4ED8", fontWeight: 700 }}>Ver informe →</p>
+          </div>
+          </Link>
+        )});
+
+        // Card H: Favoritos
+        cards.push({ id: "favorites", node: (
+          <Link href="/app/favorites">
+            <div style={{ width: "152px", flexShrink: 0, borderRadius: "18px", background: isDark ? "rgba(236,72,153,0.10)" : "#FDF2F8", border: `1px solid ${isDark ? "rgba(236,72,153,0.22)" : "#FBCFE8"}`, padding: "14px 12px", display: "flex", flexDirection: "column", gap: "8px", cursor: "pointer" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+              <span style={{ fontSize: "22px" }}>❤️</span>
+              <span style={{ fontSize: "10px", fontWeight: 800, color: "#BE185D", background: "rgba(236,72,153,0.12)", borderRadius: "6px", padding: "2px 7px" }}>Favoritos</span>
+            </div>
+            <p style={{ margin: 0, fontSize: "13px", fontWeight: 800, color: C.textPrimary, lineHeight: 1.3 }}>Mis recetas guardadas</p>
+            <p style={{ margin: 0, fontSize: "11px", color: C.textSecond, lineHeight: 1.4 }}>Accede rápido a las recetas que más te gustan</p>
+            <p style={{ margin: 0, fontSize: "10px", color: "#BE185D", fontWeight: 700 }}>Ver favoritos →</p>
+          </div>
+          </Link>
+        )});
+
+        return (
+          <div style={{ marginBottom: "20px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "12px" }}>
+              <h2 style={{ margin: 0, fontSize: "17px", fontWeight: 800, color: C.textPrimary, letterSpacing: "-0.02em" }}>✨ Para ti ahora</h2>
+              <Link href="/app/recipes"><span style={{ fontSize: "13px", fontWeight: 600, color: "#F97316" }}>Explorar →</span></Link>
+            </div>
+            <div style={{ display: "flex", gap: "12px", overflowX: "auto", paddingBottom: "6px", scrollbarWidth: "none" }}>
+              {cards.map(c => <React.Fragment key={c.id}>{c.node}</React.Fragment>)}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Suggested Menus Section — REMOVED (already in Menús section) */}
       {false && <div style={{ marginBottom: "20px" }}>
