@@ -558,20 +558,29 @@ export default function Recipes() {
   const isFetching = isFetchingNextPage;
 
   // IntersectionObserver — load next page when sentinel enters viewport
+  // Use a ref to always have the latest values without re-creating the observer
+  const hasNextPageRef = useRef(hasNextPage);
+  const isFetchingNextPageRef = useRef(isFetchingNextPage);
+  const fetchNextPageRef = useRef(fetchNextPage);
+  useEffect(() => { hasNextPageRef.current = hasNextPage; }, [hasNextPage]);
+  useEffect(() => { isFetchingNextPageRef.current = isFetchingNextPage; }, [isFetchingNextPage]);
+  useEffect(() => { fetchNextPageRef.current = fetchNextPage; }, [fetchNextPage]);
+
   useEffect(() => {
     const el = sentinelRef.current;
     if (!el) return;
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0].isIntersecting && hasNextPage && !isFetchingNextPage) {
-          fetchNextPage();
+        if (entries[0].isIntersecting && hasNextPageRef.current && !isFetchingNextPageRef.current) {
+          fetchNextPageRef.current();
         }
       },
-      { threshold: 0.1 }
+      { threshold: 0, rootMargin: '200px' }
     );
     observer.observe(el);
     return () => observer.disconnect();
-  }, [hasNextPage, isFetchingNextPage, fetchNextPage]);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Favorites
   const utils = trpc.useUtils();
@@ -1019,20 +1028,21 @@ export default function Recipes() {
           </div>
         )}
       </div>}
-      {/* Infinite scroll sentinel */}
-      {recipes.length > 0 && !showWithInventory && (
-        <div ref={sentinelRef} style={{ height: "60px", display: "flex", alignItems: "center", justifyContent: "center", marginTop: "8px" }}>
-          {isFetchingNextPage && (
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
-              <div style={{ width: "28px", height: "28px", border: "3px solid #f3f4f6", borderTop: "3px solid #F97316", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
-              <span style={{ fontSize: "14px", color: "#9ca3af", fontWeight: 600 }}>{t("recipes.loadingMore", "Loading more recipes...")}</span>
-            </div>
-          )}
-          {!hasNextPage && recipes.length > 0 && !isFetchingNextPage && (
-            <p style={{ fontSize: "14px", color: "#d1d5db", fontWeight: 600, margin: 0 }}>✅ {t("recipes.allSeen", "All recipes seen")} ({recipes.length})</p>
-          )}
-        </div>
-      )}
+      {/* Infinite scroll sentinel — always in DOM so IntersectionObserver works */}
+      <div
+        ref={sentinelRef}
+        style={{ height: "80px", display: "flex", alignItems: "center", justifyContent: "center", marginTop: "8px" }}
+      >
+        {!showWithInventory && isFetchingNextPage && (
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "8px" }}>
+            <div style={{ width: "28px", height: "28px", border: "3px solid #f3f4f6", borderTop: "3px solid #F97316", borderRadius: "50%", animation: "spin 0.8s linear infinite" }} />
+            <span style={{ fontSize: "14px", color: "#9ca3af", fontWeight: 600 }}>{t("recipes.loadingMore", "Cargando más recetas...")}</span>
+          </div>
+        )}
+        {!showWithInventory && !hasNextPage && recipes.length > 0 && !isFetchingNextPage && (
+          <p style={{ fontSize: "14px", color: "#d1d5db", fontWeight: 600, margin: 0 }}>✅ {t("recipes.allSeen", "Has visto todas las recetas")} ({recipes.length})</p>
+        )}
+      </div>
 
       {/* Disclaimer */}
       <p style={{ fontSize: "13px", color: "#d1d5db", textAlign: "center", margin: "8px 0 0", lineHeight: 1.5 }}>

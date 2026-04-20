@@ -2121,9 +2121,35 @@ Adapta esta receta eliminando los ingredientes prohibidos y sustituyéndolos por
         const userMenus = await db.getMenuOrganizers(ctx.user.id);
         if (!userMenus.length) return [];
         const results: any[] = [];
+        const targetDate = new Date(input.date + "T00:00:00Z");
         for (const menu of userMenus) {
           const dayParts = await db.getMenuDayParts(menu.id);
-          const dateMatchingParts = dayParts.filter((dp: any) => dp.dayPart.date === input.date);
+          // Calculate dayNumber for this date relative to menu start
+          let targetDayNumber: number | null = null;
+          if ((menu as any).startDate) {
+            // startDate may come as Date object or string from Drizzle
+            const rawStart = (menu as any).startDate;
+            const startDateStr = rawStart instanceof Date
+              ? rawStart.toISOString().slice(0, 10)
+              : String(rawStart).slice(0, 10);
+            const startDate = new Date(startDateStr + "T00:00:00Z");
+            const diffMs = targetDate.getTime() - startDate.getTime();
+            const diffDays = Math.round(diffMs / (1000 * 60 * 60 * 24));
+            targetDayNumber = diffDays + 1; // dayNumber is 1-based
+          }
+          // Match by dayNumber relative to startDate (primary) OR by exact date (fallback)
+          const dateMatchingParts = dayParts.filter((dp: any) => {
+            // Primary: if menu has startDate and dayPart has dayNumber, use relative mapping
+            if (targetDayNumber !== null && dp.dayPart.dayNumber !== null && dp.dayPart.dayNumber === targetDayNumber) return true;
+            // Fallback: match by exact date string (normalize Date objects)
+            if (targetDayNumber === null) {
+              const dpDate = dp.dayPart.date instanceof Date
+                ? dp.dayPart.date.toISOString().slice(0, 10)
+                : (dp.dayPart.date ? String(dp.dayPart.date).slice(0, 10) : null);
+              if (dpDate === input.date) return true;
+            }
+            return false;
+          });
           for (const dp of dateMatchingParts) {
             const recipeItems = await db.getMenuDayPartRecipes(dp.dayPart.id);
             results.push({
