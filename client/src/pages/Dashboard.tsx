@@ -317,6 +317,8 @@ export default function Dashboard() {
 
   // Subscription tier for contextual upgrade cardd
   const { tier, isFree, isPro, isProMax } = usePlan();
+  // MUST be declared before any conditional return to comply with Rules of Hooks
+  const isDesktop = useIsDesktop();
 
   // Recommendations: recipes personalized by meal time and user goal
   const userGoal = profileData.data?.profile?.mainGoal;
@@ -347,8 +349,6 @@ export default function Dashboard() {
   // Hide the card if onboarding is done OR profile is >= 85% complete
   const onboardingDone = profileData.data?.user?.onboardingCompleted === true;
   const showProfileCard = !onboardingDone && profileCompletion < 85 && !profileData.isLoading;
-
-   const isDesktop = useIsDesktop();
 
   // Si el experto está en modo profesional, mostrar su panel profesional
   if (expertMode) {
