@@ -590,24 +590,46 @@ export default function Dashboard() {
                 </div>
               </div>
             )}
-            {/* Perfil de Gusto IA */}
-            {tasteInsights.data && tasteInsights.data.topCuisines && tasteInsights.data.topCuisines.length > 0 && (
-              <div style={{ background: C.cardBg, borderRadius: '18px', padding: '16px 18px', boxShadow: C.shadow2 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
-                    <span style={{ fontSize: '20px' }}>🧠</span>
-                    <p style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: C.textPrimary }}>Tu perfil de gusto IA</p>
+            {/* Perfil de Gusto IA — siempre visible, muestra estado aprendiendo para nuevos usuarios */}
+            {tasteInsights.data !== undefined && (
+              <div style={{ background: isDark ? 'rgba(99,102,241,0.08)' : 'linear-gradient(135deg, #FFF7ED 0%, #EEF2FF 100%)', borderRadius: '18px', padding: '16px 18px', boxShadow: C.shadow2, border: `1px solid ${isDark ? 'rgba(99,102,241,0.2)' : '#E0E7FF'}` }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: 0 }}>
+                    <span style={{ fontSize: '20px', flexShrink: 0 }}>🧠</span>
+                    <div style={{ minWidth: 0 }}>
+                      <p style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: C.textPrimary }}>La IA aprende de ti</p>
+                      <p style={{ margin: 0, fontSize: '11px', color: C.textMuted, fontWeight: 500 }}>Cuanto más uses BuddyMarket, mejores recomendaciones</p>
+                    </div>
                   </div>
-                  <span style={{ fontSize: '11px', color: C.textMuted, fontWeight: 600 }}>Actualizado hoy</span>
+                  {(tasteInsights.data?.totalInteractions ?? 0) > 0 && (
+                    <div style={{ textAlign: 'center', flexShrink: 0, marginLeft: '8px' }}>
+                      <div style={{ fontSize: '16px', fontWeight: 900, color: '#F97316' }}>{Math.min(100, Math.round(((tasteInsights.data?.totalInteractions ?? 0) / 50) * 100))}%</div>
+                      <div style={{ fontSize: '10px', color: C.textMuted, fontWeight: 600 }}>Perfil</div>
+                    </div>
+                  )}
                 </div>
-                <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
-                  {(tasteInsights.data.topCuisines || []).slice(0, 3).map((c: string) => (
-                    <span key={c} style={{ padding: '4px 10px', borderRadius: '20px', background: isDark ? 'rgba(249,115,22,0.15)' : '#FFF7ED', border: `1px solid ${isDark ? 'rgba(249,115,22,0.3)' : '#FED7AA'}`, fontSize: '12px', fontWeight: 700, color: '#F97316' }}>{c}</span>
-                  ))}
-                  {(tasteInsights.data.topIngredients || []).slice(0, 3).map((i: string) => (
-                    <span key={i} style={{ padding: '4px 10px', borderRadius: '20px', background: isDark ? 'rgba(99,102,241,0.15)' : '#EEF2FF', border: `1px solid ${isDark ? 'rgba(99,102,241,0.3)' : '#C7D2FE'}`, fontSize: '12px', fontWeight: 700, color: '#6366F1' }}>{i}</span>
-                  ))}
-                </div>
+                {tasteInsights.data?.topCuisines && tasteInsights.data.topCuisines.length > 0 ? (
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '6px' }}>
+                    {(tasteInsights.data.topCuisines || []).slice(0, 3).map((c: string) => (
+                      <span key={c} style={{ padding: '4px 10px', borderRadius: '20px', background: isDark ? 'rgba(249,115,22,0.15)' : '#FFF7ED', border: `1px solid ${isDark ? 'rgba(249,115,22,0.3)' : '#FED7AA'}`, fontSize: '12px', fontWeight: 700, color: '#F97316' }}>{c}</span>
+                    ))}
+                    {(tasteInsights.data.topIngredients || []).slice(0, 3).map((i: string) => (
+                      <span key={i} style={{ padding: '4px 10px', borderRadius: '20px', background: isDark ? 'rgba(99,102,241,0.15)' : '#EEF2FF', border: `1px solid ${isDark ? 'rgba(99,102,241,0.3)' : '#C7D2FE'}`, fontSize: '12px', fontWeight: 700, color: '#6366F1' }}>{i}</span>
+                    ))}
+                  </div>
+                ) : (
+                  <div style={{ display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+                      <div style={{ flex: 1, height: '6px', borderRadius: '3px', background: isDark ? 'rgba(255,255,255,0.1)' : '#E5E7EB', overflow: 'hidden' }}>
+                        <div style={{ height: '100%', width: '5%', borderRadius: '3px', background: 'linear-gradient(90deg, #F97316, #FB923C)' }} />
+                      </div>
+                      <span style={{ fontSize: '11px', color: C.textMuted, fontWeight: 700, flexShrink: 0 }}>Iniciando...</span>
+                    </div>
+                    <p style={{ margin: 0, fontSize: '12px', color: C.textMuted, lineHeight: 1.5 }}>
+                      Guarda recetas favoritas, registra comidas y usa la app para que la IA aprenda tus gustos. ✨
+                    </p>
+                  </div>
+                )}
               </div>
             )}
             {/* Recomendaciones */}
@@ -895,20 +917,9 @@ export default function Dashboard() {
                         <div style={{ width: "32px", height: "32px", borderRadius: "50%", border: "3px solid rgba(249,115,22,0.2)", borderTopColor: "#F97316", animation: "spin 0.9s linear infinite" }} />
                         <p style={{ margin: 0, fontSize: "13px", color: C.textMuted, fontWeight: 500 }}>Buscando tu receta del día...</p>
                       </div>
-                    ) : hasError ? (
-                      // Estado de error amigable
-                      <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", gap: "10px", padding: "16px", background: "rgba(249,115,22,0.04)", borderTop: "1px solid rgba(249,115,22,0.1)" }}>
-                        <span style={{ fontSize: "32px" }}>🍽️</span>
-                        <p style={{ margin: 0, fontSize: "14px", fontWeight: 700, color: C.textPrimary, textAlign: "center" }}>No pudimos cargar la receta de hoy</p>
-                        <p style={{ margin: 0, fontSize: "12px", color: C.textMuted, textAlign: "center", lineHeight: 1.4 }}>Puede que haya un problema de conexión. Prueba a recargar la página.</p>
-                        <button
-                          onClick={() => contextualRecipe.refetch()}
-                          style={{ marginTop: "4px", padding: "8px 16px", borderRadius: "10px", border: "1.5px solid #F97316", background: "transparent", color: "#F97316", fontSize: "13px", fontWeight: 700, cursor: "pointer" }}
-                        >
-                          🔄 Reintentar
-                        </button>
-                      </div>
-                    ) : cr ? (
+                    ) : cr || hasError ? (
+                      // Si hay receta IA o fallback en error: mostrar receta IA o carrusel
+                      cr ? (
                       <Link href={`/app/recipes/${cr.id}`} style={{ display: "block", position: "absolute", inset: 0 }}>
                         <div style={{ position: "absolute", inset: 0, background: `linear-gradient(180deg, rgba(0,0,0,0.05) 0%, rgba(0,0,0,0.75) 100%), url(${cr.imageUrl || 'https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/recipes_afa44a0e.jpg'}) center/cover`, display: "flex", flexDirection: "column", justifyContent: "flex-end", padding: "16px", cursor: "pointer" }}>
                           <span style={{ display: "inline-block", background: "#F97316", color: "white", fontSize: "13px", fontWeight: 800, borderRadius: "8px", padding: "3px 8px", marginBottom: "6px", width: "fit-content" }}>Hoy</span>
@@ -919,8 +930,8 @@ export default function Dashboard() {
                           </div>
                         </div>
                       </Link>
-                    ) : (
-                      // Fallback al carrusel estático
+                      ) : (
+                      // Fallback al carrusel estático (cuando no hay receta IA o hay error)
                       <>
                         {RECIPE_OF_DAY.map((recipe, idx) => (
                           <Link key={idx} href={`/app/recipes/${recipe.id}`} style={{ display: "block", position: "absolute", inset: 0, pointerEvents: idx === recipeIdx ? "auto" : "none" }}>
@@ -937,7 +948,8 @@ export default function Dashboard() {
                           ))}
                         </div>
                       </>
-                    )}
+                      )
+                    )
                   </div>
                 </div>
               );

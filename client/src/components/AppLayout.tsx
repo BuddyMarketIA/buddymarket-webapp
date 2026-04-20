@@ -522,6 +522,10 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
     return (
       <ExpertModeContext.Provider value={expertModeValue}>
       <div style={{ display: "flex", minHeight: "100dvh", background: "#FFF8F0" }}>
+        {/* Onboarding modal — shown automatically to new users who haven't completed it */}
+        {user && profileData.data && profileData.data.user?.onboardingCompleted === false && (
+          <OnboardingModal onClose={() => { /* will re-query profile */ }} />
+        )}
         {/* Skip to main */}
         <a href="#main-content" style={{ position: "absolute", top: "-100px", left: "16px", zIndex: 9999, padding: "8px 16px", background: "#F97316", color: "white", borderRadius: "8px", fontWeight: 700, fontSize: "14px", textDecoration: "none" }}
           onFocus={(e) => { e.currentTarget.style.top = "16px"; }}

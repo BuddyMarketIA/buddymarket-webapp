@@ -447,6 +447,7 @@ export async function getRecipes(params: {
   currentUserId?: number;
   cuisineType?: string;
   cookingMethod?: string;
+  foodType?: string;
   limit?: number;
   offset?: number;
 }) {
@@ -480,6 +481,15 @@ export async function getRecipes(params: {
   if (params.tag) conditions.push(like(recipes.tags, `%${params.tag}%`));
   if (params.cuisineType) conditions.push(eq(recipes.cuisineType, params.cuisineType));
   if (params.cookingMethod) conditions.push(eq(recipes.cookingMethod, params.cookingMethod));
+  if (params.foodType) {
+    // foodType maps to category field or tags — search in both
+    conditions.push(
+      or(
+        eq(recipes.category, params.foodType as any),
+        like(recipes.tags, `%${params.foodType}%`)
+      )!
+    );
+  }
 
   // Get user's allergies to filter out recipes with matching allergens
   let userAllergenNames: string[] = [];

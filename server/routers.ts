@@ -1387,6 +1387,7 @@ Devuelve SOLO JSON válido con esta estructura:
           excludeUserAllergens: z.boolean().optional(),
           cuisineType: z.string().max(50).trim().optional(),
           cookingMethod: z.string().max(50).trim().optional(),
+          foodType: z.string().max(50).trim().optional(),
           limit: z.number().int().min(1).max(100).optional(),
           cursor: z.number().int().min(0).optional(), // offset cursor for infinite scroll
         })

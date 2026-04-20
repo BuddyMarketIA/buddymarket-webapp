@@ -36,12 +36,27 @@ type Recipe = {
 };
 
 // ─── Filter categories ────────────────────────────────────────────────────────
-type FilterCategory = "momento" | "cocina" | "metodo";
+type FilterCategory = "momento" | "tipo" | "cocina" | "metodo";
 
 const FILTER_CATEGORY_KEYS: { id: FilterCategory; key: string; emoji: string }[] = [
   { id: "momento", key: "mealTime", emoji: "🕐" },
+  { id: "tipo", key: "Tipo de alimento", emoji: "🥩" },
   { id: "cocina", key: "cuisineType", emoji: "🌍" },
   { id: "metodo", key: "cookingMethod", emoji: "🍳" },
+];
+
+const FOOD_TYPE_OPTIONS_KEYS = [
+  { value: "", key: "all", emoji: "🍽️", label: "Todos" },
+  { value: "carne", key: "meat", emoji: "🥩", label: "Carne" },
+  { value: "pescado", key: "fish", emoji: "🐟", label: "Pescado" },
+  { value: "ensalada", key: "salad", emoji: "🥗", label: "Ensalada" },
+  { value: "vegano", key: "vegan", emoji: "🌱", label: "Vegano" },
+  { value: "vegetariano", key: "vegetarian", emoji: "🥕", label: "Vegetariano" },
+  { value: "pasta", key: "pasta", emoji: "🍝", label: "Pasta" },
+  { value: "sopa", key: "soup", emoji: "🍲", label: "Sopa" },
+  { value: "postre", key: "dessert", emoji: "🍰", label: "Postre" },
+  { value: "detox", key: "detox", emoji: "🍋", label: "Detox" },
+  { value: "smoothie", key: "smoothie", emoji: "🥤", label: "Smoothie" },
 ];
 
 const MEAL_TIME_OPTIONS_KEYS = [
@@ -469,7 +484,23 @@ export default function Recipes() {
   const MEAL_TIME_OPTIONS = MEAL_TIME_OPTIONS_KEYS.map(o => ({ ...o, label: t(`recipes.mealTime.${o.key}`, o.key) }));
   const CUISINE_OPTIONS = CUISINE_OPTIONS_KEYS.map(o => ({ ...o, label: t(`recipes.cuisine.${o.key}`, o.key) }));
   const COOKING_METHOD_OPTIONS = COOKING_METHOD_OPTIONS_KEYS.map(o => ({ ...o, label: t(`recipes.cookingMethodOptions.${o.key}`, o.key) }));
-  const FILTER_CATEGORIES = FILTER_CATEGORY_KEYS.map(o => ({ ...o, label: t(`recipes.filterCat.${o.key}`, o.key) }));
+  const FILTER_CATEGORIES = FILTER_CATEGORY_KEYS.map(o => ({
+    ...o,
+    label: o.id === "tipo" ? "Tipo de alimento" : t(`recipes.filterCat.${o.key}`, o.key)
+  }));
+
+  // Filter state (declared early so profileData query can use onlyForMe)
+  const [activeFilterCat, setActiveFilterCat] = useState<FilterCategory>("momento");
+  const [mealTimeFilter, setMealTimeFilter] = useState("");
+  const [cuisineFilter, setCuisineFilter] = useState("");
+  const [cookingMethodFilter, setCookingMethodFilter] = useState("");
+  const [foodTypeFilter, setFoodTypeFilter] = useState("");
+  const [onlyForMe, setOnlyForMe] = useState(false);
+  const [showMyRecipes, setShowMyRecipes] = useState(false);
+  const [showWithInventory, setShowWithInventory] = useState(false);
+
+  // Profile query for 'Solo para mí' filter
+  const { data: profileData } = trpc.profile.get.useQuery(undefined, { enabled: isAuthenticated && onlyForMe });
 
   // Search state
   const [inputValue, setInputValue] = useState("");
@@ -479,13 +510,7 @@ export default function Recipes() {
   const searchRef = useRef<HTMLInputElement>(null);
   const dropdownRef = useRef<HTMLDivElement>(null);
 
-  // Filter state
-  const [activeFilterCat, setActiveFilterCat] = useState<FilterCategory>("momento");
-  const [mealTimeFilter, setMealTimeFilter] = useState("");
-  const [cuisineFilter, setCuisineFilter] = useState("");
-  const [cookingMethodFilter, setCookingMethodFilter] = useState("");
-  const [showMyRecipes, setShowMyRecipes] = useState(false);
-  const [showWithInventory, setShowWithInventory] = useState(false);
+  // (filter state moved above profileData query)
 
   // Load recent searches on mount
   useEffect(() => {
@@ -526,6 +551,22 @@ export default function Recipes() {
     { enabled: inputValue.trim().length >= 2 && searchFocused }
   );
 
+  // Map user goal to a search tag for 'Solo para mí'
+  const goalTagMap: Record<string, string> = {
+    perdida_peso: "perdida de peso",
+    ganancia_muscular: "musculación",
+    mantenimiento: "equilibrado",
+    definicion: "definición",
+    rendimiento: "rendimiento",
+    bienestar: "bienestar",
+    dieta_mediterranea: "mediterráneo",
+    vegano: "vegano",
+    vegetariano: "vegetariano",
+  };
+  const onlyForMeTag = onlyForMe && profileData?.profile?.mainGoal
+    ? goalTagMap[profileData.profile.mainGoal] ?? undefined
+    : undefined;
+
   const queryParams = useMemo(() => ({
     search: debouncedSearch || undefined,
     isPublic: showMyRecipes ? undefined : true,
@@ -533,9 +574,13 @@ export default function Recipes() {
     mealTime: mealTimeFilter || undefined,
     cuisineType: cuisineFilter || undefined,
     cookingMethod: cookingMethodFilter || undefined,
-    excludeUserAllergens: isAuthenticated ? true : undefined,
+    foodType: foodTypeFilter || undefined,
+    tag: onlyForMeTag || undefined,
+    // NOTE: excludeUserAllergens is intentionally NOT set here.
+    // We show ALL recipes but display a visual warning on incompatible ones.
+    // This is a key BuddyMarket differentiator: awareness, not restriction.
     limit: 20,
-  }), [debouncedSearch, showMyRecipes, user?.id, mealTimeFilter, cuisineFilter, cookingMethodFilter, isAuthenticated]);
+  }), [debouncedSearch, showMyRecipes, user?.id, mealTimeFilter, cuisineFilter, cookingMethodFilter, foodTypeFilter, onlyForMeTag]);
 
   // Sentinel ref for IntersectionObserver
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -624,12 +669,14 @@ export default function Recipes() {
   const getLikesCount = (recipeId: number) =>
     (likesBatch?.counts as Record<number, number> | undefined)?.[recipeId] ?? 0;
 
-  const activeFiltersCount = [mealTimeFilter, cuisineFilter, cookingMethodFilter].filter(Boolean).length;
+  const activeFiltersCount = [mealTimeFilter, cuisineFilter, cookingMethodFilter, foodTypeFilter, onlyForMe ? "1" : ""].filter(Boolean).length;
 
   const clearFilters = () => {
     setMealTimeFilter("");
     setCuisineFilter("");
     setCookingMethodFilter("");
+    setFoodTypeFilter("");
+    setOnlyForMe(false);
   };
 
   const handleSearchSubmit = useCallback((query: string) => {
@@ -874,9 +921,12 @@ export default function Recipes() {
           </div>
 
           {/* Filter pills */}
-          <div style={{ display: "flex", gap: "6px", overflowX: "auto", paddingBottom: "4px", marginBottom: "14px", scrollbarWidth: "none" }}>
+          <div style={{ display: "flex", gap: "6px", overflowX: "auto", paddingBottom: "4px", marginBottom: "10px", scrollbarWidth: "none" }}>
             {activeFilterCat === "momento" && MEAL_TIME_OPTIONS.map(opt => (
               <FilterPill key={opt.value} emoji={opt.emoji} label={opt.label} active={mealTimeFilter === opt.value} onClick={() => setMealTimeFilter(opt.value)} />
+            ))}
+            {activeFilterCat === "tipo" && FOOD_TYPE_OPTIONS_KEYS.map(opt => (
+              <FilterPill key={opt.value} emoji={opt.emoji} label={opt.label} active={foodTypeFilter === opt.value} onClick={() => setFoodTypeFilter(opt.value)} />
             ))}
             {activeFilterCat === "cocina" && CUISINE_OPTIONS.map(opt => (
               <FilterPill key={opt.value} emoji={opt.emoji} label={opt.label} active={cuisineFilter === opt.value} onClick={() => setCuisineFilter(opt.value)} />
@@ -885,6 +935,31 @@ export default function Recipes() {
               <FilterPill key={opt.value} emoji={opt.emoji} label={opt.label} active={cookingMethodFilter === opt.value} onClick={() => setCookingMethodFilter(opt.value)} />
             ))}
           </div>
+
+          {/* Solo para mí toggle */}
+          {isAuthenticated && (
+            <div style={{ marginBottom: "14px" }}>
+              <button
+                onClick={() => setOnlyForMe(prev => !prev)}
+                style={{
+                  display: "flex", alignItems: "center", gap: "8px",
+                  padding: "8px 14px", borderRadius: "20px",
+                  border: `2px solid ${onlyForMe ? "#F97316" : "#e5e7eb"}`,
+                  background: onlyForMe ? "rgba(249,115,22,0.1)" : "white",
+                  color: onlyForMe ? "#F97316" : "#6b7280",
+                  fontSize: "13px", fontWeight: 700, cursor: "pointer",
+                  transition: "all 0.2s",
+                }}
+              >
+                <span style={{ fontSize: "16px" }}>✨</span>
+                Solo para mí
+                {onlyForMe && <span style={{ background: "#F97316", color: "white", borderRadius: "10px", padding: "1px 7px", fontSize: "11px", fontWeight: 800 }}>ON</span>}
+              </button>
+              {onlyForMe && (
+                <p style={{ margin: "6px 0 0 4px", fontSize: "12px", color: "#9ca3af" }}>Mostrando recetas recomendadas según tu perfil y preferencias</p>
+              )}
+            </div>
+          )}
 
           {/* Active filters summary */}
           {activeFiltersCount > 0 && (
