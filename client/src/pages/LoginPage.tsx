@@ -88,8 +88,9 @@ export default function LoginPage() {
   useEffect(() => {
     // Never redirect if user just logged out (even if session briefly still active)
     if (meQuery.isLoading || isJustLoggedOut) return;
-    // If already authenticated, always go to dashboard (never to buddy-setup from login page)
+    // If already authenticated (e.g. OAuth callback), mark session active and go to dashboard
     if (meQuery.data) {
+      sessionStorage.setItem('bm_session_active', '1');
       setLocation("/app/dashboard");
     }
   }, [meQuery.data, meQuery.isLoading, isJustLoggedOut, setLocation]);
@@ -109,6 +110,9 @@ export default function LoginPage() {
 
   // Single post-auth redirect function
   const afterAuth = async (isNewRegistration = false) => {
+    // Mark this tab as having an active session so the reload-to-login guard
+    // (main.tsx) knows the user intentionally logged in.
+    sessionStorage.setItem('bm_session_active', '1');
     try {
       const user = await utils.auth.me.fetch();
       // Only go to buddy-setup if this is a brand new registration AND onboarding not done

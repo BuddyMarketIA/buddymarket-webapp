@@ -2919,3 +2919,4 @@
 - [x] Tab "Explorar": búsqueda y filtros por categoría, accesos rápidos a menús médicos y eventos, botón "Guardar"
 - [x] Simplificar sidebar: de 5 entradas de menús a 1 sola entrada "Mis Menús"
 - [x] Corregir toggle Usuario/Profesional: solo visible para usuarios con role === "buddyexpert"
+- [x] Reload page redirige al login (sessionStorage flag bm_session_active)

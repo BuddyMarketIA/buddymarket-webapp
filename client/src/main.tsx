@@ -18,7 +18,56 @@ import { trpc } from "@/lib/trpc";
   }
 })();
 
-import { UNAUTHED_ERR_MSG } from '@shared/const';
+import { COOKIE_NAME, UNAUTHED_ERR_MSG } from '@shared/const';
+
+// ── RELOAD → LOGIN ────────────────────────────────────────────────────────────
+// sessionStorage is cleared on every page reload (unlike localStorage).
+// If the user reloads the page and there is no active-session flag in
+// sessionStorage, we clear the persistent cookie and send them to /login.
+// The flag is set by LoginPage after a successful login.
+// Exempt: /login, /buddy-setup, /reset-password, /api/*, public pages.
+(function enforceSessionOnReload() {
+  try {
+    const path = window.location.pathname;
+    const isPublicPath =
+      path === '/login' ||
+      path.startsWith('/login') ||
+      path === '/' ||
+      path.startsWith('/blog') ||
+      path.startsWith('/nutricionistas') ||
+      path.startsWith('/empresas') ||
+      path.startsWith('/calculadora') ||
+      path.startsWith('/faq') ||
+      path.startsWith('/about') ||
+      path.startsWith('/terms') ||
+      path.startsWith('/privacy') ||
+      path.startsWith('/cookies') ||
+      path.startsWith('/registration') ||
+      path.startsWith('/activar') ||
+      path.startsWith('/reset-password') ||
+      path.startsWith('/buddy-setup') ||
+      path.startsWith('/onboarding') ||
+      path.startsWith('/api') ||
+      path.startsWith('/experts') ||
+      path.startsWith('/creators') ||
+      path.startsWith('/plan/') ||
+      path.startsWith('/familia/unirse');
+
+    if (isPublicPath) return;
+
+    const hasActiveSession = sessionStorage.getItem('bm_session_active') === '1';
+    if (!hasActiveSession) {
+      // Clear the persistent cookie so the server also sees no session
+      document.cookie = `${COOKIE_NAME}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=None; Secure`;
+      document.cookie = `${COOKIE_NAME}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/; SameSite=Lax`;
+      document.cookie = `${COOKIE_NAME}=; expires=Thu, 01 Jan 1970 00:00:00 GMT; path=/`;
+      window.location.replace('/login');
+    }
+  } catch (_) {
+    // Silently ignore — never block the app from loading
+  }
+})();
+
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { httpBatchLink, TRPCClientError } from "@trpc/client";
 import { createRoot } from "react-dom/client";
