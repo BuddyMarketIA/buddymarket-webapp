@@ -4181,6 +4181,7 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
           const gender = profile?.gender ?? 'male';
           const activityLevel = (profile as any)?.activityLevel ?? 'moderate';
           const goal = (profile as any)?.goal ?? 'maintenance';
+          const trainingDays = (profile as any)?.trainingDaysPerWeek ?? (profile as any)?.weeklyTrainingDays ?? null;
           const dailyCalorieGoal = profile?.dailyCalorieGoal ? Number(profile.dailyCalorieGoal) : 2000;
           const tmb = gender === 'female' ? 655 + (9.6 * weight) + (1.8 * height) - (4.7 * age) : 66 + (13.7 * weight) + (5 * height) - (6.8 * age);
           const actMult: Record<string, number> = { sedentary: 1.2, light: 1.375, moderate: 1.55, active: 1.725, very_active: 1.9 };
@@ -4190,12 +4191,76 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
           const goalLabel = goalLabels[goal] ?? goal;
           const deficitExplanation = `Tu TDEE (gasto energ\u00e9tico total) es ~${tdee} kcal/d\u00eda. Tu objetivo cal\u00f3rico de ${dailyCalorieGoal} kcal est\u00e1 ajustado para ${goalLabel}. ${deficit > 0 ? `Te quedan ${deficit} kcal para llegar a tu objetivo.` : deficit < 0 ? `Has superado tu objetivo en ${Math.abs(deficit)} kcal.` : '\u00a1Has alcanzado exactamente tu objetivo!'}`;
           const mealNames = logs.map(l => l.customMealName ?? 'comida').join(', ');
+
+          // ── Historial 7 dias para deteccion de tendencias ──
+          const sevenDaysAgo = new Date(input.date);
+          sevenDaysAgo.setDate(sevenDaysAgo.getDate() - 7);
+          const sevenDaysAgoStr = sevenDaysAgo.toISOString().split('T')[0];
+          const historyLogs = await drizzleDb.select().from(mealLogsTable).where(
+            and(eq(mealLogsTable.userId, ctx.user.id), gte(mealLogsTable.logDate, sevenDaysAgoStr), lte(mealLogsTable.logDate, input.date))
+          );
+          const dayMap: Record<string, { kcal: number; prot: number; carbs: number; fats: number }> = {};
+          for (const l of historyLogs) {
+            const d = l.logDate;
+            if (!dayMap[d]) dayMap[d] = { kcal: 0, prot: 0, carbs: 0, fats: 0 };
+            dayMap[d].kcal += Number(l.calories) || 0;
+            dayMap[d].prot += Number(l.proteins) || 0;
+            dayMap[d].carbs += Number(l.carbohydrates) || 0;
+            dayMap[d].fats += Number(l.fats) || 0;
+          }
+          const historyDays = Object.entries(dayMap).filter(([d]) => d !== input.date).slice(-6);
+          const targetProteins = Math.round(dailyCalorieGoal * 0.30 / 4);
+          const targetCarbs = Math.round(dailyCalorieGoal * 0.45 / 4);
+          const targetFats = Math.round(dailyCalorieGoal * 0.25 / 9);
+          const trendDays = historyDays.length;
+          const lowProtDays = historyDays.filter(([, v]) => v.prot < targetProteins * 0.8).length;
+          const highFatDays = historyDays.filter(([, v]) => v.fats > targetFats * 1.1).length;
+          const lowCarbDays = historyDays.filter(([, v]) => v.carbs < targetCarbs * 0.7).length;
+          const excessCalDays = historyDays.filter(([, v]) => v.kcal > dailyCalorieGoal * 1.1).length;
+          const lowCalDays = historyDays.filter(([, v]) => v.kcal > 0 && v.kcal < dailyCalorieGoal * 0.75).length;
+          const trends: string[] = [];
+          if (trendDays >= 3) {
+            if (lowProtDays >= 3) trends.push(`TENDENCIA (${lowProtDays}/${trendDays} dias): Proteina baja de forma repetida. Puede estar frenando la recomposicion corporal.`);
+            if (highFatDays >= 3) trends.push(`TENDENCIA (${highFatDays}/${trendDays} dias): Grasas elevadas de forma repetida. Revisa aceite y frutos secos.`);
+            if (lowCarbDays >= 3) trends.push(`TENDENCIA (${lowCarbDays}/${trendDays} dias): Carbohidratos muy bajos de forma repetida. Puede afectar el rendimiento en entrenamientos.`);
+            if (excessCalDays >= 3) trends.push(`TENDENCIA (${excessCalDays}/${trendDays} dias): Exceso calorico repetido. Revisa cenas o snacks.`);
+            if (lowCalDays >= 3) trends.push(`TENDENCIA (${lowCalDays}/${trendDays} dias): Deficit excesivo repetido (<75% objetivo). Riesgo de perdida muscular.`);
+          }
+          const trendsText = trends.length > 0 ? `\n\nTENDENCIAS DETECTADAS EN LOS ULTIMOS 7 DIAS:\n${trends.join('\n')}` : '';
+
+          const activityLabels: Record<string, string> = { sedentary: 'sedentario', light: 'ligero', moderate: 'moderado', active: 'activo', very_active: 'muy activo' };
+          const activityLabel = activityLabels[activityLevel] ?? activityLevel;
+          const trainingInfo = trainingDays ? `fuerza ${trainingDays} dias/semana` : 'entrenamiento regular';
+
+          const systemPrompt = `Eres un nutricionista deportivo experto en recomposicion corporal (perdida de grasa manteniendo masa muscular). Tu objetivo es analizar el dia nutricional del usuario y proporcionarle recomendaciones claras, accionables y personalizadas. Responde SIEMPRE en espanol. Tono: cercano, directo, motivador. Sin tecnicismos innecesarios. Maximo 150 palabras en el campo evaluation.`;
+
+          const userPrompt = `CONTEXTO DEL USUARIO:
+- Peso: ${weight} kg | Altura: ${height} cm | Edad: ${age} anos | Sexo: ${gender === 'female' ? 'mujer' : 'hombre'}
+- Nivel de actividad: ${activityLabel}
+- Entrenamiento: ${trainingInfo}
+- Objetivo: ${goalLabel}
+- TDEE estimado: ${tdee} kcal/dia
+
+DATOS DEL DIA (${input.date}):
+- Calorias: ${Math.round(totalCalories)} / ${dailyCalorieGoal} kcal (${Math.round((totalCalories/dailyCalorieGoal)*100)}%)
+- Proteina: ${Math.round(totalProteins)}g / ${targetProteins}g (${Math.round((totalProteins/targetProteins)*100)}%) — rango optimo recomposicion: ${(weight*1.6).toFixed(0)}-${(weight*2.2).toFixed(0)}g/dia
+- Carbohidratos: ${Math.round(totalCarbs)}g / ${targetCarbs}g (${Math.round((totalCarbs/targetCarbs)*100)}%)
+- Grasas: ${Math.round(totalFats)}g / ${targetFats}g (${Math.round((totalFats/targetFats)*100)}%)
+- Comidas registradas: ${mealNames}${trendsText}
+
+REGLAS DE ANALISIS:
+1. Si el objetivo es perder grasa: prioriza proteina alta (1.6-2.2g/kg), detecta carbos bajos (rinde peor), grasas desplazando macros, deficit extremo.
+2. Evalua el BALANCE REAL: equilibrado? permite rendir? sostenible?
+3. Detecta errores: proteina correcta pero mala distribucion, deficit excesivo, falta energia, exceso grasas.
+4. Adapta al contexto: no es lo mismo sedentario que alguien que entrena fuerza.
+5. Si hay tendencias, incluyelas en el analisis como patron repetido y en trend_alert.`;
+
           const aiResp = await invokeLLM({
             messages: [
-              { role: 'system', content: 'Eres un nutricionista experto. Responde SIEMPRE en espa\u00f1ol. S\u00e9 conciso y pr\u00e1ctico.' },
-              { role: 'user', content: `Analiza el d\u00eda nutricional:\nComidas: ${mealNames}\nCalor\u00edas: ${Math.round(totalCalories)} / ${dailyCalorieGoal} kcal\nProte\u00ednas: ${Math.round(totalProteins)}g / ${Math.round(dailyCalorieGoal*0.30/4)}g\nCarbos: ${Math.round(totalCarbs)}g / ${Math.round(dailyCalorieGoal*0.45/4)}g\nGrasas: ${Math.round(totalFats)}g / ${Math.round(dailyCalorieGoal*0.25/9)}g\nObjetivo: ${goalLabel}\nCalor\u00edas restantes: ${Math.max(0, deficit)} kcal\n\nResponde en JSON: { "evaluation": "string", "score": number, "strengths": ["string"], "improvements": ["string"], "recommendations": [{"name": "string", "calories": number, "reason": "string"}] }` }
+              { role: 'system', content: systemPrompt },
+              { role: 'user', content: userPrompt }
             ],
-            response_format: { type: 'json_schema', json_schema: { name: 'daily_analysis', strict: true, schema: { type: 'object', properties: { evaluation: { type: 'string' }, score: { type: 'number' }, strengths: { type: 'array', items: { type: 'string' } }, improvements: { type: 'array', items: { type: 'string' } }, recommendations: { type: 'array', items: { type: 'object', properties: { name: { type: 'string' }, calories: { type: 'number' }, reason: { type: 'string' } }, required: ['name', 'calories', 'reason'], additionalProperties: false } } }, required: ['evaluation', 'score', 'strengths', 'improvements', 'recommendations'], additionalProperties: false } } }
+            response_format: { type: 'json_schema', json_schema: { name: 'daily_analysis', strict: true, schema: { type: 'object', properties: { headline: { type: 'string' }, evaluation: { type: 'string' }, score: { type: 'number' }, strengths: { type: 'array', items: { type: 'string' } }, improvements: { type: 'array', items: { type: 'string' } }, recommendations: { type: 'array', items: { type: 'object', properties: { name: { type: 'string' }, calories: { type: 'number' }, reason: { type: 'string' } }, required: ['name', 'calories', 'reason'], additionalProperties: false } }, impact: { type: 'string' }, trend_alert: { type: ['string', 'null'] } }, required: ['headline', 'evaluation', 'score', 'strengths', 'improvements', 'recommendations', 'impact', 'trend_alert'], additionalProperties: false } } }
           });
           let analysis: any = null;
           try { const c = aiResp?.choices?.[0]?.message?.content; analysis = typeof c === 'string' ? JSON.parse(c) : c; } catch (_) {}

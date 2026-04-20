@@ -799,6 +799,24 @@ export default function MealLog() {
               </div>
             ) : dailyAnalysis?.hasData && dailyAnalysis.analysis ? (
               <>
+                {/* Headline */}
+                {(dailyAnalysis.analysis as any).headline && (
+                  <div style={{ background: 'linear-gradient(135deg,#1a1a2e,#16213e)', borderRadius: '16px', padding: '14px 16px', marginBottom: '14px', textAlign: 'center' }}>
+                    <p style={{ margin: 0, fontSize: '15px', fontWeight: 800, color: '#ffffff', lineHeight: 1.4 }}>{(dailyAnalysis.analysis as any).headline}</p>
+                  </div>
+                )}
+
+                {/* Trend alert */}
+                {(dailyAnalysis.analysis as any).trend_alert && (
+                  <div style={{ background: '#fef3c7', borderRadius: '14px', padding: '12px 14px', marginBottom: '14px', border: '1px solid #fcd34d', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                    <span style={{ fontSize: '18px', flexShrink: 0 }}>📈</span>
+                    <div>
+                      <p style={{ margin: '0 0 2px', fontSize: '11px', fontWeight: 800, color: '#92400e', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Tendencia detectada</p>
+                      <p style={{ margin: 0, fontSize: '12px', color: '#78350f', lineHeight: 1.5 }}>{(dailyAnalysis.analysis as any).trend_alert}</p>
+                    </div>
+                  </div>
+                )}
+
                 {/* Score */}
                 <div style={{ background: 'linear-gradient(135deg,#fff7ed,#fff)', borderRadius: '16px', padding: '16px', marginBottom: '16px', textAlign: 'center', border: '1px solid #fed7aa' }}>
                   <p style={{ margin: '0 0 4px', fontSize: '12px', color: '#9ca3af', fontWeight: 600, textTransform: 'uppercase', letterSpacing: '0.05em' }}>Puntuación del día</p>
@@ -868,6 +886,17 @@ export default function MealLog() {
                         <p style={{ margin: 0, fontSize: '12px', color: '#6b7280', lineHeight: 1.4 }}>{r.reason}</p>
                       </div>
                     ))}
+                  </div>
+                )}
+
+                {/* Impact */}
+                {(dailyAnalysis.analysis as any).impact && (
+                  <div style={{ marginTop: '14px', background: 'linear-gradient(135deg,#f0fdf4,#ecfdf5)', borderRadius: '14px', padding: '12px 14px', border: '1px solid #bbf7d0', display: 'flex', alignItems: 'flex-start', gap: '10px' }}>
+                    <span style={{ fontSize: '18px', flexShrink: 0 }}>🚀</span>
+                    <div>
+                      <p style={{ margin: '0 0 2px', fontSize: '11px', fontWeight: 800, color: '#166534', textTransform: 'uppercase', letterSpacing: '0.05em' }}>Impacto si aplicas esto</p>
+                      <p style={{ margin: 0, fontSize: '12px', color: '#15803d', lineHeight: 1.5 }}>{(dailyAnalysis.analysis as any).impact}</p>
+                    </div>
                   </div>
                 )}
               </>
