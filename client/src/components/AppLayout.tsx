@@ -293,11 +293,10 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
 
   const expertApplicationQuery = trpc.buddyApplications.getMyApplication.useQuery({ type: "expert" }, { enabled: !!user, staleTime: 5 * 60 * 1000 });
   const makerApplicationQuery = trpc.buddyApplications.getMyApplication.useQuery({ type: "maker" }, { enabled: !!user, staleTime: 5 * 60 * 1000 });
-  // Un usuario es experto aprobado si tiene la aplicación aprobada O si su rol/accountType es buddyexpert
-  const isApprovedExpert = expertApplicationQuery.data?.status === "approved" ||
-    !!(user && (user.role === "buddyexpert" || (user as any).accountType === "buddyexpert"));
-  const isApprovedMaker = makerApplicationQuery.data?.status === "approved" ||
-    !!(user && (user.role === "buddymaker" || (user as any).accountType === "buddymaker"));
+  // El toggle Usuario/Profesional solo aparece si el usuario tiene ROL buddyexpert o buddymaker
+  // (no basta con tener una aplicación aprobada — el admin debe haberle asignado el rol)
+  const isApprovedExpert = !!(user && (user.role === "buddyexpert" || (user as any).accountType === "buddyexpert"));
+  const isApprovedMaker = !!(user && (user.role === "buddymaker" || (user as any).accountType === "buddymaker"));
   const hasPendingApplication = expertApplicationQuery.data?.status === "pending" || makerApplicationQuery.data?.status === "pending";
   // ─── Expert mode toggle ──────────────────────────────────────────────────
   const isExpertRoute = location.startsWith("/app/expert") || location.startsWith("/app/buddy-expert");

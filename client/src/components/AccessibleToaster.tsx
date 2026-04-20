@@ -14,42 +14,21 @@
  * se actualicen usarán el shim para la distinción polite/assertive.
  */
 
-import { useEffect, useState } from "react";
 import { useTheme } from "next-themes";
 import { Toaster as Sonner, type ToasterProps } from "sonner";
 import { useA11yToastSetup } from "./sonner-a11y-shim";
 
 export function AccessibleToaster(props: ToasterProps) {
   const { theme = "system" } = useTheme();
-  const [toastOffset, setToastOffset] = useState(80);
 
   // Monta las regiones aria-live en el DOM al cargar la app
   useA11yToastSetup();
-
-  // Calcula el offset dinámico basado en el header real de la app
-  useEffect(() => {
-    const updateOffset = () => {
-      const header = document.querySelector(".app-header") as HTMLElement | null;
-      if (header) {
-        const headerBottom = header.getBoundingClientRect().bottom;
-        setToastOffset(headerBottom + 8);
-      } else {
-        // Fallback: safe-area-inset-top + 64px header + 8px gap
-        const safeTop = parseInt(getComputedStyle(document.documentElement).getPropertyValue("--sat") || "0") || 0;
-        setToastOffset(safeTop + 72);
-      }
-    };
-    updateOffset();
-    window.addEventListener("resize", updateOffset);
-    return () => window.removeEventListener("resize", updateOffset);
-  }, []);
 
   return (
     <Sonner
       theme={theme as ToasterProps["theme"]}
       className="toaster group"
       position="top-center"
-      offset={toastOffset}
       containerAriaLabel="Notificaciones"
       richColors
       style={
@@ -66,7 +45,7 @@ export function AccessibleToaster(props: ToasterProps) {
           fontSize: "15px",
           fontWeight: 600,
           padding: "14px 18px",
-          boxShadow: "0 8px 32px rgba(0,0,0,0.15)",
+          boxShadow: "0 8px 32px rgba(0,0,0,0.25)",
         },
       }}
       {...props}

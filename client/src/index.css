@@ -1132,3 +1132,15 @@
 .step-card:hover::after {
   opacity: 0.25;
 }
+
+/* ── Toast centrado en pantalla ─────────────────────────────────────────────── */
+/* Sonner monta el contenedor con data-sonner-toaster cuando hay toasts activos */
+[data-sonner-toaster] {
+  position: fixed !important;
+  top: 50% !important;
+  bottom: auto !important;
+  left: 50% !important;
+  right: auto !important;
+  transform: translate(-50%, -50%) !important;
+  z-index: 9999 !important;
+}
