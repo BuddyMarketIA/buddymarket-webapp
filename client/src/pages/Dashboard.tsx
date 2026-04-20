@@ -591,7 +591,7 @@ export default function Dashboard() {
               </div>
             )}
             {/* Perfil de Gusto IA — siempre visible, muestra estado aprendiendo para nuevos usuarios */}
-            {tasteInsights.data !== undefined && (
+            {!tasteInsights.isLoading && (
               <div style={{ background: isDark ? 'rgba(99,102,241,0.08)' : 'linear-gradient(135deg, #FFF7ED 0%, #EEF2FF 100%)', borderRadius: '18px', padding: '16px 18px', boxShadow: C.shadow2, border: `1px solid ${isDark ? 'rgba(99,102,241,0.2)' : '#E0E7FF'}` }}>
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '10px' }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1, minWidth: 0 }}>
