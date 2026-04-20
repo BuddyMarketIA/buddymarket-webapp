@@ -326,6 +326,7 @@ export default function Dashboard() {
   );
   // Suggested menus from library
   const suggestedMenus = trpc.menus.library.useQuery({ limit: 4 });
+  const contextualRecipe = trpc.retention.getDailyContextualRecipe.useQuery();
 
   // Calculate profile completion percentage
   const profileCompletion = (() => {
@@ -874,7 +875,6 @@ export default function Dashboard() {
 
             {/* Receta del día — contextual IA */}
             {(() => {
-              const contextualRecipe = trpc.retention.getDailyContextualRecipe.useQuery();
               const cr = contextualRecipe.data?.recipe;
               const contextMsg = contextualRecipe.data?.contextMsg || '';
               return (
@@ -920,7 +920,7 @@ export default function Dashboard() {
                   </div>
                 </div>
               );
-            })()}
+            })()} 
 
             {/* Comunidad */}
             <div style={{ background: C.cardBg, borderRadius: "20px", padding: "16px", boxShadow: C.shadow2 }}>
