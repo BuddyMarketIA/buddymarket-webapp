@@ -68,19 +68,51 @@ function getDurationDays(start: string | Date | null | undefined, end: string | 
   }
 }
 
+// Category images (CDN URLs)
+const GOAL_IMAGES: Record<string, string> = {
+  perdida_peso:      "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/menu-cover-perdida-peso-b4FLQyzdJS2gz3W3v6VMXR.webp",
+  perdida_grasa:     "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/menu-cover-perdida-peso-b4FLQyzdJS2gz3W3v6VMXR.webp",
+  ganancia_muscular: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/menu-cover-musculacion-BdzBQeP6Aiw8Jx6vGeeZiu.webp",
+  tonificacion:      "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/menu-cover-musculacion-BdzBQeP6Aiw8Jx6vGeeZiu.webp",
+  definicion:        "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/menu-cover-musculacion-BdzBQeP6Aiw8Jx6vGeeZiu.webp",
+  mediterraneo:      "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/menu-cover-mediterraneo-3pmLBfXFhNySpeEg8H5ucM.webp",
+  vegano:            "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/menu-cover-vegano-UkNwnYjCkiuZRzVp7KwAFy.webp",
+  bienestar:         "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/menu-cover-bienestar-GhYFno35PbpStPQLjan2SK.webp",
+  salud:             "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/menu-cover-bienestar-GhYFno35PbpStPQLjan2SK.webp",
+  rendimiento:       "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/menu-cover-rendimiento-hGFdZJUbgwkc2Sm2TYgCRn.webp",
+  mantenimiento:     "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/menu-cover-equilibrado-cMkzbr9TNmDrfYz3kZDYqJ.webp",
+  dieta_equilibrada: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/menu-cover-equilibrado-cMkzbr9TNmDrfYz3kZDYqJ.webp",
+};
+
+// Overlay color per category (semi-transparent tint over the image)
+const GOAL_OVERLAY: Record<string, string> = {
+  perdida_peso:      "rgba(59,130,246,0.45)",   // blue
+  perdida_grasa:     "rgba(59,130,246,0.45)",   // blue
+  ganancia_muscular: "rgba(34,197,94,0.40)",    // green
+  tonificacion:      "rgba(34,197,94,0.40)",    // green
+  definicion:        "rgba(34,197,94,0.40)",    // green
+  mediterraneo:      "rgba(245,158,11,0.40)",   // amber
+  vegano:            "rgba(16,185,129,0.40)",   // emerald
+  bienestar:         "rgba(236,72,153,0.35)",   // pink
+  salud:             "rgba(20,184,166,0.40)",   // teal
+  rendimiento:       "rgba(99,102,241,0.40)",   // indigo
+  mantenimiento:     "rgba(107,114,128,0.35)",  // gray
+  dieta_equilibrada: "rgba(107,114,128,0.35)",  // gray
+};
+
 const GOAL_META: Record<string, { label: string; emoji: string; color: string; bg: string }> = {
-  perdida_peso:      { label: "Pérdida de peso",    emoji: "🔥", color: "text-red-700",    bg: "bg-red-50 border-red-200" },
-  ganancia_muscular: { label: "Ganancia muscular",  emoji: "💪", color: "text-blue-700",   bg: "bg-blue-50 border-blue-200" },
-  tonificacion:      { label: "Tonificación",       emoji: "⚡", color: "text-yellow-700", bg: "bg-yellow-50 border-yellow-200" },
-  perdida_grasa:     { label: "Pérdida de grasa",   emoji: "🎯", color: "text-orange-700", bg: "bg-orange-50 border-orange-200" },
-  mantenimiento:     { label: "Mantenimiento",      emoji: "⚖️", color: "text-gray-700",   bg: "bg-gray-50 border-gray-200" },
-  definicion:        { label: "Definición",         emoji: "🏆", color: "text-purple-700", bg: "bg-purple-50 border-purple-200" },
-  salud:             { label: "Salud general",      emoji: "💚", color: "text-green-700",  bg: "bg-green-50 border-green-200" },
-  vegano:            { label: "Vegano",             emoji: "🌱", color: "text-emerald-700",bg: "bg-emerald-50 border-emerald-200" },
-  bienestar:         { label: "Bienestar",          emoji: "😊", color: "text-teal-700",   bg: "bg-teal-50 border-teal-200" },
-  dieta_equilibrada: { label: "Equilibrado",        emoji: "🥗", color: "text-green-700",  bg: "bg-green-50 border-green-200" },
-  rendimiento:       { label: "Rendimiento",        emoji: "🚀", color: "text-indigo-700", bg: "bg-indigo-50 border-indigo-200" },
-  mediterraneo:      { label: "Mediterráneo",       emoji: "🫒", color: "text-amber-700",  bg: "bg-amber-50 border-amber-200" },
+  perdida_peso:      { label: "Pérdida de peso",    emoji: "🔥", color: "text-blue-700",    bg: "bg-blue-50 border-blue-200" },
+  ganancia_muscular: { label: "Ganancia muscular",  emoji: "💪", color: "text-green-700",   bg: "bg-green-50 border-green-200" },
+  tonificacion:      { label: "Tonificación",       emoji: "⚡", color: "text-green-700",   bg: "bg-green-50 border-green-200" },
+  perdida_grasa:     { label: "Pérdida de grasa",   emoji: "🎯", color: "text-blue-700",    bg: "bg-blue-50 border-blue-200" },
+  mantenimiento:     { label: "Mantenimiento",      emoji: "⚖️", color: "text-gray-700",    bg: "bg-gray-50 border-gray-200" },
+  definicion:        { label: "Definición",         emoji: "🏆", color: "text-green-700",   bg: "bg-green-50 border-green-200" },
+  salud:             { label: "Salud general",      emoji: "💚", color: "text-teal-700",    bg: "bg-teal-50 border-teal-200" },
+  vegano:            { label: "Vegano",             emoji: "🌱", color: "text-emerald-700", bg: "bg-emerald-50 border-emerald-200" },
+  bienestar:         { label: "Bienestar",          emoji: "😊", color: "text-pink-700",    bg: "bg-pink-50 border-pink-200" },
+  dieta_equilibrada: { label: "Equilibrado",        emoji: "🥗", color: "text-gray-700",    bg: "bg-gray-50 border-gray-200" },
+  rendimiento:       { label: "Rendimiento",        emoji: "🚀", color: "text-indigo-700",  bg: "bg-indigo-50 border-indigo-200" },
+  mediterraneo:      { label: "Mediterráneo",       emoji: "🫒", color: "text-amber-700",   bg: "bg-amber-50 border-amber-200" },
 };
 
 // Gradient covers for menus without image
@@ -253,6 +285,8 @@ function MenuCard({ menu, onRefresh }: { menu: MenuOrganizer; onRefresh: () => v
   const goalMeta = GOAL_META[goalKey] ?? null;
   const duration = getDurationDays(menu.startDate, menu.endDate);
   const gradient = getCoverGradient(menu.id);
+  const categoryImage = menu.coverImage || GOAL_IMAGES[goalKey] || null;
+  const categoryOverlay = GOAL_OVERLAY[goalKey] || "rgba(0,0,0,0.25)";
 
   const setActiveMutation = trpc.menus.setActive.useMutation({
     onSuccess: () => {
@@ -287,16 +321,18 @@ function MenuCard({ menu, onRefresh }: { menu: MenuOrganizer; onRefresh: () => v
         menu.isActive ? "border-[#F97316]/50 shadow-md shadow-orange-100" : "border-border/60 shadow-sm"
       }`}>
         {/* Cover */}
-        <div className={`relative h-40 bg-gradient-to-br ${gradient} overflow-hidden`}>
-          {menu.coverImage ? (
-            <img src={menu.coverImage} alt={menu.name} className="w-full h-full object-cover" />
+        <div className={`relative h-40 overflow-hidden ${!categoryImage ? `bg-gradient-to-br ${gradient}` : "bg-gray-100"}`}>
+          {categoryImage ? (
+            <img src={categoryImage} alt={menu.name} className="w-full h-full object-cover" />
           ) : (
             <div className="w-full h-full flex items-center justify-center">
               <span className="text-6xl opacity-20">🥗</span>
             </div>
           )}
-          {/* Overlay */}
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
+          {/* Category color overlay */}
+          <div className="absolute inset-0" style={{ background: categoryImage ? categoryOverlay : undefined }} />
+          {/* Dark gradient for text readability */}
+          <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/10 to-transparent" />
 
           {/* Top badges */}
           <div className="absolute top-3 left-3 flex gap-1.5 flex-wrap">
