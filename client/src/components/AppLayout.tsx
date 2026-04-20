@@ -428,7 +428,9 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
     {
       label: "Menús",
       items: [
-        { key: "/app/menus", label: "Mis Menús", to: "/app/menus", emoji: "📅", matches: ["/app/menus", "/app/menu-library", "/app/active-menu", "/app/my-menus", "/app/specialized-menus", "/app/event-menu", "/app/saved-events"] },
+        { key: "/app/menus", label: "Mis Menús", to: "/app/menus", emoji: "📅", matches: ["/app/menus", "/app/menu-library", "/app/active-menu", "/app/my-menus"] },
+        { key: "/app/specialized-menus", label: "Menús Especiales", to: "/app/specialized-menus", emoji: "🎉", matches: ["/app/specialized-menus"] },
+        { key: "/app/event-menu", label: "Menú para Eventos", to: "/app/event-menu", emoji: "🥂", matches: ["/app/event-menu", "/app/saved-events"] },
       ],
     },
     {
