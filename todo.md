@@ -2905,3 +2905,9 @@
 - [x] Total recetas: 320 (todas con imagen y categoría)
 - [ ] Notificaciones push web para recordatorio de racha (pendiente)
 - [ ] Lista de la compra inteligente desde menú activo con agrupación por sección (pendiente)
+
+## Sprint: Imágenes IA para Recetas (en curso)
+- [ ] Obtener lista completa de recetas desde la BD
+- [ ] Generar imágenes únicas con IA para cada receta (generación en paralelo)
+- [ ] Subir imágenes a S3 y actualizar imageUrl en BD
+- [ ] Verificar resultado visual en la app
