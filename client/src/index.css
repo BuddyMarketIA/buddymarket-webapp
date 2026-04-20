@@ -256,6 +256,9 @@
     padding-top: 1rem;
     padding-left: 1rem;
     padding-right: 1rem;
+    max-width: 100%;
+    overflow-x: hidden;
+    box-sizing: border-box;
   }
 
   /* ── Modal overlay: always centered, never hidden by bottom nav ── */

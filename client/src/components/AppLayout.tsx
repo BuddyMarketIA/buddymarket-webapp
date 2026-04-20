@@ -554,7 +554,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
         </aside>
 
         {/* Main area */}
-        <div style={{ flex: 1, marginLeft: `${DESKTOP_SIDEBAR_WIDTH}px`, display: "flex", flexDirection: "column", minHeight: "100dvh" }}>
+        <div style={{ flex: 1, marginLeft: `${DESKTOP_SIDEBAR_WIDTH}px`, display: "flex", flexDirection: "column", minHeight: "100dvh", width: `calc(100vw - ${DESKTOP_SIDEBAR_WIDTH}px)`, overflowX: "hidden", minWidth: 0 }}>
 
           {/* Desktop Header */}
           <header style={{
