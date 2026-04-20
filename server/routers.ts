@@ -2223,7 +2223,13 @@ Adapta esta receta eliminando los ingredientes prohibidos y sustituyéndolos por
               {
                 role: "system",
                 content: `Eres un nutricionista experto. Genera planes de menú semanales personalizados en formato JSON.
-              Responde SOLO con JSON válido con esta estructura:
+⚠️ REGLAS ESTRICTAS POR FRANJA HORARIA (OBLIGATORIO):
+- DESAYUNO: tostadas, cereales, avena, yogur, fruta, huevos revueltos, smoothie, batido, pan con aceite. NUNCA: ensaladas, guisos, gazpacho, sopas, arroces, pastas, carnes asadas, pescados al horno, legumbres, potajes.
+- MEDIA MAÑANA: snack pequeño (fruta, yogur, frutos secos, barrita). NUNCA platos completos.
+- COMIDA: plato principal completo con proteína + carbohidrato + verdura. Aquí sí pueden ir ensaladas, arroces, pastas, carnes, pescados, legumbres.
+- MERIENDA: snack pequeño (fruta, yogur, tostada). NUNCA platos completos.
+- CENA: comida ligera (ensalada, crema de verduras, pescado a la plancha, tortilla, revueltos). NUNCA: gazpacho de cena si es invierno, platos muy pesados.
+Responde SOLO con JSON válido con esta estructura:
               {
                 "menuName": "nombre del menú",
                 "days": [
@@ -3243,7 +3249,11 @@ Adapta esta receta eliminando los ingredientes prohibidos y sustituyéndolos por
             },
             {
               role: "user",
-              content: `El usuario ha comprado estos ingredientes:\n${ingredientList}\n\nGenera un menú semanal para 7 días (lunes a domingo) con desayuno, comida y cena para cada día. Aprovecha al máximo los ingredientes de la lista. Para cada plato incluye: nombre del plato, momento del día (desayuno/comida/cena), ingredientes principales usados de la lista, calorías aproximadas y emoji representativo.`,
+              content: `El usuario ha comprado estos ingredientes:\n${ingredientList}\n\nGenera un menú semanal para 7 días (lunes a domingo) con desayuno, comida y cena para cada día. Aprovecha al máximo los ingredientes de la lista. Para cada plato incluye: nombre del plato, momento del día (desayuno/comida/cena), ingredientes principales usados de la lista, calorías aproximadas y emoji representativo.
+REGLAS OBLIGATORIAS POR FRANJA HORARIA:
+- DESAYUNO: tostadas, cereales, avena, yogur, fruta, huevos revueltos, smoothie, batido, pan con aceite, granola. NUNCA: ensaladas, guisos, gazpacho, sopas, arroces, pastas, carnes asadas, pescados al horno, legumbres.
+- COMIDA: plato principal completo con proteína + carbohidrato + verdura (ensaladas, arroces, pastas, carnes, pescados, legumbres, guisos).
+- CENA: comida ligera (ensalada, crema de verduras, pescado a la plancha, tortilla, revueltos, verduras salteadas). NUNCA platos muy pesados ni gazpacho de cena.`,
             },
           ],
           response_format: {
@@ -9984,7 +9994,13 @@ Devuelve SOLO JSON válido con esta estructura exacta:
       ]
     }
   ]
-}`;
+}
+REGLAS OBLIGATORIAS POR FRANJA HORARIA:
+- Desayuno: tostadas, cereales, avena, yogur, fruta, huevos revueltos, smoothie, batido, pan con aceite. NUNCA: ensaladas, guisos, gazpacho, sopas, arroces, pastas, carnes asadas, pescados al horno, legumbres.
+- Media mañana: snack pequeño (fruta, yogur, frutos secos, barrita). NUNCA platos completos.
+- Comida: plato principal completo con proteína + carbohidrato + verdura.
+- Merienda: snack pequeño. NUNCA platos completos.
+- Cena: comida ligera (ensalada, crema de verduras, pescado a la plancha, tortilla, revueltos). NUNCA platos muy pesados.`;
 
         try {
           const response = await invokeLLM({
