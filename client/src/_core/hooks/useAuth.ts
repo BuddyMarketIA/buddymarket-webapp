@@ -52,10 +52,6 @@ export function useAuth(options?: UseAuthOptions) {
       // only when user actively interacts with the login form.
       localStorage.setItem("bm_just_logged_out", "1");
 
-      // Clear the session-active flag so the reload guard in main.tsx
-      // also redirects to login if the user reloads after logout.
-      sessionStorage.removeItem('bm_session_active');
-
       // Force a full page reload to /login to clear ALL React state and tRPC cache
       // Using replace() so the user can't go "back" to the authenticated page
       window.location.replace("/login");
