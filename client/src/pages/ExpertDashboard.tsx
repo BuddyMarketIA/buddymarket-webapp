@@ -502,7 +502,7 @@ export default function ExpertDashboard() {
                     <div style={{ width: 26, height: 26, borderRadius: "50%", background: "linear-gradient(135deg,#F97316,#FB923C)", display: "flex", alignItems: "center", justifyContent: "center", color: "#fff", fontSize: 10, fontWeight: 700, flexShrink: 0 }}>{getInitials(post.expertName)}</div>
                     <div>
                       <p style={{ margin: 0, fontSize: 11, fontWeight: 700, color: "#111827" }}>{post.expertName ?? "BuddyExpert"}</p>
-                      <p style={{ margin: 0, fontSize: 10, color: "#9CA3AF" }}>{post.expertRole ?? "Nutricionista"}</p>
+                      <p style={{ margin: 0, fontSize: 10, color: "#9CA3AF" }}>{post.expertRole ?? post.expertSpecialty ?? "Nutricionista"}</p>
                     </div>
                   </div>
                   <div style={{ display: "flex", gap: 8 }}>
@@ -510,7 +510,12 @@ export default function ExpertDashboard() {
                       <p style={{ margin: "0 0 3px", fontSize: 10, color: "#9CA3AF" }}>⏱ {post.category} · {post.readTimeMinutes}h</p>
                       <p style={{ margin: 0, fontSize: 12, fontWeight: 700, color: "#111827", lineHeight: 1.4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" } as any}>{post.title}</p>
                     </div>
-                    {post.coverImageUrl && <img src={post.coverImageUrl} alt="" style={{ width: 52, height: 52, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} />}
+                    <div style={{ width: 52, height: 52, borderRadius: 8, flexShrink: 0, overflow: "hidden", background: "linear-gradient(135deg,#FEF3C7,#FDE68A)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22 }}>
+                      {post.coverImageUrl
+                        ? <img src={post.coverImageUrl} alt="" style={{ width: "100%", height: "100%", objectFit: "cover" }} onError={(e) => { const t = e.target as HTMLImageElement; t.style.display = "none"; (t.parentElement as HTMLElement).textContent = "🥗"; }} />
+                        : "🥗"
+                      }
+                    </div>
                   </div>
                 </div>
               ))}

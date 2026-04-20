@@ -1,3 +1,4 @@
+import { hasRole } from "@shared/const";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
@@ -134,7 +135,7 @@ export const weeklyCheckinsRouter = router({
       limit: z.number().int().min(1).max(52).optional().default(12),
     }))
     .query(async ({ ctx, input }) => {
-      if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
+      if (!hasRole(ctx.user, "buddyexpert") && !hasRole(ctx.user, "admin")) {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
       const { getDb } = await import("../db");

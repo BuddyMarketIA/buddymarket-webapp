@@ -295,13 +295,13 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
   const makerApplicationQuery = trpc.buddyApplications.getMyApplication.useQuery({ type: "maker" }, { enabled: !!user, staleTime: 5 * 60 * 1000 });
   // El toggle Usuario/Profesional solo aparece si el usuario tiene ROL buddyexpert o buddymaker
   // (no basta con tener una aplicación aprobada — el admin debe haberle asignado el rol)
-  const isApprovedExpert = !!(user && (user.role === "buddyexpert" || (user as any).accountType === "buddyexpert"));
+  const isApprovedExpert = !!(user && (hasRole(user, "buddyexpert") || (user as any)?.accountType === "buddyexpert"));
   const isApprovedMaker = !!(user && (user.role === "buddymaker" || (user as any).accountType === "buddymaker"));
   const hasPendingApplication = expertApplicationQuery.data?.status === "pending" || makerApplicationQuery.data?.status === "pending";
   // ─── Expert mode toggle ──────────────────────────────────────────────────
   const isExpertRoute = location.startsWith("/app/expert") || location.startsWith("/app/buddy-expert");
   // Si el usuario tiene rol buddyexpert, el modo experto está SIEMPRE activo por defecto
-  const isExpertByRole = !!(user && (user.role === "buddyexpert" || (user as any).accountType === "buddyexpert"));
+  const isExpertByRole = !!(user && (hasRole(user, "buddyexpert") || (user as any)?.accountType === "buddyexpert"));
   const [expertModeOverride, setExpertModeOverride] = useState<boolean | null>(null);
   // expertMode: true si es experto por rol, o si está en ruta de experto, o si el usuario lo activó manualmente
   const expertMode = expertModeOverride !== null

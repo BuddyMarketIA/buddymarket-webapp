@@ -326,7 +326,7 @@ export const retentionRouter = router({
     const isWarm = month >= 5 && month <= 9;
     const season = month >= 3 && month <= 5 ? 'primavera' : month >= 6 && month <= 8 ? 'verano' : month >= 9 && month <= 11 ? 'otoño' : 'invierno';
     const dateSeed = parseInt(`${now.getFullYear()}${String(now.getMonth() + 1).padStart(2, '0')}${String(now.getDate()).padStart(2, '0')}`);
-    const allRecipes = await drizzleDb.select({ id: recipes.id, name: recipes.name, imageUrl: recipes.imageUrl, caloriesPerServing: recipes.caloriesPerServing, prepTime: recipes.prepTime })
+    const allRecipes = await drizzleDb.select({ id: recipes.id, name: recipes.name, imageUrl: recipes.imageUrl, caloriesPerServing: recipes.caloriesPerServing, preparationTime: recipes.preparationTime })
       .from(recipes).where(eq(recipes.isPublic, true)).limit(200);
     if (allRecipes.length === 0) return null;
     const idx = dateSeed % allRecipes.length;
@@ -344,7 +344,7 @@ export const retentionRouter = router({
       const startDate = `${input.year}-${String(input.month).padStart(2, "0")}-01`;
       const endDate = `${input.year}-${String(input.month).padStart(2, "0")}-31`;
       // Gather stats
-      const logs = await drizzleDb.select({ calories: mealLogs.calories, protein: mealLogs.protein, carbs: mealLogs.carbs, fat: mealLogs.fat, logDate: mealLogs.logDate })
+      const logs = await drizzleDb.select({ calories: mealLogs.calories, protein: mealLogs.proteins, carbs: mealLogs.carbohydrates, fat: mealLogs.fats, logDate: mealLogs.logDate })
         .from(mealLogs).where(and(eq(mealLogs.userId, ctx.user.id), gte(mealLogs.logDate, startDate), lte(mealLogs.logDate, endDate)));
       const totalDays = new Set(logs.map(l => l.logDate)).size;
       const avgCalories = logs.length > 0 ? Math.round(logs.reduce((s, l) => s + (l.calories ?? 0), 0) / Math.max(totalDays, 1)) : 0;

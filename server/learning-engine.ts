@@ -164,12 +164,12 @@ export async function updateTasteProfile(userId: number): Promise<void> {
 
       // Tiempo de preparación y calorías (solo para interacciones positivas)
       if (effectiveWeight > 0) {
-        if (recipe.prepTime) {
-          prepTimeSum += recipe.prepTime * effectiveWeight;
+        if (recipe.preparationTime) {
+          prepTimeSum += recipe.preparationTime * effectiveWeight;
           prepTimeCount += effectiveWeight;
         }
-        if (recipe.calories) {
-          caloriesSum += recipe.calories * effectiveWeight;
+        if (recipe.caloriesPerServing) {
+          caloriesSum += recipe.caloriesPerServing * effectiveWeight;
           caloriesCount += effectiveWeight;
         }
       }

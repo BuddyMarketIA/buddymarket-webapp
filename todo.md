@@ -2920,3 +2920,10 @@
 - [x] Simplificar sidebar: de 5 entradas de menús a 1 sola entrada "Mis Menús"
 - [x] Corregir toggle Usuario/Profesional: solo visible para usuarios con role === "buddyexpert"
 - [x] Reload page redirige al login (sessionStorage flag bm_session_active)
+- [x] Ruta /landing accesible desde buddymarketapp.com
+- [x] Imágenes rotas en "Contenido destacado" de ExpertDashboard corregidas
+- [x] Soporte para roles múltiples (admin + buddyexpert simultáneo) con campo secondaryRoles
+- [x] Panel Admin: sección "Roles adicionales" para asignar/quitar roles secundarios
+- [x] BuddyExperts: createServicePlan y updateServicePlan corregidos (usan upsertServicePlan)
+- [x] Corrección de campo prepTime → preparationTime en retention.ts y learning-engine.ts
+- [x] Corrección de adherenceScore → adherenceRating en email-jobs.ts

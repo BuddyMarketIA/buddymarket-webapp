@@ -164,6 +164,7 @@ function Router() {
     <Switch>
       {/* Public landing — on buddymarket.io show LoginPage */}
       <Route path="/">{() => isAppDomain ? <LoginPage /> : <LandingPage />}</Route>
+      <Route path="/landing" component={LandingPage} />
       <Route path="/login" component={LoginPage} />
       <Route path="/reset-password" component={ResetPasswordPage} />
       <Route path="/blog" component={Blog} />

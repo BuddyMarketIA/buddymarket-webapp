@@ -1,3 +1,4 @@
+import { hasRole } from "@/lib/utils";
 /**
  * AdminContent — Panel de gestión de contenido dinámico
  * Permite añadir y editar recetas y menús desde la app sin necesidad de redespliegue.
@@ -555,7 +556,7 @@ export default function AdminContent() {
   });
 
   if (isLoading) return <div className="flex items-center justify-center min-h-screen"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-orange-500" /></div>;
-  if (!user || user.role !== "admin") return (
+  if (!user || !hasRole(user, "admin")) return (
     <div className="flex flex-col items-center justify-center min-h-screen gap-4">
       <p className="text-muted-foreground">Acceso restringido a administradores.</p>
       <Link href="/app/dashboard" className="text-orange-500 underline text-sm">Volver al inicio</Link>

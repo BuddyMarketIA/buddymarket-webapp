@@ -1,3 +1,4 @@
+import { hasRole } from "@/lib/utils";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import AppLayout from "@/components/AppLayout";
@@ -92,7 +93,7 @@ export default function AdminLogs() {
   });
 
   // ── Early return after all hooks ────────────────────────────────────────────
-  if (user && user.role !== "admin") {
+  if (user && !hasRole(user, "admin")) {
     navigate("/");
     return null;
   }

@@ -330,6 +330,13 @@
       "when": 1776639185820,
       "tag": "0046_dapper_pet_avengers",
       "breakpoints": true
+    },
+    {
+      "idx": 47,
+      "version": "7",
+      "when": 1776702605707,
+      "tag": "0047_careless_banshee",
+      "breakpoints": true
     }
   ]
 }

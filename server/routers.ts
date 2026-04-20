@@ -1,6 +1,6 @@
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
-import { COOKIE_NAME, ONE_YEAR_MS } from "@shared/const";
+import { COOKIE_NAME, ONE_YEAR_MS, hasRole } from "@shared/const";
 import { createCheckoutSession } from "./stripe-webhook";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
@@ -36,8 +36,8 @@ function hashOtpCode(code: string): string {
 // HELPERS
 // =============================================================================
 
-function requireOwnership(resourceUserId: number, ctxUserId: number, role: string) {
-  if (resourceUserId !== ctxUserId && role !== "admin") {
+function requireOwnership(resourceUserId: number, ctxUserId: number, role: string, secondaryRoles?: string[] | null) {
+  if (resourceUserId !== ctxUserId && !hasRole({ role, secondaryRoles }, "admin")) {
     throw new TRPCError({ code: "FORBIDDEN", message: "No tienes permiso para realizar esta acción" });
   }
 }
@@ -647,7 +647,7 @@ export const appRouter = router({
   // ---------------------------------------------------------------------------
   seed: router({
     catalogs: protectedProcedure.mutation(async ({ ctx }) => {
-      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
       await db.seedCatalogs();
       return { success: true };
     }),
@@ -1343,7 +1343,7 @@ Devuelve SOLO JSON válido con esta estructura:
         })
       )
       .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         const { allergyIds, ...data } = input;
         return db.createIngredientWithAllergies(data as any, allergyIds || []);
       }),
@@ -1351,7 +1351,7 @@ Devuelve SOLO JSON válido con esta estructura:
     update: protectedProcedure
       .input(z.object({ id: z.number().int().positive(), data: z.record(z.string().max(50), z.unknown()) }))
       .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         await db.updateIngredient(input.id, input.data as any);
         return { success: true };
       }),
@@ -1359,7 +1359,7 @@ Devuelve SOLO JSON válido con esta estructura:
     delete: protectedProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         await db.deleteIngredient(input.id);
         return { success: true };
       }),
@@ -4446,7 +4446,7 @@ Responde SOLO con JSON válido, sin texto adicional:
 
     getStatus: protectedProcedure.query(async ({ ctx }) => {
       // Admins always have pro_max
-      if (ctx.user.role === "admin") {
+      if (hasRole(ctx.user, "admin")) {
         return { plan: "pro_max" as const, status: "active" as const, tier: "pro_max" as const };
       }
       const sub = await db.getUserSubscription(ctx.user.id);
@@ -4668,7 +4668,7 @@ Responde SOLO con JSON válido, sin texto adicional:
     users: protectedProcedure
       .input(z.object({ limit: z.number().int().min(1).max(200).optional(), offset: z.number().int().min(0).optional() }))
       .query(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         const userList = await db.getAllUsers(input.limit, input.offset);
         // Enrich with subscription data for each user
         const enriched = await Promise.all(
@@ -4681,17 +4681,47 @@ Responde SOLO con JSON válido, sin texto adicional:
       }),
 
     updateUserRole: protectedProcedure
-      .input(z.object({ userId: z.number(), role: z.enum(["user", "admin", "buddyexpert"]) }))
+      .input(z.object({
+        userId: z.number(),
+        role: z.enum(["user", "admin", "buddyexpert"]),
+        secondaryRoles: z.array(z.string()).optional(),
+      }))
       .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
-        await db.updateUser(input.userId, { role: input.role });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
+        const updateData: Record<string, unknown> = { role: input.role };
+        if (input.secondaryRoles !== undefined) {
+          updateData.secondaryRoles = input.secondaryRoles;
+        }
+        await db.updateUser(input.userId, updateData as any);
+        return { success: true };
+      }),
+    addSecondaryRole: protectedProcedure
+      .input(z.object({ userId: z.number(), secondaryRole: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
+        const targetUser = await db.getUserById(input.userId);
+        if (!targetUser) throw new TRPCError({ code: "NOT_FOUND" });
+        const currentSecondary = targetUser.secondaryRoles ?? [];
+        if (!currentSecondary.includes(input.secondaryRole)) {
+          await db.updateUser(input.userId, { secondaryRoles: [...currentSecondary, input.secondaryRole] } as any);
+        }
+        return { success: true };
+      }),
+    removeSecondaryRole: protectedProcedure
+      .input(z.object({ userId: z.number(), secondaryRole: z.string() }))
+      .mutation(async ({ ctx, input }) => {
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
+        const targetUser = await db.getUserById(input.userId);
+        if (!targetUser) throw new TRPCError({ code: "NOT_FOUND" });
+        const currentSecondary = (targetUser.secondaryRoles ?? []).filter((r: string) => r !== input.secondaryRole);
+        await db.updateUser(input.userId, { secondaryRoles: currentSecondary } as any);
         return { success: true };
       }),
 
     grantProAccess: protectedProcedure
       .input(z.object({ userId: z.number(), plan: z.enum(["basic", "premium", "pro_max"]) }))
       .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         await db.upsertUserSubscription(input.userId, {
           status: "active",
           plan: input.plan,
@@ -4708,7 +4738,7 @@ Responde SOLO con JSON válido, sin texto adicional:
         notify: z.boolean().optional().default(true),
       }))
       .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         const drizzleDb = await db.getDb();
         if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
         const { users: usersTable } = await import("../drizzle/schema");
@@ -4752,7 +4782,7 @@ Responde SOLO con JSON válido, sin texto adicional:
         accountType: z.enum(["user", "buddymaker", "buddyexpert", "business"]),
       }))
       .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         await db.updateUser(input.userId, {
           accountType: input.accountType as any,
           registrationStep: "completed" as any,
@@ -4767,7 +4797,7 @@ Responde SOLO con JSON válido, sin texto adicional:
     getUserSubscriptionDetails: protectedProcedure
       .input(z.object({ userId: z.number() }))
       .query(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         return db.getUserSubscription(input.userId);
       }),
 
@@ -4775,7 +4805,7 @@ Responde SOLO con JSON válido, sin texto adicional:
     findDuplicateAccounts: protectedProcedure
       .input(z.object({ email: z.string().email() }))
       .query(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         const drizzleDb = await db.getDb();
         if (!drizzleDb) return [];
         const { users: usersTable } = await import("../drizzle/schema.js");
@@ -4790,7 +4820,7 @@ Responde SOLO con JSON válido, sin texto adicional:
     mergeAccounts: protectedProcedure
       .input(z.object({ keepUserId: z.number(), deleteUserIds: z.array(z.number()) }))
       .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         const drizzleDb = await db.getDb();
         if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
         const { users: usersTable } = await import("../drizzle/schema.js");
@@ -4803,7 +4833,7 @@ Responde SOLO con JSON válido, sin texto adicional:
     deleteUser: protectedProcedure
       .input(z.object({ userId: z.number(), hardDelete: z.boolean().optional().default(false) }))
       .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         if (input.userId === ctx.user.id) throw new TRPCError({ code: "BAD_REQUEST", message: "No puedes borrarte a ti mismo" });
         const drizzleDb = await db.getDb();
         if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
@@ -4827,7 +4857,7 @@ Responde SOLO con JSON válido, sin texto adicional:
     promoteToAdminProMax: protectedProcedure
       .input(z.object({ userId: z.number() }))
       .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         await db.updateUser(input.userId, { role: "admin" as any });
         await db.upsertUserSubscription(input.userId, {
           status: "active",
@@ -4840,7 +4870,7 @@ Responde SOLO con JSON válido, sin texto adicional:
     // ── Admin: Founder Emails Management ──────────────────────────────────
     getFounderEmails: protectedProcedure
       .query(async ({ ctx }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         const drizzleDb = await db.getDb();
         if (!drizzleDb) return [];
         const { founderEmails } = await import("../drizzle/schema.js");
@@ -4862,7 +4892,7 @@ Responde SOLO con JSON válido, sin texto adicional:
     addFounderEmail: protectedProcedure
       .input(z.object({ email: z.string().email(), notes: z.string().optional() }))
       .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         const drizzleDb = await db.getDb();
         if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
         const { founderEmails } = await import("../drizzle/schema.js");
@@ -4877,7 +4907,7 @@ Responde SOLO con JSON válido, sin texto adicional:
     removeFounderEmail: protectedProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         const drizzleDb = await db.getDb();
         if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
         const { founderEmails } = await import("../drizzle/schema.js");
@@ -4887,7 +4917,7 @@ Responde SOLO con JSON válido, sin texto adicional:
       }),
     getFounderStats: protectedProcedure
       .query(async ({ ctx }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         const drizzleDb = await db.getDb();
         if (!drizzleDb) return { total: 0, claimed: 0, pending: 0 };
         const { founderEmails } = await import("../drizzle/schema.js");
@@ -4904,14 +4934,14 @@ Responde SOLO con JSON válido, sin texto adicional:
     createAllergy: protectedProcedure
       .input(z.object({ apiParam: z.string(), nameEs: z.string(), nameEn: z.string().optional() }))
       .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         return db.createAllergy(input);
       }),
 
     updateAllergy: protectedProcedure
       .input(z.object({ id: z.number(), nameEs: z.string().optional(), nameEn: z.string().optional() }))
       .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         const { id, ...data } = input;
         await db.updateAllergy(id, data);
         return { success: true };
@@ -4920,7 +4950,7 @@ Responde SOLO con JSON válido, sin texto adicional:
     deleteAllergy: protectedProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         await db.deleteAllergy(input.id);
         return { success: true };
       }),
@@ -4928,14 +4958,14 @@ Responde SOLO con JSON válido, sin texto adicional:
     createDietRestriction: protectedProcedure
       .input(z.object({ apiParam: z.string(), nameEs: z.string(), nameEn: z.string().optional() }))
       .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         return db.createDietRestriction(input);
       }),
 
     updateDietRestriction: protectedProcedure
       .input(z.object({ id: z.number(), nameEs: z.string().optional(), nameEn: z.string().optional() }))
       .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         const { id, ...data } = input;
         await db.updateDietRestriction(id, data);
         return { success: true };
@@ -4944,14 +4974,14 @@ Responde SOLO con JSON válido, sin texto adicional:
     createFoodCategory: protectedProcedure
       .input(z.object({ apiParam: z.string(), nameEs: z.string(), nameEn: z.string().optional(), imageUrl: z.string().optional() }))
       .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         return db.createFoodCategory(input);
       }),
 
     updateFoodCategory: protectedProcedure
       .input(z.object({ id: z.number(), nameEs: z.string().optional(), nameEn: z.string().optional(), imageUrl: z.string().optional() }))
       .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         const { id, ...data } = input;
         await db.updateFoodCategory(id, data);
         return { success: true };
@@ -4960,32 +4990,32 @@ Responde SOLO con JSON válido, sin texto adicional:
     createMeasure: protectedProcedure
       .input(z.object({ apiParam: z.string(), nameEs: z.string(), nameEn: z.string().optional(), abbreviation: z.string().optional() }))
       .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         return db.createMeasure(input);
       }),
     deleteDietRestriction: protectedProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         await db.deleteDietRestriction(input.id);
         return { success: true };
       }),
     deleteFoodCategory: protectedProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         await db.deleteFoodCategory(input.id);
         return { success: true };
       }),
     deleteMeasure: protectedProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         await db.deleteMeasure(input.id);
         return { success: true };
       }),
     stats: protectedProcedure.query(async ({ ctx }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         const [users, recipesList, ingredients, menus, allergiesList, categoriesList, dietsList] = await Promise.all([
           db.getAllUsers(1000, 0),
           db.getAllRecipes(1000),
@@ -5013,7 +5043,7 @@ Responde SOLO con JSON válido, sin texto adicional:
         search: z.string().optional(),
       }))
       .query(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         const drizzleDb = await db.getDb();
         if (!drizzleDb) return { recipes: [], total: 0 };
         const { recipes: recipesTable, users: usersTable } = await import("../drizzle/schema");
@@ -5042,7 +5072,7 @@ Responde SOLO con JSON válido, sin texto adicional:
         mimeType: z.string().default("image/jpeg"),
       }))
       .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         const imageBuffer = Buffer.from(input.imageBase64, "base64");
         const ext = input.mimeType.split("/")[1] ?? "jpg";
         const fileKey = `recipe-images/${input.recipeId}-${Date.now()}.${ext}`;
@@ -5064,7 +5094,7 @@ Responde SOLO con JSON válido, sin texto adicional:
         isPublic: z.boolean().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         const { id, ...data } = input;
         await db.updateRecipe(id, data);
         return { success: true };
@@ -5072,7 +5102,7 @@ Responde SOLO con JSON válido, sin texto adicional:
 
     // ── API Health Monitor ────────────────────────────────────────────────────
     getApiMonitors: protectedProcedure.query(async ({ ctx }) => {
-      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
       const drizzleDb = await db.getDb();
       if (!drizzleDb) return [];
       const { apiMonitors } = await import("../drizzle/schema");
@@ -5083,7 +5113,7 @@ Responde SOLO con JSON válido, sin texto adicional:
     getApiLogs: protectedProcedure
       .input(z.object({ monitorId: z.number(), limit: z.number().optional().default(50) }))
       .query(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         const drizzleDb = await db.getDb();
         if (!drizzleDb) return [];
         const { apiHealthLogs } = await import("../drizzle/schema");
@@ -5099,7 +5129,7 @@ Responde SOLO con JSON válido, sin texto adicional:
     recheckApi: protectedProcedure
       .input(z.object({ monitorId: z.number() }))
       .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         const drizzleDb = await db.getDb();
         if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
         const { apiMonitors, apiHealthLogs } = await import("../drizzle/schema");
@@ -5131,7 +5161,7 @@ Responde SOLO con JSON válido, sin texto adicional:
     toggleMonitor: protectedProcedure
       .input(z.object({ monitorId: z.number(), isActive: z.boolean() }))
       .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         const drizzleDb = await db.getDb();
         if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
         const { apiMonitors } = await import("../drizzle/schema");
@@ -5142,7 +5172,7 @@ Responde SOLO con JSON válido, sin texto adicional:
     tagKidFriendlyRecipes: protectedProcedure
       .input(z.object({ batchSize: z.number().int().min(1).max(50).default(20) }))
       .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         const drizzleDb = await db.getDb();
         if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
         const { recipes } = await import("../drizzle/schema.js");
@@ -6391,7 +6421,7 @@ Responde SOLO con JSON válido, sin texto adicional:
     listPending: protectedProcedure
       .input(z.object({ type: z.enum(["expert", "maker", "all"]).optional(), status: z.enum(["pending", "approved", "rejected", "all"]).optional() }).nullish())
       .query(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         const drizzleDb = await db.getDb();
         if (!drizzleDb) return [];
         const { buddyApplications: appsTable, users: usersTable } = await import("../drizzle/schema");
@@ -6417,7 +6447,7 @@ Responde SOLO con JSON válido, sin texto adicional:
         adminNote: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         const drizzleDb = await db.getDb();
         if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
         const { buddyApplications: appsTable, buddyExperts, buddyMakers, users: usersTable } = await import("../drizzle/schema");
@@ -8106,7 +8136,7 @@ Responde SOLO con JSON válido, sin texto adicional:
 
     // Admin: list all referral codes
     adminList: protectedProcedure.query(async ({ ctx }) => {
-      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
       const drizzleDb = await db.getDb();
       if (!drizzleDb) return [];
       const { referralCodes, users: usersTable } = await import("../drizzle/schema");
@@ -9530,7 +9560,7 @@ Devuelve EXACTAMENTE este JSON:
           imageUrl: z.string().optional(),
         }))
         .mutation(async ({ ctx, input }) => {
-          if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+          if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
           const { inAppNotifications } = await import("../drizzle/schema");
           const { getDb } = await import("./db");
           const drizzleDb = await getDb();
@@ -9739,7 +9769,7 @@ Devuelve EXACTAMENTE este JSON:
     adminList: protectedProcedure
       .input(z.object({ status: z.enum(["pending", "approved", "rejected", "all"]).default("pending") }))
       .query(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         const requests = await db.getAllRoleRequests(input.status === "all" ? undefined : input.status);
         // Join with user data
         const drizzleDb = await db.getDb();
@@ -9755,7 +9785,7 @@ Devuelve EXACTAMENTE este JSON:
     approve: protectedProcedure
       .input(z.object({ requestId: z.number(), note: z.string().optional() }))
       .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         const allRequests = await db.getAllRoleRequests();
         const req = allRequests.find(r => r.id === input.requestId);
         if (!req) throw new TRPCError({ code: "NOT_FOUND" });
@@ -9773,7 +9803,7 @@ Devuelve EXACTAMENTE este JSON:
     reject: protectedProcedure
       .input(z.object({ requestId: z.number(), note: z.string().optional() }))
       .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         await db.updateRoleRequest(input.requestId, {
           status: "rejected",
           reviewNote: input.note ?? null,
@@ -10938,7 +10968,7 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
   usageAnalytics: router({
     // Overview: key metrics counts
     getOverview: protectedProcedure.query(async ({ ctx }) => {
-      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
       const drizzleDb = await db.getDb();
       if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       const { sql: sqlTag, count, gte, and } = await import("drizzle-orm");
@@ -10989,7 +11019,7 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
 
     // Feature heatmap: usage counts per feature
     getFeatureHeatmap: protectedProcedure.query(async ({ ctx }) => {
-      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
       const drizzleDb = await db.getDb();
       if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       const { sql: sqlTag, count, eq } = await import("drizzle-orm");
@@ -11040,7 +11070,7 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
 
     // Daily activity: registrations and meal logs per day (last 30 days)
     getDailyActivity: protectedProcedure.query(async ({ ctx }) => {
-      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
       const drizzleDb = await db.getDb();
       if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       const { sql: sqlTag, gte, count } = await import("drizzle-orm");
@@ -11084,7 +11114,7 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
 
     // AI usage breakdown
     getAIUsage: protectedProcedure.query(async ({ ctx }) => {
-      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
       const drizzleDb = await db.getDb();
       if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       const { sql: sqlTag, count, avg } = await import("drizzle-orm");
@@ -11121,7 +11151,7 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
 
     // Top users by activity
     getTopUsers: protectedProcedure.query(async ({ ctx }) => {
-      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
       const drizzleDb = await db.getDb();
       if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       const { sql: sqlTag, count, desc, eq } = await import("drizzle-orm");
@@ -11341,14 +11371,14 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
     awardManual: protectedProcedure
       .input(z.object({ userId: z.number(), badgeSlug: z.string() }))
       .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         const result = await db.awardBadge(input.userId, input.badgeSlug);
         return result;
       }),
 
     /** Estadísticas de insignias para el panel admin */
     getAdminStats: protectedProcedure.query(async ({ ctx }) => {
-      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
       const allBadges = await db.getAllBadges();
       const leaderboard = await db.getBadgeLeaderboard(10);
       return { badges: allBadges, leaderboard };
@@ -11456,7 +11486,7 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
         stripeSubscriptionId: z.string().optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         const drizzleDb = await db.getDb();
         if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
         const { userReferrals, userReferralCodes, userSubscriptions } = await import("../drizzle/schema.js");
@@ -11537,7 +11567,7 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
         offset: z.number().int().min(0).optional().default(0),
       }))
       .query(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         const drizzleDb = await db.getDb();
         if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
         const { serverLogs } = await import("../drizzle/schema.js");
@@ -11558,7 +11588,7 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
 
     stats: protectedProcedure
       .query(async ({ ctx }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         const drizzleDb = await db.getDb();
         if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
         const { serverLogs } = await import("../drizzle/schema.js");
@@ -11584,7 +11614,7 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
     resolve: protectedProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         const drizzleDb = await db.getDb();
         if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
         const { serverLogs } = await import("../drizzle/schema.js");
@@ -11596,7 +11626,7 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
     clearOld: protectedProcedure
       .input(z.object({ olderThanDays: z.number().int().min(1).max(365).default(30) }))
       .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         const drizzleDb = await db.getDb();
         if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
         const { serverLogs } = await import("../drizzle/schema.js");
@@ -11608,7 +11638,7 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
     resolveAll: protectedProcedure
       .input(z.object({ level: z.string().optional() }))
       .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         const drizzleDb = await db.getDb();
         if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
         const { serverLogs } = await import("../drizzle/schema.js");
@@ -11622,7 +11652,7 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
     analyzeAndFix: protectedProcedure
       .input(z.object({ id: z.number() }))
       .mutation(async ({ ctx, input }) => {
-        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
         const drizzleDb = await db.getDb();
         if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
         const { serverLogs } = await import("../drizzle/schema.js");

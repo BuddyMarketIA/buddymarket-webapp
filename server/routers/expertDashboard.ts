@@ -1,3 +1,4 @@
+import { hasRole } from "@shared/const";
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
 import {

@@ -496,7 +496,7 @@ export async function runExpertWeeklySummary() {
 
         // Check-ins de la semana
         const weekCheckins = await db
-          .select({ id: weeklyCheckins.id, adherenceScore: weeklyCheckins.adherenceScore })
+          .select({ id: weeklyCheckins.id, adherenceRating: weeklyCheckins.adherenceRating })
           .from(weeklyCheckins)
           .innerJoin(expertPatients, eq(expertPatients.id, weeklyCheckins.expertPatientId))
           .where(
@@ -507,7 +507,7 @@ export async function runExpertWeeklySummary() {
           );
 
         const avgAdherence = weekCheckins.length > 0
-          ? Math.round(weekCheckins.reduce((sum, c) => sum + (c.adherenceScore ?? 0), 0) / weekCheckins.length)
+          ? Math.round(weekCheckins.reduce((sum, c) => sum + (c.adherenceRating ?? 0), 0) / weekCheckins.length)
           : null;
 
         await sendExpertWeeklySummary({

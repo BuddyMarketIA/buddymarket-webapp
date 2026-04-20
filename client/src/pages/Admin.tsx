@@ -1,3 +1,4 @@
+import { hasRole } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
 import { useState, useRef } from "react";
 import { toast } from "@/components/sonner-a11y-shim";
@@ -379,8 +380,16 @@ export default function Admin() {
     },
     onError: (err) => toast.error(err.message),
   });
+  const addSecondaryRoleMut = trpc.admin.addSecondaryRole.useMutation({
+    onSuccess: () => { utils.admin.users.invalidate(); toast.success("Rol secundario añadido"); },
+    onError: (err) => toast.error(err.message),
+  });
+  const removeSecondaryRoleMut = trpc.admin.removeSecondaryRole.useMutation({
+    onSuccess: () => { utils.admin.users.invalidate(); toast.success("Rol secundario eliminado"); },
+    onError: (err) => toast.error(err.message),
+  });
 
-  if (user?.role !== "admin") {
+  if (!hasRole(user, "admin")) {
     return (
       <div className="vively-page container text-center">
         <ShieldCheckIcon className="mx-auto mb-3 h-12 w-12 text-gray-300" />
@@ -946,6 +955,43 @@ export default function Admin() {
                         <option value="premium">Pro (Premium)</option>
                         <option value="pro_max">Pro Max</option>
                       </select>
+                    </div>
+                  </div>
+                  {/* Roles secundarios */}
+                  <div className="space-y-1 pt-1">
+                    <p className="text-xs font-semibold text-muted-foreground/70 uppercase tracking-wide">Roles adicionales</p>
+                    <div className="flex flex-wrap gap-1.5 items-center">
+                      {((u as any).secondaryRoles ?? []).map((sr: string) => (
+                        <span key={sr} className="inline-flex items-center gap-1 rounded-full bg-orange-100 dark:bg-orange-900/30 px-2 py-0.5 text-xs font-semibold text-orange-700 dark:text-orange-300">
+                          {sr === "buddyexpert" ? "BuddyExpert" : sr === "admin" ? "Admin" : sr}
+                          <button
+                            onClick={() => removeSecondaryRoleMut.mutate({ userId: u.id, secondaryRole: sr })}
+                            className="ml-0.5 text-orange-500 hover:text-red-600 font-bold leading-none"
+                            title="Quitar rol"
+                          >×</button>
+                        </span>
+                      ))}
+                      {!((u as any).secondaryRoles ?? []).includes("buddyexpert") && u.role !== "buddyexpert" && (
+                        <button
+                          onClick={() => addSecondaryRoleMut.mutate({ userId: u.id, secondaryRole: "buddyexpert" })}
+                          className="rounded-full border border-dashed border-orange-300 px-2 py-0.5 text-xs text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20"
+                        >+ BuddyExpert</button>
+                      )}
+                      {!((u as any).secondaryRoles ?? []).includes("admin") && u.role !== "admin" && (
+                        <button
+                          onClick={() => addSecondaryRoleMut.mutate({ userId: u.id, secondaryRole: "admin" })}
+                          className="rounded-full border border-dashed border-blue-300 px-2 py-0.5 text-xs text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20"
+                        >+ Admin</button>
+                      )}
+                      {((u as any).secondaryRoles ?? []).length === 0 && u.role === "admin" && !((u as any).secondaryRoles ?? []).includes("buddyexpert") && (
+                        <button
+                          onClick={() => addSecondaryRoleMut.mutate({ userId: u.id, secondaryRole: "buddyexpert" })}
+                          className="rounded-full border border-dashed border-orange-300 px-2 py-0.5 text-xs text-orange-500 hover:bg-orange-50 dark:hover:bg-orange-900/20"
+                        >+ BuddyExpert</button>
+                      )}
+                      {((u as any).secondaryRoles ?? []).length === 0 && u.role !== "admin" && (
+                        <span className="text-xs text-muted-foreground/50">Sin roles adicionales</span>
+                      )}
                     </div>
                   </div>
                   {/* Borrar usuario */}

@@ -1,3 +1,4 @@
+import { hasRole } from "@shared/const";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
@@ -12,7 +13,7 @@ export const expertPatientsRouter = router({
       search: z.string().optional(),
     }))
     .query(async ({ ctx, input }) => {
-      if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
+      if (!hasRole(ctx.user, "buddyexpert") && !hasRole(ctx.user, "admin")) {
         throw new TRPCError({ code: "FORBIDDEN", message: "Solo BuddyExperts pueden acceder a esta sección" });
       }
       const { getDb } = await import("../db");
@@ -103,7 +104,7 @@ export const expertPatientsRouter = router({
   getPatientDetail: protectedProcedure
     .input(z.object({ patientRelId: z.number() }))
     .query(async ({ ctx, input }) => {
-      if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
+      if (!hasRole(ctx.user, "buddyexpert") && !hasRole(ctx.user, "admin")) {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
       const { getDb } = await import("../db");
@@ -180,7 +181,7 @@ export const expertPatientsRouter = router({
       notes: z.string().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
-      if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
+      if (!hasRole(ctx.user, "buddyexpert") && !hasRole(ctx.user, "admin")) {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
       const { getDb } = await import("../db");
@@ -289,7 +290,7 @@ export const expertPatientsRouter = router({
   sendReminderInvite: protectedProcedure
     .input(z.object({ patientRelId: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
+      if (!hasRole(ctx.user, "buddyexpert") && !hasRole(ctx.user, "admin")) {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
       const { getDb } = await import("../db");
@@ -409,7 +410,7 @@ export const expertPatientsRouter = router({
       notes: z.string().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
-      if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
+      if (!hasRole(ctx.user, "buddyexpert") && !hasRole(ctx.user, "admin")) {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
       const { getDb } = await import("../db");
@@ -438,7 +439,7 @@ export const expertPatientsRouter = router({
   deletePatient: protectedProcedure
     .input(z.object({ patientRelId: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
+      if (!hasRole(ctx.user, "buddyexpert") && !hasRole(ctx.user, "admin")) {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
       const { getDb } = await import("../db");
@@ -476,7 +477,7 @@ export const expertPatientsRouter = router({
         .where(eq(expertPatients.id, input.patientRelId)).limit(1);
       if (!rel) throw new TRPCError({ code: "NOT_FOUND" });
 
-      const isExpert = ctx.user.role === "buddyexpert" || ctx.user.role === "admin";
+      const isExpert = hasRole(ctx.user, "buddyexpert") || hasRole(ctx.user, "admin");
       const isPatient = rel.patientUserId === ctx.user.id;
       if (!isExpert && !isPatient) throw new TRPCError({ code: "FORBIDDEN" });
 
@@ -515,7 +516,7 @@ export const expertPatientsRouter = router({
         .where(eq(expertPatients.id, input.patientRelId)).limit(1);
       if (!rel) throw new TRPCError({ code: "NOT_FOUND" });
 
-      const isExpert = ctx.user.role === "buddyexpert" || ctx.user.role === "admin";
+      const isExpert = hasRole(ctx.user, "buddyexpert") || hasRole(ctx.user, "admin");
       const isPatient = rel.patientUserId === ctx.user.id;
       if (!isExpert && !isPatient) throw new TRPCError({ code: "FORBIDDEN" });
 
@@ -553,7 +554,7 @@ export const expertPatientsRouter = router({
         .where(eq(expertPatients.id, input.patientRelId)).limit(1);
       if (!rel) throw new TRPCError({ code: "NOT_FOUND" });
 
-      const isExpert = ctx.user.role === "buddyexpert" || ctx.user.role === "admin";
+      const isExpert = hasRole(ctx.user, "buddyexpert") || hasRole(ctx.user, "admin");
       const readRole = isExpert ? "patient" : "expert";
 
       await drizzleDb.update(expertMessages)
@@ -580,7 +581,7 @@ export const expertPatientsRouter = router({
       const { expertAppointments, expertPatients, buddyExperts, users } = await import("../../drizzle/schema.js");
       const { eq, and, gte, desc } = await import("drizzle-orm");
 
-      const isExpert = ctx.user.role === "buddyexpert" || ctx.user.role === "admin";
+      const isExpert = hasRole(ctx.user, "buddyexpert") || hasRole(ctx.user, "admin");
       const conditions = [];
 
       if (isExpert) {
@@ -627,7 +628,7 @@ export const expertPatientsRouter = router({
       location: z.string().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
-      if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
+      if (!hasRole(ctx.user, "buddyexpert") && !hasRole(ctx.user, "admin")) {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
       const { getDb } = await import("../db");
@@ -781,7 +782,7 @@ export const expertPatientsRouter = router({
         .where(eq(expertAppointments.id, input.appointmentId)).limit(1);
       if (!appt) throw new TRPCError({ code: "NOT_FOUND" });
 
-      const isExpert = ctx.user.role === "buddyexpert" || ctx.user.role === "admin";
+      const isExpert = hasRole(ctx.user, "buddyexpert") || hasRole(ctx.user, "admin");
       const isPatient = appt.patientUserId === ctx.user.id;
       if (!isExpert && !isPatient) throw new TRPCError({ code: "FORBIDDEN" });
 
@@ -809,7 +810,7 @@ export const expertPatientsRouter = router({
       weekStartDate: z.string().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
-      if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
+      if (!hasRole(ctx.user, "buddyexpert") && !hasRole(ctx.user, "admin")) {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
       const { getDb } = await import("../db");
@@ -976,7 +977,7 @@ Responde en JSON con este formato:
         .where(eq(expertPatients.id, input.patientRelId)).limit(1);
       if (!rel) throw new TRPCError({ code: "NOT_FOUND" });
 
-      const isExpert = ctx.user.role === "buddyexpert" || ctx.user.role === "admin";
+      const isExpert = hasRole(ctx.user, "buddyexpert") || hasRole(ctx.user, "admin");
       const isPatient = rel.patientUserId === ctx.user.id;
       if (!isExpert && !isPatient) throw new TRPCError({ code: "FORBIDDEN" });
 
@@ -1013,7 +1014,7 @@ Responde en JSON con este formato:
         .where(eq(expertPatients.id, input.patientRelId)).limit(1);
       if (!rel) throw new TRPCError({ code: "NOT_FOUND" });
 
-      const isExpert = ctx.user.role === "buddyexpert" || ctx.user.role === "admin";
+      const isExpert = hasRole(ctx.user, "buddyexpert") || hasRole(ctx.user, "admin");
       const isPatient = rel.patientUserId === ctx.user.id;
       if (!isExpert && !isPatient) throw new TRPCError({ code: "FORBIDDEN" });
 
@@ -1042,7 +1043,7 @@ Responde en JSON con este formato:
       comment: z.string().min(1).max(1000),
     }))
     .mutation(async ({ ctx, input }) => {
-      if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
+      if (!hasRole(ctx.user, "buddyexpert") && !hasRole(ctx.user, "admin")) {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
       const { getDb } = await import("../db");
@@ -1106,7 +1107,7 @@ Responde en JSON con este formato:
       isPinned: z.boolean().optional().default(false),
     }))
     .mutation(async ({ ctx, input }) => {
-      if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
+      if (!hasRole(ctx.user, "buddyexpert") && !hasRole(ctx.user, "admin")) {
         throw new TRPCError({ code: "FORBIDDEN", message: "Solo BuddyExperts pueden añadir notas" });
       }
       const { getDb } = await import("../db");
@@ -1140,7 +1141,7 @@ Responde en JSON con este formato:
   getPatientNotes: protectedProcedure
     .input(z.object({ patientRelId: z.number() }))
     .query(async ({ ctx, input }) => {
-      if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
+      if (!hasRole(ctx.user, "buddyexpert") && !hasRole(ctx.user, "admin")) {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
       const { getDb } = await import("../db");
@@ -1176,7 +1177,7 @@ Responde en JSON con este formato:
       isPinned: z.boolean().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
-      if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
+      if (!hasRole(ctx.user, "buddyexpert") && !hasRole(ctx.user, "admin")) {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
       const { getDb } = await import("../db");
@@ -1209,7 +1210,7 @@ Responde en JSON con este formato:
   deletePatientNote: protectedProcedure
     .input(z.object({ noteId: z.number() }))
     .mutation(async ({ ctx, input }) => {
-      if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
+      if (!hasRole(ctx.user, "buddyexpert") && !hasRole(ctx.user, "admin")) {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
       const { getDb } = await import("../db");
@@ -1232,7 +1233,7 @@ Responde en JSON con este formato:
   getPatientFullDetail: protectedProcedure
     .input(z.object({ patientRelId: z.number() }))
     .query(async ({ ctx, input }) => {
-      if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
+      if (!hasRole(ctx.user, "buddyexpert") && !hasRole(ctx.user, "admin")) {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
       const { getDb } = await import("../db");
@@ -1316,7 +1317,7 @@ Responde en JSON con este formato:
   // ─── Dashboard stats del experto ──────────────────────────────────────────
   getExpertDashboardStats: protectedProcedure
     .query(async ({ ctx }) => {
-      if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
+      if (!hasRole(ctx.user, "buddyexpert") && !hasRole(ctx.user, "admin")) {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
       const { getDb } = await import("../db");
@@ -1448,7 +1449,7 @@ Responde en JSON con este formato:
   getGoogleCalendarAuthUrl: protectedProcedure
     .input(z.object({ origin: z.string() }))
     .query(async ({ ctx, input }) => {
-      if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
+      if (!hasRole(ctx.user, "buddyexpert") && !hasRole(ctx.user, "admin")) {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
       const { getGoogleAuthUrl } = await import("../googleCalendar.js");
@@ -1460,7 +1461,7 @@ Responde en JSON con este formato:
 
   getGoogleCalendarStatus: protectedProcedure
     .query(async ({ ctx }) => {
-      if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
+      if (!hasRole(ctx.user, "buddyexpert") && !hasRole(ctx.user, "admin")) {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
       const { getDb } = await import("../db");
@@ -1477,7 +1478,7 @@ Responde en JSON con este formato:
 
   disconnectGoogleCalendar: protectedProcedure
     .mutation(async ({ ctx }) => {
-      if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
+      if (!hasRole(ctx.user, "buddyexpert") && !hasRole(ctx.user, "admin")) {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
       const { getDb } = await import("../db");
@@ -1507,7 +1508,7 @@ Responde en JSON con este formato:
   checkCalendarAvailability: protectedProcedure
     .input(z.object({ startTime: z.string(), endTime: z.string() }))
     .query(async ({ ctx, input }) => {
-      if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
+      if (!hasRole(ctx.user, "buddyexpert") && !hasRole(ctx.user, "admin")) {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
       const { getDb } = await import("../db");
@@ -1550,7 +1551,7 @@ Responde en JSON con este formato:
       endDate: z.string(),
     }))
     .query(async ({ ctx, input }) => {
-      if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
+      if (!hasRole(ctx.user, "buddyexpert") && !hasRole(ctx.user, "admin")) {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
       const { getDb } = await import("../db");
@@ -1626,7 +1627,7 @@ Responde en JSON con este formato:
       icon: z.string().optional().default("🏆"),
     }))
     .mutation(async ({ ctx, input }) => {
-      if (ctx.user.role !== "buddyexpert" && ctx.user.role !== "admin") {
+      if (!hasRole(ctx.user, "buddyexpert") && !hasRole(ctx.user, "admin")) {
         throw new TRPCError({ code: "FORBIDDEN" });
       }
       const { getDb } = await import("../db");

@@ -1,3 +1,4 @@
+import { hasRole } from "@/lib/utils";
 import { useState, useRef, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -333,7 +334,7 @@ export default function BuddyExpertDashboard() {
 
   // Gate: only approved experts can access the dashboard
   // Allow access if: (a) application is approved OR (b) user has buddyexpert role (assigned by admin)
-  const hasAccess = myApplication?.status === "approved" || (user as any)?.role === "buddyexpert" || (user as any)?.accountType === "buddyexpert";
+  const hasAccess = myApplication?.status === "approved" || (hasRole(user, "buddyexpert")) || (user as any)?.accountType === "buddyexpert";
   if (!appLoading && !hasAccess) {
     return (
       <AppLayout>
@@ -1047,14 +1048,19 @@ function ServicePlansTab() {
   const [editingPlan, setEditingPlan] = useState<any | null>(null);
   const [form, setForm] = useState({ name: "", description: "", price: "", billingPeriod: "monthly", durationMonths: "", includes: "", maxConsultations: "", isPopular: false });
 
-  const createMut = trpc.buddyExperts.createServicePlan.useMutation({
-    onSuccess: () => { toast.success("Plan creado"); utils.buddyExperts.getMyServicePlans.invalidate(); setShowForm(false); resetForm(); },
+  const upsertMut = trpc.buddyExperts.upsertServicePlan.useMutation({
+    onSuccess: () => {
+      toast.success(editingPlan ? "Plan actualizado" : "Plan creado");
+      utils.buddyExperts.getMyServicePlans.invalidate();
+      setShowForm(false);
+      setEditingPlan(null);
+      resetForm();
+    },
     onError: (e) => toast.error(e.message || "Error"),
   });
-  const updateMut = trpc.buddyExperts.updateServicePlan.useMutation({
-    onSuccess: () => { toast.success("Plan actualizado"); utils.buddyExperts.getMyServicePlans.invalidate(); setShowForm(false); setEditingPlan(null); resetForm(); },
-    onError: (e) => toast.error(e.message || "Error"),
-  });
+  // Aliases for backwards compat
+  const createMut = upsertMut;
+  const updateMut = upsertMut;
   const deleteMut = trpc.buddyExperts.deleteServicePlan.useMutation({
     onSuccess: () => { toast.success("Plan eliminado"); utils.buddyExperts.getMyServicePlans.invalidate(); },
     onError: (e) => toast.error(e.message || "Error"),
@@ -1082,17 +1088,17 @@ function ServicePlansTab() {
   const handleSubmit = () => {
     const includesArr = form.includes.split("\n").map(s => s.trim()).filter(Boolean);
     const payload = {
+      id: editingPlan?.id,
       name: form.name,
       description: form.description || undefined,
       price: parseFloat(form.price) || 0,
       billingPeriod: form.billingPeriod as any,
       durationMonths: form.durationMonths ? parseInt(form.durationMonths) : undefined,
-      includes: includesArr.length > 0 ? JSON.stringify(includesArr) : undefined,
+      includes: includesArr.length > 0 ? includesArr : undefined,
       maxConsultations: form.maxConsultations ? parseInt(form.maxConsultations) : undefined,
       isPopular: form.isPopular,
     };
-    if (editingPlan) updateMut.mutate({ id: editingPlan.id, ...payload });
-    else createMut.mutate(payload);
+    upsertMut.mutate(payload);
   };
 
   const periodLabel: Record<string, string> = { monthly: "mes", quarterly: "trimestre", annual: "año", one_time: "pago único" };

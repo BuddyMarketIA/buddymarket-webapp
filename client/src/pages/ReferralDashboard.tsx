@@ -1,3 +1,4 @@
+import { hasRole } from "@/lib/utils";
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -16,7 +17,7 @@ type CreatorType = "buddyexpert" | "buddymaker";
 export default function ReferralDashboard() {
   const { user } = useAuth();
   const [creatorType] = useState<CreatorType>(
-    (user?.role === "buddyexpert" || user?.accountType === "buddyexpert") ? "buddyexpert" : "buddymaker"
+    (hasRole(user, "buddyexpert") || user?.accountType === "buddyexpert") ? "buddyexpert" : "buddymaker"
   );
 
   const { data: myCode, refetch: refetchCode } = trpc.referrals.getMyCode.useQuery(

@@ -94,6 +94,8 @@ export const users = pgTable("users", {
   usedReferralCode: varchar("usedReferralCode", { length: 50 }),
   /** Tipo de código usado: company | expert | maker | promo */
   referralCodeType: varchar("referralCodeType", { length: 20 }),
+  /** Roles adicionales del usuario (además del role principal). Ej: ["buddyexpert"] para un admin que también es experto */
+  secondaryRoles: text("secondaryRoles").array().default([]).notNull(),
 }, (t) => ({
   emailIdx: index("users_email_idx").on(t.email),
   roleIdx: index("users_role_idx").on(t.role),
