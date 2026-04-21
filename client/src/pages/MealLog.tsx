@@ -298,7 +298,7 @@ export default function MealLog() {
   const [showDailyAnalysis, setShowDailyAnalysis] = useState(false);
   const [analysisRequested, setAnalysisRequested] = useState(false);
 
-  const { data: weightHistory } = trpc.metrics.weightHistory.useQuery({ days: 30 });
+  const { data: weightHistory } = trpc.progress.weightHistory.useQuery({ days: 30 });
   const { data: latestMetric, refetch: refetchLatestMetric } = trpc.metrics.getLatest.useQuery();
   const addMetric = trpc.metrics.add.useMutation({
     onSuccess: () => {
@@ -306,7 +306,7 @@ export default function MealLog() {
       setWeightInput("");
       setShowWeightWidget(false);
       refetchLatestMetric();
-      utils.metrics.weightHistory.invalidate();
+      utils.progress.weightHistory.invalidate();
       utils.profile.get.invalidate();
     },
     onError: () => toast.error("Error al registrar el peso"),
