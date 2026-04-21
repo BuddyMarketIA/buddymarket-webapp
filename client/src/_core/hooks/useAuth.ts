@@ -2,6 +2,31 @@ import { trpc } from "@/lib/trpc";
 import { TRPCClientError } from "@trpc/client";
 import { useCallback, useEffect, useMemo, useRef } from "react";
 
+// localStorage key used to persist authentication state across page reloads.
+// This prevents the brief window where hasEverAuthenticated.current is false
+// (before the first meQuery response) from triggering an unwanted redirect.
+const AUTH_STATE_KEY = "bm_auth_state";
+
+function getPersistedAuthState(): boolean {
+  try {
+    return localStorage.getItem(AUTH_STATE_KEY) === "authenticated";
+  } catch {
+    return false;
+  }
+}
+
+function setPersistedAuthState(authenticated: boolean): void {
+  try {
+    if (authenticated) {
+      localStorage.setItem(AUTH_STATE_KEY, "authenticated");
+    } else {
+      localStorage.removeItem(AUTH_STATE_KEY);
+    }
+  } catch {
+    // localStorage might be unavailable in some environments
+  }
+}
+
 type UseAuthOptions = {
   redirectOnUnauthenticated?: boolean;
   redirectPath?: string;
@@ -13,9 +38,10 @@ export function useAuth(options?: UseAuthOptions) {
   const utils = trpc.useUtils();
 
   // Track whether we have EVER successfully authenticated in this session.
+  // Initialized from localStorage so it survives page reloads.
   // This prevents transient errors (network blips, server cold-start) from
   // kicking the user out after they are already logged in.
-  const hasEverAuthenticated = useRef(false);
+  const hasEverAuthenticated = useRef(getPersistedAuthState());
 
   const meQuery = trpc.auth.me.useQuery(undefined, {
     // Never retry auth.me — a real 401 should not be retried.
@@ -32,10 +58,12 @@ export function useAuth(options?: UseAuthOptions) {
     gcTime: 30 * 60 * 1000,
   });
 
-  // Once we get a valid user, mark that we have authenticated.
+  // Once we get a valid user, mark that we have authenticated in both the ref
+  // and localStorage so it persists across page reloads.
   useEffect(() => {
     if (meQuery.data) {
       hasEverAuthenticated.current = true;
+      setPersistedAuthState(true);
     }
   }, [meQuery.data]);
 
@@ -72,6 +100,7 @@ export function useAuth(options?: UseAuthOptions) {
       // Reset the "has ever authenticated" flag so the redirect logic works
       // correctly on the next login.
       hasEverAuthenticated.current = false;
+      setPersistedAuthState(false);
 
       // Set localStorage flag so LoginPage never auto-redirects after logout.
       localStorage.setItem("bm_just_logged_out", "1");
@@ -96,13 +125,18 @@ export function useAuth(options?: UseAuthOptions) {
       (meQuery.error.data?.code === "UNAUTHORIZED" ||
         meQuery.error.data?.httpStatus === 401);
 
+    // Check both the ref (current session) and localStorage (persisted across reloads)
+    const wasAuthenticated = hasEverAuthenticated.current || getPersistedAuthState();
+
     const isAuthenticated =
       hasData ||
-      (hasEverAuthenticated.current && !isDefinitiveError);
+      (wasAuthenticated && !isDefinitiveError);
 
     return {
       user: meQuery.data ?? null,
-      loading: meQuery.isLoading || logoutMutation.isPending,
+      // Use isPending instead of isLoading so loading=true covers the initial
+      // state before the first query fires (not just when actively fetching).
+      loading: meQuery.isPending || logoutMutation.isPending,
       error: meQuery.error ?? logoutMutation.error ?? null,
       isAuthenticated,
     };
@@ -110,14 +144,14 @@ export function useAuth(options?: UseAuthOptions) {
     meQuery.data,
     meQuery.error,
     meQuery.isError,
-    meQuery.isLoading,
+    meQuery.isPending,
     logoutMutation.error,
     logoutMutation.isPending,
   ]);
 
   useEffect(() => {
     if (!redirectOnUnauthenticated) return;
-    if (meQuery.isLoading || logoutMutation.isPending) return;
+    if (meQuery.isPending || logoutMutation.isPending) return;
     if (state.user) return;
     if (typeof window === "undefined") return;
     if (window.location.pathname === redirectPath) return;
@@ -127,14 +161,15 @@ export function useAuth(options?: UseAuthOptions) {
       meQuery.error instanceof TRPCClientError &&
       (meQuery.error.data?.code === "UNAUTHORIZED" ||
         meQuery.error.data?.httpStatus === 401);
-    if (!isDefinitiveError && hasEverAuthenticated.current) return;
+    const wasAuthenticated = hasEverAuthenticated.current || getPersistedAuthState();
+    if (!isDefinitiveError && wasAuthenticated) return;
 
     window.location.href = redirectPath;
   }, [
     redirectOnUnauthenticated,
     redirectPath,
     logoutMutation.isPending,
-    meQuery.isLoading,
+    meQuery.isPending,
     meQuery.isError,
     meQuery.error,
     state.user,
