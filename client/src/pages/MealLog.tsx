@@ -185,6 +185,7 @@ export default function MealLog() {
   const [dateOffset, setDateOffset] = useState(0);
   const [showCalendar, setShowCalendar] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
+  const [selectedMealDetail, setSelectedMealDetail] = useState<any | null>(null);
   const [addMode, setAddMode] = useState<"manual" | "photo" | "barcode" | "voice">("manual");
   const [isRecording, setIsRecording] = useState(false);
   const [voiceTranscript, setVoiceTranscript] = useState("");
@@ -408,6 +409,10 @@ export default function MealLog() {
   const targetCals = (profileData?.profile as any)?.dailyCalorieGoal ?? 2000;
   const goalType = (profileData?.profile as any)?.goal ?? undefined;
   const calPct = Math.min(100, Math.round((totalCals / targetCals) * 100));
+  // Profile data for the goal banner
+  const profileWeight = (profileData?.profile as any)?.weight ?? null;
+  const profileTargetWeight = (profileData?.profile as any)?.targetWeight ?? null;
+  const profileWeightChangeRate = (profileData?.profile as any)?.weightChangeRate ?? null;
 
   // Macro totals
   const totalProteins = Math.round((summary as any)?.proteins ?? 0);
@@ -711,48 +716,119 @@ export default function MealLog() {
         </div>
       </div>
 
-      {/* ─── Calorie Deficit Panel ─── */}
-      {totalCals > 0 && (() => {
+      {/* ─── Calorie Goal & Deficit Panel ─── */}
+      {(() => {
         const deficit = targetCals - Math.round(totalCals);
         const isDeficit = deficit > 0;
         const isSurplus = deficit < 0;
-        const goalType = (profileData?.profile as any)?.goal ?? 'maintenance';
-        const goalLabels: Record<string, string> = { weight_loss: 'pérdida de peso', muscle_gain: 'ganancia muscular', maintenance: 'mantenimiento', toning: 'tonificación', fat_loss: 'pérdida de grasa' };
-        const goalLabel = goalLabels[goalType] ?? 'tu objetivo';
+        const isOnTarget = deficit === 0;
+        const gt = (profileData?.profile as any)?.goal ?? 'maintenance';
+        const isWeightLoss = gt === 'perdida_peso' || gt === 'perdida_grasa' || gt === 'weight_loss' || gt === 'fat_loss';
+        const isMuscleGain = gt === 'ganancia_muscular' || gt === 'muscle_gain';
+        const isMaintenance = gt === 'mantenimiento' || gt === 'maintenance';
+        const goalLabels: Record<string, string> = {
+          perdida_peso: 'pérdida de peso', perdida_grasa: 'pérdida de grasa',
+          ganancia_muscular: 'ganancia muscular', tonificacion: 'tonificación',
+          mantenimiento: 'mantenimiento', bienestar: 'bienestar', vegano: 'alimentación vegana',
+          weight_loss: 'pérdida de peso', muscle_gain: 'ganancia muscular',
+          maintenance: 'mantenimiento', toning: 'tonificación', fat_loss: 'pérdida de grasa',
+        };
+        const goalLabel = goalLabels[gt] ?? 'tu objetivo';
+        // Weight-to-goal context
+        const kgToLose = profileWeight && profileTargetWeight ? Math.abs(profileWeight - profileTargetWeight) : null;
+        const weeksToGoal = kgToLose && profileWeightChangeRate ? Math.ceil(kgToLose / profileWeightChangeRate) : null;
+        // Contextual message
+        const getContextMsg = () => {
+          if (totalCals === 0) {
+            // Show goal info even without logs
+            if (isWeightLoss && kgToLose) {
+              return `Tu objetivo es perder ${kgToLose.toFixed(1)} kg. Con ${targetCals} kcal/día mantienes el déficit necesario${weeksToGoal ? ` — llegarás en ~${weeksToGoal} semanas` : ''}.`;
+            }
+            if (isMuscleGain) return `Tu objetivo es ganar músculo. Con ${targetCals} kcal/día mantienes el superávit necesario para el crecimiento muscular.`;
+            return `Tu objetivo calórico diario es ${targetCals} kcal para ${goalLabel}.`;
+          }
+          if (isOnTarget) return '¡Perfecto! Has alcanzado exactamente tu objetivo calórico hoy.';
+          if (isDeficit) {
+            if (isWeightLoss) return `Llevas ${Math.round(totalCals)} kcal de ${targetCals}. Te quedan ${deficit} kcal — estás en déficit para tu objetivo de ${goalLabel}.`;
+            if (isMaintenance) return `Llevas ${Math.round(totalCals)} kcal de ${targetCals}. Con ${deficit} kcal más completarás tu objetivo de mantenimiento.`;
+            return `Llevas ${Math.round(totalCals)} kcal de ${targetCals}. Te faltan ${deficit} kcal para completar tu objetivo de ${goalLabel}.`;
+          }
+          if (isSurplus) {
+            if (isWeightLoss) return `Has superado tu objetivo en ${Math.abs(deficit)} kcal. Esto puede ralentizar la pérdida de peso. Intenta compensar con actividad física.`;
+            if (isMuscleGain) return `Superávit de +${Math.abs(deficit)} kcal — ¡bien! Esto favorece la ganancia muscular si entrenas hoy.`;
+            return `Has superado tu objetivo en ${Math.abs(deficit)} kcal.`;
+          }
+          return '';
+        };
+        const bgColor = totalCals === 0 ? 'linear-gradient(135deg,#f0f9ff,#fff)'
+          : isDeficit ? (isWeightLoss ? 'linear-gradient(135deg,#f0fdf4,#fff)' : 'linear-gradient(135deg,#fff7ed,#fff)')
+          : isSurplus ? (isWeightLoss ? 'linear-gradient(135deg,#fef2f2,#fff)' : 'linear-gradient(135deg,#f0fdf4,#fff)')
+          : 'linear-gradient(135deg,#f0fdf4,#fff)';
+        const borderColor = totalCals === 0 ? '#bae6fd'
+          : isDeficit ? (isWeightLoss ? '#bbf7d0' : '#fed7aa')
+          : isSurplus ? (isWeightLoss ? '#fecaca' : '#bbf7d0')
+          : '#bbf7d0';
+        const accentColor = totalCals === 0 ? '#0ea5e9'
+          : isDeficit ? (isWeightLoss ? '#22c55e' : '#f97316')
+          : isSurplus ? (isWeightLoss ? '#ef4444' : '#22c55e')
+          : '#22c55e';
+        const icon = totalCals === 0 ? '🎯'
+          : isOnTarget ? '✅'
+          : isDeficit ? (isWeightLoss ? '✅' : '📉')
+          : isSurplus ? (isWeightLoss ? '⚠️' : '📈') : '✅';
         return (
-          <div style={{ background: isDeficit ? 'linear-gradient(135deg,#fff7ed,#fff)' : isSurplus ? 'linear-gradient(135deg,#fef2f2,#fff)' : 'linear-gradient(135deg,#f0fdf4,#fff)', borderRadius: "20px", padding: "16px", marginBottom: "12px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)", border: `1px solid ${isDeficit ? '#fed7aa' : isSurplus ? '#fecaca' : '#bbf7d0'}` }}>
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "10px" }}>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
-                <span style={{ fontSize: "20px" }}>{isDeficit ? '📉' : isSurplus ? '📈' : '✅'}</span>
-                <div>
-                  <p style={{ margin: 0, fontSize: "13px", fontWeight: 800, color: "#1a1a1a" }}>
-                    {isDeficit
-                    ? goalType === 'maintenance'
-                      ? `Te quedan ${deficit} kcal para tu objetivo`
-                      : `Déficit: ${deficit} kcal restantes`
-                    : isSurplus
-                    ? `Superávit: +${Math.abs(deficit)} kcal`
-                    : '¡Objetivo alcanzado!'}
+          <div style={{ background: bgColor, borderRadius: '20px', padding: '16px', marginBottom: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)', border: `1px solid ${borderColor}` }}>
+            {/* Header row */}
+            <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '10px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flex: 1 }}>
+                <span style={{ fontSize: '20px', flexShrink: 0 }}>{icon}</span>
+                <div style={{ flex: 1 }}>
+                  <p style={{ margin: 0, fontSize: '13px', fontWeight: 800, color: '#1a1a1a' }}>
+                    {totalCals === 0
+                      ? `Tu objetivo: ${targetCals} kcal/día`
+                      : isOnTarget ? '¡Objetivo alcanzado!'
+                      : isDeficit ? (isWeightLoss ? `✓ En déficit — ${deficit} kcal restantes` : `Te quedan ${deficit} kcal`)
+                      : `Superávit: +${Math.abs(deficit)} kcal`}
                   </p>
-                  <p style={{ margin: 0, fontSize: "11px", color: "#6b7280", marginTop: "1px" }}>Objetivo: {goalLabel}</p>
+                  <p style={{ margin: '2px 0 0', fontSize: '11px', color: '#6b7280' }}>Objetivo: {goalLabel}</p>
                 </div>
               </div>
-              <div style={{ textAlign: "right" }}>
-                <p style={{ margin: 0, fontSize: "20px", fontWeight: 900, color: isDeficit ? '#f97316' : isSurplus ? '#ef4444' : '#22c55e' }}>{Math.round(totalCals)}</p>
-                <p style={{ margin: 0, fontSize: "10px", color: "#9ca3af" }}>/ {targetCals} kcal</p>
+              {totalCals > 0 && (
+                <div style={{ textAlign: 'right', flexShrink: 0 }}>
+                  <p style={{ margin: 0, fontSize: '20px', fontWeight: 900, color: accentColor, lineHeight: 1 }}>{Math.round(totalCals)}</p>
+                  <p style={{ margin: 0, fontSize: '10px', color: '#9ca3af' }}>/ {targetCals} kcal</p>
+                </div>
+              )}
+            </div>
+            {/* Progress bar — only when there are logs */}
+            {totalCals > 0 && (
+              <div style={{ background: '#f3f4f6', borderRadius: '999px', height: '8px', overflow: 'hidden', marginBottom: '10px' }}>
+                <div style={{ background: `linear-gradient(90deg,${accentColor},${accentColor}99)`, borderRadius: '999px', height: '100%', width: `${Math.min(100, calPct)}%`, transition: 'width 0.6s ease' }} />
               </div>
-            </div>
-            {/* Deficit bar */}
-            <div style={{ background: '#f3f4f6', borderRadius: '999px', height: '8px', overflow: 'hidden', marginBottom: '10px' }}>
-              <div style={{ background: isDeficit ? 'linear-gradient(90deg,#f97316,#fb923c)' : isSurplus ? '#ef4444' : '#22c55e', borderRadius: '999px', height: '100%', width: `${Math.min(100, calPct)}%`, transition: 'width 0.6s ease' }} />
-            </div>
-            <p style={{ margin: '0 0 10px', fontSize: '12px', color: '#6b7280', lineHeight: 1.5 }}>
-              {isDeficit
-                ? `Llevas ${Math.round(totalCals)} kcal de ${targetCals}. Con ${deficit} kcal más completarás tu objetivo de ${goalLabel}.`
-                : isSurplus
-                ? `Has superado tu objetivo en ${Math.abs(deficit)} kcal. Esto puede ralentizar ${goalType === 'weight_loss' ? 'la pérdida de peso' : 'tu progreso'}.`
-                : '¡Perfecto! Has alcanzado exactamente tu objetivo calórico.'}
+            )}
+            {/* Contextual message */}
+            <p style={{ margin: '0 0 10px', fontSize: '12px', color: '#374151', lineHeight: 1.6 }}>
+              {getContextMsg()}
             </p>
+            {/* Weight goal pill — only when relevant */}
+            {isWeightLoss && kgToLose && kgToLose > 0.1 && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(34,197,94,0.08)', borderRadius: '10px', padding: '7px 10px', marginBottom: '10px' }}>
+                <span style={{ fontSize: '14px' }}>⚖️</span>
+                <p style={{ margin: 0, fontSize: '12px', color: '#166534', fontWeight: 600, lineHeight: 1.4 }}>
+                  Meta: perder <strong>{kgToLose.toFixed(1)} kg</strong>
+                  {profileWeight && profileTargetWeight && ` (${profileWeight} → ${profileTargetWeight} kg)`}
+                  {weeksToGoal && ` · ~${weeksToGoal} semanas`}
+                </p>
+              </div>
+            )}
+            {isMuscleGain && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(59,130,246,0.08)', borderRadius: '10px', padding: '7px 10px', marginBottom: '10px' }}>
+                <span style={{ fontSize: '14px' }}>💪</span>
+                <p style={{ margin: 0, fontSize: '12px', color: '#1e40af', fontWeight: 600, lineHeight: 1.4 }}>
+                  Meta: ganar músculo · Mantén el superávit y entrena con progresión de cargas
+                </p>
+              </div>
+            )}
             {/* AI Analysis button */}
             <button
               onClick={() => { setAnalysisRequested(true); setShowDailyAnalysis(true); }}
@@ -1012,7 +1088,9 @@ export default function MealLog() {
               <h3 style={{ margin: "0 0 10px", fontSize: "13px", fontWeight: 800, color: "#374151" }}>{part}</h3>
               <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
                 {partLogs.map((log: any) => (
-                  <div key={log.log.id} style={{ display: "flex", alignItems: "center", gap: "10px", background: "#f9fafb", borderRadius: "12px", padding: "10px 12px" }}>
+                  <div key={log.log.id} style={{ display: "flex", alignItems: "center", gap: "10px", background: "#f9fafb", borderRadius: "12px", padding: "10px 12px", cursor: "pointer" }}
+                    onClick={() => setSelectedMealDetail({ ...log.log, recipeName: log.recipe?.name })}
+                  >
                     {/* Photo thumbnail if available */}
                     {log.log.photoUrl && (
                       <div style={{ width: "40px", height: "40px", borderRadius: "10px", overflow: "hidden", flexShrink: 0 }}>
@@ -1029,8 +1107,8 @@ export default function MealLog() {
                       </div>
                     </div>
                     <button
-                      onClick={() => handleRemoveLog(log.log.id, log.recipe?.name ?? log.log.customMealName ?? t("mealLog.meal", "Meal"))}
-                      style={{ width: "30px", height: "30px", borderRadius: "8px", background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#d1d5db" }}
+                      onClick={(e) => { e.stopPropagation(); handleRemoveLog(log.log.id, log.recipe?.name ?? log.log.customMealName ?? t("mealLog.meal", "Meal")); }}
+                      style={{ width: "30px", height: "30px", borderRadius: "8px", background: "transparent", border: "none", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", color: "#d1d5db", flexShrink: 0 }}
                       onMouseEnter={e => { e.currentTarget.style.background = "#fee2e2"; e.currentTarget.style.color = "#ef4444"; }}
                       onMouseLeave={e => { e.currentTarget.style.background = "transparent"; e.currentTarget.style.color = "#d1d5db"; }}
                     >
@@ -1575,6 +1653,110 @@ export default function MealLog() {
       <p style={{ fontSize: "13px", color: "#d1d5db", textAlign: "center", margin: "24px 0 0", lineHeight: 1.5 }}>
         {t("mealLog.disclaimer", "BuddyMarket does not constitute professional nutritional recommendations. Consult a dietitian.")}
       </p>
+
+      {/* ─── Meal Detail Modal ─── */}
+      {selectedMealDetail && (
+        <div
+          onClick={() => setSelectedMealDetail(null)}
+          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', zIndex: 9999, display: 'flex', alignItems: 'flex-end', justifyContent: 'center', padding: '0 0 0 0' }}
+        >
+          <div
+            onClick={e => e.stopPropagation()}
+            style={{ width: '100%', maxWidth: '480px', background: 'white', borderRadius: '28px 28px 0 0', padding: '24px 20px 36px', boxShadow: '0 -8px 40px rgba(0,0,0,0.2)', maxHeight: '90dvh', overflowY: 'auto' }}
+          >
+            {/* Handle */}
+            <div style={{ width: '40px', height: '4px', background: '#e5e7eb', borderRadius: '99px', margin: '0 auto 20px' }} />
+            {/* Photo */}
+            {selectedMealDetail.photoUrl && (
+              <div style={{ width: '100%', height: '180px', borderRadius: '16px', overflow: 'hidden', marginBottom: '16px' }}>
+                <img src={selectedMealDetail.photoUrl} alt="food" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              </div>
+            )}
+            {/* Name */}
+            <h2 style={{ margin: '0 0 4px', fontSize: '18px', fontWeight: 900, color: '#1a1a1a' }}>
+              {selectedMealDetail.recipeName ?? selectedMealDetail.customMealName ?? 'Comida'}
+            </h2>
+            <p style={{ margin: '0 0 18px', fontSize: '12px', color: '#9ca3af' }}>
+              {selectedMealDetail.logDate ? new Date(selectedMealDetail.logDate + 'T12:00:00').toLocaleDateString('es-ES', { weekday: 'long', day: 'numeric', month: 'long' }) : ''}
+              {selectedMealDetail.servings && selectedMealDetail.servings !== 1 ? ` · ${selectedMealDetail.servings} raciones` : ''}
+            </p>
+            {/* Calorie highlight */}
+            {selectedMealDetail.calories && (
+              <div style={{ background: 'linear-gradient(135deg,#fff7ed,#fff)', border: '1.5px solid #fed7aa', borderRadius: '16px', padding: '14px 16px', marginBottom: '14px', display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                  <span style={{ fontSize: '22px' }}>🔥</span>
+                  <div>
+                    <p style={{ margin: 0, fontSize: '12px', color: '#9ca3af', fontWeight: 600 }}>CALORÍAS</p>
+                    <p style={{ margin: 0, fontSize: '26px', fontWeight: 900, color: '#f97316', lineHeight: 1 }}>{Math.round(selectedMealDetail.calories)}</p>
+                  </div>
+                </div>
+                <p style={{ margin: 0, fontSize: '11px', color: '#d1d5db' }}>kcal</p>
+              </div>
+            )}
+            {/* Macros grid */}
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr 1fr', gap: '10px', marginBottom: '16px' }}>
+              {/* Proteins */}
+              <div style={{ background: '#eff6ff', borderRadius: '14px', padding: '12px 10px', textAlign: 'center' }}>
+                <p style={{ margin: '0 0 2px', fontSize: '18px' }}>💪</p>
+                <p style={{ margin: 0, fontSize: '18px', fontWeight: 900, color: '#1e40af', lineHeight: 1 }}>{selectedMealDetail.proteins ? Math.round(selectedMealDetail.proteins) : '—'}</p>
+                <p style={{ margin: '2px 0 0', fontSize: '10px', color: '#3b82f6', fontWeight: 700 }}>PROTEÍNAS</p>
+                <p style={{ margin: 0, fontSize: '10px', color: '#93c5fd' }}>gramos</p>
+              </div>
+              {/* Carbs */}
+              <div style={{ background: '#fffbeb', borderRadius: '14px', padding: '12px 10px', textAlign: 'center' }}>
+                <p style={{ margin: '0 0 2px', fontSize: '18px' }}>⚡</p>
+                <p style={{ margin: 0, fontSize: '18px', fontWeight: 900, color: '#92400e', lineHeight: 1 }}>{selectedMealDetail.carbohydrates ? Math.round(selectedMealDetail.carbohydrates) : '—'}</p>
+                <p style={{ margin: '2px 0 0', fontSize: '10px', color: '#f59e0b', fontWeight: 700 }}>CARBOS</p>
+                <p style={{ margin: 0, fontSize: '10px', color: '#fcd34d' }}>gramos</p>
+              </div>
+              {/* Fats */}
+              <div style={{ background: '#fff1f2', borderRadius: '14px', padding: '12px 10px', textAlign: 'center' }}>
+                <p style={{ margin: '0 0 2px', fontSize: '18px' }}>🥑</p>
+                <p style={{ margin: 0, fontSize: '18px', fontWeight: 900, color: '#9f1239', lineHeight: 1 }}>{selectedMealDetail.fats ? Math.round(selectedMealDetail.fats) : '—'}</p>
+                <p style={{ margin: '2px 0 0', fontSize: '10px', color: '#f43f5e', fontWeight: 700 }}>GRASAS</p>
+                <p style={{ margin: 0, fontSize: '10px', color: '#fda4af' }}>gramos</p>
+              </div>
+            </div>
+            {/* Caloric breakdown */}
+            {selectedMealDetail.proteins || selectedMealDetail.carbohydrates || selectedMealDetail.fats ? (() => {
+              const pKcal = (selectedMealDetail.proteins ?? 0) * 4;
+              const cKcal = (selectedMealDetail.carbohydrates ?? 0) * 4;
+              const fKcal = (selectedMealDetail.fats ?? 0) * 9;
+              const total = pKcal + cKcal + fKcal || 1;
+              return (
+                <div style={{ background: '#f9fafb', borderRadius: '14px', padding: '14px', marginBottom: '16px' }}>
+                  <p style={{ margin: '0 0 10px', fontSize: '12px', fontWeight: 800, color: '#374151' }}>Distribución calórica</p>
+                  {/* Bar */}
+                  <div style={{ display: 'flex', borderRadius: '8px', overflow: 'hidden', height: '10px', marginBottom: '10px' }}>
+                    <div style={{ width: `${(pKcal / total) * 100}%`, background: '#3b82f6' }} />
+                    <div style={{ width: `${(cKcal / total) * 100}%`, background: '#f59e0b' }} />
+                    <div style={{ width: `${(fKcal / total) * 100}%`, background: '#f43f5e' }} />
+                  </div>
+                  <div style={{ display: 'flex', gap: '12px' }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><div style={{ width: '8px', height: '8px', borderRadius: '2px', background: '#3b82f6', flexShrink: 0 }} /><span style={{ fontSize: '11px', color: '#6b7280' }}>Prot {Math.round((pKcal / total) * 100)}%</span></div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><div style={{ width: '8px', height: '8px', borderRadius: '2px', background: '#f59e0b', flexShrink: 0 }} /><span style={{ fontSize: '11px', color: '#6b7280' }}>Carb {Math.round((cKcal / total) * 100)}%</span></div>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: '4px' }}><div style={{ width: '8px', height: '8px', borderRadius: '2px', background: '#f43f5e', flexShrink: 0 }} /><span style={{ fontSize: '11px', color: '#6b7280' }}>Gras {Math.round((fKcal / total) * 100)}%</span></div>
+                  </div>
+                </div>
+              );
+            })() : null}
+            {/* Notes */}
+            {selectedMealDetail.notes && (
+              <div style={{ background: '#f9fafb', borderRadius: '12px', padding: '12px 14px', marginBottom: '16px' }}>
+                <p style={{ margin: '0 0 4px', fontSize: '11px', fontWeight: 700, color: '#9ca3af', textTransform: 'uppercase' }}>Notas</p>
+                <p style={{ margin: 0, fontSize: '13px', color: '#374151', lineHeight: 1.5 }}>{selectedMealDetail.notes}</p>
+              </div>
+            )}
+            {/* Close button */}
+            <button
+              onClick={() => setSelectedMealDetail(null)}
+              style={{ width: '100%', background: '#f3f4f6', border: 'none', borderRadius: '14px', padding: '13px', fontSize: '14px', fontWeight: 700, color: '#374151', cursor: 'pointer' }}
+            >
+              Cerrar
+            </button>
+          </div>
+        </div>
+      )}
 
       {/* Barcode Scanner Modal */}
       {showBarcodeScanner && (
