@@ -6339,12 +6339,14 @@ Responde SOLO con JSON válido, sin texto adicional:
         };
         if (existing.length > 0) {
           await drizzleDb.update(userMetrics).set(data).where(eq(userMetrics.id, existing[0].id));
-          return { id: existing[0].id, updated: true };
         } else {
-          const insertResult = await drizzleDb.insert(userMetrics).values(data);
-          const insertId = (insertResult as any).insertId ?? (insertResult as any)[0]?.insertId ?? 0;
-          return { id: Number(insertId), updated: false };
+          await drizzleDb.insert(userMetrics).values(data);
         }
+        // Sync weight to user profile so all sections (diary, progress, goals) stay up-to-date
+        if (input.weight) {
+          await db.upsertUserProfile(ctx.user.id, { weight: input.weight } as any);
+        }
+        return { updated: existing.length > 0 };
       }),
     getAll: protectedProcedure
       .input(z.object({ limit: z.number().optional() }).nullish())

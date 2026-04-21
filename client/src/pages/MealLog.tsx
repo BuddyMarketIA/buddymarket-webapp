@@ -186,6 +186,8 @@ export default function MealLog() {
   const [showCalendar, setShowCalendar] = useState(false);
   const [showAdd, setShowAdd] = useState(false);
   const [selectedMealDetail, setSelectedMealDetail] = useState<any | null>(null);
+  const [showWeightWidget, setShowWeightWidget] = useState(false);
+  const [weightInput, setWeightInput] = useState("");
   const [addMode, setAddMode] = useState<"manual" | "photo" | "barcode" | "voice">("manual");
   const [isRecording, setIsRecording] = useState(false);
   const [voiceTranscript, setVoiceTranscript] = useState("");
@@ -295,6 +297,20 @@ export default function MealLog() {
 
   const [showDailyAnalysis, setShowDailyAnalysis] = useState(false);
   const [analysisRequested, setAnalysisRequested] = useState(false);
+
+  const { data: weightHistory } = trpc.metrics.weightHistory.useQuery({ days: 30 });
+  const { data: latestMetric, refetch: refetchLatestMetric } = trpc.metrics.getLatest.useQuery();
+  const addMetric = trpc.metrics.add.useMutation({
+    onSuccess: () => {
+      toast.success("✓ Peso registrado correctamente");
+      setWeightInput("");
+      setShowWeightWidget(false);
+      refetchLatestMetric();
+      utils.metrics.weightHistory.invalidate();
+      utils.profile.get.invalidate();
+    },
+    onError: () => toast.error("Error al registrar el peso"),
+  });
 
   const { data: logs, isLoading } = trpc.mealLogs.list.useQuery({
     startDate: selectedDate,
@@ -715,6 +731,113 @@ export default function MealLog() {
           </div>
         </div>
       </div>
+
+      {/* ─── Weight Tracking Widget ─── */}
+      {(() => {
+        const profile = (profileData?.profile as any);
+        const currentWeight = latestMetric?.weight ? Number(latestMetric.weight) : (profile?.weight ? Number(profile.weight) : null);
+        const targetWeight = profile?.targetWeight ? Number(profile.targetWeight) : null;
+        const todayStr = selectedDate;
+        const todayEntry = (weightHistory ?? []).find((w: any) => w.date === todayStr);
+        const todayWeight = todayEntry?.weight ? Number(todayEntry.weight) : null;
+        // Mini sparkline data (last 14 days)
+        const sparkData = (weightHistory ?? []).slice(-14);
+        const sparkMin = sparkData.length ? Math.min(...sparkData.map((d: any) => Number(d.weight)).filter(Boolean)) - 1 : 50;
+        const sparkMax = sparkData.length ? Math.max(...sparkData.map((d: any) => Number(d.weight)).filter(Boolean)) + 1 : 100;
+        const sparkRange = sparkMax - sparkMin || 1;
+        const sparkWidth = 200;
+        const sparkHeight = 40;
+        const points = sparkData
+          .filter((d: any) => d.weight)
+          .map((d: any, i: number, arr: any[]) => {
+            const x = arr.length > 1 ? (i / (arr.length - 1)) * sparkWidth : sparkWidth / 2;
+            const y = sparkHeight - ((Number(d.weight) - sparkMin) / sparkRange) * sparkHeight;
+            return `${x.toFixed(1)},${y.toFixed(1)}`;
+          })
+          .join(' ');
+        return (
+          <div style={{ background: 'white', borderRadius: '20px', padding: '16px', marginBottom: '12px', boxShadow: '0 2px 8px rgba(0,0,0,0.06)' }}>
+            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '20px' }}>⚖️</span>
+                <div>
+                  <p style={{ margin: 0, fontSize: '13px', fontWeight: 800, color: '#1a1a1a' }}>Mi peso hoy</p>
+                  {currentWeight && targetWeight && (
+                    <p style={{ margin: 0, fontSize: '11px', color: '#9ca3af' }}>
+                      {currentWeight.toFixed(1)} kg → objetivo {targetWeight.toFixed(1)} kg
+                      {' '}({currentWeight > targetWeight ? `−${(currentWeight - targetWeight).toFixed(1)} kg` : `+${(targetWeight - currentWeight).toFixed(1)} kg`} restantes)
+                    </p>
+                  )}
+                </div>
+              </div>
+              <button
+                onClick={() => setShowWeightWidget(v => !v)}
+                style={{ background: showWeightWidget ? '#f3f4f6' : '#fff7ed', border: showWeightWidget ? '1.5px solid #e5e7eb' : '1.5px solid #fed7aa', borderRadius: '10px', padding: '6px 12px', fontSize: '12px', fontWeight: 700, color: showWeightWidget ? '#374151' : '#f97316', cursor: 'pointer' }}
+              >
+                {todayWeight ? `✓ ${todayWeight.toFixed(1)} kg` : '+ Registrar'}
+              </button>
+            </div>
+
+            {/* Sparkline */}
+            {sparkData.filter((d: any) => d.weight).length > 1 && (
+              <div style={{ marginBottom: showWeightWidget ? '12px' : '0' }}>
+                <svg width="100%" viewBox={`0 0 ${sparkWidth} ${sparkHeight}`} preserveAspectRatio="none" style={{ height: '40px', display: 'block' }}>
+                  {targetWeight && (
+                    <line
+                      x1="0" y1={((sparkHeight - ((targetWeight - sparkMin) / sparkRange) * sparkHeight)).toFixed(1)}
+                      x2={String(sparkWidth)} y2={((sparkHeight - ((targetWeight - sparkMin) / sparkRange) * sparkHeight)).toFixed(1)}
+                      stroke="#22c55e" strokeWidth="1" strokeDasharray="4,3" opacity="0.6"
+                    />
+                  )}
+                  <polyline points={points} fill="none" stroke="#f97316" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+                  {sparkData.filter((d: any) => d.weight).slice(-1).map((d: any, _: number, arr: any[]) => {
+                    const idx = sparkData.filter((dd: any) => dd.weight).length - 1;
+                    const total = sparkData.filter((dd: any) => dd.weight).length;
+                    const x = total > 1 ? (idx / (total - 1)) * sparkWidth : sparkWidth / 2;
+                    const y = sparkHeight - ((Number(d.weight) - sparkMin) / sparkRange) * sparkHeight;
+                    return <circle key="last" cx={x.toFixed(1)} cy={y.toFixed(1)} r="3" fill="#f97316" />;
+                  })}
+                </svg>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginTop: '2px' }}>
+                  <span style={{ fontSize: '10px', color: '#d1d5db' }}>{sparkData[0]?.date?.slice(5) ?? ''}</span>
+                  <span style={{ fontSize: '10px', color: '#9ca3af', fontWeight: 600 }}>— objetivo</span>
+                  <span style={{ fontSize: '10px', color: '#d1d5db' }}>{sparkData[sparkData.length - 1]?.date?.slice(5) ?? ''}</span>
+                </div>
+              </div>
+            )}
+
+            {/* Input form */}
+            {showWeightWidget && (
+              <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+                <input
+                  type="number"
+                  step="0.1"
+                  min="20"
+                  max="500"
+                  placeholder={currentWeight ? `${currentWeight.toFixed(1)} kg` : 'Ej: 75.5'}
+                  value={weightInput}
+                  onChange={e => setWeightInput(e.target.value)}
+                  style={{ flex: 1, padding: '10px 14px', borderRadius: '12px', border: '1.5px solid #e5e7eb', fontSize: '15px', fontWeight: 700, color: '#1a1a1a', outline: 'none' }}
+                  onFocus={e => { e.currentTarget.style.borderColor = '#f97316'; }}
+                  onBlur={e => { e.currentTarget.style.borderColor = '#e5e7eb'; }}
+                />
+                <span style={{ fontSize: '13px', color: '#9ca3af', fontWeight: 600 }}>kg</span>
+                <button
+                  onClick={() => {
+                    const w = parseFloat(weightInput);
+                    if (!w || w < 20 || w > 500) { toast.error('Introduce un peso válido (20-500 kg)'); return; }
+                    addMetric.mutate({ date: selectedDate, weight: w });
+                  }}
+                  disabled={addMetric.isPending}
+                  style={{ padding: '10px 18px', borderRadius: '12px', border: 'none', background: addMetric.isPending ? '#f3f4f6' : '#f97316', color: addMetric.isPending ? '#9ca3af' : 'white', fontSize: '13px', fontWeight: 700, cursor: addMetric.isPending ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap' }}
+                >
+                  {addMetric.isPending ? 'Guardando...' : 'Guardar'}
+                </button>
+              </div>
+            )}
+          </div>
+        );
+      })()}
 
       {/* ─── Calorie Goal & Deficit Panel ─── */}
       {(() => {
