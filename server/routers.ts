@@ -2372,7 +2372,10 @@ Responde SOLO con JSON válido con esta estructura:
         const { menuOrganizers } = await import("../drizzle/schema.js");
         const { eq } = await import("drizzle-orm");
         await drizzleDb.update(menuOrganizers).set({ isActive: false }).where(eq(menuOrganizers.userId, ctx.user.id));
-        await drizzleDb.update(menuOrganizers).set({ isActive: true }).where(eq(menuOrganizers.id, input.menuId));
+        // Set startDate to today so the menu always starts from today when activated
+        const todayDate = new Date();
+        todayDate.setHours(0, 0, 0, 0);
+        await drizzleDb.update(menuOrganizers).set({ isActive: true, startDate: todayDate as any }).where(eq(menuOrganizers.id, input.menuId));
         return { success: true };
       }),
     // Get the currently active menu with full week detail
@@ -3919,8 +3922,9 @@ Si no puedes detectar productos, devuelve {"products": []}. No incluyas texto ad
           // S3 failure is non-critical; analysis can still proceed
         }
 
-        // 2. Analyze with vision AI — pass image as base64 data URL directly
-        const dataUrl = `data:${input.mimeType};base64,${input.imageBase64}`;
+        // 2. Analyze with vision AI — prefer S3 URL (avoids base64 size limits that cause 10001 errors),
+        // fall back to data URL only if S3 upload failed
+        const imageUrl = photoUrl ?? `data:${input.mimeType};base64,${input.imageBase64}`;
         // Build allergen context for the prompt if user has allergies
         const allergenContext = allUserAllergyNames.length > 0
           ? `\n\nIMPORTANTE - ALERGIAS DEL USUARIO: El usuario es alérgico a: ${allUserAllergyNames.join(", ")}. Para cada alimento identificado, añade el campo "allergens" con un array de los alérgenos de esa lista que contiene ese alimento (puede estar vacío []). También añade al JSON raíz el campo "detectedUserAllergens" con los alérgenos del usuario que hayas detectado en el plato.`
@@ -3937,7 +3941,7 @@ Si no puedes detectar productos, devuelve {"products": []}. No incluyas texto ad
               {
                 role: "user",
                 content: [
-                  { type: "image_url", image_url: { url: dataUrl, detail: "high" } },
+                  { type: "image_url", image_url: { url: imageUrl, detail: "high" } },
                   {
                     type: "text",
                     text: `Analiza esta imagen de comida y devuelve SOLO este JSON (sin texto adicional, sin markdown, sin explicaciones):

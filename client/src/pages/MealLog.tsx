@@ -341,6 +341,7 @@ export default function MealLog() {
   const [feedbackComment, setFeedbackComment] = useState("");
   const [feedbackSubmitted, setFeedbackSubmitted] = useState(false);
   const [savedMealLogId, setSavedMealLogId] = useState<number | null>(null);
+  const [showEducation, setShowEducation] = useState(false);
 
   const submitAIFeedback = trpc.mealLogs.submitAIFeedback.useMutation({
     onSuccess: () => {
@@ -762,6 +763,87 @@ export default function MealLog() {
               <span style={{ fontSize: '16px' }}>🤖</span>
               <span>Optimiza tu día con IA →</span>
             </button>
+          </div>
+        );
+      })()}
+
+      {/* ─── Educational Section ─── */}
+      {(() => {
+        const goalType = (profileData?.profile as any)?.goal ?? 'maintenance';
+        const weight = (profileData?.profile as any)?.weight ?? 70;
+        const targetProteins = Math.round(summary?.targetProteins ?? weight * 1.8);
+        const targetCarbs = Math.round(summary?.targetCarbs ?? 250);
+        const targetFats = Math.round(summary?.targetFats ?? 65);
+        const targetCals = Math.round(summary?.targetCalories ?? 2000);
+        const goalLabels: Record<string, string> = { weight_loss: 'pérdida de grasa', muscle_gain: 'ganancia muscular', maintenance: 'mantenimiento', toning: 'tonificación', fat_loss: 'pérdida de grasa' };
+        const goalLabel = goalLabels[goalType] ?? 'tu objetivo';
+        return (
+          <div style={{ margin: '0 16px 16px', borderRadius: '16px', border: '1.5px solid #e5e7eb', overflow: 'hidden', background: 'white' }}>
+            <button
+              onClick={() => setShowEducation(v => !v)}
+              style={{ width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 16px', background: 'none', border: 'none', cursor: 'pointer', textAlign: 'left' }}
+            >
+              <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+                <span style={{ fontSize: '16px' }}>📚</span>
+                <span style={{ fontSize: '13px', fontWeight: 700, color: '#374151' }}>¿Por qué estos números?</span>
+              </div>
+              <span style={{ fontSize: '18px', color: '#9ca3af', transform: showEducation ? 'rotate(180deg)' : 'rotate(0deg)', transition: 'transform 0.2s' }}>⌄</span>
+            </button>
+            {showEducation && (
+              <div style={{ padding: '0 16px 16px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+                {/* Calories */}
+                <div style={{ background: '#fff7ed', borderRadius: '12px', padding: '12px 14px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                    <span style={{ fontSize: '16px' }}>🔥</span>
+                    <span style={{ fontSize: '13px', fontWeight: 800, color: '#9a3412' }}>Tu objetivo: {targetCals} kcal/día</span>
+                  </div>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#78350f', lineHeight: 1.6 }}>
+                    {goalType === 'weight_loss' || goalType === 'fat_loss'
+                      ? `Este número crea un déficit calórico respecto a tu metabolismo basal. Consumir menos de lo que gastas obliga a tu cuerpo a usar la grasa almacenada como energía, lo que produce la pérdida de peso gradual y sostenible.`
+                      : goalType === 'muscle_gain'
+                      ? `Este número está ligeramente por encima de tu gasto energético total. El superávit calórico proporciona la energía extra que tus músculos necesitan para crecer y recuperarse después del entrenamiento.`
+                      : `Este número coincide con tu gasto energético total estimado. Consumir estas calorías mantiene tu peso actual mientras nutres correctamente tu cuerpo.`}
+                  </p>
+                </div>
+                {/* Protein */}
+                <div style={{ background: '#eff6ff', borderRadius: '12px', padding: '12px 14px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                    <span style={{ fontSize: '16px' }}>💪</span>
+                    <span style={{ fontSize: '13px', fontWeight: 800, color: '#1e40af' }}>Proteína: {targetProteins}g/día</span>
+                  </div>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#1e3a8a', lineHeight: 1.6 }}>
+                    La proteína es el material de construcción de tus músculos. Con {Math.round(targetProteins / (weight || 70) * 10) / 10}g por kg de peso corporal, aseguras que tu cuerpo no use músculo como energía durante el déficit. También es el macro más saciante, lo que reduce el hambre.
+                  </p>
+                </div>
+                {/* Carbs */}
+                <div style={{ background: '#fffbeb', borderRadius: '12px', padding: '12px 14px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                    <span style={{ fontSize: '16px' }}>⚡</span>
+                    <span style={{ fontSize: '13px', fontWeight: 800, color: '#92400e' }}>Carbohidratos: {targetCarbs}g/día</span>
+                  </div>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#78350f', lineHeight: 1.6 }}>
+                    Los carbohidratos son el combustible preferido de tu cerebro y músculos. Mantenerlos en este rango garantiza energía para entrenar con intensidad y concentración durante el día. Reducirlos demasiado puede causar fatiga y bajo rendimiento.
+                  </p>
+                </div>
+                {/* Fats */}
+                <div style={{ background: '#fff1f2', borderRadius: '12px', padding: '12px 14px' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '6px' }}>
+                    <span style={{ fontSize: '16px' }}>🥑</span>
+                    <span style={{ fontSize: '13px', fontWeight: 800, color: '#9f1239' }}>Grasas: {targetFats}g/día</span>
+                  </div>
+                  <p style={{ margin: 0, fontSize: '12px', color: '#881337', lineHeight: 1.6 }}>
+                    Las grasas saludables regulan las hormonas (incluida la testosterona), absorben vitaminas liposolubles (A, D, E, K) y protegen los órganos. No son el enemigo — el exceso sí lo es. Prioriza aguacate, aceite de oliva, frutos secos y pescado azul.
+                  </p>
+                </div>
+                {/* Tip */}
+                <div style={{ background: '#f0fdf4', borderRadius: '12px', padding: '10px 14px', display: 'flex', gap: '8px', alignItems: 'flex-start' }}>
+                  <span style={{ fontSize: '14px', flexShrink: 0 }}>💡</span>
+                  <p style={{ margin: 0, fontSize: '11px', color: '#166534', lineHeight: 1.6 }}>
+                    <strong>Clave para {goalLabel}:</strong> la consistencia diaria importa más que la perfección. Un día fuera de objetivo no arruina el progreso — lo que importa es la media semanal.
+                  </p>
+                </div>
+              </div>
+            )}
           </div>
         );
       })()}
