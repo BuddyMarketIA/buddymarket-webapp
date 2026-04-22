@@ -1,5 +1,26 @@
-import { lazy, Suspense, useEffect } from "react";
+import { lazy, Suspense, useEffect, ComponentType } from "react";
 import WelcomeLanguageModal from "@/components/WelcomeLanguageModal";
+
+/**
+ * Wrapper for lazy imports that retries failed dynamic imports up to `retries` times.
+ * This prevents the ErrorBoundary from triggering on transient cold-start failures.
+ */
+function lazyWithRetry<T extends ComponentType<unknown>>(
+  factory: () => Promise<{ default: T }>,
+  retries = 3,
+  delay = 1000
+): ReturnType<typeof lazy<T>> {
+  return lazy(() => {
+    const attempt = (n: number): Promise<{ default: T }> =>
+      factory().catch((err) => {
+        if (n <= 0) throw err;
+        return new Promise<void>((resolve) => setTimeout(resolve, delay)).then(() =>
+          attempt(n - 1)
+        );
+      });
+    return attempt(retries);
+  });
+}
 import CookieBanner from "./components/CookieBanner";
 import OfflineIndicator from "./components/OfflineIndicator";
 import { AccessibleToaster } from "@/components/AccessibleToaster";
@@ -11,30 +32,30 @@ import { ThemeProvider } from "./contexts/ThemeContext";
 import AppLayout from "./components/AppLayout";
 import { useAuth } from "./_core/hooks/useAuth";
 // ─── Lazy-loaded pages (code splitting per route) ─────────────────────────────
-const Home = lazy(() => import("./pages/Home"));
-const LandingPage = lazy(() => import("./pages/LandingPage"));
-const LoginPage = lazy(() => import("./pages/LoginPage"));
-const Blog = lazy(() => import("./pages/Blog"));
-const BlogPost = lazy(() => import("./pages/BlogPost"));
-const ExpertPlansManager = lazy(() => import("./pages/ExpertPlansManager"));
-const ClientPlanView = lazy(() => import("./pages/ClientPlanView"));
-const FAQ = lazy(() => import("./pages/FAQ"));
-const About = lazy(() => import("./pages/About"));
-const Terms = lazy(() => import("./pages/Terms"));
-const Privacy = lazy(() => import("./pages/Privacy"));
-const Cookies = lazy(() => import("./pages/Cookies"));
-const Registration = lazy(() => import("./pages/Registration"));
-const ActivarCodigo = lazy(() => import("./pages/ActivarCodigo"));
-const NotFound = lazy(() => import("./pages/NotFound"));
-const Nutricionistas = lazy(() => import("./pages/Nutricionistas"));
-const Empresas = lazy(() => import("./pages/Empresas"));
-const CalculadoraNutricional = lazy(() => import("./pages/CalculadoraNutricional"));
-const EmpresaDashboard = lazy(() => import("./pages/EmpresaDashboard"));
-const Familia = lazy(() => import("./pages/Familia"));
-const FamiliaUnirse = lazy(() => import("./pages/FamiliaUnirse"));
-const MisRecetasAsignadas = lazy(() => import("./pages/MisRecetasAsignadas"));
-const FamiliaCalendario = lazy(() => import("./pages/FamiliaCalendario"));
-const BuddySetup = lazy(() => import("./pages/BuddySetup"));
+const Home = lazyWithRetry(() => import("./pages/Home"));
+const LandingPage = lazyWithRetry(() => import("./pages/LandingPage"));
+const LoginPage = lazyWithRetry(() => import("./pages/LoginPage"));
+const Blog = lazyWithRetry(() => import("./pages/Blog"));
+const BlogPost = lazyWithRetry(() => import("./pages/BlogPost"));
+const ExpertPlansManager = lazyWithRetry(() => import("./pages/ExpertPlansManager"));
+const ClientPlanView = lazyWithRetry(() => import("./pages/ClientPlanView"));
+const FAQ = lazyWithRetry(() => import("./pages/FAQ"));
+const About = lazyWithRetry(() => import("./pages/About"));
+const Terms = lazyWithRetry(() => import("./pages/Terms"));
+const Privacy = lazyWithRetry(() => import("./pages/Privacy"));
+const Cookies = lazyWithRetry(() => import("./pages/Cookies"));
+const Registration = lazyWithRetry(() => import("./pages/Registration"));
+const ActivarCodigo = lazyWithRetry(() => import("./pages/ActivarCodigo"));
+const NotFound = lazyWithRetry(() => import("./pages/NotFound"));
+const Nutricionistas = lazyWithRetry(() => import("./pages/Nutricionistas"));
+const Empresas = lazyWithRetry(() => import("./pages/Empresas"));
+const CalculadoraNutricional = lazyWithRetry(() => import("./pages/CalculadoraNutricional"));
+const EmpresaDashboard = lazyWithRetry(() => import("./pages/EmpresaDashboard"));
+const Familia = lazyWithRetry(() => import("./pages/Familia"));
+const FamiliaUnirse = lazyWithRetry(() => import("./pages/FamiliaUnirse"));
+const MisRecetasAsignadas = lazyWithRetry(() => import("./pages/MisRecetasAsignadas"));
+const FamiliaCalendario = lazyWithRetry(() => import("./pages/FamiliaCalendario"));
+const BuddySetup = lazyWithRetry(() => import("./pages/BuddySetup"));
 // Guard: only show BuddySetup if user hasn't completed onboarding
 function BuddySetupGuard() {
   const { user, loading } = useAuth();
@@ -47,80 +68,80 @@ function BuddySetupGuard() {
   if (loading) return null;
   return <BuddySetup />;
 }
-const OnboardingTour = lazy(() => import("./pages/OnboardingTour"));
-const ResetPasswordPage = lazy(() => import("./pages/ResetPasswordPage"));
+const OnboardingTour = lazyWithRetry(() => import("./pages/OnboardingTour"));
+const ResetPasswordPage = lazyWithRetry(() => import("./pages/ResetPasswordPage"));
 
 // App pages (protected)
-const Dashboard = lazy(() => import("./pages/Dashboard"));
-const Recipes = lazy(() => import("./pages/Recipes"));
-const RecipeDetail = lazy(() => import("./pages/RecipeDetail"));
-const RecipeForm = lazy(() => import("./pages/RecipeForm"));
-const Menus = lazy(() => import("./pages/Menus"));
-const MyMenus = lazy(() => import("./pages/MyMenus"));
-const ShoppingLists = lazy(() => import("./pages/ShoppingLists"));
-const Inventory = lazy(() => import("./pages/Inventory"));
-const MealLog = lazy(() => import("./pages/MealLog"));
-const Profile = lazy(() => import("./pages/Profile"));
-const Admin = lazy(() => import("./pages/Admin"));
-const AdminContent = lazy(() => import("./pages/AdminContent"));
-const AdminLogs = lazy(() => import("./pages/AdminLogs"));
-const Subscription = lazy(() => import("./pages/Subscription"));
-const BuddyExperts = lazy(() => import("./pages/BuddyExperts"));
-const BuddyMakers = lazy(() => import("./pages/BuddyMakers"));
-const BuddyIA = lazy(() => import("./pages/BuddyIA"));
-const BuddyShop = lazy(() => import("./pages/BuddyShop"));
-const MercadonaShop = lazy(() => import("./pages/MercadonaShop"));
-const CarrefourShop = lazy(() => import("./pages/CarrefourShop"));
-const LidlShop = lazy(() => import("./pages/LidlShop"));
-const HiperdinoShop = lazy(() => import("./pages/HiperdinoShop"));
-const ConsumShop = lazy(() => import("./pages/ConsumShop"));
-const MenuLibrary = lazy(() => import("./pages/MenuLibrary"));
-const ActiveMenu = lazy(() => import("./pages/ActiveMenu"));
-const SpecializedMenus = lazy(() => import("./pages/SpecializedMenus"));
-const Favorites = lazy(() => import("./pages/Favorites"));
-const BuddyProfile = lazy(() => import("./pages/BuddyProfile"));
-const Following = lazy(() => import("./pages/Following"));
-const BuddyExpertDashboard = lazy(() => import("./pages/BuddyExpertDashboard"));
-const BuddyMakerDashboard = lazy(() => import("./pages/BuddyMakerDashboard"));
-const BuddyMakerStats = lazy(() => import("./pages/BuddyMakerStats"));
-const BuddyExpertStats = lazy(() => import("./pages/BuddyExpertStats"));
-const ReferralDashboard = lazy(() => import("./pages/ReferralDashboard"));
-const Referrals = lazy(() => import("./pages/Referrals"));
-const Metrics = lazy(() => import("./pages/Metrics"));
-const ConnectedHealth = lazy(() => import("./pages/ConnectedHealth"));
-const NutritionalStats = lazy(() => import("./pages/NutritionalStats"));
-const Progress = lazy(() => import("./pages/Progress"));
-const Notifications = lazy(() => import("./pages/Notifications"));
-const MealNotifications = lazy(() => import("./pages/MealNotifications"));
-const Achievements = lazy(() => import("./pages/Achievements"));
-const Challenges = lazy(() => import("./pages/Challenges"));
-const BuddyApplication = lazy(() => import("./pages/BuddyApplication"));
-const EventMenuPlanner = lazy(() => import("./pages/EventMenuPlanner"));
-const SavedEvents = lazy(() => import("./pages/SavedEvents"));
-const Complements = lazy(() => import("./pages/Complements"));
-const Badges = lazy(() => import("./pages/Badges"));
-const PaymentHistory = lazy(() => import("./pages/PaymentHistory"));
-const BuddyScan = lazy(() => import("./pages/BuddyScan"));
-const InstallAppBanner = lazy(() => import("./components/InstallAppBanner"));
-const Herramientas = lazy(() => import("./pages/Herramientas"));
-const Creators = lazy(() => import("./pages/Creators"));
-const CreatorDashboard = lazy(() => import("./pages/CreatorDashboard"));
-const Soporte = lazy(() => import("./pages/Soporte"));
-const RegisterBuddyExpert = lazy(() => import("./pages/RegisterBuddyExpert"));
-const RegisterBuddyMaker = lazy(() => import("./pages/RegisterBuddyMaker"));
-const ExpertPatients = lazy(() => import("./pages/ExpertPatients"));
-const ExpertPatientDetail = lazy(() => import("./pages/ExpertPatientDetail"));
-const ExpertChat = lazy(() => import("./pages/ExpertChat"));
-const ExpertDashboard = lazy(() => import("./pages/ExpertDashboard"));
-const MenuTemplates = lazy(() => import("./pages/expert/MenuTemplates"));
-const FoodSubstitutions = lazy(() => import("./pages/expert/FoodSubstitutions"));
-const SessionPackages = lazy(() => import("./pages/expert/SessionPackages"));
-const HireRequests = lazy(() => import("./pages/expert/HireRequests"));
-const MyExpert = lazy(() => import("./pages/MyExpert"));
-const MakerAnalytics = lazy(() => import("./pages/MakerAnalytics"));
-const IngredientExplorer = lazy(() => import("./pages/IngredientExplorer"));
-const WeeklyCheckin = lazy(() => import("./pages/WeeklyCheckin"));
-const MonthlyReports = lazy(() => import("./pages/MonthlyReports"));
+const Dashboard = lazyWithRetry(() => import("./pages/Dashboard"));
+const Recipes = lazyWithRetry(() => import("./pages/Recipes"));
+const RecipeDetail = lazyWithRetry(() => import("./pages/RecipeDetail"));
+const RecipeForm = lazyWithRetry(() => import("./pages/RecipeForm"));
+const Menus = lazyWithRetry(() => import("./pages/Menus"));
+const MyMenus = lazyWithRetry(() => import("./pages/MyMenus"));
+const ShoppingLists = lazyWithRetry(() => import("./pages/ShoppingLists"));
+const Inventory = lazyWithRetry(() => import("./pages/Inventory"));
+const MealLog = lazyWithRetry(() => import("./pages/MealLog"));
+const Profile = lazyWithRetry(() => import("./pages/Profile"));
+const Admin = lazyWithRetry(() => import("./pages/Admin"));
+const AdminContent = lazyWithRetry(() => import("./pages/AdminContent"));
+const AdminLogs = lazyWithRetry(() => import("./pages/AdminLogs"));
+const Subscription = lazyWithRetry(() => import("./pages/Subscription"));
+const BuddyExperts = lazyWithRetry(() => import("./pages/BuddyExperts"));
+const BuddyMakers = lazyWithRetry(() => import("./pages/BuddyMakers"));
+const BuddyIA = lazyWithRetry(() => import("./pages/BuddyIA"));
+const BuddyShop = lazyWithRetry(() => import("./pages/BuddyShop"));
+const MercadonaShop = lazyWithRetry(() => import("./pages/MercadonaShop"));
+const CarrefourShop = lazyWithRetry(() => import("./pages/CarrefourShop"));
+const LidlShop = lazyWithRetry(() => import("./pages/LidlShop"));
+const HiperdinoShop = lazyWithRetry(() => import("./pages/HiperdinoShop"));
+const ConsumShop = lazyWithRetry(() => import("./pages/ConsumShop"));
+const MenuLibrary = lazyWithRetry(() => import("./pages/MenuLibrary"));
+const ActiveMenu = lazyWithRetry(() => import("./pages/ActiveMenu"));
+const SpecializedMenus = lazyWithRetry(() => import("./pages/SpecializedMenus"));
+const Favorites = lazyWithRetry(() => import("./pages/Favorites"));
+const BuddyProfile = lazyWithRetry(() => import("./pages/BuddyProfile"));
+const Following = lazyWithRetry(() => import("./pages/Following"));
+const BuddyExpertDashboard = lazyWithRetry(() => import("./pages/BuddyExpertDashboard"));
+const BuddyMakerDashboard = lazyWithRetry(() => import("./pages/BuddyMakerDashboard"));
+const BuddyMakerStats = lazyWithRetry(() => import("./pages/BuddyMakerStats"));
+const BuddyExpertStats = lazyWithRetry(() => import("./pages/BuddyExpertStats"));
+const ReferralDashboard = lazyWithRetry(() => import("./pages/ReferralDashboard"));
+const Referrals = lazyWithRetry(() => import("./pages/Referrals"));
+const Metrics = lazyWithRetry(() => import("./pages/Metrics"));
+const ConnectedHealth = lazyWithRetry(() => import("./pages/ConnectedHealth"));
+const NutritionalStats = lazyWithRetry(() => import("./pages/NutritionalStats"));
+const Progress = lazyWithRetry(() => import("./pages/Progress"));
+const Notifications = lazyWithRetry(() => import("./pages/Notifications"));
+const MealNotifications = lazyWithRetry(() => import("./pages/MealNotifications"));
+const Achievements = lazyWithRetry(() => import("./pages/Achievements"));
+const Challenges = lazyWithRetry(() => import("./pages/Challenges"));
+const BuddyApplication = lazyWithRetry(() => import("./pages/BuddyApplication"));
+const EventMenuPlanner = lazyWithRetry(() => import("./pages/EventMenuPlanner"));
+const SavedEvents = lazyWithRetry(() => import("./pages/SavedEvents"));
+const Complements = lazyWithRetry(() => import("./pages/Complements"));
+const Badges = lazyWithRetry(() => import("./pages/Badges"));
+const PaymentHistory = lazyWithRetry(() => import("./pages/PaymentHistory"));
+const BuddyScan = lazyWithRetry(() => import("./pages/BuddyScan"));
+const InstallAppBanner = lazyWithRetry(() => import("./components/InstallAppBanner"));
+const Herramientas = lazyWithRetry(() => import("./pages/Herramientas"));
+const Creators = lazyWithRetry(() => import("./pages/Creators"));
+const CreatorDashboard = lazyWithRetry(() => import("./pages/CreatorDashboard"));
+const Soporte = lazyWithRetry(() => import("./pages/Soporte"));
+const RegisterBuddyExpert = lazyWithRetry(() => import("./pages/RegisterBuddyExpert"));
+const RegisterBuddyMaker = lazyWithRetry(() => import("./pages/RegisterBuddyMaker"));
+const ExpertPatients = lazyWithRetry(() => import("./pages/ExpertPatients"));
+const ExpertPatientDetail = lazyWithRetry(() => import("./pages/ExpertPatientDetail"));
+const ExpertChat = lazyWithRetry(() => import("./pages/ExpertChat"));
+const ExpertDashboard = lazyWithRetry(() => import("./pages/ExpertDashboard"));
+const MenuTemplates = lazyWithRetry(() => import("./pages/expert/MenuTemplates"));
+const FoodSubstitutions = lazyWithRetry(() => import("./pages/expert/FoodSubstitutions"));
+const SessionPackages = lazyWithRetry(() => import("./pages/expert/SessionPackages"));
+const HireRequests = lazyWithRetry(() => import("./pages/expert/HireRequests"));
+const MyExpert = lazyWithRetry(() => import("./pages/MyExpert"));
+const MakerAnalytics = lazyWithRetry(() => import("./pages/MakerAnalytics"));
+const IngredientExplorer = lazyWithRetry(() => import("./pages/IngredientExplorer"));
+const WeeklyCheckin = lazyWithRetry(() => import("./pages/WeeklyCheckin"));
+const MonthlyReports = lazyWithRetry(() => import("./pages/MonthlyReports"));
 
 // ─── Page loading fallback ────────────────────────────────────────────────────
 function PageLoader() {

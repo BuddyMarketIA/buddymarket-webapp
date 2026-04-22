@@ -2969,3 +2969,15 @@
 - [x] Corregir metrics-buddymakers-referrals.test.ts: añadir upsertUserProfile al mock de db
 - [x] Build de producción exitoso (EXIT:0, sin errores)
 - [x] Todos los tests pasan: 694/694 (31 archivos de test)
+
+## Sprint: Corrección Crash Producción - Lazy Loading (COMPLETADO)
+- [x] Mejorar ErrorBoundary.tsx: detectar errores de módulos dinámicos (chunk load errors) vs errores reales
+- [x] ErrorBoundary.tsx: auto-retry después de 2s para chunk load errors (cold start del servidor)
+- [x] ErrorBoundary.tsx: mostrar mensaje amigable en español en lugar de stack trace técnico
+- [x] ErrorBoundary.tsx: spinner de "Reintentando..." durante el auto-retry
+- [x] ErrorBoundary.tsx: botón "Recargar página" en naranja cuando el retry falla
+- [x] ErrorBoundary.tsx: stack trace técnico solo visible en modo DEV
+- [x] App.tsx: añadir función lazyWithRetry() que reintenta imports dinámicos fallidos hasta 3 veces
+- [x] App.tsx: reemplazar todos los lazy() por lazyWithRetry() en los 70+ imports de páginas
+- [x] Build de producción exitoso (EXIT:0) con los cambios aplicados
+- [x] Todos los tests pasan: 694/694 (31 archivos de test)
