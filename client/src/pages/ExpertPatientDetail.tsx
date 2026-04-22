@@ -147,7 +147,7 @@ export default function ExpertPatientDetail() {
   const [aiAnalysisDate, setAiAnalysisDate] = useState<string | null>(null);
   const analyzePatientMutation = trpc.expertPatients.analyzePatientTrends.useMutation({
     onSuccess: (data) => {
-      setAiAnalysisResult(data.analysis);
+      setAiAnalysisResult(typeof data.analysis === 'string' ? data.analysis : JSON.stringify(data.analysis));
       setAiAnalysisDate(data.generatedAt);
       toast.success("🧠 Análisis generado correctamente");
     },
@@ -387,7 +387,7 @@ export default function ExpertPatientDetail() {
                     name: patientUser?.name ?? "Paciente",
                     email: patientUser?.email,
                     expertName: user?.name ?? undefined,
-                    objective: profile?.objective ?? null,
+                    objective: (profile as any)?.objective ?? profile?.mainGoal ?? null,
                   },
                   progressRecords: progressRecords,
                   sessionNotes: sessionNotes ?? [],
@@ -1275,7 +1275,7 @@ export default function ExpertPatientDetail() {
                 <h4 className="text-sm font-semibold text-foreground/80 mb-3">Perfil médico</h4>
                 <div className="text-sm text-muted-foreground space-y-1">
                   {medicalProfile.medicalConditions && <p><span className="text-muted-foreground">Condiciones: </span>{medicalProfile.medicalConditions}</p>}
-                  {medicalProfile.medications && <p><span className="text-muted-foreground">Medicación: </span>{medicalProfile.medications}</p>}
+                  {(medicalProfile as any).medications && <p><span className="text-muted-foreground">Medicación: </span>{(medicalProfile as any).medications}</p>}
                 </div>
               </div>
             )}
@@ -1319,7 +1319,7 @@ export default function ExpertPatientDetail() {
                         <span className="font-semibold text-foreground text-sm">
                           Semana del {new Date(ci.weekStart + "T12:00:00").toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })}
                         </span>
-                        {ci.completedAt && (
+                        {(ci as any).completedAt && (
                           <span className="ml-2 text-xs text-green-600 bg-green-50 px-2 py-0.5 rounded-full">✓ Completado</span>
                         )}
                       </div>
@@ -1328,45 +1328,33 @@ export default function ExpertPatientDetail() {
                       )}
                     </div>
                     <div className="grid grid-cols-5 gap-2 mb-3">
-                      {ci.energyLevel !== null && ci.energyLevel !== undefined && (
+                      {ci.energyRating !== null && ci.energyRating !== undefined && (
                         <div className="text-center bg-yellow-50 rounded-lg p-2">
                           <div className="text-xs text-muted-foreground">Energía</div>
-                          <div className="font-bold text-yellow-600">{ci.energyLevel}/10</div>
+                          <div className="font-bold text-yellow-600">{ci.energyRating}/10</div>
                         </div>
                       )}
-                      {ci.adherenceScore !== null && ci.adherenceScore !== undefined && (
+                      {ci.adherenceRating !== null && ci.adherenceRating !== undefined && (
                         <div className="text-center bg-green-50 rounded-lg p-2">
                           <div className="text-xs text-muted-foreground">Adherencia</div>
-                          <div className="font-bold text-green-600">{ci.adherenceScore}/10</div>
+                          <div className="font-bold text-green-600">{ci.adherenceRating}/10</div>
                         </div>
                       )}
-                      {ci.hunger !== null && ci.hunger !== undefined && (
+                      {ci.hungerRating !== null && ci.hungerRating !== undefined && (
                         <div className="text-center bg-orange-50 rounded-lg p-2">
                           <div className="text-xs text-muted-foreground">Saciedad</div>
-                          <div className="font-bold text-orange-600">{ci.hunger}/10</div>
-                        </div>
-                      )}
-                      {ci.mood !== null && ci.mood !== undefined && (
-                        <div className="text-center bg-blue-50 rounded-lg p-2">
-                          <div className="text-xs text-muted-foreground">Ánimo</div>
-                          <div className="font-bold text-blue-600">{ci.mood}/10</div>
-                        </div>
-                      )}
-                      {ci.sleepQuality !== null && ci.sleepQuality !== undefined && (
-                        <div className="text-center bg-purple-50 rounded-lg p-2">
-                          <div className="text-xs text-muted-foreground">Sueño</div>
-                          <div className="font-bold text-purple-600">{ci.sleepQuality}/10</div>
+                          <div className="font-bold text-orange-600">{ci.hungerRating}/10</div>
                         </div>
                       )}
                     </div>
-                    {ci.difficulties && (
+                    {ci.difficultyNotes && (
                       <div className="mt-2 text-sm text-muted-foreground bg-red-50 rounded-lg p-2">
-                        <span className="font-medium text-red-700">Dificultades:</span> {ci.difficulties}
+                        <span className="font-medium text-red-700">Dificultades:</span> {ci.difficultyNotes}
                       </div>
                     )}
-                    {ci.notes && (
+                    {ci.generalNotes && (
                       <div className="mt-2 text-sm text-muted-foreground bg-muted/30 rounded-lg p-2">
-                        <span className="font-medium">Notas:</span> {ci.notes}
+                        <span className="font-medium">Notas:</span> {ci.generalNotes}
                       </div>
                     )}
                   </div>
@@ -1615,6 +1603,7 @@ export default function ExpertPatientDetail() {
             <Button
               onClick={() => addMilestoneMutation.mutate({
                 expertPatientId: patientRelId,
+                patientUserId: patientUser?.id ?? 0,
                 title: milestoneForm.title,
                 description: milestoneForm.description || undefined,
                 milestoneDate: milestoneForm.date,

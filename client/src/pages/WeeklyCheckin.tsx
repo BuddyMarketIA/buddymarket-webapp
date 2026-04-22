@@ -91,13 +91,11 @@ export default function WeeklyCheckin() {
       expertPatientId: selectedRelId,
       weekStart,
       weight: weight ? parseFloat(weight) : undefined,
-      energyLevel,
-      adherenceScore,
-      hunger,
-      mood,
-      sleepQuality,
-      difficulties: difficulties || undefined,
-      notes: notes || undefined,
+      energyRating: energyLevel,
+      adherenceRating: adherenceScore,
+      hungerRating: hunger,
+      difficultyNotes: difficulties || undefined,
+      generalNotes: notes || undefined,
     });
   };
 

@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import { useLocation } from "wouter";
 import LogoutConfirmDialog from "@/components/LogoutConfirmDialog";
 import { useTranslation } from "react-i18next";
 import { SUPPORTED_LANGUAGES, type LanguageCode } from "@/lib/i18n";
@@ -173,6 +174,7 @@ function SaveButton({ onClick, loading }: { onClick: () => void; loading: boolea
 // ─── Componente principal ────────────────────────────────────────────────────
 export default function Profile() {
   const [activeTab, setActiveTab] = useState("account");
+  const [, setLocation] = useLocation();
   const { user, logout: logoutFn } = useAuth();
   const [showLogoutConfirm, setShowLogoutConfirm] = useState(false);
   const [logoutPending, setLogoutPending] = useState(false);

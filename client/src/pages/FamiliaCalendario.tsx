@@ -82,6 +82,11 @@ interface RecipeCardProps {
     id: number;
     isCompleted: boolean | null;
     note: string | null;
+    memberId?: number;
+    mealType?: string | null;
+    scheduledDate?: Date | string | null;
+    completedAt?: Date | null;
+    createdAt?: Date;
     recipe: { id: number; name: string; imageUrl: string | null; caloriesPerServing: number | null; preparationTime: number | null; cookTime: number | null };
     member: { id: number; displayName: string | null; userId: number; role: string };
     assignedBy: { id: number; name: string | null };

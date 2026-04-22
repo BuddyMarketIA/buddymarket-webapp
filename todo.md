@@ -2940,3 +2940,32 @@
 - [x] Crear hook usePushNotifications para gestionar suscripciones Web Push
 - [x] Crear componente PushNotificationToggle (card e inline) para activar/desactivar push
 - [x] Integrar PushNotificationToggle en página de Recordatorios (MealNotifications.tsx)
+
+## Sprint: Auditoría Integral - Correcciones (COMPLETADO)
+
+- [x] Corregir import incorrecto de pushNotifications.ts (ruta ../pushNotifications → ./pushNotifications) - causaba fallo de build
+- [x] Corregir weeklyCheckins.ts: nombres de campo del schema (adherenceRating, hungerRating, energyRating, difficultyNotes, generalNotes)
+- [x] Corregir WeeklyCheckin.tsx: submit usa nombres correctos del servidor (energyRating, adherenceRating, hungerRating, difficultyNotes, generalNotes)
+- [x] Corregir Menus.tsx: deleteMenu/duplicateMenu/renameMenu usan { id } en lugar de { menuId }
+- [x] Corregir Menus.tsx: generateWithAI incluye days y mealsPerDay requeridos
+- [x] Corregir MyMenus.tsx: generateWithAI incluye days y mealsPerDay
+- [x] Corregir Menus.tsx: Set<string> spread usa Array.from()
+- [x] Corregir ExpertPatientDetail.tsx: adherenceScore→adherenceRating, hunger→hungerRating, mood/sleepQuality removidos, difficulties→difficultyNotes, notes→generalNotes
+- [x] Corregir ExpertPatientDetail.tsx: addMilestoneMutation incluye patientUserId
+- [x] Corregir ExpertPatientDetail.tsx: setAiAnalysisResult con cast de tipo para respuesta LLM
+- [x] Corregir ExpertPatientDetail.tsx: objective→mainGoal, medications con cast
+- [x] Corregir ExpertPatientDetail.tsx: completedAt con cast de tipo
+- [x] Corregir Dashboard.tsx: prepTime→preparationTime, nameEs→title, dailyCalorieGoal, todayTask.task
+- [x] Corregir Dashboard.tsx: thirtyDay.todayTask renderizado como objeto (usar .task)
+- [x] Corregir Familia.tsx: cast de tipo en HouseholdAssignedRecipes.members
+- [x] Corregir FamiliaCalendario.tsx: ampliar tipo de RecipeCardProps.assignment con campos extra del servidor
+- [x] Corregir IngredientExplorer.tsx: filtrar null en categories.map()
+- [x] Corregir MenuLibrary.tsx: acceso a range.min/max con cast de tipo
+- [x] Corregir Referrals.tsx: import StarIcon faltante (usar Star de lucide-react)
+- [x] Corregir household.ts: ownerId null safety (userId ?? 0)
+- [x] Corregir householdRecipes.ts: userId null safety (userId ?? 0)
+- [x] Corregir retention.ts: protein/carbs/fat → proteinsPerServing/carbohydratesPerServing/fatsPerServing
+- [x] Corregir auth.logout.test.ts: actualizar mock para coincidir con comportamiento real del código
+- [x] Corregir metrics-buddymakers-referrals.test.ts: añadir upsertUserProfile al mock de db
+- [x] Build de producción exitoso (EXIT:0, sin errores)
+- [x] Todos los tests pasan: 694/694 (31 archivos de test)

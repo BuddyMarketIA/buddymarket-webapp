@@ -510,7 +510,7 @@ export const householdRouter = router({
             .where(eq(householdMembers.id, newOwner.id));
           await db
             .update(households)
-            .set({ ownerId: newOwner.userId, updatedAt: new Date() })
+            .set({ ownerId: newOwner.userId ?? 0, updatedAt: new Date() })
             .where(eq(households.id, myMembership.householdId));
         }
       }

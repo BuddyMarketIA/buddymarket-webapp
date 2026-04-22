@@ -923,8 +923,8 @@ export default function MenuLibrary() {
     if (selectedDietType && !matchesDietType(m.name, selectedDietType)) return false;
     if (selectedCalorieRange) {
       const range = CALORIE_RANGES.find((r) => r.id === selectedCalorieRange);
-      if (range && range.min !== undefined && m.dailyCalories) {
-        if (m.dailyCalories < range.min || m.dailyCalories > range.max) return false;
+      if (range && (range as any).min !== undefined && m.dailyCalories) {
+        if (m.dailyCalories < (range as any).min || m.dailyCalories > (range as any).max) return false;
       }
     }
     return true;

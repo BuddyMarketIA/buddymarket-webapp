@@ -1428,7 +1428,7 @@ export default function Familia() {
       {isOwnerOrAdmin && (
         <HouseholdAssignedRecipes
           householdId={household.id}
-          members={household.members}
+          members={household.members as Array<{ id: number; displayName: string | null; userName: string | null; userId: number; userAvatar?: string | null }>}
           isOwnerOrAdmin={isOwnerOrAdmin}
         />
       )}

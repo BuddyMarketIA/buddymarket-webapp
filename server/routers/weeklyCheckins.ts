@@ -1,23 +1,21 @@
-import { hasRole } from "@shared/const";
 import { TRPCError } from "@trpc/server";
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
+import { hasRole } from "@shared/const";
 
 export const weeklyCheckinsRouter = router({
   // ─── Paciente: enviar check-in semanal ───────────────────────────────────
   submitCheckin: protectedProcedure
     .input(z.object({
-      expertPatientId: z.number().int().positive(),
+      expertPatientId: z.number().int().positive().optional(),
       weekStart: z.string(), // YYYY-MM-DD (lunes de la semana)
       weight: z.number().optional(),
       photoUrl: z.string().optional(),
-      energyLevel: z.number().int().min(1).max(10).optional(),
-      adherenceScore: z.number().int().min(1).max(10).optional(),
-      hunger: z.number().int().min(1).max(10).optional(),
-      mood: z.number().int().min(1).max(10).optional(),
-      sleepQuality: z.number().int().min(1).max(10).optional(),
-      difficulties: z.string().optional(),
-      notes: z.string().optional(),
+      energyRating: z.number().int().min(1).max(10).optional(),
+      adherenceRating: z.number().int().min(1).max(10).optional(),
+      hungerRating: z.number().int().min(1).max(10).optional(),
+      difficultyNotes: z.string().optional(),
+      generalNotes: z.string().optional(),
     }))
     .mutation(async ({ ctx, input }) => {
       const { getDb } = await import("../db");
@@ -26,34 +24,34 @@ export const weeklyCheckinsRouter = router({
       const { weeklyCheckins, expertPatients } = await import("../../drizzle/schema.js");
       const { eq, and } = await import("drizzle-orm");
 
-      // Verificar que el paciente pertenece al usuario
-      const [rel] = await drizzleDb.select().from(expertPatients)
-        .where(and(
-          eq(expertPatients.id, input.expertPatientId),
-          eq(expertPatients.patientUserId, ctx.user.id)
-        )).limit(1);
-      if (!rel) throw new TRPCError({ code: "FORBIDDEN", message: "No tienes acceso a este check-in" });
+      // Si se especifica expertPatientId, verificar que el paciente pertenece al usuario
+      if (input.expertPatientId) {
+        const [rel] = await drizzleDb.select().from(expertPatients)
+          .where(and(
+            eq(expertPatients.id, input.expertPatientId),
+            eq(expertPatients.patientUserId, ctx.user.id)
+          )).limit(1);
+        if (!rel) throw new TRPCError({ code: "FORBIDDEN", message: "No tienes acceso a este check-in" });
+      }
 
       // Upsert: si ya existe para esa semana, actualizar
+      const conditions = [eq(weeklyCheckins.weekStart, input.weekStart), eq(weeklyCheckins.userId, ctx.user.id)];
+      if (input.expertPatientId) {
+        conditions.push(eq(weeklyCheckins.expertPatientId, input.expertPatientId));
+      }
       const [existing] = await drizzleDb.select().from(weeklyCheckins)
-        .where(and(
-          eq(weeklyCheckins.expertPatientId, input.expertPatientId),
-          eq(weeklyCheckins.weekStart, input.weekStart)
-        )).limit(1);
+        .where(and(...conditions)).limit(1);
 
       if (existing) {
         const [updated] = await drizzleDb.update(weeklyCheckins)
           .set({
             weight: input.weight,
             photoUrl: input.photoUrl,
-            energyLevel: input.energyLevel,
-            adherenceScore: input.adherenceScore,
-            hunger: input.hunger,
-            mood: input.mood,
-            sleepQuality: input.sleepQuality,
-            difficulties: input.difficulties,
-            notes: input.notes,
-            completedAt: new Date(),
+            energyRating: input.energyRating,
+            adherenceRating: input.adherenceRating,
+            hungerRating: input.hungerRating,
+            difficultyNotes: input.difficultyNotes,
+            generalNotes: input.generalNotes,
           })
           .where(eq(weeklyCheckins.id, existing.id))
           .returning();
@@ -61,19 +59,16 @@ export const weeklyCheckinsRouter = router({
       }
 
       const [created] = await drizzleDb.insert(weeklyCheckins).values({
-        expertPatientId: input.expertPatientId,
-        patientUserId: ctx.user.id,
+        userId: ctx.user.id,
+        expertPatientId: input.expertPatientId ?? null,
         weekStart: input.weekStart,
         weight: input.weight,
         photoUrl: input.photoUrl,
-        energyLevel: input.energyLevel,
-        adherenceScore: input.adherenceScore,
-        hunger: input.hunger,
-        mood: input.mood,
-        sleepQuality: input.sleepQuality,
-        difficulties: input.difficulties,
-        notes: input.notes,
-        completedAt: new Date(),
+        energyRating: input.energyRating,
+        adherenceRating: input.adherenceRating,
+        hungerRating: input.hungerRating,
+        difficultyNotes: input.difficultyNotes,
+        generalNotes: input.generalNotes,
       }).returning();
       return created;
     }),
@@ -106,7 +101,7 @@ export const weeklyCheckinsRouter = router({
       const dayOfWeek = today.getDay();
       const monday = new Date(today);
       monday.setDate(today.getDate() - (dayOfWeek === 0 ? 6 : dayOfWeek - 1));
-      const weekStart = monday.toISOString().split("T")[0];
+      const weekStart = monday.toISOString().split("T")[0]!;
 
       const pending = [];
       for (const r of relations) {
@@ -116,7 +111,7 @@ export const weeklyCheckinsRouter = router({
             eq(weeklyCheckins.weekStart, weekStart)
           )).limit(1);
 
-        if (!existing || !existing.completedAt) {
+        if (!existing) {
           pending.push({
             expertPatientId: r.rel.id,
             expertName: r.expertUser?.name ?? "Tu nutricionista",

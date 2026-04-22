@@ -261,7 +261,7 @@ function AIGenerateModal({ onClose, onDone }: { onClose: () => void; onDone: () 
         <div className="flex gap-3">
           <button onClick={onClose} className="flex-1 rounded-2xl border border-border py-3 text-sm font-semibold text-muted-foreground">Cancelar</button>
           <button
-            onClick={() => { setGenerating(true); mutation.mutate({ objective: objective || "menú equilibrado semanal" }); }}
+            onClick={() => { setGenerating(true); mutation.mutate({ days: 7, mealsPerDay: 3, objective: objective || "menú equilibrado semanal" }); }}
             disabled={generating}
             className="flex-1 btn-vively flex items-center justify-center gap-2"
           >

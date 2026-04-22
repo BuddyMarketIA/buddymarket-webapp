@@ -145,7 +145,7 @@ export const householdRecipesRouter = router({
         const memberUser = await db
           .select({ email: users.email, name: users.name })
           .from(users)
-          .where(eq(users.id, member[0].userId))
+          .where(eq(users.id, member[0].userId ?? 0))
           .limit(1);
 
         if (memberUser.length && memberUser[0].email) {

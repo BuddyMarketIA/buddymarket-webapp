@@ -970,10 +970,10 @@ export default function MealLog() {
       {(() => {
         const goalType = (profileData?.profile as any)?.goal ?? 'maintenance';
         const weight = (profileData?.profile as any)?.weight ?? 70;
-        const targetProteins = Math.round(summary?.targetProteins ?? weight * 1.8);
-        const targetCarbs = Math.round(summary?.targetCarbs ?? 250);
-        const targetFats = Math.round(summary?.targetFats ?? 65);
-        const targetCals = Math.round(summary?.targetCalories ?? 2000);
+        const targetProteins = Math.round(weight * 1.8);
+        const targetCarbs = Math.round(250);
+        const targetFats = Math.round(65);
+        const targetCals = Math.round(2000);
         const goalLabels: Record<string, string> = { weight_loss: 'pérdida de grasa', muscle_gain: 'ganancia muscular', maintenance: 'mantenimiento', toning: 'tonificación', fat_loss: 'pérdida de grasa' };
         const goalLabel = goalLabels[goalType] ?? 'tu objetivo';
         return (

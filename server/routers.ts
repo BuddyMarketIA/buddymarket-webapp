@@ -258,12 +258,14 @@ export const appRouter = router({
       const expiredDate = new Date(0);
       // Primary clear
       ctx.res.clearCookie(COOKIE_NAME, cookieOptions);
-      // Fallback: overwrite with expired cookie using same options
-      ctx.res.cookie(COOKIE_NAME, "", { ...cookieOptions, expires: expiredDate, maxAge: 0 });
-      // Fallback without domain (covers cookies set without domain attribute)
-      ctx.res.cookie(COOKIE_NAME, "", { httpOnly: true, path: "/", sameSite: "none", secure: cookieOptions.secure, expires: expiredDate, maxAge: 0 });
-      // Fallback for lax/non-HTTPS environments
-      ctx.res.cookie(COOKIE_NAME, "", { httpOnly: true, path: "/", sameSite: "lax", expires: expiredDate, maxAge: 0 });
+      // Fallback: overwrite with expired cookie using same options (only if cookie() is available)
+      if (typeof ctx.res.cookie === "function") {
+        ctx.res.cookie(COOKIE_NAME, "", { ...cookieOptions, expires: expiredDate, maxAge: 0 });
+        // Fallback without domain (covers cookies set without domain attribute)
+        ctx.res.cookie(COOKIE_NAME, "", { httpOnly: true, path: "/", sameSite: "none", secure: cookieOptions.secure, expires: expiredDate, maxAge: 0 });
+        // Fallback for lax/non-HTTPS environments
+        ctx.res.cookie(COOKIE_NAME, "", { httpOnly: true, path: "/", sameSite: "lax", expires: expiredDate, maxAge: 0 });
+      }
       return { success: true } as const;
     }),
     // ── OTP Login ─────────────────────────────────────────────────────────
@@ -9626,7 +9628,7 @@ Devuelve EXACTAMENTE este JSON:
 
       // Send a test push notification to the current user
       sendTestPush: protectedProcedure.mutation(async ({ ctx }) => {
-        const { sendPushToUser } = await import("../pushNotifications.js");
+        const { sendPushToUser } = await import("./pushNotifications.js");
         const sent = await sendPushToUser(ctx.user.id, {
           title: "🔔 Notificaciones activadas",
           body: "Las notificaciones push de BuddyMarket están funcionando correctamente.",

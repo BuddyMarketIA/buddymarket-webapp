@@ -41,6 +41,7 @@ vi.mock("./db", () => ({
   getUserSubscription: vi.fn().mockResolvedValue({ plan: "premium", manualPlan: "premium" }),
   getUserById: vi.fn().mockResolvedValue({ id: 1, name: "Test User", email: "test@test.com", role: "user" }),
   updateUser: vi.fn().mockResolvedValue(undefined),
+  upsertUserProfile: vi.fn().mockResolvedValue(undefined),
   getRoleRequestByUserAndType: vi.fn().mockResolvedValue(null),
   getRoleRequestsByUser: vi.fn().mockResolvedValue([]),
   getAllRoleRequests: vi.fn().mockResolvedValue([]),

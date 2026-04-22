@@ -336,7 +336,7 @@ function ActiveMenuTab() {
 
   const handleConfirmMeal = async (mealType: string, recipes: any[]) => {
     const key = `${selectedDateStr}-${mealType}`;
-    setConfirmingMeals(prev => new Set([...prev, key]));
+    setConfirmingMeals(prev => new Set(Array.from(prev).concat(key)));
     try {
       for (const item of recipes) {
         if (!item.recipe) continue;
@@ -346,7 +346,7 @@ function ActiveMenuTab() {
           servings: 1,
         });
       }
-      setConfirmedMeals(prev => new Set([...prev, key]));
+      setConfirmedMeals(prev => new Set(Array.from(prev).concat(key)));
       toast.success(`✅ ${recipes.length} receta${recipes.length > 1 ? "s" : ""} añadida${recipes.length > 1 ? "s" : ""} al diario`);
     } catch {
       toast.error("Error al añadir al diario");
@@ -727,8 +727,8 @@ function SavedMenusTab() {
               onActivate={() => setActive.mutate({ menuId: menu.id })}
               onApply={() => { setApplyModal({ id: menu.id, name: menu.name }); setApplyStartDate(new Date().toISOString().split("T")[0]); }}
               onRename={() => setRenaming({ id: menu.id, name: menu.name })}
-              onDuplicate={() => duplicateMenu.mutate({ menuId: menu.id })}
-              onDelete={() => { if (confirm(`¿Eliminar "${menu.name}"?`)) deleteMenu.mutate({ menuId: menu.id }); }}
+              onDuplicate={() => duplicateMenu.mutate({ id: menu.id })}
+              onDelete={() => { if (confirm(`¿Eliminar "${menu.name}"?`)) deleteMenu.mutate({ id: menu.id }); }}
             />
           ))}
         </div>
@@ -772,7 +772,7 @@ function SavedMenusTab() {
             <div className="flex gap-3">
               <button onClick={() => setShowAI(false)} className="flex-1 rounded-2xl border border-border py-3 text-sm font-semibold text-muted-foreground">Cancelar</button>
               <button
-                onClick={() => { setGenerating(true); generateAI.mutate({ objective: aiObjective || "menú equilibrado semanal" }); }}
+                onClick={() => { setGenerating(true); generateAI.mutate({ days: 7, mealsPerDay: 3, objective: aiObjective || "menú equilibrado semanal" }); }}
                 disabled={generating}
                 className="flex-1 btn-vively flex items-center justify-center gap-2">
                 {generating ? <><span className="animate-spin">⏳</span> Generando...</> : <><SparklesIcon className="h-4 w-4" /> Generar</>}
@@ -791,7 +791,7 @@ function SavedMenusTab() {
               className="vively-input mb-4" autoFocus />
             <div className="flex gap-3">
               <button onClick={() => setRenaming(null)} className="flex-1 rounded-2xl border border-border py-3 text-sm font-semibold text-muted-foreground">Cancelar</button>
-              <button onClick={() => renameMenu.mutate({ menuId: renaming.id, name: renaming.name })}
+              <button onClick={() => renameMenu.mutate({ id: renaming.id, name: renaming.name })}
                 disabled={renameMenu.isPending} className="flex-1 btn-vively">
                 {renameMenu.isPending ? "Guardando..." : "Guardar"}
               </button>

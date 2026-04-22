@@ -727,13 +727,13 @@ export default function Dashboard() {
                   {levelInfo.data && (
                     <div style={{ padding: "10px 12px", borderRadius: "12px", background: isDark ? "rgba(255,255,255,0.04)" : "#F9FAFB", border: `1px solid ${C.cardBorder}` }}>
                       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-                        <span style={{ fontSize: "12px", fontWeight: 700, color: C.textPrimary }}>{levelInfo.data.currentLevel.emoji} {levelInfo.data.currentLevel.nameEs}</span>
+                        <span style={{ fontSize: "12px", fontWeight: 700, color: C.textPrimary }}>{levelInfo.data.currentLevel.emoji} {levelInfo.data.currentLevel.title}</span>
                         <span style={{ fontSize: "11px", color: C.textMuted }}>{levelInfo.data.totalPoints} pts</span>
                       </div>
                       <div style={{ height: "5px", borderRadius: "3px", background: C.inputBg, overflow: "hidden" }}>
                         <div style={{ height: "100%", width: `${levelInfo.data.progressPct}%`, background: "linear-gradient(90deg, #F97316, #EA580C)", borderRadius: "3px", transition: "width 0.5s" }} />
                       </div>
-                      {levelInfo.data.nextLevel && <p style={{ margin: "4px 0 0", fontSize: "10px", color: C.textMuted }}>{levelInfo.data.progressPct}% hacia {levelInfo.data.nextLevel.nameEs}</p>}
+                      {levelInfo.data.nextLevel && <p style={{ margin: "4px 0 0", fontSize: "10px", color: C.textMuted }}>{levelInfo.data.progressPct}% hacia {levelInfo.data.nextLevel.title}</p>}
                     </div>
                   )}
                   {/* Weekly challenges mini */}
@@ -773,7 +773,7 @@ export default function Dashboard() {
                 const nextMeal = activeMenu?.dayParts?.find((dp: any) => !dp.completed);
                 const mealApiParam = nextMeal?.dayPartInfo?.apiParam ?? "";
                 const mealEmoji = mealApiParam === "breakfast" ? "🌅" : mealApiParam === "lunch" ? "☀️" : mealApiParam === "dinner" ? "🌙" : "🍎";
-                const mealName = nextMeal?.recipes?.[0]?.recipe?.name || nextMeal?.dayPartInfo?.nameEs || "Comida planificada";
+                const mealName = nextMeal?.recipes?.[0]?.recipe?.name || (nextMeal?.dayPartInfo as any)?.title || nextMeal?.dayPartInfo?.nameEs || "Comida planificada";
                 return nextMeal ? (
                   <Link href="/app/active-menu">
                     <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
@@ -798,7 +798,7 @@ export default function Dashboard() {
                       <div style={{ flex: 1 }}>
                         <p style={{ margin: 0, fontSize: "11px", color: C.textSecond, fontWeight: 600, textTransform: "uppercase" }}>Lista de compra</p>
                         <p style={{ margin: "2px 0 0", fontSize: "15px", fontWeight: 800, color: C.textPrimary }}>{list.name}</p>
-                        <p style={{ margin: "4px 0 0", fontSize: "13px", color: "#10B981", fontWeight: 600 }}>{list.items?.length ?? 0} productos →</p>
+                        <p style={{ margin: "4px 0 0", fontSize: "13px", color: "#10B981", fontWeight: 600 }}>{(list as any).items?.length ?? 0} productos →</p>
                       </div>
                     </div>
                   </Link>
@@ -821,7 +821,7 @@ export default function Dashboard() {
                 </div>
               )}
               {customWidgetType === "progreso_semanal" && (() => {
-                const calorieGoal = profileData.data?.dailyCalorieGoal ?? 2000;
+                const calorieGoal = profileData.data?.profile?.dailyCalorieGoal ?? 2000;
                 // Build a map of calories per day this week
                 const dayNames = ['L', 'M', 'X', 'J', 'V', 'S', 'D'];
                 const today = new Date();
@@ -926,7 +926,7 @@ export default function Dashboard() {
                           <p style={{ margin: 0, fontSize: "17px", fontWeight: 900, color: "white", letterSpacing: "-0.02em", textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>{cr.name}</p>
                           <div style={{ display: "flex", gap: "12px", marginTop: "4px" }}>
                             {cr.caloriesPerServing && <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>🔥 {cr.caloriesPerServing} kcal</span>}
-                            {cr.prepTime && <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>⏱ {cr.prepTime} min</span>}
+                            {cr.preparationTime && <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>⏱ {cr.preparationTime} min</span>}
                           </div>
                         </div>
                       </Link>
@@ -1466,13 +1466,13 @@ export default function Dashboard() {
             {levelInfo.data && (
               <div style={{ padding: "10px 12px", borderRadius: "12px", background: isDark ? "rgba(255,255,255,0.04)" : "#F9FAFB", border: `1px solid ${C.cardBorder}`, marginBottom: "8px" }}>
                 <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "6px" }}>
-                  <span style={{ fontSize: "12px", fontWeight: 700, color: C.textPrimary }}>{levelInfo.data.currentLevel.emoji} {levelInfo.data.currentLevel.nameEs}</span>
+                  <span style={{ fontSize: "12px", fontWeight: 700, color: C.textPrimary }}>{levelInfo.data.currentLevel.emoji} {levelInfo.data.currentLevel.title}</span>
                   <span style={{ fontSize: "11px", color: C.textMuted }}>{levelInfo.data.totalPoints} pts</span>
                 </div>
                 <div style={{ height: "5px", borderRadius: "3px", background: C.inputBg, overflow: "hidden" }}>
                   <div style={{ height: "100%", width: `${levelInfo.data.progressPct}%`, background: "linear-gradient(90deg, #F97316, #EA580C)", borderRadius: "3px", transition: "width 0.5s" }} />
                 </div>
-                {levelInfo.data.nextLevel && <p style={{ margin: "4px 0 0", fontSize: "10px", color: C.textMuted }}>{levelInfo.data.progressPct}% hacia {levelInfo.data.nextLevel.nameEs}</p>}
+                {levelInfo.data.nextLevel && <p style={{ margin: "4px 0 0", fontSize: "10px", color: C.textMuted }}>{levelInfo.data.progressPct}% hacia {levelInfo.data.nextLevel.title}</p>}
               </div>
             )}
             {weeklyChallenges.data && weeklyChallenges.data.length > 0 && (
@@ -1520,7 +1520,7 @@ export default function Dashboard() {
           const nextMeal = activeMenu?.dayParts?.find((dp: any) => !dp.completed);
           const mealApiParam = nextMeal?.dayPartInfo?.apiParam ?? "";
           const mealEmoji = mealApiParam === "breakfast" ? "🌅" : mealApiParam === "lunch" ? "☀️" : mealApiParam === "dinner" ? "🌙" : "🍎";
-          const mealName = nextMeal?.recipes?.[0]?.recipe?.name || nextMeal?.dayPartInfo?.nameEs || "Comida planificada";
+          const mealName = nextMeal?.recipes?.[0]?.recipe?.name || (nextMeal?.dayPartInfo as any)?.title || nextMeal?.dayPartInfo?.nameEs || "Comida planificada";
           return nextMeal ? (
             <Link href="/app/active-menu">
               <div style={{ display: "flex", alignItems: "center", gap: "14px", cursor: "pointer" }}>
@@ -1793,10 +1793,10 @@ export default function Dashboard() {
             <Link href="/app/challenges">
               <div style={{ width: "152px", height: "190px", flexShrink: 0, borderRadius: "18px", background: isDark ? "rgba(16,185,129,0.12)" : "#ECFDF5", border: `1px solid ${isDark ? "rgba(16,185,129,0.25)" : "#A7F3D0"}`, padding: "14px 12px", display: "flex", flexDirection: "column", gap: "8px", cursor: "pointer", boxSizing: "border-box" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
-                  <span style={{ fontSize: "22px" }}>{activeChallenge.emoji ?? "🏆"}</span>
+                  <span style={{ fontSize: "22px" }}>{(activeChallenge as any).emoji ?? activeChallenge.icon ?? "🏆"}</span>
                   <span style={{ fontSize: "10px", fontWeight: 800, color: "#059669", background: "rgba(16,185,129,0.15)", borderRadius: "6px", padding: "2px 7px" }}>Reto semanal</span>
                 </div>
-                <p style={{ margin: 0, fontSize: "12px", fontWeight: 800, color: C.textPrimary, lineHeight: 1.3, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{activeChallenge.nameEs ?? activeChallenge.name}</p>
+                <p style={{ margin: 0, fontSize: "12px", fontWeight: 800, color: C.textPrimary, lineHeight: 1.3, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{activeChallenge.titleEs ?? (activeChallenge as any).title ?? (activeChallenge as any).name}</p>
                 <div style={{ height: "5px", borderRadius: "3px", background: isDark ? "rgba(255,255,255,0.1)" : "#D1FAE5", overflow: "hidden" }}>
                   <div style={{ height: "100%", width: `${activeChallenge.progressPct ?? 0}%`, background: "linear-gradient(90deg, #10B981, #059669)", borderRadius: "3px" }} />
                 </div>
@@ -1816,7 +1816,7 @@ export default function Dashboard() {
                   <span style={{ fontSize: "10px", fontWeight: 800, color: "#EA580C", background: "rgba(249,115,22,0.15)", borderRadius: "6px", padding: "2px 7px" }}>Día {thirtyDay.currentDay}/30</span>
                 </div>
                 <p style={{ margin: 0, fontSize: "12px", fontWeight: 800, color: C.textPrimary, lineHeight: 1.3 }}>Reto 30 días</p>
-                {thirtyDay.todayTask && <p style={{ margin: 0, fontSize: "11px", color: C.textSecond, lineHeight: 1.4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{thirtyDay.todayTask}</p>}
+                {thirtyDay.todayTask && <p style={{ margin: 0, fontSize: "11px", color: C.textSecond, lineHeight: 1.4, display: "-webkit-box", WebkitLineClamp: 2, WebkitBoxOrient: "vertical", overflow: "hidden" }}>{(thirtyDay.todayTask as any)?.task ?? String(thirtyDay.todayTask)}</p>}
                 <div style={{ height: "5px", borderRadius: "3px", background: isDark ? "rgba(255,255,255,0.1)" : "#FFEDD5", overflow: "hidden" }}>
                   <div style={{ height: "100%", width: `${thirtyDay.progressPct}%`, background: "linear-gradient(90deg, #F97316, #EA580C)", borderRadius: "3px" }} />
                 </div>
@@ -1834,7 +1834,7 @@ export default function Dashboard() {
                   <span style={{ fontSize: "22px" }}>{level.currentLevel.emoji ?? "⭐"}</span>
                   <span style={{ fontSize: "10px", fontWeight: 800, color: "#7C3AED", background: "rgba(139,92,246,0.15)", borderRadius: "6px", padding: "2px 7px" }}>Nivel</span>
                 </div>
-                <p style={{ margin: 0, fontSize: "13px", fontWeight: 900, color: C.textPrimary }}>{level.currentLevel.nameEs}</p>
+                <p style={{ margin: 0, fontSize: "13px", fontWeight: 900, color: C.textPrimary }}>{level.currentLevel.title}</p>
                 <p style={{ margin: 0, fontSize: "11px", color: isDark ? "#a78bfa" : "#7C3AED", fontWeight: 700 }}>{level.totalPoints} pts</p>
                 {level.nextLevel && (
                   <div style={{ height: "5px", borderRadius: "3px", background: isDark ? "rgba(255,255,255,0.1)" : "#EDE9FE", overflow: "hidden" }}>
@@ -2003,7 +2003,7 @@ export default function Dashboard() {
                 <p style={{ margin: 0, fontSize: "18px", fontWeight: 900, color: "white", letterSpacing: "-0.02em", textShadow: "0 2px 8px rgba(0,0,0,0.5)" }}>{contextualRecipe.data.recipe.name}</p>
                 <div style={{ display: "flex", gap: "12px", marginTop: "4px" }}>
                   {contextualRecipe.data.recipe.caloriesPerServing && <span style={{ fontSize: "14px", color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>🔥 {contextualRecipe.data.recipe.caloriesPerServing} kcal</span>}
-                  {contextualRecipe.data.recipe.prepTime && <span style={{ fontSize: "14px", color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>⏱ {contextualRecipe.data.recipe.prepTime} min</span>}
+                  {contextualRecipe.data.recipe.preparationTime && <span style={{ fontSize: "14px", color: "rgba(255,255,255,0.85)", fontWeight: 600 }}>⏱ {contextualRecipe.data.recipe.preparationTime} min</span>}
                 </div>
               </div>
             </Link>

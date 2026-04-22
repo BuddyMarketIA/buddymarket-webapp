@@ -372,9 +372,9 @@ export const retentionRouter = router({
       const [userRow] = await drizzleDb.select({ name: users.name, email: users.email }).from(users).where(eq(users.id, ctx.user.id)).limit(1);
       const totalDays = new Set(logs.map(l => l.logDate)).size;
       const avgCalories = logs.length > 0 ? Math.round(logs.reduce((s,l) => s + (l.calories ?? 0), 0) / Math.max(totalDays, 1)) : 0;
-      const avgProtein = logs.length > 0 ? Math.round(logs.reduce((s,l) => s + (l.protein ?? 0), 0) / Math.max(totalDays, 1)) : 0;
-      const avgCarbs = logs.length > 0 ? Math.round(logs.reduce((s,l) => s + (l.carbs ?? 0), 0) / Math.max(totalDays, 1)) : 0;
-      const avgFat = logs.length > 0 ? Math.round(logs.reduce((s,l) => s + (l.fat ?? 0), 0) / Math.max(totalDays, 1)) : 0;
+      const avgProtein = logs.length > 0 ? Math.round(logs.reduce((s,l) => s + (l.proteins ?? 0), 0) / Math.max(totalDays, 1)) : 0;
+      const avgCarbs = logs.length > 0 ? Math.round(logs.reduce((s,l) => s + (l.carbohydrates ?? 0), 0) / Math.max(totalDays, 1)) : 0;
+      const avgFat = logs.length > 0 ? Math.round(logs.reduce((s,l) => s + (l.fats ?? 0), 0) / Math.max(totalDays, 1)) : 0;
       try {
         const PDFDocument = (await import('pdfkit')).default;
         const doc = new PDFDocument({ margin: 50, size: 'A4' });

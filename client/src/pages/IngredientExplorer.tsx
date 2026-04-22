@@ -294,7 +294,7 @@ export default function IngredientExplorer() {
             >
               Todas
             </button>
-            {(categories ?? []).map((cat: string) => (
+            {(categories ?? []).filter((cat): cat is string => cat !== null).map((cat: string) => (
               <button
                 key={cat}
                 onClick={() => setSelectedCategory(cat === selectedCategory ? null : cat)}
