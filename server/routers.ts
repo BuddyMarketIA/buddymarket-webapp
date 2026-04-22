@@ -8432,6 +8432,7 @@ Formato JSON estricto:
         })
       )
       .mutation(async ({ input, ctx }) => {
+        console.log("[generateMenuWithQuestionnaire] input received:", JSON.stringify({ goal: input.goal, cookingStyle: input.cookingStyle, persons: input.persons, mealsPerDay: input.mealsPerDay, daysCount: input.daysCount, startDate: input.startDate, calories: input.calories, activityLevel: input.activityLevel, dietType: input.dietType }));
         // Auto-load user profile for personalization
         // CRITICAL: load BOTH allergies AND restrictions for safety filtering
         const [userProfile, medicalProfile, userPrefs, userRestrictions, userAllergiesData] = await Promise.all([
