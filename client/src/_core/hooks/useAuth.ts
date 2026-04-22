@@ -50,12 +50,18 @@ export function useAuth(options?: UseAuthOptions) {
     // the query to fire again after the tab was backgrounded and then
     // resumed, and a transient error would log the user out.
     refetchOnWindowFocus: false,
-    // Keep the cached data for 10 minutes so the user is not re-checked
-    // every 30 seconds. The cookie is the source of truth; if it is valid
-    // the server will return the user on the next real navigation.
-    staleTime: 10 * 60 * 1000, // 10 minutes
-    // Keep the data in cache for 30 minutes even when the component unmounts.
-    gcTime: 30 * 60 * 1000,
+    // Do NOT refetch when the network reconnects — a transient error
+    // during reconnection would log the user out.
+    refetchOnReconnect: false,
+    // Do NOT refetch on mount if we already have data — prevents unnecessary
+    // re-verification when navigating between pages.
+    refetchOnMount: false,
+    // Keep the cached data for 1 hour. The cookie (1-year expiry) is the
+    // source of truth — we do NOT need to re-verify every 10 minutes.
+    // Frequent refetches were causing transient 401s to log the user out.
+    staleTime: 60 * 60 * 1000, // 1 hour
+    // Keep the data in cache for 2 hours even when the component unmounts.
+    gcTime: 2 * 60 * 60 * 1000,
   });
 
   // Once we get a valid user, mark that we have authenticated in both the ref

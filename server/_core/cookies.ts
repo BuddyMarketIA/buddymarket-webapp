@@ -39,10 +39,15 @@ export function getSessionCookieOptions(
   //       ? hostname
   //       : undefined;
 
+  const isSecure = isSecureRequest(req);
+
   return {
     httpOnly: true,
     path: "/",
-    sameSite: "none",
-    secure: isSecureRequest(req),
+    // SameSite=None requires Secure=true or browsers silently reject the cookie.
+    // Use Lax on HTTP (dev/proxy) and None on HTTPS (production).
+    // Lax is safe for our OAuth redirect flow and works on all browsers.
+    sameSite: isSecure ? "none" : "lax",
+    secure: isSecure,
   };
 }
