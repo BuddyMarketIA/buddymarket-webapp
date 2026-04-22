@@ -1,111 +1,224 @@
 /**
- * useOfflineSync — Hook para gestionar el estado offline y la cola de sincronización
+ * useOfflineSync — BuddyMarket offline queue
  *
- * Funcionalidades:
- * - Detecta si el usuario está offline/online
- * - Muestra el número de acciones pendientes de sincronizar
- * - Dispara la sincronización manual o automática al recuperar conexión
- * - Escucha mensajes del Service Worker (SYNC_COMPLETE, PENDING_COUNT)
+ * Stores pending mutations in IndexedDB when the user is offline.
+ * When the connection is restored, replays them in order via direct fetch to tRPC.
+ *
+ * Supported operations:
+ *   - mealLogs.add                  → register a meal in the diary
+ *   - mealLogs.delete               → delete a meal from the diary
+ *   - metrics.add                   → log daily weight
+ *   - menuOrganizer.confirmDayPart  → confirm a menu meal slot
  */
-import { useState, useEffect, useCallback } from "react";
+
+import { useEffect, useRef, useState, useCallback } from "react";
+
+// ─── Types ────────────────────────────────────────────────────────────────────
+
+export type OfflineOpType =
+  | "mealLogs.add"
+  | "mealLogs.delete"
+  | "metrics.add"
+  | "menuOrganizer.confirmDayPart";
+
+export interface OfflineOp {
+  id: string;        // crypto.randomUUID()
+  type: OfflineOpType;
+  payload: unknown;
+  createdAt: number; // UTC ms
+  attempts: number;
+}
 
 export interface OfflineSyncState {
   isOnline: boolean;
   pendingCount: number;
   isSyncing: boolean;
   lastSyncAt: Date | null;
+  /** Enqueue an operation for later sync when offline */
+  enqueue: (type: OfflineOpType, payload: unknown) => Promise<string>;
+  /** Manually trigger sync of all pending ops */
   triggerSync: () => void;
+  /** Force-clear the tRPC API cache (used after successful sync) */
   clearApiCache: () => void;
 }
 
+// ─── IndexedDB helpers ────────────────────────────────────────────────────────
+
+const DB_NAME = "buddymarket-offline";
+const STORE   = "pending-ops";
+const DB_VER  = 1;
+
+function openDB(): Promise<IDBDatabase> {
+  return new Promise((resolve, reject) => {
+    const req = indexedDB.open(DB_NAME, DB_VER);
+    req.onupgradeneeded = () => {
+      const db = req.result;
+      if (!db.objectStoreNames.contains(STORE)) {
+        db.createObjectStore(STORE, { keyPath: "id" });
+      }
+    };
+    req.onsuccess = () => resolve(req.result);
+    req.onerror   = () => reject(req.error);
+  });
+}
+
+async function idbGetAll(): Promise<OfflineOp[]> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx  = db.transaction(STORE, "readonly");
+    const req = tx.objectStore(STORE).getAll();
+    req.onsuccess = () =>
+      resolve((req.result as OfflineOp[]).sort((a, b) => a.createdAt - b.createdAt));
+    req.onerror = () => reject(req.error);
+  });
+}
+
+async function idbPut(op: OfflineOp): Promise<void> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx  = db.transaction(STORE, "readwrite");
+    const req = tx.objectStore(STORE).put(op);
+    req.onsuccess = () => resolve();
+    req.onerror   = () => reject(req.error);
+  });
+}
+
+async function idbDelete(id: string): Promise<void> {
+  const db = await openDB();
+  return new Promise((resolve, reject) => {
+    const tx  = db.transaction(STORE, "readwrite");
+    const req = tx.objectStore(STORE).delete(id);
+    req.onsuccess = () => resolve();
+    req.onerror   = () => reject(req.error);
+  });
+}
+
+// ─── Hook ─────────────────────────────────────────────────────────────────────
+
 export function useOfflineSync(): OfflineSyncState {
-  const [isOnline, setIsOnline] = useState<boolean>(
+  const [isOnline,     setIsOnline]     = useState(() =>
     typeof navigator !== "undefined" ? navigator.onLine : true
   );
   const [pendingCount, setPendingCount] = useState(0);
-  const [isSyncing, setIsSyncing] = useState(false);
-  const [lastSyncAt, setLastSyncAt] = useState<Date | null>(null);
+  const [isSyncing,    setIsSyncing]    = useState(false);
+  const [lastSyncAt,   setLastSyncAt]   = useState<Date | null>(null);
+  const syncingRef = useRef(false);
 
-  // Get pending count from SW
-  const refreshPendingCount = useCallback(() => {
-    if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
-      navigator.serviceWorker.controller.postMessage({ type: "GET_PENDING_COUNT" });
-    }
+  // Refresh pending count from IndexedDB
+  const refreshCount = useCallback(async () => {
+    try {
+      const ops = await idbGetAll();
+      setPendingCount(ops.length);
+    } catch (_) {}
   }, []);
 
-  // Trigger manual sync
+  // Enqueue an operation for later sync
+  const enqueue = useCallback(async (type: OfflineOpType, payload: unknown): Promise<string> => {
+    const op: OfflineOp = {
+      id:        crypto.randomUUID(),
+      type,
+      payload,
+      createdAt: Date.now(),
+      attempts:  0,
+    };
+    await idbPut(op);
+    await refreshCount();
+    return op.id;
+  }, [refreshCount]);
+
+  // Replay all pending ops via tRPC POST
+  const doSync = useCallback(async () => {
+    if (syncingRef.current) return;
+    const ops = await idbGetAll();
+    if (ops.length === 0) return;
+
+    syncingRef.current = true;
+    setIsSyncing(true);
+
+    for (const op of ops) {
+      try {
+        const res = await fetch(`/api/trpc/${op.type}`, {
+          method:  "POST",
+          headers: { "Content-Type": "application/json" },
+          body:    JSON.stringify({ json: op.payload }),
+          credentials: "include",
+        });
+        if (res.ok || res.status === 400) {
+          // 400 = validation error — discard (not retryable)
+          await idbDelete(op.id);
+        } else {
+          // Server error — increment attempts, discard after 3
+          const updated = { ...op, attempts: op.attempts + 1 };
+          if (updated.attempts >= 3) {
+            await idbDelete(op.id);
+          } else {
+            await idbPut(updated);
+          }
+        }
+      } catch (_err) {
+        // Network error — stop and retry later
+        break;
+      }
+    }
+
+    syncingRef.current = false;
+    setIsSyncing(false);
+    setLastSyncAt(new Date());
+    await refreshCount();
+  }, [refreshCount]);
+
   const triggerSync = useCallback(() => {
     if (!isOnline) return;
-    setIsSyncing(true);
-    if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
-      navigator.serviceWorker.controller.postMessage({ type: "TRIGGER_SYNC" });
-    }
-    // Also try Background Sync API
+    doSync();
+    // Also ask the SW to replay its background-sync queue
     if ("serviceWorker" in navigator) {
       navigator.serviceWorker.ready.then((reg) => {
         if ("sync" in reg) {
-          (reg as any).sync.register("replay-mutations").catch(() => {});
+          (reg as ServiceWorkerRegistration & { sync: { register: (tag: string) => Promise<void> } })
+            .sync.register("bm-offline-mutations").catch(() => {});
         }
       });
     }
-    // Fallback: reset syncing state after 5s
-    setTimeout(() => setIsSyncing(false), 5000);
-  }, [isOnline]);
+  }, [isOnline, doSync]);
 
-  // Clear API cache (force fresh data)
   const clearApiCache = useCallback(() => {
     if ("serviceWorker" in navigator && navigator.serviceWorker.controller) {
       navigator.serviceWorker.controller.postMessage({ type: "CLEAR_API_CACHE" });
     }
   }, []);
 
+  // Online/offline listeners
   useEffect(() => {
-    const handleOnline = () => {
-      setIsOnline(true);
-      // Auto-sync when coming back online
-      setTimeout(() => {
-        triggerSync();
-        refreshPendingCount();
-      }, 1000);
-    };
+    const onOnline  = () => { setIsOnline(true);  setTimeout(triggerSync, 800); };
+    const onOffline = () => setIsOnline(false);
 
-    const handleOffline = () => {
-      setIsOnline(false);
-    };
+    window.addEventListener("online",  onOnline);
+    window.addEventListener("offline", onOffline);
 
-    window.addEventListener("online", handleOnline);
-    window.addEventListener("offline", handleOffline);
-
-    // Listen for SW messages
-    const handleSWMessage = (event: MessageEvent) => {
-      if (event.data?.type === "SYNC_COMPLETE") {
-        setIsSyncing(false);
+    // Listen for SW sync-complete message
+    const onSWMessage = (e: MessageEvent) => {
+      if (e.data?.type === "BM_SYNC_COMPLETE" || e.data?.type === "SYNC_COMPLETE") {
         setLastSyncAt(new Date());
-        setPendingCount(0);
+        refreshCount();
       }
-      if (event.data?.type === "PENDING_COUNT") {
-        setPendingCount(event.data.count ?? 0);
-      }
-      if (event.data?.type === "API_CACHE_CLEARED") {
-        // Optionally notify user
+      if (e.data?.type === "PENDING_COUNT") {
+        setPendingCount(e.data.count ?? 0);
       }
     };
-
     if ("serviceWorker" in navigator) {
-      navigator.serviceWorker.addEventListener("message", handleSWMessage);
+      navigator.serviceWorker.addEventListener("message", onSWMessage);
     }
 
-    // Initial pending count
-    refreshPendingCount();
+    refreshCount();
 
     return () => {
-      window.removeEventListener("online", handleOnline);
-      window.removeEventListener("offline", handleOffline);
+      window.removeEventListener("online",  onOnline);
+      window.removeEventListener("offline", onOffline);
       if ("serviceWorker" in navigator) {
-        navigator.serviceWorker.removeEventListener("message", handleSWMessage);
+        navigator.serviceWorker.removeEventListener("message", onSWMessage);
       }
     };
-  }, [triggerSync, refreshPendingCount]);
+  }, [triggerSync, refreshCount]);
 
-  return { isOnline, pendingCount, isSyncing, lastSyncAt, triggerSync, clearApiCache };
+  return { isOnline, pendingCount, isSyncing, lastSyncAt, enqueue, triggerSync, clearApiCache };
 }

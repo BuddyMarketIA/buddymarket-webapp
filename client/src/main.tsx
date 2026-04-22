@@ -1,20 +1,26 @@
 import { trpc } from "@/lib/trpc";
 
-// ── ELIMINAR TODOS LOS SERVICE WORKERS Y CACHÉS ──────────────────────────────
-// El SW causaba "Unexpected token '<'" en TODAS las peticiones de la app.
-// Eliminamos agresivamente cualquier SW registrado y todas las cachés.
+// ── SERVICE WORKER REGISTRATION ──────────────────────────────────────────────
+// Register the offline-capable Service Worker in production.
+// In development (Vite HMR) we skip registration to avoid conflicts.
 (async () => {
-  try {
-    if ('serviceWorker' in navigator) {
-      const registrations = await navigator.serviceWorker.getRegistrations();
-      await Promise.all(registrations.map((reg) => reg.unregister()));
+  if ('serviceWorker' in navigator && import.meta.env.PROD) {
+    try {
+      const reg = await navigator.serviceWorker.register('/sw.js', { scope: '/' });
+      reg.addEventListener('updatefound', () => {
+        const newSW = reg.installing;
+        if (newSW) {
+          newSW.addEventListener('statechange', () => {
+            if (newSW.state === 'installed' && navigator.serviceWorker.controller) {
+              // New version available — send skip-waiting
+              newSW.postMessage({ type: 'BM_SKIP_WAITING' });
+            }
+          });
+        }
+      });
+    } catch (err) {
+      console.warn('[SW] Registration failed:', err);
     }
-    if ('caches' in window) {
-      const keys = await caches.keys();
-      await Promise.all(keys.map((key) => caches.delete(key)));
-    }
-  } catch (_) {
-    // Ignorar errores silenciosamente
   }
 })();
 
