@@ -2487,10 +2487,10 @@ Responde SOLO con JSON válido con esta estructura:
 
         const drizzleDb = await db.getDb();
         if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
-        const { menuOrganizerDayParts, menuOrganizerDayPartRecipes, mealLogs, recipes, dayParts } = await import("../drizzle/schema.js");
-        const { eq, and, sql } = await import("drizzle-orm");
+        const { menuOrganizerDayParts, menuOrganizers, dayParts } = await import("../drizzle/schema.js");
+        const { eq } = await import("drizzle-orm");
 
-        // Get all day parts with their recipes
+        // Get all day parts to recalculate their dates
         const dayPartRows = await drizzleDb
           .select({ dp: menuOrganizerDayParts, dpInfo: dayParts })
           .from(menuOrganizerDayParts)
@@ -2506,10 +2506,10 @@ Responde SOLO con JSON válido con esta estructura:
         const newStart = new Date(input.startDate);
         const offsetDays = Math.round((newStart.getTime() - menuOriginalStart.getTime()) / (1000 * 60 * 60 * 24));
 
-        let logsCreated = 0;
-
-        for (const { dp, dpInfo } of dayPartRows) {
-          // Calculate target date
+        // Only update the dates of the menu day parts — do NOT insert into mealLogs.
+        // The diary is filled only when the user manually confirms each meal via confirmDayPart.
+        const allTargetDates: string[] = [];
+        for (const { dp } of dayPartRows) {
           let targetDate: string;
           if (dp.date) {
             const originalDate = new Date(dp.date);
@@ -2521,57 +2521,23 @@ Responde SOLO con JSON válido con esta estructura:
           } else {
             targetDate = input.startDate;
           }
-
-          // Get recipes for this day part
-          const dpRecipes = await drizzleDb
-            .select({ dpRecipe: menuOrganizerDayPartRecipes, recipe: recipes })
-            .from(menuOrganizerDayPartRecipes)
-            .leftJoin(recipes, eq(menuOrganizerDayPartRecipes.recipeId, recipes.id))
-            .where(eq(menuOrganizerDayPartRecipes.menuOrganizerDayPartId, dp.id));
-
-          if (dpRecipes.length > 0) {
-            // Log each recipe
-            for (const { dpRecipe, recipe } of dpRecipes) {
-              if (!recipe) continue;
-              await drizzleDb.insert(mealLogs).values({
-                userId: ctx.user.id,
-                recipeId: recipe.id,
-                customMealName: recipe.name,
-                dayPartId: dp.dayPartId,
-                logDate: targetDate,
-                servings: dpRecipe.servings || 1,
-                calories: recipe.caloriesPerServing ? Math.round(recipe.caloriesPerServing * (dpRecipe.servings || 1)) : null,
-                proteins: recipe.proteinsPerServing ? recipe.proteinsPerServing * (dpRecipe.servings || 1) : null,
-                carbohydrates: recipe.carbsPerServing ? recipe.carbsPerServing * (dpRecipe.servings || 1) : null,
-                fats: recipe.fatsPerServing ? recipe.fatsPerServing * (dpRecipe.servings || 1) : null,
-                notes: `Del menú: ${menu.name}`,
-              } as any);
-              logsCreated++;
-            }
-          } else if (dp.name || dp.notes) {
-            // No recipe linked, create a custom meal log entry
-            await drizzleDb.insert(mealLogs).values({
-              userId: ctx.user.id,
-              customMealName: dp.name || dp.notes || "Comida del menú",
-              dayPartId: dp.dayPartId,
-              logDate: targetDate,
-              servings: 1,
-              notes: `Del menú: ${menu.name}`,
-            } as any);
-            logsCreated++;
-          }
+          allTargetDates.push(targetDate);
+          await drizzleDb
+            .update(menuOrganizerDayParts)
+            .set({ date: targetDate as any })
+            .where(eq(menuOrganizerDayParts.id, dp.id));
         }
 
-         // Notify user that the menu has been applied to the diary
-        if (logsCreated > 0) {
-          createInAppNotif(ctx.user.id, {
-            title: "Menu aplicado al diario",
-            body: `El menu "${menu.name}" ha sido aplicado al diario nutricional (${logsCreated} comidas). Puedes verlo en tu Diario.`,
-            type: "success",
-            link: "/app/meal-log",
-          });
-        }
-        return { success: true, logsCreated };
+        // Update menu start/end dates to match the new range
+        const sortedDates = [...allTargetDates].sort();
+        const minDate = sortedDates[0];
+        const maxDate = sortedDates[sortedDates.length - 1];
+        await drizzleDb
+          .update(menuOrganizers)
+          .set({ startDate: minDate as any, endDate: maxDate as any })
+          .where(eq(menuOrganizers.id, input.menuId));
+
+        return { success: true, logsCreated: 0 };
       }),
     // Confirm a single day part (meal slot) - logs its recipes to the diary and marks it completed
     confirmDayPart: protectedProcedure
