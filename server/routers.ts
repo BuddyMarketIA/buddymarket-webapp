@@ -9624,6 +9624,19 @@ Devuelve EXACTAMENTE este JSON:
           return { success: true, id: Number((result as any)[0]?.id ?? 0) };
         }),
 
+      // Send a test push notification to the current user
+      sendTestPush: protectedProcedure.mutation(async ({ ctx }) => {
+        const { sendPushToUser } = await import("../pushNotifications.js");
+        const sent = await sendPushToUser(ctx.user.id, {
+          title: "🔔 Notificaciones activadas",
+          body: "Las notificaciones push de BuddyMarket están funcionando correctamente.",
+          icon: "/icons/icon-192x192.png",
+          url: "/app/dashboard",
+          tag: "test-push",
+        });
+        return { success: sent > 0, sent };
+      }),
+
       createWelcome: protectedProcedure.mutation(async ({ ctx }) => {
         const { inAppNotifications } = await import("../drizzle/schema");
         const { getDb } = await import("./db");

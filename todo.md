@@ -2927,3 +2927,16 @@
 - [x] BuddyExperts: createServicePlan y updateServicePlan corregidos (usan upsertServicePlan)
 - [x] Corrección de campo prepTime → preparationTime en retention.ts y learning-engine.ts
 - [x] Corrección de adherenceScore → adherenceRating en email-jobs.ts
+
+## Sprint: Dark Mode Global Fix + Push Notifications (COMPLETADO)
+
+- [x] Añadir reglas CSS globales en index.css para corregir estilos inline hardcodeados en dark mode
+- [x] Corregir color-scheme: dark para inputs nativos (date, time, select) en modo oscuro
+- [x] Corregir fondos blancos/grises claros con inline styles en modo oscuro
+- [x] Corregir colores de texto hardcodeados (#111827, #374151, #6b7280) en modo oscuro
+- [x] Corregir banners de éxito/error/warning/info con colores hardcodeados en modo oscuro
+- [x] Corregir bordes e inputs con estilos inline en modo oscuro
+- [x] Verificar dark mode en Dashboard, Diario, BuddyIA, Recetas, Perfil, Recordatorios
+- [x] Crear hook usePushNotifications para gestionar suscripciones Web Push
+- [x] Crear componente PushNotificationToggle (card e inline) para activar/desactivar push
+- [x] Integrar PushNotificationToggle en página de Recordatorios (MealNotifications.tsx)

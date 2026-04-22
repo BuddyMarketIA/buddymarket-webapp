@@ -1218,3 +1218,178 @@
 /* Blue text */
 .dark .text-blue-600 { color: oklch(0.68 0.18 240) !important; }
 .dark .text-blue-700 { color: oklch(0.65 0.18 240) !important; }
+
+/* ─── Dark Mode: Override inline hardcoded styles ─────────────────────────── */
+/* These rules fix pages that use inline style={{ background: "white", color: "#111827" }}
+   which can't be overridden by Tailwind dark: variants.
+   We use CSS custom properties and forced color-scheme to handle most cases. */
+
+/* Force color-scheme so native inputs (date, time, select) respect dark mode */
+.dark {
+  color-scheme: dark;
+}
+
+/* Inline-styled cards and containers with white/light backgrounds */
+.dark [style*="background: white"],
+.dark [style*="background:white"],
+.dark [style*='background: "white"'],
+.dark [style*="background-color: white"],
+.dark [style*="background-color:white"] {
+  background: oklch(0.18 0.015 30) !important;
+  color: oklch(0.96 0.005 65) !important;
+}
+
+/* Light gray backgrounds */
+.dark [style*="background: #f9fafb"],
+.dark [style*="background:#f9fafb"],
+.dark [style*="background: #f3f4f6"],
+.dark [style*="background:#f3f4f6"],
+.dark [style*="background: #f1f5f9"],
+.dark [style*="background:#f1f5f9"],
+.dark [style*="background: #f8fafc"],
+.dark [style*="background:#f8fafc"],
+.dark [style*="background: rgb(249, 250, 251)"] {
+  background: oklch(0.22 0.012 30) !important;
+}
+
+/* Dark text colors used in inline styles */
+.dark [style*="color: #111827"],
+.dark [style*="color:#111827"],
+.dark [style*="color: #1f2937"],
+.dark [style*="color:#1f2937"] {
+  color: oklch(0.96 0.005 65) !important;
+}
+
+.dark [style*="color: #374151"],
+.dark [style*="color:#374151"] {
+  color: oklch(0.88 0.008 65) !important;
+}
+
+.dark [style*="color: #4b5563"],
+.dark [style*="color:#4b5563"] {
+  color: oklch(0.78 0.01 65) !important;
+}
+
+.dark [style*="color: #6b7280"],
+.dark [style*="color:#6b7280"] {
+  color: oklch(0.68 0.01 65) !important;
+}
+
+.dark [style*="color: #9ca3af"],
+.dark [style*="color:#9ca3af"] {
+  color: oklch(0.58 0.01 65) !important;
+}
+
+/* Borders */
+.dark [style*="border: 1.5px solid #f3f4f6"],
+.dark [style*="border: 1px solid #f3f4f6"],
+.dark [style*="border: 1.5px solid #e5e7eb"],
+.dark [style*="border: 1px solid #e5e7eb"],
+.dark [style*="border: 1px solid #d1d5db"],
+.dark [style*="border: 1.5px solid #d1d5db"] {
+  border-color: oklch(0.28 0.015 30) !important;
+}
+
+/* Input fields with inline styles */
+.dark input[style*="background: #f9fafb"],
+.dark input[style*="background:#f9fafb"],
+.dark input[style*="background: white"],
+.dark input[style*="background:white"] {
+  background: oklch(0.22 0.012 30) !important;
+  color: oklch(0.96 0.005 65) !important;
+  border-color: oklch(0.30 0.015 30) !important;
+}
+
+/* Warm cream/orange tinted backgrounds (used in banners) */
+.dark [style*="background: linear-gradient(135deg, #fff7ed"],
+.dark [style*="background: #fff7ed"],
+.dark [style*="background:#fff7ed"],
+.dark [style*="background: #fef3c7"],
+.dark [style*="background:#fef3c7"],
+.dark [style*="background: #fef9f5"],
+.dark [style*="background:#fef9f5"] {
+  background: oklch(0.20 0.02 45) !important;
+}
+
+/* Green success banners */
+.dark [style*="background: #f0fdf4"],
+.dark [style*="background:#f0fdf4"] {
+  background: oklch(0.18 0.03 145) !important;
+}
+
+/* Red error banners */
+.dark [style*="background: #fef2f2"],
+.dark [style*="background:#fef2f2"] {
+  background: oklch(0.18 0.03 25) !important;
+}
+
+/* Yellow warning banners */
+.dark [style*="background: #fef3c7"],
+.dark [style*="background:#fef3c7"],
+.dark [style*="background: #fef9c3"],
+.dark [style*="background:#fef9c3"] {
+  background: oklch(0.20 0.04 80) !important;
+}
+
+/* Blue info banners */
+.dark [style*="background: #eff6ff"],
+.dark [style*="background:#eff6ff"],
+.dark [style*="background: #dbeafe"],
+.dark [style*="background:#dbeafe"] {
+  background: oklch(0.18 0.03 240) !important;
+}
+
+/* Inline text on warm backgrounds */
+.dark [style*="color: #92400e"],
+.dark [style*="color:#92400e"],
+.dark [style*="color: #b45309"],
+.dark [style*="color:#b45309"],
+.dark [style*="color: #9a3412"],
+.dark [style*="color:#9a3412"],
+.dark [style*="color: #ea580c"],
+.dark [style*="color:#ea580c"] {
+  color: oklch(0.78 0.12 55) !important;
+}
+
+/* Green text on green backgrounds */
+.dark [style*="color: #166534"],
+.dark [style*="color:#166534"],
+.dark [style*="color: #15803d"],
+.dark [style*="color:#15803d"] {
+  color: oklch(0.72 0.18 145) !important;
+}
+
+/* Red text */
+.dark [style*="color: #991b1b"],
+.dark [style*="color:#991b1b"],
+.dark [style*="color: #dc2626"],
+.dark [style*="color:#dc2626"],
+.dark [style*="color: #ef4444"],
+.dark [style*="color:#ef4444"] {
+  color: oklch(0.68 0.22 25) !important;
+}
+
+/* Box shadows — soften in dark mode */
+.dark [style*="box-shadow: 0 2px 8px rgba(0,0,0,0.04)"],
+.dark [style*="box-shadow: 0 4px 16px rgba(249,115,22,0.08)"] {
+  box-shadow: 0 2px 8px rgba(0,0,0,0.3) !important;
+}
+
+/* Placeholder text in inputs */
+.dark ::placeholder {
+  color: oklch(0.55 0.01 65) !important;
+}
+
+/* Select dropdowns */
+.dark select {
+  background: oklch(0.22 0.012 30) !important;
+  color: oklch(0.96 0.005 65) !important;
+  border-color: oklch(0.30 0.015 30) !important;
+}
+
+/* Tables with inline styles */
+.dark [style*="background: #f8fafc"] th,
+.dark [style*="background: #f9fafb"] th {
+  background: oklch(0.22 0.012 30) !important;
+  color: oklch(0.88 0.008 65) !important;
+}

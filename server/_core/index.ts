@@ -489,6 +489,13 @@ if (process.env.NODE_ENV === "production") {
   scheduleNextBackup();
 }
 
+// ─── Push Notification Cron ─────────────────────────────────────────────────
+setTimeout(() => {
+  import("../pushCron").then(({ startPushCron }) => {
+    startPushCron();
+  }).catch((err) => logger.warn("[PushCron] Failed to start push cron:", err));
+}, 15000); // 15s delay to let server settle
+
 // ─── Graceful Shutdown ────────────────────────────────────────────────────────
 // Exported so startServer() can register the HTTP server for draining
 let _httpServer: ReturnType<typeof import("http").createServer> | null = null;

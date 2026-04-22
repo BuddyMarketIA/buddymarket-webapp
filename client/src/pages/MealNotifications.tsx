@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "@/components/sonner-a11y-shim";
+import { PushNotificationToggle } from "@/components/PushNotificationToggle";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type MealType = "desayuno" | "almuerzo" | "merienda" | "cena" | "snack" | "actividad";
@@ -518,6 +519,12 @@ export default function MealNotifications() {
             </button>
           ))}
         </div>
+      </div>
+
+      {/* Push Notifications Section */}
+      <div style={{ marginTop: 24 }}>
+        <p style={{ fontWeight: 700, color: "#374151", margin: "0 0 10px", fontSize: 14 }}>🔔 Notificaciones push del servidor</p>
+        <PushNotificationToggle variant="card" />
       </div>
 
       {/* Disclaimer */}
