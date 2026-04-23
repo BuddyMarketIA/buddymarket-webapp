@@ -5073,10 +5073,10 @@ Responde SOLO con JSON válido, sin texto adicional:
           db.getAllDietRestrictions(),
         ]);
         return {
-          totalUsers: users.length + 543, // +543 simulated free users
+          totalUsers: users.length,
           totalRecipes: recipesList.length,
           totalIngredients: ingredients.length,
-          totalMenus: menus.length + 1247, // +1247 simulated menus
+          totalMenus: menus.length,
           totalAllergies: allergiesList.length,
           totalCategories: categoriesList.length,
           totalDiets: dietsList.length,
@@ -11071,34 +11071,17 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
       const [pendingApplications] = await drizzleDb.select({ count: count() }).from(buddyApplications)
         .where(sqlTag`${buddyApplications.status} = 'pending'`);
 
-      // ── Simulated offset: 543 free users active over the last 2 months ──────
-      // These numbers represent realistic freemium engagement rates.
-      // 543 free users × avg engagement: 68% daily log, 41% menus, 29% shopping lists.
-      const SIM_USERS = 543;
-      const SIM_NEW_30D = 87;      // ~16% monthly growth rate
-      const SIM_MENUS = 1247;      // 543 × 41% × avg 5.6 menus
-      const SIM_AI_MENUS = 389;    // 31% of menus generated with AI
-      const SIM_MEAL_LOGS = 8934;  // 543 × 68% × avg 24 logs over 2 months
-      const SIM_AI_PHOTO = 1821;   // 20% of logs use photo AI
-      const SIM_SHOPPING = 712;    // 543 × 29% × avg 4.5 lists
-      const SIM_AI_SHOPPING = 284; // 40% of lists generated with AI
-      const SIM_FEEDBACK = 198;
-      const SIM_FAVORITES = 2341;
-      const SIM_COMPLEMENTS = 4127;
-      const SIM_BODY_METRICS = 876;
-      const SIM_RECIPE_LIKES = 3089;
-      const SIM_EXPERT_COPIES = 143;
       return {
-        users: { total: Number(totalUsers.count) + SIM_USERS, new30d: Number(newUsers30d.count) + SIM_NEW_30D },
-        menus: { total: Number(totalMenus.count) + SIM_MENUS, aiGenerated: Number(aiMenus.count) + SIM_AI_MENUS },
-        mealLogs: { total: Number(totalMealLogs.count) + SIM_MEAL_LOGS, aiPhoto: Number(aiPhotoLogs.count) + SIM_AI_PHOTO },
-        shoppingLists: { total: Number(totalShoppingLists.count) + SIM_SHOPPING, aiGenerated: Number(aiShoppingLists.count) + SIM_AI_SHOPPING },
-        aiFeedback: { total: Number(totalAiFeedback.count) + SIM_FEEDBACK },
-        favorites: Number(totalFavorites.count) + SIM_FAVORITES,
-        complements: Number(totalComplements.count) + SIM_COMPLEMENTS,
-        bodyMetrics: Number(totalBodyMetrics.count) + SIM_BODY_METRICS,
-        recipeLikes: Number(totalRecipeLikes.count) + SIM_RECIPE_LIKES,
-        expertCopies: Number(totalExpertCopies.count) + SIM_EXPERT_COPIES,
+        users: { total: Number(totalUsers.count), new30d: Number(newUsers30d.count) },
+        menus: { total: Number(totalMenus.count), aiGenerated: Number(aiMenus.count) },
+        mealLogs: { total: Number(totalMealLogs.count), aiPhoto: Number(aiPhotoLogs.count) },
+        shoppingLists: { total: Number(totalShoppingLists.count), aiGenerated: Number(aiShoppingLists.count) },
+        aiFeedback: { total: Number(totalAiFeedback.count) },
+        favorites: Number(totalFavorites.count),
+        complements: Number(totalComplements.count),
+        bodyMetrics: Number(totalBodyMetrics.count),
+        recipeLikes: Number(totalRecipeLikes.count),
+        expertCopies: Number(totalExpertCopies.count),
         pendingApplications: Number(pendingApplications.count),
       };
     }),
@@ -11136,22 +11119,21 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
         .where(eq(featureEvents.feature, "barcode_scan"));
 
       return [
-        // ── Simulated offsets for 543 free users (last 2 months) ──────────────
-        { feature: "Diario alimentario (manual)", category: "Diario", count: Number(manualFoodLog.count) + 7113, icon: "📝" },
-        { feature: "Análisis IA de foto", category: "IA", count: Number(aiPhotoLog.count) + 1821, icon: "📷" },
-        { feature: "Escáner código de barras", category: "Escáner", count: Number(barcodeCount.count) + 934, icon: "📷" },
-        { feature: "Menú manual", category: "Menús", count: Number(manualMenus.count) + 858, icon: "📅" },
-        { feature: "Menú generado por IA", category: "IA", count: Number(aiMenus.count) + 389, icon: "🤖" },
-        { feature: "Lista de compra", category: "Compras", count: Number(shoppingListCount.count) + 712, icon: "🛒" },
-        { feature: "Lista de compra con IA", category: "IA", count: Number(aiShoppingCount.count) + 284, icon: "🛒" },
-        { feature: "Recetas favoritas", category: "Recetas", count: Number(favRecipes.count) + 2341, icon: "❤️" },
-        { feature: "Me gusta en recetas", category: "Recetas", count: Number(recipeLikesCount.count) + 3089, icon: "👍" },
-        { feature: "Complementos diarios", category: "Diario", count: Number(complementCount.count) + 4127, icon: "☕" },
-        { feature: "Métricas corporales", category: "Salud", count: Number(bodyMetricsCount.count) + 876, icon: "⚖️" },
-        { feature: "Planes de expertos copiados", category: "Expertos", count: Number(expertCopiesCount.count) + 143, icon: "👨‍⚕️" },
-        { feature: "Inventario/Despensa", category: "Inventario", count: Number(pantryCount.count) + 1204, icon: "🏪" },
-        { feature: "Complementos en menús", category: "Menús", count: Number(menuComplementCount.count) + 567, icon: "🍵" },
-        { feature: "Feedback IA (valoraciones)", category: "IA", count: Number(aiFeedbackCount.count) + 198, icon: "⭐" },
+        { feature: "Diario alimentario (manual)", category: "Diario", count: Number(manualFoodLog.count), icon: "📝" },
+        { feature: "Análisis IA de foto", category: "IA", count: Number(aiPhotoLog.count), icon: "📷" },
+        { feature: "Escáner código de barras", category: "Escáner", count: Number(barcodeCount.count), icon: "📷" },
+        { feature: "Menú manual", category: "Menús", count: Number(manualMenus.count), icon: "📅" },
+        { feature: "Menú generado por IA", category: "IA", count: Number(aiMenus.count), icon: "🤖" },
+        { feature: "Lista de compra", category: "Compras", count: Number(shoppingListCount.count), icon: "🛒" },
+        { feature: "Lista de compra con IA", category: "IA", count: Number(aiShoppingCount.count), icon: "🛒" },
+        { feature: "Recetas favoritas", category: "Recetas", count: Number(favRecipes.count), icon: "❤️" },
+        { feature: "Me gusta en recetas", category: "Recetas", count: Number(recipeLikesCount.count), icon: "👍" },
+        { feature: "Complementos diarios", category: "Diario", count: Number(complementCount.count), icon: "☕" },
+        { feature: "Métricas corporales", category: "Salud", count: Number(bodyMetricsCount.count), icon: "⚖️" },
+        { feature: "Planes de expertos copiados", category: "Expertos", count: Number(expertCopiesCount.count), icon: "👨‍⚕️" },
+        { feature: "Inventario/Despensa", category: "Inventario", count: Number(pantryCount.count), icon: "🏪" },
+        { feature: "Complementos en menús", category: "Menús", count: Number(menuComplementCount.count), icon: "🍵" },
+        { feature: "Feedback IA (valoraciones)", category: "IA", count: Number(aiFeedbackCount.count), icon: "⭐" },
       ];
     }),
 
@@ -11196,44 +11178,7 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
         .groupBy(sqlTag`DATE(${menuOrganizers.createdAt})`)
         .orderBy(sqlTag`DATE(${menuOrganizers.createdAt})`);
 
-      // Merge simulated daily data for 543 free users
-      const simDays: { date: string; usersCount: number; logsCount: number; menusCount: number }[] = [];
-      const today = new Date();
-      function simRand(seed: number): number {
-        const x = Math.sin(seed + 1) * 10000;
-        return x - Math.floor(x);
-      }
-      for (let i = 29; i >= 0; i--) {
-        const d = new Date(today);
-        d.setDate(d.getDate() - i);
-        const dateStr = d.toISOString().split("T")[0];
-        const dayOfWeek = d.getDay();
-        const weekendFactor = (dayOfWeek === 0 || dayOfWeek === 6) ? 0.7 : 1.0;
-        const seed = d.getDate() + d.getMonth() * 31;
-        const newUsers = Math.round((2 + simRand(seed) * 3) * weekendFactor);
-        const mealLogs = Math.round((260 + simRand(seed + 7) * 80) * weekendFactor);
-        const menus = Math.round((30 + simRand(seed + 13) * 25) * weekendFactor);
-        simDays.push({ date: dateStr, usersCount: newUsers, logsCount: mealLogs, menusCount: menus });
-      }
-      const mergeByDate = (
-        real: { date: string; count: number | bigint }[],
-        simKey: "usersCount" | "logsCount" | "menusCount"
-      ) => {
-        const map = new Map<string, number>();
-        for (const r of real) map.set(String(r.date), Number(r.count));
-        for (const s of simDays) {
-          const prev = map.get(s.date) ?? 0;
-          map.set(s.date, prev + s[simKey]);
-        }
-        return Array.from(map.entries())
-          .sort((a, b) => a[0].localeCompare(b[0]))
-          .map(([date, count]) => ({ date, count }));
-      };
-      return {
-        usersByDay: mergeByDate(usersByDay.map(r => ({ date: String(r.date), count: Number(r.count) })), "usersCount"),
-        mealLogsByDay: mergeByDate(mealLogsByDay.map(r => ({ date: String(r.date), count: Number(r.count) })), "logsCount"),
-        menusByDay: mergeByDate(menusByDay.map(r => ({ date: String(r.date), count: Number(r.count) })), "menusCount"),
-      };
+      return { usersByDay, mealLogsByDay, menusByDay };
     }),
 
     // AI usage breakdown
@@ -11257,23 +11202,19 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
       const [aiShoppingTotal] = await drizzleDb.select({ count: count() }).from(shoppingLists)
         .where(sqlTag`${shoppingLists.generatedByAI} = true`);
 
-      // Simulated AI usage for 543 free users
-      const simFeedbackTotal = Number(feedbackStats.total) + 198;
-      const simAccurateCount = Number(feedbackStats.accurate) + 162; // 82% accuracy
-      const simAvgRating = simFeedbackTotal > 0
-        ? ((Number(feedbackStats.avgRating ?? 0) * Number(feedbackStats.total) + 4.3 * 198) / simFeedbackTotal)
-        : 4.3;
       return {
         feedback: {
-          total: simFeedbackTotal,
-          avgRating: Math.round(simAvgRating * 10) / 10,
-          accurateCount: simAccurateCount,
-          accuracyPct: Math.round((simAccurateCount / simFeedbackTotal) * 100),
+          total: Number(feedbackStats.total),
+          avgRating: feedbackStats.avgRating ? Number(Number(feedbackStats.avgRating).toFixed(1)) : 0,
+          accurateCount: Number(feedbackStats.accurate),
+          accuracyPct: feedbackStats.total > 0
+            ? Math.round((Number(feedbackStats.accurate) / Number(feedbackStats.total)) * 100)
+            : 0,
         },
-        aiMenus: Number(aiMenuTotal.count) + 389,
-        aiPhotoAnalysis: Number(aiPhotoTotal.count) + 1821,
-        aiShoppingLists: Number(aiShoppingTotal.count) + 284,
-        totalAIActions: Number(aiMenuTotal.count) + Number(aiPhotoTotal.count) + Number(aiShoppingTotal.count) + 2494,
+        aiMenus: Number(aiMenuTotal.count),
+        aiPhotoAnalysis: Number(aiPhotoTotal.count),
+        aiShoppingLists: Number(aiShoppingTotal.count),
+        totalAIActions: Number(aiMenuTotal.count) + Number(aiPhotoTotal.count) + Number(aiShoppingTotal.count),
       };
     }),
 
