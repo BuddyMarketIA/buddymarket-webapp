@@ -35,6 +35,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { RECIPE_PLACEHOLDER_IMAGE as RECIPE_PLACEHOLDER } from "@/lib/constants";
 import UsageAnalyticsPanel from "@/components/UsageAnalyticsPanel";
+import LLMLatencyChart from "@/components/LLMLatencyChart";
 import AdminLicenciasPanel from "@/components/AdminLicenciasPanel";
 
 const TABS = [
@@ -1599,6 +1600,9 @@ function ApiMonitorPanel() {
           </div>
         )}
       </div>
+
+      {/* LLM Latency History Chart */}
+      <LLMLatencyChart />
 
       <p className="text-center text-xs text-muted-foreground/70">
         Los monitores se comprueban automáticamente cada 5 minutos. Recibirás una notificación cuando falle un endpoint.

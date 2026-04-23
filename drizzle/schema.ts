@@ -1636,6 +1636,23 @@ export const apiHealthLogs = pgTable("api_health_logs", {
 export type ApiHealthLog = typeof apiHealthLogs.$inferSelect;
 export type InsertApiHealthLog = typeof apiHealthLogs.$inferInsert;
 
+// LLM Latency Log — stores every LLM call for historical latency charting
+export const llmLatencyLogs = pgTable("llm_latency_logs", {
+  id: serial("id").primaryKey(),
+  procedure: varchar("procedure", { length: 100 }).notNull().default("unknown"),
+  latencyMs: integer("latencyMs").notNull(),
+  success: boolean("success").notNull().default(true),
+  finishReason: varchar("finishReason", { length: 50 }),
+  totalTokens: integer("totalTokens"),
+  errorMessage: text("errorMessage"),
+  recordedAt: timestamp("recordedAt").defaultNow().notNull(),
+}, (t) => ({
+  lllRecordedIdx: index("lll_recorded_idx").on(t.recordedAt),
+  lllProcedureIdx: index("lll_procedure_idx").on(t.procedure),
+}));
+export type LLMLatencyLog = typeof llmLatencyLogs.$inferSelect;
+export type InsertLLMLatencyLog = typeof llmLatencyLogs.$inferInsert;
+
 // =============================================================================
 // HIPERDINO PRODUCTS
 // =============================================================================

@@ -5259,6 +5259,18 @@ Responde SOLO con JSON válido, sin texto adicional:
           const content = response.choices?.[0]?.message?.content ?? "";
           const finishReason = response.choices?.[0]?.finish_reason;
           const usage = response.usage;
+          // Persist to DB for historical chart
+          const drizzleDb = await db.getDb();
+          if (drizzleDb) {
+            const { llmLatencyLogs } = await import("../drizzle/schema.js");
+            await drizzleDb.insert(llmLatencyLogs).values({
+              procedure: "testLLMConnection",
+              latencyMs,
+              success: true,
+              finishReason: finishReason ?? null,
+              totalTokens: (usage as any)?.total_tokens ?? null,
+            });
+          }
           return {
             success: true,
             latencyMs,
@@ -5268,12 +5280,50 @@ Responde SOLO con JSON válido, sin texto adicional:
           };
         } catch (err: any) {
           const latencyMs = Date.now() - startTime;
+          // Persist error too
+          const drizzleDb = await db.getDb();
+          if (drizzleDb) {
+            const { llmLatencyLogs } = await import("../drizzle/schema.js");
+            await drizzleDb.insert(llmLatencyLogs).values({
+              procedure: "testLLMConnection",
+              latencyMs,
+              success: false,
+              errorMessage: err?.message ?? String(err),
+            });
+          }
           return {
             success: false,
             latencyMs,
             error: err?.message || String(err),
           };
         }
+      }),
+
+    // Get LLM latency history for the last N days (for the line chart)
+    getLLMLatencyHistory: protectedProcedure
+      .input(z.object({ days: z.number().int().min(1).max(30).default(7) }))
+      .query(async ({ ctx, input }) => {
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return [];
+        const { llmLatencyLogs } = await import("../drizzle/schema.js");
+        const { gte, desc } = await import("drizzle-orm");
+        const since = new Date(Date.now() - input.days * 24 * 60 * 60 * 1000);
+        const rows = await drizzleDb
+          .select({
+            id: llmLatencyLogs.id,
+            procedure: llmLatencyLogs.procedure,
+            latencyMs: llmLatencyLogs.latencyMs,
+            success: llmLatencyLogs.success,
+            finishReason: llmLatencyLogs.finishReason,
+            totalTokens: llmLatencyLogs.totalTokens,
+            recordedAt: llmLatencyLogs.recordedAt,
+          })
+          .from(llmLatencyLogs)
+          .where(gte(llmLatencyLogs.recordedAt, since))
+          .orderBy(desc(llmLatencyLogs.recordedAt))
+          .limit(500);
+        return rows;
       }),
 
     // Get API health summary (all monitors status at a glance)
@@ -8748,6 +8798,7 @@ Devuelve SOLO JSON válido con esta estructura exacta (${input.daysCount} elemen
   ]
 }`;
 
+        const llmCallStart = Date.now();
         try {
           // Add timeout to prevent hanging requests in production
           const llmPromise = invokeLLM({
@@ -8794,6 +8845,21 @@ Devuelve SOLO JSON válido con esta estructura exacta (${input.daysCount} elemen
             });
             return { menu: null, error: "El menú generado contenía ingredientes que no puedes consumir. Por favor, inténtalo de nuevo. Si el problema persiste, revisa tu perfil de alergias.", allergyViolations };
           }
+          // Persist latency to DB for historical chart
+          const llmLatencyMs = Date.now() - llmCallStart;
+          try {
+            const drizzleDb2 = await db.getDb();
+            if (drizzleDb2) {
+              const { llmLatencyLogs } = await import("../drizzle/schema.js");
+              await drizzleDb2.insert(llmLatencyLogs).values({
+                procedure: "generateMenuWithQuestionnaire",
+                latencyMs: llmLatencyMs,
+                success: true,
+                finishReason: finishReason ?? null,
+                totalTokens: (response as any).usage?.total_tokens ?? null,
+              });
+            }
+          } catch (_) { /* non-critical, ignore */ }
           return { menu, userId: ctx.user.id };
         } catch (err: any) {
           // Log full error details for production debugging
@@ -8812,6 +8878,19 @@ Devuelve SOLO JSON válido con esta estructura exacta (${input.daysCount} elemen
             stack: errStack,
           });
           if ((global as any).__llmErrorLog.length > 200) (global as any).__llmErrorLog.shift();
+          // Persist error latency to DB
+          try {
+            const drizzleDb2 = await db.getDb();
+            if (drizzleDb2) {
+              const { llmLatencyLogs } = await import("../drizzle/schema.js");
+              await drizzleDb2.insert(llmLatencyLogs).values({
+                procedure: "generateMenuWithQuestionnaire",
+                latencyMs: Date.now() - llmCallStart,
+                success: false,
+                errorMessage: errMsg.slice(0, 500),
+              });
+            }
+          } catch (_) { /* non-critical, ignore */ }
           // Distinguish between different error types for better UX
           if (errMsg.includes('JSON') || errMsg.includes('parse') || errMsg.includes('Unexpected token')) {
             return { menu: null, error: "El menú generado no pudo procesarse correctamente. Inténtalo de nuevo." };
