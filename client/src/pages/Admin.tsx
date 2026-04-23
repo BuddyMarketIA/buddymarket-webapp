@@ -1,6 +1,6 @@
 import { hasRole } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useMemo } from "react";
 import { toast } from "@/components/sonner-a11y-shim";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Link } from "wouter";
@@ -275,7 +275,33 @@ export default function Admin() {
   const [adminNote, setAdminNote] = useState<Record<number, string>>({});
   const [roleReqFilter, setRoleReqFilter] = useState<"pending" | "approved" | "rejected">("pending");
   const [roleReqNote, setRoleReqNote] = useState<Record<number, string>>({});
-  const { data: users } = trpc.admin.users.useQuery({});
+  // Users tab state
+  const [userSearch, setUserSearch] = useState("");
+  const [userSearchDebounced, setUserSearchDebounced] = useState("");
+  const [userPlanFilter, setUserPlanFilter] = useState<"all" | "free" | "pro" | "pro_max">("all");
+  const [userRoleFilter, setUserRoleFilter] = useState<"all" | "admin" | "buddyexpert" | "user">("all");
+  const [userOffset, setUserOffset] = useState(0);
+  const USER_PAGE_SIZE = 30;
+  // Debounce search
+  useEffect(() => {
+    const t = setTimeout(() => { setUserSearchDebounced(userSearch); setUserOffset(0); }, 350);
+    return () => clearTimeout(t);
+  }, [userSearch]);
+  const { data: usersRaw } = trpc.admin.users.useQuery(
+    { limit: USER_PAGE_SIZE, offset: userOffset, search: userSearchDebounced || undefined },
+    { enabled: activeTab === "users" }
+  );
+  // Client-side plan/role filter on top of server search
+  const users = useMemo(() => {
+    if (!usersRaw) return [];
+    return usersRaw.filter((u: any) => {
+      const plan = u.subscription?.status === "active" ? (u.subscription?.plan === "pro_max" ? "pro_max" : "pro") : "free";
+      if (userPlanFilter !== "all" && plan !== userPlanFilter) return false;
+      const role = u.role ?? "user";
+      if (userRoleFilter !== "all" && role !== userRoleFilter) return false;
+      return true;
+    });
+  }, [usersRaw, userPlanFilter, userRoleFilter]);
   const { data: applications, isLoading: appsLoading } = trpc.buddyApplications.listPending.useQuery(
     { status: appFilter },
     { enabled: activeTab === "applications" }
@@ -880,13 +906,46 @@ export default function Admin() {
       )}
       {activeTab === "users" && (
         <div className="vively-card space-y-3">
-          <h3 className="text-sm font-bold text-foreground/80">
-            Usuarios registrados
-            <span className="ml-2 rounded-full bg-muted/50 px-2 py-0.5 text-xs font-semibold text-muted-foreground">
-              {users?.length ?? 0}
-            </span>
-          </h3>
-          <div className="max-h-[70vh] overflow-y-auto space-y-3">
+          <div className="flex items-center justify-between gap-2 flex-wrap">
+            <h3 className="text-sm font-bold text-foreground/80">
+              Usuarios registrados
+              <span className="ml-2 rounded-full bg-muted/50 px-2 py-0.5 text-xs font-semibold text-muted-foreground">
+                {usersRaw?.length ?? 0} mostrados
+              </span>
+            </h3>
+            <div className="flex gap-1.5 flex-wrap">
+              {(["all","free","pro","pro_max"] as const).map(p => (
+                <button key={p} onClick={() => setUserPlanFilter(p)}
+                  className={`px-2.5 py-1 rounded-xl text-xs font-semibold transition-colors ${
+                    userPlanFilter === p ? "bg-gray-900 text-white" : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                  }`}>
+                  {p === "all" ? "Todos" : p === "free" ? "Free" : p === "pro" ? "Pro" : "Pro Max"}
+                </button>
+              ))}
+              {(["all","admin","buddyexpert","user"] as const).map(r => (
+                <button key={r} onClick={() => setUserRoleFilter(r)}
+                  className={`px-2.5 py-1 rounded-xl text-xs font-semibold transition-colors ${
+                    userRoleFilter === r ? "bg-orange-500 text-white" : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                  }`}>
+                  {r === "all" ? "Todos roles" : r === "admin" ? "Admin" : r === "buddyexpert" ? "Expert" : "Usuario"}
+                </button>
+              ))}
+            </div>
+          </div>
+          {/* Search */}
+          <div className="relative">
+            <MagnifyingGlassIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground/60" />
+            <input
+              value={userSearch}
+              onChange={e => setUserSearch(e.target.value)}
+              placeholder="Buscar por nombre o email..."
+              className="vively-input pl-9 w-full text-sm"
+            />
+          </div>
+          <div className="max-h-[65vh] overflow-y-auto space-y-3">
+            {users.length === 0 && (
+              <p className="text-center text-xs text-muted-foreground/70 py-6">No se encontraron usuarios con estos filtros.</p>
+            )}
             {(users ?? []).map((u: any) => {
               const planLabel = u.subscription?.status === "active"
                 ? (u.subscription?.plan === "pro_max" ? "Pro Max" : "Pro")
@@ -904,6 +963,7 @@ export default function Admin() {
                     <div className="flex-1 min-w-0">
                       <p className="truncate text-sm font-semibold text-foreground">{u.name || "Sin nombre"}</p>
                       <p className="truncate text-xs text-muted-foreground/70">{u.email || u.openId}</p>
+                      <p className="truncate text-xs text-muted-foreground/50">ID: {u.id} · {u.role} · {u.loginMethod ?? "?"}</p>
                     </div>
                     <span className={`shrink-0 rounded-full px-2.5 py-0.5 text-xs font-bold ${planColor}`}>
                       {planLabel}
@@ -1013,13 +1073,29 @@ export default function Admin() {
               );
             })}
           </div>
+          {/* Pagination */}
+          {(usersRaw?.length === USER_PAGE_SIZE || userOffset > 0) && (
+            <div className="flex items-center justify-between pt-2 border-t border-border/50">
+              <button
+                onClick={() => setUserOffset(Math.max(0, userOffset - USER_PAGE_SIZE))}
+                disabled={userOffset === 0}
+                className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-muted/50 text-muted-foreground hover:bg-muted disabled:opacity-40"
+              >← Anterior</button>
+              <span className="text-xs text-muted-foreground/70">Página {Math.floor(userOffset / USER_PAGE_SIZE) + 1}</span>
+              <button
+                onClick={() => setUserOffset(userOffset + USER_PAGE_SIZE)}
+                disabled={(usersRaw?.length ?? 0) < USER_PAGE_SIZE}
+                className="px-3 py-1.5 rounded-xl text-xs font-semibold bg-muted/50 text-muted-foreground hover:bg-muted disabled:opacity-40"
+              >Siguiente →</button>
+            </div>
+          )}
         </div>
       )}
     </div>
   );
 }
 
-// ── Terms Acceptance Panel ─────────────────────────────────────────────────
+// ── Terms Acceptance Panel──────────────────────────────────────────
 function TermsAcceptancePanel() {
   const { data: users, isLoading } = trpc.admin.users.useQuery({});
 
@@ -1321,13 +1397,26 @@ function ApiMonitorPanel() {
             <SignalIcon className="h-4 w-4 text-[#F97316]" />
             Monitores de API
           </h3>
-          <button
-            onClick={() => refetchMonitors()}
-            className="flex items-center gap-1 rounded-lg bg-muted/50 px-2.5 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-muted"
-          >
-            <ArrowPathIcon className="h-3.5 w-3.5" />
-            Actualizar
-          </button>
+          <div className="flex gap-1.5">
+            <button
+              onClick={() => {
+                if (!monitors) return;
+                monitors.forEach((m) => recheckMutation.mutate({ monitorId: m.id }));
+              }}
+              disabled={recheckMutation.isPending || !monitors?.length}
+              className="flex items-center gap-1 rounded-lg bg-orange-100 px-2.5 py-1.5 text-xs font-semibold text-orange-700 hover:bg-orange-200 disabled:opacity-50"
+            >
+              <ArrowPathIcon className={`h-3.5 w-3.5 ${recheckMutation.isPending ? "animate-spin" : ""}`} />
+              Recheck All
+            </button>
+            <button
+              onClick={() => refetchMonitors()}
+              className="flex items-center gap-1 rounded-lg bg-muted/50 px-2.5 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-muted"
+            >
+              <ArrowPathIcon className="h-3.5 w-3.5" />
+              Actualizar
+            </button>
+          </div>
         </div>
 
         {isLoading && (

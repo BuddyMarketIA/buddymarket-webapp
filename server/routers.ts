@@ -4713,10 +4713,10 @@ Responde SOLO con JSON válido, sin texto adicional:
   // ---------------------------------------------------------------------------
   admin: router({
     users: protectedProcedure
-      .input(z.object({ limit: z.number().int().min(1).max(200).optional(), offset: z.number().int().min(0).optional() }))
+      .input(z.object({ limit: z.number().int().min(1).max(200).optional(), offset: z.number().int().min(0).optional(), search: z.string().optional() }))
       .query(async ({ ctx, input }) => {
         if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
-        const userList = await db.getAllUsers(input.limit, input.offset);
+        const userList = await db.getAllUsers(input.limit, input.offset, input.search);
         // Enrich with subscription data for each user
         const enriched = await Promise.all(
           userList.map(async (u) => {

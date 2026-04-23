@@ -200,11 +200,14 @@ export async function getUserById(id: number) {
   return result[0];
 }
 
-export async function getAllUsers(limit = 50, offset = 0) {
+export async function getAllUsers(limit = 50, offset = 0, search?: string) {
   const db = await getDb();
   if (!db) return [];
-  const { isNull } = await import("drizzle-orm");
-  return db.select().from(users).where(isNull(users.deletedAt)).limit(limit).offset(offset).orderBy(desc(users.createdAt));
+  const baseCondition = sql`${users.deletedAt} IS NULL`;
+  const condition = search
+    ? and(baseCondition, or(like(users.name, `%${search}%`), like(users.email, `%${search}%`)))
+    : baseCondition;
+  return db.select().from(users).where(condition).limit(limit).offset(offset).orderBy(desc(users.createdAt));
 }
 
 export async function updateUser(id: number, data: Partial<InsertUser>) {

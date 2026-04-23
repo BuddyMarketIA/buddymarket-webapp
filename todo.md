@@ -2981,3 +2981,16 @@
 - [x] App.tsx: reemplazar todos los lazy() por lazyWithRetry() en los 70+ imports de páginas
 - [x] Build de producción exitoso (EXIT:0) con los cambios aplicados
 - [x] Todos los tests pasan: 694/694 (31 archivos de test)
+
+## Sprint: Panel Admin — Mejoras de funcionalidad completa
+
+- [x] Admin usuarios: añadir buscador por nombre/email en tiempo real
+- [x] Admin usuarios: añadir filtro por plan (Free/Pro/Pro Max) y por rol
+- [x] Admin usuarios: añadir paginación o carga incremental
+- [x] Admin usuarios: añadir campo search en procedimiento admin.users del servidor
+- [x] Admin usuarios: mostrar email del usuario en la tarjeta
+- [x] Admin recetas: mostrar número total de recetas en el encabezado
+- [ ] Admin analíticas: verificar que getDailyActivity y getTopUsers devuelven datos reales
+- [x] Admin soporte: verificar que adminUpdateTicket funciona correctamente
+- [x] Admin monitor APIs: añadir botón "Recheck all" para verificar todos los monitores a la vez
+- [ ] Admin monitor APIs: mostrar historial de fallos recientes por monitor
