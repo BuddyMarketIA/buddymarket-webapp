@@ -147,6 +147,20 @@
   </head>
 
   <body>
+    <!-- iOS Safari error diagnostic: captures JS errors before React initializes -->
+    <script>
+      window.__bmErrors = [];
+      window.onerror = function(msg, src, line, col, err) {
+        window.__bmErrors.push({ msg: msg, src: src, line: line, col: col, stack: err && err.stack });
+        // Store in sessionStorage for later retrieval
+        try { sessionStorage.setItem('bm_last_error', JSON.stringify({ msg: String(msg).slice(0, 500), src: String(src).slice(0, 200), line: line, col: col })); } catch(e) {}
+      };
+      window.addEventListener('unhandledrejection', function(e) {
+        var msg = e.reason ? String(e.reason.message || e.reason).slice(0, 500) : 'unhandledrejection';
+        window.__bmErrors.push({ msg: msg, type: 'unhandledrejection' });
+        try { sessionStorage.setItem('bm_last_rejection', msg); } catch(e) {}
+      });
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script

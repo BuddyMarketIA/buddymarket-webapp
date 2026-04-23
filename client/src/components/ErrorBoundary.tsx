@@ -37,6 +37,11 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   static getDerivedStateFromError(error: Error): Partial<State> {
+    // Log the error so it appears in Safari Web Inspector / remote debug
+    try {
+      console.error("[ErrorBoundary] Caught error:", error?.name, error?.message);
+      console.error("[ErrorBoundary] Stack:", error?.stack);
+    } catch (_) {}
     return { hasError: true, error };
   }
 
@@ -84,13 +89,36 @@ class ErrorBoundary extends Component<Props, State> {
               {isChunkError ? "Error de conexión" : "Ha ocurrido un error inesperado"}
             </h2>
 
-            <p className="text-muted-foreground mb-6 text-sm leading-relaxed">
+            <p className="text-muted-foreground mb-4 text-sm leading-relaxed">
               {isChunkError
                 ? isAutoRetrying
                   ? "La aplicación está cargando... Reintentando automáticamente."
                   : "No se pudo cargar la página. Esto puede ocurrir durante el inicio del servidor. Por favor, recarga la página."
                 : "Algo salió mal. Por favor, recarga la página para continuar."}
             </p>
+
+            {/* Error details — always visible to help diagnose iOS issues */}
+            {!isChunkError && this.state.error && (
+              <div className="w-full mb-4 p-3 rounded-lg text-left" style={{background:'#fef2f2',border:'1px solid #fecaca'}}>
+                <p className="text-xs font-mono break-all leading-relaxed" style={{color:'#b91c1c'}}>
+                  {`${this.state.error.name}: ${this.state.error.message}`.slice(0, 300)}
+                </p>
+                {(() => {
+                  try {
+                    const prev = sessionStorage.getItem('bm_last_error');
+                    const prevR = sessionStorage.getItem('bm_last_rejection');
+                    if (prev || prevR) {
+                      return (
+                        <p className="text-xs font-mono break-all leading-relaxed mt-1" style={{color:'#7f1d1d'}}>
+                          {prev ? `onerror: ${prev}` : ''}{prevR ? ` | rejection: ${prevR}` : ''}
+                        </p>
+                      );
+                    }
+                  } catch (_) {}
+                  return null;
+                })()}
+              </div>
+            )}
 
             {isAutoRetrying ? (
               <div className="flex items-center gap-2 text-sm text-muted-foreground">
@@ -111,7 +139,7 @@ class ErrorBoundary extends Component<Props, State> {
               </button>
             )}
 
-            {/* Show technical details only in dev mode */}
+            {/* Show full stack trace in dev mode */}
             {import.meta.env.DEV && !isChunkError && (
               <details className="mt-6 w-full text-left">
                 <summary className="text-xs text-muted-foreground cursor-pointer mb-2">

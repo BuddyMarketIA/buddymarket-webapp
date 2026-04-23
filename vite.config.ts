@@ -187,6 +187,12 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
+    // Target iOS Safari 13+ (iOS 13 = Sep 2019). This ensures Vite/esbuild
+    // transpiles private class fields (#field), optional chaining, nullish
+    // coalescing, and other ES2020+ syntax that older iOS Safari doesn't support.
+    // Without this, the default "esnext" target produces code that crashes on
+    // iOS < 15 with a SyntaxError before any JS executes.
+    target: ["es2019", "safari13"],
   },
   server: {
     host: true,

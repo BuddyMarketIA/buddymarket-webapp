@@ -42,6 +42,19 @@ export interface OfflineSyncState {
   clearApiCache: () => void;
 }
 
+// ─── UUID polyfill (crypto.randomUUID not available on iOS < 15.4) ──────────────
+function generateId(): string {
+  if (typeof crypto !== "undefined" && typeof crypto.randomUUID === "function") {
+    return crypto.randomUUID();
+  }
+  // Fallback: RFC 4122 v4 UUID using Math.random
+  return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
+    const r = (Math.random() * 16) | 0;
+    const v = c === "x" ? r : (r & 0x3) | 0x8;
+    return v.toString(16);
+  });
+}
+
 // ─── IndexedDB helpers ────────────────────────────────────────────────────────
 
 const DB_NAME = "buddymarket-offline";
@@ -115,7 +128,7 @@ export function useOfflineSync(): OfflineSyncState {
   // Enqueue an operation for later sync
   const enqueue = useCallback(async (type: OfflineOpType, payload: unknown): Promise<string> => {
     const op: OfflineOp = {
-      id:        crypto.randomUUID(),
+      id:        generateId(),
       type,
       payload,
       createdAt: Date.now(),
