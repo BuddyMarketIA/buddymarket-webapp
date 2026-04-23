@@ -8665,12 +8665,26 @@ Devuelve SOLO JSON válido con esta estructura exacta (${input.daysCount} elemen
 }`;
 
         try {
-          const response = await invokeLLM({
+          // Add timeout to prevent hanging requests in production
+          const llmPromise = invokeLLM({
             messages: [{ role: "user", content: prompt }],
             response_format: { type: "json_object" },
           });
+          const timeoutPromise = new Promise<never>((_, reject) =>
+            setTimeout(() => reject(new Error('LLM request timeout after 120s')), 120_000)
+          );
+          const response = await Promise.race([llmPromise, timeoutPromise]);
           const rawContent = response.choices?.[0]?.message?.content ?? "{}";
           const content = typeof rawContent === "string" ? rawContent : "{}";
+          // Log finish reason to detect truncated responses
+          const finishReason = response.choices?.[0]?.finish_reason;
+          if (finishReason && finishReason !== 'stop') {
+            console.warn(`[BuddyIA] generateMenuWithQuestionnaire: finish_reason=${finishReason} for user ${ctx.user.id}`);
+          }
+          if (!content || content === '{}') {
+            console.error(`[BuddyIA] Empty response from LLM for user ${ctx.user.id}, finish_reason=${finishReason}`);
+            return { menu: null, error: "El servicio de IA no devolvió ningún menú. Inténtalo de nuevo." };
+          }
           const menu = JSON.parse(content);
           // CRITICAL SAFETY: post-generation allergy violation check (rec. #1, #3, #4)
           // Capture restrictions snapshot at generation time (rec. #2)
@@ -8698,7 +8712,24 @@ Devuelve SOLO JSON válido con esta estructura exacta (${input.daysCount} elemen
           }
           return { menu, userId: ctx.user.id };
         } catch (err: any) {
-          console.error("[BuddyIA] generateMenuWithQuestionnaire error:", err?.message || err);
+          // Log full error details for production debugging
+          const errMsg = err?.message || String(err);
+          const errStatus = err?.status || err?.statusCode || 'unknown';
+          const errStack = err?.stack?.split('\n').slice(0, 3).join(' | ') || '';
+          console.error(`[BuddyIA] generateMenuWithQuestionnaire error: status=${errStatus} msg=${errMsg} stack=${errStack}`);
+          // Distinguish between different error types for better UX
+          if (errMsg.includes('JSON') || errMsg.includes('parse') || errMsg.includes('Unexpected token')) {
+            return { menu: null, error: "El menú generado no pudo procesarse correctamente. Inténtalo de nuevo." };
+          }
+          if (errMsg.includes('429') || errMsg.includes('rate limit') || errMsg.includes('quota')) {
+            return { menu: null, error: "El servicio de IA está temporalmente saturado. Espera unos segundos e inténtalo de nuevo." };
+          }
+          if (errMsg.includes('timeout') || errMsg.includes('ETIMEDOUT') || errMsg.includes('ECONNRESET')) {
+            return { menu: null, error: "La generación tardó demasiado. Inténtalo de nuevo con un menú de menos días." };
+          }
+          if (errMsg.includes('UNAUTHORIZED') || errMsg.includes('401') || errMsg.includes('403')) {
+            return { menu: null, error: "Error de autenticación con el servicio de IA. Contacta con soporte." };
+          }
           return { menu: null, error: "Error al generar el menú. El servicio de IA no está disponible en este momento. Inténtalo de nuevo en unos segundos." };
         }
       }),
