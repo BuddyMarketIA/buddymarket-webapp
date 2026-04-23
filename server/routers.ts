@@ -5216,6 +5216,90 @@ Responde SOLO con JSON válido, sin texto adicional:
         await drizzleDb.update(apiMonitors).set({ isActive: input.isActive, updatedAt: new Date() }).where(eq(apiMonitors.id, input.monitorId));
         return { success: true };
       }),
+
+    // Reset error count and mark a monitor as OK (manual override after fixing the issue)
+    resetMonitorErrors: protectedProcedure
+      .input(z.object({ monitorId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { apiMonitors } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+        await drizzleDb.update(apiMonitors).set({
+          failCount: 0,
+          lastStatus: "ok",
+          lastErrorMessage: null,
+          updatedAt: new Date(),
+        }).where(eq(apiMonitors.id, input.monitorId));
+        return { success: true };
+      }),
+
+    // Get LLM error logs from server console (last N errors)
+    getLLMErrorLogs: protectedProcedure
+      .input(z.object({ limit: z.number().int().min(1).max(100).default(20) }))
+      .query(async ({ ctx, input }) => {
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
+        // Read from the in-memory error log ring buffer
+        const logs = (global as any).__llmErrorLog ?? [];
+        return logs.slice(-input.limit).reverse();
+      }),
+
+    // Test LLM connection directly from admin panel
+    testLLMConnection: protectedProcedure
+      .mutation(async ({ ctx }) => {
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
+        const startTime = Date.now();
+        try {
+          const response = await invokeLLM({
+            messages: [{ role: "user", content: 'Respond with exactly: {"status":"ok"}' }],
+            response_format: { type: "json_object" },
+          });
+          const latencyMs = Date.now() - startTime;
+          const content = response.choices?.[0]?.message?.content ?? "";
+          const finishReason = response.choices?.[0]?.finish_reason;
+          const usage = response.usage;
+          return {
+            success: true,
+            latencyMs,
+            finishReason,
+            content: typeof content === "string" ? content.slice(0, 200) : "",
+            usage,
+          };
+        } catch (err: any) {
+          const latencyMs = Date.now() - startTime;
+          return {
+            success: false,
+            latencyMs,
+            error: err?.message || String(err),
+          };
+        }
+      }),
+
+    // Get API health summary (all monitors status at a glance)
+    getApiHealthSummary: protectedProcedure
+      .query(async ({ ctx }) => {
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) return { ok: 0, down: 0, degraded: 0, unknown: 0, total: 0, lastCheckedAt: null };
+        const { apiMonitors } = await import("../drizzle/schema");
+        const monitors = await drizzleDb.select({
+          lastStatus: apiMonitors.lastStatus,
+          lastCheckedAt: apiMonitors.lastCheckedAt,
+          isActive: apiMonitors.isActive,
+        }).from(apiMonitors);
+        const active = monitors.filter((m) => m.isActive);
+        const ok = active.filter((m) => m.lastStatus === "ok").length;
+        const down = active.filter((m) => m.lastStatus === "down").length;
+        const degraded = active.filter((m) => m.lastStatus === "degraded").length;
+        const unknown = active.filter((m) => !m.lastStatus).length;
+        const lastCheckedAt = active.reduce((latest, m) => {
+          if (!m.lastCheckedAt) return latest;
+          return !latest || m.lastCheckedAt > latest ? m.lastCheckedAt : latest;
+        }, null as Date | null);
+        return { ok, down, degraded, unknown, total: active.length, lastCheckedAt };
+      }),
+
     tagKidFriendlyRecipes: protectedProcedure
       .input(z.object({ batchSize: z.number().int().min(1).max(50).default(20) }))
       .mutation(async ({ ctx, input }) => {
@@ -8717,6 +8801,17 @@ Devuelve SOLO JSON válido con esta estructura exacta (${input.daysCount} elemen
           const errStatus = err?.status || err?.statusCode || 'unknown';
           const errStack = err?.stack?.split('\n').slice(0, 3).join(' | ') || '';
           console.error(`[BuddyIA] generateMenuWithQuestionnaire error: status=${errStatus} msg=${errMsg} stack=${errStack}`);
+          // Push to in-memory ring buffer for admin panel visibility
+          if (!(global as any).__llmErrorLog) (global as any).__llmErrorLog = [];
+          (global as any).__llmErrorLog.push({
+            ts: new Date().toISOString(),
+            procedure: 'generateMenuWithQuestionnaire',
+            userId: ctx.user.id,
+            status: errStatus,
+            message: errMsg,
+            stack: errStack,
+          });
+          if ((global as any).__llmErrorLog.length > 200) (global as any).__llmErrorLog.shift();
           // Distinguish between different error types for better UX
           if (errMsg.includes('JSON') || errMsg.includes('parse') || errMsg.includes('Unexpected token')) {
             return { menu: null, error: "El menú generado no pudo procesarse correctamente. Inténtalo de nuevo." };

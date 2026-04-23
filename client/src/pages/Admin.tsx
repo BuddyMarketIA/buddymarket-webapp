@@ -31,6 +31,7 @@ import {
   EnvelopeIcon,
   EyeIcon,
   ChatBubbleLeftRightIcon,
+  ExclamationTriangleIcon,
 } from "@heroicons/react/24/outline";
 import { RECIPE_PLACEHOLDER_IMAGE as RECIPE_PLACEHOLDER } from "@/lib/constants";
 import UsageAnalyticsPanel from "@/components/UsageAnalyticsPanel";
@@ -1347,6 +1348,22 @@ function ApiMonitorPanel() {
     onError: (err) => toast.error(err.message),
   });
 
+  const resetErrorsMutation = trpc.admin.resetMonitorErrors.useMutation({
+    onSuccess: () => { toast.success("Errores reseteados — monitor marcado como OK"); refetchMonitors(); },
+    onError: (err) => toast.error(err.message),
+  });
+
+  const testLLMMutation = trpc.admin.testLLMConnection.useMutation({
+    onSuccess: (data: any) => {
+      if (data.success) toast.success(`LLM OK — ${data.latencyMs}ms · finish: ${data.finishReason}`);
+      else toast.error(`LLM ERROR: ${data.error}`);
+    },
+    onError: (err: any) => toast.error(err.message),
+  });
+
+  const { data: llmLogs, refetch: refetchLLMLogs } = trpc.admin.getLLMErrorLogs.useQuery({ limit: 20 });
+  const [showLLMLogs, setShowLLMLogs] = useState(false);
+
   const statusColor = (status: string | null) => {
     if (status === "ok") return "bg-green-100 text-green-700";
     if (status === "down") return "bg-red-100 text-red-700";
@@ -1482,6 +1499,17 @@ function ApiMonitorPanel() {
                 >
                   {monitor.isActive ? <CheckIcon className="h-3.5 w-3.5" /> : <XMarkIcon className="h-3.5 w-3.5" />}
                 </button>
+                {(monitor.lastStatus === "down" || monitor.lastStatus === "degraded") && (
+                  <button
+                    onClick={() => resetErrorsMutation.mutate({ monitorId: monitor.id })}
+                    disabled={resetErrorsMutation.isPending}
+                    title="Reactivar: marcar como OK y resetear errores"
+                    className="flex h-7 items-center gap-1 rounded-lg bg-blue-100 px-2 text-xs font-semibold text-blue-700 hover:bg-blue-200 disabled:opacity-50"
+                  >
+                    <ArrowPathIcon className="h-3 w-3" />
+                    Reactivar
+                  </button>
+                )}
               </div>
             </div>
 
@@ -1512,6 +1540,64 @@ function ApiMonitorPanel() {
             )}
           </div>
         ))}
+      </div>
+
+      {/* LLM Health Section */}
+      <div className="vively-card space-y-3">
+        <div className="flex items-center justify-between">
+          <h3 className="text-sm font-bold text-foreground/80 flex items-center gap-1.5">
+            <span className="text-base">🤖</span>
+            Servicio de IA (LLM)
+          </h3>
+          <div className="flex gap-1.5">
+            <button
+              onClick={() => testLLMMutation.mutate()}
+              disabled={testLLMMutation.isPending}
+              className="flex items-center gap-1 rounded-lg bg-violet-100 px-2.5 py-1.5 text-xs font-semibold text-violet-700 hover:bg-violet-200 disabled:opacity-50"
+            >
+              <ArrowPathIcon className={`h-3.5 w-3.5 ${testLLMMutation.isPending ? "animate-spin" : ""}`} />
+              {testLLMMutation.isPending ? "Probando..." : "Test conexión"}
+            </button>
+            <button
+              onClick={() => { setShowLLMLogs(!showLLMLogs); refetchLLMLogs(); }}
+              className={`flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold ${showLLMLogs ? "bg-red-100 text-red-700 hover:bg-red-200" : "bg-muted/50 text-muted-foreground hover:bg-muted"}`}
+            >
+              <ExclamationTriangleIcon className="h-3.5 w-3.5" />
+              {llmLogs && llmLogs.length > 0 ? `${llmLogs.length} errores` : "Sin errores"}
+            </button>
+          </div>
+        </div>
+
+        {testLLMMutation.data && (
+          <div className={`rounded-lg px-3 py-2 text-xs font-medium ${testLLMMutation.data.success ? "bg-green-50 text-green-700" : "bg-red-50 text-red-700"}`}>
+            {testLLMMutation.data.success
+              ? `✓ Conexión OK · ${testLLMMutation.data.latencyMs}ms · finish_reason: ${testLLMMutation.data.finishReason} · tokens: ${(testLLMMutation.data.usage as any)?.total_tokens ?? "N/A"}`
+              : `✗ Error: ${(testLLMMutation.data as any).error}`}
+          </div>
+        )}
+
+        {showLLMLogs && (
+          <div className="space-y-1">
+            <p className="text-xs font-semibold text-muted-foreground">Últimos errores del generador de menús</p>
+            {!llmLogs || llmLogs.length === 0 ? (
+              <p className="text-xs text-green-600 font-medium">Sin errores registrados</p>
+            ) : (
+              <div className="max-h-60 overflow-y-auto space-y-1.5">
+                {llmLogs.map((log: any, i: number) => (
+                  <div key={i} className="rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-xs">
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="font-semibold text-red-700">{log.procedure}</span>
+                      <span className="text-muted-foreground">{new Date(log.ts).toLocaleString("es-ES")}</span>
+                    </div>
+                    <p className="text-red-600 font-medium">Status: {log.status} · User: {log.userId}</p>
+                    <p className="text-red-500 mt-0.5 line-clamp-2">{log.message}</p>
+                    {log.stack && <p className="text-muted-foreground/70 mt-0.5 text-[10px] line-clamp-1">{log.stack}</p>}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       <p className="text-center text-xs text-muted-foreground/70">
