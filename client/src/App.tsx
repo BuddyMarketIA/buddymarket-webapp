@@ -180,11 +180,10 @@ function ProtectedPage({ children }: { children: React.ReactNode }) {
 }
 
 function Router() {
-  const isAppDomain = typeof window !== 'undefined' && window.location.hostname.includes('buddymarketapp.com') || window.location.hostname.includes('buddymarket.io');
   return (
     <Switch>
-      {/* Public landing — on buddymarket.io show LoginPage */}
-      <Route path="/">{() => isAppDomain ? <LoginPage /> : <LandingPage />}</Route>
+      {/* Public landing page — always accessible without authentication */}
+      <Route path="/" component={LandingPage} />
       <Route path="/landing" component={LandingPage} />
       <Route path="/login" component={LoginPage} />
       <Route path="/reset-password" component={ResetPasswordPage} />
