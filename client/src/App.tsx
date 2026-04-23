@@ -146,7 +146,7 @@ const MonthlyReports = lazyWithRetry(() => import("./pages/MonthlyReports"));
 // ─── Page loading fallback ────────────────────────────────────────────────────
 function PageLoader() {
   return (
-    <div className="min-h-screen flex items-center justify-center bg-[#FAF8F5]">
+    <div className="min-h-screen flex items-center justify-center bg-background">
       <div className="flex flex-col items-center gap-3">
         <div className="w-10 h-10 border-4 border-[#F97316] border-t-transparent rounded-full animate-spin" />
         <p className="text-sm text-muted-foreground">Cargando...</p>
@@ -251,8 +251,8 @@ function Router() {
       <Route path="/app/active-menu">{() => <ProtectedRoute component={ActiveMenu} />}</Route>
       <Route path="/app/specialized-menus">{() => <ProtectedPage><SpecializedMenus /></ProtectedPage>}</Route>
       <Route path="/app/favorites">{() => <ProtectedRoute component={Favorites} />}</Route>
-      <Route path="/app/buddy-experts/:id">{() => <BuddyProfile />}</Route>
-      <Route path="/app/buddy-makers/:id">{() => <BuddyProfile />}</Route>
+      <Route path="/app/buddy-experts/:id">{() => <ProtectedPage><BuddyProfile /></ProtectedPage>}</Route>
+      <Route path="/app/buddy-makers/:id">{() => <ProtectedPage><BuddyProfile /></ProtectedPage>}</Route>
       <Route path="/app/following">{() => <ProtectedRoute component={Following} />}</Route>
       <Route path="/app/buddy-expert-dashboard">{() => <ProtectedPage><BuddyExpertDashboard /></ProtectedPage>}</Route>
       <Route path="/app/buddy-maker-dashboard">{() => <ProtectedPage><BuddyMakerDashboard /></ProtectedPage>}</Route>

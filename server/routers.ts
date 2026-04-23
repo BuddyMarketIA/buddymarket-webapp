@@ -1272,7 +1272,7 @@ Devuelve SOLO JSON válido con esta estructura:
       }))
       .mutation(async ({ ctx, input }) => {
         const drizzleDb = await db.getDb();
-        if (!drizzleDb) throw new Error("DB not available");
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB not available" });
         const { userProfiles } = await import("../drizzle/schema");
         const { eq } = await import("drizzle-orm");
         const existing = await drizzleDb.select({ id: userProfiles.id }).from(userProfiles).where(eq(userProfiles.userId, ctx.user.id)).limit(1);
@@ -1651,7 +1651,7 @@ Devuelve SOLO JSON válido con esta estructura:
           const { generateImage } = await import("./_core/imageGeneration");
           const prompt = `Professional food photography of "${recipe.name}". ${recipe.description ? recipe.description + '.' : ''} Plated beautifully on a clean white plate, natural lighting, top-down or 45-degree angle shot, vibrant colors, appetizing, restaurant quality, no text, no watermarks.`;
           const { url: generatedUrl } = await generateImage({ prompt });
-          if (!generatedUrl) throw new Error('No se obtuvo URL de imagen generada');
+          if (!generatedUrl) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "No se obtuvo URL de imagen generada" });
           const response = await fetch(generatedUrl as string);
           const arrayBuffer = await response.arrayBuffer();
           const imageBuffer = Buffer.from(arrayBuffer);
@@ -1744,7 +1744,7 @@ Adapta esta receta eliminando los ingredientes prohibidos y sustituyéndolos por
           });
 
           const rawContent = response.choices?.[0]?.message?.content;
-          if (!rawContent) throw new Error("No response from LLM");
+          if (!rawContent) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "No response from LLM" });
           const content = typeof rawContent === "string" ? rawContent : JSON.stringify(rawContent);
           let adaptedData: any;
           try {
@@ -4147,8 +4147,8 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
       .query(async ({ ctx, input }) => {
         try {
           const drizzleDb = await db.getDb();
-          if (!drizzleDb) throw new Error("DB not available");
-          const { mealLogs: mealLogsTable, userProfiles } = await import("../drizzle/schema");
+          if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB not available" });
+        const { menus, menuRecipesgsTable, userProfiles } = await import("../drizzle/schema");
           const { eq, and, gte, lte } = await import("drizzle-orm");
           const [profile] = await drizzleDb.select().from(userProfiles).where(eq(userProfiles.userId, ctx.user.id)).limit(1);
           const logs = await drizzleDb.select().from(mealLogsTable).where(and(eq(mealLogsTable.userId, ctx.user.id), gte(mealLogsTable.logDate, input.date), lte(mealLogsTable.logDate, input.date)));
@@ -4356,7 +4356,7 @@ Responde SOLO con JSON válido, sin texto adicional:
             }},
           });
           const content = response.choices?.[0]?.message?.content;
-          if (!content) throw new Error('No response from LLM');
+          if (!content) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "No response from LLM" });
           const data = typeof content === 'string' ? JSON.parse(content) : content;
           return {
             mealName: String(data.mealName || input.text),
@@ -4384,8 +4384,7 @@ Responde SOLO con JSON válido, sin texto adicional:
       .mutation(async ({ ctx, input }) => {
         try {
           const drizzleDb = await db.getDb();
-          if (!drizzleDb) throw new Error("DB not available");
-          const { aiFeedback } = await import("../drizzle/schema");
+          if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB not available" });
           await drizzleDb.insert(aiFeedback).values({
             userId: ctx.user.id,
             mealLogId: input.mealLogId ?? null,

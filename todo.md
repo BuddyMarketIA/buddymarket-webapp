@@ -2994,3 +2994,19 @@
 - [x] Admin soporte: verificar que adminUpdateTicket funciona correctamente
 - [x] Admin monitor APIs: añadir botón "Recheck all" para verificar todos los monitores a la vez
 - [ ] Admin monitor APIs: mostrar historial de fallos recientes por monitor
+
+## Sprint: Auditoría de Código (Apr 23)
+- [x] Corregir BuddyProfile sin ProtectedPage en rutas /app/buddy-experts/:id y /app/buddy-makers/:id
+- [x] Eliminar console.log de ComponentShowcase.tsx
+- [ ] Corregir window.location.href por navigate en páginas (LoginPage, FamiliaCalendario, FamiliaUnirse, Metrics, MyExpert, CalculadoraNutricional, BuddyApplication)
+- [x] Corregir throw new Error() por TRPCError en routers.ts (6 ocurrencias)
+- [ ] Añadir chunk size warning en vite.config.ts (index.js 933KB)
+- [ ] Añadir test para getLLMLatencyHistory y testLLMConnection
+
+## Sprint: Auditoría de Código (Apr 23)
+- [x] Corregir BuddyProfile sin ProtectedPage en rutas /app/buddy-experts/:id y /app/buddy-makers/:id
+- [x] Eliminar console.log de ComponentShowcase.tsx
+- [ ] Corregir window.location.href por navigate en páginas (LoginPage, FamiliaCalendario, FamiliaUnirse, Metrics, MyExpert, CalculadoraNutricional, BuddyApplication)
+- [x] Corregir throw new Error() por TRPCError en routers.ts (6 ocurrencias)
+- [ ] Añadir chunk size warning en vite.config.ts (index.js 933KB)
+- [ ] Añadir test para getLLMLatencyHistory y testLLMConnection
