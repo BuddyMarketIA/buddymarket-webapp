@@ -41,7 +41,7 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   componentDidUpdate(_: Props, prevState: State) {
-    // Auto-retry once for chunk load errors (server cold start)
+    // Auto-retry once for chunk load errors (server cold start) via full page reload
     if (
       this.state.hasError &&
       !prevState.hasError &&
@@ -49,7 +49,7 @@ class ErrorBoundary extends Component<Props, State> {
       this.state.retryCount === 0
     ) {
       this.retryTimer = setTimeout(() => {
-        this.setState({ hasError: false, error: null, retryCount: 1 });
+        window.location.reload();
       }, 2000);
     }
   }
@@ -59,7 +59,11 @@ class ErrorBoundary extends Component<Props, State> {
   }
 
   handleRetry = () => {
-    this.setState((s) => ({ hasError: false, error: null, retryCount: s.retryCount + 1 }));
+    if (isChunkLoadError(this.state.error)) {
+      window.location.reload();
+    } else {
+      this.setState((s) => ({ hasError: false, error: null, retryCount: s.retryCount + 1 }));
+    }
   };
 
   render() {
