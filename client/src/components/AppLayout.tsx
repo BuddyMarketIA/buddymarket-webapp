@@ -528,7 +528,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
     const DESKTOP_SIDEBAR_WIDTH = 260;
     return (
       <ExpertModeContext.Provider value={expertModeValue}>
-      <div style={{ display: "flex", minHeight: "100dvh", background: "#FFF8F0" }}>
+      <div className="app-layout-root" style={{ display: "flex", minHeight: "100dvh" }}>
         {/* Onboarding modal — self-contained, decides internally whether to show */}
         {user && <OnboardingModal />}
         {/* Skip to main */}
@@ -541,6 +541,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
         <aside
           id="app-sidebar"
           aria-label="Menú de navegación"
+          className="app-sidebar-desktop"
           style={{
             width: `${DESKTOP_SIDEBAR_WIDTH}px`,
             minWidth: `${DESKTOP_SIDEBAR_WIDTH}px`,
@@ -550,7 +551,6 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
             left: 0,
             display: "flex",
             flexDirection: "column",
-            background: "white",
             borderRight: "1px solid rgba(0,0,0,0.07)",
             boxShadow: "2px 0 16px rgba(0,0,0,0.05)",
             zIndex: 200,
@@ -564,11 +564,10 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
         <div style={{ flex: 1, marginLeft: `${DESKTOP_SIDEBAR_WIDTH}px`, display: "flex", flexDirection: "column", minHeight: "100dvh", width: `calc(100vw - ${DESKTOP_SIDEBAR_WIDTH}px)`, overflowX: "hidden", minWidth: 0 }}>
 
           {/* Desktop Header */}
-          <header style={{
+          <header className="app-header-desktop" style={{
             position: "sticky",
             top: 0,
             zIndex: 100,
-            background: "rgba(255,248,240,0.92)",
             backdropFilter: "blur(20px)",
             WebkitBackdropFilter: "blur(20px)",
             borderBottom: "1px solid rgba(0,0,0,0.06)",
@@ -592,7 +591,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
             </div>
 
             <div style={{ flex: 1, minWidth: 0 }}>
-              <h1 style={{ margin: 0, fontSize: "18px", fontWeight: 800, color: "#1a1a1a", letterSpacing: "-0.02em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{pageTitle}</h1>
+              <h1 className="app-header__title-main" style={{ margin: 0, fontSize: "18px", fontWeight: 800, letterSpacing: "-0.02em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{pageTitle}</h1>
             </div>
 
             <div style={{ display: "flex", alignItems: "center", gap: "10px", flexShrink: 0 }}>
@@ -649,7 +648,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
 
   // ─── MÓVIL LAYOUT (igual que antes) ──────────────────────────────────────────
   return (
-    <ExpertModeContext.Provider value={expertModeValue}><div style={{ width: "100%", maxWidth: "480px", margin: "0 auto", minHeight: "100dvh", background: "#FFF8F0", position: "relative" }}>
+    <ExpertModeContext.Provider value={expertModeValue}><div className="app-layout-root" style={{ width: "100%", maxWidth: "480px", margin: "0 auto", minHeight: "100dvh", position: "relative" }}>
       {/* Onboarding modal — self-contained, decides internally whether to show */}
       {user && <OnboardingModal />}
       <OfflineIndicator />
@@ -663,7 +662,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
 
       {/* Sidebar Panel (drawer) */}
       <div id="app-sidebar" role="dialog" aria-label="Menú de navegación" aria-modal={sidebarOpen} className="app-sidebar"
-        style={{ position: "fixed", top: 0, left: sidebarOpen ? 0 : "-310px", width: "300px", height: "100dvh", paddingTop: "env(safe-area-inset-top)", zIndex: 300, transition: "left 0.3s cubic-bezier(0.4,0,0.2,1)", display: "flex", flexDirection: "column", background: "white", boxShadow: sidebarOpen ? "4px 0 40px rgba(0,0,0,0.15)" : "none", overflowY: "auto" }}
+        style={{ position: "fixed", top: 0, left: sidebarOpen ? 0 : "-310px", width: "300px", height: "100dvh", paddingTop: "env(safe-area-inset-top)", zIndex: 300, transition: "left 0.3s cubic-bezier(0.4,0,0.2,1)", display: "flex", flexDirection: "column", boxShadow: sidebarOpen ? "4px 0 40px rgba(0,0,0,0.15)" : "none", overflowY: "auto" }}
       >
         {/* Drag handle indicator — visible only on mobile when sidebar is open */}
         {sidebarOpen && (

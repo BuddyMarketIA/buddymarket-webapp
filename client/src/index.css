@@ -1087,6 +1087,36 @@
   transition: background 0.3s;
 }
 
+/* ── AppLayout root background ──────────────────────────────────────────── */
+.app-layout-root {
+  background: #FFF8F0;
+  transition: background 0.3s;
+}
+.dark .app-layout-root {
+  background: oklch(0.13 0.01 30);
+}
+/* ── Desktop sidebar ─────────────────────────────────────────────────────── */
+.app-sidebar-desktop {
+  background: white;
+  transition: background 0.3s, border-color 0.3s;
+}
+.dark .app-sidebar-desktop {
+  background: #120d09;
+  border-right-color: rgba(255,255,255,0.06) !important;
+}
+/* ── Desktop header ──────────────────────────────────────────────────────── */
+.app-header-desktop {
+  background: rgba(255,248,240,0.92);
+  transition: background 0.3s, border-color 0.3s;
+}
+.dark .app-header-desktop {
+  background: rgba(20,14,10,0.97);
+  border-bottom-color: rgba(255,255,255,0.06) !important;
+}
+/* ── Notification bell & icon buttons ───────────────────────────────────── */
+.dark .app-icon-btn-white {
+  background: rgba(255,255,255,0.08) !important;
+}
 /* ── Primeros Pasos Cards — hover animations ─────────────────────────────── */
 .step-card {
   transition:
@@ -1392,4 +1422,95 @@
 .dark [style*="background: #f9fafb"] th {
   background: oklch(0.22 0.012 30) !important;
   color: oklch(0.88 0.008 65) !important;
+}
+
+/* ═══════════════════════════════════════════════════════════════════
+   DARK MODE — Global inline-style background overrides
+   Covers hardcoded #FFF8F0, #FAF8F5, #FAF7F2 and white backgrounds
+   that live inside style={{}} attributes throughout the app pages.
+   ═══════════════════════════════════════════════════════════════════ */
+
+/* Cream / beige backgrounds (#FFF8F0, #FAF8F5, #FAF7F2) */
+.dark [style*="background: \"#FFF8F0\""],
+.dark [style*="background: '#FFF8F0'"],
+.dark [style*="background:#FFF8F0"],
+.dark [style*="background: #FFF8F0"],
+.dark [style*="background: #FAF8F5"],
+.dark [style*="background:#FAF8F5"],
+.dark [style*="background: #faf8f5"],
+.dark [style*="background:#faf8f5"],
+.dark [style*="background: #FAF7F2"],
+.dark [style*="background:#FAF7F2"],
+.dark [style*="background: #FFF8F2"],
+.dark [style*="background: #FFFAF5"] {
+  background: oklch(0.16 0.012 30) !important;
+  color: oklch(0.96 0.005 65) !important;
+}
+
+/* Pure white backgrounds */
+.dark [style*="background: white"],
+.dark [style*="background:white"],
+.dark [style*="background: #fff"],
+.dark [style*="background:#fff"],
+.dark [style*="background: #ffffff"],
+.dark [style*="background:#ffffff"],
+.dark [style*="background: #FFFFFF"],
+.dark [style*="background:#FFFFFF"] {
+  background: oklch(0.18 0.015 30) !important;
+  color: oklch(0.96 0.005 65) !important;
+}
+
+/* Light gray backgrounds (#f3f4f6, #f9fafb, #f8fafc) */
+.dark [style*="background: #f3f4f6"],
+.dark [style*="background:#f3f4f6"],
+.dark [style*="background: #f9fafb"],
+.dark [style*="background:#f9fafb"],
+.dark [style*="background: #f8fafc"],
+.dark [style*="background:#f8fafc"],
+.dark [style*="background: #f1f5f9"],
+.dark [style*="background:#f1f5f9"] {
+  background: oklch(0.22 0.012 30) !important;
+  color: oklch(0.96 0.005 65) !important;
+}
+
+/* Near-black text colors on light backgrounds */
+.dark [style*="color: #1a1a1a"],
+.dark [style*="color:#1a1a1a"],
+.dark [style*="color: #111827"],
+.dark [style*="color:#111827"],
+.dark [style*="color: #1f2937"],
+.dark [style*="color:#1f2937"],
+.dark [style*="color: #374151"],
+.dark [style*="color:#374151"] {
+  color: oklch(0.92 0.006 65) !important;
+}
+
+/* Medium gray text */
+.dark [style*="color: #6b7280"],
+.dark [style*="color:#6b7280"],
+.dark [style*="color: #9ca3af"],
+.dark [style*="color:#9ca3af"],
+.dark [style*="color: #4b5563"],
+.dark [style*="color:#4b5563"] {
+  color: oklch(0.62 0.01 65) !important;
+}
+
+/* Light borders */
+.dark [style*="border: 1px solid #f3f4f6"],
+.dark [style*="border: 1px solid #e5e7eb"],
+.dark [style*="border: 1px solid #e8e0d5"],
+.dark [style*="border-bottom: 1px solid #f3f4f6"],
+.dark [style*="border-top: 1px solid #f3f4f6"] {
+  border-color: oklch(0.26 0.015 30) !important;
+}
+
+/* Divider lines */
+.dark [style*="background: #f3f4f6"][style*="height: \"1px\""],
+.dark [style*="background: #f3f4f6"][style*="height:1px"] {
+  background: oklch(0.26 0.015 30) !important;
+}
+
+/* vively-page and RecipeDetail page background */
+.dark .vively-page {
+  background: oklch(0.13 0.01 30);
 }
