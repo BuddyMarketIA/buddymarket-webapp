@@ -12123,6 +12123,14 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
         if (!result) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "No se pudieron obtener las métricas" });
         return result;
       }),
+
+    pendingCount: protectedProcedure
+      .query(async ({ ctx }) => {
+        // Only admins get the real count; regular users always get 0
+        if (ctx.user.role !== "admin") return { count: 0 };
+        const count = await db.getPendingFeedbackCount();
+        return { count };
+      }),
   }),
 });
 export type AppRouter = typeof appRouter;

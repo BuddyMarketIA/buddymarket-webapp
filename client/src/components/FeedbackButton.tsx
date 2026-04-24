@@ -55,9 +55,11 @@ const MIN_CHARS = 10;
 interface FeedbackButtonProps {
   asSidebarItem?: boolean;
   onClose?: () => void;
+  /** Number of pending feedbacks — shows a badge when > 0 (admin only) */
+  pendingCount?: number;
 }
 
-export default function FeedbackButton({ asSidebarItem = false, onClose }: FeedbackButtonProps = {}) {
+export default function FeedbackButton({ asSidebarItem = false, onClose, pendingCount = 0 }: FeedbackButtonProps = {}) {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<"category" | "message" | "success">("category");
   const [category, setCategory] = useState<FeedbackCategory | null>(null);
@@ -123,7 +125,30 @@ export default function FeedbackButton({ asSidebarItem = false, onClose }: Feedb
           style={{ width: "100%", display: "flex", alignItems: "center", gap: "11px", padding: "9px 13px", borderRadius: "10px", background: "transparent", border: "none", cursor: "pointer", marginBottom: "2px", textAlign: "left" }}
         >
           <span style={{ fontSize: "17px", width: "21px", textAlign: "center" }}>💬</span>
-          <span style={{ fontSize: "14px", fontWeight: 500, color: "var(--sidebar-text, #374151)" }}>Enviar feedback</span>
+          <span style={{ fontSize: "14px", fontWeight: 500, color: "var(--sidebar-text, #374151)", flex: 1 }}>Enviar feedback</span>
+          {pendingCount > 0 && (
+            <span
+              title={`${pendingCount} feedback${pendingCount === 1 ? "" : "s"} pendiente${pendingCount === 1 ? "" : "s"}`}
+              style={{
+                display: "inline-flex",
+                alignItems: "center",
+                justifyContent: "center",
+                minWidth: pendingCount > 99 ? "28px" : "20px",
+                height: "20px",
+                padding: "0 5px",
+                borderRadius: "10px",
+                background: "#EF4444",
+                color: "#fff",
+                fontSize: "11px",
+                fontWeight: 700,
+                lineHeight: 1,
+                flexShrink: 0,
+                animation: "pulse 2s cubic-bezier(0.4,0,0.6,1) infinite",
+              }}
+            >
+              {pendingCount > 99 ? "99+" : pendingCount}
+            </span>
+          )}
         </button>
       ) : null}
 

@@ -2822,3 +2822,20 @@ export async function getFeedbackAnalytics() {
     return null;
   }
 }
+
+/** Returns the number of feedbacks with status = 'pending'. Returns 0 on error. */
+export async function getPendingFeedbackCount(): Promise<number> {
+  try {
+    const db = await getDb();
+    if (!db) return 0;
+    const { feedbacks } = await import("../drizzle/schema.js");
+    const { sql: sqlFn, eq: eqFn } = await import("drizzle-orm");
+    const rows = await db
+      .select({ count: sqlFn<number>`count(*)` })
+      .from(feedbacks)
+      .where(eqFn(feedbacks.status, "pending"));
+    return Number(rows[0]?.count ?? 0);
+  } catch {
+    return 0;
+  }
+}

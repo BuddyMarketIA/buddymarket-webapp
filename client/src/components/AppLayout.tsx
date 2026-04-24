@@ -173,6 +173,7 @@ function SidebarContent({
   t,
   expertMode,
   toggleExpertMode,
+  pendingFeedbackCount,
 }: any) {
   const activeGroups = (isApprovedExpert && expertMode) ? EXPERT_SIDEBAR_GROUPS : SIDEBAR_GROUPS;
   return (
@@ -253,7 +254,7 @@ function SidebarContent({
             <span style={{ fontSize: "14px", fontWeight: location === "/app/admin" ? 700 : 500, color: location === "/app/admin" ? "#F97316" : "var(--sidebar-text, #374151)" }}>{t("sidebar.administration")}</span>
           </div>
         </Link>
-        <FeedbackButton asSidebarItem onClose={onClose} />
+        <FeedbackButton asSidebarItem onClose={onClose} pendingCount={pendingFeedbackCount ?? 0} />
       </nav>
 
       {/* Sidebar Footer */}
@@ -317,6 +318,14 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
   const isApprovedExpert = !!(user && (hasRole(user, "buddyexpert") || (user as any)?.accountType === "buddyexpert"));
   const isApprovedMaker = !!(user && (user.role === "buddymaker" || (user as any).accountType === "buddymaker"));
   const hasPendingApplication = expertApplicationQuery.data?.status === "pending" || makerApplicationQuery.data?.status === "pending";
+  // Pending feedback badge — only fetched for admins, refreshed every 2 minutes
+  const isAdmin = user?.role === "admin";
+  const pendingFeedbackQuery = trpc.feedback.pendingCount.useQuery(undefined, {
+    enabled: isAdmin,
+    staleTime: 2 * 60 * 1000,
+    refetchInterval: isAdmin ? 2 * 60 * 1000 : false,
+  });
+  const pendingFeedbackCount = pendingFeedbackQuery.data?.count ?? 0;
   // ─── Expert mode toggle ──────────────────────────────────────────────────
   const isExpertRoute = location.startsWith("/app/expert") || location.startsWith("/app/buddy-expert");
   // Si el usuario tiene rol buddyexpert, el modo experto está SIEMPRE activo por defecto
@@ -534,6 +543,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
     logout, SIDEBAR_GROUPS, EXPERT_SIDEBAR_GROUPS, t,
     expertMode: isApprovedExpert ? expertMode : false,
     toggleExpertMode: isApprovedExpert ? toggleExpertMode : undefined,
+    pendingFeedbackCount,
   };
 
   const expertModeValue = {
