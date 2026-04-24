@@ -2765,3 +2765,60 @@ export async function updateFeedbackStatus(
     return null;
   }
 }
+
+// ─── Feedback Analytics ───────────────────────────────────────────────────────
+export async function getFeedbackAnalytics() {
+  try {
+    const db = await getDb();
+    if (!db) return null;
+    const { feedbacks } = await import("../drizzle/schema.js");
+    const { sql: sqlFn, gte } = await import("drizzle-orm");
+
+    const thirtyDaysAgo = new Date(Date.now() - 30 * 24 * 60 * 60 * 1000);
+
+    // Total counts by status
+    const statusCounts = await db
+      .select({ status: feedbacks.status, count: sqlFn<number>`count(*)` })
+      .from(feedbacks)
+      .groupBy(feedbacks.status);
+
+    // Total counts by category
+    const categoryCounts = await db
+      .select({ category: feedbacks.category, count: sqlFn<number>`count(*)` })
+      .from(feedbacks)
+      .groupBy(feedbacks.category);
+
+    // Daily submissions for the last 30 days
+    const dailyRows = await db
+      .select({
+        day: sqlFn<string>`to_char("createdAt", 'YYYY-MM-DD')`,
+        count: sqlFn<number>`count(*)`,
+      })
+      .from(feedbacks)
+      .where(gte(feedbacks.createdAt, thirtyDaysAgo))
+      .groupBy(sqlFn`to_char("createdAt", 'YYYY-MM-DD')`);
+
+    // Average resolution time (resolved items only)
+    const resolutionTime = await db
+      .select({
+        avgMs: sqlFn<number>`avg(extract(epoch from ("updatedAt" - "createdAt")) * 1000)`,
+      })
+      .from(feedbacks)
+      .where(eq(feedbacks.status, "resolved"));
+
+    // Total count
+    const totalResult = await db
+      .select({ count: sqlFn<number>`count(*)` })
+      .from(feedbacks);
+
+    return {
+      total: Number(totalResult[0]?.count ?? 0),
+      byStatus: statusCounts.map((r) => ({ status: r.status, count: Number(r.count) })),
+      byCategory: categoryCounts.map((r) => ({ category: r.category, count: Number(r.count) })),
+      dailyTrend: dailyRows.map((r) => ({ day: r.day, count: Number(r.count) })),
+      avgResolutionMs: resolutionTime[0]?.avgMs ? Number(resolutionTime[0].avgMs) : null,
+    };
+  } catch {
+    return null;
+  }
+}

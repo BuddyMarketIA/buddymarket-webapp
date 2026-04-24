@@ -12110,6 +12110,14 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
         if (!result) throw new TRPCError({ code: "NOT_FOUND", message: "Feedback no encontrado" });
         return { ok: true };
       }),
+
+    analytics: protectedProcedure
+      .query(async ({ ctx }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN", message: "Solo administradores" });
+        const result = await db.getFeedbackAnalytics();
+        if (!result) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "No se pudieron obtener las métricas" });
+        return result;
+      }),
   }),
 });
 export type AppRouter = typeof appRouter;
