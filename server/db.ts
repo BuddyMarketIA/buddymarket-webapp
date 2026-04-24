@@ -2861,12 +2861,12 @@ function generateAccessCode(): string {
 
 // ── Pets ──────────────────────────────────────────────────────────────────────
 export async function getPetsByUser(userId: number) {
-  const db = getDb();
+  const db = await getDb();
   return db.select().from(petsTable).where(eq(petsTable.userId, userId)).orderBy(petsTable.createdAt);
 }
 
 export async function getPetById(petId: number, userId: number) {
-  const db = getDb();
+  const db = await getDb();
   const rows = await db.select().from(petsTable).where(and(eq(petsTable.id, petId), eq(petsTable.userId, userId))).limit(1);
   return rows[0] ?? null;
 }
@@ -2876,7 +2876,7 @@ export async function createPet(data: {
   weightValue: number; weightUnit?: string; ageYears?: number; ageMonths?: number;
   gender?: string; neutered?: boolean; healthNotes?: string; avatarEmoji?: string;
 }) {
-  const db = getDb();
+  const db = await getDb();
   const rows = await db.insert(petsTable).values({
     userId: data.userId, name: data.name, species: data.species as any,
     breed: data.breed, weightValue: data.weightValue, weightUnit: (data.weightUnit ?? "kg") as any,
@@ -2891,20 +2891,20 @@ export async function updatePet(petId: number, userId: number, data: Partial<{
   ageYears: number; ageMonths: number; gender: string; neutered: boolean;
   healthNotes: string; avatarEmoji: string;
 }>) {
-  const db = getDb();
+  const db = await getDb();
   const rows = await db.update(petsTable).set({ ...data as any, updatedAt: new Date() })
     .where(and(eq(petsTable.id, petId), eq(petsTable.userId, userId))).returning();
   return rows[0] ?? null;
 }
 
 export async function deletePet(petId: number, userId: number) {
-  const db = getDb();
+  const db = await getDb();
   await db.delete(petsTable).where(and(eq(petsTable.id, petId), eq(petsTable.userId, userId)));
 }
 
 // ── Pet Menus ─────────────────────────────────────────────────────────────────
 export async function getPetMenusByPet(petId: number, userId: number) {
-  const db = getDb();
+  const db = await getDb();
   return db.select().from(petMenusTable)
     .where(and(eq(petMenusTable.petId, petId), eq(petMenusTable.userId, userId)))
     .orderBy(petMenusTable.createdAt);
@@ -2914,32 +2914,32 @@ export async function createPetMenu(data: {
   petId: number; userId: number; weekLabel?: string;
   menuJson: string; shoppingListJson?: string; notes?: string;
 }) {
-  const db = getDb();
+  const db = await getDb();
   const rows = await db.insert(petMenusTable).values(data).returning();
   return rows[0];
 }
 
 // ── Vet Clinics ───────────────────────────────────────────────────────────────
 export async function getVetClinicByOwner(ownerId: number) {
-  const db = getDb();
+  const db = await getDb();
   const rows = await db.select().from(vetClinicsTable).where(eq(vetClinicsTable.ownerId, ownerId)).limit(1);
   return rows[0] ?? null;
 }
 
 export async function getVetClinicById(clinicId: number) {
-  const db = getDb();
+  const db = await getDb();
   const rows = await db.select().from(vetClinicsTable).where(eq(vetClinicsTable.id, clinicId)).limit(1);
   return rows[0] ?? null;
 }
 
 export async function getVetClinicByCode(code: string) {
-  const db = getDb();
+  const db = await getDb();
   const rows = await db.select().from(vetClinicsTable).where(eq(vetClinicsTable.accessCode, code.toUpperCase())).limit(1);
   return rows[0] ?? null;
 }
 
 export async function getVetClinicForUser(userId: number) {
-  const db = getDb();
+  const db = await getDb();
   // Check if user is staff of any clinic
   const staffRows = await db.select().from(vetClinicUsersTable).where(eq(vetClinicUsersTable.userId, userId));
   if (staffRows.length === 0) return null;
@@ -2951,7 +2951,7 @@ export async function createVetClinic(data: {
   name: string; address?: string; phone?: string; email?: string;
   website?: string; description?: string; ownerId: number;
 }) {
-  const db = getDb();
+  const db = await getDb();
   let code = generateAccessCode();
   // Ensure uniqueness
   let existing = await getVetClinicByCode(code);
@@ -2967,7 +2967,7 @@ export async function updateVetClinic(clinicId: number, ownerId: number, data: P
   name: string; address: string; phone: string; email: string;
   website: string; description: string; logoUrl: string;
 }>) {
-  const db = getDb();
+  const db = await getDb();
   const rows = await db.update(vetClinicsTable).set({ ...data, updatedAt: new Date() })
     .where(and(eq(vetClinicsTable.id, clinicId), eq(vetClinicsTable.ownerId, ownerId))).returning();
   return rows[0] ?? null;
@@ -2975,7 +2975,7 @@ export async function updateVetClinic(clinicId: number, ownerId: number, data: P
 
 // ── Pet-Clinic Links ──────────────────────────────────────────────────────────
 export async function linkPetToClinic(petId: number, clinicId: number, ownerId: number) {
-  const db = getDb();
+  const db = await getDb();
   // Check if already linked
   const existing = await db.select().from(petClinicLinksTable)
     .where(and(eq(petClinicLinksTable.petId, petId), eq(petClinicLinksTable.clinicId, clinicId))).limit(1);
@@ -2990,7 +2990,7 @@ export async function linkPetToClinic(petId: number, clinicId: number, ownerId: 
 }
 
 export async function getLinkedPetsForClinic(clinicId: number) {
-  const db = getDb();
+  const db = await getDb();
   return db.select({
     link: petClinicLinksTable,
     pet: petsTable,
@@ -3001,7 +3001,7 @@ export async function getLinkedPetsForClinic(clinicId: number) {
 }
 
 export async function getLinkedClinicsForPet(petId: number) {
-  const db = getDb();
+  const db = await getDb();
   return db.select({
     link: petClinicLinksTable,
     clinic: vetClinicsTable,
@@ -3012,13 +3012,13 @@ export async function getLinkedClinicsForPet(petId: number) {
 
 // ── Pet Alerts ────────────────────────────────────────────────────────────────
 export async function getPetAlertsByOwner(ownerId: number) {
-  const db = getDb();
+  const db = await getDb();
   return db.select().from(petAlertsTable).where(eq(petAlertsTable.ownerId, ownerId))
     .orderBy(petAlertsTable.dueDate);
 }
 
 export async function getPetAlertsByClinic(clinicId: number) {
-  const db = getDb();
+  const db = await getDb();
   return db.select({
     alert: petAlertsTable,
     pet: petsTable,
@@ -3032,13 +3032,13 @@ export async function createPetAlert(data: {
   petId: number; clinicId?: number; ownerId: number; type: string;
   title: string; description?: string; dueDate?: Date;
 }) {
-  const db = getDb();
+  const db = await getDb();
   const rows = await db.insert(petAlertsTable).values({ ...data as any, status: "pending" }).returning();
   return rows[0];
 }
 
 export async function resolvePetAlert(alertId: number) {
-  const db = getDb();
+  const db = await getDb();
   const rows = await db.update(petAlertsTable)
     .set({ status: "resolved", resolvedAt: new Date() })
     .where(eq(petAlertsTable.id, alertId)).returning();
@@ -3047,7 +3047,7 @@ export async function resolvePetAlert(alertId: number) {
 
 // ── Pet Vet Visits ────────────────────────────────────────────────────────────
 export async function getPetVetVisits(petId: number) {
-  const db = getDb();
+  const db = await getDb();
   return db.select().from(petVetVisitsTable).where(eq(petVetVisitsTable.petId, petId))
     .orderBy(petVetVisitsTable.visitDate);
 }
@@ -3057,7 +3057,7 @@ export async function createPetVetVisit(data: {
   reason?: string; diagnosis?: string; treatment?: string; weight?: number;
   nextVisitDate?: Date; vetName?: string;
 }) {
-  const db = getDb();
+  const db = await getDb();
   const rows = await db.insert(petVetVisitsTable).values(data).returning();
   return rows[0];
 }

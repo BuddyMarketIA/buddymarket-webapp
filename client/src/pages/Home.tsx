@@ -106,9 +106,14 @@ export default function Home() {
             {t("home.heroDesc")}
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: "12px", alignItems: "center" }}>
-            <a href={isAuthenticated ? "/app/dashboard" : getLoginUrl()} style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "16px 32px", borderRadius: "16px", background: "linear-gradient(135deg, #F97316, #FB923C)", color: "white", fontSize: "16px", fontWeight: 800, textDecoration: "none", boxShadow: "0 8px 24px rgba(249,115,22,0.35)", letterSpacing: "-0.01em" }}>
-              {isAuthenticated ? "Ir al dashboard" : t("home.getStarted")}
-            </a>
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", justifyContent: "center", alignItems: "center" }}>
+              <a href={isAuthenticated ? "/app/dashboard" : getLoginUrl()} style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "16px 32px", borderRadius: "16px", background: "linear-gradient(135deg, #F97316, #FB923C)", color: "white", fontSize: "16px", fontWeight: 800, textDecoration: "none", boxShadow: "0 8px 24px rgba(249,115,22,0.35)", letterSpacing: "-0.01em", whiteSpace: "nowrap" }}>
+                {isAuthenticated ? "Ir al dashboard" : t("home.getStarted")}
+              </a>
+              <a href="#features" style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "16px 28px", borderRadius: "16px", background: "rgba(249,115,22,0.10)", color: "#F97316", fontSize: "16px", fontWeight: 700, textDecoration: "none", border: "2px solid rgba(249,115,22,0.20)", whiteSpace: "nowrap" }}>
+                Ver funciones
+              </a>
+            </div>
             <p style={{ margin: 0, fontSize: "14px", color: "#9ca3af" }}>{t("home.noCard")}</p>
           </div>
         </div>

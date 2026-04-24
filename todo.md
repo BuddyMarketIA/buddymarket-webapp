@@ -67,6 +67,10 @@
 - [x] Estados de carga y error en todas las páginas
 - [x] Checkpoint final y entrega
 
+## Correcciones sesión actual
+- [x] Fix db.insert: 22 helpers BuddyPet en server/db.ts usaban getDb() sin await (causa db.insert is not a function)
+- [x] Fix landing móvil: botones CTA del hero ahora en fila con flexWrap, añadido segundo botón "Ver funciones"
+
 ## Mejoras futuras (fuera del alcance inicial - v2)
 - [x] Onboarding guiado para nuevos usuarios (implementado)
 - [ ] Notificación por email en nuevos registros
