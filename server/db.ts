@@ -2699,3 +2699,69 @@ export function calculateNutritionFromItems(
     { calories: 0, protein: 0, carbs: 0, fat: 0, fiber: 0, sugar: 0, sodium: 0 }
   );
 }
+
+// ─── Feedback helpers ─────────────────────────────────────────────────────────
+export async function createFeedback(data: {
+  userId: number;
+  category: "bug" | "improvement" | "idea" | "other";
+  message: string;
+}) {
+  try {
+    const db = await getDb();
+    if (!db) return null;
+    const { feedbacks } = await import("../drizzle/schema.js");
+    const [row] = await db.insert(feedbacks).values(data).returning();
+    return row ?? null;
+  } catch {
+    return null;
+  }
+}
+
+export async function getFeedbacks(opts: {
+  status?: "pending" | "reviewed" | "resolved";
+  limit?: number;
+  offset?: number;
+}) {
+  try {
+    const db = await getDb();
+    if (!db) return { items: [], total: 0 };
+    const { feedbacks } = await import("../drizzle/schema.js");
+    const conditions = opts.status ? [eq(feedbacks.status, opts.status)] : [];
+    const [items, countResult] = await Promise.all([
+      db
+        .select()
+        .from(feedbacks)
+        .where(conditions.length ? and(...conditions) : undefined)
+        .orderBy(desc(feedbacks.createdAt))
+        .limit(opts.limit ?? 50)
+        .offset(opts.offset ?? 0),
+      db
+        .select({ count: sql<number>`count(*)` })
+        .from(feedbacks)
+        .where(conditions.length ? and(...conditions) : undefined),
+    ]);
+    return { items, total: Number(countResult[0]?.count ?? 0) };
+  } catch {
+    return { items: [], total: 0 };
+  }
+}
+
+export async function updateFeedbackStatus(
+  id: number,
+  status: "pending" | "reviewed" | "resolved",
+  adminNote?: string
+) {
+  try {
+    const db = await getDb();
+    if (!db) return null;
+    const { feedbacks } = await import("../drizzle/schema.js");
+    const [row] = await db
+      .update(feedbacks)
+      .set({ status, adminNote: adminNote ?? null, updatedAt: new Date() })
+      .where(eq(feedbacks.id, id))
+      .returning();
+    return row ?? null;
+  } catch {
+    return null;
+  }
+}

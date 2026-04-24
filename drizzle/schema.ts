@@ -3041,3 +3041,23 @@ export const tasteInsights = pgTable("taste_insights", {
   tiUserIdx: index("ti_user_idx").on(t.userId),
 }));
 export type TasteInsight = typeof tasteInsights.$inferSelect;
+
+// ─── Feedback ─────────────────────────────────────────────────────────────────
+export const feedbackCategoryEnum = pgEnum("feedbackCategory", ["bug", "improvement", "idea", "other"]);
+export const feedbackStatusEnum = pgEnum("feedbackStatus", ["pending", "reviewed", "resolved"]);
+export const feedbacks = pgTable("feedbacks", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull(),
+  category: feedbackCategoryEnum("category").notNull(),
+  message: text("message").notNull(),
+  status: feedbackStatusEnum("status").default("pending").notNull(),
+  adminNote: text("adminNote"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  fbUserIdx: index("fb_user_idx").on(t.userId),
+  fbStatusIdx: index("fb_status_idx").on(t.status),
+  fbCreatedIdx: index("fb_created_idx").on(t.createdAt),
+}));
+export type Feedback = typeof feedbacks.$inferSelect;
+export type NewFeedback = typeof feedbacks.$inferInsert;

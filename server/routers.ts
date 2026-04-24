@@ -12055,5 +12055,61 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
         return { ok: true };
       }),
   }),
+
+  // ─── Feedback ──────────────────────────────────────────────────────────────
+  feedback: router({
+    submit: protectedProcedure
+      .input(z.object({
+        category: z.enum(["bug", "improvement", "idea", "other"]),
+        message: z.string().min(10, "El mensaje debe tener al menos 10 caracteres").max(500, "El mensaje no puede superar los 500 caracteres"),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const result = await db.createFeedback({
+          userId: ctx.user.id,
+          category: input.category,
+          message: input.message,
+        });
+        if (!result) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "No se pudo guardar el feedback" });
+        // Notify owner
+        try {
+          const { notifyOwner } = await import("./_core/notification.js");
+          const categoryLabels: Record<string, string> = {
+            bug: "🐛 Error / Bug",
+            improvement: "✨ Mejora",
+            idea: "💡 Idea",
+            other: "📝 Otro",
+          };
+          await notifyOwner({
+            title: `Nuevo feedback: ${categoryLabels[input.category] ?? input.category}`,
+            content: `**Usuario:** ${ctx.user.name ?? ctx.user.email ?? `#${ctx.user.id}`}\n**Categoría:** ${categoryLabels[input.category] ?? input.category}\n\n${input.message}`,
+          });
+        } catch { /* notificación no crítica */ }
+        return { ok: true, id: result.id };
+      }),
+
+    list: protectedProcedure
+      .input(z.object({
+        status: z.enum(["pending", "reviewed", "resolved"]).optional(),
+        limit: z.number().int().min(1).max(100).default(50),
+        offset: z.number().int().min(0).default(0),
+      }))
+      .query(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN", message: "Solo administradores" });
+        return db.getFeedbacks({ status: input.status, limit: input.limit, offset: input.offset });
+      }),
+
+    updateStatus: protectedProcedure
+      .input(z.object({
+        id: z.number().int(),
+        status: z.enum(["pending", "reviewed", "resolved"]),
+        adminNote: z.string().max(500).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN", message: "Solo administradores" });
+        const result = await db.updateFeedbackStatus(input.id, input.status, input.adminNote);
+        if (!result) throw new TRPCError({ code: "NOT_FOUND", message: "Feedback no encontrado" });
+        return { ok: true };
+      }),
+  }),
 });
 export type AppRouter = typeof appRouter;

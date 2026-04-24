@@ -3010,3 +3010,17 @@
 - [x] Corregir throw new Error() por TRPCError en routers.ts (6 ocurrencias)
 - [ ] Añadir chunk size warning en vite.config.ts (index.js 933KB)
 - [ ] Añadir test para getLLMLatencyHistory y testLLMConnection
+
+## Sistema de Feedback de usuarios
+- [x] Tabla `feedback` en drizzle/schema.ts (id, userId, category, message, status, createdAt)
+- [x] Migración de BD con pnpm db:push
+- [x] Helper getFeedbacks y createFeedback en server/db.ts
+- [x] Procedimiento tRPC feedback.submit (protectedProcedure)
+- [x] Procedimiento tRPC feedback.list (adminProcedure)
+- [x] Notificación al propietario al recibir nuevo feedback
+- [x] Componente FeedbackButton.tsx con botón flotante y modal
+- [x] Modal con categorías: bug, mejora, idea, otro
+- [x] Campo de descripción con contador de caracteres (máx 500)
+- [x] Integrar FeedbackButton en AppLayout
+- [x] Página /app/admin/feedback para gestionar feedbacks
+- [x] Test vitest para feedback.submit y feedback.list

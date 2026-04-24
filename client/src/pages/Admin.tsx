@@ -495,6 +495,13 @@ export default function Admin() {
                 <span>🔴 Registros de errores del servidor</span>
                 <span className="text-red-400">→</span>
               </Link>
+              <Link
+                href="/app/admin/feedback"
+                className="flex w-full items-center justify-between rounded-xl bg-purple-50 border border-purple-200 px-4 py-2.5 text-sm font-semibold text-purple-700 hover:bg-purple-100"
+              >
+                <span>💬 Feedback de usuarios</span>
+                <span className="text-purple-400">→</span>
+              </Link>
               {[
                 { label: "Gestionar recetas y fotos", tab: "recipes" },
                 { label: "Gestionar alergias", tab: "allergies" },

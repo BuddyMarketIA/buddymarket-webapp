@@ -344,6 +344,13 @@
       "when": 1776959321731,
       "tag": "0048_complex_tempest",
       "breakpoints": true
+    },
+    {
+      "idx": 49,
+      "version": "7",
+      "when": 1777019988346,
+      "tag": "0049_organic_warstar",
+      "breakpoints": true
     }
   ]
 }
