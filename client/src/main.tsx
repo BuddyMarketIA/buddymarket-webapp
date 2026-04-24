@@ -103,11 +103,31 @@ const queryClient = new QueryClient({
 // by the cookie (1-year expiry) and the useAuth hook, which only redirects
 // on a definitive 401 after the user has never authenticated.
 // Redirecting here would log users out every ~2 minutes on any network blip.
+//
+// EXCEPTION: Manus OAuth error 10001 = "Please login" = session definitively
+// expired or invalid. In this case we MUST redirect to /login immediately.
+const isMustLoginError = (error: unknown): boolean => {
+  if (!(error instanceof TRPCClientError)) return false;
+  const msg = error.message ?? "";
+  // Manus OAuth error code 10001 = session expired / not authenticated
+  return msg.includes("10001") || msg.toLowerCase().includes("please login");
+};
+
+const redirectToLogin = () => {
+  // Clear any cached auth state so the login page starts fresh
+  try { localStorage.removeItem("bm_auth_state"); } catch { /* noop */ }
+  const loginUrl = `/login?returnTo=${encodeURIComponent(window.location.pathname)}`;
+  if (window.location.pathname !== "/login") {
+    window.location.href = loginUrl;
+  }
+};
 
 queryClient.getQueryCache().subscribe(event => {
   if (event.type === "updated" && event.action.type === "error") {
     const error = event.query.state.error;
-    if (!isServerDownError(error)) {
+    if (isMustLoginError(error)) {
+      redirectToLogin();
+    } else if (!isServerDownError(error)) {
       console.warn("[API Query Error]", error);
     }
   }
@@ -116,7 +136,9 @@ queryClient.getQueryCache().subscribe(event => {
 queryClient.getMutationCache().subscribe(event => {
   if (event.type === "updated" && event.action.type === "error") {
     const error = event.mutation.state.error;
-    if (!isServerDownError(error)) {
+    if (isMustLoginError(error)) {
+      redirectToLogin();
+    } else if (!isServerDownError(error)) {
       console.warn("[API Mutation Error]", error);
     }
   }
