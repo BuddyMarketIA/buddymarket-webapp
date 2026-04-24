@@ -52,7 +52,12 @@ const CATEGORIES: CategoryOption[] = [
 const MAX_CHARS = 500;
 const MIN_CHARS = 10;
 
-export default function FeedbackButton() {
+interface FeedbackButtonProps {
+  asSidebarItem?: boolean;
+  onClose?: () => void;
+}
+
+export default function FeedbackButton({ asSidebarItem = false, onClose }: FeedbackButtonProps = {}) {
   const [open, setOpen] = useState(false);
   const [step, setStep] = useState<"category" | "message" | "success">("category");
   const [category, setCategory] = useState<FeedbackCategory | null>(null);
@@ -104,44 +109,23 @@ export default function FeedbackButton() {
   const charsLeft = MAX_CHARS - message.length;
   const isValid = message.trim().length >= MIN_CHARS && message.length <= MAX_CHARS;
 
+  function handleOpenFromSidebar() {
+    if (onClose) onClose();
+    setTimeout(() => setOpen(true), 320); // wait for sidebar close animation
+  }
+
   return (
     <>
-      {/* Floating trigger button */}
-      <button
-        onClick={() => setOpen(true)}
-        aria-label="Enviar feedback"
-        title="¿Tienes algún comentario o sugerencia?"
-        style={{
-          position: "fixed",
-          bottom: "calc(72px + env(safe-area-inset-bottom) + 12px)",
-          right: "16px",
-          zIndex: 90,
-          width: "44px",
-          height: "44px",
-          borderRadius: "14px",
-          background: "linear-gradient(135deg, #F97316, #FB923C)",
-          border: "none",
-          cursor: "pointer",
-          display: "flex",
-          alignItems: "center",
-          justifyContent: "center",
-          boxShadow: "0 4px 16px rgba(249,115,22,0.45)",
-          transition: "transform 0.2s, box-shadow 0.2s",
-        }}
-        onMouseEnter={(e) => {
-          e.currentTarget.style.transform = "scale(1.08)";
-          e.currentTarget.style.boxShadow = "0 6px 20px rgba(249,115,22,0.55)";
-        }}
-        onMouseLeave={(e) => {
-          e.currentTarget.style.transform = "scale(1)";
-          e.currentTarget.style.boxShadow = "0 4px 16px rgba(249,115,22,0.45)";
-        }}
-      >
-        {/* Chat bubble icon */}
-        <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round">
-          <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z" />
-        </svg>
-      </button>
+      {/* Sidebar item trigger */}
+      {asSidebarItem ? (
+        <button
+          onClick={handleOpenFromSidebar}
+          style={{ width: "100%", display: "flex", alignItems: "center", gap: "11px", padding: "9px 13px", borderRadius: "10px", background: "transparent", border: "none", cursor: "pointer", marginBottom: "2px", textAlign: "left" }}
+        >
+          <span style={{ fontSize: "17px", width: "21px", textAlign: "center" }}>💬</span>
+          <span style={{ fontSize: "14px", fontWeight: 500, color: "var(--sidebar-text, #374151)" }}>Enviar feedback</span>
+        </button>
+      ) : null}
 
       {/* Modal overlay */}
       {open && (

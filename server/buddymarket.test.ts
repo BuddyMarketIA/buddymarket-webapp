@@ -119,14 +119,20 @@ vi.mock("./db", () => ({
   // getDb: used by notifications router and other inline DB calls
   getDb: vi.fn().mockResolvedValue({
     select: vi.fn().mockReturnValue({
-      from: vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          limit: vi.fn().mockResolvedValue([]),
+      from: vi.fn().mockImplementation(() => {
+        const obj: any = {
+          where: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue([]),
+            orderBy: vi.fn().mockResolvedValue([]),
+            then: vi.fn().mockResolvedValue([]),
+          }),
           orderBy: vi.fn().mockResolvedValue([]),
-          then: vi.fn().mockResolvedValue([]),
-        }),
-        orderBy: vi.fn().mockResolvedValue([]),
-        then: vi.fn().mockResolvedValue([]),
+          limit: vi.fn().mockResolvedValue([]),
+          then: (resolve: any) => Promise.resolve([{ n: 0 }]).then(resolve),
+        };
+        // Make the object itself thenable so `await db.select().from(table)` works
+        obj[Symbol.iterator] = function* () { yield { n: 0 }; };
+        return Object.assign(Promise.resolve([{ n: 0 }]), obj);
       }),
     }),
     insert: vi.fn().mockReturnValue({

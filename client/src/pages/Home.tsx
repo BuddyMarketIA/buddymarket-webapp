@@ -3,6 +3,7 @@ import { useEffect } from "react";
 import { useLocation } from "wouter";
 import LanguageSelector from "@/components/LanguageSelector";
 import { useTranslation } from "react-i18next";
+import { getLoginUrl } from "@/const";
 
 export default function Home() {
   const { isAuthenticated, loading } = useAuth();
@@ -83,8 +84,8 @@ export default function Home() {
         </div>
         <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
           <LanguageSelector variant="compact" />
-          <a href="https://buddymarketapp.com" style={{ padding: "10px 20px", borderRadius: "12px", background: "linear-gradient(135deg, #F97316, #FB923C)", color: "white", fontSize: "14px", fontWeight: 700, textDecoration: "none", boxShadow: "0 4px 12px rgba(249,115,22,0.30)" }}>
-            {t("home.enter")}
+          <a href={isAuthenticated ? "/app/dashboard" : getLoginUrl()} style={{ padding: "8px 14px", borderRadius: "12px", background: "linear-gradient(135deg, #F97316, #FB923C)", color: "white", fontSize: "13px", fontWeight: 700, textDecoration: "none", boxShadow: "0 4px 12px rgba(249,115,22,0.30)", whiteSpace: "nowrap", flexShrink: 0 }}>
+            {isAuthenticated ? "Mi app" : t("home.enter")}
           </a>
         </div>
       </nav>
@@ -105,8 +106,8 @@ export default function Home() {
             {t("home.heroDesc")}
           </p>
           <div style={{ display: "flex", flexDirection: "column", gap: "12px", alignItems: "center" }}>
-            <a href="https://buddymarketapp.com" style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "16px 32px", borderRadius: "16px", background: "linear-gradient(135deg, #F97316, #FB923C)", color: "white", fontSize: "16px", fontWeight: 800, textDecoration: "none", boxShadow: "0 8px 24px rgba(249,115,22,0.35)", letterSpacing: "-0.01em" }}>
-              {t("home.getStarted")}
+            <a href={isAuthenticated ? "/app/dashboard" : getLoginUrl()} style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "16px 32px", borderRadius: "16px", background: "linear-gradient(135deg, #F97316, #FB923C)", color: "white", fontSize: "16px", fontWeight: 800, textDecoration: "none", boxShadow: "0 8px 24px rgba(249,115,22,0.35)", letterSpacing: "-0.01em" }}>
+              {isAuthenticated ? "Ir al dashboard" : t("home.getStarted")}
             </a>
             <p style={{ margin: 0, fontSize: "14px", color: "#9ca3af" }}>{t("home.noCard")}</p>
           </div>
@@ -208,8 +209,8 @@ export default function Home() {
                     </div>
                   ))}
                 </div>
-                <a href="https://buddymarketapp.com" style={{ display: "block", textAlign: "center", padding: "13px", borderRadius: "12px", background: plan.highlight ? "white" : "#F97316", color: plan.highlight ? "#F97316" : "white", fontSize: "14px", fontWeight: 800, textDecoration: "none", boxShadow: plan.highlight ? "none" : "0 4px 12px rgba(249,115,22,0.25)" }}>
-                  {plan.cta}
+                <a href={isAuthenticated ? "/app/dashboard" : getLoginUrl()} style={{ display: "block", textAlign: "center", padding: "13px", borderRadius: "12px", background: plan.highlight ? "white" : "#F97316", color: plan.highlight ? "#F97316" : "white", fontSize: "14px", fontWeight: 800, textDecoration: "none", boxShadow: plan.highlight ? "none" : "0 4px 12px rgba(249,115,22,0.25)" }}>
+                  {isAuthenticated ? "Ir al dashboard" : t("home.pricing.cta")}
                 </a>
               </div>
             ))}
@@ -227,7 +228,7 @@ export default function Home() {
           <p style={{ fontSize: "15px", color: "rgba(255,255,255,0.6)", margin: "0 0 28px", lineHeight: 1.6 }}>
             {t("home.cta.desc")}
           </p>
-          <a href="https://buddymarketapp.com" style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "16px 32px", borderRadius: "16px", background: "linear-gradient(135deg, #F97316, #FB923C)", color: "white", fontSize: "16px", fontWeight: 800, textDecoration: "none", boxShadow: "0 8px 24px rgba(249,115,22,0.40)" }}>
+          <a href={isAuthenticated ? "/app/dashboard" : getLoginUrl()} style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "16px 32px", borderRadius: "16px", background: "linear-gradient(135deg, #F97316, #FB923C)", color: "white", fontSize: "16px", fontWeight: 800, textDecoration: "none", boxShadow: "0 8px 24px rgba(249,115,22,0.40)" }}>
             {t("home.cta.button")}
           </a>
         </div>

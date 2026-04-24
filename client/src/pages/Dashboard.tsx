@@ -66,8 +66,8 @@ const _QUICK_ACCESS_PLACEHOLDER = [
   },
   {
     label: "BuddyScan IA",
-    emoji: "🤖",
-    to: "/app/menus",
+    emoji: "📷",
+    to: "/app/buddy-scan",
     img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/buddyscan_dd3e1e08.jpg",
     accent: "#8B5CF6",
     size: "wide",
@@ -142,7 +142,7 @@ export default function Dashboard() {
     { label: t("nav.supermarkets"), emoji: "🛒", to: "/app/supermercados", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/shopping_d2c9f4e5.jpg", accent: "#10B981", size: "small", subtitle: t("dashboard.supermarketsSubtitle") },
     { label: t("nav.inventory"), emoji: "📦", to: "/app/inventory", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/pantry_3fcf0a1f.jpg", accent: "#F59E0B", size: "small", subtitle: t("dashboard.inventorySubtitle") },
     { label: t("nav.scan"), emoji: "📷", to: "/app/buddy-scan", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/buddyscan_dd3e1e08.jpg", accent: "#8B5CF6", size: "wide", subtitle: t("dashboard.scanSubtitle") },
-    { label: "BuddyIA", emoji: "🧠", to: "/app/buddy-ia", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/buddyscan_dd3e1e08.jpg", accent: "#8B5CF6", size: "small", subtitle: "Tu asesor nutricional" },
+    { label: "BuddyIA", emoji: "🧠", to: "/app/buddy-ia", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/buddyia_card-VHfq39XvN8Z86UvgxyYrxs.webp", accent: "#7C3AED", size: "small", subtitle: "Tu asesor nutricional" },
     { label: t("nav.diary"), emoji: "📊", to: "/app/meal-log", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/vegetables_0f947a56.jpg", accent: "#EF4444", size: "small", subtitle: t("dashboard.diarySubtitle") },
     { label: "Ingredientes", emoji: "🥗", to: "/app/ingredients", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/vegetables_0f947a56.jpg", accent: "#4CAF50", size: "small", subtitle: "Valores nutricionales" },
   ];

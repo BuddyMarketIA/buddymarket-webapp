@@ -5062,23 +5062,28 @@ Responde SOLO con JSON válido, sin texto adicional:
       }),
     stats: protectedProcedure.query(async ({ ctx }) => {
         if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
-        const [users, recipesList, ingredients, menus, allergiesList, categoriesList, dietsList] = await Promise.all([
-          db.getAllUsers(1000, 0),
-          db.getAllRecipes(1000),
-          db.getAllIngredients(1000, 0),
-          db.getAllMenus(1000),
-          db.getAllAllergies(),
-          db.getAllFoodCategories(),
-          db.getAllDietRestrictions(),
+        // Use direct COUNT queries to avoid helper filters (e.g. active=true, deletedAt IS NULL)
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB unavailable" });
+        const { users: usersTable, recipes: recipesTable, ingredients: ingredientsTable, menuOrganizers, allergies: allergiesTable, foodCategories: foodCategoriesTable, dietRestrictions: dietRestrictionsTable } = await import("../drizzle/schema");
+        const { count } = await import("drizzle-orm");
+        const [[uCount], [rCount], [iCount], [mCount], [aCount], [cCount], [dCount]] = await Promise.all([
+          drizzleDb.select({ n: count() }).from(usersTable),
+          drizzleDb.select({ n: count() }).from(recipesTable),
+          drizzleDb.select({ n: count() }).from(ingredientsTable),
+          drizzleDb.select({ n: count() }).from(menuOrganizers),
+          drizzleDb.select({ n: count() }).from(allergiesTable),
+          drizzleDb.select({ n: count() }).from(foodCategoriesTable),
+          drizzleDb.select({ n: count() }).from(dietRestrictionsTable),
         ]);
         return {
-          totalUsers: users.length,
-          totalRecipes: recipesList.length,
-          totalIngredients: ingredients.length,
-          totalMenus: menus.length,
-          totalAllergies: allergiesList.length,
-          totalCategories: categoriesList.length,
-          totalDiets: dietsList.length,
+          totalUsers: uCount?.n ?? 0,
+          totalRecipes: rCount?.n ?? 0,
+          totalIngredients: iCount?.n ?? 0,
+          totalMenus: mCount?.n ?? 0,
+          totalAllergies: aCount?.n ?? 0,
+          totalCategories: cCount?.n ?? 0,
+          totalDiets: dCount?.n ?? 0,
         };
       }),
     // ── Admin: list all recipes with pagination + search ──────────────────────

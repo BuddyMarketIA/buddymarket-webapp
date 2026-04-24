@@ -126,14 +126,18 @@ vi.mock("./db", () => ({
   getMealTypesLoggedToday: vi.fn().mockResolvedValue([]),
   getDb: vi.fn().mockResolvedValue({
     select: vi.fn().mockReturnValue({
-      from: vi.fn().mockReturnValue({
-        where: vi.fn().mockReturnValue({
-          limit: vi.fn().mockResolvedValue([{ id: 2, name: "Target User", email: "target@test.com" }]),
+      from: vi.fn().mockImplementation(() => {
+        const obj: any = {
+          where: vi.fn().mockReturnValue({
+            limit: vi.fn().mockResolvedValue([{ id: 2, name: "Target User", email: "target@test.com" }]),
+            orderBy: vi.fn().mockResolvedValue([]),
+            then: vi.fn().mockResolvedValue([{ id: 2, name: "Target User", email: "target@test.com" }]),
+          }),
           orderBy: vi.fn().mockResolvedValue([]),
-          then: vi.fn().mockResolvedValue([{ id: 2, name: "Target User", email: "target@test.com" }]),
-        }),
-        orderBy: vi.fn().mockResolvedValue([]),
-        then: vi.fn().mockResolvedValue([]),
+          limit: vi.fn().mockResolvedValue([]),
+        };
+        obj[Symbol.iterator] = function* () { yield { n: 0 }; };
+        return Object.assign(Promise.resolve([{ n: 0 }]), obj);
       }),
     }),
     insert: vi.fn().mockReturnValue({

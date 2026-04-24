@@ -3024,3 +3024,11 @@
 - [x] Integrar FeedbackButton en AppLayout
 - [x] Página /app/admin/feedback para gestionar feedbacks
 - [x] Test vitest para feedback.submit y feedback.list
+
+## Bugs reportados (abril 2026)
+- [ ] Fix: Botón "Ir a la app" no se ve en móvil en la landing
+- [ ] Fix: Al pulsar "Ir a la app" obliga a hacer login aunque ya haya sesión activa
+- [ ] Fix: El diario precarga automáticamente platos del menú — debe ser el usuario quien los añada/confirme
+- [ ] Fix: BuddyIA y BuddyScan usan la misma imagen — deben tener imágenes distintas
+- [ ] Fix: Mover botón de feedback del botón flotante al sidebar (quitar FAB)
+- [ ] Fix: Panel admin muestra todos los datos a 0 — queries de stats no devuelven datos reales

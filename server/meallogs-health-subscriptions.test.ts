@@ -138,13 +138,18 @@ vi.mock("./db", () => ({
     getNutritionalHistory: vi.fn().mockResolvedValue([]),
     getDb: vi.fn().mockResolvedValue({
       select: vi.fn().mockReturnValue({
-        from: vi.fn().mockReturnValue({
-          where: vi.fn().mockReturnValue({
-            // Returns a row so ownership/existence checks pass
-            limit: vi.fn().mockResolvedValue([{ id: 1, userId: 1, name: "Test User", email: "test@test.com", role: "user" }]),
-            orderBy: vi.fn().mockResolvedValue([{ id: 1, userId: 1 }]),
-          }),
-          orderBy: vi.fn().mockResolvedValue([]),
+        from: vi.fn().mockImplementation(() => {
+          const obj: any = {
+            where: vi.fn().mockReturnValue({
+              // Returns a row so ownership/existence checks pass
+              limit: vi.fn().mockResolvedValue([{ id: 1, userId: 1, name: "Test User", email: "test@test.com", role: "user" }]),
+              orderBy: vi.fn().mockResolvedValue([{ id: 1, userId: 1 }]),
+            }),
+            orderBy: vi.fn().mockResolvedValue([]),
+            limit: vi.fn().mockResolvedValue([]),
+          };
+          obj[Symbol.iterator] = function* () { yield { n: 0 }; };
+          return Object.assign(Promise.resolve([{ n: 0 }]), obj);
         }),
         selectDistinct: vi.fn().mockReturnValue({
           from: vi.fn().mockReturnValue({

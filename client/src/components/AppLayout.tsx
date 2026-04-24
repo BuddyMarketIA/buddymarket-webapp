@@ -253,6 +253,7 @@ function SidebarContent({
             <span style={{ fontSize: "14px", fontWeight: location === "/app/admin" ? 700 : 500, color: location === "/app/admin" ? "#F97316" : "var(--sidebar-text, #374151)" }}>{t("sidebar.administration")}</span>
           </div>
         </Link>
+        <FeedbackButton asSidebarItem onClose={onClose} />
       </nav>
 
       {/* Sidebar Footer */}
@@ -548,7 +549,6 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       <div className="app-layout-root" style={{ display: "flex", minHeight: "100dvh" }}>
         {/* Onboarding modal — self-contained, decides internally whether to show */}
         {user && <OnboardingModal />}
-        {user && <FeedbackButton />}
         {/* Skip to main */}
         <a href="#main-content" style={{ position: "absolute", top: "-100px", left: "16px", zIndex: 9999, padding: "8px 16px", background: "#F97316", color: "white", borderRadius: "8px", fontWeight: 700, fontSize: "14px", textDecoration: "none" }}
           onFocus={(e) => { e.currentTarget.style.top = "16px"; }}
@@ -670,7 +670,6 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       {/* Onboarding modal — self-contained, decides internally whether to show */}
       {user && <OnboardingModal />}
       <OfflineIndicator />
-      {user && <FeedbackButton />}
       <a href="#main-content" style={{ position: "fixed", top: "-200px", left: "16px", zIndex: 9999, padding: "8px 16px", background: "#F97316", color: "white", borderRadius: "8px", fontWeight: 700, fontSize: "14px", textDecoration: "none", clip: "rect(0,0,0,0)", overflow: "hidden" }}
         onFocus={(e) => { e.currentTarget.style.top = "16px"; e.currentTarget.style.clip = "auto"; e.currentTarget.style.overflow = "visible"; }}
         onBlur={(e) => { e.currentTarget.style.top = "-200px"; e.currentTarget.style.clip = "rect(0,0,0,0)"; e.currentTarget.style.overflow = "hidden"; }}
