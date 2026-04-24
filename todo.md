@@ -3032,3 +3032,32 @@
 - [ ] Fix: BuddyIA y BuddyScan usan la misma imagen — deben tener imágenes distintas
 - [ ] Fix: Mover botón de feedback del botón flotante al sidebar (quitar FAB)
 - [ ] Fix: Panel admin muestra todos los datos a 0 — queries de stats no devuelven datos reales
+
+## BuddyPet - Menús para Mascotas
+- [ ] Tabla `pets` en schema.ts (especie, raza, nombre, peso, edad, unidad de peso)
+- [ ] Tabla `petMenus` en schema.ts (menú semanal generado por IA para mascota)
+- [ ] Tabla `petShoppingItems` en schema.ts (lista de compra de comida para mascota)
+- [ ] Helpers en db.ts: getPets, createPet, updatePet, deletePet, getPetMenus, createPetMenu, getPetShoppingList
+- [ ] Router tRPC: pets.list, pets.create, pets.update, pets.delete, pets.generateMenu, pets.getMenus, pets.getShoppingList
+- [x] Página BuddyPet.tsx: listado de mascotas con cards, formulario de alta/edición
+- [ ] Página PetMenu.tsx: menú semanal generado por IA para la mascota seleccionada
+- [ ] Página PetShopping.tsx: lista de compra de comida para mascotas
+- [ ] Ítem BuddyPet en el sidebar de navegación con emoji de pata
+- [ ] Ruta /app/buddy-pet en App.tsx
+- [ ] Tests vitest para pets router
+
+## BuddyPet - Clínica Veterinaria
+- [ ] Tabla `vetClinics` en schema.ts (nombre, dirección, teléfono, email, logo, código de acceso)
+- [ ] Tabla `vetClinicUsers` en schema.ts (relación clínica-usuario veterinario)
+- [ ] Tabla `petClinicLinks` en schema.ts (vinculación mascota-clínica con estado)
+- [ ] Tabla `petAlerts` en schema.ts (alertas: vacuna, revisión, medicación, peso, dieta)
+- [ ] Tabla `petVetVisits` en schema.ts (historial de visitas veterinarias)
+- [ ] Helpers en db.ts para clínicas, vinculaciones, alertas y visitas
+- [ ] Router tRPC: vetClinic.create, vetClinic.get, vetClinic.update, vetClinic.getPets, vetClinic.sendAlert, petAlerts.list, petAlerts.create, petAlerts.resolve, petVetVisits.list, petVetVisits.create
+- [ ] Página VetClinicAdmin.tsx: dashboard de clínica con mascotas vinculadas, alertas y visitas
+- [ ] Página VetClinicSetup.tsx: configuración del perfil de la clínica
+- [ ] Flujo de vinculación: usuario comparte código de clínica para vincular su mascota
+- [ ] Sistema de alertas: la clínica puede enviar alertas de vacuna/revisión/dieta al dueño
+- [ ] Notificación push al dueño cuando la clínica envía una alerta
+- [ ] Ruta /app/vet-clinic en App.tsx
+- [ ] Tests vitest para vetClinic router

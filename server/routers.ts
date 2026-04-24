@@ -12132,5 +12132,236 @@ Devuelve ÚNICAMENTE JSON válido con esta estructura:
         return { count };
       }),
   }),
+
+  // ─── BuddyPet ──────────────────────────────────────────────────────────────
+  pets: router({
+    list: protectedProcedure.query(async ({ ctx }) => {
+      return db.getPetsByUser(ctx.user.id);
+    }),
+    get: protectedProcedure
+      .input(z.object({ id: z.number().int() }))
+      .query(async ({ ctx, input }) => {
+        const pet = await db.getPetById(input.id, ctx.user.id);
+        if (!pet) throw new TRPCError({ code: "NOT_FOUND" });
+        return pet;
+      }),
+    create: protectedProcedure
+      .input(z.object({
+        name: z.string().min(1).max(100),
+        species: z.enum(["dog", "cat", "rabbit", "bird", "hamster", "guinea_pig", "fish", "turtle", "ferret", "other"]),
+        breed: z.string().max(150).optional(),
+        weightValue: z.number().positive(),
+        weightUnit: z.enum(["kg", "lb"]).default("kg"),
+        ageYears: z.number().int().min(0).max(50).optional(),
+        ageMonths: z.number().int().min(0).max(11).optional(),
+        gender: z.string().max(10).optional(),
+        neutered: z.boolean().default(false),
+        healthNotes: z.string().max(1000).optional(),
+        avatarEmoji: z.string().max(10).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        return db.createPet({ ...input, userId: ctx.user.id });
+      }),
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number().int(),
+        name: z.string().min(1).max(100).optional(),
+        species: z.enum(["dog", "cat", "rabbit", "bird", "hamster", "guinea_pig", "fish", "turtle", "ferret", "other"]).optional(),
+        breed: z.string().max(150).optional(),
+        weightValue: z.number().positive().optional(),
+        weightUnit: z.enum(["kg", "lb"]).optional(),
+        ageYears: z.number().int().min(0).max(50).optional(),
+        ageMonths: z.number().int().min(0).max(11).optional(),
+        gender: z.string().max(10).optional(),
+        neutered: z.boolean().optional(),
+        healthNotes: z.string().max(1000).optional(),
+        avatarEmoji: z.string().max(10).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { id, ...data } = input;
+        const pet = await db.updatePet(id, ctx.user.id, data);
+        if (!pet) throw new TRPCError({ code: "NOT_FOUND" });
+        return pet;
+      }),
+    delete: protectedProcedure
+      .input(z.object({ id: z.number().int() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.deletePet(input.id, ctx.user.id);
+        return { ok: true };
+      }),
+    generateMenu: protectedProcedure
+      .input(z.object({ petId: z.number().int(), weekLabel: z.string().max(50).optional() }))
+      .mutation(async ({ ctx, input }) => {
+        const pet = await db.getPetById(input.petId, ctx.user.id);
+        if (!pet) throw new TRPCError({ code: "NOT_FOUND", message: "Mascota no encontrada" });
+        const weightKg = pet.weightUnit === "lb" ? pet.weightValue * 0.453592 : pet.weightValue;
+        const speciesLabels: Record<string, string> = {
+          dog: "perro", cat: "gato", rabbit: "conejo", bird: "pájaro",
+          hamster: "hámster", guinea_pig: "cobaya", fish: "pez",
+          turtle: "tortuga", ferret: "hurón", other: "mascota",
+        };
+        const speciesLabel = speciesLabels[pet.species] ?? pet.species;
+        const prompt = `Eres un nutricionista veterinario experto. Genera un menú semanal completo y equilibrado para un ${speciesLabel} con estas características:
+- Nombre: ${pet.name}
+- Raza: ${pet.breed ?? "desconocida"}
+- Peso: ${weightKg.toFixed(1)} kg
+- Edad: ${pet.ageYears ?? 0} años ${pet.ageMonths ?? 0} meses
+- Sexo: ${pet.gender ?? "desconocido"}
+- Castrado/esterilizado: ${pet.neutered ? "sí" : "no"}
+- Notas de salud: ${pet.healthNotes ?? "ninguna"}
+
+Devuelve SOLO JSON válido con esta estructura:
+{
+  "dailyCalories": number,
+  "dailyGrams": number,
+  "notes": "recomendaciones generales",
+  "days": [{ "day": "Lunes", "meals": [{ "time": "Mañana", "food": "descripción", "grams": number }] }],
+  "shoppingList": [{ "item": "producto", "quantity": "cantidad", "category": "categoría" }]
+}`;
+        const response = await invokeLLM({
+          messages: [
+            { role: "system", content: "Eres un nutricionista veterinario experto. Responde siempre con JSON válido." },
+            { role: "user", content: prompt },
+          ],
+          response_format: { type: "json_object" },
+        });
+        const content = response.choices?.[0]?.message?.content ?? "{}";
+        const menuData = JSON.parse(content);
+        const saved = await db.createPetMenu({
+          petId: input.petId,
+          userId: ctx.user.id,
+          weekLabel: input.weekLabel ?? `Semana ${new Date().toLocaleDateString("es-ES")}`,
+          menuJson: content,
+          shoppingListJson: JSON.stringify(menuData.shoppingList ?? []),
+        });
+        return { menu: menuData, savedId: saved.id };
+      }),
+    menus: protectedProcedure
+      .input(z.object({ petId: z.number().int() }))
+      .query(async ({ ctx, input }) => {
+        return db.getPetMenusByPet(input.petId, ctx.user.id);
+      }),
+    linkToClinic: protectedProcedure
+      .input(z.object({ petId: z.number().int(), clinicCode: z.string().min(6).max(12) }))
+      .mutation(async ({ ctx, input }) => {
+        const pet = await db.getPetById(input.petId, ctx.user.id);
+        if (!pet) throw new TRPCError({ code: "NOT_FOUND", message: "Mascota no encontrada" });
+        const clinic = await db.getVetClinicByCode(input.clinicCode);
+        if (!clinic) throw new TRPCError({ code: "NOT_FOUND", message: "Código de clínica no válido" });
+        const link = await db.linkPetToClinic(input.petId, clinic.id, ctx.user.id);
+        return { ok: true, clinicName: clinic.name, link };
+      }),
+    linkedClinics: protectedProcedure
+      .input(z.object({ petId: z.number().int() }))
+      .query(async ({ ctx, input }) => {
+        const pet = await db.getPetById(input.petId, ctx.user.id);
+        if (!pet) throw new TRPCError({ code: "NOT_FOUND" });
+        return db.getLinkedClinicsForPet(input.petId);
+      }),
+    alerts: protectedProcedure.query(async ({ ctx }) => {
+      return db.getPetAlertsByOwner(ctx.user.id);
+    }),
+  }),
+
+  // ─── Veterinary Clinic ─────────────────────────────────────────────────────
+  vetClinic: router({
+    myClinic: protectedProcedure.query(async ({ ctx }) => {
+      return db.getVetClinicForUser(ctx.user.id);
+    }),
+    create: protectedProcedure
+      .input(z.object({
+        name: z.string().min(2).max(200),
+        address: z.string().max(500).optional(),
+        phone: z.string().max(32).optional(),
+        email: z.string().email().optional(),
+        website: z.string().max(300).optional().or(z.literal("")),
+        description: z.string().max(1000).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const existing = await db.getVetClinicForUser(ctx.user.id);
+        if (existing) throw new TRPCError({ code: "CONFLICT", message: "Ya tienes una clínica registrada" });
+        return db.createVetClinic({ ...input, ownerId: ctx.user.id });
+      }),
+    update: protectedProcedure
+      .input(z.object({
+        clinicId: z.number().int(),
+        name: z.string().min(2).max(200).optional(),
+        address: z.string().max(500).optional(),
+        phone: z.string().max(32).optional(),
+        email: z.string().email().optional(),
+        website: z.string().max(300).optional(),
+        description: z.string().max(1000).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { clinicId, ...data } = input;
+        const result = await db.updateVetClinic(clinicId, ctx.user.id, data);
+        if (!result) throw new TRPCError({ code: "FORBIDDEN" });
+        return result;
+      }),
+    linkedPets: protectedProcedure
+      .input(z.object({ clinicId: z.number().int() }))
+      .query(async ({ ctx, input }) => {
+        return db.getLinkedPetsForClinic(input.clinicId);
+      }),
+    sendAlert: protectedProcedure
+      .input(z.object({
+        clinicId: z.number().int(),
+        petId: z.number().int(),
+        ownerId: z.number().int(),
+        type: z.enum(["vaccine", "checkup", "medication", "weight", "diet", "deworming", "dental", "surgery", "other"]),
+        title: z.string().min(3).max(200),
+        description: z.string().max(1000).optional(),
+        dueDate: z.date().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const alert = await db.createPetAlert({
+          petId: input.petId,
+          clinicId: input.clinicId,
+          ownerId: input.ownerId,
+          type: input.type,
+          title: input.title,
+          description: input.description,
+          dueDate: input.dueDate,
+        });
+        try {
+          const { notifyOwner } = await import("./_core/notification.js");
+          await notifyOwner({ title: `🐾 Alerta veterinaria: ${input.title}`, content: input.description ?? "" });
+        } catch { /* non-critical */ }
+        return { ok: true, alert };
+      }),
+    clinicAlerts: protectedProcedure
+      .input(z.object({ clinicId: z.number().int() }))
+      .query(async ({ ctx, input }) => {
+        return db.getPetAlertsByClinic(input.clinicId);
+      }),
+    resolveAlert: protectedProcedure
+      .input(z.object({ alertId: z.number().int() }))
+      .mutation(async ({ ctx, input }) => {
+        const result = await db.resolvePetAlert(input.alertId);
+        if (!result) throw new TRPCError({ code: "NOT_FOUND" });
+        return { ok: true };
+      }),
+    addVisit: protectedProcedure
+      .input(z.object({
+        petId: z.number().int(),
+        clinicId: z.number().int(),
+        ownerId: z.number().int(),
+        visitDate: z.date(),
+        reason: z.string().max(300).optional(),
+        diagnosis: z.string().max(2000).optional(),
+        treatment: z.string().max(2000).optional(),
+        weight: z.number().positive().optional(),
+        nextVisitDate: z.date().optional(),
+        vetName: z.string().max(150).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        return db.createPetVetVisit(input);
+      }),
+    petVisits: protectedProcedure
+      .input(z.object({ petId: z.number().int() }))
+      .query(async ({ ctx, input }) => {
+        return db.getPetVetVisits(input.petId);
+      }),
+  }),
 });
 export type AppRouter = typeof appRouter;

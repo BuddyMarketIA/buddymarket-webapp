@@ -86,6 +86,8 @@ const Admin = lazyWithRetry(() => import("./pages/Admin"));
 const AdminContent = lazyWithRetry(() => import("./pages/AdminContent"));
 const AdminLogs = lazyWithRetry(() => import("./pages/AdminLogs"));
 const AdminFeedback = lazyWithRetry(() => import("./pages/AdminFeedback"));
+const BuddyPet = lazyWithRetry(() => import("./pages/BuddyPet"));
+const VetClinicDashboard = lazyWithRetry(() => import("./pages/VetClinicDashboard"));
 const Subscription = lazyWithRetry(() => import("./pages/Subscription"));
 const BuddyExperts = lazyWithRetry(() => import("./pages/BuddyExperts"));
 const BuddyMakers = lazyWithRetry(() => import("./pages/BuddyMakers"));
@@ -236,6 +238,8 @@ function Router() {
       <Route path="/app/admin/content">{() => <ProtectedRoute component={AdminContent} />}</Route>
       <Route path="/app/admin/logs">{() => <ProtectedRoute component={AdminLogs} />}</Route>
       <Route path="/app/admin/feedback">{() => <ProtectedRoute component={AdminFeedback} />}</Route>
+      <Route path="/app/buddy-pet">{() => <ProtectedRoute component={BuddyPet} />}</Route>
+      <Route path="/app/vet-clinic">{() => <ProtectedRoute component={VetClinicDashboard} />}</Route>
       <Route path="/app/subscription">{() => <ProtectedRoute component={Subscription} />}</Route>
       <Route path="/app/payment-history">{() => <ProtectedRoute component={PaymentHistory} />}</Route>
       <Route path="/app/buddy-experts">{() => <ProtectedRoute component={BuddyExperts} />}</Route>

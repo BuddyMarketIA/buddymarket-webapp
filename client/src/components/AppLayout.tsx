@@ -469,6 +469,13 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       ],
     },
     {
+      label: "BuddyPet",
+      items: [
+        { key: "/app/buddy-pet", label: "Mis Mascotas", to: "/app/buddy-pet", emoji: "🐾" },
+        { key: "/app/vet-clinic", label: "Clínica Veterinaria", to: "/app/vet-clinic", emoji: "🏥" },
+      ],
+    },
+    {
       label: "Familia",
       items: [
         { key: "/familia", label: "Mi Hogar", to: "/familia", emoji: "🏡" },

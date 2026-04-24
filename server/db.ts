@@ -2839,3 +2839,225 @@ export async function getPendingFeedbackCount(): Promise<number> {
     return 0;
   }
 }
+
+// ─── BuddyPet helpers ─────────────────────────────────────────────────────────
+import {
+  pets as petsTable,
+  petMenus as petMenusTable,
+  vetClinics as vetClinicsTable,
+  vetClinicUsers as vetClinicUsersTable,
+  petClinicLinks as petClinicLinksTable,
+  petAlerts as petAlertsTable,
+  petVetVisits as petVetVisitsTable,
+} from "../drizzle/schema";
+
+// Generate a random 8-char alphanumeric access code for vet clinics
+function generateAccessCode(): string {
+  const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+  let code = "";
+  for (let i = 0; i < 8; i++) code += chars[Math.floor(Math.random() * chars.length)];
+  return code;
+}
+
+// ── Pets ──────────────────────────────────────────────────────────────────────
+export async function getPetsByUser(userId: number) {
+  const db = getDb();
+  return db.select().from(petsTable).where(eq(petsTable.userId, userId)).orderBy(petsTable.createdAt);
+}
+
+export async function getPetById(petId: number, userId: number) {
+  const db = getDb();
+  const rows = await db.select().from(petsTable).where(and(eq(petsTable.id, petId), eq(petsTable.userId, userId))).limit(1);
+  return rows[0] ?? null;
+}
+
+export async function createPet(data: {
+  userId: number; name: string; species: string; breed?: string;
+  weightValue: number; weightUnit?: string; ageYears?: number; ageMonths?: number;
+  gender?: string; neutered?: boolean; healthNotes?: string; avatarEmoji?: string;
+}) {
+  const db = getDb();
+  const rows = await db.insert(petsTable).values({
+    userId: data.userId, name: data.name, species: data.species as any,
+    breed: data.breed, weightValue: data.weightValue, weightUnit: (data.weightUnit ?? "kg") as any,
+    ageYears: data.ageYears, ageMonths: data.ageMonths, gender: data.gender,
+    neutered: data.neutered ?? false, healthNotes: data.healthNotes, avatarEmoji: data.avatarEmoji,
+  }).returning();
+  return rows[0];
+}
+
+export async function updatePet(petId: number, userId: number, data: Partial<{
+  name: string; species: string; breed: string; weightValue: number; weightUnit: string;
+  ageYears: number; ageMonths: number; gender: string; neutered: boolean;
+  healthNotes: string; avatarEmoji: string;
+}>) {
+  const db = getDb();
+  const rows = await db.update(petsTable).set({ ...data as any, updatedAt: new Date() })
+    .where(and(eq(petsTable.id, petId), eq(petsTable.userId, userId))).returning();
+  return rows[0] ?? null;
+}
+
+export async function deletePet(petId: number, userId: number) {
+  const db = getDb();
+  await db.delete(petsTable).where(and(eq(petsTable.id, petId), eq(petsTable.userId, userId)));
+}
+
+// ── Pet Menus ─────────────────────────────────────────────────────────────────
+export async function getPetMenusByPet(petId: number, userId: number) {
+  const db = getDb();
+  return db.select().from(petMenusTable)
+    .where(and(eq(petMenusTable.petId, petId), eq(petMenusTable.userId, userId)))
+    .orderBy(petMenusTable.createdAt);
+}
+
+export async function createPetMenu(data: {
+  petId: number; userId: number; weekLabel?: string;
+  menuJson: string; shoppingListJson?: string; notes?: string;
+}) {
+  const db = getDb();
+  const rows = await db.insert(petMenusTable).values(data).returning();
+  return rows[0];
+}
+
+// ── Vet Clinics ───────────────────────────────────────────────────────────────
+export async function getVetClinicByOwner(ownerId: number) {
+  const db = getDb();
+  const rows = await db.select().from(vetClinicsTable).where(eq(vetClinicsTable.ownerId, ownerId)).limit(1);
+  return rows[0] ?? null;
+}
+
+export async function getVetClinicById(clinicId: number) {
+  const db = getDb();
+  const rows = await db.select().from(vetClinicsTable).where(eq(vetClinicsTable.id, clinicId)).limit(1);
+  return rows[0] ?? null;
+}
+
+export async function getVetClinicByCode(code: string) {
+  const db = getDb();
+  const rows = await db.select().from(vetClinicsTable).where(eq(vetClinicsTable.accessCode, code.toUpperCase())).limit(1);
+  return rows[0] ?? null;
+}
+
+export async function getVetClinicForUser(userId: number) {
+  const db = getDb();
+  // Check if user is staff of any clinic
+  const staffRows = await db.select().from(vetClinicUsersTable).where(eq(vetClinicUsersTable.userId, userId));
+  if (staffRows.length === 0) return null;
+  const clinicId = staffRows[0].clinicId;
+  return getVetClinicById(clinicId);
+}
+
+export async function createVetClinic(data: {
+  name: string; address?: string; phone?: string; email?: string;
+  website?: string; description?: string; ownerId: number;
+}) {
+  const db = getDb();
+  let code = generateAccessCode();
+  // Ensure uniqueness
+  let existing = await getVetClinicByCode(code);
+  while (existing) { code = generateAccessCode(); existing = await getVetClinicByCode(code); }
+  const rows = await db.insert(vetClinicsTable).values({ ...data, accessCode: code }).returning();
+  const clinic = rows[0];
+  // Add owner as staff
+  await db.insert(vetClinicUsersTable).values({ clinicId: clinic.id, userId: data.ownerId, role: "owner" });
+  return clinic;
+}
+
+export async function updateVetClinic(clinicId: number, ownerId: number, data: Partial<{
+  name: string; address: string; phone: string; email: string;
+  website: string; description: string; logoUrl: string;
+}>) {
+  const db = getDb();
+  const rows = await db.update(vetClinicsTable).set({ ...data, updatedAt: new Date() })
+    .where(and(eq(vetClinicsTable.id, clinicId), eq(vetClinicsTable.ownerId, ownerId))).returning();
+  return rows[0] ?? null;
+}
+
+// ── Pet-Clinic Links ──────────────────────────────────────────────────────────
+export async function linkPetToClinic(petId: number, clinicId: number, ownerId: number) {
+  const db = getDb();
+  // Check if already linked
+  const existing = await db.select().from(petClinicLinksTable)
+    .where(and(eq(petClinicLinksTable.petId, petId), eq(petClinicLinksTable.clinicId, clinicId))).limit(1);
+  if (existing.length > 0) {
+    if (existing[0].status === "active") return existing[0];
+    const rows = await db.update(petClinicLinksTable).set({ status: "active", revokedAt: null })
+      .where(eq(petClinicLinksTable.id, existing[0].id)).returning();
+    return rows[0];
+  }
+  const rows = await db.insert(petClinicLinksTable).values({ petId, clinicId, ownerId, status: "active" }).returning();
+  return rows[0];
+}
+
+export async function getLinkedPetsForClinic(clinicId: number) {
+  const db = getDb();
+  return db.select({
+    link: petClinicLinksTable,
+    pet: petsTable,
+  }).from(petClinicLinksTable)
+    .innerJoin(petsTable, eq(petClinicLinksTable.petId, petsTable.id))
+    .where(and(eq(petClinicLinksTable.clinicId, clinicId), eq(petClinicLinksTable.status, "active")))
+    .orderBy(petsTable.name);
+}
+
+export async function getLinkedClinicsForPet(petId: number) {
+  const db = getDb();
+  return db.select({
+    link: petClinicLinksTable,
+    clinic: vetClinicsTable,
+  }).from(petClinicLinksTable)
+    .innerJoin(vetClinicsTable, eq(petClinicLinksTable.clinicId, vetClinicsTable.id))
+    .where(and(eq(petClinicLinksTable.petId, petId), eq(petClinicLinksTable.status, "active")));
+}
+
+// ── Pet Alerts ────────────────────────────────────────────────────────────────
+export async function getPetAlertsByOwner(ownerId: number) {
+  const db = getDb();
+  return db.select().from(petAlertsTable).where(eq(petAlertsTable.ownerId, ownerId))
+    .orderBy(petAlertsTable.dueDate);
+}
+
+export async function getPetAlertsByClinic(clinicId: number) {
+  const db = getDb();
+  return db.select({
+    alert: petAlertsTable,
+    pet: petsTable,
+  }).from(petAlertsTable)
+    .innerJoin(petsTable, eq(petAlertsTable.petId, petsTable.id))
+    .where(eq(petAlertsTable.clinicId, clinicId))
+    .orderBy(petAlertsTable.dueDate);
+}
+
+export async function createPetAlert(data: {
+  petId: number; clinicId?: number; ownerId: number; type: string;
+  title: string; description?: string; dueDate?: Date;
+}) {
+  const db = getDb();
+  const rows = await db.insert(petAlertsTable).values({ ...data as any, status: "pending" }).returning();
+  return rows[0];
+}
+
+export async function resolvePetAlert(alertId: number) {
+  const db = getDb();
+  const rows = await db.update(petAlertsTable)
+    .set({ status: "resolved", resolvedAt: new Date() })
+    .where(eq(petAlertsTable.id, alertId)).returning();
+  return rows[0] ?? null;
+}
+
+// ── Pet Vet Visits ────────────────────────────────────────────────────────────
+export async function getPetVetVisits(petId: number) {
+  const db = getDb();
+  return db.select().from(petVetVisitsTable).where(eq(petVetVisitsTable.petId, petId))
+    .orderBy(petVetVisitsTable.visitDate);
+}
+
+export async function createPetVetVisit(data: {
+  petId: number; clinicId: number; ownerId: number; visitDate: Date;
+  reason?: string; diagnosis?: string; treatment?: string; weight?: number;
+  nextVisitDate?: Date; vetName?: string;
+}) {
+  const db = getDb();
+  const rows = await db.insert(petVetVisitsTable).values(data).returning();
+  return rows[0];
+}

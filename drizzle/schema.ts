@@ -3061,3 +3061,148 @@ export const feedbacks = pgTable("feedbacks", {
 }));
 export type Feedback = typeof feedbacks.$inferSelect;
 export type NewFeedback = typeof feedbacks.$inferInsert;
+
+// ─── BuddyPet ─────────────────────────────────────────────────────────────────
+export const petSpeciesEnum = pgEnum("petSpecies", [
+  "dog", "cat", "rabbit", "bird", "hamster", "guinea_pig", "fish", "turtle", "ferret", "other"
+]);
+export const petWeightUnitEnum = pgEnum("petWeightUnit", ["kg", "lb"]);
+
+export const pets = pgTable("pets", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull(),
+  name: varchar("name", { length: 100 }).notNull(),
+  species: petSpeciesEnum("species").notNull(),
+  breed: varchar("breed", { length: 150 }),
+  weightValue: real("weightValue").notNull(),
+  weightUnit: petWeightUnitEnum("weightUnit").default("kg").notNull(),
+  ageYears: integer("ageYears"),
+  ageMonths: integer("ageMonths"),
+  gender: varchar("gender", { length: 10 }),
+  neutered: boolean("neutered").default(false),
+  healthNotes: text("healthNotes"),
+  avatarEmoji: varchar("avatarEmoji", { length: 10 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  petUserIdx: index("pet_user_idx").on(t.userId),
+}));
+export type Pet = typeof pets.$inferSelect;
+export type NewPet = typeof pets.$inferInsert;
+
+export const petMenus = pgTable("petMenus", {
+  id: serial("id").primaryKey(),
+  petId: integer("petId").notNull(),
+  userId: integer("userId").notNull(),
+  weekLabel: varchar("weekLabel", { length: 50 }),
+  menuJson: text("menuJson").notNull(),
+  shoppingListJson: text("shoppingListJson"),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  pmPetIdx: index("pm_pet_idx").on(t.petId),
+  pmUserIdx: index("pm_user_idx").on(t.userId),
+}));
+export type PetMenu = typeof petMenus.$inferSelect;
+export type NewPetMenu = typeof petMenus.$inferInsert;
+
+// ─── Veterinary Clinics ───────────────────────────────────────────────────────
+export const petAlertTypeEnum = pgEnum("petAlertType", [
+  "vaccine", "checkup", "medication", "weight", "diet", "deworming", "dental", "surgery", "other"
+]);
+export const petAlertStatusEnum = pgEnum("petAlertStatus", ["pending", "sent", "resolved", "dismissed"]);
+export const petClinicLinkStatusEnum = pgEnum("petClinicLinkStatus", ["pending", "active", "revoked"]);
+
+export const vetClinics = pgTable("vetClinics", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 200 }).notNull(),
+  address: text("address"),
+  phone: varchar("phone", { length: 32 }),
+  email: varchar("email", { length: 320 }),
+  website: varchar("website", { length: 300 }),
+  logoUrl: text("logoUrl"),
+  description: text("description"),
+  accessCode: varchar("accessCode", { length: 12 }).notNull().unique(), // código que comparte la clínica con los dueños
+  ownerId: integer("ownerId").notNull(),                                  // usuario que creó la clínica
+  active: boolean("active").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  vcOwnerIdx: index("vc_owner_idx").on(t.ownerId),
+  vcCodeIdx: uniqueIndex("vc_code_idx").on(t.accessCode),
+}));
+export type VetClinic = typeof vetClinics.$inferSelect;
+export type NewVetClinic = typeof vetClinics.$inferInsert;
+
+// Staff de la clínica (veterinarios con acceso al panel)
+export const vetClinicUsers = pgTable("vetClinicUsers", {
+  id: serial("id").primaryKey(),
+  clinicId: integer("clinicId").notNull(),
+  userId: integer("userId").notNull(),
+  role: varchar("role", { length: 32 }).default("vet").notNull(), // owner | vet | admin
+  joinedAt: timestamp("joinedAt").defaultNow().notNull(),
+}, (t) => ({
+  vcuClinicIdx: index("vcu_clinic_idx").on(t.clinicId),
+  vcuUserIdx: index("vcu_user_idx").on(t.userId),
+}));
+export type VetClinicUser = typeof vetClinicUsers.$inferSelect;
+
+// Vinculación mascota ↔ clínica
+export const petClinicLinks = pgTable("petClinicLinks", {
+  id: serial("id").primaryKey(),
+  petId: integer("petId").notNull(),
+  clinicId: integer("clinicId").notNull(),
+  ownerId: integer("ownerId").notNull(),          // dueño de la mascota
+  status: petClinicLinkStatusEnum("status").default("active").notNull(),
+  linkedAt: timestamp("linkedAt").defaultNow().notNull(),
+  revokedAt: timestamp("revokedAt"),
+  vetNotes: text("vetNotes"),                     // notas internas del veterinario
+}, (t) => ({
+  pclPetIdx: index("pcl_pet_idx").on(t.petId),
+  pclClinicIdx: index("pcl_clinic_idx").on(t.clinicId),
+}));
+export type PetClinicLink = typeof petClinicLinks.$inferSelect;
+
+// Alertas veterinarias
+export const petAlerts = pgTable("petAlerts", {
+  id: serial("id").primaryKey(),
+  petId: integer("petId").notNull(),
+  clinicId: integer("clinicId"),                  // null si la crea el dueño
+  ownerId: integer("ownerId").notNull(),
+  type: petAlertTypeEnum("type").notNull(),
+  title: varchar("title", { length: 200 }).notNull(),
+  description: text("description"),
+  dueDate: timestamp("dueDate"),                  // fecha límite de la alerta
+  status: petAlertStatusEnum("status").default("pending").notNull(),
+  resolvedAt: timestamp("resolvedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  paPetIdx: index("pa_pet_idx").on(t.petId),
+  paOwnerIdx: index("pa_owner_idx").on(t.ownerId),
+  paClinicIdx: index("pa_clinic_idx").on(t.clinicId),
+  paStatusIdx: index("pa_status_idx").on(t.status),
+}));
+export type PetAlert = typeof petAlerts.$inferSelect;
+export type NewPetAlert = typeof petAlerts.$inferInsert;
+
+// Historial de visitas veterinarias
+export const petVetVisits = pgTable("petVetVisits", {
+  id: serial("id").primaryKey(),
+  petId: integer("petId").notNull(),
+  clinicId: integer("clinicId").notNull(),
+  ownerId: integer("ownerId").notNull(),
+  visitDate: timestamp("visitDate").notNull(),
+  reason: varchar("reason", { length: 300 }),
+  diagnosis: text("diagnosis"),
+  treatment: text("treatment"),
+  weight: real("weight"),                         // peso en la visita (kg)
+  nextVisitDate: timestamp("nextVisitDate"),
+  vetName: varchar("vetName", { length: 150 }),
+  attachmentsJson: text("attachmentsJson"),       // JSON array de URLs de documentos
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  pvvPetIdx: index("pvv_pet_idx").on(t.petId),
+  pvvClinicIdx: index("pvv_clinic_idx").on(t.clinicId),
+}));
+export type PetVetVisit = typeof petVetVisits.$inferSelect;
+export type NewPetVetVisit = typeof petVetVisits.$inferInsert;

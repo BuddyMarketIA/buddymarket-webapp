@@ -351,6 +351,20 @@
       "when": 1777019988346,
       "tag": "0049_organic_warstar",
       "breakpoints": true
+    },
+    {
+      "idx": 50,
+      "version": "7",
+      "when": 1777063487609,
+      "tag": "0050_dusty_imperial_guard",
+      "breakpoints": true
+    },
+    {
+      "idx": 51,
+      "version": "7",
+      "when": 1777063559210,
+      "tag": "0051_sharp_puppet_master",
+      "breakpoints": true
     }
   ]
 }
