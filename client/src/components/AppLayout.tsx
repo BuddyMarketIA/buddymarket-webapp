@@ -1,12 +1,27 @@
+// ─── React ───────────────────────────────────────────────────────────────────
+import React, { useState, useEffect, useRef, useCallback } from "react";
+
+// ─── Routing ─────────────────────────────────────────────────────────────────
+import { Link, useLocation } from "wouter";
+
+// ─── Data / API ───────────────────────────────────────────────────────────────
+import { trpc } from "@/lib/trpc";
+
+// ─── Auth & permissions ───────────────────────────────────────────────────────
 import { useAuth } from "@/_core/hooks/useAuth";
 import { hasRole } from "@/lib/utils";
+
+// ─── Contexts ────────────────────────────────────────────────────────────────
 import { ExpertModeContext } from "../contexts/ExpertModeContext";
-import { useState, useEffect, useRef, useCallback } from "react";
-import { Link, useLocation } from "wouter";
-import { trpc } from "@/lib/trpc";
-import { usePlan } from "@/hooks/usePlan";
 import { useTheme } from "@/contexts/ThemeContext";
+
+// ─── Hooks ───────────────────────────────────────────────────────────────────
+import { usePlan } from "@/hooks/usePlan";
+
+// ─── i18n ────────────────────────────────────────────────────────────────────
 import { useTranslation } from "react-i18next";
+
+// ─── Components ──────────────────────────────────────────────────────────────
 import LanguageSelector from "@/components/LanguageSelector";
 import LogoutConfirmDialog from "@/components/LogoutConfirmDialog";
 import { OnboardingModal } from "@/components/OnboardingModal";
