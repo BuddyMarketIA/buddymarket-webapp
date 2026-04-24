@@ -365,6 +365,13 @@
       "when": 1777063559210,
       "tag": "0051_sharp_puppet_master",
       "breakpoints": true
+    },
+    {
+      "idx": 52,
+      "version": "7",
+      "when": 1777073248633,
+      "tag": "0052_late_hulk",
+      "breakpoints": true
     }
   ]
 }

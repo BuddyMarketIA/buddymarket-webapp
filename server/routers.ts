@@ -12261,6 +12261,288 @@ Devuelve SOLO JSON válido con esta estructura:
     alerts: protectedProcedure.query(async ({ ctx }) => {
       return db.getPetAlertsByOwner(ctx.user.id);
     }),
+
+    // ── Nutrition Profile ────────────────────────────────────────────────────
+    getNutritionProfile: protectedProcedure
+      .input(z.object({ petId: z.number().int() }))
+      .query(async ({ ctx, input }) => {
+        const pet = await db.getPetById(input.petId, ctx.user.id);
+        if (!pet) throw new TRPCError({ code: "NOT_FOUND" });
+        return db.getPetNutritionProfile(input.petId, ctx.user.id);
+      }),
+
+    updateNutritionProfile: protectedProcedure
+      .input(z.object({
+        petId: z.number().int(),
+        dietType: z.enum(["standard","barf","homecooked","mixed","prescription","vegetarian","senior","puppy_kitten","weight_loss","weight_gain","hypoallergenic","renal","diabetic"]).optional(),
+        activityLevel: z.enum(["sedentary","low","moderate","high","very_high"]).optional(),
+        bodyCondition: z.enum(["very_thin","thin","ideal","overweight","obese"]).optional(),
+        targetWeightKg: z.number().positive().optional(),
+        allergies: z.array(z.string()).optional(),
+        foodsToAvoid: z.array(z.string()).optional(),
+        favoriteFoods: z.array(z.string()).optional(),
+        medicalConditions: z.array(z.string()).optional(),
+        dailyCaloriesTarget: z.number().int().positive().optional(),
+        dailyGramsTarget: z.number().int().positive().optional(),
+        mealsPerDay: z.number().int().min(1).max(6).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { petId, allergies, foodsToAvoid, favoriteFoods, medicalConditions, ...rest } = input;
+        const pet = await db.getPetById(petId, ctx.user.id);
+        if (!pet) throw new TRPCError({ code: "NOT_FOUND" });
+        return db.upsertPetNutritionProfile(petId, ctx.user.id, {
+          ...rest,
+          allergiesJson: allergies ? JSON.stringify(allergies) : undefined,
+          foodsToAvoidJson: foodsToAvoid ? JSON.stringify(foodsToAvoid) : undefined,
+          favoriteFoodsJson: favoriteFoods ? JSON.stringify(favoriteFoods) : undefined,
+          medicalConditionsJson: medicalConditions ? JSON.stringify(medicalConditions) : undefined,
+        });
+      }),
+
+    // ── Custom Menu Generation ───────────────────────────────────────────────
+    generateCustomMenu: protectedProcedure
+      .input(z.object({
+        petId: z.number().int(),
+        weekLabel: z.string().max(50).optional(),
+        dietType: z.string().optional(),
+        bodyCondition: z.string().optional(),
+        activityLevel: z.string().optional(),
+        foodsToAvoid: z.array(z.string()).optional(),
+        favoriteFoods: z.array(z.string()).optional(),
+        medicalConditions: z.array(z.string()).optional(),
+        mealsPerDay: z.number().int().min(1).max(6).optional(),
+        targetWeightKg: z.number().positive().optional(),
+        extraInstructions: z.string().max(500).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const pet = await db.getPetById(input.petId, ctx.user.id);
+        if (!pet) throw new TRPCError({ code: "NOT_FOUND", message: "Mascota no encontrada" });
+        const weightKg = pet.weightUnit === "lb" ? pet.weightValue * 0.453592 : pet.weightValue;
+        const speciesLabels: Record<string, string> = {
+          dog: "perro", cat: "gato", rabbit: "conejo", bird: "pájaro",
+          hamster: "hámster", guinea_pig: "cobaya", fish: "pez",
+          turtle: "tortuga", ferret: "hurón", other: "mascota",
+        };
+        const dietLabels: Record<string, string> = {
+          standard: "estándar (pienso comercial)", barf: "BARF (huesos y carne cruda)",
+          homecooked: "comida casera cocinada", mixed: "mixta (pienso + natural)",
+          prescription: "dieta veterinaria prescrita", vegetarian: "vegetariana",
+          senior: "senior (mascota mayor)", puppy_kitten: "cachorro/gatito",
+          weight_loss: "pérdida de peso", weight_gain: "ganancia de peso",
+          hypoallergenic: "hipoalergénica", renal: "renal", diabetic: "diabética",
+        };
+        const bodyLabels: Record<string, string> = {
+          very_thin: "muy delgado (necesita ganar peso urgente)",
+          thin: "delgado (por debajo del peso ideal)",
+          ideal: "peso ideal",
+          overweight: "sobrepeso (necesita perder peso)",
+          obese: "obeso (pérdida de peso prioritaria)",
+        };
+        const activityLabels: Record<string, string> = {
+          sedentary: "sedentario", low: "baja actividad", moderate: "actividad moderada",
+          high: "alta actividad", very_high: "muy activo (deporte/trabajo)",
+        };
+        const speciesLabel = speciesLabels[pet.species] ?? pet.species;
+        const dietLabel = dietLabels[input.dietType ?? "standard"] ?? input.dietType ?? "estándar";
+        const bodyLabel = bodyLabels[input.bodyCondition ?? "ideal"] ?? "peso ideal";
+        const activityLabel = activityLabels[input.activityLevel ?? "moderate"] ?? "moderada";
+        const prompt = `Eres un nutricionista veterinario experto. Genera un menú semanal PERSONALIZADO para un ${speciesLabel} con estas características:\n- Nombre: ${pet.name}\n- Raza: ${pet.breed ?? "desconocida"}\n- Peso actual: ${weightKg.toFixed(1)} kg\n- Edad: ${pet.ageYears ?? 0} años ${pet.ageMonths ?? 0} meses\n- Sexo: ${pet.gender ?? "desconocido"}, Castrado: ${pet.neutered ? "sí" : "no"}\n- Condición corporal: ${bodyLabel}\n- Tipo de dieta: ${dietLabel}\n- Nivel de actividad: ${activityLabel}\n- Comidas por día: ${input.mealsPerDay ?? 2}\n${input.targetWeightKg ? `- Peso objetivo: ${input.targetWeightKg} kg` : ""}\n${input.foodsToAvoid?.length ? `- Alimentos a EVITAR: ${input.foodsToAvoid.join(", ")}` : ""}\n${input.favoriteFoods?.length ? `- Alimentos favoritos: ${input.favoriteFoods.join(", ")}` : ""}\n${input.medicalConditions?.length ? `- Condiciones médicas: ${input.medicalConditions.join(", ")}` : ""}\n${pet.healthNotes ? `- Notas de salud: ${pet.healthNotes}` : ""}\n${input.extraInstructions ? `- Instrucciones adicionales: ${input.extraInstructions}` : ""}\n\nIMPORTANTE: Adapta el menú EXACTAMENTE al tipo de dieta. Si es BARF usa carne cruda. Si hay sobrepeso reduce calorías. Si hay bajo peso aumenta calorías.\n\nDevuelve SOLO JSON válido:\n{\n  "dailyCalories": number,\n  "dailyGrams": number,\n  "dietType": "${input.dietType ?? "standard"}",\n  "bodyConditionNote": "nota sobre condición corporal y objetivo",\n  "notes": "recomendaciones generales",\n  "days": [{ "day": "Lunes", "meals": [{ "time": "Mañana", "food": "descripción", "grams": number, "calories": number }] }],\n  "shoppingList": [{ "item": "producto", "quantity": "cantidad", "category": "categoría" }],\n  "supplements": [{ "name": "suplemento", "reason": "motivo", "dose": "dosis" }]\n}`;
+        const response = await invokeLLM({
+          messages: [
+            { role: "system", content: "Eres un nutricionista veterinario experto. Responde siempre con JSON válido." },
+            { role: "user", content: prompt },
+          ],
+          response_format: { type: "json_object" },
+        });
+        const content = response.choices?.[0]?.message?.content ?? "{}";
+        const menuData = JSON.parse(content);
+        const saved = await db.createPetMenu({
+          petId: input.petId,
+          userId: ctx.user.id,
+          weekLabel: input.weekLabel ?? `Menú ${dietLabel} - ${new Date().toLocaleDateString("es-ES")}`,
+          menuJson: content,
+          shoppingListJson: JSON.stringify(menuData.shoppingList ?? []),
+          notes: menuData.notes,
+        });
+        if (menuData.dailyCalories || menuData.dailyGrams) {
+          await db.upsertPetNutritionProfile(input.petId, ctx.user.id, {
+            dailyCaloriesTarget: menuData.dailyCalories,
+            dailyGramsTarget: menuData.dailyGrams,
+          });
+        }
+        return { menu: menuData, savedId: saved.id };
+      }),
+
+    // ── Photo Analysis ───────────────────────────────────────────────────────
+    analyzePhoto: protectedProcedure
+      .input(z.object({
+        petId: z.number().int(),
+        photoUrl: z.string().url(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const pet = await db.getPetById(input.petId, ctx.user.id);
+        if (!pet) throw new TRPCError({ code: "NOT_FOUND" });
+        const speciesLabels: Record<string, string> = {
+          dog: "perro", cat: "gato", rabbit: "conejo", bird: "pájaro",
+          hamster: "hámster", guinea_pig: "cobaya", fish: "pez",
+          turtle: "tortuga", ferret: "hurón", other: "mascota",
+        };
+        const speciesLabel = speciesLabels[pet.species] ?? pet.species;
+        const response = await invokeLLM({
+          messages: [
+            { role: "system", content: "Eres un veterinario experto en evaluación visual de mascotas. Analiza la imagen y proporciona evaluación en JSON." },
+            { role: "user", content: [
+              { type: "text", text: `Analiza esta foto de un ${speciesLabel} llamado ${pet.name}. Evalúa:\n1. Condición corporal (very_thin/thin/ideal/overweight/obese) con puntuación 1-9\n2. Estado del pelaje/plumaje\n3. Postura y movilidad aparente\n4. Estimación de raza si no se conoce\n5. Signos visuales de salud\n6. Recomendaciones nutricionales\n\nDevuelve SOLO JSON:\n{\n  "bodyCondition": "ideal",\n  "bodyConditionScore": 5,\n  "bodyConditionNote": "descripción",\n  "coatCondition": "descripción del pelaje",\n  "estimatedBreed": "raza estimada",\n  "healthObservations": ["obs1"],\n  "nutritionalRecommendations": ["rec1"],\n  "urgentConcerns": [],\n  "overallScore": 8,\n  "summary": "resumen"\n}` },
+              { type: "image_url", image_url: { url: input.photoUrl, detail: "high" } },
+            ]},
+          ],
+          response_format: { type: "json_object" },
+        });
+        const content = response.choices?.[0]?.message?.content ?? "{}";
+        const analysis = JSON.parse(content);
+        await db.upsertPetNutritionProfile(input.petId, ctx.user.id, {
+          photoUrl: input.photoUrl,
+          photoAnalysisJson: content,
+          bodyCondition: analysis.bodyCondition as any,
+        });
+        return { analysis, photoUrl: input.photoUrl };
+      }),
+
+    // ── Weight History ───────────────────────────────────────────────────────
+    weightHistory: protectedProcedure
+      .input(z.object({ petId: z.number().int() }))
+      .query(async ({ ctx, input }) => {
+        const pet = await db.getPetById(input.petId, ctx.user.id);
+        if (!pet) throw new TRPCError({ code: "NOT_FOUND" });
+        return db.getPetWeightHistory(input.petId, ctx.user.id);
+      }),
+
+    addWeightRecord: protectedProcedure
+      .input(z.object({
+        petId: z.number().int(),
+        weightValue: z.number().positive(),
+        weightUnit: z.enum(["kg", "lb"]).default("kg"),
+        bodyCondition: z.enum(["very_thin","thin","ideal","overweight","obese"]).optional(),
+        notes: z.string().max(500).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const pet = await db.getPetById(input.petId, ctx.user.id);
+        if (!pet) throw new TRPCError({ code: "NOT_FOUND" });
+        await db.updatePet(input.petId, ctx.user.id, { weightValue: input.weightValue, weightUnit: input.weightUnit });
+        return db.addPetWeightRecord({ ...input, userId: ctx.user.id });
+      }),
+
+    // ── Vaccines ─────────────────────────────────────────────────────────────
+    vaccines: protectedProcedure
+      .input(z.object({ petId: z.number().int() }))
+      .query(async ({ ctx, input }) => {
+        const pet = await db.getPetById(input.petId, ctx.user.id);
+        if (!pet) throw new TRPCError({ code: "NOT_FOUND" });
+        return db.getPetVaccines(input.petId, ctx.user.id);
+      }),
+
+    addVaccine: protectedProcedure
+      .input(z.object({
+        petId: z.number().int(),
+        name: z.string().min(1).max(200),
+        administeredAt: z.string().optional(),
+        nextDueAt: z.string().optional(),
+        vetName: z.string().max(150).optional(),
+        batchNumber: z.string().max(100).optional(),
+        notes: z.string().max(500).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const pet = await db.getPetById(input.petId, ctx.user.id);
+        if (!pet) throw new TRPCError({ code: "NOT_FOUND" });
+        return db.addPetVaccine({
+          ...input,
+          userId: ctx.user.id,
+          administeredAt: input.administeredAt ? new Date(input.administeredAt) : undefined,
+          nextDueAt: input.nextDueAt ? new Date(input.nextDueAt) : undefined,
+        });
+      }),
+
+    deleteVaccine: protectedProcedure
+      .input(z.object({ vaccineId: z.number().int() }))
+      .mutation(async ({ ctx, input }) => {
+        await db.deletePetVaccine(input.vaccineId, ctx.user.id);
+        return { ok: true };
+      }),
+
+    // ── Medications ──────────────────────────────────────────────────────────
+    medications: protectedProcedure
+      .input(z.object({ petId: z.number().int() }))
+      .query(async ({ ctx, input }) => {
+        const pet = await db.getPetById(input.petId, ctx.user.id);
+        if (!pet) throw new TRPCError({ code: "NOT_FOUND" });
+        return db.getPetMedications(input.petId, ctx.user.id);
+      }),
+
+    addMedication: protectedProcedure
+      .input(z.object({
+        petId: z.number().int(),
+        name: z.string().min(1).max(200),
+        dosage: z.string().max(100).optional(),
+        frequency: z.string().max(100).optional(),
+        startDate: z.string().optional(),
+        endDate: z.string().optional(),
+        prescribedBy: z.string().max(150).optional(),
+        notes: z.string().max(500).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const pet = await db.getPetById(input.petId, ctx.user.id);
+        if (!pet) throw new TRPCError({ code: "NOT_FOUND" });
+        return db.addPetMedication({
+          ...input,
+          userId: ctx.user.id,
+          startDate: input.startDate ? new Date(input.startDate) : undefined,
+          endDate: input.endDate ? new Date(input.endDate) : undefined,
+        });
+      }),
+
+    updateMedication: protectedProcedure
+      .input(z.object({
+        medicationId: z.number().int(),
+        active: z.boolean().optional(),
+        notes: z.string().max(500).optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { medicationId, ...data } = input;
+        return db.updatePetMedication(medicationId, ctx.user.id, data);
+      }),
+
+    // ── Edit Menu Meal ──────────────────────────────────────────────────────
+    editMenuMeal: protectedProcedure
+      .input(z.object({
+        menuId: z.number().int(),
+        dayIndex: z.number().int().min(0),
+        mealIndex: z.number().int().min(0),
+        newFood: z.string().min(1).max(500),
+        newGrams: z.number().positive(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const result = await db.editPetMenuMeal(input.menuId, ctx.user.id, input.dayIndex, input.mealIndex, input.newFood, input.newGrams);
+        if (!result) throw new TRPCError({ code: "NOT_FOUND" });
+        return result;
+      }),
+
+    // ── Upload Pet Photo ─────────────────────────────────────────────────────
+    uploadPhoto: protectedProcedure
+      .input(z.object({
+        petId: z.number().int(),
+        imageBase64: z.string(),
+        mimeType: z.string().default("image/jpeg"),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const pet = await db.getPetById(input.petId, ctx.user.id);
+        if (!pet) throw new TRPCError({ code: "NOT_FOUND" });
+        const imageBuffer = Buffer.from(input.imageBase64, "base64");
+        const ext = input.mimeType.split("/")[1]?.replace("jpeg", "jpg") ?? "jpg";
+        const fileKey = `pet-photos/${ctx.user.id}-${input.petId}-${Date.now()}.${ext}`;
+        const { url } = await storagePut(fileKey, imageBuffer, input.mimeType);
+        await db.upsertPetNutritionProfile(input.petId, ctx.user.id, { photoUrl: url });
+        return { url };
+      }),
   }),
 
   // ─── Veterinary Clinic ─────────────────────────────────────────────────────

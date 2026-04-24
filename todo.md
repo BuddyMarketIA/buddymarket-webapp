@@ -3065,3 +3065,24 @@
 - [ ] Notificación push al dueño cuando la clínica envía una alerta
 - [ ] Ruta /app/vet-clinic en App.tsx
 - [ ] Tests vitest para vetClinic router
+
+## BuddyPet - Expansión completa (sesión actual)
+- [x] Schema DB: tabla petWeightHistory (historial de peso de mascotas)
+- [x] Schema DB: tabla petVaccines (registro de vacunas)
+- [x] Schema DB: añadir campos a pets: bodyConditionScore, dietType, activityLevel, photoUrl, medicalConditions, allergies, favoritesFoods, foodsToAvoid
+- [x] Schema DB: tabla petMedications (medicamentos activos)
+- [x] DB helpers: CRUD petWeightHistory, petVaccines, petMedications, updatePetPhoto, updatePetDietProfile
+- [x] tRPC: pets.analyzePhoto - analiza foto de mascota con IA (condición corporal, raza estimada, estado de salud visual)
+- [x] tRPC: pets.generateCustomMenu - genera menú personalizado con parámetros: dietType, bodyCondition, activityLevel, foodPreferences, allergies
+- [x] tRPC: pets.updateMenu - editar un menú existente (cambiar comidas individuales)
+- [x] tRPC: pets.addWeightRecord - añadir registro de peso con fecha
+- [x] tRPC: pets.weightHistory - historial de peso de una mascota
+- [x] tRPC: pets.addVaccine - añadir vacuna
+- [x] tRPC: pets.vaccines - listar vacunas de una mascota
+- [x] tRPC: pets.addMedication - añadir medicamento activo
+- [x] tRPC: pets.medications - listar medicamentos de una mascota
+- [x] UI BuddyPet: tab "Salud" con historial de peso (gráfica Recharts), vacunas, medicamentos
+- [x] UI BuddyPet: tab "Nutrición" con editor de menú personalizado (dietType selector, bodyCondition slider, alimentos a evitar)
+- [x] UI BuddyPet: botón "Analizar foto" que sube imagen y devuelve análisis IA
+- [x] UI BuddyPet: editor inline de menú (cambiar comida de un día concreto)
+- [x] UI BuddyPet: perfil de mascota ampliado con foto, condición corporal, tipo de dieta

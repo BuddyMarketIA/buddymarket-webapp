@@ -3206,3 +3206,118 @@ export const petVetVisits = pgTable("petVetVisits", {
 }));
 export type PetVetVisit = typeof petVetVisits.$inferSelect;
 export type NewPetVetVisit = typeof petVetVisits.$inferInsert;
+
+// ─── BuddyPet Extended Schema ─────────────────────────────────────────────────
+
+export const petDietTypeEnum = pgEnum("petDietType", [
+  "standard",      // alimentación estándar (pienso)
+  "barf",          // BARF (huesos y carne cruda)
+  "homecooked",    // comida casera cocinada
+  "mixed",         // mixta (pienso + comida natural)
+  "prescription",  // dieta veterinaria prescrita
+  "vegetarian",    // vegetariana (para ciertas especies)
+  "senior",        // senior (mascotas mayores)
+  "puppy_kitten",  // cachorro/gatito
+  "weight_loss",   // pérdida de peso
+  "weight_gain",   // ganancia de peso/masa muscular
+  "hypoallergenic",// hipoalergénica
+  "renal",         // renal (insuficiencia renal)
+  "diabetic",      // diabética
+]);
+
+export const petActivityLevelEnum = pgEnum("petActivityLevel", [
+  "sedentary",   // sedentario (poco ejercicio)
+  "low",         // baja actividad
+  "moderate",    // actividad moderada
+  "high",        // alta actividad
+  "very_high",   // muy activo (perros de trabajo/deporte)
+]);
+
+export const petBodyConditionEnum = pgEnum("petBodyCondition", [
+  "very_thin",   // muy delgado (1-2/9)
+  "thin",        // delgado (3/9)
+  "ideal",       // peso ideal (4-5/9)
+  "overweight",  // sobrepeso (6-7/9)
+  "obese",       // obeso (8-9/9)
+]);
+
+// Historial de peso de la mascota
+export const petWeightHistory = pgTable("petWeightHistory", {
+  id: serial("id").primaryKey(),
+  petId: integer("petId").notNull(),
+  userId: integer("userId").notNull(),
+  weightValue: real("weightValue").notNull(),
+  weightUnit: petWeightUnitEnum("weightUnit").default("kg").notNull(),
+  bodyCondition: petBodyConditionEnum("bodyCondition"),
+  notes: text("notes"),
+  recordedAt: timestamp("recordedAt").defaultNow().notNull(),
+}, (t) => ({
+  pwh_pet_idx: index("pwh_pet_idx").on(t.petId),
+  pwh_user_idx: index("pwh_user_idx").on(t.userId),
+}));
+export type PetWeightRecord = typeof petWeightHistory.$inferSelect;
+export type NewPetWeightRecord = typeof petWeightHistory.$inferInsert;
+
+// Registro de vacunas
+export const petVaccines = pgTable("petVaccines", {
+  id: serial("id").primaryKey(),
+  petId: integer("petId").notNull(),
+  userId: integer("userId").notNull(),
+  name: varchar("name", { length: 200 }).notNull(),
+  administeredAt: timestamp("administeredAt"),
+  nextDueAt: timestamp("nextDueAt"),
+  vetName: varchar("vetName", { length: 150 }),
+  batchNumber: varchar("batchNumber", { length: 100 }),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  pv_pet_idx: index("pv_pet_idx").on(t.petId),
+}));
+export type PetVaccine = typeof petVaccines.$inferSelect;
+export type NewPetVaccine = typeof petVaccines.$inferInsert;
+
+// Medicamentos activos
+export const petMedications = pgTable("petMedications", {
+  id: serial("id").primaryKey(),
+  petId: integer("petId").notNull(),
+  userId: integer("userId").notNull(),
+  name: varchar("name", { length: 200 }).notNull(),
+  dosage: varchar("dosage", { length: 100 }),
+  frequency: varchar("frequency", { length: 100 }),
+  startDate: timestamp("startDate"),
+  endDate: timestamp("endDate"),
+  prescribedBy: varchar("prescribedBy", { length: 150 }),
+  notes: text("notes"),
+  active: boolean("active").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  pm_pet_idx2: index("pm_pet_idx2").on(t.petId),
+}));
+export type PetMedication = typeof petMedications.$inferSelect;
+export type NewPetMedication = typeof petMedications.$inferInsert;
+
+// Perfil nutricional extendido de la mascota (complementa la tabla pets)
+export const petNutritionProfiles = pgTable("petNutritionProfiles", {
+  id: serial("id").primaryKey(),
+  petId: integer("petId").notNull().unique(),
+  userId: integer("userId").notNull(),
+  dietType: petDietTypeEnum("dietType").default("standard").notNull(),
+  activityLevel: petActivityLevelEnum("activityLevel").default("moderate").notNull(),
+  bodyCondition: petBodyConditionEnum("bodyCondition").default("ideal").notNull(),
+  targetWeightKg: real("targetWeightKg"),
+  allergiesJson: text("allergiesJson"),        // JSON array de alergias/intolerancias
+  foodsToAvoidJson: text("foodsToAvoidJson"),  // JSON array de alimentos a evitar
+  favoriteFoodsJson: text("favoriteFoodsJson"),// JSON array de alimentos favoritos
+  medicalConditionsJson: text("medicalConditionsJson"), // JSON array de condiciones médicas
+  dailyCaloriesTarget: integer("dailyCaloriesTarget"),
+  dailyGramsTarget: integer("dailyGramsTarget"),
+  mealsPerDay: integer("mealsPerDay").default(2),
+  photoUrl: text("photoUrl"),                  // URL de la foto de la mascota
+  photoAnalysisJson: text("photoAnalysisJson"),// Resultado del análisis IA de la foto
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  pnp_pet_idx: index("pnp_pet_idx").on(t.petId),
+  pnp_user_idx: index("pnp_user_idx").on(t.userId),
+}));
+export type PetNutritionProfile = typeof petNutritionProfiles.$inferSelect;
+export type NewPetNutritionProfile = typeof petNutritionProfiles.$inferInsert;

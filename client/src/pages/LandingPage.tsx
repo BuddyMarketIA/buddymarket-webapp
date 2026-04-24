@@ -6,47 +6,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "@/components/sonner-a11y-shim";
 
-// ─── Hero video sequence ─────────────────────────────────────────────────────
-const HERO_VIDEOS = [
-  "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/supermarket_2d753c38.mp4",
-  "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/healthy-food_51264735.mp4",
-  "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/batch-cooking_aa70ccb0.mp4",
-];
-
-function HeroVideoBackground() {
-  const [currentIndex, setCurrentIndex] = useState(0);
-  const videoRef = useRef<HTMLVideoElement>(null);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-    const handleEnded = () => {
-      setCurrentIndex(prev => (prev + 1) % HERO_VIDEOS.length);
-    };
-    video.addEventListener('ended', handleEnded);
-    return () => video.removeEventListener('ended', handleEnded);
-  }, [currentIndex]);
-
-  useEffect(() => {
-    const video = videoRef.current;
-    if (!video) return;
-    video.src = HERO_VIDEOS[currentIndex];
-    video.load();
-    video.play().catch(() => {});
-  }, [currentIndex]);
-
-  return (
-    <video
-      ref={videoRef}
-      autoPlay
-      muted
-      playsInline
-      style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", zIndex: 0 }}
-    >
-      <source src={HERO_VIDEOS[0]} type="video/mp4" />
-    </video>
-  );
-}
+// ─── Hero: gradiente naranja premium (sin imágenes de supermercado) ──────────
 
 const LOGO_HORIZONTAL = "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/logo-horizontal-orange_0dcbe0a8.png";
 const LOGO_ICON = "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/logo-icon-orange_2cf889cb.png";
@@ -359,13 +319,10 @@ export default function LandingPage() {
       </nav>
 
       {/* ═══ HERO ══════════════════════════════════════════════════════════════ */}
-      <section style={{ paddingTop: 68, display: "flex", alignItems: "center", position: "relative", overflow: "hidden", minHeight: "calc(100vh - 68px)" }}>
-        {/* ── Video background sequence: supermercado → alimentos → batch cooking ── */}
-        <HeroVideoBackground />
-        {/* ── Gradient overlay for readability ── */}
-        <div style={{ position: "absolute", inset: 0, background: "linear-gradient(110deg, rgba(0,0,0,0.72) 0%, rgba(0,0,0,0.45) 55%, rgba(0,0,0,0.25) 100%)", zIndex: 1 }} />
-        {/* ── Subtle orange tint bottom ── */}
-        <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, height: "35%", background: "linear-gradient(to top, rgba(249,115,22,0.18) 0%, transparent 100%)", zIndex: 1, pointerEvents: "none" }} />
+      <section style={{ paddingTop: 68, display: "flex", alignItems: "center", position: "relative", overflow: "hidden", minHeight: "calc(100vh - 68px)", background: "linear-gradient(135deg, #1a0a00 0%, #3d1a00 40%, #7c2d00 70%, #c2410c 100%)" }}>
+        {/* ── Gradiente naranja premium — sin imágenes de supermercado ── */}
+        <div style={{ position: "absolute", inset: 0, background: "radial-gradient(ellipse at 70% 50%, rgba(249,115,22,0.30) 0%, transparent 65%)", zIndex: 1, pointerEvents: "none" }} />
+        <div style={{ position: "absolute", top: "-20%", right: "-10%", width: "600px", height: "600px", borderRadius: "50%", background: "radial-gradient(circle, rgba(249,115,22,0.20) 0%, transparent 70%)", zIndex: 1, pointerEvents: "none" }} />
 
         <div style={{ maxWidth: 1200, margin: "0 auto", padding: "60px 24px 56px", display: "grid", gridTemplateColumns: "1fr 1fr", gap: 64, alignItems: "center", width: "100%", position: "relative", zIndex: 2 }} className="lp-hero-grid">
           <div>
@@ -390,16 +347,16 @@ export default function LandingPage() {
             </p>
 
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap", marginBottom: 40 }}>
-              <a href={ctaHref} style={{ display: "inline-flex", alignItems: "center", gap: 10, padding: "14px 28px", borderRadius: 12, fontSize: 16, fontWeight: 700, color: "white", background: "linear-gradient(135deg,#F97316,#ea580c)", textDecoration: "none", boxShadow: "0 8px 24px rgba(249,115,22,0.35)", transition: "all 0.2s" }}
+              <a href={ctaHref} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 24px", borderRadius: 12, fontSize: 15, fontWeight: 700, color: "white", background: "linear-gradient(135deg,#F97316,#ea580c)", textDecoration: "none", boxShadow: "0 8px 24px rgba(249,115,22,0.35)", transition: "all 0.2s", whiteSpace: "nowrap", flex: "1 1 auto", maxWidth: 220, justifyContent: "center" }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 32px rgba(249,115,22,0.45)"; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 24px rgba(249,115,22,0.35)"; }}>
                 Empezar gratis
-                <svg width="17" height="17" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
               </a>
-              <button onClick={() => scrollTo("features")} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 24px", borderRadius: 12, fontSize: 16, fontWeight: 600, color: "#374151", background: "white", border: "2px solid #e5e7eb", cursor: "pointer", transition: "all 0.2s" }}
-                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "#F97316"; (e.currentTarget as HTMLElement).style.color = "#F97316"; }}
-                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "#e5e7eb"; (e.currentTarget as HTMLElement).style.color = "#374151"; }}>
-                Ver funcionalidades
+              <button onClick={() => scrollTo("features")} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 20px", borderRadius: 12, fontSize: 15, fontWeight: 600, color: "rgba(255,255,255,0.9)", background: "rgba(255,255,255,0.15)", border: "1.5px solid rgba(255,255,255,0.35)", cursor: "pointer", transition: "all 0.2s", whiteSpace: "nowrap", flex: "1 1 auto", maxWidth: 220, justifyContent: "center", backdropFilter: "blur(8px)" }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.25)"; (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.6)"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.background = "rgba(255,255,255,0.15)"; (e.currentTarget as HTMLElement).style.borderColor = "rgba(255,255,255,0.35)"; }}>
+                Ver funciones
               </button>
             </div>
 

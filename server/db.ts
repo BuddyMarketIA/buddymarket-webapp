@@ -3061,3 +3061,140 @@ export async function createPetVetVisit(data: {
   const rows = await db.insert(petVetVisitsTable).values(data).returning();
   return rows[0];
 }
+
+// ─── BuddyPet Extended Helpers ────────────────────────────────────────────────
+import {
+  petWeightHistory as petWeightHistoryTable,
+  petVaccines as petVaccinesTable,
+  petMedications as petMedicationsTable,
+  petNutritionProfiles as petNutritionProfilesTable,
+} from "../drizzle/schema";
+
+// ── Pet Weight History ────────────────────────────────────────────────────────
+export async function getPetWeightHistory(petId: number, userId: number) {
+  const db = await getDb();
+  return db.select().from(petWeightHistoryTable)
+    .where(and(eq(petWeightHistoryTable.petId, petId), eq(petWeightHistoryTable.userId, userId)))
+    .orderBy(petWeightHistoryTable.recordedAt);
+}
+
+export async function addPetWeightRecord(data: {
+  petId: number; userId: number; weightValue: number; weightUnit?: "kg" | "lb";
+  bodyCondition?: "very_thin" | "thin" | "ideal" | "overweight" | "obese"; notes?: string;
+}) {
+  const db = await getDb();
+  const rows = await db.insert(petWeightHistoryTable).values(data).returning();
+  return rows[0];
+}
+
+// ── Pet Vaccines ──────────────────────────────────────────────────────────────
+export async function getPetVaccines(petId: number, userId: number) {
+  const db = await getDb();
+  return db.select().from(petVaccinesTable)
+    .where(and(eq(petVaccinesTable.petId, petId), eq(petVaccinesTable.userId, userId)))
+    .orderBy(petVaccinesTable.administeredAt);
+}
+
+export async function addPetVaccine(data: {
+  petId: number; userId: number; name: string; administeredAt?: Date;
+  nextDueAt?: Date; vetName?: string; batchNumber?: string; notes?: string;
+}) {
+  const db = await getDb();
+  const rows = await db.insert(petVaccinesTable).values(data).returning();
+  return rows[0];
+}
+
+export async function deletePetVaccine(vaccineId: number, userId: number) {
+  const db = await getDb();
+  await db.delete(petVaccinesTable)
+    .where(and(eq(petVaccinesTable.id, vaccineId), eq(petVaccinesTable.userId, userId)));
+}
+
+// ── Pet Medications ───────────────────────────────────────────────────────────
+export async function getPetMedications(petId: number, userId: number) {
+  const db = await getDb();
+  return db.select().from(petMedicationsTable)
+    .where(and(eq(petMedicationsTable.petId, petId), eq(petMedicationsTable.userId, userId)))
+    .orderBy(petMedicationsTable.createdAt);
+}
+
+export async function addPetMedication(data: {
+  petId: number; userId: number; name: string; dosage?: string; frequency?: string;
+  startDate?: Date; endDate?: Date; prescribedBy?: string; notes?: string;
+}) {
+  const db = await getDb();
+  const rows = await db.insert(petMedicationsTable).values(data).returning();
+  return rows[0];
+}
+
+export async function updatePetMedication(medId: number, userId: number, data: { active?: boolean; notes?: string; endDate?: Date }) {
+  const db = await getDb();
+  const rows = await db.update(petMedicationsTable)
+    .set(data)
+    .where(and(eq(petMedicationsTable.id, medId), eq(petMedicationsTable.userId, userId)))
+    .returning();
+  return rows[0] ?? null;
+}
+
+// ── Pet Nutrition Profile ─────────────────────────────────────────────────────
+export async function getPetNutritionProfile(petId: number, userId: number) {
+  const db = await getDb();
+  const rows = await db.select().from(petNutritionProfilesTable)
+    .where(and(eq(petNutritionProfilesTable.petId, petId), eq(petNutritionProfilesTable.userId, userId)))
+    .limit(1);
+  return rows[0] ?? null;
+}
+
+export async function upsertPetNutritionProfile(petId: number, userId: number, data: {
+  dietType?: "standard" | "barf" | "homecooked" | "mixed" | "prescription" | "vegetarian" | "senior" | "puppy_kitten" | "weight_loss" | "weight_gain" | "hypoallergenic" | "renal" | "diabetic";
+  activityLevel?: "sedentary" | "low" | "moderate" | "high" | "very_high";
+  bodyCondition?: "very_thin" | "thin" | "ideal" | "overweight" | "obese";
+  targetWeightKg?: number;
+  allergiesJson?: string;
+  foodsToAvoidJson?: string;
+  favoriteFoodsJson?: string;
+  medicalConditionsJson?: string;
+  dailyCaloriesTarget?: number;
+  dailyGramsTarget?: number;
+  mealsPerDay?: number;
+  photoUrl?: string;
+  photoAnalysisJson?: string;
+}) {
+  const db = await getDb();
+  const existing = await getPetNutritionProfile(petId, userId);
+  if (existing) {
+    const rows = await db.update(petNutritionProfilesTable)
+      .set({ ...data, updatedAt: new Date() })
+      .where(and(eq(petNutritionProfilesTable.petId, petId), eq(petNutritionProfilesTable.userId, userId)))
+      .returning();
+    return rows[0];
+  } else {
+    const rows = await db.insert(petNutritionProfilesTable)
+      .values({ petId, userId, ...data })
+      .returning();
+    return rows[0];
+  }
+}
+
+// ── Edit Pet Menu Meal ────────────────────────────────────────────────────────
+export async function editPetMenuMeal(menuId: number, userId: number, dayIndex: number, mealIndex: number, newFood: string, newGrams: number) {
+  const db = await getDb();
+  // Fetch the menu first to verify ownership via pet
+  const rows = await db.select().from(petMenusTable).where(eq(petMenusTable.id, menuId)).limit(1);
+  const menu = rows[0];
+  if (!menu) return null;
+  // Verify ownership via pet
+  const pet = await getPetById(menu.petId, userId);
+  if (!pet) return null;
+  // Parse and mutate
+  const menuData = JSON.parse(menu.menuJson);
+  if (menuData.days?.[dayIndex]?.meals?.[mealIndex]) {
+    menuData.days[dayIndex].meals[mealIndex].food = newFood;
+    menuData.days[dayIndex].meals[mealIndex].grams = newGrams;
+  }
+  const updated = await db.update(petMenusTable)
+    .set({ menuJson: JSON.stringify(menuData), updatedAt: new Date() })
+    .where(eq(petMenusTable.id, menuId))
+    .returning();
+  return updated[0] ?? null;
+}
