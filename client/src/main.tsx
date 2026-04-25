@@ -104,43 +104,32 @@ const queryClient = new QueryClient({
 // on a definitive 401 after the user has never authenticated.
 // Redirecting here would log users out every ~2 minutes on any network blip.
 //
-// EXCEPTION: Manus OAuth error 10001 = "Please login" = session definitively
-// expired or invalid. In this case we MUST redirect to /login immediately.
-const isMustLoginError = (error: unknown): boolean => {
-  if (!(error instanceof TRPCClientError)) return false;
-  const msg = error.message ?? "";
-  // Manus OAuth error code 10001 = session expired / not authenticated
-  return msg.includes("10001") || msg.toLowerCase().includes("please login");
-};
-
-const redirectToLogin = () => {
-  // Clear any cached auth state so the login page starts fresh
-  try { localStorage.removeItem("bm_auth_state"); } catch { /* noop */ }
-  const loginUrl = `/login?returnTo=${encodeURIComponent(window.location.pathname)}`;
-  if (window.location.pathname !== "/login") {
-    window.location.href = loginUrl;
-  }
-};
-
+// IMPORTANT: "Please login (10001)" is also the message returned by ALL
+// protectedProcedures in our own server (UNAUTHED_ERR_MSG in shared/const.ts).
+// We must NOT redirect to /login when a protectedProcedure returns UNAUTHORIZED
+// if the user was previously authenticated — that happens transiently on cold
+// starts when the server wakes up but the cookie is still valid.
+// Only redirect if the user was never authenticated in this browser session.
 queryClient.getQueryCache().subscribe(event => {
   if (event.type === "updated" && event.action.type === "error") {
     const error = event.query.state.error;
-    if (isMustLoginError(error)) {
-      redirectToLogin();
-    } else if (!isServerDownError(error)) {
+    if (!isServerDownError(error)) {
       console.warn("[API Query Error]", error);
     }
+    // Do NOT auto-redirect to /login from background queries.
+    // The useAuth hook and AppLayout handle auth-based redirects correctly.
+    // Auto-redirecting here causes logout on cold starts and transient 401s.
   }
 });
 
 queryClient.getMutationCache().subscribe(event => {
   if (event.type === "updated" && event.action.type === "error") {
     const error = event.mutation.state.error;
-    if (isMustLoginError(error)) {
-      redirectToLogin();
-    } else if (!isServerDownError(error)) {
+    if (!isServerDownError(error)) {
       console.warn("[API Mutation Error]", error);
     }
+    // Do NOT auto-redirect to /login from mutations.
+    // The useAuth hook handles session expiry detection correctly.
   }
 });
 
