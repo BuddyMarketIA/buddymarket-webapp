@@ -1196,6 +1196,400 @@ function NutritionProfileEditor({ petId }: { petId: number }) {
   );
 }
 
+// ─── Clinic Tab ────────────────────────────────────────────────────────────────
+
+// ─── Feeding Tab ─────────────────────────────────────────────────────────────
+function FeedingTab({ petId, petName }: { petId: number; petName: string }) {
+  const utils = trpc.useUtils();
+  const { data: profile, isLoading } = trpc.pets.nutritionProfile.useQuery({ petId });
+  const updateProfile = trpc.pets.updateNutritionProfile.useMutation({
+    onSuccess: () => { toast.success("Alimentación guardada"); utils.pets.nutritionProfile.invalidate({ petId }); },
+    onError: (e) => toast.error(e.message),
+  });
+  const analyzeCurrentDiet = trpc.pets.analyzeCurrentDiet.useMutation({
+    onSuccess: () => { toast.success("Análisis completado"); utils.pets.nutritionProfile.invalidate({ petId }); },
+    onError: (e) => toast.error(e.message),
+  });
+
+  const [brand, setBrand] = React.useState("");
+  const [foodType, setFoodType] = React.useState("");
+  const [frequency, setFrequency] = React.useState("");
+  const [amount, setAmount] = React.useState("");
+  const [notes, setNotes] = React.useState("");
+  const [supplements, setSupplements] = React.useState("");
+  const [treats, setTreats] = React.useState("");
+  const [water, setWater] = React.useState("");
+  const [schedule, setSchedule] = React.useState("");
+  const [initialized, setInitialized] = React.useState(false);
+
+  React.useEffect(() => {
+    if (profile && !initialized) {
+      setBrand(profile.currentFoodBrand ?? "");
+      setFoodType(profile.currentFoodType ?? "");
+      setFrequency(profile.currentFoodFrequency?.toString() ?? "");
+      setAmount(profile.currentFoodAmountGrams?.toString() ?? "");
+      setNotes(profile.currentFoodNotes ?? "");
+      setSupplements(profile.supplementsJson ? JSON.parse(profile.supplementsJson).join(", ") : "");
+      setTreats(profile.treatsFrequency ?? "");
+      setWater(profile.waterIntakeType ?? "");
+      setSchedule(profile.feedingScheduleJson ? JSON.parse(profile.feedingScheduleJson).join(", ") : "");
+      setInitialized(true);
+    }
+  }, [profile, initialized]);
+
+  const handleSave = () => {
+    updateProfile.mutate({
+      petId,
+      currentFoodBrand: brand || undefined,
+      currentFoodType: (foodType as any) || undefined,
+      currentFoodFrequency: frequency ? parseInt(frequency) : undefined,
+      currentFoodAmountGrams: amount ? parseInt(amount) : undefined,
+      currentFoodNotes: notes || undefined,
+      supplements: supplements ? supplements.split(",").map(s => s.trim()).filter(Boolean) : undefined,
+      treatsFrequency: (treats as any) || undefined,
+      waterIntakeType: (water as any) || undefined,
+      feedingSchedule: schedule ? schedule.split(",").map(s => s.trim()).filter(Boolean) : undefined,
+    });
+  };
+
+  const analysis = profile?.currentDietAnalysisJson ? (() => {
+    try { return JSON.parse(profile.currentDietAnalysisJson); } catch { return null; }
+  })() : null;
+
+  const ratingColor = (r: number) => r >= 8 ? "text-green-600" : r >= 6 ? "text-yellow-600" : "text-red-600";
+  const ratingBg = (r: number) => r >= 8 ? "bg-green-50 border-green-200" : r >= 6 ? "bg-yellow-50 border-yellow-200" : "bg-red-50 border-red-200";
+
+  if (isLoading) return <div className="py-4 text-center text-sm text-muted-foreground">Cargando...</div>;
+
+  return (
+    <div className="space-y-4">
+      <div className="bg-blue-50 dark:bg-blue-950 rounded-lg p-3 text-xs text-blue-700 dark:text-blue-300">
+        💡 Registra qué come {petName} actualmente. La IA evaluará si la nutrición es adecuada aunque el animal parezca sano.
+      </div>
+
+      {/* Formulario de alimentación */}
+      <div className="space-y-3">
+        <h4 className="font-semibold text-sm">Alimentación actual</h4>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs font-medium text-muted-foreground block mb-1">Tipo de alimento</label>
+            <select
+              value={foodType}
+              onChange={e => setFoodType(e.target.value)}
+              className="w-full text-sm border rounded-md px-2 py-1.5 bg-background"
+            >
+              <option value="">Seleccionar...</option>
+              <option value="pienso_seco">Pienso seco</option>
+              <option value="pienso_humedo">Pienso húmedo</option>
+              <option value="barf">BARF (crudo)</option>
+              <option value="casero">Comida casera</option>
+              <option value="mixto">Mixto</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground block mb-1">Marca / producto</label>
+            <input
+              type="text"
+              value={brand}
+              onChange={e => setBrand(e.target.value)}
+              placeholder="Ej: Royal Canin, Acana..."
+              className="w-full text-sm border rounded-md px-2 py-1.5 bg-background"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs font-medium text-muted-foreground block mb-1">Tomas al día</label>
+            <select
+              value={frequency}
+              onChange={e => setFrequency(e.target.value)}
+              className="w-full text-sm border rounded-md px-2 py-1.5 bg-background"
+            >
+              <option value="">Seleccionar...</option>
+              {[1,2,3,4,5,6].map(n => <option key={n} value={n}>{n} vez{n > 1 ? "es" : ""}</option>)}
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground block mb-1">Gramos por toma</label>
+            <input
+              type="number"
+              value={amount}
+              onChange={e => setAmount(e.target.value)}
+              placeholder="Ej: 150"
+              min={1}
+              className="w-full text-sm border rounded-md px-2 py-1.5 bg-background"
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-3">
+          <div>
+            <label className="text-xs font-medium text-muted-foreground block mb-1">Premios/snacks</label>
+            <select
+              value={treats}
+              onChange={e => setTreats(e.target.value)}
+              className="w-full text-sm border rounded-md px-2 py-1.5 bg-background"
+            >
+              <option value="">Seleccionar...</option>
+              <option value="nunca">Nunca</option>
+              <option value="ocasional">Ocasional</option>
+              <option value="diario">Diario</option>
+            </select>
+          </div>
+          <div>
+            <label className="text-xs font-medium text-muted-foreground block mb-1">Tipo de agua</label>
+            <select
+              value={water}
+              onChange={e => setWater(e.target.value)}
+              className="w-full text-sm border rounded-md px-2 py-1.5 bg-background"
+            >
+              <option value="">Seleccionar...</option>
+              <option value="grifo">Del grifo</option>
+              <option value="filtrada">Filtrada</option>
+              <option value="fuente">Fuente/dispensador</option>
+              <option value="otro">Otro</option>
+            </select>
+          </div>
+        </div>
+
+        <div>
+          <label className="text-xs font-medium text-muted-foreground block mb-1">Suplementos (separados por coma)</label>
+          <input
+            type="text"
+            value={supplements}
+            onChange={e => setSupplements(e.target.value)}
+            placeholder="Ej: omega-3, probióticos, vitamina D..."
+            className="w-full text-sm border rounded-md px-2 py-1.5 bg-background"
+          />
+        </div>
+
+        <div>
+          <label className="text-xs font-medium text-muted-foreground block mb-1">Horarios de comida (separados por coma)</label>
+          <input
+            type="text"
+            value={schedule}
+            onChange={e => setSchedule(e.target.value)}
+            placeholder="Ej: 8:00, 14:00, 20:00"
+            className="w-full text-sm border rounded-md px-2 py-1.5 bg-background"
+          />
+        </div>
+
+        <div>
+          <label className="text-xs font-medium text-muted-foreground block mb-1">Notas adicionales</label>
+          <textarea
+            value={notes}
+            onChange={e => setNotes(e.target.value)}
+            placeholder="Ej: come muy rápido, le gusta mezclar con agua caliente..."
+            rows={2}
+            className="w-full text-sm border rounded-md px-2 py-1.5 bg-background resize-none"
+          />
+        </div>
+
+        <div className="flex gap-2">
+          <button
+            onClick={handleSave}
+            disabled={updateProfile.isPending}
+            className="flex-1 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium py-2 rounded-lg disabled:opacity-50"
+          >
+            {updateProfile.isPending ? "Guardando..." : "💾 Guardar alimentación"}
+          </button>
+          <button
+            onClick={() => analyzeCurrentDiet.mutate({ petId })}
+            disabled={analyzeCurrentDiet.isPending || !profile}
+            className="flex-1 bg-purple-600 hover:bg-purple-700 text-white text-sm font-medium py-2 rounded-lg disabled:opacity-50"
+          >
+            {analyzeCurrentDiet.isPending ? "Analizando..." : "🔬 Analizar con IA"}
+          </button>
+        </div>
+      </div>
+
+      {/* Resultado del análisis IA */}
+      {analysis && (
+        <div className={`rounded-lg border p-4 space-y-3 ${ratingBg(analysis.overallRating)}`}>
+          <div className="flex items-center justify-between">
+            <h4 className="font-semibold text-sm">Análisis nutricional IA</h4>
+            <div className="flex items-center gap-2">
+              <span className={`text-2xl font-bold ${ratingColor(analysis.overallRating)}`}>{analysis.overallRating}/10</span>
+              <span className="text-xs font-medium text-muted-foreground">{analysis.ratingLabel}</span>
+            </div>
+          </div>
+          <p className="text-sm">{analysis.summary}</p>
+
+          {analysis.positives?.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-green-700 mb-1">✅ Puntos positivos</p>
+              <ul className="space-y-0.5">
+                {analysis.positives.map((p: string, i: number) => (
+                  <li key={i} className="text-xs text-green-800">• {p}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {analysis.concerns?.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-yellow-700 mb-1">⚠️ Preocupaciones</p>
+              <ul className="space-y-0.5">
+                {analysis.concerns.map((c: string, i: number) => (
+                  <li key={i} className="text-xs text-yellow-800">• {c}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {analysis.deficiencies?.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-red-700 mb-1">❌ Deficiencias detectadas</p>
+              <ul className="space-y-0.5">
+                {analysis.deficiencies.map((d: string, i: number) => (
+                  <li key={i} className="text-xs text-red-800">• {d}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {analysis.recommendations?.length > 0 && (
+            <div>
+              <p className="text-xs font-semibold text-blue-700 mb-1">💡 Recomendaciones</p>
+              <ul className="space-y-0.5">
+                {analysis.recommendations.map((r: string, i: number) => (
+                  <li key={i} className="text-xs text-blue-800">• {r}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {analysis.urgentActions?.length > 0 && (
+            <div className="bg-red-100 border border-red-300 rounded p-2">
+              <p className="text-xs font-bold text-red-800 mb-1">🚨 Acciones urgentes</p>
+              <ul className="space-y-0.5">
+                {analysis.urgentActions.map((a: string, i: number) => (
+                  <li key={i} className="text-xs text-red-800 font-medium">• {a}</li>
+                ))}
+              </ul>
+            </div>
+          )}
+
+          {analysis.shouldConsultVet && (
+            <div className="bg-orange-100 border border-orange-300 rounded p-2 text-xs text-orange-800">
+              🏥 <strong>Consulta veterinaria recomendada:</strong> {analysis.vetConsultReason}
+            </div>
+          )}
+
+          <div className="grid grid-cols-2 gap-2 pt-1 border-t">
+            <div className="text-center">
+              <p className="text-xs text-muted-foreground">Calorías ideales/día</p>
+              <p className="font-bold text-sm">{analysis.idealCaloriesPerDay ?? "—"} kcal</p>
+            </div>
+            <div className="text-center">
+              <p className="text-xs text-muted-foreground">Gramos ideales/día</p>
+              <p className="font-bold text-sm">{analysis.idealGramsPerDay ?? "—"} g</p>
+            </div>
+          </div>
+
+          {profile?.currentDietAnalyzedAt && (
+            <p className="text-xs text-muted-foreground text-right">
+              Analizado: {new Date(profile.currentDietAnalyzedAt).toLocaleDateString("es-ES")}
+            </p>
+          )}
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ClinicTab({ petId, petName }: { petId: number; petName: string }) {
+  const utils = trpc.useUtils();
+  const [code, setCode] = useState("");
+  const { data: linkedClinics, isLoading } = trpc.pets.linkedClinics.useQuery({ petId });
+  const linkToClinic = trpc.pets.linkToClinic.useMutation({
+    onSuccess: (data) => {
+      toast.success(`✅ Vinculado a ${data.clinicName}`);
+      setCode("");
+      utils.pets.linkedClinics.invalidate({ petId });
+    },
+    onError: (e) => toast.error(e.message),
+  });
+  const unlinkFromClinic = trpc.pets.unlinkFromClinic.useMutation({
+    onSuccess: () => {
+      toast.success("Clínica desvinculada");
+      utils.pets.linkedClinics.invalidate({ petId });
+    },
+    onError: (e) => toast.error(e.message),
+  });
+  return (
+    <div className="space-y-4">
+      <div>
+        <h4 className="text-sm font-semibold mb-2">Clínicas colaboradoras vinculadas</h4>
+        {isLoading ? (
+          <p className="text-sm text-muted-foreground">Cargando...</p>
+        ) : !linkedClinics || linkedClinics.length === 0 ? (
+          <div className="text-center py-6 border-2 border-dashed rounded-lg text-muted-foreground">
+            <p className="text-2xl mb-1">🏥</p>
+            <p className="text-sm">{petName} no está vinculado a ninguna clínica</p>
+            <p className="text-xs mt-1">Introduce el código que te ha dado tu veterinario</p>
+          </div>
+        ) : (
+          <div className="space-y-2">
+            {linkedClinics.map(({ clinic, link }) => (
+              <div key={link.id} className="border rounded-lg p-3 bg-blue-50 dark:bg-blue-950 flex items-start justify-between gap-2">
+                <div className="flex-1 min-w-0">
+                  <p className="font-semibold text-sm">{clinic.name}</p>
+                  {clinic.address && <p className="text-xs text-muted-foreground truncate">📍 {clinic.address}</p>}
+                  {clinic.phone && <p className="text-xs text-muted-foreground">📞 {clinic.phone}</p>}
+                  {clinic.email && <p className="text-xs text-muted-foreground">✉️ {clinic.email}</p>}
+                  {(clinic as any).city && (
+                    <p className="text-xs text-muted-foreground">
+                      🏙️ {(clinic as any).city}{(clinic as any).province ? `, ${(clinic as any).province}` : ""}
+                    </p>
+                  )}
+                  <p className="text-xs text-green-600 mt-1">
+                    ✅ Vinculado desde {new Date(link.createdAt).toLocaleDateString("es-ES")}
+                  </p>
+                </div>
+                <Button
+                  size="sm"
+                  variant="outline"
+                  className="text-red-500 hover:text-red-600 shrink-0"
+                  onClick={() => unlinkFromClinic.mutate({ petId, clinicId: clinic.id })}
+                  disabled={unlinkFromClinic.isPending}
+                >
+                  Desvincular
+                </Button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+      <div className="border-t pt-4">
+        <h4 className="text-sm font-semibold mb-1">Vincular a una clínica colaboradora</h4>
+        <p className="text-xs text-muted-foreground mb-3">
+          Pide a tu clínica veterinaria su código de acceso BuddyMarket para vincular a {petName}.
+          Una vez vinculado, la clínica podrá ver el historial de salud y enviarte alertas y recordatorios.
+        </p>
+        <div className="flex gap-2">
+          <Input
+            value={code}
+            onChange={(e) => setCode(e.target.value.toUpperCase())}
+            placeholder="Código de clínica (ej: ABC12345)"
+            maxLength={12}
+            className="flex-1"
+          />
+          <Button
+            className="bg-orange-500 hover:bg-orange-600 text-white shrink-0"
+            onClick={() => linkToClinic.mutate({ petId, clinicCode: code })}
+            disabled={linkToClinic.isPending || code.length < 6}
+          >
+            {linkToClinic.isPending ? "..." : "Vincular"}
+          </Button>
+        </div>
+      </div>
+    </div>
+  );
+}
 // ─── Link to Clinic ────────────────────────────────────────────────────────────
 function LinkClinicDialog({ petId, petName }: { petId: number; petName: string }) {
   const [open, setOpen] = useState(false);
@@ -1261,11 +1655,13 @@ function PetCard({ pet, onEdit, onDelete }: {
   const dietInfo = nutritionProfile?.dietType ? DIET_TYPES.find((d) => d.value === nutritionProfile.dietType) : null;
 
   const TABS = [
-    { id: "info",   label: "ℹ️ Info" },
-    { id: "foto",   label: "📷 Foto IA" },
-    { id: "menu",   label: "🍽️ Nutrición" },
-    { id: "salud",  label: "🏥 Salud" },
-    { id: "alerts", label: `🔔${petAlerts.length > 0 ? ` (${petAlerts.length})` : ""}` },
+    { id: "info",    label: "ℹ️ Info" },
+    { id: "foto",    label: "📷 Foto IA" },
+    { id: "menu",    label: "🍽️ Nutrición" },
+    { id: "feeding", label: "🥣 Alimentación" },
+    { id: "salud",   label: "🏥 Salud" },
+    { id: "clinics", label: "🏥 Clínicas" },
+    { id: "alerts",  label: `🔔${petAlerts.length > 0 ? ` (${petAlerts.length})` : ""}` },
   ] as const;
 
   return (
@@ -1336,8 +1732,7 @@ function PetCard({ pet, onEdit, onDelete }: {
             )}
             <NutritionProfileEditor petId={pet.id} />
             <div className="flex gap-2 flex-wrap pt-2 border-t">
-              <LinkClinicDialog petId={pet.id} petName={pet.name} />
-              <Button size="sm" variant="outline" onClick={onEdit}>✏️ Editar</Button>
+<Button size="sm" variant="outline" onClick={onEdit}>✏️ Editar</Button>
               <Button size="sm" variant="outline" className="text-red-500 hover:text-red-600" onClick={onDelete}>🗑️ Eliminar</Button>
             </div>
           </div>
@@ -1377,6 +1772,14 @@ function PetCard({ pet, onEdit, onDelete }: {
           </div>
         )}
 
+        {/* Feeding tab */}
+        {tab === "feeding" && (
+          <FeedingTab petId={pet.id} petName={pet.name} />
+        )}
+        {/* Clinics tab */}
+        {tab === "clinics" && (
+          <ClinicTab petId={pet.id} petName={pet.name} />
+        )}
         {/* Alerts tab */}
         {tab === "alerts" && (
           <div className="space-y-2">

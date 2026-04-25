@@ -3101,3 +3101,27 @@
 
 ## Fix Diario - orden franjas horarias (sesión actual)
 - [x] Fix MealLog: ordenar franjas horarias cronológicamente (Desayuno → Media mañana → Comida → Merienda → Cena)
+
+## Clínicas Veterinarias Colaboradoras (sesión actual)
+- [ ] Schema DB: tabla vetClinics (id, userId, name, description, address, city, phone, email, website, logoUrl, specialties, isApproved, isActive, licenseNumber, createdAt)
+- [ ] Schema DB: tabla vetClinicPatients (id, clinicId, petId, userId, status, notes, assignedAt, assignedByClinic)
+- [ ] Schema DB: tabla vetClinicStaff (id, clinicId, userId, role, name, specialty, createdAt)
+- [ ] Schema DB: tabla vetClinicNotes (id, clinicId, petId, staffId, content, type, createdAt)
+- [ ] Schema DB: añadir campo vetClinicId a pets (clínica asignada actualmente)
+- [ ] DB helpers: CRUD vetClinics, vetClinicPatients, vetClinicStaff, vetClinicNotes
+- [ ] tRPC: vetClinics.register - registrar nueva clínica (requiere autenticación)
+- [ ] tRPC: vetClinics.myClinic - obtener clínica del usuario logado
+- [ ] tRPC: vetClinics.updateClinic - actualizar datos de la clínica
+- [ ] tRPC: vetClinics.list - listar clínicas aprobadas (público, con filtros por ciudad/especialidad)
+- [ ] tRPC: vetClinics.getById - detalle de una clínica
+- [ ] tRPC: vetClinics.patients - listar mascotas adheridas a mi clínica
+- [ ] tRPC: vetClinics.addNote - añadir nota clínica a una mascota
+- [ ] tRPC: vetClinics.petNotes - ver notas de una mascota
+- [ ] tRPC: pets.joinClinic - adherir mascota a una clínica colaboradora
+- [ ] tRPC: pets.leaveClinic - desvincularse de una clínica
+- [ ] UI: página VetClinicRegister.tsx - formulario de registro de clínica
+- [ ] UI: página VetClinicDashboard.tsx - panel de gestión tipo BuddyExperts (mascotas, notas, estadísticas)
+- [ ] UI: sección en BuddyPet para buscar y adherirse a clínicas colaboradoras
+- [ ] UI: tarjeta de clínica asignada en el perfil de la mascota
+- [ ] Ruta /vet-clinic en App.tsx para el panel de la clínica
+- [ ] Ruta /vet-clinic/register en App.tsx para el registro

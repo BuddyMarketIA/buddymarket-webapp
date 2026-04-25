@@ -3122,8 +3122,14 @@ export const vetClinics = pgTable("vetClinics", {
   website: varchar("website", { length: 300 }),
   logoUrl: text("logoUrl"),
   description: text("description"),
+  city: varchar("city", { length: 64 }),
+  province: varchar("province", { length: 64 }),
+  licenseNumber: varchar("licenseNumber", { length: 64 }),
+  specialtiesJson: text("specialtiesJson"),  // JSON array de especialidades
+  coverUrl: text("coverUrl"),
   accessCode: varchar("accessCode", { length: 12 }).notNull().unique(), // código que comparte la clínica con los dueños
   ownerId: integer("ownerId").notNull(),                                  // usuario que creó la clínica
+  featured: boolean("featured").default(false).notNull(),
   active: boolean("active").default(true).notNull(),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
@@ -3314,6 +3320,18 @@ export const petNutritionProfiles = pgTable("petNutritionProfiles", {
   mealsPerDay: integer("mealsPerDay").default(2),
   photoUrl: text("photoUrl"),                  // URL de la foto de la mascota
   photoAnalysisJson: text("photoAnalysisJson"),// Resultado del análisis IA de la foto
+  // ── Alimentación actual ──────────────────────────────────────────────────
+  currentFoodBrand: text("currentFoodBrand"),        // Marca del pienso/alimento actual
+  currentFoodType: text("currentFoodType"),          // pienso_seco, pienso_humedo, barf, casero, mixto
+  currentFoodFrequency: integer("currentFoodFrequency"), // Veces al día que come
+  currentFoodAmountGrams: integer("currentFoodAmountGrams"), // Gramos por toma
+  currentFoodNotes: text("currentFoodNotes"),        // Notas adicionales sobre la dieta actual
+  supplementsJson: text("supplementsJson"),          // JSON array de suplementos actuales
+  treatsFrequency: text("treatsFrequency"),           // nunca, ocasional, diario
+  waterIntakeType: text("waterIntakeType"),           // grifo, filtrada, fuente
+  feedingScheduleJson: text("feedingScheduleJson"),  // JSON array de horarios de comida
+  currentDietAnalysisJson: text("currentDietAnalysisJson"), // Análisis IA de la dieta actual
+  currentDietAnalyzedAt: timestamp("currentDietAnalyzedAt"), // Fecha del último análisis
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 }, (t) => ({
   pnp_pet_idx: index("pnp_pet_idx").on(t.petId),

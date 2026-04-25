@@ -12285,6 +12285,15 @@ Devuelve SOLO JSON válido con esta estructura:
         if (!pet) throw new TRPCError({ code: "NOT_FOUND" });
         return db.getLinkedClinicsForPet(input.petId);
       }),
+    unlinkFromClinic: protectedProcedure
+      .input(z.object({ petId: z.number().int(), clinicId: z.number().int() }))
+      .mutation(async ({ ctx, input }) => {
+        const pet = await db.getPetById(input.petId, ctx.user.id);
+        if (!pet) throw new TRPCError({ code: "NOT_FOUND", message: "Mascota no encontrada" });
+        const result = await db.unlinkPetFromClinic(input.petId, input.clinicId, ctx.user.id);
+        if (!result) throw new TRPCError({ code: "NOT_FOUND", message: "Vinculación no encontrada" });
+        return { ok: true };
+      }),
     alerts: protectedProcedure.query(async ({ ctx }) => {
       return db.getPetAlertsByOwner(ctx.user.id);
     }),
@@ -12312,9 +12321,19 @@ Devuelve SOLO JSON válido con esta estructura:
         dailyCaloriesTarget: z.number().int().positive().optional(),
         dailyGramsTarget: z.number().int().positive().optional(),
         mealsPerDay: z.number().int().min(1).max(6).optional(),
+        // Alimentación actual
+        currentFoodBrand: z.string().max(100).optional(),
+        currentFoodType: z.enum(["pienso_seco","pienso_humedo","barf","casero","mixto","otro"]).optional(),
+        currentFoodFrequency: z.number().int().min(1).max(6).optional(),
+        currentFoodAmountGrams: z.number().int().positive().optional(),
+        currentFoodNotes: z.string().max(500).optional(),
+        supplements: z.array(z.string()).optional(),
+        treatsFrequency: z.enum(["nunca","ocasional","diario"]).optional(),
+        waterIntakeType: z.enum(["grifo","filtrada","fuente","otro"]).optional(),
+        feedingSchedule: z.array(z.string()).optional(),
       }))
       .mutation(async ({ ctx, input }) => {
-        const { petId, allergies, foodsToAvoid, favoriteFoods, medicalConditions, ...rest } = input;
+        const { petId, allergies, foodsToAvoid, favoriteFoods, medicalConditions, supplements, feedingSchedule, ...rest } = input;
         const pet = await db.getPetById(petId, ctx.user.id);
         if (!pet) throw new TRPCError({ code: "NOT_FOUND" });
         return db.upsertPetNutritionProfile(petId, ctx.user.id, {
@@ -12323,7 +12342,41 @@ Devuelve SOLO JSON válido con esta estructura:
           foodsToAvoidJson: foodsToAvoid ? JSON.stringify(foodsToAvoid) : undefined,
           favoriteFoodsJson: favoriteFoods ? JSON.stringify(favoriteFoods) : undefined,
           medicalConditionsJson: medicalConditions ? JSON.stringify(medicalConditions) : undefined,
+          supplementsJson: supplements ? JSON.stringify(supplements) : undefined,
+          feedingScheduleJson: feedingSchedule ? JSON.stringify(feedingSchedule) : undefined,
         });
+      }),
+
+    // ── Analyze Current Diet (IA) ────────────────────────────────────────────────
+    analyzeCurrentDiet: protectedProcedure
+      .input(z.object({ petId: z.number().int() }))
+      .mutation(async ({ ctx, input }) => {
+        const pet = await db.getPetById(input.petId, ctx.user.id);
+        if (!pet) throw new TRPCError({ code: "NOT_FOUND" });
+        const profile = await db.getPetNutritionProfile(input.petId, ctx.user.id);
+        if (!profile) throw new TRPCError({ code: "BAD_REQUEST", message: "Primero completa el perfil de alimentación actual" });
+        const speciesLabels: Record<string, string> = { dog: "perro", cat: "gato", rabbit: "conejo", bird: "pájaro", hamster: "hámster", guinea_pig: "cobaya", fish: "pez", turtle: "tortuga", ferret: "hurón", other: "mascota" };
+        const speciesLabel = speciesLabels[pet.species] ?? pet.species;
+        const weightKg = pet.weightUnit === "lb" ? (pet.weightValue ?? 0) * 0.453592 : (pet.weightValue ?? 0);
+        const foodTypeLabels: Record<string, string> = { pienso_seco: "pienso seco", pienso_humedo: "pienso húmedo", barf: "dieta BARF cruda", casero: "comida casera", mixto: "alimentación mixta", otro: "otro tipo de alimentación" };
+        const foodTypeLabel = foodTypeLabels[profile.currentFoodType ?? ""] ?? profile.currentFoodType ?? "no especificado";
+        const supplements = profile.supplementsJson ? JSON.parse(profile.supplementsJson) : [];
+        const feedingSchedule = profile.feedingScheduleJson ? JSON.parse(profile.feedingScheduleJson) : [];
+        const prompt = `Eres un nutricionista veterinario experto. Analiza la dieta actual de este ${speciesLabel} y evalúa si es nutricionalmente adecuada.\n\nDATOS DE LA MASCOTA:\n- Nombre: ${pet.name}\n- Especie: ${speciesLabel}\n- Raza: ${pet.breed ?? "no especificada"}\n- Edad: ${pet.ageYears ?? "?"}a ${pet.ageMonths ?? 0}m\n- Peso: ${weightKg.toFixed(1)} kg\n- Condición corporal: ${profile.bodyCondition ?? "no evaluada"}\n- Condiciones médicas: ${profile.medicalConditionsJson ? JSON.parse(profile.medicalConditionsJson).join(", ") : "ninguna"}\n- Alergias: ${profile.allergiesJson ? JSON.parse(profile.allergiesJson).join(", ") : "ninguna"}\n\nALIMENTACIÓN ACTUAL:\n- Tipo: ${foodTypeLabel}\n- Marca: ${profile.currentFoodBrand ?? "no especificada"}\n- Frecuencia: ${profile.currentFoodFrequency ?? "?"}x/día\n- Cantidad: ${profile.currentFoodAmountGrams ?? "?"}g/toma\n- Suplementos: ${supplements.length > 0 ? supplements.join(", ") : "ninguno"}\n- Premios: ${profile.treatsFrequency ?? "no especificado"}\n- Agua: ${profile.waterIntakeType ?? "no especificada"}\n- Horarios: ${feedingSchedule.length > 0 ? feedingSchedule.join(", ") : "no especificados"}\n- Notas: ${profile.currentFoodNotes ?? "ninguna"}\n\nEvalúa: cantidad correcta para el peso, tipo de dieta apropiado, deficiencias nutricionales probables, riesgos, y recomendaciones de mejora AUNQUE el animal parezca sano visualmente.\n\nDevuelve SOLO JSON:\n{\n  "overallRating": 7,\n  "ratingLabel": "Aceptable",\n  "summary": "resumen ejecutivo",\n  "positives": ["punto positivo"],\n  "concerns": ["preocupación"],\n  "deficiencies": ["deficiencia nutricional"],\n  "recommendations": ["recomendación"],\n  "urgentActions": [],\n  "idealDietType": "pienso_seco",\n  "idealCaloriesPerDay": 400,\n  "idealGramsPerDay": 200,\n  "shouldConsultVet": false,\n  "vetConsultReason": ""\n}`;
+        const response = await invokeLLM({
+          messages: [
+            { role: "system", content: "Eres un nutricionista veterinario experto. Devuelve SOLO JSON válido." },
+            { role: "user", content: prompt },
+          ],
+          response_format: { type: "json_object" },
+        });
+        const content = response.choices?.[0]?.message?.content ?? "{}";
+        const analysis = JSON.parse(content);
+        await db.upsertPetNutritionProfile(input.petId, ctx.user.id, {
+          currentDietAnalysisJson: content,
+          currentDietAnalyzedAt: new Date(),
+        });
+        return { analysis };
       }),
 
     // ── Custom Menu Generation ───────────────────────────────────────────────
@@ -12670,6 +12723,56 @@ Devuelve SOLO JSON válido con esta estructura:
       .input(z.object({ petId: z.number().int() }))
       .query(async ({ ctx, input }) => {
         return db.getPetVetVisits(input.petId);
+      }),
+    list: publicProcedure
+      .input(z.object({ city: z.string().optional() }).optional())
+      .query(async ({ input }) => {
+        return db.listVetClinics({ city: input?.city, active: true });
+      }),
+    getById: publicProcedure
+      .input(z.object({ clinicId: z.number().int() }))
+      .query(async ({ input }) => {
+        return db.getVetClinicById(input.clinicId);
+      }),
+    updateFull: protectedProcedure
+      .input(z.object({
+        clinicId: z.number().int(),
+        name: z.string().min(2).max(200).optional(),
+        address: z.string().max(500).optional(),
+        phone: z.string().max(32).optional(),
+        email: z.string().email().optional().or(z.literal("")),
+        website: z.string().max(300).optional().or(z.literal("")),
+        description: z.string().max(1000).optional(),
+        city: z.string().max(64).optional(),
+        province: z.string().max(64).optional(),
+        licenseNumber: z.string().max(64).optional(),
+        specialtiesJson: z.string().optional(),
+        logoUrl: z.string().optional(),
+        coverUrl: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { clinicId, ...data } = input;
+        const result = await db.updateVetClinicFull(clinicId, ctx.user.id, data);
+        if (!result) throw new TRPCError({ code: "FORBIDDEN" });
+        return result;
+      }),
+    createFull: protectedProcedure
+      .input(z.object({
+        name: z.string().min(2).max(200),
+        address: z.string().max(500).optional(),
+        phone: z.string().max(32).optional(),
+        email: z.string().email().optional().or(z.literal("")),
+        website: z.string().max(300).optional().or(z.literal("")),
+        description: z.string().max(1000).optional(),
+        city: z.string().max(64).optional(),
+        province: z.string().max(64).optional(),
+        licenseNumber: z.string().max(64).optional(),
+        specialtiesJson: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const existing = await db.getVetClinicForUser(ctx.user.id);
+        if (existing) throw new TRPCError({ code: "CONFLICT", message: "Ya tienes una clínica registrada" });
+        return db.createVetClinic({ ...input, ownerId: ctx.user.id });
       }),
   }),
 });

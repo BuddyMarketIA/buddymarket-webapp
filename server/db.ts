@@ -3159,6 +3159,18 @@ export async function upsertPetNutritionProfile(petId: number, userId: number, d
   mealsPerDay?: number;
   photoUrl?: string;
   photoAnalysisJson?: string;
+  // Alimentación actual
+  currentFoodBrand?: string;
+  currentFoodType?: string;
+  currentFoodFrequency?: number;
+  currentFoodAmountGrams?: number;
+  currentFoodNotes?: string;
+  supplementsJson?: string;
+  treatsFrequency?: string;
+  waterIntakeType?: string;
+  feedingScheduleJson?: string;
+  currentDietAnalysisJson?: string;
+  currentDietAnalyzedAt?: Date;
 }) {
   const db = await getDb();
   const existing = await getPetNutritionProfile(petId, userId);
@@ -3197,4 +3209,45 @@ export async function editPetMenuMeal(menuId: number, userId: number, dayIndex: 
     .where(eq(petMenusTable.id, menuId))
     .returning();
   return updated[0] ?? null;
+}
+
+// ── Vet Clinic Extended Helpers ───────────────────────────────────────────────
+export async function listVetClinics(filters?: { city?: string; active?: boolean }) {
+  const db = await getDb();
+  if (!db) return [];
+  const conditions: ReturnType<typeof eq>[] = [];
+  if (filters?.active !== false) conditions.push(eq(vetClinicsTable.active, true));
+  if (filters?.city) conditions.push(eq(vetClinicsTable.city, filters.city));
+  const query = conditions.length > 0
+    ? db.select().from(vetClinicsTable).where(and(...conditions))
+    : db.select().from(vetClinicsTable);
+  return (query as any).orderBy(vetClinicsTable.name);
+}
+
+export async function updateVetClinicFull(clinicId: number, ownerId: number, data: Partial<{
+  name: string; address: string; phone: string; email: string; website: string;
+  description: string; city: string; province: string; licenseNumber: string;
+  specialtiesJson: string; openingHoursJson: string; logoUrl: string; coverUrl: string;
+}>) {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db.update(vetClinicsTable)
+    .set({ ...data, updatedAt: new Date() })
+    .where(and(eq(vetClinicsTable.id, clinicId), eq(vetClinicsTable.ownerId, ownerId)))
+    .returning();
+  return rows[0] ?? null;
+}
+
+export async function unlinkPetFromClinic(petId: number, clinicId: number, ownerId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await (db as any).update(petClinicLinksTable)
+    .set({ status: "revoked", revokedAt: new Date() })
+    .where(and(
+      eq(petClinicLinksTable.petId, petId),
+      eq(petClinicLinksTable.clinicId, clinicId),
+      eq(petClinicLinksTable.ownerId, ownerId),
+    ))
+    .returning();
+  return rows[0] ?? null;
 }
