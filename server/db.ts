@@ -3251,3 +3251,86 @@ export async function unlinkPetFromClinic(petId: number, clinicId: number, owner
     .returning();
   return rows[0] ?? null;
 }
+
+// ── Fridge Scanner helpers ────────────────────────────────────────────────────
+import {
+  fridgeScans as fridgeScansTable,
+  bloodTests as bloodTestsTable,
+} from "../drizzle/schema";
+
+export async function createFridgeScan(userId: number, imageUrl: string) {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db.insert(fridgeScansTable).values({ userId, imageUrl }).returning();
+  return rows[0];
+}
+
+export async function updateFridgeScan(id: number, userId: number, data: {
+  detectedIngredientsJson?: string;
+  editedIngredientsJson?: string;
+  suggestedMenuJson?: string;
+  savedAsMenuId?: number;
+}) {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db.update(fridgeScansTable)
+    .set(data)
+    .where(and(eq(fridgeScansTable.id, id), eq(fridgeScansTable.userId, userId)))
+    .returning();
+  return rows[0] ?? null;
+}
+
+export async function getFridgeScanHistory(userId: number, limit = 10) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(fridgeScansTable)
+    .where(eq(fridgeScansTable.userId, userId))
+    .orderBy(desc(fridgeScansTable.createdAt))
+    .limit(limit);
+}
+
+// ── Blood Test helpers ────────────────────────────────────────────────────────
+export async function createBloodTest(userId: number, data: {
+  fileUrl?: string;
+  testDate?: Date;
+  labName?: string;
+}) {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db.insert(bloodTestsTable).values({ userId, ...data }).returning();
+  return rows[0];
+}
+
+export async function updateBloodTest(id: number, userId: number, data: {
+  extractedValuesJson?: string;
+  analysisJson?: string;
+  recommendationsJson?: string;
+  menuAdjustmentsJson?: string;
+  testDate?: Date;
+  labName?: string;
+}) {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db.update(bloodTestsTable)
+    .set({ ...data, updatedAt: new Date() })
+    .where(and(eq(bloodTestsTable.id, id), eq(bloodTestsTable.userId, userId)))
+    .returning();
+  return rows[0] ?? null;
+}
+
+export async function getBloodTestHistory(userId: number) {
+  const db = await getDb();
+  if (!db) return [];
+  return db.select().from(bloodTestsTable)
+    .where(eq(bloodTestsTable.userId, userId))
+    .orderBy(desc(bloodTestsTable.createdAt));
+}
+
+export async function getBloodTestById(id: number, userId: number) {
+  const db = await getDb();
+  if (!db) return null;
+  const rows = await db.select().from(bloodTestsTable)
+    .where(and(eq(bloodTestsTable.id, id), eq(bloodTestsTable.userId, userId)))
+    .limit(1);
+  return rows[0] ?? null;
+}

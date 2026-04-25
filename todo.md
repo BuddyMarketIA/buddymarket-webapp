@@ -3125,3 +3125,34 @@
 - [ ] UI: tarjeta de clínica asignada en el perfil de la mascota
 - [ ] Ruta /vet-clinic en App.tsx para el panel de la clínica
 - [ ] Ruta /vet-clinic/register en App.tsx para el registro
+
+## Mejoras 500M - Sprint actual
+
+### 1. Escáner de nevera con IA
+- [ ] Schema DB: tabla fridgeScans (userId, imageUrl, detectedIngredientsJson, suggestedMenuJson, createdAt)
+- [ ] tRPC: fridge.scan - sube foto, IA detecta ingredientes y genera menú con lo disponible
+- [ ] tRPC: fridge.history - historial de escaneos
+- [ ] UI: página FridgeScanner.tsx con cámara/upload, lista de ingredientes detectados (editables), botón generar menú
+- [ ] UI: resultado del menú generado con opción de guardar en Mis Menús
+- [ ] Ruta /nevera registrada en App.tsx y en navegación
+
+### 4. Lista de la compra - pulido
+- [ ] UI: categorías visuales (Frutas y verduras, Carnes y pescados, Lácteos, Cereales, Otros)
+- [ ] UI: cantidades precisas con unidad (500g de calabacín, 2 unidades de limón)
+- [ ] UI: botón "Compartir por WhatsApp" que genera texto formateado
+- [ ] UI: checkbox por ítem para marcar como comprado (tachado visual)
+- [ ] UI: botón "Limpiar comprados" para eliminar los marcados
+- [ ] UI: resumen de ítems pendientes vs comprados
+- [ ] UI: agrupación inteligente (cantidades del mismo ingrediente sumadas)
+
+### 5. Análisis de analítica de sangre con IA
+- [ ] Schema DB: tabla bloodTests (userId, uploadedAt, fileUrl, analysisJson, recommendations)
+- [ ] tRPC: health.uploadBloodTest - sube PDF/imagen de analítica, IA extrae valores
+- [ ] tRPC: health.analyzeBloodTest - analiza valores y genera recomendaciones nutricionales
+- [ ] tRPC: health.bloodTestHistory - historial de analíticas
+- [ ] tRPC: health.adjustMenuForBloodTest - ajusta menú semanal en base a los valores de la analítica
+- [ ] UI: página BloodTestAnalysis.tsx con upload de PDF/imagen, tabla de valores extraídos, semáforo de salud
+- [ ] UI: sección de recomendaciones nutricionales personalizadas basadas en la analítica
+- [ ] UI: botón "Ajustar mi menú" que regenera el menú teniendo en cuenta los valores
+- [ ] UI: historial de analíticas con evolución de valores clave (glucosa, colesterol, ferritina, vitamina D)
+- [ ] Ruta /analitica registrada en App.tsx y en navegación

@@ -3339,3 +3339,42 @@ export const petNutritionProfiles = pgTable("petNutritionProfiles", {
 }));
 export type PetNutritionProfile = typeof petNutritionProfiles.$inferSelect;
 export type NewPetNutritionProfile = typeof petNutritionProfiles.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// FRIDGE SCANNER — Escáner de nevera con IA
+// ─────────────────────────────────────────────────────────────────────────────
+export const fridgeScans = pgTable("fridgeScans", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull(),
+  imageUrl: text("imageUrl").notNull(),
+  detectedIngredientsJson: text("detectedIngredientsJson"), // JSON array de ingredientes detectados
+  editedIngredientsJson: text("editedIngredientsJson"),     // JSON array editado por el usuario
+  suggestedMenuJson: text("suggestedMenuJson"),              // JSON del menú generado con los ingredientes
+  savedAsMenuId: integer("savedAsMenuId"),                   // Si el menú fue guardado, referencia al menú
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  fs_user_idx: index("fs_user_idx").on(t.userId),
+}));
+export type FridgeScan = typeof fridgeScans.$inferSelect;
+export type NewFridgeScan = typeof fridgeScans.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// BLOOD TESTS — Análisis de analítica de sangre con IA
+// ─────────────────────────────────────────────────────────────────────────────
+export const bloodTests = pgTable("bloodTests", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull(),
+  fileUrl: text("fileUrl"),                          // URL del PDF/imagen subido
+  testDate: timestamp("testDate"),                   // Fecha de la analítica
+  labName: text("labName"),                          // Nombre del laboratorio
+  extractedValuesJson: text("extractedValuesJson"),  // JSON con valores extraídos (glucosa, colesterol, etc.)
+  analysisJson: text("analysisJson"),                // JSON con análisis IA (semáforo, puntuación, observaciones)
+  recommendationsJson: text("recommendationsJson"),  // JSON con recomendaciones nutricionales
+  menuAdjustmentsJson: text("menuAdjustmentsJson"),  // JSON con ajustes sugeridos al menú
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  bt_user_idx: index("bt_user_idx").on(t.userId),
+}));
+export type BloodTest = typeof bloodTests.$inferSelect;
+export type NewBloodTest = typeof bloodTests.$inferInsert;

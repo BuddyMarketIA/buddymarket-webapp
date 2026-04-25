@@ -145,6 +145,8 @@ const MakerAnalytics = lazyWithRetry(() => import("./pages/MakerAnalytics"));
 const IngredientExplorer = lazyWithRetry(() => import("./pages/IngredientExplorer"));
 const WeeklyCheckin = lazyWithRetry(() => import("./pages/WeeklyCheckin"));
 const MonthlyReports = lazyWithRetry(() => import("./pages/MonthlyReports"));
+const FridgeScanner = lazyWithRetry(() => import("./pages/FridgeScanner"));
+const BloodTestAnalysis = lazyWithRetry(() => import("./pages/BloodTestAnalysis"));
 
 // ─── Page loading fallback ────────────────────────────────────────────────────
 function PageLoader() {
@@ -291,6 +293,8 @@ function Router() {
       <Route path="/app/weekly-checkin">{() => <ProtectedPage><WeeklyCheckin /></ProtectedPage>}</Route>
       <Route path="/app/maker-analytics">{() => <ProtectedPage><MakerAnalytics /></ProtectedPage>}</Route>
       <Route path="/app/my-plans">{() => <ProtectedPage><ClientPlanView /></ProtectedPage>}</Route>
+      <Route path="/app/fridge-scanner">{() => <ProtectedRoute component={FridgeScanner} />}</Route>
+      <Route path="/app/blood-test">{() => <ProtectedRoute component={BloodTestAnalysis} />}</Route>
       <Route path="/register">{() => <Registration />}</Route>
       <Route path="/register/buddy-expert">{() => <RegisterBuddyExpert />}</Route>
       <Route path="/register/buddy-maker">{() => <RegisterBuddyMaker />}</Route>

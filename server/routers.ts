@@ -12775,5 +12775,175 @@ Devuelve SOLO JSON válido con esta estructura:
         return db.createVetClinic({ ...input, ownerId: ctx.user.id });
       }),
   }),
+
+  // ── Fridge Scanner ──────────────────────────────────────────────────────────
+  fridge: router({
+    scan: protectedProcedure
+      .input(z.object({
+        imageBase64: z.string(),
+        mimeType: z.string().default("image/jpeg"),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const buffer = Buffer.from(input.imageBase64, "base64");
+        const key = `fridge-scans/${ctx.user.id}-${Date.now()}.jpg`;
+        const { url: imageUrl } = await storagePut(key, buffer, input.mimeType);
+
+        const scan = await db.createFridgeScan(ctx.user.id, imageUrl);
+        if (!scan) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+        const aiResponse = await invokeLLM({
+          messages: [
+            {
+              role: "system",
+              content: `Eres un experto en nutrición y análisis de alimentos. Analiza la imagen de una nevera o despensa y devuelve un JSON con los ingredientes detectados.`,
+            },
+            {
+              role: "user",
+              content: [
+                { type: "image_url", image_url: { url: imageUrl, detail: "high" } } as unknown as string,
+                {
+                  type: "text",
+                  text: `Analiza esta imagen de nevera/despensa. Devuelve SOLO un JSON:
+{
+  "ingredients": [
+    { "name": "nombre en español", "estimatedAmount": "cantidad estimada", "unit": "g/ml/unidades", "category": "verdura/fruta/proteína/lácteo/cereal/otro" }
+  ],
+  "notes": "observaciones adicionales"
+}`,
+                } as unknown as string,
+              ],
+            },
+          ],
+        });
+
+        let detectedIngredients: unknown[] = [];
+        try {
+          const content = aiResponse.choices[0]?.message?.content ?? "{}";
+          const parsed = JSON.parse(content.replace(/```json\n?|```/g, "").trim());
+          detectedIngredients = parsed.ingredients ?? [];
+        } catch { detectedIngredients = []; }
+
+        await db.updateFridgeScan(scan.id, ctx.user.id, { detectedIngredientsJson: JSON.stringify(detectedIngredients) });
+        return { scanId: scan.id, imageUrl, ingredients: detectedIngredients };
+      }),
+
+    generateMenuFromScan: protectedProcedure
+      .input(z.object({
+        scanId: z.number(),
+        ingredientsJson: z.string(),
+        mealsPerDay: z.number().min(3).max(6).default(5),
+        dietType: z.string().optional(),
+        allergies: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        let ingredients: { name: string; estimatedAmount?: string }[] = [];
+        try { ingredients = JSON.parse(input.ingredientsJson); } catch { ingredients = []; }
+        const ingredientsList = ingredients.map(i => `- ${i.name}${i.estimatedAmount ? ` (${i.estimatedAmount})` : ""}`).join("\n");
+
+        const aiResponse = await invokeLLM({
+          messages: [
+            { role: "system", content: `Eres un nutricionista experto. Genera menús usando EXCLUSIVAMENTE los ingredientes disponibles. Si faltan ingredientes esenciales, indícalo.` },
+            {
+              role: "user",
+              content: `Ingredientes disponibles:\n${ingredientsList}\n\nTipo de dieta: ${input.dietType ?? "equilibrada"}\nAlergias: ${input.allergies ?? "ninguna"}\nComidas por día: ${input.mealsPerDay}\n\nGenera un menú para HOY usando SOLO estos ingredientes. Devuelve JSON:\n{\n  "meals": [\n    { "mealTime": "desayuno|media_manana|comida|merienda|cena", "name": "nombre del plato", "ingredients": ["ingrediente 1"], "calories": 350, "protein": 20, "recipe": { "steps": ["paso 1"], "prepTime": 10 } }\n  ],\n  "missingIngredients": ["ingrediente que falta"],\n  "nutritionSummary": { "totalCalories": 1800, "totalProtein": 90, "totalCarbs": 200, "totalFat": 60 }\n}`,
+            },
+          ],
+        });
+
+        let menu: unknown = { meals: [], missingIngredients: [], nutritionSummary: {} };
+        try {
+          const content = aiResponse.choices[0]?.message?.content ?? "{}";
+          menu = JSON.parse(content.replace(/```json\n?|```/g, "").trim());
+        } catch { /* keep default */ }
+
+        await db.updateFridgeScan(input.scanId, ctx.user.id, {
+          editedIngredientsJson: input.ingredientsJson,
+          suggestedMenuJson: JSON.stringify(menu),
+        });
+        return menu;
+      }),
+
+    history: protectedProcedure.query(async ({ ctx }) => db.getFridgeScanHistory(ctx.user.id)),
+  }),
+
+  // ── Health / Blood Tests ─────────────────────────────────────────────────────
+  health: router({
+    uploadBloodTest: protectedProcedure
+      .input(z.object({
+        fileBase64: z.string(),
+        mimeType: z.string().default("application/pdf"),
+        testDate: z.string().optional(),
+        labName: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const buffer = Buffer.from(input.fileBase64, "base64");
+        const ext = input.mimeType.includes("pdf") ? "pdf" : "jpg";
+        const key = `blood-tests/${ctx.user.id}-${Date.now()}.${ext}`;
+        const { url: fileUrl } = await storagePut(key, buffer, input.mimeType);
+        const testDate = input.testDate ? new Date(input.testDate) : undefined;
+        const record = await db.createBloodTest(ctx.user.id, { fileUrl, testDate, labName: input.labName });
+        if (!record) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        return { id: record.id, fileUrl };
+      }),
+
+    analyze: protectedProcedure
+      .input(z.object({
+        bloodTestId: z.number(),
+        manualValuesJson: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const record = await db.getBloodTestById(input.bloodTestId, ctx.user.id);
+        if (!record) throw new TRPCError({ code: "NOT_FOUND" });
+
+        const userProfile = await db.getUserProfile(ctx.user.id);
+        const manualValues = input.manualValuesJson ? JSON.parse(input.manualValuesJson) : null;
+        const contextText = `Perfil: ${userProfile?.gender ?? "no especificado"}, ${userProfile?.age ?? "?"}años, ${userProfile?.weight ?? "?"}kg, objetivo: ${userProfile?.mainGoal ?? "salud general"}.${manualValues ? `\nValores manuales: ${JSON.stringify(manualValues)}` : ""}`;
+
+        const userContent: unknown[] = [];
+        if (record.fileUrl) {
+          const isImage = /\.(jpg|jpeg|png|webp)$/i.test(record.fileUrl);
+          if (isImage) {
+            userContent.push({ type: "image_url", image_url: { url: record.fileUrl, detail: "high" } });
+          } else {
+            userContent.push({ type: "file_url", file_url: { url: record.fileUrl, mime_type: "application/pdf" } });
+          }
+        }
+        userContent.push({
+          type: "text",
+          text: `${contextText}\n\nAnaliza esta analítica de sangre y devuelve JSON:\n{\n  "extractedValues": [{ "name": "Glucosa", "value": 95, "unit": "mg/dL", "referenceMin": 70, "referenceMax": 100, "status": "normal|bajo|alto|critico", "interpretation": "dentro del rango normal" }],\n  "overallScore": 82,\n  "overallStatus": "bueno|regular|atención|urgente",\n  "keyFindings": ["hallazgo 1"],\n  "nutritionalDeficiencies": ["vitamina D baja"],\n  "recommendations": [{ "priority": "alta|media|baja", "category": "alimentación|suplementos|hábitos|médico", "recommendation": "texto", "foods": ["alimento 1"] }],\n  "menuAdjustments": [{ "mealTime": "desayuno", "suggestion": "Añadir fuentes de vitamina D" }]\n}`,
+        });
+
+        const aiResponse = await invokeLLM({
+          messages: [
+            { role: "system", content: `Eres un médico nutricionista experto en interpretación de analíticas de sangre. Analiza los valores y proporciona recomendaciones nutricionales personalizadas basadas en evidencia científica.` },
+            { role: "user", content: userContent as string },
+          ],
+        });
+
+        let analysis: Record<string, unknown> = {};
+        try {
+          const content = aiResponse.choices[0]?.message?.content ?? "{}";
+          analysis = JSON.parse(content.replace(/```json\n?|```/g, "").trim());
+        } catch { analysis = { error: "No se pudo analizar la analítica" }; }
+
+        await db.updateBloodTest(input.bloodTestId, ctx.user.id, {
+          extractedValuesJson: JSON.stringify(analysis.extractedValues ?? []),
+          analysisJson: JSON.stringify(analysis),
+          recommendationsJson: JSON.stringify(analysis.recommendations ?? []),
+          menuAdjustmentsJson: JSON.stringify(analysis.menuAdjustments ?? []),
+        });
+        return analysis;
+      }),
+
+    history: protectedProcedure.query(async ({ ctx }) => db.getBloodTestHistory(ctx.user.id)),
+
+    getById: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const record = await db.getBloodTestById(input.id, ctx.user.id);
+        if (!record) throw new TRPCError({ code: "NOT_FOUND" });
+        return record;
+      }),
+  }),
 });
 export type AppRouter = typeof appRouter;

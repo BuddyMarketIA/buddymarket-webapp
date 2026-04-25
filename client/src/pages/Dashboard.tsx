@@ -145,6 +145,8 @@ export default function Dashboard() {
     { label: "BuddyIA", emoji: "🧠", to: "/app/buddy-ia", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/buddyia_card-VHfq39XvN8Z86UvgxyYrxs.webp", accent: "#7C3AED", size: "small", subtitle: "Tu asesor nutricional" },
     { label: t("nav.diary"), emoji: "📊", to: "/app/meal-log", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/vegetables_0f947a56.jpg", accent: "#EF4444", size: "small", subtitle: t("dashboard.diarySubtitle") },
     { label: "Ingredientes", emoji: "🥗", to: "/app/ingredients", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/vegetables_0f947a56.jpg", accent: "#4CAF50", size: "small", subtitle: "Valores nutricionales" },
+    { label: "Nevera IA", emoji: "📸", to: "/app/fridge-scanner", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/pantry_3fcf0a1f.jpg", accent: "#0EA5E9", size: "small", subtitle: "Escanea tu nevera" },
+    { label: "Analítica", emoji: "🧠", to: "/app/blood-test", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/buddyia_card-VHfq39XvN8Z86UvgxyYrxs.webp", accent: "#EC4899", size: "small", subtitle: "Analiza tu sangre" },
   ];
   // Use local date (not UTC) so the diary resets at midnight in the user's timezone
   const [today] = useState(() => {
