@@ -537,6 +537,11 @@ export async function runExpertWeeklySummary() {
  * Se llama una vez al arrancar el servidor.
  */
 export function startEmailJobs() {
+  // Only run email jobs in production to avoid sending real emails in dev/staging
+  if (process.env.NODE_ENV !== "production") {
+    logger.info("Email jobs DISABLED in non-production environment (NODE_ENV=%s)", process.env.NODE_ENV ?? "development");
+    return;
+  }
   logger.info("Registering email jobs...");
 
   // Helper para programar un job en el próximo momento específico (hora UTC)

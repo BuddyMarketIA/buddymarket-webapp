@@ -4508,10 +4508,14 @@ Responde SOLO con JSON válido, sin texto adicional:
         return { plan: "pro_max" as const, status: "active" as const, tier: "pro_max" as const };
       }
       const sub = await db.getUserSubscription(ctx.user.id);
+      const { getPlanTier } = await import("../shared/plans");
+      // Manual plan assigned by admin takes priority over Stripe subscription
+      if (sub?.manualPlan && sub.manualPlan !== "free") {
+        return { ...sub, plan: sub.manualPlan, status: "active" as const, tier: getPlanTier(sub.manualPlan) };
+      }
       if (!sub || sub.status !== "active") {
         return { plan: "free" as const, status: "inactive" as const, tier: "free" as const };
       }
-      const { getPlanTier } = await import("../shared/plans");
       return { ...sub, tier: getPlanTier(sub.plan) };
     }),
     getMonthlyUsage: protectedProcedure.query(async ({ ctx }) => {

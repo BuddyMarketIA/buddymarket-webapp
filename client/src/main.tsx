@@ -113,6 +113,8 @@ const queryClient = new QueryClient({
 queryClient.getQueryCache().subscribe(event => {
   if (event.type === "updated" && event.action.type === "error") {
     const error = event.query.state.error;
+    // Guard: error may be null/undefined if the query was cancelled
+    if (!error) return;
     if (!isServerDownError(error)) {
       console.warn("[API Query Error]", error);
     }
@@ -125,6 +127,8 @@ queryClient.getQueryCache().subscribe(event => {
 queryClient.getMutationCache().subscribe(event => {
   if (event.type === "updated" && event.action.type === "error") {
     const error = event.mutation.state.error;
+    // Guard: error may be null/undefined if the mutation was cancelled
+    if (!error) return;
     if (!isServerDownError(error)) {
       console.warn("[API Mutation Error]", error);
     }
