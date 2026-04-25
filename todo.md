@@ -3098,3 +3098,6 @@
 - [x] Fix prompt IA: ejemplos de alimentos apropiados por franja con límites de calorías
 - [x] Fix prompt IA: instrucción de auto-corrección antes de devolver el JSON
 - [x] Fix UI: mostrar receta expandible con pasos de preparación en cada comida del menú
+
+## Fix Diario - orden franjas horarias (sesión actual)
+- [x] Fix MealLog: ordenar franjas horarias cronológicamente (Desayuno → Media mañana → Comida → Merienda → Cena)

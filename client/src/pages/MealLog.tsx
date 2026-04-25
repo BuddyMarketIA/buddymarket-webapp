@@ -492,6 +492,14 @@ export default function MealLog() {
     if (!grouped[part]) grouped[part] = [];
     grouped[part].push(log);
   });
+  // Orden cronológico de franjas horarias
+  const MEAL_ORDER = ["Desayuno", "Media mañana", "Comida", "Merienda", "Cena", "Recena"];
+  const sortedGroupEntries = Object.entries(grouped).sort(([a], [b]) => {
+    const ai = MEAL_ORDER.indexOf(a);
+    const bi = MEAL_ORDER.indexOf(b);
+    // Si no está en la lista, va al final
+    return (ai === -1 ? 999 : ai) - (bi === -1 ? 999 : bi);
+  });
 
   const { compress: compressImage, compressing: isCompressingPhoto } = useImageCompressor();
   // Handle file selection — comprime automáticamente a ≤1MB/1200px sin límite de tamaño
@@ -1206,7 +1214,7 @@ export default function MealLog() {
         </div>
       ) : (
         <div style={{ display: "flex", flexDirection: "column", gap: "10px" }}>
-          {Object.entries(grouped).map(([part, partLogs]) => (
+          {sortedGroupEntries.map(([part, partLogs]) => (
             <div key={part} style={{ background: "white", borderRadius: "18px", padding: "14px", boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
               <h3 style={{ margin: "0 0 10px", fontSize: "13px", fontWeight: 800, color: "#374151" }}>{part}</h3>
               <div style={{ display: "flex", flexDirection: "column", gap: "6px" }}>
