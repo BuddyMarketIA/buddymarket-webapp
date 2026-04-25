@@ -980,7 +980,10 @@ export const appRouter = router({
               const physicalInfo = (input.gender && input.age && input.heightCm && input.weightKg)
                 ? `Perfil físico: ${input.gender === 'male' ? 'hombre' : 'mujer'}, ${input.age} años, ${input.heightCm} cm, ${input.weightKg} kg, actividad: ${input.activityLevel ?? 'moderada'}.`
                 : '';
-              const prompt = `Eres un nutricionista experto. Genera un menú semanal personalizado en JSON para un usuario con objetivo: ${goalLabel[input.mainGoal ?? ""] ?? input.mainGoal}. ${physicalInfo} ${calorieInfo} Restricciones: ${(input.restrictions ?? []).join(", ") || "ninguna"}. Comidas al día: ${input.dailyMeals ?? 3} (${(input.mealTimes ?? []).join(", ")}). Tiempo de cocina: ${input.mealPrepTime ?? "15_30"} min. Presupuesto: ${input.budgetPerWeek ?? 60}€/semana. Nivel: ${input.cookingLevel ?? "intermediate"}.
+              // Menstrual cycle phase (for women with tracking enabled)
+              const setupCycleData = await db.getMenstrualCycleData(ctx.user.id);
+              const setupCycleBlock = db.buildCyclePhaseBlock(setupCycleData?.phaseInfo);
+              const prompt = `Eres un nutricionista experto. Genera un menú semanal personalizado en JSON para un usuario con objetivo: ${goalLabel[input.mainGoal ?? ""] ?? input.mainGoal}. ${physicalInfo} ${calorieInfo} ${setupCycleBlock} Restricciones: ${(input.restrictions ?? []).join(", ") || "ninguna"}. Comidas al día: ${input.dailyMeals ?? 3} (${(input.mealTimes ?? []).join(", ")}). Tiempo de cocina: ${input.mealPrepTime ?? "15_30"} min. Presupuesto: ${input.budgetPerWeek ?? 60}€/semana. Nivel: ${input.cookingLevel ?? "intermediate"}.
 
 REGLAS OBLIGATORIAS POR FRANJA HORARIA:
 - DESAYUNO: tostadas, cereales, avena, yogur, fruta, huevos revueltos, smoothie, batido, pan con aceite. NUNCA ensaladas, guisos, arroces, pastas, carnes asadas, pescados al horno, legumbres.
@@ -2201,12 +2204,12 @@ Adapta esta receta eliminando los ingredientes prohibidos y sustituyéndolos por
       .mutation(async ({ ctx, input }) => {
         const tier = await getUserPlanTier(ctx.user.id, ctx.user.role);
         requirePlanFeature(tier, "canGenerateAIMenus");
-        const [profile, allergies, restrictions] = await Promise.all([
+        const [profile, allergies, restrictions, cycleData] = await Promise.all([
           db.getUserProfile(ctx.user.id),
           db.getUserAllergies(ctx.user.id),
           db.getUserDietRestrictions(ctx.user.id),
+          db.getMenstrualCycleData(ctx.user.id),
         ]);
-
         const profileInfo = profile
           ? `Objetivo: ${profile.mainGoal || "mantener peso"}, Actividad: ${profile.activityLevel || "moderada"}, Calorías diarias: ${profile.dailyCalorieGoal || 2000}`
           : "";
@@ -2218,6 +2221,8 @@ Adapta esta receta eliminando los ingredientes prohibidos y sustituyéndolos por
           restrictions,
           dislikedIngredients: profile?.dislikedIngredients,
         });
+        // Menstrual cycle phase block (only for women with tracking enabled)
+        const cyclePhaseBlock = db.buildCyclePhaseBlock(cycleData?.phaseInfo);
 
         try {
           const response = await invokeLLM({
@@ -2225,6 +2230,7 @@ Adapta esta receta eliminando los ingredientes prohibidos y sustituyéndolos por
               {
                 role: "system",
                 content: `Eres un nutricionista experto. Genera planes de menú semanales personalizados en formato JSON.
+${cyclePhaseBlock}
 ⚠️ REGLAS ESTRICTAS POR FRANJA HORARIA (OBLIGATORIO):
 - DESAYUNO: tostadas, cereales, avena, yogur, fruta, huevos revueltos, smoothie, batido, pan con aceite. NUNCA: ensaladas, guisos, gazpacho, sopas, arroces, pastas, carnes asadas, pescados al horno, legumbres, potajes.
 - MEDIA MAÑANA: snack pequeño (fruta, yogur, frutos secos, barrita). NUNCA platos completos.
@@ -8598,13 +8604,16 @@ Formato JSON estricto:
         console.log("[generateMenuWithQuestionnaire] input received:", JSON.stringify({ goal: input.goal, cookingStyle: input.cookingStyle, persons: input.persons, mealsPerDay: input.mealsPerDay, daysCount: input.daysCount, startDate: input.startDate, calories: input.calories, activityLevel: input.activityLevel, dietType: input.dietType }));
         // Auto-load user profile for personalization
         // CRITICAL: load BOTH allergies AND restrictions for safety filtering
-        const [userProfile, medicalProfile, userPrefs, userRestrictions, userAllergiesData] = await Promise.all([
+        const [userProfile, medicalProfile, userPrefs, userRestrictions, userAllergiesData, questionnaireCycleData] = await Promise.all([
           db.getUserProfile(ctx.user.id),
           db.getUserMedicalProfile(ctx.user.id),
           db.getUserPreferences(ctx.user.id),
           db.getUserDietRestrictions(ctx.user.id),
           db.getUserAllergies(ctx.user.id), // ❌ CRITICAL: allergies must be loaded
+          db.getMenstrualCycleData(ctx.user.id),
         ]);
+        // Menstrual cycle phase block (only for women with tracking enabled)
+        const questionnaireCycleBlock = db.buildCyclePhaseBlock(questionnaireCycleData?.phaseInfo);
         // Build user metrics string for the AI prompt
         const profileMetrics = userProfile ? [
           userProfile.weight ? `Peso: ${userProfile.weight}kg` : null,
@@ -8778,6 +8787,7 @@ ${input.preferences ? `- Preferencias adicionales: ${input.preferences}` : ""}
 ${input.specialNotes ? `- Notas especiales: ${input.specialNotes}` : ""}
 ${dietaryRules.length > 0 ? `\n⚠️ RESTRICCIONES DIETÉTICAS OBLIGATORIAS (INCUMPLIRLAS ES UN ERROR GRAVE):\n${dietaryRules.join('\n')}` : ""}
 ${forbiddenBlock}
+${questionnaireCycleBlock}
 IMPORTANTE para el estilo "${cookingStyleLabels[input.cookingStyle]}":
 ${input.cookingStyle === "batch_cooking" ? "- Agrupa ingredientes para cocinar en grandes cantidades el domingo\n- Reutiliza preparaciones base durante la semana (arroz, legumbres, proteínas)" : ""}
 ${input.cookingStyle === "tuppers" ? "- Todas las comidas deben ser aptas para tupper y microondas\n- Evita ensaladas que se pongan malas, prioriza guisos y platos calientes" : ""}
@@ -12947,6 +12957,34 @@ Devuelve SOLO JSON válido con esta estructura:
         const record = await db.getBloodTestById(input.id, ctx.user.id);
         if (!record) throw new TRPCError({ code: "NOT_FOUND" });
         return record;
+      }),
+  }),
+
+  // ===========================================================================
+  // MENSTRUAL CYCLE - Nutrición adaptada por fase del ciclo
+  // ===========================================================================
+  menstrualCycle: router({
+    get: protectedProcedure.query(async ({ ctx }) => {
+      return db.getMenstrualCycleData(ctx.user.id);
+    }),
+    save: protectedProcedure
+      .input(
+        z.object({
+          trackMenstrualCycle: z.boolean(),
+          cycleLength: z.number().min(21).max(45).optional(),
+          periodLength: z.number().min(1).max(10).optional(),
+          lastPeriodDate: z.string().optional(), // ISO date string YYYY-MM-DD
+        })
+      )
+      .mutation(async ({ ctx, input }) => {
+        await db.upsertUserProfile(ctx.user.id, {
+          trackMenstrualCycle: input.trackMenstrualCycle,
+          menstrualCycleLength: input.cycleLength ?? 28,
+          menstrualPeriodLength: input.periodLength ?? 5,
+          lastPeriodDate: input.lastPeriodDate ? new Date(input.lastPeriodDate) : undefined,
+          updatedAt: new Date(),
+        });
+        return { success: true };
       }),
   }),
 });

@@ -171,6 +171,11 @@ export const userProfiles = pgTable("user_profiles", {
   menuPersons: integer("menuPersons"), // default number of persons
   menuMealsPerDay: integer("menuMealsPerDay"), // default meals per day
   menuPreferencesUpdatedAt: timestamp("menuPreferencesUpdatedAt"),
+  // Menstrual cycle tracking (only for female users)
+  trackMenstrualCycle: boolean("trackMenstrualCycle").default(false),
+  menstrualCycleLength: integer("menstrualCycleLength").default(28), // days (typical 21-35)
+  menstrualPeriodLength: integer("menstrualPeriodLength").default(5), // days of bleeding (typical 3-7)
+  lastPeriodDate: timestamp("lastPeriodDate"), // date of last period start
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });

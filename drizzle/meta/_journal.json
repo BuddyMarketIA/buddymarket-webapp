@@ -393,6 +393,13 @@
       "when": 1777105695347,
       "tag": "0055_fancy_alex_power",
       "breakpoints": true
+    },
+    {
+      "idx": 56,
+      "version": "7",
+      "when": 1777132635696,
+      "tag": "0056_crazy_wasp",
+      "breakpoints": true
     }
   ]
 }

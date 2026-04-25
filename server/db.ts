@@ -3334,3 +3334,133 @@ export async function getBloodTestById(id: number, userId: number) {
     .limit(1);
   return rows[0] ?? null;
 }
+
+// =============================================================================
+// MENSTRUAL CYCLE
+// =============================================================================
+
+export type CyclePhase = "menstruation" | "follicular" | "ovulation" | "luteal";
+
+export interface CyclePhaseInfo {
+  phase: CyclePhase;
+  dayOfCycle: number;
+  daysUntilNextPeriod: number;
+  cycleLength: number;
+  periodLength: number;
+  nextPeriodDate: Date;
+}
+
+/**
+ * Calculates the current cycle phase based on the last period date.
+ */
+export function getCurrentCyclePhase(
+  lastPeriodDate: Date | null | undefined,
+  cycleLength: number = 28,
+  periodLength: number = 5
+): CyclePhaseInfo | null {
+  if (!lastPeriodDate) return null;
+
+  const today = new Date();
+  today.setHours(0, 0, 0, 0);
+  const last = new Date(lastPeriodDate);
+  last.setHours(0, 0, 0, 0);
+
+  const diffMs = today.getTime() - last.getTime();
+  const diffDays = Math.floor(diffMs / (1000 * 60 * 60 * 24));
+
+  // Normalize to current cycle
+  const dayOfCycle = (diffDays % cycleLength) + 1; // 1-indexed
+
+  // Ovulation typically occurs around cycleLength - 14
+  const ovulationDay = cycleLength - 14;
+
+  let phase: CyclePhase;
+  if (dayOfCycle <= periodLength) {
+    phase = "menstruation";
+  } else if (dayOfCycle <= ovulationDay - 1) {
+    phase = "follicular";
+  } else if (dayOfCycle <= ovulationDay + 2) {
+    phase = "ovulation";
+  } else {
+    phase = "luteal";
+  }
+
+  const daysUntilNextPeriod = cycleLength - dayOfCycle + 1;
+  const nextPeriodDate = new Date(today);
+  nextPeriodDate.setDate(today.getDate() + daysUntilNextPeriod);
+
+  return { phase, dayOfCycle, daysUntilNextPeriod, cycleLength, periodLength, nextPeriodDate };
+}
+
+export async function getMenstrualCycleData(userId: number) {
+  const profile = await getUserProfile(userId);
+  if (!profile || !profile.trackMenstrualCycle) return null;
+  const phaseInfo = getCurrentCyclePhase(
+    profile.lastPeriodDate,
+    profile.menstrualCycleLength ?? 28,
+    profile.menstrualPeriodLength ?? 5
+  );
+  return {
+    trackMenstrualCycle: profile.trackMenstrualCycle,
+    cycleLength: profile.menstrualCycleLength ?? 28,
+    periodLength: profile.menstrualPeriodLength ?? 5,
+    lastPeriodDate: profile.lastPeriodDate,
+    phaseInfo,
+  };
+}
+
+/**
+ * Builds a nutritional guidance block for AI prompts based on the current
+ * menstrual cycle phase. Returns empty string if not applicable.
+ */
+export function buildCyclePhaseBlock(phaseInfo: CyclePhaseInfo | null | undefined): string {
+  if (!phaseInfo) return "";
+
+  const phaseData: Record<CyclePhase, {
+    name: string;
+    emoji: string;
+    nutrients: string;
+    foods: string;
+    avoid: string;
+  }> = {
+    menstruation: {
+      name: "Menstruación",
+      emoji: "🔴",
+      nutrients: "hierro, magnesio, vitamina C, omega-3, vitamina B12",
+      foods: "lentejas, espinacas, carnes rojas magras, salmón, sardinas, semillas de chía, chocolate negro, jengibre, cúrcuma, frutos rojos, naranjas",
+      avoid: "alcohol, cafeína en exceso, alimentos muy salados, azúcares refinados, alimentos ultraprocesados",
+    },
+    follicular: {
+      name: "Folicular",
+      emoji: "🌱",
+      nutrients: "proteína, zinc, vitamina E, carbohidratos complejos, hierro",
+      foods: "pollo, huevos, legumbres, quinoa, avena, aguacate, semillas de girasol, brócoli, espárragos, frutas frescas",
+      avoid: "grasas saturadas en exceso, azúcares simples",
+    },
+    ovulation: {
+      name: "Ovulación",
+      emoji: "✨",
+      nutrients: "fibra, antioxidantes, vitamina C, zinc, magnesio",
+      foods: "verduras de hoja verde, frutas frescas, tomate, pimiento, zanahoria, almendras, semillas de lino, yogur, kéfir, alimentos ligeros y frescos",
+      avoid: "alimentos pesados, frituras, alcohol",
+    },
+    luteal: {
+      name: "Lútea",
+      emoji: "🌙",
+      nutrients: "calcio, vitamina B6, magnesio, triptófano, vitamina D",
+      foods: "lácteos, sardinas, brócoli, almendras, plátano, avena, pavo, semillas de calabaza, chocolate negro, legumbres, patata dulce",
+      avoid: "sal en exceso (retención de líquidos), cafeína, alcohol, azúcares refinados",
+    },
+  };
+
+  const pd = phaseData[phaseInfo.phase];
+  return `
+🌸 FASE DEL CICLO MENSTRUAL ACTIVA — ADAPTAR NUTRICIÓN OBLIGATORIAMENTE 🌸
+La usuaria se encuentra en la fase ${pd.emoji} ${pd.name} (día ${phaseInfo.dayOfCycle} de su ciclo, ${phaseInfo.daysUntilNextPeriod} días para el próximo período).
+NUTRIENTES PRIORITARIOS en esta fase: ${pd.nutrients}.
+ALIMENTOS A PRIORIZAR: ${pd.foods}.
+ALIMENTOS A REDUCIR O EVITAR: ${pd.avoid}.
+INSTRUCCIÓN: Incorpora los alimentos prioritarios en los platos del menú de forma natural. No menciones explícitamente el ciclo menstrual en los nombres de los platos.
+🌸 FIN FASE CICLO MENSTRUAL 🌸
+`;
+}

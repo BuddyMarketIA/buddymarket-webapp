@@ -3163,3 +3163,24 @@
 - [x] Gate en BuddyPet.tsx: usuarios free redirigen automáticamente a /app/buddy-pet-preview
 - [x] Sidebar AppLayout: badge "Pro Max" en ítem BuddyPet para usuarios free, enlace redirige a preview
 - [x] Dashboard: tarjeta BuddyPet con badge PRO MAX visible solo para usuarios free
+
+## Ciclo Menstrual - Nutrición Adaptada por Fase
+- [ ] Schema BD: campos en userProfiles (trackMenstrualCycle, cycleLength, periodLength, lastPeriodDate)
+- [ ] DB helpers: saveMenstrualCycleData, getMenstrualCycleData, getCurrentCyclePhase
+- [ ] Migración BD: pnpm db:push
+- [ ] tRPC: procedures menstrualCycle.get, menstrualCycle.save
+- [ ] UI: sección ciclo menstrual en Profile.tsx (solo gender=female)
+- [ ] UI: widget de fase actual en Dashboard para mujeres con ciclo activado
+- [ ] IA: inyectar fase del ciclo en prompt de generateMenuWithQuestionnaire
+- [ ] IA: inyectar fase del ciclo en prompt de generateWeeklyMenu
+- [ ] IA: inyectar fase del ciclo en getDailyAnalysis
+
+## Ciclo Menstrual - Nutrición Hormonal
+- [x] Añadir campos de ciclo menstrual al schema (trackMenstrualCycle, cycleLength, periodLength, lastPeriodDate)
+- [x] Ejecutar migración de BD con pnpm db:push
+- [x] Añadir helpers getMenstrualCycleData y buildCyclePhaseBlock en db.ts
+- [x] Añadir sub-router menstrualCycle con procedures save y get en routers.ts
+- [x] Implementar UI de ciclo menstrual en Profile.tsx (solo visible para género female)
+- [x] Inyectar fase del ciclo en prompt de menus.generate (cuestionario)
+- [x] Inyectar fase del ciclo en prompt de generateMenuWithQuestionnaire (BuddyIA)
+- [x] Inyectar fase del ciclo en prompt del setup questionnaire (primer menú)

@@ -231,6 +231,11 @@ export default function Profile() {
   const [hasMedicalFamilyBackground, setHasMedicalFamilyBackground] = useState(false);
   const [medicalFamilyBackground, setMedicalFamilyBackground] = useState("");
 
+  // ── Ciclo menstrual ──
+  const [trackMenstrualCycle, setTrackMenstrualCycle] = useState(false);
+  const [menstrualCycleLength, setMenstrualCycleLength] = useState("28");
+  const [menstrualPeriodLength, setMenstrualPeriodLength] = useState("5");
+  const [lastPeriodDate, setLastPeriodDate] = useState("");
   // ── Alimentación y cocina ──
   const [activityLevel, setActivityLevel] = useState("");
   const [practicesSports, setPracticesSports] = useState(false);
@@ -384,6 +389,13 @@ export default function Profile() {
 
     setSelectedAllergies(profile.allergies.map((a) => a.id));
     setSelectedRestrictions(profile.dietRestrictions.map((r) => r.id));
+    // Menstrual cycle
+    if (p) {
+      setTrackMenstrualCycle(p.trackMenstrualCycle ?? false);
+      setMenstrualCycleLength(p.menstrualCycleLength?.toString() || "28");
+      setMenstrualPeriodLength(p.menstrualPeriodLength?.toString() || "5");
+      setLastPeriodDate(p.lastPeriodDate ? new Date(p.lastPeriodDate).toISOString().split("T")[0] : "");
+    }
   }, [profile]);
 
   useEffect(() => {
@@ -435,6 +447,18 @@ export default function Profile() {
   const setDietRestrictionsMut = trpc.profile.setDietRestrictions.useMutation({ onSuccess: () => { utils.profile.get.invalidate(); toast.success("Restricciones actualizadas"); } });
 
   // ── Guardar Salud y objetivos (body + health lifestyle + medical) ──
+  const saveCycleMut = trpc.menstrualCycle.save.useMutation({
+    onSuccess: () => toast.success("Ciclo menstrual guardado"),
+    onError: () => toast.error("Error al guardar el ciclo menstrual"),
+  });
+  const handleSaveCycle = () => {
+    saveCycleMut.mutate({
+      trackMenstrualCycle,
+      cycleLength: menstrualCycleLength ? parseInt(menstrualCycleLength) : 28,
+      periodLength: menstrualPeriodLength ? parseInt(menstrualPeriodLength) : 5,
+      lastPeriodDate: lastPeriodDate || undefined,
+    });
+  };
   const handleSaveHealth = () => {
     // Body + lifestyle health fields
     updateProfile.mutate({
@@ -969,6 +993,61 @@ export default function Profile() {
           </Field>
 
           <SaveButton onClick={handleSaveHealth} loading={updateProfile.isPending || updateMedical.isPending} />
+        </div>
+      )}
+
+      {/* ── CICLO MENSTRUAL (solo visible si género = female y tab = health) ── */}
+      {activeTab === "health" && gender === "female" && (
+        <div style={{ marginTop: "16px", padding: "24px", borderRadius: "20px", background: "linear-gradient(135deg, #fdf2f8 0%, #fce7f3 100%)", border: "1.5px solid #f9a8d4" }}>
+          <SectionTitle>🌸 Ciclo menstrual y nutrición hormonal</SectionTitle>
+          <p style={{ fontSize: "14px", color: "#6b7280", marginBottom: "16px", lineHeight: "1.5" }}>
+            Activa el seguimiento del ciclo para que la IA adapte tus menús y recomendaciones nutricionales a cada fase: menstruación, folicular, ovulación y lútea.
+          </p>
+          <Toggle checked={trackMenstrualCycle} onChange={setTrackMenstrualCycle} label="Activar seguimiento del ciclo menstrual" />
+          {trackMenstrualCycle && (
+            <>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginTop: "12px" }}>
+                <Field label="Duración del ciclo (días)" hint="Típico: 21-35 días. Media: 28 días.">
+                  <Select value={menstrualCycleLength} onChange={setMenstrualCycleLength} options={[
+                    { value: "21", label: "21 días" }, { value: "22", label: "22 días" }, { value: "23", label: "23 días" },
+                    { value: "24", label: "24 días" }, { value: "25", label: "25 días" }, { value: "26", label: "26 días" },
+                    { value: "27", label: "27 días" }, { value: "28", label: "28 días (media)" }, { value: "29", label: "29 días" },
+                    { value: "30", label: "30 días" }, { value: "31", label: "31 días" }, { value: "32", label: "32 días" },
+                    { value: "33", label: "33 días" }, { value: "34", label: "34 días" }, { value: "35", label: "35 días" },
+                  ]} />
+                </Field>
+                <Field label="Duración de la menstruación (días)" hint="Típico: 3-7 días.">
+                  <Select value={menstrualPeriodLength} onChange={setMenstrualPeriodLength} options={[
+                    { value: "2", label: "2 días" }, { value: "3", label: "3 días" }, { value: "4", label: "4 días" },
+                    { value: "5", label: "5 días (media)" }, { value: "6", label: "6 días" }, { value: "7", label: "7 días" },
+                    { value: "8", label: "8 días" },
+                  ]} />
+                </Field>
+              </div>
+              <Field label="Fecha de inicio de tu último período" hint="Esto permite calcular en qué fase del ciclo estás hoy.">
+                <input type="date" value={lastPeriodDate} onChange={(e) => setLastPeriodDate(e.target.value)}
+                  style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid #f9a8d4", fontSize: "15px", background: "white", outline: "none", boxSizing: "border-box" }} />
+              </Field>
+              <div style={{ background: "rgba(249,168,212,0.2)", borderRadius: "12px", padding: "14px 16px", marginTop: "4px", marginBottom: "12px" }}>
+                <p style={{ fontSize: "13px", color: "#9d174d", fontWeight: 600, marginBottom: "10px" }}>¿Cómo adapta la IA tu nutrición según la fase?</p>
+                <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "8px" }}>
+                  {[
+                    { phase: "🔴 Menstruación", days: "Días 1-5", tip: "Hierro, magnesio, antiinflamatorios (jengibre, cúrcuma)" },
+                    { phase: "🌱 Folicular", days: "Días 6-13", tip: "Proteína, zinc, carbohidratos complejos para energía" },
+                    { phase: "✨ Ovulación", days: "Días 14-16", tip: "Fibra, antioxidantes, alimentos ligeros y frescos" },
+                    { phase: "🌙 Lútea", days: "Días 17-28", tip: "Calcio, B6, magnesio, reducir sal y azúcar" },
+                  ].map((item) => (
+                    <div key={item.phase} style={{ background: "white", borderRadius: "8px", padding: "10px 12px" }}>
+                      <p style={{ fontSize: "12px", fontWeight: 700, color: "#be185d", marginBottom: "2px" }}>{item.phase}</p>
+                      <p style={{ fontSize: "11px", color: "#6b7280", marginBottom: "4px" }}>{item.days}</p>
+                      <p style={{ fontSize: "11px", color: "#374151", lineHeight: "1.4" }}>{item.tip}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            </>
+          )}
+          <SaveButton onClick={handleSaveCycle} loading={saveCycleMut.isPending} />
         </div>
       )}
 
