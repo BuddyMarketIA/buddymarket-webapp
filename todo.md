@@ -3086,3 +3086,8 @@
 - [x] UI BuddyPet: botón "Analizar foto" que sube imagen y devuelve análisis IA
 - [x] UI BuddyPet: editor inline de menú (cambiar comida de un día concreto)
 - [x] UI BuddyPet: perfil de mascota ampliado con foto, condición corporal, tipo de dieta
+
+## Fix landing móvil (sesión actual)
+- [ ] Restaurar vídeos del hero en LandingPage.tsx (HeroVideoBackground con clips de supermercado/comida)
+- [ ] Arreglar header en móvil: logo y nav que se quedan muy arriba (safe-area / padding-top)
+- [ ] Arreglar botón "Ir a la app" que no se ve en móvil vertical
