@@ -240,7 +240,8 @@ function SidebarContent({
                     <span style={{ fontSize: "17px", width: "21px", textAlign: "center" }}>{item.emoji}</span>
                     <span style={{ fontSize: "14px", fontWeight: active ? 700 : 500, color: active ? "#F97316" : isPendingItem ? "#B45309" : "var(--sidebar-text, #374151)" }}>{item.label}</span>
                     {isPendingItem && <span style={{ marginLeft: "auto", fontSize: "10px", fontWeight: 700, background: "#FEF3C7", color: "#D97706", borderRadius: "6px", padding: "2px 6px" }}>{t("common.pending", "En revisión")}</span>}
-                    {active && !isPendingItem && <div style={{ marginLeft: "auto", width: "5px", height: "5px", borderRadius: "50%", background: "#F97316" }} />}
+                    {(item as any).badge && !isPendingItem && <span style={{ marginLeft: "auto", fontSize: "9px", fontWeight: 800, background: "linear-gradient(135deg, #7c3aed, #6d28d9)", color: "white", borderRadius: "6px", padding: "2px 6px", letterSpacing: "0.03em" }}>{(item as any).badge}</span>}
+                    {active && !isPendingItem && !(item as any).badge && <div style={{ marginLeft: "auto", width: "5px", height: "5px", borderRadius: "50%", background: "#F97316" }} />}
                   </div>
                 </Link>
               );
@@ -353,7 +354,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
   }, [isExpertByRole]);
 
   // ⚠️ These hooks MUST be here (before any conditional return) to avoid React error #300
-  const { planDisplay } = usePlan();
+  const { planDisplay, isFree } = usePlan();
   const profileData = trpc.profile.get.useQuery(undefined, { enabled: !!user, staleTime: 5 * 60 * 1000 });
 
   const [installPrompt, setInstallPrompt] = useState<any>(null);
@@ -471,7 +472,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
     {
       label: "BuddyPet",
       items: [
-        { key: "/app/buddy-pet", label: "Mis Mascotas", to: "/app/buddy-pet", emoji: "🐾" },
+        { key: "/app/buddy-pet", label: "Mis Mascotas", to: isFree ? "/app/buddy-pet-preview" : "/app/buddy-pet", emoji: "🐾", badge: isFree ? "Pro Max" : undefined },
         { key: "/app/vet-clinic", label: "Clínica Veterinaria", to: "/app/vet-clinic", emoji: "🏥" },
       ],
     },

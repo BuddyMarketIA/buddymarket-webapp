@@ -3156,3 +3156,10 @@
 - [ ] UI: botón "Ajustar mi menú" que regenera el menú teniendo en cuenta los valores
 - [ ] UI: historial de analíticas con evolución de valores clave (glucosa, colesterol, ferritina, vitamina D)
 - [ ] Ruta /analitica registrada en App.tsx y en navegación
+
+## BuddyPet Preview (Plan Gate)
+- [x] Crear BuddyPetPreview.tsx: pantalla teaser con hero oscuro, demos interactivas bloqueadas, comparativa Free vs Pro Max, testimonial y CTA de upgrade
+- [x] Añadir ruta /app/buddy-pet-preview en App.tsx
+- [x] Gate en BuddyPet.tsx: usuarios free redirigen automáticamente a /app/buddy-pet-preview
+- [x] Sidebar AppLayout: badge "Pro Max" en ítem BuddyPet para usuarios free, enlace redirige a preview
+- [x] Dashboard: tarjeta BuddyPet con badge PRO MAX visible solo para usuarios free

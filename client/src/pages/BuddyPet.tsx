@@ -1,5 +1,7 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
+import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
+import { usePlan } from "@/hooks/usePlan";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
@@ -1812,6 +1814,16 @@ function PetCard({ pet, onEdit, onDelete }: {
 
 // ─── Main Page ────────────────────────────────────────────────────────────────
 export default function BuddyPet() {
+  const { isProMax, isFree } = usePlan();
+  const [, navigate] = useLocation();
+
+  // Redirect free users to the preview page
+  useEffect(() => {
+    if (isFree) {
+      navigate("/app/buddy-pet-preview");
+    }
+  }, [isFree, navigate]);
+
   const utils = trpc.useUtils();
   const { data: pets, isLoading } = trpc.pets.list.useQuery();
   const createPet = trpc.pets.create.useMutation({

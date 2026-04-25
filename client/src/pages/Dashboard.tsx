@@ -1008,6 +1008,24 @@ export default function Dashboard() {
                 </div>
               </Link>
             )}
+            {/* BuddyPet preview card — only for free users */}
+            {isFree && (
+              <Link href="/app/buddy-pet-preview">
+                <div style={{ background: "linear-gradient(135deg, #1a0533 0%, #2d0a5e 60%, #0f172a 100%)", borderRadius: "20px", padding: "18px 20px", display: "flex", alignItems: "center", gap: "14px", boxShadow: "0 8px 24px rgba(45,10,94,0.45)", cursor: "pointer", position: "relative", overflow: "hidden" }}>
+                  <div style={{ position: "absolute", top: "-20px", right: "-20px", width: "100px", height: "100px", borderRadius: "50%", background: "rgba(124,58,237,0.25)" }} />
+                  <div style={{ position: "absolute", bottom: "-15px", left: "30px", width: "70px", height: "70px", borderRadius: "50%", background: "rgba(249,115,22,0.15)" }} />
+                  <div style={{ width: "44px", height: "44px", borderRadius: "14px", background: "rgba(124,58,237,0.3)", border: "1px solid rgba(167,139,250,0.3)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "22px", flexShrink: 0, position: "relative" }}>🐾</div>
+                  <div style={{ flex: 1, position: "relative" }}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "3px" }}>
+                      <p style={{ margin: 0, fontSize: "15px", fontWeight: 900, color: "white" }}>BuddyPet</p>
+                      <span style={{ background: "linear-gradient(135deg, #7c3aed, #6d28d9)", color: "white", fontSize: "9px", fontWeight: 800, borderRadius: "5px", padding: "2px 6px" }}>PRO MAX</span>
+                    </div>
+                    <p style={{ margin: 0, fontSize: "12px", color: "rgba(196,181,253,0.85)" }}>Nutrición y salud para tus mascotas con IA</p>
+                  </div>
+                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="rgba(167,139,250,0.7)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+                </div>
+              </Link>
+            )}
 
             {/* BuddyCoach */}
             <a href="https://www.buddycoach.io" target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
