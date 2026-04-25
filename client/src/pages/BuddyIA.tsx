@@ -56,6 +56,7 @@ interface QuestionnaireData {
 interface GeneratedMeal {
   name: string;
   food: string;
+  recipe?: { steps: string[]; tips?: string };
   calories?: number;
   protein?: number;
   carbs?: number;
@@ -1488,6 +1489,22 @@ function MenuResultView({
                             <span key={j} style={{ fontSize: "12px", background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: "8px", padding: "3px 10px", color: "#374151" }}>{ing}</span>
                           ))}
                         </div>
+                      </>
+                    )}
+                    {/* Recipe steps */}
+                    {meal.recipe?.steps && meal.recipe.steps.length > 0 && (
+                      <>
+                        <p style={{ margin: "10px 0 6px", fontSize: "11px", fontWeight: 700, color: "#6b7280", textTransform: "uppercase", letterSpacing: "0.05em" }}>📋 Preparación</p>
+                        <ol style={{ margin: "0 0 10px", padding: "0 0 0 18px", listStyle: "decimal" }}>
+                          {meal.recipe.steps.map((step, si) => (
+                            <li key={si} style={{ fontSize: "12px", color: "#374151", lineHeight: 1.5, marginBottom: "4px" }}>{step}</li>
+                          ))}
+                        </ol>
+                        {meal.recipe.tips && (
+                          <div style={{ background: "#fff7ed", border: "1px solid #fed7aa", borderRadius: "8px", padding: "8px 10px", marginBottom: "10px" }}>
+                            <p style={{ margin: 0, fontSize: "12px", color: "#92400e" }}>💡 <strong>Consejo:</strong> {meal.recipe.tips}</p>
+                          </div>
+                        )}
                       </>
                     )}
                     {/* Replace meal button */}

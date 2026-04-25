@@ -3088,6 +3088,13 @@
 - [x] UI BuddyPet: perfil de mascota ampliado con foto, condición corporal, tipo de dieta
 
 ## Fix landing móvil (sesión actual)
-- [ ] Restaurar vídeos del hero en LandingPage.tsx (HeroVideoBackground con clips de supermercado/comida)
-- [ ] Arreglar header en móvil: logo y nav que se quedan muy arriba (safe-area / padding-top)
-- [ ] Arreglar botón "Ir a la app" que no se ve en móvil vertical
+- [x] Restaurar vídeos del hero en LandingPage.tsx (HeroVideoBackground con clips de supermercado/comida)
+- [x] Arreglar header en móvil: logo y nav que se quedan muy arriba (safe-area / padding-top)
+- [x] Arreglar botón "Ir a la app" que no se ve en móvil vertical
+
+## Fix menús y recetas (sesión actual)
+- [x] Fix prompt IA: reglas estrictas por franja horaria - no ensaladas en media mañana/merienda
+- [x] Fix prompt IA: añadir receta detallada a cada comida (ingredientes, cantidades, pasos de preparación)
+- [x] Fix prompt IA: ejemplos de alimentos apropiados por franja con límites de calorías
+- [x] Fix prompt IA: instrucción de auto-corrección antes de devolver el JSON
+- [x] Fix UI: mostrar receta expandible con pasos de preparación en cada comida del menú

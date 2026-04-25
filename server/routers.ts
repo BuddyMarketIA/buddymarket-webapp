@@ -3224,7 +3224,8 @@ Responde SOLO con JSON válido con esta estructura:
 REGLAS OBLIGATORIAS POR FRANJA HORARIA:
 - DESAYUNO: tostadas, cereales, avena, yogur, fruta, huevos revueltos, smoothie, batido, pan con aceite, granola. NUNCA: ensaladas, guisos, gazpacho, sopas, arroces, pastas, carnes asadas, pescados al horno, legumbres.
 - COMIDA: plato principal completo con proteína + carbohidrato + verdura (ensaladas, arroces, pastas, carnes, pescados, legumbres, guisos).
-- CENA: comida ligera (ensalada, crema de verduras, pescado a la plancha, tortilla, revueltos, verduras salteadas). NUNCA platos muy pesados ni gazpacho de cena.`,
+- CENA: comida ligera (ensalada, crema de verduras, pescado a la plancha, tortilla, revueltos, verduras salteadas). NUNCA platos muy pesados ni gazpacho de cena.
+Para cada plato incluye también: lista de ingredientes con cantidades (ingredients), tiempo de preparación (prepTime) y receta con pasos detallados (recipe.steps) y consejo (recipe.tips).`,
             },
           ],
           response_format: {
@@ -3252,8 +3253,19 @@ REGLAS OBLIGATORIAS POR FRANJA HORARIA:
                               emoji: { type: "string" },
                               calories: { type: "integer" },
                               usedIngredients: { type: "array", items: { type: "string" } },
+                              ingredients: { type: "array", items: { type: "string" } },
+                              prepTime: { type: "string" },
+                              recipe: {
+                                type: "object",
+                                properties: {
+                                  steps: { type: "array", items: { type: "string" } },
+                                  tips: { type: "string" },
+                                },
+                                required: ["steps", "tips"],
+                                additionalProperties: false,
+                              },
                             },
-                            required: ["mealType", "name", "emoji", "calories", "usedIngredients"],
+                            required: ["mealType", "name", "emoji", "calories", "usedIngredients", "ingredients", "prepTime", "recipe"],
                             additionalProperties: false,
                           },
                         },
@@ -8502,6 +8514,13 @@ IMPORTANTE: No eres un médico. Siempre recomienda consultar con un profesional 
           definicion: "definición corporal",
         };
         const prompt = `Crea un menú semanal completo (7 días) para un objetivo de ${goalLabels[input.goal]} con ${input.calories} kcal/día.${input.restrictions?.length ? ` Restricciones: ${input.restrictions.join(", ")}.` : ""}${input.preferences ? ` Preferencias: ${input.preferences}.` : ""}
+REGLAS ESTRICTAS POR FRANJA HORARIA:
+- DESAYUNO: solo alimentos ligeros (tostadas, avena, yogur, fruta, huevos, batido). NUNCA ensaladas, guisos, arroces, pastas, carnes, pescados, legumbres.
+- MEDIA MAÑANA: solo snack pequeño (fruta, yogur, frutos secos, barrita). NUNCA platos completos, ensaladas, carnes, pescados.
+- COMIDA: plato principal completo (proteína + carbohidrato + verdura). Aquí sí pueden ir ensaladas grandes, arroces, pastas, carnes, pescados.
+- MERIENDA: solo snack pequeño (fruta, yogur, frutos secos, tostada). NUNCA platos completos.
+- CENA: comida ligera (ensalada, crema de verduras, pescado a la plancha, tortilla, revueltos). NUNCA platos muy pesados.
+Para cada comida incluye: ingredientes con cantidades y receta con 3-4 pasos de preparación.
 
 Formato JSON estricto:
 {
@@ -8768,25 +8787,33 @@ ${input.cookingStyle === "restaurante" ? "- Los días de restaurante: sugiere qu
 - NO permitido: ensaladas, guisos, carnes asadas, pescados al horno, arroces, pastas, legumbres, sopas, potajes, platos de cuchara
 - Las calorías del desayuno deben ser entre el 15-25% del total diario
 
-🍎 MEDIA MAÑANA (10:00-11:30h) - Snack PEQUEÑO:
-- SÍ permitido: fruta, yogur, frutos secos (puñado), barrita de cereales, tostada pequeña, batido de proteínas, infusión con galletas, queso con fruta
-- NO permitido: platos completos, ensaladas grandes, carnes, pescados, arroces, pastas
-- Las calorías deben ser entre el 5-15% del total diario
+🍎 MEDIA MAÑANA (10:00-11:30h) - Snack MUY PEQUEÑO (máximo 200 kcal):
+- SÍ permitido SOLO: 1 pieza de fruta (manzana, plátano, naranja), 1 yogur natural, 1 puñado de frutos secos (20-30g), 1 barrita de cereales, 1 tostada pequeña con algo, 1 batido de proteínas, infusión con 2-3 galletas
+- EJEMPLOS CORRECTOS: "Manzana y yogur natural", "Plátano y puñado de almendras", "Yogur griego con frutos rojos", "Barrita de avena y manzana"
+- ❌ ABSOLUTAMENTE PROHIBIDO: ensaladas (ni pequeñas), bocadillos, sándwiches, tortillas, huevos, carnes, pescados, arroces, pastas, guisos, sopas, cualquier plato que requiera cocinar más de 5 minutos
+- Las calorías deben ser entre el 5-10% del total diario (máximo 200 kcal)
 
 🍽️ COMIDA (13:30-15:30h) - Comida PRINCIPAL y más abundante:
 - SÍ permitido: cualquier plato completo (ensaladas, arroces, pastas, carnes, pescados, legumbres, guisos, sopas, verduras con proteína)
 - Debe incluir: proteína + carbohidrato + verdura/ensalada
 - Las calorías deben ser entre el 30-40% del total diario
 
-🍊 MERIENDA (17:00-18:30h) - Snack PEQUEÑO de tarde:
-- SÍ permitido: fruta, yogur, frutos secos, tostada con algo, batido, infusión con algo dulce, hummus con crudités
-- NO permitido: platos completos, carnes, pescados
-- Las calorías deben ser entre el 5-15% del total diario
+🍊 MERIENDA (17:00-18:30h) - Snack PEQUEÑO de tarde (máximo 200 kcal):
+- SÍ permitido SOLO: fruta, yogur, frutos secos, tostada pequeña con algo, batido, infusión con algo dulce, hummus con crudités, queso fresco con fruta
+- EJEMPLOS CORRECTOS: "Yogur con miel y nueces", "Naranja y puñado de almendras", "Tostada con aguacate", "Batido de plátano y leche"
+- ❌ ABSOLUTAMENTE PROHIBIDO: ensaladas, bocadillos grandes, carnes, pescados, arroces, pastas, guisos
+- Las calorías deben ser entre el 5-10% del total diario (máximo 200 kcal)
 
 🌙 CENA (20:00-22:00h) - Comida LIGERA y digestiva:
 - SÍ permitido: ensaladas, cremas de verduras, sopas, pescado a la plancha, tortilla, revueltos, verduras salteadas, pechuga de pollo, queso con fruta
 - EVITAR: platos muy pesados, fritos, legumbres en grandes cantidades, carnes rojas en exceso
 - Las calorías deben ser entre el 20-30% del total diario
+
+ANTES DE DEVOLVER EL JSON, VERIFICA MENTALMENTE CADA COMIDA:
+- ¿La media mañana es solo una fruta, yogur o frutos secos? Si no → cámbiala
+- ¿La merienda es solo un snack pequeño? Si no → cámbiala  
+- ¿El desayuno es ligero (no hay carnes, pescados, arroces, ensaladas)? Si no → cámbialo
+- ¿Cada comida tiene su receta con pasos de preparación? Si no → añádela
 
 IMPORTANTE: Debes generar EXACTAMENTE ${input.daysCount} días diferentes, uno por cada día a partir de ${input.startDate}. Cada día debe tener platos DISTINTOS (no repitas el mismo plato en el mismo momento del día en días diferentes). Calcula las fechas sumando 1 día por cada elemento del array.
 
@@ -8798,7 +8825,7 @@ Devuelve SOLO JSON válido con esta estructura exacta (${input.daysCount} elemen
   "cookingTips": "consejo rápido sobre este estilo de cocina",
   "shoppingListSummary": "resumen de los ingredientes principales a comprar",
   "days": [
-    ${(() => { const startD = new Date(input.startDate); return Array.from({length: input.daysCount}, (_, i) => { const d = new Date(startD); d.setDate(d.getDate() + i); const dateStr = d.toISOString().split('T')[0]; const dayNames = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado']; const dayName = dayNames[d.getDay()]; return `{ "day": "${dayName}", "date": "${dateStr}", "totalCalories": ${targetCalories}, "meals": [${mealNames.map(m => `{ "name": "${m}", "food": "descripción detallada del plato del ${dayName}", "calories": ${Math.round(targetCalories / mealNames.length)}, "protein": 20, "carbs": 50, "fat": 10, "prepTime": "20 min", "ingredients": ["ingrediente 1 - cantidad", "ingrediente 2 - cantidad"] }`).join(', ')}] }`; }).join(',\n    '); })()} 
+    ${(() => { const startD = new Date(input.startDate); return Array.from({length: input.daysCount}, (_, i) => { const d = new Date(startD); d.setDate(d.getDate() + i); const dateStr = d.toISOString().split('T')[0]; const dayNames = ['Domingo','Lunes','Martes','Miércoles','Jueves','Viernes','Sábado']; const dayName = dayNames[d.getDay()]; return `{ "day": "${dayName}", "date": "${dateStr}", "totalCalories": ${targetCalories}, "meals": [${mealNames.map(m => `{ "name": "${m}", "food": "descripción detallada del plato del ${dayName}", "calories": ${Math.round(targetCalories / mealNames.length)}, "protein": 20, "carbs": 50, "fat": 10, "prepTime": "20 min", "ingredients": ["ingrediente 1 - 100g", "ingrediente 2 - 50g"], "recipe": { "steps": ["Paso 1: descripción", "Paso 2: descripción", "Paso 3: descripción"], "tips": "consejo de preparación opcional" } }`).join(', ')}] }`; }).join(',\n    '); })()} 
   ]
 }`;
 
