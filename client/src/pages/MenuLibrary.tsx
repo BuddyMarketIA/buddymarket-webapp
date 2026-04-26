@@ -1293,7 +1293,7 @@ export default function MenuLibrary() {
       {/* Quick Shopping List Modal */}
       {shoppingMenu && (
         <div
-          className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
+          className="fixed inset-0 z-[500] flex items-center justify-center bg-black/40 backdrop-blur-sm p-4"
           onClick={(e) => { if (e.target === e.currentTarget) setShoppingMenu(null); }}
         >
           <div className="w-full max-w-sm rounded-3xl bg-background p-6 shadow-2xl">

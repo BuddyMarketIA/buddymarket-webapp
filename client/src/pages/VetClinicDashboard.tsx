@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useMemo } from "react";
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/useAuth";
@@ -203,6 +203,191 @@ function AddVisitDialog({ clinicId, pet }: { clinicId: number; pet: { id: number
   );
 }
 
+function VetClinicDirectory({ onRegister }: { onRegister: () => void }) {
+  const [search, setSearch] = useState("");
+  const [selectedSpecialty, setSelectedSpecialty] = useState<string | null>(null);
+  const [showRegister, setShowRegister] = useState(false);
+  const { data: clinics, isLoading } = trpc.vetClinic.list.useQuery(undefined);
+
+  const filtered = useMemo(() => {
+    if (!clinics) return [];
+    const q = search.toLowerCase().trim();
+    return clinics.filter((c) => {
+      const matchSearch = !q || c.name.toLowerCase().includes(q) ||
+        (c.city ?? "").toLowerCase().includes(q) ||
+        (c.description ?? "").toLowerCase().includes(q);
+      const specs: string[] = (() => { try { return c.specialtiesJson ? JSON.parse(c.specialtiesJson) : []; } catch { return []; } })();
+      const matchSpec = !selectedSpecialty || specs.includes(selectedSpecialty);
+      return matchSearch && matchSpec;
+    });
+  }, [clinics, search, selectedSpecialty]);
+
+  const allSpecialties = useMemo(() => {
+    if (!clinics) return [];
+    const set = new Set<string>();
+    clinics.forEach((c) => {
+      try { const s = c.specialtiesJson ? JSON.parse(c.specialtiesJson) : []; s.forEach((x: string) => set.add(x)); } catch {}
+    });
+    return Array.from(set).sort();
+  }, [clinics]);
+
+  if (showRegister) return (
+    <div className="min-h-screen bg-background py-8 px-4">
+      <div className="max-w-2xl mx-auto">
+        <button onClick={() => setShowRegister(false)} className="text-sm text-muted-foreground hover:text-foreground mb-6 flex items-center gap-1">
+          ← Volver al directorio
+        </button>
+        <ClinicRegisterForm onCreated={() => { setShowRegister(false); onRegister(); }} />
+      </div>
+    </div>
+  );
+
+  return (
+    <div className="min-h-screen bg-[#F7F3EF]">
+      {/* Header */}
+      <div className="bg-background/80 backdrop-blur-xl border-b border-border/50 px-4 pt-4 pb-3 sticky top-0 z-10">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h1 className="text-[22px] font-black text-foreground tracking-tight">Clínicas Veterinarias</h1>
+            <p className="text-sm text-muted-foreground/70 font-medium">Encuentra y contacta con clínicas de tu zona</p>
+          </div>
+          <span className="bg-orange-50 text-orange-600 text-[13px] font-black px-3 py-1.5 rounded-full border border-orange-100">
+            {filtered.length} clínicas
+          </span>
+        </div>
+        {/* Search */}
+        <div className="relative mb-3">
+          <svg className="absolute left-3 top-1/2 -translate-y-1/2 w-4 h-4 text-muted-foreground/70" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+          </svg>
+          <input
+            type="text"
+            placeholder="Buscar por nombre, ciudad..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            className="w-full pl-9 pr-4 py-2.5 bg-muted/50 rounded-2xl text-[13px] text-foreground placeholder-gray-400 outline-none focus:ring-2 focus:ring-orange-300 transition"
+          />
+          {search && (
+            <button onClick={() => setSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground/70 hover:text-muted-foreground">✕</button>
+          )}
+        </div>
+        {/* Specialty filters */}
+        {allSpecialties.length > 0 && (
+          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+            <button
+              onClick={() => setSelectedSpecialty(null)}
+              className={`shrink-0 px-3 py-1.5 rounded-full text-[13px] font-black transition-all ${
+                !selectedSpecialty ? "bg-orange-500 text-white shadow-md shadow-orange-200" : "bg-muted/50 text-muted-foreground hover:bg-muted"
+              }`}
+            >Todas</button>
+            {allSpecialties.map((s) => (
+              <button
+                key={s}
+                onClick={() => setSelectedSpecialty(selectedSpecialty === s ? null : s)}
+                className={`shrink-0 px-3 py-1.5 rounded-full text-[13px] font-black transition-all ${
+                  selectedSpecialty === s ? "bg-orange-500 text-white shadow-md shadow-orange-200" : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                }`}
+              >{s}</button>
+            ))}
+          </div>
+        )}
+      </div>
+
+      <div className="px-4 py-4 space-y-3">
+        {isLoading ? (
+          <div className="space-y-3">
+            {[...Array(3)].map((_, i) => (
+              <div key={i} className="bg-card rounded-2xl p-4 animate-pulse">
+                <div className="h-5 bg-muted rounded w-2/3 mb-2" />
+                <div className="h-3 bg-muted rounded w-1/2 mb-3" />
+                <div className="h-3 bg-muted rounded w-full" />
+              </div>
+            ))}
+          </div>
+        ) : filtered.length === 0 ? (
+          <div className="text-center py-16 space-y-4">
+            <div className="text-6xl">{search || selectedSpecialty ? "🔍" : "🏥"}</div>
+            <h3 className="text-lg font-black text-foreground">
+              {search || selectedSpecialty ? "Sin resultados" : "Aún no hay clínicas registradas"}
+            </h3>
+            <p className="text-sm text-muted-foreground max-w-xs mx-auto">
+              {search ? `No se encontraron clínicas para "${search}"` : "Sé la primera clínica en unirse a BuddyMarket"}
+            </p>
+          </div>
+        ) : (
+          filtered.map((clinic) => {
+            const specs: string[] = (() => { try { return clinic.specialtiesJson ? JSON.parse(clinic.specialtiesJson) : []; } catch { return []; } })();
+            return (
+              <div key={clinic.id} className="bg-card rounded-2xl p-4 shadow-sm border border-border/50 space-y-3">
+                <div className="flex items-start gap-3">
+                  <div className="w-12 h-12 rounded-xl bg-orange-100 flex items-center justify-center shrink-0 text-2xl">
+                    {clinic.logoUrl ? <img src={clinic.logoUrl} alt={clinic.name} className="w-full h-full object-cover rounded-xl" /> : "🏥"}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <h3 className="font-black text-[15px] text-foreground">{clinic.name}</h3>
+                      {clinic.featured && <Badge className="bg-orange-500 text-white text-[10px] px-1.5 py-0">Destacada</Badge>}
+                    </div>
+                    {(clinic.city || clinic.province) && (
+                      <p className="text-[13px] text-muted-foreground/70 font-medium mt-0.5">
+                        📍 {[clinic.city, clinic.province].filter(Boolean).join(", ")}
+                      </p>
+                    )}
+                  </div>
+                </div>
+                {clinic.description && (
+                  <p className="text-[13px] text-muted-foreground leading-relaxed line-clamp-2">{clinic.description}</p>
+                )}
+                {specs.length > 0 && (
+                  <div className="flex flex-wrap gap-1.5">
+                    {specs.slice(0, 4).map((s) => (
+                      <span key={s} className="bg-orange-50 text-orange-700 text-[11px] font-semibold px-2 py-0.5 rounded-full border border-orange-100">{s}</span>
+                    ))}
+                    {specs.length > 4 && <span className="text-[11px] text-muted-foreground">+{specs.length - 4} más</span>}
+                  </div>
+                )}
+                <div className="flex flex-wrap gap-2 pt-1 border-t border-border/50">
+                  {clinic.phone && (
+                    <a href={`tel:${clinic.phone}`} className="flex items-center gap-1.5 bg-green-50 text-green-700 text-[13px] font-semibold px-3 py-1.5 rounded-xl border border-green-100 hover:bg-green-100 transition-colors">
+                      📞 {clinic.phone}
+                    </a>
+                  )}
+                  {clinic.email && (
+                    <a href={`mailto:${clinic.email}`} className="flex items-center gap-1.5 bg-blue-50 text-blue-700 text-[13px] font-semibold px-3 py-1.5 rounded-xl border border-blue-100 hover:bg-blue-100 transition-colors">
+                      ✉️ Email
+                    </a>
+                  )}
+                  {clinic.website && (
+                    <a href={clinic.website} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 bg-purple-50 text-purple-700 text-[13px] font-semibold px-3 py-1.5 rounded-xl border border-purple-100 hover:bg-purple-100 transition-colors">
+                      🌐 Web
+                    </a>
+                  )}
+                  {clinic.address && (
+                    <a href={`https://maps.google.com/?q=${encodeURIComponent(clinic.address + " " + (clinic.city ?? ""))}`} target="_blank" rel="noopener noreferrer" className="flex items-center gap-1.5 bg-amber-50 text-amber-700 text-[13px] font-semibold px-3 py-1.5 rounded-xl border border-amber-100 hover:bg-amber-100 transition-colors">
+                      🗺️ Cómo llegar
+                    </a>
+                  )}
+                </div>
+              </div>
+            );
+          })
+        )}
+
+        {/* CTA para veterinarios */}
+        <div className="mt-6 bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-200 rounded-2xl p-5 text-center space-y-3">
+          <div className="text-3xl">🩺</div>
+          <h3 className="font-black text-[15px] text-foreground">¿Eres veterinario o tienes una clínica?</h3>
+          <p className="text-[13px] text-muted-foreground">Únete a la red de clínicas colaboradoras de BuddyMarket y conecta con los dueños de mascotas de tu zona.</p>
+          <Button
+            className="bg-orange-500 hover:bg-orange-600 text-white font-black"
+            onClick={() => setShowRegister(true)}
+          >Registrar mi clínica</Button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function VetClinicDashboard() {
   const utils = trpc.useUtils();
   const [activeTab, setActiveTab] = useState<"overview" | "patients" | "alerts" | "profile">("overview");
@@ -228,14 +413,7 @@ export default function VetClinicDashboard() {
     </div>
   );
 
-  if (!clinic) return (
-    <div className="min-h-screen bg-background py-8 px-4">
-      <div className="max-w-2xl mx-auto">
-        <div className="mb-6"><Link href="/app/buddypet" className="text-sm text-muted-foreground hover:text-foreground">← Volver a BuddyPet</Link></div>
-        <ClinicRegisterForm onCreated={() => refetch()} />
-      </div>
-    </div>
-  );
+  if (!clinic) return <VetClinicDirectory onRegister={() => refetch()} />;
 
   const pendingAlerts = alerts?.filter((a) => a.status === "pending") ?? [];
   const specialties: string[] = (() => { try { return clinic.specialtiesJson ? JSON.parse(clinic.specialtiesJson) : []; } catch { return []; } })();

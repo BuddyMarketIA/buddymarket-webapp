@@ -181,7 +181,7 @@ export default function MyExpert() {
 
   // ─── MODAL PEDIR CITA ──────────────────────────────────────────────────────
   const RequestAppointmentModal = () => (
-    <div className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-4">
+    <div className="fixed inset-0 bg-black/50 z-[500] flex items-end sm:items-center justify-center p-4">
       <div className="bg-background rounded-2xl w-full max-w-md shadow-2xl">
         <div className="p-5 border-b border-border/50 flex items-center justify-between">
           <h3 className="text-lg font-bold text-foreground">📅 Pedir cita</h3>

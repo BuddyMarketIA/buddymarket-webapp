@@ -364,7 +364,7 @@ export default function LidlShop() {
 
       {/* ── Cart slide-up ───────────────────────────────────────────────────── */}
       {showCart && (
-        <div className="fixed inset-0 z-50 flex flex-col justify-end">
+        <div className="fixed inset-0 z-[500] flex flex-col justify-end">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowCart(false)} />
           <div className="relative bg-background rounded-t-3xl shadow-2xl max-h-[80vh] flex flex-col">
             {/* Cart header */}

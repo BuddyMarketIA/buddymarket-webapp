@@ -460,7 +460,7 @@ export default function ConsumShop() {
 
       {/* ── Cart panel ── */}
       {showCart && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40" onClick={e => { if (e.target === e.currentTarget) setShowCart(false); }}>
+        <div className="fixed inset-0 z-[500] flex items-end justify-center bg-black/40" onClick={e => { if (e.target === e.currentTarget) setShowCart(false); }}>
           <div className="w-full max-w-lg bg-background rounded-t-3xl shadow-2xl flex flex-col max-h-[80vh]">
             <div className="flex items-center justify-between p-4 border-b">
               <h3 className="text-lg font-bold text-foreground">🛒 Carrito ({totalItems})</h3>

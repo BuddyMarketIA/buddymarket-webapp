@@ -1268,7 +1268,7 @@ export default function Inventory() {
       )}
 
       {/* ── Import from Shopping List Modal ─────────────────────────────────────────────────────────── */}
-      {showImportModal && (        <div className="fixed inset-0 z-50 flex items-end justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowImportModal(false)}>
+      {showImportModal && (        <div className="fixed inset-0 z-[500] flex items-end justify-center bg-black/40 backdrop-blur-sm" onClick={() => setShowImportModal(false)}>
           <div className="w-full max-w-lg rounded-t-3xl bg-background p-6 shadow-2xl" onClick={e => e.stopPropagation()}>
             <div className="mb-5 flex items-center justify-between">
               <div>

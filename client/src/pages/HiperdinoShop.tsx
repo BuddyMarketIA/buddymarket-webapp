@@ -249,7 +249,7 @@ export default function HiperdinoShop() {
       {/* Cart modal */}
       {showCart && (
         <div
-          className="fixed inset-0 bg-black/50 z-50 flex items-end sm:items-center justify-center p-4"
+          className="fixed inset-0 bg-black/50 z-[500] flex items-end sm:items-center justify-center p-4"
           onClick={e => { if (e.target === e.currentTarget) setShowCart(false); }}
         >
           <div className="bg-background rounded-2xl w-full max-w-md max-h-[80vh] flex flex-col shadow-2xl">

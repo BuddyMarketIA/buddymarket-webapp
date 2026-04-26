@@ -1576,7 +1576,7 @@ function MenuResultView({
 
       {/* Save Success Modal */}
       {showSaveModal && savedMenuId && (
-        <div className="fixed inset-0 bg-black/50 z-50 flex items-end justify-center" onClick={() => setShowSaveModal(false)}>
+        <div className="fixed inset-0 bg-black/50 z-[500] flex items-end justify-center" onClick={() => setShowSaveModal(false)}>
           <div className="bg-background rounded-t-2xl w-full max-w-[480px] p-6 space-y-4" onClick={(e) => e.stopPropagation()}>
             <div className="text-center">
               <div className="w-16 h-16 rounded-full bg-green-100 flex items-center justify-center text-3xl mx-auto mb-3">✅</div>

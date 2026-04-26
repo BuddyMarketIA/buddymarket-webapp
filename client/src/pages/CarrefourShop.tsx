@@ -361,7 +361,7 @@ export default function CarrefourShop() {
 
       {/* ── Cart slide-up ───────────────────────────────────────────────────── */}
       {showCart && (
-        <div className="fixed inset-0 z-50 flex flex-col justify-end">
+        <div className="fixed inset-0 z-[500] flex flex-col justify-end">
           <div className="absolute inset-0 bg-black/40 backdrop-blur-sm" onClick={() => setShowCart(false)} />
           <div className="relative bg-background rounded-t-3xl shadow-2xl max-h-[80vh] flex flex-col">
             <div className="flex items-center justify-between px-5 py-4 border-b border-border/50">
