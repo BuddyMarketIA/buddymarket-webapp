@@ -6,6 +6,23 @@ export const NOT_ADMIN_ERR_MSG = 'You do not have required permission (10002)';
 export const INVALID_SESSION_MSG = 'Session invalid, please login again (10003)';
 
 /**
+ * Returns true if the error is an authentication/session error (10001, 10002, 10003).
+ * Use this in onError handlers to avoid showing raw auth error messages to users.
+ */
+export function isAuthError(err: unknown): boolean {
+  if (!err) return false;
+  const msg = typeof err === 'string' ? err : (err as any)?.message ?? '';
+  return (
+    msg.includes('10001') ||
+    msg.includes('10002') ||
+    msg.includes('10003') ||
+    msg.includes('Please login') ||
+    msg.includes('UNAUTHORIZED') ||
+    msg.includes('FORBIDDEN')
+  );
+}
+
+/**
  * Verifica si un usuario tiene un rol determinado.
  * Soporta roles múltiples: comprueba tanto el campo `role` principal
  * como el array `secondaryRoles`.

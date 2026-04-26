@@ -1,6 +1,8 @@
 import { useState, useMemo, useEffect } from "react";
 import { useTranslation } from "react-i18next";
 import { trpc } from "@/lib/trpc";
+import { getErrorMessage } from "@/lib/errorUtils";
+import MenuPreviewModal from "@/components/MenuPreviewModal";
 import { toast } from "@/components/sonner-a11y-shim";
 import { Link, useLocation } from "wouter";
 import { usePlan } from "@/hooks/usePlan";
@@ -124,6 +126,7 @@ function MenuCard({
   onDuplicate,
   onRename,
   onApply,
+  onPreview,
   showActions = true,
   isOwned = false,
 }: {
@@ -134,6 +137,7 @@ function MenuCard({
   onDuplicate?: () => void;
   onRename?: () => void;
   onApply?: () => void;
+  onPreview?: () => void;
   showActions?: boolean;
   isOwned?: boolean;
 }) {
@@ -145,8 +149,12 @@ function MenuCard({
     <div className={`rounded-3xl overflow-hidden shadow-sm border transition-all ${
       menu.isActive ? "border-[#F97316]/50 shadow-orange-100" : "border-border/60"
     }`}>
-      {/* Cover image */}
-      <div className="relative h-36 bg-gradient-to-br from-orange-100 to-amber-50 overflow-hidden">
+      {/* Cover image - click to preview */}
+      <div
+        className="relative h-36 bg-gradient-to-br from-orange-100 to-amber-50 overflow-hidden cursor-pointer"
+        onClick={onPreview}
+        title="Ver recetas del menú"
+      >
         {coverImage ? (
           <img src={coverImage} alt={menu.name} className="w-full h-full object-cover" />
         ) : (
@@ -269,6 +277,12 @@ function MenuCard({
                 <TrashIcon className="h-3.5 w-3.5" /> Eliminar
               </button>
             )}
+            {onPreview && (
+              <button onClick={onPreview}
+                className="flex items-center gap-1 rounded-xl bg-muted/60 px-3 py-1.5 text-xs font-semibold text-foreground/80">
+                <MagnifyingGlassIcon className="h-3.5 w-3.5" /> Ver recetas
+              </button>
+            )}
           </div>
         )}
       </div>
@@ -309,7 +323,7 @@ function ActiveMenuTab() {
   const ensureDayPart      = trpc.menus.ensureDayPart.useMutation();
   const addRecipeToDayPart = trpc.menus.addRecipeToDayPart.useMutation({
     onSuccess: () => { refetchDayItems(); setShowAddRecipe(null); setRecipeSearch(""); toast.success("Receta añadida al menú"); },
-    onError:   (err: any) => toast.error(err.message || "Error al añadir receta"),
+    onError:   (err: any) => toast.error(getErrorMessage(err, "Error al añadir receta")),
   });
   const removeRecipe = trpc.menus.removeRecipeFromDayPart.useMutation({
     onSuccess: () => { refetchDayItems(); toast.success("Receta eliminada"); },
@@ -656,6 +670,7 @@ function SavedMenusTab() {
   const [renaming, setRenaming]         = useState<{ id: number; name: string } | null>(null);
   const [applyModal, setApplyModal]     = useState<{ id: number; name: string } | null>(null);
   const [applyStartDate, setApplyStartDate] = useState(() => new Date().toISOString().split("T")[0]);
+  const [previewMenuId, setPreviewMenuId] = useState<number | null>(null);
 
   const { data: menus, refetch } = trpc.menus.list.useQuery();
   const utils = trpc.useUtils();
@@ -729,9 +744,18 @@ function SavedMenusTab() {
               onRename={() => setRenaming({ id: menu.id, name: menu.name })}
               onDuplicate={() => duplicateMenu.mutate({ id: menu.id })}
               onDelete={() => { if (confirm(`¿Eliminar "${menu.name}"?`)) deleteMenu.mutate({ id: menu.id }); }}
+              onPreview={() => setPreviewMenuId(menu.id)}
             />
           ))}
         </div>
+      )}
+      {/* Menu preview modal */}
+      {previewMenuId !== null && (
+        <MenuPreviewModal
+          menuId={previewMenuId}
+          onClose={() => setPreviewMenuId(null)}
+          isOwned
+        />
       )}
 
       {/* New menu modal */}
@@ -830,6 +854,7 @@ function SavedMenusTab() {
 function ExploreMenusTab() {
   const [search, setSearch]     = useState("");
   const [category, setCategory] = useState<string>("all");
+  const [previewMenuId, setPreviewMenuId] = useState<number | null>(null);
   const { data: menus }         = trpc.menus.list.useQuery();
   const { data: savedMenus }    = trpc.menus.list.useQuery();
 
@@ -911,6 +936,7 @@ function ExploreMenusTab() {
                 isOwned={savedIds.has(menu.id)}
                 onSave={() => saveMenu.mutate({ menuId: menu.id })}
                 onActivate={() => setActive.mutate({ menuId: menu.id })}
+                onPreview={() => setPreviewMenuId(menu.id)}
               />
             ))}
           </div>
@@ -939,10 +965,21 @@ function ExploreMenusTab() {
                 isOwned={savedIds.has(menu.id)}
                 onSave={() => saveMenu.mutate({ menuId: menu.id })}
                 onActivate={() => setActive.mutate({ menuId: menu.id })}
+                onPreview={() => setPreviewMenuId(menu.id)}
               />
             ))}
           </div>
         </div>
+      )}
+      {/* Menu preview modal */}
+      {previewMenuId !== null && (
+        <MenuPreviewModal
+          menuId={previewMenuId}
+          onClose={() => setPreviewMenuId(null)}
+          isSaved={savedIds.has(previewMenuId)}
+          onSave={() => saveMenu.mutate({ menuId: previewMenuId })}
+          onActivate={() => setActive.mutate({ menuId: previewMenuId })}
+        />
       )}
     </div>
   );

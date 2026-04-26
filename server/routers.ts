@@ -2372,9 +2372,17 @@ Responde SOLO con JSON válido con esta estructura:
     setActive: protectedProcedure
       .input(z.object({ menuId: z.number() }))
       .mutation(async ({ ctx, input }) => {
-        const menu = await db.getMenuOrganizerById(input.menuId);
+        let menu = await db.getMenuOrganizerById(input.menuId);
         if (!menu) throw new TRPCError({ code: "NOT_FOUND" });
-        requireOwnership(menu.userId, ctx.user.id, ctx.user.role);
+        // If the menu doesn't belong to the user (e.g. seeded library menu),
+        // copy it for the user first, then activate the copy.
+        let targetMenuId = input.menuId;
+        if (menu.userId !== ctx.user.id && !hasRole({ role: ctx.user.role, secondaryRoles: ctx.user.secondaryRoles }, "admin")) {
+          const todayStr = new Date().toISOString().split("T")[0];
+          const copied = await db.copyMenuForUser(input.menuId, ctx.user.id, menu.persons ?? 1, todayStr);
+          if (!copied) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "No se pudo copiar el menú" });
+          targetMenuId = copied.id;
+        }
         const drizzleDb = await db.getDb();
         if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
         const { menuOrganizers } = await import("../drizzle/schema.js");
@@ -2383,8 +2391,8 @@ Responde SOLO con JSON válido con esta estructura:
         // Set startDate to today so the menu always starts from today when activated
         const todayDate = new Date();
         todayDate.setHours(0, 0, 0, 0);
-        await drizzleDb.update(menuOrganizers).set({ isActive: true, startDate: todayDate as any }).where(eq(menuOrganizers.id, input.menuId));
-        return { success: true };
+        await drizzleDb.update(menuOrganizers).set({ isActive: true, startDate: todayDate as any }).where(eq(menuOrganizers.id, targetMenuId));
+        return { success: true, newMenuId: targetMenuId !== input.menuId ? targetMenuId : undefined };
       }),
     // Get the currently active menu with full week detail
     getActive: protectedProcedure.query(async ({ ctx }) => {
@@ -2489,9 +2497,19 @@ Responde SOLO con JSON válido con esta estructura:
         })
       )
       .mutation(async ({ ctx, input }) => {
-        const menu = await db.getMenuOrganizerById(input.menuId);
+        let menu = await db.getMenuOrganizerById(input.menuId);
         if (!menu) throw new TRPCError({ code: "NOT_FOUND" });
-        requireOwnership(menu.userId, ctx.user.id, ctx.user.role);
+        // If the menu doesn't belong to the user (e.g. seeded library menu),
+        // copy it for the user first, then operate on the copy.
+        let targetMenuId = input.menuId;
+        if (menu.userId !== ctx.user.id && !hasRole({ role: ctx.user.role, secondaryRoles: ctx.user.secondaryRoles }, "admin")) {
+          const copied = await db.copyMenuForUser(input.menuId, ctx.user.id, menu.persons ?? 1, input.startDate);
+          if (!copied) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "No se pudo copiar el menú" });
+          targetMenuId = copied.id;
+          const copiedMenu = await db.getMenuOrganizerById(targetMenuId);
+          if (!copiedMenu) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+          menu = copiedMenu;
+        }
 
         const drizzleDb = await db.getDb();
         if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
@@ -2503,10 +2521,10 @@ Responde SOLO con JSON válido con esta estructura:
           .select({ dp: menuOrganizerDayParts, dpInfo: dayParts })
           .from(menuOrganizerDayParts)
           .leftJoin(dayParts, eq(menuOrganizerDayParts.dayPartId, dayParts.id))
-          .where(eq(menuOrganizerDayParts.menuOrganizerId, input.menuId));
+          .where(eq(menuOrganizerDayParts.menuOrganizerId, targetMenuId));
 
         if (dayPartRows.length === 0) {
-          return { success: true, logsCreated: 0 };
+          return { success: true, logsCreated: 0, newMenuId: targetMenuId !== input.menuId ? targetMenuId : undefined };
         }
 
         // Determine the original menu start date to calculate offsets
@@ -2514,7 +2532,7 @@ Responde SOLO con JSON válido con esta estructura:
         const newStart = new Date(input.startDate);
         const offsetDays = Math.round((newStart.getTime() - menuOriginalStart.getTime()) / (1000 * 60 * 60 * 24));
 
-        // Only update the dates of the menu day parts — do NOT insert into mealLogs.
+        // Only update the dates of the menu day parts - do NOT insert into mealLogs.
         // The diary is filled only when the user manually confirms each meal via confirmDayPart.
         const allTargetDates: string[] = [];
         for (const { dp } of dayPartRows) {
@@ -2543,11 +2561,10 @@ Responde SOLO con JSON válido con esta estructura:
         await drizzleDb
           .update(menuOrganizers)
           .set({ startDate: minDate as any, endDate: maxDate as any })
-          .where(eq(menuOrganizers.id, input.menuId));
-
-        return { success: true, logsCreated: 0 };
+          .where(eq(menuOrganizers.id, targetMenuId));
+        return { success: true, logsCreated: 0, newMenuId: targetMenuId !== input.menuId ? targetMenuId : undefined };
       }),
-    // Confirm a single day part (meal slot) - logs its recipes to the diary and marks it completed
+        // Confirm a single day part (meal slot) - logs its recipes to the diary and marks it completed
     confirmDayPart: protectedProcedure
       .input(z.object({
         dayPartId: z.number(), // menuOrganizerDayPart.id
@@ -4403,7 +4420,8 @@ Responde SOLO con JSON válido, sin texto adicional:
         try {
           const drizzleDb = await db.getDb();
           if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB not available" });
-          await drizzleDb.insert(aiFeedback).values({
+          const { aiFeedback: aiFeedbackTable } = await import("../drizzle/schema.js");
+          await drizzleDb.insert(aiFeedbackTable).values({
             userId: ctx.user.id,
             mealLogId: input.mealLogId ?? null,
             rating: input.rating,
@@ -4420,6 +4438,84 @@ Responde SOLO con JSON válido, sin texto adicional:
       }),
   }),
 
+  // ---------------------------------------------------------------------------
+  // MENU PREVIEW (public-ish, no ownership required for seeded menus)
+  // ---------------------------------------------------------------------------
+  menuPreview: router({
+    // Get full menu preview with all day parts and recipes (works for seeded and owned menus)
+    get: protectedProcedure
+      .input(z.object({ menuId: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { menuOrganizers, menuOrganizerDayParts, menuOrganizerDayPartRecipes, dayParts, recipes } = await import("../drizzle/schema.js");
+        const { eq, asc } = await import("drizzle-orm");
+        const [menu] = await drizzleDb
+          .select()
+          .from(menuOrganizers)
+          .where(eq(menuOrganizers.id, input.menuId))
+          .limit(1);
+        if (!menu) throw new TRPCError({ code: "NOT_FOUND" });
+        if (!menu.isSeeded && menu.userId !== ctx.user.id && !hasRole({ role: ctx.user.role, secondaryRoles: ctx.user.secondaryRoles }, "admin")) {
+          throw new TRPCError({ code: "FORBIDDEN" });
+        }
+        const dpRows = await drizzleDb
+          .select({ dp: menuOrganizerDayParts, dpInfo: dayParts })
+          .from(menuOrganizerDayParts)
+          .leftJoin(dayParts, eq(menuOrganizerDayParts.dayPartId, dayParts.id))
+          .where(eq(menuOrganizerDayParts.menuOrganizerId, input.menuId))
+          .orderBy(asc(menuOrganizerDayParts.dayNumber), asc(menuOrganizerDayParts.date));
+        const dayPartsWithRecipes = await Promise.all(
+          dpRows.map(async (row) => {
+            const recipeRows = await drizzleDb
+              .select({ dpRecipe: menuOrganizerDayPartRecipes, recipe: recipes })
+              .from(menuOrganizerDayPartRecipes)
+              .leftJoin(recipes, eq(menuOrganizerDayPartRecipes.recipeId, recipes.id))
+              .where(eq(menuOrganizerDayPartRecipes.menuOrganizerDayPartId, row.dp.id));
+            return {
+              id: row.dp.id,
+              dayNumber: row.dp.dayNumber,
+              date: row.dp.date,
+              mealType: row.dpInfo?.name ?? "comida",
+              recipes: recipeRows
+                .filter(r => r.recipe !== null)
+                .map(r => ({
+                  id: r.recipe!.id,
+                  name: r.recipe!.name,
+                  imageUrl: r.recipe!.imageUrl,
+                  calories: r.recipe!.calories,
+                  proteins: r.recipe!.proteins,
+                  carbs: r.recipe!.carbs,
+                  fats: r.recipe!.fats,
+                  prepTime: r.recipe!.prepTime,
+                  mealTime: r.recipe!.mealTime,
+                })),
+            };
+          })
+        );
+        const dayMap = new Map<number, typeof dayPartsWithRecipes>();
+        for (const dp of dayPartsWithRecipes) {
+          const dayNum = dp.dayNumber ?? 1;
+          if (!dayMap.has(dayNum)) dayMap.set(dayNum, []);
+          dayMap.get(dayNum)!.push(dp);
+        }
+        const days = Array.from(dayMap.entries())
+          .sort((a, b) => a[0] - b[0])
+          .map(([dayNumber, parts]) => ({ dayNumber, parts }));
+        return {
+          id: menu.id,
+          name: menu.name,
+          objective: menu.objective,
+          goal: menu.goal,
+          dailyCalories: menu.dailyCalories,
+          coverImage: menu.coverImage,
+          isSeeded: menu.isSeeded,
+          persons: menu.persons,
+          days,
+          totalDays: days.length,
+        };
+      }),
+  }),
   // ---------------------------------------------------------------------------
   // STRIPE SUBSCRIPTIONS
   // ---------------------------------------------------------------------------

@@ -2,6 +2,7 @@ import { useTranslation } from "react-i18next";
 import { useState } from "react";
 import { jsPDF } from "jspdf";
 import { trpc } from "@/lib/trpc";
+import { getErrorMessage } from "@/lib/errorUtils";
 import { toast } from "@/components/sonner-a11y-shim";
 import { useLocation } from "wouter";
 import {
@@ -490,7 +491,7 @@ export default function ActiveMenu() {
   // ── Rename mutation ──────────────────────────────────────────────────────────
   const renameMenu = trpc.menus.rename.useMutation({
     onSuccess: () => { toast.success("Nombre actualizado"); utils.menus.getActive.invalidate(); setIsEditingName(false); },
-    onError: (e) => toast.error("Error: " + e.message),
+    onError: (e) => toast.error(getErrorMessage(e, "Error inesperado")),
   });
 
   // ── Complements queries & mutations ──────────────────────────────────────────
@@ -501,11 +502,11 @@ export default function ActiveMenu() {
   );
   const addComplement = trpc.menus.addComplement.useMutation({
     onSuccess: () => { toast.success("Complemento añadido"); utils.menus.listComplements.invalidate({ menuId }); setShowAddComplement(false); setNewComplement({ name: "", emoji: "☕", mealTime: "media_manana", quantity: 1, unit: "ud", calories: 0, notes: "", isDefault: false }); },
-    onError: (e) => toast.error("Error: " + e.message),
+    onError: (e) => toast.error(getErrorMessage(e, "Error inesperado")),
   });
   const removeComplement = trpc.menus.removeComplement.useMutation({
     onSuccess: () => { toast.success("Complemento eliminado"); utils.menus.listComplements.invalidate({ menuId }); },
-    onError: (e) => toast.error("Error: " + e.message),
+    onError: (e) => toast.error(getErrorMessage(e, "Error inesperado")),
   });
 
   const generateShoppingList = trpc.shoppingLists.generateFromMenu.useMutation({
@@ -563,7 +564,7 @@ export default function ActiveMenu() {
     },
     onError: (err) => {
       setIsGenerating(false);
-      toast.error("Error al generar la lista: " + err.message);
+      toast.error("Error al generar la lista: " + getErrorMessage(err, "inténtalo de nuevo"));
     },
   });
 
@@ -577,7 +578,7 @@ export default function ActiveMenu() {
       utils.menus.getActive.invalidate();
       utils.mealLogs.dailySummary.invalidate();
     },
-    onError: (err) => toast.error("Error: " + err.message),
+    onError: (err) => toast.error(getErrorMessage(err, "Error inesperado")),
   });
 
   if (isLoading) {

@@ -3184,3 +3184,9 @@
 - [x] Inyectar fase del ciclo en prompt de menus.generate (cuestionario)
 - [x] Inyectar fase del ciclo en prompt de generateMenuWithQuestionnaire (BuddyIA)
 - [x] Inyectar fase del ciclo en prompt del setup questionnaire (primer menú)
+
+## Bugs críticos reportados (26 Apr 2026)
+- [x] BUG: Error login 1001 - CORREGIDO: getErrorMessage() filtra mensajes de auth en onError handlers del cliente
+- [x] BUG: "Error al aplicar el menú al diario" - CORREGIDO: applyToCalendar y setActive copian menú seeded para el usuario
+- [x] BUG: "No se pudo enviar el feedback" - CORREGIDO: import dinámico de aiFeedback en submitAIFeedback
+- [x] FEAT: Vista previa completa de menú - IMPLEMENTADO: MenuPreviewModal con recetas por día, macros, endpoint menuPreview.get en servidor

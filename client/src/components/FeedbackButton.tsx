@@ -3,6 +3,7 @@ import React, { useState, useRef, useEffect } from "react";
 
 // ─── Data / API ───────────────────────────────────────────────────────────────
 import { trpc } from "@/lib/trpc";
+import { getErrorMessage } from "@/lib/errorUtils";
 
 // ─── UI ───────────────────────────────────────────────────────────────────────
 import { toast } from "sonner";
@@ -71,7 +72,7 @@ export default function FeedbackButton({ asSidebarItem = false, onClose, pending
       setStep("success");
     },
     onError: (err) => {
-      toast.error(err.message ?? "No se pudo enviar el feedback. Inténtalo de nuevo.");
+      toast.error(getErrorMessage(err, "No se pudo enviar el feedback. Inténtalo de nuevo."));
     },
   });
 

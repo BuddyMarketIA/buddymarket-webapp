@@ -9,6 +9,7 @@ import BarcodeScanner from "@/components/BarcodeScanner";
 import NutritionCalendar from "@/components/NutritionCalendar";
 import ProductNutritionCard from "@/components/ProductNutritionCard";
 import { useImageCompressor } from "@/hooks/useImageCompressor";
+import { getErrorMessage } from "@/lib/errorUtils";
 
 // ─── AI Loading Animation ───────────────────────────────────────────────────
 const AI_STEPS = [
@@ -349,7 +350,7 @@ export default function MealLog() {
       // Evaluate achievements after logging a meal
       evaluateAchievements.mutate({ trigger: "meal_logged" });
     },
-    onError: (err) => toast.error(err.message),
+    onError: (err) => toast.error(getErrorMessage(err, "Error al registrar la comida")),
   });
 
   // AI Feedback state
@@ -377,7 +378,7 @@ export default function MealLog() {
       setCarbs(String(data.analysis.totalCarbs || ""));
       setFats(String(data.analysis.totalFats || ""));
     },
-    onError: (err) => toast.error("Error al analizar la imagen: " + err.message),
+    onError: (err) => toast.error("Error al analizar la imagen: " + getErrorMessage(err, "inténtalo de nuevo")),
   });
 
   const removeLog = trpc.mealLogs.remove.useMutation({
