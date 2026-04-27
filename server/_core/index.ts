@@ -24,6 +24,7 @@ import { registerMetricsRoutes } from "./metrics";
 import { startPerformanceWatchdog, sendStartupAlert, startSupabaseMonitor } from "./alerts";
 import { registerOGRoutes } from "../og";
 import { registerSitemapRoutes } from "../sitemap";
+import { registerStorageProxy } from "./storageProxy";
 
 // ─── Allowed origins ─────────────────────────────────────────────────────────
 const ALLOWED_ORIGINS = [
@@ -165,6 +166,9 @@ async function startServer() {
 
   app.use(globalLimiter);
   app.use("/api/trpc/buddyIA", aiLimiter);
+
+  // ─── Storage proxy (serve /manus-storage/* assets) ─────────────────────────
+  registerStorageProxy(app);
 
   // ─── Stripe webhook (raw body, BEFORE express.json) ───────────────────────
   registerStripeWebhook(app);

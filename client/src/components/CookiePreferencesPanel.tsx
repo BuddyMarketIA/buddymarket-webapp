@@ -38,7 +38,7 @@ const LABELS: Record<string, {
 }> = {
   es: {
     title: "Preferencias de cookies",
-    subtitle: "Gestiona qué cookies aceptas en BuddyMarket. Puedes cambiar tus preferencias en cualquier momento.",
+    subtitle: "Gestiona qué cookies aceptas en Buddy One. Puedes cambiar tus preferencias en cualquier momento.",
     lastUpdated: "Última actualización",
     notConfigured: "Aún no has configurado tus preferencias de cookies.",
     necessary: "Cookies necesarias",
@@ -55,7 +55,7 @@ const LABELS: Record<string, {
   },
   en: {
     title: "Cookie preferences",
-    subtitle: "Manage which cookies you accept on BuddyMarket. You can change your preferences at any time.",
+    subtitle: "Manage which cookies you accept on Buddy One. You can change your preferences at any time.",
     lastUpdated: "Last updated",
     notConfigured: "You haven't configured your cookie preferences yet.",
     necessary: "Necessary cookies",
@@ -72,7 +72,7 @@ const LABELS: Record<string, {
   },
   fr: {
     title: "Préférences de cookies",
-    subtitle: "Gérez les cookies que vous acceptez sur BuddyMarket. Vous pouvez modifier vos préférences à tout moment.",
+    subtitle: "Gérez les cookies que vous acceptez sur Buddy One. Vous pouvez modifier vos préférences à tout moment.",
     lastUpdated: "Dernière mise à jour",
     notConfigured: "Vous n'avez pas encore configuré vos préférences de cookies.",
     necessary: "Cookies nécessaires",
@@ -89,7 +89,7 @@ const LABELS: Record<string, {
   },
   it: {
     title: "Preferenze cookie",
-    subtitle: "Gestisci quali cookie accetti su BuddyMarket. Puoi modificare le tue preferenze in qualsiasi momento.",
+    subtitle: "Gestisci quali cookie accetti su Buddy One. Puoi modificare le tue preferenze in qualsiasi momento.",
     lastUpdated: "Ultimo aggiornamento",
     notConfigured: "Non hai ancora configurato le tue preferenze sui cookie.",
     necessary: "Cookie necessari",

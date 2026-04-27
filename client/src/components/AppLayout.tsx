@@ -181,10 +181,10 @@ function SidebarContent({
       {/* Sidebar Header */}
       <div style={{ padding: "20px 20px 16px", borderBottom: "1px solid rgba(0,0,0,0.06)", display: "flex", alignItems: "center", gap: "12px" }}>
         <div style={{ width: "44px", height: "44px", borderRadius: "14px", overflow: "hidden", boxShadow: "0 4px 12px rgba(249,115,22,0.35)", flexShrink: 0 }}>
-          <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/logo-icon-orange_2cf889cb.png" alt="BuddyMarket" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+          <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/logo-icon-orange_2cf889cb.png" alt="Buddy One" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
-          <p style={{ margin: 0, fontSize: "17px", fontWeight: 900, color: "var(--sidebar-text, #1a1a1a)", letterSpacing: "-0.03em" }}>BuddyMarket</p>
+          <p style={{ margin: 0, fontSize: "17px", fontWeight: 900, color: "var(--sidebar-text, #1a1a1a)", letterSpacing: "-0.03em" }}>Buddy One</p>
           <p style={{ margin: 0, fontSize: "14px", color: "#F97316", fontWeight: 600 }}>{t("common.nutritionalManager", "Gestor Nutricional")}</p>
         </div>
         <LanguageSelector variant="icon" />
@@ -519,9 +519,9 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       <div style={{ minHeight: "100dvh", display: "flex", alignItems: "center", justifyContent: "center", background: "#FFF8F0" }}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "20px" }}>
           <div style={{ width: "72px", height: "72px", borderRadius: "22px", overflow: "hidden", boxShadow: "0 8px 28px rgba(249,115,22,0.40)" }}>
-            <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/logo-icon-orange_2cf889cb.png" alt="BuddyMarket" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/logo-icon-orange_2cf889cb.png" alt="Buddy One" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           </div>
-          <p style={{ fontSize: "20px", fontWeight: 900, color: "#1a1a1a", letterSpacing: "-0.03em", margin: 0 }}>BuddyMarket</p>
+          <p style={{ fontSize: "20px", fontWeight: 900, color: "#1a1a1a", letterSpacing: "-0.03em", margin: 0 }}>Buddy One</p>
           <div style={{ display: "flex", gap: "6px" }}>
             {[0, 150, 300].map((delay) => (<div key={delay} style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#F97316", animation: "bounce 1s infinite", animationDelay: `${delay}ms` }} />))}
           </div>
@@ -539,7 +539,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
   if (!loading && !isAuthenticated && !wasAuthenticated) { window.location.href = "/login"; return null; }
 
   const shouldShowNav = !hideNav;
-  const pageTitle = title || currentNavItem?.label || currentSidebarItem?.label || "BuddyMarket";
+  const pageTitle = title || currentNavItem?.label || currentSidebarItem?.label || "Buddy One";
   const userName = user?.name || "Usuario";
   const userEmail = user?.email || "";
   const userAvatarUrl = profileData.data?.user?.imageUrl || (user as any)?.imageUrl || null;
@@ -652,7 +652,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
           {showInstallBanner && (
             <div style={{ background: "linear-gradient(135deg, #F97316, #FB923C)", padding: "10px 32px", display: "flex", alignItems: "center", gap: "10px" }}>
               <div style={{ width: "32px", height: "32px", borderRadius: "8px", overflow: "hidden", flexShrink: 0 }}>
-                <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/logo-icon-orange_2cf889cb.png" alt="BuddyMarket" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+                <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/logo-icon-orange_2cf889cb.png" alt="Buddy One" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
               </div>
               <div style={{ flex: 1 }}>
                 <p style={{ margin: 0, fontSize: "13px", fontWeight: 800, color: "white" }}>{t("sidebar.installApp")}</p>
@@ -717,7 +717,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       {showInstallBanner && (
         <div style={{ background: "linear-gradient(135deg, #F97316, #FB923C)", padding: "10px 16px", display: "flex", alignItems: "center", gap: "10px", zIndex: 150 }}>
           <div style={{ width: "36px", height: "36px", borderRadius: "10px", overflow: "hidden", flexShrink: 0 }}>
-            <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/logo-icon-orange_2cf889cb.png" alt="BuddyMarket" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/logo-icon-orange_2cf889cb.png" alt="Buddy One" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           </div>
           <div style={{ flex: 1, minWidth: 0 }}>
             <p style={{ margin: 0, fontSize: "13px", fontWeight: 800, color: "white" }}>{t("sidebar.installApp")}</p>
@@ -744,10 +744,10 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
 
         <div style={{ display: "flex", alignItems: "center", gap: "8px", flex: 1, minWidth: 0 }}>
           <div style={{ width: "32px", height: "32px", borderRadius: "10px", overflow: "hidden", boxShadow: "0 2px 8px rgba(249,115,22,0.30)", flexShrink: 0 }}>
-            <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/logo-icon-orange_2cf889cb.png" alt="BuddyMarket" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
+            <img src="https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/logo-icon-orange_2cf889cb.png" alt="Buddy One" style={{ width: "100%", height: "100%", objectFit: "cover" }} />
           </div>
           <div style={{ minWidth: 0 }}>
-            <p className="app-header__title-sub" style={{ margin: 0, fontSize: "14px", fontWeight: 600, letterSpacing: "0.02em" }}>BuddyMarket</p>
+            <p className="app-header__title-sub" style={{ margin: 0, fontSize: "14px", fontWeight: 600, letterSpacing: "0.02em" }}>Buddy One</p>
             <p className="app-header__title-main" style={{ margin: 0, fontSize: "17px", fontWeight: 800, letterSpacing: "-0.02em", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{pageTitle}</p>
           </div>
         </div>

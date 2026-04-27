@@ -209,7 +209,7 @@ export default function FeedbackButton({ asSidebarItem = false, onClose, pending
                   Tu opinión importa
                 </p>
                 <p style={{ margin: 0, fontSize: "12px", color: "rgba(255,255,255,0.85)", fontWeight: 500 }}>
-                  Ayúdanos a mejorar BuddyMarket
+                  Ayúdanos a mejorar Buddy One
                 </p>
               </div>
               <button
@@ -405,7 +405,7 @@ export default function FeedbackButton({ asSidebarItem = false, onClose, pending
                   ¡Gracias por tu feedback!
                 </p>
                 <p style={{ margin: "0 0 24px", fontSize: "14px", color: "#6b7280", lineHeight: 1.5 }}>
-                  Tu opinión nos ayuda a mejorar BuddyMarket cada día. Lo revisaremos lo antes posible.
+                  Tu opinión nos ayuda a mejorar Buddy One cada día. Lo revisaremos lo antes posible.
                 </p>
                 <button
                   onClick={handleClose}
