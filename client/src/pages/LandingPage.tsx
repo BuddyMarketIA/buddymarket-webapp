@@ -251,11 +251,7 @@ export default function LandingPage() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Auto-rotate modules every 4.5s
-  useEffect(() => {
-    const t = setInterval(() => setActiveModule(i => (i + 1) % MODULES.length), 4500);
-    return () => clearInterval(t);
-  }, []);
+  // No autoplay — navegación manual
 
   const scrollTo = (id: string) => {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth" });
@@ -447,11 +443,20 @@ export default function LandingPage() {
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gridTemplateRows: "200px 200px", gap: 12, position: "relative" }} className="lp-hero-imgs">
-            {[FOOD.salmon, FOOD.ensalada, FOOD.bowl, FOOD.pasta].map((src, i) => (
-              <div key={i} style={{ borderRadius: 20, overflow: "hidden", transform: ["rotate(-1.5deg)","rotate(1deg)","rotate(1.5deg)","rotate(-1deg)"][i], boxShadow: "0 12px 32px rgba(0,0,0,0.12)", transition: "transform 0.3s" }}
+            {[
+              { src: FOOD.shopping, alt: "Compra inteligente Buddy Market", badge: "🛒", label: "Buddy Market" },
+              { src: "/manus-storage/buddy-pets-cat-dog_d6068ecc.jpg", alt: "Nutrición para mascotas Buddy Pets", badge: "🐾", label: "Buddy Pets" },
+              { src: "/manus-storage/buddy-coach-nutritionist_3e23352c.jpg", alt: "Nutricionista online Buddy Coach", badge: "👤", label: "Buddy Coach" },
+              { src: FOOD.bowl, alt: "Nutrición saludable Buddy Care", badge: "➕", label: "Buddy Care" },
+            ].map((item, i) => (
+              <div key={i} style={{ borderRadius: 20, overflow: "hidden", transform: ["rotate(-1.5deg)","rotate(1deg)","rotate(1.5deg)","rotate(-1deg)"][i], boxShadow: "0 12px 32px rgba(0,0,0,0.12)", transition: "transform 0.3s", position: "relative" }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "rotate(0deg) scale(1.03)"; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = ["rotate(-1.5deg)","rotate(1deg)","rotate(1.5deg)","rotate(-1deg)"][i]; }}>
-                <img src={src} alt={["Salmón con quinoa","Ensalada mediterránea","Bowl de açaí","Pasta al pesto"][i]} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                <img src={item.src} alt={item.alt} style={{ width: "100%", height: "100%", objectFit: "cover", display: "block" }} />
+                <div style={{ position: "absolute", bottom: 8, left: 8, background: "rgba(0,0,0,0.65)", backdropFilter: "blur(8px)", borderRadius: 100, padding: "4px 10px", display: "flex", alignItems: "center", gap: 5 }}>
+                  <span style={{ fontSize: 12 }}>{item.badge}</span>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "white" }}>{item.label}</span>
+                </div>
               </div>
             ))}
             <div style={{ position: "absolute", bottom: -20, left: "50%", transform: "translateX(-50%)", background: "white", borderRadius: 100, padding: "10px 20px", boxShadow: "0 8px 24px rgba(0,0,0,0.14)", display: "flex", alignItems: "center", gap: 10, whiteSpace: "nowrap", zIndex: 10 }}>
@@ -525,12 +530,22 @@ export default function LandingPage() {
             </p>
           </div>
 
-          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center", marginBottom: 40 }}>
+          <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center", alignItems: "center", marginBottom: 40 }}>
+            <button onClick={() => setActiveModule(i => (i - 1 + MODULES.length) % MODULES.length)} style={{ width: 38, height: 38, borderRadius: "50%", border: "2px solid #e5e7eb", background: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.2s" }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "#F97316"; (e.currentTarget as HTMLElement).style.color = "#F97316"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "#e5e7eb"; (e.currentTarget as HTMLElement).style.color = "#374151"; }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
+            </button>
             {MODULES.map((m, i) => (
               <button key={i} onClick={() => setActiveModule(i)} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 18px", borderRadius: 100, fontSize: 14, fontWeight: 600, cursor: "pointer", border: "2px solid", transition: "all 0.2s", borderColor: activeModule === i ? m.color : "#e5e7eb", background: activeModule === i ? m.bg : "white", color: activeModule === i ? m.color : "#6b7280", boxShadow: activeModule === i ? `0 4px 16px ${m.color}30` : "none" }}>
                 <span>{m.icon}</span><span>{m.tag}</span>
               </button>
             ))}
+            <button onClick={() => setActiveModule(i => (i + 1) % MODULES.length)} style={{ width: 38, height: 38, borderRadius: "50%", border: "2px solid #e5e7eb", background: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.2s" }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "#F97316"; (e.currentTarget as HTMLElement).style.color = "#F97316"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "#e5e7eb"; (e.currentTarget as HTMLElement).style.color = "#374151"; }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
+            </button>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 48, alignItems: "center", background: MODULES[activeModule].bg, borderRadius: 24, padding: "48px", border: `1.5px solid ${MODULES[activeModule].color}20`, transition: "all 0.4s" }} className="lp-module-grid">
@@ -798,6 +813,148 @@ export default function LandingPage() {
                 </button>
               </div>
             ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ HERRAMIENTAS DEL ECOSISTEMA ═══════════════════════════════════ */}
+      <section id="herramientas" style={{ padding: "100px 24px", background: "#f9fafb" }}>
+        <div style={{ maxWidth: 1100, margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: 56 }}>
+            <span style={{ fontSize: 11, fontWeight: 800, color: "#F97316", letterSpacing: "0.12em", textTransform: "uppercase" }}>HERRAMIENTAS</span>
+            <h2 style={{ fontSize: "clamp(28px,4vw,44px)", fontWeight: 900, color: "#111827", margin: "12px 0 16px", lineHeight: 1.2 }}>Explora el ecosistema</h2>
+            <p style={{ fontSize: 18, color: "#6b7280", maxWidth: 500, margin: "0 auto" }}>Cinco herramientas integradas, cada una especializada en un área de tu bienestar.</p>
+          </div>
+
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(320px,1fr))", gap: 24 }}>
+
+            {/* Buddy Market */}
+            <div style={{ background: "white", borderRadius: 24, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", border: "1.5px solid #FED7AA", transition: "all 0.3s" }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(249,115,22,0.15)"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 24px rgba(0,0,0,0.06)"; }}>
+              <div style={{ height: 160, background: "linear-gradient(135deg,#FFF7ED,#FFEDD5)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
+                <img src={FOOD.shopping} alt="Buddy Market" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.35 }} />
+                <div style={{ position: "relative", zIndex: 1, textAlign: "center" }}>
+                  <div style={{ fontSize: 48 }}>🛒</div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: "#F97316", marginTop: 4 }}>Buddy Market</div>
+                </div>
+              </div>
+              <div style={{ padding: "24px" }}>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#FFF7ED", borderRadius: 100, padding: "4px 12px", marginBottom: 12 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#F97316", display: "inline-block" }} />
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "#F97316" }}>DISPONIBLE AHORA</span>
+                </div>
+                <h3 style={{ fontSize: 20, fontWeight: 800, color: "#111827", margin: "0 0 10px" }}>Compra inteligente</h3>
+                <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.65, margin: "0 0 20px" }}>Genera tu lista de la compra automáticamente desde tu menú semanal. Integración con Mercadona, Carrefour, Lidl y más.</p>
+                <a href={ctaHref} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 20px", borderRadius: 10, fontSize: 14, fontWeight: 700, color: "white", background: "#F97316", textDecoration: "none", boxShadow: "0 4px 16px rgba(249,115,22,0.3)" }}>
+                  Ir a Buddy Market
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </a>
+              </div>
+            </div>
+
+            {/* Buddy Shop */}
+            <div style={{ background: "white", borderRadius: 24, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", border: "1.5px solid #FECDD3", transition: "all 0.3s" }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(225,29,72,0.15)"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 24px rgba(0,0,0,0.06)"; }}>
+              <div style={{ height: 160, background: "linear-gradient(135deg,#FFF1F2,#FFE4E6)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
+                <img src={FOOD.pantry} alt="Buddy Shop" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.3 }} />
+                <div style={{ position: "relative", zIndex: 1, textAlign: "center" }}>
+                  <div style={{ fontSize: 48 }}>🛍️</div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: "#E11D48", marginTop: 4 }}>Buddy Shop</div>
+                </div>
+              </div>
+              <div style={{ padding: "24px" }}>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#FFF1F2", borderRadius: 100, padding: "4px 12px", marginBottom: 12 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#E11D48", display: "inline-block" }} />
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "#E11D48" }}>DISPONIBLE AHORA</span>
+                </div>
+                <h3 style={{ fontSize: 20, fontWeight: 800, color: "#111827", margin: "0 0 10px" }}>Productos saludables</h3>
+                <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.65, margin: "0 0 20px" }}>Accede a suplementos, alimentos especiales y productos saludables seleccionados por nutricionistas. Envío a domicilio.</p>
+                <a href="https://buddyshop.app" target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 20px", borderRadius: 10, fontSize: 14, fontWeight: 700, color: "white", background: "#E11D48", textDecoration: "none", boxShadow: "0 4px 16px rgba(225,29,72,0.3)" }}>
+                  Ir a Buddy Shop
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+                </a>
+              </div>
+            </div>
+
+            {/* Buddy Coach */}
+            <div style={{ background: "white", borderRadius: 24, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", border: "1.5px solid #DDD6FE", transition: "all 0.3s" }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(124,58,237,0.15)"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 24px rgba(0,0,0,0.06)"; }}>
+              <div style={{ height: 160, background: "linear-gradient(135deg,#F5F3FF,#EDE9FE)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
+                <img src={FOOD.salmon} alt="Buddy Coach" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.25 }} />
+                <div style={{ position: "relative", zIndex: 1, textAlign: "center" }}>
+                  <div style={{ fontSize: 48 }}>👤</div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: "#7C3AED", marginTop: 4 }}>Buddy Coach</div>
+                </div>
+              </div>
+              <div style={{ padding: "24px" }}>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#F5F3FF", borderRadius: 100, padding: "4px 12px", marginBottom: 12 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#7C3AED", display: "inline-block" }} />
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "#7C3AED" }}>DISPONIBLE AHORA</span>
+                </div>
+                <h3 style={{ fontSize: 20, fontWeight: 800, color: "#111827", margin: "0 0 10px" }}>Tu nutricionista online</h3>
+                <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.65, margin: "0 0 20px" }}>Accede a nutricionistas certificados que crean planes 100% personalizados, hacen seguimiento de tu evolución y responden tus dudas.</p>
+                <a href="/app/buddy-experts" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 20px", borderRadius: 10, fontSize: 14, fontWeight: 700, color: "white", background: "#7C3AED", textDecoration: "none", boxShadow: "0 4px 16px rgba(124,58,237,0.3)" }}>
+                  Ir a Buddy Coach
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </a>
+              </div>
+            </div>
+
+            {/* Buddy Pets */}
+            <div style={{ background: "white", borderRadius: 24, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", border: "1.5px solid #BFDBFE", transition: "all 0.3s" }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(37,99,235,0.15)"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 24px rgba(0,0,0,0.06)"; }}>
+              <div style={{ height: 160, background: "linear-gradient(135deg,#EFF6FF,#DBEAFE)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
+                <img src={FOOD.mealprep} alt="Buddy Pets" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.25 }} />
+                <div style={{ position: "relative", zIndex: 1, textAlign: "center" }}>
+                  <div style={{ fontSize: 48 }}>🐾</div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: "#2563EB", marginTop: 4 }}>Buddy Pets</div>
+                </div>
+              </div>
+              <div style={{ padding: "24px" }}>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#EFF6FF", borderRadius: 100, padding: "4px 12px", marginBottom: 12 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#2563EB", display: "inline-block" }} />
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "#2563EB" }}>DISPONIBLE AHORA</span>
+                </div>
+                <h3 style={{ fontSize: 20, fontWeight: 800, color: "#111827", margin: "0 0 10px" }}>Nutrición para mascotas</h3>
+                <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.65, margin: "0 0 20px" }}>Planes nutricionales personalizados para perros y gatos. Analiza las necesidades de tu mascota y genera menús adaptados a su raza, edad y condición.</p>
+                <a href="/app/buddy-pet" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 20px", borderRadius: 10, fontSize: 14, fontWeight: 700, color: "white", background: "#2563EB", textDecoration: "none", boxShadow: "0 4px 16px rgba(37,99,235,0.3)" }}>
+                  Ir a Buddy Pets
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </a>
+              </div>
+            </div>
+
+            {/* Buddy Care */}
+            <div style={{ background: "white", borderRadius: 24, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", border: "1.5px solid #BBF7D0", transition: "all 0.3s", opacity: 0.85 }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(22,163,74,0.15)"; (e.currentTarget as HTMLElement).style.opacity = "1"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 24px rgba(0,0,0,0.06)"; (e.currentTarget as HTMLElement).style.opacity = "0.85"; }}>
+              <div style={{ height: 160, background: "linear-gradient(135deg,#F0FDF4,#DCFCE7)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
+                <img src={FOOD.ensalada} alt="Buddy Care" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.25 }} />
+                <div style={{ position: "absolute", top: 12, right: 12, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(8px)", borderRadius: 100, padding: "4px 12px" }}>
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "white" }}>🔨 En desarrollo</span>
+                </div>
+                <div style={{ position: "relative", zIndex: 1, textAlign: "center" }}>
+                  <div style={{ fontSize: 48 }}>➕</div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: "#16A34A", marginTop: 4 }}>Buddy Care</div>
+                </div>
+              </div>
+              <div style={{ padding: "24px" }}>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#F0FDF4", borderRadius: 100, padding: "4px 12px", marginBottom: 12 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#16A34A", display: "inline-block", animation: "lp-pulse 2s infinite" }} />
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "#16A34A" }}>PRÓXIMAMENTE</span>
+                </div>
+                <h3 style={{ fontSize: 20, fontWeight: 800, color: "#111827", margin: "0 0 10px" }}>Salud y bienestar integral</h3>
+                <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.65, margin: "0 0 20px" }}>Estamos trabajando en Buddy Care, tu herramienta de seguimiento de salud integral. Métricas avanzadas, historial médico, recordatorios y mucho más.</p>
+                <button disabled style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 20px", borderRadius: 10, fontSize: 14, fontWeight: 700, color: "#16A34A", background: "#F0FDF4", border: "2px solid #BBF7D0", cursor: "not-allowed", opacity: 0.7 }}>
+                  Notificarme cuando esté listo
+                </button>
+              </div>
+            </div>
+
           </div>
         </div>
       </section>
