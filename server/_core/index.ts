@@ -66,6 +66,18 @@ async function startServer() {
   // Trust proxy (needed for rate limiting behind load balancers / Manus proxy)
   app.set("trust proxy", 1);
 
+  // ─── Domain redirect: buddymarketapp.com → buddyoneapp.com (301 permanent) ───────
+  const LEGACY_DOMAINS = ["buddymarketapp.com", "www.buddymarketapp.com"];
+  app.use((req: any, res: any, next: any) => {
+    const host = req.hostname;
+    if (LEGACY_DOMAINS.includes(host)) {
+      const newUrl = `https://buddyoneapp.com${req.originalUrl}`;
+      logger.info(`[Redirect] ${host}${req.originalUrl} → ${newUrl}`);
+      return res.redirect(301, newUrl);
+    }
+    next();
+  });
+
   // ─── Security headers (Helmet) ────────────────────────────────────────────
   app.use(helmet({
     contentSecurityPolicy: {
