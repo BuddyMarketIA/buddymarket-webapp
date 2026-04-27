@@ -140,7 +140,7 @@ export default function CalculadoraNutricional() {
   };
 
   const shareTwitter = () => {
-    const text = encodeURIComponent(`Acabo de calcular mis macros con @Buddy OneApp 🥗\n\n${results?.tdee} kcal/día · ${results?.protein}g proteína · ${results?.carbs}g carbos · ${results?.fat}g grasas\n\n¿Y tú? Calcula gratis 👇`);
+    const text = encodeURIComponent(`Acabo de calcular mis macros con @BuddyOneApp 🥗\n\n${results?.tdee} kcal/día · ${results?.protein}g proteína · ${results?.carbs}g carbos · ${results?.fat}g grasas\n\n¿Y tú? Calcula gratis 👇`);
     window.open(`https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(buildShareUrl())}`, "_blank");
   };
 

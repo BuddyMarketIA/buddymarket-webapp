@@ -25,13 +25,13 @@ declare global {
     /** Injected by the native iOS/Android shell */
     __BUDDYMARKET_PLATFORM__?: Platform;
     /** StoreKit 2 bridge injected by the native iOS shell */
-    Buddy OneIAP?: {
+    BuddyOneIAP?: {
       purchase: (productId: string) => Promise<{ transactionId: string; receipt: string }>;
       getProducts: (productIds: string[]) => Promise<IAPProduct[]>;
       restorePurchases: () => Promise<void>;
     };
     /** Sign in with Apple bridge injected by the native iOS shell */
-    Buddy OneAppleAuth?: {
+    BuddyOneAppleAuth?: {
       signIn: (options?: { nonce?: string }) => Promise<{
         identityToken: string;
         authorizationCode: string;
@@ -125,5 +125,5 @@ export function isNativeApp(): boolean {
  *   - Android: native shell with Google Play Billing bridge injected
  */
 export function isIAPAvailable(): boolean {
-  return isNativeApp() && typeof window !== "undefined" && !!window.Buddy OneIAP;
+  return isNativeApp() && typeof window !== "undefined" && !!window.BuddyOneIAP;
 }

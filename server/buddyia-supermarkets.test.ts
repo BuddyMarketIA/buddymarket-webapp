@@ -123,6 +123,15 @@ vi.mock("./db", () => ({
     }),
   getSeededMenus: vi.fn().mockResolvedValue([]),
   getUserMenus: vi.fn().mockResolvedValue([]),
+  getMenstrualCycleData: vi.fn().mockResolvedValue(null),
+  buildCyclePhaseBlock: vi.fn().mockReturnValue(""),
+  awardBadge: vi.fn().mockResolvedValue({ unlocked: false }),
+  updateUser: vi.fn().mockResolvedValue({ id: 1 }),
+  upsertUserSubscription: vi.fn().mockResolvedValue({ id: 1 }),
+  getUserByEmail: vi.fn().mockResolvedValue(null),
+  upsertUser: vi.fn().mockResolvedValue({ id: 1 }),
+  countRecentOtpRequests: vi.fn().mockResolvedValue(0),
+  createOtpToken: vi.fn().mockResolvedValue({ id: 1 }),
 }));
 
 vi.mock("./stripe-webhook", () => ({
