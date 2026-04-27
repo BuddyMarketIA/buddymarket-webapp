@@ -443,7 +443,7 @@ export default function BuddyExpertStats() {
                 {/* Commission info */}
                 <div className="rounded-2xl border border-blue-100 bg-blue-50 px-4 py-3">
                   <p className="text-xs text-blue-700">
-                    <strong>Comisión de plataforma:</strong> BuddyMarket aplica un {((stats?.expert?.commissionRate ?? 0.2) * 100).toFixed(0)}% sobre cada venta.
+                    <strong>Comisión de plataforma:</strong> Buddy One aplica un {((stats?.expert?.commissionRate ?? 0.2) * 100).toFixed(0)}% sobre cada venta.
                     El importe neto se transfiere automáticamente a tu cuenta de Stripe Connect.
                   </p>
                 </div>

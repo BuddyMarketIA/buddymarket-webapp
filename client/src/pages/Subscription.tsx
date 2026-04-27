@@ -186,7 +186,7 @@ export default function Subscription() {
       <div className="text-center mb-5">
         <div className="inline-flex items-center gap-2 bg-orange-100 text-orange-700 text-xs font-bold px-3 py-1.5 rounded-full mb-3">
           <SparklesIcon className="h-3.5 w-3.5" />
-          Desbloquea todo BuddyMarket
+          Desbloquea todo Buddy One
         </div>
         <h1 className="text-2xl font-extrabold text-foreground leading-tight">
           Come mejor.<br />
@@ -404,7 +404,7 @@ export default function Subscription() {
                   <span className="text-xl font-extrabold text-muted-foreground/70">0€</span>
                   <span className="text-xs text-muted-foreground/70">/siempre</span>
                 </div>
-                <p className="text-xs text-muted-foreground mt-0.5">Para empezar a explorar BuddyMarket</p>
+                <p className="text-xs text-muted-foreground mt-0.5">Para empezar a explorar Buddy One</p>
               </div>
             </div>
             <div className="mb-4 space-y-1">

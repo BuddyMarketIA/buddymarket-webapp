@@ -58,7 +58,7 @@ function ThirtyDayCard({ challenge }: { challenge: any }) {
       if (data.alreadyCheckedIn) {
         toast.info("Ya has hecho check-in hoy. ¡Vuelve mañana para continuar tu racha!");
       } else if (data.isComplete) {
-        toast.success("🏆 ¡Reto de 30 días completado! ¡Eres una leyenda BuddyMarket! Has ganado el badge exclusivo.");
+        toast.success("🏆 ¡Reto de 30 días completado! ¡Eres una leyenda Buddy One! Has ganado el badge exclusivo.");
       } else {
         toast.success(`✅ Día ${data.currentDay} completado. +20 puntos. ¡${30 - (data.currentDay ?? 0)} días más para completar el reto!`);
       }
@@ -149,7 +149,7 @@ export default function Challenges() {
             <Trophy className="w-5 h-5 text-orange-500" />
           </div>
           <div>
-            <h1 className="text-xl font-black text-foreground">Retos BuddyMarket</h1>
+            <h1 className="text-xl font-black text-foreground">Retos Buddy One</h1>
             <p className="text-sm text-muted-foreground">Supera desafíos y gana puntos</p>
           </div>
         </div>

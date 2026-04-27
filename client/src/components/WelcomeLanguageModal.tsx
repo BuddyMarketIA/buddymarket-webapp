@@ -84,7 +84,7 @@ export default function WelcomeLanguageModal() {
             🌍
           </div>
           <h2 className="text-xl font-black text-white tracking-tight">
-            ¡Bienvenido a BuddyMarket!
+            ¡Bienvenido a Buddy One!
           </h2>
           <p className="text-sm text-white/80 mt-1">
             Hemos detectado tu idioma:{" "}

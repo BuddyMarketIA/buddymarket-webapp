@@ -65,7 +65,7 @@ const PASOS = [
 const FAQS = [
   {
     q: "¿Puedo seguir con mi consulta presencial?",
-    a: "Sí. BuddyMarket es un canal adicional, no un sustituto. Muchos BuddyCoaches lo usan para el seguimiento entre sesiones presenciales.",
+    a: "Sí. Buddy One es un canal adicional, no un sustituto. Muchos BuddyCoaches lo usan para el seguimiento entre sesiones presenciales.",
   },
   {
     q: "¿Tengo control sobre lo que genera la IA?",
@@ -73,7 +73,7 @@ const FAQS = [
   },
   {
     q: "¿Cómo se gestionan los datos de salud de mis clientes?",
-    a: "BuddyMarket cumple con el RGPD. Los datos de salud se tratan como categoría especial, con cifrado en tránsito y en reposo.",
+    a: "Buddy One cumple con el RGPD. Los datos de salud se tratan como categoría especial, con cifrado en tránsito y en reposo.",
   },
   {
     q: "¿Puedo invitar a mis clientes actuales?",
@@ -281,7 +281,7 @@ export default function Nutricionistas() {
       <nav className="sticky top-0 z-50 bg-background/95 backdrop-blur border-b border-border/50" aria-label="Navegación principal">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 h-16 flex items-center justify-between">
           <Link href="/" className="flex items-center gap-2 font-black text-xl text-foreground focus-visible:outline-2 focus-visible:outline-[#F97316] rounded">
-            <span className="text-[#F97316]">BuddyMarket</span>
+            <span className="text-[#F97316]">Buddy One</span>
             <span className="text-xs font-semibold text-white bg-[#8B5CF6] px-2 py-0.5 rounded-full">Pro</span>
           </Link>
           <div className="flex items-center gap-3">
@@ -310,7 +310,7 @@ export default function Nutricionistas() {
                 <span className="text-[#F97316]">ecosistema digital</span>
               </h1>
               <p className="text-xl text-muted-foreground leading-relaxed mb-8 max-w-2xl">
-                BuddyMarket conecta a dietistas y nutricionistas con miles de usuarios que ya planifican sus menús y quieren orientación profesional. Tú aportas el criterio clínico. Nosotros ponemos la tecnología, la audiencia y la infraestructura.
+                Buddy One conecta a dietistas y nutricionistas con miles de usuarios que ya planifican sus menús y quieren orientación profesional. Tú aportas el criterio clínico. Nosotros ponemos la tecnología, la audiencia y la infraestructura.
               </p>
               <div className="flex flex-col sm:flex-row gap-4">
                 <a
@@ -504,14 +504,14 @@ export default function Nutricionistas() {
       <footer className="bg-gray-900 py-10" role="contentinfo">
         <div className="max-w-6xl mx-auto px-4 sm:px-6 flex flex-col sm:flex-row items-center justify-between gap-4">
           <div className="text-white font-black text-xl">
-            <span className="text-[#F97316]">BuddyMarket</span>
+            <span className="text-[#F97316]">Buddy One</span>
           </div>
           <div className="flex gap-6 text-sm text-muted-foreground/70">
             <Link href="/privacy" className="hover:text-white transition-colors focus-visible:outline-1 focus-visible:outline-white rounded">Privacidad</Link>
             <Link href="/terms" className="hover:text-white transition-colors focus-visible:outline-1 focus-visible:outline-white rounded">Términos</Link>
             <Link href="/faq" className="hover:text-white transition-colors focus-visible:outline-1 focus-visible:outline-white rounded">FAQ</Link>
           </div>
-          <p className="text-muted-foreground text-sm">© 2026 BuddyMarket. Todos los derechos reservados.</p>
+          <p className="text-muted-foreground text-sm">© 2026 Buddy One. Todos los derechos reservados.</p>
         </div>
       </footer>
 

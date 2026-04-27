@@ -69,7 +69,7 @@ export function generatePatientPDF(data: PDFReportData) {
   doc.setTextColor("#FFFFFF");
   doc.setFontSize(22);
   doc.setFont("helvetica", "bold");
-  text("BuddyMarket", margin, 18);
+  text("Buddy One", margin, 18);
   doc.setFontSize(11);
   doc.setFont("helvetica", "normal");
   text("Informe de Progreso del Paciente", margin, 27);
@@ -285,7 +285,7 @@ export function generatePatientPDF(data: PDFReportData) {
     doc.setFontSize(8);
     doc.setTextColor("#9CA3AF");
     doc.setFont("helvetica", "normal");
-    text(`BuddyMarket — Informe de Progreso — ${data.patient.name}`, margin, 292);
+    text(`Buddy One — Informe de Progreso — ${data.patient.name}`, margin, 292);
     text(`Página ${i} de ${totalPages}`, pageW - margin, 292, { align: "right" });
     doc.setDrawColor("#E5E7EB");
     doc.line(margin, 288, pageW - margin, 288);

@@ -251,7 +251,7 @@ export default function NutritionalCalculatorSection({ appUrl }: Props) {
 
                 <div style={{ background: "linear-gradient(135deg, #fff7ed, #fef3c7)", borderRadius: 14, padding: "16px 20px", marginBottom: 20, border: "1.5px solid #fed7aa" }}>
                   <p style={{ fontSize: 13, color: "#92400e", fontWeight: 600, lineHeight: 1.6 }}>
-                    BuddyMarket puede generar tu menú semanal completo basado exactamente en estos valores, adaptado a tus alergias y preferencias.
+                    Buddy One puede generar tu menú semanal completo basado exactamente en estos valores, adaptado a tus alergias y preferencias.
                   </p>
                 </div>
 

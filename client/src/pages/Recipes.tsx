@@ -578,7 +578,7 @@ export default function Recipes() {
     tag: onlyForMeTag || undefined,
     // NOTE: excludeUserAllergens is intentionally NOT set here.
     // We show ALL recipes but display a visual warning on incompatible ones.
-    // This is a key BuddyMarket differentiator: awareness, not restriction.
+    // This is a key Buddy One differentiator: awareness, not restriction.
     limit: 20,
   }), [debouncedSearch, showMyRecipes, user?.id, mealTimeFilter, cuisineFilter, cookingMethodFilter, foodTypeFilter, onlyForMeTag]);
 
@@ -1121,7 +1121,7 @@ export default function Recipes() {
 
       {/* Disclaimer */}
       <p style={{ fontSize: "13px", color: "#d1d5db", textAlign: "center", margin: "8px 0 0", lineHeight: 1.5 }}>
-        {t("recipes.disclaimer", "Las recetas de BuddyMarket son orientativas. Consulta a un profesional de la nutrición.")}
+        {t("recipes.disclaimer", "Las recetas de Buddy One son orientativas. Consulta a un profesional de la nutrición.")}
       </p>
 
       {/* Animations */}

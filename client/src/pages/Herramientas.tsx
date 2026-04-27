@@ -373,13 +373,13 @@ function Calculator() {
           {/* CTA */}
           <div style={{ marginTop: 20, background: "#FFF7ED", borderRadius: 16, padding: 20, border: "1.5px solid #FED7AA", textAlign: "center" }}>
             <div style={{ fontSize: 18, fontWeight: 800, color: "#111827", marginBottom: 6 }}>¿Quieres seguir estos objetivos automáticamente?</div>
-            <div style={{ fontSize: 14, color: "#6B7280", marginBottom: 16 }}>BuddyMarket registra tus comidas, genera menús adaptados a tus macros y hace la lista de la compra por ti.</div>
+            <div style={{ fontSize: 14, color: "#6B7280", marginBottom: 16 }}>Buddy One registra tus comidas, genera menús adaptados a tus macros y hace la lista de la compra por ti.</div>
             <Link href="/register">
               <button style={{
                 padding: "13px 32px", borderRadius: 14, background: "linear-gradient(135deg, #F97316, #FB923C)",
                 color: "#fff", fontWeight: 700, fontSize: 15, border: "none", cursor: "pointer", width: "100%",
               }}>
-                Empezar gratis con BuddyMarket →
+                Empezar gratis con Buddy One →
               </button>
             </Link>
           </div>
@@ -401,10 +401,10 @@ function HabitsTest() {
   const allAnswered = Object.keys(answers).length === QUESTIONS.length;
 
   const getDiagnosis = () => {
-    if (totalScore <= 4) return { label: "Excelente", color: "#22C55E", emoji: "🌟", text: "Tienes muy buenos hábitos alimentarios. BuddyMarket te ayudará a mantenerlos y optimizarlos." };
+    if (totalScore <= 4) return { label: "Excelente", color: "#22C55E", emoji: "🌟", text: "Tienes muy buenos hábitos alimentarios. Buddy One te ayudará a mantenerlos y optimizarlos." };
     if (totalScore <= 9) return { label: "Mejorable", color: "#F59E0B", emoji: "⚠️", text: "Tienes algunos hábitos que están frenando tus resultados. Con pequeños cambios verás grandes mejoras." };
     if (totalScore <= 15) return { label: "Necesita cambios", color: "#F97316", emoji: "🔥", text: "Varios hábitos están saboteando tu salud y tu peso. Es el momento de actuar." };
-    return { label: "Urgente", color: "#EF4444", emoji: "🚨", text: "Tus hábitos actuales tienen un impacto negativo significativo en tu salud. BuddyMarket puede ayudarte a transformarlos paso a paso." };
+    return { label: "Urgente", color: "#EF4444", emoji: "🚨", text: "Tus hábitos actuales tienen un impacto negativo significativo en tu salud. Buddy One puede ayudarte a transformarlos paso a paso." };
   };
 
   const q = QUESTIONS[currentQ];
@@ -457,7 +457,7 @@ function HabitsTest() {
         {/* CTA */}
         <div style={{ background: "#FFF7ED", borderRadius: 16, padding: 20, border: "1.5px solid #FED7AA", textAlign: "center" }}>
           <div style={{ fontSize: 18, fontWeight: 800, color: "#111827", marginBottom: 6 }}>
-            BuddyMarket te ayuda a corregir {badHabits.length > 0 ? `estos ${badHabits.length} hábitos` : "tus hábitos"} paso a paso
+            Buddy One te ayuda a corregir {badHabits.length > 0 ? `estos ${badHabits.length} hábitos` : "tus hábitos"} paso a paso
           </div>
           <div style={{ fontSize: 14, color: "#6B7280", marginBottom: 16 }}>
             Menús personalizados, seguimiento diario, recetas adaptadas y listas de la compra inteligentes. Todo en un solo lugar.
@@ -467,7 +467,7 @@ function HabitsTest() {
               padding: "13px 32px", borderRadius: 14, background: "linear-gradient(135deg, #F97316, #FB923C)",
               color: "#fff", fontWeight: 700, fontSize: 15, border: "none", cursor: "pointer", width: "100%",
             }}>
-              Empezar gratis con BuddyMarket →
+              Empezar gratis con Buddy One →
             </button>
           </Link>
         </div>
@@ -589,8 +589,8 @@ export default function Herramientas() {
       <div style={{ background: "#fff", borderBottom: "1px solid #E5E7EB", padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 50 }}>
         <Link href="/">
           <div style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
-            <img src="/logo192.png" alt="BuddyMarket" style={{ width: 28, height: 28, borderRadius: 8 }} />
-            <span style={{ fontWeight: 800, fontSize: 16, color: "#111827" }}>BuddyMarket</span>
+            <img src="/logo192.png" alt="Buddy One" style={{ width: 28, height: 28, borderRadius: 8 }} />
+            <span style={{ fontWeight: 800, fontSize: 16, color: "#111827" }}>Buddy One</span>
           </div>
         </Link>
         <Link href="/register">
@@ -660,9 +660,9 @@ export default function Herramientas() {
 
         {/* Footer disclaimer */}
         <div style={{ textAlign: "center", padding: "24px 0 32px" }}>
-          <img src="/logo192.png" alt="BuddyMarket" style={{ width: 20, height: 20, borderRadius: 6, verticalAlign: "middle", marginRight: 6 }} />
+          <img src="/logo192.png" alt="Buddy One" style={{ width: 20, height: 20, borderRadius: 6, verticalAlign: "middle", marginRight: 6 }} />
           <span style={{ fontSize: 11, color: "#9CA3AF" }}>
-            BuddyMarket · Las herramientas son orientativas y no sustituyen el consejo de un profesional de la salud.
+            Buddy One · Las herramientas son orientativas y no sustituyen el consejo de un profesional de la salud.
           </span>
         </div>
       </div>

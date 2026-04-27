@@ -49,7 +49,7 @@ export default function RecipeDetail() {
     onSuccess: (data) => {
       setSavedAdapted(true);
       toast.success("¡Receta adaptada guardada en la comunidad! 🎉", {
-        description: "Ya está disponible para todos los usuarios de BuddyMarket",
+        description: "Ya está disponible para todos los usuarios de Buddy One",
         action: data.recipeId ? { label: "Ver receta", onClick: () => navigate(`/app/recipes/${data.recipeId}`) } : undefined,
         duration: 6000,
       });
@@ -480,7 +480,7 @@ export default function RecipeDetail() {
           </button>
           {/* Disclaimer */}
           <p style={{ margin: 0, fontSize: "11px", color: "#9ca3af", textAlign: "center", lineHeight: 1.4 }}>
-            BuddyMarket te cuida. La IA sustituirá los ingredientes problemáticos manteniendo el sabor y los valores nutricionales.
+            Buddy One te cuida. La IA sustituirá los ingredientes problemáticos manteniendo el sabor y los valores nutricionales.
           </p>
         </div>
       )}
@@ -853,7 +853,7 @@ export default function RecipeDetail() {
                 </div>
                 <div>
                   <p style={{ margin: 0, fontSize: "16px", fontWeight: 800, color: "#1a1a1a" }}>Receta adaptada para ti</p>
-                  <p style={{ margin: 0, fontSize: "12px", color: "#6b7280" }}>BuddyMarket IA</p>
+                  <p style={{ margin: 0, fontSize: "12px", color: "#6b7280" }}>Buddy One IA</p>
                 </div>
               </div>
               <button
@@ -964,7 +964,7 @@ export default function RecipeDetail() {
                 cursor: "pointer",
               }}
             >
-              Entendido — gracias BuddyMarket ❤️
+              Entendido — gracias Buddy One ❤️
             </button>
           </div>
         </div>
@@ -979,7 +979,7 @@ export default function RecipeDetail() {
       />
 
       <div className="vively-disclaimer mt-6">
-        <p>BuddyMarket no constituye asesoramiento nutricional profesional.</p>
+        <p>Buddy One no constituye asesoramiento nutricional profesional.</p>
       </div>
     </div>
   );

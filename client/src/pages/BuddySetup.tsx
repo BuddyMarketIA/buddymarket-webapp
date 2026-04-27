@@ -459,7 +459,7 @@ export default function BuddySetup() {
             onClick={handleFinish}
             className="w-full rounded-2xl bg-orange-500 py-4 text-base font-bold text-white shadow-lg shadow-orange-200 transition-all active:scale-95"
           >
-            {data.generateMenu ? "✨ Generar mi menú personalizado" : "Empezar a usar BuddyMarket"}
+            {data.generateMenu ? "✨ Generar mi menú personalizado" : "Empezar a usar Buddy One"}
           </button>
         )}
       </div>

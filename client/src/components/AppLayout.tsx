@@ -185,7 +185,7 @@ function SidebarContent({
         </div>
         <div style={{ flex: 1, minWidth: 0 }}>
           <p style={{ margin: 0, fontSize: "17px", fontWeight: 900, color: "var(--sidebar-text, #1a1a1a)", letterSpacing: "-0.03em" }}>Buddy One</p>
-          <p style={{ margin: 0, fontSize: "14px", color: "#F97316", fontWeight: 600 }}>{t("common.nutritionalManager", "Gestor Nutricional")}</p>
+          <p style={{ margin: 0, fontSize: "12px", color: "#F97316", fontWeight: 600 }}>Tu ecosistema de bienestar</p>
         </div>
         <LanguageSelector variant="icon" />
       </div>

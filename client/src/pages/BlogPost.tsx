@@ -55,12 +55,12 @@ export default function BlogPost() {
         "jobTitle": post.expertSpecialty ?? "Nutricionista",
       } : {
         "@type": "Organization",
-        "name": "BuddyMarket",
+        "name": "Buddy One",
         "url": BASE_URL,
       },
       "publisher": {
         "@type": "Organization",
-        "name": "BuddyMarket",
+        "name": "Buddy One",
         "url": BASE_URL,
         "logo": {
           "@type": "ImageObject",
@@ -86,7 +86,7 @@ export default function BlogPost() {
     document.head.appendChild(script);
 
     // Update meta tags for SEO
-    document.title = `${post.title} | BuddyMarket Blog`;
+    document.title = `${post.title} | Buddy One Blog`;
     const metaDesc = document.querySelector('meta[name="description"]');
     if (metaDesc) metaDesc.setAttribute("content", post.excerpt ?? post.title);
 
@@ -135,7 +135,7 @@ export default function BlogPost() {
         <div style={{ maxWidth: 1200, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 68 }}>
           <Link href="/">
             <div style={{ display: "flex", alignItems: "center", gap: 10, cursor: "pointer" }}>
-              <img src={LOGO_ICON} alt="BuddyMarket" style={{ height: 40, width: 40, objectFit: "contain" }} />
+              <img src={LOGO_ICON} alt="Buddy One" style={{ height: 40, width: 40, objectFit: "contain" }} />
               <span style={{ fontSize: 18, fontWeight: 900, color: "#111827", letterSpacing: "-0.02em" }}>
                 Buddy<span style={{ color: ORANGE }}>Market</span>
               </span>
@@ -190,7 +190,7 @@ export default function BlogPost() {
               {post.expertSpecialty && (
                 <p style={{ fontSize: 13, color: "#6b7280", marginTop: 2 }}>{post.expertSpecialty}</p>
               )}
-              <p style={{ fontSize: 12, color: "#9ca3af", marginTop: 2 }}>BuddyExpert en BuddyMarket</p>
+              <p style={{ fontSize: 12, color: "#9ca3af", marginTop: 2 }}>BuddyExpert en Buddy One</p>
             </div>
           </div>
         )}
@@ -227,7 +227,7 @@ export default function BlogPost() {
           <div style={{ fontSize: 36, marginBottom: 12 }}>🥗</div>
           <h3 style={{ fontSize: 20, fontWeight: 900, color: "#111827", marginBottom: 8 }}>¿Quieres mejorar tu alimentación?</h3>
           <p style={{ fontSize: 15, color: "#6b7280", marginBottom: 20, lineHeight: 1.6 }}>
-            BuddyMarket crea menús personalizados, listas de compra inteligentes y te acompaña en tu objetivo de salud.
+            Buddy One crea menús personalizados, listas de compra inteligentes y te acompaña en tu objetivo de salud.
           </p>
           <Link href="/register" style={{ display: "inline-block", padding: "12px 28px", borderRadius: 12, background: ORANGE, color: "white", textDecoration: "none", fontWeight: 700, fontSize: 15 }}>
             Empieza gratis — sin tarjeta
@@ -279,7 +279,7 @@ export default function BlogPost() {
 
       {/* Footer */}
       <footer style={{ background: "#0f172a", padding: "32px 24px", textAlign: "center" }}>
-        <p style={{ fontSize: 13, color: "#4b5563" }}>© 2025 BuddyMarket · <Link href="/terminos" style={{ color: "#6b7280", textDecoration: "none" }}>Términos</Link> · <Link href="/privacidad" style={{ color: "#6b7280", textDecoration: "none" }}>Privacidad</Link></p>
+        <p style={{ fontSize: 13, color: "#4b5563" }}>© 2025 Buddy One · <Link href="/terminos" style={{ color: "#6b7280", textDecoration: "none" }}>Términos</Link> · <Link href="/privacidad" style={{ color: "#6b7280", textDecoration: "none" }}>Privacidad</Link></p>
         <p style={{ fontSize: 11, color: "#374151", marginTop: 8 }}>⚠️ El contenido de este blog es orientativo y no sustituye el consejo de un profesional de la salud.</p>
       </footer>
 

@@ -50,7 +50,7 @@ function exportMenuToPDF(
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(10);
     doc.setFont("helvetica", "bold");
-    doc.text("BuddyMarket — Menú Semanal", margin, 9);
+    doc.text("Buddy One — Menú Semanal", margin, 9);
     doc.setFont("helvetica", "normal");
     doc.text(new Date().toLocaleDateString("es-ES", { day: "2-digit", month: "long", year: "numeric" }), pageW - margin, 9, { align: "right" });
   }
@@ -232,7 +232,7 @@ function exportMenuToPDF(
     doc.setFontSize(7);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(180, 180, 180);
-    doc.text(`BuddyMarket · buddymarketapp.com · Página ${i} de ${pageCount}`, pageW / 2, 292, { align: "center" });
+    doc.text(`Buddy One · buddymarketapp.com · Página ${i} de ${pageCount}`, pageW / 2, 292, { align: "center" });
   }
   doc.save(`menu-${(activeMenu.name ?? "semanal").replace(/\s+/g, "-").toLowerCase()}.pdf`);
 }

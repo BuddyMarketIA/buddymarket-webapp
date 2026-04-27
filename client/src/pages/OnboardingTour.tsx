@@ -13,7 +13,7 @@ const CARDS = [
     title: "IA Nutricional",
     subtitle: "Tu coach personal inteligente",
     description:
-      "BuddyMarket analiza tus objetivos, metabolismo y preferencias para crear planes nutricionales completamente personalizados. La IA aprende contigo cada día.",
+      "Buddy One analiza tus objetivos, metabolismo y preferencias para crear planes nutricionales completamente personalizados. La IA aprende contigo cada día.",
     features: ["Planes 100% personalizados", "Ajuste automático de calorías", "Aprende de tus hábitos"],
     img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/mealprep_eb5fda9a.jpg",
   },
@@ -65,7 +65,7 @@ const CARDS = [
     title: "Inventario Inteligente",
     subtitle: "Nunca más te faltará nada",
     description:
-      "Gestiona tu despensa y nevera de forma inteligente. BuddyMarket sabe lo que tienes y genera recetas con los ingredientes disponibles, reduciendo el desperdicio.",
+      "Gestiona tu despensa y nevera de forma inteligente. Buddy One sabe lo que tienes y genera recetas con los ingredientes disponibles, reduciendo el desperdicio.",
     features: ["Control de despensa", "Alertas de caducidad", "Recetas con lo que tienes"],
     img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/pantry_3fcf0a1f.jpg",
   },
@@ -75,7 +75,7 @@ const CARDS = [
     color: "from-[#ec4899] to-[#db2777]",
     bg: "bg-[#1A0812]",
     accent: "#ec4899",
-    title: "Comunidad BuddyMarket",
+    title: "Comunidad Buddy One",
     subtitle: "Crece junto a otros",
     description:
       "Conecta con expertos en nutrición, sigue a otros usuarios, participa en retos y comparte tu progreso. La motivación es más fácil cuando no estás solo.",

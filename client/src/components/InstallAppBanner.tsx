@@ -231,7 +231,7 @@ export default function InstallAppBanner() {
             </div>
             <div>
               <p style={{ margin: 0, fontWeight: 800, fontSize: 18, color: "#111827", lineHeight: 1.2 }}>
-                Descarga BuddyMarket
+                Descarga Buddy One
               </p>
               <p style={{ margin: "3px 0 0", fontSize: 13, color: "#6b7280" }}>
                 {platform === "desktop"

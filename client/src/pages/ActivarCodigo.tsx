@@ -100,7 +100,7 @@ export default function ActivarCodigo() {
                 : "indefinido"}
             </Badge>
             <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white font-bold" onClick={() => navigate("/")}>
-              Ir a BuddyMarket
+              Ir a Buddy One
             </Button>
           </CardContent>
         </Card>
@@ -139,7 +139,7 @@ export default function ActivarCodigo() {
               className="w-full bg-orange-500 hover:bg-orange-600 text-white font-black text-base py-3"
               onClick={() => navigate("/")}
             >
-              Empezar a usar BuddyMarket →
+              Empezar a usar Buddy One →
             </Button>
           </CardContent>
         </Card>
@@ -156,7 +156,7 @@ export default function ActivarCodigo() {
       <div className="w-full max-w-lg">
         {/* Logo */}
         <div className="text-center mb-8">
-          <img src={LOGO} alt="BuddyMarket" className="h-10 mx-auto mb-2" />
+          <img src={LOGO} alt="Buddy One" className="h-10 mx-auto mb-2" />
           <p className="text-white/60 text-sm">Activa tu acceso empresarial</p>
         </div>
 
@@ -258,7 +258,7 @@ export default function ActivarCodigo() {
             {!user && (
               <div className="bg-blue-50 border border-blue-200 rounded-xl p-4 text-center">
                 <p className="text-blue-800 text-sm font-semibold mb-3">
-                  Para activar el código necesitas una cuenta de BuddyMarket
+                  Para activar el código necesitas una cuenta de Buddy One
                 </p>
                 <div className="flex gap-2">
                   <Button
@@ -281,7 +281,7 @@ export default function ActivarCodigo() {
             {/* Separador */}
             <div className="border-t border-border/50 pt-4">
               <p className="text-xs text-muted-foreground/70 text-center">
-                ¿Eres una empresa y quieres ofrecer BuddyMarket a tus empleados?{" "}
+                ¿Eres una empresa y quieres ofrecer Buddy One a tus empleados?{" "}
                 <a href="/empresas" className="text-orange-500 font-bold hover:underline">
                   Ver planes empresariales →
                 </a>

@@ -26,7 +26,7 @@ const PANEL_DATA: Record<string, { img: string; headline: string; sub: string; b
   account_type: {
     img: FOOD_IMAGES[0],
     headline: "Tu nutrición, inteligente y personalizada",
-    sub: "Únete a miles de personas que ya cuidan su alimentación con BuddyMarket",
+    sub: "Únete a miles de personas que ya cuidan su alimentación con Buddy One",
     bullets: ["🥗 Recetas y menús personalizados", "🛒 Compra en Mercadona y Carrefour", "🤖 BuddyIA, tu asistente nutricional", "📊 Seguimiento diario de nutrición"],
   },
   profile_setup: {
@@ -44,7 +44,7 @@ const PANEL_DATA: Record<string, { img: string; headline: string; sub: string; b
   pending_approval: {
     img: FOOD_IMAGES[3],
     headline: "¡Ya casi estás dentro!",
-    sub: "Mientras revisamos tu solicitud, puedes explorar todo lo que BuddyMarket tiene para ti",
+    sub: "Mientras revisamos tu solicitud, puedes explorar todo lo que Buddy One tiene para ti",
     bullets: ["🍽️ Miles de recetas disponibles", "📅 Planifica tu menú semanal", "💬 Pregunta a BuddyIA", "🛒 Gestiona tu despensa"],
   },
 };
@@ -163,8 +163,8 @@ function LeftPanel({ step, accountType }: { step: RegistrationStep; accountType:
       }}>
         {/* Logo */}
         <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
-          <img src={LOGO_ICON} alt="BuddyMarket" style={{ width: 44, height: 44, borderRadius: 12 }} />
-          <img src={LOGO_COLOR} alt="BuddyMarket" style={{ height: 28,  }} />
+          <img src={LOGO_ICON} alt="Buddy One" style={{ width: 44, height: 44, borderRadius: 12 }} />
+          <img src={LOGO_COLOR} alt="Buddy One" style={{ height: 28,  }} />
         </div>
 
         {/* Main copy */}
@@ -272,7 +272,7 @@ function StepAccountType({ onSelect }: { onSelect: (type: AccountType) => void }
     <div>
       <div style={{ marginBottom: 28 }}>
         <h2 style={{ fontSize: 26, fontWeight: 900, color: "#1a1a1a", margin: "0 0 8px", letterSpacing: "-0.03em" }}>
-          ¿Cómo quieres usar BuddyMarket?
+          ¿Cómo quieres usar Buddy One?
         </h2>
         <p style={{ fontSize: 15, color: "#6B7280", margin: 0 }}>
           Elige el tipo de cuenta que mejor se adapta a ti. Podrás cambiarla más adelante.
@@ -398,7 +398,7 @@ function StepProfileSetup({ accountType, onNext }: { accountType: AccountType; o
 
   const SUB_STEPS = [
     { icon: "👤", title: "Datos personales", desc: "Cuéntanos un poco sobre ti" },
-    { icon: "🎯", title: "Tu objetivo", desc: "¿Qué quieres conseguir con BuddyMarket?" },
+    { icon: "🎯", title: "Tu objetivo", desc: "¿Qué quieres conseguir con Buddy One?" },
     { icon: "⚠️", title: "Alergias y dieta", desc: "Para personalizar tus recetas" },
     { icon: "✅", title: "Últimos detalles", desc: "Casi listo, solo un momento más" },
   ];
@@ -669,7 +669,7 @@ function StepProfileSetup({ accountType, onNext }: { accountType: AccountType; o
                   📧 Quiero recibir el newsletter semanal
                 </span>
                 <span style={{ fontSize: 13, color: "#166534", opacity: 0.8 }}>
-                  Recetas, consejos nutricionales y novedades de BuddyMarket
+                  Recetas, consejos nutricionales y novedades de Buddy One
                 </span>
               </div>
             </label>
@@ -682,7 +682,7 @@ function StepProfileSetup({ accountType, onNext }: { accountType: AccountType; o
                 🏢 ¿Tienes un código de empresa o referido?
               </span>
               <span style={{ fontSize: 12, color: "#64748B" }}>
-                Opcional — si tu empresa tiene un convenio con BuddyMarket o alguien te recomendó
+                Opcional — si tu empresa tiene un convenio con Buddy One o alguien te recomendó
               </span>
             </div>
             <div style={{ position: "relative" }}>
@@ -878,7 +878,7 @@ function StepApplication({ accountType, onNext }: { accountType: AccountType; on
         <div>
           <label style={labelStyle}>¿Por qué quieres ser {isMaker ? "BuddyMaker" : "BuddyExpert"}? *</label>
           <textarea style={{ ...inputStyle, minHeight: 90, resize: "vertical" }}
-            placeholder="Tu motivación y qué aportarás a la comunidad de BuddyMarket..."
+            placeholder="Tu motivación y qué aportarás a la comunidad de Buddy One..."
             value={form.motivation} onChange={e => setForm(f => ({ ...f, motivation: e.target.value }))} />
         </div>
         <div>
@@ -956,7 +956,7 @@ function StepPendingApproval({ accountType, application }: { accountType: Accoun
         )}
         {!isApproved && !isRejected && (
           <p style={{ fontSize: 14, color: "#6B7280", margin: 0, lineHeight: 1.6 }}>
-            Te notificaremos por email cuando tengamos una respuesta. Mientras tanto, ya puedes explorar todas las funciones de BuddyMarket.
+            Te notificaremos por email cuando tengamos una respuesta. Mientras tanto, ya puedes explorar todas las funciones de Buddy One.
           </p>
         )}
       </div>
@@ -981,7 +981,7 @@ function StepPendingApproval({ accountType, application }: { accountType: Accoun
       )}
 
       <button onClick={() => navigate("/app/dashboard")} style={{ ...btnPrimary, width: "100%" }}>
-        {isApproved ? "Ir a mi panel →" : "Empezar a explorar BuddyMarket →"}
+        {isApproved ? "Ir a mi panel →" : "Empezar a explorar Buddy One →"}
       </button>
     </div>
   );
@@ -1022,7 +1022,7 @@ export default function Registration() {
     return (
       <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#FFF7ED" }}>
         <div style={{ textAlign: "center" }}>
-          <img src={LOGO_ICON} alt="BuddyMarket" style={{ width: 64, height: 64, borderRadius: 16, marginBottom: 16 }} />
+          <img src={LOGO_ICON} alt="Buddy One" style={{ width: 64, height: 64, borderRadius: 16, marginBottom: 16 }} />
           <p style={{ color: "#9CA3AF", fontSize: 16 }}>Cargando...</p>
         </div>
       </div>
@@ -1054,7 +1054,7 @@ export default function Registration() {
           <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
             <img src={LOGO_ICON} alt="" style={{ width: 36, height: 36, borderRadius: 10 }} />
             <span style={{ fontSize: 16, fontWeight: 900, color: "#1a1a1a", letterSpacing: "-0.02em" }}>
-              BuddyMarket
+              Buddy One
             </span>
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: 6 }}>

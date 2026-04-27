@@ -76,7 +76,7 @@ export default function FamiliaUnirse() {
             <Home className="w-8 h-8 text-white" />
           </div>
           <h1 className="text-2xl font-bold">Invitación al hogar</h1>
-          <p className="text-orange-100 mt-1 text-sm">BuddyMarket · Modo Familia</p>
+          <p className="text-orange-100 mt-1 text-sm">Buddy One · Modo Familia</p>
         </div>
 
         {/* Content */}

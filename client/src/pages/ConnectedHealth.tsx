@@ -414,7 +414,7 @@ export default function ConnectedHealth() {
                 <Smartphone className="h-12 w-12 text-muted-foreground mx-auto mb-3" />
                 <h3 className="font-semibold text-foreground mb-1">Sin datos para hoy</h3>
                 <p className="text-sm text-muted-foreground mb-4">
-                  Abre la app BuddyMarket en tu móvil y activa la sincronización con Apple Health o Google Health Connect.
+                  Abre la app Buddy One en tu móvil y activa la sincronización con Apple Health o Google Health Connect.
                 </p>
                 <div className="flex gap-2 justify-center flex-wrap">
                   <Badge variant="outline" className="gap-1"><span>🍎</span> Apple Health</Badge>
@@ -576,7 +576,7 @@ export default function ConnectedHealth() {
               <div className="flex gap-2 p-3 rounded-lg bg-blue-500/5 border border-blue-500/20 mt-2">
                 <Info className="h-4 w-4 text-blue-500 flex-shrink-0 mt-0.5" />
                 <p className="text-xs text-muted-foreground leading-relaxed">
-                  La activación de cada plataforma debe completarse desde la <strong>app móvil BuddyMarket</strong>. Aquí puedes gestionar qué integraciones están habilitadas para tu cuenta.
+                  La activación de cada plataforma debe completarse desde la <strong>app móvil Buddy One</strong>. Aquí puedes gestionar qué integraciones están habilitadas para tu cuenta.
                 </p>
               </div>
             </CardContent>
@@ -863,7 +863,7 @@ export default function ConnectedHealth() {
                   </p>
                   <ol className="space-y-1.5">
                     {[
-                      "Descarga BuddyMarket desde el App Store",
+                      "Descarga Buddy One desde el App Store",
                       "Inicia sesión con tu misma cuenta",
                       "Ve a Perfil → Salud Conectada",
                       "Pulsa «Conectar Apple Health»",
@@ -885,7 +885,7 @@ export default function ConnectedHealth() {
                   </p>
                   <ol className="space-y-1.5">
                     {[
-                      "Descarga BuddyMarket desde Google Play",
+                      "Descarga Buddy One desde Google Play",
                       "Instala Health Connect si no lo tienes",
                       "Inicia sesión con tu misma cuenta",
                       "Ve a Perfil → Salud Conectada",

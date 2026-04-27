@@ -26,7 +26,7 @@ const FAQ_DATA: FAQCategory[] = [
     items: [
       {
         q: "¿Cómo funciona la generación automática de menús?",
-        a: "BuddyMarket utiliza inteligencia artificial para crear menús semanales personalizados basándose en tu perfil nutricional: objetivos (pérdida de peso, ganancia muscular, mantenimiento), restricciones alimentarias, alergias, número de comensales y preferencias de cocina. El sistema genera un plan completo con desayuno, media mañana, comida, merienda y cena para cada día de la semana.",
+        a: "Buddy One utiliza inteligencia artificial para crear menús semanales personalizados basándose en tu perfil nutricional: objetivos (pérdida de peso, ganancia muscular, mantenimiento), restricciones alimentarias, alergias, número de comensales y preferencias de cocina. El sistema genera un plan completo con desayuno, media mañana, comida, merienda y cena para cada día de la semana.",
       },
       {
         q: "¿Puedo editar el menú generado?",
@@ -34,7 +34,7 @@ const FAQ_DATA: FAQCategory[] = [
       },
       {
         q: "¿Qué diferencia hay entre un menú estándar y un menú de BuddyExpert?",
-        a: "Los menús estándar los genera la IA de BuddyMarket en base a tu perfil. Los menús de BuddyExpert son planes nutricionales creados y supervisados por un dietista o nutricionista certificado, que sube un PDF con el plan personalizado para ti. La IA de BuddyMarket lee ese PDF y lo adapta a tus preferencias para generar el menú final y la lista de la compra.",
+        a: "Los menús estándar los genera la IA de Buddy One en base a tu perfil. Los menús de BuddyExpert son planes nutricionales creados y supervisados por un dietista o nutricionista certificado, que sube un PDF con el plan personalizado para ti. La IA de Buddy One lee ese PDF y lo adapta a tus preferencias para generar el menú final y la lista de la compra.",
       },
       {
         q: "¿Puedo guardar varios menús y alternarlos?",
@@ -58,15 +58,15 @@ const FAQ_DATA: FAQCategory[] = [
     items: [
       {
         q: "¿Qué es un plan de BuddyExpert?",
-        a: "Es un plan nutricional personalizado creado por un profesional (dietista, nutricionista o entrenador certificado) registrado en BuddyMarket como BuddyExpert. El experto sube un PDF con tu plan específico, y la IA de BuddyMarket lo procesa para generar tu menú semanal y lista de la compra adaptados a tus preferencias.",
+        a: "Es un plan nutricional personalizado creado por un profesional (dietista, nutricionista o entrenador certificado) registrado en Buddy One como BuddyExpert. El experto sube un PDF con tu plan específico, y la IA de Buddy One lo procesa para generar tu menú semanal y lista de la compra adaptados a tus preferencias.",
       },
       {
         q: "¿Cómo accedo al plan que me ha asignado mi BuddyExpert?",
         a: "Una vez que tu BuddyExpert te asigne un plan, recibirás una notificación. Puedes acceder a él desde tu dashboard en la sección 'Mi Plan' o directamente desde el perfil de tu experto. Allí verás el PDF del plan y podrás generar el menú semanal con IA con un solo clic.",
       },
       {
-        q: "¿Necesito tener un BuddyExpert para usar BuddyMarket?",
-        a: "No. BuddyMarket funciona de forma completamente autónoma. Puedes generar menús, recetas y listas de la compra con la IA integrada sin necesidad de contratar a un experto. Los BuddyExperts son un servicio adicional para quienes quieran supervisión profesional personalizada.",
+        q: "¿Necesito tener un BuddyExpert para usar Buddy One?",
+        a: "No. Buddy One funciona de forma completamente autónoma. Puedes generar menús, recetas y listas de la compra con la IA integrada sin necesidad de contratar a un experto. Los BuddyExperts son un servicio adicional para quienes quieran supervisión profesional personalizada.",
       },
       {
         q: "¿Cómo encuentro un BuddyExpert adecuado para mí?",
@@ -90,7 +90,7 @@ const FAQ_DATA: FAQCategory[] = [
       },
       {
         q: "¿Puedo comparar precios entre supermercados?",
-        a: "Sí. BuddyMarket incluye un comparador de precios con productos de Mercadona, Lidl, Carrefour y Alcampo. Puedes ver qué supermercado tiene el precio más bajo para cada ingrediente de tu lista y optimizar tu compra semanal.",
+        a: "Sí. Buddy One incluye un comparador de precios con productos de Mercadona, Lidl, Carrefour y Alcampo. Puedes ver qué supermercado tiene el precio más bajo para cada ingrediente de tu lista y optimizar tu compra semanal.",
       },
       {
         q: "¿Puedo añadir o eliminar productos de la lista?",
@@ -98,7 +98,7 @@ const FAQ_DATA: FAQCategory[] = [
       },
       {
         q: "¿La lista tiene en cuenta mi inventario actual?",
-        a: "Sí, si tienes activada la sección de Inventario. BuddyMarket cruza los ingredientes del menú con tu inventario y solo incluye en la lista los productos que necesitas comprar. Los artículos próximos a caducar se priorizan en las recetas sugeridas.",
+        a: "Sí, si tienes activada la sección de Inventario. Buddy One cruza los ingredientes del menú con tu inventario y solo incluye en la lista los productos que necesitas comprar. Los artículos próximos a caducar se priorizan en las recetas sugeridas.",
       },
       {
         q: "¿Puedo compartir la lista de la compra?",
@@ -113,8 +113,8 @@ const FAQ_DATA: FAQCategory[] = [
     color: "#8B5CF6",
     items: [
       {
-        q: "¿Qué IA utiliza BuddyMarket?",
-        a: "BuddyMarket utiliza modelos de lenguaje avanzados (LLM) para generar menús, recetas y listas de la compra personalizadas. La IA tiene en cuenta tu perfil nutricional completo, historial de menús anteriores y preferencias para mejorar sus recomendaciones con el tiempo.",
+        q: "¿Qué IA utiliza Buddy One?",
+        a: "Buddy One utiliza modelos de lenguaje avanzados (LLM) para generar menús, recetas y listas de la compra personalizadas. La IA tiene en cuenta tu perfil nutricional completo, historial de menús anteriores y preferencias para mejorar sus recomendaciones con el tiempo.",
       },
       {
         q: "¿Cuántas veces puedo generar menús con IA?",
@@ -122,7 +122,7 @@ const FAQ_DATA: FAQCategory[] = [
       },
       {
         q: "¿La IA aprende de mis preferencias?",
-        a: "Sí. Cuanto más uses BuddyMarket, mejor se adaptan las recomendaciones. La IA tiene en cuenta las recetas que has marcado como favoritas, los menús que has guardado, los ingredientes que has excluido y tus valoraciones para personalizar cada vez más los resultados.",
+        a: "Sí. Cuanto más uses Buddy One, mejor se adaptan las recomendaciones. La IA tiene en cuenta las recetas que has marcado como favoritas, los menús que has guardado, los ingredientes que has excluido y tus valoraciones para personalizar cada vez más los resultados.",
       },
       {
         q: "¿Puedo pedirle a la IA un tipo de menú específico?",
@@ -130,7 +130,7 @@ const FAQ_DATA: FAQCategory[] = [
       },
       {
         q: "¿Las recomendaciones de la IA son supervisadas por profesionales?",
-        a: "Los menús generados por la IA de BuddyMarket son orientativos y no sustituyen el consejo de un profesional de la salud o la nutrición. Para planes personalizados con supervisión profesional, te recomendamos contratar a uno de nuestros BuddyExperts certificados.",
+        a: "Los menús generados por la IA de Buddy One son orientativos y no sustituyen el consejo de un profesional de la salud o la nutrición. Para planes personalizados con supervisión profesional, te recomendamos contratar a uno de nuestros BuddyExperts certificados.",
       },
     ],
   },
@@ -158,7 +158,7 @@ const FAQ_DATA: FAQCategory[] = [
       },
       {
         q: "¿Mis datos están seguros?",
-        a: "Sí. BuddyMarket cumple con el Reglamento General de Protección de Datos (RGPD). Tus datos de salud y perfil nutricional se almacenan de forma cifrada y nunca se comparten con terceros sin tu consentimiento explícito. Puedes solicitar la exportación o eliminación de tus datos en cualquier momento desde tu perfil.",
+        a: "Sí. Buddy One cumple con el Reglamento General de Protección de Datos (RGPD). Tus datos de salud y perfil nutricional se almacenan de forma cifrada y nunca se comparten con terceros sin tu consentimiento explícito. Puedes solicitar la exportación o eliminación de tus datos en cualquier momento desde tu perfil.",
       },
     ],
   },
@@ -235,17 +235,17 @@ export default function FAQ() {
           <div style={{ display: "flex", alignItems: "center", gap: 12, marginBottom: 16 }}>
             <img
               src="https://cdn-bm.manus.space/buddymarket-logo-b-orange.png"
-              alt="BuddyMarket"
+              alt="Buddy One"
               style={{ width: 36, height: 36, objectFit: "contain" }}
               onError={(e) => { (e.target as HTMLImageElement).style.display = "none"; }}
             />
-            <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 13, fontWeight: 500 }}>BuddyMarket</span>
+            <span style={{ color: "rgba(255,255,255,0.6)", fontSize: 13, fontWeight: 500 }}>Buddy One</span>
           </div>
           <h1 style={{ fontSize: "clamp(28px, 5vw, 42px)", fontWeight: 800, color: "white", margin: "0 0 16px", lineHeight: 1.2 }}>
             Preguntas <span style={{ color: "#F97316" }}>frecuentes</span>
           </h1>
           <p style={{ fontSize: 16, color: "rgba(255,255,255,0.7)", margin: "0 0 32px", lineHeight: 1.6 }}>
-            Encuentra respuesta a las {totalQuestions} preguntas más habituales sobre el uso de BuddyMarket.
+            Encuentra respuesta a las {totalQuestions} preguntas más habituales sobre el uso de Buddy One.
           </p>
           {/* Search */}
           <div style={{ position: "relative" }}>

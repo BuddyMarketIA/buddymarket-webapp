@@ -43,7 +43,7 @@ function StatusBanner({ status, adminNote, type }: { status: string; adminNote?:
       <div>
         <p style={{ margin: 0, fontWeight: 700, color: "#854d0e", fontSize: "14px" }}>Solicitud en revisión</p>
         <p style={{ margin: "4px 0 0", fontSize: "13px", color: "#92400e" }}>
-          Tu solicitud ha sido enviada y está siendo revisada por el equipo de BuddyMarket. Te notificaremos cuando sea aprobada.
+          Tu solicitud ha sido enviada y está siendo revisada por el equipo de Buddy One. Te notificaremos cuando sea aprobada.
         </p>
       </div>
     </div>

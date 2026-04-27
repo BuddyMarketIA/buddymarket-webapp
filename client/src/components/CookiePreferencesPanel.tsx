@@ -108,7 +108,7 @@ const LABELS: Record<string, {
 
 export default function CookiePreferencesPanel() {
   const { i18n } = useTranslation();
-  // BuddyMarket is a Spanish-first product — always use Spanish
+  // Buddy One is a Spanish-first product — always use Spanish
   const lang: keyof typeof LABELS = "es";
   const L = LABELS[lang];
 

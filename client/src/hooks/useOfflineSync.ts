@@ -1,5 +1,5 @@
 /**
- * useOfflineSync — BuddyMarket offline queue
+ * useOfflineSync — Buddy One offline queue
  *
  * Stores pending mutations in IndexedDB when the user is offline.
  * When the connection is restored, replays them in order via direct fetch to tRPC.

@@ -105,7 +105,7 @@ export default function ExpertPatients() {
           <div className="mb-4 bg-blue-50 border border-blue-200 rounded-2xl p-4">
             <p className="text-sm font-bold text-blue-800 mb-1">👥 Gestiona a tus pacientes desde aquí</p>
             <p className="text-xs text-blue-700 leading-relaxed">
-              Invita a tus pacientes por email. Si ya tienen cuenta en BuddyMarket, se añadirán directamente. Si no, recibirán un email con un enlace para registrarse y conectar contigo automáticamente. Desde el perfil de cada paciente podrás chatear, asignar menús, ver su progreso y gestionar sus citas.
+              Invita a tus pacientes por email. Si ya tienen cuenta en Buddy One, se añadirán directamente. Si no, recibirán un email con un enlace para registrarse y conectar contigo automáticamente. Desde el perfil de cada paciente podrás chatear, asignar menús, ver su progreso y gestionar sus citas.
             </p>
           </div>
         )}
@@ -281,7 +281,7 @@ export default function ExpertPatients() {
                 className="mt-1"
               />
               <p className="text-xs text-muted-foreground mt-1">
-                Si el paciente ya tiene cuenta en BuddyMarket, se le añadirá directamente. Si no, recibirá un email de invitación.
+                Si el paciente ya tiene cuenta en Buddy One, se le añadirá directamente. Si no, recibirá un email de invitación.
               </p>
             </div>
             <div>

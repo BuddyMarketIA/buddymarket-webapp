@@ -15,7 +15,7 @@ export default function BuddyShop() {
   const FEATURES = [
     { emoji: "✅", text: "Productos seleccionados por nutricionistas y chefs" },
     { emoji: "🚚", text: "Envío rápido a toda España" },
-    { emoji: "💰", text: "Precios exclusivos para usuarios BuddyMarket" },
+    { emoji: "💰", text: "Precios exclusivos para usuarios Buddy One" },
     { emoji: "⭐", text: "Valoraciones verificadas de la comunidad" },
   ];
 

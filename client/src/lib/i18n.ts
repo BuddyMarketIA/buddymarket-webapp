@@ -41,7 +41,7 @@ function mapToSupported(browserLang: string): LanguageCode {
 /**
  * Resolves the initial language for the session:
  * 1. User's saved preference in localStorage (highest priority)
- * 2. Default to Spanish — BuddyMarket is a Spanish-first product
+ * 2. Default to Spanish — Buddy One is a Spanish-first product
  */
 function resolveInitialLanguage(): LanguageCode {
   // 1. Check localStorage first (returning user who explicitly changed language)
@@ -50,7 +50,7 @@ function resolveInitialLanguage(): LanguageCode {
     return saved;
   }
 
-  // 2. BuddyMarket is a Spanish-first product — always default to Spanish
+  // 2. Buddy One is a Spanish-first product — always default to Spanish
   // Users can change language from the sidebar language selector
   return "es";
 }

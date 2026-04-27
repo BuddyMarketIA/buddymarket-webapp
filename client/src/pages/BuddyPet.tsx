@@ -1569,7 +1569,7 @@ function ClinicTab({ petId, petName }: { petId: number; petName: string }) {
       <div className="border-t pt-4">
         <h4 className="text-sm font-semibold mb-1">Vincular a una clínica colaboradora</h4>
         <p className="text-xs text-muted-foreground mb-3">
-          Pide a tu clínica veterinaria su código de acceso BuddyMarket para vincular a {petName}.
+          Pide a tu clínica veterinaria su código de acceso Buddy One para vincular a {petName}.
           Una vez vinculado, la clínica podrá ver el historial de salud y enviarte alertas y recordatorios.
         </p>
         <div className="flex gap-2">

@@ -439,7 +439,7 @@ export default function Admin() {
         </div>
         <div>
           <h1 className="text-xl font-extrabold text-foreground">Panel Admin</h1>
-          <p className="text-xs text-muted-foreground/70">Gestión de BuddyMarket</p>
+          <p className="text-xs text-muted-foreground/70">Gestión de Buddy One</p>
         </div>
       </div>
 
@@ -2173,7 +2173,7 @@ function AdminEmpresasPanel() {
                   )}
                   <div className="flex gap-2 pt-1 border-t border-border/50">
                     <a
-                      href={`mailto:${lead.contactEmail}?subject=BuddyMarket for Business — ${lead.companyName}`}
+                      href={`mailto:${lead.contactEmail}?subject=Buddy One for Business — ${lead.companyName}`}
                       className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700"
                     >
                       <EnvelopeIcon className="h-3.5 w-3.5" />

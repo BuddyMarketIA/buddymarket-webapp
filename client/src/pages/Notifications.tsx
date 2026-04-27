@@ -210,7 +210,7 @@ export default function Notifications() {
         {/* Footer disclaimer */}
         <div style={{ marginTop: "32px", textAlign: "center" }}>
           <p style={{ fontSize: "11px", color: "#d1d5db", margin: 0 }}>
-            {t("notifications.disclaimer", "BuddyMarket · Notifications do not constitute professional recommendations")}
+            {t("notifications.disclaimer", "Buddy One · Notifications do not constitute professional recommendations")}
           </p>
         </div>
       </div>

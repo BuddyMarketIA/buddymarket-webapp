@@ -168,7 +168,7 @@ self.addEventListener("message", (event) => {
 self.addEventListener("push", (event) => {
   if (!event.data) return;
   const data = event.data.json();
-  self.registration.showNotification(data.title ?? "BuddyMarket", {
+  self.registration.showNotification(data.title ?? "Buddy One", {
     body: data.body ?? "",
     icon: "/icon-192x192.png",
     badge: "/icon-96x96.png",

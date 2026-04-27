@@ -11,7 +11,7 @@ const TEAM = [
   {
     name: "Luis María Cabello",
     role: "CTO & Co-fundador",
-    bio: "Ingeniero de software con experiencia en plataformas de salud digital. Arquitecto del motor de IA nutricional de BuddyMarket.",
+    bio: "Ingeniero de software con experiencia en plataformas de salud digital. Arquitecto del motor de IA nutricional de Buddy One.",
     emoji: "👨‍💻",
     linkedin: "#",
   },
@@ -47,7 +47,7 @@ export default function About() {
             <span style={{ color: "#F97316" }}>sea fácil para todos</span>
           </h1>
           <p style={{ color: "rgba(255,255,255,0.7)", fontSize: "18px", lineHeight: 1.7, margin: 0 }}>
-            BuddyMarket nació de una pregunta sencilla: ¿por qué es tan difícil comer bien en el día a día? 
+            Buddy One nació de una pregunta sencilla: ¿por qué es tan difícil comer bien en el día a día? 
             Combinamos tecnología, nutrición clínica e inteligencia artificial para que cualquier persona 
             pueda llevar una alimentación saludable, sin complicaciones.
           </p>
@@ -85,7 +85,7 @@ export default function About() {
               No es por falta de voluntad, sino por falta de herramientas accesibles y personalizadas.
             </p>
             <p style={{ fontSize: "16px", color: "#555", lineHeight: 1.8, margin: 0 }}>
-              BuddyMarket conecta a las personas con nutricionistas certificados y con la tecnología 
+              Buddy One conecta a las personas con nutricionistas certificados y con la tecnología 
               necesaria para que comer bien sea una decisión fácil, no un esfuerzo diario.
             </p>
           </div>
@@ -94,7 +94,7 @@ export default function About() {
             <blockquote style={{ margin: 0, fontSize: "18px", fontStyle: "italic", color: "#92400E", lineHeight: 1.7, fontWeight: 500 }}>
               "Queremos que en 2030, comer bien sea tan fácil como pedir una pizza."
             </blockquote>
-            <p style={{ margin: "16px 0 0", fontSize: "14px", color: "#B45309", fontWeight: 700 }}>— Equipo BuddyMarket</p>
+            <p style={{ margin: "16px 0 0", fontSize: "14px", color: "#B45309", fontWeight: 700 }}>— Equipo Buddy One</p>
           </div>
         </div>
       </div>
@@ -125,7 +125,7 @@ export default function About() {
       <div style={{ maxWidth: "960px", margin: "0 auto", padding: "64px 24px" }}>
         <div style={{ textAlign: "center", marginBottom: "48px" }}>
           <span style={{ fontSize: "13px", fontWeight: 700, color: "#F97316", textTransform: "uppercase", letterSpacing: "0.08em" }}>El equipo</span>
-          <h2 style={{ fontSize: "32px", fontWeight: 900, color: "#1a1a1a", margin: "12px 0 0" }}>Las personas detrás de BuddyMarket</h2>
+          <h2 style={{ fontSize: "32px", fontWeight: 900, color: "#1a1a1a", margin: "12px 0 0" }}>Las personas detrás de Buddy One</h2>
         </div>
         <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "28px" }}>
           {TEAM.map((member) => (
@@ -146,7 +146,7 @@ export default function About() {
         <div style={{ maxWidth: "560px", margin: "0 auto" }}>
           <h2 style={{ color: "white", fontSize: "32px", fontWeight: 900, margin: "0 0 16px" }}>¿Listo para empezar?</h2>
           <p style={{ color: "rgba(255,255,255,0.85)", fontSize: "17px", margin: "0 0 32px", lineHeight: 1.7 }}>
-            Únete a la comunidad BuddyMarket y empieza a comer mejor hoy mismo. Es gratis.
+            Únete a la comunidad Buddy One y empieza a comer mejor hoy mismo. Es gratis.
           </p>
           <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
             <Link href="/app/dashboard">
@@ -182,7 +182,7 @@ export default function About() {
           ))}
         </div>
         <p style={{ color: "rgba(255,255,255,0.3)", fontSize: "12px", margin: "16px 0 0" }}>
-          © 2026 BuddyMarket. Todos los derechos reservados.
+          © 2026 Buddy One. Todos los derechos reservados.
         </p>
       </div>
     </div>

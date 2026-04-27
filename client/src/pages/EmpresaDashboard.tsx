@@ -74,9 +74,9 @@ export default function EmpresaDashboard() {
       return;
     }
     const defaultSubjects: Record<string, string> = {
-      activation: `${data?.company?.name || "Tu empresa"} te invita a activar BuddyMarket Pro`,
-      engagement: "Como va tu nutricion esta semana? — BuddyMarket",
-      expiry_warning: "Tu codigo de BuddyMarket expira pronto",
+      activation: `${data?.company?.name || "Tu empresa"} te invita a activar Buddy One Pro`,
+      engagement: "Como va tu nutricion esta semana? — Buddy One",
+      expiry_warning: "Tu codigo de Buddy One expira pronto",
     };
     sendReminderMutation.mutate({
       name: `Campana ${reminderType} — ${new Date().toLocaleDateString("es-ES")}`,
@@ -109,7 +109,7 @@ export default function EmpresaDashboard() {
       "",
       "Instrucciones:",
       "1. Comparte este código con cada empleado",
-      "2. El empleado abre BuddyMarket y va a Perfil > Activar código de empresa",
+      "2. El empleado abre Buddy One y va a Perfil > Activar código de empresa",
       "3. Introduce el código y su acceso Pro Max se activa al instante",
       "",
       "CÓDIGOS DISPONIBLES:",
@@ -216,7 +216,7 @@ export default function EmpresaDashboard() {
             </Button>
             <div>
               <div className="font-semibold text-sm">{company.name}</div>
-              <div className="text-xs text-muted-foreground">Panel de RRHH · BuddyMarket for Business</div>
+              <div className="text-xs text-muted-foreground">Panel de RRHH · Buddy One for Business</div>
             </div>
           </div>
           <div className="flex items-center gap-3">
@@ -810,7 +810,7 @@ export default function EmpresaDashboard() {
               Enviar recordatorio a empleados
             </DialogTitle>
             <DialogDescription>
-              Notifica a los empleados que aún no han activado su código de BuddyMarket.
+              Notifica a los empleados que aún no han activado su código de Buddy One.
             </DialogDescription>
           </DialogHeader>
 

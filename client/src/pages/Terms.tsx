@@ -76,11 +76,11 @@ function TermsB2B() {
         <p style={{ fontSize: 16, color: "#6b7280", margin: 0 }}>Para empresas y organizaciones · Versión 1.0 — Entrada en vigor: 7 de abril de 2026</p>
       </div>
       <Section number="1" title="Partes del Contrato">
-        <P>Las presentes Condiciones Generales de Contratación (CGC B2B) regulan la relación contractual entre <strong>BUDDY MARKET IA, S.L.</strong> (CIF B-56.819.576, Calle Villanueva 2, 3ºC, 28001, Madrid) como proveedor, y la empresa u organización que suscribe el Plan Empresarial de BuddyMarket (en adelante, «la Empresa») como cliente.</P>
+        <P>Las presentes Condiciones Generales de Contratación (CGC B2B) regulan la relación contractual entre <strong>BUDDY MARKET IA, S.L.</strong> (CIF B-56.819.576, Calle Villanueva 2, 3ºC, 28001, Madrid) como proveedor, y la empresa u organización que suscribe el Plan Empresarial de Buddy One (en adelante, «la Empresa») como cliente.</P>
         <P>La aceptación de estas CGC B2B se produce en el momento en que la Empresa completa el proceso de registro corporativo en la Plataforma o firma el correspondiente Contrato de Servicio.</P>
       </Section>
       <Section number="2" title="Objeto del Contrato">
-        <P>BuddyMarket proporciona a la Empresa acceso a la plataforma de gestión nutricional corporativa, que incluye:</P>
+        <P>Buddy One proporciona a la Empresa acceso a la plataforma de gestión nutricional corporativa, que incluye:</P>
         <ul style={{ paddingLeft: 20, marginBottom: 14 }}>
           <li style={{ marginBottom: 8 }}>Licencias de usuario para los empleados de la Empresa (número según plan contratado)</li>
           <li style={{ marginBottom: 8 }}>Panel de administración corporativo para gestión de licencias, usuarios y reporting</li>
@@ -102,12 +102,12 @@ function TermsB2B() {
       </Section>
       <Section number="4" title="Gestión de Licencias">
         <P>La Empresa designará Administradores responsables de asignar y revocar licencias, gestionar el código de empresa y supervisar el uso. Cada licencia es personal e intransferible. La Empresa puede reasignar licencias entre empleados, pero no compartir una misma licencia entre varios usuarios simultáneamente.</P>
-        <WarnB2B>La Empresa es responsable del uso que sus empleados hagan de la Plataforma. BuddyMarket se reserva el derecho de suspender licencias individuales o la cuenta corporativa completa en caso de uso fraudulento.</WarnB2B>
+        <WarnB2B>La Empresa es responsable del uso que sus empleados hagan de la Plataforma. Buddy One se reserva el derecho de suspender licencias individuales o la cuenta corporativa completa en caso de uso fraudulento.</WarnB2B>
       </Section>
       <Section number="5" title="Privacidad y Protección de Datos (Entorno Corporativo)">
-        <P>En el marco de la relación B2B, BuddyMarket actúa como <strong>Encargado del Tratamiento</strong> de los datos personales de los empleados de la Empresa, siendo la Empresa el <strong>Responsable del Tratamiento</strong>. Las partes suscribirán el correspondiente Acuerdo de Encargo de Tratamiento (DPA) conforme al artículo 28 del RGPD.</P>
-        <P>Los informes de bienestar proporcionados a la Empresa son siempre <strong>agregados y anonimizados</strong>. BuddyMarket no proporcionará datos individuales de empleados a la Empresa sin el consentimiento expreso del empleado.</P>
-        <P>BuddyMarket se compromete a notificar a la Empresa cualquier brecha de seguridad en un plazo máximo de 72 horas y a suprimir o devolver todos los datos al finalizar el contrato.</P>
+        <P>En el marco de la relación B2B, Buddy One actúa como <strong>Encargado del Tratamiento</strong> de los datos personales de los empleados de la Empresa, siendo la Empresa el <strong>Responsable del Tratamiento</strong>. Las partes suscribirán el correspondiente Acuerdo de Encargo de Tratamiento (DPA) conforme al artículo 28 del RGPD.</P>
+        <P>Los informes de bienestar proporcionados a la Empresa son siempre <strong>agregados y anonimizados</strong>. Buddy One no proporcionará datos individuales de empleados a la Empresa sin el consentimiento expreso del empleado.</P>
+        <P>Buddy One se compromete a notificar a la Empresa cualquier brecha de seguridad en un plazo máximo de 72 horas y a suprimir o devolver todos los datos al finalizar el contrato.</P>
       </Section>
       <Section number="6" title="Niveles de Servicio (SLA)">
         <TableB2B headers={["Plan", "Disponibilidad", "Respuesta soporte", "Resolución"]} rows={[
@@ -163,45 +163,45 @@ function TermsExperts() {
       </div>
       <Section number="1" title="Definiciones">
         <TableE headers={["Término", "Definición"]} rows={[
-          ["BuddyExpert", "Profesional de la nutrición, dietética o salud verificado por BuddyMarket que ofrece servicios de consultoría y seguimiento personalizado a través de la Plataforma"],
+          ["BuddyExpert", "Profesional de la nutrición, dietética o salud verificado por Buddy One que ofrece servicios de consultoría y seguimiento personalizado a través de la Plataforma"],
           ["BuddyMaker", "Creador de contenido especializado en alimentación, recetas y nutrición que publica contenido en la Plataforma y puede monetizarlo"],
           ["Contenido", "Recetas, artículos, planes nutricionales, vídeos, imágenes y cualquier otro material publicado por el Creador en la Plataforma"],
-          ["Comisión", "Porcentaje de los ingresos generados que BuddyMarket retiene en concepto de servicio de plataforma"],
+          ["Comisión", "Porcentaje de los ingresos generados que Buddy One retiene en concepto de servicio de plataforma"],
         ]} />
       </Section>
       <Section number="2" title="Requisitos para BuddyExperts">
-        <P>Para obtener la verificación como BuddyExpert, el profesional debe acreditar: titulación universitaria en Nutrición Humana y Dietética, Medicina, Farmacia o equivalente; colegiación vigente cuando sea obligatoria; seguro de responsabilidad civil profesional con cobertura mínima de 300.000 €; y aceptación del Código Deontológico de BuddyMarket para Profesionales de la Salud.</P>
-        <WarnE>BuddyMarket se reserva el derecho de verificar la autenticidad de la documentación y de revocar la verificación si el profesional pierde los requisitos habilitantes.</WarnE>
+        <P>Para obtener la verificación como BuddyExpert, el profesional debe acreditar: titulación universitaria en Nutrición Humana y Dietética, Medicina, Farmacia o equivalente; colegiación vigente cuando sea obligatoria; seguro de responsabilidad civil profesional con cobertura mínima de 300.000 €; y aceptación del Código Deontológico de Buddy One para Profesionales de la Salud.</P>
+        <WarnE>Buddy One se reserva el derecho de verificar la autenticidad de la documentación y de revocar la verificación si el profesional pierde los requisitos habilitantes.</WarnE>
       </Section>
       <Section number="3" title="Requisitos para BuddyMakers">
         <P>Para registrarse como BuddyMaker, el creador debe ser mayor de 18 años, disponer de cuenta bancaria válida, aceptar las Directrices de Contenido y comprometerse a publicar contenido original y de calidad.</P>
         <InfoE>Los BuddyMakers no están obligados a tener titulación en nutrición, pero deben indicar claramente que no son profesionales de la salud cuando publiquen contenido nutricional.</InfoE>
       </Section>
       <Section number="4" title="Modelo de Monetización y Comisiones">
-        <TableE headers={["Mecanismo", "Descripción", "Comisión BuddyMarket"]} rows={[
+        <TableE headers={["Mecanismo", "Descripción", "Comisión Buddy One"]} rows={[
           ["Consultas individuales", "Sesiones de consultoría nutricional con usuarios (solo BuddyExperts)", "20%"],
           ["Planes nutricionales", "Venta de planes personalizados o genéricos", "20%"],
           ["Recetas premium", "Recetas de pago accesibles a usuarios con suscripción", "15%"],
           ["Código de referido", "Comisión por usuarios que se suscriban usando el código del Creador", "20% del primer año"],
-          ["Contenido patrocinado", "Publicaciones patrocinadas por marcas (previa aprobación de BuddyMarket)", "10%"],
+          ["Contenido patrocinado", "Publicaciones patrocinadas por marcas (previa aprobación de Buddy One)", "10%"],
         ]} />
         <P>Los pagos se realizan mensualmente el día 15 del mes siguiente, siempre que el saldo acumulado supere los 50 €. El Creador es responsable de declarar estos ingresos a la Agencia Tributaria.</P>
       </Section>
       <Section number="5" title="Derechos y Licencias sobre el Contenido">
-        <P>El Creador conserva la titularidad de los derechos de propiedad intelectual sobre el Contenido. Al publicarlo, concede a BuddyMarket una licencia no exclusiva, gratuita y mundial para reproducirlo, distribuirlo y utilizarlo con fines de mejora de la Plataforma, siempre citando al Creador. Esta licencia se extingue cuando el Creador elimina el Contenido.</P>
+        <P>El Creador conserva la titularidad de los derechos de propiedad intelectual sobre el Contenido. Al publicarlo, concede a Buddy One una licencia no exclusiva, gratuita y mundial para reproducirlo, distribuirlo y utilizarlo con fines de mejora de la Plataforma, siempre citando al Creador. Esta licencia se extingue cuando el Creador elimina el Contenido.</P>
       </Section>
       <Section number="6" title="Obligaciones del Creador">
         <P>El Creador se compromete a: publicar únicamente contenido original y veraz; no publicar información nutricional falsa o perjudicial; indicar claramente el contenido publicitario; respetar los derechos de propiedad intelectual de terceros; responder a consultas en máximo 48 horas (BuddyExperts); y no redirigir usuarios a plataformas externas para eludir comisiones.</P>
       </Section>
       <Section number="7" title="Responsabilidad Profesional (BuddyExperts)">
-        <WarnE><strong>RESPONSABILIDAD PROFESIONAL:</strong> Los BuddyExperts son los únicos responsables del consejo nutricional que proporcionan. BuddyMarket actúa exclusivamente como plataforma de intermediación y no asume responsabilidad por el contenido de las consultas ni por los resultados obtenidos.</WarnE>
+        <WarnE><strong>RESPONSABILIDAD PROFESIONAL:</strong> Los BuddyExperts son los únicos responsables del consejo nutricional que proporcionan. Buddy One actúa exclusivamente como plataforma de intermediación y no asume responsabilidad por el contenido de las consultas ni por los resultados obtenidos.</WarnE>
         <P>Los BuddyExperts deben mantener en vigor su seguro de responsabilidad civil durante toda su actividad y proporcionar copia actualizada anualmente.</P>
       </Section>
       <Section number="8" title="Moderación y Suspensión de Contenido">
-        <P>BuddyMarket se reserva el derecho de revisar, modificar, suspender o eliminar cualquier Contenido que infrinja estas condiciones, contenga información nutricional falsa, sea objeto de reclamaciones de propiedad intelectual o incumpla las Directrices de Contenido.</P>
+        <P>Buddy One se reserva el derecho de revisar, modificar, suspender o eliminar cualquier Contenido que infrinja estas condiciones, contenga información nutricional falsa, sea objeto de reclamaciones de propiedad intelectual o incumpla las Directrices de Contenido.</P>
       </Section>
       <Section number="9" title="Duración y Resolución">
-        <P>La relación tiene carácter indefinido y puede resolverse por cualquiera de las partes con un preaviso de 30 días. BuddyMarket podrá resolver de forma inmediata en caso de incumplimiento grave, especialmente si el Creador publica información que ponga en riesgo la salud de los usuarios.</P>
+        <P>La relación tiene carácter indefinido y puede resolverse por cualquiera de las partes con un preaviso de 30 días. Buddy One podrá resolver de forma inmediata en caso de incumplimiento grave, especialmente si el Creador publica información que ponga en riesgo la salud de los usuarios.</P>
         <p style={{ marginTop: 32, color: "#9ca3af", fontSize: 13 }}>Contacto Creadores: creadores@buddymarket.io · BUDDY MARKET IA, S.L. · Calle Villanueva 2, 3ºC, 28001, Madrid</p>
       </Section>
     </>
@@ -220,7 +220,7 @@ export default function Terms() {
       {/* Navbar */}
       <nav style={{ background: "white", borderBottom: "1px solid #e5e7eb", padding: "0 24px", position: "sticky", top: 0, zIndex: 50 }}>
         <div style={{ maxWidth: 960, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 68 }}>
-          <Link href="/"><img src={LOGO_COLOR} alt="BuddyMarket" style={{ height: 60, objectFit: "contain", cursor: "pointer" }} /></Link>
+          <Link href="/"><img src={LOGO_COLOR} alt="Buddy One" style={{ height: 60, objectFit: "contain", cursor: "pointer" }} /></Link>
           <Link href="/" style={{ fontSize: 14, color: "#6b7280", textDecoration: "none" }}>← Volver al inicio</Link>
         </div>
       </nav>
@@ -246,7 +246,7 @@ export default function Terms() {
           <p style={{ fontSize: 14, color: "#9ca3af", marginBottom: 24 }}>Versión 2.0 — Fecha de entrada en vigor: 7 de abril de 2026</p>
 
           <Warning>
-            <strong>⚕️ Aviso importante sobre salud:</strong> Los servicios de BuddyMarket tienen carácter <strong>exclusivamente informativo y orientativo</strong>. No constituyen consejo médico, diagnóstico clínico, prescripción dietética ni tratamiento terapéutico. Consulta siempre con un médico o nutricionista-dietista colegiado antes de realizar cambios significativos en tu alimentación, especialmente si padeces enfermedades crónicas, alergias graves, trastornos alimentarios, o si estás embarazada o en período de lactancia.
+            <strong>⚕️ Aviso importante sobre salud:</strong> Los servicios de Buddy One tienen carácter <strong>exclusivamente informativo y orientativo</strong>. No constituyen consejo médico, diagnóstico clínico, prescripción dietética ni tratamiento terapéutico. Consulta siempre con un médico o nutricionista-dietista colegiado antes de realizar cambios significativos en tu alimentación, especialmente si padeces enfermedades crónicas, alergias graves, trastornos alimentarios, o si estás embarazada o en período de lactancia.
           </Warning>
 
           <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 12, padding: "14px 18px" }}>
@@ -267,7 +267,7 @@ export default function Terms() {
               ["4", "Planes de suscripción y pagos"],
               ["5", "Datos de salud y perfil nutricional"],
               ["6", "Exención de responsabilidad"],
-              ["7", "Obligaciones de BuddyMarket"],
+              ["7", "Obligaciones de Buddy One"],
               ["8", "Obligaciones de los Usuarios"],
               ["9", "Confidencialidad"],
               ["10", "Protección de datos personales"],
@@ -349,9 +349,9 @@ export default function Terms() {
             <Table
               headers={["Plan", "Precio mensual (IVA incl.)", "Descripción"]}
               rows={[
-                ["<strong>BuddyMarket Basic</strong>", "4,99 €/mes", "Acceso a funcionalidades esenciales: recetas, listas de la compra, menús básicos y BuddyIA limitada"],
-                ["<strong>BuddyMarket Premium</strong>", "9,99 €/mes", "Acceso completo: menús IA avanzados, comparación de supermercados, inventario, seguimiento nutricional y BuddyIA ilimitada"],
-                ["<strong>BuddyMarket Pro Max</strong>", "19,99 €/mes", "Todo lo anterior más acceso prioritario a BuddyExperts, planes de expertos incluidos, soporte prioritario y funcionalidades avanzadas de salud conectada"],
+                ["<strong>Buddy One Basic</strong>", "4,99 €/mes", "Acceso a funcionalidades esenciales: recetas, listas de la compra, menús básicos y BuddyIA limitada"],
+                ["<strong>Buddy One Premium</strong>", "9,99 €/mes", "Acceso completo: menús IA avanzados, comparación de supermercados, inventario, seguimiento nutricional y BuddyIA ilimitada"],
+                ["<strong>Buddy One Pro Max</strong>", "19,99 €/mes", "Todo lo anterior más acceso prioritario a BuddyExperts, planes de expertos incluidos, soporte prioritario y funcionalidades avanzadas de salud conectada"],
               ]}
             />
             <P>Los precios están expresados en euros e incluyen el IVA aplicable. BUDDYMARKET se reserva el derecho de modificar los precios con un preaviso mínimo de 30 días.</P>
@@ -403,7 +403,7 @@ export default function Terms() {
             <P>BUDDYMARKET no garantiza la disponibilidad ininterrumpida de la Plataforma. El servicio puede verse interrumpido por razones de mantenimiento, actualizaciones, fallos técnicos o causas de fuerza mayor. BUDDYMARKET informará de las interrupciones planificadas con la mayor antelación posible.</P>
           </Section>
 
-          <Section id="section-7" number="7" title="Obligaciones de BuddyMarket">
+          <Section id="section-7" number="7" title="Obligaciones de Buddy One">
             <P>BUDDYMARKET se compromete a: (i) mantener la Plataforma operativa y accesible en condiciones normales de uso; (ii) proteger la seguridad e integridad de los datos de los Usuarios mediante medidas técnicas y organizativas adecuadas (Helmet.js, HTTPS, cifrado, rate limiting); (iii) cumplir con la normativa de protección de datos aplicable; (iv) proporcionar soporte al Usuario a través de <a href="mailto:info@buddymarket.io" style={{ color: ORANGE }}>info@buddymarket.io</a>; (v) notificar con antelación razonable cualquier modificación sustancial de los Términos o de los precios; y (vi) activar la suscripción en un plazo razonable tras la confirmación del pago.</P>
           </Section>
 

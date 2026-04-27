@@ -278,7 +278,7 @@ export default function BuddyMakerStats() {
                 </div>
               </div>
               <p className="mt-3 text-xs text-muted-foreground/70">
-                BuddyMarket aplica una comisión del {((stats?.maker?.commissionRate ?? 0.2) * 100).toFixed(0)}% sobre cada venta. Los pagos se transfieren a tu cuenta de Stripe Connect.
+                Buddy One aplica una comisión del {((stats?.maker?.commissionRate ?? 0.2) * 100).toFixed(0)}% sobre cada venta. Los pagos se transfieren a tu cuenta de Stripe Connect.
               </p>
             </div>
             {(stats?.recentEarnings?.length ?? 0) > 0 && (

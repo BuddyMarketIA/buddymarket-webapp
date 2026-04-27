@@ -1,5 +1,5 @@
 /**
- * usePayment — Capa de abstracción de pagos para la webapp de BuddyMarket.
+ * usePayment — Capa de abstracción de pagos para la webapp de Buddy One.
  * NOTA: Versión webapp pura. Solo usa Stripe Checkout.
  */
 

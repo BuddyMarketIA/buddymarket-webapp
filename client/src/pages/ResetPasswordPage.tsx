@@ -57,7 +57,7 @@ export default function ResetPasswordPage() {
       {/* Left panel */}
       <div className="flex-1 flex flex-col min-h-screen px-8 py-10 md:px-14 lg:px-20 max-w-[520px] w-full">
         <a href="/" className="inline-block shrink-0">
-          <img src={LOGO_COLOR} alt="BuddyMarket" className="h-9 w-auto object-contain" />
+          <img src={LOGO_COLOR} alt="Buddy One" className="h-9 w-auto object-contain" />
         </a>
 
         <div className="flex-1 flex flex-col justify-center py-10 space-y-7">
@@ -168,7 +168,7 @@ export default function ResetPasswordPage() {
         </div>
 
         <p className="text-[11px] text-white/20 text-center shrink-0">
-          © {new Date().getFullYear()} BuddyMarket · El contenido no constituye asesoramiento profesional.
+          © {new Date().getFullYear()} Buddy One · El contenido no constituye asesoramiento profesional.
         </p>
       </div>
 
@@ -185,7 +185,7 @@ export default function ResetPasswordPage() {
             <div className="mt-4 flex items-center gap-3">
               <div className="w-9 h-9 rounded-full bg-gradient-to-br from-[#F97316] to-[#ea580c] flex items-center justify-center text-white text-sm font-bold shrink-0">B</div>
               <div>
-                <p className="text-white text-xs font-semibold">Equipo BuddyMarket</p>
+                <p className="text-white text-xs font-semibold">Equipo Buddy One</p>
                 <p className="text-white/40 text-xs">Seguridad & Privacidad</p>
               </div>
             </div>

@@ -229,7 +229,7 @@ export default function Progress() {
                 icon="🍽️"
               />
               <StatCard
-                label="Puntos BuddyMarket"
+                label="Puntos Buddy One"
                 value={summary?.totalPoints ?? 0}
                 sub={`Nivel ${summary?.level ?? 1}`}
                 color={C.orange}

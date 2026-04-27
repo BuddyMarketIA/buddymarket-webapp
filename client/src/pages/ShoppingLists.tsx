@@ -113,7 +113,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
     doc.setTextColor(255, 255, 255);
     doc.setFontSize(18);
     doc.setFont("helvetica", "bold");
-    doc.text("BuddyMarket", 14, 12);
+    doc.text("Buddy One", 14, 12);
     doc.setFontSize(11);
     doc.setFont("helvetica", "normal");
     doc.text("Lista de la compra", 14, 20);
@@ -193,7 +193,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
     // Footer
     doc.setFontSize(8);
     doc.setTextColor(180, 180, 180);
-    doc.text("Generado con BuddyMarket • Tu gestor nutricional inteligente", pageW / 2, 290, { align: "center" });
+    doc.text("Generado con Buddy One • Tu gestor nutricional inteligente", pageW / 2, 290, { align: "center" });
 
     doc.save(`${listName.replace(/[^a-z0-9]/gi, "_")}_lista_compra.pdf`);
     toast.success("PDF descargado ✓");
@@ -211,7 +211,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
       grouped[cat].push(item);
     });
     let text = `🛒 *${listName}*\n`;
-    text += `_Generada con BuddyMarket_\n\n`;
+    text += `_Generada con Buddy One_\n\n`;
     Object.entries(grouped).forEach(([cat, catItems]) => {
       text += `*${cat}*\n`;
       catItems.forEach((item: any) => {
@@ -236,7 +236,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
       if (!grouped[cat]) grouped[cat] = [];
       grouped[cat].push(item);
     });
-    let text = `🛒 *${listName}*\nGenerada con BuddyMarket\n\n`;
+    let text = `🛒 *${listName}*\nGenerada con Buddy One\n\n`;
     Object.entries(grouped).forEach(([cat, catItems]) => {
       text += `*${cat}*\n`;
       catItems.forEach((item: any) => {
@@ -1014,7 +1014,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
         </div>
       )}
       <div className="vively-disclaimer">
-        <p>BuddyMarket no constituye recomendaciones profesionales de nutrición.</p>
+        <p>Buddy One no constituye recomendaciones profesionales de nutrición.</p>
       </div>
     </div>
   );
@@ -1459,7 +1459,7 @@ export default function ShoppingLists() {
       )}
 
       <div className="vively-disclaimer">
-        <p>BuddyMarket no constituye recomendaciones profesionales de nutrición.</p>
+        <p>Buddy One no constituye recomendaciones profesionales de nutrición.</p>
       </div>
 
       {/* ─── OCR Photo Modal ────────────────────────────────────────────────────── */}

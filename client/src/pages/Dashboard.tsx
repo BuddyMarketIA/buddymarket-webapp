@@ -254,7 +254,7 @@ export default function Dashboard() {
 
   const firstName = user?.name?.split(" ")[0] || "Usuario";
   const userInitial = user?.name ? user.name.charAt(0).toUpperCase() : "U";
-  // Prefer profile photo from BuddyMarket DB (updated when user uploads a photo)
+  // Prefer profile photo from Buddy One DB (updated when user uploads a photo)
   // Fall back to OAuth imageUrl (from Google/Apple login)
   const userAvatar = profileData.data?.user?.imageUrl || (user as any)?.imageUrl || null;
 
@@ -307,7 +307,7 @@ export default function Dashboard() {
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     if (params.get('subscription') === 'success') {
-      toast.success('\u00a1Suscripci\u00f3n activada! Bienvenido a BuddyMarket Premium.', {
+      toast.success('\u00a1Suscripci\u00f3n activada! Bienvenido a Buddy One Premium.', {
         duration: 6000,
         description: 'Ya tienes acceso a todas las funciones premium.',
       });
@@ -600,7 +600,7 @@ export default function Dashboard() {
                     <span style={{ fontSize: '20px', flexShrink: 0 }}>🧠</span>
                     <div style={{ minWidth: 0 }}>
                       <p style={{ margin: 0, fontSize: '14px', fontWeight: 800, color: C.textPrimary }}>La IA aprende de ti</p>
-                      <p style={{ margin: 0, fontSize: '11px', color: C.textMuted, fontWeight: 500 }}>Cuanto más uses BuddyMarket, mejores recomendaciones</p>
+                      <p style={{ margin: 0, fontSize: '11px', color: C.textMuted, fontWeight: 500 }}>Cuanto más uses Buddy One, mejores recomendaciones</p>
                     </div>
                   </div>
                   {(tasteInsights.data?.totalInteractions ?? 0) > 0 && (
@@ -1047,7 +1047,7 @@ export default function Dashboard() {
 
         {/* Disclaimer */}
         <p style={{ fontSize: "12px", color: C.textMuted, textAlign: "center", margin: "24px 0 0", lineHeight: 1.5 }}>
-          BuddyMarket no constituye asesoramiento médico o nutricional profesional. Consulta a un profesional.
+          Buddy One no constituye asesoramiento médico o nutricional profesional. Consulta a un profesional.
         </p>
       </div>
     </div>
@@ -2165,7 +2165,7 @@ export default function Dashboard() {
       </a>
       {/* Disclaimer */}
       <p style={{ fontSize: "13px", color: C.textMuted, textAlign: "center", margin: "8px 0 0", lineHeight: 1.5 }}>
-        BuddyMarket no constituye asesoramiento médico o nutricional profesional. Consulta a un profesional.
+        Buddy One no constituye asesoramiento médico o nutricional profesional. Consulta a un profesional.
       </p>
     </div>
   );

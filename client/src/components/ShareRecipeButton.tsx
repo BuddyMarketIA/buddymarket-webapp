@@ -25,12 +25,12 @@ export default function ShareRecipeButton({
 
   // WhatsApp message
   const whatsappText = encodeURIComponent(
-    `💚 ¡He encontrado esta receta en BuddyMarket y tenías que verla!\n\n🍽️ *${recipeName}*${recipeDescription ? "\n\n" + recipeDescription : ""}\n\n👉 ${recipeUrl}\n\n_BuddyMarket — Tu asistente nutricional inteligente. Recetas saludables, menús con IA y mucho más 🥗_`
+    `💚 ¡He encontrado esta receta en Buddy One y tenías que verla!\n\n🍽️ *${recipeName}*${recipeDescription ? "\n\n" + recipeDescription : ""}\n\n👉 ${recipeUrl}\n\n_Buddy One — Tu asistente nutricional inteligente. Recetas saludables, menús con IA y mucho más 🥗_`
   );
   const whatsappUrl = `https://wa.me/?text=${whatsappText}`;
 
   // Telegram message
-  const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(recipeUrl)}&text=${encodeURIComponent(`🍽️ ${recipeName} — BuddyMarket`)}`;
+  const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(recipeUrl)}&text=${encodeURIComponent(`🍽️ ${recipeName} — Buddy One`)}`;
 
   // Twitter/X
   const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(`🍽️ ${recipeName}`)}&url=${encodeURIComponent(recipeUrl)}`;

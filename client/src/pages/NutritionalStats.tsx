@@ -365,7 +365,7 @@ export default function NutritionalStats() {
       </Link>
 
       <p style={{ fontSize: "13px", color: "#d1d5db", textAlign: "center", margin: "16px 0 0", lineHeight: 1.5 }}>
-        BuddyMarket no constituye asesoramiento médico o nutricional profesional. Consulta a un profesional.
+        Buddy One no constituye asesoramiento médico o nutricional profesional. Consulta a un profesional.
       </p>
     </div>
   );

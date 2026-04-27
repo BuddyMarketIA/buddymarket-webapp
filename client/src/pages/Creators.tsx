@@ -62,7 +62,7 @@ const TESTIMONIALS = [
     name: "Carlos R.",
     role: "BuddyExpert · Nutricionista",
     avatar: "👨‍⚕️",
-    text: "Mis clientes se suscriben a BuddyMarket con mi código y yo cobro una comisión mensual mientras ellos usan la app. Es un ingreso pasivo real.",
+    text: "Mis clientes se suscriben a Buddy One con mi código y yo cobro una comisión mensual mientras ellos usan la app. Es un ingreso pasivo real.",
     earnings: "~€120/mes",
   },
   {
@@ -214,8 +214,8 @@ export default function Creators() {
       <div style={{ background: "#fff", borderBottom: "1px solid #E5E7EB", padding: "14px 20px", display: "flex", alignItems: "center", justifyContent: "space-between", position: "sticky", top: 0, zIndex: 50 }}>
         <Link href="/">
           <div style={{ display: "flex", alignItems: "center", gap: 8, cursor: "pointer" }}>
-            <img src="/logo192.png" alt="BuddyMarket" style={{ width: 28, height: 28, borderRadius: 8 }} />
-            <span style={{ fontWeight: 800, fontSize: 16, color: "#111827" }}>BuddyMarket</span>
+            <img src="/logo192.png" alt="Buddy One" style={{ width: 28, height: 28, borderRadius: 8 }} />
+            <span style={{ fontWeight: 800, fontSize: 16, color: "#111827" }}>Buddy One</span>
           </div>
         </Link>
         <div style={{ display: "flex", gap: 8 }}>
@@ -377,7 +377,7 @@ export default function Creators() {
           {[
             { label: "Precio del plan", value: "9.99€", color: "#111827" },
             { label: "Comisiones plataforma (Apple/Google/Stripe ~33%)", value: "−3.30€", color: "#EF4444" },
-            { label: "Ingreso neto BuddyMarket", value: "6.69€", color: "#374151" },
+            { label: "Ingreso neto Buddy One", value: "6.69€", color: "#374151" },
             { label: "Tu comisión (20%)", value: "+1.34€/mes", color: "#22C55E", bold: true },
           ].map((row, i) => (
             <div key={i} style={{
@@ -419,9 +419,9 @@ export default function Creators() {
 
         {/* Footer */}
         <div style={{ textAlign: "center", paddingBottom: 32 }}>
-          <img src="/logo192.png" alt="BuddyMarket" style={{ width: 20, height: 20, borderRadius: 6, verticalAlign: "middle", marginRight: 6 }} />
+          <img src="/logo192.png" alt="Buddy One" style={{ width: 20, height: 20, borderRadius: 6, verticalAlign: "middle", marginRight: 6 }} />
           <span style={{ fontSize: 11, color: "#9CA3AF" }}>
-            BuddyMarket · Este programa no garantiza ingresos mínimos. Los resultados dependen de la actividad y conversión de cada creador.
+            Buddy One · Este programa no garantiza ingresos mínimos. Los resultados dependen de la actividad y conversión de cada creador.
           </span>
         </div>
       </div>

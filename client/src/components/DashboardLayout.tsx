@@ -176,7 +176,7 @@ function DashboardLayoutContent({
                 {isCollapsed ? (
                   <img
                     src="https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/logo-icon-orange_2cf889cb.png"
-                    alt="BuddyMarket"
+                    alt="Buddy One"
                     className="h-6 w-6 object-contain"
                   />
                 ) : (
@@ -187,7 +187,7 @@ function DashboardLayoutContent({
                 <div className="flex items-center gap-2 min-w-0">
                   <img
                     src="https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/logo-horizontal-orange_0dcbe0a8.png"
-                    alt="BuddyMarket"
+                    alt="Buddy One"
                     className="h-7 w-auto object-contain"
                   />
                 </div>

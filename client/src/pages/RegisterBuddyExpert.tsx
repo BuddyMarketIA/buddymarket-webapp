@@ -514,14 +514,14 @@ export default function RegisterBuddyExpert() {
               <div className="space-y-6">
                 <div>
                   <h2 className="text-2xl font-bold text-foreground">Tu motivación</h2>
-                  <p className="text-muted-foreground mt-1">Cuéntanos por qué quieres ser BuddyExpert en BuddyMarket.</p>
+                  <p className="text-muted-foreground mt-1">Cuéntanos por qué quieres ser BuddyExpert en Buddy One.</p>
                 </div>
                 <div className="space-y-4">
                   <div>
                     <Label htmlFor="motivation">¿Por qué quieres unirte como BuddyExpert? *</Label>
                     <Textarea
                       id="motivation"
-                      placeholder="Cuéntanos qué te motiva a unirte a BuddyMarket, cómo crees que puedes ayudar a los usuarios y qué esperas de la plataforma..."
+                      placeholder="Cuéntanos qué te motiva a unirte a Buddy One, cómo crees que puedes ayudar a los usuarios y qué esperas de la plataforma..."
                       value={form.motivation}
                       onChange={(e) => update("motivation", e.target.value)}
                       className="mt-1 min-h-[120px]"

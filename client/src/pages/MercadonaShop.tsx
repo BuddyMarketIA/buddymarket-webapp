@@ -218,7 +218,7 @@ export default function SupermercadoShop() {
       <div className="vively-page pb-32">
         <div className="mb-6">
           <h1 className="text-2xl font-black text-foreground tracking-tight mb-1">Supermercados</h1>
-          <p className="text-sm text-muted-foreground">Elige tu supermercado y compra directamente desde BuddyMarket</p>
+          <p className="text-sm text-muted-foreground">Elige tu supermercado y compra directamente desde Buddy One</p>
         </div>
         <div className="flex flex-col gap-3">
           {SUPERMARKETS.map((sm) => (
@@ -487,7 +487,7 @@ export default function SupermercadoShop() {
             {/* Security notice */}
             <div className="mb-4 rounded-xl p-3 bg-blue-50 border border-blue-100 flex gap-2">
               <svg className="w-4 h-4 text-blue-600 shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" /></svg>
-              <p className="text-xs text-blue-700">La conexión se realiza directamente con Mercadona. BuddyMarket no almacena tu contraseña.</p>
+              <p className="text-xs text-blue-700">La conexión se realiza directamente con Mercadona. Buddy One no almacena tu contraseña.</p>
             </div>
 
             <div className="flex flex-col gap-3">

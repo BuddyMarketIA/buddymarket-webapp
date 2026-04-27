@@ -1,5 +1,5 @@
 /**
- * WebSSOButtons — Botones de Sign in with Google y Apple para la webapp de BuddyMarket.
+ * WebSSOButtons — Botones de Sign in with Google y Apple para la webapp de Buddy One.
  *
  * Google: flujo OAuth2 redirect estándar via /api/auth/google/login
  * Apple:  flujo OAuth2 redirect estándar via /api/auth/apple/login
@@ -183,7 +183,7 @@ export default function WebSSOButtons({
         throw new Error(err.error ?? "Error al iniciar sesión con Google");
       }
 
-      toast.success("Sesión iniciada con Google", { description: "Bienvenido a BuddyMarket" });
+      toast.success("Sesión iniciada con Google", { description: "Bienvenido a Buddy One" });
       onSuccess?.();
       setTimeout(() => window.location.reload(), 500);
     } catch (err: any) {

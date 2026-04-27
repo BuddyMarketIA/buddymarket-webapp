@@ -182,7 +182,7 @@ export default function RegisterBuddyMaker() {
             <div className="space-y-3">
               {[
                 "Publicar recetas con tus propias fotos e instrucciones",
-                "Construir tu comunidad de seguidores en BuddyMarket",
+                "Construir tu comunidad de seguidores en Buddy One",
                 "Monetizar tus recetas premium",
                 "Obtener estadísticas de alcance e impacto",
                 "Generar ingresos con tu código de referido (20% comisión)",
@@ -500,14 +500,14 @@ export default function RegisterBuddyMaker() {
               <div className="space-y-6">
                 <div>
                   <h2 className="text-2xl font-bold text-foreground">Tu motivación</h2>
-                  <p className="text-muted-foreground mt-1">Cuéntanos por qué quieres ser BuddyMaker en BuddyMarket.</p>
+                  <p className="text-muted-foreground mt-1">Cuéntanos por qué quieres ser BuddyMaker en Buddy One.</p>
                 </div>
                 <div className="space-y-4">
                   <div>
                     <Label htmlFor="motivation">¿Por qué quieres unirte como BuddyMaker? *</Label>
                     <Textarea
                       id="motivation"
-                      placeholder="Cuéntanos qué te motiva a compartir tus recetas en BuddyMarket, qué tipo de contenido crearías y qué esperas de la plataforma..."
+                      placeholder="Cuéntanos qué te motiva a compartir tus recetas en Buddy One, qué tipo de contenido crearías y qué esperas de la plataforma..."
                       value={form.motivation}
                       onChange={(e) => update("motivation", e.target.value)}
                       className="mt-1 min-h-[120px]"

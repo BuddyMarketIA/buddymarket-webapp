@@ -1407,7 +1407,7 @@ function BlogTab({ expertProfile }: { expertProfile: any }) {
         <div className="bg-muted/30 rounded-3xl p-8 text-center space-y-3">
           <div className="text-4xl">📝</div>
           <p className="text-sm font-semibold text-foreground/80">Aún no has escrito ningún artículo</p>
-          <p className="text-xs text-muted-foreground/70">Comparte tu conocimiento con la comunidad BuddyMarket</p>
+          <p className="text-xs text-muted-foreground/70">Comparte tu conocimiento con la comunidad Buddy One</p>
         </div>
       ) : (
         <div className="space-y-3">

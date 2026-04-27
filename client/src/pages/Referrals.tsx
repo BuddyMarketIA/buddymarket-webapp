@@ -86,8 +86,8 @@ export default function Referrals() {
     if (navigator.share) {
       try {
         await navigator.share({
-          title: "¡Únete a BuddyMarket!",
-          text: `Usa mi código ${myCode?.code} y consigue 1 mes gratis al suscribirte a BuddyMarket 🥗`,
+          title: "¡Únete a Buddy One!",
+          text: `Usa mi código ${myCode?.code} y consigue 1 mes gratis al suscribirte a Buddy One 🥗`,
           url: referralLink,
         });
       } catch {
@@ -101,7 +101,7 @@ export default function Referrals() {
   const handleWhatsApp = () => {
     if (!referralLink || !myCode) return;
     const text = encodeURIComponent(
-      `¡Hola! Te recomiendo BuddyMarket, la app de nutrición inteligente 🥗\n\nUsa mi código *${myCode.code}* al registrarte y consigue 1 mes gratis cuando te suscribas.\n\n${referralLink}`
+      `¡Hola! Te recomiendo Buddy One, la app de nutrición inteligente 🥗\n\nUsa mi código *${myCode.code}* al registrarte y consigue 1 mes gratis cuando te suscribas.\n\n${referralLink}`
     );
     window.open(`https://wa.me/?text=${text}`, "_blank");
   };
@@ -203,7 +203,7 @@ export default function Referrals() {
           <div className="space-y-3">
             {[
               { icon: "1", text: "Comparte tu código o enlace con amigos", color: "bg-[#F97316]" },
-              { icon: "2", text: "Tu amigo se registra en BuddyMarket con tu código", color: "bg-blue-500" },
+              { icon: "2", text: "Tu amigo se registra en Buddy One con tu código", color: "bg-blue-500" },
               { icon: "3", text: "Cuando se suscriba a cualquier plan, ¡tú ganas 1 mes gratis!", color: "bg-green-500" },
             ].map((step) => (
               <div key={step.icon} className="flex items-start gap-3">

@@ -78,7 +78,7 @@ function scheduleLocalRemindersWithSummary(
       const config = MEAL_CONFIGS.find((c) => c.mealType === reminder.mealType);
       reg.active?.postMessage({
         type: "SCHEDULE_REMINDER",
-        title: `BuddyMarket — ${config?.label || reminder.mealType}`,
+        title: `Buddy One — ${config?.label || reminder.mealType}`,
         mealType: reminder.mealType,
         summary: summary ?? null,
         delay,
@@ -152,7 +152,7 @@ export default function MealNotifications() {
       // Show a test notification
       const reg = await getServiceWorkerRegistration();
       if (reg) {
-        reg.showNotification("BuddyMarket — Notificaciones activadas", {
+        reg.showNotification("Buddy One — Notificaciones activadas", {
           body: "¡Perfecto! Recibirás recordatorios para registrar tus comidas.",
           icon: "/icon-192x192.png",
           badge: "/icon-192x192.png",
@@ -529,7 +529,7 @@ export default function MealNotifications() {
 
       {/* Disclaimer */}
       <p style={{ fontSize: 10, color: "#d1d5db", textAlign: "center", margin: "24px 0 0", lineHeight: 1.5 }}>
-        BuddyMarket no constituye recomendaciones profesionales de nutrición. Consulta a un dietista.
+        Buddy One no constituye recomendaciones profesionales de nutrición. Consulta a un dietista.
       </p>
     </div>
   );

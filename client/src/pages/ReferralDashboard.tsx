@@ -55,7 +55,7 @@ export default function ReferralDashboard() {
 
   const shareOnInstagram = () => {
     if (!myCode) return;
-    const text = `🎯 ¡Únete a BuddyMarket con mi código ${myCode.code} y obtén un ${myCode.discountPercent}% de descuento en tu suscripción!\n\n🔗 ${referralLink}`;
+    const text = `🎯 ¡Únete a Buddy One con mi código ${myCode.code} y obtén un ${myCode.discountPercent}% de descuento en tu suscripción!\n\n🔗 ${referralLink}`;
     navigator.clipboard.writeText(text);
     toast.success("Texto copiado", { description: "Pega el texto en tu historia de Instagram." });
   };

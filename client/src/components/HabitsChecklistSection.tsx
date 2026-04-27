@@ -74,7 +74,7 @@ export default function HabitsChecklistSection({ appUrl }: Props) {
 
   const getScoreInfo = (score: number) => {
     const pct = (score / total) * 100;
-    if (pct >= 80) return { label: "Excelente", desc: "Tu alimentación está muy bien encaminada. BuddyMarket puede ayudarte a optimizar los últimos detalles.", color: "#10b981", emoji: "🏆" };
+    if (pct >= 80) return { label: "Excelente", desc: "Tu alimentación está muy bien encaminada. Buddy One puede ayudarte a optimizar los últimos detalles.", color: "#10b981", emoji: "🏆" };
     if (pct >= 60) return { label: "Buena base", desc: "Tienes buenos hábitos pero hay margen de mejora. Hay algunos errores clave que están frenando tus resultados.", color: "#F97316", emoji: "📈" };
     if (pct >= 40) return { label: "Necesita mejoras", desc: "Estás cometiendo varios errores nutricionales que pueden afectar tu energía, peso y salud a largo plazo.", color: "#f59e0b", emoji: "⚠️" };
     return { label: "Atención urgente", desc: "Tu alimentación actual puede estar perjudicando tu salud. Es el momento ideal para empezar a cambiar con ayuda.", color: "#ef4444", emoji: "🚨" };
@@ -247,7 +247,7 @@ export default function HabitsChecklistSection({ appUrl }: Props) {
             {/* CTA */}
             <div style={{ background: "linear-gradient(135deg, #fff7ed, #fef3c7)", borderRadius: 20, padding: "32px", textAlign: "center", border: "1.5px solid #fed7aa" }}>
               <h4 style={{ fontSize: 20, fontWeight: 900, color: "#111827", marginBottom: 8 }}>
-                BuddyMarket corrige estos errores automáticamente
+                Buddy One corrige estos errores automáticamente
               </h4>
               <p style={{ fontSize: 15, color: "#4b5563", lineHeight: 1.7, marginBottom: 24 }}>
                 Genera menús personalizados que se adaptan a tus hábitos, corrigen tus carencias nutricionales y te ayudan a alcanzar tus objetivos sin esfuerzo.

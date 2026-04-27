@@ -135,12 +135,12 @@ export default function CalculadoraNutricional() {
   };
 
   const shareWhatsApp = () => {
-    const text = encodeURIComponent(`¡Acabo de calcular mis necesidades nutricionales con BuddyMarket! 🥗\n\nMi resultado:\n• Calorías diarias: ${results?.tdee} kcal\n• Proteínas: ${results?.protein}g · Carbos: ${results?.carbs}g · Grasas: ${results?.fat}g\n\n¿Cuáles son las tuyas? Calcula aquí gratis 👇\n${buildShareUrl()}`);
+    const text = encodeURIComponent(`¡Acabo de calcular mis necesidades nutricionales con Buddy One! 🥗\n\nMi resultado:\n• Calorías diarias: ${results?.tdee} kcal\n• Proteínas: ${results?.protein}g · Carbos: ${results?.carbs}g · Grasas: ${results?.fat}g\n\n¿Cuáles son las tuyas? Calcula aquí gratis 👇\n${buildShareUrl()}`);
     window.open(`https://wa.me/?text=${text}`, "_blank");
   };
 
   const shareTwitter = () => {
-    const text = encodeURIComponent(`Acabo de calcular mis macros con @BuddyMarketApp 🥗\n\n${results?.tdee} kcal/día · ${results?.protein}g proteína · ${results?.carbs}g carbos · ${results?.fat}g grasas\n\n¿Y tú? Calcula gratis 👇`);
+    const text = encodeURIComponent(`Acabo de calcular mis macros con @Buddy OneApp 🥗\n\n${results?.tdee} kcal/día · ${results?.protein}g proteína · ${results?.carbs}g carbos · ${results?.fat}g grasas\n\n¿Y tú? Calcula gratis 👇`);
     window.open(`https://twitter.com/intent/tweet?text=${text}&url=${encodeURIComponent(buildShareUrl())}`, "_blank");
   };
 
@@ -158,7 +158,7 @@ export default function CalculadoraNutricional() {
                 <path d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z" />
               </svg>
             </div>
-            <span style={{ fontSize: 18, fontWeight: 800, color: "#111827" }}>BuddyMarket</span>
+            <span style={{ fontSize: 18, fontWeight: 800, color: "#111827" }}>Buddy One</span>
           </Link>
           <div style={{ display: "flex", gap: 12, alignItems: "center" }}>
             <Link href="/" style={{ fontSize: 14, fontWeight: 600, color: "#6b7280", textDecoration: "none" }}>← Volver</Link>
@@ -406,9 +406,9 @@ export default function CalculadoraNutricional() {
                   </div>
                 </div>
 
-                {/* CTA BuddyMarket */}
+                {/* CTA Buddy One */}
                 <div style={{ background: "linear-gradient(135deg, #fff7ed, #fef3c7)", borderRadius: 16, padding: "20px 24px", marginBottom: 16, border: "1.5px solid #fed7aa" }}>
-                  <p style={{ fontSize: 14, fontWeight: 700, color: "#92400e", marginBottom: 6 }}>¿Quieres que BuddyMarket genere tu menú semanal?</p>
+                  <p style={{ fontSize: 14, fontWeight: 700, color: "#92400e", marginBottom: 6 }}>¿Quieres que Buddy One genere tu menú semanal?</p>
                   <p style={{ fontSize: 13, color: "#92400e", lineHeight: 1.6, marginBottom: 0 }}>
                     Basado exactamente en estos valores, adaptado a tus alergias, preferencias y los productos de tu supermercado habitual.
                   </p>
@@ -514,7 +514,7 @@ export default function CalculadoraNutricional() {
             ¿Listo para llevar tu nutrición al siguiente nivel?
           </h2>
           <p style={{ fontSize: "clamp(14px, 2vw, 17px)", color: "rgba(255,255,255,0.85)", maxWidth: 480, margin: "0 auto 32px", lineHeight: 1.7 }}>
-            BuddyMarket genera tu menú semanal completo, lista de la compra y seguimiento nutricional basado exactamente en estos valores.
+            Buddy One genera tu menú semanal completo, lista de la compra y seguimiento nutricional basado exactamente en estos valores.
           </p>
           <Link href="/login" style={{
             display: "inline-flex", alignItems: "center", gap: 8,

@@ -75,7 +75,7 @@ export default function CookieBanner() {
     dismissBanner();
   };
 
-  // BuddyMarket is a Spanish-first product — always show cookie banner in Spanish
+  // Buddy One is a Spanish-first product — always show cookie banner in Spanish
   const lang = "es";
 
   const texts: Record<string, {

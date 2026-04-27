@@ -218,8 +218,8 @@ export default function LoginPage() {
         <div className="absolute inset-0 bg-gradient-to-t from-black/80 via-black/30 to-black/10" />
         <div className="relative z-10 flex flex-col justify-between p-10 w-full">
           <a href="/" className="flex items-center gap-3 no-underline">
-            <img src={LOGO} alt="BuddyMarket" className="w-10 h-10" />
-            <span className="text-white text-2xl font-black tracking-tight">BuddyMarket</span>
+            <img src={LOGO} alt="Buddy One" className="w-10 h-10" />
+            <span className="text-white text-2xl font-black tracking-tight">Buddy One</span>
           </a>
           <div>
             <h2 className="text-white text-4xl font-black leading-tight mb-3 whitespace-pre-line">{currentSlide.title}</h2>
@@ -239,8 +239,8 @@ export default function LoginPage() {
 
           {/* Logo mobile */}
           <div className="flex lg:hidden items-center gap-2 mb-8">
-            <img src={LOGO} alt="BuddyMarket" className="w-9 h-9" />
-            <span className="text-[#F97316] text-xl font-black">BuddyMarket</span>
+            <img src={LOGO} alt="Buddy One" className="w-9 h-9" />
+            <span className="text-[#F97316] text-xl font-black">Buddy One</span>
           </div>
 
           {/* Back button */}
@@ -265,7 +265,7 @@ export default function LoginPage() {
             <div className="space-y-5">
               <div>
                 <h1 className="text-2xl font-bold text-foreground">Bienvenido de nuevo</h1>
-                <p className="text-muted-foreground/70 text-sm mt-1">Accede a tu cuenta BuddyMarket</p>
+                <p className="text-muted-foreground/70 text-sm mt-1">Accede a tu cuenta Buddy One</p>
               </div>
 
               {/* SSO */}
@@ -321,7 +321,7 @@ export default function LoginPage() {
             <div className="space-y-4">
               <div>
                 <h1 className="text-2xl font-bold text-foreground">Crea tu cuenta</h1>
-                <p className="text-muted-foreground/70 text-sm mt-1">Únete a BuddyMarket — es gratis</p>
+                <p className="text-muted-foreground/70 text-sm mt-1">Únete a Buddy One — es gratis</p>
               </div>
 
               {/* SSO */}

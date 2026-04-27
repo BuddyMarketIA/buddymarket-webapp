@@ -552,7 +552,7 @@ export default function CreatorDashboard() {
     const referralLink = `${window.location.origin}/registro?ref=${data.code.code}`;
     if (navigator.share) {
       navigator.share({
-        title: "Únete a BuddyMarket",
+        title: "Únete a Buddy One",
         text: `Usa mi código ${data.code.code} y obtén un ${data.code.discountPercent}% de descuento en tu suscripción`,
         url: referralLink,
       });
@@ -597,7 +597,7 @@ export default function CreatorDashboard() {
           </div>
           <h1 className="text-3xl font-bold mb-3">Panel de Creador</h1>
           <p className="text-muted-foreground mb-8 text-lg">
-            Genera tu código de referido único para empezar a ganar comisiones del <strong>20%</strong> por cada suscripción que traigas a BuddyMarket.
+            Genera tu código de referido único para empezar a ganar comisiones del <strong>20%</strong> por cada suscripción que traigas a Buddy One.
           </p>
           <div className="bg-orange-50 border border-orange-200 rounded-2xl p-6 mb-8 text-left space-y-3">
             <h3 className="font-semibold text-orange-800">¿Cómo funciona?</h3>

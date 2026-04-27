@@ -170,7 +170,7 @@ export function OnboardingModal() {
                 ¡Hola, {firstName}!
               </h2>
               <p style={{ margin: "0 0 6px", fontSize: 15, color: "#6b7280", lineHeight: 1.6 }}>
-                Bienvenid@ a <strong style={{ color: "#F97316" }}>BuddyMarket</strong>.<br />
+                Bienvenid@ a <strong style={{ color: "#F97316" }}>Buddy One</strong>.<br />
                 En 3 pasos configuramos tu experiencia.
               </p>
               <p style={{ margin: "0 0 24px", fontSize: 13, color: "#9ca3af" }}>
@@ -201,7 +201,7 @@ export function OnboardingModal() {
               }}>
                 <span style={{ fontSize: 18, flexShrink: 0, marginTop: 1 }}>⚠️</span>
                 <p style={{ margin: 0, fontSize: 12, color: "#92400E", lineHeight: 1.5 }}>
-                  <strong>Aviso médico:</strong> BuddyMarket es una herramienta de apoyo nutricional y no sustituye el consejo de un médico, dietista o profesional de la salud. Consulta siempre a un especialista antes de realizar cambios significativos en tu alimentación.
+                  <strong>Aviso médico:</strong> Buddy One es una herramienta de apoyo nutricional y no sustituye el consejo de un médico, dietista o profesional de la salud. Consulta siempre a un especialista antes de realizar cambios significativos en tu alimentación.
                 </p>
               </div>
             </div>
@@ -373,7 +373,7 @@ export function OnboardingModal() {
                 ¡Todo listo!
               </h2>
               <p style={{ margin: 0, fontSize: 15, color: "#6b7280", lineHeight: 1.6 }}>
-                Tu perfil está configurado. BuddyMarket ya puede personalizar tus menús y recomendaciones.
+                Tu perfil está configurado. Buddy One ya puede personalizar tus menús y recomendaciones.
               </p>
             </div>
           )}

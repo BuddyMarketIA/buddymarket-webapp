@@ -15,7 +15,7 @@ export default function Privacy() {
     <div style={{ fontFamily: "'Inter', sans-serif", color: "#111827", minHeight: "100vh", background: "#f9fafb" }}>
       <nav style={{ background: "white", borderBottom: "1px solid #e5e7eb", padding: "0 24px", position: "sticky", top: 0, zIndex: 50 }}>
         <div style={{ maxWidth: 900, margin: "0 auto", display: "flex", alignItems: "center", justifyContent: "space-between", height: 68 }}>
-          <Link href="/"><img src={LOGO_COLOR} alt="BuddyMarket" style={{ height: 60, objectFit: "contain", cursor: "pointer" }} /></Link>
+          <Link href="/"><img src={LOGO_COLOR} alt="Buddy One" style={{ height: 60, objectFit: "contain", cursor: "pointer" }} /></Link>
           <Link href="/" style={{ fontSize: 14, color: "#6b7280", textDecoration: "none" }}>← Volver al inicio</Link>
         </div>
       </nav>
@@ -32,14 +32,14 @@ export default function Privacy() {
           <Section title="1. Responsable del Tratamiento">
             <p>De conformidad con el Reglamento (UE) 2016/679 del Parlamento Europeo y del Consejo (RGPD) y la Ley Orgánica 3/2018, de 5 de diciembre, de Protección de Datos Personales y garantía de los derechos digitales (LOPDGDD), le informamos que el responsable del tratamiento de sus datos personales es:</p>
             <div style={{ background: "#f9fafb", borderRadius: 12, padding: "20px 24px", marginTop: 16 }}>
-              <p><strong>Razón social:</strong> BuddyMarket S.L.</p>
+              <p><strong>Razón social:</strong> Buddy One S.L.</p>
               <p><strong>Email de contacto:</strong> info@buddymarket.io</p>
               <p><strong>Delegado de Protección de Datos:</strong> info@buddymarket.io</p>
             </div>
           </Section>
 
           <Section title="2. Datos que Recopilamos">
-            <p>BuddyMarket recopila los siguientes tipos de datos personales:</p>
+            <p>Buddy One recopila los siguientes tipos de datos personales:</p>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16, marginTop: 16 }}>
               {[
                 { title: "Datos de identificación", items: ["Nombre y apellidos", "Dirección de correo electrónico", "Foto de perfil (opcional)"] },
@@ -109,11 +109,11 @@ export default function Privacy() {
           </Section>
 
           <Section title="5. Transferencias Internacionales">
-            <p>BuddyMarket puede transferir datos a proveedores de servicios ubicados fuera del Espacio Económico Europeo (EEE). En tales casos, nos aseguramos de que dichas transferencias se realicen con las garantías adecuadas, como cláusulas contractuales tipo aprobadas por la Comisión Europea.</p>
+            <p>Buddy One puede transferir datos a proveedores de servicios ubicados fuera del Espacio Económico Europeo (EEE). En tales casos, nos aseguramos de que dichas transferencias se realicen con las garantías adecuadas, como cláusulas contractuales tipo aprobadas por la Comisión Europea.</p>
           </Section>
 
           <Section title="6. Seguridad de los Datos">
-            <p>BuddyMarket implementa medidas técnicas y organizativas apropiadas para proteger sus datos personales contra el acceso no autorizado, la pérdida, la destrucción o la alteración. Entre estas medidas se incluyen:</p>
+            <p>Buddy One implementa medidas técnicas y organizativas apropiadas para proteger sus datos personales contra el acceso no autorizado, la pérdida, la destrucción o la alteración. Entre estas medidas se incluyen:</p>
             <ul style={{ marginTop: 12, paddingLeft: 24, display: "flex", flexDirection: "column", gap: 8 }}>
               <li>Cifrado de datos en tránsito mediante TLS/HTTPS.</li>
               <li>Cifrado de datos sensibles en reposo.</li>

@@ -49,7 +49,7 @@ function ClinicRegisterForm({ onCreated }: { onCreated: () => void }) {
         <div className="text-5xl">🏥</div>
         <h1 className="text-2xl font-bold">Registra tu clínica veterinaria</h1>
         <p className="text-muted-foreground text-sm">
-          Únete a la red de clínicas colaboradoras de BuddyMarket y conecta con los dueños de mascotas de tu zona.
+          Únete a la red de clínicas colaboradoras de Buddy One y conecta con los dueños de mascotas de tu zona.
         </p>
       </div>
       <Card>
@@ -311,7 +311,7 @@ function VetClinicDirectory({ onRegister }: { onRegister: () => void }) {
               {search || selectedSpecialty ? "Sin resultados" : "Aún no hay clínicas registradas"}
             </h3>
             <p className="text-sm text-muted-foreground max-w-xs mx-auto">
-              {search ? `No se encontraron clínicas para "${search}"` : "Sé la primera clínica en unirse a BuddyMarket"}
+              {search ? `No se encontraron clínicas para "${search}"` : "Sé la primera clínica en unirse a Buddy One"}
             </p>
           </div>
         ) : (
@@ -377,7 +377,7 @@ function VetClinicDirectory({ onRegister }: { onRegister: () => void }) {
         <div className="mt-6 bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-200 rounded-2xl p-5 text-center space-y-3">
           <div className="text-3xl">🩺</div>
           <h3 className="font-black text-[15px] text-foreground">¿Eres veterinario o tienes una clínica?</h3>
-          <p className="text-[13px] text-muted-foreground">Únete a la red de clínicas colaboradoras de BuddyMarket y conecta con los dueños de mascotas de tu zona.</p>
+          <p className="text-[13px] text-muted-foreground">Únete a la red de clínicas colaboradoras de Buddy One y conecta con los dueños de mascotas de tu zona.</p>
           <Button
             className="bg-orange-500 hover:bg-orange-600 text-white font-black"
             onClick={() => setShowRegister(true)}

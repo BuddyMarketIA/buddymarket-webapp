@@ -149,7 +149,7 @@ function TicketDetailModal({
                   </div>
                   <div className={`max-w-[75%] ${isOwnMessage ? "items-end" : "items-start"} flex flex-col gap-1`}>
                     <div className={`flex items-center gap-2 text-xs text-muted-foreground ${isOwnMessage ? "flex-row-reverse" : ""}`}>
-                      <span className="font-medium">{isAdmin ? "Equipo BuddyMarket" : (msg.authorName ?? "Tú")}</span>
+                      <span className="font-medium">{isAdmin ? "Equipo Buddy One" : (msg.authorName ?? "Tú")}</span>
                       <span>{formatDate(msg.createdAt)}</span>
                     </div>
                     <div className={`rounded-2xl px-4 py-2.5 text-sm leading-relaxed whitespace-pre-wrap ${isOwnMessage ? "bg-primary text-primary-foreground rounded-tr-sm" : "bg-muted rounded-tl-sm"}`}>

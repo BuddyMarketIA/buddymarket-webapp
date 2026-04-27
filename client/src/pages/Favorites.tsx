@@ -374,7 +374,7 @@ export default function Favorites() {
       {/* Disclaimer */}
       <div style={{ margin: "24px 16px 0", padding: "12px 14px", background: "rgba(249,115,22,0.06)", borderRadius: "12px", borderLeft: "3px solid #F97316" }}>
         <p style={{ margin: 0, fontSize: "14px", color: "#9ca3af", lineHeight: 1.5 }}>
-          <strong style={{ color: "#F97316" }}>BuddyMarket</strong> — El contenido de esta sección no constituye recomendaciones profesionales. Consulta con un nutricionista o profesional de la salud antes de realizar cambios en tu dieta.
+          <strong style={{ color: "#F97316" }}>Buddy One</strong> — El contenido de esta sección no constituye recomendaciones profesionales. Consulta con un nutricionista o profesional de la salud antes de realizar cambios en tu dieta.
         </p>
       </div>
 

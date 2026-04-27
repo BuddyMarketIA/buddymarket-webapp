@@ -40,7 +40,7 @@ const FAQS = [
   },
   {
     q: "¿Es compatible con el plan de retribución flexible?",
-    a: "Sí. BuddyMarket for Business puede integrarse en planes de retribución flexible como beneficio de salud. Consulta con tu gestor para los detalles fiscales.",
+    a: "Sí. Buddy One for Business puede integrarse en planes de retribución flexible como beneficio de salud. Consulta con tu gestor para los detalles fiscales.",
   },
   {
     q: "¿Cómo se factura? ¿Puedo pagar anualmente?",
@@ -60,7 +60,7 @@ const TESTIMONIALS = [
     name: "Carlos Fernández",
     role: "Chief People Officer",
     company: "Grupo Financiero Norte",
-    text: "Nuestros empleados viajan mucho y no tienen tiempo para cuidarse. BuddyMarket les da un menú adaptado a su agenda en 2 minutos. Es el beneficio más valorado de nuestra encuesta interna.",
+    text: "Nuestros empleados viajan mucho y no tienen tiempo para cuidarse. Buddy One les da un menú adaptado a su agenda en 2 minutos. Es el beneficio más valorado de nuestra encuesta interna.",
     rating: 5,
   },
   {
@@ -160,7 +160,7 @@ export default function Empresas() {
       <nav className="sticky top-0 z-50 border-b border-border/50 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="max-w-6xl mx-auto px-4 h-16 flex items-center justify-between">
           <Link href="/">
-            <span className="text-xl font-bold text-primary">BuddyMarket</span>
+            <span className="text-xl font-bold text-primary">Buddy One</span>
           </Link>
           <div className="flex items-center gap-4">
             <a href="#planes" className="text-sm text-muted-foreground hover:text-foreground transition-colors hidden sm:block">Planes</a>
@@ -179,7 +179,7 @@ export default function Empresas() {
           <div className="grid lg:grid-cols-2 gap-12 items-center">
             <div>
               <Badge className="mb-4 bg-primary/10 text-primary border-primary/20 hover:bg-primary/10">
-                🏢 BuddyMarket for Business
+                🏢 Buddy One for Business
               </Badge>
               <h1 className="text-4xl lg:text-5xl font-bold leading-tight mb-6">
                 El bienestar nutricional como{" "}
@@ -187,7 +187,7 @@ export default function Empresas() {
               </h1>
               <p className="text-lg text-muted-foreground mb-8 leading-relaxed">
                 Cuando el trabajo no para, la alimentación es lo primero que se descuida.
-                BuddyMarket ayuda a tus empleados a planificar menús saludables y hacer la compra
+                Buddy One ayuda a tus empleados a planificar menús saludables y hacer la compra
                 en 2 minutos, sin esfuerzo.
               </p>
               <div className="flex flex-col sm:flex-row gap-3">
@@ -676,7 +676,7 @@ export default function Empresas() {
       <footer className="border-t border-border/50 py-10 px-4">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row items-center justify-between gap-4">
           <div className="text-sm text-muted-foreground">
-            © 2025 BuddyMarket · <Link href="/privacidad" className="hover:text-foreground">Privacidad</Link> · <Link href="/terminos" className="hover:text-foreground">Términos</Link>
+            © 2025 Buddy One · <Link href="/privacidad" className="hover:text-foreground">Privacidad</Link> · <Link href="/terminos" className="hover:text-foreground">Términos</Link>
           </div>
           <div className="flex items-center gap-4 text-sm text-muted-foreground">
             <a href="mailto:info@buddymarket.io" className="flex items-center gap-1 hover:text-foreground">

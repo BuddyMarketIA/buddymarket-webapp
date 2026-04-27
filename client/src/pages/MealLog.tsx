@@ -1783,7 +1783,7 @@ export default function MealLog() {
 
       {/* Disclaimer */}
       <p style={{ fontSize: "13px", color: "#d1d5db", textAlign: "center", margin: "24px 0 0", lineHeight: 1.5 }}>
-        {t("mealLog.disclaimer", "BuddyMarket does not constitute professional nutritional recommendations. Consult a dietitian.")}
+        {t("mealLog.disclaimer", "Buddy One does not constitute professional nutritional recommendations. Consult a dietitian.")}
       </p>
 
       {/* ─── Meal Detail Modal ─── */}

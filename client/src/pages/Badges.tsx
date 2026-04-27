@@ -107,7 +107,7 @@ export default function BadgesPage() {
           <h1 className="text-3xl font-bold text-foreground">Mis Insignias</h1>
         </div>
         <p className="text-muted-foreground max-w-lg mx-auto">
-          Gana insignias completando acciones en BuddyMarket. Cada insignia refleja tu compromiso con una alimentación más inteligente y personalizada.
+          Gana insignias completando acciones en Buddy One. Cada insignia refleja tu compromiso con una alimentación más inteligente y personalizada.
         </p>
       </div>
 
@@ -208,7 +208,7 @@ export default function BadgesPage() {
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
                 <Trophy className="w-5 h-5 text-amber-500" />
-                Top BuddyMarket — Ranking de insignias
+                Top Buddy One — Ranking de insignias
               </CardTitle>
             </CardHeader>
             <CardContent>
