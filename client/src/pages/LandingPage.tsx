@@ -825,9 +825,9 @@ export default function LandingPage() {
       <section id="herramientas" style={{ padding: "100px 24px", background: "#f9fafb" }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 56 }}>
-            <span style={{ fontSize: 11, fontWeight: 800, color: "#F97316", letterSpacing: "0.12em", textTransform: "uppercase" }}>HERRAMIENTAS</span>
+            <span style={{ fontSize: 11, fontWeight: 800, color: "#F97316", letterSpacing: "0.12em", textTransform: "uppercase" }}>MÓDULOS</span>
             <h2 style={{ fontSize: "clamp(28px,4vw,44px)", fontWeight: 900, color: "#111827", margin: "12px 0 16px", lineHeight: 1.2 }}>Explora el ecosistema</h2>
-            <p style={{ fontSize: 18, color: "#6b7280", maxWidth: 500, margin: "0 auto" }}>Cinco herramientas integradas, cada una especializada en un área de tu bienestar.</p>
+            <p style={{ fontSize: 18, color: "#6b7280", maxWidth: 520, margin: "0 auto" }}>Siete módulos integrados, cada uno especializado en un área de tu bienestar.</p>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(320px,1fr))", gap: 24 }}>

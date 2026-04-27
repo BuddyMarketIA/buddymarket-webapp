@@ -1022,6 +1022,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
 export default function ShoppingLists() {
   const { t } = useTranslation();
   const [selectedListId, setSelectedListId] = useState<number | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<any | null>(null);
   const [showNew, setShowNew] = useState(false);
   const [showFromMenu, setShowFromMenu] = useState(false);
   const [newName, setNewName] = useState("");
@@ -1257,7 +1258,7 @@ export default function ShoppingLists() {
           <h2 className="mb-3 text-sm font-bold text-foreground/80 uppercase tracking-wide">Plantillas guardadas</h2>
           <div className="space-y-2">
             {templates.map((tpl: any) => (
-              <div key={tpl.id} className="vively-card flex items-center gap-3">
+              <div key={tpl.id} className="vively-card flex items-center gap-3 cursor-pointer hover:border-violet-300 transition-all" onClick={() => setSelectedTemplate(tpl)}>
                 <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-violet-50">
                   <BookmarkIcon className="h-5 w-5 text-violet-500" />
                 </div>
@@ -1266,14 +1267,14 @@ export default function ShoppingLists() {
                   <p className="text-xs text-muted-foreground/70">{tpl.itemCount} productos · {tpl.supermarket ?? "General"}</p>
                 </div>
                 <button
-                  onClick={() => createFromTemplate.mutate({ templateId: tpl.id })}
+                  onClick={(e) => { e.stopPropagation(); createFromTemplate.mutate({ templateId: tpl.id }); }}
                   className="flex h-8 w-8 items-center justify-center rounded-full bg-violet-600 text-white hover:bg-violet-700"
                   title="Crear lista desde plantilla"
                 >
                   <PlusIcon className="h-4 w-4" />
                 </button>
                 <button
-                  onClick={() => deleteTemplate.mutate({ id: tpl.id })}
+                  onClick={(e) => { e.stopPropagation(); deleteTemplate.mutate({ id: tpl.id }); }}
                   className="flex h-8 w-8 items-center justify-center rounded-full text-gray-300 hover:bg-red-50 hover:text-red-400"
                   title="Eliminar plantilla"
                 >
@@ -1452,6 +1453,60 @@ export default function ShoppingLists() {
                 className="flex-1 btn-vively"
               >
                 {generateFromMenu.isPending ? "Generando..." : "Generar lista"}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Template detail modal */}
+      {selectedTemplate && (
+        <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setSelectedTemplate(null); }}>
+          <div className="w-full max-w-sm rounded-3xl bg-background p-6 shadow-2xl animate-slide-up max-h-[85vh] flex flex-col">
+            <div className="mb-4 flex items-center justify-between">
+              <div>
+                <h3 className="text-lg font-bold text-foreground">{selectedTemplate.name}</h3>
+                <p className="text-xs text-muted-foreground/70">{selectedTemplate.itemCount} productos · {selectedTemplate.supermarket ?? "General"}</p>
+              </div>
+              <button onClick={() => setSelectedTemplate(null)} className="flex h-8 w-8 items-center justify-center rounded-full bg-muted/50 text-muted-foreground">
+                <XMarkIcon className="h-4 w-4" />
+              </button>
+            </div>
+            <div className="flex-1 overflow-y-auto space-y-1 mb-4 pr-1">
+              {(selectedTemplate.items ?? []).length === 0 ? (
+                <p className="text-sm text-muted-foreground text-center py-6">Sin productos guardados</p>
+              ) : (
+                (selectedTemplate.items as { name: string; qty: string; unit: string; category: string }[]).map((item, i) => (
+                  <div key={i} className="flex items-center gap-3 rounded-2xl bg-muted/30 px-3 py-2">
+                    <div className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full bg-violet-100">
+                      <span className="text-xs text-violet-600 font-bold">{i + 1}</span>
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-medium text-foreground truncate">{item.name}</p>
+                      {(item.qty || item.unit) && (
+                        <p className="text-xs text-muted-foreground/70">{item.qty} {item.unit}</p>
+                      )}
+                    </div>
+                    {item.category && (
+                      <span className="shrink-0 text-xs bg-muted/50 text-muted-foreground px-2 py-0.5 rounded-full">{item.category}</span>
+                    )}
+                  </div>
+                ))
+              )}
+            </div>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setSelectedTemplate(null)}
+                className="flex-1 rounded-2xl border border-border py-3 text-sm font-semibold text-muted-foreground"
+              >
+                Cerrar
+              </button>
+              <button
+                onClick={() => { createFromTemplate.mutate({ templateId: selectedTemplate.id }); setSelectedTemplate(null); }}
+                disabled={createFromTemplate.isPending}
+                className="flex-1 rounded-2xl bg-violet-600 py-3 text-sm font-semibold text-white hover:bg-violet-700"
+              >
+                {createFromTemplate.isPending ? "Creando..." : "Usar plantilla"}
               </button>
             </div>
           </div>

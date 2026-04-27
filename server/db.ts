@@ -842,6 +842,8 @@ export async function createShoppingList(data: InsertShoppingList) {
 export async function deleteShoppingList(id: number) {
   const db = await getDb();
   if (!db) return;
+  // Delete child items first to avoid FK constraint violations
+  await db.delete(shoppingListItems).where(eq(shoppingListItems.shoppingListId, id));
   await db.delete(shoppingLists).where(eq(shoppingLists.id, id));
 }
 
