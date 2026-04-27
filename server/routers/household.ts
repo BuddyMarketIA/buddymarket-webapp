@@ -82,7 +82,7 @@ async function sendHouseholdInviteEmail(params: {
           </p>
         </td></tr>
         <tr><td style="background:#f8fafc;padding:20px 40px;text-align:center;border-top:1px solid #e2e8f0;">
-          <p style="color:#94a3b8;font-size:12px;margin:0;">© 2026 BuddyMarket · <a href="https://buddymarketapp.com" style="color:#f97316;text-decoration:none;">buddymarketapp.com</a></p>
+          <p style="color:#94a3b8;font-size:12px;margin:0;">© 2026 BuddyMarket · <a href="https://buddyoneapp.com" style="color:#f97316;text-decoration:none;">buddyoneapp.com</a></p>
         </td></tr>
       </table>
     </td></tr>

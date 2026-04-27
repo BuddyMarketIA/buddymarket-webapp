@@ -4077,7 +4077,7 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
           for (let i = 0; i < attempts; i++) {
             try {
               const res = await fetch(url, {
-                headers: { "User-Agent": "BuddyMarket/1.0 (info@buddymarket.io)" },
+                headers: { "User-Agent": "BuddyMarket/1.0 (info@buddyoneapp.com)" },
                 signal: AbortSignal.timeout(10000),
               });
               if (res.ok) return res;
@@ -7172,7 +7172,7 @@ Responde SOLO con JSON válido, sin texto adicional:
         { displayName: "Enrique Ortiz", specialty: "Dietista", bio: "Especialista en nutrición vegana y plant-based.", category: "vegano" as const, verified: true, featured: false, followersCount: 15200, plansCount: 9, rating: 4.6, reviewsCount: 312, avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80", coverUrl: "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=600&q=80" },
       ];
       for (const expert of demoExperts) {
-        const [userRes] = await drizzleDb.insert(usersTable).values({ openId: `demo_expert_${expert.displayName.replace(/ /g, "_")}`, name: expert.displayName, email: `${expert.displayName.toLowerCase().replace(/ /g, ".")}@buddymarket.io`, role: "buddyexpert" }).returning({ id: usersTable.id });
+        const [userRes] = await drizzleDb.insert(usersTable).values({ openId: `demo_expert_${expert.displayName.replace(/ /g, "_")}`, name: expert.displayName, email: `${expert.displayName.toLowerCase().replace(/ /g, ".")}@buddyoneapp.com`, role: "buddyexpert" }).returning({ id: usersTable.id });
         const userId = userRes?.id ?? 0;
         const [expRes] = await drizzleDb.insert(beTable).values({ userId, ...expert }).returning({ id: beTable.id });
         const expertId = expRes?.id ?? 0;

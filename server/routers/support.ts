@@ -78,13 +78,13 @@ async function sendTicketConfirmationEmail(
               <strong>Soporte</strong> de tu cuenta.
             </p>
             <div style="margin-top:28px;">
-              <a href="https://buddymarket.io/soporte" style="background:#F97316;color:#fff;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;display:inline-block;">
+              <a href="https://buddyoneapp.com/soporte" style="background:#F97316;color:#fff;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;display:inline-block;">
                 Ver mi ticket →
               </a>
             </div>
           </div>
           <div style="padding:20px 40px;border-top:1px solid #f3f4f6;text-align:center;">
-            <p style="color:#9ca3af;font-size:12px;margin:0;">BuddyMarket · <a href="mailto:info@buddymarket.io" style="color:#F97316;text-decoration:none;">info@buddymarket.io</a></p>
+            <p style="color:#9ca3af;font-size:12px;margin:0;">BuddyMarket · <a href="mailto:info@buddyoneapp.com" style="color:#F97316;text-decoration:none;">info@buddyoneapp.com</a></p>
           </div>
         </div>
       `,
@@ -118,13 +118,13 @@ async function sendAdminReplyEmail(
               <p style="color:#374151;font-size:14px;line-height:1.8;margin:0;white-space:pre-wrap;">${replyMessage}</p>
             </div>
             <div style="margin-top:28px;">
-              <a href="https://buddymarket.io/soporte" style="background:#F97316;color:#fff;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;display:inline-block;">
+              <a href="https://buddyoneapp.com/soporte" style="background:#F97316;color:#fff;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;display:inline-block;">
                 Ver conversación completa →
               </a>
             </div>
           </div>
           <div style="padding:20px 40px;border-top:1px solid #f3f4f6;text-align:center;">
-            <p style="color:#9ca3af;font-size:12px;margin:0;">BuddyMarket · <a href="mailto:info@buddymarket.io" style="color:#F97316;text-decoration:none;">info@buddymarket.io</a></p>
+            <p style="color:#9ca3af;font-size:12px;margin:0;">BuddyMarket · <a href="mailto:info@buddyoneapp.com" style="color:#F97316;text-decoration:none;">info@buddyoneapp.com</a></p>
           </div>
         </div>
       `,

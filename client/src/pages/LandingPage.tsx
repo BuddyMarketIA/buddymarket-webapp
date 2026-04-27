@@ -75,15 +75,19 @@ const MODULES = [
   { icon: "🏪", color: "#ec4899", bg: "#fdf2f8", tag: "Buddy Shop", title: "Tienda de Productos Saludables",
     desc: "Accede a productos saludables, suplementos y alimentos especiales seleccionados por nutricionistas. Envío directo a tu puerta.",
     img: FOOD.pantry, highlights: ["Productos curados", "Suplementos", "Envío a domicilio"] },
-  { icon: "📈", color: "#f59e0b", bg: "#fffbeb", tag: "Buddy Coach", title: "Tu Nutricionista Personal Online",
+  { icon: "💪", color: "#f59e0b", bg: "#fffbeb", tag: "Buddy Coach", title: "Tu Entrenador Personal Online",
+    desc: "Accede a entrenadores certificados que diseñan planes de entrenamiento 100% personalizados para ti, hacen seguimiento de tu evolución y te motivan cada día.",
+    img: FOOD.salmon, highlights: ["Planes de entrenamiento", "Seguimiento semanal", "Entrenadores certificados"] },
+  { icon: "🧑‍⚕️", color: "#0ea5e9", bg: "#f0f9ff", tag: "Buddy Experts", title: "Nutricionistas Certificados Online",
     desc: "Accede a nutricionistas certificados que crean planes 100% personalizados para ti, hacen seguimiento de tu evolución y responden tus dudas en tiempo real.",
-    img: FOOD.salmon, highlights: ["Planes personalizados", "Seguimiento semanal", "Mensajería directa"] },
+    img: FOOD.salmon, highlights: ["Planes nutricionales", "Seguimiento semanal", "Mensajería directa"] },
 ];
 
 // ─── Módulos del ecosistema (tarjetas de branding) ───────────────────────────
 const ECOSYSTEM = [
   { name: "Buddy Market", tagline: "Compra inteligente", color: "#F97316", bg: "#FFF7ED", border: "#FED7AA", icon: "🛒" },
-  { name: "Buddy Coach", tagline: "Tu nutricionista IA", color: "#7C3AED", bg: "#F5F3FF", border: "#DDD6FE", icon: "👤" },
+  { name: "Buddy Coach", tagline: "Tu entrenador personal", color: "#7C3AED", bg: "#F5F3FF", border: "#DDD6FE", icon: "💪" },
+  { name: "Buddy Experts", tagline: "Nutricionistas online", color: "#0ea5e9", bg: "#F0F9FF", border: "#BAE6FD", icon: "🧑‍⚕️" },
   { name: "Buddy Shop", tagline: "Productos saludables", color: "#E11D48", bg: "#FFF1F2", border: "#FECDD3", icon: "🛍️" },
   { name: "Buddy Care", tagline: "Salud y bienestar", color: "#16A34A", bg: "#F0FDF4", border: "#BBF7D0", icon: "➕" },
   { name: "Buddy Pets", tagline: "Nutrición para mascotas", color: "#2563EB", bg: "#EFF6FF", border: "#BFDBFE", icon: "🐾" },
@@ -96,7 +100,7 @@ const SERVICES = [
     items: ["Menús semanales personalizados con IA","Diario nutricional con registro por voz","Lista de la compra automática","24 planes especializados","Seguimiento de métricas y progreso","Biblioteca de 207+ recetas saludables"],
     cta: "Empezar gratis" },
   { icon: "🧑‍⚕️", color: "#10b981", gradient: "linear-gradient(135deg,#f0fdf4,#dcfce7)", border: "#86efac",
-    title: "Buddy Coach", subtitle: "Escala tu consulta y multiplica tus ingresos",
+    title: "Buddy Experts", subtitle: "Escala tu consulta y multiplica tus ingresos",
     desc: "Gestiona tu consulta online, publica planes nutricionales y acompaña a tus pacientes. Buddy One te da las herramientas para llegar a más clientes y cobrar por tu expertise sin intermediarios.",
     badge: "Para nutricionistas y dietistas certificados",
     earnings: { label: "Ingresos potenciales", value: "800–3.500€/mes", note: "según número de pacientes activos" },
@@ -107,7 +111,7 @@ const SERVICES = [
       { icon: "📈", title: "Panel de analíticas", desc: "Visualiza ingresos, pacientes activos, evolución y tasa de retención." },
     ],
     items: ["Panel profesional con historial de pacientes","Crear y publicar menús y planes de nutrición","Seguimiento de evolución de clientes","Mensajería directa con pacientes","Monetización de planes premium","Badge BuddyExpert verificado","Gestión de citas y agenda","Informes de progreso exportables"],
-    cta: "Convertirme en Buddy Coach" },
+    cta: "Convertirme en Buddy Expert" },
   { icon: "🍳", color: "#f59e0b", gradient: "linear-gradient(135deg,#fffbeb,#fef3c7)", border: "#fcd34d",
     title: "BuddyMakers", subtitle: "Monetiza tus recetas y construye tu comunidad",
     desc: "Sube tus recetas, crece tu audiencia y cobra por tu contenido. Buddy One te da visibilidad ante miles de usuarios que buscan exactamente lo que tú creas.",
@@ -885,7 +889,7 @@ export default function LandingPage() {
               <div style={{ height: 160, background: "linear-gradient(135deg,#F5F3FF,#EDE9FE)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
                 <img src={FOOD.salmon} alt="Buddy Coach" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.25 }} />
                 <div style={{ position: "relative", zIndex: 1, textAlign: "center" }}>
-                  <div style={{ fontSize: 48 }}>👤</div>
+                  <div style={{ fontSize: 48 }}>💪</div>
                   <div style={{ fontSize: 13, fontWeight: 800, color: "#7C3AED", marginTop: 4 }}>Buddy Coach</div>
                 </div>
               </div>
@@ -894,10 +898,35 @@ export default function LandingPage() {
                   <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#7C3AED", display: "inline-block" }} />
                   <span style={{ fontSize: 11, fontWeight: 700, color: "#7C3AED" }}>DISPONIBLE AHORA</span>
                 </div>
-                <h3 style={{ fontSize: 20, fontWeight: 800, color: "#111827", margin: "0 0 10px" }}>Tu nutricionista online</h3>
-                <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.65, margin: "0 0 20px" }}>Accede a nutricionistas certificados que crean planes 100% personalizados, hacen seguimiento de tu evolución y responden tus dudas.</p>
-                <a href="/app/buddy-experts" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 20px", borderRadius: 10, fontSize: 14, fontWeight: 700, color: "white", background: "#7C3AED", textDecoration: "none", boxShadow: "0 4px 16px rgba(124,58,237,0.3)" }}>
+                <h3 style={{ fontSize: 20, fontWeight: 800, color: "#111827", margin: "0 0 10px" }}>Tu entrenador personal online</h3>
+                <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.65, margin: "0 0 20px" }}>Accede a entrenadores certificados que diseñan planes de entrenamiento 100% personalizados, hacen seguimiento de tu evolución y te motivan cada día.</p>
+                <a href="https://www.buddycoach.io" target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 20px", borderRadius: 10, fontSize: 14, fontWeight: 700, color: "white", background: "#7C3AED", textDecoration: "none", boxShadow: "0 4px 16px rgba(124,58,237,0.3)" }}>
                   Ir a Buddy Coach
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
+                </a>
+              </div>
+            </div>
+
+            {/* Buddy Experts */}
+            <div style={{ background: "white", borderRadius: 24, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", border: "1.5px solid #BAE6FD", transition: "all 0.3s" }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(14,165,233,0.15)"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 24px rgba(0,0,0,0.06)"; }}>
+              <div style={{ height: 160, background: "linear-gradient(135deg,#F0F9FF,#E0F2FE)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
+                <img src={FOOD.salmon} alt="Buddy Experts" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.2, filter: "hue-rotate(180deg)" }} />
+                <div style={{ position: "relative", zIndex: 1, textAlign: "center" }}>
+                  <div style={{ fontSize: 48 }}>🧑‍⚕️</div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: "#0ea5e9", marginTop: 4 }}>Buddy Experts</div>
+                </div>
+              </div>
+              <div style={{ padding: "24px" }}>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#F0F9FF", borderRadius: 100, padding: "4px 12px", marginBottom: 12 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#0ea5e9", display: "inline-block" }} />
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "#0ea5e9" }}>DISPONIBLE AHORA</span>
+                </div>
+                <h3 style={{ fontSize: 20, fontWeight: 800, color: "#111827", margin: "0 0 10px" }}>Tu nutricionista online</h3>
+                <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.65, margin: "0 0 20px" }}>Accede a nutricionistas certificados que crean planes 100% personalizados, hacen seguimiento de tu evolución y responden tus dudas en tiempo real.</p>
+                <a href="/app/buddy-experts" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 20px", borderRadius: 10, fontSize: 14, fontWeight: 700, color: "white", background: "#0ea5e9", textDecoration: "none", boxShadow: "0 4px 16px rgba(14,165,233,0.3)" }}>
+                  Ir a Buddy Experts
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </a>
               </div>

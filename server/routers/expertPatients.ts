@@ -223,7 +223,7 @@ export const expertPatientsRouter = router({
       // Enviar email de invitación
       try {
         const expertName = ctx.user.name ?? "Tu nutricionista";
-        const appUrl = process.env.PUBLIC_APP_URL || "https://buddymarketapp.com";
+        const appUrl = process.env.PUBLIC_APP_URL || "https://buddyoneapp.com";
         const isNewUser = !patientUser;
         const { sendEmail } = await import("../email");
         // URL de acción: si el usuario no existe, primero registrarse y luego aceptar
@@ -310,7 +310,7 @@ export const expertPatientsRouter = router({
       const patientEmail = (rel as any).inviteEmail;
       if (!patientEmail) throw new TRPCError({ code: "BAD_REQUEST", message: "No se encontró el email del paciente" });
       const expertName = ctx.user.name ?? "Tu nutricionista";
-      const appUrl = process.env.PUBLIC_APP_URL || "https://buddymarketapp.com";
+      const appUrl = process.env.PUBLIC_APP_URL || "https://buddyoneapp.com";
       const token = rel.inviteToken ?? "";
       const actionUrl = `${appUrl}/register?invite=${token}&email=${encodeURIComponent(patientEmail)}`;
       const { sendEmail } = await import("../email");

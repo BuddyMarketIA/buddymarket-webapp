@@ -29,12 +29,12 @@ import { registerStorageProxy } from "./storageProxy";
 // ─── Allowed origins ─────────────────────────────────────────────────────────
 const ALLOWED_ORIGINS = [
   // Primary production domain
-  "https://buddymarketapp.com",
-  "https://www.buddymarketapp.com",
+  "https://buddyoneapp.com",
+  "https://www.buddyoneapp.com",
   // Legacy / Manus preview domains
   "https://buddymarket-ndjzmo7p.manus.space",
-  "https://buddymarket.io",
-  "https://www.buddymarket.io",
+  "https://buddyoneapp.com",
+  "https://www.buddyoneapp.com",
   // Local development
   "http://localhost:3000",
   "http://localhost:5173",

@@ -101,7 +101,7 @@ export async function runAllMonitors(baseUrl: string = "http://localhost:3000"):
         const { notifyOwner } = await import("./_core/notification");
         await notifyOwner({
           title: `🚨 API caída: ${monitor.name}`,
-          content: `El monitor "${monitor.name}" ha fallado ${newFailCount} veces consecutivas.\nEndpoint: ${monitor.endpoint}\nError: ${result.errorMessage ?? "Sin respuesta"}\nLatencia: ${result.latencyMs}ms\nHora: ${new Date().toLocaleString("es-ES")}\n\nAccede al panel de monitorización: https://buddymarketapp.com/admin/api-monitor`,
+          content: `El monitor "${monitor.name}" ha fallado ${newFailCount} veces consecutivas.\nEndpoint: ${monitor.endpoint}\nError: ${result.errorMessage ?? "Sin respuesta"}\nLatencia: ${result.latencyMs}ms\nHora: ${new Date().toLocaleString("es-ES")}\n\nAccede al panel de monitorización: https://buddyoneapp.com/admin/api-monitor`,
         });
         console.log(`[Monitor] Alert sent for ${monitor.name}`);
       } catch (notifyErr) {

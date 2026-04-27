@@ -158,7 +158,7 @@ export const householdRecipesRouter = router({
             recipeImageUrl: recipe[0].imageUrl,
             mealType: input.mealType ?? null,
             note: input.note ?? null,
-            appUrl: input.origin ?? "https://buddymarket.io",
+            appUrl: input.origin ?? "https://buddyoneapp.com",
           });
         }
       } catch (_) { /* email no crítico */ }

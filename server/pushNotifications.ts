@@ -10,8 +10,8 @@ import webpush from "web-push";
 const VAPID_PUBLIC_KEY = process.env.VAPID_PUBLIC_KEY ?? "";
 const VAPID_PRIVATE_KEY = process.env.VAPID_PRIVATE_KEY ?? "";
 const VAPID_SUBJECT = process.env.PUBLIC_APP_URL
-  ? `mailto:hola@buddymarketapp.com`
-  : "mailto:hola@buddymarketapp.com";
+  ? `mailto:hola@buddyoneapp.com`
+  : "mailto:hola@buddyoneapp.com";
 
 let vapidConfigured = false;
 

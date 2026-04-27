@@ -154,7 +154,7 @@ export default function About() {
                 Empezar gratis →
               </button>
             </Link>
-            <a href="mailto:info@buddymarket.io" style={{ textDecoration: "none" }}>
+            <a href="mailto:info@buddyoneapp.com" style={{ textDecoration: "none" }}>
               <button style={{ background: "rgba(255,255,255,0.15)", color: "white", border: "2px solid rgba(255,255,255,0.4)", borderRadius: "14px", padding: "14px 28px", fontSize: "15px", fontWeight: 700, cursor: "pointer" }}>
                 Contactar
               </button>

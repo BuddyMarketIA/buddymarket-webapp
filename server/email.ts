@@ -2,11 +2,11 @@ import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Use verified Resend domain as sender. To use a custom domain (info@buddymarket.io),
-// verify buddymarket.io at https://resend.com/domains and update this value.
+// Use verified Resend domain as sender. To use a custom domain (info@buddyoneapp.com),
+// verify buddyoneapp.com at https://resend.com/domains and update this value.
 const CUSTOM_FROM_EMAIL = process.env.EMAIL_FROM || "BuddyMarket <onboarding@resend.dev>";
 const FROM_EMAIL = CUSTOM_FROM_EMAIL;
-const APP_URL = process.env.PUBLIC_APP_URL || "https://buddymarketapp.com";
+const APP_URL = process.env.PUBLIC_APP_URL || "https://buddyoneapp.com";
 
 // ─── Shared HTML helpers ──────────────────────────────────────────────────────
 
@@ -34,7 +34,7 @@ function emailWrapper(content: string): string {
                 Si tienes alguna pregunta, responde a este email.
               </p>
               <p style="margin:0;">
-                <a href="${APP_URL}" style="color:#F97316;text-decoration:none;font-size:13px;font-weight:600;">buddymarketapp.com</a>
+                <a href="${APP_URL}" style="color:#F97316;text-decoration:none;font-size:13px;font-weight:600;">buddyoneapp.com</a>
                 <span style="color:#ccc;margin:0 8px;">·</span>
                 <a href="${APP_URL}/privacidad" style="color:#999;text-decoration:none;font-size:13px;">Privacidad</a>
                 <span style="color:#ccc;margin:0 8px;">·</span>
@@ -405,7 +405,7 @@ function day7EmailHtml(name: string): string {
 
       <p style="color:#888;font-size:13px;text-align:center;margin:16px 0 0;line-height:1.6;">
         ¿Tienes feedback sobre tu primera semana? Nos encantaría escucharte. 
-        <a href="mailto:info@buddymarket.io" style="color:#F97316;text-decoration:none;">Escríbenos aquí</a>
+        <a href="mailto:info@buddyoneapp.com" style="color:#F97316;text-decoration:none;">Escríbenos aquí</a>
       </p>
     </td>
   </tr>`;
@@ -1302,7 +1302,7 @@ function reactivationEmailHtml(name: string, daysInactive: number): string {
       <table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#FFF7ED,#FFEDD5);border:2px solid #FED7AA;border-radius:16px;padding:24px;margin:0 0 24px;text-align:center;">
         <tr><td>
           <p style="color:#C2410C;font-size:16px;font-weight:800;margin:0 0 8px;">🎁 Oferta especial de reactivación</p>
-          <p style="color:#92400E;font-size:14px;margin:0;">Escríbenos a <a href="mailto:hola@buddymarket.io" style="color:#F97316;">hola@buddymarket.io</a> con el asunto "VUELVO" y te regalamos 1 mes de seguimiento extra con tu nutricionista.</p>
+          <p style="color:#92400E;font-size:14px;margin:0;">Escríbenos a <a href="mailto:hola@buddyoneapp.com" style="color:#F97316;">hola@buddyoneapp.com</a> con el asunto "VUELVO" y te regalamos 1 mes de seguimiento extra con tu nutricionista.</p>
         </td></tr>
       </table>` : ""}
       ${ctaButton("Volver a BuddyMarket →", `${APP_URL}/app/dashboard`)}
@@ -1912,7 +1912,7 @@ function expertWelcomeEmailHtml(expertName: string): string {
       </table>
       ${ctaButton("Ir a mi panel de experto →", `${APP_URL}/app/buddyexpert/dashboard`)}
       <p style="color:#9CA3AF;font-size:13px;line-height:1.6;margin:16px 0 0;text-align:center;">
-        Si tienes alguna duda, escríbenos a <a href="mailto:hola@buddymarket.io" style="color:#F97316;">hola@buddymarket.io</a>
+        Si tienes alguna duda, escríbenos a <a href="mailto:hola@buddyoneapp.com" style="color:#F97316;">hola@buddyoneapp.com</a>
       </p>
     </td>
   </tr>`;

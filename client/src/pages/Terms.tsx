@@ -98,7 +98,7 @@ function TermsB2B() {
           ["Enterprise Custom", "+500", "A negociar", "Anual con SLA personalizado"],
         ]} />
         <P>Los precios no incluyen IVA. La facturación se realiza por el número de licencias contratadas, independientemente de las licencias activas. Las licencias no utilizadas no generan derecho a crédito ni reembolso.</P>
-        <Info>Para planes Enterprise Custom con más de 500 usuarios, contacta con nuestro equipo en <strong>empresas@buddymarket.io</strong> para una propuesta personalizada.</Info>
+        <Info>Para planes Enterprise Custom con más de 500 usuarios, contacta con nuestro equipo en <strong>empresas@buddyoneapp.com</strong> para una propuesta personalizada.</Info>
       </Section>
       <Section number="4" title="Gestión de Licencias">
         <P>La Empresa designará Administradores responsables de asignar y revocar licencias, gestionar el código de empresa y supervisar el uso. Cada licencia es personal e intransferible. La Empresa puede reasignar licencias entre empleados, pero no compartir una misma licencia entre varios usuarios simultáneamente.</P>
@@ -126,7 +126,7 @@ function TermsB2B() {
       </Section>
       <Section number="9" title="Ley Aplicable y Resolución de Disputas">
         <P>Las presentes CGC B2B se rigen por la legislación española. Las partes se someten a los Juzgados y Tribunales de Madrid. Antes de iniciar cualquier procedimiento judicial, las partes intentarán resolver la controversia mediante mediación en un plazo máximo de 60 días.</P>
-        <p style={{ marginTop: 32, color: "#9ca3af", fontSize: 13 }}>Contacto B2B: empresas@buddymarket.io · BUDDY MARKET IA, S.L. · Calle Villanueva 2, 3ºC, 28001, Madrid</p>
+        <p style={{ marginTop: 32, color: "#9ca3af", fontSize: 13 }}>Contacto B2B: empresas@buddyoneapp.com · BUDDY MARKET IA, S.L. · Calle Villanueva 2, 3ºC, 28001, Madrid</p>
       </Section>
     </>
   );
@@ -202,7 +202,7 @@ function TermsExperts() {
       </Section>
       <Section number="9" title="Duración y Resolución">
         <P>La relación tiene carácter indefinido y puede resolverse por cualquiera de las partes con un preaviso de 30 días. Buddy One podrá resolver de forma inmediata en caso de incumplimiento grave, especialmente si el Creador publica información que ponga en riesgo la salud de los usuarios.</P>
-        <p style={{ marginTop: 32, color: "#9ca3af", fontSize: 13 }}>Contacto Creadores: creadores@buddymarket.io · BUDDY MARKET IA, S.L. · Calle Villanueva 2, 3ºC, 28001, Madrid</p>
+        <p style={{ marginTop: 32, color: "#9ca3af", fontSize: 13 }}>Contacto Creadores: creadores@buddyoneapp.com · BUDDY MARKET IA, S.L. · Calle Villanueva 2, 3ºC, 28001, Madrid</p>
       </Section>
     </>
   );
@@ -251,7 +251,7 @@ export default function Terms() {
 
           <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 12, padding: "14px 18px" }}>
             <p style={{ fontSize: 13, color: "#166534", margin: 0 }}>
-              <strong>Empresa titular:</strong> BUDDY MARKET IA, S.L. · CIF B-56.819.576 · Calle Villanueva 2, 3ºC, 28001, Madrid (España) · <a href="mailto:info@buddymarket.io" style={{ color: "#166534" }}>info@buddymarket.io</a>
+              <strong>Empresa titular:</strong> BUDDY MARKET IA, S.L. · CIF B-56.819.576 · Calle Villanueva 2, 3ºC, 28001, Madrid (España) · <a href="mailto:info@buddyoneapp.com" style={{ color: "#166534" }}>info@buddyoneapp.com</a>
             </p>
           </div>
         </div>
@@ -334,7 +334,7 @@ export default function Terms() {
 
           <Section id="section-3" number="3" title="Registro y cuenta de usuario">
             <P>El acceso a los servicios de BUDDYMARKET requiere el registro previo mediante la creación de una cuenta personal. El Usuario podrá registrarse mediante correo electrónico y contraseña, o a través de proveedores de identidad externos (Google Sign-In, Sign in with Apple), cuyo uso queda sujeto a los términos y condiciones de dichos proveedores.</P>
-            <P>El Usuario se compromete a proporcionar información veraz, actualizada y completa durante el registro, y a mantenerla actualizada. La cuenta es personal e intransferible. El Usuario es el único responsable de la confidencialidad de sus credenciales y de todas las actividades realizadas bajo su cuenta. Cualquier uso no autorizado deberá ser notificado de inmediato a BUDDYMARKET en <a href="mailto:info@buddymarket.io" style={{ color: ORANGE }}>info@buddymarket.io</a>.</P>
+            <P>El Usuario se compromete a proporcionar información veraz, actualizada y completa durante el registro, y a mantenerla actualizada. La cuenta es personal e intransferible. El Usuario es el único responsable de la confidencialidad de sus credenciales y de todas las actividades realizadas bajo su cuenta. Cualquier uso no autorizado deberá ser notificado de inmediato a BUDDYMARKET en <a href="mailto:info@buddyoneapp.com" style={{ color: ORANGE }}>info@buddyoneapp.com</a>.</P>
             <P>BUDDYMARKET se reserva el derecho de suspender o cancelar cuentas en caso de incumplimiento de los presentes Términos, uso fraudulento, suplantación de identidad o cualquier conducta contraria a la ley o a los intereses de la comunidad.</P>
             <P>La Plataforma ofrece los siguientes tipos de cuenta:</P>
             <ul style={{ paddingLeft: 22, display: "flex", flexDirection: "column", gap: 8 }}>
@@ -378,7 +378,7 @@ export default function Terms() {
             <P>Si el Usuario contrata los servicios de un BuddyExpert, autoriza expresamente que dicho experto pueda acceder a los datos de su perfil nutricional necesarios para la prestación del servicio. Esta autorización puede revocarse en cualquier momento desde la configuración de la cuenta.</P>
 
             <p style={{ fontWeight: 700, color: "#111827", marginBottom: 8 }}>5.5 Derechos del Usuario sobre sus datos de salud</p>
-            <P>El Usuario tiene derecho a acceder, rectificar, suprimir, limitar el tratamiento, oponerse al mismo y solicitar la portabilidad de sus datos de salud. Para ejercer estos derechos, puede enviar un correo a <a href="mailto:info@buddymarket.io" style={{ color: ORANGE }}>info@buddymarket.io</a> adjuntando copia de su documento de identidad, o dirigirse por escrito a Calle Villanueva 2, 3ºC, 28001, Madrid. También puede presentar una reclamación ante la <a href="https://www.aepd.es" target="_blank" rel="noopener noreferrer" style={{ color: ORANGE }}>Agencia Española de Protección de Datos</a>.</P>
+            <P>El Usuario tiene derecho a acceder, rectificar, suprimir, limitar el tratamiento, oponerse al mismo y solicitar la portabilidad de sus datos de salud. Para ejercer estos derechos, puede enviar un correo a <a href="mailto:info@buddyoneapp.com" style={{ color: ORANGE }}>info@buddyoneapp.com</a> adjuntando copia de su documento de identidad, o dirigirse por escrito a Calle Villanueva 2, 3ºC, 28001, Madrid. También puede presentar una reclamación ante la <a href="https://www.aepd.es" target="_blank" rel="noopener noreferrer" style={{ color: ORANGE }}>Agencia Española de Protección de Datos</a>.</P>
           </Section>
 
           <Section id="section-6" number="6" title="Exención de responsabilidad">
@@ -404,7 +404,7 @@ export default function Terms() {
           </Section>
 
           <Section id="section-7" number="7" title="Obligaciones de Buddy One">
-            <P>BUDDYMARKET se compromete a: (i) mantener la Plataforma operativa y accesible en condiciones normales de uso; (ii) proteger la seguridad e integridad de los datos de los Usuarios mediante medidas técnicas y organizativas adecuadas (Helmet.js, HTTPS, cifrado, rate limiting); (iii) cumplir con la normativa de protección de datos aplicable; (iv) proporcionar soporte al Usuario a través de <a href="mailto:info@buddymarket.io" style={{ color: ORANGE }}>info@buddymarket.io</a>; (v) notificar con antelación razonable cualquier modificación sustancial de los Términos o de los precios; y (vi) activar la suscripción en un plazo razonable tras la confirmación del pago.</P>
+            <P>BUDDYMARKET se compromete a: (i) mantener la Plataforma operativa y accesible en condiciones normales de uso; (ii) proteger la seguridad e integridad de los datos de los Usuarios mediante medidas técnicas y organizativas adecuadas (Helmet.js, HTTPS, cifrado, rate limiting); (iii) cumplir con la normativa de protección de datos aplicable; (iv) proporcionar soporte al Usuario a través de <a href="mailto:info@buddyoneapp.com" style={{ color: ORANGE }}>info@buddyoneapp.com</a>; (v) notificar con antelación razonable cualquier modificación sustancial de los Términos o de los precios; y (vi) activar la suscripción en un plazo razonable tras la confirmación del pago.</P>
           </Section>
 
           <Section id="section-8" number="8" title="Obligaciones de los Usuarios">
@@ -419,7 +419,7 @@ export default function Terms() {
           <Section id="section-10" number="10" title="Protección de datos personales">
             <P>Los datos personales del Usuario son tratados por BUDDY MARKET IA, S.L. como responsable del tratamiento, conforme al Reglamento (UE) 2016/679 (RGPD) y la Ley Orgánica 3/2018 (LOPDGDD). Los datos se almacenan en servidores seguros y se conservan durante el tiempo necesario para la prestación de los servicios y el cumplimiento de las obligaciones legales.</P>
             <P>La información detallada sobre el tratamiento de datos, las finalidades, las bases legales, los plazos de conservación y los derechos del Usuario se encuentra en la <Link href="/privacy" style={{ color: ORANGE, fontWeight: 600 }}>Política de Privacidad</Link> de BUDDYMARKET.</P>
-            <P>Para cualquier consulta sobre protección de datos, el Usuario puede dirigirse a <a href="mailto:info@buddymarket.io" style={{ color: ORANGE }}>info@buddymarket.io</a> o por escrito a Calle Villanueva 2, 3ºC, 28001, Madrid. También puede presentar una reclamación ante la <a href="https://www.aepd.es" target="_blank" rel="noopener noreferrer" style={{ color: ORANGE }}>Agencia Española de Protección de Datos</a>.</P>
+            <P>Para cualquier consulta sobre protección de datos, el Usuario puede dirigirse a <a href="mailto:info@buddyoneapp.com" style={{ color: ORANGE }}>info@buddyoneapp.com</a> o por escrito a Calle Villanueva 2, 3ºC, 28001, Madrid. También puede presentar una reclamación ante la <a href="https://www.aepd.es" target="_blank" rel="noopener noreferrer" style={{ color: ORANGE }}>Agencia Española de Protección de Datos</a>.</P>
           </Section>
 
           <Section id="section-11" number="11" title="Cookies">
@@ -459,7 +459,7 @@ export default function Terms() {
           <div style={{ borderTop: "1px solid #f3f4f6", paddingTop: 24, marginTop: 8 }}>
             <p style={{ fontSize: 13, color: "#9ca3af", margin: 0 }}>
               <strong>BUDDY MARKET IA, S.L.</strong> · CIF B-56.819.576 · Calle Villanueva 2, 3ºC, 28001, Madrid ·{" "}
-              <a href="mailto:info@buddymarket.io" style={{ color: ORANGE }}>info@buddymarket.io</a>
+              <a href="mailto:info@buddyoneapp.com" style={{ color: ORANGE }}>info@buddyoneapp.com</a>
               <br />Versión 2.0 — Fecha de entrada en vigor: 7 de abril de 2026
             </p>
           </div>

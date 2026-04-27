@@ -106,7 +106,7 @@ export default function Cookies() {
           <section>
             <h2 style={{ fontSize: 22, fontWeight: 800, color: "#111827", marginBottom: 16, paddingBottom: 12, borderBottom: "2px solid #f3f4f6" }}>Contacto</h2>
             <p style={{ fontSize: 15, color: "#374151", lineHeight: 1.8 }}>
-              Si tiene preguntas sobre nuestra política de cookies, puede contactarnos en <a href="mailto:info@buddymarket.io" style={{ color: ORANGE }}>info@buddymarket.io</a>.
+              Si tiene preguntas sobre nuestra política de cookies, puede contactarnos en <a href="mailto:info@buddyoneapp.com" style={{ color: ORANGE }}>info@buddyoneapp.com</a>.
             </p>
           </section>
         </div>

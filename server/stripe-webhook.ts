@@ -3,7 +3,7 @@ import type { Express, Request, Response } from "express";
 import * as db from "./db";
 import { sendPaymentConfirmationEmail, sendPaymentAdminNotification } from "./email";
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "info@buddymarket.io";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "info@buddyoneapp.com";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
 
