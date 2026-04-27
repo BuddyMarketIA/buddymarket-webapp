@@ -32,11 +32,13 @@ import {
   EyeIcon,
   ChatBubbleLeftRightIcon,
   ExclamationTriangleIcon,
+  HeartIcon,
 } from "@heroicons/react/24/outline";
 import { RECIPE_PLACEHOLDER_IMAGE as RECIPE_PLACEHOLDER } from "@/lib/constants";
 import UsageAnalyticsPanel from "@/components/UsageAnalyticsPanel";
 import LLMLatencyChart from "@/components/LLMLatencyChart";
 import AdminLicenciasPanel from "@/components/AdminLicenciasPanel";
+import AdminVetClinicsPanel from "@/components/AdminVetClinicsPanel";
 
 const TABS = [
   { key: "overview", label: "Resumen", icon: ShieldCheckIcon },
@@ -55,6 +57,7 @@ const TABS = [
   { key: "empresas", label: "Empresas B2B", icon: BuildingOfficeIcon },
   { key: "licencias", label: "Licencias B2B", icon: CurrencyEuroIcon },
   { key: "soporte", label: "Soporte", icon: ChatBubbleLeftRightIcon },
+  { key: "clinicas", label: "Clínicas Vet.", icon: HeartIcon },
 ];
 
 function CatalogSection({
@@ -844,6 +847,10 @@ export default function Admin() {
       {/* Soporte */}
       {activeTab === "soporte" && (
         <AdminSoportePanel />
+      )}
+      {/* Clínicas Veterinarias */}
+      {activeTab === "clinicas" && (
+        <AdminVetClinicsPanel />
       )}
       {/* Users */}
       {activeTab === "duplicates" && (

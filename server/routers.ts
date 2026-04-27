@@ -5474,6 +5474,70 @@ Responde SOLO con JSON válido, sin texto adicional:
         return { ok, down, degraded, unknown, total: active.length, lastCheckedAt };
       }),
 
+
+    // ─── Admin: Vet Clinics Management ────────────────────────────────────────
+    getAllVetClinics: protectedProcedure
+      .query(async ({ ctx }) => {
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { vetClinics, petClinicLinks, pets } = await import("../drizzle/schema.js");
+        const { count, eq: eqOp } = await import("drizzle-orm");
+        const clinics = await drizzleDb.select({
+          id: vetClinics.id,
+          name: vetClinics.name,
+          city: vetClinics.city,
+          province: vetClinics.province,
+          phone: vetClinics.phone,
+          email: vetClinics.email,
+          accessCode: vetClinics.accessCode,
+          isVerified: vetClinics.isVerified,
+          isActive: vetClinics.isActive,
+          specialtiesJson: vetClinics.specialtiesJson,
+          createdAt: vetClinics.createdAt,
+        }).from(vetClinics).orderBy(vetClinics.createdAt);
+        // Get patient counts
+        const linkCounts = await drizzleDb.select({
+          clinicId: petClinicLinks.clinicId,
+          count: count(),
+        }).from(petClinicLinks).groupBy(petClinicLinks.clinicId);
+        const countMap = Object.fromEntries(linkCounts.map(r => [r.clinicId, r.count]));
+        return clinics.map(c => ({ ...c, patientCount: countMap[c.id] ?? 0 }));
+      }),
+    verifyVetClinic: protectedProcedure
+      .input(z.object({ clinicId: z.number().int(), isVerified: z.boolean() }))
+      .mutation(async ({ ctx, input }) => {
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { vetClinics } = await import("../drizzle/schema.js");
+        const { eq: eqOp } = await import("drizzle-orm");
+        await drizzleDb.update(vetClinics).set({ isVerified: input.isVerified }).where(eqOp(vetClinics.id, input.clinicId));
+        return { success: true };
+      }),
+    toggleVetClinicActive: protectedProcedure
+      .input(z.object({ clinicId: z.number().int(), isActive: z.boolean() }))
+      .mutation(async ({ ctx, input }) => {
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { vetClinics } = await import("../drizzle/schema.js");
+        const { eq: eqOp } = await import("drizzle-orm");
+        await drizzleDb.update(vetClinics).set({ isActive: input.isActive }).where(eqOp(vetClinics.id, input.clinicId));
+        return { success: true };
+      }),
+    deleteVetClinic: protectedProcedure
+      .input(z.object({ clinicId: z.number().int() }))
+      .mutation(async ({ ctx, input }) => {
+        if (!hasRole(ctx.user, "admin")) throw new TRPCError({ code: "FORBIDDEN" });
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { vetClinics, petClinicLinks } = await import("../drizzle/schema.js");
+        const { eq: eqOp } = await import("drizzle-orm");
+        await drizzleDb.delete(petClinicLinks).where(eqOp(petClinicLinks.clinicId, input.clinicId));
+        await drizzleDb.delete(vetClinics).where(eqOp(vetClinics.id, input.clinicId));
+        return { success: true };
+      }),
     tagKidFriendlyRecipes: protectedProcedure
       .input(z.object({ batchSize: z.number().int().min(1).max(50).default(20) }))
       .mutation(async ({ ctx, input }) => {

@@ -1045,6 +1045,49 @@ function MedicationsView({ petId }: { petId: number }) {
   );
 }
 
+
+// ─── Vet Visits View ─────────────────────────────────────────────────────────
+function VetVisitsView({ petId, petName }: { petId: number; petName: string }) {
+  const { data: visits, isLoading } = trpc.vetClinic.petVisits.useQuery({ petId });
+
+  if (isLoading) return <div className="text-sm text-muted-foreground py-2">Cargando visitas...</div>;
+
+  return (
+    <div>
+      <h3 className="font-semibold text-sm mb-3">🩺 Historial de visitas veterinarias</h3>
+      {!visits || visits.length === 0 ? (
+        <div className="text-center py-6 text-muted-foreground text-sm">
+          <div className="text-3xl mb-2">📋</div>
+          <p>Sin visitas registradas</p>
+          <p className="text-xs mt-1">Las clínicas vinculadas pueden añadir visitas desde su panel</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {visits.map((visit: any) => (
+            <div key={visit.id} className="border rounded-lg p-3 bg-blue-50 dark:bg-blue-950/30">
+              <div className="flex items-start justify-between gap-2 mb-1">
+                <p className="font-medium text-sm">
+                  {new Date(visit.visitDate).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" })}
+                </p>
+                {visit.vetName && <span className="text-xs text-muted-foreground">Dr/a. {visit.vetName}</span>}
+              </div>
+              {visit.reason && <p className="text-xs text-muted-foreground mb-1">📌 <strong>Motivo:</strong> {visit.reason}</p>}
+              {visit.diagnosis && <p className="text-xs text-muted-foreground mb-1">🔍 <strong>Diagnóstico:</strong> {visit.diagnosis}</p>}
+              {visit.treatment && <p className="text-xs text-muted-foreground mb-1">💊 <strong>Tratamiento:</strong> {visit.treatment}</p>}
+              {visit.weight && <p className="text-xs text-muted-foreground mb-1">⚖️ <strong>Peso:</strong> {visit.weight} kg</p>}
+              {visit.nextVisitDate && (
+                <p className="text-xs text-orange-600 mt-1">
+                  📅 Próxima visita: {new Date(visit.nextVisitDate).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" })}
+                </p>
+              )}
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
+  );
+}
+
 // ─── Nutrition Profile Editor ─────────────────────────────────────────────────
 function NutritionProfileEditor({ petId }: { petId: number }) {
   const utils = trpc.useUtils();
@@ -1588,6 +1631,11 @@ function ClinicTab({ petId, petName }: { petId: number; petName: string }) {
             {linkToClinic.isPending ? "..." : "Vincular"}
           </Button>
         </div>
+        <div className="mt-3 text-center">
+          <a href="/app/vet-clinic" className="text-xs text-orange-500 hover:underline">
+            🔍 Buscar clínicas veterinarias en el directorio
+          </a>
+        </div>
       </div>
     </div>
   );
@@ -1661,9 +1709,9 @@ function PetCard({ pet, onEdit, onDelete }: {
     { id: "foto",    label: "📷 Foto IA" },
     { id: "menu",    label: "🍽️ Nutrición" },
     { id: "feeding", label: "🥣 Alimentación" },
-    { id: "salud",   label: "🏥 Salud" },
+    { id: "salud",   label: "🩺 Salud" },
     { id: "clinics", label: "🏥 Clínicas" },
-    { id: "alerts",  label: `🔔${petAlerts.length > 0 ? ` (${petAlerts.length})` : ""}` },
+    { id: "alerts",  label: `🔔 Alertas${petAlerts.length > 0 ? ` (${petAlerts.length})` : ""}` },
   ] as const;
 
   return (
@@ -1770,6 +1818,9 @@ function PetCard({ pet, onEdit, onDelete }: {
             </div>
             <div className="border-t pt-4">
               <MedicationsView petId={pet.id} />
+            </div>
+            <div className="border-t pt-4">
+              <VetVisitsView petId={pet.id} petName={pet.name} />
             </div>
           </div>
         )}

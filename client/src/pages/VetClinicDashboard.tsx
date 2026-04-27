@@ -388,12 +388,104 @@ function VetClinicDirectory({ onRegister }: { onRegister: () => void }) {
   );
 }
 
+
+// ─── Patient Detail Modal ─────────────────────────────────────────────────────
+function PatientDetailModal({ row, clinicId, onClose }: { row: any; clinicId: number; onClose: () => void }) {
+  const { data: visits } = trpc.vetClinic.petVisits.useQuery({ petId: row.pet.id });
+  const { data: petAlerts } = trpc.vetClinic.clinicAlerts.useQuery({ clinicId });
+  const petSpecificAlerts = petAlerts?.filter((a: any) => a.petId === row.pet.id) ?? [];
+
+  return (
+    <Dialog open onOpenChange={onClose}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle className="flex items-center gap-2">
+            <span className="text-2xl">{row.pet.species === "dog" ? "🐕" : row.pet.species === "cat" ? "🐈" : "🐾"}</span>
+            <span>{row.pet.name}</span>
+            <Badge variant="outline" className="text-xs capitalize ml-1">{row.link.status}</Badge>
+          </DialogTitle>
+        </DialogHeader>
+        <div className="space-y-5">
+          {/* Basic info */}
+          <div className="grid grid-cols-2 gap-3 text-sm">
+            {[
+              { label: "Especie", value: row.pet.species },
+              { label: "Raza", value: row.pet.breed ?? "Desconocida" },
+              { label: "Peso", value: row.pet.weightKg ? `${row.pet.weightKg} kg` : null },
+              { label: "Vinculado desde", value: new Date(row.link.createdAt).toLocaleDateString("es-ES") },
+            ].filter(f => f.value).map(f => (
+              <div key={f.label} className="bg-muted/50 rounded-lg p-2">
+                <p className="text-xs text-muted-foreground">{f.label}</p>
+                <p className="font-medium capitalize">{f.value}</p>
+              </div>
+            ))}
+          </div>
+
+          {/* Vet visits */}
+          <div>
+            <h3 className="font-semibold text-sm mb-2">🩺 Visitas veterinarias ({visits?.length ?? 0})</h3>
+            {!visits || visits.length === 0 ? (
+              <p className="text-xs text-muted-foreground italic">Sin visitas registradas aún</p>
+            ) : (
+              <div className="space-y-2 max-h-48 overflow-y-auto">
+                {visits.map((v: any) => (
+                  <div key={v.id} className="border rounded-lg p-2.5 bg-blue-50 dark:bg-blue-950/30 text-xs">
+                    <div className="flex justify-between mb-1">
+                      <span className="font-semibold">{new Date(v.visitDate).toLocaleDateString("es-ES")}</span>
+                      {v.vetName && <span className="text-muted-foreground">Dr/a. {v.vetName}</span>}
+                    </div>
+                    {v.reason && <p><strong>Motivo:</strong> {v.reason}</p>}
+                    {v.diagnosis && <p><strong>Diagnóstico:</strong> {v.diagnosis}</p>}
+                    {v.treatment && <p><strong>Tratamiento:</strong> {v.treatment}</p>}
+                    {v.weight && <p><strong>Peso:</strong> {v.weight} kg</p>}
+                    {v.nextVisitDate && <p className="text-orange-600">📅 Próxima: {new Date(v.nextVisitDate).toLocaleDateString("es-ES")}</p>}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Alerts for this pet */}
+          <div>
+            <h3 className="font-semibold text-sm mb-2">🔔 Alertas enviadas ({petSpecificAlerts.length})</h3>
+            {petSpecificAlerts.length === 0 ? (
+              <p className="text-xs text-muted-foreground italic">Sin alertas enviadas a este paciente</p>
+            ) : (
+              <div className="space-y-2 max-h-48 overflow-y-auto">
+                {petSpecificAlerts.map((a: any) => (
+                  <div key={a.id} className={`border rounded-lg p-2.5 text-xs ${a.resolvedAt ? "bg-green-50 dark:bg-green-950/20" : "bg-red-50 dark:bg-red-950/20"}`}>
+                    <div className="flex justify-between mb-1">
+                      <span className="font-semibold">{a.title}</span>
+                      <Badge variant={a.resolvedAt ? "secondary" : "destructive"} className="text-xs">
+                        {a.resolvedAt ? "Resuelta" : "Pendiente"}
+                      </Badge>
+                    </div>
+                    {a.description && <p className="text-muted-foreground">{a.description}</p>}
+                    {a.dueDate && <p className="text-orange-600">📅 {new Date(a.dueDate).toLocaleDateString("es-ES")}</p>}
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+
+          {/* Actions */}
+          <div className="flex gap-2 pt-2 border-t">
+            <SendAlertDialog clinicId={clinicId} pet={{ id: row.pet.id, name: row.pet.name, ownerId: row.pet.userId }} />
+            <AddVisitDialog clinicId={clinicId} pet={{ id: row.pet.id, name: row.pet.name, ownerId: row.pet.userId }} />
+          </div>
+        </div>
+      </DialogContent>
+    </Dialog>
+  );
+}
+
 export default function VetClinicDashboard() {
   const utils = trpc.useUtils();
   const [activeTab, setActiveTab] = useState<"overview" | "patients" | "alerts" | "profile">("overview");
   const [editOpen, setEditOpen] = useState(false);
   const [editForm, setEditForm] = useState<Record<string, string>>({});
   const [editSpecialties, setEditSpecialties] = useState<string[]>([]);
+  const [selectedPatient, setSelectedPatient] = useState<any | null>(null);
 
   const { data: clinic, isLoading, refetch } = trpc.vetClinic.myClinic.useQuery();
   const { data: linkedPets } = trpc.vetClinic.linkedPets.useQuery({ clinicId: clinic?.id ?? 0 }, { enabled: !!clinic?.id });
@@ -525,6 +617,7 @@ export default function VetClinicDashboard() {
                       <Badge variant="outline" className="text-xs capitalize">{row.link.status}</Badge>
                     </div>
                     <div className="flex gap-2 flex-wrap">
+                      <Button size="sm" variant="outline" onClick={() => setSelectedPatient(row)}>📋 Ver historial</Button>
                       <SendAlertDialog clinicId={clinic.id} pet={{ id: row.pet.id, name: row.pet.name, ownerId: row.pet.userId }} />
                       <AddVisitDialog clinicId={clinic.id} pet={{ id: row.pet.id, name: row.pet.name, ownerId: row.pet.userId }} />
                     </div>
@@ -640,6 +733,13 @@ export default function VetClinicDashboard() {
           </div>
         </DialogContent>
       </Dialog>
+      {selectedPatient && clinic && (
+        <PatientDetailModal
+          row={selectedPatient}
+          clinicId={clinic.id}
+          onClose={() => setSelectedPatient(null)}
+        />
+      )}
     </div>
   );
 }

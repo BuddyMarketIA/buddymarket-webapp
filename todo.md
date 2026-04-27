@@ -3190,3 +3190,15 @@
 - [x] BUG: "Error al aplicar el menú al diario" - CORREGIDO: applyToCalendar y setActive copian menú seeded para el usuario
 - [x] BUG: "No se pudo enviar el feedback" - CORREGIDO: import dinámico de aiFeedback en submitAIFeedback
 - [x] FEAT: Vista previa completa de menú - IMPLEMENTADO: MenuPreviewModal con recetas por día, macros, endpoint menuPreview.get en servidor
+
+## Buddy Pets + Clínicas Veterinarias (sesión 27-Apr-2026)
+
+- [ ] BuddyPet: Corregir emojis de pestañas (Salud y Clínicas tienen el mismo 🏥)
+- [ ] BuddyPet: Añadir etiqueta de texto a la pestaña Alertas (solo mostraba 🔔)
+- [ ] BuddyPet: Añadir componente VetVisitsView (historial de visitas veterinarias)
+- [ ] BuddyPet: Añadir botón para buscar clínicas desde la pestaña Clínicas
+- [ ] VetClinicDashboard: Código de acceso visible y copiable en el dashboard
+- [ ] VetClinicDashboard: Vista detallada de paciente (vacunas, medicamentos, peso, historial)
+- [ ] VetClinicDashboard: Notificación push/email al dueño cuando la clínica envía alerta
+- [ ] Admin: Añadir pestaña "Clínicas Vet" para gestión de clínicas veterinarias
+- [ ] Admin: Procedimiento admin.vetClinics en el servidor (listar, aprobar, desactivar, ver pacientes)
