@@ -65,7 +65,7 @@ const MODULES = [
     img: FOOD.menu, highlights: ["Menús en 30 segundos", "24 perfiles especiales", "Ajuste de macros automático"] },
   { icon: "🍳", color: "#10b981", bg: "#f0fdf4", tag: "Recetas", title: "Biblioteca de Recetas Saludables",
     desc: "Miles de recetas con información nutricional completa, instrucciones paso a paso y filtros por alérgenos, tiempo de preparación y objetivo de salud.",
-    img: FOOD.recipes, highlights: ["207+ recetas", "Filtros por alérgenos", "Macros detallados"] },
+    img: FOOD.recipes, highlights: ["17.000+ recetas", "Filtros por alérgenos", "Macros detallados"] },
   { icon: "🛒", color: "#3b82f6", bg: "#eff6ff", tag: "Buddy Market", title: "Compra Inteligente Automatizada",
     desc: "Genera tu lista de la compra directamente desde tu menú semanal. Organizada por categorías y con integración con supermercados online.",
     img: FOOD.shopping, highlights: ["Lista automática", "Por categorías", "Integración supermercados"] },
@@ -77,7 +77,7 @@ const MODULES = [
     img: FOOD.pantry, highlights: ["Productos curados", "Suplementos", "Envío a domicilio"] },
   { icon: "💪", color: "#f59e0b", bg: "#fffbeb", tag: "Buddy Coach", title: "Tu Entrenador Personal Online",
     desc: "Accede a entrenadores certificados que diseñan planes de entrenamiento 100% personalizados para ti, hacen seguimiento de tu evolución y te motivan cada día.",
-    img: FOOD.salmon, highlights: ["Planes de entrenamiento", "Seguimiento semanal", "Entrenadores certificados"] },
+    img: "/manus-storage/buddy-coach-sport_5db90cf6.jpg", highlights: ["Planes de entrenamiento", "Seguimiento semanal", "Entrenadores certificados"] },
   { icon: "🧑‍⚕️", color: "#0ea5e9", bg: "#f0f9ff", tag: "Buddy Experts", title: "Nutricionistas Certificados Online",
     desc: "Accede a nutricionistas certificados que crean planes 100% personalizados para ti, hacen seguimiento de tu evolución y responden tus dudas en tiempo real.",
     img: FOOD.salmon, highlights: ["Planes nutricionales", "Seguimiento semanal", "Mensajería directa"] },
@@ -97,7 +97,7 @@ const SERVICES = [
   { icon: "👤", color: "#F97316", gradient: "linear-gradient(135deg,#fff7ed,#ffedd5)", border: "#fed7aa",
     title: "Para Usuarios", subtitle: "Tu nutrición, simplificada",
     desc: "Toma el control de tu alimentación con herramientas de IA que antes solo tenían los nutricionistas. Sin complicaciones, sin excusas.",
-    items: ["Menús semanales personalizados con IA","Diario nutricional con registro por voz","Lista de la compra automática","24 planes especializados","Seguimiento de métricas y progreso","Biblioteca de 207+ recetas saludables"],
+    items: ["Menús semanales personalizados con IA","Diario nutricional con registro por voz","Lista de la compra automática","24 planes especializados","Seguimiento de métricas y progreso","Biblioteca de 17.000+ recetas saludables"],
     cta: "Empezar gratis" },
   { icon: "🧑‍⚕️", color: "#10b981", gradient: "linear-gradient(135deg,#f0fdf4,#dcfce7)", border: "#86efac",
     title: "Buddy Experts", subtitle: "Escala tu consulta y multiplica tus ingresos",
@@ -152,7 +152,7 @@ const SPECIAL_MENUS = [
 ];
 
 const STATS = [
-  { value: 207, suffix: "+", label: "Recetas disponibles", icon: "🍳" },
+  { value: 17000, suffix: "+", label: "Recetas disponibles", icon: "🍳" },
   { value: 24, suffix: "", label: "Perfiles especializados", icon: "🎯" },
   { value: 6, suffix: "", label: "Supermercados integrados", icon: "🛒" },
   { value: 100, suffix: "%", label: "Gratis para empezar", icon: "🎁" },
@@ -172,7 +172,7 @@ const TESTIMONIALS = [
 const PLANS = [
   { name: "Free", price: "0€", period: "para siempre", accent: "#6b7280", highlight: false, cta: "Empezar gratis",
     description: "Para explorar Buddy One sin compromiso",
-    features: ["Perfil nutricional básico","Ver 207+ recetas de la comunidad","2 menús/mes + 1 menú IA de prueba","3 listas de la compra/mes","Inventario (hasta 25 productos)"] },
+    features: ["Perfil nutricional básico","Ver 17.000+ recetas de la comunidad","2 menús/mes + 1 menú IA de prueba","3 listas de la compra/mes","Inventario (hasta 25 productos)"] },
   { name: "Pro", price: "9,99€", period: "al mes", accent: "#F97316", highlight: true, cta: "Empezar con Pro",
     description: "Para quienes quieren resultados reales",
     features: ["Menús semanales ilimitados con IA","24 planes especializados","BuddyIA: 50 consultas/día","Diario nutricional ilimitado","Inventario ilimitado + alertas","Métricas de salud (6 meses)","Integración supermercados online"] },
@@ -450,7 +450,7 @@ export default function LandingPage() {
             {[
               { src: FOOD.shopping, alt: "Compra inteligente Buddy Market", badge: "🛒", label: "Buddy Market" },
               { src: "/manus-storage/buddy-pets-cat-dog_d6068ecc.jpg", alt: "Nutrición para mascotas Buddy Pets", badge: "🐾", label: "Buddy Pets" },
-              { src: "/manus-storage/buddy-coach-nutritionist_3e23352c.jpg", alt: "Nutricionista online Buddy Coach", badge: "👤", label: "Buddy Coach" },
+              { src: "/manus-storage/buddy-coach-sport_5db90cf6.jpg", alt: "Entrenamiento deportivo Buddy Coach", badge: "💪", label: "Buddy Coach" },
               { src: FOOD.bowl, alt: "Nutrición saludable Buddy Care", badge: "➕", label: "Buddy Care" },
             ].map((item, i) => (
               <div key={i} style={{ borderRadius: 20, overflow: "hidden", transform: ["rotate(-1.5deg)","rotate(1deg)","rotate(1.5deg)","rotate(-1deg)"][i], boxShadow: "0 12px 32px rgba(0,0,0,0.12)", transition: "transform 0.3s", position: "relative" }}
@@ -475,7 +475,7 @@ export default function LandingPage() {
       {/* ═══ MARQUEE ══════════════════════════════════════════════════════════ */}
       <div style={{ background: "#111827", padding: "14px 0", overflow: "hidden" }}>
         <div style={{ display: "flex", gap: 48, animation: "lp-marquee 30s linear infinite", width: "max-content" }}>
-          {[...Array(3)].flatMap(() => ["🤖 BuddyIA","📋 Menús Semanales","🍳 207+ Recetas","🛒 Buddy Market","📊 Buddy Care","🛍️ Buddy Shop","💪 24 Planes Especiales","🐾 Buddy Pets","🧑‍⚕️ Buddy Coach"]).map((item, i) => (
+          {[...Array(3)].flatMap(() => ["🤖 BuddyIA","📋 Menús Semanales","🍳 17.000+ Recetas","🛒 Buddy Market","📊 Buddy Care","🛍️ Buddy Shop","💪 24 Planes Especiales","🐾 Buddy Pets","🧑‍⚕️ Buddy Coach"]).map((item, i) => (
             <span key={i} style={{ fontSize: 13, fontWeight: 600, color: "#9ca3af", whiteSpace: "nowrap" }}>{item}</span>
           ))}
         </div>
@@ -887,7 +887,7 @@ export default function LandingPage() {
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(124,58,237,0.15)"; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 24px rgba(0,0,0,0.06)"; }}>
               <div style={{ height: 160, background: "linear-gradient(135deg,#F5F3FF,#EDE9FE)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
-                <img src={FOOD.salmon} alt="Buddy Coach" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.25 }} />
+                <img src="/manus-storage/buddy-coach-sport_5db90cf6.jpg" alt="Buddy Coach" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.35 }} />
                 <div style={{ position: "relative", zIndex: 1, textAlign: "center" }}>
                   <div style={{ fontSize: 48 }}>💪</div>
                   <div style={{ fontSize: 13, fontWeight: 800, color: "#7C3AED", marginTop: 4 }}>Buddy Coach</div>

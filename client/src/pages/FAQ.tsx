@@ -142,7 +142,7 @@ const FAQ_DATA: FAQCategory[] = [
     items: [
       {
         q: "¿Qué incluye el plan gratuito?",
-        a: "El plan gratuito incluye: acceso a 207+ recetas de la comunidad, diario nutricional y seguimiento de métricas de salud (90 días de historial), 2 menús manuales al mes + 1 menú IA de prueba, hasta 3 listas de la compra al mes, inventario de hasta 25 productos, hasta 15 recetas guardadas y 5 mensajes con BuddyIA al día. Es suficiente para empezar a organizar tu alimentación.",
+        a: "El plan gratuito incluye: acceso a 17.000+ recetas de la comunidad, diario nutricional y seguimiento de métricas de salud (90 días de historial), 2 menús manuales al mes + 1 menú IA de prueba, hasta 3 listas de la compra al mes, inventario de hasta 25 productos, hasta 15 recetas guardadas y 5 mensajes con BuddyIA al día. Es suficiente para empezar a organizar tu alimentación.",
       },
       {
         q: "¿Qué ventajas tiene el plan Pro?",
