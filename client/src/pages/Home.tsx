@@ -4,6 +4,7 @@ import { useLocation } from "wouter";
 import LanguageSelector from "@/components/LanguageSelector";
 import { getLoginUrl } from "@/const";
 
+<<<<<<< Updated upstream
 const MODULES = [
   {
     id: "market",
@@ -128,6 +129,46 @@ function getColorRgb(color: string): string {
   };
   return map[color] || "249,115,22";
 }
+=======
+// ─── Buddy One brand colors ────────────────────────────────────────────────
+// Primary: #F97316 (orange), Accent: #10B981 (green), Dark: #0F0F0F
+
+const MODULES = [
+  { id: "market", emoji: "🛒", name: "BuddyMarket", tagline: "Compra inteligente", desc: "Listas automáticas, supermercados integrados y optimización de la despensa.", color: "#F97316", bg: "rgba(249,115,22,0.08)", border: "rgba(249,115,22,0.20)" },
+  { id: "care", emoji: "🥗", name: "BuddyCare", tagline: "Nutrición y salud", desc: "Menús personalizados, diario nutricional y seguimiento de objetivos de salud.", color: "#10B981", bg: "rgba(16,185,129,0.08)", border: "rgba(16,185,129,0.20)" },
+  { id: "pets", emoji: "🐶", name: "BuddyPets", tagline: "Nutrición para mascotas", desc: "Planes alimentarios y control de salud para tus animales de compañía.", color: "#8B5CF6", bg: "rgba(139,92,246,0.08)", border: "rgba(139,92,246,0.20)" },
+  { id: "ia", emoji: "🤖", name: "BuddyIA", tagline: "Asistente inteligente", desc: "IA que aprende de ti, genera menús, analiza fotos y responde tus dudas 24/7.", color: "#3B82F6", bg: "rgba(59,130,246,0.08)", border: "rgba(59,130,246,0.20)" },
+  { id: "experts", emoji: "🧑‍⚕️", name: "Experts", tagline: "Profesionales bajo demanda", desc: "Acceso a nutricionistas certificados que guían tu progreso dentro de la plataforma.", color: "#EC4899", bg: "rgba(236,72,153,0.08)", border: "rgba(236,72,153,0.20)" },
+];
+
+const ECOSYSTEM_FEATURES = [
+  { emoji: "🧠", title: "IA que aprende de ti", desc: "Cuanto más usas Buddy One, más preciso se vuelve. Aprende tus gustos, restricciones y objetivos para darte recomendaciones únicas." },
+  { emoji: "🥗", title: "Nutrición personalizada", desc: "Menús semanales adaptados a tu perfil, objetivos y preferencias. Generados en segundos con inteligencia artificial." },
+  { emoji: "🛒", title: "Compra automatizada", desc: "Tu lista de la compra se genera sola a partir de tu menú. Compra directamente en Mercadona, Consum y más." },
+  { emoji: "🏠", title: "Gestión del hogar", desc: "Control de despensa, alertas de caducidades y modo familiar para compartir menús y listas con toda la familia." },
+  { emoji: "🐾", title: "Mascotas integradas", desc: "Extiende el cuidado a tus mascotas con planes de alimentación y seguimiento de salud animal." },
+  { emoji: "👩‍⚕️", title: "Profesionales bajo demanda", desc: "Consulta con nutricionistas certificados directamente desde la app. Sin esperas, sin desplazamientos." },
+];
+
+const SERVICES = [
+  { icon: "👤", target: "Para usuarios", title: "Control total de tu bienestar", desc: "Desde tu alimentación diaria hasta la compra semanal, pasando por el seguimiento de objetivos y el acceso a profesionales. Todo en un solo lugar, todo conectado.", color: "#F97316", features: ["Menús semanales con IA", "Diario nutricional", "Lista de compra automática", "Seguimiento de objetivos", "Chat con nutricionistas"] },
+  { icon: "🧑‍⚕️", target: "Para profesionales", title: "Herramientas para nutricionistas", desc: "Gestiona a tus pacientes, crea planes personalizados, sube menús en PDF y haz seguimiento del progreso desde un dashboard profesional integrado.", color: "#EC4899", features: ["Dashboard de pacientes", "Creación de planes y menús", "Importación desde PDF", "Seguimiento de progreso", "Consultas integradas"] },
+  { icon: "🏢", target: "Para empresas", title: "Bienestar corporativo", desc: "Soluciones B2B para empresas que quieren mejorar la salud y productividad de sus equipos. Programas de bienestar escalables y medibles.", color: "#3B82F6", features: ["Programas de bienestar", "Gestión de equipos", "Métricas de salud", "Integración con RRHH", "Soporte dedicado"] },
+];
+
+const PLANS = [
+  { name: "Básico", price: "Gratis", period: "", badge: "", features: ["BuddyCare básico", "BuddyMarket básico", "5 menús con IA/mes", "Lista de compra automática", "Recetas ilimitadas"], cta: "Empezar gratis", highlight: false },
+  { name: "Premium", price: "9,99€", period: "/mes", badge: "MÁS POPULAR", features: ["Todo en Básico", "BuddyIA completo", "Menús IA ilimitados", "BuddyScan (foto → receta)", "Análisis nutricional avanzado", "Modo familiar"], cta: "Probar Premium", highlight: true },
+  { name: "Pro Max", price: "19,99€", period: "/mes", badge: "ECOSISTEMA COMPLETO", features: ["Todo en Premium", "BuddyPets", "Consultas con Experts", "API de integración", "Soporte prioritario 24/7"], cta: "Contactar", highlight: false },
+];
+
+const STATS = [
+  { value: "15K+", label: "Usuarios activos" },
+  { value: "8K+", label: "Recetas disponibles" },
+  { value: "4.9★", label: "Valoración media" },
+  { value: "98%", label: "Satisfacción" },
+];
+>>>>>>> Stashed changes
 
 export default function Home() {
   const { isAuthenticated, loading } = useAuth();
@@ -139,6 +180,7 @@ export default function Home() {
   }, [isAuthenticated, loading, navigate]);
 
   useEffect(() => {
+<<<<<<< Updated upstream
     const timer = setInterval(() => {
       setActiveModule((prev) => (prev + 1) % MODULES.length);
     }, 3500);
@@ -152,6 +194,21 @@ export default function Home() {
       <div style={{ display: "flex", minHeight: "100dvh", alignItems: "center", justifyContent: "center", background: "#0A0A0A" }}>
         <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "16px" }}>
           <div style={{ width: "60px", height: "60px", borderRadius: "18px", background: "linear-gradient(135deg, #F97316, #FB923C)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "28px" }}>B</div>
+=======
+    const timer = setInterval(() => setActiveModule(prev => (prev + 1) % MODULES.length), 3000);
+    return () => clearInterval(timer);
+  }, []);
+
+  if (loading) {
+    return (
+      <div style={{ display: "flex", minHeight: "100dvh", alignItems: "center", justifyContent: "center", background: "#0F0F0F" }}>
+        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "20px" }}>
+          <div style={{ width: "72px", height: "72px", borderRadius: "22px", background: "linear-gradient(135deg, #F97316 0%, #FB923C 50%, #FCD34D 100%)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "34px", boxShadow: "0 12px 32px rgba(249,115,22,0.45)" }}>✦</div>
+          <div style={{ textAlign: "center" }}>
+            <p style={{ margin: 0, fontSize: "20px", fontWeight: 900, color: "white", letterSpacing: "-0.03em" }}>Buddy One</p>
+            <p style={{ margin: "4px 0 0", fontSize: "13px", color: "rgba(255,255,255,0.4)" }}>Cargando tu ecosistema...</p>
+          </div>
+>>>>>>> Stashed changes
           <div style={{ display: "flex", gap: "6px" }}>
             {[0, 150, 300].map((d) => <div key={d} style={{ width: "8px", height: "8px", borderRadius: "50%", background: "#F97316", animation: "bounce 1s infinite", animationDelay: `${d}ms` }} />)}
           </div>
@@ -160,7 +217,10 @@ export default function Home() {
     );
   }
 
+  const mod = MODULES[activeModule];
+
   return (
+<<<<<<< Updated upstream
     <div style={{ fontFamily: "'Plus Jakarta Sans', 'Inter', sans-serif", background: "#0A0A0A", color: "white", minHeight: "100vh", overflowX: "hidden" }}>
 
       {/* NAVBAR */}
@@ -187,10 +247,32 @@ export default function Home() {
               {isAuthenticated ? "Ir a la app" : "Empezar gratis"}
             </a>
           </div>
+=======
+    <div style={{ minHeight: "100dvh", background: "#FFFFFF", fontFamily: "'Plus Jakarta Sans', sans-serif", overflowX: "hidden" }}>
+
+      {/* NAVBAR */}
+      <nav style={{ position: "sticky", top: 0, zIndex: 100, background: "rgba(255,255,255,0.92)", backdropFilter: "blur(16px)", borderBottom: "1px solid rgba(0,0,0,0.06)", padding: "0 20px", height: "60px", display: "flex", alignItems: "center", justifyContent: "space-between" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+          <div style={{ width: "36px", height: "36px", borderRadius: "11px", background: "linear-gradient(135deg, #F97316, #FCD34D)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", fontWeight: 900, color: "white", boxShadow: "0 4px 12px rgba(249,115,22,0.30)" }}>✦</div>
+          <div>
+            <p style={{ margin: 0, fontSize: "16px", fontWeight: 900, color: "#0F0F0F", letterSpacing: "-0.03em", lineHeight: 1 }}>Buddy One</p>
+            <p style={{ margin: 0, fontSize: "10px", color: "#F97316", fontWeight: 700, letterSpacing: "0.06em", textTransform: "uppercase", lineHeight: 1.2 }}>Ecosistema de bienestar</p>
+          </div>
+        </div>
+        <div style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+          <a href="#ecosystem" style={{ padding: "6px 12px", borderRadius: "8px", fontSize: "13px", fontWeight: 600, color: "#374151", textDecoration: "none" }}>Módulos</a>
+          <a href="#services" style={{ padding: "6px 12px", borderRadius: "8px", fontSize: "13px", fontWeight: 600, color: "#374151", textDecoration: "none" }}>Servicios</a>
+          <a href="#pricing" style={{ padding: "6px 12px", borderRadius: "8px", fontSize: "13px", fontWeight: 600, color: "#374151", textDecoration: "none" }}>Precios</a>
+          <LanguageSelector variant="compact" />
+          <a href={isAuthenticated ? "/app/dashboard" : getLoginUrl()} style={{ marginLeft: "4px", padding: "8px 16px", borderRadius: "12px", background: "linear-gradient(135deg, #F97316, #FB923C)", color: "white", fontSize: "13px", fontWeight: 700, textDecoration: "none", boxShadow: "0 4px 12px rgba(249,115,22,0.30)", whiteSpace: "nowrap" }}>
+            {isAuthenticated ? "Mi app" : "Ir a la app →"}
+          </a>
+>>>>>>> Stashed changes
         </div>
       </nav>
 
       {/* HERO */}
+<<<<<<< Updated upstream
       <section style={{ minHeight: "92vh", display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "80px 20px 60px", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", top: "20%", left: "50%", transform: "translateX(-50%)", width: "700px", height: "400px", background: "radial-gradient(ellipse at center, rgba(249,115,22,0.12) 0%, transparent 70%)", pointerEvents: "none" }} />
         <div style={{ position: "absolute", top: "40%", left: "15%", width: "300px", height: "300px", background: "radial-gradient(ellipse at center, rgba(124,58,237,0.07) 0%, transparent 70%)", pointerEvents: "none" }} />
@@ -229,10 +311,63 @@ export default function Home() {
                 <span style={{ fontSize: "12px", fontWeight: 600, color: m.color }}>{m.name}</span>
               </div>
             ))}
+=======
+      <section style={{ background: "linear-gradient(160deg, #0F0F0F 0%, #1a1a2e 60%, #0F0F0F 100%)", padding: "80px 20px 70px", textAlign: "center", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", top: "-80px", left: "50%", transform: "translateX(-50%)", width: "800px", height: "500px", background: "radial-gradient(ellipse, rgba(249,115,22,0.15) 0%, transparent 65%)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", bottom: "-60px", left: "20%", width: "400px", height: "300px", background: "radial-gradient(ellipse, rgba(16,185,129,0.08) 0%, transparent 65%)", pointerEvents: "none" }} />
+        <div style={{ position: "absolute", bottom: "-60px", right: "15%", width: "350px", height: "250px", background: "radial-gradient(ellipse, rgba(59,130,246,0.08) 0%, transparent 65%)", pointerEvents: "none" }} />
+
+        <div style={{ maxWidth: "680px", margin: "0 auto", position: "relative" }}>
+          <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", background: "rgba(249,115,22,0.15)", border: "1px solid rgba(249,115,22,0.30)", borderRadius: "100px", padding: "6px 16px", marginBottom: "28px" }}>
+            <span style={{ fontSize: "14px" }}>✦</span>
+            <span style={{ fontSize: "12px", fontWeight: 700, color: "#FB923C", letterSpacing: "0.06em", textTransform: "uppercase" }}>Buddy One · Ecosistema de bienestar inteligente</span>
           </div>
+
+          <h1 style={{ fontSize: "clamp(38px, 9vw, 64px)", fontWeight: 900, color: "white", letterSpacing: "-0.04em", lineHeight: 1.05, margin: "0 0 20px" }}>
+            Todo lo que necesitas<br />
+            <span style={{ background: "linear-gradient(90deg, #F97316, #FCD34D)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>para cuidarte,</span><br />
+            en un solo lugar
+          </h1>
+
+          <p style={{ fontSize: "17px", color: "rgba(255,255,255,0.65)", lineHeight: 1.65, margin: "0 0 36px", maxWidth: "520px", marginLeft: "auto", marginRight: "auto" }}>
+            Buddy One combina <strong style={{ color: "rgba(255,255,255,0.9)" }}>inteligencia artificial, nutrición, compra inteligente</strong> y acceso a profesionales para ayudarte a mejorar tu salud de forma simple, personalizada y continua.
+          </p>
+
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", justifyContent: "center", marginBottom: "16px" }}>
+            <a href={isAuthenticated ? "/app/dashboard" : getLoginUrl()} style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "16px 32px", borderRadius: "16px", background: "linear-gradient(135deg, #F97316, #FB923C)", color: "white", fontSize: "16px", fontWeight: 800, textDecoration: "none", boxShadow: "0 8px 32px rgba(249,115,22,0.45)", letterSpacing: "-0.01em" }}>
+              {isAuthenticated ? "Ir al dashboard" : "Empezar gratis →"}
+            </a>
+            <a href="#ecosystem" style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "16px 28px", borderRadius: "16px", background: "rgba(255,255,255,0.07)", color: "rgba(255,255,255,0.85)", fontSize: "16px", fontWeight: 700, textDecoration: "none", border: "1px solid rgba(255,255,255,0.12)" }}>
+              Ver cómo funciona ↓
+            </a>
+          </div>
+          <p style={{ margin: 0, fontSize: "13px", color: "rgba(255,255,255,0.35)" }}>Sin tarjeta de crédito · Cancela cuando quieras</p>
+        </div>
+
+        {/* Module pills */}
+        <div style={{ display: "flex", flexWrap: "wrap", gap: "10px", justifyContent: "center", marginTop: "48px", maxWidth: "600px", margin: "48px auto 0" }}>
+          {MODULES.map((m, i) => (
+            <button key={m.id} onClick={() => setActiveModule(i)} style={{ display: "inline-flex", alignItems: "center", gap: "6px", padding: "8px 14px", borderRadius: "100px", background: i === activeModule ? m.bg : "rgba(255,255,255,0.05)", border: `1px solid ${i === activeModule ? m.border : "rgba(255,255,255,0.08)"}`, color: i === activeModule ? m.color : "rgba(255,255,255,0.45)", fontSize: "13px", fontWeight: 700, cursor: "pointer", transition: "all 0.2s" }}>
+              <span>{m.emoji}</span> {m.name}
+            </button>
+          ))}
+        </div>
+
+        {/* Active module preview */}
+        <div style={{ maxWidth: "480px", margin: "20px auto 0", padding: "20px 24px", borderRadius: "20px", background: "rgba(255,255,255,0.04)", border: `1px solid ${mod.border}`, textAlign: "left" }}>
+          <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "8px" }}>
+            <span style={{ fontSize: "22px" }}>{mod.emoji}</span>
+            <div>
+              <p style={{ margin: 0, fontSize: "14px", fontWeight: 800, color: mod.color }}>{mod.name}</p>
+              <p style={{ margin: 0, fontSize: "12px", color: "rgba(255,255,255,0.45)" }}>{mod.tagline}</p>
+            </div>
+>>>>>>> Stashed changes
+          </div>
+          <p style={{ margin: 0, fontSize: "14px", color: "rgba(255,255,255,0.65)", lineHeight: 1.55 }}>{mod.desc}</p>
         </div>
       </section>
 
+<<<<<<< Updated upstream
       {/* MÓDULOS */}
       <section id="modulos" style={{ padding: "100px 20px", background: "#0F0F0F" }}>
         <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
@@ -281,11 +416,21 @@ export default function Home() {
                   <div key={i} onClick={() => setActiveModule(i)} style={{ width: i === activeModule ? "24px" : "8px", height: "8px", borderRadius: "4px", background: i === activeModule ? mod.color : "rgba(255,255,255,0.15)", cursor: "pointer", transition: "all 0.3s" }} />
                 ))}
               </div>
+=======
+      {/* STATS */}
+      <section style={{ background: "#0F0F0F", padding: "28px 20px", borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
+        <div style={{ maxWidth: "600px", margin: "0 auto", display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: "8px" }}>
+          {STATS.map((s) => (
+            <div key={s.value} style={{ textAlign: "center" }}>
+              <p style={{ margin: 0, fontSize: "22px", fontWeight: 900, color: "#F97316", letterSpacing: "-0.03em" }}>{s.value}</p>
+              <p style={{ margin: "2px 0 0", fontSize: "12px", color: "rgba(255,255,255,0.5)", fontWeight: 500 }}>{s.label}</p>
+>>>>>>> Stashed changes
             </div>
           </div>
         </div>
       </section>
 
+<<<<<<< Updated upstream
       {/* FUNCIONALIDADES */}
       <section id="funcionalidades" style={{ padding: "100px 20px", background: "#0A0A0A" }}>
         <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
@@ -303,12 +448,64 @@ export default function Home() {
                 <div style={{ fontSize: "32px", marginBottom: "16px" }}>{f.icon}</div>
                 <h3 style={{ fontSize: "18px", fontWeight: 800, color: "white", margin: "0 0 10px", letterSpacing: "-0.02em" }}>{f.title}</h3>
                 <p style={{ fontSize: "14px", color: "rgba(255,255,255,0.40)", lineHeight: 1.65, margin: 0 }}>{f.desc}</p>
+=======
+      {/* ECOSYSTEM MODULES */}
+      <section id="ecosystem" style={{ padding: "80px 20px", background: "#FAFAFA" }}>
+        <div style={{ maxWidth: "640px", margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: "48px" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(249,115,22,0.08)", borderRadius: "100px", padding: "5px 14px", marginBottom: "16px" }}>
+              <span style={{ fontSize: "12px", fontWeight: 700, color: "#F97316", letterSpacing: "0.06em", textTransform: "uppercase" }}>El ecosistema</span>
+            </div>
+            <h2 style={{ fontSize: "clamp(26px, 6vw, 38px)", fontWeight: 900, color: "#0F0F0F", letterSpacing: "-0.03em", margin: "0 0 12px" }}>Un sistema operativo<br />para tu bienestar</h2>
+            <p style={{ fontSize: "16px", color: "#6b7280", margin: 0, lineHeight: 1.6 }}>No es una app de recetas. Es una plataforma completa donde todo está conectado y todo crece contigo.</p>
+          </div>
+
+          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+            {MODULES.map((m) => (
+              <div key={m.id} style={{ display: "flex", alignItems: "flex-start", gap: "16px", padding: "20px 22px", borderRadius: "20px", background: "white", border: `1px solid ${m.border}`, boxShadow: "0 2px 12px rgba(0,0,0,0.04)" }}>
+                <div style={{ width: "48px", height: "48px", borderRadius: "14px", background: m.bg, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "22px", flexShrink: 0 }}>{m.emoji}</div>
+                <div style={{ flex: 1 }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "4px", flexWrap: "wrap" }}>
+                    <p style={{ margin: 0, fontSize: "15px", fontWeight: 800, color: "#0F0F0F" }}>{m.name}</p>
+                    <span style={{ fontSize: "11px", fontWeight: 700, color: m.color, background: m.bg, padding: "2px 8px", borderRadius: "100px" }}>{m.tagline}</span>
+                  </div>
+                  <p style={{ margin: 0, fontSize: "14px", color: "#6b7280", lineHeight: 1.55 }}>{m.desc}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+
+          <div style={{ marginTop: "28px", padding: "22px 24px", borderRadius: "20px", background: "linear-gradient(135deg, #0F0F0F, #1a1a2e)", textAlign: "center" }}>
+            <p style={{ margin: "0 0 6px", fontSize: "15px", fontWeight: 800, color: "white" }}>✦ Todo conectado. Todo integrado.</p>
+            <p style={{ margin: 0, fontSize: "13px", color: "rgba(255,255,255,0.55)", lineHeight: 1.55 }}>Cada módulo comparte datos con los demás. Tu menú alimenta tu lista de compra. Tu diario informa a tu nutricionista. Tu IA aprende de todo.</p>
+          </div>
+        </div>
+      </section>
+
+      {/* FEATURES */}
+      <section id="features" style={{ padding: "80px 20px", background: "white" }}>
+        <div style={{ maxWidth: "640px", margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: "48px" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(16,185,129,0.08)", borderRadius: "100px", padding: "5px 14px", marginBottom: "16px" }}>
+              <span style={{ fontSize: "12px", fontWeight: 700, color: "#10B981", letterSpacing: "0.06em", textTransform: "uppercase" }}>Funcionalidades</span>
+            </div>
+            <h2 style={{ fontSize: "clamp(26px, 6vw, 38px)", fontWeight: 900, color: "#0F0F0F", letterSpacing: "-0.03em", margin: "0 0 12px" }}>Un ecosistema,<br />múltiples soluciones</h2>
+            <p style={{ fontSize: "16px", color: "#6b7280", margin: 0, lineHeight: 1.6 }}>Cada capacidad está diseñada para trabajar en conjunto, no de forma aislada.</p>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(2, 1fr)", gap: "14px" }}>
+            {ECOSYSTEM_FEATURES.map((f) => (
+              <div key={f.title} style={{ padding: "20px", borderRadius: "18px", background: "#FAFAFA", border: "1px solid rgba(0,0,0,0.06)" }}>
+                <div style={{ fontSize: "26px", marginBottom: "10px" }}>{f.emoji}</div>
+                <p style={{ margin: "0 0 6px", fontSize: "14px", fontWeight: 800, color: "#0F0F0F" }}>{f.title}</p>
+                <p style={{ margin: 0, fontSize: "13px", color: "#6b7280", lineHeight: 1.55 }}>{f.desc}</p>
+>>>>>>> Stashed changes
               </div>
             ))}
           </div>
         </div>
       </section>
 
+<<<<<<< Updated upstream
       {/* SERVICIOS */}
       <section id="servicios" style={{ padding: "100px 20px", background: "#0F0F0F" }}>
         <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
@@ -335,6 +532,34 @@ export default function Home() {
                       <span style={{ fontSize: "14px", color: "rgba(255,255,255,0.60)", fontWeight: 500 }}>{item}</span>
                     </div>
                   ))}
+=======
+      {/* SERVICES */}
+      <section id="services" style={{ padding: "80px 20px", background: "#0F0F0F" }}>
+        <div style={{ maxWidth: "640px", margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: "48px" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(249,115,22,0.12)", borderRadius: "100px", padding: "5px 14px", marginBottom: "16px" }}>
+              <span style={{ fontSize: "12px", fontWeight: 700, color: "#FB923C", letterSpacing: "0.06em", textTransform: "uppercase" }}>Servicios</span>
+            </div>
+            <h2 style={{ fontSize: "clamp(26px, 6vw, 38px)", fontWeight: 900, color: "white", letterSpacing: "-0.03em", margin: "0 0 12px" }}>Una plataforma<br />para cada necesidad</h2>
+            <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.55)", margin: 0, lineHeight: 1.6 }}>Buddy One se adapta a ti, a tu equipo o a tu práctica profesional.</p>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "16px" }}>
+            {SERVICES.map((s) => (
+              <div key={s.target} style={{ padding: "28px 24px", borderRadius: "24px", background: "rgba(255,255,255,0.04)", border: "1px solid rgba(255,255,255,0.08)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "14px" }}>
+                  <div style={{ width: "44px", height: "44px", borderRadius: "13px", background: `${s.color}18`, display: "flex", alignItems: "center", justifyContent: "center", fontSize: "20px" }}>{s.icon}</div>
+                  <div>
+                    <p style={{ margin: 0, fontSize: "11px", fontWeight: 700, color: s.color, letterSpacing: "0.08em", textTransform: "uppercase" }}>{s.target}</p>
+                    <p style={{ margin: 0, fontSize: "16px", fontWeight: 800, color: "white", letterSpacing: "-0.02em" }}>{s.title}</p>
+                  </div>
+                </div>
+                <p style={{ margin: "0 0 16px", fontSize: "14px", color: "rgba(255,255,255,0.6)", lineHeight: 1.6 }}>{s.desc}</p>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "8px" }}>
+                  {s.features.map((f) => (
+                    <span key={f} style={{ display: "inline-flex", alignItems: "center", gap: "5px", fontSize: "12px", fontWeight: 600, color: "rgba(255,255,255,0.7)", background: "rgba(255,255,255,0.06)", padding: "4px 10px", borderRadius: "100px", border: "1px solid rgba(255,255,255,0.08)" }}>
+                      <span style={{ color: s.color }}>✓</span> {f}
+                    </span>
+                  ))}
                 </div>
               </div>
             ))}
@@ -342,6 +567,41 @@ export default function Home() {
         </div>
       </section>
 
+      {/* HOW IT WORKS */}
+      <section style={{ padding: "80px 20px", background: "#FAFAFA" }}>
+        <div style={{ maxWidth: "640px", margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: "48px" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(59,130,246,0.08)", borderRadius: "100px", padding: "5px 14px", marginBottom: "16px" }}>
+              <span style={{ fontSize: "12px", fontWeight: 700, color: "#3B82F6", letterSpacing: "0.06em", textTransform: "uppercase" }}>Cómo funciona</span>
+            </div>
+            <h2 style={{ fontSize: "clamp(26px, 6vw, 38px)", fontWeight: 900, color: "#0F0F0F", letterSpacing: "-0.03em", margin: "0 0 12px" }}>Empieza en minutos,<br />mejora para siempre</h2>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "0" }}>
+            {[
+              { step: "01", title: "Configura tu perfil", desc: "Indica tus objetivos, alergias, preferencias y estilo de vida. Buddy One personaliza toda la experiencia desde el primer momento.", color: "#F97316" },
+              { step: "02", title: "Activa los módulos que necesitas", desc: "Empieza con BuddyCare y BuddyMarket. Añade BuddyIA, Experts o BuddyPets cuando los necesites. Crece a tu ritmo.", color: "#10B981" },
+              { step: "03", title: "Deja que la IA trabaje por ti", desc: "Menús generados automáticamente, listas de compra listas para usar, análisis de fotos de comida y recomendaciones continuas.", color: "#3B82F6" },
+              { step: "04", title: "Mide tu progreso", desc: "Dashboards de salud, seguimiento de objetivos y acceso a profesionales cuando necesites un empujón extra.", color: "#EC4899" },
+            ].map((item, i, arr) => (
+              <div key={item.step} style={{ display: "flex", gap: "16px" }}>
+                <div style={{ display: "flex", flexDirection: "column", alignItems: "center" }}>
+                  <div style={{ width: "44px", height: "44px", borderRadius: "13px", background: `${item.color}15`, border: `2px solid ${item.color}30`, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                    <span style={{ fontSize: "13px", fontWeight: 900, color: item.color }}>{item.step}</span>
+                  </div>
+                  {i < arr.length - 1 && <div style={{ width: "2px", flex: 1, background: "rgba(0,0,0,0.06)", margin: "6px 0" }} />}
+                </div>
+                <div style={{ paddingBottom: i < arr.length - 1 ? "24px" : "0", paddingTop: "8px" }}>
+                  <p style={{ margin: "0 0 6px", fontSize: "15px", fontWeight: 800, color: "#0F0F0F" }}>{item.title}</p>
+                  <p style={{ margin: 0, fontSize: "14px", color: "#6b7280", lineHeight: 1.6 }}>{item.desc}</p>
+>>>>>>> Stashed changes
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+<<<<<<< Updated upstream
       {/* PRECIOS */}
       <section id="precios" style={{ padding: "100px 20px", background: "#0A0A0A" }}>
         <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
@@ -361,20 +621,55 @@ export default function Home() {
                   <div style={{ display: "flex", alignItems: "baseline", gap: "4px" }}>
                     <span style={{ fontSize: "40px", fontWeight: 900, color: plan.highlight ? "white" : "#F97316", letterSpacing: "-0.04em" }}>{plan.price}</span>
                     {plan.period && <span style={{ fontSize: "14px", color: plan.highlight ? "rgba(255,255,255,0.65)" : "rgba(255,255,255,0.35)" }}>{plan.period}</span>}
+=======
+      {/* PRICING */}
+      <section id="pricing" style={{ padding: "80px 20px", background: "white" }}>
+        <div style={{ maxWidth: "640px", margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: "48px" }}>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: "6px", background: "rgba(249,115,22,0.08)", borderRadius: "100px", padding: "5px 14px", marginBottom: "16px" }}>
+              <span style={{ fontSize: "12px", fontWeight: 700, color: "#F97316", letterSpacing: "0.06em", textTransform: "uppercase" }}>Precios</span>
+            </div>
+            <h2 style={{ fontSize: "clamp(26px, 6vw, 38px)", fontWeight: 900, color: "#0F0F0F", letterSpacing: "-0.03em", margin: "0 0 12px" }}>Elige tu nivel<br />de ecosistema</h2>
+            <p style={{ fontSize: "16px", color: "#6b7280", margin: 0 }}>Empieza gratis. Escala cuando estés listo.</p>
+          </div>
+          <div style={{ display: "flex", flexDirection: "column", gap: "14px" }}>
+            {PLANS.map((plan) => (
+              <div key={plan.name} style={{ padding: "24px", borderRadius: "22px", background: plan.highlight ? "linear-gradient(135deg, #F97316, #FB923C)" : "white", border: plan.highlight ? "none" : "1.5px solid rgba(0,0,0,0.08)", boxShadow: plan.highlight ? "0 12px 40px rgba(249,115,22,0.30)" : "0 2px 12px rgba(0,0,0,0.04)", position: "relative", overflow: "hidden" }}>
+                {plan.badge && (
+                  <div style={{ position: "absolute", top: "16px", right: "16px", background: plan.highlight ? "rgba(255,255,255,0.25)" : "rgba(249,115,22,0.10)", borderRadius: "100px", padding: "3px 10px" }}>
+                    <span style={{ fontSize: "10px", fontWeight: 800, color: plan.highlight ? "white" : "#F97316", letterSpacing: "0.06em" }}>{plan.badge}</span>
+                  </div>
+                )}
+                <div style={{ marginBottom: "16px" }}>
+                  <p style={{ margin: "0 0 4px", fontSize: "13px", fontWeight: 700, color: plan.highlight ? "rgba(255,255,255,0.7)" : "#9ca3af", letterSpacing: "0.04em", textTransform: "uppercase" }}>{plan.name}</p>
+                  <div style={{ display: "flex", alignItems: "baseline", gap: "4px" }}>
+                    <span style={{ fontSize: "32px", fontWeight: 900, color: plan.highlight ? "white" : "#F97316", letterSpacing: "-0.04em" }}>{plan.price}</span>
+                    {plan.period && <span style={{ fontSize: "14px", color: plan.highlight ? "rgba(255,255,255,0.65)" : "#9ca3af" }}>{plan.period}</span>}
+>>>>>>> Stashed changes
                   </div>
                   <p style={{ fontSize: "13px", color: plan.highlight ? "rgba(255,255,255,0.70)" : "rgba(255,255,255,0.35)", margin: "6px 0 0" }}>{plan.desc}</p>
                 </div>
                 <div style={{ display: "flex", flexDirection: "column", gap: "10px", marginBottom: "28px" }}>
                   {plan.features.map((f) => (
+<<<<<<< Updated upstream
                     <div key={f} style={{ display: "flex", alignItems: "center", gap: "10px" }}>
                       <div style={{ width: "18px", height: "18px", borderRadius: "5px", background: plan.highlight ? "rgba(255,255,255,0.20)" : "rgba(249,115,22,0.15)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                         <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke={plan.highlight ? "white" : "#F97316"} strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"/></svg>
+=======
+                    <div key={f} style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                      <div style={{ width: "18px", height: "18px", borderRadius: "50%", background: plan.highlight ? "rgba(255,255,255,0.25)" : "rgba(249,115,22,0.12)", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
+                        <svg width="10" height="10" viewBox="0 0 12 12" fill="none"><path d="M2 6l3 3 5-5" stroke={plan.highlight ? "white" : "#F97316"} strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round" /></svg>
+>>>>>>> Stashed changes
                       </div>
                       <span style={{ fontSize: "14px", color: plan.highlight ? "rgba(255,255,255,0.90)" : "rgba(255,255,255,0.55)", fontWeight: 500 }}>{f}</span>
                     </div>
                   ))}
                 </div>
+<<<<<<< Updated upstream
                 <a href={isAuthenticated ? "/app/dashboard" : getLoginUrl()} style={{ display: "block", textAlign: "center", padding: "14px", borderRadius: "12px", background: plan.highlight ? "white" : "rgba(249,115,22,0.12)", border: plan.highlight ? "none" : "1px solid rgba(249,115,22,0.25)", color: "#F97316", fontSize: "15px", fontWeight: 800, textDecoration: "none", letterSpacing: "-0.01em" }}>
+=======
+                <a href={isAuthenticated ? "/app/dashboard" : getLoginUrl()} style={{ display: "block", textAlign: "center", padding: "13px", borderRadius: "13px", background: plan.highlight ? "white" : "#F97316", color: plan.highlight ? "#F97316" : "white", fontSize: "14px", fontWeight: 800, textDecoration: "none", boxShadow: plan.highlight ? "none" : "0 4px 12px rgba(249,115,22,0.25)" }}>
+>>>>>>> Stashed changes
                   {isAuthenticated ? "Ir al dashboard" : plan.cta}
                 </a>
               </div>
@@ -383,6 +678,7 @@ export default function Home() {
         </div>
       </section>
 
+<<<<<<< Updated upstream
       {/* CTA FINAL */}
       <section style={{ padding: "100px 20px", background: "#0F0F0F", textAlign: "center", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: "600px", height: "300px", background: "radial-gradient(ellipse at center, rgba(249,115,22,0.14) 0%, transparent 70%)", pointerEvents: "none" }} />
@@ -404,10 +700,31 @@ export default function Home() {
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
           </a>
           <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.22)", marginTop: "20px" }}>Sin tarjeta de crédito · Cancela cuando quieras</p>
+=======
+      {/* VISION CTA */}
+      <section style={{ padding: "80px 20px", background: "linear-gradient(160deg, #0F0F0F 0%, #1a1a2e 100%)", textAlign: "center", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", top: "50%", left: "50%", transform: "translate(-50%, -50%)", width: "600px", height: "400px", background: "radial-gradient(ellipse, rgba(249,115,22,0.12) 0%, transparent 65%)", pointerEvents: "none" }} />
+        <div style={{ maxWidth: "520px", margin: "0 auto", position: "relative" }}>
+          <div style={{ width: "72px", height: "72px", borderRadius: "22px", background: "linear-gradient(135deg, #F97316, #FCD34D)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "34px", margin: "0 auto 24px", boxShadow: "0 12px 32px rgba(249,115,22,0.40)" }}>✦</div>
+          <h2 style={{ fontSize: "clamp(28px, 7vw, 42px)", fontWeight: 900, color: "white", letterSpacing: "-0.04em", margin: "0 0 16px", lineHeight: 1.1 }}>
+            No estás usando una app.<br />
+            <span style={{ background: "linear-gradient(90deg, #F97316, #FCD34D)", WebkitBackgroundClip: "text", WebkitTextFillColor: "transparent", backgroundClip: "text" }}>Estás entrando en un ecosistema.</span>
+          </h2>
+          <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.55)", margin: "0 0 36px", lineHeight: 1.65 }}>
+            Buddy One crece contigo. Cada dato que introduces, cada menú que generas y cada compra que haces hace el sistema más inteligente y más tuyo.
+          </p>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "12px", justifyContent: "center" }}>
+            <a href={isAuthenticated ? "/app/dashboard" : getLoginUrl()} style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "16px 32px", borderRadius: "16px", background: "linear-gradient(135deg, #F97316, #FB923C)", color: "white", fontSize: "16px", fontWeight: 800, textDecoration: "none", boxShadow: "0 8px 32px rgba(249,115,22,0.45)" }}>
+              {isAuthenticated ? "Ir al dashboard" : "Empezar gratis →"}
+            </a>
+          </div>
+          <p style={{ margin: "16px 0 0", fontSize: "13px", color: "rgba(255,255,255,0.30)" }}>Sin tarjeta de crédito · Cancela cuando quieras</p>
+>>>>>>> Stashed changes
         </div>
       </section>
 
       {/* FOOTER */}
+<<<<<<< Updated upstream
       <footer style={{ padding: "40px 20px 32px", background: "#060606", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
         <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: "32px", marginBottom: "40px" }}>
@@ -451,6 +768,35 @@ export default function Home() {
               El contenido de esta plataforma no constituye asesoramiento médico ni nutricional profesional. Consulta siempre con un profesional de la salud.
             </p>
           </div>
+=======
+      <footer style={{ padding: "32px 20px 24px", background: "#080808", borderTop: "1px solid rgba(255,255,255,0.06)" }}>
+        <div style={{ maxWidth: "640px", margin: "0 auto" }}>
+          <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "24px", flexWrap: "wrap", gap: "12px" }}>
+            <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+              <div style={{ width: "32px", height: "32px", borderRadius: "10px", background: "linear-gradient(135deg, #F97316, #FCD34D)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "16px", fontWeight: 900, color: "white" }}>✦</div>
+              <div>
+                <p style={{ margin: 0, fontSize: "14px", fontWeight: 900, color: "white" }}>Buddy One</p>
+                <p style={{ margin: 0, fontSize: "10px", color: "rgba(255,255,255,0.35)", letterSpacing: "0.04em" }}>Powered by BuddyMarket</p>
+              </div>
+            </div>
+            <LanguageSelector variant="footer" className="text-white/50 hover:text-white/80" />
+          </div>
+          <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", marginBottom: "24px" }}>
+            {MODULES.map((m) => (
+              <span key={m.id} style={{ display: "inline-flex", alignItems: "center", gap: "5px", fontSize: "12px", fontWeight: 600, color: "rgba(255,255,255,0.45)", background: "rgba(255,255,255,0.04)", padding: "4px 10px", borderRadius: "100px", border: "1px solid rgba(255,255,255,0.07)" }}>
+                {m.emoji} {m.name}
+              </span>
+            ))}
+          </div>
+          <div style={{ display: "flex", justifyContent: "center", gap: "20px", marginBottom: "16px", flexWrap: "wrap" }}>
+            <a href="/terms" style={{ fontSize: "12px", color: "rgba(255,255,255,0.35)", textDecoration: "underline", textUnderlineOffset: "2px" }}>Términos y Condiciones</a>
+            <a href="/privacy" style={{ fontSize: "12px", color: "rgba(255,255,255,0.35)", textDecoration: "underline", textUnderlineOffset: "2px" }}>Política de Privacidad</a>
+            <a href="mailto:iabuddymarket@gmail.com" style={{ fontSize: "12px", color: "rgba(255,255,255,0.35)", textDecoration: "underline", textUnderlineOffset: "2px" }}>Contacto</a>
+          </div>
+          <p style={{ margin: 0, fontSize: "11px", color: "rgba(255,255,255,0.20)", lineHeight: 1.5, textAlign: "center" }}>
+            © 2026 Buddy One · BuddyMarket. El contenido no constituye asesoramiento médico o nutricional profesional. Consulta siempre con un profesional de la salud.
+          </p>
+>>>>>>> Stashed changes
         </div>
       </footer>
 
