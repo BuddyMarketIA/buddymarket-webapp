@@ -203,6 +203,7 @@ export default function Profile() {
   const [bodyFatPercentage, setBodyFatPercentage] = useState("");
   const [mainGoal, setMainGoal] = useState("");
   const [weightChangeRate, setWeightChangeRate] = useState("");
+  const [dailyCalorieGoal, setDailyCalorieGoal] = useState("");
   const [motivationLevel, setMotivationLevel] = useState("");
   const [fitnessGoalDetail, setFitnessGoalDetail] = useState("");
   const [previousDietExperience, setPreviousDietExperience] = useState<string[]>([]);
@@ -323,6 +324,7 @@ export default function Profile() {
       setBodyFatPercentage(p.bodyFatPercentage?.toString() || "");
       setMainGoal(p.mainGoal || "");
       setWeightChangeRate(p.weightChangeRate?.toString() || "");
+      setDailyCalorieGoal(p.dailyCalorieGoal?.toString() || "");
       setMotivationLevel(p.motivationLevel || "");
       setFitnessGoalDetail(p.fitnessGoalDetail || "");
       setPreviousDietExperience(safeJsonParse(p.previousDietExperience, []));
@@ -472,6 +474,7 @@ export default function Profile() {
       bodyFatPercentage: bodyFatPercentage ? parseFloat(bodyFatPercentage) : undefined,
       mainGoal: (mainGoal as any) || undefined,
       weightChangeRate: weightChangeRate ? parseFloat(weightChangeRate) : undefined,
+      dailyCalorieGoal: dailyCalorieGoal ? parseInt(dailyCalorieGoal) : undefined,
       motivationLevel: (motivationLevel as any) || undefined,
       fitnessGoalDetail: fitnessGoalDetail || undefined,
       previousDietExperience: previousDietExperience.length ? JSON.stringify(previousDietExperience) : undefined,
@@ -773,6 +776,19 @@ export default function Profile() {
               { value: "0.25", label: "Lento (0.25 kg/sem)" }, { value: "0.5", label: "Moderado (0.5 kg/sem)" },
               { value: "0.75", label: "Rápido (0.75 kg/sem)" }, { value: "1", label: "Muy rápido (1 kg/sem)" },
             ]} />
+          </Field>
+          <Field label="Calorías diarias objetivo (kcal)" hint="Ajusta manualmente si quieres un déficit o supéravit mayor al calculado automáticamente.">
+            <input
+              type="number"
+              value={dailyCalorieGoal}
+              onChange={(e) => setDailyCalorieGoal(e.target.value)}
+              placeholder="Ej: 1600"
+              min={800}
+              max={6000}
+              step={50}
+              style={{ width: "100%", padding: "10px 14px", borderRadius: "10px", border: "1.5px solid #F97316", fontSize: "15px", background: "#fff7ed", outline: "none", boxSizing: "border-box", fontWeight: 600, color: "#ea580c" }}
+            />
+            <p style={{ margin: "4px 0 0", fontSize: "12px", color: "#9ca3af" }}>Rango recomendado: 1200–3500 kcal/día. Valor actual calculado automáticamente: {dailyCalorieGoal ? `${dailyCalorieGoal} kcal` : "no establecido"}</p>
           </Field>
           <Field label="Nivel de motivación actual">
             <Select value={motivationLevel} onChange={setMotivationLevel} options={[

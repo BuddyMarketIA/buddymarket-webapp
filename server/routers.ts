@@ -740,10 +740,12 @@ export const appRouter = router({
         })
       )
       .mutation(async ({ ctx, input }) => {
-        // Recalculate dailyCalorieGoal when physical data changes
+        // Recalculate dailyCalorieGoal when physical data changes,
+        // but ONLY if the user has NOT provided a manual override.
         const profileData: typeof input & { dailyCalorieGoal?: number } = { ...input };
+        const hasManualCalorieOverride = input.dailyCalorieGoal !== undefined && input.dailyCalorieGoal > 0;
         const hasPhysicalData = input.height || input.weight || input.age || input.gender || input.activityLevel || input.mainGoal || input.weightChangeRate;
-        if (hasPhysicalData) {
+        if (hasPhysicalData && !hasManualCalorieOverride) {
           // Get existing profile to fill in missing values
           const existing = await db.getUserProfile(ctx.user.id);
           const height = input.height ?? existing?.height;
