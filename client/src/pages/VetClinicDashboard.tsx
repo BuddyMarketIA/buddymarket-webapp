@@ -45,7 +45,7 @@ function ClinicRegisterForm({ onCreated }: { onCreated: () => void }) {
 
   return (
     <div className="max-w-2xl mx-auto space-y-6">
-      <div className="text-center space-y-2">
+      <div className="text-center space-y-3">
         <div className="text-5xl">🏥</div>
         <h1 className="text-2xl font-bold">Registra tu clínica veterinaria</h1>
         <p className="text-muted-foreground text-sm">
@@ -54,8 +54,8 @@ function ClinicRegisterForm({ onCreated }: { onCreated: () => void }) {
       </div>
       <Card>
         <CardHeader><CardTitle>Información de la clínica</CardTitle></CardHeader>
-        <CardContent className="space-y-4">
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+        <CardContent className="space-y-5 p-4 md:p-5">
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 md:gap-5">
             <div className="sm:col-span-2">
               <label className="text-sm font-medium mb-1 block">Nombre de la clínica *</label>
               <Input placeholder="Clínica Veterinaria..." value={form.name}
@@ -105,7 +105,7 @@ function ClinicRegisterForm({ onCreated }: { onCreated: () => void }) {
           </div>
           <div>
             <label className="text-sm font-medium mb-2 block">Especialidades</label>
-            <div className="flex flex-wrap gap-2">
+            <div className="flex flex-wrap gap-3">
               {SPECIALTIES.map((s) => (
                 <button key={s} type="button" onClick={() => toggleSpecialty(s)}
                   className={`px-3 py-1 rounded-full text-xs border transition-colors ${
@@ -273,7 +273,7 @@ function VetClinicDirectory({ onRegister }: { onRegister: () => void }) {
         </div>
         {/* Specialty filters */}
         {allSpecialties.length > 0 && (
-          <div className="flex gap-2 overflow-x-auto pb-1 scrollbar-hide">
+          <div className="flex gap-3 overflow-x-auto pb-1 scrollbar-hide">
             <button
               onClick={() => setSelectedSpecialty(null)}
               className={`shrink-0 px-3 py-1.5 rounded-full text-[13px] font-black transition-all ${
@@ -324,7 +324,7 @@ function VetClinicDirectory({ onRegister }: { onRegister: () => void }) {
                     {clinic.logoUrl ? <img src={clinic.logoUrl} alt={clinic.name} className="w-full h-full object-cover rounded-xl" /> : "🏥"}
                   </div>
                   <div className="flex-1 min-w-0">
-                    <div className="flex items-center gap-2 flex-wrap">
+                    <div className="flex items-center gap-3 flex-wrap">
                       <h3 className="font-black text-[15px] text-foreground">{clinic.name}</h3>
                       {clinic.featured && <Badge className="bg-orange-500 text-white text-[10px] px-1.5 py-0">Destacada</Badge>}
                     </div>
@@ -346,7 +346,7 @@ function VetClinicDirectory({ onRegister }: { onRegister: () => void }) {
                     {specs.length > 4 && <span className="text-[11px] text-muted-foreground">+{specs.length - 4} más</span>}
                   </div>
                 )}
-                <div className="flex flex-wrap gap-2 pt-1 border-t border-border/50">
+                <div className="flex flex-wrap gap-3 pt-1 border-t border-border/50">
                   {clinic.phone && (
                     <a href={`tel:${clinic.phone}`} className="flex items-center gap-1.5 bg-green-50 text-green-700 text-[13px] font-semibold px-3 py-1.5 rounded-xl border border-green-100 hover:bg-green-100 transition-colors">
                       📞 {clinic.phone}
@@ -399,7 +399,7 @@ function PatientDetailModal({ row, clinicId, onClose }: { row: any; clinicId: nu
     <Dialog open onOpenChange={onClose}>
       <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="flex items-center gap-2">
+          <DialogTitle className="flex items-center gap-3">
             <span className="text-2xl">{row.pet.species === "dog" ? "🐕" : row.pet.species === "cat" ? "🐈" : "🐾"}</span>
             <span>{row.pet.name}</span>
             <Badge variant="outline" className="text-xs capitalize ml-1">{row.link.status}</Badge>
@@ -407,7 +407,7 @@ function PatientDetailModal({ row, clinicId, onClose }: { row: any; clinicId: nu
         </DialogHeader>
         <div className="space-y-5">
           {/* Basic info */}
-          <div className="grid grid-cols-2 gap-3 text-sm">
+          <div className="grid grid-cols-2 gap-4 text-sm">
             {[
               { label: "Especie", value: row.pet.species },
               { label: "Raza", value: row.pet.breed ?? "Desconocida" },
@@ -427,7 +427,7 @@ function PatientDetailModal({ row, clinicId, onClose }: { row: any; clinicId: nu
             {!visits || visits.length === 0 ? (
               <p className="text-xs text-muted-foreground italic">Sin visitas registradas aún</p>
             ) : (
-              <div className="space-y-2 max-h-48 overflow-y-auto">
+              <div className="space-y-3 max-h-48 overflow-y-auto">
                 {visits.map((v: any) => (
                   <div key={v.id} className="border rounded-lg p-2.5 bg-blue-50 dark:bg-blue-950/30 text-xs">
                     <div className="flex justify-between mb-1">
@@ -451,7 +451,7 @@ function PatientDetailModal({ row, clinicId, onClose }: { row: any; clinicId: nu
             {petSpecificAlerts.length === 0 ? (
               <p className="text-xs text-muted-foreground italic">Sin alertas enviadas a este paciente</p>
             ) : (
-              <div className="space-y-2 max-h-48 overflow-y-auto">
+              <div className="space-y-3 max-h-48 overflow-y-auto">
                 {petSpecificAlerts.map((a: any) => (
                   <div key={a.id} className={`border rounded-lg p-2.5 text-xs ${a.resolvedAt ? "bg-green-50 dark:bg-green-950/20" : "bg-red-50 dark:bg-red-950/20"}`}>
                     <div className="flex justify-between mb-1">
@@ -469,7 +469,7 @@ function PatientDetailModal({ row, clinicId, onClose }: { row: any; clinicId: nu
           </div>
 
           {/* Actions */}
-          <div className="flex gap-2 pt-2 border-t">
+          <div className="flex gap-3 pt-2 border-t">
             <SendAlertDialog clinicId={clinicId} pet={{ id: row.pet.id, name: row.pet.name, ownerId: row.pet.userId }} />
             <AddVisitDialog clinicId={clinicId} pet={{ id: row.pet.id, name: row.pet.name, ownerId: row.pet.userId }} />
           </div>
@@ -501,7 +501,7 @@ export default function VetClinicDashboard() {
 
   if (isLoading) return (
     <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center space-y-2"><div className="text-4xl animate-pulse">🏥</div><p className="text-muted-foreground">Cargando...</p></div>
+      <div className="text-center space-y-3"><div className="text-4xl animate-pulse">🏥</div><p className="text-muted-foreground">Cargando...</p></div>
     </div>
   );
 
@@ -537,7 +537,7 @@ export default function VetClinicDashboard() {
                 </p>
               </div>
             </div>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               {pendingAlerts.length > 0 && <Badge variant="destructive" className="text-xs">{pendingAlerts.length} alertas</Badge>}
               <Button size="sm" variant="outline" onClick={openEdit}>✏️ Editar</Button>
             </div>
@@ -577,7 +577,7 @@ export default function VetClinicDashboard() {
                     <p className="text-sm font-medium">Código de acceso para clientes</p>
                     <p className="text-xs text-muted-foreground mt-0.5">Comparte este código con los dueños para que se vinculen</p>
                   </div>
-                  <div className="flex items-center gap-2">
+                  <div className="flex items-center gap-3">
                     <span className="font-mono text-2xl font-bold text-orange-500">{clinic.accessCode}</span>
                     <Button size="sm" variant="outline" onClick={() => { navigator.clipboard.writeText(clinic.accessCode); toast("Código copiado"); }}>📋</Button>
                   </div>
@@ -586,7 +586,7 @@ export default function VetClinicDashboard() {
             </Card>
             {specialties.length > 0 && (
               <Card><CardHeader><CardTitle className="text-sm">Especialidades</CardTitle></CardHeader>
-                <CardContent><div className="flex flex-wrap gap-2">{specialties.map((s) => <Badge key={s} variant="secondary" className="text-xs">{s}</Badge>)}</div></CardContent>
+                <CardContent><div className="flex flex-wrap gap-3">{specialties.map((s) => <Badge key={s} variant="secondary" className="text-xs">{s}</Badge>)}</div></CardContent>
               </Card>
             )}
           </div>
@@ -608,7 +608,7 @@ export default function VetClinicDashboard() {
               <div className="grid gap-4 sm:grid-cols-2">
                 {linkedPets.map((row: any) => (
                   <Card key={row.pet.id}><CardContent className="pt-4">
-                    <div className="flex items-start justify-between gap-2 mb-3">
+                    <div className="flex items-start justify-between gap-3 mb-3">
                       <div>
                         <p className="font-semibold">{row.pet.name}</p>
                         <p className="text-xs text-muted-foreground capitalize">{row.pet.species} · {row.pet.breed ?? "raza desconocida"}</p>
@@ -616,7 +616,7 @@ export default function VetClinicDashboard() {
                       </div>
                       <Badge variant="outline" className="text-xs capitalize">{row.link.status}</Badge>
                     </div>
-                    <div className="flex gap-2 flex-wrap">
+                    <div className="flex gap-3 flex-wrap">
                       <Button size="sm" variant="outline" onClick={() => setSelectedPatient(row)}>📋 Ver historial</Button>
                       <SendAlertDialog clinicId={clinic.id} pet={{ id: row.pet.id, name: row.pet.name, ownerId: row.pet.userId }} />
                       <AddVisitDialog clinicId={clinic.id} pet={{ id: row.pet.id, name: row.pet.name, ownerId: row.pet.userId }} />
@@ -634,12 +634,12 @@ export default function VetClinicDashboard() {
             {!alerts?.length ? (
               <Card><CardContent className="py-12 text-center"><div className="text-4xl mb-3">🔔</div><p className="font-medium">Sin alertas enviadas</p></CardContent></Card>
             ) : (
-              <div className="space-y-2">
+              <div className="space-y-3">
                 {alerts.map((alert: any) => (
                   <Card key={alert.id}><CardContent className="py-3">
-                    <div className="flex items-center justify-between gap-2">
+                    <div className="flex items-center justify-between gap-3">
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 flex-wrap">
+                        <div className="flex items-center gap-3 flex-wrap">
                           <p className="font-medium text-sm">{alert.title}</p>
                           <Badge variant={alert.status === "pending" ? "destructive" : "secondary"} className="text-xs capitalize">{alert.status}</Badge>
                           <Badge variant="outline" className="text-xs capitalize">{alert.type}</Badge>
@@ -673,13 +673,13 @@ export default function VetClinicDashboard() {
                 { label: "Nº licencia", value: (clinic as any).licenseNumber },
                 { label: "Descripción", value: clinic.description },
               ].filter((f) => f.value).map((field) => (
-                <div key={field.label} className="flex gap-2">
+                <div key={field.label} className="flex gap-3">
                   <span className="text-sm text-muted-foreground w-24 shrink-0">{field.label}</span>
                   <span className="text-sm break-all">{field.value}</span>
                 </div>
               ))}
               {specialties.length > 0 && (
-                <div className="flex gap-2">
+                <div className="flex gap-3">
                   <span className="text-sm text-muted-foreground w-24 shrink-0">Especialidades</span>
                   <div className="flex flex-wrap gap-1">{specialties.map((s) => <Badge key={s} variant="secondary" className="text-xs">{s}</Badge>)}</div>
                 </div>

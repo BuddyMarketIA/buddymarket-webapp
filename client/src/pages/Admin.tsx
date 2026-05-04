@@ -121,7 +121,7 @@ function CatalogSection({
       </div>
 
       {/* Items list */}
-      <div className="max-h-48 overflow-y-auto space-y-1.5">
+      <div className="max-h-48 overflow-y-auto space-y-2">
         {items && items.length > 0 ? (
           items.map((item) => (
             <div key={item.id} className="flex items-center justify-between rounded-xl bg-muted/30 px-3 py-2">
@@ -216,7 +216,7 @@ function RecipeRow({ recipe, onUpdated }: { recipe: any; onUpdated: () => void }
         {/* Info / edit */}
         <div className="flex-1 min-w-0">
           {editing ? (
-            <div className="space-y-1.5">
+            <div className="space-y-2">
               <input
                 value={editName}
                 onChange={(e) => setEditName(e.target.value)}
@@ -230,17 +230,17 @@ function RecipeRow({ recipe, onUpdated }: { recipe: any; onUpdated: () => void }
                 rows={2}
                 placeholder="Descripción"
               />
-              <div className="flex gap-1.5">
+              <div className="flex gap-2">
                 <button
                   onClick={() => updateRecipe.mutate({ id: recipe.id, name: editName, description: editDesc })}
                   disabled={updateRecipe.isPending}
-                  className="flex items-center gap-1 rounded-lg bg-green-500 px-2.5 py-1 text-xs font-semibold text-white hover:bg-green-600 disabled:opacity-50"
+                  className="flex items-center gap-2 rounded-lg bg-green-500 px-2.5 py-1 text-xs font-semibold text-white hover:bg-green-600 disabled:opacity-50"
                 >
                   <CheckIcon className="h-3 w-3" /> Guardar
                 </button>
                 <button
                   onClick={() => { setEditing(false); setEditName(recipe.name ?? ""); setEditDesc(recipe.description ?? ""); }}
-                  className="flex items-center gap-1 rounded-lg bg-muted/50 px-2.5 py-1 text-xs font-semibold text-muted-foreground hover:bg-muted"
+                  className="flex items-center gap-2 rounded-lg bg-muted/50 px-2.5 py-1 text-xs font-semibold text-muted-foreground hover:bg-muted"
                 >
                   <XMarkIcon className="h-3 w-3" /> Cancelar
                 </button>
@@ -447,12 +447,12 @@ export default function Admin() {
       </div>
 
       {/* Tabs */}
-      <div className="mb-5 flex gap-1 overflow-x-auto pb-1">
+      <div className="mb-5 flex gap-2 overflow-x-auto pb-1">
         {TABS.map((tab) => (
           <button
             key={tab.key}
             onClick={() => setActiveTab(tab.key)}
-            className={`flex shrink-0 items-center gap-1.5 rounded-xl px-3 py-2 text-xs font-semibold transition-all ${
+            className={`flex shrink-0 items-center gap-2 rounded-xl px-3 py-2 text-xs font-semibold transition-all ${
               activeTab === tab.key
                 ? "bg-gray-900 text-white"
                 : "bg-muted/50 text-muted-foreground hover:bg-muted"
@@ -929,7 +929,7 @@ export default function Admin() {
                 {usersRaw?.length ?? 0} mostrados
               </span>
             </h3>
-            <div className="flex gap-1.5 flex-wrap">
+            <div className="flex gap-2 flex-wrap">
               {(["all","free","pro","pro_max"] as const).map(p => (
                 <button key={p} onClick={() => setUserPlanFilter(p)}
                   className={`px-2.5 py-1 rounded-xl text-xs font-semibold transition-colors ${
@@ -1036,9 +1036,9 @@ export default function Admin() {
                   {/* Roles secundarios */}
                   <div className="space-y-1 pt-1">
                     <p className="text-xs font-semibold text-muted-foreground/70 uppercase tracking-wide">Roles adicionales</p>
-                    <div className="flex flex-wrap gap-1.5 items-center">
+                    <div className="flex flex-wrap gap-2 items-center">
                       {((u as any).secondaryRoles ?? []).map((sr: string) => (
-                        <span key={sr} className="inline-flex items-center gap-1 rounded-full bg-orange-100 dark:bg-orange-900/30 px-2 py-0.5 text-xs font-semibold text-orange-700 dark:text-orange-300">
+                        <span key={sr} className="inline-flex items-center gap-2 rounded-full bg-orange-100 dark:bg-orange-900/30 px-2 py-0.5 text-xs font-semibold text-orange-700 dark:text-orange-300">
                           {sr === "buddyexpert" ? "BuddyExpert" : sr === "admin" ? "Admin" : sr}
                           <button
                             onClick={() => removeSecondaryRoleMut.mutate({ userId: u.id, secondaryRole: sr })}
@@ -1079,7 +1079,7 @@ export default function Admin() {
                         }
                       }}
                       disabled={deleteUser.isPending}
-                      className="flex items-center gap-1 rounded-lg bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-600 hover:bg-red-100 disabled:opacity-50"
+                      className="flex items-center gap-2 rounded-lg bg-red-50 px-2.5 py-1 text-xs font-semibold text-red-600 hover:bg-red-100 disabled:opacity-50"
                     >
                       <TrashIcon className="h-3.5 w-3.5" />
                       Borrar usuario
@@ -1312,7 +1312,7 @@ function FoundersPanel() {
         ) : filtered.length === 0 ? (
           <p className="text-center text-xs text-muted-foreground/70 py-4">No hay emails en esta categoría.</p>
         ) : (
-          <div className="max-h-[50vh] overflow-y-auto space-y-1.5">
+          <div className="max-h-[50vh] overflow-y-auto space-y-2">
             {filtered.map((f) => (
               <div key={f.id} className="flex items-center justify-between rounded-xl bg-muted/30 px-3 py-2">
                 <div className="flex items-center gap-2">
@@ -1425,25 +1425,25 @@ function ApiMonitorPanel() {
       {/* Monitors list */}
       <div className="vively-card space-y-2">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="text-sm font-bold text-foreground/80 flex items-center gap-1.5">
+          <h3 className="text-sm font-bold text-foreground/80 flex items-center gap-2">
             <SignalIcon className="h-4 w-4 text-[#F97316]" />
             Monitores de API
           </h3>
-          <div className="flex gap-1.5">
+          <div className="flex gap-2">
             <button
               onClick={() => {
                 if (!monitors) return;
                 monitors.forEach((m) => recheckMutation.mutate({ monitorId: m.id }));
               }}
               disabled={recheckMutation.isPending || !monitors?.length}
-              className="flex items-center gap-1 rounded-lg bg-orange-100 px-2.5 py-1.5 text-xs font-semibold text-orange-700 hover:bg-orange-200 disabled:opacity-50"
+              className="flex items-center gap-2 rounded-lg bg-orange-100 px-2.5 py-1.5 text-xs font-semibold text-orange-700 hover:bg-orange-200 disabled:opacity-50"
             >
               <ArrowPathIcon className={`h-3.5 w-3.5 ${recheckMutation.isPending ? "animate-spin" : ""}`} />
               Recheck All
             </button>
             <button
               onClick={() => refetchMonitors()}
-              className="flex items-center gap-1 rounded-lg bg-muted/50 px-2.5 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-muted"
+              className="flex items-center gap-2 rounded-lg bg-muted/50 px-2.5 py-1.5 text-xs font-semibold text-muted-foreground hover:bg-muted"
             >
               <ArrowPathIcon className="h-3.5 w-3.5" />
               Actualizar
@@ -1475,7 +1475,7 @@ function ApiMonitorPanel() {
                   <p className="truncate text-sm font-semibold text-foreground">{monitor.name}</p>
                   <p className="truncate text-xs text-muted-foreground/70">{monitor.endpoint}</p>
                   {monitor.lastCheckedAt && (
-                    <p className="mt-0.5 flex items-center gap-1 text-xs text-gray-300">
+                    <p className="mt-0.5 flex items-center gap-2 text-xs text-gray-300">
                       <ClockIcon className="h-3 w-3" />
                       {new Date(monitor.lastCheckedAt).toLocaleString("es-ES")}
                       {monitor.lastLatencyMs != null && ` · ${monitor.lastLatencyMs}ms`}
@@ -1486,7 +1486,7 @@ function ApiMonitorPanel() {
                   )}
                 </div>
               </div>
-              <div className="flex shrink-0 items-center gap-1.5">
+              <div className="flex shrink-0 items-center gap-2">
                 <span className={`rounded-full px-2 py-0.5 text-xs font-bold ${statusColor(monitor.lastStatus)}`}>
                   {statusLabel(monitor.lastStatus)}
                 </span>
@@ -1519,7 +1519,7 @@ function ApiMonitorPanel() {
                     onClick={() => resetErrorsMutation.mutate({ monitorId: monitor.id })}
                     disabled={resetErrorsMutation.isPending}
                     title="Reactivar: marcar como OK y resetear errores"
-                    className="flex h-7 items-center gap-1 rounded-lg bg-blue-100 px-2 text-xs font-semibold text-blue-700 hover:bg-blue-200 disabled:opacity-50"
+                    className="flex h-7 items-center gap-2 rounded-lg bg-blue-100 px-2 text-xs font-semibold text-blue-700 hover:bg-blue-200 disabled:opacity-50"
                   >
                     <ArrowPathIcon className="h-3 w-3" />
                     Reactivar
@@ -1560,22 +1560,22 @@ function ApiMonitorPanel() {
       {/* LLM Health Section */}
       <div className="vively-card space-y-3">
         <div className="flex items-center justify-between">
-          <h3 className="text-sm font-bold text-foreground/80 flex items-center gap-1.5">
+          <h3 className="text-sm font-bold text-foreground/80 flex items-center gap-2">
             <span className="text-base">🤖</span>
             Servicio de IA (LLM)
           </h3>
-          <div className="flex gap-1.5">
+          <div className="flex gap-2">
             <button
               onClick={() => testLLMMutation.mutate()}
               disabled={testLLMMutation.isPending}
-              className="flex items-center gap-1 rounded-lg bg-violet-100 px-2.5 py-1.5 text-xs font-semibold text-violet-700 hover:bg-violet-200 disabled:opacity-50"
+              className="flex items-center gap-2 rounded-lg bg-violet-100 px-2.5 py-1.5 text-xs font-semibold text-violet-700 hover:bg-violet-200 disabled:opacity-50"
             >
               <ArrowPathIcon className={`h-3.5 w-3.5 ${testLLMMutation.isPending ? "animate-spin" : ""}`} />
               {testLLMMutation.isPending ? "Probando..." : "Test conexión"}
             </button>
             <button
               onClick={() => { setShowLLMLogs(!showLLMLogs); refetchLLMLogs(); }}
-              className={`flex items-center gap-1 rounded-lg px-2.5 py-1.5 text-xs font-semibold ${showLLMLogs ? "bg-red-100 text-red-700 hover:bg-red-200" : "bg-muted/50 text-muted-foreground hover:bg-muted"}`}
+              className={`flex items-center gap-2 rounded-lg px-2.5 py-1.5 text-xs font-semibold ${showLLMLogs ? "bg-red-100 text-red-700 hover:bg-red-200" : "bg-muted/50 text-muted-foreground hover:bg-muted"}`}
             >
               <ExclamationTriangleIcon className="h-3.5 w-3.5" />
               {llmLogs && llmLogs.length > 0 ? `${llmLogs.length} errores` : "Sin errores"}
@@ -1597,7 +1597,7 @@ function ApiMonitorPanel() {
             {!llmLogs || llmLogs.length === 0 ? (
               <p className="text-xs text-green-600 font-medium">Sin errores registrados</p>
             ) : (
-              <div className="max-h-60 overflow-y-auto space-y-1.5">
+              <div className="max-h-60 overflow-y-auto space-y-2">
                 {llmLogs.map((log: any, i: number) => (
                   <div key={i} className="rounded-lg border border-red-100 bg-red-50 px-3 py-2 text-xs">
                     <div className="flex items-center justify-between mb-1">
@@ -1891,7 +1891,7 @@ function AdminEmpresasPanel() {
             <div className="space-y-4">
               <button
                 onClick={() => setSelectedCompanyId(null)}
-                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground"
+                className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground"
               >
                 ← Volver al listado
               </button>
@@ -1957,7 +1957,7 @@ function AdminEmpresasPanel() {
                     <button
                       onClick={() => triggerSync.mutate({ companyId: companyDetail.company.id })}
                       disabled={triggerSync.isPending}
-                      className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 disabled:opacity-50"
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700 disabled:opacity-50"
                     >
                       <ArrowPathIcon className={`h-3.5 w-3.5 ${triggerSync.isPending ? "animate-spin" : ""}`} />
                       Sincronizar facturación
@@ -1978,7 +1978,7 @@ function AdminEmpresasPanel() {
                 <h4 className="text-sm font-bold text-foreground/80 mb-3">
                   Miembros ({companyDetail.stats.totalMembers})
                 </h4>
-                <div className="max-h-60 overflow-y-auto space-y-1.5">
+                <div className="max-h-60 overflow-y-auto space-y-2">
                   {companyDetail.members.length === 0 ? (
                     <p className="text-xs text-muted-foreground/70 text-center py-4">Sin miembros aún</p>
                   ) : companyDetail.members.map((m: any) => (
@@ -2181,7 +2181,7 @@ function AdminEmpresasPanel() {
                   <div className="flex gap-2 pt-1 border-t border-border/50">
                     <a
                       href={`mailto:${lead.contactEmail}?subject=Buddy One for Business — ${lead.companyName}`}
-                      className="flex items-center gap-1 px-3 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700"
+                      className="flex items-center gap-2 px-3 py-1.5 rounded-xl bg-blue-600 text-white text-xs font-semibold hover:bg-blue-700"
                     >
                       <EnvelopeIcon className="h-3.5 w-3.5" />
                       Enviar email
@@ -2189,7 +2189,7 @@ function AdminEmpresasPanel() {
                     <button
                       onClick={() => updateLead.mutate({ leadId: lead.id, contacted: !lead.contacted })}
                       disabled={updateLead.isPending}
-                      className={`flex items-center gap-1 px-3 py-1.5 rounded-xl text-xs font-semibold disabled:opacity-50 ${
+                      className={`flex items-center gap-2 px-3 py-1.5 rounded-xl text-xs font-semibold disabled:opacity-50 ${
                         lead.contacted
                           ? "bg-muted/50 text-muted-foreground hover:bg-muted"
                           : "bg-green-500 text-white hover:bg-green-600"
@@ -2392,7 +2392,7 @@ function AdminSoportePanel() {
                       <p className="text-xs text-muted-foreground mt-0.5">{ticket.userName} · #{ticket.id}</p>
                       <p className="text-xs text-muted-foreground/70 mt-0.5 truncate">{ticket.lastMessage || ticket.description}</p>
                     </div>
-                    <div className="flex flex-col items-end gap-1 shrink-0">
+                    <div className="flex flex-col items-end gap-2 shrink-0">
                       <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${STATUS_LABELS[ticket.status]?.color}`}>
                         {STATUS_LABELS[ticket.status]?.label}
                       </span>
@@ -2516,7 +2516,7 @@ function AdminSoportePanel() {
               {/* Reply box */}
               <div className="space-y-2 border-t pt-3">
                 <div className="flex items-center gap-3">
-                  <label className="flex items-center gap-1.5 text-xs text-muted-foreground cursor-pointer">
+                  <label className="flex items-center gap-2 text-xs text-muted-foreground cursor-pointer">
                     <input
                       type="checkbox"
                       checked={isInternal}
