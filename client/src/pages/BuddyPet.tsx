@@ -137,7 +137,7 @@ function PetFormDialog({
             </div>
             <div>
               <Label>Peso *</Label>
-              <div className="flex gap-2">
+              <div className="flex gap-3">
                 <Input type="number" value={form.weightValue} onChange={(e) => set("weightValue", e.target.value)} placeholder="0.0" className="flex-1" />
                 <Select value={form.weightUnit} onValueChange={(v) => set("weightUnit", v as "kg" | "lb")}>
                   <SelectTrigger className="w-16"><SelectValue /></SelectTrigger>
@@ -361,7 +361,7 @@ function MealEditor({ menuId, dayIndex, mealIndex, currentFood, currentGrams, on
         <DialogHeader>
           <DialogTitle>Editar comida</DialogTitle>
         </DialogHeader>
-        <div className="space-y-3 py-2">
+        <div className="space-y-4 py-2">
           <div>
             <Label>Descripción de la comida</Label>
             <Textarea value={food} onChange={(e) => setFood(e.target.value)} rows={3} />
@@ -393,7 +393,7 @@ function PetMenuView({ petId, petName }: { petId: number; petName: string }) {
 
   return (
     <div className="space-y-4">
-      <div className="flex items-center justify-between flex-wrap gap-2">
+      <div className="flex items-center justify-between flex-wrap gap-3">
         <h3 className="font-semibold text-sm text-muted-foreground">Menús de {petName}</h3>
         <CustomMenuGenerator petId={petId} petName={petName} onSuccess={() => utils.pets.menus.invalidate({ petId })} />
       </div>
@@ -418,7 +418,7 @@ function PetMenuView({ petId, petName }: { petId: number; petName: string }) {
               <div className="flex items-center justify-between">
                 <div>
                   <CardTitle className="text-base">{m.weekLabel}</CardTitle>
-                  <div className="flex flex-wrap gap-2 mt-1">
+                  <div className="flex flex-wrap gap-3 mt-1">
                     {menuData?.dailyCalories && (
                       <span className="text-xs text-muted-foreground">{menuData.dailyCalories} kcal/día · {menuData.dailyGrams}g/día</span>
                     )}
@@ -452,13 +452,13 @@ function PetMenuView({ petId, petName }: { petId: number; petName: string }) {
                       <TabsTrigger value="supplements" className="flex-1">Suplementos</TabsTrigger>
                     )}
                   </TabsList>
-                  <TabsContent value="menu" className="space-y-3 mt-3">
+                  <TabsContent value="menu" className="space-y-4 mt-3">
                     {menuData.days?.map((day: { day: string; meals: Array<{ time: string; food: string; grams: number; calories?: number }> }, dayIdx: number) => (
                       <div key={day.day} className="border rounded-lg p-3">
                         <p className="font-semibold text-sm mb-2">{day.day}</p>
                         <div className="space-y-2">
                           {day.meals?.map((meal, mealIdx: number) => (
-                            <div key={mealIdx} className="flex items-start gap-2 text-sm">
+                            <div key={mealIdx} className="flex items-start gap-3 text-sm">
                               <span className="text-muted-foreground min-w-[70px] text-xs">{meal.time}</span>
                               <span className="flex-1 text-xs">{meal.food}</span>
                               <div className="flex items-center gap-1 shrink-0">
@@ -587,7 +587,7 @@ function PhotoAnalyzer({ petId, petName, currentPhotoUrl }: { petId: number; pet
       )}
 
       {analysis && (
-        <div className="space-y-3">
+        <div className="space-y-4">
           <div className="flex items-center gap-3 p-3 rounded-lg border" style={{ borderColor: bcColor + "40", background: bcColor + "10" }}>
             <div className="text-2xl">⚖️</div>
             <div>
@@ -702,9 +702,9 @@ function WeightHistoryView({ petId, petName, currentWeight, weightUnit }: {
         </div>
       )}
 
-      <div className="border rounded-lg p-3 space-y-3">
+      <div className="border rounded-lg p-3 space-y-4">
         <p className="text-sm font-medium">Registrar nuevo peso</p>
-        <div className="grid grid-cols-2 gap-2">
+        <div className="grid grid-cols-2 gap-3">
           <div>
             <Label className="text-xs">Peso ({weightUnit})</Label>
             <Input type="number" value={newWeight} onChange={(e) => setNewWeight(e.target.value)} placeholder={String(currentWeight)} />
@@ -801,12 +801,12 @@ function VaccinesView({ petId }: { petId: number }) {
           </DialogTrigger>
           <DialogContent className="max-w-sm max-h-[90vh] overflow-y-auto">
             <DialogHeader><DialogTitle>Nueva vacuna</DialogTitle></DialogHeader>
-            <div className="space-y-3 py-2">
+            <div className="space-y-4 py-2">
               <div>
                 <Label>Nombre de la vacuna *</Label>
                 <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Rabia, Moquillo, Parvovirus..." />
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label>Fecha administración</Label>
                   <Input type="date" value={administeredAt} onChange={(e) => setAdministeredAt(e.target.value)} />
@@ -872,10 +872,10 @@ function VaccinesView({ petId }: { petId: number }) {
           const isSoon = v.nextDueAt && !isDue && (new Date(v.nextDueAt).getTime() - now.getTime()) < 30 * 24 * 60 * 60 * 1000;
           return (
             <div key={v.id} className={`border rounded-lg p-3 text-sm ${isDue ? "border-red-200 bg-red-50 dark:bg-red-950" : isSoon ? "border-yellow-200 bg-yellow-50 dark:bg-yellow-950" : ""}`}>
-              <div className="flex items-start justify-between gap-2">
+              <div className="flex items-start justify-between gap-3">
                 <div className="flex-1">
                   <p className="font-semibold">{v.name}</p>
-                  <div className="flex flex-wrap gap-2 mt-1 text-xs text-muted-foreground">
+                  <div className="flex flex-wrap gap-3 mt-1 text-xs text-muted-foreground">
                     {v.administeredAt && <span>💉 {new Date(v.administeredAt).toLocaleDateString("es-ES")}</span>}
                     {v.nextDueAt && <span className={isDue ? "text-red-600 font-medium" : isSoon ? "text-yellow-600 font-medium" : ""}>
                       📅 Próxima: {new Date(v.nextDueAt).toLocaleDateString("es-ES")}
@@ -936,12 +936,12 @@ function MedicationsView({ petId }: { petId: number }) {
           </DialogTrigger>
           <DialogContent className="max-w-sm max-h-[90vh] overflow-y-auto">
             <DialogHeader><DialogTitle>Nuevo medicamento</DialogTitle></DialogHeader>
-            <div className="space-y-3 py-2">
+            <div className="space-y-4 py-2">
               <div>
                 <Label>Nombre *</Label>
                 <Input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nombre del medicamento" />
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label>Dosis</Label>
                   <Input value={dosage} onChange={(e) => setDosage(e.target.value)} placeholder="5mg, 1 comprimido..." />
@@ -951,7 +951,7 @@ function MedicationsView({ petId }: { petId: number }) {
                   <Input value={frequency} onChange={(e) => setFrequency(e.target.value)} placeholder="Cada 12h, 1 vez/día..." />
                 </div>
               </div>
-              <div className="grid grid-cols-2 gap-2">
+              <div className="grid grid-cols-2 gap-3">
                 <div>
                   <Label>Inicio</Label>
                   <Input type="date" value={startDate} onChange={(e) => setStartDate(e.target.value)} />
@@ -1002,10 +1002,10 @@ function MedicationsView({ petId }: { petId: number }) {
           <div className="space-y-2">
             {activeMeds.map((m) => (
               <div key={m.id} className="border rounded-lg p-3 text-sm border-green-200 bg-green-50 dark:bg-green-950">
-                <div className="flex items-start justify-between gap-2">
+                <div className="flex items-start justify-between gap-3">
                   <div className="flex-1">
                     <p className="font-semibold">{m.name}</p>
-                    <div className="flex flex-wrap gap-2 mt-1 text-xs text-muted-foreground">
+                    <div className="flex flex-wrap gap-3 mt-1 text-xs text-muted-foreground">
                       {m.dosage && <span>💊 {m.dosage}</span>}
                       {m.frequency && <span>🕐 {m.frequency}</span>}
                       {m.prescribedBy && <span>👨‍⚕️ {m.prescribedBy}</span>}
@@ -1032,7 +1032,7 @@ function MedicationsView({ petId }: { petId: number }) {
             {inactiveMeds.map((m) => (
               <div key={m.id} className="border rounded-lg p-3 text-sm opacity-60">
                 <p className="font-semibold">{m.name}</p>
-                <div className="flex flex-wrap gap-2 mt-1 text-xs text-muted-foreground">
+                <div className="flex flex-wrap gap-3 mt-1 text-xs text-muted-foreground">
                   {m.dosage && <span>{m.dosage}</span>}
                   {m.frequency && <span>{m.frequency}</span>}
                 </div>
@@ -1062,10 +1062,10 @@ function VetVisitsView({ petId, petName }: { petId: number; petName: string }) {
           <p className="text-xs mt-1">Las clínicas vinculadas pueden añadir visitas desde su panel</p>
         </div>
       ) : (
-        <div className="space-y-3">
+        <div className="space-y-4">
           {visits.map((visit: any) => (
             <div key={visit.id} className="border rounded-lg p-3 bg-blue-50 dark:bg-blue-950/30">
-              <div className="flex items-start justify-between gap-2 mb-1">
+              <div className="flex items-start justify-between gap-3 mb-1">
                 <p className="font-medium text-sm">
                   {new Date(visit.visitDate).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric" })}
                 </p>
@@ -1313,7 +1313,7 @@ function FeedingTab({ petId, petName }: { petId: number; petName: string }) {
       </div>
 
       {/* Formulario de alimentación */}
-      <div className="space-y-3">
+      <div className="space-y-4">
         <h4 className="font-semibold text-sm">Alimentación actual</h4>
 
         <div className="grid grid-cols-2 gap-3">
@@ -1433,7 +1433,7 @@ function FeedingTab({ petId, petName }: { petId: number; petName: string }) {
           />
         </div>
 
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <button
             onClick={handleSave}
             disabled={updateProfile.isPending}
@@ -1453,10 +1453,10 @@ function FeedingTab({ petId, petName }: { petId: number; petName: string }) {
 
       {/* Resultado del análisis IA */}
       {analysis && (
-        <div className={`rounded-lg border p-4 space-y-3 ${ratingBg(analysis.overallRating)}`}>
+        <div className={`rounded-lg border p-4 space-y-4 ${ratingBg(analysis.overallRating)}`}>
           <div className="flex items-center justify-between">
             <h4 className="font-semibold text-sm">Análisis nutricional IA</h4>
-            <div className="flex items-center gap-2">
+            <div className="flex items-center gap-3">
               <span className={`text-2xl font-bold ${ratingColor(analysis.overallRating)}`}>{analysis.overallRating}/10</span>
               <span className="text-xs font-medium text-muted-foreground">{analysis.ratingLabel}</span>
             </div>
@@ -1524,7 +1524,7 @@ function FeedingTab({ petId, petName }: { petId: number; petName: string }) {
             </div>
           )}
 
-          <div className="grid grid-cols-2 gap-2 pt-1 border-t">
+          <div className="grid grid-cols-2 gap-3 pt-1 border-t">
             <div className="text-center">
               <p className="text-xs text-muted-foreground">Calorías ideales/día</p>
               <p className="font-bold text-sm">{analysis.idealCaloriesPerDay ?? "—"} kcal</p>
@@ -1580,7 +1580,7 @@ function ClinicTab({ petId, petName }: { petId: number; petName: string }) {
         ) : (
           <div className="space-y-2">
             {linkedClinics.map(({ clinic, link }) => (
-              <div key={link.id} className="border rounded-lg p-3 bg-blue-50 dark:bg-blue-950 flex items-start justify-between gap-2">
+              <div key={link.id} className="border rounded-lg p-3 bg-blue-50 dark:bg-blue-950 flex items-start justify-between gap-3">
                 <div className="flex-1 min-w-0">
                   <p className="font-semibold text-sm">{clinic.name}</p>
                   {clinic.address && <p className="text-xs text-muted-foreground truncate">📍 {clinic.address}</p>}
@@ -1615,7 +1615,7 @@ function ClinicTab({ petId, petName }: { petId: number; petName: string }) {
           Pide a tu clínica veterinaria su código de acceso Buddy One para vincular a {petName}.
           Una vez vinculado, la clínica podrá ver el historial de salud y enviarte alertas y recordatorios.
         </p>
-        <div className="flex gap-2">
+        <div className="flex gap-3">
           <Input
             value={code}
             onChange={(e) => setCode(e.target.value.toUpperCase())}
@@ -1716,8 +1716,8 @@ function PetCard({ pet, onEdit, onDelete }: {
 
   return (
     <Card className="overflow-hidden border-2 border-orange-100 dark:border-orange-900 hover:border-orange-300 transition-colors">
-      <CardHeader className="pb-2 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950 dark:to-amber-950">
-        <div className="flex items-start justify-between gap-2">
+      <CardHeader className="p-3 md:p-4 pb-3 md:pb-4 bg-gradient-to-r from-orange-50 to-amber-50 dark:from-orange-950 dark:to-amber-950">
+        <div className="flex items-start justify-between gap-3">
           <div className="flex items-center gap-3">
             {nutritionProfile?.photoUrl ? (
               <img
@@ -1730,7 +1730,7 @@ function PetCard({ pet, onEdit, onDelete }: {
             )}
             <div>
               <h3 className="font-bold text-lg leading-tight">{pet.name}</h3>
-              <div className="flex flex-wrap gap-1 mt-1">
+              <div className="flex flex-wrap gap-2 mt-2">
                 <Badge variant="secondary" className="text-xs">{getSpeciesLabel(pet.species)}</Badge>
                 {pet.breed && <Badge variant="outline" className="text-xs">{pet.breed}</Badge>}
                 {pet.neutered && <Badge className="text-xs bg-purple-100 text-purple-700 dark:bg-purple-900 dark:text-purple-300">Castrado</Badge>}
@@ -1745,7 +1745,7 @@ function PetCard({ pet, onEdit, onDelete }: {
             </Badge>
           )}
         </div>
-        <div className="flex gap-4 text-sm text-muted-foreground mt-2 flex-wrap">
+        <div className="flex gap-4 text-sm text-muted-foreground mt-3 flex-wrap">
           <span>⚖️ {pet.weightValue}{pet.weightUnit}</span>
           {ageStr && <span>🎂 {ageStr}</span>}
           {pet.gender && <span>{pet.gender === "macho" ? "♂️" : "♀️"} {pet.gender}</span>}
@@ -1754,14 +1754,14 @@ function PetCard({ pet, onEdit, onDelete }: {
           )}
         </div>
       </CardHeader>
-      <CardContent className="pt-3">
+      <CardContent className="p-4 md:p-5">
         {/* Tab bar */}
-        <div className="flex gap-0.5 mb-3 border-b pb-2 overflow-x-auto">
+        <div className="flex gap-0.5 mb-4 border-b pb-3 overflow-x-auto">
           {TABS.map((t) => (
             <button
               key={t.id}
               onClick={() => setTab(t.id)}
-              className={`flex-shrink-0 text-xs py-1.5 px-2 rounded-md transition-colors ${
+              className={`flex-shrink-0 text-xs py-2 px-3 rounded-md transition-colors ${
                 tab === t.id
                   ? "bg-orange-500 text-white"
                   : "text-muted-foreground hover:bg-muted"
@@ -1774,14 +1774,14 @@ function PetCard({ pet, onEdit, onDelete }: {
 
         {/* Info tab */}
         {tab === "info" && (
-          <div className="space-y-3">
+          <div className="space-y-4">
             {pet.healthNotes && (
               <div className="bg-yellow-50 dark:bg-yellow-950 rounded-lg p-2 text-xs">
                 <span className="font-medium">📋 Notas: </span>{pet.healthNotes}
               </div>
             )}
             <NutritionProfileEditor petId={pet.id} />
-            <div className="flex gap-2 flex-wrap pt-2 border-t">
+            <div className="flex gap-3 flex-wrap pt-2 border-t">
 <Button size="sm" variant="outline" onClick={onEdit}>✏️ Editar</Button>
               <Button size="sm" variant="outline" className="text-red-500 hover:text-red-600" onClick={onDelete}>🗑️ Eliminar</Button>
             </div>
@@ -1841,7 +1841,7 @@ function PetCard({ pet, onEdit, onDelete }: {
             ) : (
               petAlerts.map((alert) => (
                 <div key={alert.id} className="border rounded-lg p-3 bg-red-50 dark:bg-red-950">
-                  <div className="flex items-start justify-between gap-2">
+                  <div className="flex items-start justify-between gap-3">
                     <div>
                       <p className="font-medium text-sm">{ALERT_TYPE_LABELS[alert.type] ?? alert.type}</p>
                       <p className="font-semibold text-sm mt-0.5">{alert.title}</p>
@@ -1985,7 +1985,7 @@ export default function BuddyPet() {
       )}
 
       {/* Pet cards */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-4 md:gap-5">
         {pets?.map((pet) => (
           <PetCard
             key={pet.id}
