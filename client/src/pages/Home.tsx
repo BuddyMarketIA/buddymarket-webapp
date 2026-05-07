@@ -445,11 +445,18 @@ export default function Home() {
               <LanguageSelector variant="footer" className="text-white/50 hover:text-white/80" />
             </div>
           </div>
-          <div style={{ borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "24px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "12px" }}>
-            <p style={{ margin: 0, fontSize: "12px", color: "rgba(255,255,255,0.18)" }}>© 2025 Buddy One. Todos los derechos reservados.</p>
-            <p style={{ margin: 0, fontSize: "11px", color: "rgba(255,255,255,0.14)", maxWidth: "500px", textAlign: "right", lineHeight: 1.5 }}>
-              El contenido de esta plataforma no constituye asesoramiento médico ni nutricional profesional. Consulta siempre con un profesional de la salud.
-            </p>
+          <div style={{ borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "32px", paddingBottom: "32px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "20px" }}>
+            <div style={{ flex: 1, minWidth: "300px" }}>
+              <p style={{ margin: "0 0 12px 0", fontSize: "12px", color: "rgba(255,255,255,0.18)" }}>© 2025 Buddy One. Todos los derechos reservados.</p>
+              <p style={{ margin: 0, fontSize: "11px", color: "rgba(255,255,255,0.14)", lineHeight: 1.5 }}>
+                El contenido de esta plataforma no constituye asesoramiento médico ni nutricional profesional. Consulta siempre con un profesional de la salud.
+              </p>
+            </div>
+          </div>
+          
+          {/* Financiación */}
+          <div style={{ borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "32px", display: "flex", justifyContent: "center", alignItems: "center", flexWrap: "wrap", gap: "24px" }}>
+            <img src="/manus-storage/pasted_file_xwoWWb_image_fa8c6eeb.webp" alt="Financiado por la Unión Europea - NextGenerationEU" style={{ maxHeight: "80px", width: "auto", objectFit: "contain" }} />
           </div>
         </div>
       </footer>
