@@ -9,6 +9,9 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Edit2, Trash2, AlertCircle, Heart, Zap } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/lib/auth";
+import BuddyKidsMenuGenerator from "@/components/BuddyKidsMenuGenerator";
+import BuddyKidsMenuViewer from "@/components/BuddyKidsMenuViewer";
+import { useState } from "react";
 
 export default function BuddyKids() {
   const { user } = useAuth();
@@ -28,6 +31,10 @@ export default function BuddyKids() {
     { enabled: !!selectedChild }
   );
   const { data: habits } = trpc.buddyKids.getChildHabits.useQuery(
+    { childId: selectedChild! },
+    { enabled: !!selectedChild }
+  );
+  const { data: menus, isLoading: loadingMenus, refetch: refetchMenus } = trpc.buddyKids.getChildMenus.useQuery(
     { childId: selectedChild! },
     { enabled: !!selectedChild }
   );
@@ -446,15 +453,19 @@ export default function BuddyKids() {
               </TabsContent>
 
               {/* Menus Tab */}
-              <TabsContent value="menus">
-                <Card>
-                  <CardHeader>
-                    <CardTitle>Menús Personalizados</CardTitle>
-                  </CardHeader>
-                  <CardContent>
-                    <p className="text-gray-500">Los menús personalizados se generarán pronto</p>
-                  </CardContent>
-                </Card>
+              <TabsContent value="menus" className="space-y-4">
+                <BuddyKidsMenuGenerator
+                  childId={selectedChild}
+                  childName={selectedChildData.name}
+                  onMenuGenerated={() => refetchMenus()}
+                />
+                <BuddyKidsMenuViewer
+                  menus={menus || []}
+                  isLoading={loadingMenus}
+                  onDelete={(menuId) => {
+                    // TODO: Implementar eliminación de menú
+                  }}
+                />
               </TabsContent>
             </Tabs>
           </div>
