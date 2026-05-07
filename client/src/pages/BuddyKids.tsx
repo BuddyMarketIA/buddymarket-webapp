@@ -8,13 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Edit2, Trash2, AlertCircle, Heart, Zap } from "lucide-react";
 import { trpc } from "@/lib/trpc";
-import { useAuth } from "@/hooks/useAuth";
+// Removed useAuth import - not needed for this component
 // import BuddyKidsMenuGenerator from "@/components/BuddyKidsMenuGenerator";
 // import BuddyKidsMenuViewer from "@/components/BuddyKidsMenuViewer";
 import { useState } from "react";
 
 export default function BuddyKids() {
-  const { user } = useAuth();
   const [selectedChild, setSelectedChild] = useState<number | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isAllergyOpen, setIsAllergyOpen] = useState(false);
