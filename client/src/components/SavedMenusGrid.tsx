@@ -2,7 +2,7 @@ import React, { useState } from "react";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
-import { Copy, Trash2, Eye, Calendar, Users, Zap } from "lucide-react";
+import { Copy, Trash2, Eye, Calendar, Users, Zap, Download } from "lucide-react";
 import { toast } from "@/components/sonner-a11y-shim";
 
 interface SavedMenu {
@@ -26,9 +26,11 @@ interface SavedMenusGridProps {
   onDuplicate: (menuId: number) => void;
   onDelete: (menuId: number) => void;
   onView?: (menu: SavedMenu) => void;
+  onExport?: (menuId: number) => void;
   emptyMessage?: string;
   isDuplicating?: boolean;
   isDeleting?: boolean;
+  isExporting?: boolean;
 }
 
 export default function SavedMenusGrid({
@@ -37,9 +39,11 @@ export default function SavedMenusGrid({
   onDuplicate,
   onDelete,
   onView,
+  onExport,
   emptyMessage = "No hay menús guardados",
   isDuplicating = false,
   isDeleting = false,
+  isExporting = false,
 }: SavedMenusGridProps) {
   const [selectedMenu, setSelectedMenu] = useState<SavedMenu | null>(null);
   const [isViewOpen, setIsViewOpen] = useState(false);
@@ -60,6 +64,10 @@ export default function SavedMenusGrid({
       onDelete(menuId);
       toast.success("Menú eliminado correctamente");
     }
+  };
+
+  const handleExport = (menuId: number) => {
+    onExport?.(menuId);
   };
 
   if (isLoading) {
@@ -235,6 +243,16 @@ export default function SavedMenusGrid({
                   </DialogContent>
                 )}
               </Dialog>
+
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleExport(menu.id)}
+                disabled={isExporting}
+                title="Descargar como PDF"
+              >
+                <Download className="h-4 w-4" />
+              </Button>
 
               <Button
                 variant="outline"

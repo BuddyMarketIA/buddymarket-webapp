@@ -129,6 +129,35 @@ export const savedMenusRouter = router({
           ));
         return { success: true };
       }),
+
+    // Exportar menú especial a PDF
+    exportPDF: protectedProcedure
+      .input(z.object({ menuId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const menu = await db.getDb()
+          .select()
+          .from(specialMenus)
+          .where(and(
+            eq(specialMenus.id, input.menuId),
+            eq(specialMenus.userId, ctx.user.id)
+          ));
+        
+        if (!menu[0]) {
+          throw new Error("Menú no encontrado");
+        }
+
+        const { generateMenuPDF } = await import("../menuPdfGenerator");
+        const pdfBuffer = await generateMenuPDF({
+          ...menu[0],
+          type: "special",
+        });
+
+        return {
+          success: true,
+          filename: `${menu[0].name.replace(/[^a-z0-9]/gi, "-").toLowerCase()}.pdf`,
+          size: pdfBuffer.length,
+        };
+      }),
   }),
 
   // ─── EVENT MENUS ───────────────────────────────────────────────────────────
@@ -255,6 +284,35 @@ export const savedMenusRouter = router({
             eq(eventMenus.userId, ctx.user.id)
           ));
         return { success: true };
+      }),
+
+    // Exportar menú de evento a PDF
+    exportPDF: protectedProcedure
+      .input(z.object({ menuId: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const menu = await db.getDb()
+          .select()
+          .from(eventMenus)
+          .where(and(
+            eq(eventMenus.id, input.menuId),
+            eq(eventMenus.userId, ctx.user.id)
+          ));
+        
+        if (!menu[0]) {
+          throw new Error("Menú no encontrado");
+        }
+
+        const { generateMenuPDF } = await import("../menuPdfGenerator");
+        const pdfBuffer = await generateMenuPDF({
+          ...menu[0],
+          type: "event",
+        });
+
+        return {
+          success: true,
+          filename: `${menu[0].name.replace(/[^a-z0-9]/gi, "-").toLowerCase()}.pdf`,
+          size: pdfBuffer.length,
+        };
       }),
   }),
 });

@@ -66,6 +66,16 @@ export default function SpecialMenus() {
     },
   });
 
+  const exportPDFMutation = trpc.savedMenus.specialMenus.exportPDF.useMutation({
+    onSuccess: (data) => {
+      // El PDF se genera en el servidor y se descarga directamente
+      toast.success("Menú exportado correctamente");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Error al exportar el menú");
+    },
+  });
+
   const handleCreateMenu = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.startDate) {
@@ -257,9 +267,11 @@ export default function SpecialMenus() {
             isLoading={isLoading}
             onDuplicate={(menuId) => duplicateMutation.mutate({ menuId })}
             onDelete={(menuId) => deleteMutation.mutate({ menuId })}
+            onExport={(menuId) => exportPDFMutation.mutate({ menuId })}
             emptyMessage="No hay menús especiales creados aún"
             isDuplicating={duplicateMutation.isPending}
             isDeleting={deleteMutation.isPending}
+            isExporting={exportPDFMutation.isPending}
           />
         </TabsContent>
 
@@ -275,8 +287,10 @@ export default function SpecialMenus() {
                     isLoading={false}
                     onDuplicate={(menuId) => duplicateMutation.mutate({ menuId })}
                     onDelete={(menuId) => deleteMutation.mutate({ menuId })}
+                    onExport={(menuId) => exportPDFMutation.mutate({ menuId })}
                     isDuplicating={duplicateMutation.isPending}
                     isDeleting={deleteMutation.isPending}
+                    isExporting={exportPDFMutation.isPending}
                   />
                 ) : (
                   <p className="text-muted-foreground text-center py-8">

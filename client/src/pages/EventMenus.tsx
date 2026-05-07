@@ -66,6 +66,16 @@ export default function EventMenus() {
     },
   });
 
+  const exportPDFMutation = trpc.savedMenus.eventMenus.exportPDF.useMutation({
+    onSuccess: (data) => {
+      // El PDF se genera en el servidor y se descarga directamente
+      toast.success("Menú exportado correctamente");
+    },
+    onError: (error) => {
+      toast.error(error.message || "Error al exportar el menú");
+    },
+  });
+
   const handleCreateMenu = (e: React.FormEvent) => {
     e.preventDefault();
     if (!formData.name || !formData.eventDate) {
@@ -292,9 +302,11 @@ export default function EventMenus() {
             isLoading={isLoading}
             onDuplicate={(menuId) => duplicateMutation.mutate({ menuId })}
             onDelete={(menuId) => deleteMutation.mutate({ menuId })}
+            onExport={(menuId) => exportPDFMutation.mutate({ menuId })}
             emptyMessage="No hay menús de eventos creados aún"
             isDuplicating={duplicateMutation.isPending}
             isDeleting={deleteMutation.isPending}
+            isExporting={exportPDFMutation.isPending}
           />
         </TabsContent>
 
@@ -309,8 +321,10 @@ export default function EventMenus() {
                 isLoading={false}
                 onDuplicate={(menuId) => duplicateMutation.mutate({ menuId })}
                 onDelete={(menuId) => deleteMutation.mutate({ menuId })}
+                onExport={(menuId) => exportPDFMutation.mutate({ menuId })}
                 isDuplicating={duplicateMutation.isPending}
                 isDeleting={deleteMutation.isPending}
+                isExporting={exportPDFMutation.isPending}
               />
             ) : (
               <p className="text-muted-foreground text-center py-8">
@@ -332,8 +346,10 @@ export default function EventMenus() {
                     isLoading={false}
                     onDuplicate={(menuId) => duplicateMutation.mutate({ menuId })}
                     onDelete={(menuId) => deleteMutation.mutate({ menuId })}
+                    onExport={(menuId) => exportPDFMutation.mutate({ menuId })}
                     isDuplicating={duplicateMutation.isPending}
                     isDeleting={deleteMutation.isPending}
+                    isExporting={exportPDFMutation.isPending}
                   />
                 ) : (
                   <p className="text-muted-foreground text-center py-8">

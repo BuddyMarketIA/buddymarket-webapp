@@ -8,12 +8,12 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Edit2, Trash2, AlertCircle, Heart, Zap } from "lucide-react";
 import { trpc } from "@/lib/trpc";
-// Removed useAuth import - not needed for this component
+import { useAuth } from "@/_core/hooks/useAuth";
 // import BuddyKidsMenuGenerator from "@/components/BuddyKidsMenuGenerator";
 // import BuddyKidsMenuViewer from "@/components/BuddyKidsMenuViewer";
-import { useState } from "react";
 
 export default function BuddyKids() {
+  const { user } = useAuth();
   const [selectedChild, setSelectedChild] = useState<number | null>(null);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [isAllergyOpen, setIsAllergyOpen] = useState(false);
@@ -120,9 +120,7 @@ export default function BuddyKids() {
     });
   };
 
-  if (!user) {
-    return <div className="p-8 text-center">Por favor inicia sesión</div>;
-  }
+
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-50 p-4 md:p-8">
