@@ -8,9 +8,9 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { Plus, Edit2, Trash2, AlertCircle, Heart, Zap } from "lucide-react";
 import { trpc } from "@/lib/trpc";
-import { useAuth } from "@/lib/auth";
-import BuddyKidsMenuGenerator from "@/components/BuddyKidsMenuGenerator";
-import BuddyKidsMenuViewer from "@/components/BuddyKidsMenuViewer";
+import { useAuth } from "@/hooks/useAuth";
+// import BuddyKidsMenuGenerator from "@/components/BuddyKidsMenuGenerator";
+// import BuddyKidsMenuViewer from "@/components/BuddyKidsMenuViewer";
 import { useState } from "react";
 
 export default function BuddyKids() {
