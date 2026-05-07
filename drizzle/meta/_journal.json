@@ -407,6 +407,13 @@
       "when": 1778166747535,
       "tag": "0057_striped_pride",
       "breakpoints": true
+    },
+    {
+      "idx": 58,
+      "version": "7",
+      "when": 1778191022638,
+      "tag": "0058_brown_hawkeye",
+      "breakpoints": true
     }
   ]
 }

@@ -3206,3 +3206,14 @@
 - [ ] VetClinicDashboard: Notificación push/email al dueño cuando la clínica envía alerta
 - [ ] Admin: Añadir pestaña "Clínicas Vet" para gestión de clínicas veterinarias
 - [ ] Admin: Procedimiento admin.vetClinics en el servidor (listar, aprobar, desactivar, ver pacientes)
+
+
+## Sprint: Menús Guardados (Mascotas, Especiales y Eventos)
+- [x] Crear tablas de BD: specialMenus, eventMenus
+- [x] Crear router tRPC: savedMenusRouter con operaciones CRUD
+- [x] Crear componente SavedMenusGrid reutilizable
+- [x] Crear página de Menús Especiales con apartado de guardados
+- [x] Crear página de Menús de Eventos con apartado de guardados
+- [x] Añadir rutas en App.tsx
+- [x] Añadir navegación a las nuevas páginas en AppLayout
+- [ ] Integrar menús guardados en BuddyPet (mascotas) - PENDIENTE

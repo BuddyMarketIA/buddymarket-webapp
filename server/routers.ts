@@ -18,6 +18,7 @@ import { weeklyCheckinsRouter } from "./routers/weeklyCheckins";
 import { sessionPackagesRouter } from "./routers/sessionPackages";
 import { retentionRouter } from "./routers/retention";
 import { buddyKidsRouter } from "./routers/buddyKids";
+import { savedMenusRouter } from "./routers/savedMenus";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { invokeLLM } from "./_core/llm";
 import { storagePut } from "./storage";
@@ -249,6 +250,7 @@ export const appRouter = router({
   sessionPackages: sessionPackagesRouter,
   retention: retentionRouter,
   buddyKids: buddyKidsRouter,
+  savedMenus: savedMenusRouter,
 
   // ---------------------------------------------------------------------------
   // AUTH

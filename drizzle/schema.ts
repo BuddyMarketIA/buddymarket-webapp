@@ -3575,3 +3575,76 @@ export const familyCalendarEvents = pgTable("familyCalendarEvents", {
 }));
 export type FamilyCalendarEvent = typeof familyCalendarEvents.$inferSelect;
 export type NewFamilyCalendarEvent = typeof familyCalendarEvents.$inferInsert;
+
+
+// ─── Special Menus (Menús Especiales) ──────────────────────────────────────────
+export const specialMenusEnum = pgEnum("specialMenuType", [
+  "dieta_especial",
+  "alergia",
+  "restriccion_religiosa",
+  "preferencia_cultural",
+  "condicion_medica",
+  "otro"
+]);
+
+export const specialMenus = pgTable("specialMenus", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 256 }).notNull(),
+  description: text("description"),
+  menuType: specialMenusEnum("menuType").notNull(),
+  startDate: date("startDate").notNull(),
+  endDate: date("endDate"),
+  dailyCalories: integer("dailyCalories"),
+  persons: integer("persons").default(1),
+  difficulty: difficultyEnum("difficulty").default("easy"),
+  coverImage: text("coverImage"),
+  menuJson: text("menuJson"), // JSON con estructura de menú
+  notes: text("notes"),
+  isActive: boolean("isActive").default(true),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  userIdx: index("special_menus_user_idx").on(t.userId),
+  userCreatedAtIdx: index("special_menus_user_created_idx").on(t.userId, t.createdAt),
+}));
+export type SpecialMenu = typeof specialMenus.$inferSelect;
+export type NewSpecialMenu = typeof specialMenus.$inferInsert;
+
+// ─── Event Menus (Menús de Eventos) ───────────────────────────────────────────
+export const eventMenusEnum = pgEnum("eventMenuType", [
+  "cumpleanos",
+  "boda",
+  "aniversario",
+  "reunion_familiar",
+  "comida_negocios",
+  "picnic",
+  "cena_romantica",
+  "fiesta",
+  "otro"
+]);
+
+export const eventMenus = pgTable("eventMenus", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 256 }).notNull(),
+  description: text("description"),
+  eventType: eventMenusEnum("eventType").notNull(),
+  eventDate: date("eventDate").notNull(),
+  guestCount: integer("guestCount").default(1),
+  budget: numeric("budget", { precision: 10, scale: 2 }),
+  difficulty: difficultyEnum("difficulty").default("easy"),
+  cuisineType: varchar("cuisineType", { length: 64 }),
+  coverImage: text("coverImage"),
+  menuJson: text("menuJson"), // JSON con estructura de menú
+  shoppingListJson: text("shoppingListJson"),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  userIdx: index("event_menus_user_idx").on(t.userId),
+  eventDateIdx: index("event_menus_date_idx").on(t.eventDate),
+  userCreatedAtIdx: index("event_menus_user_created_idx").on(t.userId, t.createdAt),
+}));
+export type EventMenu = typeof eventMenus.$inferSelect;
+export type NewEventMenu = typeof eventMenus.$inferInsert;

@@ -483,6 +483,13 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       ],
     },
     {
+      label: "Menús",
+      items: [
+        { key: "/app/special-menus", label: "Menús Especiales", to: "/app/special-menus", emoji: "🍽️" },
+        { key: "/app/event-menus", label: "Menús de Eventos", to: "/app/event-menus", emoji: "🎉" },
+      ],
+    },
+    {
       label: "Familia",
       items: [
         { key: "/familia", label: "Mi Hogar", to: "/familia", emoji: "🏡" },
