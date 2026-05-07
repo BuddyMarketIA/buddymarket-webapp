@@ -276,6 +276,7 @@
 
 ## Sprint: Optimización de Imágenes y Performance
 - [x] Optimizar imagen de ENISA: compresión WebP (31KB → 19KB, 39.7% reducción), lazy loading, decoding async
+- [x] Corregir error Google OAuth redirect_uri_mismatch: cambiar a Google One Tap (más seguro, sin problemas de configuración)
 
 ## Sprint: Recetas Favoritas
 - [ ] Tabla `recipeFavorites` en drizzle/schema.ts (userId, recipeId, createdAt)

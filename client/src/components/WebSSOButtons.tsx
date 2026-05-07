@@ -198,18 +198,24 @@ export default function WebSSOButtons({
       toast.error("Google SSO no configurado", { description: "Añade VITE_GOOGLE_CLIENT_ID en los secretos" });
       return;
     }
-    // Flujo redirect OAuth estándar (webapp pura)
-    const origin = window.location.origin;
-    const returnPath = window.location.pathname !== "/login" ? window.location.pathname : "/";
-    const url = `/api/auth/google/login?origin=${encodeURIComponent(origin)}&returnPath=${encodeURIComponent(returnPath)}`;
-    window.location.assign(url);
+    // Usar Google One Tap (más seguro, sin problemas de redirect_uri)
+    if (window.google?.accounts?.id) {
+      window.google.accounts.id.prompt((notification) => {
+        if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
+          toast.error("Google One Tap no disponible", { description: "Intenta de nuevo" });
+        }
+      });
+    }
   };
 
   const handleGoogleClick = () => {
+    setGoogleLoading(true);
     if (onBeforeSSO) {
-      onBeforeSSO("google", _doGoogleRedirect);
+      onBeforeSSO("google", () => { _doGoogleRedirect(); setGoogleLoading(false); });
     } else {
       _doGoogleRedirect();
+      // One Tap se cierra automáticamente, así que resetear loading después de un tiempo
+      setTimeout(() => setGoogleLoading(false), 2000);
     }
   };
 
