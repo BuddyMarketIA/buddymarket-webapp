@@ -3383,3 +3383,195 @@ export const bloodTests = pgTable("bloodTests", {
 }));
 export type BloodTest = typeof bloodTests.$inferSelect;
 export type NewBloodTest = typeof bloodTests.$inferInsert;
+
+
+// =============================================================================
+// BUDDYKIDS — Nutrición, hábitos y bienestar infantil
+// =============================================================================
+
+// Enums para BuddyKids
+export const childAgeGroupEnum = pgEnum("childAgeGroup", ["1_3", "4_6", "7_12", "13_17"]);
+export const allergyTypeEnum = pgEnum("allergyType", ["gluten", "lactose", "nuts", "peanuts", "shellfish", "eggs", "soy", "sesame", "fish", "other"]);
+export const habitTypeEnum = pgEnum("habitType", ["water", "fruit_vegetable", "sleep", "activity", "breakfast", "ultraprocesados", "other"]);
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Perfiles infantiles
+// ─────────────────────────────────────────────────────────────────────────────
+export const childProfiles = pgTable("childProfiles", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 128 }).notNull(),
+  dateOfBirth: date("dateOfBirth").notNull(),
+  ageGroup: childAgeGroupEnum("ageGroup").notNull(), // 1-3, 4-6, 7-12, 13-17
+  height: numeric("height", { precision: 5, scale: 2 }), // en cm
+  weight: numeric("weight", { precision: 5, scale: 2 }), // en kg
+  gender: genderEnum("gender"),
+  favoriteFood: text("favoriteFood").array().default([]).notNull(), // Array de alimentos favoritos
+  dislikedFood: text("dislikedFood").array().default([]).notNull(), // Array de alimentos que no le gustan
+  objective: text("objective"), // Ej: "comer más verdura", "mejorar hábitos"
+  notes: text("notes"), // Notas de los padres
+  imageUrl: text("imageUrl"), // Foto del niño
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  cp_user_idx: index("cp_user_idx").on(t.userId),
+}));
+export type ChildProfile = typeof childProfiles.$inferSelect;
+export type NewChildProfile = typeof childProfiles.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Alergias e intolerancias infantiles
+// ─────────────────────────────────────────────────────────────────────────────
+export const childAllergies = pgTable("childAllergies", {
+  id: serial("id").primaryKey(),
+  childId: integer("childId").notNull().references(() => childProfiles.id, { onDelete: "cascade" }),
+  allergyType: allergyTypeEnum("allergyType").notNull(),
+  allergyName: varchar("allergyName", { length: 128 }).notNull(),
+  severity: varchar("severity", { length: 32 }), // mild, moderate, severe
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  ca_child_idx: index("ca_child_idx").on(t.childId),
+}));
+export type ChildAllergy = typeof childAllergies.$inferSelect;
+export type NewChildAllergy = typeof childAllergies.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Menús infantiles personalizados
+// ─────────────────────────────────────────────────────────────────────────────
+export const childMenus = pgTable("childMenus", {
+  id: serial("id").primaryKey(),
+  childId: integer("childId").notNull().references(() => childProfiles.id, { onDelete: "cascade" }),
+  weekStartDate: date("weekStartDate").notNull(),
+  menuType: varchar("menuType", { length: 64 }).notNull(), // "1_3_years", "4_6_years", "7_12_years", "13_17_years", "family_compatible"
+  mondayJson: text("mondayJson"), // JSON con desayuno, media mañana, comida, merienda, cena
+  tuesdayJson: text("tuesdayJson"),
+  wednesdayJson: text("wednesdayJson"),
+  thursdayJson: text("thursdayJson"),
+  fridayJson: text("fridayJson"),
+  saturdayJson: text("saturdayJson"),
+  sundayJson: text("sundayJson"),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  cm_child_idx: index("cm_child_idx").on(t.childId),
+}));
+export type ChildMenu = typeof childMenus.$inferSelect;
+export type NewChildMenu = typeof childMenus.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Lunchbox y meriendas
+// ─────────────────────────────────────────────────────────────────────────────
+export const childLunchboxes = pgTable("childLunchboxes", {
+  id: serial("id").primaryKey(),
+  childId: integer("childId").notNull().references(() => childProfiles.id, { onDelete: "cascade" }),
+  dayOfWeek: varchar("dayOfWeek", { length: 32 }).notNull(), // Monday, Tuesday, etc.
+  lunchboxName: varchar("lunchboxName", { length: 128 }).notNull(),
+  itemsJson: text("itemsJson"), // JSON array con items del lunchbox
+  calorieTarget: integer("calorieTarget"), // Calorías objetivo
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  clb_child_idx: index("clb_child_idx").on(t.childId),
+}));
+export type ChildLunchbox = typeof childLunchboxes.$inferSelect;
+export type NewChildLunchbox = typeof childLunchboxes.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Rutinas y hábitos infantiles
+// ─────────────────────────────────────────────────────────────────────────────
+export const childHabits = pgTable("childHabits", {
+  id: serial("id").primaryKey(),
+  childId: integer("childId").notNull().references(() => childProfiles.id, { onDelete: "cascade" }),
+  habitType: habitTypeEnum("habitType").notNull(),
+  habitName: varchar("habitName", { length: 128 }).notNull(),
+  dailyTarget: integer("dailyTarget"), // Ej: 8 vasos de agua
+  unit: varchar("unit", { length: 32 }), // vasos, porciones, minutos, etc.
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  ch_child_idx: index("ch_child_idx").on(t.childId),
+}));
+export type ChildHabit = typeof childHabits.$inferSelect;
+export type NewChildHabit = typeof childHabits.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Seguimiento diario de hábitos
+// ─────────────────────────────────────────────────────────────────────────────
+export const childHabitLogs = pgTable("childHabitLogs", {
+  id: serial("id").primaryKey(),
+  habitId: integer("habitId").notNull().references(() => childHabits.id, { onDelete: "cascade" }),
+  logDate: date("logDate").notNull(),
+  completed: integer("completed").notNull().default(0), // Cantidad completada
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  chl_habit_idx: index("chl_habit_idx").on(t.habitId),
+  chl_date_idx: index("chl_date_idx").on(t.logDate),
+}));
+export type ChildHabitLog = typeof childHabitLogs.$inferSelect;
+export type NewChildHabitLog = typeof childHabitLogs.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Recetas para niños (relación con tabla recipes existente)
+// ─────────────────────────────────────────────────────────────────────────────
+export const childRecipes = pgTable("childRecipes", {
+  id: serial("id").primaryKey(),
+  recipeId: integer("recipeId").notNull().references(() => recipes.id, { onDelete: "cascade" }),
+  ageGroup: childAgeGroupEnum("ageGroup").notNull(),
+  difficulty: difficultyEnum("difficulty").notNull(),
+  preparationTimeMinutes: integer("preparationTimeMinutes"),
+  cookingTimeMinutes: integer("cookingTimeMinutes"),
+  servings: integer("servings"),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  cr_recipe_idx: index("cr_recipe_idx").on(t.recipeId),
+}));
+export type ChildRecipe = typeof childRecipes.$inferSelect;
+export type NewChildRecipe = typeof childRecipes.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Progreso e indicadores infantiles
+// ─────────────────────────────────────────────────────────────────────────────
+export const childProgress = pgTable("childProgress", {
+  id: serial("id").primaryKey(),
+  childId: integer("childId").notNull().references(() => childProfiles.id, { onDelete: "cascade" }),
+  weekStartDate: date("weekStartDate").notNull(),
+  foodVarietyCount: integer("foodVarietyCount"), // Número de alimentos diferentes probados
+  fruitVegetableServings: integer("fruitVegetableServings"), // Porciones de frutas/verduras
+  mealsLogged: integer("mealsLogged"), // Comidas registradas
+  hydrationDays: integer("hydrationDays"), // Días con hidratación adecuada
+  newFoodsTried: text("newFoodsTried").array().default([]).notNull(), // Array de alimentos nuevos
+  rejectedFoods: text("rejectedFoods").array().default([]).notNull(), // Array de alimentos rechazados
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  cp_child_idx: index("cp_child_idx").on(t.childId),
+}));
+export type ChildProgress = typeof childProgress.$inferSelect;
+export type NewChildProgress = typeof childProgress.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Calendario familiar con eventos infantiles
+// ─────────────────────────────────────────────────────────────────────────────
+export const familyCalendarEvents = pgTable("familyCalendarEvents", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  childId: integer("childId"), // Opcional: si es específico de un niño
+  eventType: varchar("eventType", { length: 64 }).notNull(), // pediatric_appointment, school_menu, birthday, activity, meal_reminder
+  eventDate: date("eventDate").notNull(),
+  eventTime: varchar("eventTime", { length: 8 }), // HH:MM
+  title: varchar("title", { length: 256 }).notNull(),
+  description: text("description"),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  fce_user_idx: index("fce_user_idx").on(t.userId),
+  fce_child_idx: index("fce_child_idx").on(t.childId),
+}));
+export type FamilyCalendarEvent = typeof familyCalendarEvents.$inferSelect;
+export type NewFamilyCalendarEvent = typeof familyCalendarEvents.$inferInsert;

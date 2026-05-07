@@ -477,6 +477,12 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       ],
     },
     {
+      label: "BuddyKids",
+      items: [
+        { key: "/app/buddy-kids", label: "Nutrición Infantil", to: "/app/buddy-kids", emoji: "👶" },
+      ],
+    },
+    {
       label: "Familia",
       items: [
         { key: "/familia", label: "Mi Hogar", to: "/familia", emoji: "🏡" },

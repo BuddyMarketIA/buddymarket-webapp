@@ -400,6 +400,13 @@
       "when": 1777132635696,
       "tag": "0056_crazy_wasp",
       "breakpoints": true
+    },
+    {
+      "idx": 57,
+      "version": "7",
+      "when": 1778166747535,
+      "tag": "0057_striped_pride",
+      "breakpoints": true
     }
   ]
 }
