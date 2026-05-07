@@ -420,7 +420,7 @@ export default function Home() {
             
             {/* Imagen */}
             <a href="https://www.enisa.es" target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", textDecoration: "none", transition: "opacity 0.2s", width: "100%", maxWidth: "600px" }} onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.85")} onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}>
-              <img src="/enisa-financiacion.webp" alt="Financiado por ENISA - NextGenerationEU" style={{ maxHeight: "clamp(70px, 18vw, 110px)", width: "100%", maxWidth: "600px", height: "auto", objectFit: "contain", display: "block" }} />
+              <img src="/enisa-financiacion.webp" alt="Financiado por ENISA - NextGenerationEU" loading="lazy" decoding="async" style={{ maxHeight: "clamp(70px, 18vw, 110px)", width: "100%", maxWidth: "600px", height: "auto", objectFit: "contain", display: "block" }} />
             </a>
           </div>
         </div>
@@ -433,7 +433,7 @@ export default function Home() {
           <div style={{ background: "linear-gradient(135deg, rgba(249, 115, 22, 0.08), rgba(249, 115, 22, 0.04))", borderRadius: "12px", border: "1px solid rgba(249, 115, 22, 0.15)", padding: "32px 24px", marginBottom: "40px", display: "flex", flexDirection: "column", justifyContent: "center", alignItems: "center", gap: "16px" }}>
             <p style={{ fontSize: "12px", fontWeight: 700, color: "rgba(249, 115, 22, 0.8)", textTransform: "uppercase", letterSpacing: "0.08em", margin: 0 }}>Financiado por</p>
             <a href="https://www.nextgenerationeu.europa.eu" target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", textDecoration: "none", transition: "opacity 0.2s" }} onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")} onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}>
-              <img src="/financiacion-eu.webp" alt="Financiado por la Unión Europea - NextGenerationEU" style={{ maxHeight: "clamp(70px, 14vw, 90px)", width: "auto", objectFit: "contain", display: "block" }} />
+              <img src="/financiacion-eu.webp" alt="Financiado por la Unión Europea - NextGenerationEU" loading="lazy" decoding="async" style={{ maxHeight: "clamp(70px, 14vw, 90px)", width: "auto", objectFit: "contain", display: "block" }} />
             </a>
             <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.35)", textAlign: "center", margin: 0, maxWidth: "500px", lineHeight: 1.4 }}>Este proyecto ha sido financiado con el apoyo de la Unión Europea a través del programa NextGenerationEU.</p>
           </div>

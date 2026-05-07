@@ -274,6 +274,9 @@
 - [x] UI: contador de resultados encontrados
 - [x] Card "Completa tu perfil": cambiar color a degradado índigo/azul
 
+## Sprint: Optimización de Imágenes y Performance
+- [x] Optimizar imagen de ENISA: compresión WebP (31KB → 19KB, 39.7% reducción), lazy loading, decoding async
+
 ## Sprint: Recetas Favoritas
 - [ ] Tabla `recipeFavorites` en drizzle/schema.ts (userId, recipeId, createdAt)
 - [ ] Helper `toggleFavorite`, `getFavorites`, `isFavorite` en server/db.ts
