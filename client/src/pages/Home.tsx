@@ -408,19 +408,19 @@ export default function Home() {
       </section>
 
       {/* FINANCIACIÓN ENISA - SECTION */}
-      <section style={{ padding: "60px 20px", background: "linear-gradient(135deg, rgba(249, 115, 22, 0.05), rgba(249, 115, 22, 0.02))", borderTop: "1px solid rgba(249, 115, 22, 0.1)", borderBottom: "1px solid rgba(249, 115, 22, 0.1)" }}>
-        <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
-          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "32px" }}>
+      <section style={{ padding: "clamp(40px, 8vw, 60px) clamp(16px, 5vw, 20px)", background: "linear-gradient(135deg, rgba(249, 115, 22, 0.05), rgba(249, 115, 22, 0.02))", borderTop: "1px solid rgba(249, 115, 22, 0.1)", borderBottom: "1px solid rgba(249, 115, 22, 0.1)" }}>
+        <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "0 clamp(12px, 4vw, 24px)" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "clamp(20px, 5vw, 32px)" }}>
             {/* Texto */}
-            <div style={{ textAlign: "center", maxWidth: "700px" }}>
-              <p style={{ fontSize: "12px", fontWeight: 700, color: "rgba(249, 115, 22, 0.8)", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 12px 0" }}>Respaldado por</p>
-              <h2 style={{ fontSize: "32px", fontWeight: 900, color: "white", margin: "0 0 16px 0", lineHeight: 1.2 }}>Financiado por ENISA y NextGenerationEU</h2>
-              <p style={{ fontSize: "15px", color: "rgba(255,255,255,0.65)", lineHeight: 1.6, margin: 0 }}>BuddyOne ha recibido financiación de ENISA (Empresa Nacional de Innovación) a través del programa NextGenerationEU del Gobierno de España. Este apoyo nos permite desarrollar soluciones innovadoras para mejorar tu bienestar y salud.</p>
+            <div style={{ textAlign: "center", maxWidth: "700px", width: "100%" }}>
+              <p style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "rgba(249, 115, 22, 0.8)", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 clamp(8px, 2vw, 12px) 0" }}>Respaldado por</p>
+              <h2 style={{ fontSize: "clamp(24px, 6vw, 32px)", fontWeight: 900, color: "white", margin: "0 0 clamp(12px, 3vw, 16px) 0", lineHeight: 1.2 }}>Financiado por ENISA y NextGenerationEU</h2>
+              <p style={{ fontSize: "clamp(13px, 3.5vw, 15px)", color: "rgba(255,255,255,0.65)", lineHeight: 1.6, margin: 0, paddingLeft: "clamp(8px, 2vw, 16px)", paddingRight: "clamp(8px, 2vw, 16px)" }}>BuddyOne ha recibido financiación de ENISA (Empresa Nacional de Innovación) a través del programa NextGenerationEU del Gobierno de España. Este apoyo nos permite desarrollar soluciones innovadoras para mejorar tu bienestar y salud.</p>
             </div>
             
             {/* Imagen */}
-            <a href="https://www.enisa.es" target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", textDecoration: "none", transition: "opacity 0.2s" }} onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.85")} onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}>
-              <img src="/enisa-financiacion.webp" alt="Financiado por ENISA - NextGenerationEU" style={{ maxHeight: "clamp(80px, 16vw, 110px)", width: "auto", objectFit: "contain", display: "block" }} />
+            <a href="https://www.enisa.es" target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", textDecoration: "none", transition: "opacity 0.2s", width: "100%", maxWidth: "600px" }} onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.85")} onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}>
+              <img src="/enisa-financiacion.webp" alt="Financiado por ENISA - NextGenerationEU" style={{ maxHeight: "clamp(70px, 18vw, 110px)", width: "100%", maxWidth: "600px", height: "auto", objectFit: "contain", display: "block" }} />
             </a>
           </div>
         </div>
