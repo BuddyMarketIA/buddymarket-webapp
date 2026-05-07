@@ -407,6 +407,25 @@ export default function Home() {
         </div>
       </section>
 
+      {/* FINANCIACIÓN ENISA - SECTION */}
+      <section style={{ padding: "60px 20px", background: "linear-gradient(135deg, rgba(249, 115, 22, 0.05), rgba(249, 115, 22, 0.02))", borderTop: "1px solid rgba(249, 115, 22, 0.1)", borderBottom: "1px solid rgba(249, 115, 22, 0.1)" }}>
+        <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
+          <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "32px" }}>
+            {/* Texto */}
+            <div style={{ textAlign: "center", maxWidth: "700px" }}>
+              <p style={{ fontSize: "12px", fontWeight: 700, color: "rgba(249, 115, 22, 0.8)", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 12px 0" }}>Respaldado por</p>
+              <h2 style={{ fontSize: "32px", fontWeight: 900, color: "white", margin: "0 0 16px 0", lineHeight: 1.2 }}>Financiado por ENISA y NextGenerationEU</h2>
+              <p style={{ fontSize: "15px", color: "rgba(255,255,255,0.65)", lineHeight: 1.6, margin: 0 }}>BuddyOne ha recibido financiación de ENISA (Empresa Nacional de Innovación) a través del programa NextGenerationEU del Gobierno de España. Este apoyo nos permite desarrollar soluciones innovadoras para mejorar tu bienestar y salud.</p>
+            </div>
+            
+            {/* Imagen */}
+            <a href="https://www.enisa.es" target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", textDecoration: "none", transition: "opacity 0.2s" }} onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.85")} onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}>
+              <img src="/enisa-financiacion.webp" alt="Financiado por ENISA - NextGenerationEU" style={{ maxHeight: "clamp(80px, 16vw, 110px)", width: "auto", objectFit: "contain", display: "block" }} />
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* FOOTER */}
       <footer style={{ padding: "40px 20px 32px", background: "#060606", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
         <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
