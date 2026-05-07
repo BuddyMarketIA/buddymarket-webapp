@@ -456,7 +456,9 @@ export default function Home() {
           
           {/* Financiación */}
           <div style={{ borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "32px", display: "flex", justifyContent: "center", alignItems: "center", flexWrap: "wrap", gap: "24px" }}>
-            <img src="/financiacion-eu.webp" alt="Financiado por la Unión Europea - NextGenerationEU" style={{ maxHeight: "80px", width: "auto", objectFit: "contain" }} />
+            <a href="https://www.nextgenerationeu.europa.eu" target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", textDecoration: "none", transition: "opacity 0.2s" }} onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")} onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}>
+              <img src="/financiacion-eu.webp" alt="Financiado por la Unión Europea - NextGenerationEU" style={{ maxHeight: "80px", width: "auto", objectFit: "contain" }} />
+            </a>
           </div>
         </div>
       </footer>
