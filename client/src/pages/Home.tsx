@@ -456,7 +456,7 @@ export default function Home() {
           
           {/* Financiación */}
           <div style={{ borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "32px", display: "flex", justifyContent: "center", alignItems: "center", flexWrap: "wrap", gap: "24px" }}>
-            <img src="https://manus-webdev.s3.us-east-1.amazonaws.com/pasted_file_xwoWWb_image_35992d9e.webp" alt="Financiado por la Unión Europea - NextGenerationEU" style={{ maxHeight: "80px", width: "auto", objectFit: "contain" }} />
+            <img src="/financiacion-eu.webp" alt="Financiado por la Unión Europea - NextGenerationEU" style={{ maxHeight: "80px", width: "auto", objectFit: "contain" }} />
           </div>
         </div>
       </footer>
