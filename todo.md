@@ -280,6 +280,7 @@
 - [x] Añadir menús guardados (especiales y eventos): tablas BD, routers tRPC, componente SavedMenusGrid
 - [x] Implementar exportación a PDF para menús especiales y de eventos
 - [x] Corregir error de BuddyKids: import duplicado de useState y useAuth faltante
+- [x] Añadir logos de financiación (ENISA, NextGenerationEU) al footer de la landing
 
 ## Sprint: Recetas Favoritas
 - [ ] Tabla `recipeFavorites` en drizzle/schema.ts (userId, recipeId, createdAt)
