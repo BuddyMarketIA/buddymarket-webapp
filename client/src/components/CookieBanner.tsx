@@ -266,13 +266,7 @@ export default function CookieBanner() {
             </a>
           </div>
         </div>
-        
-        {/* Financiación - ENISA */}
-        <div className="border-t border-border/30 px-5 md:px-6 py-4 bg-muted/20 flex justify-center items-center">
-          <a href="https://www.nextgenerationeu.europa.eu" target="_blank" rel="noopener noreferrer" className="inline-flex items-center justify-center hover:opacity-80 transition-opacity">
-            <img src="/financiacion-eu.webp" alt="Financiado por la Unión Europea - NextGenerationEU" style={{ maxHeight: "60px", width: "auto", objectFit: "contain" }} />
-          </a>
-        </div>
+
       </div>
     </div>
   );
