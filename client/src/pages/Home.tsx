@@ -437,7 +437,7 @@ export default function Home() {
                 <img src="/financiacion-eu.webp" alt="Financiado por la Unión Europea - NextGenerationEU" loading="lazy" decoding="async" style={{ maxHeight: "clamp(60px, 12vw, 80px)", width: "auto", objectFit: "contain", display: "block" }} />
               </a>
               <a href="https://www.enisa.es" target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", textDecoration: "none", transition: "opacity 0.2s" }} onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")} onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}>
-                <img src="https://manus-webdev-storage.s3.us-west-2.amazonaws.com/manus-storage/pasted_file_Yq3H5b_image_ec0b201c.webp" alt="Logos de financiación ENISA y NextGenerationEU" loading="lazy" decoding="async" style={{ maxHeight: "clamp(60px, 12vw, 80px)", width: "auto", objectFit: "contain", display: "block" }} />
+                <img src="https://manus-webdev-storage.s3.us-west-2.amazonaws.com/manus-storage/pasted_file_W5Bx21_image_517a5200.png" alt="Logos de financiación ENISA y NextGenerationEU" loading="lazy" decoding="async" style={{ maxHeight: "clamp(60px, 12vw, 80px)", width: "auto", objectFit: "contain", display: "block" }} />
               </a>
             </div>
             <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.35)", textAlign: "center", margin: 0, maxWidth: "600px", lineHeight: 1.4 }}>Este proyecto ha sido financiado con el apoyo de la Unión Europea a través del programa NextGenerationEU y ENISA (Empresa Nacional de Innovación).</p>
