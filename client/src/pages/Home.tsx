@@ -477,10 +477,21 @@ export default function Home() {
               <LanguageSelector variant="footer" className="text-white/50 hover:text-white/80" />
             </div>
           </div>
-          <div style={{ borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "32px", paddingBottom: "32px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "20px" }}>
-            <div style={{ flex: 1, minWidth: "300px" }}>
-              <p style={{ margin: "0 0 12px 0", fontSize: "12px", color: "rgba(255,255,255,0.18)" }}>© 2025 Buddy One. Todos los derechos reservados.</p>
-              <p style={{ margin: 0, fontSize: "11px", color: "rgba(255,255,255,0.14)", lineHeight: 1.5 }}>
+          <div style={{ borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "32px", paddingBottom: "32px" }}>
+            {/* Textos Legales */}
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", flexWrap: "wrap", gap: "24px", marginBottom: "24px" }}>
+              <a href="/legal" style={{ fontSize: "12px", color: "rgba(255,255,255,0.50)", textDecoration: "none", fontWeight: 500, transition: "color 0.2s" }} onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.80)")} onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.50)")}>Aviso Legal</a>
+              <span style={{ color: "rgba(255,255,255,0.20)" }}>•</span>
+              <a href="/privacy" style={{ fontSize: "12px", color: "rgba(255,255,255,0.50)", textDecoration: "none", fontWeight: 500, transition: "color 0.2s" }} onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.80)")} onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.50)")}>Política de Privacidad</a>
+              <span style={{ color: "rgba(255,255,255,0.20)" }}>•</span>
+              <a href="/cookies" style={{ fontSize: "12px", color: "rgba(255,255,255,0.50)", textDecoration: "none", fontWeight: 500, transition: "color 0.2s" }} onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.80)")} onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.50)")}>Política de Cookies</a>
+              <span style={{ color: "rgba(255,255,255,0.20)" }}>•</span>
+              <a href="/terms" style={{ fontSize: "12px", color: "rgba(255,255,255,0.50)", textDecoration: "none", fontWeight: 500, transition: "color 0.2s" }} onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.80)")} onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.50)")}>Términos y Condiciones</a>
+            </div>
+            {/* Copyright y Disclaimer */}
+            <div style={{ textAlign: "center", paddingTop: "24px", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
+              <p style={{ margin: "0 0 12px 0", fontSize: "12px", color: "rgba(255,255,255,0.35)" }}>© 2025 Buddy One. Todos los derechos reservados.</p>
+              <p style={{ margin: 0, fontSize: "11px", color: "rgba(255,255,255,0.25)", lineHeight: 1.5, maxWidth: "600px", marginLeft: "auto", marginRight: "auto" }}>
                 El contenido de esta plataforma no constituye asesoramiento médico ni nutricional profesional. Consulta siempre con un profesional de la salud.
               </p>
             </div>
