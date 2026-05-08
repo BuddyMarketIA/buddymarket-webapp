@@ -4,26 +4,6 @@ import { useLocation } from "wouter";
 import LanguageSelector from "@/components/LanguageSelector";
 import { getLoginUrl } from "@/const";
 
-const LEGAL_CONTENT = {
-  legal: {
-    title: "Aviso Legal",
-    content: "Aviso Legal\n\nTitular del sitio web: Buddy One\n\nDominio: buddyoneapp.com\n\nDerechos de propiedad intelectual:\nTodos los contenidos, textos, gráficos, logotipos, imágenes y software son propiedad de Buddy One o sus proveedores y están protegidos por las leyes de propiedad intelectual.\n\nLimitación de responsabilidad:\nBuddy One no se responsabiliza de los daños y perjuicios de cualquier naturaleza que pudieran derivarse del acceso y utilización del sitio web."
-  },
-  privacy: {
-    title: "Política de Privacidad",
-    content: "Política de Privacidad\n\n1. Responsable del tratamiento\nBuddy One es responsable del tratamiento de tus datos personales.\n\n2. Datos que recabamos\n- Datos de identificación (nombre, email)\n- Datos de salud y nutrición\n- Datos de uso de la plataforma\n\n3. Base legal\nTratamos tus datos en base a tu consentimiento y para la ejecución del contrato de servicios."
-  },
-  cookies: {
-    title: "Política de Cookies",
-    content: "Política de Cookies\n\n1. ¿Qué son las cookies?\nLas cookies son pequeños archivos de texto que se almacenan en tu dispositivo cuando visitas nuestro sitio web.\n\n2. Tipos de cookies que utilizamos\n- Cookies técnicas: necesarias para el funcionamiento del sitio\n- Cookies de análisis: para entender cómo usas nuestro sitio"
-  },
-  terms: {
-    title: "Términos y Condiciones",
-    content: "Términos y Condiciones\n\n1. Aceptación de los términos\nAl acceder y utilizar Buddy One, aceptas estos términos y condiciones en su totalidad.\n\n2. Uso del servicio\nTe comprometes a usar Buddy One de manera legal y responsable, sin infringir derechos de terceros."
-  }
-};
-
-
 const MODULES = [
   {
     id: "market",
@@ -153,7 +133,6 @@ export default function Home() {
   const { isAuthenticated, loading } = useAuth();
   const [, navigate] = useLocation();
   const [activeModule, setActiveModule] = useState(0);
-  const [legalModal, setLegalModal] = useState<string | null>(null);
 
   useEffect(() => {
     if (!loading && isAuthenticated) navigate("/app/dashboard");
@@ -458,7 +437,7 @@ export default function Home() {
                 <img src="/financiacion-eu.webp" alt="Financiado por la Unión Europea - NextGenerationEU" loading="lazy" decoding="async" style={{ maxHeight: "clamp(60px, 12vw, 80px)", width: "auto", objectFit: "contain", display: "block" }} />
               </a>
               <a href="https://www.enisa.es" target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", textDecoration: "none", transition: "opacity 0.2s" }} onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.8")} onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}>
-                <img src="https://manus-webdev-storage.s3.us-west-2.amazonaws.com/manus-storage/pasted_file_W5Bx21_image_517a5200.png" alt="Logos de financiación ENISA y NextGenerationEU" loading="lazy" decoding="async" style={{ maxHeight: "clamp(60px, 12vw, 80px)", width: "auto", objectFit: "contain", display: "block" }} />
+                <img src="https://manus-webdev-storage.s3.us-west-2.amazonaws.com/manus-storage/pasted_file_Yq3H5b_image_ec0b201c.webp" alt="Logos de financiación ENISA y NextGenerationEU" loading="lazy" decoding="async" style={{ maxHeight: "clamp(60px, 12vw, 80px)", width: "auto", objectFit: "contain", display: "block" }} />
               </a>
             </div>
             <p style={{ fontSize: "11px", color: "rgba(255,255,255,0.35)", textAlign: "center", margin: 0, maxWidth: "600px", lineHeight: 1.4 }}>Este proyecto ha sido financiado con el apoyo de la Unión Europea a través del programa NextGenerationEU y ENISA (Empresa Nacional de Innovación).</p>
@@ -498,43 +477,15 @@ export default function Home() {
               <LanguageSelector variant="footer" className="text-white/50 hover:text-white/80" />
             </div>
           </div>
-          <div style={{ borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "32px", paddingBottom: "32px" }}>
-            {/* Textos Legales */}
-            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", flexWrap: "wrap", gap: "24px", marginBottom: "24px" }}>
-              <button onClick={() => setLegalModal("legal")} style={{ cursor: "pointer", background: "none", border: "none", padding: 0 }} style={{ fontSize: "12px", color: "rgba(255,255,255,0.50)", textDecoration: "none", fontWeight: 500, transition: "color 0.2s" }} onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.80)")} onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.50)")}>Aviso Legal</button>
-              <span style={{ color: "rgba(255,255,255,0.20)" }}>•</span>
-              <button onClick={() => setLegalModal("privacy")} style={{ cursor: "pointer", background: "none", border: "none", padding: 0 }} style={{ fontSize: "12px", color: "rgba(255,255,255,0.50)", textDecoration: "none", fontWeight: 500, transition: "color 0.2s" }} onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.80)")} onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.50)")}>Política de Privacidad</button>
-              <span style={{ color: "rgba(255,255,255,0.20)" }}>•</span>
-              <button onClick={() => setLegalModal("cookies")} style={{ cursor: "pointer", background: "none", border: "none", padding: 0 }} style={{ fontSize: "12px", color: "rgba(255,255,255,0.50)", textDecoration: "none", fontWeight: 500, transition: "color 0.2s" }} onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.80)")} onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.50)")}>Política de Cookies</button>
-              <span style={{ color: "rgba(255,255,255,0.20)" }}>•</span>
-              <button onClick={() => setLegalModal("terms")} style={{ cursor: "pointer", background: "none", border: "none", padding: 0 }} style={{ fontSize: "12px", color: "rgba(255,255,255,0.50)", textDecoration: "none", fontWeight: 500, transition: "color 0.2s" }} onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.80)")} onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.50)")}>Términos y Condiciones</button>
-            </div>
-            {/* Copyright y Disclaimer */}
-            <div style={{ textAlign: "center", paddingTop: "24px", borderTop: "1px solid rgba(255,255,255,0.05)" }}>
-              <p style={{ margin: "0 0 12px 0", fontSize: "12px", color: "rgba(255,255,255,0.35)" }}>© 2025 Buddy One. Todos los derechos reservados.</p>
-              <p style={{ margin: 0, fontSize: "11px", color: "rgba(255,255,255,0.25)", lineHeight: 1.5, maxWidth: "600px", marginLeft: "auto", marginRight: "auto" }}>
+          <div style={{ borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "32px", paddingBottom: "32px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "20px" }}>
+            <div style={{ flex: 1, minWidth: "300px" }}>
+              <p style={{ margin: "0 0 12px 0", fontSize: "12px", color: "rgba(255,255,255,0.18)" }}>© 2025 Buddy One. Todos los derechos reservados.</p>
+              <p style={{ margin: 0, fontSize: "11px", color: "rgba(255,255,255,0.14)", lineHeight: 1.5 }}>
                 El contenido de esta plataforma no constituye asesoramiento médico ni nutricional profesional. Consulta siempre con un profesional de la salud.
               </p>
             </div>
           </div>
         </div>
-      
-
-      {/* Modal de Textos Legales */}
-      {legalModal && LEGAL_CONTENT[legalModal as keyof typeof LEGAL_CONTENT] && (
-        <div style={{ position: "fixed", top: 0, left: 0, right: 0, bottom: 0, backgroundColor: "rgba(0,0,0,0.5)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 9999 }} onClick={() => setLegalModal(null)}>
-          <div style={{ backgroundColor: "white", borderRadius: "12px", padding: "32px", maxWidth: "600px", maxHeight: "80vh", overflowY: "auto", boxShadow: "0 20px 25px -5px rgba(0,0,0,0.1)" }} onClick={(e) => e.stopPropagation()}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "24px" }}>
-              <h2 style={{ margin: 0, fontSize: "20px", fontWeight: 700, color: "#1F2937" }}>{LEGAL_CONTENT[legalModal as keyof typeof LEGAL_CONTENT]?.title}</h2>
-              <button onClick={() => setLegalModal(null)} style={{ background: "none", border: "none", fontSize: "24px", cursor: "pointer", color: "#6B7280" }}>✕</button>
-            </div>
-            <div style={{ color: "#374151", lineHeight: 1.6, fontSize: "14px", whiteSpace: "pre-wrap" }}>
-              {LEGAL_CONTENT[legalModal as keyof typeof LEGAL_CONTENT]?.content}
-            </div>
-            <button onClick={() => setLegalModal(null)} style={{ marginTop: "24px", width: "100%", padding: "10px 16px", backgroundColor: "#F97316", color: "white", border: "none", borderRadius: "6px", fontWeight: 600, cursor: "pointer", fontSize: "14px" }}>Cerrar</button>
-          </div>
-        </div>
-      )}
       </footer>
 
       <style>{`
