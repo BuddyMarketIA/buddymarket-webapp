@@ -3669,3 +3669,159 @@ export const eventMenus = pgTable("eventMenus", {
 }));
 export type EventMenu = typeof eventMenus.$inferSelect;
 export type NewEventMenu = typeof eventMenus.$inferInsert;
+
+
+// =============================================================================
+// BUDDYMAKERS IMPROVEMENTS - MONETIZACIÓN, REPUTACIÓN Y MARKETING
+// =============================================================================
+
+// Badges y logros de Makers
+export const makerBadges = pgTable("maker_badges", {
+  id: serial("id").primaryKey(),
+  makerId: integer("makerId").notNull(),
+  badgeType: varchar("badgeType", { length: 64 }).notNull(), // "100_recipes", "1k_followers", "top_rated", "viral", "collaborator"
+  title: varchar("title", { length: 128 }).notNull(),
+  description: text("description"),
+  icon: text("icon"), // URL o emoji
+  earnedAt: timestamp("earnedAt").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  makerIdx: index("maker_badges_maker_idx").on(t.makerId),
+  typeIdx: index("maker_badges_type_idx").on(t.badgeType),
+}));
+export type MakerBadge = typeof makerBadges.$inferSelect;
+export type InsertMakerBadge = typeof makerBadges.$inferInsert;
+
+// Estadísticas de Makers (vistas, descargas, compartidas)
+export const makerStats = pgTable("maker_stats", {
+  id: serial("id").primaryKey(),
+  makerId: integer("makerId").notNull(),
+  recipeId: integer("recipeId").notNull(),
+  date: date("date").notNull(),
+  views: integer("views").default(0).notNull(),
+  downloads: integer("downloads").default(0).notNull(),
+  shares: integer("shares").default(0).notNull(),
+  saves: integer("saves").default(0).notNull(),
+  ratings: integer("ratings").default(0).notNull(),
+  averageRating: real("averageRating").default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  makerIdx: index("maker_stats_maker_idx").on(t.makerId),
+  recipeIdx: index("maker_stats_recipe_idx").on(t.recipeId),
+  dateIdx: index("maker_stats_date_idx").on(t.date),
+}));
+export type MakerStat = typeof makerStats.$inferSelect;
+export type InsertMakerStat = typeof makerStats.$inferInsert;
+
+// Códigos de referencia únicos para Makers
+export const makerReferralCodes = pgTable("maker_referral_codes", {
+  id: serial("id").primaryKey(),
+  makerId: integer("makerId").notNull(),
+  code: varchar("code", { length: 32 }).notNull().unique(),
+  discountPercent: real("discountPercent").default(10),
+  usageCount: integer("usageCount").default(0).notNull(),
+  earningsFromCode: real("earningsFromCode").default(0).notNull(),
+  isActive: boolean("isActive").default(true).notNull(),
+  expiresAt: timestamp("expiresAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  makerIdx: index("maker_referral_codes_maker_idx").on(t.makerId),
+  codeIdx: index("maker_referral_codes_code_idx").on(t.code),
+}));
+export type MakerReferralCode = typeof makerReferralCodes.$inferSelect;
+export type InsertMakerReferralCode = typeof makerReferralCodes.$inferInsert;
+
+// Colaboraciones entre Makers
+export const makerCollaborations = pgTable("maker_collaborations", {
+  id: serial("id").primaryKey(),
+  recipeId: integer("recipeId").notNull(),
+  primaryMakerId: integer("primaryMakerId").notNull(),
+  collaboratorMakerId: integer("collaboratorMakerId").notNull(),
+  role: varchar("role", { length: 64 }).notNull(), // "co-creator", "contributor", "reviewer"
+  commissionShare: real("commissionShare").default(0.5).notNull(), // Porcentaje de comisión
+  status: statusEnum("status").default("pending").notNull(), // pending, approved, rejected
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  approvedAt: timestamp("approvedAt"),
+}, (t) => ({
+  recipeIdx: index("maker_collaborations_recipe_idx").on(t.recipeId),
+  primaryIdx: index("maker_collaborations_primary_idx").on(t.primaryMakerId),
+  collaboratorIdx: index("maker_collaborations_collaborator_idx").on(t.collaboratorMakerId),
+}));
+export type MakerCollaboration = typeof makerCollaborations.$inferSelect;
+export type InsertMakerCollaboration = typeof makerCollaborations.$inferInsert;
+
+// Solicitudes de colaboración entre Makers
+export const collaborationRequests = pgTable("collaboration_requests", {
+  id: serial("id").primaryKey(),
+  fromMakerId: integer("fromMakerId").notNull(),
+  toMakerId: integer("toMakerId").notNull(),
+  recipeId: integer("recipeId"),
+  message: text("message"),
+  proposedRole: varchar("proposedRole", { length: 64 }).notNull(), // "co-creator", "contributor"
+  proposedCommissionShare: real("proposedCommissionShare").default(0.5),
+  status: statusEnum("status").default("pending").notNull(), // pending, approved, rejected
+  respondedAt: timestamp("respondedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  fromIdx: index("collab_req_from_idx").on(t.fromMakerId),
+  toIdx: index("collab_req_to_idx").on(t.toMakerId),
+}));
+export type CollaborationRequest = typeof collaborationRequests.$inferSelect;
+export type InsertCollaborationRequest = typeof collaborationRequests.$inferInsert;
+
+// Panel de capacitación y recursos para Makers
+export const makerResources = pgTable("maker_resources", {
+  id: serial("id").primaryKey(),
+  title: varchar("title", { length: 256 }).notNull(),
+  description: text("description"),
+  category: varchar("category", { length: 64 }).notNull(), // "best_practices", "monetization", "marketing", "nutrition"
+  content: text("content").notNull(), // Markdown
+  videoUrl: text("videoUrl"),
+  imageUrl: text("imageUrl"),
+  order: integer("order").default(0),
+  isPublished: boolean("isPublished").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  categoryIdx: index("maker_resources_category_idx").on(t.category),
+}));
+export type MakerResource = typeof makerResources.$inferSelect;
+export type InsertMakerResource = typeof makerResources.$inferInsert;
+
+// Progreso de Makers en recursos de capacitación
+export const makerResourceProgress = pgTable("maker_resource_progress", {
+  id: serial("id").primaryKey(),
+  makerId: integer("makerId").notNull(),
+  resourceId: integer("resourceId").notNull(),
+  completed: boolean("completed").default(false).notNull(),
+  completedAt: timestamp("completedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  makerIdx: index("maker_res_progress_maker_idx").on(t.makerId),
+  resourceIdx: index("maker_res_progress_resource_idx").on(t.resourceId),
+}));
+export type MakerResourceProgress = typeof makerResourceProgress.$inferSelect;
+export type InsertMakerResourceProgress = typeof makerResourceProgress.$inferInsert;
+
+// Análisis avanzado de recetas (datos para herramientas de creación avanzadas)
+// Nota: tabla recipeAnalytics ya existe, aquí agregamos campos adicionales
+// Se pueden agregar estos campos a la migración existente si es necesario
+
+// Notificaciones para Makers
+export const makerNotifications = pgTable("maker_notifications", {
+  id: serial("id").primaryKey(),
+  makerId: integer("makerId").notNull(),
+  type: varchar("type", { length: 64 }).notNull(), // "new_follower", "recipe_shared", "collaboration_request", "earnings", "badge_earned"
+  title: varchar("title", { length: 256 }).notNull(),
+  message: text("message"),
+  relatedId: integer("relatedId"), // ID de recurso relacionado (maker, recipe, etc.)
+  isRead: boolean("isRead").default(false).notNull(),
+  actionUrl: varchar("actionUrl", { length: 512 }),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  makerIdx: index("maker_notif_maker_idx").on(t.makerId),
+  typeIdx: index("maker_notif_type_idx").on(t.type),
+  isReadIdx: index("maker_notif_read_idx").on(t.isRead),
+}));
+export type MakerNotification = typeof makerNotifications.$inferSelect;
+export type InsertMakerNotification = typeof makerNotifications.$inferInsert;

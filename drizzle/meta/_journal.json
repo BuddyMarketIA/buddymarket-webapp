@@ -491,6 +491,13 @@
       "when": 1778331404340,
       "tag": "0069_safe_dragon_lord",
       "breakpoints": true
+    },
+    {
+      "idx": 70,
+      "version": "7",
+      "when": 1778357641306,
+      "tag": "0070_lush_chamber",
+      "breakpoints": true
     }
   ]
 }
