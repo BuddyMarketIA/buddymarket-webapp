@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from "react"
+import { useTranslation } from 'react-i18next';;
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "@/components/sonner-a11y-shim";
@@ -344,7 +345,7 @@ export default function BuddyMakerDashboard() {
                   disabled={startOnboarding.isPending}
                   className="shrink-0 rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-700 transition-colors disabled:opacity-50"
                 >
-                  {startOnboarding.isPending ? "Cargando..." : "Continuar verificación"}
+                  {startOnboarding.isPending ? t("common.loading_ellipsis") : "Continuar verificación"}
                 </button>
               </div>
             ) : (
@@ -361,7 +362,7 @@ export default function BuddyMakerDashboard() {
                   disabled={startOnboarding.isPending}
                   className="shrink-0 rounded-xl bg-emerald-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-emerald-700 transition-colors disabled:opacity-50"
                 >
-                  {startOnboarding.isPending ? "Cargando..." : "Conectar Stripe"}
+                  {startOnboarding.isPending ? t("common.loading_ellipsis") : "Conectar Stripe"}
                 </button>
               </div>
             )}

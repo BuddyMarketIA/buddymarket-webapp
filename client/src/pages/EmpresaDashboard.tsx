@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState } from "react"
+import { useTranslation } from 'react-i18next';;
 import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -194,11 +195,11 @@ export default function EmpresaDashboard() {
   };
 
   const statusLabels: Record<string, { label: string; color: string }> = {
-    pending: { label: "Pendiente", color: "bg-amber-500/10 text-amber-600" },
+    pending: { label: t("common.pending"), color: "bg-amber-500/10 text-amber-600" },
     trial: { label: "Período de prueba", color: "bg-blue-500/10 text-blue-600" },
-    active: { label: "Activo", color: "bg-emerald-500/10 text-emerald-600" },
+    active: { label: t("common.active"), color: "bg-emerald-500/10 text-emerald-600" },
     suspended: { label: "Suspendido", color: "bg-rose-500/10 text-rose-600" },
-    cancelled: { label: "Cancelado", color: "bg-muted text-muted-foreground" },
+    cancelled: { label: t("common.cancelled"), color: "bg-muted text-muted-foreground" },
   };
 
   const statusInfo = statusLabels[company.status] || statusLabels.pending;
@@ -495,7 +496,7 @@ export default function EmpresaDashboard() {
                 <div>
                   <div className="font-medium mb-1">1. Descarga los códigos</div>
                   <p className="text-muted-foreground text-xs">
-                    Usa el botón "Descargar" para obtener un archivo .txt con todos los códigos disponibles.
+                    Usa el botón t("common.download") para obtener un archivo .txt con todos los códigos disponibles.
                   </p>
                 </div>
                 <div>
@@ -617,13 +618,13 @@ export default function EmpresaDashboard() {
                         <div className="min-w-0">
                           <div className="font-medium text-sm truncate">{c.name}</div>
                           <div className="text-xs text-muted-foreground mt-0.5">
-                            {c.sentAt ? new Date(c.sentAt).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "Pendiente"}
+                            {c.sentAt ? new Date(c.sentAt).toLocaleDateString("es-ES", { day: "2-digit", month: "short", year: "numeric", hour: "2-digit", minute: "2-digit" }) : t("common.pending")}
                             {" · "}{c.sentCount} enviados · {c.failedCount} fallidos
                           </div>
                         </div>
                         <div className="flex items-center gap-2 shrink-0">
                           <Badge variant={c.status === "sent" ? "default" : c.status === "failed" ? "destructive" : "secondary"} className="text-xs">
-                            {c.status === "sent" ? "Enviada" : c.status === "failed" ? "Error" : c.status === "cancelled" ? "Cancelada" : "Pendiente"}
+                            {c.status === "sent" ? "Enviada" : c.status === "failed" ? t("common.error") : c.status === "cancelled" ? "Cancelada" : t("common.pending")}
                           </Badge>
                           <Button
                             variant="ghost"
@@ -662,7 +663,7 @@ export default function EmpresaDashboard() {
                         {log.errorMessage && <div className="text-xs text-red-500 mt-0.5">{log.errorMessage}</div>}
                       </div>
                       <Badge variant={log.status === "sent" ? "default" : log.status === "failed" ? "destructive" : "secondary"} className="text-xs shrink-0">
-                        {log.status === "sent" ? "Enviado" : log.status === "failed" ? "Error" : "Pendiente"}
+                        {log.status === "sent" ? "Enviado" : log.status === "failed" ? t("common.error") : t("common.pending")}
                       </Badge>
                     </div>
                   ))}
@@ -771,7 +772,7 @@ export default function EmpresaDashboard() {
                                 }`}>
                                   {snapshot.status === "paid" ? "Pagado" :
                                    snapshot.status === "confirmed" ? "Confirmado" :
-                                   (snapshot.status as string) === "failed" ? "Error" : "Pendiente"}
+                                   (snapshot.status as string) === "failed" ? t("common.error") : t("common.pending")}
                                 </span>
                               </td>
                             </tr>

@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from "react"
+import { useTranslation } from 'react-i18next';;
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 
@@ -396,7 +397,7 @@ export function OnboardingModal() {
                 transition: "all 0.2s ease",
               }}
             >
-              {saving ? "Guardando..." :
+              {saving ? t("common.saving") :
                step === "welcome" ? "¡Empezar! 🚀" :
                step === "preferences" ? "Finalizar ✨" :
                "Continuar →"}

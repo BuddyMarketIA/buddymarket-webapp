@@ -1,5 +1,6 @@
 // @ts-nocheck
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react"
+import { useTranslation } from 'react-i18next';;
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "@/components/sonner-a11y-shim";
@@ -250,7 +251,7 @@ export default function MyExpert() {
             disabled={requestAppointmentMutation.isPending}
             className="flex-1 bg-orange-500 hover:bg-orange-600 text-white"
           >
-            {requestAppointmentMutation.isPending ? "Enviando..." : "Enviar solicitud"}
+            {requestAppointmentMutation.isPending ? t("common.sending") : "Enviar solicitud"}
           </Button>
         </div>
       </div>
@@ -419,7 +420,7 @@ export default function MyExpert() {
                     disabled={submitFeedbackMutation.isPending}
                     className="w-full bg-orange-500 hover:bg-orange-600 text-white"
                   >
-                    {submitFeedbackMutation.isPending ? "Enviando..." : "Enviar valoración"}
+                    {submitFeedbackMutation.isPending ? t("common.sending") : "Enviar valoración"}
                   </Button>
                 </>
               )}

@@ -445,6 +445,17 @@ export const recipes = pgTable("recipes", {
   id: serial("id").primaryKey(),
   userId: integer("userId"), // nullable: seeded/BuddyMarket recipes have no owner
   name: varchar("name", { length: 256 }).notNull(),
+  // Multiidioma: nombre y descripción
+  nameEs: varchar("nameEs", { length: 256 }),
+  nameEn: varchar("nameEn", { length: 256 }),
+  nameFr: varchar("nameFr", { length: 256 }),
+  nameIt: varchar("nameIt", { length: 256 }),
+  namePt: varchar("namePt", { length: 256 }),
+  descriptionEs: text("descriptionEs"),
+  descriptionEn: text("descriptionEn"),
+  descriptionFr: text("descriptionFr"),
+  descriptionIt: text("descriptionIt"),
+  descriptionPt: text("descriptionPt"),
   imageUrl: text("imageUrl"),
   description: text("description"),
   preparationTime: integer("preparationTime").default(0), // minutes
@@ -473,9 +484,19 @@ export const recipes = pgTable("recipes", {
   fiberPerServing: real("fiberPerServing"),
   // BuddyMaker link
   buddyMakerId: integer("buddyMakerId"),
-  // Structured data (JSON)
+  // Structured data (JSON) - multiidioma
   ingredientsJson: text("ingredientsJson"), // JSON: [{name, amount, unit, category}]
+  ingredientsJsonEs: text("ingredientsJsonEs"), // JSON con ingredientes en español
+  ingredientsJsonEn: text("ingredientsJsonEn"), // JSON con ingredientes en inglés
+  ingredientsJsonFr: text("ingredientsJsonFr"), // JSON con ingredientes en francés
+  ingredientsJsonIt: text("ingredientsJsonIt"), // JSON con ingredientes en italiano
+  ingredientsJsonPt: text("ingredientsJsonPt"), // JSON con ingredientes en portugués
   instructionsJson: text("instructionsJson"), // JSON: [{step, text}]
+  instructionsJsonEs: text("instructionsJsonEs"), // JSON con instrucciones en español
+  instructionsJsonEn: text("instructionsJsonEn"), // JSON con instrucciones en inglés
+  instructionsJsonFr: text("instructionsJsonFr"), // JSON con instrucciones en francés
+  instructionsJsonIt: text("instructionsJsonIt"), // JSON con instrucciones en italiano
+  instructionsJsonPt: text("instructionsJsonPt"), // JSON con instrucciones en portugués
   // Etiquetas para niños y bebés
   isKidFriendly: boolean("isKidFriendly").default(false),   // apto para niños (>1 año)
   isBabyFriendly: boolean("isBabyFriendly").default(false), // apto para bebés (6-12 meses)

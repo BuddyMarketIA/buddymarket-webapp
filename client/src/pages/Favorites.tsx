@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo } from "react"
+import { useTranslation } from 'react-i18next';;
 import { trpc } from "@/lib/trpc";
 import { Link, useLocation } from "wouter";
 import { toast } from "@/components/sonner-a11y-shim";
@@ -246,7 +247,7 @@ export default function Favorites() {
           <div>
             <h1 style={{ margin: 0, fontSize: "22px", fontWeight: 900, color: "#1a1a1a", letterSpacing: "-0.03em" }}>Mis Favoritas</h1>
             <p style={{ margin: 0, fontSize: "13px", color: "#9ca3af" }}>
-              {isLoading ? "Cargando..." : `${favorites?.length ?? 0} receta${(favorites?.length ?? 0) !== 1 ? "s" : ""} guardada${(favorites?.length ?? 0) !== 1 ? "s" : ""}`}
+              {isLoading ? t("common.loading_ellipsis") : `${favorites?.length ?? 0} receta${(favorites?.length ?? 0) !== 1 ? "s" : ""} guardada${(favorites?.length ?? 0) !== 1 ? "s" : ""}`}
             </p>
           </div>
         </div>

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState } from "react"
+import { useTranslation } from 'react-i18next';;
 import { trpc } from "@/lib/trpc";
 import AppLayout from "@/components/AppLayout";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -117,7 +118,7 @@ function ThirtyDayCard({ challenge }: { challenge: any }) {
           onClick={() => checkIn.mutate()}
           style={{ background: todayCheckedIn ? undefined : config.bg }}
         >
-          {todayCheckedIn ? "✅ Check-in hecho hoy" : checkIn.isPending ? "Guardando..." : `✅ Marcar día ${challenge.currentDay} como completado`}
+          {todayCheckedIn ? "✅ Check-in hecho hoy" : checkIn.isPending ? t("common.saving") : `✅ Marcar día ${challenge.currentDay} como completado`}
         </Button>
       </CardContent>
     </Card>

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState } from "react"
+import { useTranslation } from 'react-i18next';;
 import { trpc } from "@/lib/trpc";
 import { RECIPE_PLACEHOLDER_IMAGE } from "@/lib/constants";
 import {
@@ -130,7 +131,7 @@ export default function MenuPreviewModal({
               </span>
             )}
             <h2 className="text-lg font-bold text-white leading-tight drop-shadow">
-              {isLoading ? "Cargando..." : preview?.name ?? "Menú"}
+              {isLoading ? t("common.loading_ellipsis") : preview?.name ?? "Menú"}
             </h2>
             <div className="flex items-center gap-3 mt-1">
               {preview?.dailyCalories && (

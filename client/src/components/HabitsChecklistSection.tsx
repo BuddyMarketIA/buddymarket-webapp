@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState } from "react"
+import { useTranslation } from 'react-i18next';;
 
 function useInView(threshold = 0.1) {
   const [inView, setInView] = useState(false);
@@ -14,7 +15,7 @@ interface Question {
   id: string;
   text: string;
   category: "hydration" | "meals" | "balance" | "planning" | "awareness";
-  goodAnswer: boolean; // true = "Sí" is good, false = "No" is good
+  goodAnswer: boolean; // true = t("common.yes") is good, false = t("common.no") is good
   tip: string;
 }
 
@@ -173,7 +174,7 @@ export default function HabitsChecklistSection({ appUrl }: Props) {
                           color: ans === v ? "white" : "#374151",
                           border: ans === v ? `2px solid ${v ? "#10b981" : "#ef4444"}` : "2px solid #e5e7eb",
                         }}>
-                          {v ? "Sí" : "No"}
+                          {v ? t("common.yes") : t("common.no")}
                         </button>
                       ))}
                     </div>

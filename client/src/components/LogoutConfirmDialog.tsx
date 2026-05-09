@@ -140,7 +140,7 @@ export default function LogoutConfirmDialog({
               opacity: isPending ? 0.6 : 1,
             }}
           >
-            {t("common.cancel", "Cancelar")}
+            {t("common.cancel", t("common.cancel"))}
           </button>
 
           {/* Confirm */}

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState } from "react"
+import { useTranslation } from 'react-i18next';;
 import { trpc } from "@/lib/trpc";
 import { toast } from "@/components/sonner-a11y-shim";
 import { Link, useLocation } from "wouter";
@@ -156,7 +157,7 @@ function RenameModal({ menu, onClose, onDone }: { menu: MenuOrganizer; onClose: 
             disabled={!name.trim() || mutation.isPending}
             className="flex-1 btn-vively"
           >
-            {mutation.isPending ? "Guardando..." : "Guardar"}
+            {mutation.isPending ? t("common.saving") : t("common.save")}
           </button>
         </div>
       </div>
@@ -185,7 +186,7 @@ function ChangeDateModal({ menu, onClose, onDone }: { menu: MenuOrganizer; onClo
             disabled={!startDate || mutation.isPending}
             className="flex-1 btn-vively"
           >
-            {mutation.isPending ? "Actualizando..." : "Aplicar"}
+            {mutation.isPending ? t("common.updating") : t("common.apply")}
           </button>
         </div>
       </div>
@@ -505,7 +506,7 @@ export default function MyMenus() {
         <div>
           <h1 className="text-2xl font-bold text-foreground">Mis Menús</h1>
           <p className="text-xs text-muted-foreground mt-0.5">
-            {isLoading ? "Cargando..." : `${userMenus.length} ${userMenus.length === 1 ? "menú guardado" : "menús guardados"}`}
+            {isLoading ? t("common.loading_ellipsis") : `${userMenus.length} ${userMenus.length === 1 ? "menú guardado" : "menús guardados"}`}
           </p>
         </div>
         <div className="flex gap-2">

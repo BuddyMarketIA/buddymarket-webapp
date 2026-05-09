@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo } from "react"
+import { useTranslation } from 'react-i18next';;
 import { toast } from "sonner";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/hooks/useAuth";
@@ -159,7 +160,7 @@ function SendAlertDialog({ clinicId, pet }: { clinicId: number; pet: { id: numbe
           <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white"
             disabled={!form.title || sendMutation.isPending}
             onClick={() => sendMutation.mutate({ clinicId, petId: pet.id, ownerId: pet.ownerId, type: form.type, title: form.title, description: form.description || undefined })}>
-            {sendMutation.isPending ? "Enviando..." : "Enviar alerta"}
+            {sendMutation.isPending ? t("common.sending") : "Enviar alerta"}
           </Button>
         </div>
       </DialogContent>
@@ -195,7 +196,7 @@ function AddVisitDialog({ clinicId, pet }: { clinicId: number; pet: { id: number
           <Textarea placeholder="Tratamiento prescrito" rows={2} value={form.treatment} onChange={(e) => setForm({ ...form, treatment: e.target.value })} />
           <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white" disabled={addMutation.isPending}
             onClick={() => addMutation.mutate({ clinicId, petId: pet.id, ownerId: pet.ownerId, visitDate: new Date(form.visitDate), reason: form.reason || undefined, diagnosis: form.diagnosis || undefined, treatment: form.treatment || undefined, vetName: form.vetName || undefined, weight: form.weight ? parseFloat(form.weight) : undefined })}>
-            {addMutation.isPending ? "Guardando..." : "Guardar visita"}
+            {addMutation.isPending ? t("common.saving") : "Guardar visita"}
           </Button>
         </div>
       </DialogContent>
@@ -457,7 +458,7 @@ function PatientDetailModal({ row, clinicId, onClose }: { row: any; clinicId: nu
                     <div className="flex justify-between mb-1">
                       <span className="font-semibold">{a.title}</span>
                       <Badge variant={a.resolvedAt ? "secondary" : "destructive"} className="text-xs">
-                        {a.resolvedAt ? "Resuelta" : "Pendiente"}
+                        {a.resolvedAt ? "Resuelta" : t("common.pending")}
                       </Badge>
                     </div>
                     {a.description && <p className="text-muted-foreground">{a.description}</p>}
@@ -728,7 +729,7 @@ export default function VetClinicDashboard() {
             <Button className="w-full bg-orange-500 hover:bg-orange-600 text-white"
               disabled={!editForm.name || updateMutation.isPending}
               onClick={() => updateMutation.mutate({ clinicId: clinic.id, ...editForm, email: editForm.email || undefined, website: editForm.website || undefined, specialtiesJson: editSpecialties.length > 0 ? JSON.stringify(editSpecialties) : undefined } as any)}>
-              {updateMutation.isPending ? "Guardando..." : "Guardar cambios"}
+              {updateMutation.isPending ? t("common.saving") : "Guardar cambios"}
             </Button>
           </div>
         </DialogContent>

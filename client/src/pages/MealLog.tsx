@@ -840,7 +840,7 @@ export default function MealLog() {
                   disabled={addMetric.isPending}
                   style={{ padding: '10px 18px', borderRadius: '12px', border: 'none', background: addMetric.isPending ? '#f3f4f6' : '#f97316', color: addMetric.isPending ? '#9ca3af' : 'white', fontSize: '13px', fontWeight: 700, cursor: addMetric.isPending ? 'not-allowed' : 'pointer', whiteSpace: 'nowrap' }}
                 >
-                  {addMetric.isPending ? 'Guardando...' : 'Guardar'}
+                  {addMetric.isPending ? t('common.saving') : t('common.save')}
                 </button>
               </div>
             )}

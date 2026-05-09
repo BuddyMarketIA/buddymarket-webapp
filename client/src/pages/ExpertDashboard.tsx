@@ -1,7 +1,8 @@
 import { useLocation, useSearch, Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { useEffect, useState, useMemo } from "react";
+import { useEffect, useState, useMemo } from "react"
+import { useTranslation } from 'react-i18next';;
 import { toast } from "sonner";
 import {
   ChevronDown, ChevronRight, ChevronUp, Search, Video,
@@ -449,7 +450,7 @@ export default function ExpertDashboard() {
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 7, background: "#F9FAFB", borderRadius: 9, padding: "7px 11px", marginBottom: 10, border: "1px solid #F3F4F6" }}>
                 <Search size={13} color="#9CA3AF" />
-                <input value={q} onChange={e => setQ(e.target.value)} placeholder="Buscar" style={{ border: "none", background: "transparent", outline: "none", fontSize: 12, color: "#374151", flex: 1 }} />
+                <input value={q} onChange={e => setQ(e.target.value)} placeholder=t("common.search") style={{ border: "none", background: "transparent", outline: "none", fontSize: 12, color: "#374151", flex: 1 }} />
               </div>
               {isLoading
                 ? [1, 2, 3].map(i => <div key={i} style={{ height: 46, background: "#F3F4F6", borderRadius: 8, marginBottom: 6, animation: "pulse 1.5s infinite" }} />)
@@ -632,7 +633,7 @@ export default function ExpertDashboard() {
                     <div style={{ textAlign: "right" }}>
                       <p style={{ margin: 0, fontSize: 13, fontWeight: 800, color: "#16A34A" }}>+{(e.commissionAmount / 100).toFixed(2)}€</p>
                       <span style={{ fontSize: 10, padding: "1px 6px", borderRadius: 5, background: e.status === "active" ? "#F0FDF4" : "#FFF7ED", color: e.status === "active" ? "#16A34A" : "#EA580C", fontWeight: 600 }}>
-                        {e.status === "active" ? "Pagado" : "Pendiente"}
+                        {e.status === "active" ? "Pagado" : t("common.pending")}
                       </span>
                     </div>
                   </div>

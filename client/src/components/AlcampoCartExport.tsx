@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react"
+import { useTranslation } from 'react-i18next';;
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { ChevronLeftIcon, ShoppingCartIcon, ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
@@ -91,7 +92,7 @@ export default function AlcampoCartExport({ items, onBack, onClose }: Props) {
           <span className="text-xl">🟠</span>
           <h3 className="text-lg font-bold text-foreground">Alcampo</h3>
         </div>
-        <button onClick={onClose} className="ml-auto text-muted-foreground/70 hover:text-muted-foreground text-xl font-bold" aria-label="Cerrar">×</button>
+        <button onClick={onClose} className="ml-auto text-muted-foreground/70 hover:text-muted-foreground text-xl font-bold" aria-label=t("common.close")>×</button>
       </div>
 
       {/* Hidden search components */}

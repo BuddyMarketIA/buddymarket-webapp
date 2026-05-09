@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from "react"
+import { useTranslation } from 'react-i18next';;
 import { X, Download, Smartphone, Monitor } from "lucide-react";
 
 // Extend Window interface for PWA install prompt
@@ -272,7 +273,7 @@ export default function InstallAppBanner() {
               <ol style={{ margin: 0, paddingLeft: 18, fontSize: 13, color: "#7c2d12", lineHeight: 1.6 }}>
                 <li>Pulsa el botón <strong>Compartir</strong> (cuadrado con flecha hacia arriba) en Safari</li>
                 <li>Desplázate y selecciona <strong>"Añadir a pantalla de inicio"</strong></li>
-                <li>Pulsa <strong>"Añadir"</strong> en la esquina superior derecha</li>
+                <li>Pulsa <strong>t("common.add")</strong> en la esquina superior derecha</li>
               </ol>
             </div>
           )}

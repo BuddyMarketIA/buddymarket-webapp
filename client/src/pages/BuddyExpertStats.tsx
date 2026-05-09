@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState } from "react"
+import { useTranslation } from 'react-i18next';;
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "@/components/sonner-a11y-shim";
@@ -38,10 +39,10 @@ function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; cls: string }> = {
     succeeded: { label: "Cobrado", cls: "bg-green-100 text-green-700" },
     paid:      { label: "Pagado",  cls: "bg-green-100 text-green-700" },
-    pending:   { label: "Pendiente", cls: "bg-yellow-100 text-yellow-700" },
+    pending:   { label: t("common.pending"), cls: "bg-yellow-100 text-yellow-700" },
     in_transit:{ label: "En tránsito", cls: "bg-blue-100 text-blue-700" },
     failed:    { label: "Fallido", cls: "bg-red-100 text-red-600" },
-    canceled:  { label: "Cancelado", cls: "bg-muted/50 text-muted-foreground" },
+    canceled:  { label: t("common.cancelled"), cls: "bg-muted/50 text-muted-foreground" },
     refunded:  { label: "Reembolsado", cls: "bg-orange-100 text-orange-600" },
   };
   const s = map[status] ?? { label: status, cls: "bg-muted/50 text-muted-foreground" };
@@ -292,7 +293,7 @@ export default function BuddyExpertStats() {
                       <div className="text-right">
                         <p className={`text-sm font-bold ${e.status === ("paid" as any) ? "text-green-600" : e.status === "pending" ? "text-yellow-600" : "text-red-500"}`}>+{e.commissionAmount.toFixed(2)} €</p>
                         <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${e.status === ("paid" as any) ? "bg-green-100 text-green-700" : e.status === "pending" ? "bg-yellow-100 text-yellow-700" : "bg-red-100 text-red-600"}`}>
-                          {e.status === ("paid" as any) ? "Pagado" : e.status === "pending" ? "Pendiente" : "Fallido"}
+                          {e.status === ("paid" as any) ? "Pagado" : e.status === "pending" ? t("common.pending") : "Fallido"}
                         </span>
                       </div>
                     </div>
@@ -635,7 +636,7 @@ function StripeConnectCard({ connectStatus, onOnboard, onDashboard, onboardingLo
                 <button onClick={onOnboard} disabled={onboardingLoading}
                   className={`flex items-center gap-1.5 rounded-xl px-4 py-2 text-sm font-semibold text-white disabled:opacity-60 ${btnClass}`}>
                   <LinkIcon className="h-4 w-4" />
-                  {onboardingLoading ? "Cargando..." : connectStatus?.connected ? "Continuar onboarding" : "Conectar Stripe"}
+                  {onboardingLoading ? t("common.loading_ellipsis") : connectStatus?.connected ? "Continuar onboarding" : "Conectar Stripe"}
                 </button>
                 {connectStatus?.connected && (
                   <button onClick={onRefresh} className="rounded-xl border border-border bg-background px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted/30">

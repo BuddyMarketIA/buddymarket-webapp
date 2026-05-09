@@ -166,7 +166,7 @@ function SaveButton({ onClick, loading }: { onClick: () => void; loading: boolea
       disabled={loading}
       style={{ width: "100%", padding: "14px", borderRadius: "14px", background: loading ? "#e5e7eb" : "linear-gradient(135deg, #F97316, #FB923C)", color: "white", fontSize: "16px", fontWeight: 700, border: "none", cursor: loading ? "not-allowed" : "pointer", marginTop: "8px" }}
     >
-      {loading ? "Guardando..." : "Guardar cambios"}
+      {loading ? t("common.saving") : "Guardar cambios"}
     </button>
   );
 }
@@ -1409,7 +1409,7 @@ function DeleteAccountSection() {
                 </button>
                 <button onClick={handleDelete} disabled={confirmText !== "DELETE MY ACCOUNT" || deleteAccount.isPending}
                   style={{ flex: 1, padding: "10px", background: confirmText === "DELETE MY ACCOUNT" ? "#dc2626" : "#fca5a5", border: "none", borderRadius: "10px", fontSize: "14px", fontWeight: 700, cursor: confirmText === "DELETE MY ACCOUNT" ? "pointer" : "not-allowed", color: "white", transition: "background 0.2s" }}>
-                  {deleteAccount.isPending ? "Eliminando..." : "Confirmar eliminación"}
+                  {deleteAccount.isPending ? t("common.deleting") : "Confirmar eliminación"}
                 </button>
               </div>
             </div>

@@ -1,6 +1,7 @@
 import { hasRole } from "@/lib/utils";
 import { trpc } from "@/lib/trpc";
-import { useState, useRef, useEffect, useMemo } from "react";
+import { useState, useRef, useEffect, useMemo } from "react"
+import { useTranslation } from 'react-i18next';;
 import { toast } from "@/components/sonner-a11y-shim";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Link } from "wouter";
@@ -256,7 +257,7 @@ function RecipeRow({ recipe, onUpdated }: { recipe: any; onUpdated: () => void }
               <button
                 onClick={() => setEditing(true)}
                 className="shrink-0 flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground/70 hover:bg-muted/50"
-                title="Editar"
+                title=t("common.edit")
               >
                 <PencilSquareIcon className="h-4 w-4" />
               </button>
@@ -1330,7 +1331,7 @@ function FoundersPanel() {
                   <button
                     onClick={() => removeFounder.mutate({ id: f.id })}
                     className="flex h-7 w-7 items-center justify-center rounded-lg text-red-400 hover:bg-red-50"
-                    title="Eliminar"
+                    title=t("common.delete")
                   >
                     <TrashIcon className="h-3.5 w-3.5" />
                   </button>
@@ -1394,7 +1395,7 @@ function ApiMonitorPanel() {
   };
 
   const statusLabel = (status: string | null) => {
-    if (status === "ok") return "OK";
+    if (status === "ok") return t("common.ok");
     if (status === "down") return "ERROR";
     if (status === "degraded") return "DEGRADADO";
     return "Sin datos";
@@ -2163,7 +2164,7 @@ function AdminEmpresasPanel() {
                     </div>
                     <div className="text-right shrink-0">
                       <span className={`text-xs px-2 py-0.5 rounded-full font-semibold ${lead.contacted ? "bg-green-100 text-green-700" : "bg-yellow-100 text-yellow-700"}`}>
-                        {lead.contacted ? "Contactado" : "Pendiente"}
+                        {lead.contacted ? "Contactado" : t("common.pending")}
                       </span>
                       <p className="text-xs text-muted-foreground/70 mt-1">{new Date(lead.createdAt).toLocaleDateString("es-ES")}</p>
                     </div>
@@ -2229,7 +2230,7 @@ function AdminCompanyNotes({
         disabled={isSaving || notes === currentNotes}
         className="px-3 py-1.5 rounded-xl bg-gray-900 text-white text-xs font-semibold hover:bg-gray-700 disabled:opacity-40"
       >
-        {isSaving ? "Guardando..." : "Guardar notas"}
+        {isSaving ? t("common.saving") : "Guardar notas"}
       </button>
     </div>
   );
@@ -2543,7 +2544,7 @@ function AdminSoportePanel() {
                     disabled={!replyText.trim() || replyMutation.isPending}
                     className="flex-1 py-2 rounded-xl bg-[#F97316] text-white text-sm font-semibold hover:bg-orange-600 disabled:opacity-40"
                   >
-                    {replyMutation.isPending ? "Enviando..." : isInternal ? "Guardar nota" : "Enviar respuesta"}
+                    {replyMutation.isPending ? t("common.sending") : isInternal ? "Guardar nota" : "Enviar respuesta"}
                   </button>
                   <button
                     onClick={() => updateStatus.mutate({ ticketId: ticketDetail.ticket.id, status: "resolved" })}

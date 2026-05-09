@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react"
+import { useTranslation } from 'react-i18next';;
 import NutritionalCalculatorSection from "@/components/NutritionalCalculatorSection";
 import HabitsChecklistSection from "@/components/HabitsChecklistSection";
 import AIMenuExamplesSection from "@/components/AIMenuExamplesSection";
@@ -813,7 +814,7 @@ export default function LandingPage() {
                   ))}
                 </div>
                 <button onClick={() => handlePlanCta(plan.name)} disabled={checkoutLoading === plan.name} style={{ width: "100%", padding: "13px", borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: "pointer", border: "none", transition: "all 0.2s", background: plan.highlight ? `linear-gradient(135deg,${plan.accent},#ea580c)` : `${plan.accent}15`, color: plan.highlight ? "white" : plan.accent, boxShadow: plan.highlight ? `0 6px 20px ${plan.accent}40` : "none" }}>
-                  {checkoutLoading === plan.name ? "Cargando..." : plan.cta}
+                  {checkoutLoading === plan.name ? t("common.loading_ellipsis") : plan.cta}
                 </button>
               </div>
             ))}

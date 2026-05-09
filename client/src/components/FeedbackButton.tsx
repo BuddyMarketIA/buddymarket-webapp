@@ -1,5 +1,6 @@
 // ─── React ────────────────────────────────────────────────────────────────────
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react"
+import { useTranslation } from 'react-i18next';;
 
 // ─── Data / API ───────────────────────────────────────────────────────────────
 import { trpc } from "@/lib/trpc";
@@ -214,7 +215,7 @@ export default function FeedbackButton({ asSidebarItem = false, onClose, pending
               </div>
               <button
                 onClick={handleClose}
-                aria-label="Cerrar"
+                aria-label=t("common.close")
                 style={{
                   width: "32px",
                   height: "32px",
@@ -377,7 +378,7 @@ export default function FeedbackButton({ asSidebarItem = false, onClose, pending
                       transition: "all 0.15s",
                     }}
                   >
-                    {submitMutation.isPending ? "Enviando..." : "Enviar feedback"}
+                    {submitMutation.isPending ? t("common.sending") : "Enviar feedback"}
                   </button>
                 </div>
               </div>

@@ -1,4 +1,5 @@
-import { useState, useRef } from "react";
+import { useState, useRef } from "react"
+import { useTranslation } from 'react-i18next';;
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { Button } from "@/components/ui/button";
@@ -171,7 +172,7 @@ export default function BloodTestAnalysis() {
                 {i + 1}
               </div>
               <span className={`text-xs ${step === s ? "text-blue-600 font-medium" : "text-gray-400"}`}>
-                {s === "upload" ? "Subir" : s === "analyze" ? "Confirmar" : "Resultados"}
+                {s === "upload" ? "Subir" : s === "analyze" ? t("common.confirm") : "Resultados"}
               </span>
               {i < 2 && <div className="w-8 h-px bg-gray-200" />}
             </div>

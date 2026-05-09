@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState } from "react"
+import { useTranslation } from 'react-i18next';;
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -591,7 +592,7 @@ export default function RegisterBuddyExpert() {
                 className="gap-2"
               >
                 <ChevronLeft className="w-4 h-4" />
-                {step > 1 ? "Anterior" : "Cancelar"}
+                {step > 1 ? t("common.previous") : t("common.cancel")}
               </Button>
               {step < STEPS.length ? (
                 <Button
@@ -617,7 +618,7 @@ export default function RegisterBuddyExpert() {
                   disabled={submitMutation.isPending}
                   className="bg-emerald-500 hover:bg-emerald-600 gap-2"
                 >
-                  {submitMutation.isPending ? "Enviando..." : "Enviar solicitud"}
+                  {submitMutation.isPending ? t("common.sending") : "Enviar solicitud"}
                   {!submitMutation.isPending && <CheckCircle2 className="w-4 h-4" />}
                 </Button>
               )}

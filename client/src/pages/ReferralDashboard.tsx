@@ -1,5 +1,6 @@
 import { hasRole } from "@/lib/utils";
-import { useState } from "react";
+import { useState } from "react"
+import { useTranslation } from 'react-i18next';;
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -34,7 +35,7 @@ export default function ReferralDashboard() {
       refetchCode();
       toast.success("¡Código generado!", { description: "Tu código de referido ya está activo en Stripe." });
     },
-    onError: (e) => toast.error("Error", { description: e.message }),
+    onError: (e) => toast.error(t("common.error"), { description: e.message }),
   });
 
   const referralLink = myCode

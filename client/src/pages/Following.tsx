@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo } from "react"
+import { useTranslation } from 'react-i18next';;
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -308,7 +309,7 @@ export default function Following() {
       {/* ── Results counter ── */}
       <div className="px-4 pt-3 pb-1 flex items-center justify-between">
         <p className="text-xs text-muted-foreground">
-          {isLoading ? "Cargando..." : (
+          {isLoading ? t("common.loading_ellipsis") : (
             <>
               <span className="font-bold text-foreground">{currentList.length}</span>
               {specialtyFilter !== "all" || sortOrder !== "popularity"

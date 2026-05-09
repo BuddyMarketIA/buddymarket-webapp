@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from "react"
+import { useTranslation } from 'react-i18next';;
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -244,7 +245,7 @@ export default function WeeklyCheckin() {
             disabled={submitMutation.isPending}
             className="w-full bg-orange-500 hover:bg-orange-600 text-white py-3 text-base font-semibold rounded-xl"
           >
-            {submitMutation.isPending ? "Enviando..." : "Enviar check-in semanal ✓"}
+            {submitMutation.isPending ? t("common.sending") : "Enviar check-in semanal ✓"}
           </Button>
         </form>
       </div>

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState } from "react"
+import { useTranslation } from 'react-i18next';;
 import { trpc } from "@/lib/trpc";
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
@@ -335,7 +336,7 @@ export default function ConnectedHealth() {
               </p>
             </div>
             <Badge variant={anySourceEnabled ? "default" : "secondary"}>
-              {anySourceEnabled ? "Activo" : "Inactivo"}
+              {anySourceEnabled ? t("common.active") : t("common.inactive")}
             </Badge>
           </div>
         </CardContent>

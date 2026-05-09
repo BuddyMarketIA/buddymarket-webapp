@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState } from "react"
+import { useTranslation } from 'react-i18next';;
 import { motion, AnimatePresence } from "framer-motion";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -687,7 +688,7 @@ function MenuDetailDialog({
           <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/30 to-transparent" />
           <div className="absolute bottom-0 left-0 right-0 p-4">
             <DialogTitle className="text-white text-lg font-bold drop-shadow sr-only">{menu?.name || ""}</DialogTitle>
-            <p className="text-white text-lg font-bold drop-shadow leading-tight">{menu?.name || "Cargando..."}</p>
+            <p className="text-white text-lg font-bold drop-shadow leading-tight">{menu?.name || t("common.loading_ellipsis")}</p>
             {menu && (
               <div className="flex gap-2 flex-wrap mt-1.5">
                 {menu.goal && (

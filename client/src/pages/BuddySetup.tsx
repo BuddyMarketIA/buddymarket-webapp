@@ -1,4 +1,5 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect } from "react"
+import { useTranslation } from 'react-i18next';;
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "@/components/sonner-a11y-shim";
@@ -116,7 +117,7 @@ const ACTIVITY_LEVELS = [
   { id: "sedentary", emoji: "🛋️", label: "Sedentario", desc: "Poco o nada de ejercicio" },
   { id: "light", emoji: "🚶", label: "Ligero", desc: "1–3 días/semana" },
   { id: "moderate", emoji: "🏃", label: "Moderado", desc: "3–5 días/semana" },
-  { id: "active", emoji: "💪", label: "Activo", desc: "6–7 días/semana" },
+  { id: "active", emoji: "💪", label: t("common.active"), desc: "6–7 días/semana" },
   { id: "very_active", emoji: "🏋️", label: "Muy activo", desc: "Doble sesión diaria" },
 ];
 

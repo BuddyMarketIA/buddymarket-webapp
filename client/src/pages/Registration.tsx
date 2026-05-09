@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react"
+import { useTranslation } from 'react-i18next';;
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "@/components/sonner-a11y-shim";
@@ -352,7 +353,7 @@ function StepAccountType({ onSelect }: { onSelect: (type: AccountType) => void }
           cursor: !selected || setAccountType.isPending ? "not-allowed" : "pointer",
         }}
       >
-        {setAccountType.isPending ? "Guardando..." : "Continuar →"}
+        {setAccountType.isPending ? t("common.saving") : "Continuar →"}
       </button>
     </div>
   );
@@ -763,7 +764,7 @@ function StepProfileSetup({ accountType, onNext }: { accountType: AccountType; o
             cursor: !canProceed || isLoading ? "not-allowed" : "pointer",
           }}
         >
-          {isLoading ? "Guardando..." : subStep < totalSubSteps - 1 ? "Siguiente →" : "¡Completar perfil! 🎉"}
+          {isLoading ? t("common.saving") : subStep < totalSubSteps - 1 ? "Siguiente →" : "¡Completar perfil! 🎉"}
         </button>
       </div>
 

@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState } from "react"
+import { useTranslation } from 'react-i18next';;
 import { useLocation } from "wouter";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
@@ -215,7 +216,7 @@ function DemoMeds() {
     <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
       {[
         { name: "Simparica Trio", dose: "1 comprimido/mes", remaining: "8 días" },
-        { name: "Omega-3 canino", dose: "5ml/día en comida", remaining: "Activo" },
+        { name: "Omega-3 canino", dose: "5ml/día en comida", remaining: t("common.active") },
       ].map((m) => (
         <div key={m.name} style={{
           display: "flex", alignItems: "center", justifyContent: "space-between",

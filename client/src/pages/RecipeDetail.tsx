@@ -820,7 +820,7 @@ export default function RecipeDetail() {
                 disabled={logMeal.isPending}
                 className="flex-1 rounded-2xl bg-[#F97316] py-3 text-sm font-bold text-white shadow-sm hover:bg-orange-600 disabled:opacity-60"
               >
-                {logMeal.isPending ? "Guardando..." : "Guardar en el diario"}
+                {logMeal.isPending ? t("common.saving") : "Guardar en el diario"}
               </button>
             </div>
           </div>

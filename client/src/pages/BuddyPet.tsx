@@ -1,4 +1,5 @@
-import React, { useState, useRef, useEffect } from "react";
+import React, { useState, useRef, useEffect } from "react"
+import { useTranslation } from 'react-i18next';;
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { usePlan } from "@/hooks/usePlan";
@@ -1234,7 +1235,7 @@ function NutritionProfileEditor({ petId }: { petId: number }) {
           onClick={handleSave}
           disabled={updateProfile.isPending}
         >
-          {updateProfile.isPending ? "Guardando..." : "Guardar perfil nutricional"}
+          {updateProfile.isPending ? t("common.saving") : "Guardar perfil nutricional"}
         </Button>
       </div>
     </div>
@@ -1439,7 +1440,7 @@ function FeedingTab({ petId, petName }: { petId: number; petName: string }) {
             disabled={updateProfile.isPending}
             className="flex-1 bg-orange-500 hover:bg-orange-600 text-white text-sm font-medium py-2 rounded-lg disabled:opacity-50"
           >
-            {updateProfile.isPending ? "Guardando..." : "💾 Guardar alimentación"}
+            {updateProfile.isPending ? t("common.saving") : "💾 Guardar alimentación"}
           </button>
           <button
             onClick={() => analyzeCurrentDiet.mutate({ petId })}

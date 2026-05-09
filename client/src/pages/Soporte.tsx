@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState } from "react"
+import { useTranslation } from 'react-i18next';;
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -114,7 +115,7 @@ function TicketDetailModal({
           <div className="flex items-start justify-between gap-3">
             <div className="flex-1 min-w-0">
               <DialogTitle className="text-base font-semibold leading-snug">
-                {isLoading ? "Cargando..." : ticket?.subject}
+                {isLoading ? t("common.loading_ellipsis") : ticket?.subject}
               </DialogTitle>
               {ticket && (
                 <div className="flex items-center gap-2 mt-1.5 flex-wrap">

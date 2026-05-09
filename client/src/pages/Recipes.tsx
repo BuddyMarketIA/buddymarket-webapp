@@ -708,7 +708,7 @@ export default function Recipes() {
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px", gap: "12px" }}>
         <div style={{ flex: 1, minWidth: 0 }}>
           <h1 style={{ margin: 0, fontSize: "22px", fontWeight: 900, color: "#1a1a1a", letterSpacing: "-0.03em" }}>{t("recipes.title")}</h1>
-          <p style={{ margin: "2px 0 0", fontSize: "14px", color: "#9ca3af", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{isFetching ? t("common.loading", "Cargando...") : `${recipes.length}${hasNextPage ? "+" : ""} ${t("recipes.available", "recetas disponibles")}`}</p>
+          <p style={{ margin: "2px 0 0", fontSize: "14px", color: "#9ca3af", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{isFetching ? t("common.loading", t("common.loading_ellipsis")) : `${recipes.length}${hasNextPage ? "+" : ""} ${t("recipes.available", "recetas disponibles")}`}</p>
         </div>
         {isAuthenticated && (
           <div style={{ flexShrink: 0, paddingTop: isFree ? "6px" : "0" }}>

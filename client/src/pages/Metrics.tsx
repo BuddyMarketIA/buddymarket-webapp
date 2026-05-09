@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo } from "react"
+import { useTranslation } from 'react-i18next';;
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { usePlan } from "@/hooks/usePlan";
@@ -351,7 +352,7 @@ export default function Metrics() {
                 </div>
 
                 <Button type="submit" className="w-full" disabled={addMutation.isPending}>
-                  {addMutation.isPending ? "Guardando..." : "Guardar medición"}
+                  {addMutation.isPending ? t("common.saving") : "Guardar medición"}
                 </Button>
               </form>
             </CardContent>

@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react"
+import { useTranslation } from 'react-i18next';;
 import { useParams, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -756,7 +757,7 @@ export default function ExpertPatientDetail() {
                   const statusLabels = {
                     pending_adaptation: "Adaptando...",
                     adapted: "Adaptado con IA",
-                    active: "Activo",
+                    active: t("common.active"),
                     archived: "Archivado",
                   };
                   return (
@@ -1561,7 +1562,7 @@ export default function ExpertPatientDetail() {
               disabled={!sessionForm.summary.trim() || createSessionMutation.isPending || updateSessionMutation.isPending}
               className="bg-orange-500 hover:bg-orange-600 text-white"
             >
-              {createSessionMutation.isPending || updateSessionMutation.isPending ? "Guardando..." : editingSessionId ? "Actualizar" : "Guardar acta"}
+              {createSessionMutation.isPending || updateSessionMutation.isPending ? t("common.saving") : editingSessionId ? "Actualizar" : "Guardar acta"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1612,7 +1613,7 @@ export default function ExpertPatientDetail() {
               disabled={!milestoneForm.title.trim() || addMilestoneMutation.isPending}
               className="bg-orange-500 hover:bg-orange-600 text-white"
             >
-              {addMilestoneMutation.isPending ? "Guardando..." : "Guardar hito"}
+              {addMilestoneMutation.isPending ? t("common.saving") : "Guardar hito"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1679,7 +1680,7 @@ export default function ExpertPatientDetail() {
               disabled={!noteContent.trim() || addNoteMutation.isPending || updateNoteMutation.isPending}
               className="bg-orange-500 hover:bg-orange-600 text-white"
             >
-              {addNoteMutation.isPending || updateNoteMutation.isPending ? "Guardando..." : editingNoteId ? "Actualizar" : "Guardar nota"}
+              {addNoteMutation.isPending || updateNoteMutation.isPending ? t("common.saving") : editingNoteId ? "Actualizar" : "Guardar nota"}
             </Button>
           </DialogFooter>
         </DialogContent>
@@ -1962,7 +1963,7 @@ export default function ExpertPatientDetail() {
               disabled={addProgressMutation.isPending}
               className="bg-orange-500 hover:bg-orange-600 text-white"
             >
-              {addProgressMutation.isPending ? "Guardando..." : "Guardar registro"}
+              {addProgressMutation.isPending ? t("common.saving") : "Guardar registro"}
             </Button>
           </DialogFooter>
         </DialogContent>

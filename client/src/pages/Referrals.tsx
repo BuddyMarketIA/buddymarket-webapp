@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState } from "react"
+import { useTranslation } from 'react-i18next';;
 import { trpc } from "@/lib/trpc";
 import { toast } from "@/components/sonner-a11y-shim";
 import {
@@ -19,7 +20,7 @@ import AppLayout from "@/components/AppLayout";
 // ─── Status badge ──────────────────────────────────────────────────────────────
 function StatusBadge({ status }: { status: string }) {
   const map: Record<string, { label: string; className: string }> = {
-    pending:    { label: "Pendiente",   className: "bg-yellow-100 text-yellow-700" },
+    pending:    { label: t("common.pending"),   className: "bg-yellow-100 text-yellow-700" },
     subscribed: { label: "Suscrito",    className: "bg-blue-100 text-blue-700" },
     rewarded:   { label: "Recompensado", className: "bg-green-100 text-green-700" },
     expired:    { label: "Expirado",    className: "bg-muted/50 text-muted-foreground" },
@@ -249,7 +250,7 @@ export default function Referrals() {
                 disabled={applyCode.isPending}
                 className="rounded-2xl bg-[#F97316] px-5 py-2.5 text-sm font-bold text-white disabled:opacity-50 active:scale-95 transition-transform"
               >
-                {applyCode.isPending ? "..." : "OK"}
+                {applyCode.isPending ? "..." : t("common.ok")}
               </button>
             </div>
           )}

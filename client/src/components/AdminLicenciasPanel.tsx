@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState } from "react"
+import { useTranslation } from 'react-i18next';;
 import { trpc } from "@/lib/trpc";
 import { toast } from "@/components/sonner-a11y-shim";
 import {
@@ -589,7 +590,7 @@ function LicenciasEmpresaDetalle({ companyId, companyName, onBack }: { companyId
                 disabled={adjust.isPending}
                 className="flex-1 py-2 rounded-xl bg-[#F97316] text-white text-xs font-semibold hover:bg-orange-600 disabled:opacity-50"
               >
-                {adjust.isPending ? "Guardando..." : "Confirmar ajuste"}
+                {adjust.isPending ? t("common.saving") : "Confirmar ajuste"}
               </button>
             </div>
           </div>

@@ -1,5 +1,6 @@
 // ─── React ────────────────────────────────────────────────────────────────────
-import React, { useState, useMemo } from "react";
+import React, { useState, useMemo } from "react"
+import { useTranslation } from 'react-i18next';;
 
 // ─── Routing ─────────────────────────────────────────────────────────────────
 import { Link } from "wouter";
@@ -43,7 +44,7 @@ const CATEGORY_META: Record<FeedbackCategory, { emoji: string; label: string; co
 };
 
 const STATUS_META: Record<FeedbackStatus, { label: string; bg: string; color: string }> = {
-  pending:  { label: "Pendiente",  bg: "#FEF3C7", color: "#92400E" },
+  pending:  { label: t("common.pending"),  bg: "#FEF3C7", color: "#92400E" },
   reviewed: { label: "Revisado",   bg: "#DBEAFE", color: "#1E40AF" },
   resolved: { label: "Resuelto",   bg: "#D1FAE5", color: "#065F46" },
 };

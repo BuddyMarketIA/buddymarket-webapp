@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState } from "react"
+import { useTranslation } from 'react-i18next';;
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { SparklesIcon, BoltIcon, StarIcon, CheckIcon, XMarkIcon, LockClosedIcon, FireIcon } from "@heroicons/react/24/solid";
@@ -615,7 +616,7 @@ export default function Subscription() {
                       color: isCurrent(p.key) ? "#9ca3af" : "white",
                     }}
                   >
-                    {isCurrent(p.key) ? "Activo" : "Activar"}
+                    {isCurrent(p.key) ? t("common.active") : "Activar"}
                   </button>
                 )}
               </div>

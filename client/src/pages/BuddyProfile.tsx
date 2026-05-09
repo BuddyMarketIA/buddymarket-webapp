@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState } from "react"
+import { useTranslation } from 'react-i18next';;
 import { useRoute, useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -525,7 +526,7 @@ function ExpertProfile({ id }: { id: number }) {
                   disabled={hireRequestMut.isPending}
                   className="w-full py-3 rounded-xl font-bold text-white bg-gradient-to-r from-orange-500 to-red-500 hover:opacity-90 disabled:opacity-50 transition-opacity"
                 >
-                  {hireRequestMut.isPending ? "Enviando..." : "🚀 Enviar solicitud"}
+                  {hireRequestMut.isPending ? t("common.sending") : "🚀 Enviar solicitud"}
                 </button>
                 <p className="text-xs text-muted-foreground/70 text-center mt-2">El nutricionista revisará tu solicitud y te responderá por email</p>
               </div>
@@ -642,7 +643,7 @@ function MenuRow({ menu }: { menu: any }) {
               disabled={copyMenuMut.isPending}
               className="text-xs text-white font-bold bg-orange-500 px-4 py-2 rounded-xl hover:bg-orange-600 transition-colors disabled:opacity-50"
             >
-              {copyMenuMut.isPending ? "Copiando..." : "Confirmar"}
+              {copyMenuMut.isPending ? "Copiando..." : t("common.confirm")}
             </button>
             <button
               onClick={() => setShowDatePicker(false)}

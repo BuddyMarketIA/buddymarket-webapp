@@ -1,5 +1,6 @@
 // @ts-nocheck
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react"
+import { useTranslation } from 'react-i18next';;
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -14,7 +15,7 @@ import { Label } from "@/components/ui/label";
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   invited: { label: "Invitado", color: "bg-yellow-100 text-yellow-700" },
-  active: { label: "Activo", color: "bg-green-100 text-green-700" },
+  active: { label: t("common.active"), color: "bg-green-100 text-green-700" },
   paused: { label: "Pausado", color: "bg-muted/50 text-muted-foreground" },
   discharged: { label: "Alta", color: "bg-blue-100 text-blue-700" },
 };
@@ -305,7 +306,7 @@ export default function ExpertPatients() {
               disabled={!inviteEmail || inviteMutation.isPending}
               className="bg-orange-500 hover:bg-orange-600 text-white"
             >
-              {inviteMutation.isPending ? "Enviando..." : "Enviar invitación"}
+              {inviteMutation.isPending ? t("common.sending") : "Enviar invitación"}
             </Button>
           </DialogFooter>
         </DialogContent>

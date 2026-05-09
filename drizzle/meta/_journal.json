@@ -484,6 +484,13 @@
       "when": 1778243664714,
       "tag": "0068_brave_killer_shrike",
       "breakpoints": true
+    },
+    {
+      "idx": 69,
+      "version": "7",
+      "when": 1778331404340,
+      "tag": "0069_safe_dragon_lord",
+      "breakpoints": true
     }
   ]
 }

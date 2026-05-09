@@ -1,4 +1,5 @@
-import { useState, useEffect, useCallback } from "react";
+import { useState, useEffect, useCallback } from "react"
+import { useTranslation } from 'react-i18next';;
 import { trpc } from "@/lib/trpc";
 import { toast } from "@/components/sonner-a11y-shim";
 import { PushNotificationToggle } from "@/components/PushNotificationToggle";
@@ -469,7 +470,7 @@ export default function MealNotifications() {
                           transition: "all 0.2s",
                         }}
                       >
-                        {upsertReminder.isPending ? "Guardando..." : saved && !state.dirty ? "✓ Guardado" : "Guardar"}
+                        {upsertReminder.isPending ? t("common.saving") : saved && !state.dirty ? "✓ Guardado" : t("common.save")}
                       </button>
                     </div>
                   </div>

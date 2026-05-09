@@ -1,4 +1,5 @@
-import React, { useState } from "react";
+import React, { useState } from "react"
+import { useTranslation } from 'react-i18next';;
 import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
@@ -201,7 +202,7 @@ function ReferralsTable({ codeId, stats, handleShare }: { codeId?: number; stats
       r.referredName,
       r.referredEmail ?? "",
       planLabels[r.plan] ?? r.plan ?? "",
-      r.isActive ? "Activo" : "Cancelado",
+      r.isActive ? t("common.active") : t("common.cancelled"),
       r.createdAt ? new Date(r.createdAt).toLocaleDateString("es-ES") : "",
       r.daysActive ?? 0,
       `${(r.totalEarned ?? 0).toFixed(2)}€`,
@@ -339,7 +340,7 @@ function ReferralsTable({ codeId, stats, handleShare }: { codeId?: number; stats
                       : "bg-red-50 text-red-600 border-red-200"
                   }`}>
                     <span className={`w-1.5 h-1.5 rounded-full ${ref.isActive ? "bg-green-500" : "bg-red-400"}`} />
-                    {ref.isActive ? "Activo" : "Cancelado"}
+                    {ref.isActive ? t("common.active") : t("common.cancelled")}
                   </span>
                 </div>
 
@@ -485,7 +486,7 @@ function ReferralRow({ referral, index }: { referral: any; index: number }) {
           variant={referral.isActive ? "default" : "secondary"}
           className={`text-xs ${referral.isActive ? "bg-green-100 text-green-700 hover:bg-green-100" : ""}`}
         >
-          {referral.isActive ? "Activo" : "Cancelado"}
+          {referral.isActive ? t("common.active") : t("common.cancelled")}
         </Badge>
       </div>
     </div>
@@ -514,7 +515,7 @@ function EarningRow({ earning }: { earning: any }) {
           variant={earning.status === "completed" ? "default" : "secondary"}
           className={`text-xs ${earning.status === "completed" ? "bg-green-100 text-green-700 hover:bg-green-100" : "bg-yellow-100 text-yellow-700"}`}
         >
-          {earning.status === "completed" ? "Pagado" : "Pendiente"}
+          {earning.status === "completed" ? "Pagado" : t("common.pending")}
         </Badge>
       </div>
     </div>

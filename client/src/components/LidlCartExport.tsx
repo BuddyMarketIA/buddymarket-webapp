@@ -1,4 +1,5 @@
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect, useRef } from "react"
+import { useTranslation } from 'react-i18next';;
 import { trpc } from "@/lib/trpc";
 import { toast } from "sonner";
 import { ShoppingCartIcon, ArrowTopRightOnSquareIcon } from "@heroicons/react/24/outline";
@@ -104,7 +105,7 @@ export default function LidlCartExport({ items, onBack, onClose }: Props) {
             </p>
           )}
         </div>
-        <button onClick={onClose} className="flex h-9 w-9 items-center justify-center rounded-full bg-muted/50 text-muted-foreground text-lg font-bold" aria-label="Cerrar">×</button>
+        <button onClick={onClose} className="flex h-9 w-9 items-center justify-center rounded-full bg-muted/50 text-muted-foreground text-lg font-bold" aria-label=t("common.close")>×</button>
       </div>
 
       {/* Lidl info banner */}

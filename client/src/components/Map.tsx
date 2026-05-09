@@ -37,7 +37,7 @@
  * - Standalone service; manually apply results to map.
  * const geocoder = new google.maps.Geocoder();
  * geocoder.geocode({ address: "New York" }, (results, status) => {
- *   if (status === "OK" && results[0]) {
+ *   if (status === t("common.ok") && results[0]) {
  *     map.setCenter(results[0].geometry.location);
  *     new google.maps.marker.AdvancedMarkerElement({
  *       map,
@@ -58,7 +58,7 @@
  * const directionsRenderer = new google.maps.DirectionsRenderer({ map });
  * directionsService.route(
  *   { origin, destination, travelMode: "DRIVING" },
- *   (res, status) => status === "OK" && directionsRenderer.setDirections(res)
+ *   (res, status) => status === t("common.ok") && directionsRenderer.setDirections(res)
  * );
  *
  * -------------------------------
@@ -76,7 +76,8 @@
 
 /// <reference types="@types/google.maps" />
 
-import { useEffect, useRef } from "react";
+import { useEffect, useRef } from "react"
+import { useTranslation } from 'react-i18next';;
 import { usePersistFn } from "@/hooks/usePersistFn";
 import { cn } from "@/lib/utils";
 

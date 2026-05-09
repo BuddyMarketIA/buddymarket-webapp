@@ -4,7 +4,8 @@ import { hasRole } from "@/lib/utils";
  * Permite añadir y editar recetas y menús desde la app sin necesidad de redespliegue.
  * Solo accesible para usuarios con rol "admin".
  */
-import { useState, useRef } from "react";
+import { useState, useRef } from "react"
+import { useTranslation } from 'react-i18next';;
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "@/components/sonner-a11y-shim";
@@ -280,7 +281,7 @@ function RecipeForm({
           </button>
         </div>
         {ingredients.length === 0 && (
-          <p className="text-xs text-muted-foreground/70 text-center py-2">No hay ingredientes. Pulsa "Añadir" para empezar.</p>
+          <p className="text-xs text-muted-foreground/70 text-center py-2">No hay ingredientes. Pulsa t("common.add") para empezar.</p>
         )}
         <div className="space-y-2 max-h-64 overflow-y-auto">
           {ingredients.map((ing, i) => (
@@ -688,7 +689,7 @@ export default function AdminContent() {
                       <button
                         onClick={() => { setEditTarget(r); setView("edit-recipe"); }}
                         className="flex h-8 w-8 items-center justify-center rounded-xl text-muted-foreground/70 hover:bg-orange-50 hover:text-orange-500"
-                        title="Editar"
+                        title=t("common.edit")
                       >
                         <PencilSquareIcon className="h-4 w-4" />
                       </button>
@@ -696,7 +697,7 @@ export default function AdminContent() {
                         onClick={() => handleDeleteRecipe(r.id, r.name)}
                         disabled={deleteRecipe.isPending}
                         className="flex h-8 w-8 items-center justify-center rounded-xl text-muted-foreground/70 hover:bg-red-50 hover:text-red-500 disabled:opacity-40"
-                        title="Eliminar"
+                        title=t("common.delete")
                       >
                         <TrashIcon className="h-4 w-4" />
                       </button>
@@ -780,7 +781,7 @@ export default function AdminContent() {
                       <button
                         onClick={() => { setEditTarget(m); setView("edit-menu"); }}
                         className="flex h-8 w-8 items-center justify-center rounded-xl text-muted-foreground/70 hover:bg-orange-50 hover:text-orange-500"
-                        title="Editar"
+                        title=t("common.edit")
                       >
                         <PencilSquareIcon className="h-4 w-4" />
                       </button>
@@ -788,7 +789,7 @@ export default function AdminContent() {
                         onClick={() => handleDeleteMenu(m.id, m.name)}
                         disabled={deleteMenu.isPending}
                         className="flex h-8 w-8 items-center justify-center rounded-xl text-muted-foreground/70 hover:bg-red-50 hover:text-red-500 disabled:opacity-40"
-                        title="Eliminar"
+                        title=t("common.delete")
                       >
                         <TrashIcon className="h-4 w-4" />
                       </button>

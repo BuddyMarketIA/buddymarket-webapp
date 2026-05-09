@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState } from "react"
+import { useTranslation } from 'react-i18next';;
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "@/components/sonner-a11y-shim";
@@ -164,7 +165,7 @@ export default function BuddyMakerStats() {
                       <div className="text-right">
                         <p className={`text-sm font-bold ${e.status === ("paid" as any) ? "text-green-600" : e.status === "pending" ? "text-yellow-600" : "text-red-500"}`}>+{e.commissionAmount.toFixed(2)} €</p>
                         <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${e.status === ("paid" as any) ? "bg-green-100 text-green-700" : e.status === "pending" ? "bg-yellow-100 text-yellow-700" : "bg-red-100 text-red-600"}`}>
-                          {e.status === ("paid" as any) ? "Pagado" : e.status === "pending" ? "Pendiente" : "Fallido"}
+                          {e.status === ("paid" as any) ? "Pagado" : e.status === "pending" ? t("common.pending") : "Fallido"}
                         </span>
                       </div>
                     </div>
@@ -294,7 +295,7 @@ export default function BuddyMakerStats() {
                       <div className="text-right">
                         <p className={`text-sm font-bold ${e.status === ("paid" as any) ? "text-green-600" : e.status === "pending" ? "text-yellow-600" : "text-red-500"}`}>+{e.commissionAmount.toFixed(2)} €</p>
                         <span className={`rounded-full px-1.5 py-0.5 text-[10px] font-semibold ${e.status === ("paid" as any) ? "bg-green-100 text-green-700" : e.status === "pending" ? "bg-yellow-100 text-yellow-700" : "bg-red-100 text-red-600"}`}>
-                          {e.status === ("paid" as any) ? "Pagado" : e.status === "pending" ? "Pendiente" : "Fallido"}
+                          {e.status === ("paid" as any) ? "Pagado" : e.status === "pending" ? t("common.pending") : "Fallido"}
                         </span>
                       </div>
                     </div>
@@ -355,7 +356,7 @@ function StripeConnectCard({ connectStatus, creatorType, onOnboard, onDashboard,
                 <button onClick={onOnboard} disabled={onboardingLoading}
                   className="flex items-center gap-1.5 rounded-xl bg-[#FF6B35] px-4 py-2 text-sm font-semibold text-white hover:bg-orange-600 disabled:opacity-60">
                   <LinkIcon className="h-4 w-4" />
-                  {onboardingLoading ? "Cargando..." : connectStatus?.connected ? "Continuar onboarding" : "Conectar Stripe"}
+                  {onboardingLoading ? t("common.loading_ellipsis") : connectStatus?.connected ? "Continuar onboarding" : "Conectar Stripe"}
                 </button>
                 {connectStatus?.connected && (
                   <button onClick={onRefresh} className="rounded-xl border border-border bg-background px-3 py-2 text-sm font-medium text-muted-foreground hover:bg-muted/30">

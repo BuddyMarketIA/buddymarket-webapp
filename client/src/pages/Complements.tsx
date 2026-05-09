@@ -1,4 +1,5 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo } from "react"
+import { useTranslation } from 'react-i18next';;
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -137,7 +138,7 @@ function LogDialog({ complement, onClose }: { complement: Complement; onClose: (
             onClick={() => logMutation.mutate({ complementId: complement.id, quantity, mealType: mealType as any })}
             disabled={logMutation.isPending}
           >
-            {logMutation.isPending ? "Guardando..." : "Añadir al diario"}
+            {logMutation.isPending ? t("common.saving") : "Añadir al diario"}
           </Button>
         </DialogFooter>
       </DialogContent>

@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState } from "react"
+import { useTranslation } from 'react-i18next';;
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -502,7 +503,7 @@ export default function BuddyApplication({ type }: { type?: AppType }) {
                 display: "flex", alignItems: "center", justifyContent: "center", gap: "8px"
               }}
             >
-              {submitMutation.isPending ? "Enviando..." : step < steps.length - 1 ? (
+              {submitMutation.isPending ? t("common.sending") : step < steps.length - 1 ? (
                 <><span>Siguiente</span><ArrowRight style={{ width: "16px", height: "16px" }} /></>
               ) : (
                 <><Check style={{ width: "16px", height: "16px" }} /><span>Enviar solicitud</span></>

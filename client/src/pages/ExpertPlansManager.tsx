@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState } from "react"
+import { useTranslation } from 'react-i18next';;
 import { trpc } from "@/lib/trpc";
 import { toast } from "@/components/sonner-a11y-shim";
 import { Button } from "@/components/ui/button";
@@ -13,7 +14,7 @@ import AppLayout from "@/components/AppLayout";
 
 const STATUS_LABELS: Record<string, { label: string; color: string }> = {
   draft: { label: "Borrador", color: "bg-muted text-muted-foreground" },
-  active: { label: "Activo", color: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" },
+  active: { label: t("common.active"), color: "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-400" },
   archived: { label: "Archivado", color: "bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-400" },
 };
 

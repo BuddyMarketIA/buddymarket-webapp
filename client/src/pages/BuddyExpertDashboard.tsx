@@ -1,5 +1,6 @@
 import { hasRole } from "@/lib/utils";
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect } from "react"
+import { useTranslation } from 'react-i18next';;
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "@/components/sonner-a11y-shim";
@@ -407,7 +408,7 @@ export default function BuddyExpertDashboard() {
                   disabled={startOnboarding.isPending}
                   className="shrink-0 rounded-xl bg-purple-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-purple-700 transition-colors disabled:opacity-50"
                 >
-                  {startOnboarding.isPending ? "Cargando..." : "Continuar verificación"}
+                  {startOnboarding.isPending ? t("common.loading_ellipsis") : "Continuar verificación"}
                 </button>
               </div>
             ) : (
@@ -424,7 +425,7 @@ export default function BuddyExpertDashboard() {
                   disabled={startOnboarding.isPending}
                   className="shrink-0 rounded-xl bg-purple-600 px-3 py-1.5 text-xs font-bold text-white hover:bg-purple-700 transition-colors disabled:opacity-50"
                 >
-                  {startOnboarding.isPending ? "Cargando..." : "Conectar Stripe"}
+                  {startOnboarding.isPending ? t("common.loading_ellipsis") : "Conectar Stripe"}
                 </button>
               </div>
             )}
@@ -1056,14 +1057,14 @@ function ServicePlansTab() {
       setEditingPlan(null);
       resetForm();
     },
-    onError: (e) => toast.error(e.message || "Error"),
+    onError: (e) => toast.error(e.message || t("common.error")),
   });
   // Aliases for backwards compat
   const createMut = upsertMut;
   const updateMut = upsertMut;
   const deleteMut = trpc.buddyExperts.deleteServicePlan.useMutation({
     onSuccess: () => { toast.success("Plan eliminado"); utils.buddyExperts.getMyServicePlans.invalidate(); },
-    onError: (e) => toast.error(e.message || "Error"),
+    onError: (e) => toast.error(e.message || t("common.error")),
   });
 
   const resetForm = () => setForm({ name: "", description: "", price: "", billingPeriod: "monthly", durationMonths: "", includes: "", maxConsultations: "", isPopular: false });
@@ -1211,7 +1212,7 @@ function ServicePlansTab() {
                 disabled={!form.name || !form.price || createMut.isPending || updateMut.isPending}
                 className="mt-4 w-full py-3 rounded-xl font-bold text-white bg-gradient-to-r from-orange-500 to-red-500 hover:opacity-90 disabled:opacity-50"
               >
-                {createMut.isPending || updateMut.isPending ? "Guardando..." : editingPlan ? "Guardar cambios" : "Crear plan"}
+                {createMut.isPending || updateMut.isPending ? t("common.saving") : editingPlan ? "Guardar cambios" : "Crear plan"}
               </button>
             </div>
           </div>
@@ -1677,7 +1678,7 @@ function PdfPlansTab({ expertProfile }: { expertProfile: any }) {
                       <button onClick={() => setExpandedPlan(isExpanded ? null : plan.id)} className="text-muted-foreground/70 hover:text-muted-foreground text-sm p-1" title={isExpanded ? "Colapsar" : "Expandir"}>
                         {isExpanded ? "▲" : "▼"}
                       </button>
-                      <button onClick={() => { if (confirm("¿Eliminar este plan?")) deleteMutation.mutate({ id: plan.id }); }} className="text-red-400 hover:text-red-600 text-sm p-1" title="Eliminar">🗑️</button>
+                      <button onClick={() => { if (confirm("¿Eliminar este plan?")) deleteMutation.mutate({ id: plan.id }); }} className="text-red-400 hover:text-red-600 text-sm p-1" title=t("common.delete")>🗑️</button>
                     </div>
                   </div>
 

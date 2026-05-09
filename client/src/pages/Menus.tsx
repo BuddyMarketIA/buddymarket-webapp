@@ -647,7 +647,7 @@ function ActiveMenuTab() {
                 disabled={applyToCalendar.isPending}
                 className="flex-1 btn-vively"
               >
-                {applyToCalendar.isPending ? "Aplicando..." : "Aplicar"}
+                {applyToCalendar.isPending ? "Aplicando..." : t("common.apply")}
               </button>
             </div>
           </div>
@@ -817,7 +817,7 @@ function SavedMenusTab() {
               <button onClick={() => setRenaming(null)} className="flex-1 rounded-2xl border border-border py-3 text-sm font-semibold text-muted-foreground">Cancelar</button>
               <button onClick={() => renameMenu.mutate({ id: renaming.id, name: renaming.name })}
                 disabled={renameMenu.isPending} className="flex-1 btn-vively">
-                {renameMenu.isPending ? "Guardando..." : "Guardar"}
+                {renameMenu.isPending ? t("common.saving") : t("common.save")}
               </button>
             </div>
           </div>
@@ -839,7 +839,7 @@ function SavedMenusTab() {
                 disabled={applyToCalendar.isPending}
                 className="flex-1 btn-vively"
               >
-                {applyToCalendar.isPending ? "Aplicando..." : "Aplicar"}
+                {applyToCalendar.isPending ? "Aplicando..." : t("common.apply")}
               </button>
             </div>
           </div>

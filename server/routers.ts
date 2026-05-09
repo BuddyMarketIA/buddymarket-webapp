@@ -21,6 +21,7 @@ import { buddyKidsRouter } from "./routers/buddyKids";
 import { savedMenusRouter } from "./routers/savedMenus";
 import { referralRouter } from "./routers/referral";
 import { analyticsRouter } from "./routers/analytics";
+import { recipesI18nRouter } from "./routers/recipes-i18n";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { invokeLLM } from "./_core/llm";
 import { storagePut } from "./storage";
@@ -255,6 +256,7 @@ export const appRouter = router({
   savedMenus: savedMenusRouter,
   referral: referralRouter,
   analytics: analyticsRouter,
+  recipesI18n: recipesI18nRouter,
 
   // ---------------------------------------------------------------------------
   // AUTH

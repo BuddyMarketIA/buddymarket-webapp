@@ -1,4 +1,5 @@
-import { useState } from "react";
+import { useState } from "react"
+import { useTranslation } from 'react-i18next';;
 import { Link } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { Button } from "@/components/ui/button";
@@ -659,7 +660,7 @@ export default function Empresas() {
                   />
                 </div>
                 <Button type="submit" className="w-full" size="lg" disabled={submitLead.isPending}>
-                  {submitLead.isPending ? "Enviando..." : "Solicitar demo gratuita →"}
+                  {submitLead.isPending ? t("common.sending") : "Solicitar demo gratuita →"}
                 </Button>
                 <p className="text-xs text-center text-muted-foreground">
                   Al enviar este formulario aceptas nuestra{" "}
