@@ -919,7 +919,7 @@ export default function Inventory() {
                           <button
                             onClick={() => setDetectedProducts((prev) => prev.filter((_, i) => i !== idx))}
                             className="flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-muted-foreground/70 hover:text-red-500 hover:bg-red-50 transition-colors"
-                            title=t("common.delete")
+                            title={t("common.delete")}
                           >
                             <XMarkIcon className="h-4 w-4" />
                           </button>

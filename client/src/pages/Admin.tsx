@@ -257,7 +257,7 @@ function RecipeRow({ recipe, onUpdated }: { recipe: any; onUpdated: () => void }
               <button
                 onClick={() => setEditing(true)}
                 className="shrink-0 flex h-7 w-7 items-center justify-center rounded-lg text-muted-foreground/70 hover:bg-muted/50"
-                title=t("common.edit")
+                title={t("common.edit")}
               >
                 <PencilSquareIcon className="h-4 w-4" />
               </button>

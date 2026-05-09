@@ -689,7 +689,7 @@ export default function AdminContent() {
                       <button
                         onClick={() => { setEditTarget(r); setView("edit-recipe"); }}
                         className="flex h-8 w-8 items-center justify-center rounded-xl text-muted-foreground/70 hover:bg-orange-50 hover:text-orange-500"
-                        title=t("common.edit")
+                        title={t("common.edit")}
                       >
                         <PencilSquareIcon className="h-4 w-4" />
                       </button>

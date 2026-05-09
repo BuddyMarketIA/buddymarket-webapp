@@ -694,7 +694,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
               <>
                 <div className="mb-5 flex items-center justify-between">
                   <h3 className="text-lg font-bold text-foreground">{t("shoppingList.buyOnlineBtn", "Buy online")}</h3>
-                  <button onClick={() => setShowExport(false)} aria-label=t("common.close") className="text-muted-foreground/70 hover:text-muted-foreground text-xl font-bold">×</button>
+                  <button onClick={() => setShowExport(false)} aria-label={t("common.close")} className="text-muted-foreground/70 hover:text-muted-foreground text-xl font-bold">×</button>
                 </div>
                 <p className="mb-5 text-sm text-muted-foreground">Elige tu supermercado y abriremos la búsqueda de cada producto en su tienda online.</p>
                 <div className="grid grid-cols-2 gap-3">
