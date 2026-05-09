@@ -414,6 +414,76 @@
       "when": 1778191022638,
       "tag": "0058_brown_hawkeye",
       "breakpoints": true
+    },
+    {
+      "idx": 59,
+      "version": "7",
+      "when": 1778233844988,
+      "tag": "0059_conscious_marauders",
+      "breakpoints": true
+    },
+    {
+      "idx": 60,
+      "version": "7",
+      "when": 1778235758592,
+      "tag": "0060_amusing_richard_fisk",
+      "breakpoints": true
+    },
+    {
+      "idx": 61,
+      "version": "7",
+      "when": 1778235816182,
+      "tag": "0061_worthless_sentry",
+      "breakpoints": true
+    },
+    {
+      "idx": 62,
+      "version": "7",
+      "when": 1778235916231,
+      "tag": "0062_hot_bullseye",
+      "breakpoints": true
+    },
+    {
+      "idx": 63,
+      "version": "7",
+      "when": 1778236152029,
+      "tag": "0063_overjoyed_chronomancer",
+      "breakpoints": true
+    },
+    {
+      "idx": 64,
+      "version": "7",
+      "when": 1778236209521,
+      "tag": "0064_typical_sabretooth",
+      "breakpoints": true
+    },
+    {
+      "idx": 65,
+      "version": "7",
+      "when": 1778243150549,
+      "tag": "0065_faulty_black_widow",
+      "breakpoints": true
+    },
+    {
+      "idx": 66,
+      "version": "7",
+      "when": 1778243328252,
+      "tag": "0066_dazzling_zaladane",
+      "breakpoints": true
+    },
+    {
+      "idx": 67,
+      "version": "7",
+      "when": 1778243586266,
+      "tag": "0067_long_spectrum",
+      "breakpoints": true
+    },
+    {
+      "idx": 68,
+      "version": "7",
+      "when": 1778243664714,
+      "tag": "0068_brave_killer_shrike",
+      "breakpoints": true
     }
   ]
 }

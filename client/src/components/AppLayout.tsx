@@ -474,19 +474,23 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       items: [
         { key: "/app/buddy-pet", label: "Mis Mascotas", to: isFree ? "/app/buddy-pet-preview" : "/app/buddy-pet", emoji: "🐾", badge: isFree ? "Pro Max" : undefined },
         { key: "/app/vet-clinic", label: "Clínica Veterinaria", to: "/app/vet-clinic", emoji: "🏥" },
+        { key: "/app/pet-menus", label: "Mis Menús para Mascotas", to: "/app/pet-menus", emoji: "🍖" },
       ],
     },
     {
       label: "BuddyKids",
       items: [
         { key: "/app/buddy-kids", label: "Nutrición Infantil", to: "/app/buddy-kids", emoji: "👶" },
+        { key: "/app/kids-menus", label: "Mis Menús para Niños", to: "/app/kids-menus", emoji: "🍽️" },
       ],
     },
     {
       label: "Menús",
       items: [
         { key: "/app/special-menus", label: "Menús Especiales", to: "/app/special-menus", emoji: "🍽️" },
+        { key: "/app/special-menus-saved", label: "Mis Menús Especiales", to: "/app/special-menus-saved", emoji: "⭐" },
         { key: "/app/event-menus", label: "Menús de Eventos", to: "/app/event-menus", emoji: "🎉" },
+        { key: "/app/event-menus-saved", label: "Mis Menús de Eventos", to: "/app/event-menus-saved", emoji: "🎊" },
       ],
     },
     {

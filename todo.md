@@ -3221,3 +3221,12 @@
 - [x] Añadir rutas en App.tsx
 - [x] Añadir navegación a las nuevas páginas en AppLayout
 - [ ] Integrar menús guardados en BuddyPet (mascotas) - PENDIENTE
+
+
+## Sprint: Acceso Rápido a Menús Guardados en Sidebar
+- [x] Añadir opción "Mis Menús para Mascotas" en sidebar bajo BuddyPets
+- [x] Añadir opción "Mis Menús para Niños" en sidebar bajo BuddyKids
+- [x] Añadir opción "Mis Menús Especiales" en sidebar bajo Menús
+- [x] Añadir opción "Mis Menús de Eventos" en sidebar bajo Menús
+- [ ] Crear páginas para cada categoría de menús guardados
+- [ ] Crear rutas en App.tsx para las nuevas páginas
