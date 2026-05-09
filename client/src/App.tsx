@@ -151,6 +151,8 @@ const WeeklyCheckin = lazyWithRetry(() => import("./pages/WeeklyCheckin"));
 const MonthlyReports = lazyWithRetry(() => import("./pages/MonthlyReports"));
 const FridgeScanner = lazyWithRetry(() => import("./pages/FridgeScanner"));
 const BloodTestAnalysis = lazyWithRetry(() => import("./pages/BloodTestAnalysis"));
+const ReferralProgram = lazyWithRetry(() => import("./pages/ReferralProgram"));
+const AnalyticsDashboard = lazyWithRetry(() => import("./pages/AnalyticsDashboard"));
 
 // ─── Page loading fallback ────────────────────────────────────────────────────
 function PageLoader() {
@@ -240,6 +242,8 @@ function Router() {
       <Route path="/app/complements">{() => <ProtectedRoute component={Complements} />}</Route>
       <Route path="/app/profile">{() => <ProtectedRoute component={Profile} />}</Route>
       <Route path="/app/badges">{() => <ProtectedRoute component={Badges} />}</Route>
+      <Route path="/app/referrals">{() => <ProtectedRoute component={ReferralProgram} />}</Route>
+      <Route path="/app/analytics">{() => <ProtectedRoute component={AnalyticsDashboard} />}</Route>
       <Route path="/app/admin">{() => <ProtectedRoute component={Admin} />}</Route>
       <Route path="/app/admin/content">{() => <ProtectedRoute component={AdminContent} />}</Route>
       <Route path="/app/admin/logs">{() => <ProtectedRoute component={AdminLogs} />}</Route>

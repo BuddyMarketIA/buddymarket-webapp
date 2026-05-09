@@ -3,7 +3,7 @@ import { initReactI18next } from "react-i18next";
 import LanguageDetector from "i18next-browser-languagedetector";
 import HttpBackend from "i18next-http-backend";
 
-const SUPPORTED = ["es", "en", "fr", "it"] as const;
+const SUPPORTED = ["es", "en", "fr", "it", "pt"] as const;
 export type LanguageCode = (typeof SUPPORTED)[number];
 
 /**
@@ -96,6 +96,7 @@ export const SUPPORTED_LANGUAGES = [
   { code: "en" as LanguageCode, name: "English", flag: "🇬🇧" },
   { code: "fr" as LanguageCode, name: "Français", flag: "🇫🇷" },
   { code: "it" as LanguageCode, name: "Italiano", flag: "🇮🇹" },
+  { code: "pt" as LanguageCode, name: "Português", flag: "🇵🇹" },
 ] as const;
 
 export { mapToSupported, resolveInitialLanguage };

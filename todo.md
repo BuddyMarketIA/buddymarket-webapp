@@ -3230,3 +3230,108 @@
 - [x] Añadir opción "Mis Menús de Eventos" en sidebar bajo Menús
 - [ ] Crear páginas para cada categoría de menús guardados
 - [ ] Crear rutas en App.tsx para las nuevas páginas
+
+
+## 🚀 SPRINT ESPECIAL: ESCALADO A 5M USUARIOS
+
+### Fase 1: Localización Multi-País (Mes 1-2)
+- [ ] Configurar i18n (i18next) con 5 idiomas (es, it, fr, de, pt)
+- [ ] Crear tablas de BD para contenido multiidioma
+- [ ] Traducir 500+ recetas a 5 idiomas
+- [ ] Integrar supermercados locales por país
+- [ ] Contratar expertos locales (5 países)
+- [ ] Implementar selector de idioma en sidebar
+- [ ] Implementar selector de país en onboarding
+
+### Fase 2: Infraestructura Escalable (Mes 1-3)
+- [ ] Configurar AWS multi-región (eu-west-1, eu-central-1, eu-south-1)
+- [ ] Implementar RDS read replicas
+- [ ] Configurar ElastiCache (Redis) para caching
+- [ ] Implementar CloudFront CDN global
+- [ ] Crear índices de BD optimizados
+- [ ] Implementar connection pooling (RDS Proxy)
+- [ ] Configurar auto-scaling groups
+- [ ] Implementar monitoring 24/7 (CloudWatch, Datadog)
+
+### Fase 3: Referral Program Viral (Mes 2-4)
+- [ ] Crear tabla de referrals en BD
+- [ ] Generar referral links únicos
+- [ ] Implementar tracking de conversiones
+- [ ] Crear UI para compartir referral
+- [ ] Integrar WhatsApp, Instagram, Facebook sharing
+- [ ] Sistema de puntos por referral
+- [ ] Leaderboard de referrals
+- [ ] Notificaciones de referral success
+
+### Fase 4: Analytics Dashboard (Mes 1-12)
+- [ ] Crear tabla de eventos en BD
+- [ ] Implementar event tracking en todas las páginas
+- [ ] Crear dashboard de crecimiento (DAU, MAU, retention)
+- [ ] Implementar cohort analysis
+- [ ] Implementar funnel analysis
+- [ ] Crear reportes de conversión
+- [ ] Integrar Mixpanel/Amplitude
+- [ ] Crear alertas de anomalías
+
+### Fase 5: Optimizaciones de Performance (Mes 1-3)
+- [ ] Optimizar queries de BD (<100ms)
+- [ ] Implementar lazy loading de imágenes
+- [ ] Minificar y comprimir assets
+- [ ] Implementar service workers (PWA)
+- [ ] Optimizar bundle size
+- [ ] Implementar code splitting
+- [ ] Crear performance monitoring
+- [ ] Alcanzar Lighthouse score >90
+
+### Fase 6: Partnerships & Marketing (Mes 2-12)
+- [ ] Contactar Mercadona (España)
+- [ ] Contactar Carrefour (Italia/Francia)
+- [ ] Contactar Edeka (Alemania)
+- [ ] Contactar Continente (Portugal)
+- [ ] Integrar Fitbit API
+- [ ] Integrar Apple Health
+- [ ] Integrar Strava
+- [ ] Crear estrategia de influencers (50 micro, 10 macro, 3 celebridades)
+
+### Fase 7: Contenido Localizado (Mes 1-4)
+- [ ] 500 recetas españolas
+- [ ] 500 recetas italianas
+- [ ] 500 recetas francesas
+- [ ] 500 recetas alemanas
+- [ ] 500 recetas portuguesas
+- [ ] Artículos de blog por país (100/país)
+- [ ] Videos de YouTube por idioma
+- [ ] Testimonios de usuarios locales
+
+### Fase 8: Testing & QA (Mes 1-12)
+- [ ] Tests de carga (1M usuarios simultáneos)
+- [ ] Tests de localización
+- [ ] Tests de referral program
+- [ ] Tests de analytics
+- [ ] Tests de performance
+- [ ] Tests de seguridad (GDPR, HIPAA)
+- [ ] Tests de compatibilidad (navegadores, dispositivos)
+- [ ] User acceptance testing (UAT)
+
+### Fase 9: Deployment & Monitoreo (Mes 1-12)
+- [ ] CI/CD pipeline configurado
+- [ ] Blue-green deployment implementado
+- [ ] Rollback automático configurado
+- [ ] Logging centralizado (ELK stack)
+- [ ] Error tracking (Sentry)
+- [ ] Performance monitoring (Datadog)
+- [ ] Uptime monitoring (99.99%)
+- [ ] Disaster recovery plan
+
+---
+
+## 📊 MÉTRICAS DE ÉXITO
+
+- [ ] DAU: 300K → 1.5M
+- [ ] MAU: 1M → 5M
+- [ ] Retention D30: 15% → 50%
+- [ ] Viral coefficient: 1.0 → 1.5
+- [ ] ARPU: $0.50 → $8
+- [ ] CAC: $5 → $2
+- [ ] LTV: $50 → $500
+- [ ] ARR: $5M → $40M
