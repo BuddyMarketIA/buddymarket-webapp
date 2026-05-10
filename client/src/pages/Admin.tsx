@@ -1331,7 +1331,7 @@ function FoundersPanel() {
                   <button
                     onClick={() => removeFounder.mutate({ id: f.id })}
                     className="flex h-7 w-7 items-center justify-center rounded-lg text-red-400 hover:bg-red-50"
-                    title=t("common.delete")
+                    title={t("common.delete")}
                   >
                     <TrashIcon className="h-3.5 w-3.5" />
                   </button>

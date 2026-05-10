@@ -345,7 +345,7 @@ function GenericListModal({ items, supermarket, supermarketName, onClose }: Gene
           <h3 className="text-lg font-bold text-foreground">
             {SUPERMARKETS.find((s) => s.id === supermarket)?.emoji} {supermarketName}
           </h3>
-          <button onClick={onClose} className="text-muted-foreground/70 text-xl font-bold" aria-label=t("common.close")>×</button>
+          <button onClick={onClose} className="text-muted-foreground/70 text-xl font-bold" aria-label={t("common.close")}>{"×"}</button>
         </div>
         <p className="mb-4 text-sm text-muted-foreground">
           {pending.length} productos de tu menú. Pulsa en cada uno para buscarlo en {supermarketName}.

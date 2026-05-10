@@ -1528,7 +1528,7 @@ export default function ShoppingLists() {
                 <p style={{ margin: "4px 0 0", fontSize: 13, color: "#6b7280" }}>Haz una foto a tu lista escrita o impresa</p>
               </div>
               <button onClick={() => { setShowOcrModal(false); setOcrPreview(null); setOcrItems([]); }}
-                aria-label=t("common.close") style={{ background: "#f3f4f6", border: "none", borderRadius: "50%", width: 36, height: 36, cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center" }}>×</button>
+                aria-label={t("common.close")} style={{ background: "#f3f4f6", border: "none", borderRadius: "50%", width: 36, height: 36, cursor: "pointer", fontSize: 18, display: "flex", alignItems: "center", justifyContent: "center" }}>{"×"}</button>
             </div>
             {!ocrPreview && (
               <div style={{ border: "2px dashed #d1d5db", borderRadius: 16, padding: "32px 24px", textAlign: "center", cursor: "pointer", background: "#fafafa", marginBottom: 16 }}
