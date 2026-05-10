@@ -431,6 +431,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       label: "Mi Cuenta",
       items: [
         { key: "/app/profile", label: "Mi Perfil", to: "/app/profile", emoji: "👤" },
+        { key: "/app/wearables", label: "Dispositivos Wearables", to: "/app/wearables", emoji: "⌚" },
         ...(isApprovedMaker ? [{ key: "/app/buddy-maker-dashboard", label: "Panel BuddyMaker", to: "/app/buddy-maker-dashboard", emoji: "🍳" }] : []),
         { key: "/app/soporte", label: "Soporte", to: "/app/soporte", emoji: "🎫" },
       ],
