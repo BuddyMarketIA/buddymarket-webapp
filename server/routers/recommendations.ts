@@ -15,64 +15,6 @@ import {
 
 export const recommendationsRouter = router({
   /**
-   * Get full history of recommendations for current user
-   */
-  getHistory: protectedProcedure
-    .input(
-      z.object({
-        limit: z.number().int().min(1).max(100).default(50),
-        offset: z.number().int().min(0).default(0),
-        source: z.enum(["buddyshop", "buddycare", "buddycoach", "all"]).default("all"),
-        sortBy: z.enum(["recent", "oldest", "relevance"]).default("recent"),
-      })
-    )
-    .query(async ({ ctx, input }) => {
-      try {
-        const query = `
-          SELECT 
-            id, externalProductId, source, title, description, reason,
-            productImage, productPrice, productUrl, relevanceScore,
-            trigger, expiresAt, createdAt
-          FROM productRecommendations
-          WHERE userId = ? ${input.source !== "all" ? "AND source = ?" : ""}
-          ORDER BY ${input.sortBy === "recent" ? "createdAt DESC" : input.sortBy === "oldest" ? "createdAt ASC" : "relevanceScore DESC"}
-          LIMIT ? OFFSET ?
-        `;
-        
-        const params = [ctx.user.id];
-        if (input.source !== "all") params.push(input.source);
-        params.push(input.limit, input.offset);
-        
-        const recommendations = await (ctx.db as any).execute(query, params);
-        
-        // Get total count
-        const countQuery = `
-          SELECT COUNT(*) as total FROM productRecommendations
-          WHERE userId = ? ${input.source !== "all" ? "AND source = ?" : ""}
-        `;
-        const countParams = [ctx.user.id];
-        if (input.source !== "all") countParams.push(input.source);
-        const countResult = await (ctx.db as any).execute(countQuery, countParams);
-        
-        return {
-          success: true,
-          data: recommendations,
-          total: countResult[0]?.total || 0,
-          count: recommendations.length,
-        };
-      } catch (error) {
-        console.error("[Recommendations] Error fetching history:", error);
-        return {
-          success: false,
-          data: [],
-          total: 0,
-          count: 0,
-          error: "Failed to fetch recommendation history",
-        };
-      }
-    }),
-
-  /**
    * Get recommendations for current user
    */
   getForUser: protectedProcedure
