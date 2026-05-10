@@ -239,7 +239,7 @@ export default function MercadonaCartExport({ items, onBack, onClose }: Props) {
           <ChevronLeftIcon className="h-4 w-4" />
         </button>
         <h3 className="text-lg font-bold text-foreground">Conectar Mercadona</h3>
-        <button onClick={onClose} aria-label={t("common.close") className="ml-auto text-muted-foreground/70 text-xl font-bold" aria-hidden="false">×</button>
+        <button onClick={onClose} aria-label=t("common.close") className="ml-auto text-muted-foreground/70 text-xl font-bold" aria-hidden="false">×</button>
       </div>
       <div className="rounded-2xl bg-orange-50 border border-orange-100 p-4">
         <p className="text-xs text-orange-700 font-medium">🔒 Tus credenciales se usan solo para añadir al carrito. No se almacenan en ningún servidor.</p>
@@ -314,7 +314,7 @@ export default function MercadonaCartExport({ items, onBack, onClose }: Props) {
             </p>
           )}
         </div>
-        <button onClick={onClose} aria-label={t("common.close") className="flex h-9 w-9 items-center justify-center rounded-full bg-muted/50 text-muted-foreground text-lg font-bold">×</button>
+        <button onClick={onClose} aria-label=t("common.close") className="flex h-9 w-9 items-center justify-center rounded-full bg-muted/50 text-muted-foreground text-lg font-bold">×</button>
       </div>
 
       {/* Account status */}

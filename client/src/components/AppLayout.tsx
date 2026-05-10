@@ -676,7 +676,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
                 <p style={{ margin: 0, fontSize: "12px", color: "rgba(255,255,255,0.85)" }}>{t("sidebar.installAppDesc")}</p>
               </div>
               <button onClick={handleInstall} style={{ background: "white", color: "#F97316", border: "none", borderRadius: "8px", padding: "6px 12px", fontSize: "13px", fontWeight: 800, cursor: "pointer" }}>{t("sidebar.install")}</button>
-              <button onClick={() => { setShowInstallBanner(false); localStorage.setItem('pwa-install-dismissed', '1'); }} aria-label={t("common.close")} style={{ background: "rgba(255,255,255,0.2)", border: "none", borderRadius: "6px", width: "26px", height: "26px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
+              <button onClick={() => { setShowInstallBanner(false); localStorage.setItem('pwa-install-dismissed', '1'); }} aria-label=t("common.close") style={{ background: "rgba(255,255,255,0.2)", border: "none", borderRadius: "6px", width: "26px", height: "26px", display: "flex", alignItems: "center", justifyContent: "center", cursor: "pointer" }}>
                 <svg width="10" height="10" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
               </button>
             </div>

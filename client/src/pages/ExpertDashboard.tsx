@@ -450,7 +450,7 @@ export default function ExpertDashboard() {
               </div>
               <div style={{ display: "flex", alignItems: "center", gap: 7, background: "#F9FAFB", borderRadius: 9, padding: "7px 11px", marginBottom: 10, border: "1px solid #F3F4F6" }}>
                 <Search size={13} color="#9CA3AF" />
-                <input value={q} onChange={e => setQ(e.target.value)} placeholder={t("common.search") style={{ border: "none", background: "transparent", outline: "none", fontSize: 12, color: "#374151", flex: 1 }} />
+                <input value={q} onChange={e => setQ(e.target.value)} placeholder=t("common.search") style={{ border: "none", background: "transparent", outline: "none", fontSize: 12, color: "#374151", flex: 1 }} />
               </div>
               {isLoading
                 ? [1, 2, 3].map(i => <div key={i} style={{ height: 46, background: "#F3F4F6", borderRadius: 8, marginBottom: 6, animation: "pulse 1.5s infinite" }} />)

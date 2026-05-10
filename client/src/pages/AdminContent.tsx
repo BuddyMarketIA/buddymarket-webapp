@@ -689,7 +689,7 @@ export default function AdminContent() {
                       <button
                         onClick={() => { setEditTarget(r); setView("edit-recipe"); }}
                         className="flex h-8 w-8 items-center justify-center rounded-xl text-muted-foreground/70 hover:bg-orange-50 hover:text-orange-500"
-                        title={t("common.edit")}
+                        title=t("common.edit")
                       >
                         <PencilSquareIcon className="h-4 w-4" />
                       </button>
@@ -697,7 +697,7 @@ export default function AdminContent() {
                         onClick={() => handleDeleteRecipe(r.id, r.name)}
                         disabled={deleteRecipe.isPending}
                         className="flex h-8 w-8 items-center justify-center rounded-xl text-muted-foreground/70 hover:bg-red-50 hover:text-red-500 disabled:opacity-40"
-                        title={t("common.delete")
+                        title=t("common.delete")
                       >
                         <TrashIcon className="h-4 w-4" />
                       </button>
@@ -781,7 +781,7 @@ export default function AdminContent() {
                       <button
                         onClick={() => { setEditTarget(m); setView("edit-menu"); }}
                         className="flex h-8 w-8 items-center justify-center rounded-xl text-muted-foreground/70 hover:bg-orange-50 hover:text-orange-500"
-                        title={t("common.edit")
+                        title=t("common.edit")
                       >
                         <PencilSquareIcon className="h-4 w-4" />
                       </button>
@@ -789,7 +789,7 @@ export default function AdminContent() {
                         onClick={() => handleDeleteMenu(m.id, m.name)}
                         disabled={deleteMenu.isPending}
                         className="flex h-8 w-8 items-center justify-center rounded-xl text-muted-foreground/70 hover:bg-red-50 hover:text-red-500 disabled:opacity-40"
-                        title={t("common.delete")
+                        title=t("common.delete")
                       >
                         <TrashIcon className="h-4 w-4" />
                       </button>

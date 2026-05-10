@@ -84,7 +84,7 @@ export function UpgradeModal({ feature, currentTier, onClose }: UpgradeModalProp
               cursor: "pointer", color: "white", fontSize: 18,
               display: "flex", alignItems: "center", justifyContent: "center",
             }}
-           aria-label={t("common.close")>×</button>
+           aria-label=t("common.close")>×</button>
           <div style={{ fontSize: 48, marginBottom: 12 }}>🚀</div>
           <div style={{
             display: "inline-block",
