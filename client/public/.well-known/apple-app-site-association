@@ -1,0 +1,41 @@
+{
+  "applinks": {
+    "details": [
+      {
+        "appIDs": ["66G44X4PZ3.io.buddymarket.app"],
+        "components": [
+          {
+            "/": "/auth/*",
+            "comment": "OAuth callbacks and deep links"
+          },
+          {
+            "/": "/invite/*",
+            "comment": "Invitation links"
+          },
+          {
+            "/": "/share/*",
+            "comment": "Shared content links"
+          },
+          {
+            "/": "/menu/*",
+            "comment": "Shared menu links"
+          },
+          {
+            "/": "/reset-password",
+            "comment": "Password reset"
+          },
+          {
+            "/": "/verify-email",
+            "comment": "Email verification"
+          }
+        ]
+      }
+    ]
+  },
+  "webcredentials": {
+    "apps": ["66G44X4PZ3.io.buddymarket.app"]
+  },
+  "activitycontinuation": {
+    "apps": ["66G44X4PZ3.io.buddymarket.app"]
+  }
+}

@@ -1,0 +1,369 @@
+import { useState } from "react";
+import { useLocation } from "wouter";
+import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/_core/hooks/useAuth";
+import { toast } from "@/components/sonner-a11y-shim";
+
+// ─── Demo data (fallback when DB is empty) ────────────────────────────────────
+const DEMO_MAKERS = [
+  { maker: { id: 1, displayName: "Ana Cocina Sana", specialty: "Cocina mediterránea", bio: "Recetas saludables y deliciosas con ingredientes de temporada. Más de 500 recetas publicadas.", avatarUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/ensalada_mediterranea-A94kBrNm9EPozXzzbctf5A.webp", instagramHandle: "anacocinasana", followersCount: 45200, recipesCount: 312, rating: 4.9, verified: true, featured: true }, user: { name: "Ana García", imageUrl: null } },
+  { maker: { id: 2, displayName: "Fit Kitchen", specialty: "Cocina fitness", bio: "Recetas altas en proteína para deportistas y amantes del fitness. Sin sacrificar el sabor.", avatarUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/pollo_al_horno_verduras-7EonsjzW4cbvVFKgkiA4g3.webp", instagramHandle: "fitkitchenspain", followersCount: 89300, recipesCount: 187, rating: 4.8, verified: true, featured: true }, user: { name: "Carlos Fitness", imageUrl: null } },
+  { maker: { id: 3, displayName: "Dulces sin culpa", specialty: "Repostería saludable", bio: "Postres y dulces saludables sin azúcar refinado.", avatarUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/brownie_boniato-DunRnq5MEnxDMMdCy7DMcV.webp", instagramHandle: "dulcessinculpa", followersCount: 32100, recipesCount: 98, rating: 4.7, verified: true, featured: false }, user: { name: "Laura Dulce", imageUrl: null } },
+  { maker: { id: 4, displayName: "Veggie Lovers", specialty: "Cocina vegana", bio: "Recetas 100% plant-based llenas de sabor y nutrientes.", avatarUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/buddha_bowl_vegano-LbSLY3naX2TfQAWVDygbXL.webp", instagramHandle: "veggielovers_es", followersCount: 21800, recipesCount: 245, rating: 4.6, verified: true, featured: false }, user: { name: "Pablo Verde", imageUrl: null } },
+  { maker: { id: 5, displayName: "Cocina Rápida Pro", specialty: "Recetas rápidas", bio: "Recetas deliciosas en menos de 20 minutos.", avatarUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/pasta_pesto_tomates-ShvKafyUPxQbbjm5oqKBmm.webp", instagramHandle: "cocinarapidapro", followersCount: 67500, recipesCount: 420, rating: 4.8, verified: true, featured: true }, user: { name: "Marta Rápida", imageUrl: null } },
+  { maker: { id: 6, displayName: "Panadería Artesanal", specialty: "Pan y masas", bio: "El arte del pan casero. Fermentaciones largas y harinas integrales.", avatarUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/pan_masa_madre-VDEXokc7GYSoNjo4bvjcTU.webp", instagramHandle: "panaderiaartesanal", followersCount: 18400, recipesCount: 76, rating: 4.9, verified: false, featured: false }, user: { name: "Javier Pan", imageUrl: null } },
+];
+
+type Tab = "makers" | "recipes";
+
+// Gradient palettes per index for visual variety
+const GRADIENTS = [
+  "from-orange-400 via-pink-500 to-rose-500",
+  "from-violet-500 via-purple-500 to-indigo-600",
+  "from-emerald-400 via-teal-500 to-cyan-600",
+  "from-amber-400 via-orange-500 to-red-500",
+  "from-blue-500 via-indigo-500 to-violet-600",
+  "from-rose-400 via-pink-500 to-fuchsia-600",
+];
+
+// ─── Instagram icon ───────────────────────────────────────────────────────────
+function IgIcon() {
+  return (
+    <svg className="w-3.5 h-3.5 shrink-0" fill="currentColor" viewBox="0 0 24 24">
+      <path d="M12 2.163c3.204 0 3.584.012 4.85.07 3.252.148 4.771 1.691 4.919 4.919.058 1.265.069 1.645.069 4.849 0 3.205-.012 3.584-.069 4.849-.149 3.225-1.664 4.771-4.919 4.919-1.266.058-1.644.07-4.85.07-3.204 0-3.584-.012-4.849-.07-3.26-.149-4.771-1.699-4.919-4.92-.058-1.265-.07-1.644-.07-4.849 0-3.204.013-3.583.07-4.849.149-3.227 1.664-4.771 4.919-4.919 1.266-.057 1.645-.069 4.849-.069zm0-2.163c-3.259 0-3.667.014-4.947.072-4.358.2-6.78 2.618-6.98 6.98-.059 1.281-.073 1.689-.073 4.948 0 3.259.014 3.668.072 4.948.2 4.358 2.618 6.78 6.98 6.98 1.281.058 1.689.072 4.948.072 3.259 0 3.668-.014 4.948-.072 4.354-.2 6.782-2.618 6.979-6.98.059-1.28.073-1.689.073-4.948 0-3.259-.014-3.667-.072-4.947-.196-4.354-2.617-6.78-6.979-6.98-1.281-.059-1.69-.073-4.949-.073zm0 5.838c-3.403 0-6.162 2.759-6.162 6.162s2.759 6.163 6.162 6.163 6.162-2.759 6.162-6.163c0-3.403-2.759-6.162-6.162-6.162zm0 10.162c-2.209 0-4-1.79-4-4 0-2.209 1.791-4 4-4s4 1.791 4 4c0 2.21-1.791 4-4 4zm6.406-11.845c-.796 0-1.441.645-1.441 1.44s.645 1.44 1.441 1.44c.795 0 1.439-.645 1.439-1.44s-.644-1.44-1.439-1.44z"/>
+    </svg>
+  );
+}
+
+// ─── Premium Maker Card ───────────────────────────────────────────────────────
+// ─── Star Rating (Makers) ────────────────────────────────────────────────────────────
+function MakerStarRating({ rating }: { rating: number }) {
+  return (
+    <div className="flex items-center gap-0.5">
+      {[1,2,3,4,5].map(i => (
+        <svg key={i} className={`w-3 h-3 ${i <= Math.round(rating) ? 'text-amber-400' : 'text-gray-200'}`} fill="currentColor" viewBox="0 0 20 20">
+          <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/>
+        </svg>
+      ))}
+      <span className="text-[10px] font-bold text-muted-foreground ml-0.5">{rating > 0 ? Number(rating).toFixed(1) : '—'}</span>
+    </div>
+  );
+}
+
+function MakerCard({ row, onFollow, index }: { row: any; onFollow: (id: number) => void; index: number }) {
+  const [, navigate] = useLocation();
+  const [following, setFollowing] = useState(false);
+  const maker = row.maker;
+  const gradient = GRADIENTS[index % GRADIENTS.length];
+  const fmtCount = (n: number) => n >= 1000 ? `${(n / 1000).toFixed(1)}k` : String(n ?? 0);
+
+  const handleFollow = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    setFollowing(!following);
+    onFollow(maker.id);
+  };
+
+  return (
+    <div
+      className="group relative bg-background rounded-[28px] overflow-hidden cursor-pointer flex flex-col"
+      style={{
+        boxShadow: "0 1px 3px rgba(0,0,0,0.04), 0 6px 24px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03)",
+        transition: "box-shadow 0.35s cubic-bezier(.4,0,.2,1), transform 0.35s cubic-bezier(.4,0,.2,1)",
+      }}
+      onMouseEnter={e => {
+        (e.currentTarget as HTMLElement).style.boxShadow = "0 20px 60px rgba(249,115,22,0.22), 0 4px 12px rgba(0,0,0,0.08), 0 0 0 1px rgba(249,115,22,0.15)";
+        (e.currentTarget as HTMLElement).style.transform = "translateY(-5px) scale(1.01)";
+      }}
+      onMouseLeave={e => {
+        (e.currentTarget as HTMLElement).style.boxShadow = "0 1px 3px rgba(0,0,0,0.04), 0 6px 24px rgba(0,0,0,0.06), 0 0 0 1px rgba(0,0,0,0.03)";
+        (e.currentTarget as HTMLElement).style.transform = "translateY(0) scale(1)";
+      }}
+      onClick={() => navigate(`/app/buddy-makers/${maker.id}`)}
+    >
+      {/* ── Gradient header with large avatar ── */}
+      <div className={`relative bg-gradient-to-br ${gradient} h-[110px] overflow-visible`}>
+        <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-background/20 blur-3xl" />
+        <div className="absolute -bottom-10 -left-10 w-44 h-44 rounded-full bg-black/15 blur-3xl" />
+        <div className="absolute top-4 right-12 w-16 h-16 rounded-full bg-background/10 blur-2xl" />
+        <div className="absolute inset-0 opacity-[0.07]" style={{ backgroundImage: "radial-gradient(circle at 1px 1px, white 1.5px, transparent 0)", backgroundSize: "14px 14px" }} />
+        <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-700"
+          style={{ background: "linear-gradient(135deg, rgba(255,255,255,0.18) 0%, rgba(255,255,255,0.05) 40%, transparent 70%)" }} />
+        {/* Badges */}
+        <div className="relative flex justify-between items-start p-3">
+          <div className="flex gap-1.5">
+            {maker.verified && (
+              <span className="flex items-center gap-1 bg-background/25 backdrop-blur-md text-white text-[10px] font-bold px-2 py-0.5 rounded-full border border-white/40 shadow-sm">
+                <svg className="w-2.5 h-2.5" fill="currentColor" viewBox="0 0 20 20"><path fillRule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clipRule="evenodd"/></svg>
+                Verificado
+              </span>
+            )}
+          </div>
+          {maker.featured && (
+            <span className="bg-gradient-to-r from-yellow-400 to-amber-400 text-yellow-900 text-[10px] font-black px-2.5 py-0.5 rounded-full shadow-lg border border-yellow-300/60 tracking-wide">
+              ⭐ TOP
+            </span>
+          )}
+        </div>
+        {/* Large avatar overflowing bottom */}
+        <div className="absolute -bottom-10 left-1/2 -translate-x-1/2">
+          <div className="relative">
+            <div className="absolute inset-0 rounded-2xl bg-background/40 blur-md scale-110" />
+            <div className="relative rounded-2xl overflow-hidden ring-[3px] ring-white shadow-2xl" style={{ width: 80, height: 80 }}>
+              <img
+                src={maker.avatarUrl ?? `https://ui-avatars.com/api/?name=${encodeURIComponent(maker.displayName)}&background=F97316&color=fff&size=80`}
+                alt={maker.displayName}
+                className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
+              />
+            </div>
+            <span className="absolute -bottom-2 -right-2 w-7 h-7 rounded-full bg-gradient-to-br from-orange-500 to-pink-500 shadow-lg flex items-center justify-center border-2 border-white">
+              <svg className="w-3.5 h-3.5 text-white" fill="currentColor" viewBox="0 0 20 20"><path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z"/></svg>
+            </span>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Body ── */}
+      <div className="pt-14 px-4 pb-4 flex flex-col items-center text-center gap-1 flex-1">
+        <h3 className="font-black text-foreground text-[15px] leading-tight tracking-tight w-full line-clamp-1">
+          {maker.displayName}
+        </h3>
+        <p className="text-[11px] text-orange-500 font-bold tracking-widest uppercase w-full line-clamp-1">
+          {maker.specialty}
+        </p>
+
+        {/* Star rating */}
+        <div className="flex items-center justify-center mt-0.5 mb-1">
+          <MakerStarRating rating={maker.rating ?? 0} />
+        </div>
+
+        {/* Bio */}
+        {maker.bio && (
+          <p className="text-[11px] text-muted-foreground/70 text-center line-clamp-2 leading-relaxed mb-1 w-full">
+            {maker.bio}
+          </p>
+        )}
+
+        {/* Stats bar */}
+        <div className="flex items-stretch w-full mt-1 mb-3 bg-muted/30/80 rounded-2xl overflow-hidden border border-border/50/80">
+          <div className="flex-1 flex flex-col items-center py-2">
+            <span className="text-[13px] font-black text-foreground">{fmtCount(maker.followersCount)}</span>
+            <span className="text-[9px] text-muted-foreground/70 font-semibold uppercase tracking-wider">Fans</span>
+          </div>
+          <div className="w-px bg-muted" />
+          <div className="flex-1 flex flex-col items-center py-2">
+            <span className="text-[13px] font-black text-foreground">{maker.recipesCount}</span>
+            <span className="text-[9px] text-muted-foreground/70 font-semibold uppercase tracking-wider">Recetas</span>
+          </div>
+        </div>
+
+        {/* Instagram */}
+        {maker.instagramHandle && (
+          <a href={`https://instagram.com/${maker.instagramHandle}`} target="_blank" rel="noopener noreferrer"
+            className="flex items-center justify-center gap-1.5 mb-2.5 text-[11px] text-pink-500 font-bold hover:text-pink-600 transition-colors"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <IgIcon />
+            @{maker.instagramHandle}
+          </a>
+        )}
+
+        {/* CTA buttons */}
+        <div className="flex gap-1.5 w-full mt-auto" onClick={(e) => e.stopPropagation()}>
+          <button onClick={handleFollow}
+            className={`flex-1 text-[12px] font-black py-2.5 rounded-2xl transition-all duration-200 active:scale-95 ${
+              following
+                ? "bg-muted/50 text-muted-foreground border border-border"
+                : "bg-gradient-to-r from-orange-500 to-pink-500 text-white shadow-lg shadow-orange-200/60 hover:shadow-orange-300/70"
+            }`}
+          >
+            {following ? "✓ Siguiendo" : "Seguir"}
+          </button>
+          <button onClick={(e) => { e.stopPropagation(); navigate(`/app/buddy-makers/${maker.id}`); }}
+            className="flex-1 bg-muted/30 border border-border text-foreground/80 hover:bg-muted/50 text-[12px] font-black py-2.5 rounded-2xl transition-all duration-200 active:scale-95"
+          >
+            Ver perfil
+          </button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Recipe card ──────────────────────────────────────────────────────────────
+function RecipeCard({ recipe }: { recipe: any }) {
+  const mealTimeLabel: Record<string, string> = {
+    desayuno: "Desayuno", comida: "Comida", cena: "Cena",
+    merienda: "Merienda", snack: "Merienda", cualquiera: "",
+  };
+  const totalTime = (recipe.preparationTime ?? 0) + (recipe.cookTime ?? 0);
+  return (
+    <div className="bg-background rounded-[20px] overflow-hidden group cursor-pointer hover:shadow-md transition-shadow" style={{ boxShadow: "0 4px 20px rgba(0,0,0,0.07)" }}>
+      <div className="relative h-36 overflow-hidden bg-gradient-to-br from-orange-100 to-pink-100">
+        {recipe.imageUrl ? (
+          <img src={recipe.imageUrl} alt={recipe.name} className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-500" />
+        ) : (
+          <div className="w-full h-full flex items-center justify-center text-4xl">🍽️</div>
+        )}
+        <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent" />
+        <div className="absolute bottom-2.5 left-3 right-3">
+          <p className="text-white font-black text-[13px] line-clamp-2 leading-tight">{recipe.name}</p>
+        </div>
+        {recipe.mealTime && recipe.mealTime !== "cualquiera" && (
+          <span className="absolute top-2.5 right-2.5 bg-orange-500 text-white text-[11px] font-black px-2 py-0.5 rounded-full">
+            {mealTimeLabel[recipe.mealTime] ?? recipe.mealTime}
+          </span>
+        )}
+      </div>
+      <div className="p-3">
+        {/* Maker info */}
+        {recipe.makerName && (
+          <div className="flex items-center gap-1.5 mb-2">
+            {recipe.makerAvatar ? (
+              <img src={recipe.makerAvatar} alt={recipe.makerName} className="w-5 h-5 rounded-full object-cover ring-1 ring-orange-100" />
+            ) : (
+              <div className="w-5 h-5 rounded-full bg-orange-100 flex items-center justify-center text-[10px]">👨‍🍳</div>
+            )}
+            <p className="text-[12px] font-bold text-muted-foreground truncate">{recipe.makerName}</p>
+          </div>
+        )}
+        <div className="flex items-center justify-between text-[11px] text-muted-foreground/70 font-semibold">
+          <span>🔥 {recipe.caloriesPerServing ?? "—"} kcal</span>
+          {totalTime > 0 && <span>⏱ {totalTime}m</span>}
+          {recipe.difficulty && (
+            <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${
+              recipe.difficulty === "easy" || recipe.difficulty === "facil" ? "bg-green-100 text-green-700" :
+              recipe.difficulty === "hard" || recipe.difficulty === "dificil" ? "bg-red-100 text-red-700" :
+              "bg-yellow-100 text-yellow-700"
+            }`}>
+              {recipe.difficulty === "easy" || recipe.difficulty === "facil" ? "Fácil" :
+               recipe.difficulty === "hard" || recipe.difficulty === "dificil" ? "Difícil" : "Media"}
+            </span>
+          )}
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Skeleton card ────────────────────────────────────────────────────────────
+function SkeletonCard() {
+  return (
+    <div className="bg-background rounded-[28px] overflow-hidden animate-pulse" style={{ boxShadow: "0 4px 24px rgba(0,0,0,0.06)" }}>
+      <div className="h-28 bg-gradient-to-br from-gray-200 to-gray-100" />
+      <div className="p-3 flex flex-col items-center gap-2">
+        <div className="w-16 h-16 rounded-2xl bg-muted -mt-8" />
+        <div className="h-4 w-24 bg-muted rounded-full" />
+        <div className="h-3 w-16 bg-muted/50 rounded-full" />
+        <div className="h-8 w-full bg-muted/50 rounded-xl" />
+        <div className="flex gap-1.5 w-full">
+          <div className="flex-1 h-9 bg-muted rounded-xl" />
+          <div className="flex-1 h-9 bg-muted/50 rounded-xl" />
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Main page ────────────────────────────────────────────────────────────────
+export default function BuddyMakers() {
+  const [tab, setTab] = useState<Tab>("makers");
+  const { user } = useAuth();
+
+  const makersQuery = trpc.buddyMakers.list.useQuery({});
+  const recipesQuery = trpc.recipes.list.useQuery(
+    { isPublic: true, limit: 30, excludeUserAllergens: true },
+    { enabled: tab === "recipes" }
+  );
+
+  const followMutation = trpc.buddyMakers.follow.useMutation({
+    onSuccess: () => toast.success("¡Ahora sigues a este BuddyMaker! 🎉"),
+    onError: () => toast.error("Error al seguir"),
+  });
+
+  const makers = (makersQuery.data && makersQuery.data.length > 0) ? makersQuery.data : DEMO_MAKERS;
+  const recipes = recipesQuery.data?.recipes ?? [];
+
+  const handleFollow = (id: number) => {
+    if (!user) { toast.error("Inicia sesión para seguir"); return; }
+    followMutation.mutate({ makerId: id });
+  };
+
+  return (
+    <div className="min-h-screen bg-[#F7F3EF]">
+      {/* Header */}
+      <div className="bg-background/90 backdrop-blur-xl border-b border-border/50/80 px-4 pt-4 pb-3 sticky top-0 z-10">
+        <div className="flex items-center justify-between mb-3">
+          <div>
+            <h1 className="text-[22px] font-black text-foreground tracking-tight">BuddyMakers</h1>
+            <p className="text-sm text-muted-foreground/70 font-medium">Creadores de contenido nutricional</p>
+          </div>
+          <span className="bg-orange-50 text-orange-600 text-[13px] font-black px-3 py-1.5 rounded-full border border-orange-100">
+            {makers.length} makers
+          </span>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-1 bg-muted/50 rounded-2xl p-1">
+          {(["makers", "recipes"] as Tab[]).map((t) => (
+            <button
+              key={t}
+              onClick={() => setTab(t)}
+              className={`flex-1 py-2 rounded-xl text-[13px] font-black transition-all duration-200 ${
+                tab === t
+                  ? "bg-background text-foreground shadow-sm"
+                  : "text-muted-foreground/70 hover:text-muted-foreground"
+              }`}
+            >
+              {t === "makers" ? "👨‍🍳 Makers" : "🍽️ Recetas"}
+            </button>
+          ))}
+        </div>
+      </div>
+
+      <div className="px-4 py-4">
+        {/* ── Makers tab ── */}
+        {tab === "makers" && (
+          <div className="grid grid-cols-2 gap-3">
+            {makersQuery.isLoading
+              ? [...Array(4)].map((_, i) => <SkeletonCard key={i} />)
+              : makers.map((row: any, i: number) => (
+                  <MakerCard key={row.maker?.id ?? i} row={row} onFollow={handleFollow} index={i} />
+                ))
+            }
+          </div>
+        )}
+
+        {/* ── Recipes tab ── */}
+        {tab === "recipes" && (
+          <div>
+            {recipesQuery.isLoading ? (
+              <div className="grid grid-cols-2 gap-3">
+                {[...Array(6)].map((_, i) => (
+                  <div key={i} className="bg-background rounded-[20px] overflow-hidden animate-pulse h-52">
+                    <div className="h-36 bg-muted" />
+                    <div className="p-3 space-y-2">
+                      <div className="h-3 bg-muted rounded w-3/4" />
+                      <div className="h-3 bg-muted/50 rounded w-1/2" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            ) : recipes.length === 0 ? (
+              <div className="flex flex-col items-center justify-center py-16 gap-3">
+                <p className="text-5xl">🍽️</p>
+                <p className="text-muted-foreground font-semibold text-center">Aún no hay recetas publicadas por los makers</p>
+                <p className="text-muted-foreground/70 text-sm text-center">Las recetas aparecerán aquí cuando los BuddyMakers las publiquen</p>
+              </div>
+            ) : (
+              <div className="grid grid-cols-2 gap-3">
+                {recipes.map((r: any) => (
+                  <RecipeCard key={r.id} recipe={r} />
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}

@@ -1,0 +1,1 @@
+ALTER TABLE "menu_organizers" ADD COLUMN "coverImage" text;
