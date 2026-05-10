@@ -37,7 +37,7 @@
  * - Standalone service; manually apply results to map.
  * const geocoder = new google.maps.Geocoder();
  * geocoder.geocode({ address: "New York" }, (results, status) => {
- *   if (status === t("common.ok") && results[0]) {
+ *   if (status === "OK" && results[0]) {
  *     map.setCenter(results[0].geometry.location);
  *     new google.maps.marker.AdvancedMarkerElement({
  *       map,
@@ -58,7 +58,7 @@
  * const directionsRenderer = new google.maps.DirectionsRenderer({ map });
  * directionsService.route(
  *   { origin, destination, travelMode: "DRIVING" },
- *   (res, status) => status === t("common.ok") && directionsRenderer.setDirections(res)
+ *   (res, status) => status === "OK" && directionsRenderer.setDirections(res)
  * );
  *
  * -------------------------------
@@ -76,13 +76,15 @@
 
 /// <reference types="@types/google.maps" />
 
-import { useEffect, useRef } from "react"
-import { useTranslation } from 'react-i18next';;
+import { useEffect, useRef } from "react";
 import { usePersistFn } from "@/hooks/usePersistFn";
 import { cn } from "@/lib/utils";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type GoogleMapsWindow = Window & { google: any };
+declare global {
+  interface Window {
+    google?: typeof google;
+  }
+}
 
 const API_KEY = import.meta.env.VITE_FRONTEND_FORGE_API_KEY;
 const FORGE_BASE_URL =
@@ -129,7 +131,7 @@ export function MapView({
       console.error("Map container not found");
       return;
     }
-    map.current = new (window as GoogleMapsWindow).google.maps.Map(mapContainer.current, {
+    map.current = new window.google.maps.Map(mapContainer.current, {
       zoom: initialZoom,
       center: initialCenter,
       mapTypeControl: true,
@@ -138,7 +140,7 @@ export function MapView({
       streetViewControl: true,
       mapId: "DEMO_MAP_ID",
     });
-    if (onMapReady && map.current) {
+    if (onMapReady) {
       onMapReady(map.current);
     }
   });
