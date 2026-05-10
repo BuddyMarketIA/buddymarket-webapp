@@ -3786,3 +3786,26 @@ export const wearableInsights = pgTable("wearableInsights", {
 }));
 export type WearableInsight = typeof wearableInsights.$inferSelect;
 export type NewWearableInsight = typeof wearableInsights.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// GAMIFICATION (Streaks, Badges, Achievements)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const streaks = pgTable("streaks", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  streakType: varchar("streakType", { length: 64 }).notNull(), // daily_login, daily_meals, daily_exercise, daily_water
+  currentStreak: integer("currentStreak").default(0),
+  longestStreak: integer("longestStreak").default(0),
+  lastActivityDate: date("lastActivityDate"),
+  startDate: date("startDate").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  userIdx: index("streak_user_idx").on(t.userId),
+  userTypeIdx: index("streak_user_type_idx").on(t.userId, t.streakType),
+}));
+export type Streak = typeof streaks.$inferSelect;
+export type NewStreak = typeof streaks.$inferInsert;
+
+// Tablas de Gamificación, Social y Premium ya están definidas arriba
