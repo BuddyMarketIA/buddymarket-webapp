@@ -3344,3 +3344,104 @@
 - [ ] Mejorar presentación de menús en BuddyIA - Organizar por comidas, macronutrientes, recetas con instrucciones claras
 - [ ] Crear componente UI para mostrar menús de forma estructurada y legible
 - [ ] Integrar con respuestas de BuddyIA para formatear menús automáticamente
+
+
+## Sprint: Integración de Recomendaciones Inteligentes de Productos (NUEVA FASE)
+
+### Fase 1: Configuración de APIs Externas
+- [ ] Configurar variables de entorno para BuddyShop API (X-BuddyOne-Key header)
+- [ ] Configurar variables de entorno para BuddyCare API (Bearer token)
+- [ ] Crear cliente HTTP para BuddyShop (https://buddyshop-niebit4z.manus.space/api/buddyone)
+- [ ] Crear cliente HTTP para BuddyCare (https://api.buddycare.com con Bearer token)
+- [ ] Implementar retry logic y error handling para ambas APIs
+
+### Fase 2: Schema de Base de Datos
+- [ ] Crear tabla `product_recommendations` en Drizzle (id, userId, productId, source, title, description, reason, relevanceScore, productUrl, productImage, productPrice, cta, expiresAt, clicked, converted, createdAt)
+- [ ] Crear tabla `recommendation_events` para tracking (id, recommendationId, userId, eventType, createdAt)
+- [ ] Crear tabla `product_cache` para cachear productos de APIs externas (id, source, productId, data, expiresAt)
+- [ ] Añadir índices para queries de recomendaciones (userId, source, expiresAt)
+
+### Fase 3: Backend - Lógica de Recomendaciones
+- [ ] Crear helper `server/db.ts` para queries de recomendaciones (getRecommendationsForUser, createRecommendation, trackEvent)
+- [ ] Implementar algoritmo de generación de recomendaciones basado en:
+  - [ ] Objetivo del usuario (ganancia muscular, pérdida peso, etc)
+  - [ ] Entrenamientos activos
+  - [ ] Macros objetivo vs consumo actual
+  - [ ] Restricciones dietéticas
+  - [ ] Historial de compras
+- [ ] Crear tRPC procedure `recommendations.getForUser` (retorna 3-5 recomendaciones personalizadas)
+- [ ] Crear tRPC procedure `recommendations.track` (registra clicks)
+- [ ] Crear tRPC procedure `recommendations.convert` (registra conversiones)
+- [ ] Implementar caching de productos (actualizar cada 24h)
+- [ ] Crear tests unitarios para algoritmo de recomendaciones
+
+### Fase 4: Tipos de Recomendaciones
+- [ ] BuddyCoach - Suplementos deportivos (proteína, creatina, BCAA) - Trigger: ganancia muscular, entrenamientos activos
+- [ ] BuddyShop - Equipamiento de cocina (mandolina, báscula, cuchillos) - Trigger: menús frecuentes, recetas complejas
+- [ ] BuddyCare - Productos de salud (vitaminas, omega-3, magnesio) - Trigger: condiciones médicas, deficiencias
+- [ ] Crear tabla de triggers por tipo de recomendación
+
+### Fase 5: Frontend - Componentes UI
+- [ ] Crear componente `ProductRecommendationCard` (imagen, título, descripción, razón, precio, CTA, badge de fuente)
+- [ ] Crear componente `RecommendationsCarousel` (carrusel de 3-5 recomendaciones, auto-rotación)
+- [ ] Crear componente `RecommendationsBanner` (banner sticky en dashboard, rotación de recomendaciones, cerrable)
+- [ ] Implementar tracking de impressions
+- [ ] Añadir animaciones y transiciones suaves
+
+### Fase 6: Integración en Dashboard
+- [ ] Añadir sección de recomendaciones en Home.tsx (debajo del greeting)
+- [ ] Mostrar 3-5 recomendaciones por usuario
+- [ ] Implementar rotación automática de recomendaciones (cada 5 segundos)
+- [ ] Añadir botón de "Cerrar" para cada recomendación
+- [ ] Implementar feedback del usuario (relevancia)
+
+### Fase 7: Testing
+- [ ] Crear tests unitarios para algoritmo de recomendaciones
+- [ ] Crear tests de integración con APIs externas (mock)
+- [ ] Probar tracking de eventos
+- [ ] Validar que no se muestren recomendaciones duplicadas
+- [ ] Probar con diferentes perfiles de usuario (ganancia muscular, pérdida peso, etc)
+
+### Fase 8: Analytics y Monetización
+- [ ] Crear dashboard de analytics de recomendaciones (CTR, conversion rate, ROI)
+- [ ] Implementar tracking de CTR (Click Through Rate)
+- [ ] Implementar tracking de conversion rate
+- [ ] Crear reportes de ROI por tipo de recomendación
+- [ ] Configurar comisiones/referrals con BuddyShop y BuddyCare
+
+### Fase 9: Optimización
+- [ ] Implementar A/B testing de mensajes de recomendación
+- [ ] Optimizar frecuencia de recomendaciones (no más de 3 simultáneamente)
+- [ ] Implementar machine learning para ranking de recomendaciones
+- [ ] Optimizar performance de queries de recomendaciones
+- [ ] Cachear recomendaciones en cliente (localStorage)
+
+### Fase 10: Entrega
+- [ ] Documentar API de recomendaciones en README
+- [ ] Crear guía de usuario para recomendaciones
+- [ ] Verificar TypeScript sin errores
+- [ ] Verificar tests pasando
+- [ ] Hacer checkpoint final
+- [ ] Publicar cambios
+
+---
+
+## Configuración de Secretos Necesarios (Recomendaciones)
+
+- [ ] `BUDDYSHOP_API_KEY`: `bshop_433b1942e295db0a145c38fbab40f53a0f3476b0c110cefe8d8605d53554fdad`
+- [ ] `BUDDYSHOP_API_URL`: `https://buddyshop-niebit4z.manus.space/api/buddyone`
+- [ ] `BUDDYCARE_API_KEY`: `sk_enterprise_51BuddyCare2024_buddyone_c9h5m1o4z0t3y7u2i6k9q1w4e8r5t2y`
+- [ ] `BUDDYCARE_API_URL`: `https://api.buddycare.com`
+- [ ] `BUDDYCARE_WEBHOOK_SECRET`: `whsec_51BuddyCare2024_webhooks_d0i6n2p5a1s4x7c0v3b6m9k2l5o8r1t4`
+
+---
+
+## Notas Importantes (Recomendaciones)
+
+- BuddyShop usa header `X-BuddyOne-Key` para autenticación
+- BuddyCare usa header `Authorization: Bearer {token}` para autenticación
+- Rate limits: BuddyShop (10K/día), BuddyCare Enterprise (ilimitado)
+- Implementar caching para reducir llamadas a APIs externas
+- Respetar GDPR y privacidad del usuario
+- No mostrar más de 3 recomendaciones simultáneamente
+- Documentación BuddyCare: https://api.buddycare.com/docs

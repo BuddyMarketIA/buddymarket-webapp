@@ -22,6 +22,7 @@ import { savedMenusRouter } from "./routers/savedMenus";
 import { referralRouter } from "./routers/referral";
 import { analyticsRouter } from "./routers/analytics";
 import { wearablesRouter } from "./routers/wearables";
+import { recommendationsRouter } from "./routers/recommendations";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { invokeLLM } from "./_core/llm";
 import { storagePut } from "./storage";
@@ -257,6 +258,7 @@ export const appRouter = router({
   referral: referralRouter,
   analytics: analyticsRouter,
   wearables: wearablesRouter,
+  recommendations: recommendationsRouter,
 
   // ---------------------------------------------------------------------------
   // AUTH

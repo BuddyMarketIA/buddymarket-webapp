@@ -519,6 +519,13 @@
       "when": 1778392546322,
       "tag": "0073_tidy_edwin_jarvis",
       "breakpoints": true
+    },
+    {
+      "idx": 74,
+      "version": "7",
+      "when": 1778435678369,
+      "tag": "0074_curly_lucky_pierre",
+      "breakpoints": true
     }
   ]
 }

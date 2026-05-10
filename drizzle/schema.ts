@@ -3809,3 +3809,149 @@ export type Streak = typeof streaks.$inferSelect;
 export type NewStreak = typeof streaks.$inferInsert;
 
 // Tablas de Gamificación, Social y Premium ya están definidas arriba
+
+
+// =============================================================================
+// PRODUCT RECOMMENDATIONS (BuddyShop, BuddyCare, BuddyCoach Integration)
+// =============================================================================
+
+export const productRecommendationSourceEnum = pgEnum("productRecommendationSource", [
+  "buddyshop",
+  "buddycare",
+  "buddycoach",
+]);
+
+export const recommendationTriggerEnum = pgEnum("recommendationTrigger", [
+  "muscle_gain",
+  "weight_loss",
+  "frequent_cooking",
+  "complex_recipes",
+  "vitamin_deficiency",
+  "health_goal",
+  "active_training",
+  "macro_deficit",
+]);
+
+// Product Recommendations Table
+export const productRecommendations = pgTable("productRecommendations", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  
+  // Product Info
+  externalProductId: varchar("externalProductId", { length: 255 }).notNull(), // ID from external API
+  source: productRecommendationSourceEnum("source").notNull(), // buddyshop, buddycare, buddycoach
+  
+  // Recommendation Details
+  title: text("title").notNull(),
+  description: text("description"),
+  reason: text("reason").notNull(), // Why this product is recommended
+  trigger: recommendationTriggerEnum("trigger").notNull(), // What triggered this recommendation
+  
+  // Product Details
+  productUrl: text("productUrl").notNull(),
+  productImage: text("productImage"),
+  productPrice: numeric("productPrice", { precision: 10, scale: 2 }),
+  productCategory: varchar("productCategory", { length: 128 }),
+  
+  // Recommendation Metrics
+  relevanceScore: integer("relevanceScore").default(50), // 0-100
+  cta: varchar("cta", { length: 255 }).default("Ver producto"), // Call to action text
+  
+  // Tracking
+  clicked: boolean("clicked").default(false),
+  clickedAt: timestamp("clickedAt"),
+  converted: boolean("converted").default(false),
+  convertedAt: timestamp("convertedAt"),
+  
+  // Lifecycle
+  expiresAt: timestamp("expiresAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  userIdx: index("pr_user_idx").on(t.userId),
+  sourceIdx: index("pr_source_idx").on(t.source),
+  userSourceIdx: index("pr_user_source_idx").on(t.userId, t.source),
+  expiresIdx: index("pr_expires_idx").on(t.expiresAt),
+  triggerIdx: index("pr_trigger_idx").on(t.trigger),
+}));
+
+export type ProductRecommendation = typeof productRecommendations.$inferSelect;
+export type NewProductRecommendation = typeof productRecommendations.$inferInsert;
+
+// Recommendation Events Table (for analytics)
+export const recommendationEvents = pgTable("recommendationEvents", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  recommendationId: integer("recommendationId").notNull().references(() => productRecommendations.id, { onDelete: "cascade" }),
+  
+  // Event Type
+  eventType: varchar("eventType", { length: 64 }).notNull(), // impression, click, hover, convert, dismiss
+  
+  // Context
+  source: productRecommendationSourceEnum("source").notNull(),
+  context: varchar("context", { length: 255 }), // Where the recommendation was shown (dashboard, banner, carousel)
+  
+  // Metadata
+  metadata: text("metadata"), // JSON with additional data
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  userIdx: index("re_user_idx").on(t.userId),
+  recIdx: index("re_rec_idx").on(t.recommendationId),
+  eventTypeIdx: index("re_event_type_idx").on(t.eventType),
+  userEventIdx: index("re_user_event_idx").on(t.userId, t.eventType),
+}));
+
+export type RecommendationEvent = typeof recommendationEvents.$inferSelect;
+export type NewRecommendationEvent = typeof recommendationEvents.$inferInsert;
+
+// Product Cache Table (for caching external API responses)
+export const productCache = pgTable("productCache", {
+  id: serial("id").primaryKey(),
+  
+  // Cache Key
+  source: productRecommendationSourceEnum("source").notNull(),
+  externalProductId: varchar("externalProductId", { length: 255 }).notNull(),
+  
+  // Cached Data
+  data: text("data").notNull(), // JSON with product data
+  
+  // Cache Lifecycle
+  expiresAt: timestamp("expiresAt").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  sourceIdx: index("pc_source_idx").on(t.source),
+  productIdx: index("pc_product_idx").on(t.externalProductId),
+  expiresIdx: index("pc_expires_idx").on(t.expiresAt),
+  sourceProductIdx: index("pc_source_product_idx").on(t.source, t.externalProductId),
+}));
+
+export type ProductCache = typeof productCache.$inferSelect;
+export type NewProductCache = typeof productCache.$inferInsert;
+
+// User Product Interactions (for personalization)
+export const userProductInteractions = pgTable("userProductInteractions", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  
+  // Product Reference
+  source: productRecommendationSourceEnum("source").notNull(),
+  externalProductId: varchar("externalProductId", { length: 255 }).notNull(),
+  
+  // Interaction
+  interactionType: varchar("interactionType", { length: 64 }).notNull(), // view, click, purchase, favorite, review
+  
+  // Metadata
+  metadata: text("metadata"), // JSON with additional data
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  userIdx: index("upi_user_idx").on(t.userId),
+  sourceIdx: index("upi_source_idx").on(t.source),
+  userSourceIdx: index("upi_user_source_idx").on(t.userId, t.source),
+  interactionIdx: index("upi_interaction_idx").on(t.interactionType),
+}));
+
+export type UserProductInteraction = typeof userProductInteractions.$inferSelect;
+export type NewUserProductInteraction = typeof userProductInteractions.$inferInsert;
