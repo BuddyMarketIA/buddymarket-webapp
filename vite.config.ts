@@ -5,7 +5,6 @@ import fs from "node:fs";
 import path from "node:path";
 import { defineConfig, type Plugin, type ViteDevServer } from "vite";
 import { vitePluginManusRuntime } from "vite-plugin-manus-runtime";
-import { VitePWA } from "vite-plugin-pwa";
 
 // =============================================================================
 // Manus Debug Collector - Vite Plugin
@@ -151,25 +150,7 @@ function vitePluginManusDebugCollector(): Plugin {
   };
 }
 
-const pwaPlugin = VitePWA({
-  registerType: "autoUpdate",
-  injectRegister: "auto",
-  strategies: "injectManifest",
-  srcDir: "src",
-  filename: "sw.ts",
-  devOptions: {
-    enabled: false, // disable in dev to avoid conflicts with HMR
-  },
-  manifest: false, // we have our own manifest.json in public/
-  injectManifest: {
-    swSrc: path.resolve(import.meta.dirname, "client/src/sw.ts"),
-    swDest: path.resolve(import.meta.dirname, "dist/public/sw.js"),
-    globDirectory: path.resolve(import.meta.dirname, "dist/public"),
-    globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,woff,woff2}"],
-  },
-});
-
-const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector(), pwaPlugin];
+const plugins = [react(), tailwindcss(), jsxLocPlugin(), vitePluginManusRuntime(), vitePluginManusDebugCollector()];
 
 export default defineConfig({
   plugins,
@@ -178,7 +159,6 @@ export default defineConfig({
       "@": path.resolve(import.meta.dirname, "client", "src"),
       "@shared": path.resolve(import.meta.dirname, "shared"),
       "@assets": path.resolve(import.meta.dirname, "attached_assets"),
-
     },
   },
   envDir: path.resolve(import.meta.dirname),
@@ -187,12 +167,6 @@ export default defineConfig({
   build: {
     outDir: path.resolve(import.meta.dirname, "dist/public"),
     emptyOutDir: true,
-    // Target iOS Safari 13+ (iOS 13 = Sep 2019). This ensures Vite/esbuild
-    // transpiles private class fields (#field), optional chaining, nullish
-    // coalescing, and other ES2020+ syntax that older iOS Safari doesn't support.
-    // Without this, the default "esnext" target produces code that crashes on
-    // iOS < 15 with a SyntaxError before any JS executes.
-    target: ["es2019", "safari13"],
   },
   server: {
     host: true,

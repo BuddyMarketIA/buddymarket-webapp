@@ -80,8 +80,11 @@ import { useEffect, useRef } from "react";
 import { usePersistFn } from "@/hooks/usePersistFn";
 import { cn } from "@/lib/utils";
 
-// eslint-disable-next-line @typescript-eslint/no-explicit-any
-type GoogleMapsWindow = Window & { google: any };
+declare global {
+  interface Window {
+    google?: typeof google;
+  }
+}
 
 const API_KEY = import.meta.env.VITE_FRONTEND_FORGE_API_KEY;
 const FORGE_BASE_URL =
@@ -128,7 +131,7 @@ export function MapView({
       console.error("Map container not found");
       return;
     }
-    map.current = new (window as GoogleMapsWindow).google.maps.Map(mapContainer.current, {
+    map.current = new window.google.maps.Map(mapContainer.current, {
       zoom: initialZoom,
       center: initialCenter,
       mapTypeControl: true,
@@ -137,7 +140,7 @@ export function MapView({
       streetViewControl: true,
       mapId: "DEMO_MAP_ID",
     });
-    if (onMapReady && map.current) {
+    if (onMapReady) {
       onMapReady(map.current);
     }
   });
