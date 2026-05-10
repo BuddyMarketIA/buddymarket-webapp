@@ -3445,3 +3445,241 @@
 - Respetar GDPR y privacidad del usuario
 - No mostrar más de 3 recomendaciones simultáneamente
 - Documentación BuddyCare: https://api.buddycare.com/docs
+
+
+---
+
+## Plan de Integración de Login Unificado del Ecosistema
+
+### Documentación
+- [x] Crear documento ECOSYSTEM_INTEGRATION_PLAN.md con arquitectura completa
+
+### Fase 1: Preparación
+- [ ] Crear tablas en base de datos (ecosystem_sessions, ecosystem_tokens)
+- [ ] Crear utilidades de ecosistema en server/_core/ecosystem.ts
+- [ ] Escribir tests para funciones de token
+- [ ] Documentar API de ecosistema
+
+### Fase 2: Backend - Endpoints
+- [ ] Implementar POST /api/ecosystem/session-token (generar token temporal)
+- [ ] Implementar POST /api/ecosystem/validate-token (validar token)
+- [ ] Implementar GET /api/ecosystem/user/{openId} (obtener datos de usuario)
+- [ ] Implementar POST /api/ecosystem/logout (invalidar sesión en ecosistema)
+- [ ] Agregar tests de integración
+- [ ] Configurar CORS para dominios del ecosistema
+
+### Fase 3: Frontend - Componentes
+- [ ] Crear componente EcosystemNavigation.tsx
+- [ ] Crear componente EcosystemLoginModal.tsx
+- [ ] Crear hook useEcosystem.ts
+- [ ] Integrar en DashboardLayout
+- [ ] Agregar botones de acceso rápido a BuddyCoach, BuddyShop, BuddyCare
+
+### Fase 4: Integración con BuddyCoach
+- [ ] Implementar endpoint de login en BuddyCoach
+- [ ] Implementar validación de token en BuddyCoach
+- [ ] Probar flujo completo de login
+- [ ] Documentar para equipo de BuddyCoach
+
+### Fase 5: Integración con BuddyShop y BuddyCare
+- [ ] Repetir proceso para BuddyShop
+- [ ] Repetir proceso para BuddyCare
+- [ ] Pruebas de sincronización entre apps
+
+### Fase 6: Validación de Suscripción
+- [ ] Implementar verificación de suscripción activa
+- [ ] Crear página de upsell para usuarios sin suscripción
+- [ ] Agregar analytics de acceso por plan
+
+### Fase 7: Testing y Deployment
+- [ ] Tests E2E de flujo completo
+- [ ] Tests de seguridad
+- [ ] Deployment a staging
+- [ ] Deployment a producción
+- [ ] Monitoreo y alertas
+
+
+---
+
+## Health Hub - Integración de Dispositivos Wearables
+
+### Documentación
+- [x] Crear documento HEALTH_HUB_INTEGRATION_PLAN.md con arquitectura completa
+
+### Fase 1: Preparación
+- [ ] Registrar aplicaciones en Oura y Whoop
+- [ ] Obtener Client ID y Client Secret
+- [ ] Crear tablas en base de datos (wearable_connections, health_metrics, health_insights)
+- [ ] Documentar APIs de Oura y Whoop
+
+### Fase 2: Backend - Autenticación
+- [ ] Implementar OAuth 2.0 con Oura Ring
+- [ ] Implementar OAuth 2.0 con Whoop
+- [ ] Crear endpoints POST /api/health-hub/connect-oura
+- [ ] Crear endpoints POST /api/health-hub/connect-whoop
+- [ ] Crear endpoints POST /api/health-hub/disconnect
+- [ ] Encriptar tokens en base de datos
+
+### Fase 3: Backend - Sincronización
+- [ ] Implementar sincronización de datos de Oura
+- [ ] Implementar sincronización de datos de Whoop
+- [ ] Crear tabla health_metrics con datos sincronizados
+- [ ] Implementar retry logic con backoff exponencial
+- [ ] Crear sincronización automática cada 6 horas
+
+### Fase 4: Backend - Insights
+- [ ] Crear algoritmo de generación de insights
+- [ ] Implementar comparativas con promedios históricos
+- [ ] Crear recomendaciones personalizadas
+- [ ] Crear tabla health_insights
+- [ ] Tests unitarios para algoritmo
+
+### Fase 5: Frontend - UI
+- [ ] Crear página HealthHub.tsx
+- [ ] Crear componente WearableCard.tsx
+- [ ] Crear componente HealthMetricsChart.tsx
+- [ ] Crear componente HealthInsights.tsx
+- [ ] Crear componente SyncStatus.tsx
+- [ ] Crear hook useHealthHub.ts
+
+### Fase 6: Integración en Dashboard
+- [ ] Agregar widget de Health Hub en Home.tsx
+- [ ] Mostrar estado de conexiones
+- [ ] Mostrar métricas principales
+- [ ] Mostrar insights recientes
+- [ ] Agregar enlace a página completa
+
+### Fase 7: Testing
+- [ ] Tests de autenticación OAuth
+- [ ] Tests de sincronización de datos
+- [ ] Tests de encriptación de tokens
+- [ ] Tests E2E del flujo completo
+- [ ] Tests de performance
+
+### Fase 8: Deployment
+- [ ] Deployment a staging
+- [ ] Pruebas con datos reales
+- [ ] Deployment a producción
+- [ ] Monitoreo y alertas
+- [ ] Documentación para usuarios
+
+### Configuración de Secretos Requeridos
+- [ ] `OURA_CLIENT_ID`: ID de cliente de Oura
+- [ ] `OURA_CLIENT_SECRET`: Secret de cliente de Oura
+- [ ] `OURA_REDIRECT_URI`: URI de redirección de Oura
+- [ ] `WHOOP_CLIENT_ID`: ID de cliente de Whoop
+- [ ] `WHOOP_CLIENT_SECRET`: Secret de cliente de Whoop
+- [ ] `WHOOP_REDIRECT_URI`: URI de redirección de Whoop
+- [ ] `ENCRYPTION_KEY`: Clave para encriptar tokens en BD
+
+
+---
+
+## Scripts de Registro de Wearables
+
+### Documentación
+- [x] Crear script register-wearables.sh (interactivo)
+- [x] Crear script validate-wearables.py (validación)
+- [x] Crear guía WEARABLES_REGISTRATION_GUIDE.md
+- [x] Crear README-WEARABLES.md
+
+### Ejecución
+- [ ] Ejecutar: bash scripts/register-wearables.sh
+- [ ] Ejecutar: python3 scripts/validate-wearables.py
+- [ ] Verificar que .env.local esté configurado
+- [ ] Verificar que wearables-credentials.json esté creado
+
+
+---
+
+## Componentes de UI para Health Hub
+
+### Componentes Creados
+- [x] WearableCard.tsx - Tarjeta para mostrar dispositivos wearables
+- [x] HealthMetricsChart.tsx - Gráficos de métricas de salud
+- [x] HealthInsights.tsx - Tarjetas de insights personalizados
+- [x] SyncStatus.tsx - Estado de sincronización
+- [x] useHealthHub.ts - Hook personalizado para gestionar estado
+- [x] HealthHub.tsx - Página principal de Health Hub
+- [x] index.ts - Archivo de exportación de componentes
+
+### Características Implementadas
+- [x] Visualización de dispositivos conectados
+- [x] Gráficos de sueño, recuperación, actividad, entrenamiento
+- [x] Insights personalizados con recomendaciones
+- [x] Estado de sincronización en tiempo real
+- [x] Pestañas para diferentes vistas (Resumen, Dispositivos, Métricas, Insights, Configuración)
+- [x] Estado vacío con CTA para conectar dispositivos
+- [x] Estadísticas rápidas (Sleep, Recovery, Strain, Activity)
+
+### Próximos Pasos
+- [ ] Integrar con endpoints tRPC del backend
+- [ ] Implementar autenticación OAuth con Oura y Whoop
+- [ ] Crear tablas en base de datos
+- [ ] Implementar sincronización automática
+- [ ] Agregar navegación en App.tsx
+- [ ] Testing de componentes
+- [ ] Deployment a producción
+
+
+---
+
+## Autenticación OAuth para Oura y Whoop
+
+### Módulos Creados
+- [x] wearables-oauth.ts - Funciones core de OAuth
+- [x] wearables-routes.ts - Endpoints REST para callbacks
+- [x] wearables-env.ts - Variables de entorno
+- [x] health-hub.ts (router) - Endpoints tRPC
+- [x] wearables-oauth.test.ts - Pruebas
+
+### Funcionalidades Implementadas
+- [x] Generación de URLs de autorización (Oura y Whoop)
+- [x] Intercambio de códigos por tokens
+- [x] Refresco de tokens expirados
+- [x] Obtención de información del usuario
+- [x] Encriptación/desencriptación de tokens
+- [x] Validación CSRF con state parameter
+- [x] Endpoints REST para callbacks OAuth
+- [x] Endpoints tRPC para gestión de conexiones
+
+### Próximos Pasos
+- [ ] Integrar rutas REST en server.ts
+- [ ] Integrar router tRPC en routers.ts
+- [ ] Crear tablas en BD para wearable_connections
+- [ ] Implementar sincronización automática de datos
+- [ ] Agregar manejo de errores y retry logic
+- [ ] Testing end-to-end
+- [ ] Deployment a producción
+
+
+---
+
+## Sincronización Automática de Datos
+
+### Módulos Creados
+- [x] oura-sync.ts - Sincronización de Oura
+- [x] whoop-sync.ts - Sincronización de Whoop
+- [x] wearables-sync-scheduler.ts - Orquestador
+- [x] health-hub-sync.ts (router) - Endpoints tRPC
+- [x] wearables-sync.test.ts - Pruebas
+
+### Funcionalidades Implementadas
+- [x] Obtención de datos de APIs de Oura y Whoop
+- [x] Procesamiento y transformación de datos
+- [x] Almacenamiento en BD
+- [x] Refresco automático de tokens expirados
+- [x] Retry logic con exponential backoff
+- [x] Sincronización automática cada 6 horas
+- [x] Sincronización manual bajo demanda
+- [x] Monitoreo de estado y salud
+- [x] Estadísticas y historial
+- [x] Manejo de errores robusto
+
+### Próximos Pasos
+- [ ] Integrar scheduler en server.ts
+- [ ] Integrar router tRPC en routers.ts
+- [ ] Crear tablas en BD para health_metrics
+- [ ] Crear componentes de UI para monitoreo
+- [ ] Testing end-to-end
+- [ ] Deployment a producción

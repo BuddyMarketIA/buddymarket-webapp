@@ -13,6 +13,8 @@ import rateLimit from "express-rate-limit";
 import { createExpressMiddleware } from "@trpc/server/adapters/express";
 import { registerSSORoutes } from "../sso";
 import { registerMobileApi } from "../mobileApi";
+import { registerWearablesRoutes } from "../wearables-routes";
+import { startSyncScheduler } from "../_core/wearables-sync-scheduler";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
 import { serveStatic, setupVite } from "./vite";
@@ -200,6 +202,8 @@ async function startServer() {
   registerSSORoutes(app);
   // Mobile REST API (iOS native app)
   registerMobileApi(app);
+  // Health Hub: Wearables OAuth callbacks
+  registerWearablesRoutes(app);
 
   // BuddyOne Ecosystem: recibe datos de BuddyCoach
   app.get("/api/ecosystem/buddycoach", async (req, res) => {

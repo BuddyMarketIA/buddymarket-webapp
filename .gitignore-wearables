@@ -1,0 +1,17 @@
+# Wearables Credentials - NEVER COMMIT THESE FILES
+wearables-credentials.json
+.env.local
+.env.*.local
+
+# API Keys and Secrets
+*.secret
+*.key
+*.pem
+
+# IDE
+.vscode/settings.json
+.idea/
+
+# OS
+.DS_Store
+Thumbs.db

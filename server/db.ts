@@ -3466,3 +3466,307 @@ INSTRUCCIÓN: Incorpora los alimentos prioritarios en los platos del menú de fo
 🌸 FIN FASE CICLO MENSTRUAL 🌸
 `;
 }
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// WEARABLES - Health Hub Functions
+// ─────────────────────────────────────────────────────────────────────────────
+
+/**
+ * Crea una nueva conexión de wearable
+ */
+export async function createWearableConnection(data: {
+  userId: string;
+  device: 'oura' | 'whoop';
+  externalId: string;
+  accessToken: string;
+  refreshToken?: string | null;
+  expiresAt: Date;
+  metadata?: Record<string, any>;
+}) {
+  const result = await db.insert(wearableConnections).values({
+    userId: parseInt(data.userId),
+    wearableType: data.device,
+    accessToken: data.accessToken,
+    refreshToken: data.refreshToken || null,
+    tokenExpiresAt: data.expiresAt,
+    externalUserId: data.externalId,
+    metadata: data.metadata ? JSON.stringify(data.metadata) : null,
+    isActive: true,
+  }).returning();
+  return result[0];
+}
+
+/**
+ * Obtiene todas las conexiones de wearables de un usuario
+ */
+export async function getWearableConnections(userId: string) {
+  return await db.query.wearableConnections.findMany({
+    where: (t, { eq, and }) => and(
+      eq(t.userId, parseInt(userId)),
+      eq(t.isActive, true)
+    ),
+  });
+}
+
+/**
+ * Obtiene una conexión específica de wearable
+ */
+export async function getWearableConnection(userId: string, device: 'oura' | 'whoop') {
+  return await db.query.wearableConnections.findFirst({
+    where: (t, { eq, and }) => and(
+      eq(t.userId, parseInt(userId)),
+      eq(t.wearableType, device),
+      eq(t.isActive, true)
+    ),
+  });
+}
+
+/**
+ * Obtiene todas las conexiones activas de un dispositivo
+ */
+export async function getAllWearableConnections(device: 'oura' | 'whoop') {
+  return await db.query.wearableConnections.findMany({
+    where: (t, { eq, and }) => and(
+      eq(t.wearableType, device),
+      eq(t.isActive, true)
+    ),
+  });
+}
+
+/**
+ * Actualiza los tokens de una conexión de wearable
+ */
+export async function updateWearableConnectionTokens(
+  connectionId: number,
+  accessToken: string,
+  refreshToken: string | null,
+  expiresAt: Date
+) {
+  return await db.update(wearableConnections)
+    .set({
+      accessToken,
+      refreshToken: refreshToken || null,
+      tokenExpiresAt: expiresAt,
+      updatedAt: new Date(),
+    })
+    .where(eq(wearableConnections.id, connectionId))
+    .returning();
+}
+
+/**
+ * Actualiza el timestamp del último sync
+ */
+export async function updateWearableConnectionLastSync(connectionId: number) {
+  return await db.update(wearableConnections)
+    .set({
+      lastSyncedAt: new Date(),
+      updatedAt: new Date(),
+    })
+    .where(eq(wearableConnections.id, connectionId))
+    .returning();
+}
+
+/**
+ * Desconecta un dispositivo wearable
+ */
+export async function deleteWearableConnection(userId: string, device: 'oura' | 'whoop') {
+  return await db.update(wearableConnections)
+    .set({
+      isActive: false,
+      updatedAt: new Date(),
+    })
+    .where(
+      and(
+        eq(wearableConnections.userId, parseInt(userId)),
+        eq(wearableConnections.wearableType, device)
+      )
+    )
+    .returning();
+}
+
+/**
+ * Guarda datos de salud de Oura
+ */
+export async function saveOuraData(userId: string, data: {
+  date: Date;
+  sleepDuration?: number;
+  sleepScore?: number;
+  deepSleep?: number;
+  remSleep?: number;
+  lightSleep?: number;
+  activityScore?: number;
+  activeCalories?: number;
+  totalCalories?: number;
+  steps?: number;
+  readinessScore?: number;
+  heartRateVariability?: number;
+  restingHeartRate?: number;
+  bodyTemperature?: number;
+  rawData?: any;
+}) {
+  return await db.insert(ouraRingData).values({
+    userId: parseInt(userId),
+    date: data.date,
+    sleepDuration: data.sleepDuration,
+    sleepScore: data.sleepScore,
+    deepSleep: data.deepSleep,
+    remSleep: data.remSleep,
+    lightSleep: data.lightSleep,
+    activityScore: data.activityScore,
+    activeCalories: data.activeCalories,
+    totalCalories: data.totalCalories,
+    steps: data.steps,
+    readinessScore: data.readinessScore,
+    heartRateVariability: data.heartRateVariability ? data.heartRateVariability.toString() : null,
+    restingHeartRate: data.restingHeartRate,
+    bodyTemperature: data.bodyTemperature ? data.bodyTemperature.toString() : null,
+    rawData: data.rawData ? JSON.stringify(data.rawData) : null,
+  }).onConflictDoUpdate({
+    target: [ouraRingData.userId, ouraRingData.date],
+    set: {
+      sleepDuration: data.sleepDuration,
+      sleepScore: data.sleepScore,
+      deepSleep: data.deepSleep,
+      remSleep: data.remSleep,
+      lightSleep: data.lightSleep,
+      activityScore: data.activityScore,
+      activeCalories: data.activeCalories,
+      totalCalories: data.totalCalories,
+      steps: data.steps,
+      readinessScore: data.readinessScore,
+      heartRateVariability: data.heartRateVariability ? data.heartRateVariability.toString() : null,
+      restingHeartRate: data.restingHeartRate,
+      bodyTemperature: data.bodyTemperature ? data.bodyTemperature.toString() : null,
+      rawData: data.rawData ? JSON.stringify(data.rawData) : null,
+      syncedAt: new Date(),
+    },
+  }).returning();
+}
+
+/**
+ * Guarda datos de salud de Whoop
+ */
+export async function saveWhoopData(userId: string, data: {
+  date: Date;
+  strain?: number;
+  strainScore?: number;
+  kilojoules?: number;
+  averageHeartRate?: number;
+  maxHeartRate?: number;
+  recovery?: number;
+  recoveryScore?: number;
+  restingHeartRate?: number;
+  heartRateVariability?: number;
+  skinTemperature?: number;
+  sleepDuration?: number;
+  sleepScore?: number;
+  sleepQuality?: number;
+  mood?: string;
+  muscleSoreness?: string;
+  rawData?: any;
+}) {
+  return await db.insert(whoopData).values({
+    userId: parseInt(userId),
+    date: data.date,
+    strain: data.strain ? data.strain.toString() : null,
+    strainScore: data.strainScore,
+    kilojoules: data.kilojoules ? data.kilojoules.toString() : null,
+    averageHeartRate: data.averageHeartRate,
+    maxHeartRate: data.maxHeartRate,
+    recovery: data.recovery ? data.recovery.toString() : null,
+    recoveryScore: data.recoveryScore,
+    restingHeartRate: data.restingHeartRate,
+    heartRateVariability: data.heartRateVariability ? data.heartRateVariability.toString() : null,
+    skinTemperature: data.skinTemperature ? data.skinTemperature.toString() : null,
+    sleepDuration: data.sleepDuration,
+    sleepScore: data.sleepScore,
+    sleepQuality: data.sleepQuality ? data.sleepQuality.toString() : null,
+    mood: data.mood,
+    muscleSoreness: data.muscleSoreness,
+    rawData: data.rawData ? JSON.stringify(data.rawData) : null,
+  }).onConflictDoUpdate({
+    target: [whoopData.userId, whoopData.date],
+    set: {
+      strain: data.strain ? data.strain.toString() : null,
+      strainScore: data.strainScore,
+      kilojoules: data.kilojoules ? data.kilojoules.toString() : null,
+      averageHeartRate: data.averageHeartRate,
+      maxHeartRate: data.maxHeartRate,
+      recovery: data.recovery ? data.recovery.toString() : null,
+      recoveryScore: data.recoveryScore,
+      restingHeartRate: data.restingHeartRate,
+      heartRateVariability: data.heartRateVariability ? data.heartRateVariability.toString() : null,
+      skinTemperature: data.skinTemperature ? data.skinTemperature.toString() : null,
+      sleepDuration: data.sleepDuration,
+      sleepScore: data.sleepScore,
+      sleepQuality: data.sleepQuality ? data.sleepQuality.toString() : null,
+      mood: data.mood,
+      muscleSoreness: data.muscleSoreness,
+      rawData: data.rawData ? JSON.stringify(data.rawData) : null,
+      syncedAt: new Date(),
+    },
+  }).returning();
+}
+
+/**
+ * Obtiene datos de Oura para un rango de fechas
+ */
+export async function getOuraData(userId: string, startDate: Date, endDate: Date) {
+  return await db.query.ouraRingData.findMany({
+    where: (t, { eq, and, gte, lte }) => and(
+      eq(t.userId, parseInt(userId)),
+      gte(t.date, startDate),
+      lte(t.date, endDate)
+    ),
+    orderBy: (t, { desc }) => desc(t.date),
+  });
+}
+
+/**
+ * Obtiene datos de Whoop para un rango de fechas
+ */
+export async function getWhoopData(userId: string, startDate: Date, endDate: Date) {
+  return await db.query.whoopData.findMany({
+    where: (t, { eq, and, gte, lte }) => and(
+      eq(t.userId, parseInt(userId)),
+      gte(t.date, startDate),
+      lte(t.date, endDate)
+    ),
+    orderBy: (t, { desc }) => desc(t.date),
+  });
+}
+
+/**
+ * Obtiene insights de wearables para un usuario
+ */
+export async function getWearableInsights(userId: string, limit = 10) {
+  return await db.query.wearableInsights.findMany({
+    where: (t, { eq }) => eq(t.userId, parseInt(userId)),
+    orderBy: (t, { desc }) => desc(t.date),
+    limit,
+  });
+}
+
+/**
+ * Crea un insight de wearable
+ */
+export async function createWearableInsight(data: {
+  userId: string;
+  date: Date;
+  insight: string;
+  category: string;
+  severity: string;
+  correlations?: any;
+  recommendations?: any;
+}) {
+  return await db.insert(wearableInsights).values({
+    userId: parseInt(data.userId),
+    date: data.date,
+    insight: data.insight,
+    category: data.category,
+    severity: data.severity,
+    correlations: data.correlations ? JSON.stringify(data.correlations) : null,
+    recommendations: data.recommendations ? JSON.stringify(data.recommendations) : null,
+  }).returning();
+}
