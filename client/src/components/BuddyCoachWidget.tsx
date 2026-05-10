@@ -11,70 +11,6 @@ function formatVolume(kg: number): string {
   return kg >= 1000 ? `${(kg / 1000).toFixed(1)}t` : `${kg}kg`;
 }
 
-// Skeleton Loading Component
-function BuddyCoachSkeleton() {
-  return (
-    <div
-      className="rounded-3xl overflow-hidden relative"
-      style={{
-        background: "linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%)",
-        boxShadow: "0 8px 24px rgba(124,58,237,0.25)",
-      }}
-    >
-      {/* Decorative */}
-      <div className="absolute top-0 right-0 w-40 h-40 rounded-full bg-white/5 -translate-y-16 translate-x-16" />
-      <div className="absolute bottom-0 left-0 w-24 h-24 rounded-full bg-white/5 translate-y-8 -translate-x-8" />
-
-      <div className="relative p-5">
-        {/* Header Skeleton */}
-        <div className="flex items-center justify-between mb-4">
-          <div className="flex items-center gap-3">
-            <div className="h-9 w-9 rounded-2xl bg-white/20 flex items-center justify-center">
-              <Dumbbell className="h-5 w-5 text-white" />
-            </div>
-            <div>
-              <p className="text-white font-black text-sm">BuddyCoach</p>
-              <p className="text-white/50 text-[10px]">Esta semana</p>
-            </div>
-          </div>
-          <div className="text-white/60">
-            <ArrowRight className="h-4 w-4" />
-          </div>
-        </div>
-
-        {/* Stats Skeleton */}
-        <div className="grid grid-cols-3 gap-3 mb-4">
-          {[1, 2, 3].map((i) => (
-            <div key={i} className="bg-white/10 rounded-2xl p-3 text-center animate-pulse">
-              <div className="h-6 bg-white/20 rounded w-8 mx-auto mb-2" />
-              <div className="h-3 bg-white/20 rounded w-12 mx-auto" />
-            </div>
-          ))}
-        </div>
-
-        {/* PR Skeleton */}
-        <div className="flex items-center gap-3 bg-white/10 rounded-2xl p-3 mb-3 animate-pulse">
-          <Trophy className="h-4 w-4 text-yellow-300 shrink-0" />
-          <div className="flex-1">
-            <div className="h-3 bg-white/20 rounded w-24 mb-1" />
-            <div className="h-4 bg-white/20 rounded w-32" />
-          </div>
-          <div className="h-5 bg-white/20 rounded w-12" />
-        </div>
-
-        {/* Calorías Skeleton */}
-        <div className="flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <Flame className="h-3.5 w-3.5 text-orange-300" />
-            <div className="h-3 bg-white/20 rounded w-32" />
-          </div>
-          <div className="h-4 bg-white/20 rounded w-20" />
-        </div>
-      </div>
-    </div>
-  );
-}
-
 export function BuddyCoachWidget() {
   const { data: workout, isLoading } = trpc.ecosystem.getBuddyCoachSummary.useQuery(undefined, {
     staleTime: 3 * 60 * 1000,
@@ -82,7 +18,15 @@ export function BuddyCoachWidget() {
   });
 
   if (isLoading) {
-    return <BuddyCoachSkeleton />;
+    return (
+      <div
+        className="rounded-3xl overflow-hidden animate-pulse"
+        style={{
+          background: "linear-gradient(135deg, #7C3AED 0%, #5B21B6 100%)",
+          minHeight: 140,
+        }}
+      />
+    );
   }
 
   if (!workout) {
