@@ -526,6 +526,20 @@
       "when": 1778435678369,
       "tag": "0074_curly_lucky_pierre",
       "breakpoints": true
+    },
+    {
+      "idx": 75,
+      "version": "7",
+      "when": 1778439334043,
+      "tag": "0075_daily_mindworm",
+      "breakpoints": true
+    },
+    {
+      "idx": 76,
+      "version": "7",
+      "when": 1778439456613,
+      "tag": "0076_red_preak",
+      "breakpoints": true
     }
   ]
 }
