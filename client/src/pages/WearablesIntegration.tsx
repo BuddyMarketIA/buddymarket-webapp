@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "@/components/sonner-a11y-shim";
@@ -6,9 +6,20 @@ import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { LineChart, Line, BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, Legend, ResponsiveContainer, AreaChart, Area } from "recharts";
-import { Activity, Heart, Moon, Zap, TrendingUp, Link2, Unlink2, RefreshCw, Calendar } from "lucide-react";
+import { Activity, Heart, Moon, Zap, TrendingUp, Link2, Unlink2, RefreshCw, Calendar, Watch, Smartphone, Cpu } from "lucide-react";
 
-type Tab = "overview" | "oura" | "whoop" | "insights" | "settings";
+type Tab = "overview" | "all-devices" | "insights" | "settings";
+
+// Wearable devices configuration
+const WEARABLE_DEVICES = [
+  { id: "oura", name: "Oura Ring", icon: "⭕", color: "orange", description: "Anillo inteligente de salud" },
+  { id: "whoop", name: "Whoop", icon: "🔵", color: "blue", description: "Banda de fitness y recuperación" },
+  { id: "apple-health", name: "Apple Health", icon: "🍎", color: "gray", description: "Datos de salud de iPhone" },
+  { id: "fitbit", name: "Fitbit", icon: "❤️", color: "purple", description: "Reloj inteligente Fitbit" },
+  { id: "garmin", name: "Garmin", icon: "🎯", color: "red", description: "Dispositivos Garmin" },
+  { id: "google-fit", name: "Google Fit", icon: "🔵", color: "green", description: "Google Fit" },
+  { id: "samsung-health", name: "Samsung Health", icon: "📱", color: "blue", description: "Samsung Health" },
+];
 
 export default function WearablesIntegration() {
   const { user, loading: authLoading } = useAuth();
@@ -112,16 +123,15 @@ export default function WearablesIntegration() {
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="mb-8">
-          <h1 className="text-4xl font-bold text-slate-900 mb-2">Integración de Wearables</h1>
-          <p className="text-slate-600">Conecta Oura Ring y Whoop para sincronizar tus datos de salud y fitness</p>
+          <h1 className="text-4xl font-bold text-slate-900 mb-2">Dispositivos Wearables</h1>
+          <p className="text-slate-600">Conecta tus dispositivos de salud y fitness para sincronizar datos en tiempo real</p>
         </div>
 
         {/* Tabs */}
         <div className="flex gap-2 mb-8 overflow-x-auto pb-2">
           {[
             { id: "overview", label: "Resumen", icon: "📊" },
-            { id: "oura", label: "Oura Ring", icon: "⭕" },
-            { id: "whoop", label: "Whoop", icon: "🔵" },
+            { id: "all-devices", label: "Todos los Dispositivos", icon: "⌚" },
             { id: "insights", label: "Insights", icon: "💡" },
             { id: "settings", label: "Configuración", icon: "⚙️" },
           ].map((tab) => (
@@ -144,6 +154,7 @@ export default function WearablesIntegration() {
           <div className="space-y-6">
             {/* Connection Status */}
             <div className="grid md:grid-cols-2 gap-4">
+              {/* Oura Ring */}
               <Card className={ouraConnected ? "border-orange-200 bg-orange-50" : "border-slate-200"}>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -195,6 +206,7 @@ export default function WearablesIntegration() {
                 </CardContent>
               </Card>
 
+              {/* Whoop */}
               <Card className={whoopConnected ? "border-blue-200 bg-blue-50" : "border-slate-200"}>
                 <CardHeader>
                   <CardTitle className="flex items-center gap-2">
@@ -247,197 +259,125 @@ export default function WearablesIntegration() {
               </Card>
             </div>
 
-            {/* Quick Stats */}
-            {(ouraConnected || whoopConnected) && (
-              <div className="grid md:grid-cols-3 gap-4">
-                {ouraStats && (
-                  <>
-                    <Card>
-                      <CardContent className="pt-6">
-                        <div className="text-center">
-                          <Moon className="w-8 h-8 text-blue-500 mx-auto mb-2" />
-                          <div className="text-2xl font-bold">{ouraStats.avgSleep}h</div>
-                          <div className="text-sm text-slate-600">Promedio de sueño (Oura)</div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                    <Card>
-                      <CardContent className="pt-6">
-                        <div className="text-center">
-                          <Activity className="w-8 h-8 text-green-500 mx-auto mb-2" />
-                          <div className="text-2xl font-bold">{ouraStats.totalSteps.toLocaleString()}</div>
-                          <div className="text-sm text-slate-600">Pasos totales</div>
-                        </div>
-                      </CardContent>
-                    </Card>
-                  </>
-                )}
-                {whoopStats && (
-                  <Card>
-                    <CardContent className="pt-6">
-                      <div className="text-center">
-                        <Zap className="w-8 h-8 text-yellow-500 mx-auto mb-2" />
-                        <div className="text-2xl font-bold">{whoopStats.avgRecovery}%</div>
-                        <div className="text-sm text-slate-600">Recuperación promedio (Whoop)</div>
-                      </div>
-                    </CardContent>
-                  </Card>
-                )}
-              </div>
+            {/* Stats */}
+            {ouraStats && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>📊 Estadísticas Oura Ring</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="p-4 bg-blue-50 rounded-lg">
+                      <div className="text-sm text-slate-600">Promedio de Sueño</div>
+                      <div className="text-2xl font-bold text-blue-600">{ouraStats.avgSleep}h</div>
+                    </div>
+                    <div className="p-4 bg-purple-50 rounded-lg">
+                      <div className="text-sm text-slate-600">Score Promedio</div>
+                      <div className="text-2xl font-bold text-purple-600">{ouraStats.avgScore}</div>
+                    </div>
+                    <div className="p-4 bg-green-50 rounded-lg">
+                      <div className="text-sm text-slate-600">Total de Pasos</div>
+                      <div className="text-2xl font-bold text-green-600">{ouraStats.totalSteps.toLocaleString()}</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            )}
+
+            {whoopStats && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>📊 Estadísticas Whoop</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-3 gap-4">
+                    <div className="p-4 bg-red-50 rounded-lg">
+                      <div className="text-sm text-slate-600">Strain Promedio</div>
+                      <div className="text-2xl font-bold text-red-600">{whoopStats.avgStrain}</div>
+                    </div>
+                    <div className="p-4 bg-green-50 rounded-lg">
+                      <div className="text-sm text-slate-600">Recovery Promedio</div>
+                      <div className="text-2xl font-bold text-green-600">{whoopStats.avgRecovery}%</div>
+                    </div>
+                    <div className="p-4 bg-blue-50 rounded-lg">
+                      <div className="text-sm text-slate-600">Promedio de Sueño</div>
+                      <div className="text-2xl font-bold text-blue-600">{whoopStats.avgSleep}h</div>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
             )}
           </div>
         )}
 
-        {/* OURA TAB */}
-        {activeTab === "oura" && ouraConnected && ouraData && (
+        {/* ALL DEVICES TAB */}
+        {activeTab === "all-devices" && (
           <div className="space-y-6">
-            <Card>
-              <CardHeader>
-                <CardTitle>Datos de Sueño (Últimos 30 días)</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ResponsiveContainer width="100%" height={300}>
-                  <AreaChart data={ouraData}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="date" />
-                    <YAxis />
-                    <Tooltip />
-                    <Legend />
-                    <Area type="monotone" dataKey="sleepDuration" stroke="#3b82f6" fill="#3b82f6" name="Duración (min)" />
-                    <Area type="monotone" dataKey="sleepScore" stroke="#10b981" fill="#10b981" name="Score" />
-                  </AreaChart>
-                </ResponsiveContainer>
-              </CardContent>
-            </Card>
-
-            <div className="grid md:grid-cols-3 gap-4">
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold">{ouraStats?.avgSleep}h</div>
-                    <div className="text-sm text-slate-600">Promedio de sueño</div>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold">{ouraStats?.avgScore}</div>
-                    <div className="text-sm text-slate-600">Score promedio</div>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold">{ouraStats?.totalSteps.toLocaleString()}</div>
-                    <div className="text-sm text-slate-600">Pasos totales</div>
-                  </div>
-                </CardContent>
-              </Card>
-            </div>
-          </div>
-        )}
-
-        {/* WHOOP TAB */}
-        {activeTab === "whoop" && whoopConnected && whoopData && (
-          <div className="space-y-6">
-            <div className="grid md:grid-cols-2 gap-4">
-              <Card>
-                <CardHeader>
-                  <CardTitle>Strain vs Recovery</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <BarChart data={whoopData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="date" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Bar dataKey="strain" fill="#ef4444" name="Strain" />
-                      <Bar dataKey="recovery" fill="#10b981" name="Recovery %" />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-
-              <Card>
-                <CardHeader>
-                  <CardTitle>Duración del Sueño</CardTitle>
-                </CardHeader>
-                <CardContent>
-                  <ResponsiveContainer width="100%" height={300}>
-                    <LineChart data={whoopData}>
-                      <CartesianGrid strokeDasharray="3 3" />
-                      <XAxis dataKey="date" />
-                      <YAxis />
-                      <Tooltip />
-                      <Legend />
-                      <Line type="monotone" dataKey="sleepDuration" stroke="#3b82f6" name="Sueño (min)" />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </CardContent>
-              </Card>
-            </div>
-
-            <div className="grid md:grid-cols-3 gap-4">
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold">{whoopStats?.avgStrain}</div>
-                    <div className="text-sm text-slate-600">Strain promedio</div>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold">{whoopStats?.avgRecovery}%</div>
-                    <div className="text-sm text-slate-600">Recovery promedio</div>
-                  </div>
-                </CardContent>
-              </Card>
-              <Card>
-                <CardContent className="pt-6">
-                  <div className="text-center">
-                    <div className="text-2xl font-bold">{whoopStats?.avgSleep}h</div>
-                    <div className="text-sm text-slate-600">Sueño promedio</div>
-                  </div>
-                </CardContent>
-              </Card>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {WEARABLE_DEVICES.map((device) => {
+                const isConnected = connections?.some((c) => c.wearableType === device.id && c.isActive);
+                return (
+                  <Card key={device.id} className={isConnected ? `border-${device.color}-200 bg-${device.color}-50` : "border-slate-200"}>
+                    <CardHeader>
+                      <CardTitle className="flex items-center gap-2">
+                        <span className="text-2xl">{device.icon}</span> {device.name}
+                      </CardTitle>
+                      <p className="text-sm text-slate-600">{device.description}</p>
+                    </CardHeader>
+                    <CardContent className="space-y-4">
+                      <div>
+                        <div className="text-sm text-slate-600">Estado</div>
+                        <div className={`text-lg font-bold ${isConnected ? "text-green-600" : "text-slate-600"}`}>
+                          {isConnected ? "✅ Conectado" : "❌ No conectado"}
+                        </div>
+                      </div>
+                      {isConnected ? (
+                        <div className="flex gap-2">
+                          <Button variant="outline" className="flex-1" disabled>
+                            <RefreshCw className="w-4 h-4 mr-2" /> Sincronizar
+                          </Button>
+                          <Button
+                            onClick={() => disconnect.mutate({ wearableType: device.id })}
+                            variant="outline"
+                            className="text-red-600 hover:text-red-700"
+                          >
+                            <Unlink2 className="w-4 h-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <Button className="w-full" disabled>
+                          <Link2 className="w-4 h-4 mr-2" /> Próximamente
+                        </Button>
+                      )}
+                    </CardContent>
+                  </Card>
+                );
+              })}
             </div>
           </div>
         )}
 
         {/* INSIGHTS TAB */}
-        {activeTab === "insights" && insights && (
-          <div className="space-y-4">
-            {insights.length > 0 ? (
-              insights.map((insight, idx) => (
-                <Card key={idx} className={`border-l-4 ${
-                  insight.severity === "high" ? "border-l-red-500" :
-                  insight.severity === "medium" ? "border-l-yellow-500" :
-                  "border-l-green-500"
-                }`}>
-                  <CardContent className="pt-6">
-                    <div className="flex justify-between items-start mb-2">
-                      <div className="font-bold">{insight.category}</div>
-                      <div className={`text-xs px-2 py-1 rounded ${
-                        insight.severity === "high" ? "bg-red-100 text-red-700" :
-                        insight.severity === "medium" ? "bg-yellow-100 text-yellow-700" :
-                        "bg-green-100 text-green-700"
-                      }`}>
-                        {insight.severity}
+        {activeTab === "insights" && (
+          <div className="space-y-6">
+            <Card>
+              <CardHeader>
+                <CardTitle>💡 Insights de Salud</CardTitle>
+              </CardHeader>
+              <CardContent>
+                {insights && insights.length > 0 ? (
+                  <div className="space-y-4">
+                    {insights.map((insight, idx) => (
+                      <div key={idx} className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+                        <p className="text-slate-700">{insight}</p>
                       </div>
-                    </div>
-                    <p className="text-slate-700">{insight.insight}</p>
-                  </CardContent>
-                </Card>
-              ))
-            ) : (
-              <div className="text-center py-12 text-slate-600">Sin insights disponibles</div>
-            )}
+                    ))}
+                  </div>
+                ) : (
+                  <p className="text-slate-600">Conecta dispositivos para obtener insights personalizados</p>
+                )}
+              </CardContent>
+            </Card>
           </div>
         )}
 
@@ -446,62 +386,43 @@ export default function WearablesIntegration() {
           <div className="space-y-6">
             <Card>
               <CardHeader>
-                <CardTitle>Configuración de Sincronización</CardTitle>
+                <CardTitle>⚙️ Configuración</CardTitle>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium mb-2">Rango de fechas</label>
-                  <div className="flex gap-2">
+                  <label className="text-sm font-medium text-slate-700">Rango de Fechas</label>
+                  <div className="flex gap-2 mt-2">
                     <input
                       type="date"
                       value={dateRange.start}
                       onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
-                      className="flex-1 px-3 py-2 border rounded-lg"
+                      className="px-3 py-2 border border-slate-300 rounded-lg"
                     />
                     <input
                       type="date"
                       value={dateRange.end}
                       onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
-                      className="flex-1 px-3 py-2 border rounded-lg"
+                      className="px-3 py-2 border border-slate-300 rounded-lg"
                     />
                   </div>
                 </div>
-
                 <div className="pt-4 border-t">
-                  <h3 className="font-medium mb-4">Sincronización Manual</h3>
-                  <div className="flex gap-2">
-                    {ouraConnected && (
-                      <Button
-                        onClick={() => syncOura.mutate()}
-                        disabled={syncOura.isPending}
-                        className="flex-1 bg-orange-500 hover:bg-orange-600"
-                      >
-                        <RefreshCw className="w-4 h-4 mr-2" /> Sincronizar Oura
-                      </Button>
-                    )}
-                    {whoopConnected && (
-                      <Button
-                        onClick={() => syncWhoop.mutate()}
-                        disabled={syncWhoop.isPending}
-                        className="flex-1 bg-blue-500 hover:bg-blue-600"
-                      >
-                        <RefreshCw className="w-4 h-4 mr-2" /> Sincronizar Whoop
-                      </Button>
-                    )}
-                  </div>
+                  <h3 className="font-medium text-slate-900 mb-2">Dispositivos Conectados</h3>
+                  {connections && connections.length > 0 ? (
+                    <ul className="space-y-2">
+                      {connections.map((conn) => (
+                        <li key={conn.id} className="flex justify-between items-center p-2 bg-slate-50 rounded">
+                          <span className="text-sm text-slate-700">{conn.wearableType}</span>
+                          <span className={`text-xs font-medium ${conn.isActive ? "text-green-600" : "text-red-600"}`}>
+                            {conn.isActive ? "Activo" : "Inactivo"}
+                          </span>
+                        </li>
+                      ))}
+                    </ul>
+                  ) : (
+                    <p className="text-sm text-slate-600">No hay dispositivos conectados</p>
+                  )}
                 </div>
-              </CardContent>
-            </Card>
-
-            <Card>
-              <CardHeader>
-                <CardTitle>Información de Privacidad</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-2 text-sm text-slate-600">
-                <p>✅ Tus datos de wearables se almacenan de forma segura y encriptada</p>
-                <p>✅ Solo tú puedes acceder a tus datos</p>
-                <p>✅ Puedes desconectar tus dispositivos en cualquier momento</p>
-                <p>✅ Los datos se sincronizan automáticamente cada 24 horas</p>
               </CardContent>
             </Card>
           </div>
