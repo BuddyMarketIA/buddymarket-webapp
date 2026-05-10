@@ -9,6 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Textarea } from "@/components/ui/textarea";
 import { Link, useLocation } from "wouter";
+import { MenuFormatter } from "@/components/MenuFormatter";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type GoalType = "perdida_peso" | "ganancia_muscular" | "tonificacion" | "perdida_grasa" | "mantenimiento" | "definicion" | "salud";
@@ -18,7 +19,7 @@ type ProteinSource = "carne" | "pescado" | "legumbres" | "huevos" | "mixto" | "v
 type CookingTime = "menos_15" | "15_30" | "30_60" | "mas_60";
 type CookingSkill = "principiante" | "intermedio" | "avanzado";
 type DietType = "omnivoro" | "flexitariano" | "pescetariano" | "vegetariano" | "vegano" | "cetogenico" | "paleo" | "mediterraneo" | "dash";
-type AppMode = "home" | "chat" | "questionnaire" | "menu_result";
+type AppMode = "home" | "chat" | "questionnaire" | "menu_result" | "formatted_menu";
 
 interface QuestionnaireData {
   startDate: string;
@@ -1719,6 +1720,7 @@ export default function BuddyIA() {
   const { can } = usePlan();
   const [mode, setMode] = useState<AppMode>("home");
   const [generatedMenu, setGeneratedMenu] = useState<GeneratedMenu | null>(null);
+  const [showFormattedMenu, setShowFormattedMenu] = useState(false);
   const [questionnaireData, setQuestionnaireData] = useState<Partial<QuestionnaireData>>({});
   const [savedMenuId, setSavedMenuId] = useState<number | null>(null);
   const [fromCalculator, setFromCalculator] = useState(false);

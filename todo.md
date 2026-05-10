@@ -3335,3 +3335,12 @@
 - [ ] CAC: $5 → $2
 - [ ] LTV: $50 → $500
 - [ ] ARR: $5M → $40M
+
+
+---
+
+## MEJORAS SOLICITADAS - SESIÓN ACTUAL
+
+- [ ] Mejorar presentación de menús en BuddyIA - Organizar por comidas, macronutrientes, recetas con instrucciones claras
+- [ ] Crear componente UI para mostrar menús de forma estructurada y legible
+- [ ] Integrar con respuestas de BuddyIA para formatear menús automáticamente
