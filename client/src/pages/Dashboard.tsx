@@ -26,6 +26,7 @@ import { BuddyScore } from "@/components/BuddyScore";
 import { useTranslation } from "react-i18next";
 import { useTheme } from "@/contexts/ThemeContext";
 import { RecommendationsCarousel } from "@/components/RecommendationsCarousel";
+import { BuddyCoachWidget } from "@/components/BuddyCoachWidget";
 
 // QUICK_ACCESS built inside component
 const _QUICK_ACCESS_PLACEHOLDER = [
@@ -664,6 +665,11 @@ export default function Dashboard() {
             {/* Product Recommendations Carousel */}
             <div style={{ background: C.cardBg, borderRadius: "20px", padding: "18px", boxShadow: C.shadow2 }}>
               <RecommendationsCarousel maxVisible={1} />
+            </div>
+
+            {/* BuddyCoach Widget */}
+            <div style={{ borderRadius: "20px", overflow: "hidden" }}>
+              <BuddyCoachWidget />
             </div>
           </div>
           {/* COLUMN 2: Accesos rápidos + Widget */}

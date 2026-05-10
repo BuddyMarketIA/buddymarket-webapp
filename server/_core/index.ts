@@ -201,6 +201,34 @@ async function startServer() {
   // Mobile REST API (iOS native app)
   registerMobileApi(app);
 
+  // BuddyOne Ecosystem: recibe datos de BuddyCoach
+  app.get("/api/ecosystem/buddycoach", async (req, res) => {
+    try {
+      const openId = req.query.openId as string | undefined;
+      if (!openId) return res.status(400).json({ error: "openId required" });
+
+      const BUDDYCOACH_URL = process.env.BUDDYCOACH_API_URL ?? "https://buddycoach.io";
+      const ECOSYSTEM_SECRET = process.env.ECOSYSTEM_SECRET ?? "buddyone-ecosystem-shared-secret";
+
+      const response = await fetch(
+        `${BUDDYCOACH_URL}/api/ecosystem/data?openId=${encodeURIComponent(openId)}`,
+        {
+          headers: {
+            "x-ecosystem-secret": ECOSYSTEM_SECRET,
+            "x-source-app": "buddyone",
+          },
+          signal: AbortSignal.timeout(5000),
+        }
+      );
+
+      if (!response.ok) return res.json({ workout: null });
+      const data = await response.json();
+      return res.json(data);
+    } catch {
+      return res.json({ workout: null });
+    }
+  });
+
   // ─── Google Calendar OAuth callback ────────────────────────────────────────
   app.get("/api/google/calendar/callback", async (req: any, res: any) => {
     try {

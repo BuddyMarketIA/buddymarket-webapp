@@ -48,6 +48,21 @@ function requireOwnership(resourceUserId: number, ctxUserId: number, role: strin
   }
 }
 
+// Tipos para el ecosistema
+interface WorkoutSummary {
+  weeklySessionCount: number;
+  weeklyVolumeKg: number;
+  monthlyVolumeKg: number;
+  latestWeight: number | null;
+  latestWeightDate: string | null;
+  streak: number;
+  bestPrExercise: string | null;
+  bestPrWeightKg: number | null;
+  bestPrReps: number | null;
+  estimatedCaloriesBurned: number;
+  lastUpdated: string;
+}
+
 async function createInAppNotif(userId: number, opts: {
   title: string;
   body: string;
@@ -259,6 +274,35 @@ export const appRouter = router({
   analytics: analyticsRouter,
   wearables: wearablesRouter,
   recommendations: recommendationsRouter,
+
+  // ---------------------------------------------------------------------------
+  // ECOSYSTEM (BuddyCoach, BuddyCare, BuddyShop)
+  // ---------------------------------------------------------------------------
+  ecosystem: router({
+    getBuddyCoachSummary: protectedProcedure.query(async ({ ctx }) => {
+      try {
+        const openId = ctx.user.openId;
+        const BUDDYCOACH_URL = process.env.BUDDYCOACH_API_URL ?? "https://buddycoach.io";
+        const ECOSYSTEM_SECRET = process.env.ECOSYSTEM_SECRET ?? "buddyone-ecosystem-shared-secret";
+
+        const res = await fetch(
+          `${BUDDYCOACH_URL}/api/ecosystem/data?openId=${encodeURIComponent(openId)}`,
+          {
+            headers: {
+              "x-ecosystem-secret": ECOSYSTEM_SECRET,
+              "x-source-app": "buddyone",
+            },
+            signal: AbortSignal.timeout(5000),
+          }
+        );
+        if (!res.ok) return null;
+        const data = await res.json() as { workout?: WorkoutSummary };
+        return data.workout ?? null;
+      } catch {
+        return null;
+      }
+    }),
+  }),
 
   // ---------------------------------------------------------------------------
   // AUTH
