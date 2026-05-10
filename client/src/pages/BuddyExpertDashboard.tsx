@@ -1678,7 +1678,7 @@ function PdfPlansTab({ expertProfile }: { expertProfile: any }) {
                       <button onClick={() => setExpandedPlan(isExpanded ? null : plan.id)} className="text-muted-foreground/70 hover:text-muted-foreground text-sm p-1" title={isExpanded ? "Colapsar" : "Expandir"}>
                         {isExpanded ? "▲" : "▼"}
                       </button>
-                      <button onClick={() => { if (confirm("¿Eliminar este plan?")) deleteMutation.mutate({ id: plan.id }); }} className="text-red-400 hover:text-red-600 text-sm p-1" title=t("common.delete")>🗑️</button>
+                      <button onClick={() => { if (confirm("¿Eliminar este plan?")) deleteMutation.mutate({ id: plan.id }); }} className="text-red-400 hover:text-red-600 text-sm p-1" title={t("common.delete")>🗑️</button>
                     </div>
                   </div>
 

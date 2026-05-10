@@ -215,7 +215,7 @@ export default function FeedbackButton({ asSidebarItem = false, onClose, pending
               </div>
               <button
                 onClick={handleClose}
-                aria-label=t("common.close")
+                aria-label={t("common.close")
                 style={{
                   width: "32px",
                   height: "32px",
