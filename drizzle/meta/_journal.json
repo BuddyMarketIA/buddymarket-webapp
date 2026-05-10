@@ -484,6 +484,34 @@
       "when": 1778243664714,
       "tag": "0068_brave_killer_shrike",
       "breakpoints": true
+    },
+    {
+      "idx": 69,
+      "version": "7",
+      "when": 1778331404340,
+      "tag": "0069_safe_dragon_lord",
+      "breakpoints": true
+    },
+    {
+      "idx": 70,
+      "version": "7",
+      "when": 1778357641306,
+      "tag": "0070_lush_chamber",
+      "breakpoints": true
+    },
+    {
+      "idx": 71,
+      "version": "7",
+      "when": 1778390334512,
+      "tag": "0071_glorious_blue_blade",
+      "breakpoints": true
+    },
+    {
+      "idx": 72,
+      "version": "7",
+      "when": 1778391822733,
+      "tag": "0072_fantastic_ulik",
+      "breakpoints": true
     }
   ]
 }

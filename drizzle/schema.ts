@@ -3648,3 +3648,141 @@ export const eventMenus = pgTable("eventMenus", {
 }));
 export type EventMenu = typeof eventMenus.$inferSelect;
 export type NewEventMenu = typeof eventMenus.$inferInsert;
+
+
+// ─────────────────────────────────────────────────────────────────────────────
+// Wearables Integration (Oura Ring & Whoop)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const wearableConnectionsEnum = pgEnum("wearableType", ["oura", "whoop", "apple_health", "google_fit"]);
+
+export const wearableConnections = pgTable("wearableConnections", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  wearableType: wearableConnectionsEnum("wearableType").notNull(),
+  accessToken: text("accessToken").notNull(),
+  refreshToken: text("refreshToken"),
+  tokenExpiresAt: timestamp("tokenExpiresAt"),
+  externalUserId: varchar("externalUserId", { length: 256 }),
+  connectedAt: timestamp("connectedAt").defaultNow().notNull(),
+  lastSyncedAt: timestamp("lastSyncedAt"),
+  isActive: boolean("isActive").default(true),
+  metadata: text("metadata"), // JSON for extra data
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  userIdx: index("wconn_user_idx").on(t.userId),
+  wearableTypeIdx: index("wconn_type_idx").on(t.wearableType),
+  userWearableIdx: index("wconn_user_wearable_idx").on(t.userId, t.wearableType),
+}));
+export type WearableConnection = typeof wearableConnections.$inferSelect;
+export type NewWearableConnection = typeof wearableConnections.$inferInsert;
+
+// Oura Ring Data
+export const ouraRingData = pgTable("ouraRingData", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  date: date("date").notNull(),
+  
+  // Sleep metrics
+  sleepDuration: integer("sleepDuration"), // minutes
+  sleepScore: integer("sleepScore"), // 0-100
+  deepSleep: integer("deepSleep"), // minutes
+  remSleep: integer("remSleep"), // minutes
+  lightSleep: integer("lightSleep"), // minutes
+  sleepLatency: integer("sleepLatency"), // minutes
+  
+  // Activity metrics
+  activityScore: integer("activityScore"), // 0-100
+  activeCalories: integer("activeCalories"),
+  totalCalories: integer("totalCalories"),
+  steps: integer("steps"),
+  distance: numeric("distance", { precision: 10, scale: 2 }), // km
+  
+  // Readiness metrics
+  readinessScore: integer("readinessScore"), // 0-100
+  heartRateVariability: numeric("heartRateVariability", { precision: 10, scale: 2 }), // ms
+  restingHeartRate: integer("restingHeartRate"), // bpm
+  bodyTemperature: numeric("bodyTemperature", { precision: 4, scale: 2 }), // Celsius
+  
+  // Recovery metrics
+  recoveryIndex: integer("recoveryIndex"), // 0-100
+  
+  // Raw data
+  rawData: text("rawData"), // JSON
+  
+  syncedAt: timestamp("syncedAt").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  userIdx: index("od_user_idx").on(t.userId),
+  dateIdx: index("od_date_idx").on(t.date),
+  userDateIdx: index("od_user_date_idx").on(t.userId, t.date),
+}));
+export type OuraRingData = typeof ouraRingData.$inferSelect;
+export type NewOuraRingData = typeof ouraRingData.$inferInsert;
+
+// Whoop Data
+export const whoopData = pgTable("whoopData", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  date: date("date").notNull(),
+  
+  // Strain metrics
+  strain: numeric("strain", { precision: 4, scale: 2 }), // 0-21
+  strainScore: integer("strainScore"), // 0-100
+  kilojoules: numeric("kilojoules", { precision: 10, scale: 2 }),
+  averageHeartRate: integer("averageHeartRate"), // bpm
+  maxHeartRate: integer("maxHeartRate"), // bpm
+  
+  // Recovery metrics
+  recovery: numeric("recovery", { precision: 4, scale: 2 }), // 0-100%
+  recoveryScore: integer("recoveryScore"), // 0-100
+  restingHeartRate: integer("restingHeartRate"), // bpm
+  heartRateVariability: numeric("heartRateVariability", { precision: 10, scale: 2 }), // ms
+  skinTemperature: numeric("skinTemperature", { precision: 4, scale: 2 }), // Celsius
+  
+  // Sleep metrics
+  sleepDuration: integer("sleepDuration"), // minutes
+  sleepScore: integer("sleepScore"), // 0-100
+  sleepQuality: numeric("sleepQuality", { precision: 4, scale: 2 }), // 0-100%
+  
+  // Mood & Muscle Soreness
+  mood: varchar("mood", { length: 64 }), // good, okay, bad
+  muscleSoreness: varchar("muscleSoreness", { length: 64 }), // none, light, moderate, heavy
+  
+  // Raw data
+  rawData: text("rawData"), // JSON
+  
+  syncedAt: timestamp("syncedAt").defaultNow().notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  userIdx: index("wd_user_idx").on(t.userId),
+  dateIdx: index("wd_date_idx").on(t.date),
+  userDateIdx: index("wd_user_date_idx").on(t.userId, t.date),
+}));
+export type WhoopData = typeof whoopData.$inferSelect;
+export type NewWhoopData = typeof whoopData.$inferInsert;
+
+// Wearable Insights & Correlations
+export const wearableInsights = pgTable("wearableInsights", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  date: date("date").notNull(),
+  
+  // Insights
+  insight: text("insight").notNull(), // AI-generated insight
+  category: varchar("category", { length: 64 }), // sleep, recovery, performance, health
+  severity: varchar("severity", { length: 64 }), // low, medium, high
+  
+  // Correlations
+  correlations: text("correlations"), // JSON array of correlated metrics
+  recommendations: text("recommendations"), // JSON array of recommendations
+  
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  userIdx: index("wi_user_idx").on(t.userId),
+  dateIdx: index("wi_date_idx").on(t.date),
+  userDateIdx: index("wi_user_date_idx").on(t.userId, t.date),
+}));
+export type WearableInsight = typeof wearableInsights.$inferSelect;
+export type NewWearableInsight = typeof wearableInsights.$inferInsert;

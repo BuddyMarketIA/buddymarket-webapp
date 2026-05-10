@@ -110,12 +110,14 @@ const BuddyProfile = lazyWithRetry(() => import("./pages/BuddyProfile"));
 const Following = lazyWithRetry(() => import("./pages/Following"));
 const BuddyExpertDashboard = lazyWithRetry(() => import("./pages/BuddyExpertDashboard"));
 const BuddyMakerDashboard = lazyWithRetry(() => import("./pages/BuddyMakerDashboard"));
+const BuddyMakerPanel = lazyWithRetry(() => import("./pages/BuddyMakerPanel"));
 const BuddyMakerStats = lazyWithRetry(() => import("./pages/BuddyMakerStats"));
 const BuddyExpertStats = lazyWithRetry(() => import("./pages/BuddyExpertStats"));
 const ReferralDashboard = lazyWithRetry(() => import("./pages/ReferralDashboard"));
 const Referrals = lazyWithRetry(() => import("./pages/Referrals"));
 const Metrics = lazyWithRetry(() => import("./pages/Metrics"));
 const ConnectedHealth = lazyWithRetry(() => import("./pages/ConnectedHealth"));
+const WearablesIntegration = lazyWithRetry(() => import("./pages/WearablesIntegration"));
 const NutritionalStats = lazyWithRetry(() => import("./pages/NutritionalStats"));
 const Progress = lazyWithRetry(() => import("./pages/Progress"));
 const Notifications = lazyWithRetry(() => import("./pages/Notifications"));
@@ -276,12 +278,14 @@ function Router() {
       <Route path="/app/following">{() => <ProtectedRoute component={Following} />}</Route>
       <Route path="/app/buddy-expert-dashboard">{() => <ProtectedPage><BuddyExpertDashboard /></ProtectedPage>}</Route>
       <Route path="/app/buddy-maker-dashboard">{() => <ProtectedPage><BuddyMakerDashboard /></ProtectedPage>}</Route>
+      <Route path="/app/buddy-maker-panel">{() => <ProtectedPage><BuddyMakerPanel /></ProtectedPage>}</Route>
       <Route path="/app/buddy-maker-stats">{() => <ProtectedPage><BuddyMakerStats /></ProtectedPage>}</Route>
       <Route path="/app/buddy-expert-stats">{() => <ProtectedPage><BuddyExpertStats /></ProtectedPage>}</Route>
       <Route path="/app/referrals">{() => <ProtectedPage><AppLayout><Referrals /></AppLayout></ProtectedPage>}</Route>
       <Route path="/app/referrals/creator">{() => <ProtectedPage><ReferralDashboard /></ProtectedPage>}</Route>
       <Route path="/app/metrics">{() => <ProtectedRoute component={Metrics} />}</Route>
       <Route path="/app/connected-health">{() => <ProtectedRoute component={ConnectedHealth} />}</Route>
+      <Route path="/app/wearables">{() => <ProtectedRoute component={WearablesIntegration} />}</Route>
       <Route path="/app/stats">{() => <ProtectedRoute component={NutritionalStats} />}</Route>
       <Route path="/app/progress">{() => <ProtectedRoute component={Progress} />}</Route>
       <Route path="/app/notifications">{() => <ProtectedPage><Notifications /></ProtectedPage>}</Route>
