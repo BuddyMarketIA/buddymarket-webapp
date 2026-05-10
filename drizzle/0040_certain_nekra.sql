@@ -1,0 +1,1 @@
+ALTER TABLE "expert_patients" ADD COLUMN "inviteEmail" varchar(255);
