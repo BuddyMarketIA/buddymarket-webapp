@@ -1,20 +1,166 @@
 <!doctype html>
-<html lang="en">
+<html lang="es">
 
   <head>
     <meta charset="UTF-8" />
-    <meta
-      name="viewport"
-      content="width=device-width, initial-scale=1.0, maximum-scale=1" />
-    <title>BuddyMarket - Gestor Nutricional Inteligente</title>    
-    <!-- THIS IS THE START OF A COMMENT BLOCK, BLOCK TO BE DELETED: Google Fonts here, example:
+    <!-- ── Viewport: cover for notch/island devices ── -->
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover" />
+    <title>Buddy One — Tu ecosistema de bienestar inteligente</title>
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
-    THIS IS THE END OF A COMMENT BLOCK, BLOCK TO BE DELETED -->
+    <link href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,300;12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800;900&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet" />
+    <meta name="description" content="Planifica menús semanales con IA, gestiona recetas saludables y lleva tu diario nutricional. Lista de la compra automática e inventario en un solo lugar." />
+    <meta name="keywords" content="bienestar inteligente, nutrición personalizada, compra inteligente, salud, IA, Buddy One, BuddyMarket, BuddyCare, BuddyCoach, BuddyPets" />
+
+    <!-- ── PWA Manifest ── -->
+    <link rel="manifest" href="/manifest.json" />
+
+    <!-- ── Theme color ── -->
+    <meta name="theme-color" content="#F97316" />
+    <meta name="msapplication-TileColor" content="#F97316" />
+    <meta name="msapplication-TileImage" content="/icon-144x144.png" />
+
+    <!-- ── iOS PWA ── -->
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+    <meta name="apple-mobile-web-app-title" content="Buddy One" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon.png" />
+    <link rel="apple-touch-icon" sizes="120x120" href="/icon-128x128.png" />
+    <link rel="apple-touch-icon" sizes="152x152" href="/icon-152x152.png" />
+    <link rel="apple-touch-icon" sizes="167x167" href="/icon-192x192.png" />
+    <link rel="apple-touch-icon" sizes="180x180" href="/apple-touch-icon.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/icon-192x192.png" />
+    <link rel="apple-touch-icon" sizes="512x512" href="/icon-512x512.png" />
+    <!-- ── iOS Splash Screens ── -->
+    <!-- iPhone 15 Pro Max / 14 Pro Max -->
+    <link rel="apple-touch-startup-image" media="screen and (device-width: 430px) and (device-height: 932px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/splash/ios-iphone14pro-max-splash.png" />
+    <!-- iPhone 15 / 14 -->
+    <link rel="apple-touch-startup-image" media="screen and (device-width: 390px) and (device-height: 844px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/splash/ios-iphone14-splash.png" />
+    <!-- iPhone 13 Pro Max -->
+    <link rel="apple-touch-startup-image" media="screen and (device-width: 428px) and (device-height: 926px) and (-webkit-device-pixel-ratio: 3) and (orientation: portrait)" href="/splash/ios-iphone13-pro-max-splash.png" />
+    <!-- iPhone XR / 11 -->
+    <link rel="apple-touch-startup-image" media="screen and (device-width: 414px) and (device-height: 896px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/splash/ios-iphone-xr-splash.png" />
+    <!-- iPhone 8 / SE -->
+    <link rel="apple-touch-startup-image" media="screen and (device-width: 375px) and (device-height: 667px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/splash/ios-iphone8-splash.png" />
+    <!-- iPad Pro 12.9" -->
+    <link rel="apple-touch-startup-image" media="screen and (device-width: 1024px) and (device-height: 1366px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/splash/ios-ipad-pro-12-splash.png" />
+    <!-- iPad Pro 11" -->
+    <link rel="apple-touch-startup-image" media="screen and (device-width: 834px) and (device-height: 1194px) and (-webkit-device-pixel-ratio: 2) and (orientation: portrait)" href="/splash/ios-ipad-pro-11-splash.png" />
+
+    <!-- ── Android ── -->
+    <meta name="mobile-web-app-capable" content="yes" />
+
+    <!-- ── Favicon ── -->
+    <link rel="icon" type="image/png" sizes="32x32" href="/icon-96x96.png" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/icon-192x192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/icon-512x512.png" />
+
+    <!-- ── Twitter Card ── -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:title" content="Buddy One — Tu ecosistema de bienestar inteligente" />
+    <meta name="twitter:description" content="Planifica tus menús, gestiona tu lista de la compra y lleva un diario nutricional con IA." />
+    <meta name="twitter:image" content="https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/icon-512x512_99d0e445.png" />
+
+    <!-- ── Open Graph ── -->
+    <meta property="og:title" content="Buddy One — Tu ecosistema de bienestar inteligente" />
+    <meta property="og:description" content="Planifica tus menús, gestiona tu lista de la compra y lleva un diario nutricional con IA." />
+    <meta property="og:type" content="website" />
+    <meta property="og:image" content="https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/icon-512x512_99d0e445.png" />
+
+    <!-- ── JSON-LD: Organization + WebSite + SoftwareApplication ── -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@graph": [
+        {
+          "@type": "Organization",
+          "@id": "https://buddyoneapp.com/#organization",
+          "name": "Buddy One",
+          "url": "https://buddyoneapp.com",
+          "logo": {
+            "@type": "ImageObject",
+            "url": "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/icon-512x512_99d0e445.png",
+            "width": 512,
+            "height": 512
+          },
+          "description": "BuddyMarket es el ecosistema inteligente para planificar, comprar y gestionar tu alimentaci\u00f3n diaria con inteligencia artificial.",
+          "sameAs": [
+            "https://buddyoneapp.com",
+            "https://www.buddyoneapp.com"
+          ]
+        },
+        {
+          "@type": "WebSite",
+          "@id": "https://buddyoneapp.com/#website",
+          "url": "https://buddyoneapp.com",
+          "name": "Buddy One",
+          "description": "Planifica tus men\u00fas, gestiona tu lista de la compra y lleva un diario nutricional con IA.",
+          "publisher": { "@id": "https://buddyoneapp.com/#organization" },
+          "inLanguage": "es-ES",
+          "potentialAction": {
+            "@type": "SearchAction",
+            "target": {
+              "@type": "EntryPoint",
+              "urlTemplate": "https://buddyoneapp.com/blog?q={search_term_string}"
+            },
+            "query-input": "required name=search_term_string"
+          }
+        },
+        {
+          "@type": "SoftwareApplication",
+          "name": "Buddy One",
+          "operatingSystem": "Android, iOS, Web",
+          "applicationCategory": "HealthApplication",
+          "offers": {
+            "@type": "Offer",
+            "price": "0",
+            "priceCurrency": "EUR"
+          },
+          "url": "https://buddyoneapp.com",
+          "publisher": { "@id": "https://buddyoneapp.com/#organization" }
+        }
+      ]
+    }
+    </script>
+
+    <style>
+      html {
+        background: #FFF8F0;
+        overflow-x: hidden;
+        overflow-y: scroll;
+        width: 100%;
+        max-width: 100vw;
+        -webkit-text-size-adjust: 100%;
+        text-size-adjust: 100%;
+      }
+      body {
+        overflow-x: hidden;
+        max-width: 100vw;
+        width: 100%;
+        position: relative;
+        touch-action: pan-y;
+      }
+      * { -webkit-tap-highlight-color: transparent; box-sizing: border-box; }
+      /* Prevent any element from causing horizontal overflow */
+      img, video, iframe, table { max-width: 100%; }
+    </style>
   </head>
 
   <body>
+    <!-- iOS Safari error diagnostic: captures JS errors before React initializes -->
+    <script>
+      window.__bmErrors = [];
+      window.onerror = function(msg, src, line, col, err) {
+        window.__bmErrors.push({ msg: msg, src: src, line: line, col: col, stack: err && err.stack });
+        // Store in sessionStorage for later retrieval
+        try { sessionStorage.setItem('bm_last_error', JSON.stringify({ msg: String(msg).slice(0, 500), src: String(src).slice(0, 200), line: line, col: col })); } catch(e) {}
+      };
+      window.addEventListener('unhandledrejection', function(e) {
+        var msg = e.reason ? String(e.reason.message || e.reason).slice(0, 500) : 'unhandledrejection';
+        window.__bmErrors.push({ msg: msg, type: 'unhandledrejection' });
+        try { sessionStorage.setItem('bm_last_rejection', msg); } catch(e) {}
+      });
+    </script>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     <script

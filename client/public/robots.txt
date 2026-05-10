@@ -1,0 +1,28 @@
+User-agent: *
+Allow: /
+
+# Páginas públicas — indexables
+Allow: /blog
+Allow: /blog/
+Allow: /precios
+Allow: /herramientas
+Allow: /creators
+Allow: /faq
+Allow: /privacidad
+Allow: /terminos
+Allow: /cookies
+Allow: /login
+Allow: /register
+
+# Rutas privadas de la app — no indexar
+Disallow: /app/
+Disallow: /buddy-setup
+Disallow: /dashboard
+Disallow: /creator-dashboard
+Disallow: /api/
+
+# Sitemaps
+Sitemap: https://buddymarket.io/sitemap.xml
+Sitemap: https://www.buddymarket.io/sitemap.xml
+Sitemap: https://buddymarket.io/sitemap.xml
+Sitemap: https://www.buddymarket.io/sitemap.xml

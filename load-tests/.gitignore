@@ -1,0 +1,4 @@
+# Generated load test reports — excluded from git
+reports/*.html
+reports/*.json
+!reports/.gitkeep
