@@ -431,8 +431,6 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       label: "Mi Cuenta",
       items: [
         { key: "/app/profile", label: t("sidebar.myProfile"), to: "/app/profile", emoji: "👤" },
-        { key: "/app/metrics", label: t("nav.metrics"), to: "/app/metrics", emoji: "📏" },
-        { key: "/app/connected-health", label: t("nav.connectedHealth"), to: "/app/connected-health", emoji: "💪" },
         { key: "/app/wearables", label: "Dispositivos Wearables", to: "/app/wearables", emoji: "⌚" },
         { key: "/app/progress", label: t("nav.progress"), to: "/app/progress", emoji: "📉" },
         { key: "/app/stats", label: t("sidebar.stats"), to: "/app/stats", emoji: "📈" },
@@ -523,8 +521,6 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       label: "Mi Cuenta",
       items: [
         { key: "/app/profile", label: t("sidebar.myProfile"), to: "/app/profile", emoji: "👤" },
-        { key: "/app/metrics", label: t("nav.metrics"), to: "/app/metrics", emoji: "📏" },
-        { key: "/app/connected-health", label: t("nav.connectedHealth"), to: "/app/connected-health", emoji: "💪" },
         { key: "/app/wearables", label: "Dispositivos Wearables", to: "/app/wearables", emoji: "⌚" },
         { key: "/app/progress", label: t("nav.progress"), to: "/app/progress", emoji: "📉" },
         { key: "/app/stats", label: t("sidebar.stats"), to: "/app/stats", emoji: "📈" },
