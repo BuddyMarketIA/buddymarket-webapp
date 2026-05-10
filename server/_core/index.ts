@@ -25,6 +25,11 @@ import { startPerformanceWatchdog, sendStartupAlert, startSupabaseMonitor } from
 import { registerOGRoutes } from "../og";
 import { registerSitemapRoutes } from "../sitemap";
 import { registerStorageProxy } from "./storageProxy";
+import {
+  generateRecommendationsHandler,
+  cleanupRecommendationsHandler,
+  refreshProductCacheHandler,
+} from "../scheduled/generateRecommendations";
 
 // ─── Allowed origins ─────────────────────────────────────────────────────────
 const ALLOWED_ORIGINS = [
@@ -200,6 +205,11 @@ async function startServer() {
   registerSSORoutes(app);
   // Mobile REST API (iOS native app)
   registerMobileApi(app);
+
+  // ─── Scheduled Jobs / Heartbeat handlers ──────────────────────────────────
+  app.post("/api/scheduled/generateRecommendations", generateRecommendationsHandler);
+  app.post("/api/scheduled/cleanupRecommendations", cleanupRecommendationsHandler);
+  app.post("/api/scheduled/refreshProductCache", refreshProductCacheHandler);
 
   // ─── Google Calendar OAuth callback ────────────────────────────────────────
   app.get("/api/google/calendar/callback", async (req: any, res: any) => {
