@@ -1,7 +1,7 @@
 import { router, protectedProcedure } from "../_core/trpc";
 import { z } from "zod";
 import { eq, and, desc, gte } from "drizzle-orm";
-import { wearableConnections, ouraRingData, whoopData, wearableInsights } from "../../drizzle/schema";
+import { wearableConnections, ouraRingData, whoopData, wearableInsights, insightFeedback } from "../../drizzle/schema";
 import * as db from "../db";
 import { invokeLLM } from "../_core/llm";
 
@@ -107,11 +107,25 @@ export const healthHubRouter = router({
       metricsSummary = "Datos de demostraci\u00f3n (\u00faltimos 7 d\u00edas): Sleep Score=86/100, HRV=45ms, FC reposo=58bpm, Horas sue\u00f1o=7.5h, Strain=12.5, Recovery=78%, Calor\u00edas=2145kcal, Temperatura corporal=36.4\u00b0C.";
     }
 
+    // Fetch recent feedback to improve recommendations
+    const recentFeedback = await drizzleDb.select().from(insightFeedback)
+      .where(eq(insightFeedback.userId, ctx.user.id))
+      .orderBy(desc(insightFeedback.createdAt))
+      .limit(20);
+
+    let feedbackContext = "";
+    if (recentFeedback.length > 0) {
+      const liked = recentFeedback.filter(f => f.feedback === "positive").map(f => `"${f.insightTitle}" (${f.insightCategory})`);
+      const disliked = recentFeedback.filter(f => f.feedback === "negative").map(f => `"${f.insightTitle}" (${f.insightCategory})`);
+      if (liked.length > 0) feedbackContext += `\nEl usuario ha valorado POSITIVAMENTE estos insights anteriores: ${liked.join(", ")}.`;
+      if (disliked.length > 0) feedbackContext += `\nEl usuario ha valorado NEGATIVAMENTE estos insights anteriores: ${disliked.join(", ")}. Evita recomendaciones similares a las negativas y prioriza el estilo de las positivas.`;
+    }
+
     const response = await invokeLLM({
       messages: [
         {
           role: "system",
-          content: `Eres un experto en salud y bienestar. Analiza las m\u00e9tricas de wearables del usuario y genera exactamente 4 insights personalizados en formato JSON. Cada insight debe tener: "icon" (un emoji relevante), "title" (t\u00edtulo corto en espa\u00f1ol), "description" (recomendaci\u00f3n concreta de 1-2 frases en espa\u00f1ol), "category" (uno de: "sleep", "recovery", "activity", "nutrition"), "priority" ("high", "medium", "low"). Responde SOLO con un JSON array, sin texto adicional.`,
+          content: `Eres un experto en salud y bienestar. Analiza las m\u00e9tricas de wearables del usuario y genera exactamente 4 insights personalizados en formato JSON. Cada insight debe tener: "icon" (un emoji relevante), "title" (t\u00edtulo corto en espa\u00f1ol), "description" (recomendaci\u00f3n concreta de 1-2 frases en espa\u00f1ol), "category" (uno de: "sleep", "recovery", "activity", "nutrition"), "priority" ("high", "medium", "low"). Responde SOLO con un JSON array, sin texto adicional.${feedbackContext}`,
         },
         {
           role: "user",
@@ -165,6 +179,27 @@ export const healthHubRouter = router({
 
     return { insights, generatedAt: Date.now(), hasRealData: !!metricsSummary.includes("Oura") || !!metricsSummary.includes("Whoop") };
   }),
+
+  // Submit feedback for an AI insight
+  submitFeedback: protectedProcedure
+    .input(z.object({
+      insightTitle: z.string(),
+      insightCategory: z.string(),
+      insightDescription: z.string(),
+      feedback: z.enum(["positive", "negative"]),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) throw new Error("DB not available");
+      await drizzleDb.insert(insightFeedback).values({
+        userId: ctx.user.id,
+        insightTitle: input.insightTitle,
+        insightCategory: input.insightCategory,
+        insightDescription: input.insightDescription,
+        feedback: input.feedback,
+      });
+      return { success: true, message: input.feedback === "positive" ? "Gracias por tu feedback positivo" : "Gracias, mejoraremos las recomendaciones" };
+    }),
 
   // Disconnect wearable
   disconnect: protectedProcedure

@@ -547,6 +547,13 @@
       "when": 1778498437302,
       "tag": "0077_hard_blackheart",
       "breakpoints": true
+    },
+    {
+      "idx": 78,
+      "version": "7",
+      "when": 1778501425380,
+      "tag": "0078_clammy_bug",
+      "breakpoints": true
     }
   ]
 }

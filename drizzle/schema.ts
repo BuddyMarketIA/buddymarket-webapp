@@ -4088,3 +4088,22 @@ export const ecosystemSyncQueue = pgTable("ecosystemSyncQueue", {
 }));
 export type EcosystemSyncQueue = typeof ecosystemSyncQueue.$inferSelect;
 export type NewEcosystemSyncQueue = typeof ecosystemSyncQueue.$inferInsert;
+
+
+// ── Insight Feedback ─────────────────────────────────────────────────────
+export const insightFeedbackEnum = pgEnum("insightFeedback", ["positive", "negative"]);
+
+export const insightFeedback = pgTable("insight_feedback", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  insightTitle: text("insightTitle").notNull(),
+  insightCategory: text("insightCategory").notNull(),
+  insightDescription: text("insightDescription").notNull(),
+  feedback: insightFeedbackEnum("feedback").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  userIdx: index("ifb_user_idx").on(t.userId),
+  categoryIdx: index("ifb_category_idx").on(t.insightCategory),
+}));
+export type InsightFeedback = typeof insightFeedback.$inferSelect;
+export type NewInsightFeedback = typeof insightFeedback.$inferInsert;

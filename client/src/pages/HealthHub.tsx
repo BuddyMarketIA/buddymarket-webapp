@@ -165,16 +165,38 @@ export default function HealthHub() {
   const [aiInsights, setAiInsights] = useState<Array<{ icon: string; title: string; description: string; category: string; priority: string }>>([]);
   const [insightsGeneratedAt, setInsightsGeneratedAt] = useState<number | null>(null);
 
+  const [feedbackGiven, setFeedbackGiven] = useState<Record<number, "positive" | "negative">>({});
+
   const generateInsightsMutation = trpc.healthHub.generateInsights.useMutation({
     onSuccess: (data) => {
       setAiInsights(data.insights);
       setInsightsGeneratedAt(data.generatedAt);
+      setFeedbackGiven({});
       toast.success("Insights generados correctamente");
     },
     onError: (e) => {
       toast.error("Error al generar insights: " + e.message);
     },
   });
+
+  const submitFeedbackMutation = trpc.healthHub.submitFeedback.useMutation({
+    onSuccess: (data) => {
+      toast.success(data.message);
+    },
+    onError: (e) => {
+      toast.error("Error al enviar feedback: " + e.message);
+    },
+  });
+
+  const handleFeedback = (idx: number, insight: typeof aiInsights[0], feedback: "positive" | "negative") => {
+    setFeedbackGiven(prev => ({ ...prev, [idx]: feedback }));
+    submitFeedbackMutation.mutate({
+      insightTitle: insight.title,
+      insightCategory: insight.category,
+      insightDescription: insight.description,
+      feedback,
+    });
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50 p-4 md:p-6 pb-24">
@@ -497,6 +519,50 @@ export default function HealthHub() {
                           </span>
                         </div>
                         <p className="text-sm text-gray-600 leading-relaxed">{insight.description}</p>
+                        {/* Feedback buttons */}
+                        <div className="flex items-center justify-between mt-3 pt-2 border-t border-gray-200/50">
+                          <span className="text-xs text-gray-400">
+                            {feedbackGiven[idx] ? (
+                              feedbackGiven[idx] === "positive" ? "Te ha resultado útil" : "Lo tendremos en cuenta"
+                            ) : (
+                              "¿Te resultó útil?"
+                            )}
+                          </span>
+                          <div className="flex items-center gap-1">
+                            <button
+                              onClick={() => handleFeedback(idx, insight, "positive")}
+                              disabled={!!feedbackGiven[idx]}
+                              className={`p-1.5 rounded-lg transition-all ${
+                                feedbackGiven[idx] === "positive"
+                                  ? "bg-green-100 text-green-600 scale-110"
+                                  : feedbackGiven[idx]
+                                    ? "text-gray-300 cursor-not-allowed"
+                                    : "text-gray-400 hover:bg-green-50 hover:text-green-600"
+                              }`}
+                              title="Útil"
+                            >
+                              <svg className="w-4 h-4" fill={feedbackGiven[idx] === "positive" ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z" />
+                              </svg>
+                            </button>
+                            <button
+                              onClick={() => handleFeedback(idx, insight, "negative")}
+                              disabled={!!feedbackGiven[idx]}
+                              className={`p-1.5 rounded-lg transition-all ${
+                                feedbackGiven[idx] === "negative"
+                                  ? "bg-red-100 text-red-600 scale-110"
+                                  : feedbackGiven[idx]
+                                    ? "text-gray-300 cursor-not-allowed"
+                                    : "text-gray-400 hover:bg-red-50 hover:text-red-600"
+                              }`}
+                              title="No útil"
+                            >
+                              <svg className="w-4 h-4" fill={feedbackGiven[idx] === "negative" ? "currentColor" : "none"} viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                                <path strokeLinecap="round" strokeLinejoin="round" d="M10 15v4a3 3 0 003 3l4-9V2H5.72a2 2 0 00-2 1.7l-1.38 9a2 2 0 002 2.3H10z" />
+                              </svg>
+                            </button>
+                          </div>
+                        </div>
                       </div>
                     );
                   })}

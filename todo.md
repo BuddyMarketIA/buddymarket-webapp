@@ -3467,3 +3467,9 @@
 ## Insights de IA en Health Hub
 - [x] Crear endpoint backend generateInsights en health-hub router usando LLM
 - [x] Implementar sección frontend de Insights de IA en HealthHub.tsx con botón generar y cards de recomendaciones
+
+## Feedback en Insights de IA (pulgar arriba/abajo)
+- [x] Crear tabla insightFeedback en schema.ts + push DB
+- [x] Crear endpoint submitFeedback en health-hub router
+- [x] Actualizar generateInsights para incluir historial de feedback en el prompt del LLM
+- [x] Implementar botones pulgar arriba/abajo en cada insight card del frontend
