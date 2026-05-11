@@ -1,0 +1,14 @@
+{
+  "query": "SELECT COUNT(*) as total, COUNT(\"imageUrl\") as con_imagen FROM recipes;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3N8WHcqSjo6gJV1.8cb8a16f7acb --database ndjzMo7PxeapbzLjBHjsKj --execute SELECT COUNT(*) as total, COUNT(\"imageUrl\") as con_imagen FROM recipes;",
+  "rows": [
+    {
+      "total": "1524",
+      "con_imagen": "1524"
+    }
+  ],
+  "messages": [],
+  "stdout": "total\tcon_imagen\n1524\t1524\n",
+  "stderr": "",
+  "execution_time_ms": 378
+}

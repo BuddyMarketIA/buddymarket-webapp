@@ -1,0 +1,15 @@
+{
+  "query": "SELECT \n  COUNT(*) as total,\n  SUM(CASE WHEN imageUrl IS NOT NULL AND imageUrl != '' THEN 1 ELSE 0 END) as con_imagen,\n  SUM(CASE WHEN imageUrl IS NULL OR imageUrl = '' THEN 1 ELSE 0 END) as sin_imagen\nFROM recipes WHERE active = 1;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3N8WHcqSjo6gJV1.8cb8a16f7acb --database ndjzMo7PxeapbzLjBHjsKj --execute SELECT \n  COUNT(*) as total,\n  SUM(CASE WHEN imageUrl IS NOT NULL AND imageUrl != '' THEN 1 ELSE 0 END) as con_imagen,\n  SUM(CASE WHEN imageUrl IS NULL OR imageUrl = '' THEN 1 ELSE 0 END) as sin_imagen\nFROM recipes WHERE active = 1;",
+  "rows": [
+    {
+      "total": "1524",
+      "con_imagen": "424",
+      "sin_imagen": "1100"
+    }
+  ],
+  "messages": [],
+  "stdout": "total\tcon_imagen\tsin_imagen\n1524\t424\t1100\n",
+  "stderr": "",
+  "execution_time_ms": 267
+}

@@ -1,0 +1,50 @@
+{
+  "query": "SELECT id, name FROM recipes WHERE (imageUrl IS NULL OR imageUrl = '') AND active = 1 LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3N8WHcqSjo6gJV1.8cb8a16f7acb --database ndjzMo7PxeapbzLjBHjsKj --execute SELECT id, name FROM recipes WHERE (imageUrl IS NULL OR imageUrl = '') AND active = 1 LIMIT 10;",
+  "rows": [
+    {
+      "id": "60001",
+      "name": "Yogur Griego con Nueces y Miel"
+    },
+    {
+      "id": "60002",
+      "name": "Tortilla de Claras con Espinacas"
+    },
+    {
+      "id": "60003",
+      "name": "Porridge de Avena con Manzana y Canela"
+    },
+    {
+      "id": "60004",
+      "name": "Zumo de Naranja, Zanahoria y Jengibre"
+    },
+    {
+      "id": "60005",
+      "name": "Tostada con Tomate, Aceite y Jamón Ibérico"
+    },
+    {
+      "id": "60006",
+      "name": "Muesli Artesanal con Frutos Rojos"
+    },
+    {
+      "id": "60007",
+      "name": "Batido Verde de Espinacas y Piña"
+    },
+    {
+      "id": "60008",
+      "name": "Huevos Revueltos con Champiñones"
+    },
+    {
+      "id": "60009",
+      "name": "Brochetas de Fruta de Temporada"
+    },
+    {
+      "id": "60010",
+      "name": "Tostada de Queso Fresco y Membrillo sin Azúcar"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\n60001\tYogur Griego con Nueces y Miel\n60002\tTortilla de Claras con Espinacas\n60003\tPorridge de Avena con Manzana y Canela\n60004\tZumo de Naranja, Zanahoria y Jengibre\n60005\tTostada con Tomate, Aceite y Jamón Ibérico\n60006\tMuesli Artesanal con Frutos Rojos\n60007\tBatido Verde de Espinacas y Piña\n60008\tHuevos Revueltos con Champiñones\n60009\tBrochetas de Fruta de Temporada\n60010\tTostada de Queso Fresco y Membrillo sin Azúcar\n",
+  "stderr": "",
+  "execution_time_ms": 253
+}

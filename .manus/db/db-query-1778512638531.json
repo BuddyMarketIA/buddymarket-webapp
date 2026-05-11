@@ -1,0 +1,30 @@
+{
+  "query": "SELECT CASE WHEN id < 1000 THEN '0-999' WHEN id < 60000 THEN '1000-59999' WHEN id < 70000 THEN '60000-69999' WHEN id < 80000 THEN '70000-79999' WHEN id < 90000 THEN '80000-89999' ELSE '90000+' END as rango, COUNT(*) as total, SUM(CASE WHEN imageUrl IS NOT NULL AND imageUrl != '' THEN 1 ELSE 0 END) as con_img FROM recipes GROUP BY rango ORDER BY rango;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3N8WHcqSjo6gJV1.8cb8a16f7acb --database ndjzMo7PxeapbzLjBHjsKj --execute SELECT CASE WHEN id < 1000 THEN '0-999' WHEN id < 60000 THEN '1000-59999' WHEN id < 70000 THEN '60000-69999' WHEN id < 80000 THEN '70000-79999' WHEN id < 90000 THEN '80000-89999' ELSE '90000+' END as rango, COUNT(*) as total, SUM(CASE WHEN imageUrl IS NOT NULL AND imageUrl != '' THEN 1 ELSE 0 END) as con_img FROM recipes GROUP BY rango ORDER BY rango;",
+  "rows": [
+    {
+      "rango": "0-999",
+      "total": "284",
+      "con_img": "284"
+    },
+    {
+      "rango": "1000-59999",
+      "total": "140",
+      "con_img": "140"
+    },
+    {
+      "rango": "60000-69999",
+      "total": "571",
+      "con_img": "0"
+    },
+    {
+      "rango": "90000+",
+      "total": "529",
+      "con_img": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "rango\ttotal\tcon_img\n0-999\t284\t284\n1000-59999\t140\t140\n60000-69999\t571\t0\n90000+\t529\t0\n",
+  "stderr": "",
+  "execution_time_ms": 258
+}

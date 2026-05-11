@@ -1,0 +1,35 @@
+{
+  "query": "SELECT id, name, LEFT(imageUrl, 80) as img FROM recipes WHERE imageUrl IS NOT NULL AND imageUrl != '' LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3N8WHcqSjo6gJV1.8cb8a16f7acb --database ndjzMo7PxeapbzLjBHjsKj --execute SELECT id, name, LEFT(imageUrl, 80) as img FROM recipes WHERE imageUrl IS NOT NULL AND imageUrl != '' LIMIT 5;",
+  "rows": [
+    {
+      "id": "2",
+      "name": "Plátano con Avellanas",
+      "img": "https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=400&h=300&fit=cro"
+    },
+    {
+      "id": "3",
+      "name": "Manzana con Almendras",
+      "img": "https://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400&h=300&fit=cro"
+    },
+    {
+      "id": "4",
+      "name": "Kiwi con Almendras",
+      "img": "https://images.unsplash.com/photo-1599490659213-e2b9527bd087?w=400&h=300&fit=cro"
+    },
+    {
+      "id": "5",
+      "name": "Uvas con Anacardos",
+      "img": "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&h=300&fit=cro"
+    },
+    {
+      "id": "6",
+      "name": "Uvas con Nueces",
+      "img": "https://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400&h=300&fit=cro"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\timg\n2\tPlátano con Avellanas\thttps://images.unsplash.com/photo-1498837167922-ddd27525d352?w=400&h=300&fit=cro\n3\tManzana con Almendras\thttps://images.unsplash.com/photo-1571091718767-18b5b1457add?w=400&h=300&fit=cro\n4\tKiwi con Almendras\thttps://images.unsplash.com/photo-1599490659213-e2b9527bd087?w=400&h=300&fit=cro\n5\tUvas con Anacardos\thttps://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&h=300&fit=cro\n6\tUvas con Nueces\thttps://images.unsplash.com/photo-1540189549336-e6e99c3679fe?w=400&h=300&fit=cro\n",
+  "stderr": "",
+  "execution_time_ms": 261
+}
