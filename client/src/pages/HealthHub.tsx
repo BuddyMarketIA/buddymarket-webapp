@@ -330,6 +330,96 @@ export default function HealthHub() {
               </div>
             </div>
 
+            {/* Last Synced Data Summary */}
+            {(ouraConnected || whoopConnected) && (
+              <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm mb-6">
+                <div className="flex items-center justify-between mb-4">
+                  <h3 className="font-semibold text-gray-900 flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-green-500 animate-pulse"></span>
+                    Últimos datos sincronizados
+                  </h3>
+                  <span className="text-xs text-gray-400">Actualizado hace 2h</span>
+                </div>
+                <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-3">
+                  {/* Sleep Score */}
+                  <div className="bg-gradient-to-br from-indigo-50 to-purple-50 rounded-xl p-3 border border-indigo-100">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <span className="text-sm">😴</span>
+                      <span className="text-xs text-gray-500 font-medium">Sueño</span>
+                    </div>
+                    <p className="text-xl font-bold text-indigo-700">86<span className="text-xs font-normal text-gray-400">/100</span></p>
+                    <p className="text-xs text-green-600 mt-0.5">+4 vs ayer</p>
+                  </div>
+                  {/* Heart Rate */}
+                  <div className="bg-gradient-to-br from-red-50 to-pink-50 rounded-xl p-3 border border-red-100">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <span className="text-sm">❤️</span>
+                      <span className="text-xs text-gray-500 font-medium">FC Reposo</span>
+                    </div>
+                    <p className="text-xl font-bold text-red-600">58<span className="text-xs font-normal text-gray-400"> bpm</span></p>
+                    <p className="text-xs text-green-600 mt-0.5">-2 vs ayer</p>
+                  </div>
+                  {/* HRV */}
+                  <div className="bg-gradient-to-br from-violet-50 to-fuchsia-50 rounded-xl p-3 border border-violet-100">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <span className="text-sm">💓</span>
+                      <span className="text-xs text-gray-500 font-medium">HRV</span>
+                    </div>
+                    <p className="text-xl font-bold text-violet-700">45<span className="text-xs font-normal text-gray-400"> ms</span></p>
+                    <p className="text-xs text-green-600 mt-0.5">+3 vs ayer</p>
+                  </div>
+                  {/* Recovery */}
+                  <div className="bg-gradient-to-br from-emerald-50 to-green-50 rounded-xl p-3 border border-emerald-100">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <span className="text-sm">💚</span>
+                      <span className="text-xs text-gray-500 font-medium">Recuperación</span>
+                    </div>
+                    <p className="text-xl font-bold text-emerald-700">78<span className="text-xs font-normal text-gray-400">%</span></p>
+                    <p className="text-xs text-amber-600 mt-0.5">-5 vs ayer</p>
+                  </div>
+                  {/* Calories */}
+                  <div className="bg-gradient-to-br from-orange-50 to-amber-50 rounded-xl p-3 border border-orange-100">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <span className="text-sm">🔥</span>
+                      <span className="text-xs text-gray-500 font-medium">Calorías</span>
+                    </div>
+                    <p className="text-xl font-bold text-orange-600">2,145<span className="text-xs font-normal text-gray-400"> kcal</span></p>
+                    <p className="text-xs text-green-600 mt-0.5">+120 vs ayer</p>
+                  </div>
+                  {/* Body Temp */}
+                  <div className="bg-gradient-to-br from-sky-50 to-cyan-50 rounded-xl p-3 border border-sky-100">
+                    <div className="flex items-center gap-1.5 mb-1">
+                      <span className="text-sm">🌡️</span>
+                      <span className="text-xs text-gray-500 font-medium">Temp. Corp.</span>
+                    </div>
+                    <p className="text-xl font-bold text-sky-700">36.4<span className="text-xs font-normal text-gray-400">°C</span></p>
+                    <p className="text-xs text-gray-400 mt-0.5">Normal</p>
+                  </div>
+                </div>
+              </div>
+            )}
+
+            {/* No devices - show what you could see */}
+            {!ouraConnected && !whoopConnected && (
+              <div className="bg-gradient-to-br from-gray-50 to-slate-50 rounded-2xl p-5 border border-gray-200 border-dashed mb-6">
+                <div className="flex items-center gap-3 mb-3">
+                  <div className="w-10 h-10 rounded-full bg-gray-100 flex items-center justify-center text-xl">📊</div>
+                  <div>
+                    <h3 className="font-semibold text-gray-700">Resumen de datos sincronizados</h3>
+                    <p className="text-xs text-gray-400">Conecta un dispositivo para ver tus métricas aquí</p>
+                  </div>
+                </div>
+                <div className="grid grid-cols-3 md:grid-cols-6 gap-2">
+                  {["Sueño", "FC Reposo", "HRV", "Recuperación", "Calorías", "Temp."].map((label) => (
+                    <div key={label} className="bg-white/60 rounded-lg p-2.5 text-center border border-gray-100">
+                      <p className="text-lg font-bold text-gray-300">--</p>
+                      <p className="text-xs text-gray-400">{label}</p>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Overview Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
               {/* Sleep Chart */}

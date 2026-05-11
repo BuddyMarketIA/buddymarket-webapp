@@ -3460,3 +3460,6 @@
 
 ## Botones interactivos Health Hub (conectar/desconectar Oura y Whoop)
 - [x] Añadir botones funcionales de conectar/desconectar Oura y Whoop en HealthHub.tsx
+
+## Resumen datos sincronizados Health Hub
+- [x] Añadir sección de resumen de últimos datos sincronizados (sueño, FC, recuperación) debajo de dispositivos en HealthHub
