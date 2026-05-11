@@ -3463,3 +3463,7 @@
 
 ## Resumen datos sincronizados Health Hub
 - [x] Añadir sección de resumen de últimos datos sincronizados (sueño, FC, recuperación) debajo de dispositivos en HealthHub
+
+## Insights de IA en Health Hub
+- [x] Crear endpoint backend generateInsights en health-hub router usando LLM
+- [x] Implementar sección frontend de Insights de IA en HealthHub.tsx con botón generar y cards de recomendaciones

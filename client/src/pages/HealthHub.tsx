@@ -161,6 +161,21 @@ export default function HealthHub() {
     disconnectMutation.mutate({ wearableType });
   };
 
+  // AI Insights state
+  const [aiInsights, setAiInsights] = useState<Array<{ icon: string; title: string; description: string; category: string; priority: string }>>([]);
+  const [insightsGeneratedAt, setInsightsGeneratedAt] = useState<number | null>(null);
+
+  const generateInsightsMutation = trpc.healthHub.generateInsights.useMutation({
+    onSuccess: (data) => {
+      setAiInsights(data.insights);
+      setInsightsGeneratedAt(data.generatedAt);
+      toast.success("Insights generados correctamente");
+    },
+    onError: (e) => {
+      toast.error("Error al generar insights: " + e.message);
+    },
+  });
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50 p-4 md:p-6 pb-24">
       {/* Header */}
@@ -419,6 +434,88 @@ export default function HealthHub() {
                 </div>
               </div>
             )}
+
+            {/* AI Insights Section */}
+            <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm mb-6">
+              <div className="flex items-center justify-between mb-4">
+                <div className="flex items-center gap-2">
+                  <div className="w-8 h-8 rounded-lg bg-gradient-to-br from-violet-500 to-purple-600 flex items-center justify-center">
+                    <svg className="w-4 h-4 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}>
+                      <path strokeLinecap="round" strokeLinejoin="round" d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
+                    </svg>
+                  </div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900">Insights de IA</h3>
+                    <p className="text-xs text-gray-400">Recomendaciones personalizadas basadas en tus métricas</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => generateInsightsMutation.mutate()}
+                  disabled={generateInsightsMutation.isPending}
+                  className="px-4 py-2 rounded-lg bg-gradient-to-r from-violet-600 to-purple-600 text-white text-sm font-medium hover:from-violet-700 hover:to-purple-700 transition-all disabled:opacity-50 flex items-center gap-2 shadow-sm"
+                >
+                  {generateInsightsMutation.isPending ? (
+                    <><svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg> Analizando...</>
+                  ) : (
+                    <><svg className="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={2}><path strokeLinecap="round" strokeLinejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg> Generar Insights</>
+                  )}
+                </button>
+              </div>
+
+              {/* Insights Cards */}
+              {aiInsights.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                  {aiInsights.map((insight, idx) => {
+                    const categoryColors: Record<string, string> = {
+                      sleep: "from-indigo-50 to-blue-50 border-indigo-100",
+                      recovery: "from-emerald-50 to-green-50 border-emerald-100",
+                      activity: "from-orange-50 to-amber-50 border-orange-100",
+                      nutrition: "from-pink-50 to-rose-50 border-pink-100",
+                    };
+                    const priorityBadge: Record<string, string> = {
+                      high: "bg-red-100 text-red-700",
+                      medium: "bg-amber-100 text-amber-700",
+                      low: "bg-green-100 text-green-700",
+                    };
+                    const priorityLabel: Record<string, string> = {
+                      high: "Alta",
+                      medium: "Media",
+                      low: "Baja",
+                    };
+                    return (
+                      <div
+                        key={idx}
+                        className={`rounded-xl p-4 border bg-gradient-to-br ${categoryColors[insight.category] || "from-gray-50 to-slate-50 border-gray-100"} transition-all hover:shadow-md`}
+                      >
+                        <div className="flex items-start justify-between mb-2">
+                          <div className="flex items-center gap-2">
+                            <span className="text-xl">{insight.icon}</span>
+                            <h4 className="font-semibold text-gray-900 text-sm">{insight.title}</h4>
+                          </div>
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${priorityBadge[insight.priority] || "bg-gray-100 text-gray-600"}`}>
+                            {priorityLabel[insight.priority] || insight.priority}
+                          </span>
+                        </div>
+                        <p className="text-sm text-gray-600 leading-relaxed">{insight.description}</p>
+                      </div>
+                    );
+                  })}
+                </div>
+              ) : (
+                <div className="text-center py-6 bg-gradient-to-br from-violet-50/50 to-purple-50/50 rounded-xl border border-dashed border-violet-200">
+                  <div className="text-3xl mb-2">🧠</div>
+                  <p className="text-sm text-gray-500 mb-1">Pulsa <strong>"Generar Insights"</strong> para obtener recomendaciones</p>
+                  <p className="text-xs text-gray-400">La IA analizará tus métricas de los últimos 7 días</p>
+                </div>
+              )}
+
+              {/* Timestamp */}
+              {insightsGeneratedAt && (
+                <p className="text-xs text-gray-400 mt-3 text-right">
+                  Generado: {new Date(insightsGeneratedAt).toLocaleString("es-ES", { dateStyle: "short", timeStyle: "short" })}
+                </p>
+              )}
+            </div>
 
             {/* Overview Charts */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
