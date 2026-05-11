@@ -2,6 +2,7 @@ import { useState } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/contexts/AuthContext";
 import { Link } from "wouter";
+import { toast } from "@/components/sonner-a11y-shim";
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
@@ -95,10 +96,70 @@ export default function HealthHub() {
   const [activeTab, setActiveTab] = useState<"overview" | "sleep" | "recovery" | "activity" | "education">("overview");
 
   const { data: connections, isLoading: loadingConnections } = trpc.healthHub.getConnections.useQuery();
-  const { data: wearableConnections } = trpc.wearables.getConnections.useQuery();
+  const { data: wearableConnections, refetch: refetchConnections } = trpc.wearables.getConnections.useQuery();
 
   const ouraConnected = wearableConnections?.some((c: any) => c.wearableType === "oura" && c.isActive);
   const whoopConnected = wearableConnections?.some((c: any) => c.wearableType === "whoop" && c.isActive);
+
+  const [connectingOura, setConnectingOura] = useState(false);
+  const [connectingWhoop, setConnectingWhoop] = useState(false);
+  const [disconnecting, setDisconnecting] = useState<string | null>(null);
+
+  const disconnectMutation = trpc.wearables.disconnect.useMutation({
+    onSuccess: (data) => {
+      toast.success(data.message);
+      refetchConnections();
+      setDisconnecting(null);
+    },
+    onError: (e) => {
+      toast.error("Error al desconectar: " + e.message);
+      setDisconnecting(null);
+    },
+  });
+
+  const handleConnectOura = async () => {
+    setConnectingOura(true);
+    try {
+      const redirectUri = `${window.location.origin}/app/wearables`;
+      // Use fetch to call the query endpoint with input
+      const res = await fetch(`/api/trpc/wearables.getOuraAuthUrl?input=${encodeURIComponent(JSON.stringify({ redirectUri }))}`);
+      const json = await res.json();
+      if (json?.result?.data?.url) {
+        toast.info("Redirigiendo a Oura Ring...");
+        window.location.href = json.result.data.url;
+      } else {
+        toast.error("Oura Ring no está configurado. Contacta al administrador.");
+      }
+    } catch (e: any) {
+      toast.error("Error al conectar Oura: " + (e?.message || "Error desconocido"));
+    } finally {
+      setConnectingOura(false);
+    }
+  };
+
+  const handleConnectWhoop = async () => {
+    setConnectingWhoop(true);
+    try {
+      const redirectUri = `${window.location.origin}/app/wearables`;
+      const res = await fetch(`/api/trpc/wearables.getWhoopAuthUrl?input=${encodeURIComponent(JSON.stringify({ redirectUri }))}`);
+      const json = await res.json();
+      if (json?.result?.data?.url) {
+        toast.info("Redirigiendo a Whoop...");
+        window.location.href = json.result.data.url;
+      } else {
+        toast.error("Whoop no está configurado. Contacta al administrador.");
+      }
+    } catch (e: any) {
+      toast.error("Error al conectar Whoop: " + (e?.message || "Error desconocido"));
+    } finally {
+      setConnectingWhoop(false);
+    }
+  };
+
+  const handleDisconnect = (wearableType: "oura" | "whoop") => {
+    setDisconnecting(wearableType);
+    disconnectMutation.mutate({ wearableType });
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50 p-4 md:p-6 pb-24">
@@ -155,7 +216,7 @@ export default function HealthHub() {
           <>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
               {/* Oura Ring Card */}
-              <div className={`rounded-2xl p-5 border ${ouraConnected ? "bg-gradient-to-br from-purple-50 to-indigo-50 border-purple-200" : "bg-white border-gray-200"}`}>
+              <div className={`rounded-2xl p-5 border transition-all ${ouraConnected ? "bg-gradient-to-br from-purple-50 to-indigo-50 border-purple-200" : "bg-white border-gray-200"}`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-2xl">
@@ -166,13 +227,32 @@ export default function HealthHub() {
                       <p className="text-sm text-gray-500">Sueño, HRV, Temperatura</p>
                     </div>
                   </div>
-                  {ouraConnected ? (
-                    <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium">Conectado</span>
-                  ) : (
-                    <button className="px-4 py-2 rounded-lg bg-purple-600 text-white text-sm font-medium hover:bg-purple-700 transition-colors">
-                      Conectar
-                    </button>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {ouraConnected ? (
+                      <>
+                        <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium">Conectado</span>
+                        <button
+                          onClick={() => handleDisconnect("oura")}
+                          disabled={disconnecting === "oura"}
+                          className="px-3 py-1.5 rounded-lg bg-red-50 text-red-600 text-xs font-medium hover:bg-red-100 border border-red-200 transition-colors disabled:opacity-50"
+                        >
+                          {disconnecting === "oura" ? (
+                            <span className="flex items-center gap-1"><svg className="animate-spin h-3 w-3" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg> Desconectando...</span>
+                          ) : "Desconectar"}
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={handleConnectOura}
+                        disabled={connectingOura}
+                        className="px-4 py-2 rounded-lg bg-purple-600 text-white text-sm font-medium hover:bg-purple-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+                      >
+                        {connectingOura ? (
+                          <><svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg> Conectando...</>
+                        ) : "Conectar"}
+                      </button>
+                    )}
+                  </div>
                 </div>
                 {ouraConnected && (
                   <div className="mt-4 grid grid-cols-3 gap-3">
@@ -193,7 +273,7 @@ export default function HealthHub() {
               </div>
 
               {/* Whoop Card */}
-              <div className={`rounded-2xl p-5 border ${whoopConnected ? "bg-gradient-to-br from-teal-50 to-cyan-50 border-teal-200" : "bg-white border-gray-200"}`}>
+              <div className={`rounded-2xl p-5 border transition-all ${whoopConnected ? "bg-gradient-to-br from-teal-50 to-cyan-50 border-teal-200" : "bg-white border-gray-200"}`}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-3">
                     <div className="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center text-2xl">
@@ -204,13 +284,32 @@ export default function HealthHub() {
                       <p className="text-sm text-gray-500">Strain, Recuperación, Sueño</p>
                     </div>
                   </div>
-                  {whoopConnected ? (
-                    <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium">Conectado</span>
-                  ) : (
-                    <button className="px-4 py-2 rounded-lg bg-teal-600 text-white text-sm font-medium hover:bg-teal-700 transition-colors">
-                      Conectar
-                    </button>
-                  )}
+                  <div className="flex items-center gap-2">
+                    {whoopConnected ? (
+                      <>
+                        <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium">Conectado</span>
+                        <button
+                          onClick={() => handleDisconnect("whoop")}
+                          disabled={disconnecting === "whoop"}
+                          className="px-3 py-1.5 rounded-lg bg-red-50 text-red-600 text-xs font-medium hover:bg-red-100 border border-red-200 transition-colors disabled:opacity-50"
+                        >
+                          {disconnecting === "whoop" ? (
+                            <span className="flex items-center gap-1"><svg className="animate-spin h-3 w-3" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg> Desconectando...</span>
+                          ) : "Desconectar"}
+                        </button>
+                      </>
+                    ) : (
+                      <button
+                        onClick={handleConnectWhoop}
+                        disabled={connectingWhoop}
+                        className="px-4 py-2 rounded-lg bg-teal-600 text-white text-sm font-medium hover:bg-teal-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+                      >
+                        {connectingWhoop ? (
+                          <><svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg> Conectando...</>
+                        ) : "Conectar"}
+                      </button>
+                    )}
+                  </div>
                 </div>
                 {whoopConnected && (
                   <div className="mt-4 grid grid-cols-3 gap-3">
@@ -447,11 +546,27 @@ export default function HealthHub() {
               Los datos mostrados arriba son de demostración.
             </p>
             <div className="flex justify-center gap-3">
-              <button className="px-5 py-2.5 rounded-lg bg-purple-600 text-white text-sm font-medium hover:bg-purple-700 transition-colors">
-                Conectar Oura Ring
+              <button
+                onClick={handleConnectOura}
+                disabled={connectingOura}
+                className="px-5 py-2.5 rounded-lg bg-purple-600 text-white text-sm font-medium hover:bg-purple-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                {connectingOura ? (
+                  <><svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg> Conectando...</>
+                ) : (
+                  <><span>💍</span> Conectar Oura Ring</>
+                )}
               </button>
-              <button className="px-5 py-2.5 rounded-lg bg-teal-600 text-white text-sm font-medium hover:bg-teal-700 transition-colors">
-                Conectar Whoop
+              <button
+                onClick={handleConnectWhoop}
+                disabled={connectingWhoop}
+                className="px-5 py-2.5 rounded-lg bg-teal-600 text-white text-sm font-medium hover:bg-teal-700 transition-colors disabled:opacity-50 flex items-center gap-2"
+              >
+                {connectingWhoop ? (
+                  <><svg className="animate-spin h-4 w-4" viewBox="0 0 24 24"><circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" fill="none"/><path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4z"/></svg> Conectando...</>
+                ) : (
+                  <><span>⌚</span> Conectar Whoop</>
+                )}
               </button>
             </div>
           </div>

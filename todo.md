@@ -3457,3 +3457,6 @@
 - [x] Usar WellnessGoalsWidget en Dashboard JSX (no solo importar)
 - [x] Añadir links Health Hub y Wellness Goals en sidebar/nav
 - [x] Añadir ruta /app/health-hub en App.tsx
+
+## Botones interactivos Health Hub (conectar/desconectar Oura y Whoop)
+- [x] Añadir botones funcionales de conectar/desconectar Oura y Whoop en HealthHub.tsx
