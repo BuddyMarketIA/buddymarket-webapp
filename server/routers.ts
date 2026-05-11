@@ -26,6 +26,7 @@ import { recommendationsRouter } from "./routers/recommendations";
 import { wellnessGoalsRouter } from "./routers/wellnessGoals";
 import { healthHubRouter } from "./routers/health-hub";
 import { ecosystemSyncRouter } from "./routers/ecosystemSync";
+import { recipeImagesRouter } from "./routers/recipeImages";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { invokeLLM } from "./_core/llm";
 import { storagePut } from "./storage";
@@ -280,6 +281,7 @@ export const appRouter = router({
   wellnessGoals: wellnessGoalsRouter,
   healthHub: healthHubRouter,
   ecosystemSync: ecosystemSyncRouter,
+  recipeImages: recipeImagesRouter,
 
   // ---------------------------------------------------------------------------
   // ECOSYSTEM (BuddyCoach, BuddyCare, BuddyShop)

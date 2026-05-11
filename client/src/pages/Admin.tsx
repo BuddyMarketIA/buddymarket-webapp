@@ -505,6 +505,13 @@ export default function Admin() {
                 <span>💬 Feedback de usuarios</span>
                 <span className="text-purple-400">→</span>
               </Link>
+              <Link
+                href="/app/admin/recipe-images"
+                className="flex w-full items-center justify-between rounded-xl bg-green-50 border border-green-200 px-4 py-2.5 text-sm font-semibold text-green-700 hover:bg-green-100"
+              >
+                <span>🖼️ Generador de Imágenes de Recetas (IA)</span>
+                <span className="text-green-400">→</span>
+              </Link>
               {[
                 { label: "Gestionar recetas y fotos", tab: "recipes" },
                 { label: "Gestionar alergias", tab: "allergies" },

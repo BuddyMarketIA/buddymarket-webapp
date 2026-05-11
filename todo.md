@@ -3497,3 +3497,12 @@
 - [x] Usar LLM para generar recomendaciones contextuales personalizadas (ej: "ayer te excediste en el deporte, come más proteína")
 - [x] Implementar componente SmartInsights en Dashboard con cards de recomendaciones diarias
 - [x] Integrar SmartInsights también en Health Hub como sección destacada
+
+## Imágenes de Recetas - Plato Terminado (IA)
+- [x] Crear router backend recipeImages con endpoints: getStats, generateBatch, generateSingle
+- [x] Implementar generación de imágenes IA del plato terminado (no ingrediente) con prompt profesional
+- [x] Upload automático a S3 (CloudFront) y actualización de BD
+- [x] Crear página admin /app/admin/recipe-images con controles de lotes, progreso y logs
+- [x] Añadir enlace en panel Admin principal
+- [x] Probar pipeline completo: 3 recetas generadas exitosamente (~7-8s por imagen)
+- [ ] Ejecutar generación completa de las 16,982 recetas pendientes (170 lotes de 100)
