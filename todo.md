@@ -3477,3 +3477,10 @@
 ## Filtros por categoría en Insights de IA
 - [x] Actualizar endpoint generateInsights para aceptar categorías opcionales como filtro
 - [x] Implementar UI de filtros por categoría (sueño, actividad, recuperación, nutrición, estrés) en HealthHub.tsx
+
+## Integración completa del Ecosistema
+- [x] Conectar recommendations-engine a API real de BuddyShop (productos dinámicos)
+- [x] Integrar BuddyCare API real en ecosystem router (similar a BuddyCoach)
+- [x] Crear página de Ecosistema con gestión de conexiones (ecosystemSync)
+- [x] Añadir BuddyShop al sidebar como link de navegación
+- [x] Usar RecommendationsBanner en más páginas (recetas, diario, etc.)

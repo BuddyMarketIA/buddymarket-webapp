@@ -521,6 +521,13 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       ],
     },
     {
+      label: "Ecosistema",
+      items: [
+        { key: "/app/ecosystem", label: "Mi Ecosistema", to: "/app/ecosystem", emoji: "🌐" },
+        { key: "/app/buddy-shop", label: "BuddyShop", to: "/app/buddy-shop", emoji: "🛍️" },
+      ],
+    },
+    {
       label: "Mi Cuenta",
       items: [
         { key: "/app/profile", label: t("sidebar.myProfile"), to: "/app/profile", emoji: "👤" },

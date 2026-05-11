@@ -8,6 +8,7 @@ import ShareRecipeButton from "@/components/ShareRecipeButton";
 import { RECIPE_PLACEHOLDER_IMAGE } from "@/lib/constants";
 import { useRecipeAllergyCheck } from "@/hooks/useRecipeAllergyCheck";
 import { usePlan } from "@/hooks/usePlan";
+import { RecommendationsBanner } from "@/components/RecommendationsBanner";
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 type Recipe = {
@@ -703,6 +704,9 @@ export default function Recipes() {
 
   return (
     <div style={{ padding: "16px", maxWidth: "480px", margin: "0 auto", paddingBottom: "100px" }}>
+
+      {/* Recommendations Banner */}
+      <RecommendationsBanner position="top" />
 
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "14px", gap: "12px" }}>

@@ -297,87 +297,272 @@ export function generateBuddyCoachRecommendations(
 }
 
 /**
- * Generate BuddyShop recommendations (kitchen equipment)
+ * Fetch products from BuddyShop real API
  */
-export function generateBuddyShopRecommendations(
+async function fetchBuddyShopProducts(options: {
+  category?: string;
+  query?: string;
+  featured?: boolean;
+}): Promise<any[]> {
+  const BUDDYSHOP_URL = process.env.BUDDYSHOP_API_URL || "https://buddyshop-niebit4z.manus.space/api/buddyone";
+  const BUDDYSHOP_KEY = process.env.BUDDYSHOP_API_KEY || "";
+  // The API base is the tRPC endpoint
+  const baseUrl = BUDDYSHOP_URL.replace("/api/buddyone", "/api/trpc");
+
+  try {
+    let endpoint: string;
+    let input: any;
+
+    if (options.featured) {
+      endpoint = "shop.getFeaturedProducts";
+      input = {};
+    } else if (options.category) {
+      endpoint = "shop.getProductsByCategory";
+      input = { categorySlug: options.category };
+    } else if (options.query) {
+      endpoint = "shop.searchProducts";
+      input = { query: options.query };
+    } else {
+      endpoint = "shop.getAllProducts";
+      input = {};
+    }
+
+    const url = `${baseUrl}/${endpoint}?input=${encodeURIComponent(JSON.stringify({ json: input }))}`;
+    const res = await fetch(url, {
+      headers: {
+        "x-api-key": BUDDYSHOP_KEY,
+        "x-source-app": "buddyone",
+      },
+      signal: AbortSignal.timeout(8000),
+    });
+
+    if (!res.ok) {
+      console.warn(`[BuddyShop API] ${endpoint} returned ${res.status}`);
+      return [];
+    }
+
+    const data = await res.json() as any;
+    return data?.result?.data?.json || [];
+  } catch (error) {
+    console.error("[BuddyShop API] Error fetching products:", error);
+    return [];
+  }
+}
+
+/**
+ * Map trigger types to BuddyShop categories
+ */
+function getTriggerCategories(triggers: RecommendationTrigger[]): string[] {
+  const categories: string[] = [];
+  if (triggers.some((t) => t.type === "frequent_cooking")) {
+    categories.push("utensilios", "electrodomesticos", "menaje");
+  }
+  if (triggers.some((t) => t.type === "complex_recipes")) {
+    categories.push("cuchillos", "utensilios");
+  }
+  if (triggers.some((t) => t.type === "health_goal" || t.type === "weight_loss")) {
+    categories.push("electrodomesticos", "menaje");
+  }
+  if (triggers.some((t) => t.type === "muscle_gain" || t.type === "active_training")) {
+    categories.push("electrodomesticos", "organizacion");
+  }
+  return [...new Set(categories)];
+}
+
+/**
+ * Map trigger type to a reason string
+ */
+function getReasonForTrigger(trigger: string, productName: string): string {
+  const reasons: Record<string, string> = {
+    frequent_cooking: `"${productName}" te ayudará a cocinar más rápido y eficiente`,
+    complex_recipes: `Ideal para preparar recetas complejas con precisión profesional`,
+    health_goal: `Complemento perfecto para tu objetivo de bienestar`,
+    weight_loss: `Te ayudará a preparar comidas saludables con control de porciones`,
+    muscle_gain: `Facilita la preparación de comidas ricas en proteína`,
+    active_training: `Optimiza tu preparación de comidas para entrenamientos`,
+  };
+  return reasons[trigger] || `Recomendado para tu perfil nutricional`;
+}
+
+/**
+ * Generate BuddyShop recommendations (kitchen equipment) - REAL API
+ */
+export async function generateBuddyShopRecommendations(
   userId: number,
   triggers: RecommendationTrigger[]
-): NewProductRecommendation[] {
+): Promise<NewProductRecommendation[]> {
   const recommendations: NewProductRecommendation[] = [];
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + 14); // Valid for 14 days
 
-  // Frequent Cooking Trigger
-  if (triggers.some((t) => t.type === "frequent_cooking")) {
-    recommendations.push({
-      userId,
-      externalProductId: "buddyshop_mandoline",
-      source: "buddyshop",
-      title: "Mandolina Profesional",
-      description: "Corta verduras en segundos con precisión",
-      reason: "Acelera tus tiempos de preparación en la cocina",
-      trigger: "frequent_cooking",
-      productUrl: "https://buddyshop.app/products/mandoline",
-      productImage: "https://images.unsplash.com/photo-1578500494198-246f612d03b3",
-      productPrice: "34.99",
-      productCategory: "utensilios",
-      relevanceScore: 90,
-      cta: "Comprar Mandolina",
-      expiresAt,
+  const BUDDYSHOP_BASE = "https://buddyshop-niebit4z.manus.space";
+  const categories = getTriggerCategories(triggers);
+
+  if (categories.length === 0) return recommendations;
+
+  try {
+    // Fetch products from relevant categories
+    const allProducts: any[] = [];
+    for (const cat of categories.slice(0, 3)) {
+      const products = await fetchBuddyShopProducts({ category: cat });
+      allProducts.push(...products);
+    }
+
+    // If no category results, try featured
+    if (allProducts.length === 0) {
+      const featured = await fetchBuddyShopProducts({ featured: true });
+      allProducts.push(...featured);
+    }
+
+    // Deduplicate by id
+    const seen = new Set<number>();
+    const uniqueProducts = allProducts.filter((p) => {
+      if (seen.has(p.id)) return false;
+      seen.add(p.id);
+      return true;
     });
 
-    recommendations.push({
-      userId,
-      externalProductId: "buddyshop_bascula",
-      source: "buddyshop",
-      title: "Báscula Digital Cocina",
-      description: "Mide porciones exactas para tus recetas",
-      reason: "Precisión en las cantidades para mejor control nutricional",
-      trigger: "frequent_cooking",
-      productUrl: "https://buddyshop.app/products/kitchen-scale",
-      productImage: "https://images.unsplash.com/photo-1584622281867-8d5c815cb5fc",
-      productPrice: "24.99",
-      productCategory: "medición",
-      relevanceScore: 85,
-      cta: "Comprar Báscula",
-      expiresAt,
-    });
-  }
+    // Pick top products (featured first, then by rating)
+    const sorted = uniqueProducts
+      .sort((a, b) => {
+        if (a.isFeatured && !b.isFeatured) return -1;
+        if (!a.isFeatured && b.isFeatured) return 1;
+        return (b.rating || 0) - (a.rating || 0);
+      })
+      .slice(0, 4);
 
-  // Complex Recipes Trigger
-  if (triggers.some((t) => t.type === "complex_recipes")) {
-    recommendations.push({
-      userId,
-      externalProductId: "buddyshop_cuchillos",
-      source: "buddyshop",
-      title: "Set Cuchillos Profesionales",
-      description: "Cuchillos de cerámica para cortes precisos",
-      reason: "Las recetas complejas requieren herramientas de calidad",
-      trigger: "complex_recipes",
-      productUrl: "https://buddyshop.app/products/knife-set",
-      productImage: "https://images.unsplash.com/photo-1593618998160-e34014e67546",
-      productPrice: "59.99",
-      productCategory: "cuchillos",
-      relevanceScore: 88,
-      cta: "Comprar Cuchillos",
-      expiresAt,
-    });
+    // Determine the primary trigger
+    const primaryTrigger = triggers.sort((a, b) => b.score - a.score)[0]?.type || "frequent_cooking";
+
+    for (const product of sorted) {
+      // Cache product in local DB
+      try {
+        await cacheProduct({
+          externalId: `buddyshop_${product.id}`,
+          source: "buddyshop",
+          title: product.name,
+          description: product.shortDescription || product.description?.slice(0, 200),
+          price: product.price,
+          imageUrl: product.imageUrl,
+          productUrl: `${BUDDYSHOP_BASE}/producto/${product.slug}`,
+          category: product.categorySlug,
+          metadata: JSON.stringify({
+            rating: product.rating,
+            reviewCount: product.reviewCount,
+            badge: product.badge,
+            material: product.material,
+          }),
+        });
+      } catch (e) {
+        // Cache failure is non-critical
+      }
+
+      recommendations.push({
+        userId,
+        externalProductId: `buddyshop_${product.id}`,
+        source: "buddyshop",
+        title: product.name,
+        description: product.shortDescription || product.description?.slice(0, 150),
+        reason: getReasonForTrigger(primaryTrigger, product.name),
+        trigger: primaryTrigger,
+        productUrl: `${BUDDYSHOP_BASE}/producto/${product.slug}`,
+        productImage: product.imageUrl,
+        productPrice: product.price,
+        productCategory: product.categorySlug,
+        relevanceScore: Math.round(85 + (product.rating || 4) * 2),
+        cta: "Ver en BuddyShop",
+        expiresAt,
+      });
+    }
+
+    console.log(`[BuddyShop] Generated ${recommendations.length} real product recommendations`);
+  } catch (error) {
+    console.error("[BuddyShop] Error generating recommendations:", error);
   }
 
   return recommendations;
 }
 
 /**
- * Generate BuddyCare recommendations (health & wellness)
+ * Fetch wellness data from BuddyCare real API
  */
-export function generateBuddyCareRecommendations(
+async function fetchBuddyCareData(userId: number, profile: UserNutritionalProfile): Promise<any | null> {
+  const BUDDYCARE_URL = process.env.BUDDYCARE_API_URL || "https://api.buddycare.com";
+  const BUDDYCARE_KEY = process.env.BUDDYCARE_API_KEY || "";
+  const ECOSYSTEM_SECRET = process.env.ECOSYSTEM_SECRET || "";
+
+  try {
+    const res = await fetch(
+      `${BUDDYCARE_URL}/api/ecosystem/recommendations`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "x-api-key": BUDDYCARE_KEY,
+          "x-ecosystem-secret": ECOSYSTEM_SECRET,
+          "x-source-app": "buddyone",
+        },
+        body: JSON.stringify({
+          userId,
+          conditions: profile.medicalConditions,
+          goal: profile.mainGoal,
+          allergies: profile.allergies,
+        }),
+        signal: AbortSignal.timeout(5000),
+      }
+    );
+
+    if (!res.ok) {
+      console.warn(`[BuddyCare API] returned ${res.status}`);
+      return null;
+    }
+
+    return await res.json();
+  } catch (error) {
+    console.warn("[BuddyCare API] Not reachable, using local recommendations");
+    return null;
+  }
+}
+
+/**
+ * Generate BuddyCare recommendations (health & wellness) - with API fallback
+ */
+export async function generateBuddyCareRecommendations(
   userId: number,
   triggers: RecommendationTrigger[],
   profile: UserNutritionalProfile
-): NewProductRecommendation[] {
+): Promise<NewProductRecommendation[]> {
   const recommendations: NewProductRecommendation[] = [];
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + 30); // Valid for 30 days
+
+  // Try to get personalized recommendations from BuddyCare API
+  const apiData = await fetchBuddyCareData(userId, profile);
+  if (apiData?.recommendations?.length) {
+    console.log(`[BuddyCare API] Got ${apiData.recommendations.length} personalized recommendations`);
+    for (const rec of apiData.recommendations.slice(0, 4)) {
+      recommendations.push({
+        userId,
+        externalProductId: rec.id || `buddycare_${Date.now()}`,
+        source: "buddycare",
+        title: rec.title || rec.name,
+        description: rec.description,
+        reason: rec.reason || "Recomendado por BuddyCare para tu bienestar",
+        trigger: triggers[0]?.type || "health_goal",
+        productUrl: rec.url || "https://buddycare.app",
+        productImage: rec.image || "https://images.unsplash.com/photo-1584308666744-24d5f400f6f0",
+        productPrice: rec.price?.toString() || "0",
+        productCategory: rec.category || "suplementos",
+        relevanceScore: rec.score || 85,
+        cta: rec.cta || "Ver en BuddyCare",
+        expiresAt,
+      });
+    }
+    return recommendations;
+  }
+
+  // Fallback: local rule-based recommendations when API is unavailable
+  console.log("[BuddyCare] API unavailable, using local fallback recommendations");
 
   // Health Goal Trigger
   if (triggers.some((t) => t.type === "health_goal")) {
@@ -509,8 +694,8 @@ export async function generateRecommendationsForUser(
 
     // Generate recommendations from each source
     const buddycoachRecs = generateBuddyCoachRecommendations(userId, triggers);
-    const buddyshopRecs = generateBuddyShopRecommendations(userId, triggers);
-    const buddycareRecs = generateBuddyCareRecommendations(
+    const buddyshopRecs = await generateBuddyShopRecommendations(userId, triggers);
+    const buddycareRecs = await generateBuddyCareRecommendations(
       userId,
       triggers,
       profile

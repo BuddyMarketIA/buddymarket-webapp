@@ -10,6 +10,7 @@ import NutritionCalendar from "@/components/NutritionCalendar";
 import ProductNutritionCard from "@/components/ProductNutritionCard";
 import { useImageCompressor } from "@/hooks/useImageCompressor";
 import { getErrorMessage } from "@/lib/errorUtils";
+import { RecommendationsBanner } from "@/components/RecommendationsBanner";
 
 // ─── AI Loading Animation ───────────────────────────────────────────────────
 const AI_STEPS = [
@@ -545,6 +546,9 @@ export default function MealLog() {
 
   return (
     <div style={{ padding: "16px", maxWidth: "480px", margin: "0 auto", paddingBottom: "100px" }}>
+
+      {/* Recommendations Banner */}
+      <RecommendationsBanner position="top" />
 
       {/* Header */}
       <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: "16px" }}>
