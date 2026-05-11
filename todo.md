@@ -3491,3 +3491,9 @@
 - [x] Implementar token refresh automático antes de cada sync
 - [x] Actualizar frontend HealthHub para detectar query params de callback
 - [x] Corregir imports (useToast → sonner, AuthContext → useAuth, useEffect)
+
+## Smart Insights: Recomendaciones cruzadas wearables + nutrición
+- [x] Crear endpoint backend smartInsights que cruce datos de wearables con datos nutricionales y objetivos del usuario
+- [x] Usar LLM para generar recomendaciones contextuales personalizadas (ej: "ayer te excediste en el deporte, come más proteína")
+- [x] Implementar componente SmartInsights en Dashboard con cards de recomendaciones diarias
+- [x] Integrar SmartInsights también en Health Hub como sección destacada

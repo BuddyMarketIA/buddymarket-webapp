@@ -28,6 +28,7 @@ import { useTheme } from "@/contexts/ThemeContext";
 import { RecommendationsCarousel } from "@/components/RecommendationsCarousel";
 import { BuddyCoachWidget } from "@/components/BuddyCoachWidget";
 import { WellnessGoalsWidget } from "@/components/WellnessGoalsWidget";
+import SmartInsights from "@/components/SmartInsights";
 
 // QUICK_ACCESS built inside component
 const _QUICK_ACCESS_PLACEHOLDER = [
@@ -666,6 +667,11 @@ export default function Dashboard() {
             {/* Product Recommendations Carousel */}
             <div style={{ background: C.cardBg, borderRadius: "20px", padding: "18px", boxShadow: C.shadow2 }}>
               <RecommendationsCarousel maxVisible={1} />
+            </div>
+
+            {/* Smart Insights - Coach IA */}
+            <div style={{ background: C.cardBg, borderRadius: "20px", padding: "18px", boxShadow: C.shadow2 }}>
+              <SmartInsights compact />
             </div>
 
             {/* BuddyCoach Widget */}
