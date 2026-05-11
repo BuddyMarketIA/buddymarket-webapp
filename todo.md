@@ -3473,3 +3473,7 @@
 - [x] Crear endpoint submitFeedback en health-hub router
 - [x] Actualizar generateInsights para incluir historial de feedback en el prompt del LLM
 - [x] Implementar botones pulgar arriba/abajo en cada insight card del frontend
+
+## Filtros por categoría en Insights de IA
+- [x] Actualizar endpoint generateInsights para aceptar categorías opcionales como filtro
+- [x] Implementar UI de filtros por categoría (sueño, actividad, recuperación, nutrición, estrés) en HealthHub.tsx

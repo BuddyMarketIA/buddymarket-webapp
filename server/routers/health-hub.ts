@@ -65,7 +65,11 @@ export const healthHubRouter = router({
     }),
 
   // Generate AI health insights from wearable data
-  generateInsights: protectedProcedure.mutation(async ({ ctx }) => {
+  generateInsights: protectedProcedure
+    .input(z.object({
+      categories: z.array(z.enum(["sleep", "recovery", "activity", "nutrition", "stress"])).optional(),
+    }).optional())
+    .mutation(async ({ ctx, input }) => {
     const drizzleDb = await db.getDb();
     if (!drizzleDb) throw new Error("DB not available");
 
@@ -113,6 +117,8 @@ export const healthHubRouter = router({
       .orderBy(desc(insightFeedback.createdAt))
       .limit(20);
 
+    const selectedCategories = input?.categories?.length ? input.categories : [];
+
     let feedbackContext = "";
     if (recentFeedback.length > 0) {
       const liked = recentFeedback.filter(f => f.feedback === "positive").map(f => `"${f.insightTitle}" (${f.insightCategory})`);
@@ -125,7 +131,7 @@ export const healthHubRouter = router({
       messages: [
         {
           role: "system",
-          content: `Eres un experto en salud y bienestar. Analiza las m\u00e9tricas de wearables del usuario y genera exactamente 4 insights personalizados en formato JSON. Cada insight debe tener: "icon" (un emoji relevante), "title" (t\u00edtulo corto en espa\u00f1ol), "description" (recomendaci\u00f3n concreta de 1-2 frases en espa\u00f1ol), "category" (uno de: "sleep", "recovery", "activity", "nutrition"), "priority" ("high", "medium", "low"). Responde SOLO con un JSON array, sin texto adicional.${feedbackContext}`,
+          content: `Eres un experto en salud y bienestar. Analiza las métricas de wearables del usuario y genera exactamente 4 insights personalizados en formato JSON. Cada insight debe tener: "icon" (un emoji relevante), "title" (título corto en español), "description" (recomendación concreta de 1-2 frases en español), "category" (uno de: "sleep", "recovery", "activity", "nutrition", "stress"), "priority" ("high", "medium", "low").${selectedCategories.length > 0 ? ` IMPORTANTE: Genera insights SOLO de estas categorías: ${selectedCategories.join(", ")}.` : ""} Responde SOLO con un JSON array, sin texto adicional.${feedbackContext}`,
         },
         {
           role: "user",
@@ -148,7 +154,7 @@ export const healthHubRouter = router({
                     icon: { type: "string", description: "Emoji icon" },
                     title: { type: "string", description: "Short title in Spanish" },
                     description: { type: "string", description: "1-2 sentence recommendation in Spanish" },
-                    category: { type: "string", enum: ["sleep", "recovery", "activity", "nutrition"] },
+                    category: { type: "string", enum: ["sleep", "recovery", "activity", "nutrition", "stress"] },
                     priority: { type: "string", enum: ["high", "medium", "low"] },
                   },
                   required: ["icon", "title", "description", "category", "priority"],

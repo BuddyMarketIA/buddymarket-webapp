@@ -166,6 +166,11 @@ export default function HealthHub() {
   const [insightsGeneratedAt, setInsightsGeneratedAt] = useState<number | null>(null);
 
   const [feedbackGiven, setFeedbackGiven] = useState<Record<number, "positive" | "negative">>({});
+  const [selectedCategories, setSelectedCategories] = useState<Array<"sleep" | "recovery" | "activity" | "nutrition" | "stress">>([]);
+
+  const toggleCategory = (cat: "sleep" | "recovery" | "activity" | "nutrition" | "stress") => {
+    setSelectedCategories(prev => prev.includes(cat) ? prev.filter(c => c !== cat) : [...prev, cat]);
+  };
 
   const generateInsightsMutation = trpc.healthHub.generateInsights.useMutation({
     onSuccess: (data) => {
@@ -472,7 +477,7 @@ export default function HealthHub() {
                   </div>
                 </div>
                 <button
-                  onClick={() => generateInsightsMutation.mutate()}
+                  onClick={() => generateInsightsMutation.mutate(selectedCategories.length > 0 ? { categories: selectedCategories } : undefined)}
                   disabled={generateInsightsMutation.isPending}
                   className="px-4 py-2 rounded-lg bg-gradient-to-r from-violet-600 to-purple-600 text-white text-sm font-medium hover:from-violet-700 hover:to-purple-700 transition-all disabled:opacity-50 flex items-center gap-2 shadow-sm"
                 >
@@ -484,6 +489,52 @@ export default function HealthHub() {
                 </button>
               </div>
 
+              {/* Category Filters */}
+              <div className="flex flex-wrap gap-2 mb-4">
+                {([
+                  { key: "sleep" as const, label: "Sueño", icon: "😴", color: "indigo" },
+                  { key: "recovery" as const, label: "Recuperación", icon: "💪", color: "emerald" },
+                  { key: "activity" as const, label: "Actividad", icon: "🏋️", color: "orange" },
+                  { key: "nutrition" as const, label: "Nutrición", icon: "🥗", color: "pink" },
+                  { key: "stress" as const, label: "Estrés", icon: "🧠", color: "purple" },
+                ]).map(cat => {
+                  const isSelected = selectedCategories.includes(cat.key);
+                  const colorMap: Record<string, string> = {
+                    indigo: isSelected ? "bg-indigo-100 border-indigo-400 text-indigo-700" : "bg-white border-gray-200 text-gray-500 hover:border-indigo-300 hover:text-indigo-600",
+                    emerald: isSelected ? "bg-emerald-100 border-emerald-400 text-emerald-700" : "bg-white border-gray-200 text-gray-500 hover:border-emerald-300 hover:text-emerald-600",
+                    orange: isSelected ? "bg-orange-100 border-orange-400 text-orange-700" : "bg-white border-gray-200 text-gray-500 hover:border-orange-300 hover:text-orange-600",
+                    pink: isSelected ? "bg-pink-100 border-pink-400 text-pink-700" : "bg-white border-gray-200 text-gray-500 hover:border-pink-300 hover:text-pink-600",
+                    purple: isSelected ? "bg-purple-100 border-purple-400 text-purple-700" : "bg-white border-gray-200 text-gray-500 hover:border-purple-300 hover:text-purple-600",
+                  };
+                  return (
+                    <button
+                      key={cat.key}
+                      onClick={() => toggleCategory(cat.key)}
+                      className={`px-3 py-1.5 rounded-full border text-xs font-medium transition-all flex items-center gap-1.5 ${colorMap[cat.color]}`}
+                    >
+                      <span>{cat.icon}</span>
+                      {cat.label}
+                      {isSelected && (
+                        <svg className="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor" strokeWidth={3}>
+                          <path strokeLinecap="round" strokeLinejoin="round" d="M5 13l4 4L19 7" />
+                        </svg>
+                      )}
+                    </button>
+                  );
+                })}
+                {selectedCategories.length > 0 && (
+                  <button
+                    onClick={() => setSelectedCategories([])}
+                    className="px-3 py-1.5 rounded-full border border-gray-200 text-xs text-gray-400 hover:text-gray-600 hover:border-gray-300 transition-all"
+                  >
+                    Limpiar filtros
+                  </button>
+                )}
+              </div>
+              {selectedCategories.length > 0 && (
+                <p className="text-xs text-violet-500 mb-3">Filtrando por: {selectedCategories.map(c => ({ sleep: "Sueño", recovery: "Recuperación", activity: "Actividad", nutrition: "Nutrición", stress: "Estrés" })[c]).join(", ")}</p>
+              )}
+
               {/* Insights Cards */}
               {aiInsights.length > 0 ? (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
@@ -493,6 +544,7 @@ export default function HealthHub() {
                       recovery: "from-emerald-50 to-green-50 border-emerald-100",
                       activity: "from-orange-50 to-amber-50 border-orange-100",
                       nutrition: "from-pink-50 to-rose-50 border-pink-100",
+                      stress: "from-purple-50 to-violet-50 border-purple-100",
                     };
                     const priorityBadge: Record<string, string> = {
                       high: "bg-red-100 text-red-700",
