@@ -155,6 +155,8 @@ const FridgeScanner = lazyWithRetry(() => import("./pages/FridgeScanner"));
 const BloodTestAnalysis = lazyWithRetry(() => import("./pages/BloodTestAnalysis"));
 const ReferralProgram = lazyWithRetry(() => import("./pages/ReferralProgram"));
 const AnalyticsDashboard = lazyWithRetry(() => import("./pages/AnalyticsDashboard"));
+const WellnessGoals = lazyWithRetry(() => import("./pages/WellnessGoals"));
+const HealthHub = lazyWithRetry(() => import("./pages/HealthHub"));
 
 // ─── Page loading fallback ────────────────────────────────────────────────────
 function PageLoader() {
@@ -298,6 +300,8 @@ function Router() {
       <Route path="/app/saved-events">{() => <ProtectedPage><SavedEvents /></ProtectedPage>}</Route>
       <Route path="/app/expert-plans">{() => <ProtectedPage><ExpertPlansManager /></ProtectedPage>}</Route>
       <Route path="/app/expert/dashboard">{() => <ProtectedRoute component={ExpertDashboard} />}</Route>
+      <Route path="/app/wellness-goals">{() => <ProtectedRoute component={WellnessGoals} />}</Route>
+      <Route path="/app/health-hub">{() => <ProtectedRoute component={HealthHub} />}</Route>
       <Route path="/app/expert/patients">{() => <ProtectedPage><ExpertPatients /></ProtectedPage>}</Route>
       <Route path="/app/expert/patients/:id">{() => <ProtectedPage><ExpertPatientDetail /></ProtectedPage>}</Route>
       <Route path="/app/expert/chat">{() => <ProtectedPage><ExpertChat /></ProtectedPage>}</Route>

@@ -3445,3 +3445,15 @@
 - Respetar GDPR y privacidad del usuario
 - No mostrar más de 3 recomendaciones simultáneamente
 - Documentación BuddyCare: https://api.buddycare.com/docs
+
+## Sprint: Integración completa Health Hub + Wellness Goals + Ecosystem
+- [x] Crear tabla wellnessGoals en schema.ts
+- [x] Crear tablas ecosystem (connections, syncLogs, sharedData, syncQueue) en schema.ts
+- [x] Recrear HealthHub.tsx page completa
+- [x] Crear health-hub router backend
+- [x] Crear oura-oauth.ts y whoop-oauth.ts helpers
+- [x] Crear ecosystemSync router
+- [x] Montar wellnessGoals, healthHub y ecosystemSync routers en appRouter
+- [x] Usar WellnessGoalsWidget en Dashboard JSX (no solo importar)
+- [x] Añadir links Health Hub y Wellness Goals en sidebar/nav
+- [x] Añadir ruta /app/health-hub en App.tsx

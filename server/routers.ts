@@ -23,6 +23,9 @@ import { referralRouter } from "./routers/referral";
 import { analyticsRouter } from "./routers/analytics";
 import { wearablesRouter } from "./routers/wearables";
 import { recommendationsRouter } from "./routers/recommendations";
+import { wellnessGoalsRouter } from "./routers/wellnessGoals";
+import { healthHubRouter } from "./routers/health-hub";
+import { ecosystemSyncRouter } from "./routers/ecosystemSync";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { invokeLLM } from "./_core/llm";
 import { storagePut } from "./storage";
@@ -274,6 +277,9 @@ export const appRouter = router({
   analytics: analyticsRouter,
   wearables: wearablesRouter,
   recommendations: recommendationsRouter,
+  wellnessGoals: wellnessGoalsRouter,
+  healthHub: healthHubRouter,
+  ecosystemSync: ecosystemSyncRouter,
 
   // ---------------------------------------------------------------------------
   // ECOSYSTEM (BuddyCoach, BuddyCare, BuddyShop)

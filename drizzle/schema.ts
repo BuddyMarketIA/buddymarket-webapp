@@ -3955,3 +3955,136 @@ export const userProductInteractions = pgTable("userProductInteractions", {
 
 export type UserProductInteraction = typeof userProductInteractions.$inferSelect;
 export type NewUserProductInteraction = typeof userProductInteractions.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// WELLNESS GOALS
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const wellnessGoalCategoryEnum = pgEnum("wellnessGoalCategory", [
+  "sleep", "recovery", "activity", "stress", "nutrition", "hydration"
+]);
+
+export const wellnessGoalPriorityEnum = pgEnum("wellnessGoalPriority", [
+  "low", "medium", "high"
+]);
+
+export const wellnessGoalStatusEnum = pgEnum("wellnessGoalStatus", [
+  "active", "completed", "abandoned"
+]);
+
+export const wellnessGoals = pgTable("wellnessGoals", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  title: varchar("title", { length: 255 }).notNull(),
+  category: wellnessGoalCategoryEnum("category").notNull(),
+  currentValue: real("currentValue").default(0).notNull(),
+  targetValue: real("targetValue").notNull(),
+  unit: varchar("unit", { length: 64 }).notNull(),
+  priority: wellnessGoalPriorityEnum("priority").default("medium").notNull(),
+  status: wellnessGoalStatusEnum("status").default("active").notNull(),
+  startDate: timestamp("startDate").defaultNow().notNull(),
+  targetDate: timestamp("targetDate"),
+  completedAt: timestamp("completedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  userIdx: index("wg_user_idx").on(t.userId),
+  statusIdx: index("wg_status_idx").on(t.status),
+  userStatusIdx: index("wg_user_status_idx").on(t.userId, t.status),
+}));
+export type WellnessGoal = typeof wellnessGoals.$inferSelect;
+export type NewWellnessGoal = typeof wellnessGoals.$inferInsert;
+
+// ─────────────────────────────────────────────────────────────────────────────
+// ECOSYSTEM CONNECTOR (BuddyOne ↔ BuddyCoach sync)
+// ─────────────────────────────────────────────────────────────────────────────
+
+export const ecosystemConnectionStatusEnum = pgEnum("ecosystemConnectionStatus", [
+  "active", "paused", "revoked", "expired"
+]);
+
+export const ecosystemConnections = pgTable("ecosystemConnections", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  targetApp: varchar("targetApp", { length: 64 }).notNull(), // buddycoach, buddycare, buddyshop
+  targetUserId: varchar("targetUserId", { length: 255 }), // openId in target app
+  status: ecosystemConnectionStatusEnum("status").default("active").notNull(),
+  permissions: text("permissions"), // JSON array of granted permissions
+  lastSyncAt: timestamp("lastSyncAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  userIdx: index("ec_user_idx").on(t.userId),
+  targetIdx: index("ec_target_idx").on(t.targetApp),
+  userTargetIdx: index("ec_user_target_idx").on(t.userId, t.targetApp),
+}));
+export type EcosystemConnection = typeof ecosystemConnections.$inferSelect;
+export type NewEcosystemConnection = typeof ecosystemConnections.$inferInsert;
+
+export const ecosystemSyncDirectionEnum = pgEnum("ecosystemSyncDirection", [
+  "push", "pull", "bidirectional"
+]);
+
+export const ecosystemSyncStatusEnum = pgEnum("ecosystemSyncStatus", [
+  "pending", "in_progress", "completed", "failed"
+]);
+
+export const ecosystemSyncLogs = pgTable("ecosystemSyncLogs", {
+  id: serial("id").primaryKey(),
+  connectionId: integer("connectionId").notNull().references(() => ecosystemConnections.id, { onDelete: "cascade" }),
+  direction: ecosystemSyncDirectionEnum("direction").notNull(),
+  dataType: varchar("dataType", { length: 64 }).notNull(), // nutrition, workouts, goals, metrics
+  status: ecosystemSyncStatusEnum("syncStatus").default("pending").notNull(),
+  recordsProcessed: integer("recordsProcessed").default(0),
+  errorMessage: text("errorMessage"),
+  startedAt: timestamp("startedAt").defaultNow().notNull(),
+  completedAt: timestamp("completedAt"),
+}, (t) => ({
+  connectionIdx: index("esl_connection_idx").on(t.connectionId),
+  statusIdx: index("esl_status_idx").on(t.status),
+}));
+export type EcosystemSyncLog = typeof ecosystemSyncLogs.$inferSelect;
+export type NewEcosystemSyncLog = typeof ecosystemSyncLogs.$inferInsert;
+
+export const ecosystemSharedData = pgTable("ecosystemSharedData", {
+  id: serial("id").primaryKey(),
+  connectionId: integer("connectionId").notNull().references(() => ecosystemConnections.id, { onDelete: "cascade" }),
+  dataType: varchar("dataType", { length: 64 }).notNull(),
+  dataKey: varchar("dataKey", { length: 255 }).notNull(),
+  dataValue: text("dataValue").notNull(), // JSON serialized
+  version: integer("version").default(1).notNull(),
+  lastModifiedBy: varchar("lastModifiedBy", { length: 64 }).notNull(), // which app last modified
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  connectionIdx: index("esd_connection_idx").on(t.connectionId),
+  dataTypeIdx: index("esd_datatype_idx").on(t.dataType),
+  keyIdx: index("esd_key_idx").on(t.dataKey),
+}));
+export type EcosystemSharedData = typeof ecosystemSharedData.$inferSelect;
+export type NewEcosystemSharedData = typeof ecosystemSharedData.$inferInsert;
+
+export const ecosystemSyncQueueStatusEnum = pgEnum("ecosystemSyncQueueStatus", [
+  "queued", "processing", "done", "failed"
+]);
+
+export const ecosystemSyncQueue = pgTable("ecosystemSyncQueue", {
+  id: serial("id").primaryKey(),
+  connectionId: integer("connectionId").notNull().references(() => ecosystemConnections.id, { onDelete: "cascade" }),
+  action: varchar("action", { length: 64 }).notNull(), // create, update, delete
+  dataType: varchar("dataType", { length: 64 }).notNull(),
+  payload: text("payload").notNull(), // JSON
+  status: ecosystemSyncQueueStatusEnum("queueStatus").default("queued").notNull(),
+  attempts: integer("attempts").default(0).notNull(),
+  maxAttempts: integer("maxAttempts").default(3).notNull(),
+  lastError: text("lastError"),
+  scheduledFor: timestamp("scheduledFor").defaultNow().notNull(),
+  processedAt: timestamp("processedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  connectionIdx: index("esq_connection_idx").on(t.connectionId),
+  statusIdx: index("esq_status_idx").on(t.status),
+  scheduledIdx: index("esq_scheduled_idx").on(t.scheduledFor),
+}));
+export type EcosystemSyncQueue = typeof ecosystemSyncQueue.$inferSelect;
+export type NewEcosystemSyncQueue = typeof ecosystemSyncQueue.$inferInsert;

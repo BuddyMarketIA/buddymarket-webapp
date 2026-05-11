@@ -27,6 +27,7 @@ import { useTranslation } from "react-i18next";
 import { useTheme } from "@/contexts/ThemeContext";
 import { RecommendationsCarousel } from "@/components/RecommendationsCarousel";
 import { BuddyCoachWidget } from "@/components/BuddyCoachWidget";
+import { WellnessGoalsWidget } from "@/components/WellnessGoalsWidget";
 
 // QUICK_ACCESS built inside component
 const _QUICK_ACCESS_PLACEHOLDER = [
@@ -670,6 +671,11 @@ export default function Dashboard() {
             {/* BuddyCoach Widget */}
             <div style={{ borderRadius: "20px", overflow: "hidden" }}>
               <BuddyCoachWidget />
+            </div>
+
+            {/* Wellness Goals Widget */}
+            <div style={{ borderRadius: "20px", overflow: "hidden" }}>
+              <WellnessGoalsWidget />
             </div>
           </div>
           {/* COLUMN 2: Accesos rápidos + Widget */}

@@ -1,0 +1,470 @@
+import { useState } from "react";
+import { trpc } from "@/lib/trpc";
+import { useAuth } from "@/contexts/AuthContext";
+import { Link } from "wouter";
+import {
+  AreaChart, Area, BarChart, Bar, LineChart, Line,
+  XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
+} from "recharts";
+
+// Mock data for demo (when no real wearable data exists)
+const mockSleepData = [
+  { date: "Lun", hours: 7.2, score: 82 },
+  { date: "Mar", hours: 6.8, score: 74 },
+  { date: "Mié", hours: 7.5, score: 86 },
+  { date: "Jue", hours: 8.1, score: 91 },
+  { date: "Vie", hours: 6.5, score: 68 },
+  { date: "Sáb", hours: 8.5, score: 94 },
+  { date: "Dom", hours: 7.8, score: 88 },
+];
+
+const mockRecoveryData = [
+  { date: "Lun", score: 72 },
+  { date: "Mar", score: 65 },
+  { date: "Mié", score: 78 },
+  { date: "Jue", score: 85 },
+  { date: "Vie", score: 60 },
+  { date: "Sáb", score: 90 },
+  { date: "Dom", score: 82 },
+];
+
+const mockActivityData = [
+  { date: "Lun", strain: 12.5, calories: 2100 },
+  { date: "Mar", strain: 8.2, calories: 1800 },
+  { date: "Mié", strain: 14.1, calories: 2400 },
+  { date: "Jue", strain: 10.8, calories: 2000 },
+  { date: "Vie", strain: 15.3, calories: 2600 },
+  { date: "Sáb", strain: 6.5, calories: 1600 },
+  { date: "Dom", strain: 9.7, calories: 1900 },
+];
+
+const educationalContent = [
+  {
+    id: "sleep",
+    icon: "😴",
+    title: "Sueño y Recuperación",
+    description: "El sueño es el pilar fundamental de la recuperación. Durante el sueño profundo, tu cuerpo repara tejidos, consolida la memoria y regula hormonas clave como la hormona del crecimiento y el cortisol.",
+    tips: [
+      "Mantén un horario regular de sueño (±30 min)",
+      "Evita pantallas 1h antes de dormir",
+      "Temperatura ideal: 18-20°C",
+      "Objetivo: 7-9 horas de sueño de calidad",
+    ],
+  },
+  {
+    id: "recovery",
+    icon: "💚",
+    title: "Recuperación (HRV)",
+    description: "La Variabilidad de la Frecuencia Cardíaca (HRV) es el indicador más fiable de tu estado de recuperación. Un HRV alto indica que tu sistema nervioso está equilibrado y listo para el esfuerzo.",
+    tips: [
+      "HRV alto = buena recuperación, puedes entrenar fuerte",
+      "HRV bajo = necesitas descanso o entrenamiento ligero",
+      "La meditación y respiración mejoran el HRV",
+      "El alcohol y el estrés reducen significativamente el HRV",
+    ],
+  },
+  {
+    id: "activity",
+    icon: "🏃",
+    title: "Actividad y Strain",
+    description: "El strain (esfuerzo) mide la carga cardiovascular acumulada durante el día. Equilibrar el strain con la recuperación es clave para progresar sin sobreentrenamiento.",
+    tips: [
+      "Adapta la intensidad a tu nivel de recuperación",
+      "Strain 0-9: día ligero | 10-13: moderado | 14+: intenso",
+      "Incluye días de recuperación activa (strain 4-7)",
+      "Monitoriza tendencias semanales, no solo días aislados",
+    ],
+  },
+  {
+    id: "hrv",
+    icon: "❤️",
+    title: "Frecuencia Cardíaca en Reposo",
+    description: "Tu FC en reposo refleja la eficiencia cardiovascular. Con el tiempo, un corazón más entrenado bombea más sangre por latido, reduciendo la FC en reposo.",
+    tips: [
+      "FC en reposo baja = mejor condición cardiovascular",
+      "Aumentos súbitos pueden indicar enfermedad o sobreentrenamiento",
+      "Mídela siempre al despertar para mayor precisión",
+      "Rango saludable: 50-70 lpm (deportistas: 40-60 lpm)",
+    ],
+  },
+];
+
+export default function HealthHub() {
+  const { user } = useAuth();
+  const [dateRange, setDateRange] = useState<7 | 30 | 90>(7);
+  const [activeTab, setActiveTab] = useState<"overview" | "sleep" | "recovery" | "activity" | "education">("overview");
+
+  const { data: connections, isLoading: loadingConnections } = trpc.healthHub.getConnections.useQuery();
+  const { data: wearableConnections } = trpc.wearables.getConnections.useQuery();
+
+  const ouraConnected = wearableConnections?.some((c: any) => c.wearableType === "oura" && c.isActive);
+  const whoopConnected = wearableConnections?.some((c: any) => c.wearableType === "whoop" && c.isActive);
+
+  return (
+    <div className="min-h-screen bg-gradient-to-br from-orange-50 via-white to-amber-50 p-4 md:p-6 pb-24">
+      {/* Header */}
+      <div className="max-w-6xl mx-auto">
+        <div className="flex items-center justify-between mb-6">
+          <div>
+            <h1 className="text-2xl md:text-3xl font-bold text-gray-900">Salud Conectada</h1>
+            <p className="text-gray-500 mt-1">Tu centro de datos de bienestar</p>
+          </div>
+          <div className="flex gap-2">
+            {[7, 30, 90].map((d) => (
+              <button
+                key={d}
+                onClick={() => setDateRange(d as 7 | 30 | 90)}
+                className={`px-3 py-1.5 rounded-lg text-sm font-medium transition-all ${
+                  dateRange === d
+                    ? "bg-orange-500 text-white shadow-md"
+                    : "bg-white text-gray-600 hover:bg-orange-50 border border-gray-200"
+                }`}
+              >
+                {d}d
+              </button>
+            ))}
+          </div>
+        </div>
+
+        {/* Tabs */}
+        <div className="flex gap-1 bg-white/80 backdrop-blur-sm rounded-xl p-1 mb-6 overflow-x-auto border border-gray-100 shadow-sm">
+          {[
+            { id: "overview", label: "Resumen", icon: "📊" },
+            { id: "sleep", label: "Sueño", icon: "😴" },
+            { id: "recovery", label: "Recuperación", icon: "💚" },
+            { id: "activity", label: "Actividad", icon: "🏃" },
+            { id: "education", label: "Aprende", icon: "📚" },
+          ].map((tab) => (
+            <button
+              key={tab.id}
+              onClick={() => setActiveTab(tab.id as any)}
+              className={`flex items-center gap-1.5 px-4 py-2 rounded-lg text-sm font-medium whitespace-nowrap transition-all ${
+                activeTab === tab.id
+                  ? "bg-orange-500 text-white shadow-md"
+                  : "text-gray-600 hover:bg-orange-50"
+              }`}
+            >
+              <span>{tab.icon}</span>
+              <span>{tab.label}</span>
+            </button>
+          ))}
+        </div>
+
+        {/* Connection Status Cards */}
+        {activeTab === "overview" && (
+          <>
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+              {/* Oura Ring Card */}
+              <div className={`rounded-2xl p-5 border ${ouraConnected ? "bg-gradient-to-br from-purple-50 to-indigo-50 border-purple-200" : "bg-white border-gray-200"}`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-purple-100 flex items-center justify-center text-2xl">
+                      💍
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900">Oura Ring</h3>
+                      <p className="text-sm text-gray-500">Sueño, HRV, Temperatura</p>
+                    </div>
+                  </div>
+                  {ouraConnected ? (
+                    <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium">Conectado</span>
+                  ) : (
+                    <button className="px-4 py-2 rounded-lg bg-purple-600 text-white text-sm font-medium hover:bg-purple-700 transition-colors">
+                      Conectar
+                    </button>
+                  )}
+                </div>
+                {ouraConnected && (
+                  <div className="mt-4 grid grid-cols-3 gap-3">
+                    <div className="text-center p-2 bg-white/60 rounded-lg">
+                      <p className="text-lg font-bold text-purple-700">86</p>
+                      <p className="text-xs text-gray-500">Sleep Score</p>
+                    </div>
+                    <div className="text-center p-2 bg-white/60 rounded-lg">
+                      <p className="text-lg font-bold text-purple-700">45ms</p>
+                      <p className="text-xs text-gray-500">HRV</p>
+                    </div>
+                    <div className="text-center p-2 bg-white/60 rounded-lg">
+                      <p className="text-lg font-bold text-purple-700">7.5h</p>
+                      <p className="text-xs text-gray-500">Sueño</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              {/* Whoop Card */}
+              <div className={`rounded-2xl p-5 border ${whoopConnected ? "bg-gradient-to-br from-teal-50 to-cyan-50 border-teal-200" : "bg-white border-gray-200"}`}>
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-3">
+                    <div className="w-12 h-12 rounded-full bg-teal-100 flex items-center justify-center text-2xl">
+                      ⌚
+                    </div>
+                    <div>
+                      <h3 className="font-semibold text-gray-900">Whoop</h3>
+                      <p className="text-sm text-gray-500">Strain, Recuperación, Sueño</p>
+                    </div>
+                  </div>
+                  {whoopConnected ? (
+                    <span className="px-3 py-1 rounded-full bg-green-100 text-green-700 text-xs font-medium">Conectado</span>
+                  ) : (
+                    <button className="px-4 py-2 rounded-lg bg-teal-600 text-white text-sm font-medium hover:bg-teal-700 transition-colors">
+                      Conectar
+                    </button>
+                  )}
+                </div>
+                {whoopConnected && (
+                  <div className="mt-4 grid grid-cols-3 gap-3">
+                    <div className="text-center p-2 bg-white/60 rounded-lg">
+                      <p className="text-lg font-bold text-teal-700">12.5</p>
+                      <p className="text-xs text-gray-500">Strain</p>
+                    </div>
+                    <div className="text-center p-2 bg-white/60 rounded-lg">
+                      <p className="text-lg font-bold text-teal-700">78%</p>
+                      <p className="text-xs text-gray-500">Recovery</p>
+                    </div>
+                    <div className="text-center p-2 bg-white/60 rounded-lg">
+                      <p className="text-lg font-bold text-teal-700">2.1k</p>
+                      <p className="text-xs text-gray-500">Calorías</p>
+                    </div>
+                  </div>
+                )}
+              </div>
+            </div>
+
+            {/* Overview Charts */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+              {/* Sleep Chart */}
+              <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+                <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <span>😴</span> Calidad del Sueño
+                </h3>
+                <ResponsiveContainer width="100%" height={200}>
+                  <AreaChart data={mockSleepData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+                    <YAxis tick={{ fontSize: 12 }} domain={[0, 100]} />
+                    <Tooltip />
+                    <Area type="monotone" dataKey="score" stroke="#8b5cf6" fill="#ede9fe" strokeWidth={2} />
+                  </AreaChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* Recovery Chart */}
+              <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+                <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <span>💚</span> Recuperación
+                </h3>
+                <ResponsiveContainer width="100%" height={200}>
+                  <BarChart data={mockRecoveryData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+                    <YAxis tick={{ fontSize: 12 }} domain={[0, 100]} />
+                    <Tooltip />
+                    <Bar dataKey="score" fill="#10b981" radius={[4, 4, 0, 0]} />
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+
+              {/* Activity Chart */}
+              <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm lg:col-span-2">
+                <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2">
+                  <span>🏃</span> Actividad (Strain)
+                </h3>
+                <ResponsiveContainer width="100%" height={200}>
+                  <LineChart data={mockActivityData}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                    <XAxis dataKey="date" tick={{ fontSize: 12 }} />
+                    <YAxis tick={{ fontSize: 12 }} />
+                    <Tooltip />
+                    <Line type="monotone" dataKey="strain" stroke="#f97316" strokeWidth={2} dot={{ fill: "#f97316" }} />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            </div>
+
+            {/* Personalized Tips */}
+            <div className="mt-6 bg-gradient-to-r from-orange-500 to-amber-500 rounded-2xl p-5 text-white">
+              <h3 className="font-semibold text-lg mb-3">Insights Personalizados</h3>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                <div className="bg-white/20 backdrop-blur-sm rounded-xl p-4">
+                  <p className="text-sm font-medium mb-1">Sueño promedio</p>
+                  <p className="text-2xl font-bold">7.5h</p>
+                  <p className="text-xs opacity-80 mt-1">+0.3h vs semana anterior</p>
+                </div>
+                <div className="bg-white/20 backdrop-blur-sm rounded-xl p-4">
+                  <p className="text-sm font-medium mb-1">Recuperación media</p>
+                  <p className="text-2xl font-bold">76%</p>
+                  <p className="text-xs opacity-80 mt-1">Buen nivel, puedes entrenar</p>
+                </div>
+                <div className="bg-white/20 backdrop-blur-sm rounded-xl p-4">
+                  <p className="text-sm font-medium mb-1">Strain semanal</p>
+                  <p className="text-2xl font-bold">77.1</p>
+                  <p className="text-xs opacity-80 mt-1">Carga moderada-alta</p>
+                </div>
+              </div>
+            </div>
+          </>
+        )}
+
+        {/* Sleep Tab */}
+        {activeTab === "sleep" && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+              <h3 className="font-semibold text-lg text-gray-900 mb-4">Análisis del Sueño</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <AreaChart data={mockSleepData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="date" />
+                  <YAxis yAxisId="left" domain={[0, 10]} />
+                  <YAxis yAxisId="right" orientation="right" domain={[0, 100]} />
+                  <Tooltip />
+                  <Area yAxisId="left" type="monotone" dataKey="hours" stroke="#6366f1" fill="#e0e7ff" strokeWidth={2} name="Horas" />
+                  <Area yAxisId="right" type="monotone" dataKey="score" stroke="#8b5cf6" fill="#ede9fe" strokeWidth={2} name="Score" />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="bg-indigo-50 rounded-2xl p-5 border border-indigo-100">
+              <h4 className="font-semibold text-indigo-900 mb-2">Sobre el Score de Sueño</h4>
+              <p className="text-sm text-indigo-700 leading-relaxed">
+                El score de sueño combina duración, eficiencia, latencia, fases REM y sueño profundo.
+                Un score superior a 85 indica sueño reparador. Por debajo de 70, tu recuperación se verá afectada.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Recovery Tab */}
+        {activeTab === "recovery" && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+              <h3 className="font-semibold text-lg text-gray-900 mb-4">Recuperación Diaria</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <BarChart data={mockRecoveryData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="date" />
+                  <YAxis domain={[0, 100]} />
+                  <Tooltip />
+                  <Bar dataKey="score" radius={[6, 6, 0, 0]} name="Recovery %">
+                    {mockRecoveryData.map((entry, index) => (
+                      <rect key={index} fill={entry.score >= 67 ? "#10b981" : entry.score >= 34 ? "#f59e0b" : "#ef4444"} />
+                    ))}
+                  </Bar>
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="bg-green-50 rounded-2xl p-5 border border-green-100">
+              <h4 className="font-semibold text-green-900 mb-2">Interpretación de la Recuperación</h4>
+              <div className="grid grid-cols-3 gap-3 mt-3">
+                <div className="text-center p-3 bg-white rounded-lg">
+                  <div className="w-4 h-4 rounded-full bg-green-500 mx-auto mb-1"></div>
+                  <p className="text-xs font-medium text-gray-700">67-100%</p>
+                  <p className="text-xs text-gray-500">Entrena fuerte</p>
+                </div>
+                <div className="text-center p-3 bg-white rounded-lg">
+                  <div className="w-4 h-4 rounded-full bg-yellow-500 mx-auto mb-1"></div>
+                  <p className="text-xs font-medium text-gray-700">34-66%</p>
+                  <p className="text-xs text-gray-500">Moderado</p>
+                </div>
+                <div className="text-center p-3 bg-white rounded-lg">
+                  <div className="w-4 h-4 rounded-full bg-red-500 mx-auto mb-1"></div>
+                  <p className="text-xs font-medium text-gray-700">0-33%</p>
+                  <p className="text-xs text-gray-500">Descansa</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Activity Tab */}
+        {activeTab === "activity" && (
+          <div className="space-y-6">
+            <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+              <h3 className="font-semibold text-lg text-gray-900 mb-4">Strain y Calorías</h3>
+              <ResponsiveContainer width="100%" height={300}>
+                <LineChart data={mockActivityData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                  <XAxis dataKey="date" />
+                  <YAxis yAxisId="left" />
+                  <YAxis yAxisId="right" orientation="right" />
+                  <Tooltip />
+                  <Line yAxisId="left" type="monotone" dataKey="strain" stroke="#f97316" strokeWidth={2} name="Strain" />
+                  <Line yAxisId="right" type="monotone" dataKey="calories" stroke="#06b6d4" strokeWidth={2} name="Calorías" />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+            <div className="bg-orange-50 rounded-2xl p-5 border border-orange-100">
+              <h4 className="font-semibold text-orange-900 mb-2">Gestión del Strain</h4>
+              <p className="text-sm text-orange-700 leading-relaxed">
+                El strain óptimo depende de tu recuperación. Si tu recovery es 80%+, puedes apuntar a strain 14-18.
+                Con recovery bajo (menos de 50%), mantén strain por debajo de 10 para evitar sobreentrenamiento.
+              </p>
+            </div>
+          </div>
+        )}
+
+        {/* Education Tab */}
+        {activeTab === "education" && (
+          <div className="space-y-4">
+            <div className="bg-gradient-to-r from-blue-50 to-indigo-50 rounded-2xl p-5 border border-blue-100 mb-6">
+              <h3 className="font-semibold text-blue-900 text-lg mb-2">Centro de Aprendizaje</h3>
+              <p className="text-sm text-blue-700">
+                Entiende tus métricas de salud para tomar mejores decisiones sobre tu bienestar.
+                El conocimiento es poder cuando se trata de optimizar tu rendimiento y recuperación.
+              </p>
+            </div>
+
+            {educationalContent.map((item) => (
+              <div key={item.id} className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+                <div className="flex items-start gap-4">
+                  <div className="w-12 h-12 rounded-xl bg-orange-50 flex items-center justify-center text-2xl flex-shrink-0">
+                    {item.icon}
+                  </div>
+                  <div className="flex-1">
+                    <h4 className="font-semibold text-gray-900 mb-2">{item.title}</h4>
+                    <p className="text-sm text-gray-600 leading-relaxed mb-3">{item.description}</p>
+                    <div className="space-y-1.5">
+                      {item.tips.map((tip, i) => (
+                        <div key={i} className="flex items-start gap-2">
+                          <span className="text-orange-500 mt-0.5 text-xs">●</span>
+                          <p className="text-sm text-gray-700">{tip}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                </div>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {/* No devices connected state */}
+        {!ouraConnected && !whoopConnected && activeTab === "overview" && (
+          <div className="mt-6 bg-white rounded-2xl p-8 border border-gray-100 shadow-sm text-center">
+            <div className="text-5xl mb-4">🔗</div>
+            <h3 className="font-semibold text-gray-900 text-lg mb-2">Conecta tu primer dispositivo</h3>
+            <p className="text-gray-500 text-sm max-w-md mx-auto mb-6">
+              Conecta tu Oura Ring o Whoop para ver datos reales de sueño, recuperación y actividad.
+              Los datos mostrados arriba son de demostración.
+            </p>
+            <div className="flex justify-center gap-3">
+              <button className="px-5 py-2.5 rounded-lg bg-purple-600 text-white text-sm font-medium hover:bg-purple-700 transition-colors">
+                Conectar Oura Ring
+              </button>
+              <button className="px-5 py-2.5 rounded-lg bg-teal-600 text-white text-sm font-medium hover:bg-teal-700 transition-colors">
+                Conectar Whoop
+              </button>
+            </div>
+          </div>
+        )}
+
+        {/* Disclaimer */}
+        <div className="mt-8 text-center">
+          <p className="text-xs text-gray-400">
+            Los datos mostrados son informativos y no constituyen consejo médico profesional.
+            Consulta con un profesional de la salud antes de tomar decisiones basadas en estos datos.
+          </p>
+        </div>
+      </div>
+    </div>
+  );
+}

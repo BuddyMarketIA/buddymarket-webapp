@@ -540,6 +540,13 @@
       "when": 1778439456613,
       "tag": "0076_red_preak",
       "breakpoints": true
+    },
+    {
+      "idx": 77,
+      "version": "7",
+      "when": 1778498437302,
+      "tag": "0077_hard_blackheart",
+      "breakpoints": true
     }
   ]
 }
