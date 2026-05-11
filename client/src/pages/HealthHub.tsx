@@ -1,6 +1,6 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { Link } from "wouter";
 import { toast } from "@/components/sonner-a11y-shim";
 import {
@@ -117,12 +117,30 @@ export default function HealthHub() {
     },
   });
 
+  // Handle callback query params from OAuth redirect
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const connected = params.get("wearable_connected");
+    const wError = params.get("wearable_error");
+    if (connected) {
+      toast.success(`${connected === "oura" ? "Oura Ring" : "Whoop"} conectado correctamente`);
+      refetchConnections();
+      window.history.replaceState({}, "", window.location.pathname);
+    } else if (wError) {
+      const errorMessages: Record<string, string> = {
+        not_configured: "El dispositivo no está configurado. Contacta al administrador.",
+        token_exchange_failed: "Error al intercambiar el código de autorización. Inténtalo de nuevo.",
+      };
+      toast.error(errorMessages[wError] || `Error al conectar: ${wError}`);
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
+
   const handleConnectOura = async () => {
     setConnectingOura(true);
     try {
-      const redirectUri = `${window.location.origin}/app/wearables`;
-      // Use fetch to call the query endpoint with input
-      const res = await fetch(`/api/trpc/wearables.getOuraAuthUrl?input=${encodeURIComponent(JSON.stringify({ redirectUri }))}`);
+      const origin = window.location.origin;
+      const res = await fetch(`/api/trpc/wearables.getOuraAuthUrl?input=${encodeURIComponent(JSON.stringify({ origin }))}`);
       const json = await res.json();
       if (json?.result?.data?.url) {
         toast.info("Redirigiendo a Oura Ring...");
@@ -140,8 +158,8 @@ export default function HealthHub() {
   const handleConnectWhoop = async () => {
     setConnectingWhoop(true);
     try {
-      const redirectUri = `${window.location.origin}/app/wearables`;
-      const res = await fetch(`/api/trpc/wearables.getWhoopAuthUrl?input=${encodeURIComponent(JSON.stringify({ redirectUri }))}`);
+      const origin = window.location.origin;
+      const res = await fetch(`/api/trpc/wearables.getWhoopAuthUrl?input=${encodeURIComponent(JSON.stringify({ origin }))}`);
       const json = await res.json();
       if (json?.result?.data?.url) {
         toast.info("Redirigiendo a Whoop...");

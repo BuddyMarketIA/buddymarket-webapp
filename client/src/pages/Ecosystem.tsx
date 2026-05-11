@@ -1,26 +1,26 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/components/sonner-a11y-shim";
 
 export default function Ecosystem() {
-  const { toast } = useToast();
+
   const [connectingApp, setConnectingApp] = useState<string | null>(null);
 
   const { data: status, isLoading, refetch } = trpc.ecosystemSync.getStatus.useQuery();
   const connectMutation = trpc.ecosystemSync.connect.useMutation({
     onSuccess: () => {
-      toast({ title: "Conectado", description: "App del ecosistema conectada correctamente" });
+      toast.success("App del ecosistema conectada correctamente");
       refetch();
       setConnectingApp(null);
     },
     onError: (err) => {
-      toast({ title: "Error", description: err.message, variant: "destructive" });
+      toast.error(err.message);
       setConnectingApp(null);
     },
   });
   const disconnectMutation = trpc.ecosystemSync.disconnect.useMutation({
     onSuccess: () => {
-      toast({ title: "Desconectado", description: "App desconectada del ecosistema" });
+      toast.success("App desconectada del ecosistema");
       refetch();
     },
   });

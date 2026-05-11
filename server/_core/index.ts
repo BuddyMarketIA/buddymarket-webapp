@@ -229,6 +229,78 @@ async function startServer() {
     }
   });
 
+  // ─── Wearables OAuth callback (Oura Ring & Whoop) ───────────────────────
+  app.get("/api/wearables/callback", async (req: any, res: any) => {
+    try {
+      const { code, state, error } = req.query as Record<string, string>;
+      if (error) {
+        const origin = req.headers.referer?.split("/api")[0] || "";
+        return res.redirect(`${origin}/app/health-hub?wearable_error=${encodeURIComponent(error)}`);
+      }
+      if (!code || !state) return res.status(400).json({ error: "Missing code or state" });
+
+      let stateData: { userId: number; origin: string; provider: string };
+      try {
+        stateData = JSON.parse(Buffer.from(state, "base64url").toString());
+      } catch {
+        return res.status(400).json({ error: "Invalid state" });
+      }
+
+      const provider = stateData.provider;
+      const redirectUri = `${stateData.origin}/api/wearables/callback`;
+      let clientId: string | undefined, clientSecret: string | undefined, tokenUrl: string;
+
+      if (provider === "oura") {
+        clientId = process.env.OURA_CLIENT_ID;
+        clientSecret = process.env.OURA_CLIENT_SECRET;
+        tokenUrl = "https://api.ouraring.com/oauth/token";
+      } else if (provider === "whoop") {
+        clientId = process.env.WHOOP_CLIENT_ID;
+        clientSecret = process.env.WHOOP_CLIENT_SECRET;
+        tokenUrl = "https://api.prod.whoop.com/oauth/oauth2/token";
+      } else {
+        return res.status(400).json({ error: "Unknown provider" });
+      }
+
+      if (!clientId || !clientSecret) {
+        return res.redirect(`${stateData.origin}/app/health-hub?wearable_error=not_configured`);
+      }
+
+      const tokenResponse = await fetch(tokenUrl, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: new URLSearchParams({ grant_type: "authorization_code", code, redirect_uri: redirectUri, client_id: clientId, client_secret: clientSecret }).toString(),
+      });
+
+      if (!tokenResponse.ok) {
+        const errBody = await tokenResponse.text();
+        logger.error(`[Wearables callback] Token exchange failed for ${provider}:`, errBody);
+        return res.redirect(`${stateData.origin}/app/health-hub?wearable_error=token_exchange_failed`);
+      }
+
+      const tokenData = await tokenResponse.json();
+      const { getDb } = await import("../db");
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new Error("DB unavailable");
+      const { wearableConnections } = await import("../../drizzle/schema.js");
+      const { eq, and } = await import("drizzle-orm");
+
+      await drizzleDb.delete(wearableConnections).where(and(eq(wearableConnections.userId, stateData.userId), eq(wearableConnections.wearableType, provider)));
+      await drizzleDb.insert(wearableConnections).values({
+        userId: stateData.userId, wearableType: provider,
+        accessToken: tokenData.access_token, refreshToken: tokenData.refresh_token || null,
+        tokenExpiresAt: new Date(Date.now() + (tokenData.expires_in || 86400) * 1000),
+        externalUserId: tokenData.user_id || null, lastSyncedAt: new Date(),
+      });
+
+      logger.info(`[Wearables callback] ${provider} connected for user ${stateData.userId}`);
+      return res.redirect(`${stateData.origin}/app/health-hub?wearable_connected=${provider}`);
+    } catch (err: any) {
+      logger.error("[Wearables callback error]", err);
+      return res.redirect(`/app/health-hub?wearable_error=${encodeURIComponent(err.message ?? "Unknown error")}`);
+    }
+  });
+
   // ─── Google Calendar OAuth callback ────────────────────────────────────────
   app.get("/api/google/calendar/callback", async (req: any, res: any) => {
     try {

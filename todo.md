@@ -3484,3 +3484,10 @@
 - [x] Crear página de Ecosistema con gestión de conexiones (ecosystemSync)
 - [x] Añadir BuddyShop al sidebar como link de navegación
 - [x] Usar RecommendationsBanner en más páginas (recetas, diario, etc.)
+
+## Oura/Whoop: Credenciales + Callback + Token Refresh
+- [x] Registrar app en Oura Developer Portal y configurar OURA_CLIENT_ID/SECRET
+- [x] Implementar callback route /api/wearables/callback en el servidor
+- [x] Implementar token refresh automático antes de cada sync
+- [x] Actualizar frontend HealthHub para detectar query params de callback
+- [x] Corregir imports (useToast → sonner, AuthContext → useAuth, useEffect)
