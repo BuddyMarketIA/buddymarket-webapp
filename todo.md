@@ -3506,3 +3506,8 @@
 - [x] Añadir enlace en panel Admin principal
 - [x] Probar pipeline completo: 3 recetas generadas exitosamente (~7-8s por imagen)
 - [ ] Ejecutar generación completa de las 16,982 recetas pendientes (170 lotes de 100)
+
+## Imágenes de Recetas - Búsqueda en bancos de imágenes gratuitos
+- [x] Buscar imágenes reales de platos terminados en APIs gratuitas (Pexels/Pixabay) para recetas pendientes
+- [x] Actualizar las 16,985 recetas con imágenes de platos terminados de Pexels (100% completado)
+- [x] 0 recetas pendientes - todas actualizadas con imágenes de platos terminados
