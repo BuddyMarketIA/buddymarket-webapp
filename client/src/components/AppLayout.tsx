@@ -433,7 +433,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
         { key: "/app/profile", label: t("sidebar.myProfile"), to: "/app/profile", emoji: "👤" },
 
         { key: "/app/metrics", label: t("nav.metrics"), to: "/app/metrics", emoji: "📏" },
-        { key: "/app/health-hub", label: "Salud Conectada", to: "/app/health-hub", emoji: "❤️" },
+        { key: "/app/health-hub", label: "Health Hub", to: "/app/health-hub", emoji: "💓" },
         { key: "/app/wellness-goals", label: "Metas de Bienestar", to: "/app/wellness-goals", emoji: "🎯" },
         { key: "/app/progress", label: t("nav.progress"), to: "/app/progress", emoji: "📉" },
         { key: "/app/stats", label: t("sidebar.stats"), to: "/app/stats", emoji: "📈" },
@@ -525,6 +525,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       items: [
         { key: "/app/ecosystem", label: "Mi Ecosistema", to: "/app/ecosystem", emoji: "🌐" },
         { key: "/app/buddy-shop", label: "BuddyShop", to: "/app/buddy-shop", emoji: "🛍️" },
+        { key: "/app/buddy-care", label: "BuddyCare", to: "/app/buddy-care", emoji: "💚" },
       ],
     },
     {
@@ -533,7 +534,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
         { key: "/app/profile", label: t("sidebar.myProfile"), to: "/app/profile", emoji: "👤" },
 
         { key: "/app/metrics", label: t("nav.metrics"), to: "/app/metrics", emoji: "📏" },
-        { key: "/app/health-hub", label: "Salud Conectada", to: "/app/health-hub", emoji: "❤️" },
+        { key: "/app/health-hub", label: "Health Hub", to: "/app/health-hub", emoji: "💓" },
         { key: "/app/wellness-goals", label: "Metas de Bienestar", to: "/app/wellness-goals", emoji: "🎯" },
         { key: "/app/progress", label: t("nav.progress"), to: "/app/progress", emoji: "📉" },
         { key: "/app/stats", label: t("sidebar.stats"), to: "/app/stats", emoji: "📈" },

@@ -2126,7 +2126,7 @@ export default function Dashboard() {
           <div style={{ flex: 1, position: "relative" }}>
             <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "2px" }}>
               <p style={{ margin: 0, fontSize: "16px", fontWeight: 900, color: "white" }}>BuddyShop</p>
-              <span style={{ background: "#F97316", color: "white", fontSize: "9px", fontWeight: 800, borderRadius: "6px", padding: "2px 6px" }}>buddyshop.app</span>
+              <span style={{ background: "#F97316", color: "white", fontSize: "9px", fontWeight: 800, borderRadius: "6px", padding: "2px 6px" }}>buddyoneshop.com</span>
             </div>
             <p style={{ margin: 0, fontSize: "14px", color: "rgba(255,255,255,0.6)" }}>Utensilios y productos de cocina premium</p>
           </div>

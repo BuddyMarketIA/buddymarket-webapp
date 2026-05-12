@@ -875,7 +875,7 @@ export default function LandingPage() {
                 </div>
                 <h3 style={{ fontSize: 20, fontWeight: 800, color: "#111827", margin: "0 0 10px" }}>Productos saludables</h3>
                 <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.65, margin: "0 0 20px" }}>Accede a suplementos, alimentos especiales y productos saludables seleccionados por nutricionistas. Envío a domicilio.</p>
-                <a href="https://buddyshop.app" target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 20px", borderRadius: 10, fontSize: 14, fontWeight: 700, color: "white", background: "#E11D48", textDecoration: "none", boxShadow: "0 4px 16px rgba(225,29,72,0.3)" }}>
+                <a href="https://www.buddyoneshop.com" target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 20px", borderRadius: 10, fontSize: 14, fontWeight: 700, color: "white", background: "#E11D48", textDecoration: "none", boxShadow: "0 4px 16px rgba(225,29,72,0.3)" }}>
                   Ir a Buddy Shop
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
                 </a>

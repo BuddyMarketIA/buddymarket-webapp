@@ -117,8 +117,7 @@ const BuddyExpertStats = lazyWithRetry(() => import("./pages/BuddyExpertStats"))
 const ReferralDashboard = lazyWithRetry(() => import("./pages/ReferralDashboard"));
 const Referrals = lazyWithRetry(() => import("./pages/Referrals"));
 const Metrics = lazyWithRetry(() => import("./pages/Metrics"));
-const ConnectedHealth = lazyWithRetry(() => import("./pages/ConnectedHealth"));
-const WearablesIntegration = lazyWithRetry(() => import("./pages/WearablesIntegration"));
+// ConnectedHealth and WearablesIntegration removed - consolidated into HealthHub
 const NutritionalStats = lazyWithRetry(() => import("./pages/NutritionalStats"));
 const Progress = lazyWithRetry(() => import("./pages/Progress"));
 const Notifications = lazyWithRetry(() => import("./pages/Notifications"));
@@ -159,6 +158,7 @@ const AnalyticsDashboard = lazyWithRetry(() => import("./pages/AnalyticsDashboar
 const WellnessGoals = lazyWithRetry(() => import("./pages/WellnessGoals"));
 const HealthHub = lazyWithRetry(() => import("./pages/HealthHub"));
 const Ecosystem = lazyWithRetry(() => import("./pages/Ecosystem"));
+const BuddyCare = lazyWithRetry(() => import("./pages/BuddyCare"));
 
 // ─── Page loading fallback ────────────────────────────────────────────────────
 function PageLoader() {
@@ -289,8 +289,8 @@ function Router() {
       <Route path="/app/referrals">{() => <ProtectedPage><AppLayout><Referrals /></AppLayout></ProtectedPage>}</Route>
       <Route path="/app/referrals/creator">{() => <ProtectedPage><ReferralDashboard /></ProtectedPage>}</Route>
       <Route path="/app/metrics">{() => <ProtectedRoute component={Metrics} />}</Route>
-      <Route path="/app/connected-health">{() => <ProtectedRoute component={ConnectedHealth} />}</Route>
-      <Route path="/app/wearables">{() => <ProtectedRoute component={WearablesIntegration} />}</Route>
+      <Route path="/app/connected-health">{() => { window.location.replace("/app/health-hub"); return null; }}</Route>
+      <Route path="/app/wearables">{() => { window.location.replace("/app/health-hub"); return null; }}</Route>
       <Route path="/app/stats">{() => <ProtectedRoute component={NutritionalStats} />}</Route>
       <Route path="/app/progress">{() => <ProtectedRoute component={Progress} />}</Route>
       <Route path="/app/notifications">{() => <ProtectedPage><Notifications /></ProtectedPage>}</Route>
@@ -306,6 +306,7 @@ function Router() {
       <Route path="/app/wellness-goals">{() => <ProtectedRoute component={WellnessGoals} />}</Route>
       <Route path="/app/health-hub">{() => <ProtectedRoute component={HealthHub} />}</Route>
       <Route path="/app/ecosystem">{() => <ProtectedRoute component={Ecosystem} />}</Route>
+      <Route path="/app/buddy-care">{() => <ProtectedRoute component={BuddyCare} />}</Route>
       <Route path="/app/expert/patients">{() => <ProtectedPage><ExpertPatients /></ProtectedPage>}</Route>
       <Route path="/app/expert/patients/:id">{() => <ProtectedPage><ExpertPatientDetail /></ProtectedPage>}</Route>
       <Route path="/app/expert/chat">{() => <ProtectedPage><ExpertChat /></ProtectedPage>}</Route>

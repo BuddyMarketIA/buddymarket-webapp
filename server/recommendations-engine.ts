@@ -304,7 +304,7 @@ async function fetchBuddyShopProducts(options: {
   query?: string;
   featured?: boolean;
 }): Promise<any[]> {
-  const BUDDYSHOP_URL = process.env.BUDDYSHOP_API_URL || "https://buddyshop-niebit4z.manus.space/api/buddyone";
+  const BUDDYSHOP_URL = process.env.BUDDYSHOP_API_URL || "https://www.buddyoneshop.com/api/buddyone";
   const BUDDYSHOP_KEY = process.env.BUDDYSHOP_API_KEY || "";
   // The API base is the tRPC endpoint
   const baseUrl = BUDDYSHOP_URL.replace("/api/buddyone", "/api/trpc");
@@ -395,7 +395,7 @@ export async function generateBuddyShopRecommendations(
   const expiresAt = new Date();
   expiresAt.setDate(expiresAt.getDate() + 14); // Valid for 14 days
 
-  const BUDDYSHOP_BASE = "https://buddyshop-niebit4z.manus.space";
+  const BUDDYSHOP_BASE = "https://www.buddyoneshop.com";
   const categories = getTriggerCategories(triggers);
 
   if (categories.length === 0) return recommendations;

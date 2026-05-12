@@ -3511,3 +3511,9 @@
 - [x] Buscar imágenes reales de platos terminados en APIs gratuitas (Pexels/Pixabay) para recetas pendientes
 - [x] Actualizar las 16,985 recetas con imágenes de platos terminados de Pexels (100% completado)
 - [x] 0 recetas pendientes - todas actualizadas con imágenes de platos terminados
+## Rediseño visual inspirado en BuddyCoach (versión BuddyOne)
+- [x] Rediseñar Ecosystem.tsx con card de score combinado, grid 2x2 de acceso rápido y secciones de entrenamiento/nutrición
+- [x] Actualizar sidebar: renombrar "Salud Conectada" a "Health Hub", añadir BuddyCare al grupo Ecosistema
+- [x] Actualizar todas las URLs de BuddyShop de buddyshop-niebit4z.manus.space y buddyshop.app a www.buddyoneshop.com
+- [x] Eliminar rutas duplicadas /app/connected-health y /app/wearables (redirigen a /app/health-hub)
+- [x] Crear página BuddyCare.tsx y añadir ruta /app/buddy-care en App.tsx

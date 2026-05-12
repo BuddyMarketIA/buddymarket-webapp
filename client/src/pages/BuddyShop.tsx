@@ -1,6 +1,6 @@
 export default function BuddyShop() {
   const handleVisit = () => {
-    window.open("https://buddyshop.app", "_blank", "noopener,noreferrer");
+    window.open("https://www.buddyoneshop.com", "_blank", "noopener,noreferrer");
   };
 
   const CATEGORIES = [
@@ -42,7 +42,7 @@ export default function BuddyShop() {
               <div className="flex items-center gap-2">
                 <h1 className="text-2xl font-black text-white tracking-tight">BuddyShop</h1>
                 <span className="text-xs font-800 px-2 py-0.5 rounded-lg text-white" style={{ background: "#F97316" }}>
-                  .app
+                  .com
                 </span>
               </div>
               <p className="text-sm text-muted-foreground/70 mt-0.5">Marketplace de cocina y nutrición</p>
@@ -67,7 +67,7 @@ export default function BuddyShop() {
             </svg>
           </button>
 
-          <p className="text-xs text-muted-foreground text-center mt-3">buddyshop.app · Abre en nueva pestaña</p>
+          <p className="text-xs text-muted-foreground text-center mt-3">www.buddyoneshop.com · Abre en nueva pestaña</p>
         </div>
       </div>
 

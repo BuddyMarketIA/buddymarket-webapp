@@ -144,7 +144,7 @@ export const ecosystemSyncRouter = router({
   getBuddyShopProducts: protectedProcedure
     .input(z.object({ category: z.string().optional(), limit: z.number().default(6) }))
     .query(async ({ ctx, input }) => {
-      const BUDDYSHOP_URL = process.env.BUDDYSHOP_API_URL || "https://buddyshop-niebit4z.manus.space/api/buddyone";
+      const BUDDYSHOP_URL = process.env.BUDDYSHOP_API_URL || "https://www.buddyoneshop.com/api/buddyone";
       const BUDDYSHOP_KEY = process.env.BUDDYSHOP_API_KEY || "";
       const baseUrl = BUDDYSHOP_URL.replace("/api/buddyone", "/api/trpc");
 
@@ -194,7 +194,7 @@ export const ecosystemSyncRouter = router({
 
     const apps = [
       { id: "buddycoach", name: "BuddyCoach", description: "Entrenamiento y fitness personalizado", icon: "🏋️", url: "https://buddycoach.io" },
-      { id: "buddyshop", name: "BuddyShop", description: "Productos de cocina y hogar premium", icon: "🛍️", url: "https://buddyshop-niebit4z.manus.space" },
+      { id: "buddyshop", name: "BuddyShop", description: "Productos de cocina y hogar premium", icon: "🛍️", url: "https://www.buddyoneshop.com" },
       { id: "buddycare", name: "BuddyCare", description: "Bienestar y suplementación personalizada", icon: "💚", url: "https://buddycare.app" },
     ];
 
