@@ -508,15 +508,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
         { key: "/app/kids-menus", label: "Mis Menús para Niños", to: "/app/kids-menus", emoji: "🍽️" },
       ],
     },
-    {
-      label: "Menús",
-      items: [
-        { key: "/app/special-menus", label: "Menús Especiales", to: "/app/special-menus", emoji: "🍽️" },
-        { key: "/app/special-menus-saved", label: "Mis Menús Especiales", to: "/app/special-menus-saved", emoji: "⭐" },
-        { key: "/app/event-menus", label: "Menús de Eventos", to: "/app/event-menus", emoji: "🎉" },
-        { key: "/app/event-menus-saved", label: "Mis Menús de Eventos", to: "/app/event-menus-saved", emoji: "🎊" },
-      ],
-    },
+
     {
       label: "Familia",
       items: [

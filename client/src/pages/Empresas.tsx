@@ -16,110 +16,26 @@ import {
   Sparkles, Clock, Globe, Award
 } from "lucide-react";
 
-// ─── Pricing tiers ──────────────────────────────────────────────────────────
+// ─── Pricing tiers (same Pro Max plan, only price changes by volume) ─────────
 const PRICING_TIERS = [
-  {
-    id: "starter" as const,
-    name: "Starter",
-    price: 3.90,
-    benefit: 2.50,
-    employees: "10–49",
-    minEmployees: 10,
-    maxEmployees: 49,
-    badge: null,
-    features: [
-      "App completa con menús IA",
-      "Lista de la compra automática",
-      "Seguimiento de macros",
-      "Códigos de activación",
-      "Soporte por email",
-    ],
-  },
-  {
-    id: "growth" as const,
-    name: "Growth",
-    price: 3.50,
-    benefit: 2.10,
-    employees: "50–199",
-    minEmployees: 50,
-    maxEmployees: 199,
-    badge: null,
-    features: [
-      "Todo lo de Starter",
-      "Panel RRHH con métricas",
-      "Onboarding dedicado",
-      "Alta masiva por CSV",
-      "Soporte prioritario",
-    ],
-  },
-  {
-    id: "business" as const,
-    name: "Business",
-    price: 3.40,
-    benefit: 2.00,
-    employees: "200–499",
-    minEmployees: 200,
-    maxEmployees: 499,
-    badge: "Más popular",
-    features: [
-      "Todo lo de Growth",
-      "BuddyCoach grupal mensual",
-      "Informes PDF mensuales",
-      "Webinars de nutrición",
-      "Cuenta ejecutiva",
-    ],
-  },
-  {
-    id: "enterprise" as const,
-    name: "Enterprise",
-    price: 2.50,
-    benefit: 1.10,
-    employees: "500–999",
-    minEmployees: 500,
-    maxEmployees: 999,
-    badge: null,
-    features: [
-      "Todo lo de Business",
-      "SSO (Google / Microsoft)",
-      "SLA 99,9%",
-      "API de integración HRIS",
-      "Soporte 24/5",
-    ],
-  },
-  {
-    id: "corporate" as const,
-    name: "Corporate",
-    price: 2.20,
-    benefit: 0.80,
-    employees: "1.000–4.999",
-    minEmployees: 1000,
-    maxEmployees: 4999,
-    badge: null,
-    features: [
-      "Todo lo de Enterprise",
-      "Integración HRIS completa",
-      "Bienestar personalizado",
-      "Eventos presenciales",
-      "Soporte 24/7",
-    ],
-  },
-  {
-    id: "global" as const,
-    name: "Global",
-    price: 1.90,
-    benefit: 0.50,
-    employees: "5.000+",
-    minEmployees: 5000,
-    maxEmployees: 99999,
-    badge: "Mejor precio",
-    features: [
-      "Todo lo de Corporate",
-      "Multi-país / multi-idioma",
-      "API dedicada premium",
-      "Consultoría estratégica",
-      "Condiciones a medida",
-    ],
-  },
+  { id: "starter" as const, name: "Starter", price: 3.90, employees: "10–49", minEmployees: 10, maxEmployees: 49 },
+  { id: "growth" as const, name: "Growth", price: 3.50, employees: "50–199", minEmployees: 50, maxEmployees: 199 },
+  { id: "business" as const, name: "Business", price: 3.40, employees: "200–499", minEmployees: 200, maxEmployees: 499 },
+  { id: "enterprise" as const, name: "Enterprise", price: 2.50, employees: "500–999", minEmployees: 500, maxEmployees: 999 },
+  { id: "corporate" as const, name: "Corporate", price: 2.20, employees: "1.000–4.999", minEmployees: 1000, maxEmployees: 4999 },
+  { id: "global" as const, name: "Global", price: 1.90, employees: "5.000+", minEmployees: 5000, maxEmployees: 99999 },
+];
+
+// All plans include the exact same Pro Max features
+const PRO_MAX_FEATURES = [
+  { icon: "Sparkles", title: "Menús IA personalizados", desc: "Menús semanales adaptados a objetivos, alergias y preferencias" },
+  { icon: "Calculator", title: "Seguimiento nutricional completo", desc: "Control de calorías, macros y micronutrientes con diario de comidas" },
+  { icon: "Clock", title: "Lista de la compra inteligente", desc: "Lista automática por supermercado con cantidades exactas" },
+  { icon: "Heart", title: "Health Hub + Wearables", desc: "Integración con dispositivos, seguimiento de sueño y actividad" },
+  { icon: "Globe", title: "BuddyExperts", desc: "Acceso a nutricionistas certificados para consultas personalizadas" },
+  { icon: "Zap", title: "BuddyCare", desc: "Seguimiento de suplementos y recomendaciones de bienestar" },
+  { icon: "BarChart3", title: "Ecosistema completo", desc: "BuddyCoach, BuddyShop, BuddyPets y todo el ecosistema Buddy One" },
+  { icon: "Headphones", title: "Soporte premium", desc: "Soporte prioritario por chat y email para todos los empleados" },
 ];
 
 const INDUSTRIES = [
@@ -227,8 +143,9 @@ export default function Empresas() {
     const annualTotal = monthlyTotal * 10; // 2 months free
     const annualMonthlyEquiv = annualTotal / 12;
     const annualSavings = monthlyTotal * 12 - annualTotal;
-    const proMaxPrice = 19.99; // individual Pro Max price
+    const proMaxPrice = 19.99;
     const savingsVsIndividual = (proMaxPrice - tier.price) * employees;
+    const savingsPercent = Math.round(((proMaxPrice - tier.price) / proMaxPrice) * 100);
 
     return {
       tier,
@@ -237,6 +154,7 @@ export default function Empresas() {
       annualMonthlyEquiv,
       annualSavings,
       savingsVsIndividual,
+      savingsPercent,
       effectiveMonthly: billingCycle === "annual" ? annualMonthlyEquiv : monthlyTotal,
     };
   }, [employees, billingCycle]);
@@ -438,13 +356,15 @@ export default function Empresas() {
         </div>
       </section>
 
-      {/* ── PLANES ──────────────────────────────────────────────────────── */}
+       {/* ── PLAN ÚNICO: PRECIOS POR VOLUMEN ───────────────────────────── */}
       <section id="planes" className="py-20 px-4 bg-muted/30">
-        <div className="max-w-7xl mx-auto">
+        <div className="max-w-4xl mx-auto">
           <div className="text-center mb-10">
-            <h2 className="text-3xl font-bold mb-4">Planes y precios</h2>
-            <p className="text-muted-foreground mb-6">
-              Sin permanencia. Facturación por licencias activas. Anual: 2 meses gratis.
+            <Badge className="bg-primary/10 text-primary border-0 mb-4">Un solo plan, un solo producto</Badge>
+            <h2 className="text-3xl font-bold mb-4">Buddy One Pro Max para todos tus empleados</h2>
+            <p className="text-muted-foreground max-w-2xl mx-auto mb-6">
+              Todos reciben exactamente lo mismo: el plan Pro Max completo, valorado en 19,99€/mes.
+              Lo único que cambia es el precio según el número de empleados.
             </p>
             {/* Billing toggle */}
             <div className="inline-flex items-center gap-2 bg-muted rounded-full p-1">
@@ -471,75 +391,69 @@ export default function Empresas() {
             </div>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
-            {PRICING_TIERS.map((plan) => {
-              const effectivePrice = billingCycle === "annual"
-                ? Math.round(plan.price * 10 / 12 * 100) / 100
-                : plan.price;
-              const isMostPopular = plan.badge === "Más popular";
+          {/* Pricing table */}
+          <Card className="border-border/50 overflow-hidden">
+            <div className="overflow-x-auto">
+              <table className="w-full">
+                <thead>
+                  <tr className="border-b border-border/50 bg-muted/50">
+                    <th className="text-left px-6 py-4 text-sm font-semibold">Tramo</th>
+                    <th className="text-center px-6 py-4 text-sm font-semibold">Empleados</th>
+                    <th className="text-center px-6 py-4 text-sm font-semibold">Precio/empleado/mes</th>
+                    <th className="text-center px-6 py-4 text-sm font-semibold hidden sm:table-cell">Ahorro vs individual</th>
+                    <th className="text-right px-6 py-4 text-sm font-semibold"></th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {PRICING_TIERS.map((tier, i) => {
+                    const effectivePrice = billingCycle === "annual"
+                      ? Math.round(tier.price * 10 / 12 * 100) / 100
+                      : tier.price;
+                    const savingsPct = Math.round(((19.99 - tier.price) / 19.99) * 100);
+                    const isHighlighted = i === 2; // Business row
+                    return (
+                      <tr key={tier.id} className={`border-b border-border/30 transition-colors ${isHighlighted ? "bg-primary/5" : "hover:bg-muted/30"}`}>
+                        <td className="px-6 py-4">
+                          <div className="flex items-center gap-2">
+                            <span className="font-semibold">{tier.name}</span>
+                            {isHighlighted && <Badge className="bg-primary text-primary-foreground text-[10px] py-0">Popular</Badge>}
+                          </div>
+                        </td>
+                        <td className="px-6 py-4 text-center text-sm text-muted-foreground">{tier.employees}</td>
+                        <td className="px-6 py-4 text-center">
+                          <span className="text-xl font-bold">{effectivePrice.toFixed(2).replace(".", ",")}€</span>
+                        </td>
+                        <td className="px-6 py-4 text-center hidden sm:table-cell">
+                          <Badge variant="outline" className="bg-emerald-500/10 text-emerald-600 border-emerald-200">
+                            −{savingsPct}%
+                          </Badge>
+                        </td>
+                        <td className="px-6 py-4 text-right">
+                          <Button
+                            size="sm"
+                            variant={isHighlighted ? "default" : "outline"}
+                            onClick={() => {
+                              if (tier.id === "global" || tier.id === "corporate") {
+                                document.getElementById("contact-form")?.scrollIntoView({ behavior: "smooth" });
+                              } else {
+                                handleCheckout(tier.id);
+                              }
+                            }}
+                            disabled={createCheckout.isPending}
+                          >
+                            {tier.id === "global" || tier.id === "corporate" ? "Contactar" : "Contratar"}
+                          </Button>
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          </Card>
 
-              return (
-                <Card
-                  key={plan.id}
-                  className={`relative border-border/50 transition-shadow hover:shadow-lg ${
-                    isMostPopular ? "border-primary shadow-lg shadow-primary/10 ring-1 ring-primary/20" : ""
-                  }`}
-                >
-                  {plan.badge && (
-                    <div className="absolute -top-3 left-1/2 -translate-x-1/2">
-                      <Badge className={
-                        isMostPopular
-                          ? "bg-primary text-primary-foreground"
-                          : "bg-emerald-600 text-white"
-                      }>
-                        {plan.badge}
-                      </Badge>
-                    </div>
-                  )}
-                  <CardHeader className="pb-3 pt-6">
-                    <CardTitle className="text-lg">{plan.name}</CardTitle>
-                    <div className="mt-2">
-                      <span className="text-3xl font-bold">{effectivePrice.toFixed(2).replace(".", ",")}€</span>
-                      <span className="text-muted-foreground text-sm">/empleado/mes</span>
-                    </div>
-                    <p className="text-xs text-muted-foreground">{plan.employees} empleados</p>
-                    {billingCycle === "annual" && (
-                      <p className="text-xs text-emerald-600 font-medium mt-1">
-                        Ahorro: {((plan.price * 12 - plan.price * 10) * plan.minEmployees).toFixed(0)}€–{((plan.price * 12 - plan.price * 10) * plan.maxEmployees).toFixed(0)}€/año
-                      </p>
-                    )}
-                  </CardHeader>
-                  <CardContent className="space-y-3">
-                    <ul className="space-y-2">
-                      {plan.features.map((f) => (
-                        <li key={f} className="flex items-start gap-2 text-sm">
-                          <CheckCircle2 className="h-4 w-4 text-emerald-500 flex-shrink-0 mt-0.5" />
-                          {f}
-                        </li>
-                      ))}
-                    </ul>
-                    <Button
-                      className="w-full mt-4"
-                      variant={isMostPopular ? "default" : "outline"}
-                      onClick={() => {
-                        if (plan.id === "global" || plan.id === "corporate") {
-                          document.getElementById("contact-form")?.scrollIntoView({ behavior: "smooth" });
-                        } else {
-                          handleCheckout(plan.id);
-                        }
-                      }}
-                      disabled={createCheckout.isPending}
-                    >
-                      {plan.id === "global" || plan.id === "corporate" ? "Contactar" : "Contratar ahora"}
-                    </Button>
-                  </CardContent>
-                </Card>
-              );
-            })}
-          </div>
-
-          <p className="text-center text-xs text-muted-foreground mt-8">
-            Todos los precios sin IVA. Factura mensual o anual con IVA incluido para empresas de la UE.
+          <p className="text-center text-xs text-muted-foreground mt-6">
+            Todos los precios sin IVA. Sin permanencia. Facturación por licencias activas. Anual: pagas 10 meses, recibes 12.
           </p>
         </div>
       </section>

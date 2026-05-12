@@ -3586,3 +3586,10 @@
 - [x] Añadir enlace "Empresas" en el header de navegación principal
 - [x] Actualizar secciones de funcionalidades con todas las nuevas features (BuddyExperts, Product Board, B2B, IA, etc.)
 - [x] Revisar y actualizar hero, pricing, testimonials y CTA con información actualizada
+
+## Simplificar pricing B2B Empresas
+- [x] Reescribir sección de pricing en Empresas.tsx: todos los planes son idénticos (Pro Max completo), solo cambia el precio por volumen de empleados
+- [x] Eliminar diferenciación de features entre planes, mostrar tabla única de precios por tramo
+
+## Fix: Sidebar elementos duplicados
+- [x] Revisar y eliminar elementos repetidos en el sidebar de navegación (eliminada sección 'Menús' duplicada)
