@@ -188,9 +188,11 @@ export default function EmpresaDashboard() {
 
   const planLabels: Record<string, string> = {
     starter: "Starter",
+    growth: "Growth",
     business: "Business",
     enterprise: "Enterprise",
     corporate: "Corporate",
+    global: "Global",
   };
 
   const statusLabels: Record<string, { label: string; color: string }> = {
@@ -643,30 +645,39 @@ export default function EmpresaDashboard() {
             </Card>
           )}
 
-          {/* Campaign logs detail */}
+          {/* Campaign logs detail — privacy-first: only show aggregate status, no individual emails */}
           {selectedCampaignId && campaignLogs && (
             <Card className="border-border/50 mt-3">
               <CardHeader className="pb-2">
                 <CardTitle className="text-sm flex items-center gap-2">
                   <Mail className="w-4 h-4" />
-                  Detalle de envíos — {campaignLogs.campaign.name}
+                  Resumen de envíos — {campaignLogs.campaign.name}
                 </CardTitle>
               </CardHeader>
-              <CardContent className="p-0">
-                <div className="divide-y divide-border/50 max-h-64 overflow-y-auto">
-                  {campaignLogs.logs.map((log) => (
-                    <div key={log.id} className="px-4 py-2.5 flex items-center justify-between gap-3 text-sm">
-                      <div className="min-w-0">
-                        <div className="font-medium truncate">{log.recipientName || log.recipientEmail}</div>
-                        <div className="text-xs text-muted-foreground truncate">{log.recipientEmail}</div>
-                        {log.errorMessage && <div className="text-xs text-red-500 mt-0.5">{log.errorMessage}</div>}
-                      </div>
-                      <Badge variant={log.status === "sent" ? "default" : log.status === "failed" ? "destructive" : "secondary"} className="text-xs shrink-0">
-                        {log.status === "sent" ? "Enviado" : log.status === "failed" ? "Error" : "Pendiente"}
-                      </Badge>
+              <CardContent className="p-4">
+                <div className="grid grid-cols-3 gap-4 text-center">
+                  <div>
+                    <div className="text-xl font-bold text-emerald-600">
+                      {campaignLogs.logs.filter((l: any) => l.status === "sent").length}
                     </div>
-                  ))}
+                    <div className="text-xs text-muted-foreground">Entregados</div>
+                  </div>
+                  <div>
+                    <div className="text-xl font-bold text-red-500">
+                      {campaignLogs.logs.filter((l: any) => l.status === "failed").length}
+                    </div>
+                    <div className="text-xs text-muted-foreground">Fallidos</div>
+                  </div>
+                  <div>
+                    <div className="text-xl font-bold text-amber-500">
+                      {campaignLogs.logs.filter((l: any) => l.status !== "sent" && l.status !== "failed").length}
+                    </div>
+                    <div className="text-xs text-muted-foreground">Pendientes</div>
+                  </div>
                 </div>
+                <p className="text-xs text-muted-foreground text-center mt-4">
+                  Por privacidad, los datos individuales de los destinatarios no se muestran en este panel.
+                </p>
               </CardContent>
             </Card>
           )}

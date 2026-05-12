@@ -568,6 +568,13 @@
       "when": 1778582195831,
       "tag": "0080_puzzling_dexter_bennett",
       "breakpoints": true
+    },
+    {
+      "idx": 81,
+      "version": "7",
+      "when": 1778596095699,
+      "tag": "0081_bitter_wild_pack",
+      "breakpoints": true
     }
   ]
 }

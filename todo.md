@@ -3558,3 +3558,9 @@
 
 ## Footer: Logos de financiación
 - [x] Añadir imagen de logos de financiación (UE NextGenerationEU, ENISA, Plan de Recuperación) al footer de la landing page
+
+## B2B Modelo Gympass
+- [x] Landing page /empresas con propuesta de valor, pricing por tramos, formulario de contacto
+- [x] Flujo de activación del empleado: canjear código corporativo → activar Pro Max
+- [x] Pricing por tramos: Starter 3,90€, Growth 3,50€, Business 3,40€, Enterprise 2,50€, Corporate 2,20€, Global 1,90€
+- [x] Panel HR mínimo: solo licencias activas/usadas y facturación (sin datos individuales de empleados)

@@ -5,11 +5,15 @@ import { router, publicProcedure, protectedProcedure } from "../_core/trpc";
 import { getDb } from "../db";
 import { notifyOwner } from "../_core/notification";
 
-// ─── Planes empresariales ─────────────────────────────────────────────────
+// ─── Planes empresariales (modelo Gympass — 6 tramos) ────────────────────
+import type { B2BPlanId } from "../stripe-b2b-products";
+import { B2B_PLANS as STRIPE_B2B_PLANS, getPlanForEmployeeCount, calculateB2BCost } from "../stripe-b2b-products";
+
 const COMPANY_PLANS = {
   starter: {
-    name: "BuddyMarket for Business — Starter",
-    pricePerEmployee: 8,
+    name: "Buddy One for Business — Starter",
+    pricePerEmployee: 3.90,
+    benefitPerEmployee: 2.50,
     minEmployees: 10,
     maxEmployees: 49,
     description: "Para equipos de 10 a 49 personas",
@@ -17,48 +21,83 @@ const COMPANY_PLANS = {
       "App completa con menús IA para todos los empleados",
       "Lista de la compra automática por supermercado",
       "Seguimiento de macros y calorías",
+      "Códigos de activación individuales",
       "Soporte por email",
     ],
   },
-  business: {
-    name: "BuddyMarket for Business — Business",
-    pricePerEmployee: 6,
+  growth: {
+    name: "Buddy One for Business — Growth",
+    pricePerEmployee: 3.50,
+    benefitPerEmployee: 2.10,
     minEmployees: 50,
     maxEmployees: 199,
     description: "Para equipos de 50 a 199 personas",
     features: [
       "Todo lo de Starter",
-      "Panel de RRHH con métricas de activación",
-      "BuddyCoach asignado (sesión grupal mensual)",
+      "Panel RRHH con métricas agregadas",
       "Onboarding dedicado",
       "Alta masiva de empleados por CSV",
+      "Soporte prioritario",
     ],
   },
-  enterprise: {
-    name: "BuddyMarket for Business — Enterprise",
-    pricePerEmployee: 4.5,
+  business: {
+    name: "Buddy One for Business — Business",
+    pricePerEmployee: 3.40,
+    benefitPerEmployee: 2.00,
     minEmployees: 200,
     maxEmployees: 499,
     description: "Para equipos de 200 a 499 personas",
     features: [
-      "Todo lo de Business",
-      "Integración SSO (Google / Microsoft)",
-      "Informes mensuales en PDF para dirección",
-      "SLA 99,9% garantizado",
+      "Todo lo de Growth",
+      "BuddyCoach grupal mensual",
+      "Informes PDF mensuales para dirección",
+      "Webinars de nutrición para empleados",
       "Cuenta ejecutiva dedicada",
     ],
   },
-  corporate: {
-    name: "BuddyMarket for Business — Corporate",
-    pricePerEmployee: 0, // A medida
+  enterprise: {
+    name: "Buddy One for Business — Enterprise",
+    pricePerEmployee: 2.50,
+    benefitPerEmployee: 1.10,
     minEmployees: 500,
-    maxEmployees: 99999,
-    description: "Para equipos de 500+ personas",
+    maxEmployees: 999,
+    description: "Para equipos de 500 a 999 personas",
+    features: [
+      "Todo lo de Business",
+      "Integración SSO (Google / Microsoft)",
+      "SLA 99,9% garantizado",
+      "API de integración con HRIS",
+      "Soporte 24/5",
+    ],
+  },
+  corporate: {
+    name: "Buddy One for Business — Corporate",
+    pricePerEmployee: 2.20,
+    benefitPerEmployee: 0.80,
+    minEmployees: 1000,
+    maxEmployees: 4999,
+    description: "Para equipos de 1.000 a 4.999 personas",
     features: [
       "Todo lo de Enterprise",
-      "Integración con HRIS (Workday, SAP, BambooHR)",
-      "API dedicada",
-      "Precio a medida",
+      "Integración HRIS (Workday, SAP, BambooHR)",
+      "Programa de bienestar personalizado",
+      "Eventos de nutrición presenciales",
+      "Soporte 24/7",
+    ],
+  },
+  global: {
+    name: "Buddy One for Business — Global",
+    pricePerEmployee: 1.90,
+    benefitPerEmployee: 0.50,
+    minEmployees: 5000,
+    maxEmployees: 99999,
+    description: "Para equipos de 5.000+ personas",
+    features: [
+      "Todo lo de Corporate",
+      "Multi-país / multi-idioma",
+      "API dedicada con SLA premium",
+      "Consultoría nutricional estratégica",
+      "Precio y condiciones a medida",
     ],
   },
 } as const;
@@ -92,7 +131,7 @@ export const companyRouter = router({
       contactPhone: z.string().max(30).optional(),
       employeeCount: z.number().int().min(1).optional(),
       industry: z.string().max(100).optional(),
-      planInterest: z.enum(["starter", "business", "enterprise", "corporate"]).optional(),
+      planInterest: z.enum(["starter", "growth", "business", "enterprise", "corporate", "global"]).optional(),
       message: z.string().max(2000).optional(),
     }))
     .mutation(async ({ input }) => {
@@ -123,8 +162,8 @@ export const companyRouter = router({
   /** Crear checkout Stripe para plan empresarial — facturación por licencias activas */
   createCheckout: publicProcedure
     .input(z.object({
-      plan: z.enum(["starter", "business", "enterprise"]),
-      employeeCount: z.number().int().min(1).max(10000),
+      plan: z.enum(["starter", "growth", "business", "enterprise", "corporate", "global"]),
+      employeeCount: z.number().int().min(1).max(100000),
       companyName: z.string().min(2).max(255),
       contactEmail: z.string().email(),
       contactName: z.string().min(2).max(255),
@@ -133,11 +172,10 @@ export const companyRouter = router({
     .mutation(async ({ input }) => {
       const Stripe = (await import("stripe")).default;
       const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
-      const { getStripePriceId, B2B_PLANS } = await import("../stripe-b2b-products.js");
+      const { getStripePriceId } = await import("../stripe-b2b-products.js");
 
-      const planConfig = COMPANY_PLANS[input.plan];
-      const b2bPlanConfig = B2B_PLANS[input.plan];
-      const stripePriceId = getStripePriceId(input.plan);
+      const b2bPlanConfig = STRIPE_B2B_PLANS[input.plan as B2BPlanId];
+      const stripePriceId = getStripePriceId(input.plan as B2BPlanId);
 
       // Construir line_items: precio unitario por licencia con quantity = empleados estimados
       // La quantity se actualizará mensualmente según licencias activas reales
@@ -500,7 +538,7 @@ export const companyRouter = router({
   adminGetCompanies: protectedProcedure
     .input(z.object({
       status: z.enum(["pending", "trial", "active", "suspended", "cancelled", "all"]).optional().default("all"),
-      plan: z.enum(["starter", "business", "enterprise", "corporate", "all"]).optional().default("all"),
+      plan: z.enum(["starter", "growth", "business", "enterprise", "corporate", "global", "all"]).optional().default("all"),
       search: z.string().optional(),
     }))
     .query(async ({ ctx, input }) => {
@@ -543,7 +581,7 @@ export const companyRouter = router({
         .groupBy(companyMembers.companyId);
       const memberMap = new Map(memberCounts.map(m => [m.companyId, Number(m.total)]));
 
-      const prices: Record<string, number> = { starter: 8, business: 6, enterprise: 4.5, corporate: 0 };
+      const prices: Record<string, number> = { starter: 3.90, growth: 3.50, business: 3.40, enterprise: 2.50, corporate: 2.20, global: 1.90 };
       const withMetrics = filtered.map(c => ({
         ...c,
         activeMembersCount: memberMap.get(c.id) || 0,
@@ -616,7 +654,7 @@ export const companyRouter = router({
     .input(z.object({
       companyId: z.number(),
       status: z.enum(["pending", "trial", "active", "suspended", "cancelled"]).optional(),
-      plan: z.enum(["starter", "business", "enterprise", "corporate"]).optional(),
+      plan: z.enum(["starter", "growth", "business", "enterprise", "corporate", "global"]).optional(),
       licensesTotal: z.number().min(1).max(10000).optional(),
       notes: z.string().optional(),
     }))
@@ -676,7 +714,7 @@ export const companyRouter = router({
         .select({ total: count() })
         .from(companyMembers)
         .where(and(eq(companyMembers.companyId, input.companyId), eq(companyMembers.isActive, true), gt(companyMembers.lastActiveAt, thirtyDaysAgo)));
-      const prices: Record<string, number> = { starter: 8, business: 6, enterprise: 4.5, corporate: 0 };
+      const prices: Record<string, number> = { starter: 3.90, growth: 3.50, business: 3.40, enterprise: 2.50, corporate: 2.20, global: 1.90 };
       const pricePerLicense = prices[company.plan] || 0;
       const activeLicenses = Number(total);
       const totalAmount = activeLicenses * pricePerLicense;
@@ -705,7 +743,7 @@ export const companyRouter = router({
       const drizzleDb = await getDb();
       if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
       const { companies, companyBillingSnapshots } = await import("../../drizzle/schema.js");
-      const prices: Record<string, number> = { starter: 8, business: 6, enterprise: 4.5, corporate: 0 };
+      const prices: Record<string, number> = { starter: 3.90, growth: 3.50, business: 3.40, enterprise: 2.50, corporate: 2.20, global: 1.90 };
 
       const allCompanies = await drizzleDb.select().from(companies);
       const activeCompanies = allCompanies.filter(c => c.status === "active");
@@ -716,7 +754,7 @@ export const companyRouter = router({
       const mrr = activeCompanies.reduce((s, c) => s + (c.licensesActive || 0) * (prices[c.plan] || 0), 0);
       const arr = mrr * 12;
 
-      const byPlan = ["starter", "business", "enterprise", "corporate"].map(plan => ({
+      const byPlan = ["starter", "growth", "business", "enterprise", "corporate", "global"].map(plan => ({
         plan,
         totalCompanies: allCompanies.filter(c => c.plan === plan).length,
         activeCompanies: activeCompanies.filter(c => c.plan === plan).length,

@@ -2078,7 +2078,7 @@ export type InsertUserReferralCode = typeof userReferralCodes.$inferInsert;
 // BUDDYMARKET FOR BUSINESS — B2B Corporate Wellness
 // ─────────────────────────────────────────────────────────────
 
-export const companyPlanEnum = pgEnum("companyPlan", ["starter", "business", "enterprise", "corporate"]);
+export const companyPlanEnum = pgEnum("companyPlan", ["starter", "growth", "business", "enterprise", "corporate", "global"]);
 export const companyStatusEnum = pgEnum("companyStatus", ["pending", "trial", "active", "suspended", "cancelled"]);
 export const activationCodeStatusEnum = pgEnum("activationCodeStatus", ["available", "used", "expired", "revoked"]);
 

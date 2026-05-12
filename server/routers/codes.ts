@@ -335,7 +335,7 @@ export const codesRouter = router({
       name: z.string().min(2).max(255),
       contactEmail: z.string().email(),
       contactName: z.string().optional(),
-      plan: z.enum(["starter", "business", "enterprise", "corporate"]).default("starter"),
+      plan: z.enum(["starter", "growth", "business", "enterprise", "corporate", "global"]).default("starter"),
       licensesTotal: z.number().int().min(1).max(10000).default(10),
       adminUserId: z.number().int().optional(),
       customCode: z.string().min(4).max(20).optional(),
