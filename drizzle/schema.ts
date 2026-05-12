@@ -4161,3 +4161,130 @@ export const ecosystemActivity = pgTable("ecosystem_activity", {
 }));
 export type EcosystemActivityRow = typeof ecosystemActivity.$inferSelect;
 export type InsertEcosystemActivity = typeof ecosystemActivity.$inferInsert;
+
+// =============================================================================
+// EXPERT REVIEWS (Reseñas verificadas de pacientes)
+// =============================================================================
+export const expertReviews = pgTable("expert_reviews", {
+  id: serial("id").primaryKey(),
+  expertId: integer("expertId").notNull(),
+  patientUserId: integer("patientUserId").notNull(),
+  expertPatientId: integer("expertPatientId").notNull(),
+  rating: integer("rating").notNull(),
+  title: varchar("title", { length: 256 }),
+  content: text("content"),
+  isVerified: boolean("isVerified").default(false).notNull(),
+  weeksWithExpert: integer("weeksWithExpert").default(0).notNull(),
+  isPublic: boolean("isPublic").default(true).notNull(),
+  expertResponse: text("expertResponse"),
+  expertRespondedAt: timestamp("expertRespondedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  expertIdx: index("er_expert_idx").on(t.expertId),
+  patientIdx: index("er_patient_idx").on(t.patientUserId),
+}));
+export type ExpertReview = typeof expertReviews.$inferSelect;
+export type InsertExpertReview = typeof expertReviews.$inferInsert;
+
+// =============================================================================
+// EXPERT AVAILABILITY (Disponibilidad y reserva directa)
+// =============================================================================
+export const dayOfWeekEnum = pgEnum("dayOfWeek", ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"]);
+export const expertAvailabilitySlots = pgTable("expert_availability_slots", {
+  id: serial("id").primaryKey(),
+  expertId: integer("expertId").notNull(),
+  dayOfWeek: dayOfWeekEnum("dayOfWeek").notNull(),
+  startTime: varchar("startTime", { length: 5 }).notNull(),
+  endTime: varchar("endTime", { length: 5 }).notNull(),
+  slotDurationMinutes: integer("slotDurationMinutes").default(60).notNull(),
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  expertIdx: index("eas_expert_idx").on(t.expertId),
+}));
+export type ExpertAvailabilitySlot = typeof expertAvailabilitySlots.$inferSelect;
+export type InsertExpertAvailabilitySlot = typeof expertAvailabilitySlots.$inferInsert;
+
+// =============================================================================
+// VIDEO ROOMS (Salas de videoconsulta)
+// =============================================================================
+export const videoRoomStatusEnum = pgEnum("videoRoomStatus", ["waiting", "active", "ended"]);
+export const videoRooms = pgTable("video_rooms", {
+  id: serial("id").primaryKey(),
+  appointmentId: integer("appointmentId").notNull(),
+  expertId: integer("expertId").notNull(),
+  patientUserId: integer("patientUserId").notNull(),
+  roomCode: varchar("roomCode", { length: 64 }).notNull().unique(),
+  status: videoRoomStatusEnum("status").default("waiting").notNull(),
+  startedAt: timestamp("startedAt"),
+  endedAt: timestamp("endedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  appointmentIdx: index("vr_appt_idx").on(t.appointmentId),
+  codeIdx: index("vr_code_idx").on(t.roomCode),
+}));
+export type VideoRoom = typeof videoRooms.$inferSelect;
+export type InsertVideoRoom = typeof videoRooms.$inferInsert;
+
+// =============================================================================
+// PATIENT ALERTS (Alertas inteligentes para el experto)
+// =============================================================================
+export const alertSeverityEnum = pgEnum("alertSeverity", ["low", "medium", "high", "critical"]);
+export const alertStatusEnum2 = pgEnum("alertStatus2", ["active", "acknowledged", "resolved"]);
+export const patientAlerts = pgTable("patient_alerts", {
+  id: serial("id").primaryKey(),
+  expertId: integer("expertId").notNull(),
+  patientUserId: integer("patientUserId").notNull(),
+  expertPatientId: integer("expertPatientId").notNull(),
+  alertType: varchar("alertType", { length: 64 }).notNull(),
+  severity: alertSeverityEnum("severity").default("medium").notNull(),
+  status: alertStatusEnum2("status").default("active").notNull(),
+  title: varchar("title", { length: 256 }).notNull(),
+  description: text("description"),
+  metadata: text("metadata"),
+  acknowledgedAt: timestamp("acknowledgedAt"),
+  resolvedAt: timestamp("resolvedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  expertIdx: index("pa2_expert_idx").on(t.expertId),
+  patientIdx: index("pa2_patient_idx").on(t.patientUserId),
+  statusIdx: index("pa2_status_idx").on(t.status),
+}));
+export type PatientAlert = typeof patientAlerts.$inferSelect;
+export type InsertPatientAlert = typeof patientAlerts.$inferInsert;
+
+// =============================================================================
+// B2B COMPANIES (Plan empresarial de wellness)
+// =============================================================================
+export const b2bCompanies = pgTable("b2b_companies", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 256 }).notNull(),
+  contactEmail: varchar("contactEmail", { length: 256 }).notNull(),
+  contactName: varchar("contactName", { length: 256 }),
+  logoUrl: text("logoUrl"),
+  maxSeats: integer("maxSeats").default(10).notNull(),
+  usedSeats: integer("usedSeats").default(0).notNull(),
+  planType: varchar("planType", { length: 64 }).default("standard").notNull(),
+  stripeCustomerId: varchar("stripeCustomerId", { length: 128 }),
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  emailIdx: index("b2b_email_idx").on(t.contactEmail),
+}));
+export type B2bCompany = typeof b2bCompanies.$inferSelect;
+export type InsertB2bCompany = typeof b2bCompanies.$inferInsert;
+
+export const b2bEmployees = pgTable("b2b_employees", {
+  id: serial("id").primaryKey(),
+  companyId: integer("companyId").notNull(),
+  userId: integer("userId").notNull(),
+  role: varchar("role", { length: 32 }).default("employee").notNull(),
+  joinedAt: timestamp("joinedAt").defaultNow().notNull(),
+  isActive: boolean("isActive").default(true).notNull(),
+}, (t) => ({
+  companyIdx: index("b2be_company_idx").on(t.companyId),
+  userIdx: index("b2be_user_idx").on(t.userId),
+}));
+export type B2bEmployee = typeof b2bEmployees.$inferSelect;
+export type InsertB2bEmployee = typeof b2bEmployees.$inferInsert;

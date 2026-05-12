@@ -146,6 +146,14 @@ const MenuTemplates = lazyWithRetry(() => import("./pages/expert/MenuTemplates")
 const FoodSubstitutions = lazyWithRetry(() => import("./pages/expert/FoodSubstitutions"));
 const SessionPackages = lazyWithRetry(() => import("./pages/expert/SessionPackages"));
 const HireRequests = lazyWithRetry(() => import("./pages/expert/HireRequests"));
+const AIPlanGenerator = lazyWithRetry(() => import("./pages/expert/AIPlanGenerator"));
+const PatientAlerts = lazyWithRetry(() => import("./pages/expert/PatientAlerts"));
+const ExpertReviews = lazyWithRetry(() => import("./pages/expert/ExpertReviews"));
+const ExpertAvailability = lazyWithRetry(() => import("./pages/expert/ExpertAvailability"));
+const ExpertReferrals = lazyWithRetry(() => import("./pages/expert/ExpertReferrals"));
+const VideoConsultation = lazyWithRetry(() => import("./pages/expert/VideoConsultation"));
+const B2BCorporate = lazyWithRetry(() => import("./pages/expert/B2BCorporate"));
+const PatientTrends = lazyWithRetry(() => import("./pages/expert/PatientTrends"));
 const MyExpert = lazyWithRetry(() => import("./pages/MyExpert"));
 const MakerAnalytics = lazyWithRetry(() => import("./pages/MakerAnalytics"));
 const IngredientExplorer = lazyWithRetry(() => import("./pages/IngredientExplorer"));
@@ -314,6 +322,14 @@ function Router() {
       <Route path="/app/expert/food-substitutions">{() => <ProtectedPage><FoodSubstitutions /></ProtectedPage>}</Route>
       <Route path="/app/expert/session-packages">{() => <ProtectedPage><SessionPackages /></ProtectedPage>}</Route>
       <Route path="/app/expert/hire-requests">{() => <ProtectedPage><HireRequests /></ProtectedPage>}</Route>
+      <Route path="/app/expert/ai-plan">{() => <ProtectedPage><AIPlanGenerator /></ProtectedPage>}</Route>
+      <Route path="/app/expert/alerts">{() => <ProtectedPage><PatientAlerts /></ProtectedPage>}</Route>
+      <Route path="/app/expert/reviews">{() => <ProtectedPage><ExpertReviews /></ProtectedPage>}</Route>
+      <Route path="/app/expert/availability">{() => <ProtectedPage><ExpertAvailability /></ProtectedPage>}</Route>
+      <Route path="/app/expert/referrals">{() => <ProtectedPage><ExpertReferrals /></ProtectedPage>}</Route>
+      <Route path="/app/expert/video">{() => <ProtectedPage><VideoConsultation /></ProtectedPage>}</Route>
+      <Route path="/app/expert/b2b">{() => <ProtectedPage><B2BCorporate /></ProtectedPage>}</Route>
+      <Route path="/app/expert/trends">{() => <ProtectedPage><PatientTrends /></ProtectedPage>}</Route>
       <Route path="/app/my-expert">{() => <ProtectedPage><MyExpert /></ProtectedPage>}</Route>
       <Route path="/app/weekly-checkin">{() => <ProtectedPage><WeeklyCheckin /></ProtectedPage>}</Route>
       <Route path="/app/maker-analytics">{() => <ProtectedPage><MakerAnalytics /></ProtectedPage>}</Route>

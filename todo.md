@@ -3543,3 +3543,15 @@
 - [x] 8. Datos de nutrición reales en la card de Nutrición del Ecosistema
 - [x] 9. Sincronización bidireccional visible (qué datos fluyen entre apps)
 - [x] 10. Quick Actions contextuales según hora del día y contexto
+
+## Mejoras BuddyExperts (10 propuestas)
+- [x] 1. Generación de planes con IA: experto describe objetivo y la IA genera borrador de menú semanal
+- [x] 2. Check-in semanal automatizado: formulario para paciente (peso, adherencia, fotos, estado)
+- [x] 3. Alertas inteligentes: notificaciones cuando paciente no registra, pierde peso fuera de rango, etc.
+- [x] 4. Informe PDF automatizado del paciente con gráficos de evolución
+- [x] 5. Videoconsulta integrada: botón para iniciar sala de video en citas
+- [x] 6. Sistema de reseñas verificadas de pacientes (tras 4+ semanas)
+- [x] 7. Programa de referidos con revenue sharing (20% de suscripción)
+- [x] 8. Disponibilidad y reserva directa: calendario de huecos y booking
+- [x] 9. Plan B2B para empresas: wellness corporativo con dashboard HR
+- [x] 10. Análisis de tendencias del paciente: correlaciones, predicciones, gráficos avanzados

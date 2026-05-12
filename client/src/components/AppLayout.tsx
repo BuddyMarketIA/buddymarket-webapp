@@ -424,7 +424,20 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
         { key: "/app/expert/patients", label: "Mis Pacientes", to: "/app/expert/patients", emoji: "👥" },
         { key: "/app/expert/hire-requests", label: "Solicitudes", to: "/app/expert/hire-requests", emoji: "📩" },
         { key: "/app/expert/chat", label: "Chat con Pacientes", to: "/app/expert/chat", emoji: "💬" },
+        { key: "/app/expert/alerts", label: "Alertas Pacientes", to: "/app/expert/alerts", emoji: "🔔" },
+        { key: "/app/expert/trends", label: "Análisis Tendencias", to: "/app/expert/trends", emoji: "📊" },
         { key: "/app/buddy-ia", label: "BuddyIA Profesional", to: "/app/buddy-ia", emoji: "🤖" },
+      ],
+    },
+    {
+      label: "Herramientas Pro",
+      items: [
+        { key: "/app/expert/ai-plan", label: "Plan con IA", to: "/app/expert/ai-plan", emoji: "🤖" },
+        { key: "/app/expert/video", label: "Videoconsultas", to: "/app/expert/video", emoji: "📹" },
+        { key: "/app/expert/availability", label: "Disponibilidad", to: "/app/expert/availability", emoji: "📅" },
+        { key: "/app/expert/reviews", label: "Reseñas", to: "/app/expert/reviews", emoji: "⭐" },
+        { key: "/app/expert/referrals", label: "Referidos", to: "/app/expert/referrals", emoji: "🎁" },
+        { key: "/app/expert/b2b", label: "Plan B2B Empresas", to: "/app/expert/b2b", emoji: "🏢" },
       ],
     },
     {

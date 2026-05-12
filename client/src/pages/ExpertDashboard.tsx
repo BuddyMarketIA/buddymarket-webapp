@@ -549,6 +549,14 @@ export default function ExpertDashboard() {
             <QuickBtn icon={<span style={{fontSize:14}}>🗂️</span>} label="Plantillas Menús" bg="linear-gradient(135deg,#7C3AED,#6D28D9)" onClick={() => nav("/app/expert/menu-templates")} />
             <QuickBtn icon={<span style={{fontSize:14}}>🔄</span>} label="Sustituciones" bg="linear-gradient(135deg,#0891B2,#0E7490)" onClick={() => nav("/app/expert/food-substitutions")} />
             <QuickBtn icon={<Package size={16} />} label="Paquetes de Sesiones" bg="linear-gradient(135deg,#D97706,#B45309)" onClick={() => nav("/app/expert/session-packages")} />
+            <QuickBtn icon={<span style={{fontSize:14}}>🤖</span>} label="Plan con IA" bg="linear-gradient(135deg,#8B5CF6,#7C3AED)" onClick={() => nav("/app/expert/ai-plan")} />
+            <QuickBtn icon={<span style={{fontSize:14}}>🔔</span>} label="Alertas" bg="linear-gradient(135deg,#EF4444,#DC2626)" onClick={() => nav("/app/expert/alerts")} />
+            <QuickBtn icon={<span style={{fontSize:14}}>📹</span>} label="Videoconsulta" bg="linear-gradient(135deg,#3B82F6,#2563EB)" onClick={() => nav("/app/expert/video")} />
+            <QuickBtn icon={<span style={{fontSize:14}}>⭐</span>} label="Reseñas" bg="linear-gradient(135deg,#F59E0B,#D97706)" onClick={() => nav("/app/expert/reviews")} />
+            <QuickBtn icon={<span style={{fontSize:14}}>📅</span>} label="Disponibilidad" bg="linear-gradient(135deg,#10B981,#059669)" onClick={() => nav("/app/expert/availability")} />
+            <QuickBtn icon={<span style={{fontSize:14}}>📊</span>} label="Tendencias" bg="linear-gradient(135deg,#6366F1,#4F46E5)" onClick={() => nav("/app/expert/trends")} />
+            <QuickBtn icon={<span style={{fontSize:14}}>🎁</span>} label="Referidos" bg="linear-gradient(135deg,#A855F7,#9333EA)" onClick={() => nav("/app/expert/referrals")} />
+            <QuickBtn icon={<span style={{fontSize:14}}>🏢</span>} label="Plan B2B" bg="linear-gradient(135deg,#14B8A6,#0D9488)" onClick={() => nav("/app/expert/b2b")} />
           </div>
 
           {/* Estadísticas */}

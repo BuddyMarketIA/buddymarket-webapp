@@ -27,6 +27,7 @@ import { wellnessGoalsRouter } from "./routers/wellnessGoals";
 import { healthHubRouter } from "./routers/health-hub";
 import { ecosystemSyncRouter } from "./routers/ecosystemSync";
 import { ecosystemEnhancedRouter } from "./routers/ecosystemEnhanced";
+import { expertEnhancedRouter } from "./routers/expertEnhanced";
 import { recipeImagesRouter } from "./routers/recipeImages";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { invokeLLM } from "./_core/llm";
@@ -283,6 +284,7 @@ export const appRouter = router({
   healthHub: healthHubRouter,
   ecosystemSync: ecosystemSyncRouter,
   ecosystemEnhanced: ecosystemEnhancedRouter,
+  expertEnhanced: expertEnhancedRouter,
   recipeImages: recipeImagesRouter,
 
   // ---------------------------------------------------------------------------
