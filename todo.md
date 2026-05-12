@@ -3581,3 +3581,8 @@
 
 ## Build Fix: AuthContext import error
 - [x] Fix broken import of 'contexts/AuthContext' in 8 expert pages (PatientAlerts, VideoConsultation, AIPlanGenerator, ExpertReviews, ExpertAvailability, ExpertReferrals, B2BCorporate, PatientTrends) → changed to '@/_core/hooks/useAuth'
+
+## Landing Page Update - Nuevas funcionalidades
+- [x] Añadir enlace "Empresas" en el header de navegación principal
+- [x] Actualizar secciones de funcionalidades con todas las nuevas features (BuddyExperts, Product Board, B2B, IA, etc.)
+- [x] Revisar y actualizar hero, pricing, testimonials y CTA con información actualizada

@@ -61,6 +61,17 @@ const ECOSYSTEM_FEATURES = [
   { icon: "🌱", title: "Crecimiento continuo", desc: "La plataforma evoluciona contigo. Nuevos módulos, nuevas funcionalidades, siempre un paso por delante." },
 ];
 
+const EXPERT_FEATURES = [
+  { icon: "🧠", title: "Planes con IA", desc: "Describe el objetivo de tu paciente y la IA genera un borrador de plan nutricional que puedes editar y enviar." },
+  { icon: "📹", title: "Videoconsultas", desc: "Consultas online integradas con agenda, recordatorios y seguimiento post-sesión." },
+  { icon: "📋", title: "Plantillas de menús", desc: "Crea y reutiliza plantillas de menús con editor drag & drop y ajuste calórico automático." },
+  { icon: "🔔", title: "Alertas de pacientes", desc: "Recibe notificaciones cuando un paciente se desvía de su plan o no registra datos durante varios días." },
+  { icon: "📊", title: "Tendencias y progreso", desc: "Gráficas de evolución, análisis de tendencias y comparativas para cada paciente." },
+  { icon: "💡", title: "Product Board", desc: "Los profesionales proponen y votan mejoras. Tu voz construye la plataforma que necesitas." },
+  { icon: "🔄", title: "Banco de sustituciones", desc: "Base de datos de sustituciones de ingredientes para adaptar menús a alergias e intolerancias." },
+  { icon: "⭐", title: "Reseñas y reputación", desc: "Sistema de valoraciones que aumenta tu visibilidad ante miles de usuarios que buscan profesionales." },
+];
+
 const SERVICES = [
   {
     audience: "Para ti",
@@ -74,14 +85,14 @@ const SERVICES = [
     icon: "🧑‍⚕️",
     color: "#7C3AED",
     title: "Herramientas para expertos",
-    items: ["Panel de gestión de pacientes", "Seguimiento nutricional en tiempo real", "Agenda y videoconsultas integradas", "Facturación y pagos automatizados", "Visibilidad ante miles de usuarios"],
+    items: ["Panel completo de gestión de pacientes", "Planes con IA y plantillas de menús", "Videoconsultas y agenda integrada", "Alertas, tendencias y Product Board", "Facturación y paquetes de sesiones"],
   },
   {
     audience: "Para empresas",
     icon: "🏢",
     color: "#16A34A",
     title: "Bienestar corporativo",
-    items: ["Programas de salud para empleados", "Dashboard de bienestar empresarial", "Integración con RRHH y beneficios", "Reportes de impacto y ROI", "Soluciones B2B personalizadas"],
+    items: ["Programas de salud tipo Gympass", "Panel HR con licencias y facturación", "Activación por código corporativo", "Precios por volumen desde 1,90€/empleado", "Datos 100% anónimos y privados"],
   },
 ];
 
@@ -108,14 +119,22 @@ const PLANS = [
   },
   {
     name: "Empresas",
-    price: "A medida",
-    period: "",
-    desc: "Soluciones B2B y corporativas",
-    features: ["Todo en Buddy One", "Panel corporativo", "Integración RRHH", "SLA garantizado", "Account manager dedicado"],
-    cta: "Contactar ventas",
+    price: "Desde 1,90€",
+    period: "/empleado/mes",
+    desc: "Bienestar corporativo tipo Gympass",
+    features: ["Todo en Buddy One", "Panel HR con métricas anónimas", "Activación por código corporativo", "Facturación centralizada con PDF", "Account manager dedicado"],
+    cta: "Ver planes B2B",
+    ctaHref: "/empresas",
     highlight: false,
-    badge: null,
+    badge: "B2B",
   },
+];
+
+const B2B_HIGHLIGHTS = [
+  { stat: "Desde 1,90€", label: "por empleado/mes" },
+  { stat: "6 tramos", label: "de precio por volumen" },
+  { stat: "100%", label: "datos anónimos" },
+  { stat: "PDF", label: "facturas descargables" },
 ];
 
 function getColorRgb(color: string): string {
@@ -175,11 +194,31 @@ export default function Home() {
           </div>
           <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
             <div style={{ display: "flex", gap: "20px" }}>
-              {[["Módulos", "#modulos"], ["Funcionalidades", "#funcionalidades"], ["Servicios", "#servicios"], ["Precios", "#precios"]].map(([label, href]) => (
-                <a key={label} href={href} style={{ fontSize: "14px", color: "rgba(255,255,255,0.50)", textDecoration: "none", fontWeight: 500 }}
-                  onMouseEnter={(e) => (e.currentTarget.style.color = "white")}
-                  onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.50)")}
-                >{label}</a>
+              {[
+                ["Módulos", "#modulos"],
+                ["Funcionalidades", "#funcionalidades"],
+                ["Profesionales", "#profesionales"],
+                ["Precios", "#precios"],
+                ["Empresas", "/empresas"],
+              ].map(([label, href]) => (
+                <a
+                  key={label}
+                  href={href}
+                  style={{
+                    fontSize: "14px",
+                    color: label === "Empresas" ? "#F97316" : "rgba(255,255,255,0.50)",
+                    textDecoration: "none",
+                    fontWeight: label === "Empresas" ? 700 : 500,
+                    display: "flex",
+                    alignItems: "center",
+                    gap: "4px",
+                  }}
+                  onMouseEnter={(e) => (e.currentTarget.style.color = label === "Empresas" ? "#FB923C" : "white")}
+                  onMouseLeave={(e) => (e.currentTarget.style.color = label === "Empresas" ? "#F97316" : "rgba(255,255,255,0.50)")}
+                >
+                  {label === "Empresas" && <span style={{ fontSize: "12px" }}>🏢</span>}
+                  {label}
+                </a>
               ))}
             </div>
             <LanguageSelector variant="nav" className="text-white/50 hover:text-white/80" />
@@ -309,8 +348,40 @@ export default function Home() {
         </div>
       </section>
 
+      {/* BUDDYEXPERTS - PROFESIONALES */}
+      <section id="profesionales" style={{ padding: "100px 20px", background: "#0F0F0F" }}>
+        <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
+          <div style={{ textAlign: "center", marginBottom: "60px" }}>
+            <p style={{ fontSize: "13px", fontWeight: 700, color: "#7C3AED", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "12px" }}>BuddyExperts</p>
+            <h2 style={{ fontSize: "clamp(28px, 5vw, 48px)", fontWeight: 900, letterSpacing: "-0.03em", margin: "0 0 16px" }}>La plataforma que<br /><span style={{ color: "#7C3AED" }}>los profesionales merecen</span></h2>
+            <p style={{ fontSize: "17px", color: "rgba(255,255,255,0.40)", maxWidth: "560px", margin: "0 auto", lineHeight: 1.6 }}>Herramientas avanzadas para nutricionistas y entrenadores que quieren ofrecer un servicio diferencial a sus pacientes.</p>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fit, minmax(260px, 1fr))", gap: "16px" }}>
+            {EXPERT_FEATURES.map((f, i) => (
+              <div key={i} style={{ background: "rgba(124,58,237,0.04)", border: "1px solid rgba(124,58,237,0.12)", borderRadius: "18px", padding: "24px", transition: "all 0.2s" }}
+                onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(124,58,237,0.08)"; e.currentTarget.style.borderColor = "rgba(124,58,237,0.25)"; }}
+                onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(124,58,237,0.04)"; e.currentTarget.style.borderColor = "rgba(124,58,237,0.12)"; }}
+              >
+                <div style={{ fontSize: "28px", marginBottom: "12px" }}>{f.icon}</div>
+                <h3 style={{ fontSize: "16px", fontWeight: 800, color: "white", margin: "0 0 8px", letterSpacing: "-0.01em" }}>{f.title}</h3>
+                <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.40)", lineHeight: 1.6, margin: 0 }}>{f.desc}</p>
+              </div>
+            ))}
+          </div>
+          <div style={{ textAlign: "center", marginTop: "48px" }}>
+            <a href={isAuthenticated ? "/app/register-expert" : getLoginUrl()} style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "14px 28px", borderRadius: "12px", background: "rgba(124,58,237,0.15)", border: "1px solid rgba(124,58,237,0.30)", color: "#A78BFA", fontSize: "15px", fontWeight: 700, textDecoration: "none", transition: "all 0.2s" }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(124,58,237,0.25)"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(124,58,237,0.15)"; }}
+            >
+              Hazte BuddyExpert
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+        </div>
+      </section>
+
       {/* SERVICIOS */}
-      <section id="servicios" style={{ padding: "100px 20px", background: "#0F0F0F" }}>
+      <section id="servicios" style={{ padding: "100px 20px", background: "#0A0A0A" }}>
         <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: "60px" }}>
             <p style={{ fontSize: "13px", fontWeight: 700, color: "#F97316", letterSpacing: "0.12em", textTransform: "uppercase", marginBottom: "12px" }}>Servicios</p>
@@ -342,6 +413,39 @@ export default function Home() {
         </div>
       </section>
 
+      {/* B2B EMPRESAS BANNER */}
+      <section style={{ padding: "80px 20px", background: "linear-gradient(135deg, rgba(22,163,74,0.08) 0%, rgba(22,163,74,0.02) 100%)", borderTop: "1px solid rgba(22,163,74,0.15)", borderBottom: "1px solid rgba(22,163,74,0.15)" }}>
+        <div style={{ maxWidth: "1100px", margin: "0 auto" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "60px", alignItems: "center" }}>
+            <div>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "6px 16px", borderRadius: "100px", background: "rgba(22,163,74,0.15)", border: "1px solid rgba(22,163,74,0.30)", marginBottom: "24px" }}>
+                <span style={{ fontSize: "14px" }}>🏢</span>
+                <span style={{ fontSize: "13px", color: "#4ADE80", fontWeight: 600 }}>Bienestar corporativo</span>
+              </div>
+              <h2 style={{ fontSize: "clamp(28px, 4vw, 40px)", fontWeight: 900, letterSpacing: "-0.03em", margin: "0 0 16px", color: "white" }}>
+                Cuida de tu equipo<br />
+                <span style={{ color: "#4ADE80" }}>como cuidas tu negocio</span>
+              </h2>
+              <p style={{ fontSize: "16px", color: "rgba(255,255,255,0.50)", lineHeight: 1.7, margin: "0 0 32px" }}>
+                Ofrece a tus empleados acceso completo a Buddy One con un modelo tipo Gympass. Activación por código, panel HR con datos anónimos y facturación centralizada.
+              </p>
+              <a href="/empresas" style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "14px 28px", borderRadius: "12px", background: "linear-gradient(135deg, #16A34A, #22C55E)", color: "white", fontSize: "15px", fontWeight: 800, textDecoration: "none", boxShadow: "0 6px 24px rgba(22,163,74,0.30)" }}>
+                Descubre el plan B2B
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </a>
+            </div>
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "16px" }}>
+              {B2B_HIGHLIGHTS.map((h, i) => (
+                <div key={i} style={{ background: "rgba(22,163,74,0.08)", border: "1px solid rgba(22,163,74,0.20)", borderRadius: "16px", padding: "24px", textAlign: "center" }}>
+                  <div style={{ fontSize: "28px", fontWeight: 900, color: "#4ADE80", marginBottom: "4px" }}>{h.stat}</div>
+                  <div style={{ fontSize: "12px", color: "rgba(255,255,255,0.40)", fontWeight: 500 }}>{h.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
       {/* PRECIOS */}
       <section id="precios" style={{ padding: "100px 20px", background: "#0A0A0A" }}>
         <div style={{ maxWidth: "1000px", margin: "0 auto" }}>
@@ -354,7 +458,7 @@ export default function Home() {
             {PLANS.map((plan, i) => (
               <div key={i} style={{ background: plan.highlight ? "linear-gradient(135deg, #F97316, #FB923C)" : "rgba(255,255,255,0.03)", border: plan.highlight ? "none" : "1px solid rgba(255,255,255,0.08)", borderRadius: "24px", padding: "36px", position: "relative", overflow: "hidden" }}>
                 {plan.badge && (
-                  <div style={{ position: "absolute", top: "16px", right: "16px", padding: "4px 12px", borderRadius: "100px", background: "rgba(255,255,255,0.20)", fontSize: "11px", fontWeight: 700, color: "white", letterSpacing: "0.04em" }}>{plan.badge}</div>
+                  <div style={{ position: "absolute", top: "16px", right: "16px", padding: "4px 12px", borderRadius: "100px", background: plan.highlight ? "rgba(255,255,255,0.20)" : "rgba(22,163,74,0.15)", fontSize: "11px", fontWeight: 700, color: plan.highlight ? "white" : "#4ADE80", letterSpacing: "0.04em" }}>{plan.badge}</div>
                 )}
                 <div style={{ marginBottom: "24px" }}>
                   <p style={{ fontSize: "12px", fontWeight: 700, color: plan.highlight ? "rgba(255,255,255,0.75)" : "rgba(255,255,255,0.35)", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 8px" }}>{plan.name}</p>
@@ -374,8 +478,8 @@ export default function Home() {
                     </div>
                   ))}
                 </div>
-                <a href={isAuthenticated ? "/app/dashboard" : getLoginUrl()} style={{ display: "block", textAlign: "center", padding: "14px", borderRadius: "12px", background: plan.highlight ? "white" : "rgba(249,115,22,0.12)", border: plan.highlight ? "none" : "1px solid rgba(249,115,22,0.25)", color: "#F97316", fontSize: "15px", fontWeight: 800, textDecoration: "none", letterSpacing: "-0.01em" }}>
-                  {isAuthenticated ? "Ir al dashboard" : plan.cta}
+                <a href={(plan as any).ctaHref || (isAuthenticated ? "/app/dashboard" : getLoginUrl())} style={{ display: "block", textAlign: "center", padding: "14px", borderRadius: "12px", background: plan.highlight ? "white" : "rgba(249,115,22,0.12)", border: plan.highlight ? "none" : "1px solid rgba(249,115,22,0.25)", color: "#F97316", fontSize: "15px", fontWeight: 800, textDecoration: "none", letterSpacing: "-0.01em" }}>
+                  {isAuthenticated && !(plan as any).ctaHref ? "Ir al dashboard" : plan.cta}
                 </a>
               </div>
             ))}
@@ -399,10 +503,15 @@ export default function Home() {
           <p style={{ fontSize: "18px", color: "rgba(255,255,255,0.45)", margin: "0 0 40px", lineHeight: 1.65 }}>
             No estás descargando una app.<br />Estás entrando en una plataforma que crece contigo.
           </p>
-          <a href={isAuthenticated ? "/app/dashboard" : getLoginUrl()} style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "18px 36px", borderRadius: "16px", background: "linear-gradient(135deg, #F97316, #FB923C)", color: "white", fontSize: "17px", fontWeight: 800, textDecoration: "none", boxShadow: "0 8px 40px rgba(249,115,22,0.38)", letterSpacing: "-0.01em" }}>
-            Empezar gratis ahora
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-          </a>
+          <div style={{ display: "flex", gap: "12px", justifyContent: "center", flexWrap: "wrap" }}>
+            <a href={isAuthenticated ? "/app/dashboard" : getLoginUrl()} style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "18px 36px", borderRadius: "16px", background: "linear-gradient(135deg, #F97316, #FB923C)", color: "white", fontSize: "17px", fontWeight: 800, textDecoration: "none", boxShadow: "0 8px 40px rgba(249,115,22,0.38)", letterSpacing: "-0.01em" }}>
+              Empezar gratis ahora
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            </a>
+            <a href="/empresas" style={{ display: "inline-flex", alignItems: "center", gap: "8px", padding: "18px 28px", borderRadius: "16px", background: "rgba(22,163,74,0.12)", border: "1px solid rgba(22,163,74,0.25)", color: "#4ADE80", fontSize: "16px", fontWeight: 700, textDecoration: "none" }}>
+              Plan empresas
+            </a>
+          </div>
           <p style={{ fontSize: "13px", color: "rgba(255,255,255,0.22)", marginTop: "20px" }}>Sin tarjeta de crédito · Cancela cuando quieras</p>
         </div>
       </section>
@@ -411,14 +520,11 @@ export default function Home() {
       <section style={{ padding: "clamp(40px, 8vw, 60px) clamp(16px, 5vw, 20px)", background: "linear-gradient(135deg, rgba(249, 115, 22, 0.05), rgba(249, 115, 22, 0.02))", borderTop: "1px solid rgba(249, 115, 22, 0.1)", borderBottom: "1px solid rgba(249, 115, 22, 0.1)" }}>
         <div style={{ maxWidth: "1100px", margin: "0 auto", padding: "0 clamp(12px, 4vw, 24px)" }}>
           <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: "clamp(20px, 5vw, 32px)" }}>
-            {/* Texto */}
             <div style={{ textAlign: "center", maxWidth: "700px", width: "100%" }}>
               <p style={{ fontSize: "clamp(10px, 2.5vw, 12px)", fontWeight: 700, color: "rgba(249, 115, 22, 0.8)", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 clamp(8px, 2vw, 12px) 0" }}>Respaldado por</p>
               <h2 style={{ fontSize: "clamp(24px, 6vw, 32px)", fontWeight: 900, color: "white", margin: "0 0 clamp(12px, 3vw, 16px) 0", lineHeight: 1.2 }}>Financiado por ENISA y NextGenerationEU</h2>
               <p style={{ fontSize: "clamp(13px, 3.5vw, 15px)", color: "rgba(255,255,255,0.65)", lineHeight: 1.6, margin: 0, paddingLeft: "clamp(8px, 2vw, 16px)", paddingRight: "clamp(8px, 2vw, 16px)" }}>BuddyOne ha recibido financiación de ENISA (Empresa Nacional de Innovación) a través del programa NextGenerationEU del Gobierno de España. Este apoyo nos permite desarrollar soluciones innovadoras para mejorar tu bienestar y salud.</p>
             </div>
-            
-            {/* Imagen */}
             <a href="https://www.enisa.es" target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", justifyContent: "center", textDecoration: "none", transition: "opacity 0.2s", width: "100%", maxWidth: "600px" }} onMouseEnter={(e) => (e.currentTarget.style.opacity = "0.85")} onMouseLeave={(e) => (e.currentTarget.style.opacity = "1")}>
               <img src="/enisa-financiacion.webp" alt="Financiado por ENISA - NextGenerationEU" loading="lazy" decoding="async" style={{ maxHeight: "clamp(70px, 18vw, 110px)", width: "100%", maxWidth: "600px", height: "auto", objectFit: "contain", display: "block" }} />
             </a>
@@ -458,6 +564,21 @@ export default function Home() {
                     <span style={{ fontSize: "13px" }}>{m.icon}</span>
                     <span style={{ fontSize: "13px", color: "rgba(255,255,255,0.40)", fontWeight: 500 }}>{m.name}</span>
                   </div>
+                ))}
+              </div>
+            </div>
+            <div>
+              <p style={{ fontSize: "12px", fontWeight: 700, color: "rgba(255,255,255,0.28)", textTransform: "uppercase", letterSpacing: "0.08em", marginBottom: "14px" }}>Soluciones</p>
+              <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                {[
+                  { label: "Para profesionales", href: "#profesionales" },
+                  { label: "Para empresas", href: "/empresas" },
+                  { label: "Precios", href: "#precios" },
+                ].map((l) => (
+                  <a key={l.label} href={l.href} style={{ fontSize: "13px", color: "rgba(255,255,255,0.38)", textDecoration: "none", fontWeight: 500 }}
+                    onMouseEnter={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.75)")}
+                    onMouseLeave={(e) => (e.currentTarget.style.color = "rgba(255,255,255,0.38)")}
+                  >{l.label}</a>
                 ))}
               </div>
             </div>
