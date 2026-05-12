@@ -3578,3 +3578,6 @@
 - [x] Categorías: Gestión de pacientes, Planes y menús, Seguimiento y métricas, Comunicación, Facturación, Integraciones, Otro
 - [x] Estados visibles: En revisión, Planificado, En desarrollo, Completado
 - [x] Ruta /app/expert/feature-requests y enlace en el dashboard de experto
+
+## Build Fix: AuthContext import error
+- [x] Fix broken import of 'contexts/AuthContext' in 8 expert pages (PatientAlerts, VideoConsultation, AIPlanGenerator, ExpertReviews, ExpertAvailability, ExpertReferrals, B2BCorporate, PatientTrends) → changed to '@/_core/hooks/useAuth'
