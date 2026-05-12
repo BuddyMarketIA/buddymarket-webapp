@@ -79,8 +79,8 @@ const MODULES = [
     desc: "Accede a entrenadores certificados que diseñan planes de entrenamiento 100% personalizados para ti, hacen seguimiento de tu evolución y te motivan cada día.",
     img: "/manus-storage/buddy-coach-sport_5db90cf6.jpg", highlights: ["Planes de entrenamiento", "Seguimiento semanal", "Entrenadores certificados"] },
   { icon: "🧑‍⚕️", color: "#0ea5e9", bg: "#f0f9ff", tag: "Buddy Experts", title: "Nutricionistas Certificados Online",
-    desc: "Accede a nutricionistas certificados que crean planes 100% personalizados para ti, hacen seguimiento de tu evolución y responden tus dudas en tiempo real.",
-    img: FOOD.salmon, highlights: ["Planes nutricionales", "Seguimiento semanal", "Mensajería directa"] },
+    desc: "Accede a nutricionistas certificados que crean planes 100% personalizados, hacen seguimiento de tu evolución, videoconsultas, alertas inteligentes y un Product Board donde los profesionales proponen mejoras.",
+    img: FOOD.salmon, highlights: ["Planes con IA + videoconsultas", "Alertas y tendencias de pacientes", "Product Board colaborativo"] },
 ];
 
 // ─── Módulos del ecosistema (tarjetas de branding) ───────────────────────────
@@ -110,7 +110,7 @@ const SERVICES = [
       { icon: "🏅", title: "Badge verificado", desc: "Sello de nutricionista certificado que genera confianza y más conversiones." },
       { icon: "📈", title: "Panel de analíticas", desc: "Visualiza ingresos, pacientes activos, evolución y tasa de retención." },
     ],
-    items: ["Panel profesional con historial de pacientes","Crear y publicar menús y planes de nutrición","Seguimiento de evolución de clientes","Mensajería directa con pacientes","Monetización de planes premium","Badge BuddyExpert verificado","Gestión de citas y agenda","Informes de progreso exportables"],
+    items: ["Panel profesional con historial de pacientes","Generador de planes nutricionales con IA","Videoconsultas integradas","Alertas inteligentes de pacientes","Tendencias y análisis de evolución","Product Board: proponer y votar mejoras","Mensajería directa y seguimiento semanal","Monetización de planes + Badge verificado"],
     cta: "Convertirme en Buddy Expert" },
   { icon: "🍳", color: "#f59e0b", gradient: "linear-gradient(135deg,#fffbeb,#fef3c7)", border: "#fcd34d",
     title: "BuddyMakers", subtitle: "Monetiza tus recetas y construye tu comunidad",
@@ -126,9 +126,17 @@ const SERVICES = [
     items: ["Perfil de creador con página propia","Subir y publicar recetas con fotos","Comunidad de seguidores y likes","Monetización de recetas premium","Analíticas de alcance y engagement","Badge BuddyMaker verificado"],
     cta: "Convertirme en BuddyMaker" },
   { icon: "🏢", color: "#7c3aed", gradient: "linear-gradient(135deg,#f5f3ff,#ede9fe)", border: "#c4b5fd",
-    title: "Para Empresas", subtitle: "Bienestar corporativo con ROI medible",
-    desc: "Mejora la salud y productividad de tu equipo. Planes de nutrición corporativos con dashboard de administración y reportes de impacto.",
-    items: ["Dashboard de administración centralizado","Planes nutricionales para equipos","Reportes de bienestar y engagement","Integración con RRHH y beneficios","Facturación y gestión de licencias","Soporte dedicado y onboarding"],
+    title: "Para Empresas", subtitle: "Bienestar corporativo tipo Gympass con ROI medible",
+    desc: "Ofrece nutrición personalizada como beneficio para tu equipo. Modelo tipo Gympass con activación por código, precios desde 1,90€/empleado/mes y panel HR con datos 100% anónimos.",
+    badge: "Modelo B2B tipo Gympass — desde 10 empleados",
+    earnings: { label: "Precio por empleado", value: "Desde 1,90€/mes", note: "según volumen de licencias (10–1.000+)" },
+    perks: [
+      { icon: "🔑", title: "Activación instantánea", desc: "El empleado canjea un código corporativo y activa Pro Max al instante." },
+      { icon: "📊", title: "Panel HR privado", desc: "Solo licencias activas/usadas y facturación. Sin datos individuales de empleados." },
+      { icon: "📉", title: "Precios por volumen", desc: "6 tramos: de 3,90€ (10 empleados) a 1,90€ (+1.000 empleados)." },
+      { icon: "📄", title: "Factura PDF mensual", desc: "Descarga la factura mensual directamente desde el panel de RRHH." },
+    ],
+    items: ["Activación por código corporativo → Pro Max instantáneo","Panel HR: licencias activas/usadas + facturación","Datos 100% anónimos — sin información personal de empleados","6 tramos de precio por volumen (3,90€ → 1,90€)","Factura PDF mensual descargable","Soporte dedicado y onboarding personalizado"],
     cta: "Solicitar demo" },
 ];
 
@@ -335,6 +343,11 @@ export default function LandingPage() {
                 {item.label}
               </button>
             ))}
+            <a href="/empresas" style={{ padding: "8px 14px", fontSize: 14, fontWeight: 600, color: "#7c3aed", textDecoration: "none", borderRadius: 8, transition: "all 0.15s", background: "#f5f3ff", border: "1.5px solid #ede9fe" }}
+              onMouseEnter={e => { (e.target as HTMLElement).style.background = "#7c3aed"; (e.target as HTMLElement).style.color = "white"; (e.target as HTMLElement).style.borderColor = "#7c3aed"; }}
+              onMouseLeave={e => { (e.target as HTMLElement).style.background = "#f5f3ff"; (e.target as HTMLElement).style.color = "#7c3aed"; (e.target as HTMLElement).style.borderColor = "#ede9fe"; }}>
+              Empresas
+            </a>
             <a href="/blog" style={{ padding: "8px 14px", fontSize: 14, fontWeight: 500, color: "#4b5563", textDecoration: "none", borderRadius: 8, transition: "all 0.15s" }}
               onMouseEnter={e => { (e.target as HTMLElement).style.color = "#F97316"; (e.target as HTMLElement).style.background = "#fff7ed"; }}
               onMouseLeave={e => { (e.target as HTMLElement).style.color = "#4b5563"; (e.target as HTMLElement).style.background = "transparent"; }}>
@@ -383,6 +396,9 @@ export default function LandingPage() {
                 {item.label}
               </button>
             ))}
+            <a href="/empresas" onClick={() => setMobileOpen(false)} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", textAlign: "left", padding: "13px 0", fontSize: 15, fontWeight: 600, color: "#7c3aed", textDecoration: "none", borderBottom: "1px solid #f3f4f6" }}>
+              <span style={{ fontSize: 16 }}>🏢</span> Empresas
+            </a>
             <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 10 }}>
               <a href={loginUrl} style={{ padding: "12px", textAlign: "center", fontSize: 15, fontWeight: 600, color: "#374151", textDecoration: "none", borderRadius: 10, border: "1.5px solid #e5e7eb" }}>Iniciar sesión</a>
               <a href={loginUrl} style={{ padding: "12px", textAlign: "center", fontSize: 15, fontWeight: 700, color: "white", background: "linear-gradient(135deg,#F97316,#ea580c)", borderRadius: 10, textDecoration: "none" }}>Empezar gratis</a>
@@ -988,7 +1004,48 @@ export default function LandingPage() {
         </div>
       </section>
 
-      {/* ═══ CTA FINAL ════════════════════════════════════════════════════════ */}
+      {/* ═══ B2B CORPORATE BANNER ════════════════════════════════════════════════ */}
+      <section style={{ padding: "80px 24px", background: "linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)", position: "relative", overflow: "hidden" }}>
+        <div style={{ position: "absolute", inset: 0, opacity: 0.08, background: "url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 80 80\"><circle cx=\"40\" cy=\"40\" r=\"2\" fill=\"white\"/></svg>') repeat", backgroundSize: "40px 40px" }} />
+        <div style={{ maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 48, alignItems: "center", position: "relative", zIndex: 1 }} className="lp-services-grid">
+          <div>
+            <div style={{ display: "inline-flex", alignItems: "center", gap: 8, background: "rgba(255,255,255,0.15)", backdropFilter: "blur(8px)", borderRadius: 100, padding: "6px 16px", marginBottom: 20 }}>
+              <span style={{ fontSize: 16 }}>🏢</span>
+              <span style={{ fontSize: 12, fontWeight: 700, color: "white", letterSpacing: "0.06em" }}>PARA EMPRESAS</span>
+            </div>
+            <h2 style={{ fontSize: "clamp(28px,4vw,42px)", fontWeight: 900, color: "white", margin: "0 0 16px", lineHeight: 1.15, letterSpacing: "-0.02em" }}>
+              Nutrición como beneficio<br />para tu equipo
+            </h2>
+            <p style={{ fontSize: 17, color: "rgba(255,255,255,0.75)", lineHeight: 1.7, marginBottom: 32, maxWidth: 480 }}>
+              Modelo tipo Gympass: cada empleado canjea un código y activa Pro Max al instante. Panel HR con datos anónimos, facturación simplificada y precios por volumen.
+            </p>
+            <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+              <a href="/empresas" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 28px", borderRadius: 12, fontSize: 15, fontWeight: 700, color: "#7c3aed", background: "white", textDecoration: "none", boxShadow: "0 8px 24px rgba(0,0,0,0.2)", transition: "all 0.2s" }}
+                onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 32px rgba(0,0,0,0.3)"; }}
+                onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 24px rgba(0,0,0,0.2)"; }}>
+                Ver planes para empresas
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </a>
+            </div>
+          </div>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 16 }}>
+            {[
+              { value: "Desde 1,90€", label: "por empleado/mes", icon: "💰" },
+              { value: "6 tramos", label: "de precio por volumen", icon: "📉" },
+              { value: "100%", label: "datos anónimos", icon: "🔒" },
+              { value: "Pro Max", label: "activación instantánea", icon: "⚡" },
+            ].map((stat, i) => (
+              <div key={i} style={{ background: "rgba(255,255,255,0.1)", backdropFilter: "blur(8px)", borderRadius: 16, padding: "24px 20px", textAlign: "center", border: "1px solid rgba(255,255,255,0.15)" }}>
+                <div style={{ fontSize: 28, marginBottom: 8 }}>{stat.icon}</div>
+                <div style={{ fontSize: 24, fontWeight: 900, color: "white", lineHeight: 1 }}>{stat.value}</div>
+                <div style={{ fontSize: 12, color: "rgba(255,255,255,0.6)", marginTop: 6, fontWeight: 500 }}>{stat.label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ═══ CTA FINAL ════════════════════════════════════════════════════════════ */}
       <section style={{ padding: "100px 24px", background: "#0f172a" }}>
         <div style={{ maxWidth: 680, margin: "0 auto", textAlign: "center" }}>
           <div style={{ width: 72, height: 72, borderRadius: 20, background: "linear-gradient(135deg,#F97316,#ea580c)", display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 28px", fontSize: 32, boxShadow: "0 12px 32px rgba(249,115,22,0.35)", animation: "lp-float 3s ease-in-out infinite" }}>🚀</div>
@@ -1012,7 +1069,7 @@ export default function LandingPage() {
       {/* ═══ FOOTER ═══════════════════════════════════════════════════════════ */}
       <footer style={{ background: "#111827", borderTop: "1px solid rgba(255,255,255,0.06)", padding: "56px 24px 32px" }}>
         <div style={{ maxWidth: 1160, margin: "0 auto" }}>
-          <div className="footer-grid" style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr", gap: 40, marginBottom: 48 }}>
+          <div className="footer-grid" style={{ display: "grid", gridTemplateColumns: "2fr 1fr 1fr 1fr 1fr", gap: 32, marginBottom: 48 }}>
             <div>
               <div style={{ display: "flex", alignItems: "center", gap: 10, marginBottom: 16 }}>
                 <img src={LOGO_ICON} alt="Buddy One" style={{ height: 36, width: 36 }} onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
@@ -1031,14 +1088,15 @@ export default function LandingPage() {
               </div>
             </div>
             {[
-              { title: "Producto", links: ["Funcionalidades", "Precios", "BuddyIA", "Recetas", "Menús especiales", "Para empresas"] },
+              { title: "Producto", links: ["Funcionalidades", "Precios", "BuddyIA", "Recetas", "Menús especiales"] },
+              { title: "Soluciones", links: ["Para empresas", "Buddy Experts", "BuddyMakers", "Buddy Coach"] },
               { title: "Empresa", links: ["Sobre nosotros", "Blog", "Creadores", "FAQ", "Contacto"] },
               { title: "Legal", links: ["Privacidad", "Términos de uso", "Cookies", "RGPD", "Aviso legal"] },
             ].map(col => (
               <div key={col.title}>
                 <h4 style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.5)", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 16 }}>{col.title}</h4>
                 {col.links.map(l => (
-                  <a key={l} href="#" style={{ display: "block", fontSize: 14, color: "rgba(255,255,255,0.40)", textDecoration: "none", marginBottom: 10, transition: "color 0.2s" }}
+                  <a key={l} href={l === "Para empresas" ? "/empresas" : l === "Buddy Experts" ? "/app/expert" : l === "BuddyMakers" ? "/app/creators" : l === "Buddy Coach" ? "/app/buddy-coach" : l === "Blog" ? "/blog" : l === "Privacidad" ? "/privacidad" : l === "T\u00e9rminos de uso" ? "/terminos" : l === "Cookies" ? "/cookies" : l === "RGPD" ? "/rgpd" : l === "Aviso legal" ? "/aviso-legal" : "#"} style={{ display: "block", fontSize: 14, color: "rgba(255,255,255,0.40)", textDecoration: "none", marginBottom: 10, transition: "color 0.2s" }}
                     onMouseEnter={e => (e.currentTarget.style.color = "white")}
                     onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.40)")}
                   >{l}</a>
