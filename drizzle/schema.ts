@@ -4107,3 +4107,57 @@ export const insightFeedback = pgTable("insight_feedback", {
 }));
 export type InsightFeedback = typeof insightFeedback.$inferSelect;
 export type NewInsightFeedback = typeof insightFeedback.$inferInsert;
+
+// ── Supplement Tracker (BuddyCare) ───────────────────────────────────────
+export const supplementFrequencyEnum = pgEnum("supplement_frequency", ["daily", "twice_daily", "weekly", "as_needed"]);
+
+export const userSupplements = pgTable("user_supplements", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  name: varchar("name", { length: 256 }).notNull(),
+  dosage: varchar("dosage", { length: 128 }),
+  frequency: supplementFrequencyEnum("frequency").default("daily").notNull(),
+  timeOfDay: varchar("timeOfDay", { length: 32 }),
+  notes: text("notes"),
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  userIdx: index("usup_user_idx").on(t.userId),
+}));
+export type UserSupplement = typeof userSupplements.$inferSelect;
+export type InsertUserSupplement = typeof userSupplements.$inferInsert;
+
+export const supplementLogs = pgTable("supplement_logs", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  supplementId: integer("supplementId").notNull().references(() => userSupplements.id, { onDelete: "cascade" }),
+  takenAt: timestamp("takenAt").defaultNow().notNull(),
+  skipped: boolean("skipped").default(false).notNull(),
+  notes: text("notes"),
+}, (t) => ({
+  userIdx: index("slog_user_idx").on(t.userId),
+  dateIdx: index("slog_date_idx").on(t.takenAt),
+}));
+export type SupplementLog = typeof supplementLogs.$inferSelect;
+export type InsertSupplementLog = typeof supplementLogs.$inferInsert;
+
+// ── Ecosystem Activity Feed ──────────────────────────────────────────────
+export const ecosystemActivitySourceEnum = pgEnum("ecosystem_activity_source", ["buddyone", "buddycoach", "buddycare", "buddyshop", "healthhub"]);
+
+export const ecosystemActivity = pgTable("ecosystem_activity", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().references(() => users.id, { onDelete: "cascade" }),
+  source: ecosystemActivitySourceEnum("source").notNull(),
+  eventType: varchar("eventType", { length: 64 }).notNull(),
+  title: varchar("title", { length: 256 }).notNull(),
+  description: text("description"),
+  metadata: text("metadata"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  userIdx: index("eact_user_idx").on(t.userId),
+  dateIdx: index("eact_date_idx").on(t.createdAt),
+  sourceIdx: index("eact_source_idx").on(t.source),
+}));
+export type EcosystemActivityRow = typeof ecosystemActivity.$inferSelect;
+export type InsertEcosystemActivity = typeof ecosystemActivity.$inferInsert;

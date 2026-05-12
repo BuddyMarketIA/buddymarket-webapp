@@ -3532,3 +3532,14 @@
 - [x] Implementar estado vacío amigable cuando la búsqueda no devuelve resultados
 - [x] Añadir animaciones de carga (skeleton/shimmer) mientras se procesan los filtros
 - [x] Micro-animaciones de transición al mostrar/ocultar resultados
+## Mejoras del Ecosistema (10 propuestas)
+- [x] 1. Score del Ecosistema dinámico calculado en tiempo real (apps conectadas, uso, datos)
+- [x] 2. Timeline de actividad cruzada entre apps (feed cronológico de eventos)
+- [x] 3. Recomendaciones cruzadas inteligentes visibles en Ecosistema
+- [x] 4. Mapa visual de conexiones hub-and-spoke con animaciones
+- [x] 5. Resumen semanal del ecosistema (Weekly Digest) con comparación vs semana anterior
+- [x] 6. Gamificación: badges por uso del ecosistema
+- [x] 7. BuddyCare completo: tracker de suplementos, recordatorios, historial
+- [x] 8. Datos de nutrición reales en la card de Nutrición del Ecosistema
+- [x] 9. Sincronización bidireccional visible (qué datos fluyen entre apps)
+- [x] 10. Quick Actions contextuales según hora del día y contexto
