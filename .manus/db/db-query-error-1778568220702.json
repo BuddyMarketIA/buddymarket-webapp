@@ -1,0 +1,8 @@
+{
+  "query": "SELECT id, name, \"imageUrl\" FROM recipes WHERE \"deletedAt\" IS NULL AND \"imageUrl\" IS NOT NULL AND \"imageUrl\" != '' ORDER BY RANDOM() LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3N8WHcqSjo6gJV1.8cb8a16f7acb --database ndjzMo7PxeapbzLjBHjsKj --execute SELECT id, name, \"imageUrl\" FROM recipes WHERE \"deletedAt\" IS NULL AND \"imageUrl\" IS NOT NULL AND \"imageUrl\" != '' ORDER BY RANDOM() LIMIT 20;",
+  "returncode": 1,
+  "logs": [
+    "ERROR 1305 (42000) at line 1: FUNCTION ndjzMo7PxeapbzLjBHjsKj.random does not exist"
+  ]
+}

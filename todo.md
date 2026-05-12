@@ -3517,3 +3517,9 @@
 - [x] Actualizar todas las URLs de BuddyShop de buddyshop-niebit4z.manus.space y buddyshop.app a www.buddyoneshop.com
 - [x] Eliminar rutas duplicadas /app/connected-health y /app/wearables (redirigen a /app/health-hub)
 - [x] Crear página BuddyCare.tsx y añadir ruta /app/buddy-care en App.tsx
+## Bug: Imágenes de recetas no coinciden con el plato
+- [x] Investigar por qué las imágenes asignadas no corresponden al plato real (Pexels search devolvía fotos no-food)
+- [x] Corregir la lógica de asignación de imágenes: script de generación AI por nombre de plato (1,000 recetas corregidas)
+- [ ] Completar generación AI para las ~13,758 recetas restantes con Pexels (API limit exhausted, pendiente reset)
+## Añadir Health Hub a la barra de navegación inferior
+- [x] Añadir Health Hub como item en la barra de navegación inferior (bottom nav)

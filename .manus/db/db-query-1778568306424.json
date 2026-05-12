@@ -1,0 +1,35 @@
+{
+  "query": "SELECT id, name, imageUrl FROM recipes WHERE deletedAt IS NULL AND imageUrl IS NOT NULL AND name LIKE '%Salmón%' LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3N8WHcqSjo6gJV1.8cb8a16f7acb --database ndjzMo7PxeapbzLjBHjsKj --execute SELECT id, name, imageUrl FROM recipes WHERE deletedAt IS NULL AND imageUrl IS NOT NULL AND name LIKE '%Salmón%' LIMIT 5;",
+  "rows": [
+    {
+      "id": "108",
+      "name": "Salmón a la Plancha con Espárragos Especial",
+      "imageUrl": "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400&h=300&fit=crop&auto=format"
+    },
+    {
+      "id": "132",
+      "name": "Salmón a la Plancha con Espárragos Verdes",
+      "imageUrl": "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400&h=300&fit=crop&auto=format"
+    },
+    {
+      "id": "313",
+      "name": "Huevos Revueltos con Salmón Ahumado",
+      "imageUrl": "https://images.unsplash.com/photo-1510693206972-df098062cb71?w=400&h=300&fit=crop&auto=format"
+    },
+    {
+      "id": "366",
+      "name": "Salmón al Horno con Limón y Eneldo",
+      "imageUrl": "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400&h=300&fit=crop&auto=format"
+    },
+    {
+      "id": "375",
+      "name": "Salmón al Horno con Espárragos",
+      "imageUrl": "https://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=400&h=300&fit=crop&auto=format"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\timageUrl\n108\tSalmón a la Plancha con Espárragos Especial\thttps://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400&h=300&fit=crop&auto=format\n132\tSalmón a la Plancha con Espárragos Verdes\thttps://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400&h=300&fit=crop&auto=format\n313\tHuevos Revueltos con Salmón Ahumado\thttps://images.unsplash.com/photo-1510693206972-df098062cb71?w=400&h=300&fit=crop&auto=format\n366\tSalmón al Horno con Limón y Eneldo\thttps://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400&h=300&fit=crop&auto=format\n375\tSalmón al Horno con Espárragos\thttps://images.unsplash.com/photo-1519708227418-c8fd9a32b7a2?w=400&h=300&fit=crop&auto=format\n",
+  "stderr": "",
+  "execution_time_ms": 665
+}

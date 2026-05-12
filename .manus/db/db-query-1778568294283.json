@@ -1,0 +1,50 @@
+{
+  "query": "SELECT id, name FROM recipes WHERE deletedAt IS NULL AND imageUrl LIKE '%photo-1488477181946%' LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3N8WHcqSjo6gJV1.8cb8a16f7acb --database ndjzMo7PxeapbzLjBHjsKj --execute SELECT id, name FROM recipes WHERE deletedAt IS NULL AND imageUrl LIKE '%photo-1488477181946%' LIMIT 10;",
+  "rows": [
+    {
+      "id": "24",
+      "name": "Yogur de soja con Mango y Semillas de lino"
+    },
+    {
+      "id": "28",
+      "name": "Yogur de soja con Uvas y Semillas de chía"
+    },
+    {
+      "id": "32",
+      "name": "Yogur natural con Piña y Semillas de chía"
+    },
+    {
+      "id": "34",
+      "name": "Yogur natural con Kiwi y Semillas de chía"
+    },
+    {
+      "id": "40",
+      "name": "Yogur de soja con Piña y Semillas de chía"
+    },
+    {
+      "id": "194",
+      "name": "Yogur natural con Mango y Avellanas"
+    },
+    {
+      "id": "196",
+      "name": "Yogur natural con Pera y Almendras"
+    },
+    {
+      "id": "198",
+      "name": "Yogur natural con Melocotón y Pistachos"
+    },
+    {
+      "id": "200",
+      "name": "Yogur natural con Melocotón y Almendras"
+    },
+    {
+      "id": "202",
+      "name": "Yogur natural con Naranja y Nueces"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\n24\tYogur de soja con Mango y Semillas de lino\n28\tYogur de soja con Uvas y Semillas de chía\n32\tYogur natural con Piña y Semillas de chía\n34\tYogur natural con Kiwi y Semillas de chía\n40\tYogur de soja con Piña y Semillas de chía\n194\tYogur natural con Mango y Avellanas\n196\tYogur natural con Pera y Almendras\n198\tYogur natural con Melocotón y Pistachos\n200\tYogur natural con Melocotón y Almendras\n202\tYogur natural con Naranja y Nueces\n",
+  "stderr": "",
+  "execution_time_ms": 616
+}

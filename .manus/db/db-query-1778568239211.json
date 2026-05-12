@@ -1,0 +1,17 @@
+{
+  "query": "SELECT \n  COUNT(CASE WHEN imageUrl LIKE '%unsplash%' THEN 1 END) as unsplash,\n  COUNT(CASE WHEN imageUrl LIKE '%pexels%' THEN 1 END) as pexels,\n  COUNT(CASE WHEN imageUrl LIKE '%cloudfront%' OR imageUrl LIKE '%forge%' OR imageUrl LIKE '%storage%' THEN 1 END) as ai_or_s3,\n  COUNT(CASE WHEN imageUrl IS NULL OR imageUrl = '' THEN 1 END) as no_image,\n  COUNT(*) as total\nFROM recipes WHERE deletedAt IS NULL;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3N8WHcqSjo6gJV1.8cb8a16f7acb --database ndjzMo7PxeapbzLjBHjsKj --execute SELECT \n  COUNT(CASE WHEN imageUrl LIKE '%unsplash%' THEN 1 END) as unsplash,\n  COUNT(CASE WHEN imageUrl LIKE '%pexels%' THEN 1 END) as pexels,\n  COUNT(CASE WHEN imageUrl LIKE '%cloudfront%' OR imageUrl LIKE '%forge%' OR imageUrl LIKE '%storage%' THEN 1 END) as ai_or_s3,\n  COUNT(CASE WHEN imageUrl IS NULL OR imageUrl = '' THEN 1 END) as no_image,\n  COUNT(*) as total\nFROM recipes WHERE deletedAt IS NULL;",
+  "rows": [
+    {
+      "unsplash": "424",
+      "pexels": "0",
+      "ai_or_s3": "0",
+      "no_image": "1100",
+      "total": "1524"
+    }
+  ],
+  "messages": [],
+  "stdout": "unsplash\tpexels\tai_or_s3\tno_image\ttotal\n424\t0\t0\t1100\t1524\n",
+  "stderr": "",
+  "execution_time_ms": 722
+}

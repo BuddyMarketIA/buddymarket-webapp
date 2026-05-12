@@ -1,0 +1,110 @@
+{
+  "query": "SELECT id, name, imageUrl FROM recipes WHERE deletedAt IS NULL AND imageUrl IS NOT NULL AND imageUrl != '' ORDER BY RAND() LIMIT 20;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3N8WHcqSjo6gJV1.8cb8a16f7acb --database ndjzMo7PxeapbzLjBHjsKj --execute SELECT id, name, imageUrl FROM recipes WHERE deletedAt IS NULL AND imageUrl IS NOT NULL AND imageUrl != '' ORDER BY RAND() LIMIT 20;",
+  "rows": [
+    {
+      "id": "381",
+      "name": "Tortilla de Patatas Ligera",
+      "imageUrl": "https://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&h=300&fit=crop&auto=format"
+    },
+    {
+      "id": "377",
+      "name": "Tostadas de Aguacate y Huevo Poché",
+      "imageUrl": "https://images.unsplash.com/photo-1541519227354-08fa5d50c820?w=400&h=300&fit=crop&auto=format"
+    },
+    {
+      "id": "30129",
+      "name": "Muffins de plátano y nueces de macadamia",
+      "imageUrl": "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=400&h=300&fit=crop&auto=format"
+    },
+    {
+      "id": "263",
+      "name": "Brochetas de tomate cherry y mozzarella",
+      "imageUrl": "https://images.unsplash.com/photo-1565958011703-44f9829ba187?w=400&h=300&fit=crop&auto=format"
+    },
+    {
+      "id": "16",
+      "name": "Mango con Pistachos",
+      "imageUrl": "https://images.unsplash.com/photo-1519996529931-28324d5a630e?w=400&h=300&fit=crop&auto=format"
+    },
+    {
+      "id": "397",
+      "name": "Huevos Rellenos de Atún",
+      "imageUrl": "https://images.unsplash.com/photo-1510693206972-df098062cb71?w=400&h=300&fit=crop&auto=format"
+    },
+    {
+      "id": "297",
+      "name": "Tostadas con Crema de Cacahuete y Plátano",
+      "imageUrl": "https://images.unsplash.com/photo-1541519227354-08fa5d50c820?w=400&h=300&fit=crop&auto=format"
+    },
+    {
+      "id": "282",
+      "name": "Yogur Griego con Frutas del Bosque y Granola Casera",
+      "imageUrl": "https://images.unsplash.com/photo-1517673400267-0251440c45dc?w=400&h=300&fit=crop&auto=format"
+    },
+    {
+      "id": "30094",
+      "name": "Pad thai con gambas y cacahuetes",
+      "imageUrl": "https://images.unsplash.com/photo-1565680018434-b513d5e5fd47?w=400&h=300&fit=crop&auto=format"
+    },
+    {
+      "id": "30006",
+      "name": "Yogur con granola y miel",
+      "imageUrl": "https://images.unsplash.com/photo-1517673400267-0251440c45dc?w=400&h=300&fit=crop&auto=format"
+    },
+    {
+      "id": "207",
+      "name": "Yogur natural con Mango y Almendras",
+      "imageUrl": "https://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=400&h=300&fit=crop&auto=format"
+    },
+    {
+      "id": "345",
+      "name": "Granola Casera con Frutos Secos y Semillas",
+      "imageUrl": "https://images.unsplash.com/photo-1517673400267-0251440c45dc?w=400&h=300&fit=crop&auto=format"
+    },
+    {
+      "id": "58",
+      "name": "Mini tosta de Pan integral con Hummus",
+      "imageUrl": "https://images.unsplash.com/photo-1498837167922-ddd27525d352?w=400&h=300&fit=crop&auto=format"
+    },
+    {
+      "id": "407",
+      "name": "Ensalada de Quinoa con Aguacate y Maíz",
+      "imageUrl": "https://images.unsplash.com/photo-1607532941433-304659e8198a?w=400&h=300&fit=crop&auto=format"
+    },
+    {
+      "id": "330",
+      "name": "Tortilla Francesa con Hierbas Frescas",
+      "imageUrl": "https://images.unsplash.com/photo-1482049016688-2d3e1b311543?w=400&h=300&fit=crop&auto=format"
+    },
+    {
+      "id": "30146",
+      "name": "Salmón con costra de hierbas al air fryer",
+      "imageUrl": "https://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400&h=300&fit=crop&auto=format"
+    },
+    {
+      "id": "170",
+      "name": "Ensalada de Quinoa con Atún",
+      "imageUrl": "https://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=300&fit=crop&auto=format"
+    },
+    {
+      "id": "200",
+      "name": "Yogur natural con Melocotón y Almendras",
+      "imageUrl": "https://images.unsplash.com/photo-1488477181946-6428a0291777?w=400&h=300&fit=crop&auto=format"
+    },
+    {
+      "id": "30084",
+      "name": "Risotto de setas porcini con parmesano",
+      "imageUrl": "https://images.unsplash.com/photo-1536304993881-ff86e0c9b3e0?w=400&h=300&fit=crop&auto=format"
+    },
+    {
+      "id": "405",
+      "name": "Hamburguesas de Lentejas y Champiñones con Pan Integral",
+      "imageUrl": "https://images.unsplash.com/photo-1546964124-0cce460f38ef?w=400&h=300&fit=crop&auto=format"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\timageUrl\n381\tTortilla de Patatas Ligera\thttps://images.unsplash.com/photo-1567620905732-2d1ec7ab7445?w=400&h=300&fit=crop&auto=format\n377\tTostadas de Aguacate y Huevo Poché\thttps://images.unsplash.com/photo-1541519227354-08fa5d50c820?w=400&h=300&fit=crop&auto=format\n30129\tMuffins de plátano y nueces de macadamia\thttps://images.unsplash.com/photo-1488477181946-6428a0291777?w=400&h=300&fit=crop&auto=format\n263\tBrochetas de tomate cherry y mozzarella\thttps://images.unsplash.com/photo-1565958011703-44f9829ba187?w=400&h=300&fit=crop&auto=format\n16\tMango con Pistachos\thttps://images.unsplash.com/photo-1519996529931-28324d5a630e?w=400&h=300&fit=crop&auto=format\n397\tHuevos Rellenos de Atún\thttps://images.unsplash.com/photo-1510693206972-df098062cb71?w=400&h=300&fit=crop&auto=format\n297\tTostadas con Crema de Cacahuete y Plátano\thttps://images.unsplash.com/photo-1541519227354-08fa5d50c820?w=400&h=300&fit=crop&auto=format\n282\tYogur Griego con Frutas del Bosque y Granola Casera\thttps://images.unsplash.com/photo-1517673400267-0251440c45dc?w=400&h=300&fit=crop&auto=format\n30094\tPad thai con gambas y cacahuetes\thttps://images.unsplash.com/photo-1565680018434-b513d5e5fd47?w=400&h=300&fit=crop&auto=format\n30006\tYogur con granola y miel\thttps://images.unsplash.com/photo-1517673400267-0251440c45dc?w=400&h=300&fit=crop&auto=format\n207\tYogur natural con Mango y Almendras\thttps://images.unsplash.com/photo-1563729784474-d77dbb933a9e?w=400&h=300&fit=crop&auto=format\n345\tGranola Casera con Frutos Secos y Semillas\thttps://images.unsplash.com/photo-1517673400267-0251440c45dc?w=400&h=300&fit=crop&auto=format\n58\tMini tosta de Pan integral con Hummus\thttps://images.unsplash.com/photo-1498837167922-ddd27525d352?w=400&h=300&fit=crop&auto=format\n407\tEnsalada de Quinoa con Aguacate y Maíz\thttps://images.unsplash.com/photo-1607532941433-304659e8198a?w=400&h=300&fit=crop&auto=format\n330\tTortilla Francesa con Hierbas Frescas\thttps://images.unsplash.com/photo-1482049016688-2d3e1b311543?w=400&h=300&fit=crop&auto=format\n30146\tSalmón con costra de hierbas al air fryer\thttps://images.unsplash.com/photo-1467003909585-2f8a72700288?w=400&h=300&fit=crop&auto=format\n170\tEnsalada de Quinoa con Atún\thttps://images.unsplash.com/photo-1546069901-ba9599a7e63c?w=400&h=300&fit=crop&auto=format\n200\tYogur natural con Melocotón y Almendras\thttps://images.unsplash.com/photo-1488477181946-6428a0291777?w=400&h=300&fit=crop&auto=format\n30084\tRisotto de setas porcini con parmesano\thttps://images.unsplash.com/photo-1536304993881-ff86e0c9b3e0?w=400&h=300&fit=crop&auto=format\n405\tHamburguesas de Lentejas y Champiñones con Pan Integral\thttps://images.unsplash.com/photo-1546964124-0cce460f38ef?w=400&h=300&fit=crop&auto=format\n",
+  "stderr": "",
+  "execution_time_ms": 673
+}
