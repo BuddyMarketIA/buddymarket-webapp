@@ -4,6 +4,7 @@ import { eq, and, count, desc, sql, gte } from "drizzle-orm";
 import { router, publicProcedure, protectedProcedure } from "../_core/trpc";
 import { getDb } from "../db";
 import { notifyOwner } from "../_core/notification";
+import { generateInvoicePdf } from "../invoice-pdf";
 
 // ─── Planes empresariales (modelo Gympass — 6 tramos) ────────────────────
 import type { B2BPlanId } from "../stripe-b2b-products";
@@ -521,6 +522,72 @@ export const companyRouter = router({
           status: s.status,
           createdAt: s.createdAt,
         })),
+      };
+    }),
+
+  /** Generar factura PDF para un snapshot de facturación */
+  downloadInvoice: protectedProcedure
+    .input(z.object({ snapshotId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+      const { companies, companyBillingSnapshots } = await import("../../drizzle/schema.js");
+      const userId = ctx.user.id;
+
+      // Verificar admin
+      const [company] = await drizzleDb
+        .select()
+        .from(companies)
+        .where(eq(companies.adminUserId, userId))
+        .limit(1);
+
+      if (!company) throw new TRPCError({ code: "FORBIDDEN", message: "No eres administrador de ninguna empresa" });
+
+      // Obtener snapshot
+      const [snapshot] = await drizzleDb
+        .select()
+        .from(companyBillingSnapshots)
+        .where(
+          and(
+            eq(companyBillingSnapshots.id, input.snapshotId),
+            eq(companyBillingSnapshots.companyId, company.id)
+          )
+        )
+        .limit(1);
+
+      if (!snapshot) throw new TRPCError({ code: "NOT_FOUND", message: "Factura no encontrada" });
+
+      const periodStart = new Date(snapshot.billingPeriodStart);
+      const periodEnd = new Date(snapshot.billingPeriodEnd);
+      const fmtDate = (d: Date) => d.toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit", year: "numeric" });
+      const fmtMonth = (d: Date) => d.toLocaleDateString("es-ES", { month: "long", year: "numeric" });
+
+      const invoiceNumber = `BM-${company.id.toString().padStart(4, "0")}-${periodStart.getFullYear()}${(periodStart.getMonth() + 1).toString().padStart(2, "0")}`;
+
+      const pdfBuffer = await generateInvoicePdf({
+        invoiceNumber,
+        issueDate: fmtDate(snapshot.createdAt),
+        billingPeriodStart: fmtMonth(periodStart),
+        billingPeriodEnd: fmtMonth(periodEnd),
+        company: {
+          name: company.name,
+          taxId: company.taxId,
+          contactEmail: company.contactEmail,
+          contactName: company.contactName,
+          plan: company.plan,
+        },
+        activeLicenses: snapshot.activeLicenses,
+        pricePerLicense: parseFloat(snapshot.pricePerLicense),
+        totalAmount: parseFloat(snapshot.totalAmount),
+        status: snapshot.status,
+      });
+
+      // Devolver como base64 para que el frontend lo descargue
+      return {
+        filename: `factura-${invoiceNumber}.pdf`,
+        base64: pdfBuffer.toString("base64"),
+        mimeType: "application/pdf",
       };
     }),
 

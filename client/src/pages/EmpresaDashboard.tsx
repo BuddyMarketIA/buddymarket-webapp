@@ -14,7 +14,8 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   Users, CheckCircle2, Clock, Copy, Download, BarChart3,
   Building2, TrendingUp, AlertCircle, ArrowLeft, RefreshCw,
-  Bell, Send, Mail, Eye, ChevronDown, ChevronUp, CreditCard, FileText
+  Bell, Send, Mail, Eye, ChevronDown, ChevronUp, CreditCard, FileText,
+  FileDown, Loader2
 } from "lucide-react";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts";
 
@@ -52,6 +53,39 @@ export default function EmpresaDashboard() {
   );
   const { data: reminderStats } = trpc.companyReminders.getStats.useQuery(undefined, { enabled: !!user });
   const { data: billingData } = trpc.company.getBillingHistory.useQuery(undefined, { enabled: !!user });
+  const [downloadingInvoiceId, setDownloadingInvoiceId] = useState<number | null>(null);
+  const downloadInvoiceMutation = trpc.company.downloadInvoice.useMutation({
+    onSuccess: (result) => {
+      // Decodificar base64 y descargar
+      const byteCharacters = atob(result.base64);
+      const byteNumbers = new Array(byteCharacters.length);
+      for (let i = 0; i < byteCharacters.length; i++) {
+        byteNumbers[i] = byteCharacters.charCodeAt(i);
+      }
+      const byteArray = new Uint8Array(byteNumbers);
+      const blob = new Blob([byteArray], { type: result.mimeType });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = result.filename;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      toast.success("Factura descargada correctamente");
+      setDownloadingInvoiceId(null);
+    },
+    onError: (err) => {
+      toast.error(`Error al generar factura: ${err.message}`);
+      setDownloadingInvoiceId(null);
+    },
+  });
+
+  const handleDownloadInvoice = (snapshotId: number) => {
+    setDownloadingInvoiceId(snapshotId);
+    downloadInvoiceMutation.mutate({ snapshotId });
+  };
+
   const sendReminderMutation = trpc.companyReminders.sendNow.useMutation({
     onSuccess: (result) => {
       toast.success(`Recordatorios enviados: ${result.sentCount} exitosos, ${result.failedCount} fallidos`);
@@ -755,6 +789,7 @@ export default function EmpresaDashboard() {
                             <th className="text-right px-4 py-3 font-medium text-muted-foreground">Precio/licencia</th>
                             <th className="text-right px-4 py-3 font-medium text-muted-foreground">Total</th>
                             <th className="text-center px-4 py-3 font-medium text-muted-foreground">Estado</th>
+                            <th className="text-center px-4 py-3 font-medium text-muted-foreground">Factura</th>
                           </tr>
                         </thead>
                         <tbody>
@@ -784,6 +819,23 @@ export default function EmpresaDashboard() {
                                    snapshot.status === "confirmed" ? "Confirmado" :
                                    (snapshot.status as string) === "failed" ? "Error" : "Pendiente"}
                                 </span>
+                              </td>
+                              <td className="px-4 py-3 text-center">
+                                <Button
+                                  variant="ghost"
+                                  size="sm"
+                                  className="gap-1.5 text-xs text-blue-600 hover:text-blue-700 hover:bg-blue-50"
+                                  onClick={() => handleDownloadInvoice(snapshot.id)}
+                                  disabled={downloadingInvoiceId === snapshot.id}
+                                  aria-label={`Descargar factura de ${new Date(snapshot.billingPeriodStart).toLocaleDateString("es-ES", { month: "long", year: "numeric" })}`}
+                                >
+                                  {downloadingInvoiceId === snapshot.id ? (
+                                    <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                                  ) : (
+                                    <FileDown className="h-3.5 w-3.5" />
+                                  )}
+                                  PDF
+                                </Button>
                               </td>
                             </tr>
                           ))}

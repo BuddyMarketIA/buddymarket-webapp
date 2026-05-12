@@ -3564,3 +3564,7 @@
 - [x] Flujo de activación del empleado: canjear código corporativo → activar Pro Max
 - [x] Pricing por tramos: Starter 3,90€, Growth 3,50€, Business 3,40€, Enterprise 2,50€, Corporate 2,20€, Global 1,90€
 - [x] Panel HR mínimo: solo licencias activas/usadas y facturación (sin datos individuales de empleados)
+
+## Factura PDF en Panel HR
+- [x] Endpoint servidor para generar factura PDF mensual con datos de la empresa y licencias
+- [x] Botón de descarga de factura PDF en la tabla de historial de facturación del panel HR
