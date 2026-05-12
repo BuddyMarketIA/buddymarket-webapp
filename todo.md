@@ -3523,3 +3523,8 @@
 - [ ] Completar generación AI para las ~13,758 recetas restantes con Pexels (API limit exhausted, pendiente reset)
 ## Añadir Health Hub a la barra de navegación inferior
 - [x] Añadir Health Hub como item en la barra de navegación inferior (bottom nav)
+## Health Hub: Búsqueda y filtros por categoría
+- [x] Añadir barra de búsqueda en Health Hub para buscar métricas, dispositivos y datos de salud
+- [x] Implementar filtros por categoría (ej: Actividad, Sueño, Nutrición, Cuerpo, Dispositivos)
+- [x] Conectar búsqueda y filtros con los datos existentes del Health Hub
+- [x] Asegurar diseño responsive y coherente con el estilo BuddyOne
