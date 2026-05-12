@@ -557,6 +557,7 @@ export default function ExpertDashboard() {
             <QuickBtn icon={<span style={{fontSize:14}}>📊</span>} label="Tendencias" bg="linear-gradient(135deg,#6366F1,#4F46E5)" onClick={() => nav("/app/expert/trends")} />
             <QuickBtn icon={<span style={{fontSize:14}}>🎁</span>} label="Referidos" bg="linear-gradient(135deg,#A855F7,#9333EA)" onClick={() => nav("/app/expert/referrals")} />
             <QuickBtn icon={<span style={{fontSize:14}}>🏢</span>} label="Plan B2B" bg="linear-gradient(135deg,#14B8A6,#0D9488)" onClick={() => nav("/app/expert/b2b")} />
+            <QuickBtn icon={<span style={{fontSize:14}}>💡</span>} label="Product Board" bg="linear-gradient(135deg,#E11D48,#BE123C)" onClick={() => nav("/app/expert/feature-requests")} />
           </div>
 
           {/* Estadísticas */}

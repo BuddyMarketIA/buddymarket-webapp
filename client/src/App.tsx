@@ -154,6 +154,7 @@ const ExpertReferrals = lazyWithRetry(() => import("./pages/expert/ExpertReferra
 const VideoConsultation = lazyWithRetry(() => import("./pages/expert/VideoConsultation"));
 const B2BCorporate = lazyWithRetry(() => import("./pages/expert/B2BCorporate"));
 const PatientTrends = lazyWithRetry(() => import("./pages/expert/PatientTrends"));
+const ExpertFeatureRequests = lazyWithRetry(() => import("./pages/expert/ExpertFeatureRequests"));
 const MyExpert = lazyWithRetry(() => import("./pages/MyExpert"));
 const MakerAnalytics = lazyWithRetry(() => import("./pages/MakerAnalytics"));
 const IngredientExplorer = lazyWithRetry(() => import("./pages/IngredientExplorer"));
@@ -330,6 +331,7 @@ function Router() {
       <Route path="/app/expert/video">{() => <ProtectedPage><VideoConsultation /></ProtectedPage>}</Route>
       <Route path="/app/expert/b2b">{() => <ProtectedPage><B2BCorporate /></ProtectedPage>}</Route>
       <Route path="/app/expert/trends">{() => <ProtectedPage><PatientTrends /></ProtectedPage>}</Route>
+      <Route path="/app/expert/feature-requests">{() => <ProtectedPage><ExpertFeatureRequests /></ProtectedPage>}</Route>
       <Route path="/app/my-expert">{() => <ProtectedPage><MyExpert /></ProtectedPage>}</Route>
       <Route path="/app/weekly-checkin">{() => <ProtectedPage><WeeklyCheckin /></ProtectedPage>}</Route>
       <Route path="/app/maker-analytics">{() => <ProtectedPage><MakerAnalytics /></ProtectedPage>}</Route>

@@ -28,6 +28,7 @@ import { healthHubRouter } from "./routers/health-hub";
 import { ecosystemSyncRouter } from "./routers/ecosystemSync";
 import { ecosystemEnhancedRouter } from "./routers/ecosystemEnhanced";
 import { expertEnhancedRouter } from "./routers/expertEnhanced";
+import { expertFeatureRequestsRouter } from "./routers/expertFeatureRequests";
 import { recipeImagesRouter } from "./routers/recipeImages";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { invokeLLM } from "./_core/llm";
@@ -269,6 +270,7 @@ export const appRouter = router({
   householdRecipes: householdRecipesRouter,
   expertPatients: expertPatientsRouter,
   expertDashboard: expertDashboardRouter,
+  expertFeatureRequests: expertFeatureRequestsRouter,
   makerAnalytics: makerAnalyticsRouter,
   contentSync: contentSyncRouter,
   weeklyCheckins: weeklyCheckinsRouter,

@@ -4288,3 +4288,56 @@ export const b2bEmployees = pgTable("b2b_employees", {
 }));
 export type B2bEmployee = typeof b2bEmployees.$inferSelect;
 export type InsertB2bEmployee = typeof b2bEmployees.$inferInsert;
+
+
+// ── Expert Feature Requests (Product Board) ─────────────────────────────────
+export const expertFeatureRequestCategoryEnum = pgEnum("expert_fr_category", [
+  "patient_management",
+  "plans_menus",
+  "tracking_metrics",
+  "communication",
+  "billing",
+  "integrations",
+  "other",
+]);
+
+export const expertFeatureRequestStatusEnum = pgEnum("expert_fr_status", [
+  "under_review",
+  "planned",
+  "in_progress",
+  "completed",
+  "declined",
+]);
+
+export const expertFeatureRequests = pgTable("expert_feature_requests", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull(),
+  title: varchar("title", { length: 255 }).notNull(),
+  description: text("description").notNull(),
+  category: expertFeatureRequestCategoryEnum("category").notNull(),
+  status: expertFeatureRequestStatusEnum("status").default("under_review").notNull(),
+  adminNote: text("adminNote"),
+  voteCount: integer("voteCount").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  userIdx: index("efr_user_idx").on(t.userId),
+  categoryIdx: index("efr_category_idx").on(t.category),
+  statusIdx: index("efr_status_idx").on(t.status),
+  votesIdx: index("efr_votes_idx").on(t.voteCount),
+}));
+export type ExpertFeatureRequest = typeof expertFeatureRequests.$inferSelect;
+export type InsertExpertFeatureRequest = typeof expertFeatureRequests.$inferInsert;
+
+export const expertFeatureVotes = pgTable("expert_feature_votes", {
+  id: serial("id").primaryKey(),
+  requestId: integer("requestId").notNull(),
+  userId: integer("userId").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  requestUserUnique: unique("efv_request_user_unique").on(t.requestId, t.userId),
+  requestIdx: index("efv_request_idx").on(t.requestId),
+  userIdx: index("efv_user_idx").on(t.userId),
+}));
+export type ExpertFeatureVote = typeof expertFeatureVotes.$inferSelect;
+export type InsertExpertFeatureVote = typeof expertFeatureVotes.$inferInsert;

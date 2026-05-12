@@ -3568,3 +3568,13 @@
 ## Factura PDF en Panel HR
 - [x] Endpoint servidor para generar factura PDF mensual con datos de la empresa y licencias
 - [x] Botón de descarga de factura PDF en la tabla de historial de facturación del panel HR
+
+## BuddyExperts: Product Board (Solicitud de Personalizaciones)
+- [x] Tabla expertFeatureRequests en BD (categoría, título, descripción, estado, votos, userId)
+- [x] Tabla expertFeatureVotes para tracking de votos únicos por usuario
+- [x] Endpoints tRPC: crear solicitud, listar con filtros/orden, votar/desvotar, obtener mis solicitudes
+- [x] Notificación al owner cuando se crea nueva solicitud
+- [x] Página ExpertFeatureRequests con formulario de envío, listado con votos, filtros por categoría/estado, vista roadmap
+- [x] Categorías: Gestión de pacientes, Planes y menús, Seguimiento y métricas, Comunicación, Facturación, Integraciones, Otro
+- [x] Estados visibles: En revisión, Planificado, En desarrollo, Completado
+- [x] Ruta /app/expert/feature-requests y enlace en el dashboard de experto
