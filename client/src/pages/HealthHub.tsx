@@ -181,6 +181,18 @@ export default function HealthHub() {
     { key: "add", label: "Add", icon: "\uD83D\uDD17" },
   ];
 
+  /* ── Search loading simulation ── */
+  const [isSearching, setIsSearching] = useState(false);
+
+  useEffect(() => {
+    if (searchQuery.trim() || activeCategory !== "all") {
+      setIsSearching(true);
+      const timer = setTimeout(() => setIsSearching(false), 400);
+      return () => clearTimeout(timer);
+    }
+    setIsSearching(false);
+  }, [searchQuery, activeCategory]);
+
   /* ── Filtered search results ── */
   const filteredItems = useMemo(() => {
     let items = searchableItems;
@@ -334,55 +346,134 @@ export default function HealthHub() {
             })}
           </div>
 
-          {/* ── Search results dropdown ── */}
-          {showSearchResults && (
-            <div className="mt-2 bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden max-h-[400px] overflow-y-auto z-50 relative">
-              {filteredItems.length === 0 ? (
-                <div className="p-6 text-center">
-                  <p className="text-3xl mb-2">🔍</p>
-                  <p className="text-sm font-medium text-gray-700">Sin resultados</p>
-                  <p className="text-xs text-gray-400 mt-1">Prueba con otro termino o cambia la categoria</p>
+          {/* ── Search results dropdown with animations ── */}
+          <div
+            className={`mt-2 bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden max-h-[420px] overflow-y-auto z-50 relative transition-all duration-300 ease-out origin-top ${
+              showSearchResults
+                ? "opacity-100 scale-y-100 translate-y-0"
+                : "opacity-0 scale-y-95 -translate-y-2 pointer-events-none h-0 border-0 shadow-none mt-0"
+            }`}
+          >
+            {/* Loading skeleton state */}
+            {isSearching ? (
+              <div className="p-4 space-y-3">
+                <div className="flex items-center gap-2 mb-1">
+                  <div className="h-3 w-28 bg-gray-200 rounded-full animate-pulse" />
+                  <div className="flex-1" />
+                  <div className="h-3 w-16 bg-gray-100 rounded-full animate-pulse" />
                 </div>
-              ) : (
-                <>
-                  <div className="px-4 py-2.5 border-b border-gray-100 flex items-center justify-between">
-                    <p className="text-xs font-semibold text-gray-500 tracking-wider uppercase">
-                      {activeCategory === "all" ? "Todos los resultados" : categories.find((c) => c.key === activeCategory)?.label}
-                    </p>
-                    <span className="text-xs text-gray-400">{filteredItems.length} elementos</span>
+                {[1, 2, 3, 4].map((i) => (
+                  <div key={i} className="flex items-center gap-3 py-2" style={{ animationDelay: `${i * 80}ms` }}>
+                    <div className="w-10 h-10 rounded-xl bg-gray-100 animate-pulse" style={{ animationDelay: `${i * 80}ms` }} />
+                    <div className="flex-1 space-y-2">
+                      <div className="h-3.5 bg-gray-200 rounded-full animate-pulse w-3/5" style={{ animationDelay: `${i * 80 + 40}ms` }} />
+                      <div className="h-2.5 bg-gray-100 rounded-full animate-pulse w-2/5" style={{ animationDelay: `${i * 80 + 80}ms` }} />
+                    </div>
+                    <div className="h-5 w-16 bg-gray-100 rounded-full animate-pulse" style={{ animationDelay: `${i * 80 + 60}ms` }} />
                   </div>
-                  {filteredItems.map((item) => {
-                    const catDef = categories.find((c) => c.key === item.category);
-                    return (
-                      <button
-                        key={item.id}
-                        onClick={() => handleSearchItemClick(item)}
-                        className="w-full flex items-center gap-3 px-4 py-3 hover:bg-orange-50/60 transition-colors text-left border-b border-gray-50 last:border-0"
-                      >
-                        <div
-                          className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0"
-                          style={{ background: `${catDef?.color || "#F97316"}15` }}
+                ))}
+              </div>
+            ) : filteredItems.length === 0 && showSearchResults ? (
+              /* ── Friendly empty state ── */
+              <div className="py-10 px-6 text-center">
+                <div className="relative inline-block mb-4">
+                  <div className="w-20 h-20 rounded-full mx-auto flex items-center justify-center" style={{ background: "linear-gradient(135deg, #FFF7ED, #FFEDD5)" }}>
+                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="animate-[bounce_2s_ease-in-out_infinite]">
+                      <circle cx="11" cy="11" r="8" />
+                      <line x1="21" y1="21" x2="16.65" y2="16.65" />
+                    </svg>
+                  </div>
+                  <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-white shadow-md flex items-center justify-center">
+                    <span className="text-sm">🤔</span>
+                  </div>
+                </div>
+                <p className="text-base font-semibold text-gray-800 mb-1">No encontramos resultados</p>
+                <p className="text-sm text-gray-500 mb-5 max-w-[260px] mx-auto leading-relaxed">
+                  {searchQuery.trim()
+                    ? <>No hay coincidencias para <span className="font-medium text-orange-600">"{searchQuery}"</span>. Prueba con otro termino.</>
+                    : "No hay elementos en esta categoria. Prueba seleccionando otra."}
+                </p>
+                <div className="flex flex-col items-center gap-2">
+                  {searchQuery.trim() && (
+                    <button
+                      onClick={() => { setSearchQuery(""); }}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium text-white shadow-sm transition-all hover:shadow-md active:scale-95"
+                      style={{ background: "#F97316" }}
+                    >
+                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
+                      Limpiar busqueda
+                    </button>
+                  )}
+                  {activeCategory !== "all" && (
+                    <button
+                      onClick={() => setActiveCategory("all")}
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition-all active:scale-95"
+                    >
+                      <span className="text-xs">🏠</span> Ver todas las categorias
+                    </button>
+                  )}
+                </div>
+                {/* Suggested categories */}
+                {searchQuery.trim() && (
+                  <div className="mt-5 pt-5 border-t border-gray-100">
+                    <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">Categorias sugeridas</p>
+                    <div className="flex flex-wrap justify-center gap-2">
+                      {categories.filter(c => c.key !== "all").map((cat) => (
+                        <button
+                          key={cat.key}
+                          onClick={() => { setSearchQuery(""); setActiveCategory(cat.key); }}
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-white border border-gray-200 text-gray-600 hover:border-gray-300 hover:shadow-sm transition-all active:scale-95"
                         >
-                          {item.icon}
-                        </div>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">{item.title}</p>
-                          <p className="text-xs text-gray-500 truncate">{item.subtitle}</p>
-                        </div>
-                        <div className="flex items-center gap-2 flex-shrink-0">
-                          <span
-                            className="text-[10px] font-medium px-2 py-0.5 rounded-full"
-                            style={{ background: `${catDef?.color || "#F97316"}15`, color: catDef?.color || "#F97316" }}
-                          >
-                            {catDef?.label}
-                          </span>
-                          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="2"><polyline points="9 18 15 12 9 6"/></svg>
-                        </div>
-                      </button>
-                    );
-                  })}
-                </>
-              )}
+                          <span>{cat.icon}</span> {cat.label}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : showSearchResults && filteredItems.length > 0 ? (
+              /* ── Results list with staggered animations ── */
+              <>
+                <div className="px-4 py-2.5 border-b border-gray-100 flex items-center justify-between">
+                  <p className="text-xs font-semibold text-gray-500 tracking-wider uppercase">
+                    {activeCategory === "all" ? "Todos los resultados" : categories.find((c) => c.key === activeCategory)?.label}
+                  </p>
+                  <span className="text-xs text-gray-400">{filteredItems.length} elementos</span>
+                </div>
+                {filteredItems.map((item, idx) => {
+                  const catDef = categories.find((c) => c.key === item.category);
+                  return (
+                    <button
+                      key={item.id}
+                      onClick={() => handleSearchItemClick(item)}
+                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-orange-50/60 transition-all text-left border-b border-gray-50 last:border-0 animate-[fadeSlideIn_0.25s_ease-out_both]"
+                      style={{ animationDelay: `${idx * 40}ms` }}
+                    >
+                      <div
+                        className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 transition-transform hover:scale-110"
+                        style={{ background: `${catDef?.color || "#F97316"}15` }}
+                      >
+                        {item.icon}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-sm font-medium text-gray-900 truncate">{item.title}</p>
+                        <p className="text-xs text-gray-500 truncate">{item.subtitle}</p>
+                      </div>
+                      <div className="flex items-center gap-2 flex-shrink-0">
+                        <span
+                          className="text-[10px] font-medium px-2 py-0.5 rounded-full"
+                          style={{ background: `${catDef?.color || "#F97316"}15`, color: catDef?.color || "#F97316" }}
+                        >
+                          {catDef?.label}
+                        </span>
+                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="2" className="transition-transform group-hover:translate-x-0.5"><polyline points="9 18 15 12 9 6"/></svg>
+                      </div>
+                    </button>
+                  );
+                })}
+              </>
+            ) : null}
+            {showSearchResults && !isSearching && (
               <div className="px-4 py-2.5 border-t border-gray-100 bg-gray-50/50">
                 <button
                   onClick={() => { setShowSearchResults(false); setSearchQuery(""); setActiveCategory("all"); }}
@@ -391,8 +482,8 @@ export default function HealthHub() {
                   Cerrar resultados
                 </button>
               </div>
-            </div>
-          )}
+            )}
+          </div>
         </div>
 
         {/* ═══════════════════════════════════════════════════════════════

@@ -1514,3 +1514,15 @@
 .dark .vively-page {
   background: oklch(0.13 0.01 30);
 }
+
+/* Health Hub search result animations */
+@keyframes fadeSlideIn {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}

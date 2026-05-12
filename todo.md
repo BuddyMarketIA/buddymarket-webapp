@@ -3528,3 +3528,7 @@
 - [x] Implementar filtros por categoría (ej: Actividad, Sueño, Nutrición, Cuerpo, Dispositivos)
 - [x] Conectar búsqueda y filtros con los datos existentes del Health Hub
 - [x] Asegurar diseño responsive y coherente con el estilo BuddyOne
+## Health Hub: Estado vacío y animaciones de carga
+- [x] Implementar estado vacío amigable cuando la búsqueda no devuelve resultados
+- [x] Añadir animaciones de carga (skeleton/shimmer) mientras se procesan los filtros
+- [x] Micro-animaciones de transición al mostrar/ocultar resultados
