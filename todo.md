@@ -3555,3 +3555,6 @@
 - [x] 8. Disponibilidad y reserva directa: calendario de huecos y booking
 - [x] 9. Plan B2B para empresas: wellness corporativo con dashboard HR
 - [x] 10. Análisis de tendencias del paciente: correlaciones, predicciones, gráficos avanzados
+
+## Footer: Logos de financiación
+- [x] Añadir imagen de logos de financiación (UE NextGenerationEU, ENISA, Plan de Recuperación) al footer de la landing page

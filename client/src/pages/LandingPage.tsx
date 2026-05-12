@@ -1046,9 +1046,14 @@ export default function LandingPage() {
               </div>
             ))}
           </div>
-          <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 24, display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
-            <p style={{ fontSize: 13, color: "rgba(255,255,255,0.35)" }}>© 2025 Buddy One. Todos los derechos reservados.</p>
-            <p style={{ fontSize: 12, color: "rgba(255,255,255,0.22)" }}>El contenido de Buddy One es orientativo y no sustituye el consejo de un profesional de la salud.</p>
+          <div style={{ borderTop: "1px solid rgba(255,255,255,0.08)", paddingTop: 24, marginBottom: 32 }}>
+            <div style={{ display: "flex", justifyContent: "center", alignItems: "center", marginBottom: 24, padding: "16px 0", background: "rgba(255,255,255,0.95)", borderRadius: 8 }}>
+              <img src="/manus-storage/funding-logos_8215cdec.webp" alt="Financiado por la Unión Europea - NextGenerationEU | Financiada por ENISA - Ministerio de Industria y Turismo | Plan de Recuperación, Transformación y Resiliencia" style={{ maxWidth: "100%", height: "auto", maxHeight: 60 }} />
+            </div>
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+              <p style={{ fontSize: 13, color: "rgba(255,255,255,0.35)" }}>© 2025 Buddy One. Todos los derechos reservados.</p>
+              <p style={{ fontSize: 12, color: "rgba(255,255,255,0.22)" }}>El contenido de Buddy One es orientativo y no sustituye el consejo de un profesional de la salud.</p>
+            </div>
           </div>
         </div>
       </footer>
