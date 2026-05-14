@@ -2535,87 +2535,94 @@ function b2bPerkCampaignHtml(params: {
     employeeCount >= 100 ? "3,40" :
     employeeCount >= 50 ? "3,50" : "3,90";
 
-  return emailWrapper(`
-    <!-- Header with gradient -->
-    <tr><td style="padding:0;">
-      <div style="background:linear-gradient(135deg,#7c3aed 0%,#a855f7 50%,#F97316 100%);padding:48px 40px;text-align:center;">
-        <h1 style="font-size:28px;font-weight:900;color:#ffffff;margin:0 0 8px;">BuddyOne for Business</h1>
-        <p style="font-size:15px;color:rgba(255,255,255,0.9);margin:0;">Nutrición inteligente como beneficio para tu equipo</p>
-      </div>
-    </td></tr>
-
-    <!-- Body -->
-    <tr><td style="padding:40px;">
-      <p style="font-size:16px;color:#374151;line-height:1.7;margin:0 0 20px;">Hola <strong style="color:#1a1a1a;">${contactName}</strong>,</p>
-      
-      <p style="font-size:15px;color:#374151;line-height:1.7;margin:0 0 20px;">Me pongo en contacto contigo porque en <strong>${companyName}</strong> cuidáis del bienestar de vuestro equipo, y creemos que <strong style="color:#7c3aed;">BuddyOne</strong> puede ser un complemento perfecto para vuestra estrategia de beneficios.</p>
-
-      <p style="font-size:15px;color:#374151;line-height:1.7;margin:0 0 24px;"><strong>¿Qué es BuddyOne?</strong> Una plataforma de nutrición inteligente con IA que ayuda a tus empleados a comer mejor, planificar menús semanales en segundos y hacer seguimiento de su salud — todo desde el móvil, en menos de 2 minutos al día.</p>
-
-      <!-- Value props -->
-      <div style="background:#f5f3ff;border-radius:16px;padding:24px;margin:0 0 24px;">
-        <p style="font-size:14px;font-weight:700;color:#7c3aed;margin:0 0 16px;text-transform:uppercase;letter-spacing:0.05em;">Lo que incluye para cada empleado:</p>
-        <table width="100%" cellpadding="0" cellspacing="0">
-          <tr><td style="padding:6px 0;font-size:14px;color:#374151;">✓ Menús semanales personalizados con IA</td></tr>
-          <tr><td style="padding:6px 0;font-size:14px;color:#374151;">✓ Seguimiento nutricional completo (calorías, macros, micros)</td></tr>
-          <tr><td style="padding:6px 0;font-size:14px;color:#374151;">✓ Lista de la compra automática</td></tr>
-          <tr><td style="padding:6px 0;font-size:14px;color:#374151;">✓ +10.000 recetas saludables adaptadas a preferencias</td></tr>
-          <tr><td style="padding:6px 0;font-size:14px;color:#374151;">✓ Integración con wearables (Oura, Apple Health, Google Fit)</td></tr>
-          <tr><td style="padding:6px 0;font-size:14px;color:#374151;">✓ Acceso a BuddyExperts (nutricionistas certificados)</td></tr>
+  return `<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+</head>
+<body style="margin:0;padding:0;background-color:#0a0a0a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#0a0a0a;padding:32px 16px;">
+    <tr>
+      <td align="center">
+        <table width="640" cellpadding="0" cellspacing="0" style="max-width:640px;width:100%;">
+          <!-- HERO -->
+          <tr><td style="padding:0;">
+            <div style="background:linear-gradient(160deg,#1a0533 0%,#2d1052 25%,#4c1d95 50%,#7c3aed 75%,#f97316 100%);border-radius:24px 24px 0 0;padding:60px 48px 48px;text-align:center;">
+              <div style="width:56px;height:56px;background:rgba(255,255,255,0.15);border-radius:16px;display:inline-block;text-align:center;line-height:56px;font-size:28px;margin-bottom:28px;border:1px solid rgba(255,255,255,0.2);">🍊</div>
+              <h1 style="font-size:36px;font-weight:900;color:#ffffff;margin:0 0 12px;letter-spacing:-0.5px;line-height:1.1;">Nutrición inteligente<br>para tu equipo</h1>
+              <p style="font-size:16px;color:rgba(255,255,255,0.75);margin:0 0 36px;line-height:1.6;">Ofrece a tus empleados el mejor perk de bienestar del mercado. Sin complicaciones.</p>
+              <table width="100%" cellpadding="0" cellspacing="0">
+                <tr>
+                  <td width="33%" style="text-align:center;padding:16px 8px;background:rgba(255,255,255,0.08);border-radius:12px;"><p style="font-size:28px;font-weight:900;color:#ffffff;margin:0;">+10K</p><p style="font-size:11px;color:rgba(255,255,255,0.6);margin:4px 0 0;text-transform:uppercase;letter-spacing:0.08em;">Recetas</p></td>
+                  <td width="8"></td>
+                  <td width="33%" style="text-align:center;padding:16px 8px;background:rgba(255,255,255,0.08);border-radius:12px;"><p style="font-size:28px;font-weight:900;color:#ffffff;margin:0;">2 min</p><p style="font-size:11px;color:rgba(255,255,255,0.6);margin:4px 0 0;text-transform:uppercase;letter-spacing:0.08em;">Al día</p></td>
+                  <td width="8"></td>
+                  <td width="33%" style="text-align:center;padding:16px 8px;background:rgba(255,255,255,0.08);border-radius:12px;"><p style="font-size:28px;font-weight:900;color:#ffffff;margin:0;">100%</p><p style="font-size:11px;color:rgba(255,255,255,0.6);margin:4px 0 0;text-transform:uppercase;letter-spacing:0.08em;">Privado</p></td>
+                </tr>
+              </table>
+            </div>
+          </td></tr>
+          <!-- BODY -->
+          <tr><td style="background:#111111;padding:48px;border-left:1px solid #1f1f1f;border-right:1px solid #1f1f1f;">
+            <p style="font-size:17px;color:#e5e5e5;line-height:1.8;margin:0 0 24px;">Hola <strong style="color:#ffffff;">${contactName}</strong>,</p>
+            <p style="font-size:15px;color:#a3a3a3;line-height:1.8;margin:0 0 28px;">Sé que en <strong style="color:#ffffff;">${companyName}</strong> el bienestar del equipo es prioridad. Por eso quiero presentarte <strong style="color:#a78bfa;">BuddyOne</strong> — la plataforma que convierte la nutrición saludable en algo fácil, rápido y personalizado para cada empleado.</p>
+            <div style="height:1px;background:linear-gradient(90deg,transparent,#333,transparent);margin:32px 0;"></div>
+            <!-- FEATURES -->
+            <p style="font-size:12px;font-weight:700;color:#7c3aed;margin:0 0 20px;text-transform:uppercase;letter-spacing:0.12em;">Cada empleado recibe</p>
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr>
+                <td width="48%" style="background:#1a1a1a;border-radius:16px;padding:20px;vertical-align:top;border:1px solid #262626;"><div style="width:36px;height:36px;background:linear-gradient(135deg,#7c3aed,#a78bfa);border-radius:10px;text-align:center;line-height:36px;font-size:18px;margin-bottom:12px;">🧠</div><p style="font-size:14px;font-weight:700;color:#ffffff;margin:0 0 4px;">Menús con IA</p><p style="font-size:12px;color:#737373;margin:0;line-height:1.5;">Planes semanales personalizados generados en segundos</p></td>
+                <td width="4%"></td>
+                <td width="48%" style="background:#1a1a1a;border-radius:16px;padding:20px;vertical-align:top;border:1px solid #262626;"><div style="width:36px;height:36px;background:linear-gradient(135deg,#f97316,#fb923c);border-radius:10px;text-align:center;line-height:36px;font-size:18px;margin-bottom:12px;">📊</div><p style="font-size:14px;font-weight:700;color:#ffffff;margin:0 0 4px;">Seguimiento total</p><p style="font-size:12px;color:#737373;margin:0;line-height:1.5;">Calorías, macros, micros y progreso visual</p></td>
+              </tr>
+              <tr><td colspan="3" height="12"></td></tr>
+              <tr>
+                <td width="48%" style="background:#1a1a1a;border-radius:16px;padding:20px;vertical-align:top;border:1px solid #262626;"><div style="width:36px;height:36px;background:linear-gradient(135deg,#10b981,#34d399);border-radius:10px;text-align:center;line-height:36px;font-size:18px;margin-bottom:12px;">🛒</div><p style="font-size:14px;font-weight:700;color:#ffffff;margin:0 0 4px;">Lista de la compra</p><p style="font-size:12px;color:#737373;margin:0;line-height:1.5;">Generada automáticamente desde el menú semanal</p></td>
+                <td width="4%"></td>
+                <td width="48%" style="background:#1a1a1a;border-radius:16px;padding:20px;vertical-align:top;border:1px solid #262626;"><div style="width:36px;height:36px;background:linear-gradient(135deg,#ec4899,#f472b6);border-radius:10px;text-align:center;line-height:36px;font-size:18px;margin-bottom:12px;">⌚</div><p style="font-size:14px;font-weight:700;color:#ffffff;margin:0 0 4px;">Wearables</p><p style="font-size:12px;color:#737373;margin:0;line-height:1.5;">Oura, Apple Health, Google Fit sincronizados</p></td>
+              </tr>
+              <tr><td colspan="3" height="12"></td></tr>
+              <tr>
+                <td width="48%" style="background:#1a1a1a;border-radius:16px;padding:20px;vertical-align:top;border:1px solid #262626;"><div style="width:36px;height:36px;background:linear-gradient(135deg,#06b6d4,#67e8f9);border-radius:10px;text-align:center;line-height:36px;font-size:18px;margin-bottom:12px;">👨‍⚕️</div><p style="font-size:14px;font-weight:700;color:#ffffff;margin:0 0 4px;">BuddyExperts</p><p style="font-size:12px;color:#737373;margin:0;line-height:1.5;">Nutricionistas certificados disponibles on-demand</p></td>
+                <td width="4%"></td>
+                <td width="48%" style="background:#1a1a1a;border-radius:16px;padding:20px;vertical-align:top;border:1px solid #262626;"><div style="width:36px;height:36px;background:linear-gradient(135deg,#eab308,#fde047);border-radius:10px;text-align:center;line-height:36px;font-size:18px;margin-bottom:12px;">🍳</div><p style="font-size:14px;font-weight:700;color:#ffffff;margin:0 0 4px;">+10.000 recetas</p><p style="font-size:12px;color:#737373;margin:0;line-height:1.5;">Adaptadas a alergias, preferencias y objetivos</p></td>
+              </tr>
+            </table>
+            <div style="height:1px;background:linear-gradient(90deg,transparent,#333,transparent);margin:36px 0;"></div>
+            <!-- PRICING -->
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#1a0533,#2d1052);border-radius:20px;overflow:hidden;border:1px solid #4c1d95;"><tr><td style="padding:36px;text-align:center;"><p style="font-size:11px;font-weight:700;color:#a78bfa;margin:0 0 8px;text-transform:uppercase;letter-spacing:0.15em;">Tu precio exclusivo</p><p style="font-size:56px;font-weight:900;color:#ffffff;margin:0;line-height:1;">${pricePerEmployee}€</p><p style="font-size:14px;color:#a78bfa;margin:8px 0 0;">por empleado/mes</p><div style="height:1px;background:linear-gradient(90deg,transparent,#7c3aed,transparent);margin:20px 0;"></div><p style="font-size:13px;color:#737373;margin:0;">Sin permanencia · Facturación mensual · Cancelación inmediata</p></td></tr></table>
+            <div style="height:1px;background:linear-gradient(90deg,transparent,#333,transparent);margin:36px 0;"></div>
+            <!-- STEPS -->
+            <p style="font-size:12px;font-weight:700;color:#f97316;margin:0 0 24px;text-transform:uppercase;letter-spacing:0.12em;">Activación en 4 pasos</p>
+            <table width="100%" cellpadding="0" cellspacing="0">
+              <tr><td style="padding:12px 0;vertical-align:top;width:44px;"><div style="width:32px;height:32px;background:linear-gradient(135deg,#7c3aed,#a78bfa);border-radius:50%;text-align:center;line-height:32px;font-size:14px;font-weight:800;color:#ffffff;">1</div></td><td style="padding:12px 0;vertical-align:middle;"><p style="font-size:14px;color:#e5e5e5;margin:0;font-weight:600;">Elegís el volumen de empleados</p><p style="font-size:12px;color:#737373;margin:2px 0 0;">El precio baja automáticamente con más licencias</p></td></tr>
+              <tr><td style="padding:12px 0;vertical-align:top;"><div style="width:32px;height:32px;background:linear-gradient(135deg,#7c3aed,#a78bfa);border-radius:50%;text-align:center;line-height:32px;font-size:14px;font-weight:800;color:#ffffff;">2</div></td><td style="padding:12px 0;vertical-align:middle;"><p style="font-size:14px;color:#e5e5e5;margin:0;font-weight:600;">Cada empleado recibe un código único</p><p style="font-size:12px;color:#737373;margin:2px 0 0;">Lo envías por email interno o Slack</p></td></tr>
+              <tr><td style="padding:12px 0;vertical-align:top;"><div style="width:32px;height:32px;background:linear-gradient(135deg,#7c3aed,#a78bfa);border-radius:50%;text-align:center;line-height:32px;font-size:14px;font-weight:800;color:#ffffff;">3</div></td><td style="padding:12px 0;vertical-align:middle;"><p style="font-size:14px;color:#e5e5e5;margin:0;font-weight:600;">Activan Pro Max en 30 segundos</p><p style="font-size:12px;color:#737373;margin:2px 0 0;">Sin tarjeta de crédito, sin fricción</p></td></tr>
+              <tr><td style="padding:12px 0;vertical-align:top;"><div style="width:32px;height:32px;background:linear-gradient(135deg,#7c3aed,#a78bfa);border-radius:50%;text-align:center;line-height:32px;font-size:14px;font-weight:800;color:#ffffff;">4</div></td><td style="padding:12px 0;vertical-align:middle;"><p style="font-size:14px;color:#e5e5e5;margin:0;font-weight:600;">Tú solo ves datos agregados</p><p style="font-size:12px;color:#737373;margin:2px 0 0;">Privacidad total — cero datos individuales</p></td></tr>
+            </table>
+            <div style="height:1px;background:linear-gradient(90deg,transparent,#333,transparent);margin:36px 0;"></div>
+            <!-- PRIVACY -->
+            <table width="100%" cellpadding="0" cellspacing="0" style="background:#0a1f0a;border-radius:14px;border:1px solid #166534;"><tr><td style="padding:20px 24px;"><table width="100%" cellpadding="0" cellspacing="0"><tr><td width="44" style="vertical-align:top;"><div style="width:36px;height:36px;background:#166534;border-radius:10px;text-align:center;line-height:36px;font-size:18px;">🔒</div></td><td style="vertical-align:middle;padding-left:12px;"><p style="font-size:14px;font-weight:700;color:#4ade80;margin:0 0 4px;">Privacidad garantizada</p><p style="font-size:12px;color:#86efac;margin:0;line-height:1.5;">RRHH solo ve licencias activas y facturación. Nunca datos de nutrición o salud individuales. Cumplimiento RGPD total.</p></td></tr></table></td></tr></table>
+            <div style="height:1px;background:linear-gradient(90deg,transparent,#333,transparent);margin:36px 0;"></div>
+            <!-- CTA -->
+            <div style="text-align:center;padding:8px 0 16px;">
+              <p style="font-size:18px;font-weight:700;color:#ffffff;margin:0 0 8px;">¿Hacemos un piloto gratuito?</p>
+              <p style="font-size:14px;color:#737373;margin:0 0 28px;">30 días gratis con un grupo reducido. Sin compromiso.</p>
+              <table cellpadding="0" cellspacing="0" style="margin:0 auto 16px;"><tr><td style="background:linear-gradient(135deg,#7c3aed,#a855f7);border-radius:14px;padding:18px 48px;text-align:center;"><a href="${APP_URL}/empresas" style="color:#ffffff;font-size:16px;font-weight:800;text-decoration:none;letter-spacing:0.02em;">Solicitar piloto gratuito</a></td></tr></table>
+              <table cellpadding="0" cellspacing="0" style="margin:0 auto;"><tr><td style="background:transparent;border:1px solid #404040;border-radius:14px;padding:14px 36px;text-align:center;"><a href="${APP_URL}/empresas" style="color:#a3a3a3;font-size:14px;font-weight:600;text-decoration:none;">Ver más información →</a></td></tr></table>
+            </div>
+          </td></tr>
+          <!-- SIGNATURE -->
+          <tr><td style="background:#0d0d0d;padding:36px 48px;border-left:1px solid #1f1f1f;border-right:1px solid #1f1f1f;border-top:1px solid #1f1f1f;"><table width="100%" cellpadding="0" cellspacing="0"><tr><td width="48" style="vertical-align:top;"><div style="width:44px;height:44px;background:linear-gradient(135deg,#f97316,#ea580c);border-radius:12px;text-align:center;line-height:44px;font-size:20px;font-weight:900;color:#ffffff;">JP</div></td><td style="vertical-align:top;padding-left:14px;"><p style="font-size:15px;font-weight:700;color:#ffffff;margin:0 0 2px;">Javier Pérez</p><p style="font-size:13px;color:#737373;margin:0 0 2px;">CEO & Co-founder, BuddyOne</p><p style="font-size:13px;color:#525252;margin:0;">javier@buddyoneapp.com · +34 600 000 000</p></td></tr></table></td></tr>
+          <!-- FOOTER -->
+          <tr><td style="background:#080808;padding:28px 48px;text-align:center;border-radius:0 0 24px 24px;border:1px solid #1f1f1f;border-top:none;"><p style="font-size:12px;color:#525252;margin:0 0 12px;line-height:1.6;">Este email es una comunicación comercial de BuddyOne Technologies S.L.<br>Si no deseas recibir más emails, <a href="${APP_URL}/baja" style="color:#737373;text-decoration:underline;">date de baja aquí</a>.</p><p style="margin:0;"><a href="${APP_URL}" style="color:#7c3aed;text-decoration:none;font-size:12px;font-weight:600;">buddyoneapp.com</a><span style="color:#333;margin:0 8px;">·</span><a href="${APP_URL}/privacidad" style="color:#525252;text-decoration:none;font-size:12px;">Privacidad</a><span style="color:#333;margin:0 8px;">·</span><a href="${APP_URL}/empresas" style="color:#525252;text-decoration:none;font-size:12px;">Empresas</a></p></td></tr>
         </table>
-      </div>
-
-      <!-- Pricing highlight -->
-      <div style="background:linear-gradient(135deg,#7c3aed,#a855f7);border-radius:16px;padding:28px;text-align:center;margin:0 0 24px;">
-        <p style="font-size:13px;color:rgba(255,255,255,0.8);margin:0 0 4px;text-transform:uppercase;letter-spacing:0.1em;font-weight:600;">Precio por empleado/mes</p>
-        <p style="font-size:42px;font-weight:900;color:#ffffff;margin:0;">${pricePerEmployee}€</p>
-        <p style="font-size:13px;color:rgba(255,255,255,0.7);margin:8px 0 0;">Sin compromiso de permanencia · Facturación mensual</p>
-      </div>
-
-      <!-- How it works -->
-      <p style="font-size:15px;color:#374151;line-height:1.7;margin:0 0 16px;"><strong>¿Cómo funciona?</strong></p>
-      <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
-        <tr>
-          <td style="padding:8px 12px 8px 0;vertical-align:top;width:32px;"><div style="width:28px;height:28px;background:#f5f3ff;border-radius:50%;text-align:center;line-height:28px;font-size:13px;font-weight:700;color:#7c3aed;">1</div></td>
-          <td style="padding:8px 0;font-size:14px;color:#374151;line-height:1.6;">Elegís el plan según vuestro número de empleados</td>
-        </tr>
-        <tr>
-          <td style="padding:8px 12px 8px 0;vertical-align:top;"><div style="width:28px;height:28px;background:#f5f3ff;border-radius:50%;text-align:center;line-height:28px;font-size:13px;font-weight:700;color:#7c3aed;">2</div></td>
-          <td style="padding:8px 0;font-size:14px;color:#374151;line-height:1.6;">Cada empleado recibe un código de activación único</td>
-        </tr>
-        <tr>
-          <td style="padding:8px 12px 8px 0;vertical-align:top;"><div style="width:28px;height:28px;background:#f5f3ff;border-radius:50%;text-align:center;line-height:28px;font-size:13px;font-weight:700;color:#7c3aed;">3</div></td>
-          <td style="padding:8px 0;font-size:14px;color:#374151;line-height:1.6;">Activan Pro Max en 30 segundos — sin tarjeta de crédito</td>
-        </tr>
-        <tr>
-          <td style="padding:8px 12px 8px 0;vertical-align:top;"><div style="width:28px;height:28px;background:#f5f3ff;border-radius:50%;text-align:center;line-height:28px;font-size:13px;font-weight:700;color:#7c3aed;">4</div></td>
-          <td style="padding:8px 0;font-size:14px;color:#374151;line-height:1.6;">Vosotros veis solo datos agregados (privacidad total)</td>
-        </tr>
-      </table>
-
-      <!-- Privacy callout -->
-      <div style="background:#f0fdf4;border-left:4px solid #10b981;border-radius:0 12px 12px 0;padding:16px 20px;margin:0 0 24px;">
-        <p style="font-size:14px;color:#065f46;margin:0;line-height:1.6;"><strong>🔒 Privacidad total:</strong> RRHH solo ve licencias activas y facturación. Nunca datos individuales de nutrición o salud de los empleados.</p>
-      </div>
-
-      <!-- CTA -->
-      <p style="font-size:15px;color:#374151;line-height:1.7;margin:0 0 24px;">¿Te gustaría que te cuente más o hacer un piloto gratuito de 30 días con un grupo reducido?</p>
-
-      <table cellpadding="0" cellspacing="0" style="margin:0 auto 32px;">
-        <tr><td style="background:linear-gradient(135deg,#7c3aed,#6d28d9);border-radius:14px;padding:16px 40px;text-align:center;">
-          <a href="${APP_URL}/empresas" style="color:#ffffff;font-size:16px;font-weight:900;text-decoration:none;">Ver más información</a>
-        </td></tr>
-      </table>
-
-      <!-- Signature -->
-      <div style="border-top:1px solid #e5e7eb;padding-top:24px;">
-        <p style="font-size:14px;color:#374151;line-height:1.7;margin:0 0 4px;"><strong>Javier Pérez</strong></p>
-        <p style="font-size:13px;color:#6b7280;margin:0 0 4px;">CEO & Co-founder, BuddyOne</p>
-        <p style="font-size:13px;color:#6b7280;margin:0 0 4px;">javier@buddyoneapp.com · +34 600 000 000</p>
-        <p style="font-size:13px;color:#6b7280;margin:0;">buddyoneapp.com/empresas</p>
-      </div>
-    </td></tr>
-  `);
+      </td>
+    </tr>
+  </table>
+</body>
+</html>`;
 }
 
 export interface B2BPerkCampaignRecipient {
