@@ -3593,3 +3593,8 @@
 
 ## Fix: Sidebar elementos duplicados
 - [x] Revisar y eliminar elementos repetidos en el sidebar de navegación (eliminada sección 'Menús' duplicada)
+
+## B2B Perk Campaign - Email masivo a empresas
+- [x] Listado de empresas target para ofrecer BuddyOne como perk de bienestar (60 empresas en 4 tiers)
+- [x] Email modelo HTML profesional para la propuesta B2B perk (con pricing dinámico por volumen)
+- [x] Endpoint backend con Resend para enviar el email a todas las empresas cuando se active (adminSendPerkCampaign + adminSendPerkCampaignToLeads)

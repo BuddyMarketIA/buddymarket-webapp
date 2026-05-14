@@ -1012,4 +1012,60 @@ export const companyRouter = router({
       }).where(eq(companies.id, member.companyId));
       return { success: true };
     }),
+
+  // ─── B2B Perk Campaign ─────────────────────────────────────────────────────
+
+  /** Enviar email de campaña B2B perk a una lista de destinatarios */
+  adminSendPerkCampaign: protectedProcedure
+    .input(z.object({
+      recipients: z.array(z.object({
+        contactName: z.string().min(1),
+        contactEmail: z.string().email(),
+        companyName: z.string().min(1),
+        employeeCount: z.number().optional(),
+      })).min(1).max(100),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      const { sendB2BPerkCampaignBatch } = await import("../email.js");
+      const result = await sendB2BPerkCampaignBatch(input.recipients);
+      return result;
+    }),
+
+  /** Enviar email de campaña B2B perk a todos los leads no contactados */
+  adminSendPerkCampaignToLeads: protectedProcedure
+    .input(z.object({
+      onlyUncontacted: z.boolean().optional().default(true),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { companyLeads } = await import("../../drizzle/schema.js");
+      const { sendB2BPerkCampaignBatch } = await import("../email.js");
+
+      const leads = input.onlyUncontacted
+        ? await drizzleDb.select().from(companyLeads).where(eq(companyLeads.contacted, false))
+        : await drizzleDb.select().from(companyLeads);
+
+      if (leads.length === 0) return { total: 0, sent: 0, failed: 0, results: [] };
+
+      const recipients = leads.map(lead => ({
+        contactName: lead.contactName,
+        contactEmail: lead.contactEmail,
+        companyName: lead.companyName,
+        employeeCount: lead.employeeCount ?? undefined,
+      }));
+
+      const result = await sendB2BPerkCampaignBatch(recipients);
+
+      // Mark sent leads as contacted
+      for (const r of result.results) {
+        if (r.success) {
+          await drizzleDb.update(companyLeads).set({ contacted: true }).where(eq(companyLeads.contactEmail, r.email));
+        }
+      }
+
+      return result;
+    }),
 });

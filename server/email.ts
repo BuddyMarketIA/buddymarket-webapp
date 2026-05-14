@@ -2519,3 +2519,165 @@ export async function sendDailySummaryEmail(params: {
     return true;
   } catch (err) { console.error("[Email] Error sending daily summary:", err); return false; }
 }
+
+// ─── B2B Perk Campaign Email ─────────────────────────────────────────────────
+
+function b2bPerkCampaignHtml(params: {
+  contactName: string;
+  companyName: string;
+  employeeCount?: number;
+}): string {
+  const { contactName, companyName, employeeCount } = params;
+  const pricePerEmployee = !employeeCount ? "3,90" :
+    employeeCount >= 1000 ? "1,90" :
+    employeeCount >= 500 ? "2,20" :
+    employeeCount >= 250 ? "2,50" :
+    employeeCount >= 100 ? "3,40" :
+    employeeCount >= 50 ? "3,50" : "3,90";
+
+  return emailWrapper(`
+    <!-- Header with gradient -->
+    <tr><td style="padding:0;">
+      <div style="background:linear-gradient(135deg,#7c3aed 0%,#a855f7 50%,#F97316 100%);padding:48px 40px;text-align:center;">
+        <h1 style="font-size:28px;font-weight:900;color:#ffffff;margin:0 0 8px;">BuddyOne for Business</h1>
+        <p style="font-size:15px;color:rgba(255,255,255,0.9);margin:0;">Nutrición inteligente como beneficio para tu equipo</p>
+      </div>
+    </td></tr>
+
+    <!-- Body -->
+    <tr><td style="padding:40px;">
+      <p style="font-size:16px;color:#374151;line-height:1.7;margin:0 0 20px;">Hola <strong style="color:#1a1a1a;">${contactName}</strong>,</p>
+      
+      <p style="font-size:15px;color:#374151;line-height:1.7;margin:0 0 20px;">Me pongo en contacto contigo porque en <strong>${companyName}</strong> cuidáis del bienestar de vuestro equipo, y creemos que <strong style="color:#7c3aed;">BuddyOne</strong> puede ser un complemento perfecto para vuestra estrategia de beneficios.</p>
+
+      <p style="font-size:15px;color:#374151;line-height:1.7;margin:0 0 24px;"><strong>¿Qué es BuddyOne?</strong> Una plataforma de nutrición inteligente con IA que ayuda a tus empleados a comer mejor, planificar menús semanales en segundos y hacer seguimiento de su salud — todo desde el móvil, en menos de 2 minutos al día.</p>
+
+      <!-- Value props -->
+      <div style="background:#f5f3ff;border-radius:16px;padding:24px;margin:0 0 24px;">
+        <p style="font-size:14px;font-weight:700;color:#7c3aed;margin:0 0 16px;text-transform:uppercase;letter-spacing:0.05em;">Lo que incluye para cada empleado:</p>
+        <table width="100%" cellpadding="0" cellspacing="0">
+          <tr><td style="padding:6px 0;font-size:14px;color:#374151;">✓ Menús semanales personalizados con IA</td></tr>
+          <tr><td style="padding:6px 0;font-size:14px;color:#374151;">✓ Seguimiento nutricional completo (calorías, macros, micros)</td></tr>
+          <tr><td style="padding:6px 0;font-size:14px;color:#374151;">✓ Lista de la compra automática</td></tr>
+          <tr><td style="padding:6px 0;font-size:14px;color:#374151;">✓ +10.000 recetas saludables adaptadas a preferencias</td></tr>
+          <tr><td style="padding:6px 0;font-size:14px;color:#374151;">✓ Integración con wearables (Oura, Apple Health, Google Fit)</td></tr>
+          <tr><td style="padding:6px 0;font-size:14px;color:#374151;">✓ Acceso a BuddyExperts (nutricionistas certificados)</td></tr>
+        </table>
+      </div>
+
+      <!-- Pricing highlight -->
+      <div style="background:linear-gradient(135deg,#7c3aed,#a855f7);border-radius:16px;padding:28px;text-align:center;margin:0 0 24px;">
+        <p style="font-size:13px;color:rgba(255,255,255,0.8);margin:0 0 4px;text-transform:uppercase;letter-spacing:0.1em;font-weight:600;">Precio por empleado/mes</p>
+        <p style="font-size:42px;font-weight:900;color:#ffffff;margin:0;">${pricePerEmployee}€</p>
+        <p style="font-size:13px;color:rgba(255,255,255,0.7);margin:8px 0 0;">Sin compromiso de permanencia · Facturación mensual</p>
+      </div>
+
+      <!-- How it works -->
+      <p style="font-size:15px;color:#374151;line-height:1.7;margin:0 0 16px;"><strong>¿Cómo funciona?</strong></p>
+      <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
+        <tr>
+          <td style="padding:8px 12px 8px 0;vertical-align:top;width:32px;"><div style="width:28px;height:28px;background:#f5f3ff;border-radius:50%;text-align:center;line-height:28px;font-size:13px;font-weight:700;color:#7c3aed;">1</div></td>
+          <td style="padding:8px 0;font-size:14px;color:#374151;line-height:1.6;">Elegís el plan según vuestro número de empleados</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px 8px 0;vertical-align:top;"><div style="width:28px;height:28px;background:#f5f3ff;border-radius:50%;text-align:center;line-height:28px;font-size:13px;font-weight:700;color:#7c3aed;">2</div></td>
+          <td style="padding:8px 0;font-size:14px;color:#374151;line-height:1.6;">Cada empleado recibe un código de activación único</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px 8px 0;vertical-align:top;"><div style="width:28px;height:28px;background:#f5f3ff;border-radius:50%;text-align:center;line-height:28px;font-size:13px;font-weight:700;color:#7c3aed;">3</div></td>
+          <td style="padding:8px 0;font-size:14px;color:#374151;line-height:1.6;">Activan Pro Max en 30 segundos — sin tarjeta de crédito</td>
+        </tr>
+        <tr>
+          <td style="padding:8px 12px 8px 0;vertical-align:top;"><div style="width:28px;height:28px;background:#f5f3ff;border-radius:50%;text-align:center;line-height:28px;font-size:13px;font-weight:700;color:#7c3aed;">4</div></td>
+          <td style="padding:8px 0;font-size:14px;color:#374151;line-height:1.6;">Vosotros veis solo datos agregados (privacidad total)</td>
+        </tr>
+      </table>
+
+      <!-- Privacy callout -->
+      <div style="background:#f0fdf4;border-left:4px solid #10b981;border-radius:0 12px 12px 0;padding:16px 20px;margin:0 0 24px;">
+        <p style="font-size:14px;color:#065f46;margin:0;line-height:1.6;"><strong>🔒 Privacidad total:</strong> RRHH solo ve licencias activas y facturación. Nunca datos individuales de nutrición o salud de los empleados.</p>
+      </div>
+
+      <!-- CTA -->
+      <p style="font-size:15px;color:#374151;line-height:1.7;margin:0 0 24px;">¿Te gustaría que te cuente más o hacer un piloto gratuito de 30 días con un grupo reducido?</p>
+
+      <table cellpadding="0" cellspacing="0" style="margin:0 auto 32px;">
+        <tr><td style="background:linear-gradient(135deg,#7c3aed,#6d28d9);border-radius:14px;padding:16px 40px;text-align:center;">
+          <a href="${APP_URL}/empresas" style="color:#ffffff;font-size:16px;font-weight:900;text-decoration:none;">Ver más información</a>
+        </td></tr>
+      </table>
+
+      <!-- Signature -->
+      <div style="border-top:1px solid #e5e7eb;padding-top:24px;">
+        <p style="font-size:14px;color:#374151;line-height:1.7;margin:0 0 4px;"><strong>Javier Pérez</strong></p>
+        <p style="font-size:13px;color:#6b7280;margin:0 0 4px;">CEO & Co-founder, BuddyOne</p>
+        <p style="font-size:13px;color:#6b7280;margin:0 0 4px;">javier@buddyoneapp.com · +34 600 000 000</p>
+        <p style="font-size:13px;color:#6b7280;margin:0;">buddyoneapp.com/empresas</p>
+      </div>
+    </td></tr>
+  `);
+}
+
+export interface B2BPerkCampaignRecipient {
+  contactName: string;
+  contactEmail: string;
+  companyName: string;
+  employeeCount?: number;
+}
+
+export async function sendB2BPerkCampaignEmail(recipient: B2BPerkCampaignRecipient): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  if (!process.env.RESEND_API_KEY) {
+    console.warn("[Email] RESEND_API_KEY not set, skipping B2B perk campaign email");
+    return { success: false, error: "RESEND_API_KEY not configured" };
+  }
+  try {
+    const { data, error } = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: recipient.contactEmail,
+      subject: `${recipient.contactName}, nutrición inteligente como perk para ${recipient.companyName}`,
+      html: b2bPerkCampaignHtml({
+        contactName: recipient.contactName,
+        companyName: recipient.companyName,
+        employeeCount: recipient.employeeCount,
+      }),
+      replyTo: "javier@buddyoneapp.com",
+    });
+    if (error) {
+      console.error("[Email] B2B perk campaign failed:", error, "→", recipient.contactEmail);
+      return { success: false, error: error.message };
+    }
+    console.log("[Email] B2B perk campaign sent:", data?.id, "→", recipient.contactEmail);
+    return { success: true, messageId: data?.id };
+  } catch (err: any) {
+    console.error("[Email] Error sending B2B perk campaign:", err);
+    return { success: false, error: err.message || "Unknown error" };
+  }
+}
+
+export async function sendB2BPerkCampaignBatch(recipients: B2BPerkCampaignRecipient[]): Promise<{
+  total: number;
+  sent: number;
+  failed: number;
+  results: Array<{ email: string; company: string; success: boolean; messageId?: string; error?: string }>;
+}> {
+  const results: Array<{ email: string; company: string; success: boolean; messageId?: string; error?: string }> = [];
+  let sent = 0;
+  let failed = 0;
+
+  for (const recipient of recipients) {
+    const result = await sendB2BPerkCampaignEmail(recipient);
+    results.push({
+      email: recipient.contactEmail,
+      company: recipient.companyName,
+      success: result.success,
+      messageId: result.messageId,
+      error: result.error,
+    });
+    if (result.success) sent++;
+    else failed++;
+    // Rate limit: wait 200ms between emails to avoid Resend limits
+    await new Promise(resolve => setTimeout(resolve, 200));
+  }
+
+  return { total: recipients.length, sent, failed, results };
+}
