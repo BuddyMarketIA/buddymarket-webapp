@@ -3606,3 +3606,11 @@
 - [x] Campo cuisineType ya existía en el schema de recetas
 - [x] Clasificar todas las recetas existentes (~17,000) por cocina/país usando IA (script classify-cuisines.mjs en ejecución)
 - [x] Añadir filtro por país/cocina en la página de recetas (30 cocinas con banderas de país: 🇪🇸 Española, 🇮🇹 Italiana, 🇲🇽 Mexicana, 🇯🇵 Japonesa, 🇨🇳 China, 🇮🇳 India, 🇫🇷 Francesa, 🇹🇭 Tailandesa, 🇬🇷 Griega, 🇲🇦 Marroquí, 🇹🇷 Turca, 🇵🇪 Peruana, 🇦🇷 Argentina, 🇨🇴 Colombiana, 🇧🇷 Brasileña, 🇰🇷 Coreana, 🇻🇳 Vietnamita, 🇱🇧 Libanesa, 🇺🇸 Americana, 🇵🇹 Portuguesa, 🇩🇪 Alemana, 🇨🇺 Cubana, Mediterránea, Nórdica, Caribeña, Africana, Árabe, Internacional, Fusión)
+
+## Proyecto: Regenerar TODAS las fotos de recetas con IA
+- [x] Analizar estado actual de imágenes en BD (16,986 recetas; 13,758 con Pexels genéricas, 3,228 con CDN/IA)
+- [x] Diseñar script robusto de generación masiva de imágenes con IA (scripts/generate-recipe-images.mjs)
+- [x] Testear script con lote pequeño (5 recetas, 100% éxito, ~7.4s/imagen)
+- [x] Ejecutar generación masiva — 768 imágenes nuevas generadas antes de alcanzar límite API (total CDN: 3,996)
+- [ ] Continuar generación cuando se restablezca el límite de la API (12,990 pendientes)
+- [x] Clasificación de cocinas completada: 16,986/16,986 recetas clasificadas (32 cocinas diferentes)

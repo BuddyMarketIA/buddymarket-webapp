@@ -1,0 +1,16 @@
+{
+  "query": "\nSELECT \n  COUNT(CASE WHEN \"imageUrl\" = 'imageUrl' THEN 1 END) as literal_imageurl,\n  COUNT(CASE WHEN \"imageUrl\" LIKE 'http%' THEN 1 END) as has_real_url,\n  COUNT(CASE WHEN \"imageUrl\" NOT LIKE 'http%' AND \"imageUrl\" != 'imageUrl' THEN 1 END) as other_format,\n  COUNT(*) as total\nFROM recipes;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3N8WHcqSjo6gJV1.8cb8a16f7acb --database ndjzMo7PxeapbzLjBHjsKj --execute \nSELECT \n  COUNT(CASE WHEN \"imageUrl\" = 'imageUrl' THEN 1 END) as literal_imageurl,\n  COUNT(CASE WHEN \"imageUrl\" LIKE 'http%' THEN 1 END) as has_real_url,\n  COUNT(CASE WHEN \"imageUrl\" NOT LIKE 'http%' AND \"imageUrl\" != 'imageUrl' THEN 1 END) as other_format,\n  COUNT(*) as total\nFROM recipes;\n",
+  "rows": [
+    {
+      "literal_imageurl": "1524",
+      "has_real_url": "0",
+      "other_format": "0",
+      "total": "1524"
+    }
+  ],
+  "messages": [],
+  "stdout": "literal_imageurl\thas_real_url\tother_format\ttotal\n1524\t0\t0\t1524\n",
+  "stderr": "",
+  "execution_time_ms": 258
+}

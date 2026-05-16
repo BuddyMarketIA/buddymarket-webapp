@@ -1,0 +1,14 @@
+{
+  "query": "SELECT DISTINCT \"cuisineType\", COUNT(*) as cnt FROM recipes WHERE \"cuisineType\" IS NOT NULL GROUP BY \"cuisineType\" ORDER BY cnt DESC;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3N8WHcqSjo6gJV1.8cb8a16f7acb --database ndjzMo7PxeapbzLjBHjsKj --execute SELECT DISTINCT \"cuisineType\", COUNT(*) as cnt FROM recipes WHERE \"cuisineType\" IS NOT NULL GROUP BY \"cuisineType\" ORDER BY cnt DESC;",
+  "rows": [
+    {
+      "cuisineType": "cuisineType",
+      "cnt": "1524"
+    }
+  ],
+  "messages": [],
+  "stdout": "cuisineType\tcnt\ncuisineType\t1524\n",
+  "stderr": "",
+  "execution_time_ms": 265
+}

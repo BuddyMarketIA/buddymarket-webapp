@@ -1,0 +1,60 @@
+{
+  "query": "SELECT id, name, \"imageUrl\" FROM recipes ORDER BY id LIMIT 10;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3N8WHcqSjo6gJV1.8cb8a16f7acb --database ndjzMo7PxeapbzLjBHjsKj --execute SELECT id, name, \"imageUrl\" FROM recipes ORDER BY id LIMIT 10;",
+  "rows": [
+    {
+      "id": "2",
+      "name": "Plátano con Avellanas",
+      "imageUrl": "imageUrl"
+    },
+    {
+      "id": "3",
+      "name": "Manzana con Almendras",
+      "imageUrl": "imageUrl"
+    },
+    {
+      "id": "4",
+      "name": "Kiwi con Almendras",
+      "imageUrl": "imageUrl"
+    },
+    {
+      "id": "5",
+      "name": "Uvas con Anacardos",
+      "imageUrl": "imageUrl"
+    },
+    {
+      "id": "6",
+      "name": "Uvas con Nueces",
+      "imageUrl": "imageUrl"
+    },
+    {
+      "id": "7",
+      "name": "Piña con Avellanas",
+      "imageUrl": "imageUrl"
+    },
+    {
+      "id": "8",
+      "name": "Fresas con Pistachos",
+      "imageUrl": "imageUrl"
+    },
+    {
+      "id": "9",
+      "name": "Fresas con Nueces",
+      "imageUrl": "imageUrl"
+    },
+    {
+      "id": "10",
+      "name": "Fresas con Anacardos",
+      "imageUrl": "imageUrl"
+    },
+    {
+      "id": "11",
+      "name": "Mango con Nueces",
+      "imageUrl": "imageUrl"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\timageUrl\n2\tPlátano con Avellanas\timageUrl\n3\tManzana con Almendras\timageUrl\n4\tKiwi con Almendras\timageUrl\n5\tUvas con Anacardos\timageUrl\n6\tUvas con Nueces\timageUrl\n7\tPiña con Avellanas\timageUrl\n8\tFresas con Pistachos\timageUrl\n9\tFresas con Nueces\timageUrl\n10\tFresas con Anacardos\timageUrl\n11\tMango con Nueces\timageUrl\n",
+  "stderr": "",
+  "execution_time_ms": 262
+}

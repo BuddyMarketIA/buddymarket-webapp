@@ -1,0 +1,15 @@
+{
+  "query": "\nSELECT \n  COUNT(CASE WHEN \"cuisineType\" IS NOT NULL AND \"cuisineType\" = LOWER(\"cuisineType\") THEN 1 END) as lowercase_cuisine,\n  COUNT(CASE WHEN \"cuisineType\" IS NOT NULL AND \"cuisineType\" != LOWER(\"cuisineType\") THEN 1 END) as capitalized_cuisine,\n  COUNT(CASE WHEN \"cuisineType\" IS NULL THEN 1 END) as no_cuisine\nFROM recipes;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3N8WHcqSjo6gJV1.8cb8a16f7acb --database ndjzMo7PxeapbzLjBHjsKj --execute \nSELECT \n  COUNT(CASE WHEN \"cuisineType\" IS NOT NULL AND \"cuisineType\" = LOWER(\"cuisineType\") THEN 1 END) as lowercase_cuisine,\n  COUNT(CASE WHEN \"cuisineType\" IS NOT NULL AND \"cuisineType\" != LOWER(\"cuisineType\") THEN 1 END) as capitalized_cuisine,\n  COUNT(CASE WHEN \"cuisineType\" IS NULL THEN 1 END) as no_cuisine\nFROM recipes;\n",
+  "rows": [
+    {
+      "lowercase_cuisine": "1524",
+      "capitalized_cuisine": "0",
+      "no_cuisine": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "lowercase_cuisine\tcapitalized_cuisine\tno_cuisine\n1524\t0\t0\n",
+  "stderr": "",
+  "execution_time_ms": 258
+}

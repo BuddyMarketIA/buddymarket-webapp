@@ -1,0 +1,15 @@
+{
+  "query": "SELECT MIN(id) as min_id, MAX(id) as max_id, COUNT(*) as total FROM recipes;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3N8WHcqSjo6gJV1.8cb8a16f7acb --database ndjzMo7PxeapbzLjBHjsKj --execute SELECT MIN(id) as min_id, MAX(id) as max_id, COUNT(*) as total FROM recipes;",
+  "rows": [
+    {
+      "min_id": "2",
+      "max_id": "120136",
+      "total": "1524"
+    }
+  ],
+  "messages": [],
+  "stdout": "min_id\tmax_id\ttotal\n2\t120136\t1524\n",
+  "stderr": "",
+  "execution_time_ms": 265
+}

@@ -1,0 +1,14 @@
+{
+  "query": "\nSELECT \n  CASE \n    WHEN \"imageUrl\" LIKE 'https://images.unsplash%' THEN 'unsplash'\n    WHEN \"imageUrl\" LIKE 'https://images.pexels%' THEN 'pexels'\n    WHEN \"imageUrl\" LIKE 'https://d2xsxph8kpxj0f.cloudfront%' THEN 'cloudfront_cdn'\n    WHEN \"imageUrl\" LIKE 'https://storage.googleapis%' THEN 'google_storage'\n    WHEN \"imageUrl\" LIKE 'https://cdn%' THEN 'cdn'\n    WHEN \"imageUrl\" LIKE 'https://oaidalleapiprodscus%' THEN 'dalle'\n    WHEN \"imageUrl\" LIKE 'https://%.blob.core%' THEN 'azure_blob'\n    WHEN \"imageUrl\" LIKE 'data:%' THEN 'data_uri'\n    ELSE SUBSTRING(\"imageUrl\", 1, 60)\n  END as url_type,\n  COUNT(*) as cnt\nFROM recipes\nWHERE \"imageUrl\" IS NOT NULL AND \"imageUrl\" != ''\nGROUP BY url_type\nORDER BY cnt DESC\nLIMIT 20;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3N8WHcqSjo6gJV1.8cb8a16f7acb --database ndjzMo7PxeapbzLjBHjsKj --execute \nSELECT \n  CASE \n    WHEN \"imageUrl\" LIKE 'https://images.unsplash%' THEN 'unsplash'\n    WHEN \"imageUrl\" LIKE 'https://images.pexels%' THEN 'pexels'\n    WHEN \"imageUrl\" LIKE 'https://d2xsxph8kpxj0f.cloudfront%' THEN 'cloudfront_cdn'\n    WHEN \"imageUrl\" LIKE 'https://storage.googleapis%' THEN 'google_storage'\n    WHEN \"imageUrl\" LIKE 'https://cdn%' THEN 'cdn'\n    WHEN \"imageUrl\" LIKE 'https://oaidalleapiprodscus%' THEN 'dalle'\n    WHEN \"imageUrl\" LIKE 'https://%.blob.core%' THEN 'azure_blob'\n    WHEN \"imageUrl\" LIKE 'data:%' THEN 'data_uri'\n    ELSE SUBSTRING(\"imageUrl\", 1, 60)\n  END as url_type,\n  COUNT(*) as cnt\nFROM recipes\nWHERE \"imageUrl\" IS NOT NULL AND \"imageUrl\" != ''\nGROUP BY url_type\nORDER BY cnt DESC\nLIMIT 20;\n",
+  "rows": [
+    {
+      "url_type": "imageUrl",
+      "cnt": "1524"
+    }
+  ],
+  "messages": [],
+  "stdout": "url_type\tcnt\nimageUrl\t1524\n",
+  "stderr": "",
+  "execution_time_ms": 405
+}

@@ -1,0 +1,190 @@
+{
+  "query": "SELECT id, name, cuisineType, mealTime FROM recipes ORDER BY RAND() LIMIT 30;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3N8WHcqSjo6gJV1.8cb8a16f7acb --database ndjzMo7PxeapbzLjBHjsKj --execute SELECT id, name, cuisineType, mealTime FROM recipes ORDER BY RAND() LIMIT 30;",
+  "rows": [
+    {
+      "id": "90092",
+      "name": "Bowl de Quinoa y Atún al Natural",
+      "cuisineType": "internacional",
+      "mealTime": "comida"
+    },
+    {
+      "id": "60060",
+      "name": "Almendras fritas con sal y pimentón de la Vera",
+      "cuisineType": "española",
+      "mealTime": "media_manana"
+    },
+    {
+      "id": "60372",
+      "name": "Batido de Plátano con Mantequilla de Cacahuete",
+      "cuisineType": "americana",
+      "mealTime": "merienda"
+    },
+    {
+      "id": "60457",
+      "name": "Hamburguesas de merluza y gambas caseras",
+      "cuisineType": "mediterranea",
+      "mealTime": "cena"
+    },
+    {
+      "id": "140",
+      "name": "Curry de Garbanzos y Espinacas",
+      "cuisineType": "asiatica",
+      "mealTime": "comida"
+    },
+    {
+      "id": "30047",
+      "name": "Quiche de espinacas y brie",
+      "cuisineType": "francesa",
+      "mealTime": "desayuno"
+    },
+    {
+      "id": "90287",
+      "name": "Pierna de cordero asada a baja temperatura",
+      "cuisineType": "mediterranea",
+      "mealTime": "comida"
+    },
+    {
+      "id": "60527",
+      "name": "Açaí Bowl Tropical con Fruta de la Pasión",
+      "cuisineType": "americana",
+      "mealTime": "desayuno"
+    },
+    {
+      "id": "90158",
+      "name": "Ensalada Waldorf",
+      "cuisineType": "americana",
+      "mealTime": "cena"
+    },
+    {
+      "id": "60416",
+      "name": "Ensalada de Burrata con Tomate y Pistachos",
+      "cuisineType": "italiana",
+      "mealTime": "cena"
+    },
+    {
+      "id": "60189",
+      "name": "Pappardelle con Setas Porcini",
+      "cuisineType": "italiana",
+      "mealTime": "comida"
+    },
+    {
+      "id": "90217",
+      "name": "Garbanzos salteados con kale",
+      "cuisineType": "española",
+      "mealTime": "comida"
+    },
+    {
+      "id": "319",
+      "name": "Porridge de Avena con Frutos Rojos",
+      "cuisineType": "española",
+      "mealTime": "desayuno"
+    },
+    {
+      "id": "90128",
+      "name": "Tiras de Pollo Crujientes (Airfryer)",
+      "cuisineType": "americana",
+      "mealTime": "comida"
+    },
+    {
+      "id": "60164",
+      "name": "Dorada a la Espalda",
+      "cuisineType": "española",
+      "mealTime": "comida"
+    },
+    {
+      "id": "60108",
+      "name": "Sándwich de Pepino y Queso Quark",
+      "cuisineType": "internacional",
+      "mealTime": "media_manana"
+    },
+    {
+      "id": "58",
+      "name": "Mini tosta de Pan integral con Hummus",
+      "cuisineType": "arabe",
+      "mealTime": "media_manana"
+    },
+    {
+      "id": "116",
+      "name": "Canelones de Carne Especial",
+      "cuisineType": "española",
+      "mealTime": "comida"
+    },
+    {
+      "id": "90129",
+      "name": "Seitán Salteado con Pimientos",
+      "cuisineType": "internacional",
+      "mealTime": "comida"
+    },
+    {
+      "id": "60208",
+      "name": "Arroz a Banda",
+      "cuisineType": "española",
+      "mealTime": "comida"
+    },
+    {
+      "id": "90359",
+      "name": "Sopa de wonton de cerdo y gambas",
+      "cuisineType": "asiatica",
+      "mealTime": "cena"
+    },
+    {
+      "id": "60365",
+      "name": "Batido de Fresa con Arándanos",
+      "cuisineType": "americana",
+      "mealTime": "comida"
+    },
+    {
+      "id": "396",
+      "name": "Salmón a la Plancha con Espárragos",
+      "cuisineType": "española",
+      "mealTime": "cena"
+    },
+    {
+      "id": "283",
+      "name": "Huevos Revueltos con Aguacate y Pan de Centeno",
+      "cuisineType": "española",
+      "mealTime": "desayuno"
+    },
+    {
+      "id": "60047",
+      "name": "Smoothie de Melón y Pepino Refrescante",
+      "cuisineType": "americana",
+      "mealTime": "desayuno"
+    },
+    {
+      "id": "90069",
+      "name": "Poke Bowl de Salmón y Edamame",
+      "cuisineType": "asiatica",
+      "mealTime": "comida"
+    },
+    {
+      "id": "120060",
+      "name": "Tortitas de arroz con pavo y tomate",
+      "cuisineType": "NULL",
+      "mealTime": "merienda"
+    },
+    {
+      "id": "17",
+      "name": "Naranja con Pistachos",
+      "cuisineType": "española",
+      "mealTime": "media_manana"
+    },
+    {
+      "id": "30129",
+      "name": "Muffins de plátano y nueces de macadamia",
+      "cuisineType": "americana",
+      "mealTime": "merienda"
+    },
+    {
+      "id": "313",
+      "name": "Huevos Revueltos con Salmón Ahumado",
+      "cuisineType": "española",
+      "mealTime": "desayuno"
+    }
+  ],
+  "messages": [],
+  "stdout": "id\tname\tcuisineType\tmealTime\n90092\tBowl de Quinoa y Atún al Natural\tinternacional\tcomida\n60060\tAlmendras fritas con sal y pimentón de la Vera\tespañola\tmedia_manana\n60372\tBatido de Plátano con Mantequilla de Cacahuete\tamericana\tmerienda\n60457\tHamburguesas de merluza y gambas caseras\tmediterranea\tcena\n140\tCurry de Garbanzos y Espinacas\tasiatica\tcomida\n30047\tQuiche de espinacas y brie\tfrancesa\tdesayuno\n90287\tPierna de cordero asada a baja temperatura\tmediterranea\tcomida\n60527\tAçaí Bowl Tropical con Fruta de la Pasión\tamericana\tdesayuno\n90158\tEnsalada Waldorf\tamericana\tcena\n60416\tEnsalada de Burrata con Tomate y Pistachos\titaliana\tcena\n60189\tPappardelle con Setas Porcini\titaliana\tcomida\n90217\tGarbanzos salteados con kale\tespañola\tcomida\n319\tPorridge de Avena con Frutos Rojos\tespañola\tdesayuno\n90128\tTiras de Pollo Crujientes (Airfryer)\tamericana\tcomida\n60164\tDorada a la Espalda\tespañola\tcomida\n60108\tSándwich de Pepino y Queso Quark\tinternacional\tmedia_manana\n58\tMini tosta de Pan integral con Hummus\tarabe\tmedia_manana\n116\tCanelones de Carne Especial\tespañola\tcomida\n90129\tSeitán Salteado con Pimientos\tinternacional\tcomida\n60208\tArroz a Banda\tespañola\tcomida\n90359\tSopa de wonton de cerdo y gambas\tasiatica\tcena\n60365\tBatido de Fresa con Arándanos\tamericana\tcomida\n396\tSalmón a la Plancha con Espárragos\tespañola\tcena\n283\tHuevos Revueltos con Aguacate y Pan de Centeno\tespañola\tdesayuno\n60047\tSmoothie de Melón y Pepino Refrescante\tamericana\tdesayuno\n90069\tPoke Bowl de Salmón y Edamame\tasiatica\tcomida\n120060\tTortitas de arroz con pavo y tomate\tNULL\tmerienda\n17\tNaranja con Pistachos\tespañola\tmedia_manana\n30129\tMuffins de plátano y nueces de macadamia\tamericana\tmerienda\n313\tHuevos Revueltos con Salmón Ahumado\tespañola\tdesayuno\n",
+  "stderr": "",
+  "execution_time_ms": 279
+}

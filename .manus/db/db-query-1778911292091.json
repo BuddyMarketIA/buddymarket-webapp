@@ -1,0 +1,20 @@
+{
+  "query": "\nSELECT \n  COUNT(*) as total_recipes,\n  COUNT(CASE WHEN \"imageUrl\" IS NOT NULL AND \"imageUrl\" != '' THEN 1 END) as with_image,\n  COUNT(CASE WHEN \"imageUrl\" IS NULL OR \"imageUrl\" = '' THEN 1 END) as no_image,\n  COUNT(CASE WHEN \"imageUrl\" LIKE '%placeholder%' THEN 1 END) as placeholder_images,\n  COUNT(CASE WHEN \"imageUrl\" LIKE '%cloudfront%' THEN 1 END) as cloudfront_images,\n  COUNT(CASE WHEN \"imageUrl\" LIKE '%unsplash%' THEN 1 END) as unsplash_images,\n  COUNT(CASE WHEN \"imageUrl\" LIKE '%pexels%' THEN 1 END) as pexels_images,\n  COUNT(CASE WHEN \"imageUrl\" LIKE '%manus%' OR \"imageUrl\" LIKE '%forge%' THEN 1 END) as ai_generated_images\nFROM recipes;\n",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway02.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3N8WHcqSjo6gJV1.8cb8a16f7acb --database ndjzMo7PxeapbzLjBHjsKj --execute \nSELECT \n  COUNT(*) as total_recipes,\n  COUNT(CASE WHEN \"imageUrl\" IS NOT NULL AND \"imageUrl\" != '' THEN 1 END) as with_image,\n  COUNT(CASE WHEN \"imageUrl\" IS NULL OR \"imageUrl\" = '' THEN 1 END) as no_image,\n  COUNT(CASE WHEN \"imageUrl\" LIKE '%placeholder%' THEN 1 END) as placeholder_images,\n  COUNT(CASE WHEN \"imageUrl\" LIKE '%cloudfront%' THEN 1 END) as cloudfront_images,\n  COUNT(CASE WHEN \"imageUrl\" LIKE '%unsplash%' THEN 1 END) as unsplash_images,\n  COUNT(CASE WHEN \"imageUrl\" LIKE '%pexels%' THEN 1 END) as pexels_images,\n  COUNT(CASE WHEN \"imageUrl\" LIKE '%manus%' OR \"imageUrl\" LIKE '%forge%' THEN 1 END) as ai_generated_images\nFROM recipes;\n",
+  "rows": [
+    {
+      "total_recipes": "1524",
+      "with_image": "1524",
+      "no_image": "0",
+      "placeholder_images": "0",
+      "cloudfront_images": "0",
+      "unsplash_images": "0",
+      "pexels_images": "0",
+      "ai_generated_images": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "total_recipes\twith_image\tno_image\tplaceholder_images\tcloudfront_images\tunsplash_images\tpexels_images\tai_generated_images\n1524\t1524\t0\t0\t0\t0\t0\t0\n",
+  "stderr": "",
+  "execution_time_ms": 320
+}
