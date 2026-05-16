@@ -69,16 +69,16 @@ const MODULES = [
   { icon: "🛒", color: "#3b82f6", bg: "#eff6ff", tag: "Buddy Market", title: "Compra Inteligente Automatizada",
     desc: "Genera tu lista de la compra directamente desde tu menú semanal. Organizada por categorías y con integración con supermercados online.",
     img: FOOD.shopping, highlights: ["Lista automática", "Por categorías", "Integración supermercados"] },
-  { icon: "📊", color: "#8b5cf6", bg: "#f5f3ff", tag: "Buddy Care", title: "Seguimiento Nutricional en Tiempo Real",
+  { icon: "📊", color: "#D97706", bg: "#FFFBEB", tag: "Buddy Care", title: "Seguimiento Nutricional en Tiempo Real",
     desc: "Registra tus comidas y monitoriza calorías, proteínas, carbohidratos y grasas. Estadísticas detalladas y sistema de logros para mantenerte motivado.",
     img: FOOD.mealprep, highlights: ["Registro por voz", "Análisis de fotos", "Estadísticas avanzadas"] },
-  { icon: "🏪", color: "#ec4899", bg: "#fdf2f8", tag: "Buddy Shop", title: "Tienda de Productos Saludables",
+  { icon: "🏪", color: "#B45309", bg: "#FFFBEB", tag: "Buddy Shop", title: "Tienda de Productos Saludables",
     desc: "Accede a productos saludables, suplementos y alimentos especiales seleccionados por nutricionistas. Envío directo a tu puerta.",
     img: FOOD.pantry, highlights: ["Productos curados", "Suplementos", "Envío a domicilio"] },
   { icon: "💪", color: "#f59e0b", bg: "#fffbeb", tag: "Buddy Coach", title: "Tu Entrenador Personal Online",
     desc: "Accede a entrenadores certificados que diseñan planes de entrenamiento 100% personalizados para ti, hacen seguimiento de tu evolución y te motivan cada día.",
     img: "/manus-storage/buddy-coach-sport_5db90cf6.jpg", highlights: ["Planes de entrenamiento", "Seguimiento semanal", "Entrenadores certificados"] },
-  { icon: "🧑‍⚕️", color: "#0ea5e9", bg: "#f0f9ff", tag: "Buddy Experts", title: "Nutricionistas Certificados Online",
+  { icon: "🧑‍⚕️", color: "#EA580C", bg: "#FFF7ED", tag: "Buddy Experts", title: "Nutricionistas Certificados Online",
     desc: "Accede a nutricionistas certificados que crean planes 100% personalizados, hacen seguimiento de tu evolución, videoconsultas, alertas inteligentes y un Product Board donde los profesionales proponen mejoras.",
     img: FOOD.salmon, highlights: ["Planes con IA + videoconsultas", "Alertas y tendencias de pacientes", "Product Board colaborativo"] },
 ];
@@ -86,11 +86,11 @@ const MODULES = [
 // ─── Módulos del ecosistema (tarjetas de branding) ───────────────────────────
 const ECOSYSTEM = [
   { name: "Buddy Market", tagline: "Compra inteligente", color: "#F97316", bg: "#FFF7ED", border: "#FED7AA", icon: "🛒" },
-  { name: "Buddy Coach", tagline: "Tu entrenador personal", color: "#7C3AED", bg: "#F5F3FF", border: "#DDD6FE", icon: "💪" },
-  { name: "Buddy Experts", tagline: "Nutricionistas online", color: "#0ea5e9", bg: "#F0F9FF", border: "#BAE6FD", icon: "🧑‍⚕️" },
-  { name: "Buddy Shop", tagline: "Productos saludables", color: "#E11D48", bg: "#FFF1F2", border: "#FECDD3", icon: "🛍️" },
-  { name: "Buddy Care", tagline: "Salud y bienestar", color: "#16A34A", bg: "#F0FDF4", border: "#BBF7D0", icon: "➕" },
-  { name: "Buddy Pets", tagline: "Nutrición para mascotas", color: "#2563EB", bg: "#EFF6FF", border: "#BFDBFE", icon: "🐾" },
+  { name: "Buddy Coach", tagline: "Tu entrenador personal", color: "#EA580C", bg: "#FFF7ED", border: "#FDBA74", icon: "💪" },
+  { name: "Buddy Experts", tagline: "Nutricionistas online", color: "#C2410C", bg: "#FFF7ED", border: "#FED7AA", icon: "🧑‍⚕️" },
+  { name: "Buddy Shop", tagline: "Productos saludables", color: "#FB923C", bg: "#FFF7ED", border: "#FDBA74", icon: "🛍️" },
+  { name: "Buddy Care", tagline: "Salud y bienestar", color: "#D97706", bg: "#FFFBEB", border: "#FDE68A", icon: "➕" },
+  { name: "Buddy Pets", tagline: "Nutrición para mascotas", color: "#B45309", bg: "#FFFBEB", border: "#FDE68A", icon: "🐾" },
 ];
 
 const SERVICES = [
@@ -125,7 +125,7 @@ const SERVICES = [
     ],
     items: ["Perfil de creador con página propia","Subir y publicar recetas con fotos","Comunidad de seguidores y likes","Monetización de recetas premium","Analíticas de alcance y engagement","Badge BuddyMaker verificado"],
     cta: "Convertirme en BuddyMaker" },
-  { icon: "🏢", color: "#7c3aed", gradient: "linear-gradient(135deg,#f5f3ff,#ede9fe)", border: "#c4b5fd",
+  { icon: "🏢", color: "#C2410C", gradient: "linear-gradient(135deg,#FFF7ED,#FFEDD5)", border: "#FED7AA",
     title: "Para Empresas", subtitle: "Bienestar corporativo tipo Gympass con ROI medible",
     desc: "Ofrece nutrición personalizada como beneficio para tu equipo. Modelo tipo Gympass con activación por código, precios desde 1,90€/empleado/mes y panel HR con datos 100% anónimos.",
     badge: "Modelo B2B tipo Gympass — desde 10 empleados",
@@ -146,7 +146,7 @@ const SPECIAL_MENUS = [
   { emoji: "🌾", label: "Celíacos", color: "#fef3c7", text: "#92400e" },
   { emoji: "💉", label: "Diabéticos", color: "#dbeafe", text: "#1e40af" },
   { emoji: "❤️", label: "Hipertensión", color: "#fee2e2", text: "#991b1b" },
-  { emoji: "💪", label: "Deportistas", color: "#ede9fe", text: "#5b21b6" },
+  { emoji: "💪", label: "Deportistas", color: "#FFEDD5", text: "#C2410C" },
   { emoji: "🤧", label: "Resfriado", color: "#e0f2fe", text: "#0c4a6e" },
   { emoji: "🧓", label: "Mayores 65", color: "#f0fdf4", text: "#14532d" },
   { emoji: "👶", label: "Niños", color: "#fef9c3", text: "#713f12" },
@@ -156,7 +156,7 @@ const SPECIAL_MENUS = [
   { emoji: "🫀", label: "Colesterol", color: "#fff1f2", text: "#9f1239" },
   { emoji: "🧠", label: "Ansiedad", color: "#faf5ff", text: "#581c87" },
   { emoji: "🤱", label: "Lactancia", color: "#fdf4ff", text: "#701a75" },
-  { emoji: "🏋️", label: "Volumen muscular", color: "#f0f9ff", text: "#0c4a6e" },
+  { emoji: "🏋️", label: "Volumen muscular", color: "#FEF3C7", text: "#92400E" },
 ];
 
 const STATS = [
@@ -171,7 +171,7 @@ const TESTIMONIALS = [
     text: "Antes pasaba horas pensando qué cocinar. Ahora Buddy One me genera el menú de la semana en segundos, adaptado a los gustos de mis hijos y con la lista de la compra incluida. Un cambio de vida.", stars: 5 },
   { name: "Carlos R.", role: "Deportista amateur, Barcelona", avatar: "CR", color: "#10b981",
     text: "Llevo 3 meses usando BuddyIA para mis menús de ganancia muscular. He ganado 4kg de masa muscular manteniendo el % de grasa. Los macros son perfectos y las recetas están buenísimas.", stars: 5 },
-  { name: "Ana G.", role: "Nutricionista, Valencia", avatar: "AG", color: "#8b5cf6",
+  { name: "Ana G.", role: "Nutricionista, Valencia", avatar: "AG", color: "#D97706",
     text: "Como nutricionista, recomiendo Buddy One a mis pacientes para el seguimiento entre consultas. La herramienta de diario nutricional y las métricas me ayudan a ver su evolución real.", stars: 5 },
   { name: "Pedro S.", role: "Diabético tipo 2, Sevilla", avatar: "PS", color: "#3b82f6",
     text: "El plan para diabéticos es increíble. Controla el índice glucémico de cada comida y me ayuda a mantener la glucosa estable. Mi médico está impresionado con mi evolución.", stars: 5 },
@@ -184,7 +184,7 @@ const PLANS = [
   { name: "Pro", price: "9,99€", period: "al mes", accent: "#F97316", highlight: true, cta: "Empezar con Pro",
     description: "Para quienes quieren resultados reales",
     features: ["Menús semanales ilimitados con IA","24 planes especializados","BuddyIA: 50 consultas/día","Diario nutricional ilimitado","Inventario ilimitado + alertas","Métricas de salud (6 meses)","Integración supermercados online"] },
-  { name: "Pro Max", price: "19,99€", period: "al mes", accent: "#7c3aed", highlight: false, cta: "Empezar con Pro Max",
+  { name: "Pro Max", price: "19,99€", period: "al mes", accent: "#EA580C", highlight: false, cta: "Empezar con Pro Max",
     description: "Para profesionales y familias",
     features: ["Todo lo de Pro","BuddyIA ilimitado","Historial de métricas ilimitado","Crear y publicar recetas propias","Acceso a Buddy Coach","Perfiles familiares múltiples","Exportar informes PDF","Soporte prioritario 24/7"] },
 ];
@@ -194,7 +194,7 @@ const HOW_IT_WORKS = [
     desc: "Cuéntanos tus objetivos, alergias, condiciones médicas y estilo de vida. Solo tarda 3 minutos." },
   { step: "02", icon: "🤖", color: "#10b981", title: "La IA genera tu plan personalizado",
     desc: "BuddyIA analiza tu perfil y crea un menú semanal completo con 5 comidas diarias y lista de la compra." },
-  { step: "03", icon: "📊", color: "#8b5cf6", title: "Sigue tu progreso y mejora",
+  { step: "03", icon: "📊", color: "#D97706", title: "Sigue tu progreso y mejora",
     desc: "Registra tus comidas, monitoriza tus métricas y deja que BuddyIA ajuste tu plan semana a semana." },
 ];
 
@@ -343,9 +343,9 @@ export default function LandingPage() {
                 {item.label}
               </button>
             ))}
-            <a href="/empresas" style={{ padding: "8px 14px", fontSize: 14, fontWeight: 600, color: "#7c3aed", textDecoration: "none", borderRadius: 8, transition: "all 0.15s", background: "#f5f3ff", border: "1.5px solid #ede9fe" }}
-              onMouseEnter={e => { (e.target as HTMLElement).style.background = "#7c3aed"; (e.target as HTMLElement).style.color = "white"; (e.target as HTMLElement).style.borderColor = "#7c3aed"; }}
-              onMouseLeave={e => { (e.target as HTMLElement).style.background = "#f5f3ff"; (e.target as HTMLElement).style.color = "#7c3aed"; (e.target as HTMLElement).style.borderColor = "#ede9fe"; }}>
+            <a href="/empresas" style={{ padding: "8px 14px", fontSize: 14, fontWeight: 600, color: "#EA580C", textDecoration: "none", borderRadius: 8, transition: "all 0.15s", background: "#FFF7ED", border: "1.5px solid #FFEDD5" }}
+              onMouseEnter={e => { (e.target as HTMLElement).style.background = "#EA580C"; (e.target as HTMLElement).style.color = "white"; (e.target as HTMLElement).style.borderColor = "#EA580C"; }}
+              onMouseLeave={e => { (e.target as HTMLElement).style.background = "#FFF7ED"; (e.target as HTMLElement).style.color = "#EA580C"; (e.target as HTMLElement).style.borderColor = "#FFEDD5"; }}>
               Empresas
             </a>
             <a href="/blog" style={{ padding: "8px 14px", fontSize: 14, fontWeight: 500, color: "#4b5563", textDecoration: "none", borderRadius: 8, transition: "all 0.15s" }}
@@ -396,7 +396,7 @@ export default function LandingPage() {
                 {item.label}
               </button>
             ))}
-            <a href="/empresas" onClick={() => setMobileOpen(false)} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", textAlign: "left", padding: "13px 0", fontSize: 15, fontWeight: 600, color: "#7c3aed", textDecoration: "none", borderBottom: "1px solid #f3f4f6" }}>
+            <a href="/empresas" onClick={() => setMobileOpen(false)} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", textAlign: "left", padding: "13px 0", fontSize: 15, fontWeight: 600, color: "#EA580C", textDecoration: "none", borderBottom: "1px solid #f3f4f6" }}>
               <span style={{ fontSize: 16 }}>🏢</span> Empresas
             </a>
             <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 10 }}>
@@ -451,7 +451,7 @@ export default function LandingPage() {
 
             <div style={{ display: "flex", alignItems: "center", gap: 16, flexWrap: "wrap" }}>
               <div style={{ display: "flex" }}>
-                {[["LM","#F97316"],["CR","#10b981"],["AG","#8b5cf6"],["PS","#3b82f6"],["MR","#f59e0b"]].map(([init, bg], i) => (
+                {[["LM","#F97316"],["CR","#10b981"],["AG","#D97706"],["PS","#3b82f6"],["MR","#f59e0b"]].map(([init, bg], i) => (
                   <div key={i} style={{ width: 34, height: 34, borderRadius: "50%", background: bg, border: "2.5px solid white", marginLeft: i === 0 ? 0 : -9, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, fontWeight: 800, color: "white" }}>{init}</div>
                 ))}
               </div>
@@ -505,7 +505,7 @@ export default function LandingPage() {
       </section>
 
       {/* ═══ ECOSISTEMA — LOGOS OFICIALES ════════════════════════════════════ */}
-      <section style={{ background: "#F9FAFB", padding: "72px 24px" }}>
+      <section style={{ background: "#FFF8F0", padding: "72px 24px" }}>
         <div style={{ maxWidth: 1160, margin: "0 auto", textAlign: "center" }}>
           <p style={{ fontSize: "12px", color: "#F97316", fontWeight: 700, letterSpacing: "0.10em", textTransform: "uppercase", marginBottom: "16px" }}>El ecosistema Buddy One</p>
           <h2 style={{ fontSize: "clamp(24px,3.5vw,40px)", fontWeight: 900, color: "#111827", margin: "0 0 12px", letterSpacing: "-0.02em" }}>
@@ -874,24 +874,24 @@ export default function LandingPage() {
             </div>
 
             {/* Buddy Shop */}
-            <div style={{ background: "white", borderRadius: 24, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", border: "1.5px solid #FECDD3", transition: "all 0.3s" }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(225,29,72,0.15)"; }}
+            <div style={{ background: "white", borderRadius: 24, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", border: "1.5px solid #FDBA74", transition: "all 0.3s" }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(251,146,60,0.15)"; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 24px rgba(0,0,0,0.06)"; }}>
-              <div style={{ height: 160, background: "linear-gradient(135deg,#FFF1F2,#FFE4E6)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
+              <div style={{ height: 160, background: "linear-gradient(135deg,#FFF7ED,#FFEDD5)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
                 <img src={FOOD.pantry} alt="Buddy Shop" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.3 }} />
                 <div style={{ position: "relative", zIndex: 1, textAlign: "center" }}>
                   <div style={{ fontSize: 48 }}>🛍️</div>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: "#E11D48", marginTop: 4 }}>Buddy Shop</div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: "#FB923C", marginTop: 4 }}>Buddy Shop</div>
                 </div>
               </div>
               <div style={{ padding: "24px" }}>
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#FFF1F2", borderRadius: 100, padding: "4px 12px", marginBottom: 12 }}>
-                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#E11D48", display: "inline-block" }} />
-                  <span style={{ fontSize: 11, fontWeight: 700, color: "#E11D48" }}>DISPONIBLE AHORA</span>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#FFF7ED", borderRadius: 100, padding: "4px 12px", marginBottom: 12 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#FB923C", display: "inline-block" }} />
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "#FB923C" }}>DISPONIBLE AHORA</span>
                 </div>
                 <h3 style={{ fontSize: 20, fontWeight: 800, color: "#111827", margin: "0 0 10px" }}>Productos saludables</h3>
                 <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.65, margin: "0 0 20px" }}>Accede a suplementos, alimentos especiales y productos saludables seleccionados por nutricionistas. Envío a domicilio.</p>
-                <a href="https://www.buddyoneshop.com" target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 20px", borderRadius: 10, fontSize: 14, fontWeight: 700, color: "white", background: "#E11D48", textDecoration: "none", boxShadow: "0 4px 16px rgba(225,29,72,0.3)" }}>
+                <a href="https://www.buddyoneshop.com" target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 20px", borderRadius: 10, fontSize: 14, fontWeight: 700, color: "white", background: "#FB923C", textDecoration: "none", boxShadow: "0 4px 16px rgba(251,146,60,0.3)" }}>
                   Ir a Buddy Shop
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
                 </a>
@@ -899,24 +899,24 @@ export default function LandingPage() {
             </div>
 
             {/* Buddy Coach */}
-            <div style={{ background: "white", borderRadius: 24, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", border: "1.5px solid #DDD6FE", transition: "all 0.3s" }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(124,58,237,0.15)"; }}
+            <div style={{ background: "white", borderRadius: 24, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", border: "1.5px solid #FDBA74", transition: "all 0.3s" }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(234,88,12,0.15)"; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 24px rgba(0,0,0,0.06)"; }}>
-              <div style={{ height: 160, background: "linear-gradient(135deg,#F5F3FF,#EDE9FE)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
+              <div style={{ height: 160, background: "linear-gradient(135deg,#FFF7ED,#FFEDD5)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
                 <img src="/manus-storage/buddy-coach-sport_5db90cf6.jpg" alt="Buddy Coach" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.35 }} />
                 <div style={{ position: "relative", zIndex: 1, textAlign: "center" }}>
                   <div style={{ fontSize: 48 }}>💪</div>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: "#7C3AED", marginTop: 4 }}>Buddy Coach</div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: "#EA580C", marginTop: 4 }}>Buddy Coach</div>
                 </div>
               </div>
               <div style={{ padding: "24px" }}>
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#F5F3FF", borderRadius: 100, padding: "4px 12px", marginBottom: 12 }}>
-                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#7C3AED", display: "inline-block" }} />
-                  <span style={{ fontSize: 11, fontWeight: 700, color: "#7C3AED" }}>DISPONIBLE AHORA</span>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#FFF7ED", borderRadius: 100, padding: "4px 12px", marginBottom: 12 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#EA580C", display: "inline-block" }} />
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "#EA580C" }}>DISPONIBLE AHORA</span>
                 </div>
                 <h3 style={{ fontSize: 20, fontWeight: 800, color: "#111827", margin: "0 0 10px" }}>Tu entrenador personal online</h3>
                 <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.65, margin: "0 0 20px" }}>Accede a entrenadores certificados que diseñan planes de entrenamiento 100% personalizados, hacen seguimiento de tu evolución y te motivan cada día.</p>
-                <a href="https://www.buddycoach.io" target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 20px", borderRadius: 10, fontSize: 14, fontWeight: 700, color: "white", background: "#7C3AED", textDecoration: "none", boxShadow: "0 4px 16px rgba(124,58,237,0.3)" }}>
+                <a href="https://www.buddycoach.io" target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 20px", borderRadius: 10, fontSize: 14, fontWeight: 700, color: "white", background: "#EA580C", textDecoration: "none", boxShadow: "0 4px 16px rgba(234,88,12,0.3)" }}>
                   Ir a Buddy Coach
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
                 </a>
@@ -924,24 +924,24 @@ export default function LandingPage() {
             </div>
 
             {/* Buddy Experts */}
-            <div style={{ background: "white", borderRadius: 24, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", border: "1.5px solid #BAE6FD", transition: "all 0.3s" }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(14,165,233,0.15)"; }}
+            <div style={{ background: "white", borderRadius: 24, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", border: "1.5px solid #FED7AA", transition: "all 0.3s" }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(194,65,12,0.15)"; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 24px rgba(0,0,0,0.06)"; }}>
-              <div style={{ height: 160, background: "linear-gradient(135deg,#F0F9FF,#E0F2FE)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
-                <img src={FOOD.salmon} alt="Buddy Experts" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.2, filter: "hue-rotate(180deg)" }} />
+              <div style={{ height: 160, background: "linear-gradient(135deg,#FFF7ED,#FFEDD5)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
+                <img src={FOOD.salmon} alt="Buddy Experts" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.2 }} />
                 <div style={{ position: "relative", zIndex: 1, textAlign: "center" }}>
                   <div style={{ fontSize: 48 }}>🧑‍⚕️</div>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: "#0ea5e9", marginTop: 4 }}>Buddy Experts</div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: "#C2410C", marginTop: 4 }}>Buddy Experts</div>
                 </div>
               </div>
               <div style={{ padding: "24px" }}>
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#F0F9FF", borderRadius: 100, padding: "4px 12px", marginBottom: 12 }}>
-                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#0ea5e9", display: "inline-block" }} />
-                  <span style={{ fontSize: 11, fontWeight: 700, color: "#0ea5e9" }}>DISPONIBLE AHORA</span>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#FFF7ED", borderRadius: 100, padding: "4px 12px", marginBottom: 12 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#C2410C", display: "inline-block" }} />
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "#C2410C" }}>DISPONIBLE AHORA</span>
                 </div>
                 <h3 style={{ fontSize: 20, fontWeight: 800, color: "#111827", margin: "0 0 10px" }}>Tu nutricionista online</h3>
                 <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.65, margin: "0 0 20px" }}>Accede a nutricionistas certificados que crean planes 100% personalizados, hacen seguimiento de tu evolución y responden tus dudas en tiempo real.</p>
-                <a href="/app/buddy-experts" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 20px", borderRadius: 10, fontSize: 14, fontWeight: 700, color: "white", background: "#0ea5e9", textDecoration: "none", boxShadow: "0 4px 16px rgba(14,165,233,0.3)" }}>
+                <a href="/app/buddy-experts" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 20px", borderRadius: 10, fontSize: 14, fontWeight: 700, color: "white", background: "#C2410C", textDecoration: "none", boxShadow: "0 4px 16px rgba(194,65,12,0.3)" }}>
                   Ir a Buddy Experts
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </a>
@@ -949,24 +949,24 @@ export default function LandingPage() {
             </div>
 
             {/* Buddy Pets */}
-            <div style={{ background: "white", borderRadius: 24, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", border: "1.5px solid #BFDBFE", transition: "all 0.3s" }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(37,99,235,0.15)"; }}
+            <div style={{ background: "white", borderRadius: 24, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", border: "1.5px solid #FDE68A", transition: "all 0.3s" }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(180,83,9,0.15)"; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 24px rgba(0,0,0,0.06)"; }}>
-              <div style={{ height: 160, background: "linear-gradient(135deg,#EFF6FF,#DBEAFE)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
+              <div style={{ height: 160, background: "linear-gradient(135deg,#FFFBEB,#FEF3C7)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
                 <img src={FOOD.mealprep} alt="Buddy Pets" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.25 }} />
                 <div style={{ position: "relative", zIndex: 1, textAlign: "center" }}>
                   <div style={{ fontSize: 48 }}>🐾</div>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: "#2563EB", marginTop: 4 }}>Buddy Pets</div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: "#B45309", marginTop: 4 }}>Buddy Pets</div>
                 </div>
               </div>
               <div style={{ padding: "24px" }}>
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#EFF6FF", borderRadius: 100, padding: "4px 12px", marginBottom: 12 }}>
-                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#2563EB", display: "inline-block" }} />
-                  <span style={{ fontSize: 11, fontWeight: 700, color: "#2563EB" }}>DISPONIBLE AHORA</span>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#FFFBEB", borderRadius: 100, padding: "4px 12px", marginBottom: 12 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#B45309", display: "inline-block" }} />
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "#B45309" }}>DISPONIBLE AHORA</span>
                 </div>
                 <h3 style={{ fontSize: 20, fontWeight: 800, color: "#111827", margin: "0 0 10px" }}>Nutrición para mascotas</h3>
                 <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.65, margin: "0 0 20px" }}>Planes nutricionales personalizados para perros y gatos. Analiza las necesidades de tu mascota y genera menús adaptados a su raza, edad y condición.</p>
-                <a href="/app/buddy-pet" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 20px", borderRadius: 10, fontSize: 14, fontWeight: 700, color: "white", background: "#2563EB", textDecoration: "none", boxShadow: "0 4px 16px rgba(37,99,235,0.3)" }}>
+                <a href="/app/buddy-pet" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 20px", borderRadius: 10, fontSize: 14, fontWeight: 700, color: "white", background: "#B45309", textDecoration: "none", boxShadow: "0 4px 16px rgba(180,83,9,0.3)" }}>
                   Ir a Buddy Pets
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
                 </a>
@@ -974,27 +974,27 @@ export default function LandingPage() {
             </div>
 
             {/* Buddy Care */}
-            <div style={{ background: "white", borderRadius: 24, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", border: "1.5px solid #BBF7D0", transition: "all 0.3s", opacity: 0.85 }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(22,163,74,0.15)"; (e.currentTarget as HTMLElement).style.opacity = "1"; }}
+            <div style={{ background: "white", borderRadius: 24, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", border: "1.5px solid #FDE68A", transition: "all 0.3s", opacity: 0.85 }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(217,119,6,0.15)"; (e.currentTarget as HTMLElement).style.opacity = "1"; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 24px rgba(0,0,0,0.06)"; (e.currentTarget as HTMLElement).style.opacity = "0.85"; }}>
-              <div style={{ height: 160, background: "linear-gradient(135deg,#F0FDF4,#DCFCE7)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
+              <div style={{ height: 160, background: "linear-gradient(135deg,#FFFBEB,#FEF3C7)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
                 <img src={FOOD.ensalada} alt="Buddy Care" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.25 }} />
                 <div style={{ position: "absolute", top: 12, right: 12, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(8px)", borderRadius: 100, padding: "4px 12px" }}>
                   <span style={{ fontSize: 11, fontWeight: 700, color: "white" }}>🔨 En desarrollo</span>
                 </div>
                 <div style={{ position: "relative", zIndex: 1, textAlign: "center" }}>
                   <div style={{ fontSize: 48 }}>➕</div>
-                  <div style={{ fontSize: 13, fontWeight: 800, color: "#16A34A", marginTop: 4 }}>Buddy Care</div>
+                  <div style={{ fontSize: 13, fontWeight: 800, color: "#D97706", marginTop: 4 }}>Buddy Care</div>
                 </div>
               </div>
               <div style={{ padding: "24px" }}>
-                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#F0FDF4", borderRadius: 100, padding: "4px 12px", marginBottom: 12 }}>
-                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#16A34A", display: "inline-block", animation: "lp-pulse 2s infinite" }} />
-                  <span style={{ fontSize: 11, fontWeight: 700, color: "#16A34A" }}>PRÓXIMAMENTE</span>
+                <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#FFFBEB", borderRadius: 100, padding: "4px 12px", marginBottom: 12 }}>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#D97706", display: "inline-block", animation: "lp-pulse 2s infinite" }} />
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "#D97706" }}>PRÓXIMAMENTE</span>
                 </div>
                 <h3 style={{ fontSize: 20, fontWeight: 800, color: "#111827", margin: "0 0 10px" }}>Salud y bienestar integral</h3>
                 <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.65, margin: "0 0 20px" }}>Estamos trabajando en Buddy Care, tu herramienta de seguimiento de salud integral. Métricas avanzadas, historial médico, recordatorios y mucho más.</p>
-                <button disabled style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 20px", borderRadius: 10, fontSize: 14, fontWeight: 700, color: "#16A34A", background: "#F0FDF4", border: "2px solid #BBF7D0", cursor: "not-allowed", opacity: 0.7 }}>
+                <button disabled style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 20px", borderRadius: 10, fontSize: 14, fontWeight: 700, color: "#D97706", background: "#FFFBEB", border: "2px solid #FDE68A", cursor: "not-allowed", opacity: 0.7 }}>
                   Notificarme cuando esté listo
                 </button>
               </div>
@@ -1005,7 +1005,7 @@ export default function LandingPage() {
       </section>
 
       {/* ═══ B2B CORPORATE BANNER ════════════════════════════════════════════════ */}
-      <section style={{ padding: "80px 24px", background: "linear-gradient(135deg, #7c3aed 0%, #5b21b6 100%)", position: "relative", overflow: "hidden" }}>
+      <section style={{ padding: "80px 24px", background: "linear-gradient(135deg, #EA580C 0%, #C2410C 100%)", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, opacity: 0.08, background: "url('data:image/svg+xml,<svg xmlns=\"http://www.w3.org/2000/svg\" viewBox=\"0 0 80 80\"><circle cx=\"40\" cy=\"40\" r=\"2\" fill=\"white\"/></svg>') repeat", backgroundSize: "40px 40px" }} />
         <div style={{ maxWidth: 1100, margin: "0 auto", display: "grid", gridTemplateColumns: "1.2fr 1fr", gap: 48, alignItems: "center", position: "relative", zIndex: 1 }} className="lp-services-grid">
           <div>
@@ -1020,7 +1020,7 @@ export default function LandingPage() {
               Modelo tipo Gympass: cada empleado canjea un código y activa Pro Max al instante. Panel HR con datos anónimos, facturación simplificada y precios por volumen.
             </p>
             <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
-              <a href="/empresas" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 28px", borderRadius: 12, fontSize: 15, fontWeight: 700, color: "#7c3aed", background: "white", textDecoration: "none", boxShadow: "0 8px 24px rgba(0,0,0,0.2)", transition: "all 0.2s" }}
+              <a href="/empresas" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "14px 28px", borderRadius: 12, fontSize: 15, fontWeight: 700, color: "#EA580C", background: "white", textDecoration: "none", boxShadow: "0 8px 24px rgba(0,0,0,0.2)", transition: "all 0.2s" }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 32px rgba(0,0,0,0.3)"; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 24px rgba(0,0,0,0.2)"; }}>
                 Ver planes para empresas

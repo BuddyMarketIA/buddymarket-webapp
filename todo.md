@@ -3598,3 +3598,11 @@
 - [x] Listado de empresas target para ofrecer BuddyOne como perk de bienestar (60 empresas en 4 tiers)
 - [x] Email modelo HTML profesional para la propuesta B2B perk (con pricing dinámico por volumen)
 - [x] Endpoint backend con Resend para enviar el email a todas las empresas cuando se active (adminSendPerkCampaign + adminSendPerkCampaignToLeads)
+
+## Fix: Colores del ecosistema en landing
+- [x] Alinear los colores de la sección ecosistema en la landing page con el esquema de color del resto de la app (fondo #FFF8F0 crema)
+
+## Etiquetas de cocina/país en recetas
+- [x] Campo cuisineType ya existía en el schema de recetas
+- [x] Clasificar todas las recetas existentes (~17,000) por cocina/país usando IA (script classify-cuisines.mjs en ejecución)
+- [x] Añadir filtro por país/cocina en la página de recetas (30 cocinas con banderas de país: 🇪🇸 Española, 🇮🇹 Italiana, 🇲🇽 Mexicana, 🇯🇵 Japonesa, 🇨🇳 China, 🇮🇳 India, 🇫🇷 Francesa, 🇹🇭 Tailandesa, 🇬🇷 Griega, 🇲🇦 Marroquí, 🇹🇷 Turca, 🇵🇪 Peruana, 🇦🇷 Argentina, 🇨🇴 Colombiana, 🇧🇷 Brasileña, 🇰🇷 Coreana, 🇻🇳 Vietnamita, 🇱🇧 Libanesa, 🇺🇸 Americana, 🇵🇹 Portuguesa, 🇩🇪 Alemana, 🇨🇺 Cubana, Mediterránea, Nórdica, Caribeña, Africana, Árabe, Internacional, Fusión)
