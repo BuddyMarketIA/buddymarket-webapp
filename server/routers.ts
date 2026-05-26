@@ -1472,6 +1472,8 @@ Devuelve SOLO JSON válido con esta estructura:
           restrictionIds: z.array(z.number().int().positive()).max(20).optional(),
           difficulty: z.enum(["facil", "medio", "dificil"]).optional(),
           maxTime: z.number().int().min(0).max(1440).optional(),
+          minCalories: z.number().int().min(0).max(5000).optional(),
+          maxCalories: z.number().int().min(0).max(5000).optional(),
           isPublic: z.boolean().optional(),
           mealTime: z.string().max(50).trim().optional(),
           tag: z.string().max(50).trim().optional(),

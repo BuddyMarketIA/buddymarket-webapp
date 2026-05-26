@@ -441,6 +441,8 @@ export async function getRecipes(params: {
   restrictionIds?: number[];
   difficulty?: string;
   maxTime?: number;
+  minCalories?: number;
+  maxCalories?: number;
   isPublic?: boolean;
   mealTime?: string;
   tag?: string;
@@ -475,6 +477,12 @@ export async function getRecipes(params: {
   if (params.difficulty) conditions.push(eq(recipes.difficulty, params.difficulty as any));
   if (params.maxTime) {
     conditions.push(lte(sql`(${recipes.preparationTime} + ${recipes.cookTime})`, params.maxTime));
+  }
+  if (params.minCalories) {
+    conditions.push(gte(recipes.caloriesPerServing, params.minCalories));
+  }
+  if (params.maxCalories) {
+    conditions.push(lte(recipes.caloriesPerServing, params.maxCalories));
   }
   if (params.mealTime && params.mealTime !== 'cualquiera') {
     conditions.push(eq(recipes.mealTime, params.mealTime as any));

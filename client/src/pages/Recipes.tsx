@@ -519,6 +519,11 @@ export default function Recipes() {
   const [onlyForMe, setOnlyForMe] = useState(false);
   const [showMyRecipes, setShowMyRecipes] = useState(false);
   const [showWithInventory, setShowWithInventory] = useState(false);
+  // Advanced fitness filters
+  const [showFitnessFilters, setShowFitnessFilters] = useState(false);
+  const [maxCaloriesFilter, setMaxCaloriesFilter] = useState<number | "">("")
+  const [maxTimeFilter, setMaxTimeFilter] = useState<number | "">("")
+  const [fitnessCategoryFilter, setFitnessCategoryFilter] = useState("");
 
   // Profile query for 'Solo para mí' filter
   const { data: profileData } = trpc.profile.get.useQuery(undefined, { enabled: isAuthenticated && onlyForMe });
@@ -595,13 +600,15 @@ export default function Recipes() {
     mealTime: mealTimeFilter || undefined,
     cuisineType: cuisineFilter || undefined,
     cookingMethod: cookingMethodFilter || undefined,
-    foodType: foodTypeFilter || undefined,
-    tag: onlyForMeTag || undefined,
+    foodType: (showFitnessFilters && fitnessCategoryFilter) ? fitnessCategoryFilter : (foodTypeFilter || undefined),
+    tag: (showFitnessFilters ? "fitness" : onlyForMeTag) || undefined,
+    maxTime: maxTimeFilter || undefined,
+    maxCalories: maxCaloriesFilter || undefined,
     // NOTE: excludeUserAllergens is intentionally NOT set here.
     // We show ALL recipes but display a visual warning on incompatible ones.
     // This is a key Buddy One differentiator: awareness, not restriction.
     limit: 20,
-  }), [debouncedSearch, showMyRecipes, user?.id, mealTimeFilter, cuisineFilter, cookingMethodFilter, foodTypeFilter, onlyForMeTag]);
+  }), [debouncedSearch, showMyRecipes, user?.id, mealTimeFilter, cuisineFilter, cookingMethodFilter, foodTypeFilter, onlyForMeTag, showFitnessFilters, maxTimeFilter, maxCaloriesFilter, fitnessCategoryFilter]);
 
   // Sentinel ref for IntersectionObserver
   const sentinelRef = useRef<HTMLDivElement>(null);
@@ -690,7 +697,7 @@ export default function Recipes() {
   const getLikesCount = (recipeId: number) =>
     (likesBatch?.counts as Record<number, number> | undefined)?.[recipeId] ?? 0;
 
-  const activeFiltersCount = [mealTimeFilter, cuisineFilter, cookingMethodFilter, foodTypeFilter, onlyForMe ? "1" : ""].filter(Boolean).length;
+  const activeFiltersCount = [mealTimeFilter, cuisineFilter, cookingMethodFilter, foodTypeFilter, onlyForMe ? "1" : "", showFitnessFilters ? "1" : "", maxCaloriesFilter ? "1" : "", maxTimeFilter ? "1" : "", fitnessCategoryFilter].filter(Boolean).length;
 
   const clearFilters = () => {
     setMealTimeFilter("");
@@ -698,6 +705,10 @@ export default function Recipes() {
     setCookingMethodFilter("");
     setFoodTypeFilter("");
     setOnlyForMe(false);
+    setShowFitnessFilters(false);
+    setMaxCaloriesFilter("");
+    setMaxTimeFilter("");
+    setFitnessCategoryFilter("");
   };
 
   const handleSearchSubmit = useCallback((query: string) => {
@@ -998,6 +1009,136 @@ export default function Recipes() {
               {onlyForMe && (
                 <p style={{ margin: "6px 0 0 4px", fontSize: "12px", color: "#9ca3af" }}>Mostrando recetas recomendadas según tu perfil y preferencias</p>
               )}
+            </div>
+          )}
+
+          {/* ─── Fitness Filters Toggle ─────────────────────────────────── */}
+          <div style={{ marginBottom: "14px" }}>
+            <button
+              onClick={() => {
+                const next = !showFitnessFilters;
+                setShowFitnessFilters(next);
+                if (!next) { setMaxCaloriesFilter(""); setMaxTimeFilter(""); setFitnessCategoryFilter(""); }
+              }}
+              style={{
+                display: "flex", alignItems: "center", gap: "8px",
+                padding: "8px 14px", borderRadius: "20px",
+                border: `2px solid ${showFitnessFilters ? "#10B981" : "#e5e7eb"}`,
+                background: showFitnessFilters ? "rgba(16,185,129,0.1)" : "white",
+                color: showFitnessFilters ? "#10B981" : "#6b7280",
+                fontSize: "13px", fontWeight: 700, cursor: "pointer",
+                transition: "all 0.2s",
+              }}
+            >
+              <span style={{ fontSize: "16px" }}>💪</span>
+              Recetas Fitness
+              {showFitnessFilters && <span style={{ background: "#10B981", color: "white", borderRadius: "10px", padding: "1px 7px", fontSize: "11px", fontWeight: 800 }}>ON</span>}
+            </button>
+          </div>
+
+          {/* ─── Advanced Fitness Filters Panel ────────────────────────────── */}
+          {showFitnessFilters && (
+            <div style={{
+              background: "white",
+              borderRadius: "16px",
+              padding: "16px",
+              marginBottom: "14px",
+              boxShadow: "0 2px 12px rgba(16,185,129,0.12)",
+              border: "1.5px solid rgba(16,185,129,0.25)",
+            }}>
+              <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "14px" }}>
+                <span style={{ fontSize: "18px" }}>⚡</span>
+                <h3 style={{ margin: 0, fontSize: "15px", fontWeight: 800, color: "#1a1a1a" }}>Filtros Avanzados Fitness</h3>
+              </div>
+
+              {/* Max Calories Filter */}
+              <div style={{ marginBottom: "12px" }}>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#6b7280", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  🔥 Calorías máximas
+                </label>
+                <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                  {[{ label: "Todas", value: "" }, { label: "< 200 kcal", value: 200 }, { label: "< 300 kcal", value: 300 }, { label: "< 400 kcal", value: 400 }, { label: "< 500 kcal", value: 500 }, { label: "< 600 kcal", value: 600 }].map(opt => (
+                    <button
+                      key={String(opt.value)}
+                      onClick={() => setMaxCaloriesFilter(opt.value as number | "")}
+                      style={{
+                        padding: "6px 12px", borderRadius: "14px",
+                        border: `2px solid ${maxCaloriesFilter === opt.value ? "#10B981" : "#f3f4f6"}`,
+                        background: maxCaloriesFilter === opt.value ? "rgba(16,185,129,0.1)" : "#f9fafb",
+                        color: maxCaloriesFilter === opt.value ? "#10B981" : "#6b7280",
+                        fontSize: "12px", fontWeight: 700, cursor: "pointer", transition: "all 0.2s",
+                      }}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Max Time Filter */}
+              <div style={{ marginBottom: "12px" }}>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#6b7280", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  ⏱️ Tiempo máximo de preparación
+                </label>
+                <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                  {[{ label: "Todos", value: "" }, { label: "< 10 min", value: 10 }, { label: "< 15 min", value: 15 }, { label: "< 20 min", value: 20 }, { label: "< 30 min", value: 30 }, { label: "< 45 min", value: 45 }].map(opt => (
+                    <button
+                      key={String(opt.value)}
+                      onClick={() => setMaxTimeFilter(opt.value as number | "")}
+                      style={{
+                        padding: "6px 12px", borderRadius: "14px",
+                        border: `2px solid ${maxTimeFilter === opt.value ? "#10B981" : "#f3f4f6"}`,
+                        background: maxTimeFilter === opt.value ? "rgba(16,185,129,0.1)" : "#f9fafb",
+                        color: maxTimeFilter === opt.value ? "#10B981" : "#6b7280",
+                        fontSize: "12px", fontWeight: 700, cursor: "pointer", transition: "all 0.2s",
+                      }}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Fitness Category Filter */}
+              <div>
+                <label style={{ display: "block", fontSize: "12px", fontWeight: 700, color: "#6b7280", marginBottom: "6px", textTransform: "uppercase", letterSpacing: "0.05em" }}>
+                  🏷️ Categoría fitness
+                </label>
+                <div style={{ display: "flex", gap: "6px", flexWrap: "wrap" }}>
+                  {[
+                    { label: "Todas", value: "" },
+                    { label: "🥣 Bowls proteicos", value: "Bowls proteicos" },
+                    { label: "🌯 Wraps ligeros", value: "Wraps y burritos ligeros" },
+                    { label: "🥗 Ensaladas", value: "Ensaladas completas" },
+                    { label: "💨 Airfryer", value: "Airfryer fitness" },
+                    { label: "🍳 Desayunos", value: "Desayunos fitness" },
+                    { label: "🌙 Cenas ligeras", value: "Cenas ligeras" },
+                    { label: "🍕 Pizzas fit", value: "pizza" },
+                    { label: "🍝 Pasta fit", value: "pasta" },
+                    { label: "🥤 Smoothies", value: "smoothie" },
+                    { label: "🥜 Snacks", value: "snack" },
+                    { label: "📦 Meal prep", value: "meal-prep" },
+                    { label: "💪 Alta proteína", value: "alta-proteina" },
+                    { label: "🔥 Baja caloría", value: "baja-caloria" },
+                    { label: "⚡ Post-entreno", value: "post-entreno" },
+                  ].map(opt => (
+                    <button
+                      key={opt.value}
+                      onClick={() => setFitnessCategoryFilter(opt.value)}
+                      style={{
+                        padding: "6px 12px", borderRadius: "14px",
+                        border: `2px solid ${fitnessCategoryFilter === opt.value ? "#10B981" : "#f3f4f6"}`,
+                        background: fitnessCategoryFilter === opt.value ? "rgba(16,185,129,0.1)" : "#f9fafb",
+                        color: fitnessCategoryFilter === opt.value ? "#10B981" : "#6b7280",
+                        fontSize: "12px", fontWeight: 700, cursor: "pointer", transition: "all 0.2s",
+                        whiteSpace: "nowrap",
+                      }}
+                    >
+                      {opt.label}
+                    </button>
+                  ))}
+                </div>
+              </div>
             </div>
           )}
 

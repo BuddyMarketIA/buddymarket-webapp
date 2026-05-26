@@ -3662,3 +3662,4 @@
 ### Bloque 7: IA y offline
 - [x] IA conversacional nutrición — /app/nutrition-chat (router nutritionChat + NutritionChat.tsx)
 - [x] Modo offline — ya existía (contentSync router + service worker)
+- [x] Advanced fitness recipe filters: filter by calories range, preparation time, and category
