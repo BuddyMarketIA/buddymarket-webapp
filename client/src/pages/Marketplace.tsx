@@ -1,6 +1,6 @@
 import { useState, useMemo } from "react";
 import { trpc } from "@/lib/trpc";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { Store, Star, ShoppingBag, Filter, Crown, ChefHat, Heart } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";

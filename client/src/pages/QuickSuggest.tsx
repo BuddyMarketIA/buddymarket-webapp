@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { trpc } from "@/lib/trpc";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { Link } from "wouter";
 import { Sparkles, RefreshCw, Clock, Flame, Drumstick, ChevronRight, Zap } from "lucide-react";
 import { Button } from "@/components/ui/button";

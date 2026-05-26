@@ -1,5 +1,5 @@
 import { trpc } from "@/lib/trpc";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { Building2, Users, TrendingUp, Activity, Award, Calendar } from "lucide-react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 

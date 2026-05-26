@@ -1,6 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { trpc } from "@/lib/trpc";
-import { useAuth } from "@/contexts/AuthContext";
+import { useAuth } from "@/_core/hooks/useAuth";
 import { Send, Bot, User, Sparkles, Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
