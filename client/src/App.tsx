@@ -76,6 +76,7 @@ const Dashboard = lazyWithRetry(() => import("./pages/Dashboard"));
 const Recipes = lazyWithRetry(() => import("./pages/Recipes"));
 const RecipeDetail = lazyWithRetry(() => import("./pages/RecipeDetail"));
 const RecipeForm = lazyWithRetry(() => import("./pages/RecipeForm"));
+const InstagramRecipeImport = lazyWithRetry(() => import("./pages/InstagramRecipeImport"));
 const Menus = lazyWithRetry(() => import("./pages/Menus"));
 const MyMenus = lazyWithRetry(() => import("./pages/MyMenus"));
 const ShoppingLists = lazyWithRetry(() => import("./pages/ShoppingLists"));
@@ -244,6 +245,7 @@ function Router() {
       {/* Protected app routes */}
       <Route path="/app/dashboard">{() => <ProtectedRoute component={Dashboard} />}</Route>
       <Route path="/app/recipes/new">{() => <ProtectedRoute component={RecipeForm} />}</Route>
+      <Route path="/app/recipes/instagram">{() => <ProtectedRoute component={InstagramRecipeImport} />}</Route>
       <Route path="/app/recipes/:id/edit">{(params) => <ProtectedRoute component={RecipeForm} params={params} />}</Route>
       <Route path="/app/recipes/:id">{(params) => <ProtectedRoute component={RecipeDetail} params={params} />}</Route>
       <Route path="/app/recipes">{() => <ProtectedRoute component={Recipes} />}</Route>

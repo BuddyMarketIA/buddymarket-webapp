@@ -30,6 +30,7 @@ import { ecosystemEnhancedRouter } from "./routers/ecosystemEnhanced";
 import { expertEnhancedRouter } from "./routers/expertEnhanced";
 import { expertFeatureRequestsRouter } from "./routers/expertFeatureRequests";
 import { recipeImagesRouter } from "./routers/recipeImages";
+import { instagramRecipeRouter } from "./routers/instagramRecipe";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { invokeLLM } from "./_core/llm";
 import { storagePut } from "./storage";
@@ -288,6 +289,7 @@ export const appRouter = router({
   ecosystemEnhanced: ecosystemEnhancedRouter,
   expertEnhanced: expertEnhancedRouter,
   recipeImages: recipeImagesRouter,
+  instagramRecipe: instagramRecipeRouter,
 
   // ---------------------------------------------------------------------------
   // ECOSYSTEM (BuddyCoach, BuddyCare, BuddyShop)

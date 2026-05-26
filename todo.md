@@ -3614,3 +3614,15 @@
 - [x] Ejecutar generación masiva — 768 imágenes nuevas generadas antes de alcanzar límite API (total CDN: 3,996)
 - [ ] Continuar generación cuando se restablezca el límite de la API (12,990 pendientes)
 - [x] Clasificación de cocinas completada: 16,986/16,986 recetas clasificadas (32 cocinas diferentes)
+
+## Base de datos de recetas fitness/low-cal (estilo Instagram)
+- [x] Crear script para generar 50-100 recetas fitness originales (139 generadas: bowls, wraps, airfryer, snacks, etc.)
+- [x] Insertar recetas en la base de datos con tags "Fitness", "Low-Cal", "Alta Proteína"
+- [x] Verificar que las recetas aparecen correctamente en la app
+
+## Funcionalidad: Copiar receta de Instagram
+- [x] Diseñar endpoint que reciba URL de Instagram y genere versión original con IA (server/routers/instagramRecipe.ts)
+- [x] Implementar UI para pegar link de Instagram y obtener receta inspirada (InstagramRecipeImport.tsx)
+- [x] Permitir guardar la receta generada en carpetas del usuario
+- [x] Asegurar que no se copia contenido literal (prompt explícito de "inspiración original")
+- [x] Añadir botón Instagram en header de página Recetas (gradiente Instagram)
