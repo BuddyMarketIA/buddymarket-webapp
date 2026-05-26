@@ -31,6 +31,13 @@ import { expertEnhancedRouter } from "./routers/expertEnhanced";
 import { expertFeatureRequestsRouter } from "./routers/expertFeatureRequests";
 import { recipeImagesRouter } from "./routers/recipeImages";
 import { instagramRecipeRouter } from "./routers/instagramRecipe";
+import { quickSuggestRouter } from "./routers/quickSuggest";
+import { mealPrepRouter } from "./routers/mealPrep";
+import { sustainabilityRouter } from "./routers/sustainability";
+import { marketplaceRouter } from "./routers/marketplace";
+import { corporateDashboardRouter } from "./routers/corporateDashboard";
+import { priceCompareRouter } from "./routers/priceCompare";
+import { nutritionChatRouter } from "./routers/nutritionChat";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { invokeLLM } from "./_core/llm";
 import { storagePut } from "./storage";
@@ -290,6 +297,13 @@ export const appRouter = router({
   expertEnhanced: expertEnhancedRouter,
   recipeImages: recipeImagesRouter,
   instagramRecipe: instagramRecipeRouter,
+  quickSuggest: quickSuggestRouter,
+  mealPrep: mealPrepRouter,
+  sustainability: sustainabilityRouter,
+  marketplace: marketplaceRouter,
+  corporateDashboard: corporateDashboardRouter,
+  priceCompare: priceCompareRouter,
+  nutritionChat: nutritionChatRouter,
 
   // ---------------------------------------------------------------------------
   // ECOSYSTEM (BuddyCoach, BuddyCare, BuddyShop)

@@ -3626,3 +3626,39 @@
 - [x] Permitir guardar la receta generada en carpetas del usuario
 - [x] Asegurar que no se copia contenido literal (prompt explícito de "inspiración original")
 - [x] Añadir botón Instagram en header de página Recetas (gradiente Instagram)
+
+## Mejoras Masivas v3 — Mayo 2026
+
+### Bloque 1: Gamificación (streaks, badges, niveles)
+- [x] Schema DB: ya existía (badges, userBadges, streaks tables)
+- [x] Backend: ya existía (gamification router con badges, streaks, levels)
+- [x] Frontend: ya existía (Achievements page con badges y progreso)
+- [x] Dashboard: ya existía (widget de racha)
+
+### Bloque 2: Features rápidos
+- [x] "¿Qué como hoy?" — /app/quick-suggest (router quickSuggest + página QuickSuggest.tsx)
+- [x] Compartir recetas por WhatsApp — ya existía (ShareRecipeButton con WhatsApp/Telegram/Twitter)
+- [x] Historial de peso con gráfica — ya existía (Progress page + NutritionalStats)
+
+### Bloque 3: Notificaciones y scoring
+- [x] Notificaciones inteligentes — ya existía (MealNotifications + push cron)
+- [x] Score de sostenibilidad — /app/sustainability (router sustainability + SustainabilityScore.tsx)
+- [x] Adaptación por temporada — integrado en sustainability router (getSeasonalProducts)
+
+### Bloque 4: Meal Prep y escáner de despensa
+- [x] Meal Prep Planner — /app/meal-prep (router mealPrep + MealPrepPlanner.tsx)
+- [x] Escáner de despensa — ya existía (FridgeScanner page + fridgeScans table)
+
+### Bloque 5: Retos y referidos
+- [x] Retos semanales — ya existía (Challenges page + challenges/userChallenges tables)
+- [x] Programa de referidos — ya existía (ReferralProgram + ReferralDashboard pages)
+
+### Bloque 6: B2B y marketplace
+- [x] Dashboard corporativo — /app/corporate-dashboard (router corporateDashboard + CorporateDashboard.tsx)
+- [x] Marketplace de menús — /app/marketplace (router marketplace + Marketplace.tsx)
+- [x] Integración wearables — ya existía (wearables router + HealthHub page + Oura/Whoop)
+- [x] Comparador de precios — /app/price-compare (router priceCompare + PriceCompare.tsx)
+
+### Bloque 7: IA y offline
+- [x] IA conversacional nutrición — /app/nutrition-chat (router nutritionChat + NutritionChat.tsx)
+- [x] Modo offline — ya existía (contentSync router + service worker)

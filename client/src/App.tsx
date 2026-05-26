@@ -169,6 +169,13 @@ const WellnessGoals = lazyWithRetry(() => import("./pages/WellnessGoals"));
 const HealthHub = lazyWithRetry(() => import("./pages/HealthHub"));
 const Ecosystem = lazyWithRetry(() => import("./pages/Ecosystem"));
 const BuddyCare = lazyWithRetry(() => import("./pages/BuddyCare"));
+const QuickSuggest = lazyWithRetry(() => import("./pages/QuickSuggest"));
+const MealPrepPlanner = lazyWithRetry(() => import("./pages/MealPrepPlanner"));
+const SustainabilityScore = lazyWithRetry(() => import("./pages/SustainabilityScore"));
+const NutritionChat = lazyWithRetry(() => import("./pages/NutritionChat"));
+const PriceCompare = lazyWithRetry(() => import("./pages/PriceCompare"));
+const MarketplacePage = lazyWithRetry(() => import("./pages/Marketplace"));
+const CorporateDashboard = lazyWithRetry(() => import("./pages/CorporateDashboard"));
 
 // ─── Page loading fallback ────────────────────────────────────────────────────
 function PageLoader() {
@@ -318,6 +325,13 @@ function Router() {
       <Route path="/app/health-hub">{() => <ProtectedRoute component={HealthHub} />}</Route>
       <Route path="/app/ecosystem">{() => <ProtectedRoute component={Ecosystem} />}</Route>
       <Route path="/app/buddy-care">{() => <ProtectedRoute component={BuddyCare} />}</Route>
+      <Route path="/app/quick-suggest">{() => <ProtectedRoute component={QuickSuggest} />}</Route>
+      <Route path="/app/meal-prep">{() => <ProtectedRoute component={MealPrepPlanner} />}</Route>
+      <Route path="/app/sustainability">{() => <ProtectedRoute component={SustainabilityScore} />}</Route>
+      <Route path="/app/nutrition-chat">{() => <ProtectedRoute component={NutritionChat} />}</Route>
+      <Route path="/app/price-compare">{() => <ProtectedRoute component={PriceCompare} />}</Route>
+      <Route path="/app/marketplace">{() => <ProtectedRoute component={MarketplacePage} />}</Route>
+      <Route path="/app/corporate-dashboard">{() => <ProtectedRoute component={CorporateDashboard} />}</Route>
       <Route path="/app/expert/patients">{() => <ProtectedPage><ExpertPatients /></ProtectedPage>}</Route>
       <Route path="/app/expert/patients/:id">{() => <ProtectedPage><ExpertPatientDetail /></ProtectedPage>}</Route>
       <Route path="/app/expert/chat">{() => <ProtectedPage><ExpertChat /></ProtectedPage>}</Route>
