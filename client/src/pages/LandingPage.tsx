@@ -69,12 +69,12 @@ const MODULES = [
   { icon: "🛒", color: "#3b82f6", bg: "#eff6ff", tag: "Buddy Market", title: "Compra Inteligente Automatizada",
     desc: "Genera tu lista de la compra directamente desde tu menú semanal. Organizada por categorías y con integración con supermercados online.",
     img: FOOD.shopping, highlights: ["Lista automática", "Por categorías", "Integración supermercados"] },
-  { icon: "📊", color: "#D97706", bg: "#FFFBEB", tag: "Buddy Care", title: "Seguimiento Nutricional en Tiempo Real",
-    desc: "Registra tus comidas y monitoriza calorías, proteínas, carbohidratos y grasas. Estadísticas detalladas y sistema de logros para mantenerte motivado.",
-    img: FOOD.mealprep, highlights: ["Registro por voz", "Análisis de fotos", "Estadísticas avanzadas"] },
-  { icon: "🏪", color: "#B45309", bg: "#FFFBEB", tag: "Buddy Shop", title: "Tienda de Productos Saludables",
-    desc: "Accede a productos saludables, suplementos y alimentos especiales seleccionados por nutricionistas. Envío directo a tu puerta.",
-    img: FOOD.pantry, highlights: ["Productos curados", "Suplementos", "Envío a domicilio"] },
+  { icon: "💊", color: "#D97706", bg: "#FFFBEB", tag: "Buddy Care", title: "Suplementos Nutricionales Personalizados",
+    desc: "Tu tienda de suplementos nutricionales con recomendaciones basadas en tu perfil. Omega 3, creatina, proteína, vitaminas y más, seleccionados según tus objetivos y necesidades.",
+    img: FOOD.ensalada, highlights: ["Recomendaciones personalizadas", "Omega 3, creatina, vitaminas", "Seguimiento de tomas diarias"] },
+  { icon: "🍳", color: "#B45309", bg: "#FFFBEB", tag: "Buddy Shop", title: "Marketplace de Utensilios de Cocina",
+    desc: "Todo lo que necesitas para cocinar mejor: sartenes, ollas, robots de cocina, básculas, tuppers y más. Productos seleccionados para facilitar tu día a día en la cocina.",
+    img: FOOD.pantry, highlights: ["Utensilios de cocina", "Robots y básculas", "Envío a domicilio"] },
   { icon: "💪", color: "#f59e0b", bg: "#fffbeb", tag: "Buddy Coach", title: "Tu Entrenador Personal Online",
     desc: "Accede a entrenadores certificados que diseñan planes de entrenamiento 100% personalizados para ti, hacen seguimiento de tu evolución y te motivan cada día.",
     img: "/manus-storage/buddy-coach-sport_5db90cf6.jpg", highlights: ["Planes de entrenamiento", "Seguimiento semanal", "Entrenadores certificados"] },
@@ -88,8 +88,8 @@ const ECOSYSTEM = [
   { name: "Buddy Market", tagline: "Compra inteligente", color: "#F97316", bg: "#FFF7ED", border: "#FED7AA", icon: "🛒" },
   { name: "Buddy Coach", tagline: "Tu entrenador personal", color: "#EA580C", bg: "#FFF7ED", border: "#FDBA74", icon: "💪" },
   { name: "Buddy Experts", tagline: "Nutricionistas online", color: "#C2410C", bg: "#FFF7ED", border: "#FED7AA", icon: "🧑‍⚕️" },
-  { name: "Buddy Shop", tagline: "Productos saludables", color: "#FB923C", bg: "#FFF7ED", border: "#FDBA74", icon: "🛍️" },
-  { name: "Buddy Care", tagline: "Salud y bienestar", color: "#D97706", bg: "#FFFBEB", border: "#FDE68A", icon: "➕" },
+  { name: "Buddy Shop", tagline: "Utensilios de cocina", color: "#FB923C", bg: "#FFF7ED", border: "#FDBA74", icon: "🍳" },
+  { name: "Buddy Care", tagline: "Suplementos nutricionales", color: "#D97706", bg: "#FFFBEB", border: "#FDE68A", icon: "💊" },
   { name: "Buddy Pets", tagline: "Nutrición para mascotas", color: "#B45309", bg: "#FFFBEB", border: "#FDE68A", icon: "🐾" },
 ];
 
@@ -865,7 +865,7 @@ export default function LandingPage() {
                   <span style={{ fontSize: 11, fontWeight: 700, color: "#F97316" }}>DISPONIBLE AHORA</span>
                 </div>
                 <h3 style={{ fontSize: 20, fontWeight: 800, color: "#111827", margin: "0 0 10px" }}>Compra inteligente</h3>
-                <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.65, margin: "0 0 20px" }}>Genera tu lista de la compra automáticamente desde tu menú semanal. Integración con Mercadona, Carrefour, Lidl y más.</p>
+                <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.65, margin: "0 0 20px" }}>Genera tu lista de la compra automáticamente desde tu menú semanal. Organizada por categorías e integrada con los principales supermercados online.</p>
                 <a href={ctaHref} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 20px", borderRadius: 10, fontSize: 14, fontWeight: 700, color: "white", background: "#F97316", textDecoration: "none", boxShadow: "0 4px 16px rgba(249,115,22,0.3)" }}>
                   Ir a Buddy Market
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -880,7 +880,7 @@ export default function LandingPage() {
               <div style={{ height: 160, background: "linear-gradient(135deg,#FFF7ED,#FFEDD5)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
                 <img src={FOOD.pantry} alt="Buddy Shop" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.3 }} />
                 <div style={{ position: "relative", zIndex: 1, textAlign: "center" }}>
-                  <div style={{ fontSize: 48 }}>🛍️</div>
+                  <div style={{ fontSize: 48 }}>🍳</div>
                   <div style={{ fontSize: 13, fontWeight: 800, color: "#FB923C", marginTop: 4 }}>Buddy Shop</div>
                 </div>
               </div>
@@ -889,8 +889,8 @@ export default function LandingPage() {
                   <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#FB923C", display: "inline-block" }} />
                   <span style={{ fontSize: 11, fontWeight: 700, color: "#FB923C" }}>DISPONIBLE AHORA</span>
                 </div>
-                <h3 style={{ fontSize: 20, fontWeight: 800, color: "#111827", margin: "0 0 10px" }}>Productos saludables</h3>
-                <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.65, margin: "0 0 20px" }}>Accede a suplementos, alimentos especiales y productos saludables seleccionados por nutricionistas. Envío a domicilio.</p>
+                <h3 style={{ fontSize: 20, fontWeight: 800, color: "#111827", margin: "0 0 10px" }}>Utensilios de cocina</h3>
+                <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.65, margin: "0 0 20px" }}>Marketplace de utensilios de cocina: sartenes, ollas, robots de cocina, básculas, tuppers y todo lo que necesitas para cocinar mejor. Envío a domicilio.</p>
                 <a href="https://www.buddyoneshop.com" target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 20px", borderRadius: 10, fontSize: 14, fontWeight: 700, color: "white", background: "#FB923C", textDecoration: "none", boxShadow: "0 4px 16px rgba(251,146,60,0.3)" }}>
                   Ir a Buddy Shop
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
@@ -974,29 +974,27 @@ export default function LandingPage() {
             </div>
 
             {/* Buddy Care */}
-            <div style={{ background: "white", borderRadius: 24, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", border: "1.5px solid #FDE68A", transition: "all 0.3s", opacity: 0.85 }}
-              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(217,119,6,0.15)"; (e.currentTarget as HTMLElement).style.opacity = "1"; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 24px rgba(0,0,0,0.06)"; (e.currentTarget as HTMLElement).style.opacity = "0.85"; }}>
+            <div style={{ background: "white", borderRadius: 24, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", border: "1.5px solid #FDE68A", transition: "all 0.3s" }}
+              onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(217,119,6,0.15)"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 24px rgba(0,0,0,0.06)"; }}>
               <div style={{ height: 160, background: "linear-gradient(135deg,#FFFBEB,#FEF3C7)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
                 <img src={FOOD.ensalada} alt="Buddy Care" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.25 }} />
-                <div style={{ position: "absolute", top: 12, right: 12, background: "rgba(0,0,0,0.55)", backdropFilter: "blur(8px)", borderRadius: 100, padding: "4px 12px" }}>
-                  <span style={{ fontSize: 11, fontWeight: 700, color: "white" }}>🔨 En desarrollo</span>
-                </div>
                 <div style={{ position: "relative", zIndex: 1, textAlign: "center" }}>
-                  <div style={{ fontSize: 48 }}>➕</div>
+                  <div style={{ fontSize: 48 }}>💊</div>
                   <div style={{ fontSize: 13, fontWeight: 800, color: "#D97706", marginTop: 4 }}>Buddy Care</div>
                 </div>
               </div>
               <div style={{ padding: "24px" }}>
                 <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "#FFFBEB", borderRadius: 100, padding: "4px 12px", marginBottom: 12 }}>
-                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#D97706", display: "inline-block", animation: "lp-pulse 2s infinite" }} />
-                  <span style={{ fontSize: 11, fontWeight: 700, color: "#D97706" }}>PRÓXIMAMENTE</span>
+                  <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#D97706", display: "inline-block" }} />
+                  <span style={{ fontSize: 11, fontWeight: 700, color: "#D97706" }}>DISPONIBLE AHORA</span>
                 </div>
-                <h3 style={{ fontSize: 20, fontWeight: 800, color: "#111827", margin: "0 0 10px" }}>Salud y bienestar integral</h3>
-                <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.65, margin: "0 0 20px" }}>Estamos trabajando en Buddy Care, tu herramienta de seguimiento de salud integral. Métricas avanzadas, historial médico, recordatorios y mucho más.</p>
-                <button disabled style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 20px", borderRadius: 10, fontSize: 14, fontWeight: 700, color: "#D97706", background: "#FFFBEB", border: "2px solid #FDE68A", cursor: "not-allowed", opacity: 0.7 }}>
-                  Notificarme cuando esté listo
-                </button>
+                <h3 style={{ fontSize: 20, fontWeight: 800, color: "#111827", margin: "0 0 10px" }}>Suplementos nutricionales</h3>
+                <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.65, margin: "0 0 20px" }}>Tu tienda de suplementos con recomendaciones personalizadas según tu perfil: omega 3, creatina, proteína, vitaminas, minerales y más. Seguimiento de tomas diarias incluido.</p>
+                <a href={ctaHref} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 20px", borderRadius: 10, fontSize: 14, fontWeight: 700, color: "white", background: "#D97706", textDecoration: "none", boxShadow: "0 4px 16px rgba(217,119,6,0.3)" }}>
+                  Ir a Buddy Care
+                  <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+                </a>
               </div>
             </div>
 
@@ -1096,7 +1094,7 @@ export default function LandingPage() {
               <div key={col.title}>
                 <h4 style={{ fontSize: 12, fontWeight: 700, color: "rgba(255,255,255,0.5)", letterSpacing: "0.08em", textTransform: "uppercase", marginBottom: 16 }}>{col.title}</h4>
                 {col.links.map(l => (
-                  <a key={l} href={l === "Para empresas" ? "/empresas" : l === "Buddy Experts" ? "/app/expert" : l === "BuddyMakers" ? "/app/creators" : l === "Buddy Coach" ? "/app/buddy-coach" : l === "Blog" ? "/blog" : l === "Privacidad" ? "/privacidad" : l === "T\u00e9rminos de uso" ? "/terminos" : l === "Cookies" ? "/cookies" : l === "RGPD" ? "/rgpd" : l === "Aviso legal" ? "/aviso-legal" : "#"} style={{ display: "block", fontSize: 14, color: "rgba(255,255,255,0.40)", textDecoration: "none", marginBottom: 10, transition: "color 0.2s" }}
+                  <a key={l} href={l === "Para empresas" ? "/empresas" : l === "Buddy Experts" ? "/app/buddy-experts" : l === "BuddyMakers" ? "/creators" : l === "Buddy Coach" ? "https://www.buddycoach.io" : l === "Blog" ? "/blog" : l === "Privacidad" ? "/privacy" : l === "T\u00e9rminos de uso" ? "/terms" : l === "Cookies" ? "/cookies" : l === "RGPD" ? "/gdpr" : l === "Aviso legal" ? "/legal" : l === "FAQ" ? "/faq" : l === "Sobre nosotros" ? "/about" : l === "Contacto" ? "/contacto" : l === "Creadores" ? "/creators" : l === "Funcionalidades" ? "/#features" : l === "Precios" ? "/#pricing" : l === "BuddyIA" ? "/app/buddy-ia" : l === "Recetas" ? "/app/recipes" : l === "Men\u00fas especiales" ? "/app/special-menus" : "#"} style={{ display: "block", fontSize: 14, color: "rgba(255,255,255,0.40)", textDecoration: "none", marginBottom: 10, transition: "color 0.2s" }}
                     onMouseEnter={e => (e.currentTarget.style.color = "white")}
                     onMouseLeave={e => (e.currentTarget.style.color = "rgba(255,255,255,0.40)")}
                   >{l}</a>
@@ -1109,7 +1107,7 @@ export default function LandingPage() {
               <img src="/manus-storage/funding-logos_8215cdec.webp" alt="Financiado por la Unión Europea - NextGenerationEU | Financiada por ENISA - Ministerio de Industria y Turismo | Plan de Recuperación, Transformación y Resiliencia" style={{ maxWidth: "100%", height: "auto", maxHeight: 60 }} />
             </div>
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
-              <p style={{ fontSize: 13, color: "rgba(255,255,255,0.35)" }}>© 2025 Buddy One. Todos los derechos reservados.</p>
+              <p style={{ fontSize: 13, color: "rgba(255,255,255,0.35)" }}>© 2026 Buddy One. Todos los derechos reservados.</p>
               <p style={{ fontSize: 12, color: "rgba(255,255,255,0.22)" }}>El contenido de Buddy One es orientativo y no sustituye el consejo de un profesional de la salud.</p>
             </div>
           </div>

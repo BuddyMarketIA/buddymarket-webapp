@@ -3663,3 +3663,29 @@
 - [x] IA conversacional nutrición — /app/nutrition-chat (router nutritionChat + NutritionChat.tsx)
 - [x] Modo offline — ya existía (contentSync router + service worker)
 - [x] Advanced fitness recipe filters: filter by calories range, preparation time, and category
+
+
+## Landing Page - Auditoría y Correcciones (Mayo 2026)
+
+### BuddyCare - Descripción incorrecta
+- [x] BuddyCare en MODULES: Dice "Seguimiento Nutricional en Tiempo Real" con "Registro por voz, Análisis de fotos, Estadísticas avanzadas". INCORRECTO. BuddyCare es una tienda de suplementos nutricionales (omega 3, creatina, vitaminas...) con recomendaciones personalizadas.
+- [x] BuddyCare en ECOSYSTEM: Dice "Salud y bienestar" genérico. Cambiar a "Suplementos nutricionales".
+- [x] BuddyCare en sección HERRAMIENTAS: Marcado como "PRÓXIMAMENTE" y "En desarrollo". Corregir: es una tienda de suplementos ya disponible.
+
+### BuddyShop - Descripción incorrecta
+- [x] BuddyShop en MODULES: Dice "Tienda de Productos Saludables" con "Productos curados, Suplementos, Envío a domicilio". INCORRECTO. BuddyShop es marketplace de utensilios de cocina (sartenes, ollas, básculas, robots...).
+- [x] BuddyShop en ECOSYSTEM: Dice "Productos saludables". Cambiar a "Utensilios de cocina".
+- [x] BuddyShop en sección HERRAMIENTAS: Dice "suplementos, alimentos especiales". INCORRECTO. Es marketplace de utensilios de cocina.
+
+### Buddy Market - Texto incorrecto
+- [x] Buddy Market en HERRAMIENTAS: Menciona "Mercadona, Carrefour, Lidl" específicamente. Cambiar a "supermercados" genérico.
+
+### Textos que no se ajustan a la realidad
+- [ ] STATS: "6 Supermercados integrados" - verificar número real.
+- [x] Footer copyright: "© 2025" → actualizar a 2026.
+
+### Mejoras de coherencia
+- [x] Intercambiar descripciones BuddyCare/BuddyShop en toda la landing.
+- [x] Quitar estado "PRÓXIMAMENTE" de BuddyCare y marcar como disponible.
+- [x] Añadir enlace funcional a BuddyCare (actualmente botón deshabilitado).
+- [ ] Buddy Pets en HERRAMIENTAS: usa imagen de meal prep en vez de mascotas.

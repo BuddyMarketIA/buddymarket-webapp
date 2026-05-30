@@ -176,6 +176,7 @@ const NutritionChat = lazyWithRetry(() => import("./pages/NutritionChat"));
 const PriceCompare = lazyWithRetry(() => import("./pages/PriceCompare"));
 const MarketplacePage = lazyWithRetry(() => import("./pages/Marketplace"));
 const CorporateDashboard = lazyWithRetry(() => import("./pages/CorporateDashboard"));
+const Contacto = lazyWithRetry(() => import("./pages/Contacto"));
 
 // ─── Page loading fallback ────────────────────────────────────────────────────
 function PageLoader() {
@@ -235,6 +236,7 @@ function Router() {
       <Route path="/nutricionistas" component={Nutricionistas} />
       <Route path="/calculadora" component={CalculadoraNutricional} />
       <Route path="/empresas" component={Empresas} />
+      <Route path="/contacto" component={Contacto} />
       <Route path="/empresa/dashboard">{() => <ProtectedPage><EmpresaDashboard /></ProtectedPage>}</Route>
       <Route path="/activar" component={ActivarCodigo} />
       <Route path="/app/soporte">{() => <ProtectedRoute component={Soporte} />}</Route>
