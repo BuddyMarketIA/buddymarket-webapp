@@ -1,5 +1,5 @@
 import { useParams, Link } from "wouter";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { trpc } from "@/lib/trpc";
 
 const ORANGE = "#F97316";
@@ -85,6 +85,79 @@ function renderMarkdown(text: string): string {
     .replace(/^(?!<[h|u|l])(.+)$/gm, '<p style="margin:0 0 16px;line-height:1.8;color:#374151;font-size:17px">$1</p>')
     // Clean up empty paragraphs
     .replace(/<p[^>]*>\s*<\/p>/g, '');
+}
+
+// ── Newsletter Form Component ────────────────────────────────────────────────
+function NewsletterForm() {
+  const [email, setEmail] = useState("");
+  const [name, setName] = useState("");
+  const [status, setStatus] = useState<"idle" | "loading" | "success" | "error">("idle");
+  const subscribeMutation = trpc.newsletter.subscribe.useMutation({
+    onSuccess: () => setStatus("success"),
+    onError: () => setStatus("error"),
+  });
+
+  function handleSubmit(e: React.FormEvent) {
+    e.preventDefault();
+    if (!email) return;
+    setStatus("loading");
+    subscribeMutation.mutate({ email, name: name || undefined, source: "blog" });
+  }
+
+  if (status === "success") {
+    return (
+      <div style={{ marginTop: 56, padding: "40px 32px", background: "linear-gradient(135deg, #FFF7ED 0%, #FFFBF5 100%)", borderRadius: 16, border: "1px solid #FDBA74", textAlign: "center" }}>
+        <div style={{ fontSize: 40, marginBottom: 12 }}>✉️</div>
+        <h3 style={{ fontSize: 20, fontWeight: 800, color: "#111827", marginBottom: 8 }}>¡Suscripción confirmada!</h3>
+        <p style={{ fontSize: 15, color: "#6b7280", maxWidth: 400, margin: "0 auto" }}>Recibirás nuestros mejores artículos sobre nutrición, recetas y bienestar directamente en tu bandeja de entrada.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div style={{ marginTop: 56, padding: "40px 32px", background: "linear-gradient(135deg, #FFF7ED 0%, #FFFBF5 100%)", borderRadius: 16, border: "1px solid #FED7AA" }}>
+      <div style={{ textAlign: "center", marginBottom: 24 }}>
+        <h3 style={{ fontSize: 22, fontWeight: 800, color: "#111827", marginBottom: 8 }}>
+          📨 Recibe más contenido como este
+        </h3>
+        <p style={{ fontSize: 15, color: "#6b7280", maxWidth: 480, margin: "0 auto" }}>
+          Suscríbete a nuestra newsletter y recibe cada semana recetas, consejos nutricionales y guías exclusivas.
+        </p>
+      </div>
+      <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: 12, maxWidth: 480, margin: "0 auto" }}>
+        <div style={{ display: "flex", gap: 12, flexWrap: "wrap" }}>
+          <input
+            type="text"
+            placeholder="Tu nombre (opcional)"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            style={{ flex: "1 1 140px", padding: "12px 16px", borderRadius: 10, border: "1px solid #e5e7eb", fontSize: 14, outline: "none", background: "white" }}
+          />
+          <input
+            type="email"
+            placeholder="tu@email.com"
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            required
+            style={{ flex: "2 1 200px", padding: "12px 16px", borderRadius: 10, border: "1px solid #e5e7eb", fontSize: 14, outline: "none", background: "white" }}
+          />
+        </div>
+        <button
+          type="submit"
+          disabled={status === "loading" || !email}
+          style={{ padding: "14px 24px", borderRadius: 10, background: ORANGE, color: "white", fontWeight: 700, fontSize: 15, border: "none", cursor: status === "loading" ? "wait" : "pointer", opacity: status === "loading" ? 0.7 : 1, transition: "opacity 0.2s" }}
+        >
+          {status === "loading" ? "Suscribiendo..." : "Suscribirme gratis"}
+        </button>
+        {status === "error" && (
+          <p style={{ fontSize: 13, color: "#ef4444", textAlign: "center" }}>Error al suscribirte. Inténtalo de nuevo.</p>
+        )}
+        <p style={{ fontSize: 12, color: "#9ca3af", textAlign: "center", marginTop: 4 }}>
+          Sin spam. Puedes darte de baja en cualquier momento. Cumplimos con el RGPD.
+        </p>
+      </form>
+    </div>
+  );
 }
 
 export default function BlogPost() {
@@ -349,6 +422,9 @@ export default function BlogPost() {
             </div>
           </div>
         )}
+
+        {/* Newsletter Subscription */}
+        <NewsletterForm />
 
         {/* Back to blog */}
         <div style={{ marginTop: 56, textAlign: "center" }}>

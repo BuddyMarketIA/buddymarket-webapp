@@ -4341,3 +4341,20 @@ export const expertFeatureVotes = pgTable("expert_feature_votes", {
 }));
 export type ExpertFeatureVote = typeof expertFeatureVotes.$inferSelect;
 export type InsertExpertFeatureVote = typeof expertFeatureVotes.$inferInsert;
+
+
+// ── Newsletter Subscribers ───────────────────────────────────────────────────
+export const newsletterSubscribers = pgTable("newsletter_subscribers", {
+  id: serial("id").primaryKey(),
+  email: varchar("email", { length: 255 }).notNull(),
+  name: varchar("name", { length: 255 }),
+  source: varchar("source", { length: 100 }).default("blog"),
+  subscribedAt: timestamp("subscribedAt").defaultNow().notNull(),
+  unsubscribedAt: timestamp("unsubscribedAt"),
+  active: boolean("active").default(true).notNull(),
+}, (t) => ({
+  emailUnique: unique("newsletter_email_unique").on(t.email),
+  activeIdx: index("newsletter_active_idx").on(t.active),
+}));
+export type NewsletterSubscriber = typeof newsletterSubscribers.$inferSelect;
+export type InsertNewsletterSubscriber = typeof newsletterSubscribers.$inferInsert;

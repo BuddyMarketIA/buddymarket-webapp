@@ -3707,3 +3707,9 @@
 - [x] Registration.tsx: "Compra en Mercadona y Carrefour" → "Lista de la compra inteligente"
 - [x] Subscription.tsx: "Mercadona, Lidl y más" → "tu supermercado favorito"
 - [x] Terms.tsx: eliminados nombres específicos de supermercados
+
+### Newsletter - Formulario de suscripción en blog
+- [x] Crear tabla newsletter_subscribers en schema (email, nombre, fecha, estado)
+- [x] Crear endpoint tRPC newsletter.subscribe (público)
+- [x] Añadir formulario de suscripción al final de BlogPost.tsx
+- [x] Diseño coherente con el estilo naranja/crema del blog

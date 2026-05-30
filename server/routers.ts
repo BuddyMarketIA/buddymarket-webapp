@@ -13237,5 +13237,40 @@ Devuelve SOLO JSON válido con esta estructura:
         return { success: true };
       }),
   }),
+  // ---------------------------------------------------------------------------
+  // NEWSLETTER — Suscripción al boletín
+  // ---------------------------------------------------------------------------
+  newsletter: router({
+    subscribe: publicProcedure
+      .input(z.object({
+        email: z.string().email(),
+        name: z.string().optional(),
+        source: z.string().default("blog"),
+      }))
+      .mutation(async ({ input }) => {
+        const db = await getDb();
+        const { newsletterSubscribers } = await import("../drizzle/schema.js");
+        const { eq } = await import("drizzle-orm");
+        // Check if already subscribed
+        const existing = await db.select().from(newsletterSubscribers)
+          .where(eq(newsletterSubscribers.email, input.email.toLowerCase()))
+          .limit(1);
+        if (existing.length > 0) {
+          // Reactivate if previously unsubscribed
+          if (!existing[0].active) {
+            await db.update(newsletterSubscribers)
+              .set({ active: true, unsubscribedAt: null, name: input.name || existing[0].name })
+              .where(eq(newsletterSubscribers.id, existing[0].id));
+          }
+          return { success: true, message: "already_subscribed" };
+        }
+        await db.insert(newsletterSubscribers).values({
+          email: input.email.toLowerCase(),
+          name: input.name || null,
+          source: input.source,
+        });
+        return { success: true, message: "subscribed" };
+      }),
+  }),
 });
 export type AppRouter = typeof appRouter;
