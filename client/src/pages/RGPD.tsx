@@ -44,7 +44,7 @@ export default function RGPD() {
               {[
                 ["Denominación social", "BUDDY MARKET IA, S.L."],
                 ["CIF", "B-56.819.576"],
-                ["Domicilio social", "Calle Villanueva 2, 3ºC, 28001 Madrid (España)"],
+                ["Domicilio social", "Calle Villanueva 2, Esc. 3, 3ºC, 28001 Madrid (España)"],
                 ["Email de contacto", "info@buddyoneapp.com"],
                 ["Delegado de Protección de Datos (DPO)", "dpo@buddyoneapp.com"],
                 ["Registro Mercantil", "Inscrita en el Registro Mercantil de Madrid"],
@@ -320,7 +320,7 @@ export default function RGPD() {
           <div style={{ background: "#f0fdf4", borderRadius: 12, padding: "20px 24px", border: "1px solid #bbf7d0" }}>
             <p style={{ fontSize: 15, color: "#166534", margin: "0 0 8px", fontWeight: 700 }}>Delegado de Protección de Datos (DPO)</p>
             <p style={{ fontSize: 14, color: "#374151", margin: "0 0 4px" }}>Email: <a href="mailto:dpo@buddyoneapp.com" style={{ color: ORANGE, fontWeight: 600 }}>dpo@buddyoneapp.com</a></p>
-            <p style={{ fontSize: 14, color: "#374151", margin: "0 0 4px" }}>Dirección postal: BUDDY MARKET IA, S.L. — Att. DPO — Calle Villanueva 2, 3ºC, 28001 Madrid</p>
+            <p style={{ fontSize: 14, color: "#374151", margin: "0 0 4px" }}>Dirección postal: BUDDY MARKET IA, S.L. — Att. DPO — Calle Villanueva 2, Esc. 3, 3ºC, 28001 Madrid</p>
             <p style={{ fontSize: 12, color: "#6b7280", margin: "12px 0 0" }}>El DPO atenderá cualquier consulta relativa al tratamiento de datos personales en un plazo máximo de 30 días naturales.</p>
           </div>
         </Section>

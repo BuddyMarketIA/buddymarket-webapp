@@ -46,11 +46,11 @@ export default function AvisoLegal() {
                 ["Denominación social", "BUDDY MARKET IA, S.L."],
                 ["Nombre comercial", "Buddy One"],
                 ["CIF", "B-56.819.576"],
-                ["Domicilio social", "Calle Villanueva 2, 3ºC, 28001 Madrid (España)"],
+                ["Domicilio social", "Calle Villanueva 2, Esc. 3, 3ºC, 28001 Madrid (España)"],
                 ["Email de contacto", "info@buddyoneapp.com"],
                 ["Sitio web", "www.buddyoneapp.com"],
-                ["Registro Mercantil", "Inscrita en el Registro Mercantil de Madrid, Tomo XXXXX, Folio XXX, Hoja M-XXXXXX"],
-                ["Actividad", "Desarrollo y explotación de plataforma digital de nutrición personalizada mediante inteligencia artificial"],
+                ["Registro Mercantil", "Inscrita en el Registro Mercantil de Madrid"],
+                ["Actividad (CNAE 6210)", "Diseño, desarrollo, implementación y mantenimiento de software y tecnologías de la información, en especial sistemas de asistencia de compras basados en inteligencia artificial"],
               ].map(([label, value], i) => (
                 <tr key={i} style={{ borderBottom: "1px solid #f3f4f6" }}>
                   <td style={{ padding: "12px 16px", fontSize: 14, fontWeight: 600, color: "#111827", background: "#f9fafb", width: "35%" }}>{label}</td>

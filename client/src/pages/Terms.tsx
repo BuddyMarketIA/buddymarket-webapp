@@ -76,7 +76,7 @@ function TermsB2B() {
         <p style={{ fontSize: 16, color: "#6b7280", margin: 0 }}>Para empresas y organizaciones · Versión 1.0 — Entrada en vigor: 7 de abril de 2026</p>
       </div>
       <Section number="1" title="Partes del Contrato">
-        <P>Las presentes Condiciones Generales de Contratación (CGC B2B) regulan la relación contractual entre <strong>BUDDY MARKET IA, S.L.</strong> (CIF B-56.819.576, Calle Villanueva 2, 3ºC, 28001, Madrid) como proveedor, y la empresa u organización que suscribe el Plan Empresarial de Buddy One (en adelante, «la Empresa») como cliente.</P>
+        <P>Las presentes Condiciones Generales de Contratación (CGC B2B) regulan la relación contractual entre <strong>BUDDY MARKET IA, S.L.</strong> (CIF B-56.819.576, Calle Villanueva 2, Esc. 3, 3ºC, 28001, Madrid) como proveedor, y la empresa u organización que suscribe el Plan Empresarial de Buddy One (en adelante, «la Empresa») como cliente.</P>
         <P>La aceptación de estas CGC B2B se produce en el momento en que la Empresa completa el proceso de registro corporativo en la Plataforma o firma el correspondiente Contrato de Servicio.</P>
       </Section>
       <Section number="2" title="Objeto del Contrato">
@@ -126,7 +126,7 @@ function TermsB2B() {
       </Section>
       <Section number="9" title="Ley Aplicable y Resolución de Disputas">
         <P>Las presentes CGC B2B se rigen por la legislación española. Las partes se someten a los Juzgados y Tribunales de Madrid. Antes de iniciar cualquier procedimiento judicial, las partes intentarán resolver la controversia mediante mediación en un plazo máximo de 60 días.</P>
-        <p style={{ marginTop: 32, color: "#9ca3af", fontSize: 13 }}>Contacto B2B: empresas@buddyoneapp.com · BUDDY MARKET IA, S.L. · Calle Villanueva 2, 3ºC, 28001, Madrid</p>
+        <p style={{ marginTop: 32, color: "#9ca3af", fontSize: 13 }}>Contacto B2B: empresas@buddyoneapp.com · BUDDY MARKET IA, S.L. · Calle Villanueva 2, Esc. 3, 3ºC, 28001, Madrid</p>
       </Section>
     </>
   );
@@ -202,7 +202,7 @@ function TermsExperts() {
       </Section>
       <Section number="9" title="Duración y Resolución">
         <P>La relación tiene carácter indefinido y puede resolverse por cualquiera de las partes con un preaviso de 30 días. Buddy One podrá resolver de forma inmediata en caso de incumplimiento grave, especialmente si el Creador publica información que ponga en riesgo la salud de los usuarios.</P>
-        <p style={{ marginTop: 32, color: "#9ca3af", fontSize: 13 }}>Contacto Creadores: creadores@buddyoneapp.com · BUDDY MARKET IA, S.L. · Calle Villanueva 2, 3ºC, 28001, Madrid</p>
+        <p style={{ marginTop: 32, color: "#9ca3af", fontSize: 13 }}>Contacto Creadores: creadores@buddyoneapp.com · BUDDY MARKET IA, S.L. · Calle Villanueva 2, Esc. 3, 3ºC, 28001, Madrid</p>
       </Section>
     </>
   );
@@ -251,7 +251,7 @@ export default function Terms() {
 
           <div style={{ background: "#f0fdf4", border: "1px solid #bbf7d0", borderRadius: 12, padding: "14px 18px" }}>
             <p style={{ fontSize: 13, color: "#166534", margin: 0 }}>
-              <strong>Empresa titular:</strong> BUDDY MARKET IA, S.L. · CIF B-56.819.576 · Calle Villanueva 2, 3ºC, 28001, Madrid (España) · <a href="mailto:info@buddyoneapp.com" style={{ color: "#166534" }}>info@buddyoneapp.com</a>
+              <strong>Empresa titular:</strong> BUDDY MARKET IA, S.L. · CIF B-56.819.576 · Calle Villanueva 2, Esc. 3, 3ºC, 28001, Madrid (España) · <a href="mailto:info@buddyoneapp.com" style={{ color: "#166534" }}>info@buddyoneapp.com</a>
             </p>
           </div>
         </div>
@@ -378,7 +378,7 @@ export default function Terms() {
             <P>Si el Usuario contrata los servicios de un BuddyExpert, autoriza expresamente que dicho experto pueda acceder a los datos de su perfil nutricional necesarios para la prestación del servicio. Esta autorización puede revocarse en cualquier momento desde la configuración de la cuenta.</P>
 
             <p style={{ fontWeight: 700, color: "#111827", marginBottom: 8 }}>5.5 Derechos del Usuario sobre sus datos de salud</p>
-            <P>El Usuario tiene derecho a acceder, rectificar, suprimir, limitar el tratamiento, oponerse al mismo y solicitar la portabilidad de sus datos de salud. Para ejercer estos derechos, puede enviar un correo a <a href="mailto:info@buddyoneapp.com" style={{ color: ORANGE }}>info@buddyoneapp.com</a> adjuntando copia de su documento de identidad, o dirigirse por escrito a Calle Villanueva 2, 3ºC, 28001, Madrid. También puede presentar una reclamación ante la <a href="https://www.aepd.es" target="_blank" rel="noopener noreferrer" style={{ color: ORANGE }}>Agencia Española de Protección de Datos</a>.</P>
+            <P>El Usuario tiene derecho a acceder, rectificar, suprimir, limitar el tratamiento, oponerse al mismo y solicitar la portabilidad de sus datos de salud. Para ejercer estos derechos, puede enviar un correo a <a href="mailto:info@buddyoneapp.com" style={{ color: ORANGE }}>info@buddyoneapp.com</a> adjuntando copia de su documento de identidad, o dirigirse por escrito a Calle Villanueva 2, Esc. 3, 3ºC, 28001, Madrid. También puede presentar una reclamación ante la <a href="https://www.aepd.es" target="_blank" rel="noopener noreferrer" style={{ color: ORANGE }}>Agencia Española de Protección de Datos</a>.</P>
           </Section>
 
           <Section id="section-6" number="6" title="Exención de responsabilidad">
@@ -419,7 +419,7 @@ export default function Terms() {
           <Section id="section-10" number="10" title="Protección de datos personales">
             <P>Los datos personales del Usuario son tratados por BUDDY MARKET IA, S.L. como responsable del tratamiento, conforme al Reglamento (UE) 2016/679 (RGPD) y la Ley Orgánica 3/2018 (LOPDGDD). Los datos se almacenan en servidores seguros y se conservan durante el tiempo necesario para la prestación de los servicios y el cumplimiento de las obligaciones legales.</P>
             <P>La información detallada sobre el tratamiento de datos, las finalidades, las bases legales, los plazos de conservación y los derechos del Usuario se encuentra en la <Link href="/privacy" style={{ color: ORANGE, fontWeight: 600 }}>Política de Privacidad</Link> de BUDDYMARKET.</P>
-            <P>Para cualquier consulta sobre protección de datos, el Usuario puede dirigirse a <a href="mailto:info@buddyoneapp.com" style={{ color: ORANGE }}>info@buddyoneapp.com</a> o por escrito a Calle Villanueva 2, 3ºC, 28001, Madrid. También puede presentar una reclamación ante la <a href="https://www.aepd.es" target="_blank" rel="noopener noreferrer" style={{ color: ORANGE }}>Agencia Española de Protección de Datos</a>.</P>
+            <P>Para cualquier consulta sobre protección de datos, el Usuario puede dirigirse a <a href="mailto:info@buddyoneapp.com" style={{ color: ORANGE }}>info@buddyoneapp.com</a> o por escrito a Calle Villanueva 2, Esc. 3, 3ºC, 28001, Madrid. También puede presentar una reclamación ante la <a href="https://www.aepd.es" target="_blank" rel="noopener noreferrer" style={{ color: ORANGE }}>Agencia Española de Protección de Datos</a>.</P>
           </Section>
 
           <Section id="section-11" number="11" title="Cookies">
@@ -458,7 +458,7 @@ export default function Terms() {
 
           <div style={{ borderTop: "1px solid #f3f4f6", paddingTop: 24, marginTop: 8 }}>
             <p style={{ fontSize: 13, color: "#9ca3af", margin: 0 }}>
-              <strong>BUDDY MARKET IA, S.L.</strong> · CIF B-56.819.576 · Calle Villanueva 2, 3ºC, 28001, Madrid ·{" "}
+              <strong>BUDDY MARKET IA, S.L.</strong> · CIF B-56.819.576 · Calle Villanueva 2, Esc. 3, 3ºC, 28001, Madrid ·{" "}
               <a href="mailto:info@buddyoneapp.com" style={{ color: ORANGE }}>info@buddyoneapp.com</a>
               <br />Versión 2.0 — Fecha de entrada en vigor: 7 de abril de 2026
             </p>
