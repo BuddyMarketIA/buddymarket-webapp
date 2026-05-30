@@ -24,7 +24,7 @@ const BENEFICIOS = [
   {
     icon: "🛒",
     titulo: "Lista de la compra integrada",
-    desc: "Tus planes nutricionales se convierten automáticamente en listas de la compra para Mercadona, Consum o Lidl con precios reales.",
+    desc: "Tus planes nutricionales se convierten automáticamente en listas de la compra optimizadas para los principales supermercados con precios reales.",
   },
   {
     icon: "📊",
@@ -451,7 +451,7 @@ export default function Nutricionistas() {
               </blockquote>
               <blockquote className="bg-background rounded-2xl p-8 shadow-sm border border-border/50">
                 <p className="text-foreground/80 leading-relaxed mb-6 italic">
-                  "Mis clientes me dicen que por fin pueden seguir el plan porque la lista de la compra les sale directamente para Mercadona. Eso marca la diferencia entre un plan que se cumple y uno que se olvida en el cajón."
+                  "Mis clientes me dicen que por fin pueden seguir el plan porque la lista de la compra les sale directamente para su supermercado habitual. Eso marca la diferencia entre un plan que se cumple y uno que se olvida en el cajón."
                 </p>
                 <footer className="flex items-center gap-3">
                   <div className="w-10 h-10 rounded-full bg-[#8B5CF6]/10 flex items-center justify-center text-xl">👨‍⚕️</div>

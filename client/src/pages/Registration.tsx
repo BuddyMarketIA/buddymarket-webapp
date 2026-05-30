@@ -27,7 +27,7 @@ const PANEL_DATA: Record<string, { img: string; headline: string; sub: string; b
     img: FOOD_IMAGES[0],
     headline: "Tu nutrición, inteligente y personalizada",
     sub: "Únete a miles de personas que ya cuidan su alimentación con Buddy One",
-    bullets: ["🥗 Recetas y menús personalizados", "🛒 Compra en Mercadona y Carrefour", "🤖 BuddyIA, tu asistente nutricional", "📊 Seguimiento diario de nutrición"],
+    bullets: ["🥗 Recetas y menús personalizados", "🛒 Lista de la compra inteligente", "🤖 BuddyIA, tu asistente nutricional", "📊 Seguimiento diario de nutrición"],
   },
   profile_setup: {
     img: FOOD_IMAGES[1],

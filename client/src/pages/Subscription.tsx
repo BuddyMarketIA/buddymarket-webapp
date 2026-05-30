@@ -345,7 +345,7 @@ export default function Subscription() {
               <LockedFeature
                 icon="🛒"
                 title="Conectar supermercado online"
-                description="Exporta tu lista de la compra directamente a Mercadona, Lidl y más"
+                description="Exporta tu lista de la compra directamente a tu supermercado favorito"
               />
               <LockedFeature
                 icon="📈"

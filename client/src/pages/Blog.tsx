@@ -19,12 +19,12 @@ const CATEGORIES = ["Todos", "Nutrición", "Recetas", "Salud", "Bienestar", "Gu�
 
 // Static fallback posts shown when no published posts exist yet
 const STATIC_POSTS = [
-  { id: "s1", title: "Cómo planificar tu menú semanal en menos de 10 minutos", excerpt: "La planificación semanal es la clave para comer bien sin estrés. Te enseñamos el método Buddy One.", category: "Guías", date: "28 Mar 2025", readTime: "5 min", img: FOOD_IMAGES.mealprep, featured: true, authorName: "Equipo Buddy One", authorAvatar: null },
-  { id: "s2", title: "Los 14 alérgenos de declaración obligatoria en Europa", excerpt: "Conoce cuáles son los alérgenos que la normativa europea obliga a declarar en todos los alimentos.", category: "Salud", date: "22 Mar 2025", readTime: "7 min", img: FOOD_IMAGES.vegetables, featured: false, authorName: "Equipo Buddy One", authorAvatar: null },
-  { id: "s3", title: "Dieta mediterránea: la ciencia detrás del patrón más saludable", excerpt: "Numerosos estudios avalan la dieta mediterránea como el patrón alimentario con mayor evidencia científica.", category: "Ciencia", date: "15 Mar 2025", readTime: "9 min", img: FOOD_IMAGES.ensalada, featured: false, authorName: "Equipo Buddy One", authorAvatar: null },
-  { id: "s4", title: "Receta: Salmón con quinoa y verduras asadas", excerpt: "Una receta completa, rica en omega-3 y proteínas de alta calidad. Lista en 25 minutos.", category: "Recetas", date: "10 Mar 2025", readTime: "4 min", img: FOOD_IMAGES.salmon, featured: false, authorName: "Equipo Buddy One", authorAvatar: null },
-  { id: "s5", title: "Proteínas vegetales: las mejores fuentes y cómo combinarlas", excerpt: "Si sigues una dieta vegana o vegetariana, conocer las fuentes de proteína vegetal es fundamental.", category: "Nutrición", date: "20 Feb 2025", readTime: "6 min", img: FOOD_IMAGES.buddha, featured: false, authorName: "Equipo Buddy One", authorAvatar: null },
-  { id: "s6", title: "Intolerancia al gluten vs. celiaquía: diferencias clave", excerpt: "Aunque a menudo se confunden, la intolerancia al gluten y la celiaquía son condiciones distintas.", category: "Salud", date: "7 Feb 2025", readTime: "8 min", img: FOOD_IMAGES.pan, featured: false, authorName: "Equipo Buddy One", authorAvatar: null },
+  { id: "s1", title: "Cómo planificar tu menú semanal en menos de 10 minutos", excerpt: "La planificación semanal es la clave para comer bien sin estrés. Te enseñamos el método Buddy One.", category: "Guías", date: "28 Mar 2025", readTime: "5 min", img: FOOD_IMAGES.mealprep, featured: true, authorName: "Equipo Buddy One", authorAvatar: null, slug: "planificar-menu-semanal" },
+  { id: "s2", title: "Los 14 alérgenos de declaración obligatoria en Europa", excerpt: "Conoce cuáles son los alérgenos que la normativa europea obliga a declarar en todos los alimentos.", category: "Salud", date: "22 Mar 2025", readTime: "7 min", img: FOOD_IMAGES.vegetables, featured: false, authorName: "Equipo Buddy One", authorAvatar: null, slug: "14-alergenos-europa" },
+  { id: "s3", title: "Dieta mediterránea: la ciencia detrás del patrón más saludable", excerpt: "Numerosos estudios avalan la dieta mediterránea como el patrón alimentario con mayor evidencia científica.", category: "Ciencia", date: "15 Mar 2025", readTime: "9 min", img: FOOD_IMAGES.ensalada, featured: false, authorName: "Equipo Buddy One", authorAvatar: null, slug: "dieta-mediterranea-ciencia" },
+  { id: "s4", title: "Receta: Salmón con quinoa y verduras asadas", excerpt: "Una receta completa, rica en omega-3 y proteínas de alta calidad. Lista en 25 minutos.", category: "Recetas", date: "10 Mar 2025", readTime: "4 min", img: FOOD_IMAGES.salmon, featured: false, authorName: "Equipo Buddy One", authorAvatar: null, slug: "receta-salmon-quinoa" },
+  { id: "s5", title: "Proteínas vegetales: las mejores fuentes y cómo combinarlas", excerpt: "Si sigues una dieta vegana o vegetariana, conocer las fuentes de proteína vegetal es fundamental.", category: "Nutrición", date: "20 Feb 2025", readTime: "6 min", img: FOOD_IMAGES.buddha, featured: false, authorName: "Equipo Buddy One", authorAvatar: null, slug: "proteinas-vegetales-fuentes" },
+  { id: "s6", title: "Intolerancia al gluten vs. celiaquía: diferencias clave", excerpt: "Aunque a menudo se confunden, la intolerancia al gluten y la celiaquía son condiciones distintas.", category: "Salud", date: "7 Feb 2025", readTime: "8 min", img: FOOD_IMAGES.pan, featured: false, authorName: "Equipo Buddy One", authorAvatar: null, slug: "intolerancia-gluten-celiaquia" },
 ];
 
 function AuthorBadge({ name, avatar, specialty, verified }: { name?: string | null; avatar?: string | null; specialty?: string | null; verified?: boolean | null }) {
@@ -75,7 +75,7 @@ export default function Blog() {
   }));
 
   // Use real posts if available, else static fallback
-  const allPosts = hasRealPosts ? normalizedReal : STATIC_POSTS.map((p) => ({ ...p, authorSpecialty: null, authorVerified: false, slug: undefined }));
+  const allPosts = hasRealPosts ? normalizedReal : STATIC_POSTS.map((p) => ({ ...p, authorSpecialty: null, authorVerified: false, slug: p.slug }));
 
   // Filter by search (category already filtered server-side for real posts)
   const filtered = allPosts.filter((p) => {

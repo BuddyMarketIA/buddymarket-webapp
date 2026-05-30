@@ -306,7 +306,7 @@ export default function Terms() {
             <p style={{ fontWeight: 700, color: "#111827", marginBottom: 8 }}>Servicios de Compra Inteligente</p>
             <ul style={{ paddingLeft: 22, display: "flex", flexDirection: "column", gap: 6, marginBottom: 16 }}>
               <li>Generación automática de listas de la compra basadas en los menús planificados.</li>
-              <li>Comparación de precios en supermercados integrados (Mercadona, Carrefour, Lidl, Consum, HiperDino y otros).</li>
+              <li>Comparación de precios en supermercados integrados.</li>
               <li>Gestión del inventario doméstico con alertas de caducidad y sugerencias de uso.</li>
               <li>Escáner de códigos de barras para añadir productos al inventario.</li>
             </ul>

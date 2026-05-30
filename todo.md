@@ -3694,3 +3694,16 @@
 - [x] Crear /gdpr como página RGPD independiente (derechos, DPO, bases legales, datos de salud, menores, mascotas)
 - [x] Crear /legal como Aviso Legal independiente (LSSI, identificación empresa, responsabilidad)
 - [x] Registrar rutas independientes en App.tsx (no reutilizar Privacy/Terms)
+
+### Blog - Contenido estático funcional
+- [x] Añadir slugs a los 6 posts estáticos del blog para que sean navegables
+- [x] Crear contenido completo para cada post estático (planificar menú, 14 alérgenos, dieta mediterránea, receta salmón, proteínas vegetales, intolerancia gluten)
+- [x] Fallback en BlogPost.tsx: si el post no está en BD, usa contenido estático
+- [x] Blog ya no muestra "Próximamente" en los posts estáticos
+
+### Nombres de supermercados - Eliminados de páginas públicas
+- [x] Nutricionistas.tsx: "Mercadona, Consum o Lidl" → "principales supermercados"
+- [x] Nutricionistas.tsx testimonial: "para Mercadona" → "para su supermercado habitual"
+- [x] Registration.tsx: "Compra en Mercadona y Carrefour" → "Lista de la compra inteligente"
+- [x] Subscription.tsx: "Mercadona, Lidl y más" → "tu supermercado favorito"
+- [x] Terms.tsx: eliminados nombres específicos de supermercados
