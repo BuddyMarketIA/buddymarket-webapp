@@ -3681,11 +3681,11 @@
 - [x] Buddy Market en HERRAMIENTAS: Menciona "Mercadona, Carrefour, Lidl" específicamente. Cambiar a "supermercados" genérico.
 
 ### Textos que no se ajustan a la realidad
-- [ ] STATS: "6 Supermercados integrados" - verificar número real.
+- [x] STATS: "6 Supermercados integrados" - cambiado a "5 Comidas diarias planificadas".
 - [x] Footer copyright: "© 2025" → actualizar a 2026.
 
 ### Mejoras de coherencia
 - [x] Intercambiar descripciones BuddyCare/BuddyShop en toda la landing.
 - [x] Quitar estado "PRÓXIMAMENTE" de BuddyCare y marcar como disponible.
 - [x] Añadir enlace funcional a BuddyCare (actualmente botón deshabilitado).
-- [ ] Buddy Pets en HERRAMIENTAS: usa imagen de meal prep en vez de mascotas.
+- [x] Buddy Pets en HERRAMIENTAS: imagen cambiada a foto real de mascotas comiendo.

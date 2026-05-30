@@ -162,7 +162,7 @@ const SPECIAL_MENUS = [
 const STATS = [
   { value: 17000, suffix: "+", label: "Recetas disponibles", icon: "🍳" },
   { value: 24, suffix: "", label: "Perfiles especializados", icon: "🎯" },
-  { value: 6, suffix: "", label: "Supermercados integrados", icon: "🛒" },
+  { value: 5, suffix: "", label: "Comidas diarias planificadas", icon: "🍽️" },
   { value: 100, suffix: "%", label: "Gratis para empezar", icon: "🎁" },
 ];
 
@@ -953,7 +953,7 @@ export default function LandingPage() {
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(180,83,9,0.15)"; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 24px rgba(0,0,0,0.06)"; }}>
               <div style={{ height: 160, background: "linear-gradient(135deg,#FFFBEB,#FEF3C7)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
-                <img src={FOOD.mealprep} alt="Buddy Pets" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.25 }} />
+                <img src="/manus-storage/buddy-pets-nutrition_f69760ba.jpg" alt="Buddy Pets" style={{ position: "absolute", inset: 0, width: "100%", height: "100%", objectFit: "cover", opacity: 0.25 }} />
                 <div style={{ position: "relative", zIndex: 1, textAlign: "center" }}>
                   <div style={{ fontSize: 48 }}>🐾</div>
                   <div style={{ fontSize: 13, fontWeight: 800, color: "#B45309", marginTop: 4 }}>Buddy Pets</div>
