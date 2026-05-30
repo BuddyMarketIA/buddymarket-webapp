@@ -177,6 +177,8 @@ const PriceCompare = lazyWithRetry(() => import("./pages/PriceCompare"));
 const MarketplacePage = lazyWithRetry(() => import("./pages/Marketplace"));
 const CorporateDashboard = lazyWithRetry(() => import("./pages/CorporateDashboard"));
 const Contacto = lazyWithRetry(() => import("./pages/Contacto"));
+const RGPDPage = lazyWithRetry(() => import("./pages/RGPD"));
+const AvisoLegal = lazyWithRetry(() => import("./pages/AvisoLegal"));
 
 // ─── Page loading fallback ────────────────────────────────────────────────────
 function PageLoader() {
@@ -230,8 +232,8 @@ function Router() {
       <Route path="/faq" component={FAQ} />
       <Route path="/about" component={About} />
       <Route path="/sobre-nosotros" component={About} />
-      <Route path="/legal" component={Terms} />
-      <Route path="/gdpr" component={Privacy} />
+      <Route path="/legal" component={AvisoLegal} />
+      <Route path="/gdpr" component={RGPDPage} />
       <Route path="/herramientas" component={Herramientas} />
       <Route path="/nutricionistas" component={Nutricionistas} />
       <Route path="/calculadora" component={CalculadoraNutricional} />

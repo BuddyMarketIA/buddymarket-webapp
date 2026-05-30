@@ -3689,3 +3689,8 @@
 - [x] Quitar estado "PRÓXIMAMENTE" de BuddyCare y marcar como disponible.
 - [x] Añadir enlace funcional a BuddyCare (actualmente botón deshabilitado).
 - [x] Buddy Pets en HERRAMIENTAS: imagen cambiada a foto real de mascotas comiendo.
+
+### Footer - Páginas legales independientes
+- [x] Crear /gdpr como página RGPD independiente (derechos, DPO, bases legales, datos de salud, menores, mascotas)
+- [x] Crear /legal como Aviso Legal independiente (LSSI, identificación empresa, responsabilidad)
+- [x] Registrar rutas independientes en App.tsx (no reutilizar Privacy/Terms)
