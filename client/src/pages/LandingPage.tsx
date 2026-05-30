@@ -288,7 +288,7 @@ const DARK_COLORS = {
 };
 
 export default function LandingPage() {
-  const { theme } = useTheme();
+  const { theme, toggleTheme } = useTheme();
   const isDark = theme === "dark";
   const C = isDark ? DARK_COLORS : LIGHT_COLORS;
   const { user, loading: authLoading } = useAuth();
@@ -426,6 +426,21 @@ export default function LandingPage() {
             )}
           </div>
 
+          {/* Theme toggle */}
+          <button
+            onClick={toggleTheme}
+            aria-label={isDark ? "Cambiar a modo claro" : "Cambiar a modo oscuro"}
+            style={{ display: "flex", alignItems: "center", justifyContent: "center", width: 38, height: 38, borderRadius: 10, border: `1.5px solid ${C.border}`, background: C.cardBg, cursor: "pointer", transition: "all 0.3s ease" }}
+            onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "#F97316"; (e.currentTarget as HTMLElement).style.transform = "rotate(15deg)"; }}
+            onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = C.border; (e.currentTarget as HTMLElement).style.transform = "rotate(0deg)"; }}
+          >
+            {isDark ? (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+            ) : (
+              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#475569" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+            )}
+          </button>
+
           <div className="lp-mobile-cta" style={{ display: "none" }}>
             <a href={isLoggedIn ? dashboardUrl : loginUrl} style={{ padding: "8px 14px", fontSize: 13, fontWeight: 700, color: "white", background: "linear-gradient(135deg,#F97316,#ea580c)", borderRadius: 8, textDecoration: "none", whiteSpace: "nowrap" }}>
               {isLoggedIn ? "Ir a la app" : "Empezar"}
@@ -449,6 +464,14 @@ export default function LandingPage() {
             <a href="/empresas" onClick={() => setMobileOpen(false)} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", textAlign: "left", padding: "13px 0", fontSize: 15, fontWeight: 600, color: "#EA580C", textDecoration: "none", borderBottom: `1px solid ${C.borderLight}` }}>
               <span style={{ fontSize: 16 }}>🏢</span> Empresas
             </a>
+            <button onClick={toggleTheme} style={{ display: "flex", alignItems: "center", gap: 10, width: "100%", textAlign: "left", padding: "13px 0", fontSize: 15, fontWeight: 500, color: C.textSecondary, background: "none", border: "none", borderBottom: `1px solid ${C.borderLight}`, cursor: "pointer" }}>
+              {isDark ? (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#fbbf24" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="5"/><path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42"/></svg>
+              ) : (
+                <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#475569" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z"/></svg>
+              )}
+              {isDark ? "Modo claro" : "Modo oscuro"}
+            </button>
             <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 10 }}>
               <a href={loginUrl} style={{ padding: "12px", textAlign: "center", fontSize: 15, fontWeight: 600, color: C.textSecondary, textDecoration: "none", borderRadius: 10, border: `1.5px solid ${C.border}` }}>Iniciar sesión</a>
               <a href={loginUrl} style={{ padding: "12px", textAlign: "center", fontSize: 15, fontWeight: 700, color: "white", background: "linear-gradient(135deg,#F97316,#ea580c)", borderRadius: 10, textDecoration: "none" }}>Empezar gratis</a>
