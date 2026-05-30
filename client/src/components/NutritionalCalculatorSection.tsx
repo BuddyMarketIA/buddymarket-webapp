@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+import { useTheme } from "../contexts/ThemeContext";
+
 function useInView(threshold = 0.15) {
   const [inView, setInView] = useState(false);
   const ref = (el: HTMLElement | null) => {
@@ -14,6 +16,20 @@ interface Props { appUrl: string; }
 
 export default function NutritionalCalculatorSection({ appUrl }: Props) {
   const section = useInView(0.1);
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const C = {
+    sectionBg: isDark ? "#1a1a2e" : "#f9fafb",
+    cardBg: isDark ? "#1e293b" : "white",
+    textPrimary: isDark ? "#f1f5f9" : "#111827",
+    textSecondary: isDark ? "#cbd5e1" : "#374151",
+    textMuted: isDark ? "#94a3b8" : "#6b7280",
+    textLight: isDark ? "#64748b" : "#9ca3af",
+    border: isDark ? "#334155" : "#e5e7eb",
+    borderLight: isDark ? "#1e293b" : "#f3f4f6",
+    inputBg: isDark ? "#0f172a" : "#f9fafb",
+    resultsBg: isDark ? "#0f172a" : "#f9fafb",
+  };
 
   // Form state
   const [sex, setSex] = useState<"male" | "female">("female");
@@ -66,7 +82,7 @@ export default function NutritionalCalculatorSection({ appUrl }: Props) {
     <section
       ref={section.ref as any}
       id="calculadora"
-      style={{ padding: "96px 24px", background: "#f9fafb" }}
+      style={{ padding: "96px 24px", background: C.sectionBg }}
     >
       <div style={{ maxWidth: 1100, margin: "0 auto" }}>
         {/* Header */}
@@ -79,10 +95,10 @@ export default function NutritionalCalculatorSection({ appUrl }: Props) {
           <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 16px", borderRadius: 100, background: "#fff7ed", border: "1.5px solid #fed7aa", fontSize: 13, fontWeight: 700, color: "#ea580c", marginBottom: 16 }}>
             Calculadora Nutricional Gratuita
           </div>
-          <h2 style={{ fontSize: "clamp(28px, 5vw, 48px)", fontWeight: 900, color: "#111827", margin: "0 0 16px", letterSpacing: "-0.03em", lineHeight: 1.1 }}>
+          <h2 style={{ fontSize: "clamp(28px, 5vw, 48px)", fontWeight: 900, color: C.textPrimary, margin: "0 0 16px", letterSpacing: "-0.03em", lineHeight: 1.1 }}>
             Descubre tus necesidades<br />nutricionales exactas
           </h2>
-          <p style={{ fontSize: "clamp(15px, 2vw, 18px)", color: "#6b7280", maxWidth: 560, margin: "0 auto", lineHeight: 1.7 }}>
+          <p style={{ fontSize: "clamp(15px, 2vw, 18px)", color: C.textMuted, maxWidth: 560, margin: "0 auto", lineHeight: 1.7 }}>
             Calcula tu IMC, metabolismo basal y distribución de macronutrientes personalizada en segundos.
           </p>
         </div>
@@ -95,19 +111,19 @@ export default function NutritionalCalculatorSection({ appUrl }: Props) {
         }} className="calc-grid">
 
           {/* Form card */}
-          <div style={{ background: "white", borderRadius: 24, padding: "36px 32px", boxShadow: "0 4px 32px rgba(0,0,0,0.06)", border: "1px solid #f3f4f6" }}>
-            <h3 style={{ fontSize: 18, fontWeight: 800, color: "#111827", marginBottom: 28 }}>Tus datos</h3>
+          <div style={{ background: C.cardBg, borderRadius: 24, padding: "36px 32px", boxShadow: "0 4px 32px rgba(0,0,0,0.06)", border: `1px solid ${C.borderLight}` }}>
+            <h3 style={{ fontSize: 18, fontWeight: 800, color: C.textPrimary, marginBottom: 28 }}>Tus datos</h3>
 
             {/* Sex */}
             <div style={{ marginBottom: 20 }}>
-              <label style={{ fontSize: 13, fontWeight: 700, color: "#374151", display: "block", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.05em" }}>Sexo biológico</label>
+              <label style={{ fontSize: 13, fontWeight: 700, color: C.textSecondary, display: "block", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.05em" }}>Sexo biológico</label>
               <div style={{ display: "flex", gap: 10 }}>
                 {(["female", "male"] as const).map(s => (
                   <button key={s} onClick={() => setSex(s)} style={{
                     flex: 1, padding: "12px", borderRadius: 12, fontSize: 14, fontWeight: 700, cursor: "pointer", transition: "all 0.2s",
-                    background: sex === s ? "#F97316" : "white",
-                    color: sex === s ? "white" : "#374151",
-                    border: sex === s ? "2px solid #F97316" : "2px solid #e5e7eb",
+                    background: sex === s ? "#F97316" : C.cardBg,
+                    color: sex === s ? "white" : C.textSecondary,
+                    border: sex === s ? "2px solid #F97316" : `2px solid ${C.border}`,
                   }}>
                     {s === "female" ? "Mujer" : "Hombre"}
                   </button>
@@ -123,14 +139,14 @@ export default function NutritionalCalculatorSection({ appUrl }: Props) {
                 { label: "Altura", unit: "cm", value: height, min: 130, max: 220, setter: setHeight },
               ].map(f => (
                 <div key={f.label}>
-                  <label style={{ fontSize: 12, fontWeight: 700, color: "#6b7280", display: "block", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.05em" }}>{f.label}</label>
+                  <label style={{ fontSize: 12, fontWeight: 700, color: C.textMuted, display: "block", marginBottom: 6, textTransform: "uppercase", letterSpacing: "0.05em" }}>{f.label}</label>
                   <div style={{ position: "relative" }}>
                     <input
                       type="number" value={f.value} min={f.min} max={f.max}
                       onChange={e => f.setter(Number(e.target.value))}
-                      style={{ width: "100%", padding: "12px 40px 12px 14px", borderRadius: 12, border: "2px solid #e5e7eb", fontSize: 16, fontWeight: 700, color: "#111827", outline: "none", boxSizing: "border-box", background: "#f9fafb" }}
+                      style={{ width: "100%", padding: "12px 40px 12px 14px", borderRadius: 12, border: `2px solid ${C.border}`, fontSize: 16, fontWeight: 700, color: C.textPrimary, outline: "none", boxSizing: "border-box", background: C.inputBg }}
                       onFocus={e => (e.target.style.borderColor = "#F97316")}
-                      onBlur={e => (e.target.style.borderColor = "#e5e7eb")}
+                      onBlur={e => (e.target.style.borderColor = C.border)}
                     />
                     <span style={{ position: "absolute", right: 12, top: "50%", transform: "translateY(-50%)", fontSize: 12, color: "#9ca3af", fontWeight: 600 }}>{f.unit}</span>
                   </div>
@@ -140,25 +156,25 @@ export default function NutritionalCalculatorSection({ appUrl }: Props) {
 
             {/* Activity */}
             <div style={{ marginBottom: 20 }}>
-              <label style={{ fontSize: 12, fontWeight: 700, color: "#6b7280", display: "block", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>Nivel de actividad</label>
+              <label style={{ fontSize: 12, fontWeight: 700, color: C.textMuted, display: "block", marginBottom: 8, textTransform: "uppercase", letterSpacing: "0.05em" }}>Nivel de actividad</label>
               <select value={activity} onChange={e => setActivity(e.target.value as any)}
-                style={{ width: "100%", padding: "12px 16px", borderRadius: 12, border: "2px solid #e5e7eb", fontSize: 14, fontWeight: 600, color: "#111827", background: "#f9fafb", outline: "none", cursor: "pointer" }}
+                style={{ width: "100%", padding: "12px 16px", borderRadius: 12, border: `2px solid ${C.border}`, fontSize: 14, fontWeight: 600, color: C.textPrimary, background: C.inputBg, outline: "none", cursor: "pointer" }}
                 onFocus={e => (e.target.style.borderColor = "#F97316")}
-                onBlur={e => (e.target.style.borderColor = "#e5e7eb")}>
+                onBlur={e => (e.target.style.borderColor = C.border)}>
                 {Object.entries(activityLabels).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
               </select>
             </div>
 
             {/* Goal */}
             <div style={{ marginBottom: 28 }}>
-              <label style={{ fontSize: 12, fontWeight: 700, color: "#6b7280", display: "block", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.05em" }}>Objetivo</label>
+              <label style={{ fontSize: 12, fontWeight: 700, color: C.textMuted, display: "block", marginBottom: 10, textTransform: "uppercase", letterSpacing: "0.05em" }}>Objetivo</label>
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 10 }}>
                 {([["lose", "Perder peso"], ["maintain", "Mantener"], ["gain", "Ganar músculo"]] as const).map(([k, v]) => (
                   <button key={k} onClick={() => setGoal(k)} style={{
                     padding: "11px 8px", borderRadius: 12, fontSize: 13, fontWeight: 700, cursor: "pointer", transition: "all 0.2s",
-                    background: goal === k ? "#F97316" : "white",
-                    color: goal === k ? "white" : "#374151",
-                    border: goal === k ? "2px solid #F97316" : "2px solid #e5e7eb",
+                    background: goal === k ? "#F97316" : C.cardBg,
+                    color: goal === k ? "white" : C.textSecondary,
+                    border: goal === k ? "2px solid #F97316" : `2px solid ${C.border}`,
                   }}>
                     {v}
                   </button>
@@ -179,10 +195,10 @@ export default function NutritionalCalculatorSection({ appUrl }: Props) {
 
           {/* Results card */}
           <div style={{
-            background: calculated ? "white" : "#f9fafb",
+            background: calculated ? C.cardBg : C.resultsBg,
             borderRadius: 24, padding: "36px 32px",
             boxShadow: calculated ? "0 4px 32px rgba(0,0,0,0.06)" : "none",
-            border: calculated ? "1px solid #f3f4f6" : "2px dashed #e5e7eb",
+            border: calculated ? `1px solid ${C.borderLight}` : `2px dashed ${C.border}`,
             display: "flex", flexDirection: "column", justifyContent: calculated ? "flex-start" : "center", alignItems: calculated ? "flex-start" : "center",
             minHeight: 400, transition: "all 0.4s",
           }}>
@@ -193,17 +209,17 @@ export default function NutritionalCalculatorSection({ appUrl }: Props) {
                     <path d="M9 3H5a2 2 0 00-2 2v4m6-6h10a2 2 0 012 2v4M9 3v18m0 0h10a2 2 0 002-2V9M9 21H5a2 2 0 01-2-2V9m0 0h18"/>
                   </svg>
                 </div>
-                <p style={{ fontSize: 16, color: "#9ca3af", fontWeight: 600 }}>Completa el formulario y<br />pulsa calcular</p>
+                <p style={{ fontSize: 16, color: C.textLight, fontWeight: 600 }}>Completa el formulario y<br />pulsa calcular</p>
               </div>
             ) : (
               <div style={{ width: "100%" }}>
-                <h3 style={{ fontSize: 18, fontWeight: 800, color: "#111827", marginBottom: 24 }}>Tus resultados</h3>
+                <h3 style={{ fontSize: 18, fontWeight: 800, color: C.textPrimary, marginBottom: 24 }}>Tus resultados</h3>
 
                 {/* IMC */}
-                <div style={{ background: "#f9fafb", borderRadius: 16, padding: "20px 24px", marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                <div style={{ background: C.resultsBg, borderRadius: 16, padding: "20px 24px", marginBottom: 16, display: "flex", justifyContent: "space-between", alignItems: "center" }}>
                   <div>
                     <p style={{ fontSize: 12, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 4 }}>IMC (Índice de Masa Corporal)</p>
-                    <p style={{ fontSize: 32, fontWeight: 900, color: "#111827", lineHeight: 1 }}>{results.imc}</p>
+                    <p style={{ fontSize: 32, fontWeight: 900, color: C.textPrimary, lineHeight: 1 }}>{results.imc}</p>
                   </div>
                   <div style={{ textAlign: "right" }}>
                     <span style={{ display: "inline-block", padding: "6px 14px", borderRadius: 100, fontSize: 13, fontWeight: 700, background: imcInfo.color + "20", color: imcInfo.color }}>
@@ -223,15 +239,15 @@ export default function NutritionalCalculatorSection({ appUrl }: Props) {
                   ].map(r => (
                     <div key={r.label} style={{ background: r.color + "10", borderRadius: 16, padding: "18px 20px", border: `1.5px solid ${r.color}30` }}>
                       <p style={{ fontSize: 11, fontWeight: 700, color: r.color, textTransform: "uppercase", letterSpacing: "0.05em", marginBottom: 6 }}>{r.label}</p>
-                      <p style={{ fontSize: 28, fontWeight: 900, color: "#111827", lineHeight: 1, marginBottom: 4 }}>{r.value.toLocaleString()}</p>
+                      <p style={{ fontSize: 28, fontWeight: 900, color: C.textPrimary, lineHeight: 1, marginBottom: 4 }}>{r.value.toLocaleString()}</p>
                       <p style={{ fontSize: 12, color: "#6b7280" }}>{r.unit} · {r.desc}</p>
                     </div>
                   ))}
                 </div>
 
                 {/* Macros */}
-                <div style={{ background: "#f9fafb", borderRadius: 16, padding: "20px 24px", marginBottom: 24 }}>
-                  <p style={{ fontSize: 13, fontWeight: 700, color: "#374151", marginBottom: 16 }}>Distribución de macronutrientes diarios</p>
+                <div style={{ background: C.resultsBg, borderRadius: 16, padding: "20px 24px", marginBottom: 24 }}>
+                  <p style={{ fontSize: 13, fontWeight: 700, color: C.textSecondary, marginBottom: 16 }}>Distribución de macronutrientes diarios</p>
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 12 }}>
                     {[
                       { label: "Proteínas", value: results.protein, unit: "g", color: "#F97316", kcal: results.protein * 4 },
@@ -242,7 +258,7 @@ export default function NutritionalCalculatorSection({ appUrl }: Props) {
                         <div style={{ width: 56, height: 56, borderRadius: "50%", background: m.color + "15", border: `3px solid ${m.color}`, display: "flex", alignItems: "center", justifyContent: "center", margin: "0 auto 8px" }}>
                           <span style={{ fontSize: 18, fontWeight: 900, color: m.color }}>{m.value}</span>
                         </div>
-                        <p style={{ fontSize: 12, fontWeight: 700, color: "#374151", marginBottom: 2 }}>{m.label}</p>
+                        <p style={{ fontSize: 12, fontWeight: 700, color: C.textSecondary, marginBottom: 2 }}>{m.label}</p>
                         <p style={{ fontSize: 11, color: "#9ca3af" }}>{m.unit} · {m.kcal} kcal</p>
                       </div>
                     ))}

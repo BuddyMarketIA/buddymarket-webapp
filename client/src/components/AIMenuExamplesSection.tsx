@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+import { useTheme } from "../contexts/ThemeContext";
+
 const FOOD = {
   salmon:   "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/salmon_quinoa-GK5uCABZM54kHC6jSfHP9p.webp",
   ensalada: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/ensalada_mediterranea-A94kBrNm9EPozXzzbctf5A.webp",
@@ -275,24 +277,24 @@ const PROFILES: Profile[] = [
 
 const DAYS_OF_WEEK = ["Lunes", "Martes", "Miércoles"];
 
-function MacroBar({ label, value, max, color }: { label: string; value: number; max: number; color: string }) {
+function MacroBar({ label, value, max, color, isDark }: { label: string; value: number; max: number; color: string; isDark?: boolean }) {
   const pct = Math.min((value / max) * 100, 100);
   return (
     <div style={{ flex: 1 }}>
       <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
-        <span style={{ fontSize: 11, fontWeight: 600, color: "#6b7280" }}>{label}</span>
-        <span style={{ fontSize: 11, fontWeight: 700, color: "#374151" }}>{value}g</span>
+        <span style={{ fontSize: 11, fontWeight: 600, color: isDark ? "#94a3b8" : "#6b7280" }}>{label}</span>
+        <span style={{ fontSize: 11, fontWeight: 700, color: isDark ? "#cbd5e1" : "#374151" }}>{value}g</span>
       </div>
-      <div style={{ height: 6, background: "#f3f4f6", borderRadius: 100, overflow: "hidden" }}>
+      <div style={{ height: 6, background: isDark ? "#1e293b" : "#f3f4f6", borderRadius: 100, overflow: "hidden" }}>
         <div style={{ height: "100%", width: `${pct}%`, background: color, borderRadius: 100, transition: "width 0.6s ease" }} />
       </div>
     </div>
   );
 }
 
-function MealCard({ meal, color }: { meal: Meal; color: string }) {
+function MealCard({ meal, color, isDark }: { meal: Meal; color: string; isDark?: boolean }) {
   return (
-    <div style={{ display: "flex", gap: 12, alignItems: "center", padding: "12px", background: "white", borderRadius: 14, border: "1px solid #f3f4f6", transition: "all 0.2s" }}
+    <div style={{ display: "flex", gap: 12, alignItems: "center", padding: "12px", background: isDark ? "#1e293b" : "white", borderRadius: 14, border: `1px solid ${isDark ? "#334155" : "#f3f4f6"}`, transition: "all 0.2s" }}
       onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 16px rgba(0,0,0,0.08)"; (e.currentTarget as HTMLElement).style.transform = "translateX(4px)"; }}
       onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = "none"; (e.currentTarget as HTMLElement).style.transform = "translateX(0)"; }}>
       <div style={{ width: 52, height: 52, borderRadius: 10, overflow: "hidden", flexShrink: 0 }}>
@@ -300,14 +302,14 @@ function MealCard({ meal, color }: { meal: Meal; color: string }) {
       </div>
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, marginBottom: 4 }}>
-          <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: "#111827", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{meal.name}</p>
-          <span style={{ fontSize: 11, color: "#9ca3af", flexShrink: 0 }}>{meal.time}</span>
+          <p style={{ margin: 0, fontSize: 13, fontWeight: 600, color: isDark ? "#f1f5f9" : "#111827", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{meal.name}</p>
+          <span style={{ fontSize: 11, color: isDark ? "#64748b" : "#9ca3af", flexShrink: 0 }}>{meal.time}</span>
         </div>
         <div style={{ display: "flex", gap: 8 }}>
           <span style={{ fontSize: 11, fontWeight: 700, color, background: `${color}15`, padding: "2px 8px", borderRadius: 100 }}>{meal.kcal} kcal</span>
-          <span style={{ fontSize: 11, color: "#9ca3af" }}>P:{meal.p}g</span>
-          <span style={{ fontSize: 11, color: "#9ca3af" }}>C:{meal.c}g</span>
-          <span style={{ fontSize: 11, color: "#9ca3af" }}>G:{meal.f}g</span>
+          <span style={{ fontSize: 11, color: isDark ? "#64748b" : "#9ca3af" }}>P:{meal.p}g</span>
+          <span style={{ fontSize: 11, color: isDark ? "#64748b" : "#9ca3af" }}>C:{meal.c}g</span>
+          <span style={{ fontSize: 11, color: isDark ? "#64748b" : "#9ca3af" }}>G:{meal.f}g</span>
         </div>
       </div>
     </div>
@@ -321,22 +323,35 @@ interface Props {
 export default function AIMenuExamplesSection({ appUrl = "" }: Props) {
   const [activeProfile, setActiveProfile] = useState(0);
   const [activeDay, setActiveDay] = useState(0);
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const C = {
+    sectionBg: isDark ? "#0f172a" : "#f8fafc",
+    cardBg: isDark ? "#1e293b" : "white",
+    textPrimary: isDark ? "#f1f5f9" : "#111827",
+    textSecondary: isDark ? "#cbd5e1" : "#374151",
+    textMuted: isDark ? "#94a3b8" : "#6b7280",
+    textLight: isDark ? "#64748b" : "#9ca3af",
+    border: isDark ? "#334155" : "#e5e7eb",
+    borderLight: isDark ? "#1e293b" : "#f3f4f6",
+    dayBg: isDark ? "#1a1a2e" : "#fafafa",
+  };
 
   const profile = PROFILES[activeProfile];
   const dayMenu = profile.days[activeDay];
   const ctaHref = appUrl ? `${appUrl}/login` : "/login";
 
   return (
-    <section style={{ padding: "100px 24px", background: "#f8fafc" }}>
+    <section style={{ padding: "100px 24px", background: C.sectionBg }}>
       <div style={{ maxWidth: 1200, margin: "0 auto" }}>
 
         {/* Header */}
         <div style={{ textAlign: "center", marginBottom: 56 }}>
           <span style={{ fontSize: 11, fontWeight: 800, color: "#F97316", letterSpacing: "0.12em", textTransform: "uppercase" }}>EJEMPLOS REALES</span>
-          <h2 style={{ fontSize: "clamp(28px,4vw,44px)", fontWeight: 900, color: "#111827", margin: "12px 0 16px", lineHeight: 1.2 }}>
+          <h2 style={{ fontSize: "clamp(28px,4vw,44px)", fontWeight: 900, color: C.textPrimary, margin: "12px 0 16px", lineHeight: 1.2 }}>
             Menús generados por IA<br />para cada perfil
           </h2>
-          <p style={{ fontSize: 18, color: "#6b7280", maxWidth: 560, margin: "0 auto" }}>
+          <p style={{ fontSize: 18, color: C.textMuted, maxWidth: 560, margin: "0 auto" }}>
             Cada menú es único y se adapta al perfil, objetivos y restricciones de cada persona. Estos son ejemplos reales generados por BuddyIA.
           </p>
         </div>
@@ -347,8 +362,8 @@ export default function AIMenuExamplesSection({ appUrl = "" }: Props) {
             <button key={p.id} onClick={() => { setActiveProfile(i); setActiveDay(0); }}
               style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 18px", borderRadius: 100, fontSize: 14, fontWeight: 600, cursor: "pointer", border: "2px solid", transition: "all 0.2s",
                 borderColor: activeProfile === i ? p.color : "#e5e7eb",
-                background: activeProfile === i ? p.bg : "white",
-                color: activeProfile === i ? p.color : "#6b7280",
+                background: activeProfile === i ? p.bg : C.cardBg,
+                color: activeProfile === i ? p.color : C.textMuted,
                 boxShadow: activeProfile === i ? `0 4px 16px ${p.color}30` : "none",
               }}>
               <span style={{ fontSize: 18 }}>{p.emoji}</span>
@@ -361,7 +376,7 @@ export default function AIMenuExamplesSection({ appUrl = "" }: Props) {
         </div>
 
         {/* Main card */}
-        <div style={{ background: "white", borderRadius: 28, boxShadow: "0 8px 48px rgba(0,0,0,0.08)", border: `1.5px solid ${profile.border}`, overflow: "hidden", transition: "all 0.4s" }}>
+        <div style={{ background: C.cardBg, borderRadius: 28, boxShadow: "0 8px 48px rgba(0,0,0,0.08)", border: `1.5px solid ${profile.border}`, overflow: "hidden", transition: "all 0.4s" }}>
 
           {/* Profile header */}
           <div style={{ background: profile.bg, padding: "28px 32px", borderBottom: `1px solid ${profile.border}` }}>
@@ -372,10 +387,10 @@ export default function AIMenuExamplesSection({ appUrl = "" }: Props) {
                 </div>
                 <div>
                   <div style={{ display: "flex", alignItems: "center", gap: 8, marginBottom: 4 }}>
-                    <h3 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "#111827" }}>Plan {profile.label}</h3>
+                    <h3 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: C.textPrimary }}>Plan {profile.label}</h3>
                     <span style={{ fontSize: 11, fontWeight: 700, color: profile.color, background: `${profile.color}15`, padding: "3px 10px", borderRadius: 100 }}>IA Generado</span>
                   </div>
-                  <p style={{ margin: 0, fontSize: 14, color: "#6b7280", maxWidth: 480 }}>{profile.description}</p>
+                  <p style={{ margin: 0, fontSize: 14, color: C.textMuted, maxWidth: 480 }}>{profile.description}</p>
                 </div>
               </div>
 
@@ -387,10 +402,10 @@ export default function AIMenuExamplesSection({ appUrl = "" }: Props) {
                   { label: "Carbos", value: `${profile.carbs}g`, unit: "/día", color: "#f59e0b" },
                   { label: "Grasas", value: `${profile.fat}g`, unit: "/día", color: "#ec4899" },
                 ].map(stat => (
-                  <div key={stat.label} style={{ textAlign: "center", background: "white", borderRadius: 14, padding: "12px 16px", minWidth: 72, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+                  <div key={stat.label} style={{ textAlign: "center", background: C.cardBg, borderRadius: 14, padding: "12px 16px", minWidth: 72, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
                     <div style={{ fontSize: 18, fontWeight: 900, color: stat.color, lineHeight: 1 }}>{stat.value}</div>
                     <div style={{ fontSize: 10, color: "#9ca3af", marginTop: 2 }}>{stat.unit}</div>
-                    <div style={{ fontSize: 10, fontWeight: 600, color: "#6b7280", marginTop: 1 }}>{stat.label}</div>
+                    <div style={{ fontSize: 10, fontWeight: 600, color: C.textMuted, marginTop: 1 }}>{stat.label}</div>
                   </div>
                 ))}
               </div>
@@ -399,27 +414,27 @@ export default function AIMenuExamplesSection({ appUrl = "" }: Props) {
             {/* Tags */}
             <div style={{ display: "flex", gap: 8, marginTop: 16, flexWrap: "wrap" }}>
               {profile.tags.map(tag => (
-                <span key={tag} style={{ fontSize: 12, fontWeight: 600, color: profile.color, background: "white", border: `1px solid ${profile.border}`, padding: "4px 12px", borderRadius: 100 }}>{tag}</span>
+                <span key={tag} style={{ fontSize: 12, fontWeight: 600, color: profile.color, background: C.cardBg, border: `1px solid ${profile.border}`, padding: "4px 12px", borderRadius: 100 }}>{tag}</span>
               ))}
             </div>
           </div>
 
           {/* Day selector */}
-          <div style={{ display: "flex", gap: 4, padding: "16px 32px", borderBottom: "1px solid #f3f4f6", background: "#fafafa" }}>
+          <div style={{ display: "flex", gap: 4, padding: "16px 32px", borderBottom: `1px solid ${C.borderLight}`, background: C.dayBg }}>
             <span style={{ fontSize: 13, fontWeight: 600, color: "#9ca3af", marginRight: 8, alignSelf: "center" }}>Día:</span>
             {DAYS_OF_WEEK.map((day, i) => (
               <button key={day} onClick={() => setActiveDay(i)}
                 style={{ padding: "8px 18px", borderRadius: 10, fontSize: 13, fontWeight: 600, cursor: "pointer", border: "1.5px solid", transition: "all 0.2s",
                   borderColor: activeDay === i ? profile.color : "#e5e7eb",
-                  background: activeDay === i ? profile.color : "white",
-                  color: activeDay === i ? "white" : "#6b7280",
+                  background: activeDay === i ? profile.color : C.cardBg,
+                  color: activeDay === i ? "white" : C.textMuted,
                 }}>
                 {day}
               </button>
             ))}
             <div style={{ marginLeft: "auto", display: "flex", alignItems: "center", gap: 6 }}>
               <div style={{ width: 8, height: 8, borderRadius: "50%", background: "#10b981" }} />
-              <span style={{ fontSize: 12, color: "#6b7280" }}>Generado por BuddyIA</span>
+              <span style={{ fontSize: 12, color: C.textMuted }}>Generado por BuddyIA</span>
             </div>
           </div>
 
@@ -427,20 +442,20 @@ export default function AIMenuExamplesSection({ appUrl = "" }: Props) {
           <div style={{ padding: "28px 32px" }}>
             <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }} className="ai-menu-meals-grid">
               {dayMenu.meals.map((meal, i) => (
-                <MealCard key={i} meal={meal} color={profile.color} />
+                <MealCard key={i} meal={meal} color={profile.color} isDark={isDark} />
               ))}
             </div>
 
             {/* Daily macro bars */}
             <div style={{ marginTop: 24, padding: "20px 24px", background: profile.bg, borderRadius: 16, border: `1px solid ${profile.border}` }}>
-              <p style={{ margin: "0 0 14px", fontSize: 13, fontWeight: 700, color: "#374151" }}>Distribución de macros del día</p>
+              <p style={{ margin: "0 0 14px", fontSize: 13, fontWeight: 700, color: C.textSecondary }}>Distribución de macros del día</p>
               <div style={{ display: "flex", gap: 16 }} className="ai-menu-macro-bars">
-                <MacroBar label="Proteína" value={dayMenu.meals.reduce((s, m) => s + m.p, 0)} max={profile.protein} color={profile.color} />
-                <MacroBar label="Carbohidratos" value={dayMenu.meals.reduce((s, m) => s + m.c, 0)} max={profile.carbs} color="#f59e0b" />
-                <MacroBar label="Grasas" value={dayMenu.meals.reduce((s, m) => s + m.f, 0)} max={profile.fat} color="#ec4899" />
+                <MacroBar label="Proteína" value={dayMenu.meals.reduce((s, m) => s + m.p, 0)} max={profile.protein} color={profile.color} isDark={isDark} />
+                <MacroBar label="Carbohidratos" value={dayMenu.meals.reduce((s, m) => s + m.c, 0)} max={profile.carbs} color="#f59e0b" isDark={isDark} />
+                <MacroBar label="Grasas" value={dayMenu.meals.reduce((s, m) => s + m.f, 0)} max={profile.fat} color="#ec4899" isDark={isDark} />
               </div>
               <div style={{ display: "flex", justifyContent: "space-between", marginTop: 14, flexWrap: "wrap", gap: 8 }}>
-                <span style={{ fontSize: 13, color: "#6b7280" }}>
+                <span style={{ fontSize: 13, color: C.textMuted }}>
                   Total del día: <strong style={{ color: profile.color }}>{dayMenu.meals.reduce((s, m) => s + m.kcal, 0)} kcal</strong>
                   {" "}de {profile.kcal} kcal objetivo
                 </span>
@@ -450,10 +465,10 @@ export default function AIMenuExamplesSection({ appUrl = "" }: Props) {
           </div>
 
           {/* CTA footer */}
-          <div style={{ padding: "20px 32px 28px", borderTop: "1px solid #f3f4f6", display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
+          <div style={{ padding: "20px 32px 28px", borderTop: `1px solid ${C.borderLight}`, display: "flex", alignItems: "center", justifyContent: "space-between", flexWrap: "wrap", gap: 16 }}>
             <div>
-              <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: "#111827" }}>¿Quieres tu propio menú personalizado?</p>
-              <p style={{ margin: "4px 0 0", fontSize: 13, color: "#6b7280" }}>BuddyIA genera tu plan en menos de 30 segundos, adaptado a tu perfil único.</p>
+              <p style={{ margin: 0, fontSize: 15, fontWeight: 700, color: C.textPrimary }}>¿Quieres tu propio menú personalizado?</p>
+              <p style={{ margin: "4px 0 0", fontSize: 13, color: C.textMuted }}>BuddyIA genera tu plan en menos de 30 segundos, adaptado a tu perfil único.</p>
             </div>
             <a href={ctaHref} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "13px 24px", borderRadius: 12, fontSize: 15, fontWeight: 700, color: "white", background: profile.color, textDecoration: "none", boxShadow: `0 6px 20px ${profile.color}40`, whiteSpace: "nowrap", transition: "all 0.2s" }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)"; (e.currentTarget as HTMLElement).style.boxShadow = `0 10px 28px ${profile.color}50`; }}
@@ -465,7 +480,7 @@ export default function AIMenuExamplesSection({ appUrl = "" }: Props) {
         </div>
 
         {/* Bottom note */}
-        <p style={{ textAlign: "center", fontSize: 13, color: "#9ca3af", marginTop: 24 }}>
+        <p style={{ textAlign: "center", fontSize: 13, color: C.textLight, marginTop: 24 }}>
           Los menús mostrados son ejemplos ilustrativos. Tu menú real será único y adaptado a tu perfil, objetivos y restricciones específicas.
         </p>
       </div>

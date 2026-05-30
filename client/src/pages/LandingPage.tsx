@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useTheme } from "@/contexts/ThemeContext";
 import NutritionalCalculatorSection from "@/components/NutritionalCalculatorSection";
 import HabitsChecklistSection from "@/components/HabitsChecklistSection";
 import AIMenuExamplesSection from "@/components/AIMenuExamplesSection";
@@ -240,7 +241,56 @@ function StatCounter({ value, suffix, label, icon, start }: { value: number; suf
   );
 }
 
+// ── Dark mode color palette ──────────────────────────────────────────────────
+const LIGHT_COLORS = {
+  pageBg: "#fff",
+  sectionBg: "#fff",
+  sectionBgAlt: "#f9fafb",
+  sectionBgCream: "#FFF8F0",
+  cardBg: "white",
+  navBg: "rgba(255,255,255,0.96)",
+  navBgTransparent: "rgba(255,255,255,0.7)",
+  navBorder: "rgba(0,0,0,0.07)",
+  textPrimary: "#111827",
+  textSecondary: "#374151",
+  textMuted: "#6b7280",
+  textLight: "#9ca3af",
+  border: "#e5e7eb",
+  borderLight: "#f3f4f6",
+  inputBg: "white",
+  badgeBg: "#FFF7ED",
+  badgeBorder: "#FFEDD5",
+  pillBg: "white",
+  pillActiveBg: "(dynamic)",
+  pillInactiveBg: "white",
+};
+const DARK_COLORS = {
+  pageBg: "#0f1117",
+  sectionBg: "#0f1117",
+  sectionBgAlt: "#1a1d27",
+  sectionBgCream: "#1a1510",
+  cardBg: "#1e2130",
+  navBg: "rgba(15,17,23,0.96)",
+  navBgTransparent: "rgba(15,17,23,0.7)",
+  navBorder: "rgba(255,255,255,0.08)",
+  textPrimary: "#f3f4f6",
+  textSecondary: "#d1d5db",
+  textMuted: "#9ca3af",
+  textLight: "#6b7280",
+  border: "#374151",
+  borderLight: "#1f2937",
+  inputBg: "#1e2130",
+  badgeBg: "#2a1f10",
+  badgeBorder: "#4a3520",
+  pillBg: "#1e2130",
+  pillActiveBg: "(dynamic)",
+  pillInactiveBg: "#1e2130",
+};
+
 export default function LandingPage() {
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const C = isDark ? DARK_COLORS : LIGHT_COLORS;
   const { user, loading: authLoading } = useAuth();
   const isLoggedIn = !authLoading && !!user;
   const createCheckout = trpc.subscriptions.createCheckout.useMutation();
@@ -287,7 +337,7 @@ export default function LandingPage() {
   const ctaHref = isLoggedIn ? dashboardUrl : loginUrl;
 
   return (
-    <div style={{ fontFamily: "'Inter', -apple-system, sans-serif", overflowX: "hidden", background: "#fff" }}>
+    <div style={{ fontFamily: "'Inter', -apple-system, sans-serif", overflowX: "hidden", background: C.pageBg, color: C.textPrimary, transition: "background 0.3s, color 0.3s" }}>
 
       {/* ═══ ESTILOS GLOBALES ══════════════════════════════════════════════════ */}
       <style>{`
@@ -315,9 +365,9 @@ export default function LandingPage() {
       {/* ═══ NAVBAR ═══════════════════════════════════════════════════════════ */}
       <nav style={{
         position: "fixed", top: 0, left: 0, right: 0, zIndex: 100,
-        background: scrolled ? "rgba(255,255,255,0.96)" : "rgba(255,255,255,0.7)",
+        background: scrolled ? C.navBg : C.navBgTransparent,
         backdropFilter: "blur(16px)",
-        borderBottom: scrolled ? "1px solid rgba(0,0,0,0.07)" : "1px solid transparent",
+        borderBottom: scrolled ? `1px solid ${C.navBorder}` : "1px solid transparent",
         boxShadow: scrolled ? "0 2px 20px rgba(0,0,0,0.06)" : "none",
         transition: "all 0.3s ease",
         paddingTop: "env(safe-area-inset-top, 0px)",
@@ -326,7 +376,7 @@ export default function LandingPage() {
           <a href="/" style={{ display: "flex", alignItems: "center", gap: 10, textDecoration: "none", flexShrink: 0, marginRight: 24 }}>
             <img src={LOGO_ICON} alt="Buddy One logo" style={{ height: 40, width: 40 }} onError={e => { (e.currentTarget as HTMLImageElement).style.display = 'none'; }} />
             <div style={{ lineHeight: 1 }}>
-              <span style={{ fontSize: 22, fontWeight: 900, color: "#111827", letterSpacing: "-0.5px" }}>Buddy</span>
+              <span style={{ fontSize: 22, fontWeight: 900, color: C.textPrimary, letterSpacing: "-0.5px" }}>Buddy</span>
               <span style={{ fontSize: 22, fontWeight: 900, color: "#F97316", letterSpacing: "-0.5px" }}>One</span>
             </div>
           </a>
@@ -337,20 +387,20 @@ export default function LandingPage() {
               { label: "Servicios", id: "services" },
               { label: "Precios", id: "pricing" },
             ].map(item => (
-              <button key={item.label} onClick={() => scrollTo(item.id)} style={{ padding: "8px 14px", fontSize: 14, fontWeight: 500, color: "#4b5563", background: "none", border: "none", cursor: "pointer", borderRadius: 8, transition: "all 0.15s" }}
-                onMouseEnter={e => { (e.target as HTMLElement).style.color = "#F97316"; (e.target as HTMLElement).style.background = "#fff7ed"; }}
-                onMouseLeave={e => { (e.target as HTMLElement).style.color = "#4b5563"; (e.target as HTMLElement).style.background = "transparent"; }}>
+              <button key={item.label} onClick={() => scrollTo(item.id)} style={{ padding: "8px 14px", fontSize: 14, fontWeight: 500, color: C.textMuted, background: "none", border: "none", cursor: "pointer", borderRadius: 8, transition: "all 0.15s" }}
+                onMouseEnter={e => { (e.target as HTMLElement).style.color = "#F97316"; (e.target as HTMLElement).style.background = isDark ? "#2a1f10" : "#fff7ed"; }}
+                onMouseLeave={e => { (e.target as HTMLElement).style.color = C.textMuted; (e.target as HTMLElement).style.background = "transparent"; }}>
                 {item.label}
               </button>
             ))}
-            <a href="/empresas" style={{ padding: "8px 14px", fontSize: 14, fontWeight: 600, color: "#EA580C", textDecoration: "none", borderRadius: 8, transition: "all 0.15s", background: "#FFF7ED", border: "1.5px solid #FFEDD5" }}
+            <a href="/empresas" style={{ padding: "8px 14px", fontSize: 14, fontWeight: 600, color: "#EA580C", textDecoration: "none", borderRadius: 8, transition: "all 0.15s", background: C.badgeBg, border: `1.5px solid ${C.badgeBorder}` }}
               onMouseEnter={e => { (e.target as HTMLElement).style.background = "#EA580C"; (e.target as HTMLElement).style.color = "white"; (e.target as HTMLElement).style.borderColor = "#EA580C"; }}
-              onMouseLeave={e => { (e.target as HTMLElement).style.background = "#FFF7ED"; (e.target as HTMLElement).style.color = "#EA580C"; (e.target as HTMLElement).style.borderColor = "#FFEDD5"; }}>
+              onMouseLeave={e => { (e.target as HTMLElement).style.background = C.badgeBg; (e.target as HTMLElement).style.color = "#EA580C"; (e.target as HTMLElement).style.borderColor = C.badgeBorder; }}>
               Empresas
             </a>
-            <a href="/blog" style={{ padding: "8px 14px", fontSize: 14, fontWeight: 500, color: "#4b5563", textDecoration: "none", borderRadius: 8, transition: "all 0.15s" }}
-              onMouseEnter={e => { (e.target as HTMLElement).style.color = "#F97316"; (e.target as HTMLElement).style.background = "#fff7ed"; }}
-              onMouseLeave={e => { (e.target as HTMLElement).style.color = "#4b5563"; (e.target as HTMLElement).style.background = "transparent"; }}>
+            <a href="/blog" style={{ padding: "8px 14px", fontSize: 14, fontWeight: 500, color: C.textMuted, textDecoration: "none", borderRadius: 8, transition: "all 0.15s" }}
+              onMouseEnter={e => { (e.target as HTMLElement).style.color = "#F97316"; (e.target as HTMLElement).style.background = isDark ? "#2a1f10" : "#fff7ed"; }}
+              onMouseLeave={e => { (e.target as HTMLElement).style.color = C.textMuted; (e.target as HTMLElement).style.background = "transparent"; }}>
               Blog
             </a>
           </div>
@@ -362,9 +412,9 @@ export default function LandingPage() {
               </a>
             ) : (
               <>
-                <a href={loginUrl} style={{ padding: "9px 18px", fontSize: 14, fontWeight: 500, color: "#374151", textDecoration: "none", borderRadius: 10, border: "1.5px solid #e5e7eb", background: "white", transition: "all 0.15s" }}
+                <a href={loginUrl} style={{ padding: "9px 18px", fontSize: 14, fontWeight: 500, color: C.textSecondary, textDecoration: "none", borderRadius: 10, border: `1.5px solid ${C.border}`, background: C.cardBg, transition: "all 0.15s" }}
                   onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "#F97316"; (e.currentTarget as HTMLElement).style.color = "#F97316"; }}
-                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "#e5e7eb"; (e.currentTarget as HTMLElement).style.color = "#374151"; }}>
+                  onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = C.border; (e.currentTarget as HTMLElement).style.color = C.textSecondary; }}>
                   Iniciar sesión
                 </a>
                 <a href={loginUrl} style={{ padding: "9px 20px", fontSize: 14, fontWeight: 700, color: "white", background: "linear-gradient(135deg,#F97316,#ea580c)", borderRadius: 10, textDecoration: "none", boxShadow: "0 4px 12px rgba(249,115,22,0.3)", transition: "all 0.2s" }}
@@ -381,7 +431,7 @@ export default function LandingPage() {
               {isLoggedIn ? "Ir a la app" : "Empezar"}
             </a>
           </div>
-          <button className="lp-hamburger" onClick={() => setMobileOpen(o => !o)} style={{ display: "none", alignItems: "center", justifyContent: "center", width: 40, height: 40, borderRadius: 10, border: "1.5px solid #e5e7eb", background: "white", cursor: "pointer" }}>
+          <button className="lp-hamburger" onClick={() => setMobileOpen(o => !o)} style={{ display: "none", alignItems: "center", justifyContent: "center", width: 40, height: 40, borderRadius: 10, border: `1.5px solid ${C.border}`, background: C.cardBg, cursor: "pointer" }}>
             {mobileOpen
               ? <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
               : <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#374151" strokeWidth="2.5" strokeLinecap="round"><path d="M4 6h16M4 12h16M4 18h16"/></svg>
@@ -390,17 +440,17 @@ export default function LandingPage() {
         </div>
 
         {mobileOpen && (
-          <div style={{ background: "white", borderTop: "1px solid #f3f4f6", padding: "12px 20px 20px" }}>
+          <div style={{ background: C.cardBg, borderTop: `1px solid ${C.borderLight}`, padding: "12px 20px 20px" }}>
             {[{ label: "Funcionalidades", id: "features" }, { label: "Servicios", id: "services" }, { label: "Precios", id: "pricing" }].map(item => (
-              <button key={item.label} onClick={() => scrollTo(item.id)} style={{ display: "block", width: "100%", textAlign: "left", padding: "13px 0", fontSize: 15, fontWeight: 500, color: "#374151", background: "none", border: "none", borderBottom: "1px solid #f3f4f6", cursor: "pointer" }}>
+              <button key={item.label} onClick={() => scrollTo(item.id)} style={{ display: "block", width: "100%", textAlign: "left", padding: "13px 0", fontSize: 15, fontWeight: 500, color: C.textSecondary, background: "none", border: "none", borderBottom: `1px solid ${C.borderLight}`, cursor: "pointer" }}>
                 {item.label}
               </button>
             ))}
-            <a href="/empresas" onClick={() => setMobileOpen(false)} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", textAlign: "left", padding: "13px 0", fontSize: 15, fontWeight: 600, color: "#EA580C", textDecoration: "none", borderBottom: "1px solid #f3f4f6" }}>
+            <a href="/empresas" onClick={() => setMobileOpen(false)} style={{ display: "flex", alignItems: "center", gap: 8, width: "100%", textAlign: "left", padding: "13px 0", fontSize: 15, fontWeight: 600, color: "#EA580C", textDecoration: "none", borderBottom: `1px solid ${C.borderLight}` }}>
               <span style={{ fontSize: 16 }}>🏢</span> Empresas
             </a>
             <div style={{ marginTop: 16, display: "flex", flexDirection: "column", gap: 10 }}>
-              <a href={loginUrl} style={{ padding: "12px", textAlign: "center", fontSize: 15, fontWeight: 600, color: "#374151", textDecoration: "none", borderRadius: 10, border: "1.5px solid #e5e7eb" }}>Iniciar sesión</a>
+              <a href={loginUrl} style={{ padding: "12px", textAlign: "center", fontSize: 15, fontWeight: 600, color: C.textSecondary, textDecoration: "none", borderRadius: 10, border: `1.5px solid ${C.border}` }}>Iniciar sesión</a>
               <a href={loginUrl} style={{ padding: "12px", textAlign: "center", fontSize: 15, fontWeight: 700, color: "white", background: "linear-gradient(135deg,#F97316,#ea580c)", borderRadius: 10, textDecoration: "none" }}>Empezar gratis</a>
             </div>
           </div>
@@ -505,13 +555,13 @@ export default function LandingPage() {
       </section>
 
       {/* ═══ ECOSISTEMA — LOGOS OFICIALES ════════════════════════════════════ */}
-      <section style={{ background: "#FFF8F0", padding: "72px 24px" }}>
+      <section style={{ background: C.sectionBgCream, padding: "72px 24px" }}>
         <div style={{ maxWidth: 1160, margin: "0 auto", textAlign: "center" }}>
           <p style={{ fontSize: "12px", color: "#F97316", fontWeight: 700, letterSpacing: "0.10em", textTransform: "uppercase", marginBottom: "16px" }}>El ecosistema Buddy One</p>
-          <h2 style={{ fontSize: "clamp(24px,3.5vw,40px)", fontWeight: 900, color: "#111827", margin: "0 0 12px", letterSpacing: "-0.02em" }}>
+          <h2 style={{ fontSize: "clamp(24px,3.5vw,40px)", fontWeight: 900, color: C.textPrimary, margin: "0 0 12px", letterSpacing: "-0.02em" }}>
             Cinco módulos. Un solo ecosistema.
           </h2>
-          <p style={{ fontSize: 17, color: "#6B7280", maxWidth: 480, margin: "0 auto 48px", lineHeight: 1.6 }}>
+          <p style={{ fontSize: 17, color: C.textMuted, maxWidth: 480, margin: "0 auto 48px", lineHeight: 1.6 }}>
             Cada módulo trabaja de forma independiente y en conjunto para transformar tu bienestar.
           </p>
           <img
@@ -526,8 +576,8 @@ export default function LandingPage() {
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = `0 12px 32px ${m.color}20`; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow = "none"; }}>
                 <div style={{ fontSize: 32, marginBottom: 10 }}>{m.icon}</div>
-                <div style={{ fontSize: 13, fontWeight: 800, color: "#111827", marginBottom: 4 }}>
-                  <span style={{ color: "#111827" }}>Buddy </span>
+                <div style={{ fontSize: 13, fontWeight: 800, color: C.textPrimary, marginBottom: 4 }}>
+                  <span style={{ color: C.textPrimary }}>Buddy </span>
                   <span style={{ color: m.color }}>{m.name.replace("Buddy ", "")}</span>
                 </div>
                 <div style={{ fontSize: 11, color: m.color, fontWeight: 600 }}>{m.tagline}</div>
@@ -538,51 +588,51 @@ export default function LandingPage() {
       </section>
 
       {/* ═══ FEATURES / MODULES ═══════════════════════════════════════════════ */}
-      <section id="features" ref={modulesSection.ref} style={{ padding: "100px 24px", background: "#fff" }}>
+      <section id="features" ref={modulesSection.ref} style={{ padding: "100px 24px", background: C.sectionBg }}>
         <div style={{ maxWidth: 1200, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 56 }}>
             <span style={{ fontSize: 11, fontWeight: 800, color: "#F97316", letterSpacing: "0.12em", textTransform: "uppercase" }}>FUNCIONALIDADES</span>
-            <h2 style={{ fontSize: "clamp(28px,4vw,44px)", fontWeight: 900, color: "#111827", margin: "12px 0 16px", lineHeight: 1.2 }}>
+            <h2 style={{ fontSize: "clamp(28px,4vw,44px)", fontWeight: 900, color: C.textPrimary, margin: "12px 0 16px", lineHeight: 1.2 }}>
               Todo lo que necesitas para<br />comer bien, en un solo lugar
             </h2>
-            <p style={{ fontSize: 18, color: "#6b7280", maxWidth: 540, margin: "0 auto" }}>
+            <p style={{ fontSize: 18, color: C.textMuted, maxWidth: 540, margin: "0 auto" }}>
               Módulos integrados que trabajan juntos para transformar tu relación con la alimentación.
             </p>
           </div>
 
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center", alignItems: "center", marginBottom: 40 }}>
-            <button onClick={() => setActiveModule(i => (i - 1 + MODULES.length) % MODULES.length)} style={{ width: 38, height: 38, borderRadius: "50%", border: "2px solid #e5e7eb", background: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.2s" }}
+            <button onClick={() => setActiveModule(i => (i - 1 + MODULES.length) % MODULES.length)} style={{ width: 38, height: 38, borderRadius: "50%", border: `2px solid ${C.border}`, background: C.cardBg, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.2s" }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "#F97316"; (e.currentTarget as HTMLElement).style.color = "#F97316"; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "#e5e7eb"; (e.currentTarget as HTMLElement).style.color = "#374151"; }}>
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = C.border; (e.currentTarget as HTMLElement).style.color = C.textSecondary; }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6"/></svg>
             </button>
             {MODULES.map((m, i) => (
-              <button key={i} onClick={() => setActiveModule(i)} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 18px", borderRadius: 100, fontSize: 14, fontWeight: 600, cursor: "pointer", border: "2px solid", transition: "all 0.2s", borderColor: activeModule === i ? m.color : "#e5e7eb", background: activeModule === i ? m.bg : "white", color: activeModule === i ? m.color : "#6b7280", boxShadow: activeModule === i ? `0 4px 16px ${m.color}30` : "none" }}>
+              <button key={i} onClick={() => setActiveModule(i)} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 18px", borderRadius: 100, fontSize: 14, fontWeight: 600, cursor: "pointer", border: "2px solid", transition: "all 0.2s", borderColor: activeModule === i ? m.color : C.border, background: activeModule === i ? m.bg : C.cardBg, color: activeModule === i ? m.color : C.textMuted, boxShadow: activeModule === i ? `0 4px 16px ${m.color}30` : "none" }}>
                 <span>{m.icon}</span><span>{m.tag}</span>
               </button>
             ))}
-            <button onClick={() => setActiveModule(i => (i + 1) % MODULES.length)} style={{ width: 38, height: 38, borderRadius: "50%", border: "2px solid #e5e7eb", background: "white", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.2s" }}
+            <button onClick={() => setActiveModule(i => (i + 1) % MODULES.length)} style={{ width: 38, height: 38, borderRadius: "50%", border: `2px solid ${C.border}`, background: C.cardBg, cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0, transition: "all 0.2s" }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.borderColor = "#F97316"; (e.currentTarget as HTMLElement).style.color = "#F97316"; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = "#e5e7eb"; (e.currentTarget as HTMLElement).style.color = "#374151"; }}>
+              onMouseLeave={e => { (e.currentTarget as HTMLElement).style.borderColor = C.border; (e.currentTarget as HTMLElement).style.color = C.textSecondary; }}>
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M9 18l6-6-6-6"/></svg>
             </button>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 48, alignItems: "center", background: MODULES[activeModule].bg, borderRadius: 24, padding: "48px", border: `1.5px solid ${MODULES[activeModule].color}20`, transition: "all 0.4s" }} className="lp-module-grid">
             <div>
-              <div style={{ display: "inline-flex", alignItems: "center", gap: 10, background: "white", borderRadius: 12, padding: "10px 16px", marginBottom: 24, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+              <div style={{ display: "inline-flex", alignItems: "center", gap: 10, background: C.cardBg, borderRadius: 12, padding: "10px 16px", marginBottom: 24, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
                 <span style={{ fontSize: 26 }}>{MODULES[activeModule].icon}</span>
                 <span style={{ fontSize: 12, fontWeight: 700, color: MODULES[activeModule].color, textTransform: "uppercase", letterSpacing: "0.08em" }}>{MODULES[activeModule].tag}</span>
               </div>
-              <h3 style={{ fontSize: "clamp(22px,3vw,32px)", fontWeight: 800, color: "#111827", margin: "0 0 14px", lineHeight: 1.3 }}>{MODULES[activeModule].title}</h3>
-              <p style={{ fontSize: 16, color: "#4b5563", lineHeight: 1.7, marginBottom: 24 }}>{MODULES[activeModule].desc}</p>
+              <h3 style={{ fontSize: "clamp(22px,3vw,32px)", fontWeight: 800, color: C.textPrimary, margin: "0 0 14px", lineHeight: 1.3 }}>{MODULES[activeModule].title}</h3>
+              <p style={{ fontSize: 16, color: C.textSecondary, lineHeight: 1.7, marginBottom: 24 }}>{MODULES[activeModule].desc}</p>
               <div style={{ display: "flex", flexDirection: "column", gap: 10, marginBottom: 28 }}>
                 {MODULES[activeModule].highlights.map((h, i) => (
                   <div key={i} style={{ display: "flex", alignItems: "center", gap: 10 }}>
                     <div style={{ width: 22, height: 22, borderRadius: "50%", background: MODULES[activeModule].color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                       <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                     </div>
-                    <span style={{ fontSize: 15, fontWeight: 600, color: "#374151" }}>{h}</span>
+                    <span style={{ fontSize: 15, fontWeight: 600, color: C.textSecondary }}>{h}</span>
                   </div>
                 ))}
               </div>
@@ -627,21 +677,21 @@ export default function LandingPage() {
       </section>
 
       {/* ═══ SERVICES ═════════════════════════════════════════════════════════ */}
-      <section id="services" style={{ padding: "100px 24px", background: "#fff" }}>
+      <section id="services" style={{ padding: "100px 24px", background: C.sectionBg }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 56 }}>
             <span style={{ fontSize: 11, fontWeight: 800, color: "#F97316", letterSpacing: "0.12em", textTransform: "uppercase" }}>SERVICIOS</span>
-            <h2 style={{ fontSize: "clamp(28px,4vw,44px)", fontWeight: 900, color: "#111827", margin: "12px 0 16px", lineHeight: 1.2 }}>
+            <h2 style={{ fontSize: "clamp(28px,4vw,44px)", fontWeight: 900, color: C.textPrimary, margin: "12px 0 16px", lineHeight: 1.2 }}>
               Para cada tipo de usuario
             </h2>
-            <p style={{ fontSize: 18, color: "#6b7280", maxWidth: 500, margin: "0 auto" }}>
+            <p style={{ fontSize: 18, color: C.textMuted, maxWidth: 500, margin: "0 auto" }}>
               Buddy One se adapta a ti, seas usuario final, profesional de la salud o empresa.
             </p>
           </div>
 
           <div style={{ display: "flex", gap: 10, flexWrap: "wrap", justifyContent: "center", marginBottom: 40 }}>
             {SERVICES.map((s, i) => (
-              <button key={i} onClick={() => setActiveService(i)} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 100, fontSize: 14, fontWeight: 600, cursor: "pointer", border: "2px solid", transition: "all 0.2s", borderColor: activeService === i ? s.color : "#e5e7eb", background: activeService === i ? s.color : "white", color: activeService === i ? "white" : "#6b7280", boxShadow: activeService === i ? `0 4px 16px ${s.color}30` : "none" }}>
+              <button key={i} onClick={() => setActiveService(i)} style={{ display: "flex", alignItems: "center", gap: 8, padding: "10px 20px", borderRadius: 100, fontSize: 14, fontWeight: 600, cursor: "pointer", border: "2px solid", transition: "all 0.2s", borderColor: activeService === i ? s.color : C.border, background: activeService === i ? s.color : C.cardBg, color: activeService === i ? "white" : C.textMuted, boxShadow: activeService === i ? `0 4px 16px ${s.color}30` : "none" }}>
                 <span>{s.icon}</span><span>{s.title}</span>
               </button>
             ))}
@@ -653,18 +703,18 @@ export default function LandingPage() {
                 <div style={{ display: "flex", alignItems: "center", gap: 14, marginBottom: 20 }}>
                   <div style={{ width: 52, height: 52, borderRadius: 14, background: SERVICES[activeService].color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 26, boxShadow: `0 8px 24px ${SERVICES[activeService].color}40` }}>{SERVICES[activeService].icon}</div>
                   <div>
-                    <h3 style={{ fontSize: 22, fontWeight: 800, color: "#111827", margin: 0 }}>{SERVICES[activeService].title}</h3>
+                    <h3 style={{ fontSize: 22, fontWeight: 800, color: C.textPrimary, margin: 0 }}>{SERVICES[activeService].title}</h3>
                     <p style={{ fontSize: 14, color: SERVICES[activeService].color, fontWeight: 600, margin: 0 }}>{SERVICES[activeService].subtitle}</p>
                   </div>
                 </div>
                 {(SERVICES[activeService] as any).badge && (
-                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: "white", borderRadius: 100, padding: "5px 12px", marginBottom: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
+                  <div style={{ display: "inline-flex", alignItems: "center", gap: 6, background: C.cardBg, borderRadius: 100, padding: "5px 12px", marginBottom: 16, boxShadow: "0 2px 8px rgba(0,0,0,0.06)" }}>
                     <span style={{ fontSize: 11, fontWeight: 700, color: SERVICES[activeService].color }}>✓ {(SERVICES[activeService] as any).badge}</span>
                   </div>
                 )}
-                <p style={{ fontSize: 16, color: "#374151", lineHeight: 1.7, marginBottom: 20 }}>{SERVICES[activeService].desc}</p>
+                <p style={{ fontSize: 16, color: C.textSecondary, lineHeight: 1.7, marginBottom: 20 }}>{SERVICES[activeService].desc}</p>
                 {(SERVICES[activeService] as any).earnings && (
-                  <div style={{ background: "white", borderRadius: 14, padding: "16px 20px", marginBottom: 20, border: `1.5px solid ${SERVICES[activeService].color}30` }}>
+                  <div style={{ background: C.cardBg, borderRadius: 14, padding: "16px 20px", marginBottom: 20, border: `1.5px solid ${SERVICES[activeService].color}30` }}>
                     <p style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 4px" }}>{(SERVICES[activeService] as any).earnings.label}</p>
                     <p style={{ fontSize: 28, fontWeight: 900, color: SERVICES[activeService].color, margin: "0 0 2px" }}>{(SERVICES[activeService] as any).earnings.value}</p>
                     <p style={{ fontSize: 12, color: "#9ca3af", margin: 0 }}>{(SERVICES[activeService] as any).earnings.note}</p>
@@ -673,10 +723,10 @@ export default function LandingPage() {
                 {(SERVICES[activeService] as any).perks && (
                   <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20 }}>
                     {(SERVICES[activeService] as any).perks.map((p: any, i: number) => (
-                      <div key={i} style={{ background: "white", borderRadius: 12, padding: "14px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+                      <div key={i} style={{ background: C.cardBg, borderRadius: 12, padding: "14px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
                         <div style={{ fontSize: 20, marginBottom: 6 }}>{p.icon}</div>
-                        <p style={{ fontSize: 13, fontWeight: 700, color: "#111827", margin: "0 0 4px" }}>{p.title}</p>
-                        <p style={{ fontSize: 12, color: "#6b7280", margin: 0, lineHeight: 1.5 }}>{p.desc}</p>
+                        <p style={{ fontSize: 13, fontWeight: 700, color: C.textPrimary, margin: "0 0 4px" }}>{p.title}</p>
+                        <p style={{ fontSize: 12, color: C.textMuted, margin: 0, lineHeight: 1.5 }}>{p.desc}</p>
                       </div>
                     ))}
                   </div>
@@ -688,11 +738,11 @@ export default function LandingPage() {
               </div>
               <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
                 {SERVICES[activeService].items.map((item, i) => (
-                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 14, background: "white", borderRadius: 12, padding: "13px 18px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
+                  <div key={i} style={{ display: "flex", alignItems: "center", gap: 14, background: C.cardBg, borderRadius: 12, padding: "13px 18px", boxShadow: "0 2px 8px rgba(0,0,0,0.04)" }}>
                     <div style={{ width: 26, height: 26, borderRadius: "50%", background: SERVICES[activeService].color, display: "flex", alignItems: "center", justifyContent: "center", flexShrink: 0 }}>
                       <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="white" strokeWidth="3" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
                     </div>
-                    <span style={{ fontSize: 14, fontWeight: 500, color: "#374151" }}>{item}</span>
+                    <span style={{ fontSize: 14, fontWeight: 500, color: C.textSecondary }}>{item}</span>
                   </div>
                 ))}
               </div>
@@ -702,12 +752,12 @@ export default function LandingPage() {
       </section>
 
       {/* ═══ SPECIAL MENUS ════════════════════════════════════════════════════ */}
-      <section style={{ padding: "100px 24px", background: "white" }}>
+      <section style={{ padding: "100px 24px", background: C.sectionBg }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 48 }}>
             <span style={{ fontSize: 11, fontWeight: 800, color: "#F97316", letterSpacing: "0.12em", textTransform: "uppercase" }}>PLANES ESPECIALIZADOS</span>
-            <h2 style={{ fontSize: "clamp(28px,4vw,44px)", fontWeight: 900, color: "#111827", margin: "12px 0 16px", lineHeight: 1.2 }}>24 planes nutricionales<br />para cada condición</h2>
-            <p style={{ fontSize: 18, color: "#6b7280", maxWidth: 500, margin: "0 auto" }}>Menús diseñados para condiciones médicas, etapas de vida y objetivos concretos. Avalados por nutricionistas.</p>
+            <h2 style={{ fontSize: "clamp(28px,4vw,44px)", fontWeight: 900, color: C.textPrimary, margin: "12px 0 16px", lineHeight: 1.2 }}>24 planes nutricionales<br />para cada condición</h2>
+            <p style={{ fontSize: 18, color: C.textMuted, maxWidth: 500, margin: "0 auto" }}>Menús diseñados para condiciones médicas, etapas de vida y objetivos concretos. Avalados por nutricionistas.</p>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(130px,1fr))", gap: 10 }}>
             {SPECIAL_MENUS.map((m, i) => (
@@ -731,24 +781,24 @@ export default function LandingPage() {
       </section>
 
       {/* ═══ TESTIMONIALS ═════════════════════════════════════════════════════ */}
-      <section style={{ padding: "100px 24px", background: "#f9fafb" }}>
+      <section style={{ padding: "100px 24px", background: C.sectionBgAlt }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 48 }}>
             <span style={{ fontSize: 11, fontWeight: 800, color: "#F97316", letterSpacing: "0.12em", textTransform: "uppercase" }}>TESTIMONIOS</span>
-            <h2 style={{ fontSize: "clamp(28px,4vw,44px)", fontWeight: 900, color: "#111827", margin: "12px 0 0", lineHeight: 1.2 }}>Lo que dicen nuestros usuarios</h2>
+            <h2 style={{ fontSize: "clamp(28px,4vw,44px)", fontWeight: 900, color: C.textPrimary, margin: "12px 0 0", lineHeight: 1.2 }}>Lo que dicen nuestros usuarios</h2>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(2,1fr)", gap: 20 }} className="lp-testimonials-grid">
             {TESTIMONIALS.map((t, i) => (
-              <div key={i} style={{ background: "white", borderRadius: 20, padding: "28px", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", border: "1px solid #f3f4f6", transition: "all 0.3s" }}
+              <div key={i} style={{ background: C.cardBg, borderRadius: 20, padding: "28px", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", border: `1px solid ${C.borderLight}`, transition: "all 0.3s" }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 8px 40px rgba(0,0,0,0.1)"; (e.currentTarget as HTMLElement).style.transform = "translateY(-2px)"; }}
                 onMouseLeave={e => { (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 24px rgba(0,0,0,0.06)"; (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; }}>
                 <div style={{ display: "flex", gap: 3, marginBottom: 14 }}>{[1,2,3,4,5].map(s => <span key={s} style={{ color: "#f59e0b", fontSize: 15 }}>★</span>)}</div>
-                <p style={{ fontSize: 15, color: "#374151", lineHeight: 1.7, margin: "0 0 20px", fontStyle: "italic" }}>"{t.text}"</p>
+                <p style={{ fontSize: 15, color: C.textSecondary, lineHeight: 1.7, margin: "0 0 20px", fontStyle: "italic" }}>"{t.text}"</p>
                 <div style={{ display: "flex", alignItems: "center", gap: 12 }}>
                   <div style={{ width: 42, height: 42, borderRadius: "50%", background: t.color, display: "flex", alignItems: "center", justifyContent: "center", fontSize: 13, fontWeight: 700, color: "white", flexShrink: 0 }}>{t.avatar}</div>
                   <div>
-                    <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#111827" }}>{t.name}</p>
-                    <p style={{ margin: 0, fontSize: 13, color: "#9ca3af" }}>{t.role}</p>
+                    <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: C.textPrimary }}>{t.name}</p>
+                    <p style={{ margin: 0, fontSize: 13, color: C.textLight }}>{t.role}</p>
                   </div>
                 </div>
               </div>
@@ -797,16 +847,16 @@ export default function LandingPage() {
       <HabitsChecklistSection appUrl={appUrl} />
 
       {/* ═══ PRICING ══════════════════════════════════════════════════════════ */}
-      <section id="pricing" style={{ padding: "100px 24px", background: "#fff" }}>
+      <section id="pricing" style={{ padding: "100px 24px", background: C.sectionBg }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 56 }}>
             <span style={{ fontSize: 11, fontWeight: 800, color: "#F97316", letterSpacing: "0.12em", textTransform: "uppercase" }}>PRECIOS</span>
-            <h2 style={{ fontSize: "clamp(28px,4vw,44px)", fontWeight: 900, color: "#111827", margin: "12px 0 16px", lineHeight: 1.2 }}>Planes para cada necesidad</h2>
-            <p style={{ fontSize: 18, color: "#6b7280", maxWidth: 460, margin: "0 auto" }}>Empieza gratis y escala cuando lo necesites. Sin permanencia, cancela cuando quieras.</p>
+            <h2 style={{ fontSize: "clamp(28px,4vw,44px)", fontWeight: 900, color: C.textPrimary, margin: "12px 0 16px", lineHeight: 1.2 }}>Planes para cada necesidad</h2>
+            <p style={{ fontSize: 18, color: C.textMuted, maxWidth: 460, margin: "0 auto" }}>Empieza gratis y escala cuando lo necesites. Sin permanencia, cancela cuando quieras.</p>
           </div>
           <div style={{ display: "grid", gridTemplateColumns: "repeat(3,1fr)", gap: 24, alignItems: "start" }} className="lp-plans-grid">
             {PLANS.map((plan, i) => (
-              <div key={i} style={{ borderRadius: 24, padding: "36px 28px", background: plan.highlight ? "#111827" : "white", border: plan.highlight ? "none" : "2px solid #f3f4f6", boxShadow: plan.highlight ? "0 20px 60px rgba(0,0,0,0.2)" : "0 4px 16px rgba(0,0,0,0.04)", position: "relative", transition: "all 0.3s", transform: plan.highlight ? "scale(1.04)" : "scale(1)" }}
+              <div key={i} style={{ borderRadius: 24, padding: "36px 28px", background: plan.highlight ? "#111827" : C.cardBg, border: plan.highlight ? "none" : `2px solid ${C.borderLight}`, boxShadow: plan.highlight ? "0 20px 60px rgba(0,0,0,0.2)" : "0 4px 16px rgba(0,0,0,0.04)", position: "relative", transition: "all 0.3s", transform: plan.highlight ? "scale(1.04)" : "scale(1)" }}
                 onMouseEnter={e => { if (!plan.highlight) { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(0,0,0,0.1)"; } }}
                 onMouseLeave={e => { if (!plan.highlight) { (e.currentTarget as HTMLElement).style.transform = "scale(1)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 16px rgba(0,0,0,0.04)"; } }}>
                 {plan.highlight && (
@@ -814,7 +864,7 @@ export default function LandingPage() {
                 )}
                 <p style={{ fontSize: 12, fontWeight: 700, color: plan.accent, textTransform: "uppercase", letterSpacing: "0.08em", margin: "0 0 8px" }}>{plan.name}</p>
                 <div style={{ display: "flex", alignItems: "baseline", gap: 4, marginBottom: 4 }}>
-                  <span style={{ fontSize: 46, fontWeight: 900, color: plan.highlight ? "white" : "#111827", lineHeight: 1 }}>{plan.price}</span>
+                  <span style={{ fontSize: 46, fontWeight: 900, color: plan.highlight ? "white" : C.textPrimary, lineHeight: 1 }}>{plan.price}</span>
                   <span style={{ fontSize: 13, color: plan.highlight ? "#9ca3af" : "#6b7280" }}>/{plan.period}</span>
                 </div>
                 <p style={{ fontSize: 14, color: plan.highlight ? "#9ca3af" : "#6b7280", marginBottom: 24 }}>{plan.description}</p>
@@ -838,18 +888,18 @@ export default function LandingPage() {
       </section>
 
       {/* ═══ HERRAMIENTAS DEL ECOSISTEMA ═══════════════════════════════════ */}
-      <section id="herramientas" style={{ padding: "100px 24px", background: "#f9fafb" }}>
+      <section id="herramientas" style={{ padding: "100px 24px", background: C.sectionBgAlt }}>
         <div style={{ maxWidth: 1100, margin: "0 auto" }}>
           <div style={{ textAlign: "center", marginBottom: 56 }}>
             <span style={{ fontSize: 11, fontWeight: 800, color: "#F97316", letterSpacing: "0.12em", textTransform: "uppercase" }}>MÓDULOS</span>
-            <h2 style={{ fontSize: "clamp(28px,4vw,44px)", fontWeight: 900, color: "#111827", margin: "12px 0 16px", lineHeight: 1.2 }}>Explora el ecosistema</h2>
-            <p style={{ fontSize: 18, color: "#6b7280", maxWidth: 520, margin: "0 auto" }}>Siete módulos integrados, cada uno especializado en un área de tu bienestar.</p>
+            <h2 style={{ fontSize: "clamp(28px,4vw,44px)", fontWeight: 900, color: C.textPrimary, margin: "12px 0 16px", lineHeight: 1.2 }}>Explora el ecosistema</h2>
+            <p style={{ fontSize: 18, color: C.textMuted, maxWidth: 520, margin: "0 auto" }}>Siete módulos integrados, cada uno especializado en un área de tu bienestar.</p>
           </div>
 
           <div style={{ display: "grid", gridTemplateColumns: "repeat(auto-fill,minmax(320px,1fr))", gap: 24 }}>
 
             {/* Buddy Market */}
-            <div style={{ background: "white", borderRadius: 24, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", border: "1.5px solid #FED7AA", transition: "all 0.3s" }}
+            <div style={{ background: C.cardBg, borderRadius: 24, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", border: "1.5px solid #FED7AA", transition: "all 0.3s" }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(249,115,22,0.15)"; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 24px rgba(0,0,0,0.06)"; }}>
               <div style={{ height: 160, background: "linear-gradient(135deg,#FFF7ED,#FFEDD5)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
@@ -864,8 +914,8 @@ export default function LandingPage() {
                   <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#F97316", display: "inline-block" }} />
                   <span style={{ fontSize: 11, fontWeight: 700, color: "#F97316" }}>DISPONIBLE AHORA</span>
                 </div>
-                <h3 style={{ fontSize: 20, fontWeight: 800, color: "#111827", margin: "0 0 10px" }}>Compra inteligente</h3>
-                <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.65, margin: "0 0 20px" }}>Genera tu lista de la compra automáticamente desde tu menú semanal. Organizada por categorías e integrada con los principales supermercados online.</p>
+                <h3 style={{ fontSize: 20, fontWeight: 800, color: C.textPrimary, margin: "0 0 10px" }}>Compra inteligente</h3>
+                <p style={{ fontSize: 14, color: C.textMuted, lineHeight: 1.65, margin: "0 0 20px" }}>Genera tu lista de la compra automáticamente desde tu menú semanal. Organizada por categorías e integrada con los principales supermercados online.</p>
                 <a href={ctaHref} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 20px", borderRadius: 10, fontSize: 14, fontWeight: 700, color: "white", background: "#F97316", textDecoration: "none", boxShadow: "0 4px 16px rgba(249,115,22,0.3)" }}>
                   Ir a Buddy Market
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -874,7 +924,7 @@ export default function LandingPage() {
             </div>
 
             {/* Buddy Shop */}
-            <div style={{ background: "white", borderRadius: 24, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", border: "1.5px solid #FDBA74", transition: "all 0.3s" }}
+            <div style={{ background: C.cardBg, borderRadius: 24, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", border: "1.5px solid #FDBA74", transition: "all 0.3s" }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(251,146,60,0.15)"; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 24px rgba(0,0,0,0.06)"; }}>
               <div style={{ height: 160, background: "linear-gradient(135deg,#FFF7ED,#FFEDD5)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
@@ -889,8 +939,8 @@ export default function LandingPage() {
                   <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#FB923C", display: "inline-block" }} />
                   <span style={{ fontSize: 11, fontWeight: 700, color: "#FB923C" }}>DISPONIBLE AHORA</span>
                 </div>
-                <h3 style={{ fontSize: 20, fontWeight: 800, color: "#111827", margin: "0 0 10px" }}>Utensilios de cocina</h3>
-                <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.65, margin: "0 0 20px" }}>Marketplace de utensilios de cocina: sartenes, ollas, robots de cocina, básculas, tuppers y todo lo que necesitas para cocinar mejor. Envío a domicilio.</p>
+                <h3 style={{ fontSize: 20, fontWeight: 800, color: C.textPrimary, margin: "0 0 10px" }}>Utensilios de cocina</h3>
+                <p style={{ fontSize: 14, color: C.textMuted, lineHeight: 1.65, margin: "0 0 20px" }}>Marketplace de utensilios de cocina: sartenes, ollas, robots de cocina, básculas, tuppers y todo lo que necesitas para cocinar mejor. Envío a domicilio.</p>
                 <a href="https://www.buddyoneshop.com" target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 20px", borderRadius: 10, fontSize: 14, fontWeight: 700, color: "white", background: "#FB923C", textDecoration: "none", boxShadow: "0 4px 16px rgba(251,146,60,0.3)" }}>
                   Ir a Buddy Shop
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
@@ -899,7 +949,7 @@ export default function LandingPage() {
             </div>
 
             {/* Buddy Coach */}
-            <div style={{ background: "white", borderRadius: 24, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", border: "1.5px solid #FDBA74", transition: "all 0.3s" }}
+            <div style={{ background: C.cardBg, borderRadius: 24, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", border: "1.5px solid #FDBA74", transition: "all 0.3s" }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(234,88,12,0.15)"; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 24px rgba(0,0,0,0.06)"; }}>
               <div style={{ height: 160, background: "linear-gradient(135deg,#FFF7ED,#FFEDD5)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
@@ -914,8 +964,8 @@ export default function LandingPage() {
                   <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#EA580C", display: "inline-block" }} />
                   <span style={{ fontSize: 11, fontWeight: 700, color: "#EA580C" }}>DISPONIBLE AHORA</span>
                 </div>
-                <h3 style={{ fontSize: 20, fontWeight: 800, color: "#111827", margin: "0 0 10px" }}>Tu entrenador personal online</h3>
-                <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.65, margin: "0 0 20px" }}>Accede a entrenadores certificados que diseñan planes de entrenamiento 100% personalizados, hacen seguimiento de tu evolución y te motivan cada día.</p>
+                <h3 style={{ fontSize: 20, fontWeight: 800, color: C.textPrimary, margin: "0 0 10px" }}>Tu entrenador personal online</h3>
+                <p style={{ fontSize: 14, color: C.textMuted, lineHeight: 1.65, margin: "0 0 20px" }}>Accede a entrenadores certificados que diseñan planes de entrenamiento 100% personalizados, hacen seguimiento de tu evolución y te motivan cada día.</p>
                 <a href="https://www.buddycoach.io" target="_blank" rel="noopener noreferrer" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 20px", borderRadius: 10, fontSize: 14, fontWeight: 700, color: "white", background: "#EA580C", textDecoration: "none", boxShadow: "0 4px 16px rgba(234,88,12,0.3)" }}>
                   Ir a Buddy Coach
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 01-2 2H5a2 2 0 01-2-2V8a2 2 0 012-2h6M15 3h6v6M10 14L21 3"/></svg>
@@ -924,7 +974,7 @@ export default function LandingPage() {
             </div>
 
             {/* Buddy Experts */}
-            <div style={{ background: "white", borderRadius: 24, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", border: "1.5px solid #FED7AA", transition: "all 0.3s" }}
+            <div style={{ background: C.cardBg, borderRadius: 24, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", border: "1.5px solid #FED7AA", transition: "all 0.3s" }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(194,65,12,0.15)"; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 24px rgba(0,0,0,0.06)"; }}>
               <div style={{ height: 160, background: "linear-gradient(135deg,#FFF7ED,#FFEDD5)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
@@ -939,8 +989,8 @@ export default function LandingPage() {
                   <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#C2410C", display: "inline-block" }} />
                   <span style={{ fontSize: 11, fontWeight: 700, color: "#C2410C" }}>DISPONIBLE AHORA</span>
                 </div>
-                <h3 style={{ fontSize: 20, fontWeight: 800, color: "#111827", margin: "0 0 10px" }}>Tu nutricionista online</h3>
-                <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.65, margin: "0 0 20px" }}>Accede a nutricionistas certificados que crean planes 100% personalizados, hacen seguimiento de tu evolución y responden tus dudas en tiempo real.</p>
+                <h3 style={{ fontSize: 20, fontWeight: 800, color: C.textPrimary, margin: "0 0 10px" }}>Tu nutricionista online</h3>
+                <p style={{ fontSize: 14, color: C.textMuted, lineHeight: 1.65, margin: "0 0 20px" }}>Accede a nutricionistas certificados que crean planes 100% personalizados, hacen seguimiento de tu evolución y responden tus dudas en tiempo real.</p>
                 <a href="/app/buddy-experts" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 20px", borderRadius: 10, fontSize: 14, fontWeight: 700, color: "white", background: "#C2410C", textDecoration: "none", boxShadow: "0 4px 16px rgba(194,65,12,0.3)" }}>
                   Ir a Buddy Experts
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -949,7 +999,7 @@ export default function LandingPage() {
             </div>
 
             {/* Buddy Pets */}
-            <div style={{ background: "white", borderRadius: 24, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", border: "1.5px solid #FDE68A", transition: "all 0.3s" }}
+            <div style={{ background: C.cardBg, borderRadius: 24, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", border: "1.5px solid #FDE68A", transition: "all 0.3s" }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(180,83,9,0.15)"; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 24px rgba(0,0,0,0.06)"; }}>
               <div style={{ height: 160, background: "linear-gradient(135deg,#FFFBEB,#FEF3C7)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
@@ -964,8 +1014,8 @@ export default function LandingPage() {
                   <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#B45309", display: "inline-block" }} />
                   <span style={{ fontSize: 11, fontWeight: 700, color: "#B45309" }}>DISPONIBLE AHORA</span>
                 </div>
-                <h3 style={{ fontSize: 20, fontWeight: 800, color: "#111827", margin: "0 0 10px" }}>Nutrición para mascotas</h3>
-                <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.65, margin: "0 0 20px" }}>Planes nutricionales personalizados para perros y gatos. Analiza las necesidades de tu mascota y genera menús adaptados a su raza, edad y condición.</p>
+                <h3 style={{ fontSize: 20, fontWeight: 800, color: C.textPrimary, margin: "0 0 10px" }}>Nutrición para mascotas</h3>
+                <p style={{ fontSize: 14, color: C.textMuted, lineHeight: 1.65, margin: "0 0 20px" }}>Planes nutricionales personalizados para perros y gatos. Analiza las necesidades de tu mascota y genera menús adaptados a su raza, edad y condición.</p>
                 <a href="/app/buddy-pet" style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 20px", borderRadius: 10, fontSize: 14, fontWeight: 700, color: "white", background: "#B45309", textDecoration: "none", boxShadow: "0 4px 16px rgba(180,83,9,0.3)" }}>
                   Ir a Buddy Pets
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
@@ -974,7 +1024,7 @@ export default function LandingPage() {
             </div>
 
             {/* Buddy Care */}
-            <div style={{ background: "white", borderRadius: 24, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", border: "1.5px solid #FDE68A", transition: "all 0.3s" }}
+            <div style={{ background: C.cardBg, borderRadius: 24, overflow: "hidden", boxShadow: "0 4px 24px rgba(0,0,0,0.06)", border: "1.5px solid #FDE68A", transition: "all 0.3s" }}
               onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 12px 40px rgba(217,119,6,0.15)"; }}
               onMouseLeave={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLElement).style.boxShadow = "0 4px 24px rgba(0,0,0,0.06)"; }}>
               <div style={{ height: 160, background: "linear-gradient(135deg,#FFFBEB,#FEF3C7)", display: "flex", alignItems: "center", justifyContent: "center", position: "relative", overflow: "hidden" }}>
@@ -989,8 +1039,8 @@ export default function LandingPage() {
                   <span style={{ width: 6, height: 6, borderRadius: "50%", background: "#D97706", display: "inline-block" }} />
                   <span style={{ fontSize: 11, fontWeight: 700, color: "#D97706" }}>DISPONIBLE AHORA</span>
                 </div>
-                <h3 style={{ fontSize: 20, fontWeight: 800, color: "#111827", margin: "0 0 10px" }}>Suplementos nutricionales</h3>
-                <p style={{ fontSize: 14, color: "#6b7280", lineHeight: 1.65, margin: "0 0 20px" }}>Tu tienda de suplementos con recomendaciones personalizadas según tu perfil: omega 3, creatina, proteína, vitaminas, minerales y más. Seguimiento de tomas diarias incluido.</p>
+                <h3 style={{ fontSize: 20, fontWeight: 800, color: C.textPrimary, margin: "0 0 10px" }}>Suplementos nutricionales</h3>
+                <p style={{ fontSize: 14, color: C.textMuted, lineHeight: 1.65, margin: "0 0 20px" }}>Tu tienda de suplementos con recomendaciones personalizadas según tu perfil: omega 3, creatina, proteína, vitaminas, minerales y más. Seguimiento de tomas diarias incluido.</p>
                 <a href={ctaHref} style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "11px 20px", borderRadius: 10, fontSize: 14, fontWeight: 700, color: "white", background: "#D97706", textDecoration: "none", boxShadow: "0 4px 16px rgba(217,119,6,0.3)" }}>
                   Ir a Buddy Care
                   <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>

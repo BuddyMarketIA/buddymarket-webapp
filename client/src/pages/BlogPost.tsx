@@ -153,7 +153,8 @@ function NewsletterForm() {
           <p style={{ fontSize: 13, color: "#ef4444", textAlign: "center" }}>Error al suscribirte. Inténtalo de nuevo.</p>
         )}
         <p style={{ fontSize: 12, color: "#9ca3af", textAlign: "center", marginTop: 4 }}>
-          Sin spam. Puedes darte de baja en cualquier momento. Cumplimos con el RGPD.
+          Sin spam. Puedes darte de baja en cualquier momento. Consulta nuestra{" "}
+          <Link href="/privacy" style={{ color: ORANGE, textDecoration: "underline" }}>política de privacidad</Link>.
         </p>
       </form>
     </div>

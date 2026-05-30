@@ -1,5 +1,7 @@
 import { useState } from "react";
 
+import { useTheme } from "../contexts/ThemeContext";
+
 function useInView(threshold = 0.1) {
   const [inView, setInView] = useState(false);
   const ref = (el: HTMLElement | null) => {
@@ -51,6 +53,20 @@ interface Props { appUrl: string; }
 
 export default function HabitsChecklistSection({ appUrl }: Props) {
   const section = useInView(0.1);
+  const { theme } = useTheme();
+  const isDark = theme === "dark";
+  const C = {
+    sectionBg: isDark ? "#111827" : "white",
+    cardBg: isDark ? "#1e293b" : "#f9fafb",
+    textPrimary: isDark ? "#f1f5f9" : "#111827",
+    textSecondary: isDark ? "#cbd5e1" : "#374151",
+    textMuted: isDark ? "#94a3b8" : "#6b7280",
+    textLight: isDark ? "#64748b" : "#9ca3af",
+    border: isDark ? "#334155" : "#e5e7eb",
+    borderLight: isDark ? "#1e293b" : "#f3f4f6",
+    progressBg: isDark ? "#1e293b" : "#f3f4f6",
+    btnBg: isDark ? "#1e293b" : "white",
+  };
   const [answers, setAnswers] = useState<Record<string, boolean | null>>({});
   const [showResults, setShowResults] = useState(false);
 
@@ -94,7 +110,7 @@ export default function HabitsChecklistSection({ appUrl }: Props) {
     <section
       ref={section.ref as any}
       id="checklist"
-      style={{ padding: "96px 24px", background: "white" }}
+      style={{ padding: "96px 24px", background: C.sectionBg }}
     >
       <div style={{ maxWidth: 860, margin: "0 auto" }}>
         {/* Header */}
@@ -107,10 +123,10 @@ export default function HabitsChecklistSection({ appUrl }: Props) {
           <div style={{ display: "inline-flex", alignItems: "center", gap: 8, padding: "6px 16px", borderRadius: 100, background: "#f0fdf4", border: "1.5px solid #bbf7d0", fontSize: 13, fontWeight: 700, color: "#059669", marginBottom: 16 }}>
             Análisis de hábitos nutricionales
           </div>
-          <h2 style={{ fontSize: "clamp(28px, 5vw, 48px)", fontWeight: 900, color: "#111827", margin: "0 0 16px", letterSpacing: "-0.03em", lineHeight: 1.1 }}>
+          <h2 style={{ fontSize: "clamp(28px, 5vw, 48px)", fontWeight: 900, color: C.textPrimary, margin: "0 0 16px", letterSpacing: "-0.03em", lineHeight: 1.1 }}>
             ¿Estás comiendo bien<br />o cometiendo errores?
           </h2>
-          <p style={{ fontSize: "clamp(15px, 2vw, 18px)", color: "#6b7280", maxWidth: 520, margin: "0 auto", lineHeight: 1.7 }}>
+          <p style={{ fontSize: "clamp(15px, 2vw, 18px)", color: C.textMuted, maxWidth: 520, margin: "0 auto", lineHeight: 1.7 }}>
             Responde estas 10 preguntas y descubre qué hábitos están saboteando tu nutrición sin que lo sepas.
           </p>
         </div>
@@ -122,10 +138,10 @@ export default function HabitsChecklistSection({ appUrl }: Props) {
           transition: "opacity 0.6s 0.2s",
         }}>
           <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
-            <span style={{ fontSize: 13, fontWeight: 700, color: "#374151" }}>Progreso</span>
+            <span style={{ fontSize: 13, fontWeight: 700, color: C.textSecondary }}>Progreso</span>
             <span style={{ fontSize: 13, fontWeight: 700, color: "#F97316" }}>{answered}/{total} respondidas</span>
           </div>
-          <div style={{ height: 8, background: "#f3f4f6", borderRadius: 4, overflow: "hidden" }}>
+          <div style={{ height: 8, background: C.progressBg, borderRadius: 4, overflow: "hidden" }}>
             <div style={{ height: "100%", width: `${progress}%`, background: "linear-gradient(90deg, #F97316, #ea580c)", borderRadius: 4, transition: "width 0.4s" }} />
           </div>
         </div>
@@ -145,9 +161,9 @@ export default function HabitsChecklistSection({ appUrl }: Props) {
 
               return (
                 <div key={q.id} style={{
-                  background: isAnswered ? (isCorrect ? "#f0fdf4" : "#fff7ed") : "#f9fafb",
+                  background: isAnswered ? (isCorrect ? (isDark ? "#052e16" : "#f0fdf4") : (isDark ? "#431407" : "#fff7ed")) : C.cardBg,
                   borderRadius: 16, padding: "20px 24px",
-                  border: isAnswered ? `1.5px solid ${isCorrect ? "#bbf7d0" : "#fed7aa"}` : "1.5px solid #f3f4f6",
+                  border: isAnswered ? `1.5px solid ${isCorrect ? "#bbf7d0" : "#fed7aa"}` : `1.5px solid ${C.borderLight}`,
                   transition: "all 0.3s",
                 }}>
                   <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", gap: 16, flexWrap: "wrap" }}>
@@ -158,7 +174,7 @@ export default function HabitsChecklistSection({ appUrl }: Props) {
                         </span>
                         <span style={{ fontSize: 12, color: "#9ca3af", fontWeight: 600 }}>#{i + 1}</span>
                       </div>
-                      <p style={{ fontSize: 15, fontWeight: 600, color: "#111827", lineHeight: 1.5, margin: 0 }}>{q.text}</p>
+                      <p style={{ fontSize: 15, fontWeight: 600, color: C.textPrimary, lineHeight: 1.5, margin: 0 }}>{q.text}</p>
                       {isAnswered && !isCorrect && (
                         <p style={{ fontSize: 13, color: "#92400e", marginTop: 8, lineHeight: 1.5, padding: "8px 12px", background: "#fef3c7", borderRadius: 8 }}>
                           {q.tip}
@@ -169,9 +185,9 @@ export default function HabitsChecklistSection({ appUrl }: Props) {
                       {[true, false].map(v => (
                         <button key={String(v)} onClick={() => handleAnswer(q.id, v)} style={{
                           padding: "9px 20px", borderRadius: 10, fontSize: 14, fontWeight: 700, cursor: "pointer", transition: "all 0.2s",
-                          background: ans === v ? (v ? "#10b981" : "#ef4444") : "white",
-                          color: ans === v ? "white" : "#374151",
-                          border: ans === v ? `2px solid ${v ? "#10b981" : "#ef4444"}` : "2px solid #e5e7eb",
+                          background: ans === v ? (v ? "#10b981" : "#ef4444") : C.btnBg,
+                          color: ans === v ? "white" : C.textSecondary,
+                          border: ans === v ? `2px solid ${v ? "#10b981" : "#ef4444"}` : `2px solid ${C.border}`,
                         }}>
                           {v ? "Sí" : "No"}
                         </button>
@@ -185,12 +201,12 @@ export default function HabitsChecklistSection({ appUrl }: Props) {
             {/* Show results button */}
             <div style={{ textAlign: "center", marginTop: 16 }}>
               {!canShowResults && (
-                <p style={{ fontSize: 13, color: "#9ca3af", marginBottom: 12 }}>Responde al menos {Math.ceil(total * 0.7)} preguntas para ver tu análisis</p>
+                <p style={{ fontSize: 13, color: C.textLight, marginBottom: 12 }}>Responde al menos {Math.ceil(total * 0.7)} preguntas para ver tu análisis</p>
               )}
               <button onClick={() => setShowResults(true)} disabled={!canShowResults} style={{
                 padding: "16px 40px", borderRadius: 14, fontSize: 16, fontWeight: 800, cursor: canShowResults ? "pointer" : "not-allowed",
-                background: canShowResults ? "linear-gradient(135deg, #F97316, #ea580c)" : "#e5e7eb",
-                color: canShowResults ? "white" : "#9ca3af", border: "none",
+                background: canShowResults ? "linear-gradient(135deg, #F97316, #ea580c)" : C.progressBg,
+                color: canShowResults ? "white" : C.textLight, border: "none",
                 boxShadow: canShowResults ? "0 8px 24px rgba(249,115,22,0.35)" : "none",
                 transition: "all 0.2s",
               }}>
@@ -210,22 +226,22 @@ export default function HabitsChecklistSection({ appUrl }: Props) {
               borderRadius: 24, padding: "36px 32px", textAlign: "center", marginBottom: 32,
             }}>
               <div style={{ fontSize: 48, marginBottom: 12 }}>{scoreInfo.emoji}</div>
-              <h3 style={{ fontSize: 28, fontWeight: 900, color: "#111827", marginBottom: 8 }}>
+              <h3 style={{ fontSize: 28, fontWeight: 900, color: C.textPrimary, marginBottom: 8 }}>
                 {score}/{total} hábitos correctos — {scoreInfo.label}
               </h3>
-              <p style={{ fontSize: 16, color: "#4b5563", lineHeight: 1.7, maxWidth: 560, margin: "0 auto 24px" }}>{scoreInfo.desc}</p>
+              <p style={{ fontSize: 16, color: C.textSecondary, lineHeight: 1.7, maxWidth: 560, margin: "0 auto 24px" }}>{scoreInfo.desc}</p>
 
               {/* Score bar */}
-              <div style={{ height: 12, background: "#e5e7eb", borderRadius: 6, overflow: "hidden", maxWidth: 400, margin: "0 auto 8px" }}>
+              <div style={{ height: 12, background: C.progressBg, borderRadius: 6, overflow: "hidden", maxWidth: 400, margin: "0 auto 8px" }}>
                 <div style={{ height: "100%", width: `${(score / total) * 100}%`, background: scoreInfo.color, borderRadius: 6, transition: "width 1s" }} />
               </div>
-              <p style={{ fontSize: 13, color: "#9ca3af" }}>{Math.round((score / total) * 100)}% de hábitos saludables</p>
+              <p style={{ fontSize: 13, color: C.textLight }}>{Math.round((score / total) * 100)}% de hábitos saludables</p>
             </div>
 
             {/* Errors */}
             {wrongAnswers.length > 0 && (
               <div style={{ marginBottom: 32 }}>
-                <h4 style={{ fontSize: 18, fontWeight: 800, color: "#111827", marginBottom: 16 }}>
+                <h4 style={{ fontSize: 18, fontWeight: 800, color: C.textPrimary, marginBottom: 16 }}>
                   Errores detectados ({wrongAnswers.length})
                 </h4>
                 <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
@@ -235,7 +251,7 @@ export default function HabitsChecklistSection({ appUrl }: Props) {
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#ef4444" strokeWidth="2.5" strokeLinecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
                       </div>
                       <div>
-                        <p style={{ fontSize: 14, fontWeight: 700, color: "#111827", marginBottom: 4 }}>{q.text}</p>
+                        <p style={{ fontSize: 14, fontWeight: 700, color: C.textPrimary, marginBottom: 4 }}>{q.text}</p>
                         <p style={{ fontSize: 13, color: "#92400e", lineHeight: 1.5 }}>{q.tip}</p>
                       </div>
                     </div>
@@ -246,10 +262,10 @@ export default function HabitsChecklistSection({ appUrl }: Props) {
 
             {/* CTA */}
             <div style={{ background: "linear-gradient(135deg, #fff7ed, #fef3c7)", borderRadius: 20, padding: "32px", textAlign: "center", border: "1.5px solid #fed7aa" }}>
-              <h4 style={{ fontSize: 20, fontWeight: 900, color: "#111827", marginBottom: 8 }}>
+              <h4 style={{ fontSize: 20, fontWeight: 900, color: C.textPrimary, marginBottom: 8 }}>
                 Buddy One corrige estos errores automáticamente
               </h4>
-              <p style={{ fontSize: 15, color: "#4b5563", lineHeight: 1.7, marginBottom: 24 }}>
+              <p style={{ fontSize: 15, color: C.textSecondary, lineHeight: 1.7, marginBottom: 24 }}>
                 Genera menús personalizados que se adaptan a tus hábitos, corrigen tus carencias nutricionales y te ayudan a alcanzar tus objetivos sin esfuerzo.
               </p>
               <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
@@ -263,7 +279,7 @@ export default function HabitsChecklistSection({ appUrl }: Props) {
                 </a>
                 <button onClick={() => { setShowResults(false); setAnswers({}); }} style={{
                   padding: "15px 24px", borderRadius: 12, fontSize: 15, fontWeight: 700, cursor: "pointer",
-                  background: "white", color: "#374151", border: "2px solid #e5e7eb", transition: "all 0.2s",
+                  background: C.btnBg, color: C.textSecondary, border: `2px solid ${C.border}`, transition: "all 0.2s",
                 }}>
                   Repetir test
                 </button>
