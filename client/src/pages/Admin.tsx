@@ -58,6 +58,7 @@ const TABS = [
   { key: "licencias", label: "Licencias B2B", icon: CurrencyEuroIcon },
   { key: "soporte", label: "Soporte", icon: ChatBubbleLeftRightIcon },
   { key: "clinicas", label: "Clínicas Vet.", icon: HeartIcon },
+  { key: "campaigns", label: "Campañas Email", icon: EnvelopeIcon },
 ];
 
 function CatalogSection({
@@ -2565,6 +2566,14 @@ function AdminSoportePanel() {
           ) : null}
         </div>
       </div>
+      {activeTab === "campaigns" && (
+        <div className="vively-card p-6 text-center space-y-4">
+          <EnvelopeIcon className="h-12 w-12 mx-auto text-[#F97316]" />
+          <h3 className="text-lg font-bold">Campañas de Email</h3>
+          <p className="text-sm text-muted-foreground">Gestiona contactos, listas y envía campañas masivas con diseño BuddyOne.</p>
+          <Link href="/app/admin/campaigns" className="inline-block px-6 py-2 bg-[#F97316] text-white rounded-xl font-semibold hover:bg-orange-600 transition-colors">Abrir panel de campañas</Link>
+        </div>
+      )}
     </div>
   );
 }

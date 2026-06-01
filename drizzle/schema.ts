@@ -4358,3 +4358,90 @@ export const newsletterSubscribers = pgTable("newsletter_subscribers", {
 }));
 export type NewsletterSubscriber = typeof newsletterSubscribers.$inferSelect;
 export type InsertNewsletterSubscriber = typeof newsletterSubscribers.$inferInsert;
+
+
+// =============================================================================
+// EMAIL CAMPAIGNS
+// =============================================================================
+
+export const campaignStatusEnum = pgEnum("campaignStatus", ["draft", "scheduled", "sending", "sent", "failed"]);
+
+export const emailContacts = pgTable("email_contacts", {
+  id: serial("id").primaryKey(),
+  email: varchar("email", { length: 320 }).notNull(),
+  name: varchar("name", { length: 255 }),
+  company: varchar("company", { length: 255 }),
+  tags: text("tags"), // JSON array of tags
+  source: varchar("source", { length: 100 }).default("manual"),
+  subscribed: boolean("subscribed").default(true).notNull(),
+  bouncedAt: timestamp("bouncedAt"),
+  unsubscribedAt: timestamp("unsubscribedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  emailIdx: uniqueIndex("email_contacts_email_idx").on(t.email),
+  subscribedIdx: index("email_contacts_subscribed_idx").on(t.subscribed),
+}));
+export type EmailContact = typeof emailContacts.$inferSelect;
+export type InsertEmailContact = typeof emailContacts.$inferInsert;
+
+export const emailLists = pgTable("email_lists", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  color: varchar("color", { length: 7 }).default("#F97316"),
+  contactCount: integer("contactCount").default(0).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+export type EmailList = typeof emailLists.$inferSelect;
+export type InsertEmailList = typeof emailLists.$inferInsert;
+
+export const emailListMembers = pgTable("email_list_members", {
+  id: serial("id").primaryKey(),
+  listId: integer("listId").notNull(),
+  contactId: integer("contactId").notNull(),
+  addedAt: timestamp("addedAt").defaultNow().notNull(),
+}, (t) => ({
+  listContactUnique: unique("email_list_member_unique").on(t.listId, t.contactId),
+  listIdx: index("email_list_members_list_idx").on(t.listId),
+  contactIdx: index("email_list_members_contact_idx").on(t.contactId),
+}));
+export type EmailListMember = typeof emailListMembers.$inferSelect;
+export type InsertEmailListMember = typeof emailListMembers.$inferInsert;
+
+export const emailCampaigns = pgTable("email_campaigns", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  subject: varchar("subject", { length: 500 }).notNull(),
+  previewText: varchar("previewText", { length: 255 }),
+  htmlContent: text("htmlContent").notNull(),
+  listId: integer("listId"),
+  status: campaignStatusEnum("status").default("draft").notNull(),
+  scheduledAt: timestamp("scheduledAt"),
+  sentAt: timestamp("sentAt"),
+  totalRecipients: integer("totalRecipients").default(0),
+  totalSent: integer("totalSent").default(0),
+  totalFailed: integer("totalFailed").default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+});
+export type EmailCampaign = typeof emailCampaigns.$inferSelect;
+export type InsertEmailCampaign = typeof emailCampaigns.$inferInsert;
+
+export const emailCampaignSends = pgTable("email_campaign_sends", {
+  id: serial("id").primaryKey(),
+  campaignId: integer("campaignId").notNull(),
+  contactId: integer("contactId").notNull(),
+  email: varchar("email", { length: 320 }).notNull(),
+  status: varchar("status", { length: 20 }).default("pending").notNull(), // pending, sent, failed, bounced
+  messageId: varchar("messageId", { length: 255 }),
+  sentAt: timestamp("sentAt"),
+  errorMessage: text("errorMessage"),
+}, (t) => ({
+  campaignIdx: index("email_sends_campaign_idx").on(t.campaignId),
+  contactIdx: index("email_sends_contact_idx").on(t.contactId),
+  statusIdx: index("email_sends_status_idx").on(t.status),
+}));
+export type EmailCampaignSend = typeof emailCampaignSends.$inferSelect;
+export type InsertEmailCampaignSend = typeof emailCampaignSends.$inferInsert;

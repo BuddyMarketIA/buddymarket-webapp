@@ -88,6 +88,7 @@ const AdminContent = lazyWithRetry(() => import("./pages/AdminContent"));
 const AdminLogs = lazyWithRetry(() => import("./pages/AdminLogs"));
 const AdminFeedback = lazyWithRetry(() => import("./pages/AdminFeedback"));
 const AdminRecipeImages = lazyWithRetry(() => import("./pages/AdminRecipeImages"));
+const AdminCampaigns = lazyWithRetry(() => import("./pages/AdminCampaigns"));
 const BuddyPet = lazyWithRetry(() => import("./pages/BuddyPet"));
 const BuddyPetPreview = lazyWithRetry(() => import("./pages/BuddyPetPreview"));
 const BuddyKids = lazyWithRetry(() => import("./pages/BuddyKids"));
@@ -277,6 +278,7 @@ function Router() {
       <Route path="/app/admin/logs">{() => <ProtectedRoute component={AdminLogs} />}</Route>
       <Route path="/app/admin/feedback">{() => <ProtectedRoute component={AdminFeedback} />}</Route>
       <Route path="/app/admin/recipe-images">{() => <ProtectedRoute component={AdminRecipeImages} />}</Route>
+      <Route path="/app/admin/campaigns">{() => <ProtectedRoute component={AdminCampaigns} />}</Route>
       <Route path="/app/buddy-pet">{() => <ProtectedRoute component={BuddyPet} />}</Route>
       <Route path="/app/buddy-pet-preview">{() => <ProtectedRoute component={BuddyPetPreview} />}</Route>
       <Route path="/app/buddy-kids">{() => <ProtectedRoute component={BuddyKids} />}</Route>

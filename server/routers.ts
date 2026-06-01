@@ -38,6 +38,7 @@ import { marketplaceRouter } from "./routers/marketplace";
 import { corporateDashboardRouter } from "./routers/corporateDashboard";
 import { priceCompareRouter } from "./routers/priceCompare";
 import { nutritionChatRouter } from "./routers/nutritionChat";
+import { emailCampaignsRouter } from "./routers/emailCampaigns";
 import { protectedProcedure, publicProcedure, router } from "./_core/trpc";
 import { invokeLLM } from "./_core/llm";
 import { storagePut } from "./storage";
@@ -304,6 +305,7 @@ export const appRouter = router({
   corporateDashboard: corporateDashboardRouter,
   priceCompare: priceCompareRouter,
   nutritionChat: nutritionChatRouter,
+  emailCampaigns: emailCampaignsRouter,
 
   // ---------------------------------------------------------------------------
   // ECOSYSTEM (BuddyCoach, BuddyCare, BuddyShop)

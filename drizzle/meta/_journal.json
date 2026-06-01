@@ -589,6 +589,13 @@
       "when": 1780131125771,
       "tag": "0083_first_marvel_boy",
       "breakpoints": true
+    },
+    {
+      "idx": 84,
+      "version": "7",
+      "when": 1780326235973,
+      "tag": "0084_faithful_eternals",
+      "breakpoints": true
     }
   ]
 }

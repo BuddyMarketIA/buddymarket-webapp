@@ -3713,3 +3713,15 @@
 - [x] Crear endpoint tRPC newsletter.subscribe (público)
 - [x] Añadir formulario de suscripción al final de BlogPost.tsx
 - [x] Diseño coherente con el estilo naranja/crema del blog
+
+## Sistema de Campañas de Email (Resend)
+- [ ] Schema DB: tablas emailContacts, emailLists, emailListMembers, emailCampaigns, emailCampaignSends
+- [ ] Backend: instalar Resend SDK y configurar envío desde info@buddymarket.io
+- [ ] Backend: tRPC router campañas (CRUD contactos, listas, campañas, envío masivo)
+- [ ] Backend: rate limiting y batch sending para envíos masivos
+- [ ] Frontend: página admin Campañas con listado y estadísticas
+- [ ] Frontend: editor de campañas con preview HTML
+- [ ] Frontend: gestión de contactos y listas (importar CSV, añadir manual)
+- [ ] Frontend: historial de envíos con métricas (enviados, abiertos, clicks)
+- [ ] Templates: email BuddyOne branded (bienvenida, newsletter, inversores, promoción)
+- [ ] Tests: vitest para router de campañas
