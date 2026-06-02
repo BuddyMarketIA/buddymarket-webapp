@@ -16,7 +16,7 @@ import {
 import { generatePatientPDF } from "@/hooks/usePDFReport";
 import { ChatMarkdown } from "@/lib/renderChatMarkdown";
 
-type Tab = "messages" | "menus" | "appointments" | "progress" | "notes" | "profile" | "diary" | "sessions" | "analysis" | "checkins";
+type Tab = "messages" | "menus" | "appointments" | "progress" | "notes" | "profile" | "diary" | "sessions" | "analysis" | "checkins" | "documents" | "clinical";
 
 const NOTE_TYPE_LABELS: Record<string, { label: string; color: string; icon: string }> = {
   general: { label: "General", color: "bg-muted/50 text-foreground/80", icon: "📝" },
@@ -84,7 +84,27 @@ export default function ExpertPatientDetail() {
 
   // Formulario de progreso
   const [progressForm, setProgressForm] = useState({
-    weight: "", bodyFat: "", muscleMass: "", waist: "", hip: "", notes: "",
+    weight: "", bodyFat: "", muscleMass: "", waist: "", hip: "", chest: "", arm: "", thigh: "", notes: "",
+  });
+
+  // Documentos
+  const [showDocumentModal, setShowDocumentModal] = useState(false);
+  const [documentForm, setDocumentForm] = useState({
+    title: "",
+    description: "",
+    documentType: "nutrition_plan" as "nutrition_plan" | "blood_test" | "medical_report" | "scale_export" | "progress_photo" | "consent_form" | "other",
+    visibility: "shared" as "shared" | "expert_only",
+  });
+  const [documentFile, setDocumentFile] = useState<File | null>(null);
+  const [documentUploading, setDocumentUploading] = useState(false);
+
+  // Métricas clínicas
+  const [showClinicalModal, setShowClinicalModal] = useState(false);
+  const [clinicalForm, setClinicalForm] = useState({
+    bloodPressureSystolic: "", bloodPressureDiastolic: "", heartRate: "",
+    glucoseFasting: "", hba1c: "", totalCholesterol: "", ldlCholesterol: "", hdlCholesterol: "", triglycerides: "",
+    boneMass: "", waterPercentage: "", visceralFat: "", metabolicAge: "",
+    calf: "", neck: "", shoulder: "", notes: "",
   });
 
   // Formulario de cita
@@ -257,6 +277,67 @@ export default function ExpertPatientDetail() {
     onError: () => toast.error("Error al eliminar la nota"),
   });
 
+  // Documentos queries & mutations
+  const { data: documentsData, refetch: refetchDocuments } = trpc.expertDocuments.getDocuments.useQuery(
+    { expertPatientId: patientRelId, documentType: "all" },
+    { enabled: !!user && patientRelId > 0 && activeTab === "documents" }
+  );
+  const deleteDocumentMutation = trpc.expertDocuments.deleteDocument.useMutation({
+    onSuccess: () => { toast.success("Documento eliminado"); refetchDocuments(); },
+    onError: () => toast.error("Error al eliminar el documento"),
+  });
+  const updateVisibilityMutation = trpc.expertDocuments.updateVisibility.useMutation({
+    onSuccess: () => { toast.success("Visibilidad actualizada"); refetchDocuments(); },
+  });
+
+  // Métricas clínicas queries & mutations
+  const { data: clinicalData, refetch: refetchClinical } = trpc.expertDocuments.getClinicalMetrics.useQuery(
+    { expertPatientId: patientRelId },
+    { enabled: !!user && patientRelId > 0 && activeTab === "clinical" }
+  );
+  const addClinicalMutation = trpc.expertDocuments.addClinicalMetrics.useMutation({
+    onSuccess: () => {
+      toast.success("Métricas clínicas guardadas");
+      setShowClinicalModal(false);
+      setClinicalForm({ bloodPressureSystolic: "", bloodPressureDiastolic: "", heartRate: "", glucoseFasting: "", hba1c: "", totalCholesterol: "", ldlCholesterol: "", hdlCholesterol: "", triglycerides: "", boneMass: "", waterPercentage: "", visceralFat: "", metabolicAge: "", calf: "", neck: "", shoulder: "", notes: "" });
+      refetchClinical();
+    },
+    onError: () => toast.error("Error al guardar las métricas"),
+  });
+
+  // Upload document handler
+  const handleDocumentUpload = async () => {
+    if (!documentFile || !documentForm.title) return;
+    setDocumentUploading(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const base64 = (e.target?.result as string).split(",")[1];
+        await trpc.expertDocuments.uploadDocument.mutate({
+          expertPatientId: patientRelId,
+          title: documentForm.title,
+          description: documentForm.description || undefined,
+          documentType: documentForm.documentType,
+          visibility: documentForm.visibility,
+          fileBase64: base64,
+          fileName: documentFile.name,
+          mimeType: documentFile.type,
+          fileSize: documentFile.size,
+        });
+        toast.success("Documento subido correctamente");
+        setShowDocumentModal(false);
+        setDocumentFile(null);
+        setDocumentForm({ title: "", description: "", documentType: "nutrition_plan", visibility: "shared" });
+        refetchDocuments();
+        setDocumentUploading(false);
+      };
+      reader.readAsDataURL(documentFile);
+    } catch {
+      toast.error("Error al subir el documento");
+      setDocumentUploading(false);
+    }
+  };
+
   useEffect(() => {
     if (activeTab === "messages") {
       setTimeout(() => messagesEndRef.current?.scrollIntoView({ behavior: "smooth" }), 200);
@@ -303,6 +384,8 @@ export default function ExpertPatientDetail() {
     { id: "menus", label: "Menús", icon: "🥗", count: assignedMenus.length || undefined },
     { id: "appointments", label: "Citas", icon: "📅", count: appointments.filter(a => a.status === "scheduled").length || undefined },
     { id: "progress", label: "Evolución", icon: "📈", count: progressRecords.length || undefined },
+    { id: "clinical", label: "Clínica", icon: "🩺" },
+    { id: "documents", label: "Documentos", icon: "📂", count: documentsData?.length || undefined },
     { id: "notes", label: "Notas", icon: "🔒", count: notes.length || undefined },
     { id: "sessions", label: "Historial", icon: "📋", count: undefined },
     { id: "checkins", label: "Check-ins", icon: "✅" },
@@ -1451,6 +1534,220 @@ export default function ExpertPatientDetail() {
             )}
           </div>
         )}
+
+        {/* ─── TAB: DOCUMENTOS ─────────────────────────────────────────── */}
+        {activeTab === "documents" && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold text-foreground/80">📂 Documentos clínicos</h3>
+                <p className="text-xs text-muted-foreground/70 mt-0.5">Planes nutricionales, analíticas, informes y archivos compartidos</p>
+              </div>
+              <Button onClick={() => setShowDocumentModal(true)} className="bg-orange-500 hover:bg-orange-600 text-white" size="sm">
+                + Subir documento
+              </Button>
+            </div>
+
+            {/* Filtros por tipo */}
+            {documentsData && documentsData.length > 0 && (
+              <div className="flex flex-wrap gap-2">
+                {["nutrition_plan", "blood_test", "medical_report", "scale_export", "progress_photo", "other"].map(type => {
+                  const count = documentsData.filter(d => d.documentType === type).length;
+                  if (count === 0) return null;
+                  const labels: Record<string, string> = {
+                    nutrition_plan: "📋 Planes", blood_test: "🩸 Analíticas", medical_report: "🏥 Informes",
+                    scale_export: "⚖️ Báscula", progress_photo: "📸 Fotos", other: "📎 Otros"
+                  };
+                  return (
+                    <span key={type} className="px-2 py-1 bg-orange-50 text-orange-700 rounded-full text-xs font-medium">
+                      {labels[type]} ({count})
+                    </span>
+                  );
+                })}
+              </div>
+            )}
+
+            {!documentsData || documentsData.length === 0 ? (
+              <div className="text-center py-12 bg-muted/30 rounded-xl border border-dashed border-border">
+                <div className="text-4xl mb-2">📂</div>
+                <p className="text-muted-foreground font-medium">No hay documentos aún</p>
+                <p className="text-sm text-muted-foreground/70 mt-1">Sube planes nutricionales, analíticas, informes médicos o exportaciones de báscula</p>
+                <Button onClick={() => setShowDocumentModal(true)} className="mt-3 bg-orange-500 hover:bg-orange-600 text-white" size="sm">
+                  Subir primer documento
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-3">
+                {documentsData.map(doc => {
+                  const typeLabels: Record<string, { label: string; icon: string; color: string }> = {
+                    nutrition_plan: { label: "Plan nutricional", icon: "📋", color: "bg-green-100 text-green-700" },
+                    blood_test: { label: "Analítica", icon: "🩸", color: "bg-red-100 text-red-700" },
+                    medical_report: { label: "Informe médico", icon: "🏥", color: "bg-blue-100 text-blue-700" },
+                    scale_export: { label: "Exportación báscula", icon: "⚖️", color: "bg-purple-100 text-purple-700" },
+                    progress_photo: { label: "Foto de progreso", icon: "📸", color: "bg-yellow-100 text-yellow-700" },
+                    consent_form: { label: "Consentimiento", icon: "✍️", color: "bg-gray-100 text-gray-700" },
+                    other: { label: "Otro", icon: "📎", color: "bg-muted text-muted-foreground" },
+                  };
+                  const typeInfo = typeLabels[doc.documentType] ?? typeLabels.other;
+                  const isImage = doc.mimeType?.startsWith("image/");
+                  const isPdf = doc.mimeType === "application/pdf";
+                  return (
+                    <div key={doc.id} className="p-4 bg-background rounded-xl border border-border">
+                      <div className="flex items-start gap-3">
+                        <div className="text-3xl flex-shrink-0">{isImage ? "🖼️" : isPdf ? "📄" : typeInfo.icon}</div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <p className="font-medium text-foreground/90 text-sm truncate">{doc.title}</p>
+                            <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${typeInfo.color}`}>{typeInfo.label}</span>
+                            {doc.visibility === "expert_only" && (
+                              <span className="px-2 py-0.5 bg-gray-100 text-gray-600 rounded-full text-xs">🔒 Solo expert</span>
+                            )}
+                            {doc.uploaderRole === "patient" && (
+                              <span className="px-2 py-0.5 bg-blue-100 text-blue-600 rounded-full text-xs">👤 Paciente</span>
+                            )}
+                          </div>
+                          {doc.description && <p className="text-xs text-muted-foreground mt-1">{doc.description}</p>}
+                          <div className="flex items-center gap-3 mt-2 flex-wrap">
+                            <span className="text-xs text-muted-foreground/70">
+                              {new Date(doc.createdAt).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}
+                            </span>
+                            {doc.fileSize && (
+                              <span className="text-xs text-muted-foreground/70">
+                                {doc.fileSize > 1024 * 1024 ? `${(doc.fileSize / 1024 / 1024).toFixed(1)} MB` : `${Math.round(doc.fileSize / 1024)} KB`}
+                              </span>
+                            )}
+                          </div>
+                        </div>
+                        <div className="flex gap-2 flex-shrink-0">
+                          <a
+                            href={doc.fileUrl}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="px-3 py-1.5 bg-orange-50 text-orange-600 rounded-lg text-xs font-medium hover:bg-orange-100 transition-colors"
+                          >
+                            ↗ Ver
+                          </a>
+                          <button
+                            onClick={() => updateVisibilityMutation.mutate({
+                              documentId: doc.id,
+                              visibility: doc.visibility === "shared" ? "expert_only" : "shared"
+                            })}
+                            className="px-3 py-1.5 bg-muted text-muted-foreground rounded-lg text-xs font-medium hover:bg-muted/80 transition-colors"
+                            title={doc.visibility === "shared" ? "Hacer privado" : "Compartir con paciente"}
+                          >
+                            {doc.visibility === "shared" ? "🔒" : "👁️"}
+                          </button>
+                          <button
+                            onClick={() => { if (confirm("¿Eliminar este documento?")) deleteDocumentMutation.mutate({ documentId: doc.id }); }}
+                            className="px-3 py-1.5 bg-red-50 text-red-500 rounded-lg text-xs font-medium hover:bg-red-100 transition-colors"
+                          >
+                            🗑️
+                          </button>
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ─── TAB: MÉTRICAS CLÍNICAS ──────────────────────────────────── */}
+        {activeTab === "clinical" && (
+          <div className="space-y-4">
+            <div className="flex items-center justify-between">
+              <div>
+                <h3 className="font-semibold text-foreground/80">🩺 Métricas clínicas</h3>
+                <p className="text-xs text-muted-foreground/70 mt-0.5">Tensión arterial, glucosa, colesterol, composición corporal avanzada</p>
+              </div>
+              <Button onClick={() => setShowClinicalModal(true)} className="bg-orange-500 hover:bg-orange-600 text-white" size="sm">
+                + Registrar métricas
+              </Button>
+            </div>
+
+            {!clinicalData || clinicalData.length === 0 ? (
+              <div className="text-center py-12 bg-muted/30 rounded-xl border border-dashed border-border">
+                <div className="text-4xl mb-2">🩺</div>
+                <p className="text-muted-foreground font-medium">Sin métricas clínicas registradas</p>
+                <p className="text-sm text-muted-foreground/70 mt-1">Registra tensión arterial, glucosa, colesterol y composición corporal avanzada</p>
+                <Button onClick={() => setShowClinicalModal(true)} className="mt-3 bg-orange-500 hover:bg-orange-600 text-white" size="sm">
+                  Primer registro
+                </Button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                {/* Últimas métricas destacadas */}
+                {(() => {
+                  const latest = clinicalData[clinicalData.length - 1];
+                  return (
+                    <div className="grid grid-cols-2 sm:grid-cols-4 gap-3">
+                      {latest.bloodPressureSystolic && latest.bloodPressureDiastolic && (
+                        <div className="p-3 bg-red-50 rounded-xl text-center">
+                          <p className="text-xs text-muted-foreground">Tensión arterial</p>
+                          <p className="text-base font-bold text-red-600">{latest.bloodPressureSystolic}/{latest.bloodPressureDiastolic}</p>
+                          <p className="text-xs text-muted-foreground">mmHg</p>
+                        </div>
+                      )}
+                      {latest.glucoseFasting && (
+                        <div className="p-3 bg-yellow-50 rounded-xl text-center">
+                          <p className="text-xs text-muted-foreground">Glucosa en ayunas</p>
+                          <p className="text-base font-bold text-yellow-600">{latest.glucoseFasting}</p>
+                          <p className="text-xs text-muted-foreground">mg/dL</p>
+                        </div>
+                      )}
+                      {latest.totalCholesterol && (
+                        <div className="p-3 bg-purple-50 rounded-xl text-center">
+                          <p className="text-xs text-muted-foreground">Colesterol total</p>
+                          <p className="text-base font-bold text-purple-600">{latest.totalCholesterol}</p>
+                          <p className="text-xs text-muted-foreground">mg/dL</p>
+                        </div>
+                      )}
+                      {latest.heartRate && (
+                        <div className="p-3 bg-pink-50 rounded-xl text-center">
+                          <p className="text-xs text-muted-foreground">Frecuencia cardíaca</p>
+                          <p className="text-base font-bold text-pink-600">{latest.heartRate}</p>
+                          <p className="text-xs text-muted-foreground">bpm</p>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })()}
+
+                {/* Historial */}
+                <div className="space-y-3">
+                  {[...clinicalData].reverse().map(metric => (
+                    <div key={metric.id} className="p-4 bg-background rounded-xl border border-border">
+                      <p className="text-sm font-medium text-foreground/80 mb-2">
+                        {new Date(metric.recordedAt).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })}
+                      </p>
+                      <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                        {metric.bloodPressureSystolic && metric.bloodPressureDiastolic && (
+                          <span className="text-xs text-muted-foreground">❤️ Tensión: <strong>{metric.bloodPressureSystolic}/{metric.bloodPressureDiastolic} mmHg</strong></span>
+                        )}
+                        {metric.heartRate && <span className="text-xs text-muted-foreground">💓 FC: <strong>{metric.heartRate} bpm</strong></span>}
+                        {metric.glucoseFasting && <span className="text-xs text-muted-foreground">🩸 Glucosa: <strong>{metric.glucoseFasting} mg/dL</strong></span>}
+                        {metric.hba1c && <span className="text-xs text-muted-foreground">📊 HbA1c: <strong>{metric.hba1c}%</strong></span>}
+                        {metric.totalCholesterol && <span className="text-xs text-muted-foreground">🫀 Col. total: <strong>{metric.totalCholesterol} mg/dL</strong></span>}
+                        {metric.ldlCholesterol && <span className="text-xs text-muted-foreground">LDL: <strong>{metric.ldlCholesterol}</strong></span>}
+                        {metric.hdlCholesterol && <span className="text-xs text-muted-foreground">HDL: <strong>{metric.hdlCholesterol}</strong></span>}
+                        {metric.triglycerides && <span className="text-xs text-muted-foreground">Triglicéridos: <strong>{metric.triglycerides}</strong></span>}
+                        {metric.waterPercentage && <span className="text-xs text-muted-foreground">💧 Agua: <strong>{metric.waterPercentage}%</strong></span>}
+                        {metric.visceralFat && <span className="text-xs text-muted-foreground">🫃 Grasa visceral: <strong>{metric.visceralFat}</strong></span>}
+                        {metric.metabolicAge && <span className="text-xs text-muted-foreground">⚡ Edad metabólica: <strong>{metric.metabolicAge}</strong></span>}
+                        {metric.boneMass && <span className="text-xs text-muted-foreground">🦴 Masa ósea: <strong>{metric.boneMass} kg</strong></span>}
+                        {metric.neck && <span className="text-xs text-muted-foreground">📏 Cuello: <strong>{metric.neck} cm</strong></span>}
+                        {metric.calf && <span className="text-xs text-muted-foreground">📏 Pantorrilla: <strong>{metric.calf} cm</strong></span>}
+                        {metric.shoulder && <span className="text-xs text-muted-foreground">📏 Hombros: <strong>{metric.shoulder} cm</strong></span>}
+                      </div>
+                      {metric.notes && <p className="text-xs text-muted-foreground/70 mt-2 italic">{metric.notes}</p>}
+                    </div>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        )}
       </div>
 
       {/* Modal: Sesión / Acta de consulta */}
@@ -2041,6 +2338,223 @@ export default function ExpertPatientDetail() {
               className="bg-orange-500 hover:bg-orange-600 text-white"
             >
               {createAppointmentMutation.isPending ? "Programando..." : "Programar cita"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* Modal: Subir documento */}
+      <Dialog open={showDocumentModal} onOpenChange={setShowDocumentModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>📂 Subir documento clínico</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-3 py-2">
+            <div>
+              <Label>Título del documento *</Label>
+              <Input placeholder="Ej: Plan nutricional semana 1" value={documentForm.title}
+                onChange={e => setDocumentForm(prev => ({ ...prev, title: e.target.value }))} className="mt-1" />
+            </div>
+            <div>
+              <Label>Tipo de documento</Label>
+              <Select value={documentForm.documentType} onValueChange={v => setDocumentForm(prev => ({ ...prev, documentType: v as typeof documentForm.documentType }))}>
+                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="nutrition_plan">📋 Plan nutricional</SelectItem>
+                  <SelectItem value="blood_test">🩸 Analítica de sangre</SelectItem>
+                  <SelectItem value="medical_report">🏥 Informe médico</SelectItem>
+                  <SelectItem value="scale_export">⚖️ Exportación báscula</SelectItem>
+                  <SelectItem value="progress_photo">📸 Foto de progreso</SelectItem>
+                  <SelectItem value="consent_form">✍️ Consentimiento informado</SelectItem>
+                  <SelectItem value="other">📎 Otro</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Visibilidad</Label>
+              <Select value={documentForm.visibility} onValueChange={v => setDocumentForm(prev => ({ ...prev, visibility: v as typeof documentForm.visibility }))}>
+                <SelectTrigger className="mt-1"><SelectValue /></SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="shared">👁️ Compartido con el paciente</SelectItem>
+                  <SelectItem value="expert_only">🔒 Solo visible para el expert</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+            <div>
+              <Label>Descripción (opcional)</Label>
+              <Textarea placeholder="Notas sobre este documento..." value={documentForm.description}
+                onChange={e => setDocumentForm(prev => ({ ...prev, description: e.target.value }))} className="mt-1" rows={2} />
+            </div>
+            <div>
+              <Label>Archivo *</Label>
+              <input
+                type="file"
+                accept=".pdf,.jpg,.jpeg,.png,.csv,.xlsx,.doc,.docx"
+                onChange={e => setDocumentFile(e.target.files?.[0] ?? null)}
+                className="mt-1 block w-full text-sm text-muted-foreground file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-orange-50 file:text-orange-700 hover:file:bg-orange-100"
+              />
+              {documentFile && (
+                <p className="text-xs text-muted-foreground mt-1">✅ {documentFile.name} ({Math.round(documentFile.size / 1024)} KB)</p>
+              )}
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowDocumentModal(false)}>Cancelar</Button>
+            <Button
+              onClick={handleDocumentUpload}
+              disabled={!documentFile || !documentForm.title || documentUploading}
+              className="bg-orange-500 hover:bg-orange-600 text-white"
+            >
+              {documentUploading ? "Subiendo..." : "Subir documento"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Modal: Métricas clínicas */}
+      <Dialog open={showClinicalModal} onOpenChange={setShowClinicalModal}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>🩺 Registrar métricas clínicas</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">❤️ Cardiovascular</p>
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <Label>Sistólica (mmHg)</Label>
+                  <Input type="number" placeholder="120" value={clinicalForm.bloodPressureSystolic}
+                    onChange={e => setClinicalForm(prev => ({ ...prev, bloodPressureSystolic: e.target.value }))} className="mt-1" />
+                </div>
+                <div>
+                  <Label>Diastólica (mmHg)</Label>
+                  <Input type="number" placeholder="80" value={clinicalForm.bloodPressureDiastolic}
+                    onChange={e => setClinicalForm(prev => ({ ...prev, bloodPressureDiastolic: e.target.value }))} className="mt-1" />
+                </div>
+                <div>
+                  <Label>Frec. cardíaca (bpm)</Label>
+                  <Input type="number" placeholder="70" value={clinicalForm.heartRate}
+                    onChange={e => setClinicalForm(prev => ({ ...prev, heartRate: e.target.value }))} className="mt-1" />
+                </div>
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">🩸 Glucemia</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Glucosa en ayunas (mg/dL)</Label>
+                  <Input type="number" placeholder="90" value={clinicalForm.glucoseFasting}
+                    onChange={e => setClinicalForm(prev => ({ ...prev, glucoseFasting: e.target.value }))} className="mt-1" />
+                </div>
+                <div>
+                  <Label>HbA1c (%)</Label>
+                  <Input type="number" step="0.1" placeholder="5.5" value={clinicalForm.hba1c}
+                    onChange={e => setClinicalForm(prev => ({ ...prev, hba1c: e.target.value }))} className="mt-1" />
+                </div>
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">🫀 Lípidos</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Colesterol total (mg/dL)</Label>
+                  <Input type="number" placeholder="180" value={clinicalForm.totalCholesterol}
+                    onChange={e => setClinicalForm(prev => ({ ...prev, totalCholesterol: e.target.value }))} className="mt-1" />
+                </div>
+                <div>
+                  <Label>LDL (mg/dL)</Label>
+                  <Input type="number" placeholder="100" value={clinicalForm.ldlCholesterol}
+                    onChange={e => setClinicalForm(prev => ({ ...prev, ldlCholesterol: e.target.value }))} className="mt-1" />
+                </div>
+                <div>
+                  <Label>HDL (mg/dL)</Label>
+                  <Input type="number" placeholder="60" value={clinicalForm.hdlCholesterol}
+                    onChange={e => setClinicalForm(prev => ({ ...prev, hdlCholesterol: e.target.value }))} className="mt-1" />
+                </div>
+                <div>
+                  <Label>Triglicéridos (mg/dL)</Label>
+                  <Input type="number" placeholder="120" value={clinicalForm.triglycerides}
+                    onChange={e => setClinicalForm(prev => ({ ...prev, triglycerides: e.target.value }))} className="mt-1" />
+                </div>
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">📊 Composición corporal avanzada</p>
+              <div className="grid grid-cols-2 gap-3">
+                <div>
+                  <Label>Masa ósea (kg)</Label>
+                  <Input type="number" step="0.1" placeholder="3.2" value={clinicalForm.boneMass}
+                    onChange={e => setClinicalForm(prev => ({ ...prev, boneMass: e.target.value }))} className="mt-1" />
+                </div>
+                <div>
+                  <Label>% Agua corporal</Label>
+                  <Input type="number" step="0.1" placeholder="55" value={clinicalForm.waterPercentage}
+                    onChange={e => setClinicalForm(prev => ({ ...prev, waterPercentage: e.target.value }))} className="mt-1" />
+                </div>
+                <div>
+                  <Label>Grasa visceral</Label>
+                  <Input type="number" step="0.5" placeholder="8" value={clinicalForm.visceralFat}
+                    onChange={e => setClinicalForm(prev => ({ ...prev, visceralFat: e.target.value }))} className="mt-1" />
+                </div>
+                <div>
+                  <Label>Edad metabólica</Label>
+                  <Input type="number" placeholder="30" value={clinicalForm.metabolicAge}
+                    onChange={e => setClinicalForm(prev => ({ ...prev, metabolicAge: e.target.value }))} className="mt-1" />
+                </div>
+              </div>
+            </div>
+            <div>
+              <p className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-2">📏 Medidas adicionales (cm)</p>
+              <div className="grid grid-cols-3 gap-3">
+                <div>
+                  <Label>Cuello</Label>
+                  <Input type="number" step="0.5" placeholder="38" value={clinicalForm.neck}
+                    onChange={e => setClinicalForm(prev => ({ ...prev, neck: e.target.value }))} className="mt-1" />
+                </div>
+                <div>
+                  <Label>Pantorrilla</Label>
+                  <Input type="number" step="0.5" placeholder="36" value={clinicalForm.calf}
+                    onChange={e => setClinicalForm(prev => ({ ...prev, calf: e.target.value }))} className="mt-1" />
+                </div>
+                <div>
+                  <Label>Hombros</Label>
+                  <Input type="number" step="0.5" placeholder="110" value={clinicalForm.shoulder}
+                    onChange={e => setClinicalForm(prev => ({ ...prev, shoulder: e.target.value }))} className="mt-1" />
+                </div>
+              </div>
+            </div>
+            <div>
+              <Label>Notas clínicas</Label>
+              <Textarea placeholder="Observaciones, contexto de la medición..." value={clinicalForm.notes}
+                onChange={e => setClinicalForm(prev => ({ ...prev, notes: e.target.value }))} className="mt-1" rows={2} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowClinicalModal(false)}>Cancelar</Button>
+            <Button
+              onClick={() => addClinicalMutation.mutate({
+                expertPatientId: patientRelId,
+                bloodPressureSystolic: clinicalForm.bloodPressureSystolic ? parseInt(clinicalForm.bloodPressureSystolic) : undefined,
+                bloodPressureDiastolic: clinicalForm.bloodPressureDiastolic ? parseInt(clinicalForm.bloodPressureDiastolic) : undefined,
+                heartRate: clinicalForm.heartRate ? parseInt(clinicalForm.heartRate) : undefined,
+                glucoseFasting: clinicalForm.glucoseFasting ? parseFloat(clinicalForm.glucoseFasting) : undefined,
+                hba1c: clinicalForm.hba1c ? parseFloat(clinicalForm.hba1c) : undefined,
+                totalCholesterol: clinicalForm.totalCholesterol ? parseFloat(clinicalForm.totalCholesterol) : undefined,
+                ldlCholesterol: clinicalForm.ldlCholesterol ? parseFloat(clinicalForm.ldlCholesterol) : undefined,
+                hdlCholesterol: clinicalForm.hdlCholesterol ? parseFloat(clinicalForm.hdlCholesterol) : undefined,
+                triglycerides: clinicalForm.triglycerides ? parseFloat(clinicalForm.triglycerides) : undefined,
+                boneMass: clinicalForm.boneMass ? parseFloat(clinicalForm.boneMass) : undefined,
+                waterPercentage: clinicalForm.waterPercentage ? parseFloat(clinicalForm.waterPercentage) : undefined,
+                visceralFat: clinicalForm.visceralFat ? parseFloat(clinicalForm.visceralFat) : undefined,
+                metabolicAge: clinicalForm.metabolicAge ? parseInt(clinicalForm.metabolicAge) : undefined,
+                neck: clinicalForm.neck ? parseFloat(clinicalForm.neck) : undefined,
+                calf: clinicalForm.calf ? parseFloat(clinicalForm.calf) : undefined,
+                shoulder: clinicalForm.shoulder ? parseFloat(clinicalForm.shoulder) : undefined,
+                notes: clinicalForm.notes || undefined,
+              })}
+              disabled={addClinicalMutation.isPending}
+              className="bg-orange-500 hover:bg-orange-600 text-white"
+            >
+              {addClinicalMutation.isPending ? "Guardando..." : "Guardar métricas"}
             </Button>
           </DialogFooter>
         </DialogContent>

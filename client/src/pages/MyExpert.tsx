@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ChatMarkdown } from "@/lib/renderChatMarkdown";
 
-type View = "dashboard" | "messages" | "menus" | "menu_detail" | "appointments" | "progress" | "request_appointment";
+type View = "dashboard" | "messages" | "menus" | "menu_detail" | "appointments" | "progress" | "request_appointment" | "documents";
 
 const DAY_LABELS: Record<string, string> = {
   monday: "Lunes", tuesday: "Martes", wednesday: "Miércoles",
@@ -117,6 +117,48 @@ export default function MyExpert() {
     onSuccess: () => { toast.success("Cita confirmada"); refetchDetail(); },
     onError: () => toast.error("Error al actualizar la cita"),
   });
+
+  // Documentos del paciente
+  const [showPatientDocModal, setShowPatientDocModal] = useState(false);
+  const [patientDocFile, setPatientDocFile] = useState<File | null>(null);
+  const [patientDocForm, setPatientDocForm] = useState({ title: "", description: "", documentType: "blood_test" as "nutrition_plan" | "blood_test" | "medical_report" | "scale_export" | "progress_photo" | "consent_form" | "other" });
+  const [patientDocUploading, setPatientDocUploading] = useState(false);
+  const { data: patientDocuments, refetch: refetchPatientDocs } = trpc.expertDocuments.getDocuments.useQuery(
+    { expertPatientId: activeRelId ?? 0, documentType: "all" },
+    { enabled: !!activeRelId && view === "documents" }
+  );
+  const handlePatientDocUpload = async () => {
+    if (!patientDocFile || !patientDocForm.title || !activeRelId) return;
+    setPatientDocUploading(true);
+    try {
+      const reader = new FileReader();
+      reader.onload = async (e) => {
+        const base64 = (e.target?.result as string).split(",")[1];
+        await trpc.expertDocuments.uploadDocument.mutate({
+          expertPatientId: activeRelId,
+          title: patientDocForm.title,
+          description: patientDocForm.description || undefined,
+          documentType: patientDocForm.documentType,
+          visibility: "shared",
+          fileBase64: base64,
+          fileName: patientDocFile.name,
+          mimeType: patientDocFile.type,
+          fileSize: patientDocFile.size,
+          uploaderRole: "patient",
+        });
+        toast.success("Documento enviado a tu nutricionista");
+        setShowPatientDocModal(false);
+        setPatientDocFile(null);
+        setPatientDocForm({ title: "", description: "", documentType: "blood_test" });
+        refetchPatientDocs();
+        setPatientDocUploading(false);
+      };
+      reader.readAsDataURL(patientDocFile);
+    } catch {
+      toast.error("Error al subir el documento");
+      setPatientDocUploading(false);
+    }
+  };
 
   useEffect(() => {
     if (myExperts && myExperts.length > 0 && !activeRelId) {
@@ -501,6 +543,10 @@ export default function MyExpert() {
                 <button onClick={() => setView("menus")}
                   className="flex items-center justify-center gap-1.5 bg-background/20 hover:bg-background/30 transition-colors rounded-xl py-2.5 text-sm font-semibold">
                   🥗 Mis menús
+                </button>
+                <button onClick={() => setView("documents")}
+                  className="flex items-center justify-center gap-1.5 bg-background/20 hover:bg-background/30 transition-colors rounded-xl py-2.5 text-sm font-semibold col-span-2">
+                  📂 Mis documentos
                 </button>
               </div>
             </div>
@@ -912,6 +958,155 @@ export default function MyExpert() {
             </div>
           )}
         </div>
+      </AppLayout>
+    );
+  }
+
+  // ─── VISTA: MIS DOCUMENTOS ────────────────────────────────────────────────────
+  if (view === "documents") {
+    const docTypeLabels: Record<string, string> = {
+      nutrition_plan: "📋 Plan nutricional",
+      blood_test: "🩸 Analítica de sangre",
+      medical_report: "🏥 Informe médico",
+      scale_export: "⚖️ Exportación báscula",
+      progress_photo: "📸 Foto de progreso",
+      consent_form: "✍️ Consentimiento",
+      other: "📎 Otro",
+    };
+    return (
+      <AppLayout>
+        <div className="max-w-2xl mx-auto px-4 py-6">
+          <BackButton />
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-foreground">📂 Mis documentos</h2>
+            <button
+              onClick={() => setShowPatientDocModal(true)}
+              className="flex items-center gap-1.5 bg-orange-500 hover:bg-orange-600 text-white text-sm font-semibold px-3 py-2 rounded-xl transition-colors"
+            >
+              + Subir documento
+            </button>
+          </div>
+
+          {/* Descripción */}
+          <div className="bg-orange-50 border border-orange-100 rounded-xl p-3 mb-4">
+            <p className="text-sm text-orange-700">
+              💡 Aquí puedes ver los documentos que tu nutricionista ha compartido contigo (planes, informes, etc.) y subir tus propios documentos como analíticas o exportaciones de báscula.
+            </p>
+          </div>
+
+          {/* Lista de documentos */}
+          {!patientDocuments || patientDocuments.length === 0 ? (
+            <div className="text-center py-12 bg-muted/30 rounded-xl border border-dashed border-border">
+              <div className="text-4xl mb-2">📂</div>
+              <p className="text-muted-foreground">Aún no hay documentos compartidos</p>
+              <p className="text-sm text-muted-foreground/70 mt-1">Tu nutricionista podrá compartir planes, informes y más</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {patientDocuments.map((doc: any) => (
+                <div key={doc.id} className="flex items-start gap-3 p-4 bg-background rounded-xl border border-border hover:border-orange-200 transition-colors">
+                  <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center text-lg flex-shrink-0">
+                    {doc.documentType === "progress_photo" ? "📸" : doc.documentType === "blood_test" ? "🩸" : doc.documentType === "nutrition_plan" ? "📋" : doc.documentType === "scale_export" ? "⚖️" : "📎"}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <p className="font-semibold text-foreground text-sm truncate">{doc.title}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">
+                      {docTypeLabels[doc.documentType] ?? doc.documentType}
+                      {" · "}
+                      {doc.uploaderRole === "expert" ? "👩‍⚕️ Tu nutricionista" : "Tú"}
+                      {" · "}
+                      {new Date(doc.uploadedAt).toLocaleDateString("es-ES", { day: "numeric", month: "short", year: "numeric" })}
+                    </p>
+                    {doc.description && <p className="text-xs text-muted-foreground/70 mt-1 italic">{doc.description}</p>}
+                  </div>
+                  <a
+                    href={doc.fileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="flex-shrink-0 text-xs text-orange-600 font-medium hover:text-orange-700 bg-orange-50 px-2 py-1 rounded-lg"
+                  >
+                    Ver ↗
+                  </a>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Modal: Subir documento del paciente */}
+        {showPatientDocModal && (
+          <div className="fixed inset-0 bg-black/50 z-[500] flex items-end sm:items-center justify-center p-4">
+            <div className="bg-background rounded-2xl w-full max-w-md shadow-2xl">
+              <div className="p-5 border-b border-border/50 flex items-center justify-between">
+                <h3 className="text-lg font-bold text-foreground">📂 Subir documento</h3>
+                <button onClick={() => setShowPatientDocModal(false)} className="text-muted-foreground/70 hover:text-muted-foreground text-xl">✕</button>
+              </div>
+              <div className="p-5 space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-foreground/80 mb-1">Título *</label>
+                  <input
+                    type="text"
+                    value={patientDocForm.title}
+                    onChange={e => setPatientDocForm(prev => ({ ...prev, title: e.target.value }))}
+                    placeholder="Ej: Analítica de sangre enero 2025"
+                    className="w-full border border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground/80 mb-1">Tipo de documento</label>
+                  <select
+                    value={patientDocForm.documentType}
+                    onChange={e => setPatientDocForm(prev => ({ ...prev, documentType: e.target.value as typeof patientDocForm.documentType }))}
+                    className="w-full border border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                  >
+                    <option value="blood_test">🩸 Analítica de sangre</option>
+                    <option value="scale_export">⚖️ Exportación báscula</option>
+                    <option value="progress_photo">📸 Foto de progreso</option>
+                    <option value="medical_report">🏥 Informe médico</option>
+                    <option value="other">📎 Otro</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground/80 mb-1">Descripción (opcional)</label>
+                  <textarea
+                    value={patientDocForm.description}
+                    onChange={e => setPatientDocForm(prev => ({ ...prev, description: e.target.value }))}
+                    placeholder="Notas sobre este documento..."
+                    rows={2}
+                    className="w-full border border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-foreground/80 mb-1">Archivo *</label>
+                  <input
+                    type="file"
+                    accept=".pdf,.jpg,.jpeg,.png,.csv,.xlsx"
+                    onChange={e => setPatientDocFile(e.target.files?.[0] ?? null)}
+                    className="w-full text-sm text-muted-foreground file:mr-3 file:py-1.5 file:px-3 file:rounded-lg file:border-0 file:text-sm file:font-medium file:bg-orange-50 file:text-orange-700"
+                  />
+                  {patientDocFile && (
+                    <p className="text-xs text-muted-foreground mt-1">✅ {patientDocFile.name} ({Math.round(patientDocFile.size / 1024)} KB)</p>
+                  )}
+                </div>
+              </div>
+              <div className="p-5 border-t border-border/50 flex gap-3">
+                <button
+                  onClick={() => setShowPatientDocModal(false)}
+                  className="flex-1 py-2.5 text-sm font-medium border border-border rounded-xl text-foreground/80 hover:bg-muted/50"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={handlePatientDocUpload}
+                  disabled={!patientDocFile || !patientDocForm.title || patientDocUploading}
+                  className="flex-1 py-2.5 text-sm font-bold bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white rounded-xl transition-colors"
+                >
+                  {patientDocUploading ? "Subiendo..." : "Enviar al nutricionista"}
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
       </AppLayout>
     );
   }

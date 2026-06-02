@@ -3725,3 +3725,31 @@
 - [ ] Frontend: historial de envíos con métricas (enviados, abiertos, clicks)
 - [ ] Templates: email BuddyOne branded (bienvenida, newsletter, inversores, promoción)
 - [ ] Tests: vitest para router de campañas
+
+## BuddyExperts Panel — Rediseño Completo v2
+
+### Backend (nuevos endpoints)
+- [ ] Endpoint: subida de documentos clínicos PDF/imagen a S3 (expertClientPlans)
+- [ ] Endpoint: registro de medidas antropométricas completas (cintura, cadera, brazo, muslo)
+- [ ] Endpoint: registro de métricas clínicas (tensión, glucosa, colesterol)
+- [ ] Endpoint: gestión de documentos del paciente (listar, eliminar, compartir)
+- [ ] Endpoint: subida de documentos por el paciente (analíticas, exportaciones báscula)
+- [ ] Endpoint: diario de bienestar diario del paciente (peso, energía, adherencia, síntomas)
+- [ ] Endpoint: facturación — generar factura por consulta
+- [ ] Endpoint: historial de pagos del expert
+
+### Panel Expert — Mejoras UI
+- [ ] Tab "Documentos": subida de PDF/imagen, organización por tipo, visibilidad configurable
+- [ ] Tab "Evolución": medidas antropométricas completas + métricas clínicas + gráficas avanzadas
+- [ ] Tab "Facturación": historial de ingresos, facturas generadas, comisiones BuddyOne
+- [ ] Registro de peso mejorado: composición corporal completa (grasa, músculo, agua, hueso)
+- [ ] Alertas inteligentes automáticas (inactividad, subida de peso, sin cita programada)
+- [ ] Dashboard expert: métricas de negocio (retención, ingresos, valoración media)
+
+### Panel Paciente (MyExpert) — Mejoras UI
+- [ ] Tab "Documentos": ver documentos compartidos por el expert + subir los propios
+- [ ] Tab "Diario": registro diario de peso, energía, adherencia, síntomas, fotos
+- [ ] Tab "Mi Plan": visualización mejorada del plan nutricional con recetas enlazadas
+- [ ] Tab "Pagos": historial de pagos y facturas descargables
+- [ ] Registro de peso diario desde dashboard del paciente
+- [ ] Notificación cuando el expert sube un documento o actualiza el plan

@@ -4445,3 +4445,130 @@ export const emailCampaignSends = pgTable("email_campaign_sends", {
 }));
 export type EmailCampaignSend = typeof emailCampaignSends.$inferSelect;
 export type InsertEmailCampaignSend = typeof emailCampaignSends.$inferInsert;
+
+// =============================================================================
+// PATIENT DOCUMENTS — Documentos clínicos compartidos entre expert y paciente
+// =============================================================================
+export const patientDocumentTypeEnum = pgEnum("patientDocumentType", [
+  "nutrition_plan",
+  "blood_test",
+  "medical_report",
+  "scale_export",
+  "progress_photo",
+  "consent_form",
+  "other"
+]);
+export const patientDocumentVisibilityEnum = pgEnum("patientDocumentVisibility", [
+  "expert_only",
+  "shared"
+]);
+
+export const patientDocuments = pgTable("patient_documents", {
+  id: serial("id").primaryKey(),
+  expertPatientId: integer("expertPatientId").notNull(),
+  expertId: integer("expertId").notNull(),
+  patientUserId: integer("patientUserId").notNull(),
+  uploadedBy: integer("uploadedBy").notNull(), // userId who uploaded
+  uploaderRole: varchar("uploaderRole", { length: 16 }).notNull().default("expert"), // expert | patient
+  title: varchar("title", { length: 256 }).notNull(),
+  description: text("description"),
+  fileUrl: text("fileUrl").notNull(),
+  fileKey: text("fileKey").notNull(),
+  fileName: varchar("fileName", { length: 256 }).notNull(),
+  fileSize: integer("fileSize"), // bytes
+  mimeType: varchar("mimeType", { length: 128 }),
+  documentType: patientDocumentTypeEnum("documentType").default("other").notNull(),
+  visibility: patientDocumentVisibilityEnum("visibility").default("shared").notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  epIdx: index("pd_ep_idx").on(t.expertPatientId),
+  expertIdx: index("pd_expert_idx").on(t.expertId),
+  patientIdx: index("pd_patient_idx").on(t.patientUserId),
+  typeIdx: index("pd_type_idx").on(t.documentType),
+}));
+
+export type PatientDocument = typeof patientDocuments.$inferSelect;
+export type InsertPatientDocument = typeof patientDocuments.$inferInsert;
+
+// =============================================================================
+// PATIENT CLINICAL METRICS — Métricas clínicas adicionales (tensión, glucosa, etc.)
+// =============================================================================
+export const patientClinicalMetrics = pgTable("patient_clinical_metrics", {
+  id: serial("id").primaryKey(),
+  expertPatientId: integer("expertPatientId").notNull(),
+  patientUserId: integer("patientUserId").notNull(),
+  recordedAt: timestamp("recordedAt").defaultNow().notNull(),
+  // Cardiovascular
+  bloodPressureSystolic: integer("bloodPressureSystolic"),   // mmHg
+  bloodPressureDiastolic: integer("bloodPressureDiastolic"), // mmHg
+  heartRate: integer("heartRate"),                           // bpm
+  // Metabolic
+  glucoseFasting: real("glucoseFasting"),   // mg/dL
+  hba1c: real("hba1c"),                     // %
+  totalCholesterol: real("totalCholesterol"), // mg/dL
+  ldlCholesterol: real("ldlCholesterol"),
+  hdlCholesterol: real("hdlCholesterol"),
+  triglycerides: real("triglycerides"),
+  // Body composition extras
+  boneMass: real("boneMass"),       // kg
+  waterPercentage: real("waterPercentage"), // %
+  visceralFat: integer("visceralFat"), // index 1-59
+  metabolicAge: integer("metabolicAge"),
+  // Measurements
+  calf: real("calf"),       // cm
+  neck: real("neck"),       // cm
+  shoulder: real("shoulder"), // cm
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  epIdx: index("pcm_ep_idx").on(t.expertPatientId),
+  patientIdx: index("pcm_patient_idx").on(t.patientUserId),
+  dateIdx: index("pcm_date_idx").on(t.recordedAt),
+}));
+
+export type PatientClinicalMetric = typeof patientClinicalMetrics.$inferSelect;
+export type InsertPatientClinicalMetric = typeof patientClinicalMetrics.$inferInsert;
+
+// =============================================================================
+// PATIENT DAILY DIARY — Diario de salud diario del paciente
+// =============================================================================
+export const patientDailyDiary = pgTable("patient_daily_diary", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull(),
+  expertPatientId: integer("expertPatientId"),
+  diaryDate: date("diaryDate").notNull(),
+  // Biometrics
+  weight: real("weight"),
+  // Subjective ratings (1-5)
+  energyLevel: integer("energyLevel"),
+  digestiveComfort: integer("digestiveComfort"),
+  sleepQuality: integer("sleepQuality"),
+  moodLevel: integer("moodLevel"),
+  stressLevel: integer("stressLevel"),
+  // Plan adherence
+  planAdherence: varchar("planAdherence", { length: 16 }), // full | partial | no
+  // Physical activity
+  activityType: varchar("activityType", { length: 64 }),
+  activityDuration: integer("activityDuration"), // minutes
+  activityIntensity: varchar("activityIntensity", { length: 16 }), // low | medium | high
+  // Sleep
+  sleepHours: real("sleepHours"),
+  // Notes and photos
+  symptoms: text("symptoms"),
+  generalNotes: text("generalNotes"),
+  foodPhotoUrl: text("foodPhotoUrl"),
+  progressPhotoUrl: text("progressPhotoUrl"),
+  // Expert feedback
+  expertFeedback: text("expertFeedback"),
+  expertFeedbackAt: timestamp("expertFeedbackAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  userIdx: index("pdd_user_idx").on(t.userId),
+  dateIdx: index("pdd_date_idx").on(t.diaryDate),
+  epIdx: index("pdd_ep_idx").on(t.expertPatientId),
+}));
+
+export type PatientDailyDiary = typeof patientDailyDiary.$inferSelect;
+export type InsertPatientDailyDiary = typeof patientDailyDiary.$inferInsert;
