@@ -526,9 +526,8 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       ],
     },
     {
-      label: "Ecosistema",
+      label: "Tienda & Bienestar",
       items: [
-        { key: "/app/ecosystem", label: "Mi Ecosistema", to: "/app/ecosystem", emoji: "🌐" },
         { key: "/app/buddy-shop", label: "BuddyShop", to: "/app/buddy-shop", emoji: "🛍️" },
         { key: "/app/buddy-care", label: "BuddyCare", to: "/app/buddy-care", emoji: "💚" },
       ],

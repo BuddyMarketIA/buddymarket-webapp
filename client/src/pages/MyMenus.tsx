@@ -105,12 +105,12 @@ const GOAL_META: Record<string, { label: string; emoji: string; color: string; b
   ganancia_muscular: { label: "Ganancia muscular",  emoji: "💪", color: "text-green-700",   bg: "bg-green-50 border-green-200" },
   tonificacion:      { label: "Tonificación",       emoji: "⚡", color: "text-green-700",   bg: "bg-green-50 border-green-200" },
   perdida_grasa:     { label: "Pérdida de grasa",   emoji: "🎯", color: "text-blue-700",    bg: "bg-blue-50 border-blue-200" },
-  mantenimiento:     { label: "Mantenimiento",      emoji: "⚖️", color: "text-gray-700",    bg: "bg-gray-50 border-gray-200" },
+  mantenimiento:     { label: "Mantenimiento",      emoji: "⚖️", color: "text-foreground/80",    bg: "bg-muted/30 border-border" },
   definicion:        { label: "Definición",         emoji: "🏆", color: "text-green-700",   bg: "bg-green-50 border-green-200" },
   salud:             { label: "Salud general",      emoji: "💚", color: "text-teal-700",    bg: "bg-teal-50 border-teal-200" },
   vegano:            { label: "Vegano",             emoji: "🌱", color: "text-emerald-700", bg: "bg-emerald-50 border-emerald-200" },
   bienestar:         { label: "Bienestar",          emoji: "😊", color: "text-pink-700",    bg: "bg-pink-50 border-pink-200" },
-  dieta_equilibrada: { label: "Equilibrado",        emoji: "🥗", color: "text-gray-700",    bg: "bg-gray-50 border-gray-200" },
+  dieta_equilibrada: { label: "Equilibrado",        emoji: "🥗", color: "text-foreground/80",    bg: "bg-muted/30 border-border" },
   rendimiento:       { label: "Rendimiento",        emoji: "🚀", color: "text-indigo-700",  bg: "bg-indigo-50 border-indigo-200" },
   mediterraneo:      { label: "Mediterráneo",       emoji: "🫒", color: "text-amber-700",   bg: "bg-amber-50 border-amber-200" },
 };
@@ -321,7 +321,7 @@ function MenuCard({ menu, onRefresh }: { menu: MenuOrganizer; onRefresh: () => v
         menu.isActive ? "border-[#F97316]/50 shadow-md shadow-orange-100" : "border-border/60 shadow-sm"
       }`}>
         {/* Cover */}
-        <div className={`relative h-40 overflow-hidden ${!categoryImage ? `bg-gradient-to-br ${gradient}` : "bg-gray-100"}`}>
+        <div className={`relative h-40 overflow-hidden ${!categoryImage ? `bg-gradient-to-br ${gradient}` : "bg-muted/50"}`}>
           {categoryImage ? (
             <img src={categoryImage} alt={menu.name} className="w-full h-full object-cover" />
           ) : (
@@ -361,7 +361,7 @@ function MenuCard({ menu, onRefresh }: { menu: MenuOrganizer; onRefresh: () => v
             <h3 className="text-sm font-bold text-white leading-tight line-clamp-2 drop-shadow mb-1">{menu.name}</h3>
             <div className="flex items-center gap-2 flex-wrap">
               {goalMeta && (
-                <span className="inline-flex items-center gap-1 rounded-full bg-white/20 backdrop-blur-sm px-2 py-0.5 text-[10px] font-semibold text-white">
+                <span className="inline-flex items-center gap-1 rounded-full bg-card/20 backdrop-blur-sm px-2 py-0.5 text-[10px] font-semibold text-white">
                   {goalMeta.emoji} {goalMeta.label}
                 </span>
               )}
@@ -541,7 +541,7 @@ export default function MyMenus() {
             </div>
             <button
               onClick={() => navigate("/app/menus")}
-              className="shrink-0 flex items-center gap-1 rounded-2xl bg-white/20 hover:bg-white/30 px-3 py-2 text-xs font-bold text-white transition-colors"
+              className="shrink-0 flex items-center gap-1 rounded-2xl bg-card/20 hover:bg-card/30 px-3 py-2 text-xs font-bold text-white transition-colors"
             >
               Ver <ChevronRightIcon className="h-3.5 w-3.5" />
             </button>

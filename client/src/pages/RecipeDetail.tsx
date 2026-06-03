@@ -18,6 +18,7 @@ import {
   SparklesIcon,
 } from "@heroicons/react/24/outline";
 import { HeartIcon as HeartSolid } from "@heroicons/react/24/solid";
+import ContextualProductWidget from "@/components/ContextualProductWidget";
 
 type Tab = "ingredients" | "instructions" | "nutrition";
 
@@ -977,6 +978,16 @@ export default function RecipeDetail() {
         recipeDescription={recipe.description ?? undefined}
         variant="bar"
       />
+
+      {/* BuddyShop / BuddyCare contextual recommendations */}
+      {recipe && (
+        <ContextualProductWidget
+          recipeName={recipe.name}
+          recipeTags={recipe.tags ? (typeof recipe.tags === 'string' ? JSON.parse(recipe.tags) : recipe.tags) : []}
+          recipeCategory={recipe.category ?? undefined}
+          className="mt-6 mx-1"
+        />
+      )}
 
       <div className="vively-disclaimer mt-6">
         <p>Buddy One no constituye asesoramiento nutricional profesional.</p>

@@ -3,6 +3,7 @@ import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "@/components/sonner-a11y-shim";
 import SmartInsights from "@/components/SmartInsights";
+import ContextualProductWidget from "@/components/ContextualProductWidget";
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
@@ -113,6 +114,7 @@ export default function HealthHub() {
   const { data: ouraData } = trpc.healthHub.getOuraData.useQuery({ days: period === "7d" ? 7 : period === "14d" ? 14 : 30 });
   const { data: whoopData } = trpc.healthHub.getWhoopData.useQuery({ days: period === "7d" ? 7 : period === "14d" ? 14 : 30 });
 
+  const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const [connectingOura, setConnectingOura] = useState(false);
   const [connectingWhoop, setConnectingWhoop] = useState(false);
   const [disconnecting, setDisconnecting] = useState<string | null>(null);
@@ -270,8 +272,8 @@ export default function HealthHub() {
         {/* Header */}
         <div className="flex items-center justify-between">
           <div>
-            <h1 className="text-2xl font-bold text-gray-900">Health Hub</h1>
-            <p className="text-sm text-gray-500">
+            <h1 className="text-2xl font-bold text-foreground">Health Hub</h1>
+            <p className="text-sm text-muted-foreground">
               {connectedCount > 0 ? `${connectedCount} fuentes conectadas` : "Conecta tus wearables para ver todas tus metricas"}
             </p>
           </div>
@@ -282,7 +284,7 @@ export default function HealthHub() {
                 Sincronizar
               </button>
             )}
-            <span className={`flex items-center gap-1 text-xs font-medium ${hasData ? "text-emerald-600" : "text-gray-400"}`}>
+            <span className={`flex items-center gap-1 text-xs font-medium ${hasData ? "text-emerald-600" : "text-muted-foreground/70"}`}>
               <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
               {hasData ? "En vivo" : "Sin datos"}
             </span>
@@ -293,7 +295,7 @@ export default function HealthHub() {
             SEARCH BAR
         ═══════════════════════════════════════════════════════════════ */}
         <div className="relative">
-          <div className="flex items-center gap-2 bg-white rounded-2xl border border-gray-200 shadow-sm px-4 py-3 focus-within:border-orange-400 focus-within:ring-2 focus-within:ring-orange-100 transition-all">
+          <div className="flex items-center gap-2 bg-card rounded-2xl border border-border shadow-sm px-4 py-3 focus-within:border-orange-400 focus-within:ring-2 focus-within:ring-orange-100 transition-all">
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
               <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
             </svg>
@@ -306,10 +308,10 @@ export default function HealthHub() {
               }}
               onFocus={() => setShowSearchResults(true)}
               placeholder="Buscar metricas, dispositivos, datos de salud..."
-              className="flex-1 bg-transparent text-sm text-gray-900 placeholder-gray-400 focus:outline-none"
+              className="flex-1 bg-transparent text-sm text-foreground placeholder-gray-400 focus:outline-none"
             />
             {searchQuery && (
-              <button onClick={() => { setSearchQuery(""); setShowSearchResults(false); setActiveCategory("all"); }} className="text-gray-400 hover:text-gray-600 transition-colors">
+              <button onClick={() => { setSearchQuery(""); setShowSearchResults(false); setActiveCategory("all"); }} className="text-muted-foreground/70 hover:text-muted-foreground transition-colors">
                 <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
               </button>
             )}
@@ -330,14 +332,14 @@ export default function HealthHub() {
                   className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all border ${
                     isActive
                       ? "text-white border-transparent shadow-sm"
-                      : "bg-white text-gray-600 border-gray-200 hover:border-gray-300 hover:shadow-sm"
+                      : "bg-card text-muted-foreground border-border hover:border-border/80 hover:shadow-sm"
                   }`}
                   style={isActive ? { background: cat.color, borderColor: cat.color } : {}}
                 >
                   <span className="text-sm">{cat.icon}</span>
                   {cat.label}
                   {isActive && cat.key !== "all" && (
-                    <span className="ml-0.5 bg-white/30 rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold">
+                    <span className="ml-0.5 bg-card/30 rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold">
                       {searchableItems.filter((i) => i.category === cat.key).length}
                     </span>
                   )}
@@ -348,7 +350,7 @@ export default function HealthHub() {
 
           {/* ── Search results dropdown with animations ── */}
           <div
-            className={`mt-2 bg-white rounded-2xl border border-gray-200 shadow-lg overflow-hidden max-h-[420px] overflow-y-auto z-50 relative transition-all duration-300 ease-out origin-top ${
+            className={`mt-2 bg-card rounded-2xl border border-border shadow-lg overflow-hidden max-h-[420px] overflow-y-auto z-50 relative transition-all duration-300 ease-out origin-top ${
               showSearchResults
                 ? "opacity-100 scale-y-100 translate-y-0"
                 : "opacity-0 scale-y-95 -translate-y-2 pointer-events-none h-0 border-0 shadow-none mt-0"
@@ -360,16 +362,16 @@ export default function HealthHub() {
                 <div className="flex items-center gap-2 mb-1">
                   <div className="h-3 w-28 bg-gray-200 rounded-full animate-pulse" />
                   <div className="flex-1" />
-                  <div className="h-3 w-16 bg-gray-100 rounded-full animate-pulse" />
+                  <div className="h-3 w-16 bg-muted/50 rounded-full animate-pulse" />
                 </div>
                 {[1, 2, 3, 4].map((i) => (
                   <div key={i} className="flex items-center gap-3 py-2" style={{ animationDelay: `${i * 80}ms` }}>
-                    <div className="w-10 h-10 rounded-xl bg-gray-100 animate-pulse" style={{ animationDelay: `${i * 80}ms` }} />
+                    <div className="w-10 h-10 rounded-xl bg-muted/50 animate-pulse" style={{ animationDelay: `${i * 80}ms` }} />
                     <div className="flex-1 space-y-2">
                       <div className="h-3.5 bg-gray-200 rounded-full animate-pulse w-3/5" style={{ animationDelay: `${i * 80 + 40}ms` }} />
-                      <div className="h-2.5 bg-gray-100 rounded-full animate-pulse w-2/5" style={{ animationDelay: `${i * 80 + 80}ms` }} />
+                      <div className="h-2.5 bg-muted/50 rounded-full animate-pulse w-2/5" style={{ animationDelay: `${i * 80 + 80}ms` }} />
                     </div>
-                    <div className="h-5 w-16 bg-gray-100 rounded-full animate-pulse" style={{ animationDelay: `${i * 80 + 60}ms` }} />
+                    <div className="h-5 w-16 bg-muted/50 rounded-full animate-pulse" style={{ animationDelay: `${i * 80 + 60}ms` }} />
                   </div>
                 ))}
               </div>
@@ -383,12 +385,12 @@ export default function HealthHub() {
                       <line x1="21" y1="21" x2="16.65" y2="16.65" />
                     </svg>
                   </div>
-                  <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-white shadow-md flex items-center justify-center">
+                  <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-card shadow-md flex items-center justify-center">
                     <span className="text-sm">🤔</span>
                   </div>
                 </div>
-                <p className="text-base font-semibold text-gray-800 mb-1">No encontramos resultados</p>
-                <p className="text-sm text-gray-500 mb-5 max-w-[260px] mx-auto leading-relaxed">
+                <p className="text-base font-semibold text-foreground mb-1">No encontramos resultados</p>
+                <p className="text-sm text-muted-foreground mb-5 max-w-[260px] mx-auto leading-relaxed">
                   {searchQuery.trim()
                     ? <>No hay coincidencias para <span className="font-medium text-orange-600">"{searchQuery}"</span>. Prueba con otro termino.</>
                     : "No hay elementos en esta categoria. Prueba seleccionando otra."}
@@ -407,7 +409,7 @@ export default function HealthHub() {
                   {activeCategory !== "all" && (
                     <button
                       onClick={() => setActiveCategory("all")}
-                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 transition-all active:scale-95"
+                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium text-muted-foreground bg-muted/50 hover:bg-gray-200 transition-all active:scale-95"
                     >
                       <span className="text-xs">🏠</span> Ver todas las categorias
                     </button>
@@ -415,14 +417,14 @@ export default function HealthHub() {
                 </div>
                 {/* Suggested categories */}
                 {searchQuery.trim() && (
-                  <div className="mt-5 pt-5 border-t border-gray-100">
-                    <p className="text-xs font-medium text-gray-400 uppercase tracking-wider mb-3">Categorias sugeridas</p>
+                  <div className="mt-5 pt-5 border-t border-border">
+                    <p className="text-xs font-medium text-muted-foreground/70 uppercase tracking-wider mb-3">Categorias sugeridas</p>
                     <div className="flex flex-wrap justify-center gap-2">
                       {categories.filter(c => c.key !== "all").map((cat) => (
                         <button
                           key={cat.key}
                           onClick={() => { setSearchQuery(""); setActiveCategory(cat.key); }}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-white border border-gray-200 text-gray-600 hover:border-gray-300 hover:shadow-sm transition-all active:scale-95"
+                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-card border border-border text-muted-foreground hover:border-border/80 hover:shadow-sm transition-all active:scale-95"
                         >
                           <span>{cat.icon}</span> {cat.label}
                         </button>
@@ -434,11 +436,11 @@ export default function HealthHub() {
             ) : showSearchResults && filteredItems.length > 0 ? (
               /* ── Results list with staggered animations ── */
               <>
-                <div className="px-4 py-2.5 border-b border-gray-100 flex items-center justify-between">
-                  <p className="text-xs font-semibold text-gray-500 tracking-wider uppercase">
+                <div className="px-4 py-2.5 border-b border-border flex items-center justify-between">
+                  <p className="text-xs font-semibold text-muted-foreground tracking-wider uppercase">
                     {activeCategory === "all" ? "Todos los resultados" : categories.find((c) => c.key === activeCategory)?.label}
                   </p>
-                  <span className="text-xs text-gray-400">{filteredItems.length} elementos</span>
+                  <span className="text-xs text-muted-foreground/70">{filteredItems.length} elementos</span>
                 </div>
                 {filteredItems.map((item, idx) => {
                   const catDef = categories.find((c) => c.key === item.category);
@@ -456,8 +458,8 @@ export default function HealthHub() {
                         {item.icon}
                       </div>
                       <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-gray-900 truncate">{item.title}</p>
-                        <p className="text-xs text-gray-500 truncate">{item.subtitle}</p>
+                        <p className="text-sm font-medium text-foreground truncate">{item.title}</p>
+                        <p className="text-xs text-muted-foreground truncate">{item.subtitle}</p>
                       </div>
                       <div className="flex items-center gap-2 flex-shrink-0">
                         <span
@@ -474,10 +476,10 @@ export default function HealthHub() {
               </>
             ) : null}
             {showSearchResults && !isSearching && (
-              <div className="px-4 py-2.5 border-t border-gray-100 bg-gray-50/50">
+              <div className="px-4 py-2.5 border-t border-border bg-muted/30/50">
                 <button
                   onClick={() => { setShowSearchResults(false); setSearchQuery(""); setActiveCategory("all"); }}
-                  className="text-xs font-medium text-gray-500 hover:text-gray-700 transition-colors"
+                  className="text-xs font-medium text-muted-foreground hover:text-foreground/80 transition-colors"
                 >
                   Cerrar resultados
                 </button>
@@ -493,12 +495,12 @@ export default function HealthHub() {
           <>
             {/* Health Score Card - Dark */}
             <div className="rounded-2xl p-6" style={{ background: "linear-gradient(135deg, #1a1a2e 0%, #2d2d3e 100%)" }}>
-              <p className="text-xs font-semibold tracking-wider text-gray-400 mb-3">SCORE DE SALUD</p>
+              <p className="text-xs font-semibold tracking-wider text-muted-foreground/70 mb-3">SCORE DE SALUD</p>
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-baseline gap-1">
                     <span className="text-5xl font-bold" style={{ color: "#10B981" }}>{healthScore.score}</span>
-                    <span className="text-lg text-gray-400">/100</span>
+                    <span className="text-lg text-muted-foreground/70">/100</span>
                   </div>
                   <p className="text-sm font-medium mt-1" style={{ color: "#10B981" }}>{healthScore.label}</p>
                 </div>
@@ -515,15 +517,15 @@ export default function HealthHub() {
               <div className="border-t border-gray-700 mt-4 pt-4 grid grid-cols-3 gap-4">
                 <div className="text-center">
                   <p className="text-lg font-bold" style={{ color: "#7C3AED" }}>{healthScore.recovery}%</p>
-                  <p className="text-xs text-gray-400">Recovery</p>
+                  <p className="text-xs text-muted-foreground/70">Recovery</p>
                 </div>
                 <div className="text-center">
                   <p className="text-lg font-bold" style={{ color: "#7C3AED" }}>{healthScore.hrv}ms</p>
-                  <p className="text-xs text-gray-400">HRV</p>
+                  <p className="text-xs text-muted-foreground/70">HRV</p>
                 </div>
                 <div className="text-center">
                   <p className="text-lg font-bold" style={{ color: "#7C3AED" }}>{healthScore.rhr}bpm</p>
-                  <p className="text-xs text-gray-400">FC reposo</p>
+                  <p className="text-xs text-muted-foreground/70">FC reposo</p>
                 </div>
               </div>
             </div>
@@ -531,7 +533,7 @@ export default function HealthHub() {
             {/* Tabs */}
             <div className="flex items-center gap-1 overflow-x-auto pb-1">
               {tabs.map((tab) => (
-                <button key={tab.key} onClick={() => setActiveTab(tab.key)} className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${activeTab === tab.key ? "bg-white shadow-sm border border-gray-200 text-gray-900" : "text-gray-500 hover:text-gray-700"}`}>
+                <button key={tab.key} onClick={() => setActiveTab(tab.key)} className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${activeTab === tab.key ? "bg-card shadow-sm border border-border text-foreground" : "text-muted-foreground hover:text-foreground/80"}`}>
                   <span className="text-sm">{tab.icon}</span>
                   {tab.label}
                   {tab.key === "comparar" && connectedCount > 1 && <span className="w-2 h-2 rounded-full bg-blue-500"></span>}
@@ -548,8 +550,8 @@ export default function HealthHub() {
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
                       Chat
                     </button>
-                    <button className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium text-gray-400 hover:text-gray-200">Valorar</button>
-                    <button className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium text-gray-400 hover:text-gray-200">Historial</button>
+                    <button className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium text-muted-foreground/70 hover:text-gray-200">Valorar</button>
+                    <button className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium text-muted-foreground/70 hover:text-gray-200">Historial</button>
                     <button className="ml-auto flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium text-gray-300 border border-gray-600 hover:border-gray-400">+ Nuevo</button>
                   </div>
                   <div className="p-4">
@@ -557,7 +559,7 @@ export default function HealthHub() {
                       <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: "#7C3AED" }}>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
                       </div>
-                      <div className="bg-gray-800/50 rounded-2xl rounded-tl-sm p-4 max-w-[85%]">
+                      <div className="bg-muted/60 rounded-2xl rounded-tl-sm p-4 max-w-[85%]">
                         <p className="text-sm text-gray-200 leading-relaxed">
                           Hola! Soy tu <strong className="text-white">Coach Buddy</strong>, tu asistente de salud y rendimiento personal.
                         </p>
@@ -567,7 +569,7 @@ export default function HealthHub() {
                         <p className="text-sm text-gray-200 leading-relaxed mt-3">
                           En que puedo ayudarte hoy? Puedes preguntarme sobre tus metricas, si estas listo para entrenar, como mejorar tu recuperacion, o cualquier duda sobre salud y rendimiento.
                         </p>
-                        <p className="text-right text-[10px] text-gray-500 mt-2">
+                        <p className="text-right text-[10px] text-muted-foreground mt-2">
                           {new Date().toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
                         </p>
                       </div>
@@ -575,14 +577,14 @@ export default function HealthHub() {
                   </div>
                   <div className="p-3 border-t border-gray-700">
                     <div className="flex gap-2">
-                      <input type="text" value={chatInput} onChange={(e) => setChatInput(e.target.value)} placeholder="Pregunta sobre tu salud..." className="flex-1 bg-gray-800 text-white text-sm rounded-full px-4 py-2.5 placeholder-gray-500 border border-gray-700 focus:border-purple-500 focus:outline-none" />
+                      <input type="text" value={chatInput} onChange={(e) => setChatInput(e.target.value)} placeholder="Pregunta sobre tu salud..." className="flex-1 bg-muted text-foreground text-sm rounded-full px-4 py-2.5 placeholder-muted-foreground border border-border focus:border-purple-500 focus:outline-none" />
                       <button className="w-10 h-10 rounded-full flex items-center justify-center text-white" style={{ background: "#7C3AED" }} onClick={() => { if (chatInput.trim()) { toast.info("Funcion de chat proximamente"); setChatInput(""); } }}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
                       </button>
                     </div>
                   </div>
                 </div>
-                <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
+                <div className="bg-card rounded-2xl p-5 border border-border shadow-sm">
                   <SmartInsights />
                 </div>
               </div>
@@ -591,33 +593,33 @@ export default function HealthHub() {
             {/* TAB: DIA */}
             {activeTab === "dia" && (
               <div className="space-y-4">
-                <div className="rounded-xl bg-white border border-gray-200 p-5 shadow-sm">
-                  <h3 className="font-semibold text-gray-900 mb-4">Resumen del dia</h3>
+                <div className="rounded-xl bg-card border border-border p-5 shadow-sm">
+                  <h3 className="font-semibold text-foreground mb-4">Resumen del dia</h3>
                   <div className="grid grid-cols-2 gap-3">
                     <div className="p-3 rounded-xl bg-purple-50 border border-purple-100">
-                      <p className="text-xs text-gray-500">Sueño</p>
-                      <p className="text-xl font-bold text-purple-700">86<span className="text-xs font-normal text-gray-400">/100</span></p>
+                      <p className="text-xs text-muted-foreground">Sueño</p>
+                      <p className="text-xl font-bold text-purple-700">86<span className="text-xs font-normal text-muted-foreground/70">/100</span></p>
                       <p className="text-xs text-green-600 mt-1">+4 vs ayer</p>
                     </div>
                     <div className="p-3 rounded-xl bg-green-50 border border-green-100">
-                      <p className="text-xs text-gray-500">Recovery</p>
+                      <p className="text-xs text-muted-foreground">Recovery</p>
                       <p className="text-xl font-bold text-green-700">78%</p>
                       <p className="text-xs text-amber-600 mt-1">-5 vs ayer</p>
                     </div>
                     <div className="p-3 rounded-xl bg-orange-50 border border-orange-100">
-                      <p className="text-xs text-gray-500">Strain</p>
+                      <p className="text-xs text-muted-foreground">Strain</p>
                       <p className="text-xl font-bold text-orange-700">12.5</p>
                       <p className="text-xs text-green-600 mt-1">Moderado</p>
                     </div>
                     <div className="p-3 rounded-xl bg-blue-50 border border-blue-100">
-                      <p className="text-xs text-gray-500">HRV</p>
+                      <p className="text-xs text-muted-foreground">HRV</p>
                       <p className="text-xl font-bold text-blue-700">53ms</p>
                       <p className="text-xs text-green-600 mt-1">+3 vs ayer</p>
                     </div>
                   </div>
                 </div>
-                <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
-                  <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2"><span>😴</span> Calidad del Sueño (7 dias)</h3>
+                <div className="bg-card rounded-2xl p-5 border border-border shadow-sm">
+                  <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2"><span>😴</span> Calidad del Sueño (7 dias)</h3>
                   <ResponsiveContainer width="100%" height={180}>
                     <AreaChart data={mockSleepData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -628,8 +630,34 @@ export default function HealthHub() {
                     </AreaChart>
                   </ResponsiveContainer>
                 </div>
-                <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
-                  <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2"><span>🏃</span> Actividad (Strain)</h3>
+                {/* Síntomas del día + BuddyCare */}
+                <div className="rounded-2xl border border-border bg-card p-4">
+                  <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2"><span>🩺</span> ¿Cómo te encuentras hoy?</h3>
+                  <p className="text-xs text-muted-foreground mb-3">Selecciona si tienes algún síntoma y te sugeriremos productos BuddyCare que pueden ayudarte.</p>
+                  <div className="flex flex-wrap gap-2 mb-3">
+                    {["Retención de líquidos", "Fatiga", "Digestión pesada", "Estrés", "Insomnio", "Inflamación", "Falta de energía", "Dolor muscular"].map(s => (
+                      <button
+                        key={s}
+                        onClick={() => setSelectedSymptoms(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])}
+                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
+                          selectedSymptoms.includes(s)
+                            ? "bg-emerald-500 text-white"
+                            : "bg-muted text-muted-foreground hover:bg-muted/80"
+                        }`}
+                      >{s}</button>
+                    ))}
+                  </div>
+                  {selectedSymptoms.length > 0 && (
+                    <ContextualProductWidget
+                      symptoms={selectedSymptoms}
+                      mode="care"
+                      className="mt-2"
+                    />
+                  )}
+                </div>
+
+                <div className="bg-card rounded-2xl p-5 border border-border">
+                  <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2"><span>🏃</span> Actividad (Strain)</h3>
                   <ResponsiveContainer width="100%" height={180}>
                     <LineChart data={mockActivityData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -646,12 +674,12 @@ export default function HealthHub() {
             {/* TAB: DATOS */}
             {activeTab === "datos" && (
               <div className="space-y-4">
-                <div className="rounded-xl bg-white border border-gray-200 p-5 shadow-sm">
+                <div className="rounded-xl bg-card border border-border p-5 shadow-sm">
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold text-gray-900">Datos historicos</h3>
+                    <h3 className="font-semibold text-foreground">Datos historicos</h3>
                     <div className="flex items-center gap-1">
                       {(["7d", "14d", "30d"] as PeriodKey[]).map((p) => (
-                        <button key={p} onClick={() => setPeriod(p)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${period === p ? "bg-orange-500 text-white" : "bg-gray-100 text-gray-600 hover:bg-gray-200"}`}>{p}</button>
+                        <button key={p} onClick={() => setPeriod(p)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${period === p ? "bg-orange-500 text-white" : "bg-muted/50 text-muted-foreground hover:bg-gray-200"}`}>{p}</button>
                       ))}
                     </div>
                   </div>
@@ -665,17 +693,17 @@ export default function HealthHub() {
                       { label: "SpO2", value: "97%", trend: "Estable", up: true },
                     ].map((item, i) => (
                       <div key={i} className="flex items-center justify-between py-2.5 border-b border-gray-50 last:border-0">
-                        <span className="text-sm text-gray-600">{item.label}</span>
+                        <span className="text-sm text-muted-foreground">{item.label}</span>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm font-semibold text-gray-900">{item.value}</span>
+                          <span className="text-sm font-semibold text-foreground">{item.value}</span>
                           <span className={`text-xs ${item.up ? "text-green-600" : "text-amber-600"}`}>{item.trend}</span>
                         </div>
                       </div>
                     ))}
                   </div>
                 </div>
-                <div className="bg-white rounded-2xl p-5 border border-gray-100 shadow-sm">
-                  <h3 className="font-semibold text-gray-900 mb-4 flex items-center gap-2"><span>💚</span> Recuperacion</h3>
+                <div className="bg-card rounded-2xl p-5 border border-border shadow-sm">
+                  <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2"><span>💚</span> Recuperacion</h3>
                   <ResponsiveContainer width="100%" height={180}>
                     <BarChart data={mockRecoveryData}>
                       <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
@@ -701,42 +729,42 @@ export default function HealthHub() {
                     </div>
                   </div>
                   <div className="flex gap-2 mt-3">
-                    <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-white bg-white/20">
+                    <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-white bg-card/20">
                       <span className="w-2 h-2 rounded-full bg-green-400"></span> WHOOP
                     </span>
-                    <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-white bg-white/20">
+                    <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-white bg-card/20">
                       <span className="w-2 h-2 rounded-full bg-green-400"></span> Oura Ring
                     </span>
                   </div>
                 </div>
 
                 <div>
-                  <p className="text-xs font-semibold tracking-wider text-gray-500 mb-3">SELECCIONA UNA METRICA</p>
+                  <p className="text-xs font-semibold tracking-wider text-muted-foreground mb-3">SELECCIONA UNA METRICA</p>
                   <div className="flex flex-wrap gap-2">
                     {metrics.map((m) => (
-                      <button key={m.key} onClick={() => setSelectedMetric(m.key)} className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-all ${selectedMetric === m.key ? "bg-purple-100 text-purple-800 border border-purple-300" : "bg-white text-gray-600 border border-gray-200 hover:border-gray-300"}`}>
+                      <button key={m.key} onClick={() => setSelectedMetric(m.key)} className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-all ${selectedMetric === m.key ? "bg-purple-100 text-purple-800 border border-purple-300" : "bg-card text-muted-foreground border border-border hover:border-border/80"}`}>
                         <span>{m.icon}</span> {m.label}
                         {m.multiDevice && <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>}
                       </button>
                     ))}
                   </div>
-                  <p className="text-xs text-gray-400 mt-2 flex items-center gap-1">
+                  <p className="text-xs text-muted-foreground/70 mt-2 flex items-center gap-1">
                     <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>
                     Metrica disponible en varios dispositivos
                   </p>
                 </div>
 
                 <div className="flex items-center gap-2">
-                  <span className="text-sm text-gray-500">Periodo:</span>
+                  <span className="text-sm text-muted-foreground">Periodo:</span>
                   {(["7d", "14d", "30d"] as PeriodKey[]).map((p) => (
-                    <button key={p} onClick={() => setPeriod(p)} className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${period === p ? "text-white" : "text-gray-500 hover:text-gray-700"}`} style={period === p ? { background: "#F97316" } : {}}>{p}</button>
+                    <button key={p} onClick={() => setPeriod(p)} className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${period === p ? "text-white" : "text-muted-foreground hover:text-foreground/80"}`} style={period === p ? { background: "#F97316" } : {}}>{p}</button>
                   ))}
                 </div>
 
-                <div className="rounded-xl bg-white border border-gray-200 p-5 shadow-sm">
+                <div className="rounded-xl bg-card border border-border p-5 shadow-sm">
                   <div className="h-48 flex items-center justify-center">
                     <div className="text-center">
-                      <p className="text-sm text-gray-400 mb-2">{connectedCount >= 2 ? "Grafico de comparacion" : "Conecta 2 o mas dispositivos para comparar"}</p>
+                      <p className="text-sm text-muted-foreground/70 mb-2">{connectedCount >= 2 ? "Grafico de comparacion" : "Conecta 2 o mas dispositivos para comparar"}</p>
                       {connectedCount < 2 && <button onClick={() => setActiveTab("add")} className="text-xs font-medium text-purple-600 hover:text-purple-700">Ir a conectar dispositivos</button>}
                     </div>
                   </div>
@@ -747,15 +775,15 @@ export default function HealthHub() {
             {/* TAB: ADD */}
             {activeTab === "add" && (
               <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-gray-700">Dispositivos disponibles</h3>
+                <h3 className="text-sm font-semibold text-foreground/80">Dispositivos disponibles</h3>
                 <div className="grid grid-cols-1 gap-3">
                   {platforms.map((platform) => (
-                    <div key={platform.id} className={`flex items-center justify-between p-4 rounded-xl border transition-all ${platform.connected ? "border-green-200 bg-green-50/50" : "border-gray-200 bg-white hover:border-gray-300 hover:shadow-sm"}`}>
+                    <div key={platform.id} className={`flex items-center justify-between p-4 rounded-xl border transition-all ${platform.connected ? "border-green-200 bg-green-50/50" : "border-border bg-card hover:border-border/80 hover:shadow-sm"}`}>
                       <div className="flex items-center gap-3">
                         <div className="w-10 h-10 rounded-full flex items-center justify-center text-lg" style={{ background: `${platform.color}15` }}>{platform.icon}</div>
                         <div>
-                          <p className="text-sm font-medium text-gray-900">{platform.name}</p>
-                          <p className="text-xs text-gray-500">{platform.connected ? "Conectado y sincronizando" : "Disponible para conectar"}</p>
+                          <p className="text-sm font-medium text-foreground">{platform.name}</p>
+                          <p className="text-xs text-muted-foreground">{platform.connected ? "Conectado y sincronizando" : "Disponible para conectar"}</p>
                         </div>
                       </div>
                       {platform.connected ? (
@@ -770,12 +798,12 @@ export default function HealthHub() {
                     </div>
                   ))}
                 </div>
-                <p className="text-xs text-gray-400 text-center mt-2">Apple Health y Google Health Connect requieren la app nativa. Garmin, Fitbit, Samsung y Xiaomi proximamente.</p>
+                <p className="text-xs text-muted-foreground/70 text-center mt-2">Apple Health y Google Health Connect requieren la app nativa. Garmin, Fitbit, Samsung y Xiaomi proximamente.</p>
               </div>
             )}
 
             <div className="pt-4 text-center">
-              <p className="text-xs text-gray-400">Los datos mostrados son informativos y no constituyen consejo medico profesional.</p>
+              <p className="text-xs text-muted-foreground/70">Los datos mostrados son informativos y no constituyen consejo medico profesional.</p>
             </div>
           </>
         )}

@@ -229,9 +229,9 @@ export default function WellnessGoals() {
         <div className="mb-8">
           <div className="flex items-center gap-3 mb-4">
             <Target className="w-8 h-8 text-orange-600" />
-            <h1 className="text-4xl font-bold text-gray-900">Metas de Bienestar</h1>
+            <h1 className="text-4xl font-bold text-foreground">Metas de Bienestar</h1>
           </div>
-          <p className="text-gray-600 text-lg">
+          <p className="text-muted-foreground text-lg">
             Establece y monitorea tus objetivos personalizados de salud y bienestar
           </p>
         </div>
@@ -242,7 +242,7 @@ export default function WellnessGoals() {
             <CardContent className="pt-6">
               <div className="text-center">
                 <div className="text-3xl font-bold text-orange-600 mb-2">{goals.length}</div>
-                <p className="text-gray-600 text-sm">Metas Totales</p>
+                <p className="text-muted-foreground text-sm">Metas Totales</p>
               </div>
             </CardContent>
           </Card>
@@ -251,7 +251,7 @@ export default function WellnessGoals() {
             <CardContent className="pt-6">
               <div className="text-center">
                 <div className="text-3xl font-bold text-green-600 mb-2">{activeGoals}</div>
-                <p className="text-gray-600 text-sm">Metas Activas</p>
+                <p className="text-muted-foreground text-sm">Metas Activas</p>
               </div>
             </CardContent>
           </Card>
@@ -260,7 +260,7 @@ export default function WellnessGoals() {
             <CardContent className="pt-6">
               <div className="text-center">
                 <div className="text-3xl font-bold text-blue-600 mb-2">{completedGoals}</div>
-                <p className="text-gray-600 text-sm">Completadas</p>
+                <p className="text-muted-foreground text-sm">Completadas</p>
               </div>
             </CardContent>
           </Card>
@@ -269,7 +269,7 @@ export default function WellnessGoals() {
             <CardContent className="pt-6">
               <div className="text-center">
                 <div className="text-3xl font-bold text-purple-600 mb-2">{averageProgress}%</div>
-                <p className="text-gray-600 text-sm">Progreso Promedio</p>
+                <p className="text-muted-foreground text-sm">Progreso Promedio</p>
               </div>
             </CardContent>
           </Card>
@@ -299,7 +299,7 @@ export default function WellnessGoals() {
             <CardContent>
               <div className="space-y-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-foreground/80 mb-2">
                     Categoría
                   </label>
                   <select
@@ -310,7 +310,7 @@ export default function WellnessGoals() {
                         category: e.target.value as typeof newGoal.category,
                       })
                     }
-                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                    className="w-full px-4 py-2 border border-border/80 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
                   >
                     {Object.entries(categoryConfig).map(([key, config]) => (
                       <option key={key} value={key}>
@@ -321,7 +321,7 @@ export default function WellnessGoals() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-foreground/80 mb-2">
                     Título de la Meta
                   </label>
                   <Input
@@ -332,7 +332,7 @@ export default function WellnessGoals() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-foreground/80 mb-2">
                     Valor Objetivo ({categoryConfig[newGoal.category].unit})
                   </label>
                   <Input
@@ -381,11 +381,11 @@ export default function WellnessGoals() {
                 <Card>
                   <CardContent className="pt-12 pb-12">
                     <div className="text-center">
-                      <AlertCircle className="w-12 h-12 text-gray-400 mx-auto mb-4" />
-                      <p className="text-gray-600 text-lg">
+                      <AlertCircle className="w-12 h-12 text-muted-foreground/70 mx-auto mb-4" />
+                      <p className="text-muted-foreground text-lg">
                         No hay metas en esta categoría
                       </p>
-                      <p className="text-gray-500 text-sm mt-2">
+                      <p className="text-muted-foreground text-sm mt-2">
                         Crea una nueva meta para comenzar
                       </p>
                     </div>
@@ -409,7 +409,7 @@ export default function WellnessGoals() {
 
                           <div className="flex-1">
                             <div className="flex items-center gap-2 mb-2">
-                              <h3 className="text-lg font-semibold text-gray-900">
+                              <h3 className="text-lg font-semibold text-foreground">
                                 {goal.title}
                               </h3>
                               <Badge
@@ -446,14 +446,14 @@ export default function WellnessGoals() {
                               </Badge>
                             </div>
 
-                            <p className="text-gray-600 text-sm mb-4">
+                            <p className="text-muted-foreground text-sm mb-4">
                               {goal.description}
                             </p>
 
                             {/* Progress Bar */}
                             <div className="mb-4">
                               <div className="flex justify-between items-center mb-2">
-                                <span className="text-sm font-medium text-gray-700">
+                                <span className="text-sm font-medium text-foreground/80">
                                   Progreso
                                 </span>
                                 <span className="text-sm font-semibold text-orange-600">
@@ -465,14 +465,14 @@ export default function WellnessGoals() {
 
                             {/* Current vs Target */}
                             <div className="grid grid-cols-2 gap-4 mb-4">
-                              <div className="bg-gray-50 p-3 rounded-lg">
-                                <p className="text-xs text-gray-600 mb-1">Valor Actual</p>
-                                <p className="text-lg font-bold text-gray-900">
+                              <div className="bg-muted/30 p-3 rounded-lg">
+                                <p className="text-xs text-muted-foreground mb-1">Valor Actual</p>
+                                <p className="text-lg font-bold text-foreground">
                                   {goal.currentValue} {goal.unit}
                                 </p>
                               </div>
                               <div className="bg-orange-50 p-3 rounded-lg">
-                                <p className="text-xs text-gray-600 mb-1">Objetivo</p>
+                                <p className="text-xs text-muted-foreground mb-1">Objetivo</p>
                                 <p className="text-lg font-bold text-orange-600">
                                   {goal.targetValue} {goal.unit}
                                 </p>
@@ -494,7 +494,7 @@ export default function WellnessGoals() {
                             )}
 
                             {/* Deadline */}
-                            <div className="flex items-center gap-2 text-sm text-gray-600 mb-4">
+                            <div className="flex items-center gap-2 text-sm text-muted-foreground mb-4">
                               <Calendar className="w-4 h-4" />
                               <span>
                                 Plazo: {goal.deadline.toLocaleDateString("es-ES")}

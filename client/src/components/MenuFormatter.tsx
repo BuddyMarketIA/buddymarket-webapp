@@ -39,37 +39,37 @@ export const MenuFormatter: React.FC<MenuFormatterProps> = ({
       {/* Resumen del día */}
       {(totalDayCalories || macros) && (
         <Card className="bg-gradient-to-r from-orange-50 to-amber-50 p-6 border-orange-200">
-          <h2 className="text-2xl font-bold text-gray-900 mb-4">
+          <h2 className="text-2xl font-bold text-foreground mb-4">
             📊 Resumen Nutricional del Día
           </h2>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
             {totalDayCalories && (
-              <div className="bg-white rounded-lg p-4 text-center border border-orange-200">
+              <div className="bg-card rounded-lg p-4 text-center border border-orange-200">
                 <div className="text-3xl font-bold text-orange-600">
                   {totalDayCalories}
                 </div>
-                <div className="text-sm text-gray-600">kcal Totales</div>
+                <div className="text-sm text-muted-foreground">kcal Totales</div>
               </div>
             )}
             {macros && (
               <>
-                <div className="bg-white rounded-lg p-4 text-center border border-orange-200">
+                <div className="bg-card rounded-lg p-4 text-center border border-orange-200">
                   <div className="text-3xl font-bold text-blue-600">
                     {macros.protein}g
                   </div>
-                  <div className="text-sm text-gray-600">Proteínas</div>
+                  <div className="text-sm text-muted-foreground">Proteínas</div>
                 </div>
-                <div className="bg-white rounded-lg p-4 text-center border border-orange-200">
+                <div className="bg-card rounded-lg p-4 text-center border border-orange-200">
                   <div className="text-3xl font-bold text-yellow-600">
                     {macros.carbs}g
                   </div>
-                  <div className="text-sm text-gray-600">Carbohidratos</div>
+                  <div className="text-sm text-muted-foreground">Carbohidratos</div>
                 </div>
-                <div className="bg-white rounded-lg p-4 text-center border border-orange-200">
+                <div className="bg-card rounded-lg p-4 text-center border border-orange-200">
                   <div className="text-3xl font-bold text-red-600">
                     {macros.fat}g
                   </div>
-                  <div className="text-sm text-gray-600">Grasas</div>
+                  <div className="text-sm text-muted-foreground">Grasas</div>
                 </div>
               </>
             )}
@@ -82,7 +82,7 @@ export const MenuFormatter: React.FC<MenuFormatterProps> = ({
         <div key={idx} className="space-y-3">
           <div className="flex items-center gap-2 mb-4">
             <span className="text-3xl">{section.emoji}</span>
-            <h3 className="text-xl font-bold text-gray-900">
+            <h3 className="text-xl font-bold text-foreground">
               {section.mealTime}
             </h3>
             {section.totalCalories && (
@@ -96,10 +96,10 @@ export const MenuFormatter: React.FC<MenuFormatterProps> = ({
             {section.items.map((item, itemIdx) => (
               <Card
                 key={itemIdx}
-                className="p-4 border-l-4 border-l-orange-400 bg-white hover:shadow-md transition-shadow"
+                className="p-4 border-l-4 border-l-orange-400 bg-card hover:shadow-md transition-shadow"
               >
                 {/* Nombre de la receta */}
-                <h4 className="text-lg font-semibold text-gray-900 mb-2">
+                <h4 className="text-lg font-semibold text-foreground mb-2">
                   {item.name}
                 </h4>
 
@@ -111,7 +111,7 @@ export const MenuFormatter: React.FC<MenuFormatterProps> = ({
                         <div className="font-semibold text-orange-700">
                           {item.calories}
                         </div>
-                        <div className="text-gray-600 text-xs">kcal</div>
+                        <div className="text-muted-foreground text-xs">kcal</div>
                       </div>
                     )}
                     {item.protein && (
@@ -119,7 +119,7 @@ export const MenuFormatter: React.FC<MenuFormatterProps> = ({
                         <div className="font-semibold text-blue-700">
                           {item.protein}g
                         </div>
-                        <div className="text-gray-600 text-xs">Proteína</div>
+                        <div className="text-muted-foreground text-xs">Proteína</div>
                       </div>
                     )}
                     {item.carbs && (
@@ -127,7 +127,7 @@ export const MenuFormatter: React.FC<MenuFormatterProps> = ({
                         <div className="font-semibold text-yellow-700">
                           {item.carbs}g
                         </div>
-                        <div className="text-gray-600 text-xs">Carbos</div>
+                        <div className="text-muted-foreground text-xs">Carbos</div>
                       </div>
                     )}
                     {item.fat && (
@@ -135,7 +135,7 @@ export const MenuFormatter: React.FC<MenuFormatterProps> = ({
                         <div className="font-semibold text-red-700">
                           {item.fat}g
                         </div>
-                        <div className="text-gray-600 text-xs">Grasas</div>
+                        <div className="text-muted-foreground text-xs">Grasas</div>
                       </div>
                     )}
                   </div>
@@ -144,10 +144,10 @@ export const MenuFormatter: React.FC<MenuFormatterProps> = ({
                 {/* Ingredientes */}
                 {item.ingredients && item.ingredients.length > 0 && (
                   <div className="mb-3">
-                    <h5 className="font-semibold text-gray-700 text-sm mb-2">
+                    <h5 className="font-semibold text-foreground/80 text-sm mb-2">
                       🥘 Ingredientes:
                     </h5>
-                    <ul className="space-y-1 text-sm text-gray-600">
+                    <ul className="space-y-1 text-sm text-muted-foreground">
                       {item.ingredients.map((ing, ingIdx) => (
                         <li key={ingIdx} className="flex items-start gap-2">
                           <span className="text-orange-400 mt-1">•</span>
@@ -163,10 +163,10 @@ export const MenuFormatter: React.FC<MenuFormatterProps> = ({
                 {/* Instrucciones */}
                 {item.instructions && item.instructions.length > 0 && (
                   <div>
-                    <h5 className="font-semibold text-gray-700 text-sm mb-2">
+                    <h5 className="font-semibold text-foreground/80 text-sm mb-2">
                       👨‍🍳 Preparación:
                     </h5>
-                    <ol className="space-y-2 text-sm text-gray-600">
+                    <ol className="space-y-2 text-sm text-muted-foreground">
                       {item.instructions.map((instruction, instrIdx) => (
                         <li key={instrIdx} className="flex gap-3">
                           <span className="font-semibold text-orange-600 flex-shrink-0">

@@ -149,12 +149,12 @@ export default function Ecosystem() {
             {score?.breakdown && (
               <div className="grid grid-cols-2 gap-2">
                 {score.breakdown.map((b) => (
-                  <div key={b.key} className="bg-white/5 rounded-lg p-2.5 flex items-center gap-2">
+                  <div key={b.key} className="bg-card/5 rounded-lg p-2.5 flex items-center gap-2">
                     <span className="text-lg">{b.icon}</span>
                     <div className="flex-1 min-w-0">
                       <p className="text-[11px] text-zinc-400 truncate">{b.label}</p>
                       <div className="flex items-center gap-1.5">
-                        <Progress value={(b.score / b.max) * 100} className="h-1.5 flex-1 bg-white/10" />
+                        <Progress value={(b.score / b.max) * 100} className="h-1.5 flex-1 bg-card/10" />
                         <span className="text-xs font-semibold tabular-nums">{b.score}</span>
                       </div>
                     </div>
@@ -180,7 +180,7 @@ export default function Ecosystem() {
                   if (a.url.startsWith("http")) window.open(a.url, "_blank");
                   else window.location.href = a.url;
                 }}
-                className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-white/5 hover:bg-white/10 transition-all group"
+                className="flex flex-col items-center gap-1.5 p-3 rounded-xl bg-card/5 hover:bg-card/10 transition-all group"
               >
                 <div
                   className="w-10 h-10 rounded-xl flex items-center justify-center text-lg transition-transform group-hover:scale-110"
@@ -269,7 +269,7 @@ export default function Ecosystem() {
                       { label: "Proteína (g)", current: digest.thisWeek.protein, prev: digest.lastWeek.protein, icon: <Target className="w-3.5 h-3.5" /> },
                       { label: "Suplementos", current: digest.thisWeek.supplements, prev: digest.lastWeek.supplements, icon: <Pill className="w-3.5 h-3.5" /> },
                     ].map((item) => (
-                      <div key={item.label} className="bg-white/5 rounded-lg p-3">
+                      <div key={item.label} className="bg-card/5 rounded-lg p-3">
                         <div className="flex items-center justify-between mb-1">
                           <span className="text-zinc-400">{item.icon}</span>
                           <div className="flex items-center gap-1">
@@ -304,7 +304,7 @@ export default function Ecosystem() {
                   {/* Spokes */}
                   <div className="grid grid-cols-2 gap-3 w-full">
                     {Object.entries(SOURCE_CONFIG).filter(([k]) => k !== "buddyone" && k !== "healthhub").map(([key, cfg]) => (
-                      <div key={key} className="flex items-center gap-2 bg-white/5 rounded-lg p-3 hover:bg-white/8 transition-colors">
+                      <div key={key} className="flex items-center gap-2 bg-card/5 rounded-lg p-3 hover:bg-card/8 transition-colors">
                         <div className={`w-9 h-9 rounded-lg bg-gradient-to-br ${cfg.gradient} flex items-center justify-center`}>
                           {cfg.icon}
                         </div>
@@ -351,7 +351,7 @@ export default function Ecosystem() {
                 {timeline.map((item) => {
                   const cfg = SOURCE_CONFIG[item.source] ?? SOURCE_CONFIG.buddyone;
                   return (
-                    <div key={item.id} className="flex items-start gap-3 p-3 rounded-lg bg-white/[0.03] hover:bg-white/[0.06] transition-colors">
+                    <div key={item.id} className="flex items-start gap-3 p-3 rounded-lg bg-card/[0.03] hover:bg-card/[0.06] transition-colors">
                       <div className={`w-8 h-8 rounded-lg bg-gradient-to-br ${cfg.gradient} flex items-center justify-center flex-shrink-0 mt-0.5`}>
                         {cfg.icon}
                       </div>
@@ -488,7 +488,7 @@ export default function Ecosystem() {
                 <p className="text-xs text-zinc-500 mb-2 uppercase tracking-wider">Conseguidos ({badgesData.earned.length})</p>
                 <div className="grid grid-cols-2 gap-2">
                   {badgesData.earned.map((b) => (
-                    <div key={b.id} className="bg-white/5 rounded-xl p-3 border border-white/10">
+                    <div key={b.id} className="bg-card/5 rounded-xl p-3 border border-white/10">
                       <div className="flex items-center gap-2 mb-1.5">
                         <span className="text-2xl">{b.icon}</span>
                         <Star className="w-3.5 h-3.5 text-amber-400" />
@@ -510,7 +510,7 @@ export default function Ecosystem() {
                 <p className="text-xs text-zinc-500 mb-2 uppercase tracking-wider">Por conseguir ({badgesData.available.length})</p>
                 <div className="grid grid-cols-2 gap-2">
                   {badgesData.available.map((b) => (
-                    <div key={b.id} className="bg-white/[0.02] rounded-xl p-3 border border-zinc-800 opacity-60">
+                    <div key={b.id} className="bg-card/[0.02] rounded-xl p-3 border border-zinc-800 opacity-60">
                       <div className="flex items-center gap-2 mb-1.5">
                         <span className="text-2xl grayscale">{b.icon}</span>
                         <Shield className="w-3.5 h-3.5 text-zinc-600" />

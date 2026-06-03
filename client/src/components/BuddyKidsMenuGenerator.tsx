@@ -61,9 +61,9 @@ export default function BuddyKidsMenuGenerator({ childId, childName, onMenuGener
       <CardContent className="space-y-5">
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-700">Número de días</label>
+            <label className="text-sm font-semibold text-foreground/80">Número de días</label>
             <Select value={days} onValueChange={setDays} disabled={isGenerating}>
-              <SelectTrigger className="bg-white">
+              <SelectTrigger className="bg-card">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -77,9 +77,9 @@ export default function BuddyKidsMenuGenerator({ childId, childName, onMenuGener
           </div>
 
           <div className="space-y-2">
-            <label className="text-sm font-semibold text-gray-700">Comidas por día</label>
+            <label className="text-sm font-semibold text-foreground/80">Comidas por día</label>
             <Select value={mealsPerDay} onValueChange={setMealsPerDay} disabled={isGenerating}>
-              <SelectTrigger className="bg-white">
+              <SelectTrigger className="bg-card">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>
@@ -93,9 +93,9 @@ export default function BuddyKidsMenuGenerator({ childId, childName, onMenuGener
           </div>
 
           <div className="space-y-2 sm:col-span-2">
-            <label className="text-sm font-semibold text-gray-700">Tipo de menú</label>
+            <label className="text-sm font-semibold text-foreground/80">Tipo de menú</label>
             <Select value={mealType} onValueChange={(v) => setMealType(v as any)} disabled={isGenerating}>
-              <SelectTrigger className="bg-white">
+              <SelectTrigger className="bg-card">
                 <SelectValue />
               </SelectTrigger>
               <SelectContent>

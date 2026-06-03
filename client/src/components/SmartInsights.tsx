@@ -84,10 +84,10 @@ export default function SmartInsights({ compact = false }: SmartInsightsProps) {
             🧠
           </div>
           <div>
-            <h3 className="font-bold text-gray-900 text-lg">
+            <h3 className="font-bold text-foreground text-lg">
               {compact ? "Tu Coach Inteligente" : "Análisis Inteligente"}
             </h3>
-            <p className="text-xs text-gray-500">
+            <p className="text-xs text-muted-foreground">
               Cruza wearables + nutrición + objetivos
             </p>
           </div>
@@ -115,7 +115,7 @@ export default function SmartInsights({ compact = false }: SmartInsightsProps) {
 
       {/* Score + Summary */}
       {generated && (
-        <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
+        <div className="bg-card rounded-2xl border border-border shadow-sm p-4">
           <div className="flex items-center gap-4">
             {/* Score ring */}
             <div className="relative w-16 h-16 flex-shrink-0">
@@ -134,8 +134,8 @@ export default function SmartInsights({ compact = false }: SmartInsightsProps) {
               </span>
             </div>
             <div className="flex-1 min-w-0">
-              <p className="font-semibold text-gray-900 text-sm">Tu estado hoy</p>
-              <p className="text-gray-600 text-sm mt-0.5">{dailySummary}</p>
+              <p className="font-semibold text-foreground text-sm">Tu estado hoy</p>
+              <p className="text-muted-foreground text-sm mt-0.5">{dailySummary}</p>
               {!hasRealData && (
                 <span className="inline-block mt-1 text-xs bg-amber-50 text-amber-700 px-2 py-0.5 rounded-full">
                   Datos de demostración — conecta tus wearables y registra comidas para datos reales
@@ -157,7 +157,7 @@ export default function SmartInsights({ compact = false }: SmartInsightsProps) {
             return (
               <div
                 key={idx}
-                className="bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden hover:shadow-md transition-shadow"
+                className="bg-card rounded-2xl border border-border shadow-sm overflow-hidden hover:shadow-md transition-shadow"
               >
                 {/* Color bar */}
                 <div className={`h-1 bg-gradient-to-r ${cat.gradient}`} />
@@ -166,19 +166,19 @@ export default function SmartInsights({ compact = false }: SmartInsightsProps) {
                     <span className="text-2xl flex-shrink-0">{insight.icon}</span>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center gap-2 flex-wrap">
-                        <h4 className="font-bold text-gray-900 text-sm">{insight.title}</h4>
+                        <h4 className="font-bold text-foreground text-sm">{insight.title}</h4>
                         <span className={`text-[10px] font-semibold px-2 py-0.5 rounded-full ${pri.bg} ${pri.color}`}>
                           {pri.label}
                         </span>
-                        <span className="text-[10px] text-gray-400 bg-gray-50 px-2 py-0.5 rounded-full">
+                        <span className="text-[10px] text-muted-foreground/70 bg-muted/30 px-2 py-0.5 rounded-full">
                           {cat.label}
                         </span>
                       </div>
-                      <p className="text-gray-700 text-sm mt-1.5 leading-relaxed">{insight.description}</p>
+                      <p className="text-foreground/80 text-sm mt-1.5 leading-relaxed">{insight.description}</p>
                       {/* Data points */}
                       <div className="mt-2 flex flex-wrap gap-1.5">
                         {insight.dataPoints.split(",").map((dp, i) => (
-                          <span key={i} className="text-[10px] bg-gray-50 text-gray-500 px-2 py-0.5 rounded-full border border-gray-100">
+                          <span key={i} className="text-[10px] bg-muted/30 text-muted-foreground px-2 py-0.5 rounded-full border border-border">
                             {dp.trim()}
                           </span>
                         ))}
@@ -191,16 +191,16 @@ export default function SmartInsights({ compact = false }: SmartInsightsProps) {
                           </span>
                         ) : (
                           <>
-                            <span className="text-xs text-gray-400">¿Útil?</span>
+                            <span className="text-xs text-muted-foreground/70">¿Útil?</span>
                             <button
                               onClick={() => handleFeedback(idx, insight, "positive")}
-                              className="w-7 h-7 rounded-full bg-gray-50 hover:bg-emerald-50 flex items-center justify-center text-sm transition-colors"
+                              className="w-7 h-7 rounded-full bg-muted/30 hover:bg-emerald-50 flex items-center justify-center text-sm transition-colors"
                             >
                               👍
                             </button>
                             <button
                               onClick={() => handleFeedback(idx, insight, "negative")}
-                              className="w-7 h-7 rounded-full bg-gray-50 hover:bg-red-50 flex items-center justify-center text-sm transition-colors"
+                              className="w-7 h-7 rounded-full bg-muted/30 hover:bg-red-50 flex items-center justify-center text-sm transition-colors"
                             >
                               👎
                             </button>
@@ -220,12 +220,12 @@ export default function SmartInsights({ compact = false }: SmartInsightsProps) {
       {!generated && !smartMutation.isPending && (
         <div className="bg-gradient-to-br from-orange-50 to-rose-50 rounded-2xl p-6 text-center border border-orange-100">
           <div className="text-4xl mb-3">🧠</div>
-          <p className="font-semibold text-gray-900">Tu coach personal con IA</p>
-          <p className="text-sm text-gray-600 mt-1 max-w-md mx-auto">
+          <p className="font-semibold text-foreground">Tu coach personal con IA</p>
+          <p className="text-sm text-muted-foreground mt-1 max-w-md mx-auto">
             Analiza tus datos de sueño, actividad, recuperación y nutrición para darte
             recomendaciones personalizadas que te ayuden a alcanzar tus objetivos.
           </p>
-          <p className="text-xs text-gray-400 mt-2">
+          <p className="text-xs text-muted-foreground/70 mt-2">
             Ejemplo: "Ayer te excediste en el deporte y comiste poca proteína. Hoy añade un batido post-entreno."
           </p>
         </div>
@@ -233,13 +233,13 @@ export default function SmartInsights({ compact = false }: SmartInsightsProps) {
 
       {/* Loading state */}
       {smartMutation.isPending && (
-        <div className="bg-white rounded-2xl border border-gray-100 p-8 text-center">
+        <div className="bg-card rounded-2xl border border-border p-8 text-center">
           <div className="animate-pulse space-y-3">
             <div className="flex justify-center">
               <div className="w-12 h-12 rounded-full bg-gradient-to-r from-orange-200 to-rose-200 animate-bounce" />
             </div>
-            <p className="text-sm font-medium text-gray-600">Analizando tus datos de wearables y nutrición...</p>
-            <p className="text-xs text-gray-400">Cruzando sueño, actividad, comidas y objetivos</p>
+            <p className="text-sm font-medium text-muted-foreground">Analizando tus datos de wearables y nutrición...</p>
+            <p className="text-xs text-muted-foreground/70">Cruzando sueño, actividad, comidas y objetivos</p>
           </div>
         </div>
       )}

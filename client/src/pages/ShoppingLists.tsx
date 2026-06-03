@@ -500,7 +500,7 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
                     ? "bg-green-100 text-green-700"
                     : tab.id === "purchased"
                     ? "bg-orange-100 text-[#F97316]"
-                    : "bg-gray-900 text-white"
+                    : "bg-foreground text-background"
                   : "bg-background text-muted-foreground shadow-sm"
               }`}
             >

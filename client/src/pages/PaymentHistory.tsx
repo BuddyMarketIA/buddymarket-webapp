@@ -15,7 +15,7 @@ const PLAN_LABELS: Record<string, string> = {
 };
 
 const PLAN_COLORS: Record<string, string> = {
-  free: "bg-gray-100 text-gray-700",
+  free: "bg-muted/50 text-foreground/80",
   basic: "bg-blue-100 text-blue-700",
   premium: "bg-purple-100 text-purple-700",
   pro_max: "bg-amber-100 text-amber-700",
@@ -73,17 +73,17 @@ export default function PaymentHistory() {
   return (
     <div className="min-h-screen bg-[#FFF8F0]">
       {/* Header */}
-      <div className="sticky top-0 z-10 bg-white border-b border-orange-100 px-4 py-3 flex items-center gap-3">
+      <div className="sticky top-0 z-10 bg-card border-b border-orange-100 px-4 py-3 flex items-center gap-3">
         <button
           onClick={() => setLocation("/app/profile")}
           className="p-2 rounded-full hover:bg-orange-50 transition-colors"
           aria-label="Volver"
         >
-          <ArrowLeft className="w-5 h-5 text-gray-700" />
+          <ArrowLeft className="w-5 h-5 text-foreground/80" />
         </button>
         <div>
-          <h1 className="text-lg font-bold text-gray-900">Historial de pagos</h1>
-          <p className="text-xs text-gray-500">Tus suscripciones y facturas</p>
+          <h1 className="text-lg font-bold text-foreground">Historial de pagos</h1>
+          <p className="text-xs text-muted-foreground">Tus suscripciones y facturas</p>
         </div>
       </div>
 
@@ -91,7 +91,7 @@ export default function PaymentHistory() {
         {/* Current subscription card */}
         <Card className="border-orange-100 shadow-sm">
           <CardHeader className="pb-2">
-            <CardTitle className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+            <CardTitle className="text-sm font-semibold text-foreground/80 flex items-center gap-2">
               <CreditCard className="w-4 h-4 text-orange-500" />
               Suscripción actual
             </CardTitle>
@@ -106,7 +106,7 @@ export default function PaymentHistory() {
                     {PLAN_LABELS[subscription.plan ?? "free"] ?? subscription.plan}
                   </span>
                   {subscription.currentPeriodEnd && (
-                    <p className="text-xs text-gray-500 mt-1">
+                    <p className="text-xs text-muted-foreground mt-1">
                       Válida hasta: {new Date(subscription.currentPeriodEnd).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })}
                     </p>
                   )}
@@ -115,7 +115,7 @@ export default function PaymentHistory() {
               </div>
             ) : (
               <div className="text-center py-3">
-                <p className="text-sm text-gray-500">No tienes ninguna suscripción activa.</p>
+                <p className="text-sm text-muted-foreground">No tienes ninguna suscripción activa.</p>
                 <Button
                   size="sm"
                   className="mt-2 bg-orange-500 hover:bg-orange-600 text-white"
@@ -130,7 +130,7 @@ export default function PaymentHistory() {
 
         {/* Payment history */}
         <div>
-          <h2 className="text-sm font-semibold text-gray-700 mb-3 flex items-center gap-2">
+          <h2 className="text-sm font-semibold text-foreground/80 mb-3 flex items-center gap-2">
             <Receipt className="w-4 h-4 text-orange-500" />
             Facturas y pagos
           </h2>
@@ -145,8 +145,8 @@ export default function PaymentHistory() {
             <Card className="border-dashed border-orange-200 bg-orange-50/50">
               <CardContent className="py-10 text-center">
                 <Receipt className="w-10 h-10 text-orange-300 mx-auto mb-3" />
-                <p className="text-sm font-medium text-gray-600">Sin facturas todavía</p>
-                <p className="text-xs text-gray-400 mt-1">Aquí aparecerán tus pagos cuando realices una compra.</p>
+                <p className="text-sm font-medium text-muted-foreground">Sin facturas todavía</p>
+                <p className="text-xs text-muted-foreground/70 mt-1">Aquí aparecerán tus pagos cuando realices una compra.</p>
               </CardContent>
             </Card>
           ) : (
@@ -164,21 +164,21 @@ export default function PaymentHistory() {
                           )}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium text-gray-900 truncate">
+                          <p className="text-sm font-medium text-foreground truncate">
                             {payment.description}
                           </p>
-                          <p className="text-xs text-gray-500 mt-0.5">
+                          <p className="text-xs text-muted-foreground mt-0.5">
                             {formatDate(payment.created)}
                           </p>
                           {payment.periodStart && payment.periodEnd && (
-                            <p className="text-xs text-gray-400 mt-0.5">
+                            <p className="text-xs text-muted-foreground/70 mt-0.5">
                               Período: {formatDate(payment.periodStart)} – {formatDate(payment.periodEnd)}
                             </p>
                           )}
                         </div>
                       </div>
                       <div className="flex flex-col items-end gap-1.5 flex-shrink-0">
-                        <span className="text-sm font-bold text-gray-900">
+                        <span className="text-sm font-bold text-foreground">
                           {formatAmount(payment.amount, payment.currency)}
                         </span>
                         <StatusBadge status={payment.status} />
@@ -204,7 +204,7 @@ export default function PaymentHistory() {
                             href={payment.pdfUrl}
                             target="_blank"
                             rel="noopener noreferrer"
-                            className="flex items-center gap-1.5 text-xs text-gray-500 hover:text-gray-700 font-medium"
+                            className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground/80 font-medium"
                           >
                             <Download className="w-3 h-3" />
                             Descargar PDF
@@ -220,7 +220,7 @@ export default function PaymentHistory() {
         </div>
 
         {/* Info note */}
-        <p className="text-xs text-gray-400 text-center pb-4">
+        <p className="text-xs text-muted-foreground/70 text-center pb-4">
           Para cualquier consulta sobre pagos, contacta con nosotros en{" "}
           <a href="mailto:soporte@buddyoneapp.com" className="text-orange-500 underline">
             soporte@buddyoneapp.com

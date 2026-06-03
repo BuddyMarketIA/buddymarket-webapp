@@ -20,6 +20,7 @@ import {
   Baby, User, Sparkles, Calendar, Utensils, Zap, Droplets
 } from "lucide-react";
 import { Textarea } from "@/components/ui/textarea";
+import HouseholdMenuPlans from "@/components/HouseholdMenuPlans";
 
 
 // ─── Meal type labels ─────────────────────────────────────────────────────────
@@ -1237,14 +1238,14 @@ export default function Familia() {
       {/* ── Hero banner ─────────────────────────────────────────────────── */}
       <div className="relative rounded-3xl overflow-hidden bg-gradient-to-br from-orange-400 via-amber-400 to-orange-500 shadow-lg">
         {/* decorative circles */}
-        <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-white/10" />
-        <div className="absolute -bottom-10 -left-6 w-32 h-32 rounded-full bg-white/10" />
+        <div className="absolute -top-8 -right-8 w-40 h-40 rounded-full bg-card/10" />
+        <div className="absolute -bottom-10 -left-6 w-32 h-32 rounded-full bg-card/10" />
         <div className="relative px-6 py-6">
           <div className="flex items-start justify-between gap-3">
             {/* left: name + meta */}
             <div className="min-w-0">
               <div className="flex items-center gap-2 mb-1">
-                <div className="w-9 h-9 rounded-xl bg-white/25 flex items-center justify-center shrink-0">
+                <div className="w-9 h-9 rounded-xl bg-card/25 flex items-center justify-center shrink-0">
                   <Home className="w-5 h-5 text-white" />
                 </div>
                 <h1 className="text-2xl font-bold text-white leading-tight truncate">{household.name}</h1>
@@ -1261,7 +1262,7 @@ export default function Familia() {
               <p className="text-white/80 text-sm">
                 {household.members.length} miembro{household.members.length !== 1 ? "s" : ""}
                 {household.pendingInvitations.length > 0 && (
-                  <span className="ml-2 bg-white/20 rounded-full px-2 py-0.5 text-xs font-medium">
+                  <span className="ml-2 bg-card/20 rounded-full px-2 py-0.5 text-xs font-medium">
                     {household.pendingInvitations.length} invitación{household.pendingInvitations.length !== 1 ? "es" : ""} pendiente{household.pendingInvitations.length !== 1 ? "s" : ""}
                   </span>
                 )}
@@ -1272,7 +1273,7 @@ export default function Familia() {
               <Button
                 size="sm"
                 onClick={() => setShowPrefs(true)}
-                className="bg-white/20 hover:bg-white/30 text-white border-0 gap-1.5 text-xs h-8"
+                className="bg-card/20 hover:bg-card/30 text-white border-0 gap-1.5 text-xs h-8"
               >
                 <Settings className="w-3.5 h-3.5" /> Mis preferencias
               </Button>
@@ -1281,14 +1282,14 @@ export default function Familia() {
                   <Button
                     size="sm"
                     onClick={() => setShowFamilyMenu(true)}
-                    className="bg-white/20 hover:bg-white/30 text-white border-0 gap-1 text-xs h-8 flex-1"
+                    className="bg-card/20 hover:bg-card/30 text-white border-0 gap-1 text-xs h-8 flex-1"
                   >
                     <Sparkles className="w-3.5 h-3.5" /> Menú IA
                   </Button>
                   <Button
                     size="sm"
                     onClick={() => setShowInvite(true)}
-                    className="bg-white hover:bg-white/90 text-orange-600 border-0 gap-1 text-xs h-8 font-semibold flex-1"
+                    className="bg-card hover:bg-card/90 text-orange-600 border-0 gap-1 text-xs h-8 font-semibold flex-1"
                   >
                     <UserPlus className="w-3.5 h-3.5" /> Invitar
                   </Button>
@@ -1309,7 +1310,7 @@ export default function Familia() {
                 </Avatar>
               ))}
               {household.members.length > 5 && (
-                <div className="w-8 h-8 rounded-full border-2 border-white/60 bg-white/20 flex items-center justify-center">
+                <div className="w-8 h-8 rounded-full border-2 border-white/60 bg-card/20 flex items-center justify-center">
                   <span className="text-white text-xs font-bold">+{household.members.length - 5}</span>
                 </div>
               )}
@@ -1487,28 +1488,16 @@ export default function Familia() {
         />
       )}
 
-      {/* ── Coming Soon: Family Menus ─────────────────────────────────── */}
-      <div className="mt-6 rounded-3xl p-5 bg-gradient-to-br from-orange-500/5 to-background border border-orange-500/15">
-        <div className="flex items-center gap-2 mb-3">
-          <span className="text-lg">✨</span>
-          <h3 className="text-sm font-700 text-foreground">Próximamente en Modo Hogar</h3>
-        </div>
-        <div className="space-y-2">
-          {[
-            { emoji: "🍽️", text: "Menú semanal familiar unificado compatible con todos" },
-            { emoji: "👶", text: "Menú niños + Menú adultos generados por separado" },
-            { emoji: "💊", text: "Menú especial por condición: diabético, celíaco, hipertenso..." },
-            { emoji: "🛒", text: "Lista de la compra unificada sumando todos los menús" },
-            { emoji: "🥗", text: "Nutrición infantil por edad y etapa de desarrollo" },
-            { emoji: "📱", text: "Invitación por QR para unirse al hogar al instante" },
-          ].map((item, i) => (
-            <div key={i} className="flex items-start gap-2.5">
-              <span className="text-base shrink-0">{item.emoji}</span>
-              <p className="text-xs text-muted-foreground leading-relaxed">{item.text}</p>
-            </div>
-          ))}
-        </div>
-      </div>
+      {/* ── Menús del Hogar por persona ─────────────────────────────── */}
+      <HouseholdMenuPlans
+        members={household.members.map(m => ({
+          id: m.id,
+          displayName: m.displayName,
+          userName: m.userName,
+          userId: m.userId,
+          memberType: m.memberType,
+        }))}
+      />
 
       {/* Modals */}
       <FamilyMenuModal open={showFamilyMenu} onClose={() => setShowFamilyMenu(false)} />

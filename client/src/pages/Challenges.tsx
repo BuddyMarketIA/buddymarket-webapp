@@ -80,8 +80,8 @@ function ThirtyDayCard({ challenge }: { challenge: any }) {
           </div>
         </div>
         <div className="flex items-center gap-2 mt-3">
-          <div className="flex-1 bg-white/20 rounded-full h-3 overflow-hidden">
-            <div className="h-full bg-white rounded-full transition-all duration-500" style={{ width: `${challenge.progressPct}%` }} />
+          <div className="flex-1 bg-card/20 rounded-full h-3 overflow-hidden">
+            <div className="h-full bg-card rounded-full transition-all duration-500" style={{ width: `${challenge.progressPct}%` }} />
           </div>
           <span className="text-white font-bold text-sm">{completedDays.length}/30</span>
         </div>

@@ -4609,3 +4609,36 @@ export const careProducts = pgTable("care_products", {
 });
 export type CareProduct = typeof careProducts.$inferSelect;
 export type InsertCareProduct = typeof careProducts.$inferInsert;
+
+// =============================================================================
+// HOUSEHOLD MENU PLANS — Menús semanales por miembro del hogar
+// =============================================================================
+export const householdMenuTypeEnum = pgEnum("household_menu_type", [
+  "adults",
+  "kids",
+  "baby",
+  "custom",
+  "family",
+]);
+
+export const householdMenuPlans = pgTable("household_menu_plans", {
+  id: serial("id").primaryKey(),
+  householdId: integer("householdId").notNull(),
+  memberId: integer("memberId"),
+  createdByUserId: integer("createdByUserId").notNull(),
+  name: varchar("name", { length: 120 }).notNull(),
+  menuType: householdMenuTypeEnum("menuType").notNull().default("adults"),
+  weekStartDate: timestamp("weekStartDate").notNull(),
+  meals: text("meals"),
+  notes: text("notes"),
+  isActive: boolean("isActive").default(true).notNull(),
+  generatedByAI: boolean("generatedByAI").default(false).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  householdIdx: index("hmp_household_idx").on(t.householdId),
+  memberIdx: index("hmp_member_idx").on(t.memberId),
+  weekIdx: index("hmp_week_idx").on(t.householdId, t.weekStartDate),
+}));
+export type HouseholdMenuPlan = typeof householdMenuPlans.$inferSelect;
+export type InsertHouseholdMenuPlan = typeof householdMenuPlans.$inferInsert;

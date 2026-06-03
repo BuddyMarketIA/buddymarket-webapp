@@ -3803,3 +3803,36 @@
 - [ ] Nutrición infantil conectada con perfiles del hogar
 - [ ] Invitación por QR al hogar
 - [ ] Health Hub centralizado (métricas, documentos, diario, evolución en una sola página)
+
+## Sesión actual — Pendientes a implementar ahora
+
+### Widget Contextual BuddyShop/BuddyCare
+- [ ] Componente ContextualProductWidget reutilizable (no intrusivo, máx 2 productos)
+- [ ] Integrar widget en RecipeDetail (BBQ → vajilla, wok → sartén wok, etc.)
+- [ ] Integrar widget BuddyCare en diario de salud (síntomas → productos)
+
+### Health Hub Centralizado
+- [ ] Crear página /health-hub con métricas, documentos, diario y evolución
+- [ ] Añadir ruta y enlace en sidebar/navegación
+- [ ] Centralizar todos los datos de bienestar en un único lugar
+
+### Menús Familiares por Persona
+- [ ] Schema DB: tabla familyMenuProfiles (perfil por miembro del hogar)
+- [ ] Backend: endpoint para generar menú por perfil (niños/adultos/condición médica)
+- [ ] UI: selector de tipo de menú familiar en página Familia
+- [ ] UI: generador de menú familiar con IA (menú unificado o separado por persona)
+- [ ] UI: menú para condición médica (diabético, celíaco, hipertenso)
+
+## Auditoría y Correcciones (sesión actual)
+
+### Inconsistencias críticas a corregir:
+- [x] Eliminar "Mi Ecosistema" del sidebar (ya no tiene sentido como función)
+- [ ] Quitar Household.tsx duplicado (ya existe Familia.tsx con la misma función)
+- [x] Corregir colores hardcodeados en 28 páginas (bg-gray-900, bg-black, etc.) → usar variables CSS del tema
+- [x] Corregir colores hardcodeados bg-white/text-gray-900 en 15 páginas
+- [ ] Añadir ruta /app/buddy-care que falta en App.tsx (existe en sidebar pero no en rutas)
+- [ ] Verificar que BuddyShop y BuddyCare usan productos reales de BD (no hardcodeados)
+- [x] Menús familiares por persona: tabla householdMenuPlans + router householdMenus + UI HouseholdMenuPlans
+- [ ] Menús familiares por persona: procedimientos en household router
+- [ ] Menús familiares por persona: UI en página Familia
+- [ ] Asignar rol BuddyExpert a luis@buddymarket.io cuando se registre

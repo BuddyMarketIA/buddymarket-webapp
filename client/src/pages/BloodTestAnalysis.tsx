@@ -150,14 +150,14 @@ export default function BloodTestAnalysis() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-indigo-50 pb-24">
       {/* Header */}
-      <div className="bg-white border-b sticky top-0 z-10">
+      <div className="bg-card border-b sticky top-0 z-10">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+            <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
               <Activity className="w-5 h-5 text-blue-500" />
               Analítica de sangre
             </h1>
-            <p className="text-sm text-gray-500">IA interpreta tus valores y ajusta tu nutrición</p>
+            <p className="text-sm text-muted-foreground">IA interpreta tus valores y ajusta tu nutrición</p>
           </div>
           {step !== "upload" && (
             <Button variant="outline" size="sm" onClick={resetAll}>Nueva analítica</Button>
@@ -167,10 +167,10 @@ export default function BloodTestAnalysis() {
         <div className="max-w-2xl mx-auto px-4 pb-3 flex gap-2">
           {(["upload", "analyze", "results"] as const).map((s, i) => (
             <div key={s} className="flex items-center gap-2">
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${step === s ? "bg-blue-500 text-white" : (["upload", "analyze", "results"].indexOf(step) > i ? "bg-green-500 text-white" : "bg-gray-200 text-gray-500")}`}>
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${step === s ? "bg-blue-500 text-white" : (["upload", "analyze", "results"].indexOf(step) > i ? "bg-green-500 text-white" : "bg-gray-200 text-muted-foreground")}`}>
                 {i + 1}
               </div>
-              <span className={`text-xs ${step === s ? "text-blue-600 font-medium" : "text-gray-400"}`}>
+              <span className={`text-xs ${step === s ? "text-blue-600 font-medium" : "text-muted-foreground/70"}`}>
                 {s === "upload" ? "Subir" : s === "analyze" ? "Confirmar" : "Resultados"}
               </span>
               {i < 2 && <div className="w-8 h-px bg-gray-200" />}
@@ -187,7 +187,7 @@ export default function BloodTestAnalysis() {
             <Card>
               <CardHeader className="pb-3">
                 <CardTitle className="text-base">Sube tu analítica</CardTitle>
-                <p className="text-sm text-gray-500">PDF o imagen de tu analítica de sangre</p>
+                <p className="text-sm text-muted-foreground">PDF o imagen de tu analítica de sangre</p>
               </CardHeader>
               <CardContent className="space-y-4">
                 <div
@@ -198,15 +198,15 @@ export default function BloodTestAnalysis() {
                     <div className="flex items-center justify-center gap-2">
                       <FileText className="w-8 h-8 text-blue-500" />
                       <div className="text-left">
-                        <p className="font-medium text-gray-800 text-sm">{fileName}</p>
-                        <p className="text-xs text-gray-500">Toca para cambiar</p>
+                        <p className="font-medium text-foreground text-sm">{fileName}</p>
+                        <p className="text-xs text-muted-foreground">Toca para cambiar</p>
                       </div>
                     </div>
                   ) : (
                     <div className="space-y-2">
                       <Upload className="w-10 h-10 text-blue-400 mx-auto" />
-                      <p className="font-medium text-gray-700">Sube tu analítica</p>
-                      <p className="text-xs text-gray-400">PDF, JPG, PNG — máx. 16 MB</p>
+                      <p className="font-medium text-foreground/80">Sube tu analítica</p>
+                      <p className="text-xs text-muted-foreground/70">PDF, JPG, PNG — máx. 16 MB</p>
                     </div>
                   )}
                 </div>
@@ -236,14 +236,14 @@ export default function BloodTestAnalysis() {
             {/* Manual entry alternative */}
             <Card className="border-dashed">
               <CardContent className="pt-4">
-                <p className="text-sm font-medium text-gray-700 mb-3">¿No tienes el PDF? Introduce los valores manualmente</p>
+                <p className="text-sm font-medium text-foreground/80 mb-3">¿No tienes el PDF? Introduce los valores manualmente</p>
                 <div className="space-y-2">
                   {manualValues.map((v, idx) => (
                     <div key={idx} className="flex gap-2 items-center">
                       <Input placeholder="Parámetro (ej: Glucosa)" value={v.name} onChange={e => updateManualValue(idx, "name", e.target.value)} className="flex-1 text-sm" />
                       <Input placeholder="Valor" value={v.value} onChange={e => updateManualValue(idx, "value", e.target.value)} className="w-20 text-sm" />
                       <Input placeholder="Unidad" value={v.unit} onChange={e => updateManualValue(idx, "unit", e.target.value)} className="w-20 text-sm" />
-                      <Button variant="ghost" size="icon" className="h-8 w-8 text-gray-400" onClick={() => removeManualValue(idx)}><Trash2 className="w-3 h-3" /></Button>
+                      <Button variant="ghost" size="icon" className="h-8 w-8 text-muted-foreground/70" onClick={() => removeManualValue(idx)}><Trash2 className="w-3 h-3" /></Button>
                     </div>
                   ))}
                   <Button variant="outline" size="sm" onClick={addManualValue}><Plus className="w-3 h-3 mr-1" /> Añadir valor</Button>
@@ -267,10 +267,10 @@ export default function BloodTestAnalysis() {
                   {history.slice(0, 3).map((h: { id: number; testDate?: string | null; labName?: string | null; analysisJson?: string | null }) => {
                     const a = h.analysisJson ? JSON.parse(h.analysisJson as string) as BloodAnalysis : null;
                     return (
-                      <div key={h.id} className="flex items-center justify-between p-2 bg-gray-50 rounded-lg">
+                      <div key={h.id} className="flex items-center justify-between p-2 bg-muted/30 rounded-lg">
                         <div>
                           <p className="text-sm font-medium">{h.testDate ? new Date(h.testDate).toLocaleDateString("es-ES") : "Sin fecha"}</p>
-                          <p className="text-xs text-gray-500">{h.labName ?? "Laboratorio no especificado"}</p>
+                          <p className="text-xs text-muted-foreground">{h.labName ?? "Laboratorio no especificado"}</p>
                         </div>
                         {a?.overallScore && (
                           <span className={`text-lg font-bold ${SCORE_COLOR(a.overallScore)}`}>{a.overallScore}/100</span>
@@ -292,8 +292,8 @@ export default function BloodTestAnalysis() {
                 <Activity className="w-8 h-8 text-blue-500" />
               </div>
               <div>
-                <h2 className="font-bold text-gray-900">Analítica lista para analizar</h2>
-                <p className="text-sm text-gray-500 mt-1">La IA leerá tus valores y generará recomendaciones nutricionales personalizadas</p>
+                <h2 className="font-bold text-foreground">Analítica lista para analizar</h2>
+                <p className="text-sm text-muted-foreground mt-1">La IA leerá tus valores y generará recomendaciones nutricionales personalizadas</p>
               </div>
               <div className="bg-blue-50 rounded-lg p-3 text-left space-y-1">
                 <p className="text-xs text-blue-700 font-medium">¿Qué analizará la IA?</p>
@@ -329,7 +329,7 @@ export default function BloodTestAnalysis() {
                   <div>
                     <p className="text-sm opacity-90">Puntuación de salud</p>
                     <p className="text-5xl font-black mt-1">{analysis.overallScore}<span className="text-2xl">/100</span></p>
-                    <Badge className="mt-2 bg-white/20 text-white border-white/30 capitalize">{analysis.overallStatus}</Badge>
+                    <Badge className="mt-2 bg-card/20 text-white border-white/30 capitalize">{analysis.overallStatus}</Badge>
                   </div>
                   <div className="w-20 h-20 rounded-full border-4 border-white/30 flex items-center justify-center">
                     <Activity className="w-10 h-10 text-white/80" />
@@ -343,13 +343,13 @@ export default function BloodTestAnalysis() {
               <Card>
                 <CardContent className="pt-4">
                   <button className="w-full flex items-center justify-between" onClick={() => toggleSection("findings")}>
-                    <span className="font-semibold text-gray-900 flex items-center gap-2"><AlertTriangle className="w-4 h-4 text-amber-500" /> Hallazgos clave</span>
+                    <span className="font-semibold text-foreground flex items-center gap-2"><AlertTriangle className="w-4 h-4 text-amber-500" /> Hallazgos clave</span>
                     {expandedSection === "findings" ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                   </button>
                   {expandedSection === "findings" && (
                     <ul className="mt-3 space-y-2">
                       {analysis.keyFindings.map((f, i) => (
-                        <li key={i} className="flex gap-2 text-sm text-gray-700">
+                        <li key={i} className="flex gap-2 text-sm text-foreground/80">
                           <span className="text-amber-500 mt-0.5">•</span>{f}
                         </li>
                       ))}
@@ -363,7 +363,7 @@ export default function BloodTestAnalysis() {
             {analysis.nutritionalDeficiencies?.length > 0 && (
               <Card className="border-red-100">
                 <CardContent className="pt-4">
-                  <p className="font-semibold text-gray-900 flex items-center gap-2 mb-3">
+                  <p className="font-semibold text-foreground flex items-center gap-2 mb-3">
                     <XCircle className="w-4 h-4 text-red-500" /> Deficiencias nutricionales detectadas
                   </p>
                   <div className="flex flex-wrap gap-2">
@@ -380,7 +380,7 @@ export default function BloodTestAnalysis() {
               <Card>
                 <CardContent className="pt-4">
                   <button className="w-full flex items-center justify-between mb-3" onClick={() => toggleSection("values")}>
-                    <span className="font-semibold text-gray-900">Valores extraídos ({analysis.extractedValues.length})</span>
+                    <span className="font-semibold text-foreground">Valores extraídos ({analysis.extractedValues.length})</span>
                     {expandedSection === "values" ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                   </button>
                   {expandedSection === "values" && (
@@ -416,7 +416,7 @@ export default function BloodTestAnalysis() {
               <Card>
                 <CardContent className="pt-4">
                   <button className="w-full flex items-center justify-between mb-3" onClick={() => toggleSection("recs")}>
-                    <span className="font-semibold text-gray-900 flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-500" /> Recomendaciones</span>
+                    <span className="font-semibold text-foreground flex items-center gap-2"><CheckCircle className="w-4 h-4 text-green-500" /> Recomendaciones</span>
                     {expandedSection === "recs" ? <ChevronUp className="w-4 h-4" /> : <ChevronDown className="w-4 h-4" />}
                   </button>
                   {expandedSection === "recs" && (
@@ -431,7 +431,7 @@ export default function BloodTestAnalysis() {
                           {r.foods && r.foods.length > 0 && (
                             <div className="flex flex-wrap gap-1 mt-2">
                               {r.foods.map((f, j) => (
-                                <span key={j} className="text-xs bg-white/60 px-2 py-0.5 rounded-full">{f}</span>
+                                <span key={j} className="text-xs bg-card/60 px-2 py-0.5 rounded-full">{f}</span>
                               ))}
                             </div>
                           )}
@@ -460,7 +460,7 @@ export default function BloodTestAnalysis() {
               </Card>
             )}
 
-            <p className="text-xs text-center text-gray-400 px-4">
+            <p className="text-xs text-center text-muted-foreground/70 px-4">
               Este análisis es orientativo y no sustituye la consulta médica profesional. Consulta siempre con tu médico o dietista.
             </p>
           </div>

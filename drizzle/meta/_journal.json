@@ -610,6 +610,13 @@
       "when": 1780493769920,
       "tag": "0086_empty_alice",
       "breakpoints": true
+    },
+    {
+      "idx": 87,
+      "version": "7",
+      "when": 1780500386013,
+      "tag": "0087_unusual_shinobi_shaw",
+      "breakpoints": true
     }
   ]
 }

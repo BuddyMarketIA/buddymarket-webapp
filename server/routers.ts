@@ -10,6 +10,7 @@ import { codesRouter } from "./routers/codes";
 import { supportRouter } from "./routers/support";
 import { householdRouter } from "./routers/household";
 import { householdRecipesRouter } from "./routers/householdRecipes";
+import { householdMenusRouter } from "./routers/householdMenus";
 import { expertPatientsRouter } from "./routers/expertPatients";
 import { expertDashboardRouter } from "./routers/expertDashboard";
 import { makerAnalyticsRouter } from "./routers/makerAnalytics";
@@ -279,6 +280,7 @@ export const appRouter = router({
   support: supportRouter,
   household: householdRouter,
   householdRecipes: householdRecipesRouter,
+  householdMenus: householdMenusRouter,
   expertPatients: expertPatientsRouter,
   expertDashboard: expertDashboardRouter,
   expertFeatureRequests: expertFeatureRequestsRouter,

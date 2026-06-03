@@ -45,7 +45,7 @@ const CATEGORY_COLORS: Record<string, string> = {
   proteína: "bg-red-100 text-red-800",
   lácteo: "bg-blue-100 text-blue-800",
   cereal: "bg-amber-100 text-amber-800",
-  otro: "bg-gray-100 text-gray-700",
+  otro: "bg-muted/50 text-foreground/80",
 };
 
 export default function FridgeScanner() {
@@ -138,14 +138,14 @@ export default function FridgeScanner() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-orange-50 to-amber-50 pb-24">
       {/* Header */}
-      <div className="bg-white border-b sticky top-0 z-10">
+      <div className="bg-card border-b sticky top-0 z-10">
         <div className="max-w-2xl mx-auto px-4 py-4 flex items-center justify-between">
           <div>
-            <h1 className="text-xl font-bold text-gray-900 flex items-center gap-2">
+            <h1 className="text-xl font-bold text-foreground flex items-center gap-2">
               <Camera className="w-5 h-5 text-orange-500" />
               Escáner de nevera
             </h1>
-            <p className="text-sm text-gray-500">Fotografía tu nevera y genera un menú con lo que tienes</p>
+            <p className="text-sm text-muted-foreground">Fotografía tu nevera y genera un menú con lo que tienes</p>
           </div>
           {step !== "upload" && (
             <Button variant="outline" size="sm" onClick={resetScan}>
@@ -157,10 +157,10 @@ export default function FridgeScanner() {
         <div className="max-w-2xl mx-auto px-4 pb-3 flex gap-2">
           {(["upload", "review", "menu"] as const).map((s, i) => (
             <div key={s} className="flex items-center gap-2">
-              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${step === s ? "bg-orange-500 text-white" : (["upload", "review", "menu"].indexOf(step) > i ? "bg-green-500 text-white" : "bg-gray-200 text-gray-500")}`}>
+              <div className={`w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold transition-colors ${step === s ? "bg-orange-500 text-white" : (["upload", "review", "menu"].indexOf(step) > i ? "bg-green-500 text-white" : "bg-gray-200 text-muted-foreground")}`}>
                 {i + 1}
               </div>
-              <span className={`text-xs ${step === s ? "text-orange-600 font-medium" : "text-gray-400"}`}>
+              <span className={`text-xs ${step === s ? "text-orange-600 font-medium" : "text-muted-foreground/70"}`}>
                 {s === "upload" ? "Foto" : s === "review" ? "Revisar" : "Menú"}
               </span>
               {i < 2 && <div className="w-8 h-px bg-gray-200" />}
@@ -187,10 +187,10 @@ export default function FridgeScanner() {
                       <Camera className="w-8 h-8 text-orange-500" />
                     </div>
                     <div>
-                      <p className="font-semibold text-gray-700">Fotografía tu nevera o despensa</p>
-                      <p className="text-sm text-gray-500 mt-1">Toca para seleccionar una imagen</p>
+                      <p className="font-semibold text-foreground/80">Fotografía tu nevera o despensa</p>
+                      <p className="text-sm text-muted-foreground mt-1">Toca para seleccionar una imagen</p>
                     </div>
-                    <div className="flex items-center gap-2 justify-center text-xs text-gray-400">
+                    <div className="flex items-center gap-2 justify-center text-xs text-muted-foreground/70">
                       <Upload className="w-3 h-3" />
                       <span>JPG, PNG, WEBP — máx. 16 MB</span>
                     </div>
@@ -209,7 +209,7 @@ export default function FridgeScanner() {
                       {scanMutation.isPending ? <><Loader2 className="w-4 h-4 mr-2 animate-spin" /> Analizando...</> : <><Sparkles className="w-4 h-4 mr-2" /> Detectar ingredientes</>}
                     </Button>
                   </div>
-                  <p className="text-xs text-center text-gray-400">La IA analizará tu nevera y detectará todos los alimentos visibles</p>
+                  <p className="text-xs text-center text-muted-foreground/70">La IA analizará tu nevera y detectará todos los alimentos visibles</p>
                 </div>
               )}
             </CardContent>
@@ -225,11 +225,11 @@ export default function FridgeScanner() {
                   <CardTitle className="text-base">Ingredientes detectados</CardTitle>
                   <Badge variant="secondary">{ingredients.length} encontrados</Badge>
                 </div>
-                <p className="text-sm text-gray-500">Revisa y edita la lista antes de generar el menú</p>
+                <p className="text-sm text-muted-foreground">Revisa y edita la lista antes de generar el menú</p>
               </CardHeader>
               <CardContent className="space-y-2">
                 {ingredients.map((ing, idx) => (
-                  <div key={idx} className="flex items-center gap-2 p-2 bg-gray-50 rounded-lg">
+                  <div key={idx} className="flex items-center gap-2 p-2 bg-muted/30 rounded-lg">
                     <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${CATEGORY_COLORS[ing.category ?? "otro"] ?? CATEGORY_COLORS.otro}`}>
                       {ing.category ?? "otro"}
                     </span>
@@ -242,10 +242,10 @@ export default function FridgeScanner() {
                     <Input
                       value={ing.estimatedAmount ?? ""}
                       onChange={(e) => updateIngredient(idx, "estimatedAmount", e.target.value)}
-                      className="w-20 h-7 text-xs border-0 bg-transparent focus-visible:ring-0 p-0 text-gray-500"
+                      className="w-20 h-7 text-xs border-0 bg-transparent focus-visible:ring-0 p-0 text-muted-foreground"
                       placeholder="cantidad"
                     />
-                    <Button variant="ghost" size="icon" className="h-7 w-7 text-gray-400 hover:text-red-500" onClick={() => removeIngredient(idx)}>
+                    <Button variant="ghost" size="icon" className="h-7 w-7 text-muted-foreground/70 hover:text-red-500" onClick={() => removeIngredient(idx)}>
                       <Trash2 className="w-3 h-3" />
                     </Button>
                   </div>
@@ -317,21 +317,21 @@ export default function FridgeScanner() {
                     <div className="flex items-start justify-between cursor-pointer" onClick={() => setExpandedMeal(expandedMeal === idx ? null : idx)}>
                       <div className="flex-1">
                         <p className="text-xs font-medium text-orange-600 mb-1">{MEAL_TIME_LABELS[meal.mealTime] ?? meal.mealTime}</p>
-                        <p className="font-semibold text-gray-900">{meal.name}</p>
-                        <div className="flex gap-3 mt-1 text-xs text-gray-500">
+                        <p className="font-semibold text-foreground">{meal.name}</p>
+                        <div className="flex gap-3 mt-1 text-xs text-muted-foreground">
                           {meal.calories && <span>🔥 {meal.calories} kcal</span>}
                           {meal.protein && <span>💪 {meal.protein}g prot.</span>}
                           {meal.recipe?.prepTime && <span>⏱️ {meal.recipe.prepTime} min</span>}
                         </div>
                       </div>
-                      <span className="text-gray-400 text-sm">{expandedMeal === idx ? "▲" : "▼"}</span>
+                      <span className="text-muted-foreground/70 text-sm">{expandedMeal === idx ? "▲" : "▼"}</span>
                     </div>
 
                     {expandedMeal === idx && (
                       <div className="mt-3 pt-3 border-t space-y-3">
                         {meal.ingredients && meal.ingredients.length > 0 && (
                           <div>
-                            <p className="text-xs font-semibold text-gray-600 mb-1">Ingredientes:</p>
+                            <p className="text-xs font-semibold text-muted-foreground mb-1">Ingredientes:</p>
                             <div className="flex flex-wrap gap-1">
                               {meal.ingredients.map((ing, i) => (
                                 <span key={i} className="text-xs bg-orange-50 text-orange-700 px-2 py-0.5 rounded-full">{ing}</span>
@@ -341,10 +341,10 @@ export default function FridgeScanner() {
                         )}
                         {meal.recipe?.steps && meal.recipe.steps.length > 0 && (
                           <div>
-                            <p className="text-xs font-semibold text-gray-600 mb-1">Preparación:</p>
+                            <p className="text-xs font-semibold text-muted-foreground mb-1">Preparación:</p>
                             <ol className="space-y-1">
                               {meal.recipe.steps.map((step, i) => (
-                                <li key={i} className="text-xs text-gray-700 flex gap-2">
+                                <li key={i} className="text-xs text-foreground/80 flex gap-2">
                                   <span className="w-4 h-4 bg-orange-100 text-orange-700 rounded-full flex items-center justify-center flex-shrink-0 font-bold text-[10px]">{i + 1}</span>
                                   <span>{step}</span>
                                 </li>

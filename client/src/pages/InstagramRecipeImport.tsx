@@ -102,10 +102,10 @@ export default function InstagramRecipeImport() {
     <div className="max-w-2xl mx-auto px-4 pt-6 pb-24">
       {/* Header */}
       <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">
+        <h1 className="text-2xl font-bold text-foreground">
           📸 Importar Receta de Instagram
         </h1>
-        <p className="text-sm text-gray-500 mt-1">
+        <p className="text-sm text-muted-foreground mt-1">
           Pega el enlace de un reel o post de Instagram y te generaremos una receta original inspirada en él.
         </p>
       </div>
@@ -123,7 +123,7 @@ export default function InstagramRecipeImport() {
             className="text-sm"
           />
           <div>
-            <label className="text-sm text-gray-600 mb-1 block">
+            <label className="text-sm text-muted-foreground mb-1 block">
               Descripción del post (opcional, mejora el resultado)
             </label>
             <Textarea
@@ -137,13 +137,13 @@ export default function InstagramRecipeImport() {
 
           {/* Preferences */}
           <div className="space-y-2">
-            <p className="text-sm font-medium text-gray-700">Preferencias:</p>
+            <p className="text-sm font-medium text-foreground/80">Preferencias:</p>
             <label className="flex items-center gap-2 text-sm">
               <input
                 type="checkbox"
                 checked={lowerCalories}
                 onChange={(e) => setLowerCalories(e.target.checked)}
-                className="rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+                className="rounded border-border/80 text-orange-500 focus:ring-orange-500"
               />
               Más baja en calorías (máx. 400 kcal)
             </label>
@@ -152,7 +152,7 @@ export default function InstagramRecipeImport() {
                 type="checkbox"
                 checked={higherProtein}
                 onChange={(e) => setHigherProtein(e.target.checked)}
-                className="rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+                className="rounded border-border/80 text-orange-500 focus:ring-orange-500"
               />
               Más alta en proteína (mín. 35g)
             </label>
@@ -161,7 +161,7 @@ export default function InstagramRecipeImport() {
                 type="checkbox"
                 checked={adaptAllergies}
                 onChange={(e) => setAdaptAllergies(e.target.checked)}
-                className="rounded border-gray-300 text-orange-500 focus:ring-orange-500"
+                className="rounded border-border/80 text-orange-500 focus:ring-orange-500"
               />
               Adaptar a mis alergias
             </label>
@@ -201,32 +201,32 @@ export default function InstagramRecipeImport() {
             <CardTitle className="text-lg text-green-800 flex items-center gap-2">
               ✅ {result.recipe.name}
             </CardTitle>
-            <p className="text-sm text-gray-600">{result.recipe.description}</p>
-            <p className="text-xs text-gray-400 italic mt-1">💡 {result.recipe.inspirationNote}</p>
+            <p className="text-sm text-muted-foreground">{result.recipe.description}</p>
+            <p className="text-xs text-muted-foreground/70 italic mt-1">💡 {result.recipe.inspirationNote}</p>
           </CardHeader>
           <CardContent className="space-y-4">
             {/* Macros */}
             <div className="grid grid-cols-4 gap-2">
-              <div className="bg-white rounded-lg p-2 text-center shadow-sm">
+              <div className="bg-card rounded-lg p-2 text-center shadow-sm">
                 <div className="text-lg font-bold text-orange-500">{result.recipe.caloriesPerServing}</div>
-                <div className="text-xs text-gray-500">kcal</div>
+                <div className="text-xs text-muted-foreground">kcal</div>
               </div>
-              <div className="bg-white rounded-lg p-2 text-center shadow-sm">
+              <div className="bg-card rounded-lg p-2 text-center shadow-sm">
                 <div className="text-lg font-bold text-green-600">{result.recipe.proteinsPerServing}g</div>
-                <div className="text-xs text-gray-500">Proteína</div>
+                <div className="text-xs text-muted-foreground">Proteína</div>
               </div>
-              <div className="bg-white rounded-lg p-2 text-center shadow-sm">
+              <div className="bg-card rounded-lg p-2 text-center shadow-sm">
                 <div className="text-lg font-bold text-blue-500">{result.recipe.carbsPerServing}g</div>
-                <div className="text-xs text-gray-500">Carbos</div>
+                <div className="text-xs text-muted-foreground">Carbos</div>
               </div>
-              <div className="bg-white rounded-lg p-2 text-center shadow-sm">
+              <div className="bg-card rounded-lg p-2 text-center shadow-sm">
                 <div className="text-lg font-bold text-yellow-600">{result.recipe.fatsPerServing}g</div>
-                <div className="text-xs text-gray-500">Grasas</div>
+                <div className="text-xs text-muted-foreground">Grasas</div>
               </div>
             </div>
 
             {/* Info */}
-            <div className="flex gap-3 text-xs text-gray-600">
+            <div className="flex gap-3 text-xs text-muted-foreground">
               <span>⏱ {result.recipe.preparationTime + result.recipe.cookTime} min</span>
               <span>🍽 {result.recipe.servings} ración{result.recipe.servings > 1 ? "es" : ""}</span>
               <span>📍 {result.recipe.cuisineType}</span>
@@ -238,9 +238,9 @@ export default function InstagramRecipeImport() {
               <h3 className="font-semibold text-sm mb-2">🥗 Ingredientes</h3>
               <ul className="space-y-1">
                 {result.recipe.ingredients.map((ing, i) => (
-                  <li key={i} className="text-sm text-gray-700 flex justify-between">
+                  <li key={i} className="text-sm text-foreground/80 flex justify-between">
                     <span>{ing.name}</span>
-                    <span className="text-gray-500">{ing.amount} {ing.unit}</span>
+                    <span className="text-muted-foreground">{ing.amount} {ing.unit}</span>
                   </li>
                 ))}
               </ul>
@@ -251,7 +251,7 @@ export default function InstagramRecipeImport() {
               <h3 className="font-semibold text-sm mb-2">👨‍🍳 Instrucciones</h3>
               <ol className="space-y-2">
                 {result.recipe.instructions.map((inst) => (
-                  <li key={inst.step} className="text-sm text-gray-700">
+                  <li key={inst.step} className="text-sm text-foreground/80">
                     <span className="font-medium text-orange-500">{inst.step}.</span> {inst.text}
                   </li>
                 ))}
@@ -276,7 +276,7 @@ export default function InstagramRecipeImport() {
               {saveMutation.isPending ? "Guardando..." : "💾 Guardar en mis recetas"}
             </Button>
 
-            <p className="text-xs text-gray-400 text-center">{result.disclaimer}</p>
+            <p className="text-xs text-muted-foreground/70 text-center">{result.disclaimer}</p>
           </CardContent>
         </Card>
       )}
