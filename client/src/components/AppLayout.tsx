@@ -155,6 +155,137 @@ function matchesPath(location: string, paths: string[]) {
   return paths.some((p) => location === p || location.startsWith(p + "/"));
 }
 
+// ─── Collapsible sidebar group ────────────────────────────────────────────────
+function CollapsibleGroup({ label, icon, items, location, onClose, isApprovedExpert, isApprovedMaker, hasPendingApplication, t, defaultOpen = true }: any) {
+  const hasActive = items.some((item: any) => location === item.to || location.startsWith(item.to + "/"));
+  const [open, setOpen] = React.useState(defaultOpen || hasActive);
+  const filteredItems = items.filter((item: any) => {
+    if (item.key === "/app/expert/dashboard" && !isApprovedExpert) return false;
+    if (item.key === "/app/buddy-expert-dashboard" && !isApprovedExpert) return false;
+    if (item.key === "/app/expert/patients" && !isApprovedExpert) return false;
+    if (item.key === "/app/expert/chat" && !isApprovedExpert) return false;
+    if (item.key === "/app/buddy-maker-dashboard" && !isApprovedMaker) return false;
+    if (item.key === "/app/maker-analytics" && !isApprovedMaker) return false;
+    if (item.key === "/app/buddy-application" && (isApprovedExpert || isApprovedMaker || hasPendingApplication)) return false;
+    return true;
+  });
+  if (filteredItems.length === 0) return null;
+  return (
+    <div style={{ marginBottom: "2px" }}>
+      <button
+        onClick={() => setOpen(!open)}
+        style={{ width: "100%", display: "flex", alignItems: "center", gap: "6px", padding: "5px 10px 5px 14px", background: "none", border: "none", cursor: "pointer", borderRadius: "8px", transition: "background 0.15s" }}
+      >
+        {icon && <span style={{ fontSize: "12px", opacity: 0.8 }}>{icon}</span>}
+        <span style={{ fontSize: "10.5px", fontWeight: 800, color: hasActive ? "#F97316" : "#9ca3af", letterSpacing: "0.08em", textTransform: "uppercase", flex: 1, textAlign: "left" }}>{label}</span>
+        <svg width="11" height="11" viewBox="0 0 24 24" fill="none" stroke={hasActive ? "#F97316" : "#9ca3af"} strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" style={{ transition: "transform 0.2s", transform: open ? "rotate(180deg)" : "rotate(0deg)", flexShrink: 0 }}><polyline points="6 9 12 15 18 9"/></svg>
+      </button>
+      {open && (
+        <div style={{ paddingLeft: "2px", paddingBottom: "4px" }}>
+          {filteredItems.map((item: any) => {
+            const isPendingItem = item.key === "register" && hasPendingApplication;
+            if (item.to.startsWith("http")) {
+              return (
+                <a key={item.key} href={item.to} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
+                  <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "8px 12px", borderRadius: "9px", background: "linear-gradient(135deg, rgba(249,115,22,0.08), rgba(251,146,60,0.06))", cursor: "pointer", marginBottom: "1px", border: "1px solid rgba(249,115,22,0.15)" }}>
+                    <span style={{ fontSize: "15px", width: "20px", textAlign: "center" }}>{item.emoji}</span>
+                    <span style={{ fontSize: "13px", fontWeight: 700, color: "#F97316" }}>{item.label}</span>
+                    <svg style={{ marginLeft: "auto" }} width="11" height="11" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
+                  </div>
+                </a>
+              );
+            }
+            const active = location === item.to || location.startsWith(item.to + "/");
+            return (
+              <Link key={item.key} href={item.to} onClick={onClose}>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "8px 12px", borderRadius: "9px", background: active ? "rgba(249,115,22,0.10)" : isPendingItem ? "rgba(234,179,8,0.08)" : "transparent", cursor: "pointer", marginBottom: "1px", transition: "background 0.15s" }}>
+                  <span style={{ fontSize: "15px", width: "20px", textAlign: "center" }}>{item.emoji}</span>
+                  <span style={{ fontSize: "13px", fontWeight: active ? 700 : 500, color: active ? "#F97316" : isPendingItem ? "#B45309" : "var(--sidebar-text, #374151)" }}>{item.label}</span>
+                  {isPendingItem && <span style={{ marginLeft: "auto", fontSize: "10px", fontWeight: 700, background: "#FEF3C7", color: "#D97706", borderRadius: "6px", padding: "2px 6px" }}>{t("common.pending", "En revisi\u00f3n")}</span>}
+                  {(item as any).badge && !isPendingItem && <span style={{ marginLeft: "auto", fontSize: "9px", fontWeight: 800, background: "linear-gradient(135deg, #7c3aed, #6d28d9)", color: "white", borderRadius: "6px", padding: "2px 6px", letterSpacing: "0.03em" }}>{(item as any).badge}</span>}
+                  {active && !isPendingItem && !(item as any).badge && <div style={{ marginLeft: "auto", width: "5px", height: "5px", borderRadius: "50%", background: "#F97316" }} />}
+                </div>
+              </Link>
+            );
+          })}
+        </div>
+      )}
+    </div>
+  );
+}
+
+// ─── Sidebar Nav with visual hierarchy ────────────────────────────────────────
+function SidebarNav({ activeGroups, location, onClose, isApprovedExpert, isApprovedMaker, hasPendingApplication, t, pendingFeedbackCount }: any) {
+  const collapsedByDefault = new Set(["BuddyPet", "BuddyKids", "Familia", "Comunidad", "Tienda & Bienestar", "Mi Cuenta"]);
+  const groupIcons: Record<string, string> = {
+    "Nutrici\u00f3n": "\ud83e\udd57",
+    "Men\u00fas": "\ud83d\udcc5",
+    "Compra": "\ud83d\uded2",
+    "BuddyPet": "\ud83d\udc3e",
+    "BuddyKids": "\ud83d\udc76",
+    "Familia": "\ud83c\udfe1",
+    "Comunidad": "\ud83e\udd1d",
+    "Tienda & Bienestar": "\ud83d\udecd\ufe0f",
+    "Mi Cuenta": "\ud83d\udc64",
+    "Mi Panel": "\ud83d\udcca",
+    "Mis Pacientes": "\ud83e\uddd1\u200d\u2695\ufe0f",
+    "Mis Creaciones": "\ud83d\udc68\u200d\ud83c\udf73",
+  };
+  return (
+    <nav style={{ flex: 1, padding: "8px", overflowY: "auto" }}>
+      {activeGroups.map((group: any) => {
+        const isAlwaysOpen = !collapsedByDefault.has(group.label);
+        if (group.label === "Inicio") {
+          const filteredItems = group.items.filter((item: any) => {
+            if (item.key === "/app/buddy-application" && (isApprovedExpert || isApprovedMaker || hasPendingApplication)) return false;
+            return true;
+          });
+          return (
+            <div key={group.label} style={{ marginBottom: "6px" }}>
+              {filteredItems.map((item: any) => {
+                const active = location === item.to || location.startsWith(item.to + "/");
+                return (
+                  <Link key={item.key} href={item.to} onClick={onClose}>
+                    <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "9px 13px", borderRadius: "10px", background: active ? "rgba(249,115,22,0.12)" : "transparent", cursor: "pointer", marginBottom: "2px", transition: "background 0.15s" }}>
+                      <span style={{ fontSize: "16px", width: "20px", textAlign: "center" }}>{item.emoji}</span>
+                      <span style={{ fontSize: "14px", fontWeight: active ? 700 : 600, color: active ? "#F97316" : "var(--sidebar-text, #374151)" }}>{item.label}</span>
+                      {active && <div style={{ marginLeft: "auto", width: "5px", height: "5px", borderRadius: "50%", background: "#F97316" }} />}
+                    </div>
+                  </Link>
+                );
+              })}
+              <div style={{ height: "1px", background: "rgba(0,0,0,0.06)", margin: "6px 4px 4px" }} />
+            </div>
+          );
+        }
+        return (
+          <CollapsibleGroup
+            key={group.label}
+            label={group.label}
+            icon={groupIcons[group.label]}
+            items={group.items}
+            location={location}
+            onClose={onClose}
+            isApprovedExpert={isApprovedExpert}
+            isApprovedMaker={isApprovedMaker}
+            hasPendingApplication={hasPendingApplication}
+            t={t}
+            defaultOpen={isAlwaysOpen}
+          />
+        );
+      })}
+      <div style={{ height: "1px", background: "rgba(0,0,0,0.06)", margin: "8px 4px" }} />
+      <Link href="/app/admin" onClick={onClose}>
+        <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "8px 12px", borderRadius: "9px", background: location === "/app/admin" ? "rgba(249,115,22,0.10)" : "transparent", cursor: "pointer", marginBottom: "1px" }}>
+          <span style={{ fontSize: "15px", width: "20px", textAlign: "center" }}>\ud83d\udee1\ufe0f</span>
+          <span style={{ fontSize: "13px", fontWeight: location === "/app/admin" ? 700 : 500, color: location === "/app/admin" ? "#F97316" : "var(--sidebar-text, #374151)" }}>{t("sidebar.administration")}</span>
+        </div>
+      </Link>
+      <FeedbackButton asSidebarItem onClose={onClose} pendingCount={pendingFeedbackCount ?? 0} />
+    </nav>
+  );
+}
+
 // ─── Sidebar content (shared between mobile drawer and desktop fixed) ─────────
 function SidebarContent({
   location,
@@ -206,57 +337,17 @@ function SidebarContent({
         </div>
       )}
 
-      {/* Sidebar Nav */}
-      <nav style={{ flex: 1, padding: "12px", overflowY: "auto" }}>
-        {activeGroups.map((group: any, gi: number) => (
-          <div key={group.label} style={{ marginBottom: "2px" }}>
-            <p style={{ margin: gi === 0 ? "4px 0 4px 16px" : "10px 0 4px 16px", fontSize: "11px", fontWeight: 800, color: "#9ca3af", letterSpacing: "0.08em", textTransform: "uppercase" }}>{group.label}</p>
-            {group.items.filter((item: any) => {
-              if (item.key === "/app/expert/dashboard" && !isApprovedExpert) return false;
-              if (item.key === "/app/buddy-expert-dashboard" && !isApprovedExpert) return false;
-              if (item.key === "/app/expert/patients" && !isApprovedExpert) return false;
-              if (item.key === "/app/expert/chat" && !isApprovedExpert) return false;
-              if (item.key === "/app/buddy-maker-dashboard" && !isApprovedMaker) return false;
-              if (item.key === "/app/maker-analytics" && !isApprovedMaker) return false;
-              if (item.key === "/app/buddy-application" && (isApprovedExpert || isApprovedMaker || hasPendingApplication)) return false;
-              return true;
-            }).map((item: any) => {
-              const isPendingItem = item.key === "register" && hasPendingApplication;
-              if (item.to.startsWith("http")) {
-                return (
-                  <a key={item.key} href={item.to} target="_blank" rel="noopener noreferrer" style={{ textDecoration: "none" }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: "12px", padding: "9px 14px", borderRadius: "10px", background: "linear-gradient(135deg, rgba(249,115,22,0.08), rgba(251,146,60,0.06))", cursor: "pointer", marginBottom: "2px", border: "1px solid rgba(249,115,22,0.15)" }}>
-                      <span style={{ fontSize: "17px", width: "22px", textAlign: "center" }}>{item.emoji}</span>
-                      <span style={{ fontSize: "14px", fontWeight: 700, color: "#F97316" }}>{item.label}</span>
-                      <svg style={{ marginLeft: "auto" }} width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M18 13v6a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h6"/><polyline points="15 3 21 3 21 9"/><line x1="10" y1="14" x2="21" y2="3"/></svg>
-                    </div>
-                  </a>
-                );
-              }
-              const active = location === item.to || location.startsWith(item.to + "/");
-              return (
-                <Link key={item.key} href={item.to} onClick={onClose}>
-                  <div style={{ display: "flex", alignItems: "center", gap: "11px", padding: "9px 13px", borderRadius: "10px", background: active ? "rgba(249,115,22,0.10)" : isPendingItem ? "rgba(234,179,8,0.08)" : "transparent", cursor: "pointer", marginBottom: "1px", transition: "background 0.15s" }}>
-                    <span style={{ fontSize: "17px", width: "21px", textAlign: "center" }}>{item.emoji}</span>
-                    <span style={{ fontSize: "14px", fontWeight: active ? 700 : 500, color: active ? "#F97316" : isPendingItem ? "#B45309" : "var(--sidebar-text, #374151)" }}>{item.label}</span>
-                    {isPendingItem && <span style={{ marginLeft: "auto", fontSize: "10px", fontWeight: 700, background: "#FEF3C7", color: "#D97706", borderRadius: "6px", padding: "2px 6px" }}>{t("common.pending", "En revisión")}</span>}
-                    {(item as any).badge && !isPendingItem && <span style={{ marginLeft: "auto", fontSize: "9px", fontWeight: 800, background: "linear-gradient(135deg, #7c3aed, #6d28d9)", color: "white", borderRadius: "6px", padding: "2px 6px", letterSpacing: "0.03em" }}>{(item as any).badge}</span>}
-                    {active && !isPendingItem && !(item as any).badge && <div style={{ marginLeft: "auto", width: "5px", height: "5px", borderRadius: "50%", background: "#F97316" }} />}
-                  </div>
-                </Link>
-              );
-            })}
-          </div>
-        ))}
-        <div style={{ height: "1px", background: "rgba(0,0,0,0.06)", margin: "10px 4px" }} />
-        <Link href="/app/admin" onClick={onClose}>
-          <div style={{ display: "flex", alignItems: "center", gap: "11px", padding: "9px 13px", borderRadius: "10px", background: location === "/app/admin" ? "rgba(249,115,22,0.10)" : "transparent", cursor: "pointer", marginBottom: "2px" }}>
-            <span style={{ fontSize: "17px", width: "21px", textAlign: "center" }}>🛡️</span>
-            <span style={{ fontSize: "14px", fontWeight: location === "/app/admin" ? 700 : 500, color: location === "/app/admin" ? "#F97316" : "var(--sidebar-text, #374151)" }}>{t("sidebar.administration")}</span>
-          </div>
-        </Link>
-        <FeedbackButton asSidebarItem onClose={onClose} pendingCount={pendingFeedbackCount ?? 0} />
-      </nav>
+      {/* Sidebar Nav — hierarchical with collapsible groups */}
+      <SidebarNav
+        activeGroups={activeGroups}
+        location={location}
+        onClose={onClose}
+        isApprovedExpert={isApprovedExpert}
+        isApprovedMaker={isApprovedMaker}
+        hasPendingApplication={hasPendingApplication}
+        t={t}
+        pendingFeedbackCount={pendingFeedbackCount}
+      />
 
       {/* Sidebar Footer */}
       <div style={{ padding: "14px 18px", borderTop: "1px solid rgba(0,0,0,0.06)", display: "flex", alignItems: "center", gap: "10px" }}>
