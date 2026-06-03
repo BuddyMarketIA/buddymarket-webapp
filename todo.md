@@ -3836,3 +3836,4 @@
 - [ ] Menús familiares por persona: procedimientos en household router
 - [ ] Menús familiares por persona: UI en página Familia
 - [ ] Asignar rol BuddyExpert a luis@buddymarket.io cuando se registre
+- [x] Exportar menú familiar a PDF e impresión: utilidad exportHouseholdMenuPDF.ts con jsPDF (orientación landscape A4), botón "⋯" con dropdown en cada tarjeta de menú (Exportar PDF / Imprimir / Eliminar), botones rápidos en vista expandida, función printHouseholdMenu con ventana HTML optimizada para impresión

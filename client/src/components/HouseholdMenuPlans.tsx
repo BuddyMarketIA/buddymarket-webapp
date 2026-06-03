@@ -7,7 +7,20 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
-import { Loader2, Plus, Sparkles, ChevronDown, ChevronUp, Trash2, Calendar, User, Baby } from "lucide-react";
+import {
+  Loader2, Sparkles, ChevronDown, ChevronUp, Trash2, Calendar,
+  FileDown, Printer, MoreHorizontal,
+} from "lucide-react";
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuSeparator,
+  DropdownMenuTrigger,
+} from "@/components/ui/dropdown-menu";
+import { exportHouseholdMenuToPDF, printHouseholdMenu } from "@/lib/exportHouseholdMenuPDF";
+
+// ─── Constants ────────────────────────────────────────────────────────────────
 
 const DAYS = [
   { key: "monday", label: "Lunes" },
@@ -30,7 +43,7 @@ const MENU_TYPE_LABELS: Record<string, { label: string; emoji: string; color: st
   adults: { label: "Adultos", emoji: "👤", color: "bg-blue-100 text-blue-700" },
   kids: { label: "Niños", emoji: "👶", color: "bg-pink-100 text-pink-700" },
   baby: { label: "Bebé", emoji: "🍼", color: "bg-purple-100 text-purple-700" },
-  custom: { label: "Personalizado", emoji: "⚙️", color: "bg-gray-100 text-gray-700" },
+  custom: { label: "Personalizado", emoji: "⚙️", color: "bg-muted text-muted-foreground" },
   family: { label: "Familiar", emoji: "🏠", color: "bg-orange-100 text-orange-700" },
 };
 
@@ -43,6 +56,8 @@ function getWeekMonday(date: Date = new Date()): Date {
   return d;
 }
 
+// ─── Types ────────────────────────────────────────────────────────────────────
+
 interface Member {
   id: number;
   displayName: string | null;
@@ -51,13 +66,30 @@ interface Member {
   memberType?: string | null;
 }
 
-interface GenerateMenuDialogProps {
+interface MenuPlanData {
+  id: number;
+  name: string;
+  menuType: string;
+  weekStartDate: Date | string;
+  meals: Record<string, Record<string, string>> | null;
+  notes: string | null;
+  generatedByAI: boolean;
+  memberId?: number | null;
+  memberName?: string | null;
+  memberType?: string | null;
+}
+
+// ─── Generate Menu Dialog ─────────────────────────────────────────────────────
+
+function GenerateMenuDialog({
+  open,
+  onClose,
+  members,
+}: {
   open: boolean;
   onClose: () => void;
   members: Member[];
-}
-
-function GenerateMenuDialog({ open, onClose, members }: GenerateMenuDialogProps) {
+}) {
   const [memberId, setMemberId] = useState<string>("family");
   const [menuType, setMenuType] = useState<"adults" | "kids" | "baby" | "custom" | "family">("family");
   const [weekDate, setWeekDate] = useState(() => getWeekMonday().toISOString().split("T")[0]);
@@ -174,29 +206,40 @@ function GenerateMenuDialog({ open, onClose, members }: GenerateMenuDialogProps)
   );
 }
 
-interface MenuPlanCardProps {
-  plan: {
-    id: number;
-    name: string;
-    menuType: string;
-    weekStartDate: Date | string;
-    meals: Record<string, Record<string, string>> | null;
-    notes: string | null;
-    generatedByAI: boolean;
-    memberName?: string | null;
-    memberType?: string | null;
-  };
-  onDelete: (id: number) => void;
-}
+// ─── Menu Plan Card ───────────────────────────────────────────────────────────
 
-function MenuPlanCard({ plan, onDelete }: MenuPlanCardProps) {
+function MenuPlanCard({
+  plan,
+  onDelete,
+}: {
+  plan: MenuPlanData;
+  onDelete: (id: number) => void;
+}) {
   const [expanded, setExpanded] = useState(false);
+  const [exporting, setExporting] = useState(false);
   const typeInfo = MENU_TYPE_LABELS[plan.menuType] || MENU_TYPE_LABELS.adults;
   const weekDate = new Date(plan.weekStartDate);
   const weekLabel = weekDate.toLocaleDateString("es-ES", { day: "numeric", month: "long" });
 
+  const handleExportPDF = async () => {
+    setExporting(true);
+    try {
+      exportHouseholdMenuToPDF(plan);
+      toast.success("PDF descargado correctamente");
+    } catch {
+      toast.error("Error al generar el PDF");
+    } finally {
+      setExporting(false);
+    }
+  };
+
+  const handlePrint = () => {
+    printHouseholdMenu(plan);
+  };
+
   return (
     <div className="rounded-2xl border border-border bg-card overflow-hidden">
+      {/* Card header — clickable to expand */}
       <button
         className="w-full px-4 py-3 flex items-center gap-3 text-left hover:bg-muted/30 transition-colors"
         onClick={() => setExpanded(!expanded)}
@@ -211,7 +254,7 @@ function MenuPlanCard({ plan, onDelete }: MenuPlanCardProps) {
               </Badge>
             )}
           </div>
-          <div className="flex items-center gap-2 mt-0.5">
+          <div className="flex items-center gap-2 mt-0.5 flex-wrap">
             <span className={`text-xs px-1.5 py-0.5 rounded-md font-medium ${typeInfo.color}`}>
               {typeInfo.label}
             </span>
@@ -221,20 +264,99 @@ function MenuPlanCard({ plan, onDelete }: MenuPlanCardProps) {
             </span>
           </div>
         </div>
-        <div className="flex items-center gap-2 shrink-0">
-          <button
-            onClick={(e) => { e.stopPropagation(); onDelete(plan.id); }}
-            className="p-1.5 rounded-lg hover:bg-red-50 text-muted-foreground hover:text-red-500 transition-colors"
+
+        {/* Action buttons — stop propagation so they don't toggle expand */}
+        <div className="flex items-center gap-1 shrink-0" onClick={(e) => e.stopPropagation()}>
+          {/* Export / Print dropdown */}
+          <DropdownMenu>
+            <DropdownMenuTrigger asChild>
+              <Button
+                variant="ghost"
+                size="icon"
+                className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                disabled={exporting}
+              >
+                {exporting
+                  ? <Loader2 className="w-4 h-4 animate-spin" />
+                  : <MoreHorizontal className="w-4 h-4" />
+                }
+              </Button>
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-44">
+              <DropdownMenuItem
+                onClick={handleExportPDF}
+                className="gap-2 cursor-pointer"
+              >
+                <FileDown className="w-4 h-4 text-orange-500" />
+                Exportar a PDF
+              </DropdownMenuItem>
+              <DropdownMenuItem
+                onClick={handlePrint}
+                className="gap-2 cursor-pointer"
+              >
+                <Printer className="w-4 h-4 text-blue-500" />
+                Imprimir
+              </DropdownMenuItem>
+              <DropdownMenuSeparator />
+              <DropdownMenuItem
+                onClick={() => onDelete(plan.id)}
+                className="gap-2 cursor-pointer text-destructive focus:text-destructive"
+              >
+                <Trash2 className="w-4 h-4" />
+                Eliminar menú
+              </DropdownMenuItem>
+            </DropdownMenuContent>
+          </DropdownMenu>
+
+          {/* Expand toggle */}
+          <Button
+            variant="ghost"
+            size="icon"
+            className="h-8 w-8 text-muted-foreground"
+            onClick={() => setExpanded(!expanded)}
           >
-            <Trash2 className="w-3.5 h-3.5" />
-          </button>
-          {expanded ? <ChevronUp className="w-4 h-4 text-muted-foreground" /> : <ChevronDown className="w-4 h-4 text-muted-foreground" />}
+            {expanded
+              ? <ChevronUp className="w-4 h-4" />
+              : <ChevronDown className="w-4 h-4" />
+            }
+          </Button>
         </div>
       </button>
 
+      {/* Expanded table view */}
       {expanded && plan.meals && (
-        <div className="border-t border-border px-4 py-3">
-          <div className="overflow-x-auto">
+        <div className="border-t border-border">
+          {/* Quick action bar inside expanded view */}
+          <div className="px-4 py-2 flex items-center justify-between bg-muted/20 border-b border-border/50">
+            <span className="text-xs text-muted-foreground">Vista semanal completa</span>
+            <div className="flex items-center gap-1.5">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs gap-1.5"
+                onClick={handleExportPDF}
+                disabled={exporting}
+              >
+                {exporting
+                  ? <Loader2 className="w-3 h-3 animate-spin" />
+                  : <FileDown className="w-3 h-3 text-orange-500" />
+                }
+                PDF
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-7 text-xs gap-1.5"
+                onClick={handlePrint}
+              >
+                <Printer className="w-3 h-3 text-blue-500" />
+                Imprimir
+              </Button>
+            </div>
+          </div>
+
+          {/* Weekly table */}
+          <div className="px-4 py-3 overflow-x-auto">
             <table className="w-full text-xs min-w-[500px]">
               <thead>
                 <tr>
@@ -251,7 +373,7 @@ function MenuPlanCard({ plan, onDelete }: MenuPlanCardProps) {
                   const dayMeals = plan.meals?.[day.key] || {};
                   return (
                     <tr key={day.key} className="border-t border-border/50">
-                      <td className="py-2 pr-3 font-medium text-foreground">{day.label}</td>
+                      <td className="py-2 pr-3 font-semibold text-orange-600 dark:text-orange-400">{day.label}</td>
                       {MEALS.map(m => (
                         <td key={m.key} className="py-2 px-2 text-muted-foreground">
                           {dayMeals[m.key] || <span className="text-border">—</span>}
@@ -263,16 +385,19 @@ function MenuPlanCard({ plan, onDelete }: MenuPlanCardProps) {
               </tbody>
             </table>
           </div>
+
           {plan.notes && (
-            <p className="mt-3 text-xs text-muted-foreground bg-muted/40 rounded-lg px-3 py-2">
+            <div className="mx-4 mb-3 text-xs text-muted-foreground bg-orange-50 dark:bg-orange-950/30 border border-orange-100 dark:border-orange-900/50 rounded-lg px-3 py-2">
               📝 {plan.notes}
-            </p>
+            </div>
           )}
         </div>
       )}
     </div>
   );
 }
+
+// ─── Main Component ───────────────────────────────────────────────────────────
 
 interface HouseholdMenuPlansProps {
   members: Member[];

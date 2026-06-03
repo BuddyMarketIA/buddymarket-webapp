@@ -11,15 +11,6 @@ import {
 import { invokeLLM } from "../_core/llm";
 
 // ─── Helper: get Monday of the week for a given date ─────────────────────────
-function getWeekMonday(date: Date = new Date()): Date {
-  const d = new Date(date);
-  const day = d.getDay();
-  const diff = d.getDate() - day + (day === 0 ? -6 : 1);
-  d.setDate(diff);
-  d.setHours(0, 0, 0, 0);
-  return d;
-}
-
 // ─── Helper: get membership and verify household ──────────────────────────────
 async function getMyMembership(db: Awaited<ReturnType<typeof getDb>>, userId: number) {
   if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
@@ -77,7 +68,7 @@ export const householdMenusRouter = router({
       name: z.string().min(1).max(120),
       menuType: z.enum(["adults", "kids", "baby", "custom", "family"]).default("adults"),
       weekStartDate: z.string(), // ISO date string (Monday)
-      meals: z.record(z.object({
+      meals: z.record(z.string(), z.object({
         breakfast: z.string().optional(),
         lunch: z.string().optional(),
         dinner: z.string().optional(),
@@ -110,7 +101,7 @@ export const householdMenusRouter = router({
     .input(z.object({
       planId: z.number(),
       name: z.string().min(1).max(120).optional(),
-      meals: z.record(z.object({
+      meals: z.record(z.string(), z.object({
         breakfast: z.string().optional(),
         lunch: z.string().optional(),
         dinner: z.string().optional(),
@@ -215,8 +206,8 @@ Formato JSON exacto:
           ],
           response_format: { type: "json_object" } as any,
         });
-        const content = response.choices?.[0]?.message?.content || "{}";
-        meals = JSON.parse(content);
+        const rawContent = response.choices?.[0]?.message?.content || "{}";
+        meals = JSON.parse(typeof rawContent === "string" ? rawContent : JSON.stringify(rawContent));
       } catch {
         // Fallback: basic menu structure
         const days = ["monday", "tuesday", "wednesday", "thursday", "friday", "saturday", "sunday"];
@@ -257,12 +248,11 @@ Formato JSON exacto:
     .query(async ({ ctx, input }) => {
       const db = await getDb();
       const membership = await getMyMembership(db, ctx.user.id);
-      const weekStart = getWeekMonday();
       const conditions = [
         eq(householdMenuPlans.householdId, membership.householdId),
         eq(householdMenuPlans.isActive, true),
       ];
-      if (input?.memberId !== undefined) {
+      if (input?.memberId !== undefined && input.memberId !== null) {
         conditions.push(eq(householdMenuPlans.memberId, input.memberId));
       }
       const [plan] = await db!.select().from(householdMenuPlans)
