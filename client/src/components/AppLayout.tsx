@@ -218,18 +218,18 @@ function CollapsibleGroup({ label, icon, items, location, onClose, isApprovedExp
 function SidebarNav({ activeGroups, location, onClose, isApprovedExpert, isApprovedMaker, hasPendingApplication, t, pendingFeedbackCount }: any) {
   const collapsedByDefault = new Set(["BuddyPet", "BuddyKids", "Familia", "Comunidad", "Tienda & Bienestar", "Mi Cuenta"]);
   const groupIcons: Record<string, string> = {
-    "Nutrici\u00f3n": "\ud83e\udd57",
-    "Men\u00fas": "\ud83d\udcc5",
-    "Compra": "\ud83d\uded2",
-    "BuddyPet": "\ud83d\udc3e",
-    "BuddyKids": "\ud83d\udc76",
-    "Familia": "\ud83c\udfe1",
-    "Comunidad": "\ud83e\udd1d",
-    "Tienda & Bienestar": "\ud83d\udecd\ufe0f",
-    "Mi Cuenta": "\ud83d\udc64",
-    "Mi Panel": "\ud83d\udcca",
-    "Mis Pacientes": "\ud83e\uddd1\u200d\u2695\ufe0f",
-    "Mis Creaciones": "\ud83d\udc68\u200d\ud83c\udf73",
+    "Nutrición": "🥗",
+    "Menús": "📅",
+    "Compra": "🛒",
+    "BuddyPet": "🐾",
+    "BuddyKids": "👶",
+    "Familia": "🏡",
+    "Comunidad": "🤝",
+    "Tienda & Bienestar": "🛍️",
+    "Mi Cuenta": "👤",
+    "Mi Panel": "📊",
+    "Mis Pacientes": "🧑‍⚕️",
+    "Mis Creaciones": "👨‍🍳",
   };
   return (
     <nav style={{ flex: 1, padding: "8px", overflowY: "auto" }}>
@@ -277,7 +277,7 @@ function SidebarNav({ activeGroups, location, onClose, isApprovedExpert, isAppro
       <div style={{ height: "1px", background: "rgba(0,0,0,0.06)", margin: "8px 4px" }} />
       <Link href="/app/admin" onClick={onClose}>
         <div style={{ display: "flex", alignItems: "center", gap: "10px", padding: "8px 12px", borderRadius: "9px", background: location === "/app/admin" ? "rgba(249,115,22,0.10)" : "transparent", cursor: "pointer", marginBottom: "1px" }}>
-          <span style={{ fontSize: "15px", width: "20px", textAlign: "center" }}>\ud83d\udee1\ufe0f</span>
+          <span style={{ fontSize: "15px", width: "20px", textAlign: "center" }}>🛡️</span>
           <span style={{ fontSize: "13px", fontWeight: location === "/app/admin" ? 700 : 500, color: location === "/app/admin" ? "#F97316" : "var(--sidebar-text, #374151)" }}>{t("sidebar.administration")}</span>
         </div>
       </Link>

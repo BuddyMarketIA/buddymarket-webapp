@@ -1067,12 +1067,12 @@ export default function Dashboard() {
             </a>
           </div>
         </div>
-
-        {/* Disclaimer */}
-        <p style={{ fontSize: "12px", color: C.textMuted, textAlign: "center", margin: "24px 0 0", lineHeight: 1.5 }}>
-          Buddy One no constituye asesoramiento médico o nutricional profesional. Consulta a un profesional.
-        </p>
       </div>
+
+      {/* Disclaimer */}
+      <p style={{ fontSize: "12px", color: C.textMuted, textAlign: "center", margin: "24px 0 0", lineHeight: 1.5 }}>
+        Buddy One no constituye asesoramiento médico o nutricional profesional. Consulta a un profesional.
+      </p>
     </div>
     );
   }
