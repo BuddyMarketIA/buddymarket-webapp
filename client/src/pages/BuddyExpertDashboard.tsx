@@ -71,7 +71,7 @@ export default function BuddyExpertDashboard() {
     })),
   });
 
-  const { data: myProfile, refetch: refetchProfile } = trpc.buddyExperts.getMyProfile.useQuery(undefined, {
+  const { data: myProfile, isLoading: profileLoading, refetch: refetchProfile } = trpc.buddyExperts.getMyProfile.useQuery(undefined, {
     enabled: !!user,
   });
 
@@ -444,7 +444,12 @@ export default function BuddyExpertDashboard() {
         </div>
 
         {/* Profile Tab */}
-        {activeTab === "/app/profile" && (
+        {activeTab === "/app/profile" && profileLoading && (
+          <div className="flex items-center justify-center py-16">
+            <div className="w-8 h-8 border-4 border-orange-400 border-t-transparent rounded-full animate-spin" />
+          </div>
+        )}
+        {activeTab === "/app/profile" && !profileLoading && (
           <form onSubmit={handleSaveProfile} className="bg-background rounded-3xl p-6 shadow-sm border border-border/50 space-y-4">
             <h2 className="text-base font-black text-foreground mb-2">
               {myProfile ? "Editar perfil de experto" : "Crear perfil de experto"}

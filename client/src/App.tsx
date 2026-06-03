@@ -141,6 +141,8 @@ const Soporte = lazyWithRetry(() => import("./pages/Soporte"));
 const RegisterBuddyExpert = lazyWithRetry(() => import("./pages/RegisterBuddyExpert"));
 const RegisterBuddyMaker = lazyWithRetry(() => import("./pages/RegisterBuddyMaker"));
 const ExpertPatients = lazyWithRetry(() => import("./pages/ExpertPatients"));
+const PatientImport = lazyWithRetry(() => import("./pages/PatientImport"));
+const PatientDetailOffline = lazyWithRetry(() => import("./pages/PatientDetail"));
 const ExpertPatientDetail = lazyWithRetry(() => import("./pages/ExpertPatientDetail"));
 const ExpertChat = lazyWithRetry(() => import("./pages/ExpertChat"));
 const ExpertDashboard = lazyWithRetry(() => import("./pages/ExpertDashboard"));
@@ -339,7 +341,9 @@ function Router() {
       <Route path="/app/marketplace">{() => <ProtectedRoute component={MarketplacePage} />}</Route>
       <Route path="/app/corporate-dashboard">{() => <ProtectedRoute component={CorporateDashboard} />}</Route>
       <Route path="/app/expert/patients">{() => <ProtectedPage><ExpertPatients /></ProtectedPage>}</Route>
+      <Route path="/app/expert/patients/import">{() => <ProtectedPage><PatientImport /></ProtectedPage>}</Route>
       <Route path="/app/expert/patients/:id">{() => <ProtectedPage><ExpertPatientDetail /></ProtectedPage>}</Route>
+      <Route path="/app/expert/offline-patients/:id">{() => <ProtectedPage><PatientDetailOffline /></ProtectedPage>}</Route>
       <Route path="/app/expert/chat">{() => <ProtectedPage><ExpertChat /></ProtectedPage>}</Route>
       <Route path="/app/expert/menu-templates">{() => <ProtectedPage><MenuTemplates /></ProtectedPage>}</Route>
       <Route path="/app/expert/food-substitutions">{() => <ProtectedPage><FoodSubstitutions /></ProtectedPage>}</Route>

@@ -354,15 +354,38 @@ export default function ExpertDashboard() {
     <div style={{ background: "#F5F0EB", minHeight: "100%", fontFamily: "'Plus Jakarta Sans','Inter',sans-serif" }}>
       <style>{`@keyframes pulse{0%,100%{opacity:1}50%{opacity:0.6}} *{box-sizing:border-box}`}</style>
 
-      {/* Banner de bienvenida contextual */}
-      {!stats?.activePatients && !isLoading && (
-        <div style={{ margin: "12px 16px 0", background: "linear-gradient(135deg,#FFF7ED,#FFEDD5)", border: "1px solid #FED7AA", borderRadius: 14, padding: "14px 16px" }}>
-          <p style={{ margin: "0 0 6px", fontSize: 14, fontWeight: 800, color: "#92400E" }}>👋 Bienvenido a tu panel de experto</p>
-          <p style={{ margin: 0, fontSize: 12, color: "#78350F", lineHeight: 1.5 }}>
-            Desde aquí gestionarás a tus pacientes, verás sus progresos y tendrás acceso rápido a tus citas del día. Para empezar, <strong>invita a tu primer paciente</strong> desde la sección “Pacientes”.
-          </p>
-        </div>
-      )}
+      {/* Checklist de activación — se muestra hasta que todos los pasos estén completos */}
+      {!isLoading && (() => {
+        const expertProf = (data as any)?.expertProfile;
+        const steps = [
+          { done: !!(expertProf?.specialty && expertProf?.bio), label: "Completa tu perfil profesional", action: () => nav("/app/buddy-expert-dashboard"), cta: "Completar" },
+          { done: !!(expertProf?.availabilitySlots?.length || gcalStatus?.connected), label: "Configura tu disponibilidad", action: () => nav("/app/expert/availability"), cta: "Configurar" },
+          { done: (stats?.activePatients ?? 0) > 0, label: "Consigue tu primer paciente", action: () => nav("/app/expert/patients"), cta: "Invitar" },
+          { done: gcalStatus?.connected === true, label: "Conecta Google Calendar (opcional)", action: () => gcalAuthData?.url && (window.location.href = gcalAuthData.url), cta: "Conectar" },
+        ];
+        const allDone = steps.every(s => s.done);
+        if (allDone) return null;
+        const completedCount = steps.filter(s => s.done).length;
+        return (
+          <div style={{ margin: "12px 16px 0", background: "linear-gradient(135deg,#FFF7ED,#FFEDD5)", border: "1px solid #FED7AA", borderRadius: 14, padding: "14px 16px" }}>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginBottom: 10 }}>
+              <p style={{ margin: 0, fontSize: 14, fontWeight: 800, color: "#92400E" }}>🚀 Activa tu perfil profesional</p>
+              <span style={{ fontSize: 11, fontWeight: 700, color: "#F97316", background: "#FFF", borderRadius: 20, padding: "2px 8px", border: "1px solid #FED7AA" }}>{completedCount}/{steps.length}</span>
+            </div>
+            <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+              {steps.map((step, i) => (
+                <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <span style={{ width: 18, height: 18, borderRadius: "50%", background: step.done ? "#22C55E" : "#E5E7EB", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 10, color: step.done ? "#fff" : "#9CA3AF", flexShrink: 0, fontWeight: 700 }}>{step.done ? "✓" : i + 1}</span>
+                  <span style={{ flex: 1, fontSize: 12, color: step.done ? "#6B7280" : "#78350F", textDecoration: step.done ? "line-through" : "none" }}>{step.label}</span>
+                  {!step.done && (
+                    <button onClick={step.action} style={{ fontSize: 11, fontWeight: 700, color: "#F97316", background: "none", border: "1px solid #FED7AA", borderRadius: 8, padding: "2px 8px", cursor: "pointer" }}>{step.cta}</button>
+                  )}
+                </div>
+              ))}
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Header */}
       <div style={{ padding: "16px 16px 12px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 8, flexWrap: "wrap" }}>
@@ -428,7 +451,7 @@ export default function ExpertDashboard() {
               count={isLoading ? "…" : (stats?.todayAppointments ?? 0)}
               title="Citas"
               subtitle="hoy"
-              linkText="Paciente(s) de ping..."
+              linkText="Ver agenda"
               bg="linear-gradient(135deg,#2D9B8A,#1E8070)"
               href="/app/expert/patients"
             />

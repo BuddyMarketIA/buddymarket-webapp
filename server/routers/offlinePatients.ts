@@ -1,0 +1,529 @@
+import { z } from "zod";
+import { protectedProcedure, router } from "../_core/trpc";
+import { getDb } from "../db";
+import {
+  offlinePatients,
+  patientWeightHistory,
+  patientPlansSent,
+} from "../../drizzle/schema";
+import { eq, and, desc, inArray } from "drizzle-orm";
+import { invokeLLM } from "../_core/llm";
+import { TRPCError } from "@trpc/server";
+import { Resend } from "resend";
+
+// ─── Helpers ──────────────────────────────────────────────────────────────────
+function requireExpert(ctx: any) {
+  const u = ctx.user;
+  const isExpert =
+    u.role === "buddyexpert" ||
+    u.accountType === "buddyexpert" ||
+    (u.secondaryRoles ?? []).includes("buddyexpert");
+  if (!isExpert) throw new TRPCError({ code: "FORBIDDEN", message: "Solo nutricionistas pueden acceder a esta función" });
+  return u;
+}
+
+// Build a plain-text weekly menu from menuData JSON for WhatsApp / email body
+function buildMenuText(menuData: any, patientName: string, weekLabel: string): string {
+  const days = menuData?.days ?? menuData?.menu ?? [];
+  const lines: string[] = [
+    `🥗 PLAN NUTRICIONAL — ${patientName}`,
+    `📅 Semana: ${weekLabel}`,
+    "",
+  ];
+  for (const day of days) {
+    lines.push(`━━ ${day.day ?? day.name ?? ""} ━━`);
+    for (const meal of day.meals ?? []) {
+      const food = typeof meal.food === "string" ? meal.food : (meal.food ?? []).join(", ");
+      if (food) lines.push(`  • ${meal.name}: ${food}`);
+    }
+    lines.push("");
+  }
+  lines.push("─────────────────────────────");
+  lines.push("Generado con BuddyOne · buddyone.app");
+  return lines.join("\n");
+}
+
+// Build HTML email for the patient plan
+function buildMenuHtml(menuData: any, patientName: string, weekLabel: string, weightHistory: any[]): string {
+  const days = menuData?.days ?? menuData?.menu ?? [];
+
+  // Weight evolution table
+  let weightSection = "";
+  if (weightHistory.length > 0) {
+    const rows = weightHistory
+      .slice(-6)
+      .map((w) => {
+        const date = new Date(w.recordedAt).toLocaleDateString("es-ES", { day: "numeric", month: "short" });
+        return `<tr><td style="padding:6px 12px;border-bottom:1px solid #f3f4f6">${date}</td><td style="padding:6px 12px;border-bottom:1px solid #f3f4f6;font-weight:700">${w.weightKg} kg</td>${w.bodyFatPct ? `<td style="padding:6px 12px;border-bottom:1px solid #f3f4f6">${w.bodyFatPct}%</td>` : "<td></td>"}</tr>`;
+      })
+      .join("");
+    weightSection = `
+      <h2 style="color:#1B2B4B;font-size:16px;margin:24px 0 8px">📊 Tu evolución de peso</h2>
+      <table style="width:100%;border-collapse:collapse;font-size:13px;color:#374151">
+        <thead><tr style="background:#f9fafb"><th style="padding:8px 12px;text-align:left">Fecha</th><th style="padding:8px 12px;text-align:left">Peso</th><th style="padding:8px 12px;text-align:left">% Grasa</th></tr></thead>
+        <tbody>${rows}</tbody>
+      </table>`;
+  }
+
+  // Menu days
+  const daysHtml = days
+    .map((day: any) => {
+      const meals = (day.meals ?? [])
+        .filter((m: any) => m.food)
+        .map((m: any) => {
+          const food = typeof m.food === "string" ? m.food : (m.food ?? []).join(", ");
+          return `<tr><td style="padding:5px 10px;color:#6b7280;font-size:12px;width:110px">${m.name}</td><td style="padding:5px 10px;font-size:13px">${food}</td></tr>`;
+        })
+        .join("");
+      if (!meals) return "";
+      return `
+        <div style="margin-bottom:16px">
+          <div style="background:#F97316;color:#fff;font-weight:700;font-size:13px;padding:6px 12px;border-radius:8px 8px 0 0">${day.day ?? day.name}</div>
+          <table style="width:100%;border-collapse:collapse;background:#fff;border:1px solid #f3f4f6;border-top:none;border-radius:0 0 8px 8px">${meals}</table>
+        </div>`;
+    })
+    .join("");
+
+  return `<!DOCTYPE html>
+<html lang="es">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
+<body style="margin:0;padding:0;background:#f9fafb;font-family:system-ui,-apple-system,sans-serif">
+  <div style="max-width:600px;margin:0 auto;padding:24px 16px">
+    <div style="background:linear-gradient(135deg,#F97316,#FB923C);border-radius:16px;padding:24px;margin-bottom:24px;text-align:center">
+      <h1 style="color:#fff;margin:0;font-size:22px">🥗 Tu Plan Nutricional</h1>
+      <p style="color:rgba(255,255,255,0.9);margin:6px 0 0;font-size:14px">Semana: ${weekLabel}</p>
+    </div>
+    <div style="background:#fff;border-radius:16px;padding:20px;margin-bottom:16px;box-shadow:0 2px 8px rgba(0,0,0,0.06)">
+      <p style="margin:0 0 4px;font-size:14px;color:#6b7280">Hola,</p>
+      <h2 style="margin:0 0 16px;color:#1B2B4B;font-size:18px">${patientName}</h2>
+      <p style="color:#374151;font-size:14px;margin:0 0 20px">Tu nutricionista ha preparado el siguiente plan para esta semana. Recuerda hidratarte bien y consultar cualquier duda en tu próxima cita.</p>
+      ${weightSection}
+      <h2 style="color:#1B2B4B;font-size:16px;margin:24px 0 12px">📅 Menú semanal</h2>
+      ${daysHtml}
+    </div>
+    <p style="text-align:center;font-size:11px;color:#9ca3af;margin-top:16px">Generado con <strong>BuddyOne</strong> · buddyone.app · Este plan es orientativo y no sustituye el consejo médico profesional.</p>
+  </div>
+</body>
+</html>`;
+}
+
+// ─── Router ───────────────────────────────────────────────────────────────────
+export const offlinePatientsRouter = router({
+  // List all patients for the expert
+  list: protectedProcedure
+    .input(z.object({ search: z.string().optional() }).optional())
+    .query(async ({ ctx, input }) => {
+      requireExpert(ctx);
+      const db = getDb();
+      const { ilike, or } = await import('drizzle-orm');
+      let query = db
+        .select()
+        .from(offlinePatients)
+        .where(and(
+          eq(offlinePatients.expertUserId, ctx.user.id),
+          eq(offlinePatients.isActive, true),
+          input?.search ? or(
+            ilike(offlinePatients.name, `%${input.search}%`),
+            ilike(offlinePatients.email, `%${input.search}%`)
+          ) : undefined
+        ))
+        .orderBy(desc(offlinePatients.createdAt));
+      const patients = await query;
+      // Get latest weight for each patient
+      const patientIds = patients.map(p => p.id);
+      const { inArray, max } = await import('drizzle-orm');
+      const latestWeights = await db
+        .select({ patientId: patientWeightHistory.patientId, weight: max(patientWeightHistory.weightKg) })
+        .from(patientWeightHistory)
+        .where(inArray(patientWeightHistory.patientId, patientIds))
+        .groupBy(patientWeightHistory.patientId);
+      const weightMap = new Map(latestWeights.map(w => [w.patientId, w.weight]));
+      return patients.map(p => ({ ...p, lastWeight: weightMap.get(p.id) ?? p.initialWeightKg }));
+    }),
+
+  // Get single patient
+  getById: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .query(async ({ ctx, input }) => {
+      requireExpert(ctx);
+      const [patient] = await getDb()
+        .select()
+        .from(offlinePatients)
+        .where(and(eq(offlinePatients.id, input.id), eq(offlinePatients.expertUserId, ctx.user.id)));
+      if (!patient) throw new TRPCError({ code: "NOT_FOUND" });
+      return patient;
+    }),
+
+  // Create single patient
+  create: protectedProcedure
+    .input(z.object({
+      name: z.string().min(1),
+      email: z.string().email().optional(),
+      phone: z.string().optional(),
+      birthDate: z.string().optional(),
+      gender: z.string().optional(),
+      heightCm: z.number().optional(),
+      initialWeightKg: z.number().optional(),
+      targetWeightKg: z.number().optional(),
+      activityLevel: z.string().optional(),
+      objective: z.string().optional(),
+      allergies: z.string().optional(),
+      pathologies: z.string().optional(),
+      medications: z.string().optional(),
+      notes: z.string().optional(),
+      consultationFrequencyWeeks: z.number().default(2),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      requireExpert(ctx);
+      const [created] = await getDb().insert(offlinePatients).values({
+        ...input,
+        birthDate: input.birthDate ? new Date(input.birthDate) : undefined,
+        expertUserId: ctx.user.id,
+      }).returning();
+      return created;
+    }),
+
+  // Update patient
+  update: protectedProcedure
+    .input(z.object({
+      id: z.number(),
+      name: z.string().min(1).optional(),
+      email: z.string().email().optional(),
+      phone: z.string().optional(),
+      birthDate: z.string().optional(),
+      gender: z.string().optional(),
+      heightCm: z.number().optional(),
+      initialWeightKg: z.number().optional(),
+      targetWeightKg: z.number().optional(),
+      activityLevel: z.string().optional(),
+      objective: z.string().optional(),
+      allergies: z.string().optional(),
+      pathologies: z.string().optional(),
+      medications: z.string().optional(),
+      notes: z.string().optional(),
+      consultationFrequencyWeeks: z.number().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      requireExpert(ctx);
+      const { id, ...data } = input;
+      const [updated] = await db
+        .update(offlinePatients)
+        .set({ ...data, birthDate: data.birthDate ? new Date(data.birthDate) : undefined, updatedAt: new Date() })
+        .where(and(eq(offlinePatients.id, id), eq(offlinePatients.expertUserId, ctx.user.id)))
+        .returning();
+      return updated;
+    }),
+
+  // Soft-delete patient
+  delete: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      requireExpert(ctx);
+      await db
+        .update(offlinePatients)
+        .set({ isActive: false, updatedAt: new Date() })
+        .where(and(eq(offlinePatients.id, input.id), eq(offlinePatients.expertUserId, ctx.user.id)));
+      return { success: true };
+    }),
+
+  // Bulk import from parsed CSV/Excel data
+  bulkImport: protectedProcedure
+    .input(z.object({
+      patients: z.array(z.object({
+        name: z.string().min(1),
+        email: z.string().email().optional().or(z.literal("")),
+        phone: z.string().optional(),
+        birthDate: z.string().optional(),
+        gender: z.string().optional(),
+        heightCm: z.number().optional(),
+        initialWeightKg: z.number().optional(),
+        targetWeightKg: z.number().optional(),
+        activityLevel: z.string().optional(),
+        objective: z.string().optional(),
+        allergies: z.string().optional(),
+        pathologies: z.string().optional(),
+        medications: z.string().optional(),
+        notes: z.string().optional(),
+        consultationFrequencyWeeks: z.number().optional(),
+      })).min(1).max(500),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      requireExpert(ctx);
+      const rows = input.patients.map((p) => ({
+        ...p,
+        email: p.email || undefined,
+        birthDate: p.birthDate ? new Date(p.birthDate) : undefined,
+        expertUserId: ctx.user.id,
+        isActive: true,
+      }));
+      const created = await getDb().insert(offlinePatients).values(rows).returning();
+      return { imported: created.length, patients: created };
+    }),
+
+  // AI-powered field mapping: given raw CSV headers + sample row, return column mapping
+  suggestColumnMapping: protectedProcedure
+    .input(z.object({
+      headers: z.array(z.string()),
+      sampleRow: z.record(z.string(), z.string()),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      requireExpert(ctx);
+      const response = await invokeLLM({
+        messages: [
+          {
+            role: "system",
+            content: `Eres un asistente que mapea columnas de CSV de pacientes de nutricionistas a campos estándar.
+Campos estándar disponibles: name, email, phone, birthDate (YYYY-MM-DD), gender (male/female/other), heightCm (número), initialWeightKg (número), targetWeightKg (número), activityLevel (sedentary/light/moderate/active/very_active), objective (texto), allergies (texto), pathologies (texto), medications (texto), notes (texto), consultationFrequencyWeeks (número).
+Devuelve SOLO un JSON con el mapping: { "columna_csv": "campo_estandar" }. Si una columna no corresponde a ningún campo, omítela.`,
+          },
+          {
+            role: "user",
+            content: `Cabeceras CSV: ${input.headers.join(", ")}\nFila de ejemplo: ${JSON.stringify(input.sampleRow)}`,
+          },
+        ],
+        response_format: {
+          type: "json_schema",
+          json_schema: {
+            name: "column_mapping",
+            strict: true,
+            schema: {
+              type: "object",
+              properties: {
+                mapping: {
+                  type: "object",
+                  description: "Mapping from CSV column name to standard field name",
+                  additionalProperties: { type: "string" },
+                },
+              },
+              required: ["mapping"],
+              additionalProperties: false,
+            },
+          },
+        },
+      });
+      const content = response.choices[0]?.message?.content ?? "{}";
+      const parsed = JSON.parse(content);
+      return parsed.mapping ?? {};
+    }),
+
+  // ─── Weight History ────────────────────────────────────────────────────────
+  getWeightHistory: protectedProcedure
+    .input(z.object({ patientId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      requireExpert(ctx);
+      return getDb()
+        .select()
+        .from(patientWeightHistory)
+        .where(and(eq(patientWeightHistory.patientId, input.patientId), eq(patientWeightHistory.expertUserId, ctx.user.id)))
+        .orderBy(patientWeightHistory.recordedAt);
+    }),
+
+  addWeightRecord: protectedProcedure
+    .input(z.object({
+      patientId: z.number(),
+      weightKg: z.number(),
+      bodyFatPct: z.number().optional(),
+      muscleMassPct: z.number().optional(),
+      waistCm: z.number().optional(),
+      hipCm: z.number().optional(),
+      notes: z.string().optional(),
+      recordedAt: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      requireExpert(ctx);
+      // Verify patient belongs to expert
+      const [patient] = await getDb().select().from(offlinePatients).where(and(eq(offlinePatients.id, input.patientId), eq(offlinePatients.expertUserId, ctx.user.id)));
+      if (!patient) throw new TRPCError({ code: "NOT_FOUND" });
+      const [record] = await getDb().insert(patientWeightHistory).values({
+        patientId: input.patientId,
+        expertUserId: ctx.user.id,
+        weightKg: input.weightKg,
+        bodyFatPct: input.bodyFatPct,
+        muscleMassPct: input.muscleMassPct,
+        waistCm: input.waistCm,
+        hipCm: input.hipCm,
+        notes: input.notes,
+        recordedAt: input.recordedAt ? new Date(input.recordedAt) : new Date(),
+      }).returning();
+      return record;
+    }),
+
+  deleteWeightRecord: protectedProcedure
+    .input(z.object({ id: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      requireExpert(ctx);
+      await getDb().delete(patientWeightHistory).where(and(eq(patientWeightHistory.id, input.id), eq(patientWeightHistory.expertUserId, ctx.user.id)));
+      return { success: true };
+    }),
+
+  // ─── Generate AI menu for offline patient ─────────────────────────────────
+  generatePatientMenu: protectedProcedure
+    .input(z.object({
+      patientId: z.number(),
+      durationWeeks: z.number().min(1).max(2).default(1),
+      extraInstructions: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      requireExpert(ctx);
+      const [patient] = await getDb().select().from(offlinePatients).where(and(eq(offlinePatients.id, input.patientId), eq(offlinePatients.expertUserId, ctx.user.id)));
+      if (!patient) throw new TRPCError({ code: "NOT_FOUND" });
+
+      const weightRecords = await getDb().select().from(patientWeightHistory).where(eq(patientWeightHistory.patientId, input.patientId)).orderBy(desc(patientWeightHistory.recordedAt)).limit(3);
+      const currentWeight = weightRecords[0]?.weightKg ?? patient.initialWeightKg;
+
+      const systemPrompt = `Eres un nutricionista experto. Genera un menú semanal completo y personalizado en JSON.
+Estructura: { "days": [ { "day": "Lunes", "meals": [ { "name": "Desayuno", "food": "descripción" }, ... ] }, ... ] }
+Incluye: Desayuno, Media mañana, Comida, Merienda, Cena para cada día.
+Responde SOLO con el JSON, sin texto adicional.`;
+
+      const userPrompt = `Paciente: ${patient.name}
+Objetivo: ${patient.objective ?? "dieta equilibrada"}
+Peso actual: ${currentWeight ? currentWeight + " kg" : "no especificado"}
+Peso objetivo: ${patient.targetWeightKg ? patient.targetWeightKg + " kg" : "no especificado"}
+Altura: ${patient.heightCm ? patient.heightCm + " cm" : "no especificada"}
+Alergias: ${patient.allergies ?? "ninguna"}
+Patologías: ${patient.pathologies ?? "ninguna"}
+Medicación: ${patient.medications ?? "ninguna"}
+Nivel de actividad: ${patient.activityLevel ?? "moderado"}
+${input.extraInstructions ? "Instrucciones adicionales: " + input.extraInstructions : ""}
+Duración: ${input.durationWeeks} semana(s)`;
+
+      const response = await invokeLLM({ messages: [{ role: "system", content: systemPrompt }, { role: "user", content: userPrompt }] });
+      const content = response.choices[0]?.message?.content ?? "{}";
+      let menuData: any;
+      try {
+        menuData = JSON.parse(content);
+      } catch {
+        const jsonMatch = content.match(/\{[\s\S]*\}/);
+        menuData = jsonMatch ? JSON.parse(jsonMatch[0]) : { days: [] };
+      }
+      return { menuData, patientName: patient.name };
+    }),
+
+  // ─── Send plan by email ────────────────────────────────────────────────────
+  sendPlanByEmail: protectedProcedure
+    .input(z.object({
+      patientId: z.number(),
+      menuData: z.any(),
+      weekStartDate: z.string(),
+      weekEndDate: z.string(),
+      customMessage: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      requireExpert(ctx);
+      const [patient] = await getDb().select().from(offlinePatients).where(and(eq(offlinePatients.id, input.patientId), eq(offlinePatients.expertUserId, ctx.user.id)));
+      if (!patient) throw new TRPCError({ code: "NOT_FOUND" });
+      if (!patient.email) throw new TRPCError({ code: "BAD_REQUEST", message: "El paciente no tiene email registrado" });
+
+      const weightHistory = await getDb().select().from(patientWeightHistory).where(eq(patientWeightHistory.patientId, input.patientId)).orderBy(patientWeightHistory.recordedAt);
+      const weekLabel = `${new Date(input.weekStartDate).toLocaleDateString("es-ES", { day: "numeric", month: "long" })} – ${new Date(input.weekEndDate).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })}`;
+
+      const htmlBody = buildMenuHtml(input.menuData, patient.name, weekLabel, weightHistory);
+
+      const resendKey = process.env.RESEND_API_KEY;
+      if (!resendKey) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Email no configurado" });
+
+      const resend = new Resend(resendKey);
+      await resend.emails.send({
+        from: "BuddyOne <noreply@buddyone.app>",
+        to: patient.email,
+        subject: `Tu plan nutricional — semana del ${new Date(input.weekStartDate).toLocaleDateString("es-ES", { day: "numeric", month: "long" })}`,
+        html: htmlBody,
+      });
+
+      // Log the send
+      await getDb().insert(patientPlansSent).values({
+        patientId: input.patientId,
+        expertUserId: ctx.user.id,
+        channel: "email",
+        subject: `Plan semana ${weekLabel}`,
+        menuData: JSON.stringify(input.menuData),
+        weekStartDate: new Date(input.weekStartDate),
+        weekEndDate: new Date(input.weekEndDate),
+      });
+
+      return { success: true };
+    }),
+
+  // ─── Get WhatsApp message (returns text, user sends manually) ─────────────
+  getWhatsAppMessage: protectedProcedure
+    .input(z.object({
+      patientId: z.number(),
+      menuData: z.any(),
+      weekStartDate: z.string(),
+      weekEndDate: z.string(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      requireExpert(ctx);
+      const [patient] = await getDb().select().from(offlinePatients).where(and(eq(offlinePatients.id, input.patientId), eq(offlinePatients.expertUserId, ctx.user.id)));
+      if (!patient) throw new TRPCError({ code: "NOT_FOUND" });
+
+      const weekLabel = `${new Date(input.weekStartDate).toLocaleDateString("es-ES", { day: "numeric", month: "long" })} – ${new Date(input.weekEndDate).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })}`;
+      const text = buildMenuText(input.menuData, patient.name, weekLabel);
+
+      // Log the send
+      await getDb().insert(patientPlansSent).values({
+        patientId: input.patientId,
+        expertUserId: ctx.user.id,
+        channel: "whatsapp",
+        subject: `Plan semana ${weekLabel}`,
+        menuData: JSON.stringify(input.menuData),
+        weekStartDate: new Date(input.weekStartDate),
+        weekEndDate: new Date(input.weekEndDate),
+      });
+
+      const phone = patient.phone?.replace(/\D/g, "");
+      const waUrl = phone ? `https://wa.me/${phone}?text=${encodeURIComponent(text)}` : null;
+      return { text, waUrl, phone: patient.phone };
+    }),
+
+  // ─── Send invite to register in Buddy ─────────────────────────────────────
+  sendInvite: protectedProcedure
+    .input(z.object({
+      patientId: z.number(),
+      origin: z.string(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      requireExpert(ctx);
+      const [patient] = await getDb().select().from(offlinePatients).where(and(eq(offlinePatients.id, input.patientId), eq(offlinePatients.expertUserId, ctx.user.id)));
+      if (!patient) throw new TRPCError({ code: "NOT_FOUND" });
+      if (!patient.email) throw new TRPCError({ code: "BAD_REQUEST", message: "El paciente no tiene email registrado" });
+
+      const expertName = ctx.user.name ?? "Tu nutricionista";
+      const registerUrl = `${input.origin}/register?ref=expert&expertId=${ctx.user.id}`;
+
+      const resendKey = process.env.RESEND_API_KEY;
+      if (!resendKey) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Email no configurado" });
+
+      const resend = new Resend(resendKey);
+      await resend.emails.send({
+        from: "BuddyOne <noreply@buddyone.app>",
+        to: patient.email,
+        subject: `${expertName} te invita a unirte a BuddyOne`,
+        html: `<!DOCTYPE html><html lang="es"><body style="font-family:system-ui,sans-serif;background:#f9fafb;padding:24px">
+          <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:16px;padding:32px;box-shadow:0 2px 8px rgba(0,0,0,0.06)">
+            <h1 style="color:#F97316;margin:0 0 8px">🥗 BuddyOne</h1>
+            <h2 style="color:#1B2B4B;margin:0 0 16px">Hola ${patient.name},</h2>
+            <p style="color:#374151">${expertName} te ha invitado a unirte a <strong>BuddyOne</strong>, la plataforma de nutrición inteligente donde podrás ver tus planes, registrar tu progreso y comunicarte directamente con tu nutricionista.</p>
+            <a href="${registerUrl}" style="display:inline-block;margin:20px 0;background:#F97316;color:#fff;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:700">Crear mi cuenta gratis</a>
+            <p style="color:#9ca3af;font-size:12px;margin-top:24px">Si no esperabas este mensaje, puedes ignorarlo.</p>
+          </div>
+        </body></html>`,
+      });
+
+      await getDb().update(offlinePatients).set({ inviteSentAt: new Date(), updatedAt: new Date() }).where(eq(offlinePatients.id, input.patientId));
+      return { success: true };
+    }),
+
+  // ─── Plans sent history ────────────────────────────────────────────────────
+  getPlansSent: protectedProcedure
+    .input(z.object({ patientId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      requireExpert(ctx);
+      return getDb()
+        .select()
+        .from(patientPlansSent)
+        .where(and(eq(patientPlansSent.patientId, input.patientId), eq(patientPlansSent.expertUserId, ctx.user.id)))
+        .orderBy(desc(patientPlansSent.sentAt));
+    }),
+});

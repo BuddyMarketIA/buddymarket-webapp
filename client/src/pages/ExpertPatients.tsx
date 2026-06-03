@@ -7,6 +7,8 @@ import { toast } from "@/components/sonner-a11y-shim";
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
+import { Upload, Users } from "lucide-react";
+import OfflinePatientsSection from "@/components/OfflinePatientsSection";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -92,12 +94,21 @@ export default function ExpertPatients() {
               )}
             </p>
           </div>
-          <Button
-            onClick={() => setShowInviteModal(true)}
-            className="bg-orange-500 hover:bg-orange-600 text-white"
-          >
-            + Invitar paciente
-          </Button>
+          <div className="flex gap-2 flex-wrap">
+            <Button
+              variant="outline"
+              onClick={() => navigate("/app/expert/patients/import")}
+              className="flex items-center gap-1.5"
+            >
+              <Upload size={14} /> Importar CSV
+            </Button>
+            <Button
+              onClick={() => setShowInviteModal(true)}
+              className="bg-orange-500 hover:bg-orange-600 text-white"
+            >
+              + Invitar paciente
+            </Button>
+          </div>
         </div>
 
         {/* Explicación contextual */}
@@ -261,7 +272,10 @@ export default function ExpertPatients() {
             })}
           </div>
         )}
-      </div>
+            </div>
+
+      {/* ── Pacientes offline (importados) ── */}
+      <OfflinePatientsSection />
 
       {/* Modal invitar paciente */}
       <Dialog open={showInviteModal} onOpenChange={setShowInviteModal}>

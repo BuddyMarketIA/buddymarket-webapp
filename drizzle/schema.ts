@@ -4642,3 +4642,74 @@ export const householdMenuPlans = pgTable("household_menu_plans", {
 }));
 export type HouseholdMenuPlan = typeof householdMenuPlans.$inferSelect;
 export type InsertHouseholdMenuPlan = typeof householdMenuPlans.$inferInsert;
+
+// =============================================================================
+// OFFLINE PATIENTS (pacientes sin cuenta Buddy, gestionados por el experto)
+// =============================================================================
+export const offlinePatients = pgTable("offline_patients", {
+  id: serial("id").primaryKey(),
+  expertUserId: integer("expertUserId").notNull(),
+  buddyUserId: integer("buddyUserId"),
+  name: varchar("name", { length: 200 }).notNull(),
+  email: varchar("email", { length: 200 }),
+  phone: varchar("phone", { length: 40 }),
+  birthDate: timestamp("birthDate"),
+  gender: varchar("gender", { length: 20 }),
+  heightCm: integer("heightCm"),
+  initialWeightKg: real("initialWeightKg"),
+  targetWeightKg: real("targetWeightKg"),
+  activityLevel: varchar("activityLevel", { length: 50 }),
+  objective: varchar("objective", { length: 100 }),
+  allergies: text("allergies"),
+  pathologies: text("pathologies"),
+  medications: text("medications"),
+  notes: text("notes"),
+  consultationFrequencyWeeks: integer("consultationFrequencyWeeks").default(2),
+  isActive: boolean("isActive").default(true).notNull(),
+  inviteSentAt: timestamp("inviteSentAt"),
+  inviteAcceptedAt: timestamp("inviteAcceptedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  expertIdx: index("op_expert_idx").on(t.expertUserId),
+  emailIdx: index("op_email_idx").on(t.email),
+}));
+export type OfflinePatient = typeof offlinePatients.$inferSelect;
+export type InsertOfflinePatient = typeof offlinePatients.$inferInsert;
+
+export const patientWeightHistory = pgTable("patient_weight_history", {
+  id: serial("id").primaryKey(),
+  patientId: integer("patientId").notNull(),
+  expertUserId: integer("expertUserId").notNull(),
+  weightKg: real("weightKg").notNull(),
+  bodyFatPct: real("bodyFatPct"),
+  muscleMassPct: real("muscleMassPct"),
+  waistCm: real("waistCm"),
+  hipCm: real("hipCm"),
+  notes: text("notes"),
+  recordedAt: timestamp("recordedAt").defaultNow().notNull(),
+}, (t) => ({
+  patientIdx: index("pwh_patient_idx").on(t.patientId),
+  expertIdx: index("pwh_expert_idx").on(t.expertUserId),
+}));
+export type PatientWeightHistory = typeof patientWeightHistory.$inferSelect;
+export type InsertPatientWeightHistory = typeof patientWeightHistory.$inferInsert;
+
+export const patientPlansSent = pgTable("patient_plans_sent", {
+  id: serial("id").primaryKey(),
+  patientId: integer("patientId").notNull(),
+  expertUserId: integer("expertUserId").notNull(),
+  channel: varchar("channel", { length: 20 }).notNull().default("email"),
+  subject: varchar("subject", { length: 300 }),
+  menuData: text("menuData"),
+  weekStartDate: timestamp("weekStartDate"),
+  weekEndDate: timestamp("weekEndDate"),
+  sentAt: timestamp("sentAt").defaultNow().notNull(),
+  deliveredAt: timestamp("deliveredAt"),
+  openedAt: timestamp("openedAt"),
+}, (t) => ({
+  patientIdx: index("pps_patient_idx").on(t.patientId),
+  expertIdx: index("pps_expert_idx").on(t.expertUserId),
+}));
+export type PatientPlanSent = typeof patientPlansSent.$inferSelect;
+export type InsertPatientPlanSent = typeof patientPlansSent.$inferInsert;

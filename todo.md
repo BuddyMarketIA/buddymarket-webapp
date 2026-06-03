@@ -3837,3 +3837,18 @@
 - [ ] Menús familiares por persona: UI en página Familia
 - [ ] Asignar rol BuddyExpert a luis@buddymarket.io cuando se registre
 - [x] Exportar menú familiar a PDF e impresión: utilidad exportHouseholdMenuPDF.ts con jsPDF (orientación landscape A4), botón "⋯" con dropdown en cada tarjeta de menú (Exportar PDF / Imprimir / Eliminar), botones rápidos en vista expandida, función printHouseholdMenu con ventana HTML optimizada para impresión
+
+## Panel Profesional — Bugs y nuevas funcionalidades (sesión actual)
+- [ ] Fix: Panel BuddyExpert muestra "Crear perfil" aunque el experto ya tiene perfil aprobado
+- [ ] Fix: Mis Planes muestra 3 skeleton cards infinitas (bug de carga)
+- [ ] Fix: Breadcrumb siempre dice "Buddy One" en lugar del nombre de la página
+- [ ] Fix: Texto "Paciente(s) de ping..." en widget de Citas del dashboard
+- [ ] Fix: Solicitudes vacías sin CTA para compartir enlace de perfil público
+- [ ] Feature: Tabla offline_patients en BD para pacientes sin cuenta Buddy
+- [ ] Feature: Importación masiva de pacientes desde CSV/Excel con previsualización
+- [ ] Feature: Historial de peso y evolución por paciente
+- [ ] Feature: Ficha de paciente con datos clínicos, historial y generación de plan
+- [ ] Feature: Envío de plan semanal por email con plantilla HTML (evolución + menú)
+- [ ] Feature: Envío de plan por WhatsApp con plantilla de texto formateada
+- [ ] Feature: Invitación opcional para que el paciente se registre en Buddy
+- [ ] Feature: Checklist de activación en dashboard profesional

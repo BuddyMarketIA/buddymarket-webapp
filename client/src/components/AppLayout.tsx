@@ -644,8 +644,9 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
   ];
 
   const SIDEBAR_ITEMS = SIDEBAR_GROUPS.flatMap(g => g.items);
+  const ALL_NAV_ITEMS = [...SIDEBAR_ITEMS, ...EXPERT_SIDEBAR_GROUPS.flatMap((g: any) => g.items)];
   const currentNavItem = NAV_ITEMS.find((item) => matchesPath(location, item.matches));
-  const currentSidebarItem = SIDEBAR_ITEMS.find((item) => location === item.to || location.startsWith(item.to + "/"));
+  const currentSidebarItem = ALL_NAV_ITEMS.find((item: any) => location === item.to || location.startsWith(item.to + "/"));
 
   if (loading) {
     return (
