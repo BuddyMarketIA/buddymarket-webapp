@@ -4572,3 +4572,40 @@ export const patientDailyDiary = pgTable("patient_daily_diary", {
 
 export type PatientDailyDiary = typeof patientDailyDiary.$inferSelect;
 export type InsertPatientDailyDiary = typeof patientDailyDiary.$inferInsert;
+
+// =============================================================================
+// BUDDYSHOP PRODUCTS — Utensilios y menaje de cocina
+// =============================================================================
+export const shopProducts = pgTable("shop_products", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  price: real("price"),
+  imageUrl: text("imageUrl"),
+  affiliateUrl: text("affiliateUrl"),
+  category: varchar("category", { length: 64 }),
+  tags: text("tags"), // JSON array: ["bbq","parrilla","verano"]
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type ShopProduct = typeof shopProducts.$inferSelect;
+export type InsertShopProduct = typeof shopProducts.$inferInsert;
+
+// =============================================================================
+// BUDDYCARE PRODUCTS — Suplementos y parafarmacia
+// =============================================================================
+export const careProducts = pgTable("care_products", {
+  id: serial("id").primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  description: text("description"),
+  price: real("price"),
+  imageUrl: text("imageUrl"),
+  affiliateUrl: text("affiliateUrl"),
+  category: varchar("category", { length: 64 }),
+  tags: text("tags"), // JSON array: ["retencion_liquidos","drenante","detox"]
+  healthBenefits: text("healthBenefits"), // JSON array of benefit strings
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+});
+export type CareProduct = typeof careProducts.$inferSelect;
+export type InsertCareProduct = typeof careProducts.$inferInsert;

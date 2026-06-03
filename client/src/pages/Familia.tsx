@@ -904,9 +904,10 @@ function CreateHouseholdModal({ open, onClose }: { open: boolean; onClose: () =>
 }
 
 // ─── Invite modal ─────────────────────────────────────────────────────────────
-function InviteModal({ open, onClose }: { open: boolean; onClose: () => void }) {
+function InviteModal({ open, onClose, householdName }: { open: boolean; onClose: () => void; householdName?: string }) {
   const [email, setEmail] = useState("");
   const [sent, setSent] = useState(false);
+  const [tab, setTab] = useState<"email" | "whatsapp">("email");
   const utils = trpc.useUtils();
   const invite = trpc.household.invite.useMutation({
     onSuccess: () => {
@@ -919,7 +920,14 @@ function InviteModal({ open, onClose }: { open: boolean; onClose: () => void }) 
   const handleClose = () => {
     setEmail("");
     setSent(false);
+    setTab("email");
     onClose();
+  };
+
+  const handleWhatsApp = () => {
+    const text = `¡Hola! Te invito a unirte a nuestro hogar "${householdName || "BuddyOne"}" para compartir menús semanales y listas de la compra. Regístrate en buddyone.io y te envío la invitación por email.`;
+    window.open(`https://wa.me/?text=${encodeURIComponent(text)}`, "_blank");
+    handleClose();
   };
 
   return (
@@ -943,33 +951,79 @@ function InviteModal({ open, onClose }: { open: boolean; onClose: () => void }) 
           </div>
         ) : (
           <>
-            <div className="space-y-4 py-2">
-              <div>
-                <Label htmlFor="invite-email">Email del familiar</Label>
-                <Input
-                  id="invite-email"
-                  type="email"
-                  placeholder="familiar@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  className="mt-1"
-                />
-              </div>
-              <p className="text-xs text-muted-foreground">
-                Recibirán un email con un enlace para unirse. El enlace expira en 7 días.
-              </p>
-            </div>
-            <DialogFooter>
-              <Button variant="outline" onClick={handleClose}>Cancelar</Button>
-              <Button
-                onClick={() => invite.mutate({ email, origin: window.location.origin })}
-                disabled={!email.trim() || invite.isPending}
-                className="bg-orange-500 hover:bg-orange-600 text-white"
+            {/* Tabs */}
+            <div className="flex gap-2 mb-4">
+              <button
+                onClick={() => setTab("email")}
+                className={`flex-1 py-2 rounded-xl text-sm font-600 transition-colors ${
+                  tab === "email"
+                    ? "bg-orange-500 text-white"
+                    : "bg-muted text-muted-foreground hover:text-foreground"
+                }`}
               >
-                {invite.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
-                Enviar invitación
-              </Button>
-            </DialogFooter>
+                📧 Por email
+              </button>
+              <button
+                onClick={() => setTab("whatsapp")}
+                className={`flex-1 py-2 rounded-xl text-sm font-600 transition-colors ${
+                  tab === "whatsapp"
+                    ? "bg-[#25D366] text-white"
+                    : "bg-muted text-muted-foreground hover:text-foreground"
+                }`}
+              >
+                💬 WhatsApp
+              </button>
+            </div>
+
+            {tab === "email" ? (
+              <div className="space-y-4 py-2">
+                <div>
+                  <Label htmlFor="invite-email">Email del familiar</Label>
+                  <Input
+                    id="invite-email"
+                    type="email"
+                    placeholder="familiar@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    className="mt-1"
+                    onKeyDown={(e) => e.key === "Enter" && email.trim() && invite.mutate({ email, origin: window.location.origin })}
+                  />
+                </div>
+                <p className="text-xs text-muted-foreground">
+                  Recibirán un email con un enlace para unirse. El enlace expira en 7 días.
+                </p>
+                <DialogFooter>
+                  <Button variant="outline" onClick={handleClose}>Cancelar</Button>
+                  <Button
+                    onClick={() => invite.mutate({ email, origin: window.location.origin })}
+                    disabled={!email.trim() || invite.isPending}
+                    className="bg-orange-500 hover:bg-orange-600 text-white"
+                  >
+                    {invite.isPending ? <Loader2 className="w-4 h-4 animate-spin mr-2" /> : null}
+                    Enviar invitación
+                  </Button>
+                </DialogFooter>
+              </div>
+            ) : (
+              <div className="space-y-4 py-2">
+                <div className="bg-[#25D366]/10 border border-[#25D366]/20 rounded-2xl p-4 text-center">
+                  <p className="text-2xl mb-2">💬</p>
+                  <p className="text-sm font-600 text-foreground mb-1">Invitar por WhatsApp</p>
+                  <p className="text-xs text-muted-foreground">
+                    Se abrirá WhatsApp con un mensaje listo para enviar a quien quieras invitar a tu hogar.
+                  </p>
+                </div>
+                <DialogFooter>
+                  <Button variant="outline" onClick={handleClose}>Cancelar</Button>
+                  <Button
+                    onClick={handleWhatsApp}
+                    className="bg-[#25D366] hover:bg-[#1fb855] text-white"
+                  >
+                    Abrir WhatsApp
+                  </Button>
+                </DialogFooter>
+              </div>
+            )}
           </>
         )}
       </DialogContent>
@@ -1433,6 +1487,29 @@ export default function Familia() {
         />
       )}
 
+      {/* ── Coming Soon: Family Menus ─────────────────────────────────── */}
+      <div className="mt-6 rounded-3xl p-5 bg-gradient-to-br from-orange-500/5 to-background border border-orange-500/15">
+        <div className="flex items-center gap-2 mb-3">
+          <span className="text-lg">✨</span>
+          <h3 className="text-sm font-700 text-foreground">Próximamente en Modo Hogar</h3>
+        </div>
+        <div className="space-y-2">
+          {[
+            { emoji: "🍽️", text: "Menú semanal familiar unificado compatible con todos" },
+            { emoji: "👶", text: "Menú niños + Menú adultos generados por separado" },
+            { emoji: "💊", text: "Menú especial por condición: diabético, celíaco, hipertenso..." },
+            { emoji: "🛒", text: "Lista de la compra unificada sumando todos los menús" },
+            { emoji: "🥗", text: "Nutrición infantil por edad y etapa de desarrollo" },
+            { emoji: "📱", text: "Invitación por QR para unirse al hogar al instante" },
+          ].map((item, i) => (
+            <div key={i} className="flex items-start gap-2.5">
+              <span className="text-base shrink-0">{item.emoji}</span>
+              <p className="text-xs text-muted-foreground leading-relaxed">{item.text}</p>
+            </div>
+          ))}
+        </div>
+      </div>
+
       {/* Modals */}
       <FamilyMenuModal open={showFamilyMenu} onClose={() => setShowFamilyMenu(false)} />
       {editingMemberId !== null && (
@@ -1442,7 +1519,7 @@ export default function Familia() {
           onClose={() => setEditingMemberId(null)}
         />
       )}
-      <InviteModal open={showInvite} onClose={() => setShowInvite(false)} />
+      <InviteModal open={showInvite} onClose={() => setShowInvite(false)} householdName={household?.name} />
       {myMember && (
         <MyPreferencesModal
           open={showPrefs}

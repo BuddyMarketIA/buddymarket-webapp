@@ -3753,3 +3753,53 @@
 - [ ] Tab "Pagos": historial de pagos y facturas descargables
 - [ ] Registro de peso diario desde dashboard del paciente
 - [ ] Notificación cuando el expert sube un documento o actualiza el plan
+
+## BuddyShop & BuddyCare — Recomendaciones Contextuales Inteligentes
+
+- [ ] Añadir tabla `shop_products` al schema (BuddyShop: utensilios/menaje) con campos: id, name, description, price, imageUrl, affiliateUrl, category, tags, source, isActive
+- [ ] Añadir tabla `care_products` al schema (BuddyCare: suplementos/parafarmacia) con campos: id, name, description, price, imageUrl, affiliateUrl, category, tags, healthBenefits, isActive
+- [ ] Crear router `contextualRecommendations` con procedimiento `getForRecipe(recipeId)` — devuelve productos BuddyShop/BuddyCare relevantes según tags de la receta
+- [ ] Crear procedimiento `getForHealthGoal(symptoms[])` — devuelve productos BuddyCare según síntomas registrados en el diario
+- [ ] Poblar BD con 25+ productos BuddyShop (parrillas, vajillas BBQ, sartenes wok, moldes horno, etc.)
+- [ ] Poblar BD con 25+ productos BuddyCare (infusiones drenantes, vitaminas, proteínas, probióticos, etc.)
+- [ ] Implementar componente `ContextualProductCard` — tarjeta pequeña no intrusiva con imagen, nombre, precio y CTA
+- [ ] Integrar widget de recomendación en RecipeDetail (aparece si la receta tiene tags como "bbq", "horno", "wok", etc.)
+- [ ] Integrar widget BuddyCare en RecipeDetail (si la receta tiene tags "antiinflamatorio", "detox", "drenante", etc.)
+- [ ] Integrar recomendaciones en el menú semanal (sección al final del menú con productos relevantes)
+- [ ] Integrar recomendaciones en el diario de salud (si el usuario registra síntomas como retención de líquidos, fatiga, etc.)
+- [ ] Las recomendaciones deben rotar — no mostrar siempre las mismas (máximo 2 por contexto, aleatorio entre los relevantes)
+- [ ] Añadir sección "BuddyShop" y "BuddyCare" en el menú principal de la app como acceso directo al catálogo completo
+
+## Sesión actual — Mejoras implementadas
+
+### Acceso Admin
+- [x] Dar rol admin a luis@buddymarket.io en la base de datos
+
+### BuddyShop & BuddyCare — Implementado
+- [x] Tablas shop_products y care_products creadas y migradas
+- [x] 18 productos BuddyShop sembrados (parrillas, vajillas, sartenes, moldes, etc.)
+- [x] 15 productos BuddyCare sembrados (infusiones, vitaminas, proteínas, probióticos, etc.)
+- [x] Router contextualRecommendations con getForRecipe y getForHealthGoal
+- [x] Página BuddyShop rediseñada con catálogo real, filtros y diseño temático
+- [x] Página BuddyCare rediseñada con disclaimer médico, opt-in y catálogo
+- [x] Sin fondos negros hardcodeados — todo usa variables CSS del tema
+
+### Modo Hogar — Mejoras
+- [x] Invitación al hogar por WhatsApp (modal con tabs email/WhatsApp)
+- [x] Sección "Próximamente en Modo Hogar" con menús por persona, nutrición infantil, QR
+- [x] householdName pasado al InviteModal para personalizar el mensaje de WhatsApp
+
+### BuddyExperts Panel — Implementado
+- [x] Tablas patientDocuments y patientClinicalMetrics creadas y migradas
+- [x] Router expertDocuments con upload, list, delete, share procedures
+- [x] Tab "Documentos" en ExpertPatientDetail (subida PDF/imagen, control visibilidad)
+- [x] Tab "Métricas Clínicas" en ExpertPatientDetail (tensión, glucosa, colesterol, composición corporal)
+- [x] Vista "Mis documentos" en MyExpert (paciente ve y sube documentos)
+
+### Pendiente
+- [ ] Widget ContextualProductCard integrado en RecipeDetail
+- [ ] Widget BuddyCare integrado en diario de salud por síntomas
+- [ ] Menús familiares por persona (Menú niños / Menú adultos / Menú por condición médica)
+- [ ] Nutrición infantil conectada con perfiles del hogar
+- [ ] Invitación por QR al hogar
+- [ ] Health Hub centralizado (métricas, documentos, diario, evolución en una sola página)
