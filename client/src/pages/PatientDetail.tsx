@@ -72,8 +72,14 @@ export default function PatientDetail() {
     onError: (e) => toast.error("Error al generar: " + e.message),
   });
 
+  const [pdfUrl, setPdfUrl] = useState<string | null>(null);
+  const [customMessage, setCustomMessage] = useState("");
+  const generatePdf = trpc.offlinePatients.generatePdfReport.useMutation({
+    onSuccess: (data) => { setPdfUrl(data.pdfUrl); toast.success("PDF generado correctamente"); },
+    onError: (e) => toast.error("Error al generar PDF: " + e.message),
+  });
   const sendEmail = trpc.offlinePatients.sendPlanByEmail.useMutation({
-    onSuccess: () => { toast.success("Plan enviado por email"); setShowSendModal(null); },
+    onSuccess: () => { toast.success("Informe PDF enviado por email"); setShowSendModal(null); },
     onError: (e) => toast.error("Error: " + e.message),
   });
 
@@ -363,23 +369,61 @@ export default function PatientDetail() {
               </div>
 
               {/* Send buttons */}
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowSendModal("email")}
-                  disabled={!patient.email}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border border-border text-sm font-bold hover:bg-muted transition-colors disabled:opacity-40"
-                >
-                  <Mail size={14} /> Email
-                </button>
-                <button
-                  onClick={() => getWhatsApp.mutate({ patientId, menuData: generatedMenu, weekStartDate: monday.toISOString(), weekEndDate: sunday.toISOString() })}
-                  disabled={getWhatsApp.isPending}
-                  className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-green-500 text-white text-sm font-bold hover:bg-green-600 transition-colors disabled:opacity-50"
-                >
-                  <MessageCircle size={14} /> WhatsApp
-                </button>
+              <div className="space-y-3">
+                {/* Custom message */}
+                <textarea
+                  placeholder="Mensaje personalizado para el paciente (opcional)..."
+                  value={customMessage}
+                  onChange={(e) => setCustomMessage(e.target.value)}
+                  rows={2}
+                  className="w-full rounded-xl border border-border bg-muted/30 px-3 py-2 text-sm text-foreground placeholder:text-muted-foreground resize-none focus:outline-none focus:ring-2 focus:ring-orange-400"
+                />
+                {/* PDF generation */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => { setPdfUrl(null); generatePdf.mutate({ patientId, menuData: generatedMenu, weekStartDate: monday.toISOString(), weekEndDate: sunday.toISOString(), customMessage: customMessage || undefined }); }}
+                    disabled={generatePdf.isPending}
+                    className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-orange-500 text-white text-sm font-bold hover:bg-orange-600 transition-colors disabled:opacity-50"
+                  >
+                    {generatePdf.isPending ? <span className="animate-spin">⏳</span> : "📄"} {generatePdf.isPending ? "Generando PDF..." : "Generar informe PDF"}
+                  </button>
+                  {pdfUrl && (
+                    <a
+                      href={pdfUrl}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="flex items-center justify-center gap-1 px-4 py-2.5 rounded-xl bg-green-600 text-white text-sm font-bold hover:bg-green-700 transition-colors whitespace-nowrap"
+                    >
+                      ⬇ Descargar
+                    </a>
+                  )}
+                </div>
+                {pdfUrl && (
+                  <div className="bg-green-50 border border-green-200 rounded-xl p-3 text-center">
+                    <p className="text-xs text-green-700 font-bold mb-1">✅ PDF listo para enviar</p>
+                    <p className="text-xs text-green-600">Incluye gráfica de evolución de peso y menú semanal completo</p>
+                  </div>
+                )}
+                {/* Send channels */}
+                <div className="flex gap-2">
+                  <button
+                    onClick={() => setShowSendModal("email")}
+                    disabled={!patient.email || !pdfUrl}
+                    className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl border border-border text-sm font-bold hover:bg-muted transition-colors disabled:opacity-40"
+                  >
+                    <Mail size={14} /> Enviar por email
+                  </button>
+                  <button
+                    onClick={() => getWhatsApp.mutate({ patientId, menuData: generatedMenu, weekStartDate: monday.toISOString(), weekEndDate: sunday.toISOString() })}
+                    disabled={getWhatsApp.isPending}
+                    className="flex-1 flex items-center justify-center gap-2 py-2.5 rounded-xl bg-green-500 text-white text-sm font-bold hover:bg-green-600 transition-colors disabled:opacity-50"
+                  >
+                    <MessageCircle size={14} /> WhatsApp
+                  </button>
+                </div>
+                {!patient.email && <p className="text-xs text-muted-foreground text-center">El paciente no tiene email registrado</p>}
+                {!pdfUrl && <p className="text-xs text-muted-foreground text-center">Genera el PDF primero para poder enviarlo por email</p>}
               </div>
-              {!patient.email && <p className="text-xs text-muted-foreground mt-2 text-center">El paciente no tiene email registrado</p>}
             </div>
           )}
 
@@ -417,7 +461,7 @@ export default function PatientDetail() {
         <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 p-4">
           <div className="bg-card rounded-2xl p-6 w-full max-w-md space-y-4">
             <h3 className="text-base font-black text-foreground">Enviar plan por email</h3>
-            <p className="text-sm text-muted-foreground">Se enviará el plan semanal a <strong>{patient.email}</strong> con el historial de evolución de peso.</p>
+            <p className="text-sm text-muted-foreground">Se enviará el <strong>informe PDF</strong> a <strong>{patient.email}</strong> con la gráfica de evolución de peso y el menú semanal completo.</p>
             <div className="flex gap-3">
               <button onClick={() => setShowSendModal(null)} className="flex-1 py-2.5 rounded-xl border border-border font-semibold text-sm hover:bg-muted transition-colors">Cancelar</button>
               <button

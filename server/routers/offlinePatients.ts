@@ -10,6 +10,8 @@ import { eq, and, desc, inArray } from "drizzle-orm";
 import { invokeLLM } from "../_core/llm";
 import { TRPCError } from "@trpc/server";
 import { Resend } from "resend";
+import { generatePatientReportPdf } from "../patientReportPdf";
+import { storagePut } from "../storage";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function requireExpert(ctx: any) {
@@ -400,7 +402,53 @@ Duración: ${input.durationWeeks} semana(s)`;
       return { menuData, patientName: patient.name };
     }),
 
-  // ─── Send plan by email ────────────────────────────────────────────────────
+  // ─── Generate PDF report and upload to S3 ─────────────────────────────────
+  generatePdfReport: protectedProcedure
+    .input(z.object({
+      patientId: z.number(),
+      menuData: z.any(),
+      weekStartDate: z.string(),
+      weekEndDate: z.string(),
+      customMessage: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      requireExpert(ctx);
+      const [patient] = await getDb().select().from(offlinePatients).where(and(eq(offlinePatients.id, input.patientId), eq(offlinePatients.expertUserId, ctx.user.id)));
+      if (!patient) throw new TRPCError({ code: "NOT_FOUND" });
+
+      const weightHistory = await getDb().select().from(patientWeightHistory)
+        .where(and(eq(patientWeightHistory.patientId, input.patientId), eq(patientWeightHistory.expertUserId, ctx.user.id)))
+        .orderBy(patientWeightHistory.recordedAt);
+
+      const weekLabel = `${new Date(input.weekStartDate).toLocaleDateString("es-ES", { day: "numeric", month: "long" })} – ${new Date(input.weekEndDate).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })}`;
+
+      const pdfBuffer = await generatePatientReportPdf({
+        patient: {
+          name: patient.name,
+          email: patient.email,
+          heightCm: patient.heightCm,
+          initialWeightKg: patient.initialWeightKg,
+          targetWeightKg: patient.targetWeightKg,
+          objective: patient.objective,
+          allergies: patient.allergies,
+          pathologies: patient.pathologies,
+          consultationFrequencyWeeks: patient.consultationFrequencyWeeks,
+        },
+        weightHistory: weightHistory.map(w => ({ recordedAt: w.recordedAt, weightKg: w.weightKg, notes: w.notes })),
+        menuData: input.menuData,
+        weekLabel,
+        expertName: ctx.user.name ?? undefined,
+        customMessage: input.customMessage,
+      });
+
+      const suffix = Date.now();
+      const fileKey = `expert-${ctx.user.id}/patient-reports/${input.patientId}-${suffix}.pdf`;
+      const { url: pdfUrl } = await storagePut(fileKey, pdfBuffer, "application/pdf");
+
+      return { pdfUrl, weekLabel };
+    }),
+
+  // ─── Send plan PDF by email ──────────────────────────────────────────────────
   sendPlanByEmail: protectedProcedure
     .input(z.object({
       patientId: z.number(),
@@ -415,20 +463,57 @@ Duración: ${input.durationWeeks} semana(s)`;
       if (!patient) throw new TRPCError({ code: "NOT_FOUND" });
       if (!patient.email) throw new TRPCError({ code: "BAD_REQUEST", message: "El paciente no tiene email registrado" });
 
-      const weightHistory = await getDb().select().from(patientWeightHistory).where(eq(patientWeightHistory.patientId, input.patientId)).orderBy(patientWeightHistory.recordedAt);
+      const weightHistory = await getDb().select().from(patientWeightHistory)
+        .where(and(eq(patientWeightHistory.patientId, input.patientId), eq(patientWeightHistory.expertUserId, ctx.user.id)))
+        .orderBy(patientWeightHistory.recordedAt);
+
       const weekLabel = `${new Date(input.weekStartDate).toLocaleDateString("es-ES", { day: "numeric", month: "long" })} – ${new Date(input.weekEndDate).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })}`;
 
-      const htmlBody = buildMenuHtml(input.menuData, patient.name, weekLabel, weightHistory);
+      // Generate PDF with Puppeteer
+      const pdfBuffer = await generatePatientReportPdf({
+        patient: {
+          name: patient.name,
+          email: patient.email,
+          heightCm: patient.heightCm,
+          initialWeightKg: patient.initialWeightKg,
+          targetWeightKg: patient.targetWeightKg,
+          objective: patient.objective,
+          allergies: patient.allergies,
+          pathologies: patient.pathologies,
+          consultationFrequencyWeeks: patient.consultationFrequencyWeeks,
+        },
+        weightHistory: weightHistory.map(w => ({ recordedAt: w.recordedAt, weightKg: w.weightKg, notes: w.notes })),
+        menuData: input.menuData,
+        weekLabel,
+        expertName: ctx.user.name ?? undefined,
+        customMessage: input.customMessage,
+      });
+
+      // Upload to S3
+      const suffix = Date.now();
+      const fileKey = `expert-${ctx.user.id}/patient-reports/${input.patientId}-${suffix}.pdf`;
+      const { url: pdfUrl } = await storagePut(fileKey, pdfBuffer, "application/pdf");
 
       const resendKey = process.env.RESEND_API_KEY;
       if (!resendKey) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Email no configurado" });
 
       const resend = new Resend(resendKey);
+      const dateLabel = new Date(input.weekStartDate).toLocaleDateString("es-ES", { day: "numeric", month: "long" });
       await resend.emails.send({
         from: "BuddyOne <noreply@buddyone.app>",
         to: patient.email,
-        subject: `Tu plan nutricional — semana del ${new Date(input.weekStartDate).toLocaleDateString("es-ES", { day: "numeric", month: "long" })}`,
-        html: htmlBody,
+        subject: `Tu informe nutricional — semana del ${dateLabel}`,
+        html: `<!DOCTYPE html><html lang="es"><body style="font-family:system-ui,sans-serif;background:#f9fafb;padding:24px">
+          <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:16px;padding:32px;box-shadow:0 2px 8px rgba(0,0,0,0.06)">
+            <h1 style="color:#F97316;margin:0 0 8px">🥗 BuddyOne</h1>
+            <h2 style="color:#1B2B4B;margin:0 0 16px">Hola ${patient.name},</h2>
+            <p style="color:#374151">Tu nutricionista ha preparado tu informe nutricional para la semana del <strong>${dateLabel}</strong>.</p>
+            <p style="color:#374151;margin-top:12px">El informe incluye tu <strong>evolución de peso</strong> y tu <strong>plan de alimentación semanal</strong>.</p>
+            ${input.customMessage ? `<div style="background:#fffbeb;border-left:4px solid #f59e0b;padding:12px 16px;margin:16px 0;border-radius:0 8px 8px 0"><strong>Mensaje de tu nutricionista:</strong><br>${input.customMessage}</div>` : ""}
+            <a href="${pdfUrl}" style="display:inline-block;margin:20px 0;background:#F97316;color:#fff;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:700">📄 Descargar informe PDF</a>
+            <p style="color:#9ca3af;font-size:12px;margin-top:24px">Generado con <strong>BuddyOne</strong> · buddyone.app</p>
+          </div>
+        </body></html>`,
       });
 
       // Log the send
@@ -436,13 +521,13 @@ Duración: ${input.durationWeeks} semana(s)`;
         patientId: input.patientId,
         expertUserId: ctx.user.id,
         channel: "email",
-        subject: `Plan semana ${weekLabel}`,
+        subject: `Informe PDF semana ${weekLabel}`,
         menuData: JSON.stringify(input.menuData),
         weekStartDate: new Date(input.weekStartDate),
         weekEndDate: new Date(input.weekEndDate),
       });
 
-      return { success: true };
+      return { success: true, pdfUrl };
     }),
 
   // ─── Get WhatsApp message (returns text, user sends manually) ─────────────
