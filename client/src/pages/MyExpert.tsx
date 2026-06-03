@@ -179,6 +179,18 @@ export default function MyExpert() {
     }
   }, [detail?.messages?.length, view, activeRelId]);
 
+  // Fix: compute menuItem here (after all hooks) to avoid render-phase setState (React error #310)
+  const menuItemForDetail = (view === "menu_detail" && selectedMenuId && myAssignedMenus)
+    ? myAssignedMenus.find(m => m.menu.id === selectedMenuId)
+    : undefined;
+
+  useEffect(() => {
+    // Redirect to menus list if the selected menu is no longer found (after data loads)
+    if (view === "menu_detail" && selectedMenuId && myAssignedMenus && !menuItemForDetail) {
+      setView("menus");
+    }
+  }, [view, selectedMenuId, myAssignedMenus, menuItemForDetail]);
+
   if (!user) return null;
 
   if (loadingExperts) return (
@@ -301,8 +313,8 @@ export default function MyExpert() {
 
   // ─── VISTA: DETALLE DE MENÚ ────────────────────────────────────────────────
   if (view === "menu_detail" && selectedMenuId) {
-    const menuItem = myAssignedMenus?.find(m => m.menu.id === selectedMenuId);
-    if (!menuItem) { setView("menus"); return null; }
+    const menuItem = menuItemForDetail;
+    if (!menuItem) { return null; } // redirect handled by useEffect above
 
     const rawMenuData = menuItem.menu.adaptedMenuData || menuItem.originalMenu?.menuData;
     const menuData = parseMenuData(rawMenuData);
