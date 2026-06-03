@@ -577,51 +577,9 @@ export default function BuddyExpertDashboard() {
         )}
 
         {/* Proactive: Inactive Patients Alert (shown in profile tab) */}
-        {myProfile && activeTab === "/app/profile" && (() => {
-          const inactiveQuery = trpc.expertPatients.getInactivePatients.useQuery({ inactiveDays: 3 }, { enabled: !!myProfile });
-          const sendProactive = trpc.expertPatients.sendProactiveMessage.useMutation({
-            onSuccess: () => { toast.success('✅ Mensaje enviado al paciente'); inactiveQuery.refetch(); },
-            onError: (e) => toast.error(e.message),
-          });
-          const inactive = inactiveQuery.data ?? [];
-          if (inactive.length === 0) return null;
-          return (
-            <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 space-y-3">
-              <div className="flex items-center gap-2">
-                <span className="text-xl">🚨</span>
-                <div>
-                  <p className="text-sm font-black text-amber-900">{inactive.length} paciente{inactive.length > 1 ? 's' : ''} sin registrar en 3+ días</p>
-                  <p className="text-xs text-amber-700">Envíales un mensaje de seguimiento para mantener su motivación</p>
-                </div>
-              </div>
-              <div className="space-y-2">
-                {inactive.slice(0, 5).map((p: any) => (
-                  <div key={p.expertPatientId} className="flex items-center justify-between bg-background rounded-xl px-3 py-2 border border-amber-100">
-                    <div className="flex items-center gap-2">
-                      <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-sm font-bold text-amber-700">
-                        {(p.patientName || p.patientEmail || '?')[0].toUpperCase()}
-                      </div>
-                      <div>
-                        <p className="text-xs font-bold text-foreground">{p.patientName || p.patientEmail}</p>
-                        <p className="text-[10px] text-muted-foreground">{p.lastLogDate ? `Último registro: ${p.lastLogDate}` : 'Sin registros'}</p>
-                      </div>
-                    </div>
-                    <button
-                      onClick={() => sendProactive.mutate({
-                        expertPatientId: p.expertPatientId,
-                        message: `¡Hola ${p.patientName?.split(' ')[0] || ''}! 👋 Veo que llevas unos días sin registrar tus comidas. ¿Todo bien? Recuerda que estoy aquí para ayudarte. ¡Pequeños pasos cada día hacen grandes cambios! 🌱`,
-                      })}
-                      disabled={sendProactive.isPending}
-                      className="text-xs font-bold text-amber-700 bg-amber-100 hover:bg-amber-200 px-3 py-1.5 rounded-lg transition-colors"
-                    >
-                      Saludar
-                    </button>
-                  </div>
-                ))}
-              </div>
-            </div>
-          );
-        })()}
+        {myProfile && activeTab === "/app/profile" && (
+          <InactivePatientsAlert expertProfile={myProfile} />
+        )}
 
         {/* Plans Tab */}
         {activeTab === "plans" && (
@@ -1042,6 +1000,53 @@ export default function BuddyExpertDashboard() {
         )}
       </div>
     </AppLayout>
+  );
+}
+
+// ─── Inactive Patients Alert Component ─────────────────────────────────────
+function InactivePatientsAlert({ expertProfile }: { expertProfile: any }) {
+  const inactiveQuery = trpc.expertPatients.getInactivePatients.useQuery({ inactiveDays: 3 }, { enabled: !!expertProfile });
+  const sendProactive = trpc.expertPatients.sendProactiveMessage.useMutation({
+    onSuccess: () => { toast.success('✅ Mensaje enviado al paciente'); inactiveQuery.refetch(); },
+    onError: (e: any) => toast.error(e.message),
+  });
+  const inactive = inactiveQuery.data ?? [];
+  if (inactive.length === 0) return null;
+  return (
+    <div className="bg-amber-50 border border-amber-200 rounded-2xl p-4 space-y-3">
+      <div className="flex items-center gap-2">
+        <span className="text-xl">🚨</span>
+        <div>
+          <p className="text-sm font-black text-amber-900">{inactive.length} paciente{inactive.length > 1 ? 's' : ''} sin registrar en 3+ días</p>
+          <p className="text-xs text-amber-700">Envíales un mensaje de seguimiento para mantener su motivación</p>
+        </div>
+      </div>
+      <div className="space-y-2">
+        {inactive.slice(0, 5).map((p: any) => (
+          <div key={p.expertPatientId} className="flex items-center justify-between bg-background rounded-xl px-3 py-2 border border-amber-100">
+            <div className="flex items-center gap-2">
+              <div className="w-8 h-8 rounded-full bg-amber-100 flex items-center justify-center text-sm font-bold text-amber-700">
+                {(p.patientName || p.patientEmail || '?')[0].toUpperCase()}
+              </div>
+              <div>
+                <p className="text-xs font-bold text-foreground">{p.patientName || p.patientEmail}</p>
+                <p className="text-[10px] text-muted-foreground">{p.lastLogDate ? `Último registro: ${p.lastLogDate}` : 'Sin registros'}</p>
+              </div>
+            </div>
+            <button
+              onClick={() => sendProactive.mutate({
+                expertPatientId: p.expertPatientId,
+                message: `¡Hola ${p.patientName?.split(' ')[0] || ''}! 👋 Veo que llevas unos días sin registrar tus comidas. ¿Todo bien? Recuerda que estoy aquí para ayudarte. ¡Pequeños pasos cada día hacen grandes cambios! 🌱`,
+              })}
+              disabled={sendProactive.isPending}
+              className="text-xs font-bold text-amber-700 bg-amber-100 hover:bg-amber-200 px-3 py-1.5 rounded-lg transition-colors"
+            >
+              Saludar
+            </button>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }
 
