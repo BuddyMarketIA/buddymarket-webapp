@@ -565,6 +565,12 @@ function ExpertProfile({ id }: { id: number }) {
           </div>
         </section>
       )}
+
+      {/* Packs de programas — compra directa */}
+      <ExpertPacksSection expertId={id} />
+
+      {/* Reseñas de pacientes verificados */}
+      <ExpertReviewsSection expertId={id} expertPatientId={null} />
     </ProfileLayout>
   );
 }
@@ -1002,6 +1008,192 @@ function NotFound({ type }: { type: string }) {
       <p className="text-muted-foreground text-center">Este {type} no existe o ya no está disponible.</p>
       <button onClick={() => window.history.length > 2 ? window.history.back() : navigate("/app/buddy-makers")} className="bg-orange-500 text-white font-semibold px-6 py-2.5 rounded-xl">Volver</button>
     </div>
+  );
+}
+
+// ─── Packs de programas del nutricionista (compra directa) ──────────────────
+function ExpertPacksSection({ expertId }: { expertId: number }) {
+  const { user } = useAuth();
+  const { data: packs } = trpc.sessionPackages.getExpertPackages.useQuery({ expertId });
+
+  if (!packs || packs.length === 0) return null;
+
+  return (
+    <section>
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="font-bold text-foreground text-base">Programas y packs</h3>
+        <span className="text-xs text-purple-600 font-medium bg-purple-50 px-2 py-0.5 rounded-full">Compra directa</span>
+      </div>
+      <div className="space-y-3">
+        {packs.map((pack: any) => (
+          <div key={pack.id} className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-950/30 dark:to-pink-950/30 rounded-2xl border border-purple-200 dark:border-purple-800 p-4">
+            <div className="flex items-start justify-between gap-3">
+              <div className="flex-1">
+                <h4 className="font-bold text-foreground text-sm">{pack.name}</h4>
+                {pack.description && <p className="text-xs text-muted-foreground mt-0.5 leading-relaxed">{pack.description}</p>}
+                {pack.sessionsCount > 0 && (
+                  <p className="text-xs text-purple-600 font-medium mt-1">{pack.sessionsCount} sesiones incluidas</p>
+                )}
+              </div>
+              <div className="text-right flex-shrink-0">
+                <div className="text-xl font-black text-purple-600">{pack.price === 0 ? "Gratis" : `${pack.price}€`}</div>
+                <div className="text-xs text-muted-foreground/70">pago único</div>
+              </div>
+            </div>
+            {user ? (
+              <a
+                href={`/app/buddy-experts/${expertId}?pack=${pack.id}`}
+                className="mt-3 block w-full py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:opacity-90 transition-opacity text-center"
+              >
+                🛒 Comprar este programa
+              </a>
+            ) : (
+              <button
+                onClick={() => { window.location.href = "/login"; }}
+                className="mt-3 w-full py-2.5 rounded-xl text-sm font-bold bg-gradient-to-r from-purple-500 to-pink-500 text-white hover:opacity-90 transition-opacity"
+              >
+                Inicia sesión para comprar
+              </button>
+            )}
+          </div>
+        ))}
+      </div>
+    </section>
+  );
+}
+
+// ─── Reseñas de pacientes verificados ────────────────────────────────────────
+function ExpertReviewsSection({ expertId, expertPatientId }: { expertId: number; expertPatientId: number | null }) {
+  const { user } = useAuth();
+  const [showForm, setShowForm] = useState(false);
+  const [rating, setRating] = useState(5);
+  const [title, setTitle] = useState("");
+  const [content, setContent] = useState("");
+  const utils = trpc.useUtils();
+
+  const { data: reviews, isLoading } = trpc.expertEnhanced.getExpertReviews.useQuery({ expertId, limit: 10 });
+
+  // Verificar si el usuario tiene relación activa con este experto
+  const { data: myRelation } = trpc.expertPatients.getMyRelationWithExpert.useQuery(
+    { expertId },
+    { enabled: !!user }
+  );
+
+  const submitMut = trpc.expertEnhanced.submitReview.useMutation({
+    onSuccess: () => {
+      toast.success("⭐ Reseña enviada. ¡Gracias por tu valoración!");
+      setShowForm(false);
+      setRating(5); setTitle(""); setContent("");
+      utils.expertEnhanced.getExpertReviews.invalidate({ expertId });
+    },
+    onError: (err: any) => toast.error(err.message || "Error al enviar la reseña"),
+  });
+
+  const avgRating = reviews?.length
+    ? (reviews.reduce((s: number, r: any) => s + r.review.rating, 0) / reviews.length).toFixed(1)
+    : null;
+
+  return (
+    <section>
+      <div className="flex items-center justify-between mb-3">
+        <h3 className="font-bold text-foreground text-base">
+          Opiniones de pacientes
+          {avgRating && <span className="ml-2 text-amber-500">⭐ {avgRating}</span>}
+        </h3>
+        {myRelation && !showForm && (
+          <button
+            onClick={() => setShowForm(true)}
+            className="text-xs text-amber-600 font-semibold border border-amber-300 px-3 py-1 rounded-full hover:bg-amber-50 transition-colors"
+          >
+            + Dejar reseña
+          </button>
+        )}
+      </div>
+
+      {/* Formulario de reseña — solo para pacientes verificados */}
+      {showForm && myRelation && (
+        <div className="bg-amber-50 dark:bg-amber-950/20 border border-amber-200 dark:border-amber-800 rounded-2xl p-4 mb-4">
+          <p className="text-sm font-semibold text-foreground mb-3">Tu valoración</p>
+          <div className="flex gap-1 mb-3">
+            {[1,2,3,4,5].map(i => (
+              <button key={i} onClick={() => setRating(i)}>
+                <svg className={`w-7 h-7 ${i <= rating ? "text-amber-400" : "text-gray-200"}`} fill="currentColor" viewBox="0 0 20 20">
+                  <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                </svg>
+              </button>
+            ))}
+          </div>
+          <input
+            value={title}
+            onChange={e => setTitle(e.target.value)}
+            placeholder="Título (opcional)"
+            className="w-full border border-border rounded-xl px-3 py-2 text-sm mb-2 focus:outline-none focus:ring-2 focus:ring-amber-300"
+          />
+          <textarea
+            value={content}
+            onChange={e => setContent(e.target.value)}
+            placeholder="Cuéntanos tu experiencia con este nutricionista..."
+            className="w-full border border-border rounded-xl px-3 py-2 text-sm resize-none focus:outline-none focus:ring-2 focus:ring-amber-300"
+            rows={3}
+          />
+          <div className="flex gap-2 mt-3">
+            <button
+              onClick={() => submitMut.mutate({ expertPatientId: myRelation.id, rating, title: title || undefined, content: content || undefined })}
+              disabled={submitMut.isPending}
+              className="flex-1 py-2 rounded-xl text-sm font-bold bg-amber-500 text-white hover:bg-amber-600 disabled:opacity-50 transition-colors"
+            >
+              {submitMut.isPending ? "Enviando..." : "⭐ Publicar reseña"}
+            </button>
+            <button onClick={() => setShowForm(false)} className="px-4 py-2 rounded-xl text-sm text-muted-foreground hover:bg-muted/50 transition-colors">Cancelar</button>
+          </div>
+          <p className="text-[10px] text-muted-foreground/60 mt-2 text-center">
+            Solo los pacientes con relación activa pueden dejar reseñas. Las reseñas verificadas se marcan con ✅.
+          </p>
+        </div>
+      )}
+
+      {isLoading ? (
+        <div className="space-y-2">{[1,2].map(i => <div key={i} className="h-20 rounded-xl bg-muted/50 animate-pulse" />)}</div>
+      ) : !reviews?.length ? (
+        <div className="text-center py-8 text-muted-foreground/60">
+          <p className="text-3xl mb-2">⭐</p>
+          <p className="text-sm">Aún no hay reseñas. Sé el primero en valorar a este nutricionista.</p>
+        </div>
+      ) : (
+        <div className="space-y-3">
+          {reviews.map((item: any) => (
+            <div key={item.review.id} className="bg-background rounded-2xl border border-border/50 p-4">
+              <div className="flex items-start gap-3">
+                <div className="w-9 h-9 rounded-full bg-gradient-to-br from-amber-100 to-orange-100 dark:from-amber-900 dark:to-orange-900 flex items-center justify-center text-sm font-bold text-amber-700 shrink-0">
+                  {(item.patientName || "P")[0].toUpperCase()}
+                </div>
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center gap-2 flex-wrap">
+                    <span className="font-semibold text-sm">{item.patientName || "Paciente"}</span>
+                    {item.review.isVerified && <span className="text-[10px] text-green-700 bg-green-50 border border-green-200 px-1.5 py-0.5 rounded-full">✅ Verificado</span>}
+                  </div>
+                  <div className="flex items-center gap-0.5 mt-0.5">
+                    {[1,2,3,4,5].map(i => (
+                      <svg key={i} className={`w-3.5 h-3.5 ${i <= item.review.rating ? "text-amber-400" : "text-gray-200"}`} fill="currentColor" viewBox="0 0 20 20">
+                        <path d="M9.049 2.927c.3-.921 1.603-.921 1.902 0l1.07 3.292a1 1 0 00.95.69h3.462c.969 0 1.371 1.24.588 1.81l-2.8 2.034a1 1 0 00-.364 1.118l1.07 3.292c.3.921-.755 1.688-1.54 1.118l-2.8-2.034a1 1 0 00-1.175 0l-2.8 2.034c-.784.57-1.838-.197-1.539-1.118l1.07-3.292a1 1 0 00-.364-1.118L2.98 8.72c-.783-.57-.38-1.81.588-1.81h3.461a1 1 0 00.951-.69l1.07-3.292z" />
+                      </svg>
+                    ))}
+                  </div>
+                  {item.review.title && <p className="text-sm font-semibold mt-1">{item.review.title}</p>}
+                  {item.review.content && <p className="text-sm mt-0.5 text-foreground/80">{item.review.content}</p>}
+                  {item.review.expertResponse && (
+                    <div className="mt-2 bg-orange-50 dark:bg-orange-950/20 border border-orange-200 dark:border-orange-800 rounded-xl p-2.5">
+                      <p className="text-[10px] font-semibold text-orange-700 dark:text-orange-400 mb-0.5">Respuesta del nutricionista:</p>
+                      <p className="text-xs text-foreground/80">{item.review.expertResponse}</p>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
+    </section>
   );
 }
 
