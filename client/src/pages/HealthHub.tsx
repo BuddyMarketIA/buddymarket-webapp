@@ -269,25 +269,30 @@ export default function HealthHub() {
   return (
     <div className="min-h-screen" style={{ background: "#FFF8F0" }}>
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
-        {/* Header */}
-        <div className="flex items-center justify-between">
-          <div>
-            <h1 className="text-2xl font-bold text-foreground">Health Hub</h1>
-            <p className="text-sm text-muted-foreground">
-              {connectedCount > 0 ? `${connectedCount} fuentes conectadas` : "Conecta tus wearables para ver todas tus metricas"}
-            </p>
-          </div>
-          <div className="flex items-center gap-3">
-            {connectedCount > 0 && (
-              <button onClick={() => toast.success("Sincronizando datos...")} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-sm font-medium text-white" style={{ background: "#7C3AED" }}>
-                <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
-                Sincronizar
-              </button>
-            )}
-            <span className={`flex items-center gap-1 text-xs font-medium ${hasData ? "text-emerald-600" : "text-muted-foreground/70"}`}>
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M5 12.55a11 11 0 0 1 14.08 0"/><path d="M1.42 9a16 16 0 0 1 21.16 0"/><path d="M8.53 16.11a6 6 0 0 1 6.95 0"/><line x1="12" y1="20" x2="12.01" y2="20"/></svg>
-              {hasData ? "En vivo" : "Sin datos"}
-            </span>
+        {/* Header Banner */}
+        <div className="rounded-2xl p-5" style={{ background: "linear-gradient(135deg, #F97316 0%, #FB923C 50%, #FDBA74 100%)" }}>
+          <div className="flex items-start justify-between">
+            <div>
+              <div className="flex items-center gap-2 mb-1">
+                <span className="text-2xl">💓</span>
+                <h1 className="text-2xl font-bold text-white">Health Hub</h1>
+              </div>
+              <p className="text-sm text-orange-100">
+                {connectedCount > 0 ? `${connectedCount} fuente${connectedCount > 1 ? "s" : ""} conectada${connectedCount > 1 ? "s" : ""}` : "Conecta tus wearables para ver todas tus métricas"}
+              </p>
+            </div>
+            <div className="flex flex-col items-end gap-2">
+              {connectedCount > 0 && (
+                <button onClick={() => toast.success("Sincronizando datos...")} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-white/20 text-white border border-white/30 hover:bg-white/30">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
+                  Sincronizar
+                </button>
+              )}
+              <span className={`flex items-center gap-1 text-xs font-medium ${hasData ? "text-white" : "text-orange-100"}`}>
+                <span className={`w-2 h-2 rounded-full ${hasData ? "bg-green-300" : "bg-orange-200"}`}></span>
+                {hasData ? "En vivo" : "Sin datos"}
+              </span>
+            </div>
           </div>
         </div>
 
@@ -493,39 +498,39 @@ export default function HealthHub() {
         ═══════════════════════════════════════════════════════════════ */}
         {!showSearchResults && (
           <>
-            {/* Health Score Card - Dark */}
-            <div className="rounded-2xl p-6" style={{ background: "linear-gradient(135deg, #1a1a2e 0%, #2d2d3e 100%)" }}>
-              <p className="text-xs font-semibold tracking-wider text-muted-foreground/70 mb-3">SCORE DE SALUD</p>
+            {/* Health Score Card - Light/Warm */}
+            <div className="rounded-2xl p-6" style={{ background: "linear-gradient(135deg, #FFF3E8 0%, #FFF8F0 100%)", border: "1px solid #FFE0C2" }}>
+              <p className="text-xs font-semibold tracking-wider mb-3" style={{ color: "#F97316" }}>SCORE DE SALUD</p>
               <div className="flex items-start justify-between">
                 <div>
                   <div className="flex items-baseline gap-1">
-                    <span className="text-5xl font-bold" style={{ color: "#10B981" }}>{healthScore.score}</span>
-                    <span className="text-lg text-muted-foreground/70">/100</span>
+                    <span className="text-5xl font-bold" style={{ color: "#F97316" }}>{healthScore.score}</span>
+                    <span className="text-lg text-muted-foreground">/100</span>
                   </div>
-                  <p className="text-sm font-medium mt-1" style={{ color: "#10B981" }}>{healthScore.label}</p>
+                  <p className="text-sm font-semibold mt-1" style={{ color: "#16A34A" }}>{healthScore.label}</p>
                 </div>
                 <div className="relative w-16 h-16">
                   <svg viewBox="0 0 64 64" className="w-full h-full">
-                    <circle cx="32" cy="32" r="28" fill="none" stroke="#374151" strokeWidth="4" />
-                    <circle cx="32" cy="32" r="28" fill="none" stroke="#10B981" strokeWidth="4" strokeDasharray={`${healthScore.score * 1.76} 176`} strokeLinecap="round" transform="rotate(-90 32 32)" />
+                    <circle cx="32" cy="32" r="28" fill="none" stroke="#FFE0C2" strokeWidth="4" />
+                    <circle cx="32" cy="32" r="28" fill="none" stroke="#F97316" strokeWidth="4" strokeDasharray={`${healthScore.score * 1.76} 176`} strokeLinecap="round" transform="rotate(-90 32 32)" />
                   </svg>
                   <div className="absolute inset-0 flex items-center justify-center">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#10B981" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
                   </div>
                 </div>
               </div>
-              <div className="border-t border-gray-700 mt-4 pt-4 grid grid-cols-3 gap-4">
+              <div className="border-t mt-4 pt-4 grid grid-cols-3 gap-4" style={{ borderColor: "#FFE0C2" }}>
                 <div className="text-center">
                   <p className="text-lg font-bold" style={{ color: "#7C3AED" }}>{healthScore.recovery}%</p>
-                  <p className="text-xs text-muted-foreground/70">Recovery</p>
+                  <p className="text-xs text-muted-foreground">Recovery</p>
                 </div>
                 <div className="text-center">
                   <p className="text-lg font-bold" style={{ color: "#7C3AED" }}>{healthScore.hrv}ms</p>
-                  <p className="text-xs text-muted-foreground/70">HRV</p>
+                  <p className="text-xs text-muted-foreground">HRV</p>
                 </div>
                 <div className="text-center">
                   <p className="text-lg font-bold" style={{ color: "#7C3AED" }}>{healthScore.rhr}bpm</p>
-                  <p className="text-xs text-muted-foreground/70">FC reposo</p>
+                  <p className="text-xs text-muted-foreground">FC reposo</p>
                 </div>
               </div>
             </div>
@@ -544,29 +549,29 @@ export default function HealthHub() {
             {/* TAB: COACH */}
             {activeTab === "coach" && (
               <div className="space-y-4">
-                <div className="rounded-2xl overflow-hidden" style={{ background: "linear-gradient(135deg, #1a1a2e 0%, #2d2d3e 100%)" }}>
-                  <div className="flex items-center gap-1 p-3 border-b border-gray-700">
-                    <button className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium text-white" style={{ background: "#7C3AED" }}>
+                <div className="rounded-2xl overflow-hidden bg-card border border-border shadow-sm">
+                  <div className="flex items-center gap-1 p-3 border-b border-border" style={{ background: "#FFF8F0" }}>
+                    <button className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium text-white" style={{ background: "#F97316" }}>
                       <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
                       Chat
                     </button>
-                    <button className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium text-muted-foreground/70 hover:text-gray-200">Valorar</button>
-                    <button className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium text-muted-foreground/70 hover:text-gray-200">Historial</button>
-                    <button className="ml-auto flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium text-gray-300 border border-gray-600 hover:border-gray-400">+ Nuevo</button>
+                    <button className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium text-muted-foreground hover:text-foreground">Valorar</button>
+                    <button className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium text-muted-foreground hover:text-foreground">Historial</button>
+                    <button className="ml-auto flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium text-muted-foreground border border-border hover:border-orange-300 hover:text-orange-600">+ Nuevo</button>
                   </div>
-                  <div className="p-4">
+                  <div className="p-4" style={{ background: "#FFFBF7" }}>
                     <div className="flex gap-3">
-                      <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: "#7C3AED" }}>
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: "linear-gradient(135deg, #F97316, #FB923C)" }}>
                         <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
                       </div>
-                      <div className="bg-muted/60 rounded-2xl rounded-tl-sm p-4 max-w-[85%]">
-                        <p className="text-sm text-gray-200 leading-relaxed">
-                          Hola! Soy tu <strong className="text-white">Coach Buddy</strong>, tu asistente de salud y rendimiento personal.
+                      <div className="rounded-2xl rounded-tl-sm p-4 max-w-[85%]" style={{ background: "#FFF3E8", border: "1px solid #FFE0C2" }}>
+                        <p className="text-sm text-foreground leading-relaxed">
+                          Hola! Soy tu <strong className="text-orange-600">Coach Buddy</strong>, tu asistente de salud y rendimiento personal.
                         </p>
-                        <p className="text-sm text-gray-200 leading-relaxed mt-3">
+                        <p className="text-sm text-foreground/80 leading-relaxed mt-3">
                           Tengo acceso a todas tus metricas de wearables conectados: HRV, recovery score, sueño, strain, SpO2 y mucho mas.
                         </p>
-                        <p className="text-sm text-gray-200 leading-relaxed mt-3">
+                        <p className="text-sm text-foreground/80 leading-relaxed mt-3">
                           En que puedo ayudarte hoy? Puedes preguntarme sobre tus metricas, si estas listo para entrenar, como mejorar tu recuperacion, o cualquier duda sobre salud y rendimiento.
                         </p>
                         <p className="text-right text-[10px] text-muted-foreground mt-2">
@@ -575,10 +580,10 @@ export default function HealthHub() {
                       </div>
                     </div>
                   </div>
-                  <div className="p-3 border-t border-gray-700">
+                  <div className="p-3 border-t border-border" style={{ background: "#FFF8F0" }}>
                     <div className="flex gap-2">
-                      <input type="text" value={chatInput} onChange={(e) => setChatInput(e.target.value)} placeholder="Pregunta sobre tu salud..." className="flex-1 bg-muted text-foreground text-sm rounded-full px-4 py-2.5 placeholder-muted-foreground border border-border focus:border-purple-500 focus:outline-none" />
-                      <button className="w-10 h-10 rounded-full flex items-center justify-center text-white" style={{ background: "#7C3AED" }} onClick={() => { if (chatInput.trim()) { toast.info("Funcion de chat proximamente"); setChatInput(""); } }}>
+                      <input type="text" value={chatInput} onChange={(e) => setChatInput(e.target.value)} placeholder="Pregunta sobre tu salud..." className="flex-1 bg-background text-foreground text-sm rounded-full px-4 py-2.5 placeholder-muted-foreground border border-border focus:border-orange-400 focus:outline-none" />
+                      <button className="w-10 h-10 rounded-full flex items-center justify-center text-white" style={{ background: "#F97316" }} onClick={() => { if (chatInput.trim()) { toast.info("Funcion de chat proximamente"); setChatInput(""); } }}>
                         <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
                       </button>
                     </div>
@@ -720,20 +725,20 @@ export default function HealthHub() {
             {/* TAB: COMPARAR */}
             {activeTab === "comparar" && (
               <div className="space-y-5">
-                <div className="rounded-2xl p-5" style={{ background: "linear-gradient(135deg, #7C3AED 0%, #A855F7 100%)" }}>
+                <div className="rounded-2xl p-5" style={{ background: "linear-gradient(135deg, #F3EEFF 0%, #EDE9FE 100%)", border: "1px solid #DDD6FE" }}>
                   <div className="flex items-center gap-3 mb-2">
                     <span className="text-xl">📱</span>
                     <div>
-                      <h3 className="text-lg font-bold text-white">Comparar Wearables</h3>
-                      <p className="text-xs text-purple-200">Metricas lado a lado de tus dispositivos</p>
+                      <h3 className="text-lg font-bold" style={{ color: "#6D28D9" }}>Comparar Wearables</h3>
+                      <p className="text-xs" style={{ color: "#7C3AED" }}>Metricas lado a lado de tus dispositivos</p>
                     </div>
                   </div>
                   <div className="flex gap-2 mt-3">
-                    <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-white bg-card/20">
-                      <span className="w-2 h-2 rounded-full bg-green-400"></span> WHOOP
+                    <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-white/70" style={{ color: "#6D28D9", border: "1px solid #DDD6FE" }}>
+                      <span className="w-2 h-2 rounded-full bg-green-500"></span> WHOOP
                     </span>
-                    <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium text-white bg-card/20">
-                      <span className="w-2 h-2 rounded-full bg-green-400"></span> Oura Ring
+                    <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-white/70" style={{ color: "#6D28D9", border: "1px solid #DDD6FE" }}>
+                      <span className="w-2 h-2 rounded-full bg-green-500"></span> Oura Ring
                     </span>
                   </div>
                 </div>
