@@ -271,6 +271,49 @@ function RecommendationsList({ recipes }: { recipes: any[] }) {
   );
 }
 
+// ─── Daily Recommendations ──────────────────────────────────────────────────
+type DailyRecsProps = { consumed: number; goal: number; protein: number; carbs: number; fat: number; proteinGoal: number; carbsGoal: number; fatGoal: number; streak: number; };
+function DailyRecs({ consumed, goal, protein, carbs, fat, proteinGoal, carbsGoal, fatGoal, streak }: DailyRecsProps) {
+  const hour = new Date().getHours();
+  const pct = goal > 0 ? consumed / goal : 0;
+  const recs: { icon: string; text: string; color: string }[] = [];
+
+  if (consumed === 0) {
+    if (hour < 10) recs.push({ icon: "🌅", text: "Empieza el día con un desayuno equilibrado: proteínas + carbohidratos complejos.", color: "#FFF7ED" });
+    else if (hour < 14) recs.push({ icon: "🍽️", text: "Aún no has registrado comidas hoy. ¡Registra tu almuerzo para seguir tu progreso!", color: "#FFF7ED" });
+    else recs.push({ icon: "📋", text: "Registra tus comidas para que Buddy Coach pueda darte recomendaciones personalizadas.", color: "#FFF7ED" });
+  } else if (pct < 0.4) {
+    recs.push({ icon: "⚡", text: `Solo llevas ${consumed} kcal de ${goal} kcal. Asegúrate de comer suficiente para mantener tu energía.`, color: "#FFF7ED" });
+  } else if (pct > 0.9 && pct < 1.05) {
+    recs.push({ icon: "🎯", text: "¡Casi en tu meta calórica! Elige una cena ligera rica en verduras y proteína magra.", color: "#F0FDF4" });
+  } else if (pct >= 1.05) {
+    recs.push({ icon: "⚠️", text: `Has superado tu meta en ${consumed - goal} kcal. Opta por una cena muy ligera y bebe agua.`, color: "#FEF3C7" });
+  }
+
+  const proteinPct = proteinGoal > 0 ? protein / proteinGoal : 0;
+  if (proteinPct < 0.5 && consumed > 0) recs.push({ icon: "💪", text: `Tu proteína está baja (${Math.round(protein)}g de ${proteinGoal}g). Añade pollo, huevos o legumbres en tu próxima comida.`, color: "#EFF6FF" });
+
+  if (streak >= 7) recs.push({ icon: "🔥", text: `¡${streak} días de racha! Mantén el ritmo — la consistencia es la clave del éxito.`, color: "#FFF7ED" });
+  else if (streak === 0) recs.push({ icon: "🚀", text: "Registra tus comidas hoy para empezar tu racha. ¡Los primeros 7 días son los más importantes!", color: "#F5F3FF" });
+
+  if (hour >= 14 && hour < 17 && consumed > 0) recs.push({ icon: "🥜", text: "Hora del snack de tarde: un puñado de frutos secos o una fruta te dará energía hasta la cena.", color: "#F0FDF4" });
+
+  if (!recs.length) return null;
+  return (
+    <div style={{ background: "white", borderRadius: 18, padding: "16px 18px", border: "1px solid #f3f4f6", boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
+      <p style={{ margin: "0 0 12px", fontSize: 13, fontWeight: 700, color: "#1a1a1a" }}>💡 Recomendaciones de hoy</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+        {recs.map((r, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "flex-start", gap: 10, padding: "10px 12px", borderRadius: 12, background: r.color }}>
+            <span style={{ fontSize: 18, flexShrink: 0 }}>{r.icon}</span>
+            <p style={{ margin: 0, fontSize: 13, color: "#374151", lineHeight: 1.5 }}>{r.text}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function DashboardV2() {
   const { user } = useAuth();
@@ -364,7 +407,20 @@ export default function DashboardV2() {
           {/* Buddy Coach CTA */}
           <BuddyCoachCTA />
 
-          {/* Recomendaciones */}
+          {/* Recomendaciones diarias personalizadas */}
+          <DailyRecs
+            consumed={consumed}
+            goal={goalCal}
+            protein={summary?.totalProtein ?? 0}
+            carbs={summary?.totalCarbs ?? 0}
+            fat={summary?.totalFat ?? 0}
+            proteinGoal={Math.round((goalCal * 0.30) / 4)}
+            carbsGoal={Math.round((goalCal * 0.45) / 4)}
+            fatGoal={Math.round((goalCal * 0.25) / 9)}
+            streak={streak}
+          />
+
+          {/* Recetas recomendadas */}
           <RecommendationsList recipes={recs} />
 
         </div>
