@@ -149,6 +149,7 @@ const ExpertChat = lazyWithRetry(() => import("./pages/ExpertChat"));
 const ExpertDashboard = lazyWithRetry(() => import("./pages/ExpertDashboard"));
 const MenuTemplates = lazyWithRetry(() => import("./pages/expert/MenuTemplates"));
 const FoodSubstitutions = lazyWithRetry(() => import("./pages/expert/FoodSubstitutions"));
+const ExpertPlanLibrary = lazyWithRetry(() => import("./pages/expert/ExpertPlanLibrary"));
 const SessionPackages = lazyWithRetry(() => import("./pages/expert/SessionPackages"));
 const HireRequests = lazyWithRetry(() => import("./pages/expert/HireRequests"));
 const AIPlanGenerator = lazyWithRetry(() => import("./pages/expert/AIPlanGenerator"));
@@ -349,6 +350,7 @@ function Router() {
       <Route path="/app/expert/chat">{() => <ProtectedPage><ExpertChat /></ProtectedPage>}</Route>
       <Route path="/app/expert/menu-templates">{() => <ProtectedPage><MenuTemplates /></ProtectedPage>}</Route>
       <Route path="/app/expert/food-substitutions">{() => <ProtectedPage><FoodSubstitutions /></ProtectedPage>}</Route>
+      <Route path="/app/expert/plan-library">{() => <ProtectedPage><ExpertPlanLibrary /></ProtectedPage>}</Route>
       <Route path="/app/expert/session-packages">{() => <ProtectedPage><SessionPackages /></ProtectedPage>}</Route>
       <Route path="/app/expert/hire-requests">{() => <ProtectedPage><HireRequests /></ProtectedPage>}</Route>
       <Route path="/app/expert/ai-plan">{() => <ProtectedPage><AIPlanGenerator /></ProtectedPage>}</Route>

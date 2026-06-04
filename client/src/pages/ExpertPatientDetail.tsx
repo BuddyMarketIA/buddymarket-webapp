@@ -13,6 +13,7 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@
 import {
   ResponsiveContainer, LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, Legend,
 } from "recharts";
+import { MessageCircle } from "lucide-react";
 import { generatePatientPDF } from "@/hooks/usePDFReport";
 import { ChatMarkdown } from "@/lib/renderChatMarkdown";
 
@@ -38,6 +39,7 @@ export default function ExpertPatientDetail() {
   // Modal estados
   const [showAssignMenuModal, setShowAssignMenuModal] = useState(false);
   const [showMenuPickerModal, setShowMenuPickerModal] = useState(false);
+  const [sendWhatsAppAfterAssign, setSendWhatsAppAfterAssign] = useState(false);
   const [showProgressModal, setShowProgressModal] = useState(false);
   const [showAppointmentModal, setShowAppointmentModal] = useState(false);
   const [assignMenuTitle, setAssignMenuTitle] = useState("");
@@ -461,6 +463,38 @@ export default function ExpertPatientDetail() {
           </div>
           {/* Fila 2: botones de acción */}
           <div className="flex gap-2 flex-wrap ml-9">
+            {/* WhatsApp rápido */}
+            {patientUser?.phone && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  const cleanPhone = patientUser.phone.replace(/[^0-9+]/g, "");
+                  window.open(`https://wa.me/${cleanPhone}`, "_blank");
+                }}
+                className="border-green-400 text-green-700 hover:bg-green-50 flex items-center gap-1.5"
+                title="Contactar por WhatsApp"
+              >
+                <MessageCircle size={14} /> WhatsApp
+              </Button>
+            )}
+            {!patientUser?.phone && (
+              <Button
+                size="sm"
+                variant="outline"
+                onClick={() => {
+                  const phone = prompt("Introduce el teléfono del paciente (con prefijo, ej: +34600000000):");
+                  if (phone) {
+                    const cleanPhone = phone.replace(/[^0-9+]/g, "");
+                    window.open(`https://wa.me/${cleanPhone}`, "_blank");
+                  }
+                }}
+                className="border-green-400 text-green-700 hover:bg-green-50 flex items-center gap-1.5"
+                title="Contactar por WhatsApp"
+              >
+                <MessageCircle size={14} /> WA
+              </Button>
+            )}
             <Button
               size="sm"
               variant="outline"
@@ -2185,16 +2219,63 @@ export default function ExpertPatientDetail() {
             <p className="text-xs text-orange-600 bg-orange-50 p-2 rounded">
               🤖 La IA adaptará automáticamente el menú a las restricciones y objetivos del paciente.
             </p>
+            {/* Opción WhatsApp */}
+            <div
+              onClick={() => setSendWhatsAppAfterAssign(!sendWhatsAppAfterAssign)}
+              className={`flex items-center gap-3 p-3 rounded-xl border cursor-pointer transition-all ${
+                sendWhatsAppAfterAssign
+                  ? "bg-green-50 border-green-400"
+                  : "bg-muted/30 border-border hover:border-green-300"
+              }`}
+            >
+              <div className={`w-5 h-5 rounded-md border-2 flex items-center justify-center flex-shrink-0 transition-all ${
+                sendWhatsAppAfterAssign ? "bg-green-500 border-green-500" : "border-border"
+              }`}>
+                {sendWhatsAppAfterAssign && <span className="text-white text-xs font-bold">✓</span>}
+              </div>
+              <div className="flex-1">
+                <p className="text-sm font-semibold text-foreground flex items-center gap-1.5">
+                  <MessageCircle size={14} className="text-green-600" />
+                  Notificar al paciente por WhatsApp
+                </p>
+                <p className="text-xs text-muted-foreground mt-0.5">Se abrirá WhatsApp con un mensaje listo para enviar</p>
+              </div>
+            </div>
           </div>
           <DialogFooter>
             <Button variant="outline" onClick={() => setShowAssignMenuModal(false)}>Cancelar</Button>
             <Button
-              onClick={() => assignMenuMutation.mutate({
-                patientRelId,
-                menuTitle: assignMenuTitle || undefined,
-                weekStartDate: assignWeekStart || undefined,
-                expertNotes: assignMenuNotes || undefined,
-              })}
+              onClick={() => {
+                assignMenuMutation.mutate({
+                  patientRelId,
+                  menuTitle: assignMenuTitle || undefined,
+                  weekStartDate: assignWeekStart || undefined,
+                  expertNotes: assignMenuNotes || undefined,
+                }, {
+                  onSuccess: () => {
+                    if (sendWhatsAppAfterAssign) {
+                      const phone = patientUser?.phone;
+                      const appUrl = window.location.origin;
+                      const menuName = assignMenuTitle || "tu nuevo menú";
+                      const notes = assignMenuNotes ? `\n\n📝 Notas de tu nutricionista:\n${assignMenuNotes}` : "";
+                      const msg = encodeURIComponent(
+                        `Hola ${patientUser?.name ?? ""} 👋\n\nTe he asignado *${menuName}* en Buddy One. Ya puedes verlo en tu app.${notes}\n\n👉 Accede aquí: ${appUrl}\n\n¡Cualquier duda estoy aquí! 🥗`
+                      );
+                      if (phone) {
+                        const cleanPhone = phone.replace(/[^0-9+]/g, "");
+                        window.open(`https://wa.me/${cleanPhone}?text=${msg}`, "_blank");
+                      } else {
+                        const manualPhone = prompt("Teléfono del paciente (con prefijo, ej: +34600000000):");
+                        if (manualPhone) {
+                          const cleanPhone = manualPhone.replace(/[^0-9+]/g, "");
+                          window.open(`https://wa.me/${cleanPhone}?text=${msg}`, "_blank");
+                        }
+                      }
+                      setSendWhatsAppAfterAssign(false);
+                    }
+                  }
+                });
+              }}
               disabled={!assignMenuTitle || assignMenuMutation.isPending}
               className="bg-orange-500 hover:bg-orange-600 text-white"
             >
