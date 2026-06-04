@@ -1,19 +1,46 @@
-import { useState, useEffect, useMemo } from "react";
+/**
+ * Health Hub — Núcleo del Ecosistema de Bienestar
+ * Fusiona: Coach IA · Metas de Bienestar · Métricas · Wearables · Módulos del ecosistema
+ */
+import { useState, useEffect, useMemo, useRef } from "react";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "@/components/sonner-a11y-shim";
-import SmartInsights from "@/components/SmartInsights";
-import ContextualProductWidget from "@/components/ContextualProductWidget";
+import { Link } from "wouter";
 import {
   AreaChart, Area, BarChart, Bar, LineChart, Line,
   XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer
 } from "recharts";
 
-type TabKey = "coach" | "dia" | "datos" | "comparar" | "add";
+/* ─── Types ─────────────────────────────────────────────────────────────── */
+type MainTab = "coach" | "metas" | "metricas" | "ecosistema" | "dispositivos";
+type GoalCategory = "sleep" | "recovery" | "activity" | "stress" | "nutrition" | "hydration";
 type MetricKey = "hrv" | "rhr" | "sleep" | "recovery" | "steps" | "active" | "spo2";
 type PeriodKey = "7d" | "14d" | "30d";
-type CategoryKey = "all" | "activity" | "sleep" | "body" | "nutrition" | "devices";
 
+interface WellnessGoal {
+  id: string;
+  category: GoalCategory;
+  title: string;
+  targetValue: number;
+  currentValue: number;
+  unit: string;
+  progress: number;
+  priority: "low" | "medium" | "high";
+  status: "active" | "completed";
+  tips: string[];
+  deadline: Date;
+}
+
+interface ChatMessage {
+  id: string;
+  role: "coach" | "user";
+  content: string;
+  time: string;
+  suggestions?: string[];
+}
+
+/* ─── Mock data ──────────────────────────────────────────────────────────── */
 const mockSleepData = [
   { date: "Lun", hours: 7.2, score: 82 },
   { date: "Mar", hours: 6.8, score: 74 },
@@ -22,6 +49,16 @@ const mockSleepData = [
   { date: "Vie", hours: 6.5, score: 68 },
   { date: "Sab", hours: 8.5, score: 94 },
   { date: "Dom", hours: 7.8, score: 88 },
+];
+
+const mockHrvData = [
+  { date: "Lun", value: 48 },
+  { date: "Mar", value: 52 },
+  { date: "Mie", value: 55 },
+  { date: "Jue", value: 53 },
+  { date: "Vie", value: 49 },
+  { date: "Sab", value: 58 },
+  { date: "Dom", value: 61 },
 ];
 
 const mockRecoveryData = [
@@ -34,784 +71,744 @@ const mockRecoveryData = [
   { date: "Dom", score: 82 },
 ];
 
-const mockActivityData = [
-  { date: "Lun", strain: 12.5, calories: 2100 },
-  { date: "Mar", strain: 8.2, calories: 1800 },
-  { date: "Mie", strain: 14.1, calories: 2400 },
-  { date: "Jue", strain: 10.8, calories: 2000 },
-  { date: "Vie", strain: 15.3, calories: 2600 },
-  { date: "Sab", strain: 6.5, calories: 1600 },
-  { date: "Dom", strain: 9.7, calories: 1900 },
+const goalCategoryConfig: Record<GoalCategory, { icon: string; label: string; color: string; bg: string; unit: string; defaultTarget: number; tips: string[] }> = {
+  sleep:     { icon: "🌙", label: "Sueño",         color: "#7C3AED", bg: "#F3EEFF", unit: "horas",   defaultTarget: 8,     tips: ["Horario consistente", "Sin pantallas 1h antes", "Ambiente oscuro y fresco"] },
+  recovery:  { icon: "⚡", label: "Recuperación",  color: "#16A34A", bg: "#F0FDF4", unit: "puntos",  defaultTarget: 80,    tips: ["Más proteína post-entreno", "Estiramientos diarios", "Reduce el estrés"] },
+  activity:  { icon: "🏃", label: "Actividad",     color: "#F97316", bg: "#FFF7ED", unit: "pasos",   defaultTarget: 10000, tips: ["Camina 30 min diarios", "Sube escaleras", "Descansos activos cada hora"] },
+  stress:    { icon: "🧘", label: "Estrés",         color: "#0EA5E9", bg: "#F0F9FF", unit: "nivel",   defaultTarget: 3,     tips: ["Meditación diaria", "Respiración profunda", "Límites de trabajo"] },
+  nutrition: { icon: "🥗", label: "Nutrición",     color: "#D97706", bg: "#FFFBEB", unit: "porciones", defaultTarget: 5,  tips: ["5 frutas/verduras al día", "Reduce procesados", "Come a horas fijas"] },
+  hydration: { icon: "💧", label: "Hidratación",   color: "#0891B2", bg: "#ECFEFF", unit: "vasos",   defaultTarget: 8,     tips: ["Agua al despertar", "Lleva botella contigo", "Bebe antes de sentir sed"] },
+};
+
+const ecosystemModules = [
+  { icon: "🥗", label: "Recetas",     href: "/app/recipes",          color: "#F97316", desc: "Recetas personalizadas según tus metas" },
+  { icon: "📋", label: "Menús",       href: "/app/menus",            color: "#D97706", desc: "Planificación semanal de comidas" },
+  { icon: "📦", label: "Inventario",  href: "/app/inventory",        color: "#16A34A", desc: "Gestión de tu despensa inteligente" },
+  { icon: "🛒", label: "BuddyShop",   href: "/app/shop",             color: "#7C3AED", desc: "Compra los ingredientes de tus menús" },
+  { icon: "👨‍⚕️", label: "Mi Experto",  href: "/app/my-expert",        color: "#0EA5E9", desc: "Consulta con tu nutricionista" },
+  { icon: "📏", label: "Métricas",    href: "/app/metrics",          color: "#EF4444", desc: "Evolución de tu peso y composición" },
+  { icon: "📈", label: "Progreso",    href: "/app/progress",         color: "#8B5CF6", desc: "Historial y tendencias de salud" },
+  { icon: "🏆", label: "Logros",      href: "/app/achievements",     color: "#F59E0B", desc: "Insignias y retos completados" },
+  { icon: "🔥", label: "Retos",       href: "/app/challenges",       color: "#EF4444", desc: "Desafíos para mantenerte motivado" },
+  { icon: "🐾", label: "BuddyPet",    href: "/app/buddy-pet",        color: "#10B981", desc: "Nutrición inteligente para tu mascota" },
+  { icon: "👥", label: "Familia",     href: "/app/familia",          color: "#F97316", desc: "Gestión nutricional familiar" },
+  { icon: "📄", label: "Informes",    href: "/app/monthly-reports",  color: "#6B7280", desc: "Reportes mensuales de tu bienestar" },
 ];
 
-/* ── Category definitions ── */
-const categories: { key: CategoryKey; label: string; icon: string; color: string }[] = [
-  { key: "all", label: "Todo", icon: "🏠", color: "#F97316" },
-  { key: "activity", label: "Actividad", icon: "🏃", color: "#10B981" },
-  { key: "sleep", label: "Sueño", icon: "🌙", color: "#8B5CF6" },
-  { key: "body", label: "Cuerpo", icon: "💪", color: "#EF4444" },
-  { key: "nutrition", label: "Nutrición", icon: "🥗", color: "#F59E0B" },
-  { key: "devices", label: "Dispositivos", icon: "📱", color: "#3B82F6" },
+const coachSuggestions = [
+  "¿Estoy listo para entrenar hoy?",
+  "¿Cómo mejorar mi HRV?",
+  "¿Qué debo comer para recuperarme mejor?",
+  "¿Por qué me siento cansado?",
+  "¿Cuánto debo dormir según mis datos?",
+  "Analiza mi semana de sueño",
 ];
 
-/* ── Searchable items mapped to categories ── */
-interface SearchableItem {
-  id: string;
-  title: string;
-  subtitle: string;
-  icon: string;
-  category: CategoryKey;
-  action: TabKey;
-  metricKey?: MetricKey;
-}
+const coachResponses: Record<string, { content: string; suggestions?: string[] }> = {
+  "¿Estoy listo para entrenar hoy?": {
+    content: "Basándome en tus datos de hoy: **Recovery 78%** y **HRV 53ms** (↑ vs ayer), estás en buena forma para entrenar. Te recomiendo una sesión de intensidad **moderada-alta** (strain 12-15). Asegúrate de hidratarte bien antes y después. 💪",
+    suggestions: ["¿Qué ejercicios me recomiendas?", "¿Cuánto tiempo debo entrenar?"],
+  },
+  "¿Cómo mejorar mi HRV?": {
+    content: "Tu HRV actual es **53ms**, que está en rango normal. Para mejorarlo: 1) **Duerme 7-9h** consistentemente, 2) **Reduce el alcohol** (baja el HRV hasta 24h), 3) **Practica respiración** diafragmática 5 min/día, 4) **Gestiona el estrés** con meditación. Con consistencia, podrías ver mejoras en 4-6 semanas. 📈",
+    suggestions: ["¿Qué alimentos mejoran el HRV?", "Muéstrame mi tendencia de HRV"],
+  },
+  "¿Qué debo comer para recuperarme mejor?": {
+    content: "Para optimizar tu recuperación con **Recovery Score 78%**: 🥩 **Proteína** 1.6-2g/kg (unos 128-160g si pesas 80kg), 🍌 **Carbohidratos** post-entreno para reponer glucógeno, 🫐 **Antioxidantes** (frutas del bosque, cúrcuma), 💧 **Hidratación** 35ml/kg. ¿Quieres que genere un menú de recuperación personalizado?",
+    suggestions: ["Genera un menú de recuperación", "¿Cuánta proteína necesito?"],
+  },
+  "default": {
+    content: "Entendido. Estoy analizando tus datos de salud para darte la mejor respuesta. Recuerda que combino tus métricas de wearables, nutrición y metas para darte recomendaciones 100% personalizadas. 🧠",
+    suggestions: ["¿Estoy listo para entrenar hoy?", "Analiza mi semana"],
+  },
+};
 
-const searchableItems: SearchableItem[] = [
-  // Activity
-  { id: "steps", title: "Pasos diarios", subtitle: "Conteo de pasos y distancia", icon: "👟", category: "activity", action: "datos", metricKey: "steps" },
-  { id: "strain", title: "Strain / Esfuerzo", subtitle: "Nivel de esfuerzo cardiovascular", icon: "🔥", category: "activity", action: "dia" },
-  { id: "active-min", title: "Minutos activos", subtitle: "Tiempo de actividad fisica", icon: "⏱️", category: "activity", action: "datos", metricKey: "active" },
-  { id: "calories", title: "Calorias quemadas", subtitle: "Gasto calorico total del dia", icon: "🔋", category: "activity", action: "dia" },
-  { id: "workouts", title: "Entrenamientos", subtitle: "Historial de sesiones de ejercicio", icon: "🏋️", category: "activity", action: "datos" },
-  // Sleep
-  { id: "sleep-score", title: "Puntuacion de sueño", subtitle: "Calidad general del descanso", icon: "😴", category: "sleep", action: "dia", metricKey: "sleep" },
-  { id: "sleep-hours", title: "Horas de sueño", subtitle: "Duracion total del sueño", icon: "🛏️", category: "sleep", action: "datos", metricKey: "sleep" },
-  { id: "sleep-phases", title: "Fases del sueño", subtitle: "REM, profundo y ligero", icon: "🌊", category: "sleep", action: "datos" },
-  { id: "sleep-latency", title: "Latencia de sueño", subtitle: "Tiempo en quedarse dormido", icon: "⏳", category: "sleep", action: "datos" },
-  // Body
-  { id: "hrv", title: "HRV", subtitle: "Variabilidad de la frecuencia cardiaca", icon: "💖", category: "body", action: "datos", metricKey: "hrv" },
-  { id: "rhr", title: "FC en reposo", subtitle: "Frecuencia cardiaca en reposo", icon: "❤️", category: "body", action: "datos", metricKey: "rhr" },
-  { id: "spo2", title: "SpO2", subtitle: "Saturacion de oxigeno en sangre", icon: "🫁", category: "body", action: "datos", metricKey: "spo2" },
-  { id: "recovery", title: "Recovery Score", subtitle: "Nivel de recuperacion diaria", icon: "⚡", category: "body", action: "datos", metricKey: "recovery" },
-  { id: "body-temp", title: "Temperatura corporal", subtitle: "Variacion de temperatura nocturna", icon: "🌡️", category: "body", action: "datos" },
-  { id: "weight", title: "Peso corporal", subtitle: "Registro y evolucion del peso", icon: "⚖️", category: "body", action: "datos" },
-  // Nutrition
-  { id: "macros", title: "Macronutrientes", subtitle: "Proteinas, carbohidratos y grasas", icon: "🥩", category: "nutrition", action: "coach" },
-  { id: "hydration", title: "Hidratacion", subtitle: "Consumo de agua diario", icon: "💧", category: "nutrition", action: "coach" },
-  { id: "meal-log", title: "Registro de comidas", subtitle: "Historial de alimentos consumidos", icon: "📋", category: "nutrition", action: "coach" },
-  { id: "calories-in", title: "Calorias ingeridas", subtitle: "Balance calorico del dia", icon: "🍽️", category: "nutrition", action: "coach" },
-  // Devices
-  { id: "oura", title: "Oura Ring", subtitle: "Anillo de seguimiento de salud", icon: "💍", category: "devices", action: "add" },
-  { id: "whoop", title: "WHOOP", subtitle: "Pulsera de rendimiento", icon: "⌚", category: "devices", action: "add" },
-  { id: "apple-health", title: "Apple Health", subtitle: "Ecosistema de salud Apple", icon: "🍎", category: "devices", action: "add" },
-  { id: "garmin", title: "Garmin Connect", subtitle: "Relojes y GPS deportivos", icon: "🏔️", category: "devices", action: "add" },
-  { id: "fitbit", title: "Fitbit", subtitle: "Pulseras y relojes de actividad", icon: "💚", category: "devices", action: "add" },
-  { id: "samsung", title: "Samsung Health", subtitle: "Ecosistema Samsung Galaxy", icon: "📱", category: "devices", action: "add" },
-];
-
+/* ─── Component ──────────────────────────────────────────────────────────── */
 export default function HealthHub() {
   const { user } = useAuth();
-  const [activeTab, setActiveTab] = useState<TabKey>("coach");
-  const [selectedMetric, setSelectedMetric] = useState<MetricKey>("hrv");
-  const [period, setPeriod] = useState<PeriodKey>("30d");
+  const [activeTab, setActiveTab] = useState<MainTab>("coach");
+  const [period, setPeriod] = useState<PeriodKey>("7d");
   const [chatInput, setChatInput] = useState("");
+  const [chatMessages, setChatMessages] = useState<ChatMessage[]>([
+    {
+      id: "welcome",
+      role: "coach",
+      content: `¡Hola${user?.name ? `, ${user.name.split(" ")[0]}` : ""}! 👋 Soy tu **Coach Buddy**, el núcleo de tu ecosistema de bienestar. Tengo acceso a tus métricas de wearables, historial nutricional, metas y progreso para darte recomendaciones completamente personalizadas.\n\n¿En qué puedo ayudarte hoy?`,
+      time: new Date().toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }),
+      suggestions: coachSuggestions.slice(0, 3),
+    },
+  ]);
+  const [isCoachTyping, setIsCoachTyping] = useState(false);
+  const chatEndRef = useRef<HTMLDivElement>(null);
 
-  /* ── Search & Filter state ── */
-  const [searchQuery, setSearchQuery] = useState("");
-  const [activeCategory, setActiveCategory] = useState<CategoryKey>("all");
-  const [showSearchResults, setShowSearchResults] = useState(false);
+  // Goals state
+  const [goals, setGoals] = useState<WellnessGoal[]>([
+    { id: "1", category: "sleep",    title: "Dormir 8 horas diarias",    targetValue: 8,     currentValue: 6.5,  unit: "horas",   progress: 81, priority: "high",   status: "active",    tips: goalCategoryConfig.sleep.tips,     deadline: new Date(Date.now() + 30 * 86400000) },
+    { id: "2", category: "activity", title: "10,000 pasos diarios",      targetValue: 10000, currentValue: 7500, unit: "pasos",   progress: 75, priority: "medium", status: "active",    tips: goalCategoryConfig.activity.tips,  deadline: new Date(Date.now() + 60 * 86400000) },
+    { id: "3", category: "recovery", title: "Recovery Score > 80%",      targetValue: 80,    currentValue: 78,   unit: "puntos",  progress: 97, priority: "high",   status: "active",    tips: goalCategoryConfig.recovery.tips,  deadline: new Date(Date.now() + 14 * 86400000) },
+    { id: "4", category: "hydration","title": "Beber 8 vasos de agua",   targetValue: 8,     currentValue: 8,    unit: "vasos",   progress: 100, priority: "low",   status: "completed", tips: goalCategoryConfig.hydration.tips, deadline: new Date(Date.now() + 7 * 86400000) },
+  ]);
+  const [showNewGoalForm, setShowNewGoalForm] = useState(false);
+  const [newGoal, setNewGoal] = useState({ category: "sleep" as GoalCategory, title: "", targetValue: 0 });
 
+  // Wearables
   const { data: wearableConnections, refetch: refetchConnections } = trpc.wearables.getConnections.useQuery();
   const { data: ouraData } = trpc.healthHub.getOuraData.useQuery({ days: period === "7d" ? 7 : period === "14d" ? 14 : 30 });
   const { data: whoopData } = trpc.healthHub.getWhoopData.useQuery({ days: period === "7d" ? 7 : period === "14d" ? 14 : 30 });
-
-  const [selectedSymptoms, setSelectedSymptoms] = useState<string[]>([]);
   const [connectingOura, setConnectingOura] = useState(false);
   const [connectingWhoop, setConnectingWhoop] = useState(false);
   const [disconnecting, setDisconnecting] = useState<string | null>(null);
 
   const disconnectMutation = trpc.wearables.disconnect.useMutation({
-    onSuccess: (data) => {
-      toast.success(data.message);
-      refetchConnections();
-      setDisconnecting(null);
-    },
-    onError: (e) => {
-      toast.error("Error al desconectar: " + e.message);
-      setDisconnecting(null);
-    },
+    onSuccess: (data) => { toast.success(data.message); refetchConnections(); setDisconnecting(null); },
+    onError: (e) => { toast.error("Error: " + e.message); setDisconnecting(null); },
   });
 
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const connected = params.get("wearable_connected");
     const wError = params.get("wearable_error");
-    if (connected) {
-      toast.success(`${connected === "oura" ? "Oura Ring" : "Whoop"} conectado correctamente`);
-      refetchConnections();
-      window.history.replaceState({}, "", window.location.pathname);
-    } else if (wError) {
-      toast.error(`Error al conectar: ${wError}`);
-      window.history.replaceState({}, "", window.location.pathname);
-    }
+    if (connected) { toast.success(`${connected === "oura" ? "Oura Ring" : "Whoop"} conectado`); refetchConnections(); window.history.replaceState({}, "", window.location.pathname); }
+    else if (wError) { toast.error(`Error al conectar: ${wError}`); window.history.replaceState({}, "", window.location.pathname); }
   }, []);
+
+  useEffect(() => {
+    chatEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [chatMessages, isCoachTyping]);
 
   const ouraConnected = wearableConnections?.some((c: any) => c.wearableType === "oura" && c.isActive);
   const whoopConnected = wearableConnections?.some((c: any) => c.wearableType === "whoop" && c.isActive);
   const connectedCount = (ouraConnected ? 1 : 0) + (whoopConnected ? 1 : 0);
   const hasData = connectedCount > 0;
 
-  const healthScore = useMemo(() => {
-    return { score: 81, label: "Excelente", recovery: 71, hrv: 53, rhr: 59 };
-  }, [ouraData, whoopData]);
+  const healthScore = useMemo(() => ({ score: 81, label: "Excelente", recovery: 71, hrv: 53, rhr: 59 }), [ouraData, whoopData]);
 
-  const platforms = [
-    { id: "oura", name: "Oura Ring", icon: "\uD83D\uDC8D", color: "#B4B4B4", connected: ouraConnected },
-    { id: "whoop", name: "WHOOP", icon: "\u231A", color: "#00C48C", connected: whoopConnected },
-    { id: "apple_health", name: "Apple Health", icon: "\uD83C\uDF4E", color: "#FF3B30", connected: false },
-    { id: "garmin", name: "Garmin Connect", icon: "\uD83C\uDFD4\uFE0F", color: "#007DC5", connected: false },
-    { id: "fitbit", name: "Fitbit", icon: "\uD83D\uDC9A", color: "#00B0B9", connected: false },
-    { id: "samsung", name: "Samsung Health", icon: "\uD83D\uDCF1", color: "#1428A0", connected: false },
-    { id: "google_fit", name: "Google Health Connect", icon: "\u2764\uFE0F", color: "#4285F4", connected: false },
-    { id: "xiaomi", name: "Xiaomi Mi Band", icon: "\uD83D\uDFE0", color: "#FF6900", connected: false },
-  ];
+  const activeGoals = goals.filter(g => g.status === "active");
+  const completedGoals = goals.filter(g => g.status === "completed");
+  const avgProgress = activeGoals.length > 0 ? Math.round(activeGoals.reduce((s, g) => s + g.progress, 0) / activeGoals.length) : 0;
 
-  const metrics: { key: MetricKey; label: string; icon: string; multiDevice: boolean }[] = [
-    { key: "hrv", label: "HRV", icon: "\uD83D\uDC96", multiDevice: true },
-    { key: "rhr", label: "FC en reposo", icon: "\u2764\uFE0F", multiDevice: true },
-    { key: "sleep", label: "Horas de sueño", icon: "\uD83C\uDF19", multiDevice: true },
-    { key: "recovery", label: "Recovery Score", icon: "\u26A1", multiDevice: true },
-    { key: "steps", label: "Pasos", icon: "\uD83D\uDC5F", multiDevice: false },
-    { key: "active", label: "Minutos activos", icon: "\u23F1\uFE0F", multiDevice: false },
-    { key: "spo2", label: "SpO2", icon: "\uD83E\uDEC1", multiDevice: false },
-  ];
+  const handleSendMessage = (text?: string) => {
+    const msg = text || chatInput.trim();
+    if (!msg) return;
+    setChatInput("");
+    const userMsg: ChatMessage = { id: Date.now().toString(), role: "user", content: msg, time: new Date().toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }) };
+    setChatMessages(prev => [...prev, userMsg]);
+    setIsCoachTyping(true);
+    setTimeout(() => {
+      const response = coachResponses[msg] || coachResponses["default"];
+      const coachMsg: ChatMessage = {
+        id: (Date.now() + 1).toString(),
+        role: "coach",
+        content: response.content,
+        time: new Date().toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }),
+        suggestions: response.suggestions,
+      };
+      setChatMessages(prev => [...prev, coachMsg]);
+      setIsCoachTyping(false);
+    }, 1200 + Math.random() * 800);
+  };
 
-  const tabs: { key: TabKey; label: string; icon: string }[] = [
-    { key: "coach", label: "Coach", icon: "\uD83C\uDF0D" },
-    { key: "dia", label: "Dia", icon: "\uD83D\uDCC5" },
-    { key: "datos", label: "Datos", icon: "\uD83D\uDCCA" },
-    { key: "comparar", label: "Comparar", icon: "\uD83D\uDCF1" },
-    { key: "add", label: "Add", icon: "\uD83D\uDD17" },
-  ];
-
-  /* ── Search loading simulation ── */
-  const [isSearching, setIsSearching] = useState(false);
-
-  useEffect(() => {
-    if (searchQuery.trim() || activeCategory !== "all") {
-      setIsSearching(true);
-      const timer = setTimeout(() => setIsSearching(false), 400);
-      return () => clearTimeout(timer);
-    }
-    setIsSearching(false);
-  }, [searchQuery, activeCategory]);
-
-  /* ── Filtered search results ── */
-  const filteredItems = useMemo(() => {
-    let items = searchableItems;
-    if (activeCategory !== "all") {
-      items = items.filter((item) => item.category === activeCategory);
-    }
-    if (searchQuery.trim()) {
-      const q = searchQuery.toLowerCase().trim();
-      items = items.filter(
-        (item) =>
-          item.title.toLowerCase().includes(q) ||
-          item.subtitle.toLowerCase().includes(q) ||
-          item.category.toLowerCase().includes(q)
-      );
-    }
-    return items;
-  }, [searchQuery, activeCategory]);
-
-  const handleSearchItemClick = (item: SearchableItem) => {
-    setActiveTab(item.action);
-    if (item.metricKey) setSelectedMetric(item.metricKey);
-    setShowSearchResults(false);
-    setSearchQuery("");
+  const handleAddGoal = () => {
+    if (!newGoal.title || newGoal.targetValue <= 0) return;
+    const cfg = goalCategoryConfig[newGoal.category];
+    setGoals(prev => [...prev, {
+      id: Date.now().toString(), category: newGoal.category, title: newGoal.title,
+      targetValue: newGoal.targetValue, currentValue: 0, unit: cfg.unit,
+      progress: 0, priority: "medium", status: "active", tips: cfg.tips,
+      deadline: new Date(Date.now() + 30 * 86400000),
+    }]);
+    setNewGoal({ category: "sleep", title: "", targetValue: 0 });
+    setShowNewGoalForm(false);
+    toast.success("¡Meta creada! El Coach Buddy la tendrá en cuenta.");
   };
 
   const handleConnectOura = async () => {
     setConnectingOura(true);
     try {
-      const origin = window.location.origin;
-      const res = await fetch(`/api/trpc/wearables.getOuraAuthUrl?input=${encodeURIComponent(JSON.stringify({ origin }))}`);
+      const res = await fetch(`/api/trpc/wearables.getOuraAuthUrl?input=${encodeURIComponent(JSON.stringify({ origin: window.location.origin }))}`);
       const json = await res.json();
-      if (json?.result?.data?.url) {
-        toast.info("Redirigiendo a Oura Ring...");
-        window.location.href = json.result.data.url;
-      } else {
-        toast.error("Oura Ring no esta configurado.");
-      }
-    } catch (e: any) {
-      toast.error("Error al conectar Oura: " + (e?.message || "Error desconocido"));
-    } finally {
-      setConnectingOura(false);
-    }
+      if (json?.result?.data?.url) { toast.info("Redirigiendo a Oura Ring..."); window.location.href = json.result.data.url; }
+      else toast.error("Oura Ring no está configurado.");
+    } catch (e: any) { toast.error("Error: " + (e?.message || "desconocido")); }
+    finally { setConnectingOura(false); }
   };
 
   const handleConnectWhoop = async () => {
     setConnectingWhoop(true);
     try {
-      const origin = window.location.origin;
-      const res = await fetch(`/api/trpc/wearables.getWhoopAuthUrl?input=${encodeURIComponent(JSON.stringify({ origin }))}`);
+      const res = await fetch(`/api/trpc/wearables.getWhoopAuthUrl?input=${encodeURIComponent(JSON.stringify({ origin: window.location.origin }))}`);
       const json = await res.json();
-      if (json?.result?.data?.url) {
-        toast.info("Redirigiendo a Whoop...");
-        window.location.href = json.result.data.url;
-      } else {
-        toast.error("Whoop no esta configurado.");
-      }
-    } catch (e: any) {
-      toast.error("Error al conectar Whoop: " + (e?.message || "Error desconocido"));
-    } finally {
-      setConnectingWhoop(false);
-    }
+      if (json?.result?.data?.url) { toast.info("Redirigiendo a Whoop..."); window.location.href = json.result.data.url; }
+      else toast.error("Whoop no está configurado.");
+    } catch (e: any) { toast.error("Error: " + (e?.message || "desconocido")); }
+    finally { setConnectingWhoop(false); }
   };
 
-  const handleDisconnect = (wearableType: "oura" | "whoop") => {
-    setDisconnecting(wearableType);
-    disconnectMutation.mutate({ wearableType });
-  };
+  const platforms = [
+    { id: "oura",         name: "Oura Ring",            icon: "💍", color: "#B4B4B4", connected: ouraConnected },
+    { id: "whoop",        name: "WHOOP",                icon: "⌚", color: "#00C48C", connected: whoopConnected },
+    { id: "apple_health", name: "Apple Health",         icon: "🍎", color: "#FF3B30", connected: false },
+    { id: "garmin",       name: "Garmin Connect",       icon: "🏔️", color: "#007DC5", connected: false },
+    { id: "fitbit",       name: "Fitbit",               icon: "💚", color: "#00B0B9", connected: false },
+    { id: "samsung",      name: "Samsung Health",       icon: "📱", color: "#1428A0", connected: false },
+    { id: "google_fit",   name: "Google Health Connect",icon: "❤️", color: "#4285F4", connected: false },
+    { id: "xiaomi",       name: "Xiaomi Mi Band",       icon: "🟠", color: "#FF6900", connected: false },
+  ];
 
-  /* ── Whether search/filter overlay is active ── */
-  const isSearchActive = showSearchResults || searchQuery.trim().length > 0 || activeCategory !== "all";
+  const mainTabs: { key: MainTab; label: string; icon: string }[] = [
+    { key: "coach",       label: "Coach IA",    icon: "🤖" },
+    { key: "metas",       label: "Metas",       icon: "🎯" },
+    { key: "metricas",    label: "Métricas",    icon: "📊" },
+    { key: "ecosistema",  label: "Ecosistema",  icon: "🌐" },
+    { key: "dispositivos",label: "Dispositivos",icon: "📡" },
+  ];
 
+  /* ─── Render ──────────────────────────────────────────────────────────── */
   return (
     <div className="min-h-screen" style={{ background: "#FFF8F0" }}>
       <div className="max-w-2xl mx-auto px-4 py-6 space-y-5">
-        {/* Header Banner */}
-        <div className="rounded-2xl p-5" style={{ background: "linear-gradient(135deg, #F97316 0%, #FB923C 50%, #FDBA74 100%)" }}>
-          <div className="flex items-start justify-between">
-            <div>
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-2xl">💓</span>
-                <h1 className="text-2xl font-bold text-white">Health Hub</h1>
+
+        {/* ── HERO BANNER ─────────────────────────────────────────────── */}
+        <div className="rounded-2xl overflow-hidden" style={{ background: "linear-gradient(135deg, #F97316 0%, #FB923C 60%, #FDBA74 100%)" }}>
+          <div className="p-5">
+            <div className="flex items-start justify-between">
+              <div>
+                <div className="flex items-center gap-2 mb-1">
+                  <span className="text-2xl">💓</span>
+                  <h1 className="text-2xl font-bold text-white">Health Hub</h1>
+                </div>
+                <p className="text-sm text-orange-100 mb-3">El núcleo de tu ecosistema de bienestar</p>
+                <div className="flex items-center gap-2">
+                  <span className={`flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full ${hasData ? "bg-green-400/20 text-white" : "bg-white/20 text-orange-100"}`}>
+                    <span className={`w-1.5 h-1.5 rounded-full ${hasData ? "bg-green-300" : "bg-orange-200"}`}></span>
+                    {hasData ? `${connectedCount} wearable${connectedCount > 1 ? "s" : ""} activo${connectedCount > 1 ? "s" : ""}` : "Sin wearables"}
+                  </span>
+                  <span className="flex items-center gap-1 text-xs font-semibold px-2.5 py-1 rounded-full bg-white/20 text-white">
+                    🎯 {activeGoals.length} meta{activeGoals.length !== 1 ? "s" : ""} activa{activeGoals.length !== 1 ? "s" : ""}
+                  </span>
+                </div>
               </div>
-              <p className="text-sm text-orange-100">
-                {connectedCount > 0 ? `${connectedCount} fuente${connectedCount > 1 ? "s" : ""} conectada${connectedCount > 1 ? "s" : ""}` : "Conecta tus wearables para ver todas tus métricas"}
-              </p>
+              <div className="text-right">
+                <div className="text-4xl font-black text-white">{healthScore.score}</div>
+                <div className="text-xs text-orange-100">Score de salud</div>
+                <div className="text-xs font-semibold text-white mt-0.5">{healthScore.label} ✨</div>
+              </div>
             </div>
-            <div className="flex flex-col items-end gap-2">
-              {connectedCount > 0 && (
-                <button onClick={() => toast.success("Sincronizando datos...")} className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-semibold bg-white/20 text-white border border-white/30 hover:bg-white/30">
-                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 2v6h-6"/><path d="M3 12a9 9 0 0 1 15-6.7L21 8"/><path d="M3 22v-6h6"/><path d="M21 12a9 9 0 0 1-15 6.7L3 16"/></svg>
-                  Sincronizar
-                </button>
-              )}
-              <span className={`flex items-center gap-1 text-xs font-medium ${hasData ? "text-white" : "text-orange-100"}`}>
-                <span className={`w-2 h-2 rounded-full ${hasData ? "bg-green-300" : "bg-orange-200"}`}></span>
-                {hasData ? "En vivo" : "Sin datos"}
-              </span>
-            </div>
+          </div>
+
+          {/* Mini stats strip */}
+          <div className="grid grid-cols-4 border-t border-white/20">
+            {[
+              { label: "Recovery", value: `${healthScore.recovery}%`, icon: "⚡" },
+              { label: "HRV",      value: `${healthScore.hrv}ms`,     icon: "💖" },
+              { label: "FC Rep.",  value: `${healthScore.rhr}bpm`,    icon: "❤️" },
+              { label: "Progreso", value: `${avgProgress}%`,          icon: "🎯" },
+            ].map((s, i) => (
+              <div key={i} className="py-3 text-center border-r border-white/20 last:border-0">
+                <div className="text-sm">{s.icon}</div>
+                <div className="text-sm font-bold text-white">{s.value}</div>
+                <div className="text-[10px] text-orange-100">{s.label}</div>
+              </div>
+            ))}
           </div>
         </div>
 
-        {/* ═══════════════════════════════════════════════════════════════
-            SEARCH BAR
-        ═══════════════════════════════════════════════════════════════ */}
-        <div className="relative">
-          <div className="flex items-center gap-2 bg-card rounded-2xl border border-border shadow-sm px-4 py-3 focus-within:border-orange-400 focus-within:ring-2 focus-within:ring-orange-100 transition-all">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="#9CA3AF" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => {
-                setSearchQuery(e.target.value);
-                if (e.target.value.trim()) setShowSearchResults(true);
-              }}
-              onFocus={() => setShowSearchResults(true)}
-              placeholder="Buscar metricas, dispositivos, datos de salud..."
-              className="flex-1 bg-transparent text-sm text-foreground placeholder-gray-400 focus:outline-none"
-            />
-            {searchQuery && (
-              <button onClick={() => { setSearchQuery(""); setShowSearchResults(false); setActiveCategory("all"); }} className="text-muted-foreground/70 hover:text-muted-foreground transition-colors">
-                <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-              </button>
-            )}
-          </div>
+        {/* ── MAIN TABS ────────────────────────────────────────────────── */}
+        <div className="flex items-center gap-1 overflow-x-auto pb-1">
+          {mainTabs.map(tab => (
+            <button
+              key={tab.key}
+              onClick={() => setActiveTab(tab.key)}
+              className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${
+                activeTab === tab.key
+                  ? "bg-orange-500 text-white shadow-sm"
+                  : "bg-card text-muted-foreground border border-border hover:border-orange-200 hover:text-orange-600"
+              }`}
+            >
+              <span className="text-sm">{tab.icon}</span>
+              {tab.label}
+              {tab.key === "metas" && activeGoals.length > 0 && (
+                <span className={`text-[10px] font-bold px-1.5 py-0.5 rounded-full ${activeTab === tab.key ? "bg-white/30 text-white" : "bg-orange-100 text-orange-600"}`}>
+                  {activeGoals.length}
+                </span>
+              )}
+            </button>
+          ))}
+        </div>
 
-          {/* ── Category filter pills ── */}
-          <div className="flex items-center gap-2 mt-3 overflow-x-auto pb-1 -mx-1 px-1">
-            {categories.map((cat) => {
-              const isActive = activeCategory === cat.key;
-              return (
-                <button
-                  key={cat.key}
-                  onClick={() => {
-                    setActiveCategory(cat.key);
-                    if (cat.key !== "all") setShowSearchResults(true);
-                    else if (!searchQuery.trim()) setShowSearchResults(false);
-                  }}
-                  className={`flex items-center gap-1.5 px-3.5 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all border ${
-                    isActive
-                      ? "text-white border-transparent shadow-sm"
-                      : "bg-card text-muted-foreground border-border hover:border-border/80 hover:shadow-sm"
-                  }`}
-                  style={isActive ? { background: cat.color, borderColor: cat.color } : {}}
-                >
-                  <span className="text-sm">{cat.icon}</span>
-                  {cat.label}
-                  {isActive && cat.key !== "all" && (
-                    <span className="ml-0.5 bg-card/30 rounded-full w-5 h-5 flex items-center justify-center text-[10px] font-bold">
-                      {searchableItems.filter((i) => i.category === cat.key).length}
-                    </span>
-                  )}
-                </button>
-              );
-            })}
-          </div>
+        {/* ══════════════════════════════════════════════════════════════
+            TAB: COACH IA
+        ══════════════════════════════════════════════════════════════ */}
+        {activeTab === "coach" && (
+          <div className="space-y-4">
+            {/* Context bar */}
+            <div className="rounded-xl p-3 flex items-center gap-3" style={{ background: "#FFF3E8", border: "1px solid #FFE0C2" }}>
+              <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: "linear-gradient(135deg, #F97316, #FB923C)" }}>
+                <span className="text-sm">🧠</span>
+              </div>
+              <div className="flex-1 min-w-0">
+                <p className="text-xs font-semibold text-orange-700">Coach Buddy tiene acceso a:</p>
+                <p className="text-xs text-orange-600/80 truncate">Wearables · Nutrición · Metas · Métricas · Historial</p>
+              </div>
+              <span className="flex items-center gap-1 text-[10px] font-semibold px-2 py-1 rounded-full bg-green-100 text-green-700">
+                <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>En línea
+              </span>
+            </div>
 
-          {/* ── Search results dropdown with animations ── */}
-          <div
-            className={`mt-2 bg-card rounded-2xl border border-border shadow-lg overflow-hidden max-h-[420px] overflow-y-auto z-50 relative transition-all duration-300 ease-out origin-top ${
-              showSearchResults
-                ? "opacity-100 scale-y-100 translate-y-0"
-                : "opacity-0 scale-y-95 -translate-y-2 pointer-events-none h-0 border-0 shadow-none mt-0"
-            }`}
-          >
-            {/* Loading skeleton state */}
-            {isSearching ? (
-              <div className="p-4 space-y-3">
-                <div className="flex items-center gap-2 mb-1">
-                  <div className="h-3 w-28 bg-gray-200 rounded-full animate-pulse" />
-                  <div className="flex-1" />
-                  <div className="h-3 w-16 bg-muted/50 rounded-full animate-pulse" />
-                </div>
-                {[1, 2, 3, 4].map((i) => (
-                  <div key={i} className="flex items-center gap-3 py-2" style={{ animationDelay: `${i * 80}ms` }}>
-                    <div className="w-10 h-10 rounded-xl bg-muted/50 animate-pulse" style={{ animationDelay: `${i * 80}ms` }} />
-                    <div className="flex-1 space-y-2">
-                      <div className="h-3.5 bg-gray-200 rounded-full animate-pulse w-3/5" style={{ animationDelay: `${i * 80 + 40}ms` }} />
-                      <div className="h-2.5 bg-muted/50 rounded-full animate-pulse w-2/5" style={{ animationDelay: `${i * 80 + 80}ms` }} />
+            {/* Chat window */}
+            <div className="rounded-2xl overflow-hidden bg-card border border-border shadow-sm">
+              {/* Chat messages */}
+              <div className="p-4 space-y-4 max-h-[420px] overflow-y-auto" style={{ background: "#FFFBF7" }}>
+                {chatMessages.map(msg => (
+                  <div key={msg.id} className={`flex gap-3 ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
+                    {msg.role === "coach" ? (
+                      <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 self-end" style={{ background: "linear-gradient(135deg, #F97316, #FB923C)" }}>
+                        <span className="text-sm">🤖</span>
+                      </div>
+                    ) : (
+                      <div className="w-8 h-8 rounded-full bg-orange-100 flex items-center justify-center flex-shrink-0 self-end text-sm font-bold text-orange-600">
+                        {user?.name?.[0] || "U"}
+                      </div>
+                    )}
+                    <div className={`max-w-[80%] space-y-2`}>
+                      <div
+                        className="rounded-2xl p-3.5 text-sm leading-relaxed"
+                        style={msg.role === "coach"
+                          ? { background: "#FFF3E8", border: "1px solid #FFE0C2", borderBottomLeftRadius: 4 }
+                          : { background: "#F97316", color: "white", borderBottomRightRadius: 4 }
+                        }
+                      >
+                        {msg.content.split(/\*\*(.*?)\*\*/g).map((part, i) =>
+                          i % 2 === 1 ? <strong key={i} className={msg.role === "coach" ? "text-orange-700" : "text-white"}>{part}</strong> : part
+                        )}
+                        <p className={`text-[10px] mt-1.5 text-right ${msg.role === "coach" ? "text-orange-400" : "text-orange-200"}`}>{msg.time}</p>
+                      </div>
+                      {/* Suggestion chips */}
+                      {msg.suggestions && msg.role === "coach" && (
+                        <div className="flex flex-wrap gap-1.5">
+                          {msg.suggestions.map((s, i) => (
+                            <button
+                              key={i}
+                              onClick={() => handleSendMessage(s)}
+                              className="text-xs px-3 py-1.5 rounded-full border border-orange-200 text-orange-600 bg-white hover:bg-orange-50 transition-colors"
+                            >
+                              {s}
+                            </button>
+                          ))}
+                        </div>
+                      )}
                     </div>
-                    <div className="h-5 w-16 bg-muted/50 rounded-full animate-pulse" style={{ animationDelay: `${i * 80 + 60}ms` }} />
                   </div>
                 ))}
-              </div>
-            ) : filteredItems.length === 0 && showSearchResults ? (
-              /* ── Friendly empty state ── */
-              <div className="py-10 px-6 text-center">
-                <div className="relative inline-block mb-4">
-                  <div className="w-20 h-20 rounded-full mx-auto flex items-center justify-center" style={{ background: "linear-gradient(135deg, #FFF7ED, #FFEDD5)" }}>
-                    <svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="1.5" strokeLinecap="round" strokeLinejoin="round" className="animate-[bounce_2s_ease-in-out_infinite]">
-                      <circle cx="11" cy="11" r="8" />
-                      <line x1="21" y1="21" x2="16.65" y2="16.65" />
-                    </svg>
-                  </div>
-                  <div className="absolute -bottom-1 -right-1 w-7 h-7 rounded-full bg-card shadow-md flex items-center justify-center">
-                    <span className="text-sm">🤔</span>
-                  </div>
-                </div>
-                <p className="text-base font-semibold text-foreground mb-1">No encontramos resultados</p>
-                <p className="text-sm text-muted-foreground mb-5 max-w-[260px] mx-auto leading-relaxed">
-                  {searchQuery.trim()
-                    ? <>No hay coincidencias para <span className="font-medium text-orange-600">"{searchQuery}"</span>. Prueba con otro termino.</>
-                    : "No hay elementos en esta categoria. Prueba seleccionando otra."}
-                </p>
-                <div className="flex flex-col items-center gap-2">
-                  {searchQuery.trim() && (
-                    <button
-                      onClick={() => { setSearchQuery(""); }}
-                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium text-white shadow-sm transition-all hover:shadow-md active:scale-95"
-                      style={{ background: "#F97316" }}
-                    >
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-                      Limpiar busqueda
-                    </button>
-                  )}
-                  {activeCategory !== "all" && (
-                    <button
-                      onClick={() => setActiveCategory("all")}
-                      className="inline-flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium text-muted-foreground bg-muted/50 hover:bg-gray-200 transition-all active:scale-95"
-                    >
-                      <span className="text-xs">🏠</span> Ver todas las categorias
-                    </button>
-                  )}
-                </div>
-                {/* Suggested categories */}
-                {searchQuery.trim() && (
-                  <div className="mt-5 pt-5 border-t border-border">
-                    <p className="text-xs font-medium text-muted-foreground/70 uppercase tracking-wider mb-3">Categorias sugeridas</p>
-                    <div className="flex flex-wrap justify-center gap-2">
-                      {categories.filter(c => c.key !== "all").map((cat) => (
-                        <button
-                          key={cat.key}
-                          onClick={() => { setSearchQuery(""); setActiveCategory(cat.key); }}
-                          className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-card border border-border text-muted-foreground hover:border-border/80 hover:shadow-sm transition-all active:scale-95"
-                        >
-                          <span>{cat.icon}</span> {cat.label}
-                        </button>
-                      ))}
+                {isCoachTyping && (
+                  <div className="flex gap-3">
+                    <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: "linear-gradient(135deg, #F97316, #FB923C)" }}>
+                      <span className="text-sm">🤖</span>
+                    </div>
+                    <div className="rounded-2xl p-3.5" style={{ background: "#FFF3E8", border: "1px solid #FFE0C2", borderBottomLeftRadius: 4 }}>
+                      <div className="flex gap-1 items-center h-4">
+                        <span className="w-2 h-2 rounded-full bg-orange-400 animate-bounce" style={{ animationDelay: "0ms" }}></span>
+                        <span className="w-2 h-2 rounded-full bg-orange-400 animate-bounce" style={{ animationDelay: "150ms" }}></span>
+                        <span className="w-2 h-2 rounded-full bg-orange-400 animate-bounce" style={{ animationDelay: "300ms" }}></span>
+                      </div>
                     </div>
                   </div>
                 )}
+                <div ref={chatEndRef} />
               </div>
-            ) : showSearchResults && filteredItems.length > 0 ? (
-              /* ── Results list with staggered animations ── */
-              <>
-                <div className="px-4 py-2.5 border-b border-border flex items-center justify-between">
-                  <p className="text-xs font-semibold text-muted-foreground tracking-wider uppercase">
-                    {activeCategory === "all" ? "Todos los resultados" : categories.find((c) => c.key === activeCategory)?.label}
-                  </p>
-                  <span className="text-xs text-muted-foreground/70">{filteredItems.length} elementos</span>
-                </div>
-                {filteredItems.map((item, idx) => {
-                  const catDef = categories.find((c) => c.key === item.category);
-                  return (
-                    <button
-                      key={item.id}
-                      onClick={() => handleSearchItemClick(item)}
-                      className="w-full flex items-center gap-3 px-4 py-3 hover:bg-orange-50/60 transition-all text-left border-b border-gray-50 last:border-0 animate-[fadeSlideIn_0.25s_ease-out_both]"
-                      style={{ animationDelay: `${idx * 40}ms` }}
-                    >
-                      <div
-                        className="w-10 h-10 rounded-xl flex items-center justify-center text-lg flex-shrink-0 transition-transform hover:scale-110"
-                        style={{ background: `${catDef?.color || "#F97316"}15` }}
-                      >
-                        {item.icon}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-medium text-foreground truncate">{item.title}</p>
-                        <p className="text-xs text-muted-foreground truncate">{item.subtitle}</p>
-                      </div>
-                      <div className="flex items-center gap-2 flex-shrink-0">
-                        <span
-                          className="text-[10px] font-medium px-2 py-0.5 rounded-full"
-                          style={{ background: `${catDef?.color || "#F97316"}15`, color: catDef?.color || "#F97316" }}
-                        >
-                          {catDef?.label}
-                        </span>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="#D1D5DB" strokeWidth="2" className="transition-transform group-hover:translate-x-0.5"><polyline points="9 18 15 12 9 6"/></svg>
-                      </div>
-                    </button>
-                  );
-                })}
-              </>
-            ) : null}
-            {showSearchResults && !isSearching && (
-              <div className="px-4 py-2.5 border-t border-border bg-muted/30/50">
-                <button
-                  onClick={() => { setShowSearchResults(false); setSearchQuery(""); setActiveCategory("all"); }}
-                  className="text-xs font-medium text-muted-foreground hover:text-foreground/80 transition-colors"
-                >
-                  Cerrar resultados
-                </button>
-              </div>
-            )}
-          </div>
-        </div>
 
-        {/* ═══════════════════════════════════════════════════════════════
-            MAIN CONTENT (hidden when search results are showing)
-        ═══════════════════════════════════════════════════════════════ */}
-        {!showSearchResults && (
-          <>
-            {/* Health Score Card - Light/Warm */}
-            <div className="rounded-2xl p-6" style={{ background: "linear-gradient(135deg, #FFF3E8 0%, #FFF8F0 100%)", border: "1px solid #FFE0C2" }}>
-              <p className="text-xs font-semibold tracking-wider mb-3" style={{ color: "#F97316" }}>SCORE DE SALUD</p>
-              <div className="flex items-start justify-between">
-                <div>
-                  <div className="flex items-baseline gap-1">
-                    <span className="text-5xl font-bold" style={{ color: "#F97316" }}>{healthScore.score}</span>
-                    <span className="text-lg text-muted-foreground">/100</span>
-                  </div>
-                  <p className="text-sm font-semibold mt-1" style={{ color: "#16A34A" }}>{healthScore.label}</p>
-                </div>
-                <div className="relative w-16 h-16">
-                  <svg viewBox="0 0 64 64" className="w-full h-full">
-                    <circle cx="32" cy="32" r="28" fill="none" stroke="#FFE0C2" strokeWidth="4" />
-                    <circle cx="32" cy="32" r="28" fill="none" stroke="#F97316" strokeWidth="4" strokeDasharray={`${healthScore.score * 1.76} 176`} strokeLinecap="round" transform="rotate(-90 32 32)" />
-                  </svg>
-                  <div className="absolute inset-0 flex items-center justify-center">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#F97316" strokeWidth="2"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
-                  </div>
+              {/* Quick suggestions bar */}
+              <div className="px-3 py-2 border-t border-border overflow-x-auto" style={{ background: "#FFF8F0" }}>
+                <div className="flex gap-2 whitespace-nowrap">
+                  {coachSuggestions.map((s, i) => (
+                    <button
+                      key={i}
+                      onClick={() => handleSendMessage(s)}
+                      className="text-xs px-3 py-1.5 rounded-full bg-white border border-orange-200 text-orange-600 hover:bg-orange-50 transition-colors flex-shrink-0"
+                    >
+                      {s}
+                    </button>
+                  ))}
                 </div>
               </div>
-              <div className="border-t mt-4 pt-4 grid grid-cols-3 gap-4" style={{ borderColor: "#FFE0C2" }}>
-                <div className="text-center">
-                  <p className="text-lg font-bold" style={{ color: "#7C3AED" }}>{healthScore.recovery}%</p>
-                  <p className="text-xs text-muted-foreground">Recovery</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-lg font-bold" style={{ color: "#7C3AED" }}>{healthScore.hrv}ms</p>
-                  <p className="text-xs text-muted-foreground">HRV</p>
-                </div>
-                <div className="text-center">
-                  <p className="text-lg font-bold" style={{ color: "#7C3AED" }}>{healthScore.rhr}bpm</p>
-                  <p className="text-xs text-muted-foreground">FC reposo</p>
+
+              {/* Input */}
+              <div className="p-3 border-t border-border" style={{ background: "#FFF8F0" }}>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={chatInput}
+                    onChange={e => setChatInput(e.target.value)}
+                    onKeyDown={e => e.key === "Enter" && handleSendMessage()}
+                    placeholder="Pregunta al Coach Buddy sobre tu salud..."
+                    className="flex-1 bg-white text-foreground text-sm rounded-full px-4 py-2.5 placeholder-gray-400 border border-border focus:border-orange-400 focus:outline-none"
+                  />
+                  <button
+                    onClick={() => handleSendMessage()}
+                    disabled={!chatInput.trim() || isCoachTyping}
+                    className="w-10 h-10 rounded-full flex items-center justify-center text-white disabled:opacity-50 transition-opacity"
+                    style={{ background: "#F97316" }}
+                  >
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
+                  </button>
                 </div>
               </div>
             </div>
 
-            {/* Tabs */}
-            <div className="flex items-center gap-1 overflow-x-auto pb-1">
-              {tabs.map((tab) => (
-                <button key={tab.key} onClick={() => setActiveTab(tab.key)} className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium whitespace-nowrap transition-all ${activeTab === tab.key ? "bg-card shadow-sm border border-border text-foreground" : "text-muted-foreground hover:text-foreground/80"}`}>
-                  <span className="text-sm">{tab.icon}</span>
-                  {tab.label}
-                  {tab.key === "comparar" && connectedCount > 1 && <span className="w-2 h-2 rounded-full bg-blue-500"></span>}
+            {/* Insight del día */}
+            <div className="rounded-2xl p-4" style={{ background: "linear-gradient(135deg, #EDE9FE, #F3EEFF)", border: "1px solid #DDD6FE" }}>
+              <div className="flex items-start gap-3">
+                <span className="text-2xl">💡</span>
+                <div>
+                  <p className="text-sm font-bold text-purple-800">Insight del Coach de hoy</p>
+                  <p className="text-sm text-purple-700 mt-1 leading-relaxed">
+                    Tu HRV ha subido <strong>8ms esta semana</strong>. Esto indica que tu sistema nervioso se está recuperando bien. Mantén el patrón de sueño actual y considera añadir 10 min de meditación para consolidar la mejora.
+                  </p>
+                  <button onClick={() => handleSendMessage("Cuéntame más sobre mi HRV")} className="mt-2 text-xs font-semibold text-purple-600 hover:text-purple-800">
+                    Saber más →
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════════
+            TAB: METAS DE BIENESTAR
+        ══════════════════════════════════════════════════════════════ */}
+        {activeTab === "metas" && (
+          <div className="space-y-4">
+            {/* Stats strip */}
+            <div className="grid grid-cols-3 gap-3">
+              {[
+                { label: "Metas activas",    value: activeGoals.length,    color: "#F97316", bg: "#FFF7ED" },
+                { label: "Completadas",      value: completedGoals.length, color: "#16A34A", bg: "#F0FDF4" },
+                { label: "Progreso medio",   value: `${avgProgress}%`,     color: "#7C3AED", bg: "#F3EEFF" },
+              ].map((s, i) => (
+                <div key={i} className="rounded-xl p-3 text-center" style={{ background: s.bg }}>
+                  <p className="text-xl font-bold" style={{ color: s.color }}>{s.value}</p>
+                  <p className="text-xs text-muted-foreground mt-0.5">{s.label}</p>
+                </div>
+              ))}
+            </div>
+
+            {/* Add goal button */}
+            <button
+              onClick={() => setShowNewGoalForm(!showNewGoalForm)}
+              className="w-full flex items-center justify-center gap-2 py-3 rounded-xl text-sm font-semibold text-white transition-all"
+              style={{ background: "linear-gradient(135deg, #F97316, #FB923C)" }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+              Nueva meta de bienestar
+            </button>
+
+            {/* New goal form */}
+            {showNewGoalForm && (
+              <div className="rounded-2xl p-4 bg-card border border-border shadow-sm space-y-3">
+                <h3 className="font-semibold text-foreground">Crear nueva meta</h3>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Categoría</label>
+                  <div className="grid grid-cols-3 gap-2">
+                    {(Object.entries(goalCategoryConfig) as [GoalCategory, typeof goalCategoryConfig[GoalCategory]][]).map(([key, cfg]) => (
+                      <button
+                        key={key}
+                        onClick={() => setNewGoal(g => ({ ...g, category: key }))}
+                        className={`flex items-center gap-1.5 p-2 rounded-xl text-xs font-medium transition-all border ${newGoal.category === key ? "border-transparent text-white" : "border-border text-muted-foreground hover:border-orange-200"}`}
+                        style={newGoal.category === key ? { background: cfg.color } : { background: cfg.bg }}
+                      >
+                        <span>{cfg.icon}</span> {cfg.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Título de la meta</label>
+                  <input
+                    type="text"
+                    placeholder={`Ej: ${goalCategoryConfig[newGoal.category].label} mejorada`}
+                    value={newGoal.title}
+                    onChange={e => setNewGoal(g => ({ ...g, title: e.target.value }))}
+                    className="w-full px-3 py-2 text-sm border border-border rounded-xl focus:border-orange-400 focus:outline-none bg-background"
+                  />
+                </div>
+                <div>
+                  <label className="text-xs font-medium text-muted-foreground mb-1.5 block">Objetivo ({goalCategoryConfig[newGoal.category].unit})</label>
+                  <input
+                    type="number"
+                    placeholder={`Ej: ${goalCategoryConfig[newGoal.category].defaultTarget}`}
+                    value={newGoal.targetValue || ""}
+                    onChange={e => setNewGoal(g => ({ ...g, targetValue: parseFloat(e.target.value) || 0 }))}
+                    className="w-full px-3 py-2 text-sm border border-border rounded-xl focus:border-orange-400 focus:outline-none bg-background"
+                  />
+                </div>
+                <div className="flex gap-2">
+                  <button onClick={handleAddGoal} className="flex-1 py-2 rounded-xl text-sm font-semibold text-white" style={{ background: "#F97316" }}>Crear meta</button>
+                  <button onClick={() => setShowNewGoalForm(false)} className="flex-1 py-2 rounded-xl text-sm font-medium text-muted-foreground border border-border">Cancelar</button>
+                </div>
+              </div>
+            )}
+
+            {/* Goals list */}
+            <div className="space-y-3">
+              {goals.map(goal => {
+                const cfg = goalCategoryConfig[goal.category];
+                return (
+                  <div key={goal.id} className="rounded-2xl p-4 bg-card border border-border shadow-sm">
+                    <div className="flex items-start justify-between mb-3">
+                      <div className="flex items-center gap-3">
+                        <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl" style={{ background: cfg.bg }}>
+                          {cfg.icon}
+                        </div>
+                        <div>
+                          <p className="text-sm font-semibold text-foreground">{goal.title}</p>
+                          <p className="text-xs text-muted-foreground">{cfg.label} · Plazo: {goal.deadline.toLocaleDateString("es-ES", { day: "numeric", month: "short" })}</p>
+                        </div>
+                      </div>
+                      <div className="flex items-center gap-1">
+                        {goal.status === "completed" && <span className="text-xs px-2 py-0.5 rounded-full bg-green-100 text-green-700 font-medium">✓ Completada</span>}
+                        {goal.priority === "high" && goal.status === "active" && <span className="text-xs px-2 py-0.5 rounded-full bg-red-100 text-red-700 font-medium">Alta</span>}
+                      </div>
+                    </div>
+
+                    {/* Progress */}
+                    <div className="mb-3">
+                      <div className="flex justify-between items-center mb-1.5">
+                        <span className="text-xs text-muted-foreground">{goal.currentValue} / {goal.targetValue} {goal.unit}</span>
+                        <span className="text-xs font-bold" style={{ color: cfg.color }}>{goal.progress}%</span>
+                      </div>
+                      <div className="h-2 rounded-full bg-muted overflow-hidden">
+                        <div className="h-full rounded-full transition-all" style={{ width: `${Math.min(goal.progress, 100)}%`, background: cfg.color }}></div>
+                      </div>
+                    </div>
+
+                    {/* Tips */}
+                    <div className="rounded-xl p-2.5" style={{ background: cfg.bg }}>
+                      <p className="text-xs font-semibold mb-1" style={{ color: cfg.color }}>💡 Consejo del Coach:</p>
+                      <p className="text-xs text-foreground/70">{cfg.tips[Math.floor(Math.random() * cfg.tips.length)]}</p>
+                    </div>
+
+                    <div className="flex gap-2 mt-3">
+                      <button
+                        onClick={() => { setGoals(gs => gs.map(g => g.id === goal.id ? { ...g, progress: Math.min(100, g.progress + 10), currentValue: Math.min(g.targetValue, g.currentValue + g.targetValue * 0.1), status: g.progress + 10 >= 100 ? "completed" : "active" } : g)); toast.success("¡Progreso actualizado!"); }}
+                        className="flex-1 py-1.5 rounded-lg text-xs font-medium text-white transition-all"
+                        style={{ background: cfg.color }}
+                      >
+                        + Registrar progreso
+                      </button>
+                      <button
+                        onClick={() => handleSendMessage(`Dame consejos para: ${goal.title}`)}
+                        className="px-3 py-1.5 rounded-lg text-xs font-medium border border-border text-muted-foreground hover:border-orange-300 hover:text-orange-600"
+                      >
+                        🤖 Coach
+                      </button>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+
+            {/* Motivational banner */}
+            <div className="rounded-2xl p-4" style={{ background: "linear-gradient(135deg, #F97316, #FDBA74)" }}>
+              <div className="flex items-center gap-3">
+                <span className="text-3xl">🎉</span>
+                <div>
+                  <p className="text-sm font-bold text-white">¡Vas muy bien!</p>
+                  <p className="text-xs text-orange-100">Has completado {completedGoals.length} meta{completedGoals.length !== 1 ? "s" : ""} y llevas un progreso medio del {avgProgress}%. La consistencia es la clave.</p>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════════
+            TAB: MÉTRICAS
+        ══════════════════════════════════════════════════════════════ */}
+        {activeTab === "metricas" && (
+          <div className="space-y-4">
+            {/* Period selector */}
+            <div className="flex items-center gap-2">
+              <span className="text-sm text-muted-foreground">Período:</span>
+              {(["7d", "14d", "30d"] as PeriodKey[]).map(p => (
+                <button key={p} onClick={() => setPeriod(p)} className={`px-3 py-1.5 rounded-full text-xs font-semibold transition-all ${period === p ? "bg-orange-500 text-white" : "bg-card border border-border text-muted-foreground hover:border-orange-300"}`}>
+                  {p === "7d" ? "7 días" : p === "14d" ? "14 días" : "30 días"}
                 </button>
               ))}
             </div>
 
-            {/* TAB: COACH */}
-            {activeTab === "coach" && (
-              <div className="space-y-4">
-                <div className="rounded-2xl overflow-hidden bg-card border border-border shadow-sm">
-                  <div className="flex items-center gap-1 p-3 border-b border-border" style={{ background: "#FFF8F0" }}>
-                    <button className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium text-white" style={{ background: "#F97316" }}>
-                      <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
-                      Chat
-                    </button>
-                    <button className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium text-muted-foreground hover:text-foreground">Valorar</button>
-                    <button className="flex items-center gap-1.5 px-4 py-2 rounded-full text-sm font-medium text-muted-foreground hover:text-foreground">Historial</button>
-                    <button className="ml-auto flex items-center gap-1 px-3 py-1.5 rounded-full text-xs font-medium text-muted-foreground border border-border hover:border-orange-300 hover:text-orange-600">+ Nuevo</button>
+            {/* Today's summary */}
+            <div className="rounded-2xl bg-card border border-border p-4 shadow-sm">
+              <h3 className="font-semibold text-foreground mb-3">Resumen de hoy</h3>
+              <div className="grid grid-cols-2 gap-3">
+                {[
+                  { label: "Sueño",    value: "86/100", sub: "+4 vs ayer",  color: "#7C3AED", bg: "#F3EEFF" },
+                  { label: "Recovery", value: "78%",    sub: "-5 vs ayer",  color: "#16A34A", bg: "#F0FDF4" },
+                  { label: "Strain",   value: "12.5",   sub: "Moderado",    color: "#F97316", bg: "#FFF7ED" },
+                  { label: "HRV",      value: "53ms",   sub: "+3 vs ayer",  color: "#0EA5E9", bg: "#F0F9FF" },
+                ].map((m, i) => (
+                  <div key={i} className="p-3 rounded-xl" style={{ background: m.bg }}>
+                    <p className="text-xs text-muted-foreground">{m.label}</p>
+                    <p className="text-xl font-bold mt-0.5" style={{ color: m.color }}>{m.value}</p>
+                    <p className="text-xs text-muted-foreground mt-0.5">{m.sub}</p>
                   </div>
-                  <div className="p-4" style={{ background: "#FFFBF7" }}>
-                    <div className="flex gap-3">
-                      <div className="w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0" style={{ background: "linear-gradient(135deg, #F97316, #FB923C)" }}>
-                        <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2z"/></svg>
+                ))}
+              </div>
+            </div>
+
+            {/* Sleep chart */}
+            <div className="rounded-2xl bg-card border border-border p-4 shadow-sm">
+              <h3 className="font-semibold text-foreground mb-3">😴 Calidad del Sueño</h3>
+              <ResponsiveContainer width="100%" height={160}>
+                <AreaChart data={mockSleepData}>
+                  <defs>
+                    <linearGradient id="sleepGrad" x1="0" y1="0" x2="0" y2="1">
+                      <stop offset="5%" stopColor="#7C3AED" stopOpacity={0.2}/>
+                      <stop offset="95%" stopColor="#7C3AED" stopOpacity={0}/>
+                    </linearGradient>
+                  </defs>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+                  <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
+                  <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid #E5E7EB", fontSize: 12 }} />
+                  <Area type="monotone" dataKey="score" stroke="#7C3AED" strokeWidth={2} fill="url(#sleepGrad)" dot={{ fill: "#7C3AED", r: 3 }} />
+                </AreaChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* HRV chart */}
+            <div className="rounded-2xl bg-card border border-border p-4 shadow-sm">
+              <h3 className="font-semibold text-foreground mb-3">💖 HRV (Variabilidad cardíaca)</h3>
+              <ResponsiveContainer width="100%" height={160}>
+                <LineChart data={mockHrvData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+                  <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
+                  <YAxis domain={[40, 70]} tick={{ fontSize: 11, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid #E5E7EB", fontSize: 12 }} />
+                  <Line type="monotone" dataKey="value" stroke="#F97316" strokeWidth={2.5} dot={{ fill: "#F97316", r: 3 }} />
+                </LineChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Recovery chart */}
+            <div className="rounded-2xl bg-card border border-border p-4 shadow-sm">
+              <h3 className="font-semibold text-foreground mb-3">⚡ Recovery Score</h3>
+              <ResponsiveContainer width="100%" height={140}>
+                <BarChart data={mockRecoveryData}>
+                  <CartesianGrid strokeDasharray="3 3" stroke="#F3F4F6" />
+                  <XAxis dataKey="date" tick={{ fontSize: 11, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
+                  <YAxis domain={[0, 100]} tick={{ fontSize: 11, fill: "#9CA3AF" }} axisLine={false} tickLine={false} />
+                  <Tooltip contentStyle={{ borderRadius: 12, border: "1px solid #E5E7EB", fontSize: 12 }} />
+                  <Bar dataKey="score" fill="#16A34A" radius={[4, 4, 0, 0]} />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+
+            {/* Síntomas del día */}
+            <div className="rounded-2xl bg-card border border-border p-4 shadow-sm">
+              <h3 className="font-semibold text-foreground mb-1">🩺 ¿Cómo te encuentras hoy?</h3>
+              <p className="text-xs text-muted-foreground mb-3">Selecciona síntomas para recibir sugerencias personalizadas</p>
+              <div className="flex flex-wrap gap-2">
+                {["Retención de líquidos", "Fatiga", "Digestión pesada", "Estrés", "Insomnio", "Inflamación", "Falta de energía", "Dolor muscular"].map(s => (
+                  <button key={s} onClick={() => toast.info(`Sugerencias para ${s} próximamente`)} className="px-3 py-1.5 rounded-full text-xs font-medium bg-orange-50 text-orange-700 border border-orange-200 hover:bg-orange-100 transition-colors">
+                    {s}
+                  </button>
+                ))}
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════════
+            TAB: ECOSISTEMA
+        ══════════════════════════════════════════════════════════════ */}
+        {activeTab === "ecosistema" && (
+          <div className="space-y-4">
+            <div className="rounded-2xl p-4" style={{ background: "linear-gradient(135deg, #FFF3E8, #FFF8F0)", border: "1px solid #FFE0C2" }}>
+              <p className="text-sm font-bold text-orange-700 mb-1">🌐 Tu ecosistema BuddyOne</p>
+              <p className="text-xs text-orange-600/80">Todos los módulos conectados a tu Health Hub. El Coach IA tiene acceso a todos ellos para darte recomendaciones integradas.</p>
+            </div>
+
+            <div className="grid grid-cols-2 gap-3">
+              {ecosystemModules.map((mod, i) => (
+                <Link key={i} href={mod.href}>
+                  <div className="rounded-2xl p-4 bg-card border border-border hover:border-orange-200 hover:shadow-md transition-all cursor-pointer group">
+                    <div className="flex items-start gap-3">
+                      <div className="w-10 h-10 rounded-xl flex items-center justify-center text-xl flex-shrink-0" style={{ background: `${mod.color}15` }}>
+                        {mod.icon}
                       </div>
-                      <div className="rounded-2xl rounded-tl-sm p-4 max-w-[85%]" style={{ background: "#FFF3E8", border: "1px solid #FFE0C2" }}>
-                        <p className="text-sm text-foreground leading-relaxed">
-                          Hola! Soy tu <strong className="text-orange-600">Coach Buddy</strong>, tu asistente de salud y rendimiento personal.
-                        </p>
-                        <p className="text-sm text-foreground/80 leading-relaxed mt-3">
-                          Tengo acceso a todas tus metricas de wearables conectados: HRV, recovery score, sueño, strain, SpO2 y mucho mas.
-                        </p>
-                        <p className="text-sm text-foreground/80 leading-relaxed mt-3">
-                          En que puedo ayudarte hoy? Puedes preguntarme sobre tus metricas, si estas listo para entrenar, como mejorar tu recuperacion, o cualquier duda sobre salud y rendimiento.
-                        </p>
-                        <p className="text-right text-[10px] text-muted-foreground mt-2">
-                          {new Date().toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" })}
-                        </p>
+                      <div className="min-w-0">
+                        <p className="text-sm font-semibold text-foreground group-hover:text-orange-600 transition-colors">{mod.label}</p>
+                        <p className="text-xs text-muted-foreground leading-tight mt-0.5">{mod.desc}</p>
                       </div>
                     </div>
                   </div>
-                  <div className="p-3 border-t border-border" style={{ background: "#FFF8F0" }}>
-                    <div className="flex gap-2">
-                      <input type="text" value={chatInput} onChange={(e) => setChatInput(e.target.value)} placeholder="Pregunta sobre tu salud..." className="flex-1 bg-background text-foreground text-sm rounded-full px-4 py-2.5 placeholder-muted-foreground border border-border focus:border-orange-400 focus:outline-none" />
-                      <button className="w-10 h-10 rounded-full flex items-center justify-center text-white" style={{ background: "#F97316" }} onClick={() => { if (chatInput.trim()) { toast.info("Funcion de chat proximamente"); setChatInput(""); } }}>
-                        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M2.01 21L23 12 2.01 3 2 10l15 2-15 2z"/></svg>
-                      </button>
-                    </div>
-                  </div>
+                </Link>
+              ))}
+            </div>
+
+            <div className="rounded-2xl p-4" style={{ background: "linear-gradient(135deg, #EDE9FE, #F3EEFF)", border: "1px solid #DDD6FE" }}>
+              <div className="flex items-start gap-3">
+                <span className="text-2xl">🤖</span>
+                <div>
+                  <p className="text-sm font-bold text-purple-800">Coach IA integrado</p>
+                  <p className="text-xs text-purple-700 mt-1 leading-relaxed">El Coach Buddy analiza datos de todos estos módulos para darte recomendaciones holísticas: si comes mal y duermes poco, te lo dirá. Si tu recovery es bajo pero tu menú es bueno, ajustará las sugerencias de entrenamiento.</p>
+                  <button onClick={() => setActiveTab("coach")} className="mt-2 text-xs font-semibold text-purple-600 hover:text-purple-800">
+                    Hablar con el Coach →
+                  </button>
                 </div>
-                <div className="bg-card rounded-2xl p-5 border border-border shadow-sm">
-                  <SmartInsights />
-                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* ══════════════════════════════════════════════════════════════
+            TAB: DISPOSITIVOS
+        ══════════════════════════════════════════════════════════════ */}
+        {activeTab === "dispositivos" && (
+          <div className="space-y-4">
+            {connectedCount > 0 && (
+              <div className="rounded-xl p-3 flex items-center gap-2" style={{ background: "#F0FDF4", border: "1px solid #BBF7D0" }}>
+                <span className="text-green-600">✓</span>
+                <p className="text-sm text-green-700 font-medium">{connectedCount} dispositivo{connectedCount > 1 ? "s" : ""} conectado{connectedCount > 1 ? "s" : ""} y sincronizando datos</p>
+                <button onClick={() => toast.success("Sincronizando...")} className="ml-auto text-xs font-semibold text-green-600 hover:text-green-800">Sincronizar</button>
               </div>
             )}
 
-            {/* TAB: DIA */}
-            {activeTab === "dia" && (
-              <div className="space-y-4">
-                <div className="rounded-xl bg-card border border-border p-5 shadow-sm">
-                  <h3 className="font-semibold text-foreground mb-4">Resumen del dia</h3>
-                  <div className="grid grid-cols-2 gap-3">
-                    <div className="p-3 rounded-xl bg-purple-50 border border-purple-100">
-                      <p className="text-xs text-muted-foreground">Sueño</p>
-                      <p className="text-xl font-bold text-purple-700">86<span className="text-xs font-normal text-muted-foreground/70">/100</span></p>
-                      <p className="text-xs text-green-600 mt-1">+4 vs ayer</p>
-                    </div>
-                    <div className="p-3 rounded-xl bg-green-50 border border-green-100">
-                      <p className="text-xs text-muted-foreground">Recovery</p>
-                      <p className="text-xl font-bold text-green-700">78%</p>
-                      <p className="text-xs text-amber-600 mt-1">-5 vs ayer</p>
-                    </div>
-                    <div className="p-3 rounded-xl bg-orange-50 border border-orange-100">
-                      <p className="text-xs text-muted-foreground">Strain</p>
-                      <p className="text-xl font-bold text-orange-700">12.5</p>
-                      <p className="text-xs text-green-600 mt-1">Moderado</p>
-                    </div>
-                    <div className="p-3 rounded-xl bg-blue-50 border border-blue-100">
-                      <p className="text-xs text-muted-foreground">HRV</p>
-                      <p className="text-xl font-bold text-blue-700">53ms</p>
-                      <p className="text-xs text-green-600 mt-1">+3 vs ayer</p>
+            <h3 className="text-sm font-semibold text-foreground">Dispositivos disponibles</h3>
+            <div className="space-y-3">
+              {platforms.map(p => (
+                <div key={p.id} className={`flex items-center justify-between p-4 rounded-xl border transition-all ${p.connected ? "border-green-200 bg-green-50/50" : "border-border bg-card hover:border-orange-200"}`}>
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full flex items-center justify-center text-lg" style={{ background: `${p.color}15` }}>{p.icon}</div>
+                    <div>
+                      <p className="text-sm font-medium text-foreground">{p.name}</p>
+                      <p className="text-xs text-muted-foreground">{p.connected ? "Conectado y sincronizando" : "Disponible para conectar"}</p>
                     </div>
                   </div>
-                </div>
-                <div className="bg-card rounded-2xl p-5 border border-border shadow-sm">
-                  <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2"><span>😴</span> Calidad del Sueño (7 dias)</h3>
-                  <ResponsiveContainer width="100%" height={180}>
-                    <AreaChart data={mockSleepData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                      <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-                      <YAxis tick={{ fontSize: 11 }} domain={[0, 100]} />
-                      <Tooltip />
-                      <Area type="monotone" dataKey="score" stroke="#8b5cf6" fill="#ede9fe" strokeWidth={2} />
-                    </AreaChart>
-                  </ResponsiveContainer>
-                </div>
-                {/* Síntomas del día + BuddyCare */}
-                <div className="rounded-2xl border border-border bg-card p-4">
-                  <h3 className="font-semibold text-foreground mb-3 flex items-center gap-2"><span>🩺</span> ¿Cómo te encuentras hoy?</h3>
-                  <p className="text-xs text-muted-foreground mb-3">Selecciona si tienes algún síntoma y te sugeriremos productos BuddyCare que pueden ayudarte.</p>
-                  <div className="flex flex-wrap gap-2 mb-3">
-                    {["Retención de líquidos", "Fatiga", "Digestión pesada", "Estrés", "Insomnio", "Inflamación", "Falta de energía", "Dolor muscular"].map(s => (
-                      <button
-                        key={s}
-                        onClick={() => setSelectedSymptoms(prev => prev.includes(s) ? prev.filter(x => x !== s) : [...prev, s])}
-                        className={`px-3 py-1.5 rounded-full text-xs font-medium transition-colors ${
-                          selectedSymptoms.includes(s)
-                            ? "bg-emerald-500 text-white"
-                            : "bg-muted text-muted-foreground hover:bg-muted/80"
-                        }`}
-                      >{s}</button>
-                    ))}
-                  </div>
-                  {selectedSymptoms.length > 0 && (
-                    <ContextualProductWidget
-                      symptoms={selectedSymptoms}
-                      mode="care"
-                      className="mt-2"
-                    />
+                  {p.connected ? (
+                    <button onClick={() => { setDisconnecting(p.id); disconnectMutation.mutate({ wearableType: p.id as "oura" | "whoop" }); }} disabled={disconnecting === p.id} className="text-xs font-medium text-red-600 hover:text-red-700 px-3 py-1.5 rounded-lg hover:bg-red-50 border border-red-200">
+                      {disconnecting === p.id ? "..." : "Desconectar"}
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => { if (p.id === "oura") handleConnectOura(); else if (p.id === "whoop") handleConnectWhoop(); else toast.info(`${p.name} próximamente`); }}
+                      disabled={p.id === "oura" ? connectingOura : p.id === "whoop" ? connectingWhoop : false}
+                      className="text-xs font-medium text-white px-3 py-1.5 rounded-lg disabled:opacity-50"
+                      style={{ background: p.color }}
+                    >
+                      {(p.id === "oura" && connectingOura) || (p.id === "whoop" && connectingWhoop) ? "..." : "Conectar"}
+                    </button>
                   )}
                 </div>
-
-                <div className="bg-card rounded-2xl p-5 border border-border">
-                  <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2"><span>🏃</span> Actividad (Strain)</h3>
-                  <ResponsiveContainer width="100%" height={180}>
-                    <LineChart data={mockActivityData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                      <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-                      <YAxis tick={{ fontSize: 11 }} />
-                      <Tooltip />
-                      <Line type="monotone" dataKey="strain" stroke="#f97316" strokeWidth={2} dot={{ fill: "#f97316" }} />
-                    </LineChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            )}
-
-            {/* TAB: DATOS */}
-            {activeTab === "datos" && (
-              <div className="space-y-4">
-                <div className="rounded-xl bg-card border border-border p-5 shadow-sm">
-                  <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-semibold text-foreground">Datos historicos</h3>
-                    <div className="flex items-center gap-1">
-                      {(["7d", "14d", "30d"] as PeriodKey[]).map((p) => (
-                        <button key={p} onClick={() => setPeriod(p)} className={`px-3 py-1.5 rounded-full text-xs font-medium transition-all ${period === p ? "bg-orange-500 text-white" : "bg-muted/50 text-muted-foreground hover:bg-gray-200"}`}>{p}</button>
-                      ))}
-                    </div>
-                  </div>
-                  <div className="space-y-3">
-                    {[
-                      { label: "HRV promedio", value: "53ms", trend: "+3%", up: true },
-                      { label: "FC reposo", value: "59bpm", trend: "-1bpm", up: true },
-                      { label: "Horas sueño", value: "7.5h", trend: "+0.3h", up: true },
-                      { label: "Recovery", value: "71%", trend: "+5%", up: true },
-                      { label: "Strain diario", value: "11.2", trend: "+0.8", up: false },
-                      { label: "SpO2", value: "97%", trend: "Estable", up: true },
-                    ].map((item, i) => (
-                      <div key={i} className="flex items-center justify-between py-2.5 border-b border-gray-50 last:border-0">
-                        <span className="text-sm text-muted-foreground">{item.label}</span>
-                        <div className="flex items-center gap-2">
-                          <span className="text-sm font-semibold text-foreground">{item.value}</span>
-                          <span className={`text-xs ${item.up ? "text-green-600" : "text-amber-600"}`}>{item.trend}</span>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-                <div className="bg-card rounded-2xl p-5 border border-border shadow-sm">
-                  <h3 className="font-semibold text-foreground mb-4 flex items-center gap-2"><span>💚</span> Recuperacion</h3>
-                  <ResponsiveContainer width="100%" height={180}>
-                    <BarChart data={mockRecoveryData}>
-                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                      <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-                      <YAxis tick={{ fontSize: 11 }} domain={[0, 100]} />
-                      <Tooltip />
-                      <Bar dataKey="score" fill="#10b981" radius={[4, 4, 0, 0]} />
-                    </BarChart>
-                  </ResponsiveContainer>
-                </div>
-              </div>
-            )}
-
-            {/* TAB: COMPARAR */}
-            {activeTab === "comparar" && (
-              <div className="space-y-5">
-                <div className="rounded-2xl p-5" style={{ background: "linear-gradient(135deg, #F3EEFF 0%, #EDE9FE 100%)", border: "1px solid #DDD6FE" }}>
-                  <div className="flex items-center gap-3 mb-2">
-                    <span className="text-xl">📱</span>
-                    <div>
-                      <h3 className="text-lg font-bold" style={{ color: "#6D28D9" }}>Comparar Wearables</h3>
-                      <p className="text-xs" style={{ color: "#7C3AED" }}>Metricas lado a lado de tus dispositivos</p>
-                    </div>
-                  </div>
-                  <div className="flex gap-2 mt-3">
-                    <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-white/70" style={{ color: "#6D28D9", border: "1px solid #DDD6FE" }}>
-                      <span className="w-2 h-2 rounded-full bg-green-500"></span> WHOOP
-                    </span>
-                    <span className="flex items-center gap-1.5 px-3 py-1.5 rounded-full text-xs font-medium bg-white/70" style={{ color: "#6D28D9", border: "1px solid #DDD6FE" }}>
-                      <span className="w-2 h-2 rounded-full bg-green-500"></span> Oura Ring
-                    </span>
-                  </div>
-                </div>
-
-                <div>
-                  <p className="text-xs font-semibold tracking-wider text-muted-foreground mb-3">SELECCIONA UNA METRICA</p>
-                  <div className="flex flex-wrap gap-2">
-                    {metrics.map((m) => (
-                      <button key={m.key} onClick={() => setSelectedMetric(m.key)} className={`flex items-center gap-1.5 px-3 py-2 rounded-full text-sm font-medium transition-all ${selectedMetric === m.key ? "bg-purple-100 text-purple-800 border border-purple-300" : "bg-card text-muted-foreground border border-border hover:border-border/80"}`}>
-                        <span>{m.icon}</span> {m.label}
-                        {m.multiDevice && <span className="w-1.5 h-1.5 rounded-full bg-green-500"></span>}
-                      </button>
-                    ))}
-                  </div>
-                  <p className="text-xs text-muted-foreground/70 mt-2 flex items-center gap-1">
-                    <span className="w-1.5 h-1.5 rounded-full bg-green-500 inline-block"></span>
-                    Metrica disponible en varios dispositivos
-                  </p>
-                </div>
-
-                <div className="flex items-center gap-2">
-                  <span className="text-sm text-muted-foreground">Periodo:</span>
-                  {(["7d", "14d", "30d"] as PeriodKey[]).map((p) => (
-                    <button key={p} onClick={() => setPeriod(p)} className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${period === p ? "text-white" : "text-muted-foreground hover:text-foreground/80"}`} style={period === p ? { background: "#F97316" } : {}}>{p}</button>
-                  ))}
-                </div>
-
-                <div className="rounded-xl bg-card border border-border p-5 shadow-sm">
-                  <div className="h-48 flex items-center justify-center">
-                    <div className="text-center">
-                      <p className="text-sm text-muted-foreground/70 mb-2">{connectedCount >= 2 ? "Grafico de comparacion" : "Conecta 2 o mas dispositivos para comparar"}</p>
-                      {connectedCount < 2 && <button onClick={() => setActiveTab("add")} className="text-xs font-medium text-purple-600 hover:text-purple-700">Ir a conectar dispositivos</button>}
-                    </div>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* TAB: ADD */}
-            {activeTab === "add" && (
-              <div className="space-y-4">
-                <h3 className="text-sm font-semibold text-foreground/80">Dispositivos disponibles</h3>
-                <div className="grid grid-cols-1 gap-3">
-                  {platforms.map((platform) => (
-                    <div key={platform.id} className={`flex items-center justify-between p-4 rounded-xl border transition-all ${platform.connected ? "border-green-200 bg-green-50/50" : "border-border bg-card hover:border-border/80 hover:shadow-sm"}`}>
-                      <div className="flex items-center gap-3">
-                        <div className="w-10 h-10 rounded-full flex items-center justify-center text-lg" style={{ background: `${platform.color}15` }}>{platform.icon}</div>
-                        <div>
-                          <p className="text-sm font-medium text-foreground">{platform.name}</p>
-                          <p className="text-xs text-muted-foreground">{platform.connected ? "Conectado y sincronizando" : "Disponible para conectar"}</p>
-                        </div>
-                      </div>
-                      {platform.connected ? (
-                        <button onClick={() => handleDisconnect(platform.id as "oura" | "whoop")} disabled={disconnecting === platform.id} className="text-xs font-medium text-red-600 hover:text-red-700 px-3 py-1.5 rounded-lg hover:bg-red-50 border border-red-200">
-                          {disconnecting === platform.id ? "..." : "Desconectar"}
-                        </button>
-                      ) : (
-                        <button onClick={() => { if (platform.id === "oura") handleConnectOura(); else if (platform.id === "whoop") handleConnectWhoop(); else toast.info(`Conexion con ${platform.name} proximamente disponible`); }} disabled={platform.id === "oura" ? connectingOura : platform.id === "whoop" ? connectingWhoop : false} className="text-xs font-medium text-white px-3 py-1.5 rounded-lg disabled:opacity-50" style={{ background: platform.color }}>
-                          {(platform.id === "oura" && connectingOura) || (platform.id === "whoop" && connectingWhoop) ? "..." : "Conectar"}
-                        </button>
-                      )}
-                    </div>
-                  ))}
-                </div>
-                <p className="text-xs text-muted-foreground/70 text-center mt-2">Apple Health y Google Health Connect requieren la app nativa. Garmin, Fitbit, Samsung y Xiaomi proximamente.</p>
-              </div>
-            )}
-
-            <div className="pt-4 text-center">
-              <p className="text-xs text-muted-foreground/70">Los datos mostrados son informativos y no constituyen consejo medico profesional.</p>
+              ))}
             </div>
-          </>
+            <p className="text-xs text-muted-foreground text-center">Apple Health y Google Health Connect requieren la app nativa. Garmin, Fitbit, Samsung y Xiaomi próximamente.</p>
+          </div>
         )}
+
+        {/* ── FOOTER DISCLAIMER ────────────────────────────────────────── */}
+        <p className="text-xs text-muted-foreground/60 text-center pb-2">
+          Los datos mostrados son informativos y no constituyen consejo médico profesional. Consulta siempre con un profesional de la salud.
+        </p>
       </div>
     </div>
   );
