@@ -1,7 +1,128 @@
-import { useState, useMemo } from "react";
-import { Link } from "wouter";
+import { useState, useMemo, useEffect, useCallback } from "react";
+import { Link, useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
+
+// ─── Widget Config ───────────────────────────────────────────────────────────
+const ALL_WIDGETS = [
+  { id: "calorie",      label: "Calorías del día",       emoji: "🔥",  required: true },
+  { id: "onboarding",  label: "Primeros pasos",          emoji: "🚀",  required: false },
+  { id: "menu",        label: "Menú activo",             emoji: "📅",  required: false },
+  { id: "coach",       label: "Buddy Coach",             emoji: "🤖",  required: false },
+  { id: "recs",        label: "Recomendaciones del día", emoji: "💡",  required: false },
+  { id: "recipes",     label: "Recetas para ti",         emoji: "✨",  required: false },
+  { id: "quickaccess", label: "Accesos rápidos",         emoji: "⚡",  required: false },
+  { id: "streak",      label: "Mi progreso",             emoji: "🏆",  required: false },
+  { id: "recipeday",   label: "Receta del día",          emoji: "🍽️", required: false },
+  { id: "community",   label: "Comunidad & Tienda",      emoji: "🤝",  required: false },
+];
+
+const DEFAULT_ACTIVE = ["calorie", "onboarding", "menu", "coach", "recs", "recipes", "quickaccess", "streak", "recipeday", "community"];
+
+function useWidgetConfig() {
+  const [activeWidgets, setActiveWidgets] = useState<string[]>(() => {
+    try {
+      const saved = localStorage.getItem("bm_dashboard_widgets");
+      if (saved) return JSON.parse(saved);
+    } catch {}
+    return DEFAULT_ACTIVE;
+  });
+
+  const toggle = useCallback((id: string) => {
+    setActiveWidgets(prev => {
+      const next = prev.includes(id) ? prev.filter(w => w !== id) : [...prev, id];
+      localStorage.setItem("bm_dashboard_widgets", JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
+  const moveUp = useCallback((id: string) => {
+    setActiveWidgets(prev => {
+      const idx = prev.indexOf(id);
+      if (idx <= 0) return prev;
+      const next = [...prev];
+      [next[idx - 1], next[idx]] = [next[idx], next[idx - 1]];
+      localStorage.setItem("bm_dashboard_widgets", JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
+  const moveDown = useCallback((id: string) => {
+    setActiveWidgets(prev => {
+      const idx = prev.indexOf(id);
+      if (idx < 0 || idx >= prev.length - 1) return prev;
+      const next = [...prev];
+      [next[idx], next[idx + 1]] = [next[idx + 1], next[idx]];
+      localStorage.setItem("bm_dashboard_widgets", JSON.stringify(next));
+      return next;
+    });
+  }, []);
+
+  const reset = useCallback(() => {
+    localStorage.setItem("bm_dashboard_widgets", JSON.stringify(DEFAULT_ACTIVE));
+    setActiveWidgets(DEFAULT_ACTIVE);
+  }, []);
+
+  return { activeWidgets, toggle, moveUp, moveDown, reset };
+}
+
+// ─── Widget Config Panel ──────────────────────────────────────────────────────
+function WidgetConfigPanel({ onClose, activeWidgets, toggle, moveUp, moveDown, reset }: {
+  onClose: () => void;
+  activeWidgets: string[];
+  toggle: (id: string) => void;
+  moveUp: (id: string) => void;
+  moveDown: (id: string) => void;
+  reset: () => void;
+}) {
+  return (
+    <div style={{ position: "fixed", inset: 0, zIndex: 9999, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
+      {/* Backdrop */}
+      <div onClick={onClose} style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.4)" }} />
+      {/* Panel */}
+      <div style={{ position: "relative", background: "white", borderRadius: "24px 24px 0 0", padding: "24px 20px 32px", width: "100%", maxWidth: 480, maxHeight: "80vh", overflowY: "auto", boxShadow: "0 -8px 40px rgba(0,0,0,0.15)" }}>
+        {/* Handle */}
+        <div style={{ width: 40, height: 4, background: "#e5e7eb", borderRadius: 99, margin: "0 auto 20px" }} />
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+          <div>
+            <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: "#1a1a1a" }}>⚙️ Personalizar Dashboard</h3>
+            <p style={{ margin: "4px 0 0", fontSize: 12, color: "#9ca3af" }}>Activa, desactiva y ordena tus widgets</p>
+          </div>
+          <button onClick={reset} style={{ fontSize: 11, color: "#9ca3af", background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: 8, padding: "6px 10px", cursor: "pointer" }}>Restablecer</button>
+        </div>
+        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+          {ALL_WIDGETS.map((w, idx) => {
+            const isActive = activeWidgets.includes(w.id);
+            const posInActive = activeWidgets.indexOf(w.id);
+            return (
+              <div key={w.id} style={{ display: "flex", alignItems: "center", gap: 12, background: isActive ? "#FFF7ED" : "#f9fafb", borderRadius: 14, padding: "12px 14px", border: isActive ? "1.5px solid #FED7AA" : "1.5px solid #f3f4f6", transition: "all 0.2s" }}>
+                <span style={{ fontSize: 20, width: 28, textAlign: "center" }}>{w.emoji}</span>
+                <div style={{ flex: 1 }}>
+                  <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: isActive ? "#1a1a1a" : "#9ca3af" }}>{w.label}</p>
+                  {w.required && <p style={{ margin: "2px 0 0", fontSize: 10, color: "#F97316" }}>Siempre visible</p>}
+                </div>
+                {isActive && !w.required && (
+                  <div style={{ display: "flex", gap: 4 }}>
+                    <button onClick={() => moveUp(w.id)} disabled={posInActive <= 0} style={{ width: 28, height: 28, borderRadius: 8, border: "1px solid #e5e7eb", background: "white", cursor: posInActive <= 0 ? "not-allowed" : "pointer", opacity: posInActive <= 0 ? 0.4 : 1, fontSize: 12 }}>↑</button>
+                    <button onClick={() => moveDown(w.id)} disabled={posInActive >= activeWidgets.length - 1} style={{ width: 28, height: 28, borderRadius: 8, border: "1px solid #e5e7eb", background: "white", cursor: posInActive >= activeWidgets.length - 1 ? "not-allowed" : "pointer", opacity: posInActive >= activeWidgets.length - 1 ? 0.4 : 1, fontSize: 12 }}>↓</button>
+                  </div>
+                )}
+                {!w.required && (
+                  <button
+                    onClick={() => toggle(w.id)}
+                    style={{ width: 44, height: 26, borderRadius: 99, border: "none", background: isActive ? "#F97316" : "#e5e7eb", cursor: "pointer", position: "relative", transition: "background 0.2s", flexShrink: 0 }}
+                  >
+                    <div style={{ position: "absolute", top: 3, left: isActive ? 21 : 3, width: 20, height: 20, borderRadius: "50%", background: "white", boxShadow: "0 1px 4px rgba(0,0,0,0.2)", transition: "left 0.2s" }} />
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    </div>
+  );
+}
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function getGreeting(name?: string | null) {
@@ -430,8 +551,12 @@ function QuickMealModal({ onClose, today }: { onClose: () => void; today: string
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function Dashboard() {
   const { user } = useAuth();
+  const [, navigate] = useLocation();
   const [showCheckinCard, setShowCheckinCard] = useState(true);
   const [showMealModal, setShowMealModal] = useState(false);
+  const [showWidgetConfig, setShowWidgetConfig] = useState(false);
+  const { activeWidgets, toggle, moveUp, moveDown, reset } = useWidgetConfig();
+  const has = (id: string) => activeWidgets.includes(id);
 
   const [today] = useState(() => {
     const d = new Date();
@@ -463,6 +588,16 @@ export default function Dashboard() {
   return (
     <>
       {showMealModal && <QuickMealModal onClose={() => setShowMealModal(false)} today={today} />}
+      {showWidgetConfig && (
+        <WidgetConfigPanel
+          onClose={() => setShowWidgetConfig(false)}
+          activeWidgets={activeWidgets}
+          toggle={toggle}
+          moveUp={moveUp}
+          moveDown={moveDown}
+          reset={reset}
+        />
+      )}
       <div className="max-w-[1100px] mx-auto pb-10 px-0">
 
         {/* ── CHECK-IN SEMANAL (Mejora 2) ── */}
@@ -479,13 +614,19 @@ export default function Dashboard() {
               <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "#1a1a1a" }}>{getGreeting(user?.name)}</h1>
               <p style={{ margin: "4px 0 0", fontSize: 13, color: "#9ca3af" }}>{capitalize(fmtDate())} · {streak > 0 ? `🔥 ¡Sigues en racha! ${streak} días` : "Empieza tu racha hoy"}</p>
             </div>
-            <Link href="/app/health-hub">
-              <div style={{ background: "white", borderRadius: 14, padding: "8px 14px", display: "flex", alignItems: "center", gap: 8, border: "1px solid #FED7AA", cursor: "pointer" }}>
-                <span style={{ fontSize: 14 }}>💓</span>
-                <span style={{ fontSize: 12, fontWeight: 700, color: "#F97316" }}>Health Hub</span>
-                <span style={{ fontSize: 12, color: "#9ca3af" }}>→</span>
-              </div>
-            </Link>
+            <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+              <button onClick={() => setShowWidgetConfig(true)} style={{ background: "white", borderRadius: 14, padding: "8px 12px", display: "flex", alignItems: "center", gap: 6, border: "1px solid #FED7AA", cursor: "pointer" }}>
+                <span style={{ fontSize: 14 }}>⚙️</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: "#6b7280" }}>Widgets</span>
+              </button>
+              <Link href="/app/health-hub">
+                <div style={{ background: "white", borderRadius: 14, padding: "8px 14px", display: "flex", alignItems: "center", gap: 8, border: "1px solid #FED7AA", cursor: "pointer" }}>
+                  <span style={{ fontSize: 14 }}>💓</span>
+                  <span style={{ fontSize: 12, fontWeight: 700, color: "#F97316" }}>Health Hub</span>
+                  <span style={{ fontSize: 12, color: "#9ca3af" }}>→</span>
+                </div>
+              </Link>
+            </div>
           </div>
           <div style={{ marginTop: 16 }}>
             <WellnessStrip />
@@ -498,11 +639,22 @@ export default function Dashboard() {
           {/* ── COLUMN LEFT ── */}
           <div className="flex flex-col gap-4">
 
-            {/* Calorías */}
-            <div style={{ background: "white", borderRadius: 20, padding: "20px 22px", border: "1px solid #f3f4f6", boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
+            {/* Calorías — clickable para abrir el Diario */}
+            <div
+              onClick={() => navigate("/app/meal-log")}
+              style={{ background: "white", borderRadius: 20, padding: "20px 22px", border: "1px solid #f3f4f6", boxShadow: "0 2px 12px rgba(0,0,0,0.05)", cursor: "pointer", transition: "box-shadow 0.2s, transform 0.15s" }}
+              onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "0 6px 24px rgba(249,115,22,0.15)"; (e.currentTarget as HTMLDivElement).style.transform = "translateY(-1px)"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "0 2px 12px rgba(0,0,0,0.05)"; (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)"; }}
+            >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
                 <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em" }}>🔥 Calorías hoy</p>
-                <button onClick={() => setShowMealModal(true)} style={{ fontSize: 12, color: "#F97316", fontWeight: 700, cursor: "pointer", background: "#FFF7ED", border: "1px solid #FED7AA", borderRadius: 8, padding: "4px 10px" }}>⚡ Registrar</button>
+                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
+                  <button
+                    onClick={e => { e.stopPropagation(); setShowMealModal(true); }}
+                    style={{ fontSize: 12, color: "#F97316", fontWeight: 700, cursor: "pointer", background: "#FFF7ED", border: "1px solid #FED7AA", borderRadius: 8, padding: "4px 10px" }}
+                  >⚡ Registrar</button>
+                  <span style={{ fontSize: 11, color: "#9ca3af" }}>Ver diario →</span>
+                </div>
               </div>
               <CalorieRing
                 consumed={consumed}
@@ -514,29 +666,31 @@ export default function Dashboard() {
             </div>
 
             {/* Onboarding progresivo (Mejora 4) */}
-            <OnboardingCard profile={profile} />
+            {has("onboarding") && <OnboardingCard profile={profile} />}
 
             {/* Menú activo */}
-            <ActiveMenuCard menu={activeMenuData.data} />
+            {has("menu") && <ActiveMenuCard menu={activeMenuData.data} />}
 
             {/* Buddy Coach CTA */}
-            <BuddyCoachCTA />
+            {has("coach") && <BuddyCoachCTA />}
 
             {/* Recomendaciones diarias personalizadas */}
-            <DailyRecs
-              consumed={consumed}
-              goal={goalCal}
-              protein={summary?.totalProtein ?? 0}
-              carbs={summary?.totalCarbs ?? 0}
-              fat={summary?.totalFat ?? 0}
-              proteinGoal={Math.round((goalCal * 0.30) / 4)}
-              carbsGoal={Math.round((goalCal * 0.45) / 4)}
-              fatGoal={Math.round((goalCal * 0.25) / 9)}
-              streak={streak}
-            />
+            {has("recs") && (
+              <DailyRecs
+                consumed={consumed}
+                goal={goalCal}
+                protein={summary?.totalProtein ?? 0}
+                carbs={summary?.totalCarbs ?? 0}
+                fat={summary?.totalFat ?? 0}
+                proteinGoal={Math.round((goalCal * 0.30) / 4)}
+                carbsGoal={Math.round((goalCal * 0.45) / 4)}
+                fatGoal={Math.round((goalCal * 0.25) / 9)}
+                streak={streak}
+              />
+            )}
 
             {/* Recetas recomendadas */}
-            <RecommendationsList recipes={recs} />
+            {has("recipes") && <RecommendationsList recipes={recs} />}
 
           </div>
 
@@ -544,26 +698,32 @@ export default function Dashboard() {
           <div className="flex flex-col gap-4">
 
             {/* Accesos rápidos */}
-            <div style={{ background: "white", borderRadius: 20, padding: "16px 18px", border: "1px solid #f3f4f6", boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
-              <p style={{ margin: "0 0 12px", fontSize: 12, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em" }}>Accesos rápidos</p>
-              <QuickAccessGrid />
-            </div>
+            {has("quickaccess") && (
+              <div style={{ background: "white", borderRadius: 20, padding: "16px 18px", border: "1px solid #f3f4f6", boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
+                <p style={{ margin: "0 0 12px", fontSize: 12, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em" }}>Accesos rápidos</p>
+                <QuickAccessGrid />
+              </div>
+            )}
 
             {/* Racha + Nivel */}
-            <StreakWidget
-              streak={streak}
-              level={lvl?.level ?? 1}
-              levelName={lvl?.levelName ?? "Principiante"}
-            />
+            {has("streak") && (
+              <StreakWidget
+                streak={streak}
+                level={lvl?.level ?? 1}
+                levelName={lvl?.levelName ?? "Principiante"}
+              />
+            )}
 
             {/* Receta del día */}
-            {recipe && <RecipeCard recipe={recipe} />}
+            {has("recipeday") && recipe && <RecipeCard recipe={recipe} />}
 
             {/* Comunidad */}
-            <div style={{ background: "white", borderRadius: 20, padding: "16px 18px", border: "1px solid #f3f4f6", boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
-              <p style={{ margin: "0 0 12px", fontSize: 12, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em" }}>Comunidad & Tienda</p>
-              <CommunityStrip />
-            </div>
+            {has("community") && (
+              <div style={{ background: "white", borderRadius: 20, padding: "16px 18px", border: "1px solid #f3f4f6", boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
+                <p style={{ margin: "0 0 12px", fontSize: 12, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em" }}>Comunidad & Tienda</p>
+                <CommunityStrip />
+              </div>
+            )}
 
           </div>
         </div>
