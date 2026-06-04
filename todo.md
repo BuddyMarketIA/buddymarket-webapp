@@ -3865,3 +3865,15 @@
 - [ ] #13 Exportar historial nutricional completo en PDF/CSV
 - [ ] #14 Onboarding guiado para modo Familia
 - [ ] #15 Correcciones copy landing: año copyright, "cinco módulos" → seis, icono duplicado
+
+## Lote de mejoras Jun 2026
+- [ ] Mejora 2: Card de check-in semanal pendiente en el Dashboard
+- [ ] Mejora 3: Resumen semanal automático por notificación push/in-app (lunes)
+- [ ] Mejora 4: Indicador de onboarding progresivo en Dashboard ("Perfil X% completo")
+- [ ] Mejora 5: Modal de registro rápido de comidas desde el Dashboard (sin salir de la pantalla)
+- [ ] Mejora 6: Sección "Recetas con lo que tienes en casa" cruzando inventario con recetas
+- [ ] Mejora 7: Historial de menús anteriores con adherencia y calorías medias en Mis Menús
+- [ ] Mejora 8: Recordatorio de hidratación en MealNotifications
+- [ ] Mejora 9: Modo "Evento especial" accesible desde el flujo principal de Menús
+- [ ] Mejora 10: Botón "Compartir con mi familia" en RecipeDetail y ActiveMenu
+- [ ] Mejora 12: Resumen diario automático del Buddy Coach al abrir Health Hub por la tarde/noche

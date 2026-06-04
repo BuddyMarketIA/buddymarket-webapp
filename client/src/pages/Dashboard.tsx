@@ -1,9 +1,7 @@
 import { useState, useMemo } from "react";
 import { Link } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
-import { useTheme } from "@/contexts/ThemeContext";
 import { trpc } from "@/lib/trpc";
-import { useTranslation } from "react-i18next";
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 function getGreeting(name?: string | null) {
@@ -23,8 +21,7 @@ function CalorieRing({ consumed, goal, protein, carbs, fat }: { consumed: number
   const remaining = Math.max(goal - consumed, 0);
   const over = consumed > goal;
   return (
-    <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
-      {/* Ring */}
+    <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
       <div style={{ position: "relative", width: 130, height: 130, flexShrink: 0 }}>
         <svg width="130" height="130" viewBox="0 0 130 130">
           <circle cx="65" cy="65" r={r} fill="none" stroke="#FED7AA" strokeWidth="10" />
@@ -39,7 +36,6 @@ function CalorieRing({ consumed, goal, protein, carbs, fat }: { consumed: number
           <span style={{ fontSize: 10, color: "#9ca3af", fontWeight: 600 }}>kcal rest.</span>
         </div>
       </div>
-      {/* Macros */}
       <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10 }}>
         <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
           <span style={{ color: "#6b7280" }}>Meta diaria</span>
@@ -75,12 +71,10 @@ function WellnessStrip() {
     { label: "Pasos", value: "–", unit: "", color: "#0EA5E9", icon: "👟" },
   ];
   return (
-    <div style={{ display: "grid", gridTemplateColumns: "repeat(4, 1fr)", gap: 10 }}>
+    <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 md:gap-3">
       {metrics.map(m => (
         <Link key={m.label} href="/app/health-hub">
-          <div style={{ background: "white", borderRadius: 14, padding: "12px 10px", textAlign: "center", border: "1px solid #f3f4f6", cursor: "pointer", transition: "box-shadow 0.2s" }}
-            onMouseEnter={e => (e.currentTarget.style.boxShadow = "0 4px 12px rgba(0,0,0,0.1)")}
-            onMouseLeave={e => (e.currentTarget.style.boxShadow = "none")}>
+          <div style={{ background: "white", borderRadius: 14, padding: "12px 10px", textAlign: "center", border: "1px solid #f3f4f6", cursor: "pointer" }}>
             <div style={{ fontSize: 18, marginBottom: 4 }}>{m.icon}</div>
             <div style={{ fontSize: 18, fontWeight: 800, color: m.color, lineHeight: 1 }}>{m.value}</div>
             <div style={{ fontSize: 10, color: "#9ca3af", marginTop: 2 }}>{m.label}</div>
@@ -100,7 +94,6 @@ const QUICK = [
   { label: "BuddyScan", emoji: "📷", to: "/app/buddy-scan", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/buddyscan_dd3e1e08.jpg", color: "#8B5CF6" },
   { label: "BuddyIA", emoji: "🧠", to: "/app/buddy-ia", img: "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/buddyia_card-VHfq39XvN8Z86UvgxyYrxs.webp", color: "#7C3AED" },
 ];
-
 function QuickAccessGrid() {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
@@ -314,10 +307,131 @@ function DailyRecs({ consumed, goal, protein, carbs, fat, proteinGoal, carbsGoal
   );
 }
 
+// ─── Weekly Check-in Card (Mejora 2) ─────────────────────────────────────────
+function WeeklyCheckinCard({ onDismiss }: { onDismiss: () => void }) {
+  return (
+    <div style={{ background: "linear-gradient(135deg, #FFF7ED, #FFEDD5)", borderRadius: 18, padding: "16px 18px", border: "2px solid #FED7AA", position: "relative", overflow: "hidden" }}>
+      <div style={{ position: "absolute", top: -20, right: -20, width: 100, height: 100, background: "rgba(249,115,22,0.06)", borderRadius: "50%" }} />
+      <div style={{ display: "flex", alignItems: "flex-start", gap: 12 }}>
+        <div style={{ background: "#F97316", borderRadius: 12, padding: "10px", flexShrink: 0, display: "flex", alignItems: "center", justifyContent: "center" }}>
+          <span style={{ fontSize: 20 }}>📋</span>
+        </div>
+        <div style={{ flex: 1 }}>
+          <p style={{ margin: 0, fontSize: 14, fontWeight: 800, color: "#1a1a1a" }}>Check-in semanal pendiente</p>
+          <p style={{ margin: "4px 0 12px", fontSize: 12, color: "#6b7280", lineHeight: 1.5 }}>Registra tu progreso de esta semana: peso, fotos y cómo te has sentido. ¡Solo tarda 2 minutos!</p>
+          <div style={{ display: "flex", gap: 8 }}>
+            <Link href="/app/progress">
+              <span style={{ background: "#F97316", color: "white", borderRadius: 10, padding: "7px 16px", fontSize: 12, fontWeight: 700, cursor: "pointer", display: "inline-block" }}>Hacer check-in →</span>
+            </Link>
+            <button onClick={onDismiss} style={{ background: "transparent", border: "1px solid #FED7AA", borderRadius: 10, padding: "7px 14px", fontSize: 12, fontWeight: 600, color: "#9ca3af", cursor: "pointer" }}>Más tarde</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+// ─── Onboarding Progress Card (Mejora 4) ─────────────────────────────────────
+function OnboardingCard({ profile }: { profile: any }) {
+  const steps = [
+    { label: "Peso y altura", done: !!(profile?.weight && profile?.height) },
+    { label: "Objetivo principal", done: !!profile?.mainGoal },
+    { label: "Meta calórica", done: !!profile?.dailyCalorieGoal },
+    { label: "Restricciones dietéticas", done: !!(profile?.menuRestrictions || profile?.menuAllergies) },
+    { label: "Nivel de actividad", done: !!profile?.activityLevel },
+  ];
+  const done = steps.filter(s => s.done).length;
+  const pct = Math.round((done / steps.length) * 100);
+  if (pct >= 100) return null;
+  const pending = steps.filter(s => !s.done);
+  return (
+    <div style={{ background: "white", borderRadius: 18, padding: "16px 18px", border: "1px solid #f3f4f6", boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 8 }}>
+        <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#1a1a1a" }}>⚙️ Completa tu perfil</p>
+        <span style={{ fontSize: 13, fontWeight: 800, color: "#F97316" }}>{pct}%</span>
+      </div>
+      <div style={{ background: "#f3f4f6", borderRadius: 99, height: 6, marginBottom: 12 }}>
+        <div style={{ background: "linear-gradient(90deg, #F97316, #FB923C)", borderRadius: 99, height: 6, width: `${pct}%`, transition: "width 0.6s ease" }} />
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 6, marginBottom: 10 }}>
+        {pending.slice(0, 2).map((s, i) => (
+          <div key={i} style={{ display: "flex", alignItems: "center", gap: 8 }}>
+            <div style={{ width: 16, height: 16, borderRadius: "50%", border: "2px solid #FED7AA", flexShrink: 0 }} />
+            <span style={{ fontSize: 12, color: "#6b7280" }}>{s.label}</span>
+          </div>
+        ))}
+      </div>
+      <Link href="/app/profile">
+        <span style={{ fontSize: 12, fontWeight: 700, color: "#F97316", cursor: "pointer" }}>Completar perfil → mejores recomendaciones</span>
+      </Link>
+    </div>
+  );
+}
+
+// ─── Quick Meal Log Modal (Mejora 5) ──────────────────────────────────────────
+function QuickMealModal({ onClose, today }: { onClose: () => void; today: string }) {
+  const [mealName, setMealName] = useState("");
+  const [calories, setCalories] = useState("");
+  const [protein, setProtein] = useState("");
+  const [mealType, setMealType] = useState("almuerzo");
+  const utils = trpc.useUtils();
+  const addMeal = trpc.mealLogs.add.useMutation({
+    onSuccess: () => {
+      utils.mealLogs.dailySummary.invalidate();
+      onClose();
+    },
+  });
+  const mealTypes = [
+    { id: "desayuno", label: "🌅 Desayuno" },
+    { id: "almuerzo", label: "☀️ Almuerzo" },
+    { id: "cena", label: "🌙 Cena" },
+    { id: "snack", label: "🍎 Snack" },
+  ];
+  return (
+    <div style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.45)", zIndex: 1000, display: "flex", alignItems: "center", justifyContent: "center", padding: 16 }} onClick={onClose}>
+      <div style={{ background: "white", borderRadius: 24, padding: 24, width: "100%", maxWidth: 400, boxShadow: "0 20px 60px rgba(0,0,0,0.2)" }} onClick={e => e.stopPropagation()}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
+          <h3 style={{ margin: 0, fontSize: 16, fontWeight: 800, color: "#1a1a1a" }}>⚡ Registro rápido</h3>
+          <button onClick={onClose} style={{ background: "#f3f4f6", border: "none", borderRadius: 99, width: 30, height: 30, cursor: "pointer", fontSize: 14, display: "flex", alignItems: "center", justifyContent: "center", color: "#6b7280" }}>✕</button>
+        </div>
+        {/* Tipo de comida */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 8, marginBottom: 16 }}>
+          {mealTypes.map(m => (
+            <button key={m.id} onClick={() => setMealType(m.id)} style={{ background: mealType === m.id ? "#FFF7ED" : "#f9fafb", border: `2px solid ${mealType === m.id ? "#F97316" : "transparent"}`, borderRadius: 12, padding: "9px 10px", fontSize: 12, fontWeight: 600, color: mealType === m.id ? "#F97316" : "#6b7280", cursor: "pointer" }}>{m.label}</button>
+          ))}
+        </div>
+        {/* Nombre */}
+        <input value={mealName} onChange={e => setMealName(e.target.value)} placeholder="Nombre del alimento o plato" style={{ width: "100%", border: "1.5px solid #e5e7eb", borderRadius: 12, padding: "10px 14px", fontSize: 13, outline: "none", marginBottom: 10, boxSizing: "border-box" }} />
+        {/* Calorías y proteínas */}
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10, marginBottom: 20 }}>
+          <div>
+            <label style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", display: "block", marginBottom: 4 }}>CALORÍAS *</label>
+            <input type="number" value={calories} onChange={e => setCalories(e.target.value)} placeholder="0" style={{ width: "100%", border: "1.5px solid #e5e7eb", borderRadius: 12, padding: "10px 14px", fontSize: 13, outline: "none", boxSizing: "border-box" }} />
+          </div>
+          <div>
+            <label style={{ fontSize: 11, fontWeight: 700, color: "#9ca3af", display: "block", marginBottom: 4 }}>PROTEÍNA (g)</label>
+            <input type="number" value={protein} onChange={e => setProtein(e.target.value)} placeholder="0" style={{ width: "100%", border: "1.5px solid #e5e7eb", borderRadius: 12, padding: "10px 14px", fontSize: 13, outline: "none", boxSizing: "border-box" }} />
+          </div>
+        </div>
+        <button
+          onClick={() => addMeal.mutate({ customMealName: mealName.trim(), calories: Number(calories), proteins: Number(protein) || 0, logDate: today })}
+          disabled={!mealName.trim() || !calories || addMeal.isPending}
+          style={{ width: "100%", background: "linear-gradient(135deg, #F97316, #FB923C)", color: "white", border: "none", borderRadius: 14, padding: "13px", fontSize: 14, fontWeight: 700, cursor: "pointer", opacity: (!mealName.trim() || !calories) ? 0.5 : 1 }}>
+          {addMeal.isPending ? "Registrando..." : "✓ Registrar comida"}
+        </button>
+        <Link href="/app/meal-log">
+          <p style={{ textAlign: "center", marginTop: 10, fontSize: 12, color: "#9ca3af", cursor: "pointer" }}>Ir al diario completo →</p>
+        </Link>
+      </div>
+    </div>
+  );
+}
+
 // ─── Main Component ───────────────────────────────────────────────────────────
 export default function Dashboard() {
   const { user } = useAuth();
-  const { t } = useTranslation();
+  const [showCheckinCard, setShowCheckinCard] = useState(true);
+  const [showMealModal, setShowMealModal] = useState(false);
 
   const [today] = useState(() => {
     const d = new Date();
@@ -331,6 +445,7 @@ export default function Dashboard() {
   const activeMenuData = trpc.menus.getActive.useQuery();
   const levelInfo = trpc.retention.getLevelInfo.useQuery();
   const contextualRecipe = trpc.retention.getDailyContextualRecipe.useQuery();
+  const pendingCheckins = trpc.weeklyCheckins.getMyPendingCheckins.useQuery();
   const recommendedRecipes = trpc.recipes.list.useQuery(
     useMemo(() => ({ limit: 3, isPublic: true, excludeUserAllergens: true }), [])
   );
@@ -343,115 +458,116 @@ export default function Dashboard() {
   const lvl = levelInfo.data;
   const recipe = contextualRecipe.data;
   const recs = recommendedRecipes.data ?? [];
+  const hasPendingCheckin = (pendingCheckins.data?.length ?? 0) > 0;
 
   return (
-    <div style={{ maxWidth: 1100, margin: "0 auto", padding: "0 0 40px" }}>
+    <>
+      {showMealModal && <QuickMealModal onClose={() => setShowMealModal(false)} today={today} />}
+      <div className="max-w-[1100px] mx-auto pb-10 px-0">
 
-      {/* ── PROTOTYPE BANNER ── */}
-      <div style={{ background: "linear-gradient(90deg, #6366F1, #8B5CF6)", borderRadius: 14, padding: "10px 18px", marginBottom: 20, display: "flex", alignItems: "center", gap: 10 }}>
-        <span style={{ fontSize: 16 }}>🧪</span>
-        <p style={{ margin: 0, fontSize: 13, color: "white", fontWeight: 600 }}>Prototipo del nuevo Dashboard — <span style={{ opacity: 0.85 }}>Dinos qué te parece antes de reemplazar el actual</span></p>
-        <Link href="/app/dashboard" style={{ marginLeft: "auto" }}>
-          <span style={{ fontSize: 12, color: "rgba(255,255,255,0.85)", fontWeight: 600, cursor: "pointer", whiteSpace: "nowrap" }}>← Ver dashboard actual</span>
-        </Link>
-      </div>
-
-      {/* ── HERO ── */}
-      <div style={{ background: "linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%)", borderRadius: 22, padding: "22px 24px", marginBottom: 20, border: "1px solid #FED7AA" }}>
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
-          <div>
-            <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "#1a1a1a" }}>{getGreeting(user?.name)}</h1>
-            <p style={{ margin: "4px 0 0", fontSize: 13, color: "#9ca3af" }}>{capitalize(fmtDate())} · {streak > 0 ? `🔥 ¡Sigues en racha! ${streak} días` : "Empieza tu racha hoy"}</p>
+        {/* ── CHECK-IN SEMANAL (Mejora 2) ── */}
+        {hasPendingCheckin && showCheckinCard && (
+          <div className="mb-4">
+            <WeeklyCheckinCard onDismiss={() => setShowCheckinCard(false)} />
           </div>
-          <Link href="/app/health-hub">
-            <div style={{ background: "white", borderRadius: 14, padding: "8px 14px", display: "flex", alignItems: "center", gap: 8, border: "1px solid #FED7AA", cursor: "pointer" }}>
-              <span style={{ fontSize: 14 }}>💓</span>
-              <span style={{ fontSize: 12, fontWeight: 700, color: "#F97316" }}>Health Hub</span>
-              <span style={{ fontSize: 12, color: "#9ca3af" }}>→</span>
+        )}
+
+        {/* ── HERO ── */}
+        <div className="rounded-[22px] mb-5 border border-[#FED7AA] p-5 md:p-6" style={{ background: "linear-gradient(135deg, #FFF7ED 0%, #FFEDD5 100%)" }}>
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", flexWrap: "wrap", gap: 12 }}>
+            <div>
+              <h1 style={{ margin: 0, fontSize: 22, fontWeight: 800, color: "#1a1a1a" }}>{getGreeting(user?.name)}</h1>
+              <p style={{ margin: "4px 0 0", fontSize: 13, color: "#9ca3af" }}>{capitalize(fmtDate())} · {streak > 0 ? `🔥 ¡Sigues en racha! ${streak} días` : "Empieza tu racha hoy"}</p>
             </div>
-          </Link>
+            <Link href="/app/health-hub">
+              <div style={{ background: "white", borderRadius: 14, padding: "8px 14px", display: "flex", alignItems: "center", gap: 8, border: "1px solid #FED7AA", cursor: "pointer" }}>
+                <span style={{ fontSize: 14 }}>💓</span>
+                <span style={{ fontSize: 12, fontWeight: 700, color: "#F97316" }}>Health Hub</span>
+                <span style={{ fontSize: 12, color: "#9ca3af" }}>→</span>
+              </div>
+            </Link>
+          </div>
+          <div style={{ marginTop: 16 }}>
+            <WellnessStrip />
+          </div>
         </div>
 
-        {/* Wellness strip */}
-        <div style={{ marginTop: 16 }}>
-          <WellnessStrip />
-        </div>
-      </div>
+        {/* ── 2-COLUMN GRID ── */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_380px] gap-4 items-start">
 
-      {/* ── 2-COLUMN GRID ── */}
-      <div style={{ display: "grid", gridTemplateColumns: "1fr 380px", gap: 16, alignItems: "start" }}>
+          {/* ── COLUMN LEFT ── */}
+          <div className="flex flex-col gap-4">
 
-        {/* ── COLUMN LEFT ── */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-
-          {/* Calorías */}
-          <div style={{ background: "white", borderRadius: 20, padding: "20px 22px", border: "1px solid #f3f4f6", boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
-            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-              <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em" }}>🔥 Calorías hoy</p>
-              <Link href="/app/meal-log">
-                <span style={{ fontSize: 12, color: "#F97316", fontWeight: 600, cursor: "pointer" }}>+ Registrar →</span>
-              </Link>
+            {/* Calorías */}
+            <div style={{ background: "white", borderRadius: 20, padding: "20px 22px", border: "1px solid #f3f4f6", boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+                <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em" }}>🔥 Calorías hoy</p>
+                <button onClick={() => setShowMealModal(true)} style={{ fontSize: 12, color: "#F97316", fontWeight: 700, cursor: "pointer", background: "#FFF7ED", border: "1px solid #FED7AA", borderRadius: 8, padding: "4px 10px" }}>⚡ Registrar</button>
+              </div>
+              <CalorieRing
+                consumed={consumed}
+                goal={goalCal}
+                protein={summary?.totalProtein ?? 0}
+                carbs={summary?.totalCarbs ?? 0}
+                fat={summary?.totalFat ?? 0}
+              />
             </div>
-            <CalorieRing
+
+            {/* Onboarding progresivo (Mejora 4) */}
+            <OnboardingCard profile={profile} />
+
+            {/* Menú activo */}
+            <ActiveMenuCard menu={activeMenuData.data} />
+
+            {/* Buddy Coach CTA */}
+            <BuddyCoachCTA />
+
+            {/* Recomendaciones diarias personalizadas */}
+            <DailyRecs
               consumed={consumed}
               goal={goalCal}
               protein={summary?.totalProtein ?? 0}
               carbs={summary?.totalCarbs ?? 0}
               fat={summary?.totalFat ?? 0}
+              proteinGoal={Math.round((goalCal * 0.30) / 4)}
+              carbsGoal={Math.round((goalCal * 0.45) / 4)}
+              fatGoal={Math.round((goalCal * 0.25) / 9)}
+              streak={streak}
             />
+
+            {/* Recetas recomendadas */}
+            <RecommendationsList recipes={recs} />
+
           </div>
 
-          {/* Menú activo */}
-          <ActiveMenuCard menu={activeMenuData.data} />
+          {/* ── COLUMN RIGHT ── */}
+          <div className="flex flex-col gap-4">
 
-          {/* Buddy Coach CTA */}
-          <BuddyCoachCTA />
+            {/* Accesos rápidos */}
+            <div style={{ background: "white", borderRadius: 20, padding: "16px 18px", border: "1px solid #f3f4f6", boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
+              <p style={{ margin: "0 0 12px", fontSize: 12, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em" }}>Accesos rápidos</p>
+              <QuickAccessGrid />
+            </div>
 
-          {/* Recomendaciones diarias personalizadas */}
-          <DailyRecs
-            consumed={consumed}
-            goal={goalCal}
-            protein={summary?.totalProtein ?? 0}
-            carbs={summary?.totalCarbs ?? 0}
-            fat={summary?.totalFat ?? 0}
-            proteinGoal={Math.round((goalCal * 0.30) / 4)}
-            carbsGoal={Math.round((goalCal * 0.45) / 4)}
-            fatGoal={Math.round((goalCal * 0.25) / 9)}
-            streak={streak}
-          />
+            {/* Racha + Nivel */}
+            <StreakWidget
+              streak={streak}
+              level={lvl?.level ?? 1}
+              levelName={lvl?.levelName ?? "Principiante"}
+            />
 
-          {/* Recetas recomendadas */}
-          <RecommendationsList recipes={recs} />
+            {/* Receta del día */}
+            {recipe && <RecipeCard recipe={recipe} />}
 
-        </div>
+            {/* Comunidad */}
+            <div style={{ background: "white", borderRadius: 20, padding: "16px 18px", border: "1px solid #f3f4f6", boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
+              <p style={{ margin: "0 0 12px", fontSize: 12, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em" }}>Comunidad & Tienda</p>
+              <CommunityStrip />
+            </div>
 
-        {/* ── COLUMN RIGHT ── */}
-        <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-
-          {/* Accesos rápidos */}
-          <div style={{ background: "white", borderRadius: 20, padding: "16px 18px", border: "1px solid #f3f4f6", boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
-            <p style={{ margin: "0 0 12px", fontSize: 12, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em" }}>Accesos rápidos</p>
-            <QuickAccessGrid />
           </div>
-
-          {/* Racha + Nivel */}
-          <StreakWidget
-            streak={streak}
-            level={lvl?.level ?? 1}
-            levelName={lvl?.levelName ?? "Principiante"}
-          />
-
-          {/* Receta del día */}
-          {recipe && <RecipeCard recipe={recipe} />}
-
-          {/* Comunidad */}
-          <div style={{ background: "white", borderRadius: 20, padding: "16px 18px", border: "1px solid #f3f4f6", boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
-            <p style={{ margin: "0 0 12px", fontSize: 12, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em" }}>Comunidad & Tienda</p>
-            <CommunityStrip />
-          </div>
-
         </div>
       </div>
-    </div>
+    </>
   );
 }
