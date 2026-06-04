@@ -1,6 +1,6 @@
 /**
  * Health Hub — Conector central del ecosistema de bienestar
- * NO duplica páginas. Muestra resumen de estado + Coach IA + accesos directos.
+ * NO duplica páginas. Muestra resumen de estado + Buddy Coach + accesos directos.
  */
 import { useState, useEffect, useMemo, useRef } from "react";
 import { trpc } from "@/lib/trpc";
@@ -156,7 +156,7 @@ export default function HealthHub() {
 
   const tabs: { key: MainTab; label: string; icon: string }[] = [
     { key: "estado",       label: "Estado",      icon: "💓" },
-    { key: "coach",        label: "Coach IA",    icon: "🤖" },
+    { key: "coach",        label: "Buddy Coach",    icon: "🤖" },
     { key: "dispositivos", label: "Wearables",   icon: "📡" },
   ];
 
@@ -230,12 +230,12 @@ export default function HealthHub() {
               <div className="flex items-start gap-3">
                 <span className="text-xl">💡</span>
                 <div className="flex-1">
-                  <p className="text-sm font-bold text-purple-800">Insight del Coach de hoy</p>
+                  <p className="text-sm font-bold text-purple-800">Insight de tu Buddy Coach</p>
                   <p className="text-sm text-purple-700 mt-1 leading-relaxed">
                     Tu HRV ha subido <strong>8ms esta semana</strong>. Tu sistema nervioso se está recuperando bien. Mantén el patrón de sueño actual y considera añadir 10 min de meditación.
                   </p>
                   <button onClick={() => setActiveTab("coach")} className="mt-2 text-xs font-semibold text-purple-600 hover:text-purple-800">
-                    Preguntarle al Coach →
+                    Preguntarle al Buddy Coach →
                   </button>
                 </div>
               </div>

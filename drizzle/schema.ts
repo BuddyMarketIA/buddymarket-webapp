@@ -4289,6 +4289,77 @@ export const b2bEmployees = pgTable("b2b_employees", {
 export type B2bEmployee = typeof b2bEmployees.$inferSelect;
 export type InsertB2bEmployee = typeof b2bEmployees.$inferInsert;
 
+// =============================================================================
+// B2B EXPERT TEAMS — Equipos de hasta 10 personas con condiciones similares
+// El nutricionista crea equipos, añade miembros y genera planes grupales con IA
+// =============================================================================
+export const b2bTeamGoalEnum = pgEnum("b2b_team_goal", [
+  "weight_loss",
+  "muscle_gain",
+  "energy_performance",
+  "stress_management",
+  "balanced_diet",
+  "cardiovascular_health",
+  "digestive_health",
+  "diabetes_management",
+  "other",
+]);
+
+export const b2bTeams = pgTable("b2b_teams", {
+  id: serial("id").primaryKey(),
+  expertId: integer("expertId").notNull(),           // nutricionista propietario
+  name: varchar("name", { length: 256 }).notNull(),   // ej: "Equipo Comercial Madrid"
+  companyName: varchar("companyName", { length: 256 }), // empresa cliente (opcional)
+  goal: varchar("goal", { length: 64 }).notNull(),    // objetivo común del equipo
+  conditions: text("conditions"),                     // condiciones similares (texto libre)
+  dietaryRestrictions: text("dietaryRestrictions"),   // restricciones comunes
+  maxMembers: integer("maxMembers").default(10).notNull(),
+  isActive: boolean("isActive").default(true).notNull(),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  expertIdx: index("b2bt_expert_idx").on(t.expertId),
+}));
+export type B2bTeam = typeof b2bTeams.$inferSelect;
+export type InsertB2bTeam = typeof b2bTeams.$inferInsert;
+
+export const b2bTeamMembers = pgTable("b2b_team_members", {
+  id: serial("id").primaryKey(),
+  teamId: integer("teamId").notNull(),
+  name: varchar("name", { length: 256 }).notNull(),   // nombre del miembro
+  email: varchar("email", { length: 256 }),            // email (opcional, para invitar)
+  age: integer("age"),
+  gender: varchar("gender", { length: 16 }),
+  weight: integer("weight"),                           // kg
+  height: integer("height"),                           // cm
+  specificConditions: text("specificConditions"),      // variaciones individuales
+  isActive: boolean("isActive").default(true).notNull(),
+  joinedAt: timestamp("joinedAt").defaultNow().notNull(),
+}, (t) => ({
+  teamIdx: index("b2btm_team_idx").on(t.teamId),
+}));
+export type B2bTeamMember = typeof b2bTeamMembers.$inferSelect;
+export type InsertB2bTeamMember = typeof b2bTeamMembers.$inferInsert;
+
+export const b2bTeamPlans = pgTable("b2b_team_plans", {
+  id: serial("id").primaryKey(),
+  teamId: integer("teamId").notNull(),
+  expertId: integer("expertId").notNull(),
+  title: varchar("title", { length: 256 }).notNull(),
+  description: text("description"),
+  planContent: text("planContent"),                   // plan nutricional generado (markdown/JSON)
+  recommendations: text("recommendations"),            // recomendaciones grupales IA
+  weeklyMenuSummary: text("weeklyMenuSummary"),         // resumen de menú semanal
+  isAiGenerated: boolean("isAiGenerated").default(false).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  teamIdx: index("b2btp_team_idx").on(t.teamId),
+  expertIdx: index("b2btp_expert_idx").on(t.expertId),
+}));
+export type B2bTeamPlan = typeof b2bTeamPlans.$inferSelect;
+export type InsertB2bTeamPlan = typeof b2bTeamPlans.$inferInsert;
 
 // ── Expert Feature Requests (Product Board) ─────────────────────────────────
 export const expertFeatureRequestCategoryEnum = pgEnum("expert_fr_category", [
