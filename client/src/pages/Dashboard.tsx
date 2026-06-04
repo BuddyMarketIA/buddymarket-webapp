@@ -201,51 +201,70 @@ function capitalize(s: string) { return s.charAt(0).toUpperCase() + s.slice(1); 
 // ─── Calorie Ring ─────────────────────────────────────────────────────────────
 function CalorieRing({ consumed, goal, protein, carbs, fat }: { consumed: number; goal: number; protein: number; carbs: number; fat: number }) {
   const pct = Math.min(consumed / Math.max(goal, 1), 1);
-  const r = 52; const circ = 2 * Math.PI * r;
+  const r = 58; const circ = 2 * Math.PI * r;
   const remaining = Math.max(goal - consumed, 0);
   const over = consumed > goal;
+  const macros = [
+    { label: "Proteínas", val: Math.round(protein), unit: "g", icon: "💪" },
+    { label: "Carbos",    val: Math.round(carbs),   unit: "g", icon: "⚡" },
+    { label: "Grasas",    val: Math.round(fat),     unit: "g", icon: "💧" },
+  ];
   return (
-    <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
-      <div style={{ position: "relative", width: 130, height: 130, flexShrink: 0 }}>
-        <svg width="130" height="130" viewBox="0 0 130 130">
-          <circle cx="65" cy="65" r={r} fill="none" stroke="#FED7AA" strokeWidth="10" />
-          <circle cx="65" cy="65" r={r} fill="none"
-            stroke={over ? "#EF4444" : "#F97316"} strokeWidth="10"
-            strokeDasharray={circ} strokeDashoffset={circ * (1 - pct)}
-            strokeLinecap="round" transform="rotate(-90 65 65)"
-            style={{ transition: "stroke-dashoffset 0.6s ease" }} />
-        </svg>
-        <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-          <span style={{ fontSize: 22, fontWeight: 800, color: over ? "#EF4444" : "#F97316", lineHeight: 1 }}>{remaining}</span>
-          <span style={{ fontSize: 10, color: "#9ca3af", fontWeight: 600 }}>kcal rest.</span>
+    <div style={{ display: "flex", flexDirection: "column", gap: 18 }}>
+      {/* Top row: ring + numbers */}
+      <div style={{ display: "flex", alignItems: "center", gap: 20 }}>
+        {/* SVG Ring */}
+        <div style={{ position: "relative", width: 140, height: 140, flexShrink: 0 }}>
+          <div style={{ position: "absolute", inset: 10, borderRadius: "50%", background: over ? "radial-gradient(circle, rgba(239,68,68,0.25) 0%, transparent 70%)" : "radial-gradient(circle, rgba(249,115,22,0.3) 0%, transparent 70%)", filter: "blur(8px)" }} />
+          <svg width="140" height="140" viewBox="0 0 140 140">
+            <circle cx="70" cy="70" r={r} fill="none" stroke="rgba(255,255,255,0.12)" strokeWidth="11" />
+            <circle cx="70" cy="70" r={r} fill="none"
+              stroke={over ? "#EF4444" : "url(#calGrad)"} strokeWidth="11"
+              strokeDasharray={circ} strokeDashoffset={circ * (1 - pct)}
+              strokeLinecap="round" transform="rotate(-90 70 70)"
+              style={{ transition: "stroke-dashoffset 0.8s cubic-bezier(0.4,0,0.2,1)", filter: over ? "drop-shadow(0 0 6px #EF4444)" : "drop-shadow(0 0 8px rgba(249,115,22,0.8))" }} />
+            <defs>
+              <linearGradient id="calGrad" x1="0%" y1="0%" x2="100%" y2="0%">
+                <stop offset="0%" stopColor="#F97316" />
+                <stop offset="100%" stopColor="#FBBF24" />
+              </linearGradient>
+            </defs>
+          </svg>
+          <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
+            <span style={{ fontSize: 26, fontWeight: 900, color: over ? "#FCA5A5" : "white", lineHeight: 1, letterSpacing: "-0.04em" }}>{remaining}</span>
+            <span style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", fontWeight: 600, marginTop: 2 }}>kcal restantes</span>
+          </div>
+        </div>
+        {/* Stats */}
+        <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 12 }}>
+          <div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 2 }}>Consumidas</div>
+            <div style={{ fontSize: 28, fontWeight: 900, color: over ? "#FCA5A5" : "white", lineHeight: 1, letterSpacing: "-0.04em" }}>{consumed}<span style={{ fontSize: 13, fontWeight: 600, color: "rgba(255,255,255,0.5)", marginLeft: 4 }}>kcal</span></div>
+          </div>
+          <div style={{ height: 1, background: "rgba(255,255,255,0.1)" }} />
+          <div>
+            <div style={{ fontSize: 11, color: "rgba(255,255,255,0.5)", fontWeight: 600, textTransform: "uppercase", letterSpacing: "0.06em", marginBottom: 2 }}>Objetivo</div>
+            <div style={{ fontSize: 18, fontWeight: 800, color: "rgba(255,255,255,0.8)", lineHeight: 1 }}>{goal}<span style={{ fontSize: 12, fontWeight: 600, color: "rgba(255,255,255,0.4)", marginLeft: 4 }}>kcal</span></div>
+          </div>
+          {/* Progress bar */}
+          <div style={{ height: 5, background: "rgba(255,255,255,0.1)", borderRadius: 99, overflow: "hidden" }}>
+            <div style={{ height: "100%", width: `${pct * 100}%`, background: over ? "#EF4444" : "linear-gradient(90deg, #F97316, #FBBF24)", borderRadius: 99, transition: "width 0.8s ease", boxShadow: over ? "0 0 8px #EF4444" : "0 0 8px rgba(249,115,22,0.8)" }} />
+          </div>
         </div>
       </div>
-      <div style={{ flex: 1, display: "flex", flexDirection: "column", gap: 10 }}>
-        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
-          <span style={{ color: "#6b7280" }}>Meta diaria</span>
-          <span style={{ fontWeight: 700, color: "#1a1a1a" }}>{goal} kcal</span>
-        </div>
-        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 13 }}>
-          <span style={{ color: "#6b7280" }}>Consumidas</span>
-          <span style={{ fontWeight: 700, color: over ? "#EF4444" : "#1a1a1a" }}>{consumed} kcal</span>
-        </div>
-        <div style={{ height: 1, background: "#f3f4f6" }} />
-        {[
-          { label: "Proteínas", val: protein, color: "#F97316", unit: "g" },
-          { label: "Carbos", val: carbs, color: "#6366F1", unit: "g" },
-          { label: "Grasas", val: fat, color: "#10B981", unit: "g" },
-        ].map(m => (
-          <div key={m.label} style={{ display: "flex", alignItems: "center", gap: 8 }}>
-            <div style={{ width: 8, height: 8, borderRadius: "50%", background: m.color, flexShrink: 0 }} />
-            <span style={{ fontSize: 12, color: "#6b7280", flex: 1 }}>{m.label}</span>
-            <span style={{ fontSize: 12, fontWeight: 700, color: "#1a1a1a" }}>{m.val}{m.unit}</span>
+      {/* Macros row */}
+      <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr", gap: 8 }}>
+        {macros.map(m => (
+          <div key={m.label} style={{ background: "rgba(255,255,255,0.08)", borderRadius: 14, padding: "10px 8px", textAlign: "center", border: "1px solid rgba(255,255,255,0.1)" }}>
+            <div style={{ fontSize: 16, marginBottom: 4 }}>{m.icon}</div>
+            <div style={{ fontSize: 17, fontWeight: 900, color: "white", lineHeight: 1 }}>{m.val}<span style={{ fontSize: 10, fontWeight: 600, color: "rgba(255,255,255,0.5)" }}>{m.unit}</span></div>
+            <div style={{ fontSize: 10, color: "rgba(255,255,255,0.5)", marginTop: 3, fontWeight: 600 }}>{m.label}</div>
           </div>
         ))}
       </div>
     </div>
   );
 }
-
 // ─── Wellness Strip ───────────────────────────────────────────────────────────
 function WellnessStrip() {
   const metrics = [
@@ -809,25 +828,35 @@ export default function Dashboard() {
           {/* ── COLUMN LEFT ── */}
           <div className="flex flex-col gap-4">
 
-            {/* Calorías — clickable para abrir el Diario */}
+            {/* Calorías — WOW card oscura */}
             <div
               onClick={() => navigate("/app/meal-log")}
-              style={{ background: "white", borderRadius: 20, padding: "20px 22px", border: "1.5px solid #FED7AA", boxShadow: "0 2px 12px rgba(249,115,22,0.08)", cursor: "pointer", transition: "box-shadow 0.2s, transform 0.15s, border-color 0.2s" }}
-              onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "0 8px 28px rgba(249,115,22,0.2)"; (e.currentTarget as HTMLDivElement).style.transform = "translateY(-2px)"; (e.currentTarget as HTMLDivElement).style.borderColor = "#F97316"; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "0 2px 12px rgba(249,115,22,0.08)"; (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLDivElement).style.borderColor = "#FED7AA"; }}
+              style={{
+                position: "relative", overflow: "hidden",
+                background: "linear-gradient(135deg, #1C1C2E 0%, #2D1B4E 45%, #1A1A2E 100%)",
+                borderRadius: 24, padding: "22px 22px 20px",
+                boxShadow: "0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(249,115,22,0.2), inset 0 1px 0 rgba(255,255,255,0.06)",
+                cursor: "pointer", transition: "transform 0.2s, box-shadow 0.2s"
+              }}
+              onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.transform = "translateY(-3px)"; (e.currentTarget as HTMLDivElement).style.boxShadow = "0 16px 48px rgba(0,0,0,0.5), 0 0 0 1px rgba(249,115,22,0.4), inset 0 1px 0 rgba(255,255,255,0.08)"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLDivElement).style.boxShadow = "0 8px 32px rgba(0,0,0,0.4), 0 0 0 1px rgba(249,115,22,0.2), inset 0 1px 0 rgba(255,255,255,0.06)"; }}
             >
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
+              {/* Decorative blobs */}
+              <div style={{ position: "absolute", top: -50, right: -50, width: 180, height: 180, borderRadius: "50%", background: "radial-gradient(circle, rgba(249,115,22,0.22) 0%, transparent 70%)", pointerEvents: "none" }} />
+              <div style={{ position: "absolute", bottom: -40, left: -40, width: 140, height: 140, borderRadius: "50%", background: "radial-gradient(circle, rgba(139,92,246,0.18) 0%, transparent 70%)", pointerEvents: "none" }} />
+              {/* Header */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 18, position: "relative" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-                  <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em" }}>🔥 Calorías hoy</p>
-                  <span style={{ fontSize: 10, background: "#FFF7ED", color: "#F97316", border: "1px solid #FED7AA", borderRadius: 6, padding: "2px 7px", fontWeight: 700 }}>📖 Ver diario</span>
+                  <span style={{ fontSize: 18 }}>🔥</span>
+                  <span style={{ fontSize: 13, fontWeight: 800, color: "rgba(255,255,255,0.9)", textTransform: "uppercase", letterSpacing: "0.06em" }}>Calorías hoy</span>
+                  <span style={{ fontSize: 10, background: "rgba(249,115,22,0.2)", color: "#FB923C", border: "1px solid rgba(249,115,22,0.3)", borderRadius: 6, padding: "2px 8px", fontWeight: 700 }}>📖 Diario</span>
                 </div>
-                <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
-                  <button
-                    onClick={e => { e.stopPropagation(); setShowMealModal(true); }}
-                    style={{ fontSize: 12, color: "#F97316", fontWeight: 700, cursor: "pointer", background: "#FFF7ED", border: "1px solid #FED7AA", borderRadius: 8, padding: "4px 10px" }}
-                  >⚡ Registrar</button>
-                </div>
+                <button
+                  onClick={e => { e.stopPropagation(); setShowMealModal(true); }}
+                  style={{ fontSize: 12, color: "#1a1a1a", fontWeight: 800, cursor: "pointer", background: "linear-gradient(135deg, #F97316, #FBBF24)", border: "none", borderRadius: 10, padding: "6px 12px", boxShadow: "0 2px 8px rgba(249,115,22,0.5)" }}
+                >⚡ Registrar</button>
               </div>
+              {/* Ring + data */}
               <CalorieRing
                 consumed={consumed}
                 goal={goalCal}
@@ -836,7 +865,6 @@ export default function Dashboard() {
                 fat={(summary as any)?.fats ?? (summary as any)?.totalFat ?? 0}
               />
             </div>
-
             {/* Onboarding progresivo (Mejora 4) */}
             {has("onboarding") && <OnboardingCard profile={profile} />}
 
