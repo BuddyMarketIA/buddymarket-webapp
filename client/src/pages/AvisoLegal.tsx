@@ -116,7 +116,26 @@ export default function AvisoLegal() {
           <P>Los menús, recomendaciones y sugerencias generados por los algoritmos de IA son orientativos. La plataforma no sustituye el criterio de un profesional sanitario. El Usuario es responsable de verificar la adecuación de las recomendaciones a su situación particular, especialmente en casos de condiciones médicas, embarazo, lactancia o tratamiento de menores.</P>
         </Section>
 
-        <Section title="6. Legislación Aplicable y Jurisdicción">
+        <Section title="6. Cumplimiento del Reglamento de Inteligencia Artificial (RIA / EU AI Act)">
+          <P>Buddy One hace uso de sistemas de inteligencia artificial para generar recomendaciones nutricionales, analizar imágenes de alimentos, crear menús personalizados y proporcionar orientación de bienestar. En consecuencia, la plataforma queda sujeta al <strong>Reglamento (UE) 2024/1689 del Parlamento Europeo y del Consejo, de 13 de junio de 2024, por el que se establecen normas armonizadas en materia de inteligencia artificial (Reglamento de IA / EU AI Act)</strong>, cuya aplicación progresiva comenzó el 2 de agosto de 2024.</P>
+          <P style={{ marginTop: 12 }}>A los efectos del citado Reglamento, BUDDY MARKET IA, S.L. actúa como <strong>proveedor</strong> de sistemas de IA de propósito general y, en su caso, como <strong>desplegador</strong> de modelos de terceros. Los sistemas de IA empleados en el ámbito de la salud y la nutrición pueden estar clasificados como de <strong>riesgo alto</strong> según el Anexo III del RIA, lo que conlleva obligaciones adicionales en materia de:</P>
+          <ul style={{ paddingLeft: 24, display: "flex", flexDirection: "column", gap: 6, marginTop: 12 }}>
+            <li>Evaluación de conformidad y registro en la base de datos de la UE.</li>
+            <li>Supervisión humana efectiva de las recomendaciones generadas.</li>
+            <li>Transparencia hacia los usuarios sobre el uso de IA.</li>
+            <li>Gestión de riesgos y documentación técnica.</li>
+            <li>Calidad y gobernanza de los datos de entrenamiento.</li>
+          </ul>
+          <div style={{ marginTop: 20, background: "#FFF7ED", border: "1px solid #FED7AA", borderRadius: 12, padding: "16px 20px" }}>
+            <p style={{ margin: "0 0 8px", fontSize: 13, fontWeight: 800, color: "#C2410C" }}>⚠️ Aviso importante para usuarios profesionales y empresariales</p>
+            <p style={{ margin: 0, fontSize: 13, color: "#92400E", lineHeight: 1.7 }}>
+              Si utilizas Buddy One en un contexto profesional, como herramienta de apoyo sanitario, en el ámbito de la empresa o para la toma de decisiones que afecten a terceros, <strong>te recomendamos encarecidamente consultar con un abogado especializado en derecho tecnológico y regulación de inteligencia artificial</strong> para verificar el cumplimiento normativo aplicable a tu caso concreto. La normativa sobre IA está en plena evolución y puede generar obligaciones específicas según el uso que se haga de la plataforma.
+            </p>
+          </div>
+          <P style={{ marginTop: 16 }}>Para cualquier consulta sobre cumplimiento normativo en materia de IA, puede contactar con nosotros en: <a href="mailto:iabuddymarket@gmail.com" style={{ color: "#F97316" }}>iabuddymarket@gmail.com</a></P>
+        </Section>
+
+        <Section title="7. Legislación Aplicable y Jurisdicción">
           <P>El presente Aviso Legal se rige por la legislación española. En particular:</P>
           <ul style={{ paddingLeft: 24, display: "flex", flexDirection: "column", gap: 6, marginTop: 12 }}>
             <li>Ley 34/2002, de 11 de julio, de Servicios de la Sociedad de la Información y de Comercio Electrónico (LSSI-CE).</li>

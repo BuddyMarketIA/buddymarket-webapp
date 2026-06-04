@@ -598,11 +598,22 @@ export default function Home() {
               <LanguageSelector variant="footer" className="text-white/50 hover:text-white/80" />
             </div>
           </div>
-          <div style={{ borderTop: "1px solid rgba(255,255,255,0.05)", paddingTop: "32px", paddingBottom: "32px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "20px" }}>
+          {/* RIA Disclaimer */}
+          <div style={{ borderTop: "1px solid rgba(249,115,22,0.12)", paddingTop: "24px", marginBottom: "20px" }}>
+            <div style={{ background: "rgba(249,115,22,0.06)", border: "1px solid rgba(249,115,22,0.15)", borderRadius: 10, padding: "16px 20px" }}>
+              <p style={{ margin: "0 0 6px", fontSize: "11px", fontWeight: 800, color: "rgba(249,115,22,0.8)", textTransform: "uppercase", letterSpacing: "0.06em" }}>⚖️ Aviso de cumplimiento normativo — Reglamento de IA (UE) 2024/1689</p>
+              <p style={{ margin: 0, fontSize: "11px", color: "rgba(255,255,255,0.35)", lineHeight: 1.7 }}>
+                Buddy One utiliza sistemas de inteligencia artificial para generar recomendaciones nutricionales, menús personalizados y análisis de bienestar. De conformidad con el <strong style={{ color: "rgba(255,255,255,0.5)" }}>Reglamento (UE) 2024/1689 sobre Inteligencia Artificial (RIA / EU AI Act)</strong>, los sistemas de IA aplicados a la salud pueden estar sujetos a requisitos específicos de transparencia, supervisión humana y evaluación de conformidad.{" "}
+                <strong style={{ color: "rgba(249,115,22,0.7)" }}>Si utilizas Buddy One en un contexto profesional, empresarial o como herramienta de apoyo sanitario, te recomendamos encarecidamente consultar con un abogado especializado en derecho tecnológico y regulación de IA para verificar el cumplimiento normativo aplicable a tu caso.</strong>{" "}
+                Las recomendaciones generadas por IA son orientativas y no sustituyen el criterio de un profesional de la salud, médico o dietista-nutricionista colegiado.
+              </p>
+            </div>
+          </div>
+          <div style={{ paddingTop: "16px", paddingBottom: "32px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: "20px" }}>
             <div style={{ flex: 1, minWidth: "300px" }}>
-              <p style={{ margin: "0 0 12px 0", fontSize: "12px", color: "rgba(255,255,255,0.18)" }}>© 2025 Buddy One. Todos los derechos reservados.</p>
+              <p style={{ margin: "0 0 8px 0", fontSize: "12px", color: "rgba(255,255,255,0.18)" }}>© 2025 Buddy One · BUDDY MARKET IA, S.L. · Todos los derechos reservados.</p>
               <p style={{ margin: 0, fontSize: "11px", color: "rgba(255,255,255,0.14)", lineHeight: 1.5 }}>
-                El contenido de esta plataforma no constituye asesoramiento médico ni nutricional profesional. Consulta siempre con un profesional de la salud.
+                El contenido de esta plataforma no constituye asesoramiento médico ni nutricional profesional. Consulta siempre con un profesional de la salud colegiado.
               </p>
             </div>
           </div>

@@ -192,7 +192,7 @@ export function OnboardingModal() {
                   </div>
                 ))}
               </div>
-              {/* ── Disclaimer médico obligatorio (App Store / Google Play) ── */}
+              {/* ── Disclaimer médico + RIA obligatorio (App Store / Google Play) ── */}
               <div style={{
                 marginTop: 20, padding: "12px 14px",
                 background: "#FEF3C7", borderRadius: 12,
@@ -200,9 +200,14 @@ export function OnboardingModal() {
                 display: "flex", alignItems: "flex-start", gap: 10, textAlign: "left",
               }}>
                 <span style={{ fontSize: 18, flexShrink: 0, marginTop: 1 }}>⚠️</span>
-                <p style={{ margin: 0, fontSize: 12, color: "#92400E", lineHeight: 1.5 }}>
-                  <strong>Aviso médico:</strong> Buddy One es una herramienta de apoyo nutricional y no sustituye el consejo de un médico, dietista o profesional de la salud. Consulta siempre a un especialista antes de realizar cambios significativos en tu alimentación.
-                </p>
+                <div style={{ margin: 0 }}>
+                  <p style={{ margin: "0 0 6px", fontSize: 12, color: "#92400E", lineHeight: 1.5 }}>
+                    <strong>Aviso médico:</strong> Buddy One es una herramienta de apoyo nutricional y no sustituye el consejo de un médico, dietista o profesional de la salud. Consulta siempre a un especialista antes de realizar cambios significativos en tu alimentación.
+                  </p>
+                  <p style={{ margin: 0, fontSize: 11, color: "#92400E", lineHeight: 1.5, opacity: 0.85 }}>
+                    <strong>Aviso regulatorio (RIA):</strong> Esta plataforma utiliza IA conforme al Reglamento (UE) 2024/1689. Si la usas en contexto profesional o sanitario, consulta con un abogado especializado en regulación de IA.
+                  </p>
+                </div>
               </div>
             </div>
           )}
