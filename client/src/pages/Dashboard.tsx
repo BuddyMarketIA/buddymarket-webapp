@@ -5,16 +5,19 @@ import { trpc } from "@/lib/trpc";
 
 // ─── Widget Config ───────────────────────────────────────────────────────────
 const ALL_WIDGETS = [
-  { id: "calorie",      label: "Calorías del día",       emoji: "🔥",  required: true },
-  { id: "onboarding",  label: "Primeros pasos",          emoji: "🚀",  required: false },
-  { id: "menu",        label: "Menú activo",             emoji: "📅",  required: false },
-  { id: "coach",       label: "Buddy Coach",             emoji: "🤖",  required: false },
-  { id: "recs",        label: "Recomendaciones del día", emoji: "💡",  required: false },
-  { id: "recipes",     label: "Recetas para ti",         emoji: "✨",  required: false },
-  { id: "quickaccess", label: "Accesos rápidos",         emoji: "⚡",  required: false },
-  { id: "streak",      label: "Mi progreso",             emoji: "🏆",  required: false },
-  { id: "recipeday",   label: "Receta del día",          emoji: "🍽️", required: false },
-  { id: "community",   label: "Comunidad & Tienda",      emoji: "🤝",  required: false },
+  { id: "calorie",      label: "Calorías del día",       emoji: "🔥",  required: true,  desc: "Anillo de calorías con macros del día",          col: "left" },
+  { id: "hydration",   label: "Hidratación",             emoji: "💧",  required: false, desc: "Seguimiento de vasos de agua diarios",           col: "right" },
+  { id: "onboarding",  label: "Primeros pasos",          emoji: "🚀",  required: false, desc: "Completa tu perfil para mejores resultados",     col: "left" },
+  { id: "menu",        label: "Menú activo",             emoji: "📅",  required: false, desc: "Tu menú semanal en curso",                       col: "left" },
+  { id: "coach",       label: "Buddy Coach",             emoji: "🤖",  required: false, desc: "Acceso rápido a tu asesor de bienestar",         col: "left" },
+  { id: "recs",        label: "Recomendaciones del día", emoji: "💡",  required: false, desc: "Consejos personalizados según tu progreso",      col: "left" },
+  { id: "macros",      label: "Resumen de macros",       emoji: "📊",  required: false, desc: "Barras de progreso de proteínas, carbos y grasas",col: "right" },
+  { id: "recipes",     label: "Recetas para ti",         emoji: "✨",  required: false, desc: "Recetas recomendadas según tu perfil",           col: "left" },
+  { id: "quickaccess", label: "Accesos rápidos",         emoji: "⚡",  required: false, desc: "Atajos a las secciones más usadas",              col: "right" },
+  { id: "streak",      label: "Mi progreso",             emoji: "🏆",  required: false, desc: "Racha de días y nivel de gamificación",          col: "right" },
+  { id: "recipeday",   label: "Receta del día",          emoji: "🍽️", required: false, desc: "Una receta especial seleccionada para ti",       col: "right" },
+  { id: "community",   label: "Comunidad & Tienda",      emoji: "🤝",  required: false, desc: "Accesos a nutricionistas, BuddyShop y más",      col: "right" },
+  { id: "goals",       label: "Objetivos semanales",     emoji: "🎯",  required: false, desc: "Seguimiento de tus metas de la semana",          col: "right" },
 ];
 
 const DEFAULT_ACTIVE = ["calorie", "onboarding", "menu", "coach", "recs", "recipes", "quickaccess", "streak", "recipeday", "community"];
@@ -75,49 +78,109 @@ function WidgetConfigPanel({ onClose, activeWidgets, toggle, moveUp, moveDown, r
   moveDown: (id: string) => void;
   reset: () => void;
 }) {
+  const [tab, setTab] = useState<"gallery"|"order">("gallery");
+  const activeList = ALL_WIDGETS.filter(w => activeWidgets.includes(w.id) && !w.required);
   return (
     <div style={{ position: "fixed", inset: 0, zIndex: 9999, display: "flex", alignItems: "flex-end", justifyContent: "center" }}>
-      {/* Backdrop */}
-      <div onClick={onClose} style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.4)" }} />
-      {/* Panel */}
-      <div style={{ position: "relative", background: "white", borderRadius: "24px 24px 0 0", padding: "24px 20px 32px", width: "100%", maxWidth: 480, maxHeight: "80vh", overflowY: "auto", boxShadow: "0 -8px 40px rgba(0,0,0,0.15)" }}>
-        {/* Handle */}
-        <div style={{ width: 40, height: 4, background: "#e5e7eb", borderRadius: 99, margin: "0 auto 20px" }} />
-        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 20 }}>
-          <div>
-            <h3 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: "#1a1a1a" }}>⚙️ Personalizar Dashboard</h3>
-            <p style={{ margin: "4px 0 0", fontSize: 12, color: "#9ca3af" }}>Activa, desactiva y ordena tus widgets</p>
+      <div onClick={onClose} style={{ position: "absolute", inset: 0, background: "rgba(0,0,0,0.5)" }} />
+      <div style={{ position: "relative", background: "white", borderRadius: "28px 28px 0 0", padding: "0 0 32px", width: "100%", maxWidth: 520, maxHeight: "88vh", overflowY: "auto", boxShadow: "0 -12px 50px rgba(0,0,0,0.2)" }}>
+        {/* Header sticky */}
+        <div style={{ position: "sticky", top: 0, background: "white", zIndex: 10, padding: "20px 20px 0", borderRadius: "28px 28px 0 0" }}>
+          <div style={{ width: 40, height: 4, background: "#e5e7eb", borderRadius: 99, margin: "0 auto 16px" }} />
+          <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start", marginBottom: 16 }}>
+            <div>
+              <h3 style={{ margin: 0, fontSize: 20, fontWeight: 800, color: "#1a1a1a" }}>✨ Mi Dashboard</h3>
+              <p style={{ margin: "4px 0 0", fontSize: 12, color: "#9ca3af" }}>{activeWidgets.length} widgets activos · personaliza a tu gusto</p>
+            </div>
+            <button onClick={reset} style={{ fontSize: 11, color: "#9ca3af", background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: 10, padding: "7px 12px", cursor: "pointer", fontWeight: 600 }}>↺ Restablecer</button>
           </div>
-          <button onClick={reset} style={{ fontSize: 11, color: "#9ca3af", background: "#f9fafb", border: "1px solid #e5e7eb", borderRadius: 8, padding: "6px 10px", cursor: "pointer" }}>Restablecer</button>
+          {/* Tabs */}
+          <div style={{ display: "flex", gap: 4, background: "#f3f4f6", borderRadius: 14, padding: 4, marginBottom: 16 }}>
+            {(["gallery", "order"] as const).map(t => (
+              <button key={t} onClick={() => setTab(t)}
+                style={{ flex: 1, padding: "9px", borderRadius: 11, border: "none", fontSize: 13, fontWeight: 700, cursor: "pointer",
+                  background: tab === t ? "white" : "transparent",
+                  color: tab === t ? "#F97316" : "#9ca3af",
+                  boxShadow: tab === t ? "0 1px 6px rgba(0,0,0,0.1)" : "none" }}>
+                {t === "gallery" ? "🎨 Galería de widgets" : "↕️ Ordenar activos"}
+              </button>
+            ))}
+          </div>
         </div>
-        <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-          {ALL_WIDGETS.map((w, idx) => {
-            const isActive = activeWidgets.includes(w.id);
-            const posInActive = activeWidgets.indexOf(w.id);
-            return (
-              <div key={w.id} style={{ display: "flex", alignItems: "center", gap: 12, background: isActive ? "#FFF7ED" : "#f9fafb", borderRadius: 14, padding: "12px 14px", border: isActive ? "1.5px solid #FED7AA" : "1.5px solid #f3f4f6", transition: "all 0.2s" }}>
-                <span style={{ fontSize: 20, width: 28, textAlign: "center" }}>{w.emoji}</span>
-                <div style={{ flex: 1 }}>
-                  <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: isActive ? "#1a1a1a" : "#9ca3af" }}>{w.label}</p>
-                  {w.required && <p style={{ margin: "2px 0 0", fontSize: 10, color: "#F97316" }}>Siempre visible</p>}
-                </div>
-                {isActive && !w.required && (
-                  <div style={{ display: "flex", gap: 4 }}>
-                    <button onClick={() => moveUp(w.id)} disabled={posInActive <= 0} style={{ width: 28, height: 28, borderRadius: 8, border: "1px solid #e5e7eb", background: "white", cursor: posInActive <= 0 ? "not-allowed" : "pointer", opacity: posInActive <= 0 ? 0.4 : 1, fontSize: 12 }}>↑</button>
-                    <button onClick={() => moveDown(w.id)} disabled={posInActive >= activeWidgets.length - 1} style={{ width: 28, height: 28, borderRadius: 8, border: "1px solid #e5e7eb", background: "white", cursor: posInActive >= activeWidgets.length - 1 ? "not-allowed" : "pointer", opacity: posInActive >= activeWidgets.length - 1 ? 0.4 : 1, fontSize: 12 }}>↓</button>
+
+        <div style={{ padding: "0 20px" }}>
+          {tab === "gallery" ? (
+            <>
+              {/* Siempre visible */}
+              <p style={{ margin: "0 0 8px", fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.06em" }}>Siempre visible</p>
+              {ALL_WIDGETS.filter(w => w.required).map(w => (
+                <div key={w.id} style={{ display: "flex", alignItems: "center", gap: 12, background: "#FFF7ED", borderRadius: 16, padding: "14px 16px", border: "1.5px solid #FED7AA", marginBottom: 8 }}>
+                  <div style={{ width: 44, height: 44, borderRadius: 14, background: "linear-gradient(135deg, #F97316, #FB923C)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 22, flexShrink: 0 }}>{w.emoji}</div>
+                  <div style={{ flex: 1 }}>
+                    <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#1a1a1a" }}>{w.label}</p>
+                    <p style={{ margin: "2px 0 0", fontSize: 11, color: "#9ca3af" }}>{w.desc}</p>
                   </div>
-                )}
-                {!w.required && (
-                  <button
-                    onClick={() => toggle(w.id)}
-                    style={{ width: 44, height: 26, borderRadius: 99, border: "none", background: isActive ? "#F97316" : "#e5e7eb", cursor: "pointer", position: "relative", transition: "background 0.2s", flexShrink: 0 }}
-                  >
-                    <div style={{ position: "absolute", top: 3, left: isActive ? 21 : 3, width: 20, height: 20, borderRadius: "50%", background: "white", boxShadow: "0 1px 4px rgba(0,0,0,0.2)", transition: "left 0.2s" }} />
-                  </button>
-                )}
+                  <span style={{ fontSize: 11, color: "#F97316", fontWeight: 700, background: "#FFF7ED", border: "1px solid #FED7AA", borderRadius: 8, padding: "4px 10px" }}>Fijo</span>
+                </div>
+              ))}
+
+              {/* Opcionales */}
+              <p style={{ margin: "16px 0 8px", fontSize: 11, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.06em" }}>Widgets opcionales</p>
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 10 }}>
+                {ALL_WIDGETS.filter(w => !w.required).map(w => {
+                  const isActive = activeWidgets.includes(w.id);
+                  return (
+                    <div key={w.id}
+                      onClick={() => toggle(w.id)}
+                      style={{ borderRadius: 18, padding: "16px 14px", border: `2px solid ${isActive ? "#F97316" : "#f3f4f6"}`,
+                        background: isActive ? "#FFF7ED" : "white", cursor: "pointer", position: "relative",
+                        boxShadow: isActive ? "0 4px 16px rgba(249,115,22,0.15)" : "0 1px 4px rgba(0,0,0,0.05)" }}>
+                      {isActive && (
+                        <div style={{ position: "absolute", top: 10, right: 10, width: 20, height: 20, borderRadius: "50%",
+                          background: "#F97316", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 11, color: "white", fontWeight: 800 }}>✓</div>
+                      )}
+                      <div style={{ fontSize: 28, marginBottom: 8 }}>{w.emoji}</div>
+                      <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: isActive ? "#F97316" : "#1a1a1a", lineHeight: 1.2 }}>{w.label}</p>
+                      <p style={{ margin: "4px 0 0", fontSize: 11, color: "#9ca3af", lineHeight: 1.4 }}>{w.desc}</p>
+                    </div>
+                  );
+                })}
               </div>
-            );
-          })}
+            </>
+          ) : (
+            <>
+              <p style={{ margin: "0 0 12px", fontSize: 12, color: "#9ca3af" }}>Arrastra o usa las flechas para reordenar los widgets activos en tu dashboard.</p>
+              {activeList.length === 0 && (
+                <div style={{ textAlign: "center", padding: "32px 0", color: "#9ca3af" }}>
+                  <div style={{ fontSize: 40, marginBottom: 8 }}>📭</div>
+                  <p style={{ margin: 0, fontSize: 14 }}>No tienes widgets opcionales activos</p>
+                  <button onClick={() => setTab("gallery")} style={{ marginTop: 12, background: "#F97316", color: "white", border: "none", borderRadius: 10, padding: "8px 18px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>Añadir widgets</button>
+                </div>
+              )}
+              <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
+                {activeList.map((w) => {
+                  const posInActive = activeWidgets.indexOf(w.id);
+                  return (
+                    <div key={w.id} style={{ display: "flex", alignItems: "center", gap: 12, background: "#FFF7ED", borderRadius: 14, padding: "12px 14px", border: "1.5px solid #FED7AA" }}>
+                      <div style={{ width: 38, height: 38, borderRadius: 12, background: "linear-gradient(135deg, #F97316, #FB923C)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 18, flexShrink: 0 }}>{w.emoji}</div>
+                      <div style={{ flex: 1 }}>
+                        <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#1a1a1a" }}>{w.label}</p>
+                        <p style={{ margin: "2px 0 0", fontSize: 11, color: "#9ca3af" }}>Posición {posInActive + 1}</p>
+                      </div>
+                      <div style={{ display: "flex", gap: 4 }}>
+                        <button onClick={() => moveUp(w.id)} disabled={posInActive <= 0}
+                          style={{ width: 32, height: 32, borderRadius: 10, border: "1px solid #e5e7eb", background: "white", cursor: posInActive <= 0 ? "not-allowed" : "pointer", opacity: posInActive <= 0 ? 0.4 : 1, fontSize: 14 }}>↑</button>
+                        <button onClick={() => moveDown(w.id)} disabled={posInActive >= activeWidgets.length - 1}
+                          style={{ width: 32, height: 32, borderRadius: 10, border: "1px solid #e5e7eb", background: "white", cursor: posInActive >= activeWidgets.length - 1 ? "not-allowed" : "pointer", opacity: posInActive >= activeWidgets.length - 1 ? 0.4 : 1, fontSize: 14 }}>↓</button>
+                      </div>
+                      <button onClick={() => toggle(w.id)}
+                        style={{ width: 32, height: 32, borderRadius: 10, border: "1px solid #FED7AA", background: "white", cursor: "pointer", fontSize: 14, color: "#9ca3af" }}>✕</button>
+                    </div>
+                  );
+                })}
+              </div>
+            </>
+          )}
         </div>
       </div>
     </div>
@@ -428,6 +491,113 @@ function DailyRecs({ consumed, goal, protein, carbs, fat, proteinGoal, carbsGoal
   );
 }
 
+
+// ─── Hydration Widget ─────────────────────────────────────────────────────────
+const HYDRATION_GOAL = 8;
+function HydrationWidget() {
+  const storageKey = "buddymarket_hydration_" + new Date().toISOString().slice(0, 10);
+  const [glasses, setGlasses] = useState<number>(() => {
+    try { return Number(localStorage.getItem(storageKey) ?? 0); } catch { return 0; }
+  });
+  const add = () => {
+    const next = Math.min(glasses + 1, HYDRATION_GOAL + 4);
+    setGlasses(next);
+    try { localStorage.setItem(storageKey, String(next)); } catch {}
+  };
+  const remove = () => {
+    const next = Math.max(glasses - 1, 0);
+    setGlasses(next);
+    try { localStorage.setItem(storageKey, String(next)); } catch {}
+  };
+  const pct = Math.min(glasses / HYDRATION_GOAL, 1);
+  const done = glasses >= HYDRATION_GOAL;
+  return (
+    <div style={{ background: done ? "linear-gradient(135deg, #EFF6FF, #DBEAFE)" : "white", borderRadius: 18, padding: "16px 18px", border: `1px solid ${done ? "#93C5FD" : "#f3f4f6"}`, boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+        <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: done ? "#1D4ED8" : "#1a1a1a" }}>💧 Hidratación</p>
+        <span style={{ fontSize: 12, color: done ? "#2563EB" : "#9ca3af", fontWeight: 700 }}>{glasses}/{HYDRATION_GOAL} vasos{done ? " ✅" : ""}</span>
+      </div>
+      <div style={{ height: 8, background: "#f3f4f6", borderRadius: 99, marginBottom: 12, overflow: "hidden" }}>
+        <div style={{ height: "100%", width: `${pct * 100}%`, background: done ? "linear-gradient(90deg, #3B82F6, #60A5FA)" : "linear-gradient(90deg, #93C5FD, #BFDBFE)", borderRadius: 99, transition: "width 0.4s ease" }} />
+      </div>
+      <div style={{ display: "flex", gap: 5, flexWrap: "wrap", marginBottom: 12 }}>
+        {Array.from({ length: HYDRATION_GOAL }).map((_, i) => (
+          <div key={i} style={{ width: 28, height: 34, borderRadius: 6, border: `2px solid ${i < glasses ? "#3B82F6" : "#e5e7eb"}`, background: i < glasses ? "#DBEAFE" : "#f9fafb", display: "flex", alignItems: "center", justifyContent: "center", fontSize: 14, transition: "all 0.2s" }}>
+            {i < glasses ? "💧" : ""}
+          </div>
+        ))}
+      </div>
+      <div style={{ display: "flex", gap: 8 }}>
+        <button onClick={add} style={{ flex: 1, background: "linear-gradient(135deg, #3B82F6, #60A5FA)", color: "white", border: "none", borderRadius: 12, padding: "9px", fontSize: 13, fontWeight: 700, cursor: "pointer" }}>+ Vaso</button>
+        <button onClick={remove} disabled={glasses === 0} style={{ width: 40, background: "#f3f4f6", color: "#6b7280", border: "none", borderRadius: 12, padding: "9px", fontSize: 16, fontWeight: 700, cursor: glasses === 0 ? "not-allowed" : "pointer", opacity: glasses === 0 ? 0.5 : 1 }}>−</button>
+      </div>
+    </div>
+  );
+}
+
+// ─── Macros Summary Widget ────────────────────────────────────────────────────
+type MacrosSummaryProps = { consumed: number; goal: number; protein: number; carbs: number; fat: number; proteinGoal: number; carbsGoal: number; fatGoal: number; };
+function MacrosSummaryWidget({ consumed: _c, goal: _g, protein, carbs, fat, proteinGoal, carbsGoal, fatGoal }: MacrosSummaryProps) {
+  const macros = [
+    { label: "Proteínas", value: Math.round(protein), goal: proteinGoal, color: "#6366F1", unit: "g" },
+    { label: "Carbohidratos", value: Math.round(carbs), goal: carbsGoal, color: "#F97316", unit: "g" },
+    { label: "Grasas", value: Math.round(fat), goal: fatGoal, color: "#10B981", unit: "g" },
+  ];
+  return (
+    <div style={{ background: "white", borderRadius: 18, padding: "16px 18px", border: "1px solid #f3f4f6", boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
+      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 14 }}>
+        <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#1a1a1a" }}>📊 Resumen de macros</p>
+        <Link href="/app/meal-log"><span style={{ fontSize: 12, color: "#F97316", fontWeight: 600, cursor: "pointer" }}>Ver diario →</span></Link>
+      </div>
+      <div style={{ display: "flex", flexDirection: "column", gap: 10 }}>
+        {macros.map(m => {
+          const pct = m.goal > 0 ? Math.min(m.value / m.goal, 1) : 0;
+          return (
+            <div key={m.label}>
+              <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 4 }}>
+                <span style={{ fontSize: 12, fontWeight: 600, color: "#374151" }}>{m.label}</span>
+                <span style={{ fontSize: 12, color: "#9ca3af" }}>{m.value}{m.unit} / {m.goal}{m.unit}</span>
+              </div>
+              <div style={{ height: 6, background: "#f3f4f6", borderRadius: 99, overflow: "hidden" }}>
+                <div style={{ height: "100%", width: `${pct * 100}%`, background: m.color, borderRadius: 99, transition: "width 0.5s ease" }} />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+    </div>
+  );
+}
+
+// ─── Weekly Goals Widget ──────────────────────────────────────────────────────
+function WeeklyGoalsWidget({ streak, consumed, goal }: { streak: number; consumed: number; goal: number }) {
+  const calPct = goal > 0 ? Math.min(consumed / goal, 1) : 0;
+  const getHydration = () => { try { return Number(localStorage.getItem("buddymarket_hydration_" + new Date().toISOString().slice(0, 10)) ?? 0); } catch { return 0; } };
+  const goals = [
+    { label: "Calorías del día", pct: calPct, color: "#F97316", detail: `${consumed} / ${goal} kcal` },
+    { label: "Racha activa", pct: Math.min(streak / 7, 1), color: "#EF4444", detail: `${streak} / 7 días` },
+    { label: "Hidratación", pct: Math.min(getHydration() / 8, 1), color: "#3B82F6", detail: `${getHydration()} / 8 vasos` },
+  ];
+  return (
+    <div style={{ background: "white", borderRadius: 18, padding: "16px 18px", border: "1px solid #f3f4f6", boxShadow: "0 2px 12px rgba(0,0,0,0.05)" }}>
+      <p style={{ margin: "0 0 14px", fontSize: 13, fontWeight: 700, color: "#1a1a1a" }}>🎯 Objetivos de hoy</p>
+      <div style={{ display: "flex", flexDirection: "column", gap: 12 }}>
+        {goals.map(g => (
+          <div key={g.label}>
+            <div style={{ display: "flex", justifyContent: "space-between", marginBottom: 5 }}>
+              <span style={{ fontSize: 12, fontWeight: 600, color: "#374151" }}>{g.label}</span>
+              <span style={{ fontSize: 11, color: "#9ca3af" }}>{g.detail}</span>
+            </div>
+            <div style={{ height: 8, background: "#f3f4f6", borderRadius: 99, overflow: "hidden" }}>
+              <div style={{ height: "100%", width: `${g.pct * 100}%`, background: g.color, borderRadius: 99, transition: "width 0.5s ease" }} />
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 // ─── Weekly Check-in Card (Mejora 2) ─────────────────────────────────────────
 function WeeklyCheckinCard({ onDismiss }: { onDismiss: () => void }) {
   return (
@@ -578,7 +748,7 @@ export default function Dashboard() {
   const profile = profileData.data;
   const summary = dailySummary.data;
   const goalCal = profile?.dailyCalorieGoal ?? 2000;
-  const consumed = summary?.totalCalories ?? 0;
+  const consumed = (summary as any)?.calories ?? (summary as any)?.totalCalories ?? 0;
   const streak = streakData.data?.currentStreak ?? 0;
   const lvl = levelInfo.data;
   const recipe = contextualRecipe.data;
@@ -642,26 +812,28 @@ export default function Dashboard() {
             {/* Calorías — clickable para abrir el Diario */}
             <div
               onClick={() => navigate("/app/meal-log")}
-              style={{ background: "white", borderRadius: 20, padding: "20px 22px", border: "1px solid #f3f4f6", boxShadow: "0 2px 12px rgba(0,0,0,0.05)", cursor: "pointer", transition: "box-shadow 0.2s, transform 0.15s" }}
-              onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "0 6px 24px rgba(249,115,22,0.15)"; (e.currentTarget as HTMLDivElement).style.transform = "translateY(-1px)"; }}
-              onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "0 2px 12px rgba(0,0,0,0.05)"; (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)"; }}
+              style={{ background: "white", borderRadius: 20, padding: "20px 22px", border: "1.5px solid #FED7AA", boxShadow: "0 2px 12px rgba(249,115,22,0.08)", cursor: "pointer", transition: "box-shadow 0.2s, transform 0.15s, border-color 0.2s" }}
+              onMouseEnter={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "0 8px 28px rgba(249,115,22,0.2)"; (e.currentTarget as HTMLDivElement).style.transform = "translateY(-2px)"; (e.currentTarget as HTMLDivElement).style.borderColor = "#F97316"; }}
+              onMouseLeave={e => { (e.currentTarget as HTMLDivElement).style.boxShadow = "0 2px 12px rgba(249,115,22,0.08)"; (e.currentTarget as HTMLDivElement).style.transform = "translateY(0)"; (e.currentTarget as HTMLDivElement).style.borderColor = "#FED7AA"; }}
             >
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 16 }}>
-                <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em" }}>🔥 Calorías hoy</p>
+                <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
+                  <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#9ca3af", textTransform: "uppercase", letterSpacing: "0.05em" }}>🔥 Calorías hoy</p>
+                  <span style={{ fontSize: 10, background: "#FFF7ED", color: "#F97316", border: "1px solid #FED7AA", borderRadius: 6, padding: "2px 7px", fontWeight: 700 }}>📖 Ver diario</span>
+                </div>
                 <div style={{ display: "flex", gap: 8, alignItems: "center" }}>
                   <button
                     onClick={e => { e.stopPropagation(); setShowMealModal(true); }}
                     style={{ fontSize: 12, color: "#F97316", fontWeight: 700, cursor: "pointer", background: "#FFF7ED", border: "1px solid #FED7AA", borderRadius: 8, padding: "4px 10px" }}
                   >⚡ Registrar</button>
-                  <span style={{ fontSize: 11, color: "#9ca3af" }}>Ver diario →</span>
                 </div>
               </div>
               <CalorieRing
                 consumed={consumed}
                 goal={goalCal}
-                protein={summary?.totalProtein ?? 0}
-                carbs={summary?.totalCarbs ?? 0}
-                fat={summary?.totalFat ?? 0}
+                protein={(summary as any)?.proteins ?? (summary as any)?.totalProtein ?? 0}
+                carbs={(summary as any)?.carbohydrates ?? (summary as any)?.totalCarbs ?? 0}
+                fat={(summary as any)?.fats ?? (summary as any)?.totalFat ?? 0}
               />
             </div>
 
@@ -679,13 +851,27 @@ export default function Dashboard() {
               <DailyRecs
                 consumed={consumed}
                 goal={goalCal}
-                protein={summary?.totalProtein ?? 0}
-                carbs={summary?.totalCarbs ?? 0}
-                fat={summary?.totalFat ?? 0}
+                protein={(summary as any)?.proteins ?? (summary as any)?.totalProtein ?? 0}
+                carbs={(summary as any)?.carbohydrates ?? (summary as any)?.totalCarbs ?? 0}
+                fat={(summary as any)?.fats ?? (summary as any)?.totalFat ?? 0}
                 proteinGoal={Math.round((goalCal * 0.30) / 4)}
                 carbsGoal={Math.round((goalCal * 0.45) / 4)}
                 fatGoal={Math.round((goalCal * 0.25) / 9)}
                 streak={streak}
+              />
+            )}
+
+            {/* Resumen de macros */}
+            {has("macros") && (
+              <MacrosSummaryWidget
+                consumed={consumed}
+                goal={goalCal}
+                protein={(summary as any)?.proteins ?? (summary as any)?.totalProtein ?? 0}
+                carbs={(summary as any)?.carbohydrates ?? (summary as any)?.totalCarbs ?? 0}
+                fat={(summary as any)?.fats ?? (summary as any)?.totalFat ?? 0}
+                proteinGoal={Math.round((goalCal * 0.30) / 4)}
+                carbsGoal={Math.round((goalCal * 0.45) / 4)}
+                fatGoal={Math.round((goalCal * 0.25) / 9)}
               />
             )}
 
@@ -696,6 +882,12 @@ export default function Dashboard() {
 
           {/* ── COLUMN RIGHT ── */}
           <div className="flex flex-col gap-4">
+
+            {/* Hidratación */}
+            {has("hydration") && <HydrationWidget />}
+
+            {/* Objetivos semanales */}
+            {has("goals") && <WeeklyGoalsWidget streak={streak} consumed={consumed} goal={goalCal} />}
 
             {/* Accesos rápidos */}
             {has("quickaccess") && (
