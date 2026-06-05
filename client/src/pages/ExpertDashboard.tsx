@@ -256,19 +256,60 @@ function PatientsSection({ patients, nav }: { patients: any[]; nav: (p: string) 
 
 // ─── Sección: Acciones de trabajo ─────────────────────────────────────────────
 function WorkActionsSection({ nav }: { nav: (p: string) => void }) {
+  // Solo acciones de FLUJO DE TRABAJO que no están en el sidebar
+  // El sidebar ya tiene: Pacientes, Chat, Alertas, Tendencias, Plan IA, Video, Disponibilidad, Reseñas, etc.
   const actions = [
-    { icon: "🤖", label: "Generar plan con IA", desc: "Crea un plan adaptado al paciente", href: "/app/expert/plan-library", bg: "linear-gradient(135deg,#8B5CF6,#7C3AED)", hot: true },
-    { icon: "📚", label: "Biblioteca de planes", desc: "Tus plantillas reutilizables", href: "/app/expert/plan-library", bg: "linear-gradient(135deg,#F97316,#EA580C)" },
-    { icon: "🗂️", label: "Plantillas de menús", desc: "Menús listos para asignar", href: "/app/expert/menu-templates", bg: "linear-gradient(135deg,#7C3AED,#6D28D9)" },
-    { icon: "👤", label: "Nuevo paciente", desc: "Invitar o añadir paciente", href: "/app/expert/patients", bg: "linear-gradient(135deg,#16A34A,#15803D)" },
-    { icon: "📅", label: "Agendar cita", desc: "Nueva consulta o seguimiento", href: "/app/expert/appointments", bg: "linear-gradient(135deg,#2D9B8A,#1E8070)" },
-    { icon: "💬", label: "Mensajes", desc: "Responder a tus pacientes", href: "/app/expert/messages", bg: "linear-gradient(135deg,#1B2B4B,#243B6B)" },
-    { icon: "📊", label: "Tendencias", desc: "Progreso y adherencia", href: "/app/expert/trends", bg: "linear-gradient(135deg,#6366F1,#4F46E5)" },
-    { icon: "💰", label: "Paquetes y ventas", desc: "Gestiona tus servicios", href: "/app/expert/session-packages", bg: "linear-gradient(135deg,#D97706,#B45309)" },
-    { icon: "🔄", label: "Sustituciones", desc: "Alimentos equivalentes", href: "/app/expert/food-substitutions", bg: "linear-gradient(135deg,#0891B2,#0E7490)" },
-    { icon: "📹", label: "Videoconsulta", desc: "Consulta online", href: "/app/expert/video", bg: "linear-gradient(135deg,#3B82F6,#2563EB)" },
-    { icon: "📅", label: "Disponibilidad", desc: "Configura tus horarios", href: "/app/expert/availability", bg: "linear-gradient(135deg,#10B981,#059669)" },
-    { icon: "⭐", label: "Reseñas", desc: "Opiniones de pacientes", href: "/app/expert/reviews", bg: "linear-gradient(135deg,#F59E0B,#D97706)" },
+    {
+      icon: "🤖",
+      label: "Generar menú semanal con IA",
+      desc: "Describe el objetivo → la IA crea el menú completo",
+      href: "/app/expert/menu-templates",
+      bg: "linear-gradient(135deg,#8B5CF6,#7C3AED)",
+      hot: true,
+    },
+    {
+      icon: "📋",
+      label: "Asignar plan a paciente",
+      desc: "Elige plan base → IA lo adapta al paciente",
+      href: "/app/expert/plan-library",
+      bg: "linear-gradient(135deg,#F97316,#EA580C)",
+      hot: true,
+    },
+    {
+      icon: "📲",
+      label: "Enviar recordatorio WhatsApp",
+      desc: "Mensaje rápido a paciente sin check-in",
+      href: "/app/expert/patients",
+      bg: "linear-gradient(135deg,#25D366,#128C7E)",
+    },
+    {
+      icon: "🩺",
+      label: "Análisis de analítica",
+      desc: "Sube analítica y obtén informe nutricional",
+      href: "/app/blood-test",
+      bg: "linear-gradient(135deg,#EF4444,#DC2626)",
+    },
+    {
+      icon: "🔄",
+      label: "Sustituciones de alimentos",
+      desc: "Encuentra equivalentes para un alimento",
+      href: "/app/expert/food-substitutions",
+      bg: "linear-gradient(135deg,#0891B2,#0E7490)",
+    },
+    {
+      icon: "💰",
+      label: "Crear pack de venta",
+      desc: "Operación bikini, detox, etc. con precio",
+      href: "/app/expert/session-packages",
+      bg: "linear-gradient(135deg,#D97706,#B45309)",
+    },
+    {
+      icon: "🏢",
+      label: "Propuesta B2B Empresas",
+      desc: "Servicios de nutrición para empresas",
+      href: "/app/expert/b2b",
+      bg: "linear-gradient(135deg,#1B2B4B,#243B6B)",
+    },
   ];
 
   return (
