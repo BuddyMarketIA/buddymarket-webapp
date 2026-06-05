@@ -255,7 +255,7 @@ function PatientsSection({ patients, nav }: { patients: any[]; nav: (p: string) 
 }
 
 // ─── Sección: Acciones de trabajo ─────────────────────────────────────────────
-function WorkActionsSection({ nav }: { nav: (p: string) => void }) {
+function WorkActionsSection({ nav, onGenerateMenu }: { nav: (p: string) => void; onGenerateMenu: () => void }) {
   // Solo acciones de FLUJO DE TRABAJO que no están en el sidebar
   // El sidebar ya tiene: Pacientes, Chat, Alertas, Tendencias, Plan IA, Video, Disponibilidad, Reseñas, etc.
   const actions = [
@@ -263,7 +263,8 @@ function WorkActionsSection({ nav }: { nav: (p: string) => void }) {
       icon: "🤖",
       label: "Generar menú semanal con IA",
       desc: "Describe el objetivo → la IA crea el menú completo",
-      href: "/app/expert/menu-templates",
+      href: null, // Abre modal en lugar de navegar
+      onPress: onGenerateMenu,
       bg: "linear-gradient(135deg,#8B5CF6,#7C3AED)",
       hot: true,
     },
@@ -317,7 +318,7 @@ function WorkActionsSection({ nav }: { nav: (p: string) => void }) {
       <h3 style={{ margin: "0 0 14px", fontSize: 15, fontWeight: 800, color: "#111827" }}>⚡ Acciones rápidas</h3>
       <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
         {actions.map((a, i) => (
-          <button key={i} onClick={() => nav(a.href)} style={{
+          <button key={i} onClick={() => a.onPress ? a.onPress() : nav(a.href!)} style={{
             display: "flex", alignItems: "center", gap: 10, width: "100%",
             padding: "10px 12px", borderRadius: 10, border: "none",
             background: "#F9FAFB", cursor: "pointer", textAlign: "left",
@@ -495,12 +496,305 @@ function ActivationChecklist({ data, gcalStatus, gcalAuthData, nav }: any) {
   );
 }
 
+// ─── Modal: Generar menú semanal con IA ─────────────────────────────────────
+const ALLERGY_OPTIONS = [
+  { id: "gluten", label: "Gluten", emoji: "🌾" },
+  { id: "lactosa", label: "Lactosa", emoji: "🥛" },
+  { id: "frutos_secos", label: "Frutos secos", emoji: "🥜" },
+  { id: "huevo", label: "Huevo", emoji: "🥚" },
+  { id: "marisco", label: "Marisco", emoji: "🦐" },
+  { id: "pescado", label: "Pescado", emoji: "🐟" },
+  { id: "soja", label: "Soja", emoji: "🫘" },
+  { id: "sesamo", label: "Sésamo", emoji: "🌱" },
+];
+
+const GOAL_OPTIONS = [
+  { value: "perdida_peso", label: "Pérdida de peso", emoji: "⚖️" },
+  { value: "ganancia_muscular", label: "Ganancia muscular", emoji: "💪" },
+  { value: "mantenimiento", label: "Mantenimiento", emoji: "🎯" },
+  { value: "salud", label: "Mejorar salud", emoji: "💚" },
+  { value: "definicion", label: "Definición", emoji: "🔥" },
+  { value: "tonificacion", label: "Tonificación", emoji: "✨" },
+];
+
+const DIET_OPTIONS = [
+  { value: "omnivoro", label: "Omnívoro" },
+  { value: "mediterraneo", label: "Mediterráneo" },
+  { value: "vegetariano", label: "Vegetariano" },
+  { value: "vegano", label: "Vegano" },
+  { value: "cetogenico", label: "Cetogénico" },
+  { value: "paleo", label: "Paleo" },
+  { value: "dash", label: "DASH" },
+];
+
+function GenerateMenuModal({ onClose, patients }: { onClose: () => void; patients: any[] }) {
+  const [step, setStep] = useState<"form" | "generating" | "done">("form");
+  const [selectedPatientId, setSelectedPatientId] = useState<string>("");
+  const [selectedAllergies, setSelectedAllergies] = useState<string[]>([]);
+  const [goal, setGoal] = useState<string>("mantenimiento");
+  const [dietType, setDietType] = useState<string>("omnivoro");
+  const [calories, setCalories] = useState<string>("");
+  const [preferences, setPreferences] = useState<string>("");
+  const [days, setDays] = useState<number>(7);
+  const [generatedMenuTitle, setGeneratedMenuTitle] = useState<string>("");
+  const [errorMsg, setErrorMsg] = useState<string>("");
+
+  const generateMenu = trpc.menus.generateMenuWithQuestionnaire.useMutation({
+    onSuccess: (data) => {
+      setGeneratedMenuTitle(data?.name ?? "Menú generado con IA");
+      setStep("done");
+    },
+    onError: (err) => {
+      setErrorMsg(err.message || "Error al generar el menú. Inténtalo de nuevo.");
+      setStep("form");
+    },
+  });
+
+  const toggleAllergy = (id: string) => {
+    setSelectedAllergies(prev =>
+      prev.includes(id) ? prev.filter(a => a !== id) : [...prev, id]
+    );
+  };
+
+  const handleGenerate = () => {
+    setErrorMsg("");
+    setStep("generating");
+    generateMenu.mutate({
+      startDate: new Date().toISOString().slice(0, 10),
+      cookingStyle: "rapido",
+      persons: 1,
+      mealsPerDay: 3,
+      goal: goal as any,
+      daysCount: days,
+      dietType: dietType as any,
+      allergies: selectedAllergies,
+      restrictions: selectedAllergies,
+      calories: calories ? parseInt(calories) : undefined,
+      preferences: preferences || undefined,
+      specialNotes: selectedPatientId
+        ? `Plan generado por nutricionista para paciente ID ${selectedPatientId}`
+        : "Plan generado por nutricionista",
+    });
+  };
+
+  return (
+    <div style={{
+      position: "fixed", inset: 0, zIndex: 9999,
+      background: "rgba(0,0,0,0.55)", backdropFilter: "blur(4px)",
+      display: "flex", alignItems: "center", justifyContent: "center",
+      padding: 16,
+    }} onClick={(e) => { if (e.target === e.currentTarget) onClose(); }}>
+      <div style={{
+        background: "#fff", borderRadius: 20, width: "100%", maxWidth: 520,
+        maxHeight: "90vh", overflowY: "auto",
+        boxShadow: "0 20px 60px rgba(0,0,0,0.25)",
+      }}>
+        {/* Header */}
+        <div style={{
+          padding: "20px 20px 16px",
+          background: "linear-gradient(135deg,#8B5CF6,#7C3AED)",
+          borderRadius: "20px 20px 0 0",
+          display: "flex", alignItems: "center", justifyContent: "space-between",
+        }}>
+          <div>
+            <h2 style={{ margin: 0, fontSize: 18, fontWeight: 800, color: "#fff" }}>🤖 Generar menú con IA</h2>
+            <p style={{ margin: "4px 0 0", fontSize: 12, color: "rgba(255,255,255,0.8)" }}>Personaliza el menú según las necesidades del paciente</p>
+          </div>
+          <button onClick={onClose} style={{ background: "rgba(255,255,255,0.2)", border: "none", borderRadius: 8, width: 32, height: 32, cursor: "pointer", color: "#fff", fontSize: 16, display: "flex", alignItems: "center", justifyContent: "center" }}>✕</button>
+        </div>
+
+        {step === "generating" && (
+          <div style={{ padding: 48, textAlign: "center" }}>
+            <div style={{ fontSize: 48, marginBottom: 16 }}>🤖</div>
+            <p style={{ fontSize: 16, fontWeight: 700, color: "#7C3AED", margin: "0 0 8px" }}>Generando menú personalizado...</p>
+            <p style={{ fontSize: 13, color: "#9CA3AF", margin: 0 }}>La IA está creando un plan adaptado a las condiciones del paciente. Esto puede tardar unos segundos.</p>
+            <div style={{ marginTop: 24, display: "flex", justifyContent: "center", gap: 6 }}>
+              {[0,1,2].map(i => (
+                <div key={i} style={{ width: 10, height: 10, borderRadius: "50%", background: "#8B5CF6", animation: `pulse 1.2s ${i * 0.2}s infinite` }} />
+              ))}
+            </div>
+          </div>
+        )}
+
+        {step === "done" && (
+          <div style={{ padding: 40, textAlign: "center" }}>
+            <div style={{ fontSize: 56, marginBottom: 16 }}>✅</div>
+            <h3 style={{ margin: "0 0 8px", fontSize: 18, fontWeight: 800, color: "#111827" }}>¡Menú generado!</h3>
+            <p style={{ fontSize: 14, color: "#6B7280", margin: "0 0 8px" }}>{generatedMenuTitle}</p>
+            <p style={{ fontSize: 13, color: "#9CA3AF", margin: "0 0 24px" }}>El menú ha sido creado y guardado. Puedes asignarlo al paciente desde su perfil o desde la sección Menús.</p>
+            <div style={{ display: "flex", gap: 10, justifyContent: "center" }}>
+              <button onClick={onClose} style={{ padding: "10px 20px", borderRadius: 10, border: "1px solid #E5E7EB", background: "#fff", cursor: "pointer", fontSize: 14, fontWeight: 600, color: "#374151" }}>Cerrar</button>
+              <button onClick={() => { onClose(); window.location.href = "/app/my-menus"; }} style={{ padding: "10px 20px", borderRadius: 10, border: "none", background: "linear-gradient(135deg,#8B5CF6,#7C3AED)", cursor: "pointer", fontSize: 14, fontWeight: 700, color: "#fff" }}>Ver menús →</button>
+            </div>
+          </div>
+        )}
+
+        {step === "form" && (
+          <div style={{ padding: 20, display: "flex", flexDirection: "column", gap: 18 }}>
+            {errorMsg && (
+              <div style={{ background: "#FEF2F2", border: "1px solid #FECACA", borderRadius: 10, padding: "10px 14px", fontSize: 13, color: "#DC2626" }}>
+                ⚠️ {errorMsg}
+              </div>
+            )}
+
+            {/* Selector de paciente */}
+            {patients.length > 0 && (
+              <div>
+                <label style={{ fontSize: 13, fontWeight: 700, color: "#374151", display: "block", marginBottom: 6 }}>👤 Paciente (opcional)</label>
+                <select
+                  value={selectedPatientId}
+                  onChange={e => setSelectedPatientId(e.target.value)}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #E5E7EB", fontSize: 13, color: "#111827", background: "#F9FAFB", outline: "none" }}
+                >
+                  <option value="">Sin paciente específico (menú genérico)</option>
+                  {patients.map((p: any) => (
+                    <option key={p.patient?.id} value={p.patient?.id}>
+                      {p.user?.name ?? p.patient?.inviteEmail ?? "Paciente"}
+                    </option>
+                  ))}
+                </select>
+                <p style={{ margin: "4px 0 0", fontSize: 11, color: "#9CA3AF" }}>Si seleccionas un paciente, la IA tendrá en cuenta su perfil automáticamente</p>
+              </div>
+            )}
+
+            {/* Objetivo */}
+            <div>
+              <label style={{ fontSize: 13, fontWeight: 700, color: "#374151", display: "block", marginBottom: 8 }}>🎯 Objetivo del plan</label>
+              <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 6 }}>
+                {GOAL_OPTIONS.map(g => (
+                  <button
+                    key={g.value}
+                    onClick={() => setGoal(g.value)}
+                    style={{
+                      padding: "8px 6px", borderRadius: 10, border: `2px solid ${goal === g.value ? "#8B5CF6" : "#E5E7EB"}`,
+                      background: goal === g.value ? "#F5F3FF" : "#F9FAFB",
+                      cursor: "pointer", fontSize: 11, fontWeight: goal === g.value ? 700 : 500,
+                      color: goal === g.value ? "#7C3AED" : "#374151", textAlign: "center",
+                    }}
+                  >
+                    <div style={{ fontSize: 18, marginBottom: 2 }}>{g.emoji}</div>
+                    {g.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Alergias */}
+            <div>
+              <label style={{ fontSize: 13, fontWeight: 700, color: "#374151", display: "block", marginBottom: 8 }}>⚠️ Alergias e intolerancias</label>
+              <div style={{ display: "flex", flexWrap: "wrap", gap: 6 }}>
+                {ALLERGY_OPTIONS.map(a => (
+                  <button
+                    key={a.id}
+                    onClick={() => toggleAllergy(a.id)}
+                    style={{
+                      padding: "6px 12px", borderRadius: 20,
+                      border: `2px solid ${selectedAllergies.includes(a.id) ? "#EF4444" : "#E5E7EB"}`,
+                      background: selectedAllergies.includes(a.id) ? "#FEF2F2" : "#F9FAFB",
+                      cursor: "pointer", fontSize: 12, fontWeight: selectedAllergies.includes(a.id) ? 700 : 500,
+                      color: selectedAllergies.includes(a.id) ? "#DC2626" : "#374151",
+                      display: "flex", alignItems: "center", gap: 4,
+                    }}
+                  >
+                    <span>{a.emoji}</span> {a.label}
+                    {selectedAllergies.includes(a.id) && <span style={{ marginLeft: 2 }}>✓</span>}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Tipo de dieta + Calorías */}
+            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+              <div>
+                <label style={{ fontSize: 13, fontWeight: 700, color: "#374151", display: "block", marginBottom: 6 }}>🥗 Tipo de dieta</label>
+                <select
+                  value={dietType}
+                  onChange={e => setDietType(e.target.value)}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #E5E7EB", fontSize: 13, color: "#111827", background: "#F9FAFB", outline: "none" }}
+                >
+                  {DIET_OPTIONS.map(d => (
+                    <option key={d.value} value={d.value}>{d.label}</option>
+                  ))}
+                </select>
+              </div>
+              <div>
+                <label style={{ fontSize: 13, fontWeight: 700, color: "#374151", display: "block", marginBottom: 6 }}>🔥 Calorías/día (opcional)</label>
+                <input
+                  type="number"
+                  placeholder="Ej: 1800"
+                  value={calories}
+                  onChange={e => setCalories(e.target.value)}
+                  min={1000} max={5000}
+                  style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #E5E7EB", fontSize: 13, color: "#111827", background: "#F9FAFB", outline: "none", boxSizing: "border-box" }}
+                />
+              </div>
+            </div>
+
+            {/* Duración */}
+            <div>
+              <label style={{ fontSize: 13, fontWeight: 700, color: "#374151", display: "block", marginBottom: 8 }}>📅 Duración del plan</label>
+              <div style={{ display: "flex", gap: 8 }}>
+                {[7, 14].map(d => (
+                  <button
+                    key={d}
+                    onClick={() => setDays(d)}
+                    style={{
+                      flex: 1, padding: "10px", borderRadius: 10,
+                      border: `2px solid ${days === d ? "#8B5CF6" : "#E5E7EB"}`,
+                      background: days === d ? "#F5F3FF" : "#F9FAFB",
+                      cursor: "pointer", fontSize: 13, fontWeight: days === d ? 700 : 500,
+                      color: days === d ? "#7C3AED" : "#374151",
+                    }}
+                  >
+                    {d} días
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            {/* Preferencias adicionales */}
+            <div>
+              <label style={{ fontSize: 13, fontWeight: 700, color: "#374151", display: "block", marginBottom: 6 }}>📝 Preferencias y notas adicionales</label>
+              <textarea
+                placeholder="Ej: Le gustan las legumbres, no le gusta el brócoli, tiene cena de empresa el jueves..."
+                value={preferences}
+                onChange={e => setPreferences(e.target.value)}
+                rows={3}
+                style={{ width: "100%", padding: "10px 12px", borderRadius: 10, border: "1px solid #E5E7EB", fontSize: 13, color: "#111827", background: "#F9FAFB", outline: "none", resize: "vertical", fontFamily: "inherit", boxSizing: "border-box" }}
+              />
+            </div>
+
+            {/* Botón generar */}
+            <button
+              onClick={handleGenerate}
+              style={{
+                width: "100%", padding: "14px", borderRadius: 12, border: "none",
+                background: "linear-gradient(135deg,#8B5CF6,#7C3AED)",
+                cursor: "pointer", fontSize: 15, fontWeight: 800, color: "#fff",
+                boxShadow: "0 4px 16px rgba(124,58,237,0.35)",
+                display: "flex", alignItems: "center", justifyContent: "center", gap: 8,
+              }}
+            >
+              🤖 Generar menú con IA
+            </button>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 // ─── Main ─────────────────────────────────────────────────────────────────────
 export default function ExpertDashboard() {
-  const { user } = useAuth();
+    const { user } = useAuth();
   const [, nav] = useLocation();
   const search = useSearch();
-
+  const [showGenerateMenuModal, setShowGenerateMenuModal] = useState(false);
+  // Cargar pacientes para el modal de generación de menús
+  const { data: patientsData } = trpc.expertPatients.getPatients.useQuery(
+    { status: "active" },
+    { enabled: !!user, staleTime: 60000 }
+  );
   // Usar el nuevo endpoint optimizado para el dashboard
   const { data: metrics, isLoading } = trpc.expertDashboard.getMetrics.useQuery(
     undefined, { enabled: !!user, refetchInterval: 60000 }
@@ -627,11 +921,18 @@ export default function ExpertDashboard() {
 
           {/* Columna derecha: acciones y negocio */}
           <div style={{ display: "flex", flexDirection: "column", gap: 16 }}>
-            <WorkActionsSection nav={nav} />
+            <WorkActionsSection nav={nav} onGenerateMenu={() => setShowGenerateMenuModal(true)} />
             <RevenueSection earningsData={earningsData} referralCode={referralCode} nav={nav} />
           </div>
         </div>
       </div>
+      {/* Modal de generación de menú con IA */}
+      {showGenerateMenuModal && (
+        <GenerateMenuModal
+          onClose={() => setShowGenerateMenuModal(false)}
+          patients={patientsData ?? []}
+        />
+      )}
     </div>
   );
 }
