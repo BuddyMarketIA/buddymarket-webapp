@@ -1,4 +1,4 @@
-// BuddyMarket — Achievements Catalog
+// BuddyOne — Achievements Catalog
 // 25 achievements across 5 categories to incentivize consistent meal logging
 
 export type AchievementCategory = "racha" | "cantidad" | "variedad" | "nutricion" | "explorador";

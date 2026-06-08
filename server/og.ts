@@ -42,7 +42,7 @@ function buildOGHtml({
   description,
   imageUrl,
   url,
-  siteName = "BuddyMarket",
+  siteName = "BuddyOne",
 }: {
   title: string;
   description: string;
@@ -114,7 +114,7 @@ export function registerOGRoutes(app: Express) {
       if (recipe.proteinsPerServing) parts.push(`💪 ${Math.round(recipe.proteinsPerServing)}g proteína`);
       if (recipe.preparationTime) parts.push(`⏱️ ${recipe.preparationTime} min`);
       const nutritionLine = parts.length > 0 ? ` | ${parts.join(" · ")}` : "";
-      const description = `¡He compartido esta receta contigo desde BuddyMarket que te puede interesar! 🍽️${nutritionLine}${recipe.description ? " — " + recipe.description.slice(0, 120) : ""}`;
+      const description = `¡He compartido esta receta contigo desde BuddyOne que te puede interesar! 🍽️${nutritionLine}${recipe.description ? " — " + recipe.description.slice(0, 120) : ""}`;
 
       const imageUrl = recipe.imageUrl || BUDDYMARKET_LOGO;
 
@@ -139,7 +139,7 @@ export function registerOGRoutes(app: Express) {
 
       const html = buildOGHtml({
         title: "Menú semanal personalizado",
-        description: "¡He compartido este menú semanal contigo desde BuddyMarket! Menús con IA adaptados a tus objetivos nutricionales 🥗",
+        description: "¡He compartido este menú semanal contigo desde BuddyOne! Menús con IA adaptados a tus objetivos nutricionales 🥗",
         imageUrl: BUDDYMARKET_LOGO,
         url,
       });

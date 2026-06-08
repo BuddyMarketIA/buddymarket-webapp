@@ -1,5 +1,5 @@
 /**
- * BuddyMarket — Retention Router
+ * BuddyOne — Retention Router
  * Handles: streak shields, weekly challenges, 30-day challenges, taste insights, level-up events
  */
 import { z } from "zod";
@@ -267,7 +267,7 @@ export const retentionRouter = router({
     const recipeIds = favorites.map(f => f.recipeId);
     let topCuisines: string[] = [];
     let topIngredients: string[] = [];
-    let insightSummaryEs = "Seguimos aprendiendo tus preferencias. ¡Sigue usando BuddyMarket!";
+    let insightSummaryEs = "Seguimos aprendiendo tus preferencias. ¡Sigue usando BuddyOne!";
     if (recipeIds.length > 0) {
       const { inArray } = await import("drizzle-orm");
       const favRecipes = await drizzleDb.select({ tags: recipes.tags, name: recipes.name }).from(recipes).where(inArray(recipes.id, recipeIds)).limit(20);
@@ -386,7 +386,7 @@ export const retentionRouter = router({
         });
         // Header
         doc.rect(0, 0, 595, 120).fill('#F97316');
-        doc.fillColor('white').fontSize(28).font('Helvetica-Bold').text('BuddyMarket', 50, 35);
+        doc.fillColor('white').fontSize(28).font('Helvetica-Bold').text('BuddyOne', 50, 35);
         doc.fontSize(16).font('Helvetica').text(`Informe Nutricional — ${monthName} ${input.year}`, 50, 72);
         doc.fillColor('#333').fontSize(12).font('Helvetica').text(`Usuario: ${userRow?.name || ctx.user.email}`, 50, 140);
         doc.text(`Generado el: ${new Date().toLocaleDateString('es-ES')}`, 50, 158);
@@ -410,7 +410,7 @@ export const retentionRouter = router({
           y += 28;
         });
         // Footer
-        doc.fontSize(10).fillColor('#999').font('Helvetica').text('BuddyMarket — Tu nutrición, inteligente y personalizada', 50, 760, { align: 'center', width: 495 });
+        doc.fontSize(10).fillColor('#999').font('Helvetica').text('BuddyOne — Tu nutrición, inteligente y personalizada', 50, 760, { align: 'center', width: 495 });
         doc.end();
         const pdfBuffer = await pdfReady;
         const { storagePut } = await import('../storage.js');

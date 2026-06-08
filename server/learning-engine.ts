@@ -1,5 +1,5 @@
 /**
- * BuddyMarket Learning Engine
+ * BuddyOne Learning Engine
  * ─────────────────────────────────────────────────────────────────────────────
  * Motor de aprendizaje adaptativo que analiza el comportamiento del usuario
  * y construye un perfil de gustos para mejorar las recomendaciones con el tiempo.
@@ -256,7 +256,7 @@ export function calculateBuddyScore(totalInteractions: number, confidenceScore: 
   const levelNames = ["Recién llegado", "Conocido", "Amigo", "Compañero", "Experto"];
   const levelEmojis = ["🌱", "🌿", "🌳", "⭐", "🧠"];
   const descriptions = [
-    "BuddyMarket está aprendiendo tus primeras preferencias.",
+    "BuddyOne está aprendiendo tus primeras preferencias.",
     "Ya conozco algunos de tus gustos. Las recomendaciones mejoran.",
     "Tengo un buen perfil tuyo. Las recetas que te sugiero son cada vez más tuyas.",
     "Conozco muy bien tus preferencias. Los menús IA ya son casi perfectos para ti.",

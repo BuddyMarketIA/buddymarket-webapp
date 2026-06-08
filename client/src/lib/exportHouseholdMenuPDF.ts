@@ -184,7 +184,7 @@ export function exportHouseholdMenuToPDF(plan: MenuPlan): void {
   doc.setFont("helvetica", "normal");
   doc.setTextColor(180, 180, 180);
   doc.text(
-    "Generado con BuddyOne · buddyoneapp.com · Este menú es orientativo y no sustituye el consejo de un profesional de la salud.",
+    "Generado con BuddyOne · buddyone.io · Este menú es orientativo y no sustituye el consejo de un profesional de la salud.",
     pageW / 2,
     pageH - 5,
     { align: "center" }
@@ -243,7 +243,7 @@ export function printHouseholdMenu(plan: MenuPlan): void {
 <body>
   <div class="header">
     <h1>${plan.name}${plan.generatedByAI ? '<span class="ai-badge">✦ IA</span>' : ""}</h1>
-    <span class="brand">BuddyOne · buddyoneapp.com</span>
+    <span class="brand">BuddyOne · buddyone.io</span>
   </div>
   <div class="meta">
     Semana del <span>${weekLabel}</span> &nbsp;·&nbsp; Tipo: <span>${typeLabel}</span>

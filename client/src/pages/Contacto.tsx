@@ -81,7 +81,7 @@ export default function Contacto() {
           <div style={{ textAlign: "center", padding: "24px 16px" }}>
             <div style={{ fontSize: 28, marginBottom: 8 }}>📧</div>
             <p style={{ fontSize: 13, fontWeight: 700, color: "#111827", margin: "0 0 4px" }}>Email</p>
-            <p style={{ fontSize: 13, color: "#6b7280", margin: 0 }}>hola@buddyoneapp.com</p>
+            <p style={{ fontSize: 13, color: "#6b7280", margin: 0 }}>hola@buddyone.io</p>
           </div>
           <div style={{ textAlign: "center", padding: "24px 16px" }}>
             <div style={{ fontSize: 28, marginBottom: 8 }}>⏰</div>

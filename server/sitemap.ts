@@ -34,7 +34,7 @@ function formatDate(date: Date | null | undefined): string {
 }
 
 export function registerSitemapRoutes(app: Express) {
-  const baseUrl = (ENV.publicAppUrl || "https://buddyoneapp.com").replace(/\/$/, "");
+  const baseUrl = (ENV.publicAppUrl || "https://buddyone.io").replace(/\/$/, "");
 
   // ─── /sitemap.xml ─────────────────────────────────────────────────────────
   app.get("/sitemap.xml", async (_req: any, res: any) => {

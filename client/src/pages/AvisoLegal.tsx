@@ -47,8 +47,8 @@ export default function AvisoLegal() {
                 ["Nombre comercial", "Buddy One"],
                 ["CIF", "B-56.819.576"],
                 ["Domicilio social", "Calle Villanueva 2, Esc. 3, 3ºC, 28001 Madrid (España)"],
-                ["Email de contacto", "info@buddyoneapp.com"],
-                ["Sitio web", "www.buddyoneapp.com"],
+                ["Email de contacto", "luis@buddyone.io"],
+                ["Sitio web", "www.buddyone.io"],
                 ["Registro Mercantil", "Inscrita en el Registro Mercantil de Madrid"],
                 ["Actividad (CNAE 6210)", "Diseño, desarrollo, implementación y mantenimiento de software y tecnologías de la información, en especial sistemas de asistencia de compras basados en inteligencia artificial"],
               ].map(([label, value], i) => (
@@ -62,7 +62,7 @@ export default function AvisoLegal() {
         </Section>
 
         <Section title="2. Objeto del Sitio Web">
-          <P>El presente sitio web (www.buddyoneapp.com y sus subdominios) tiene por objeto poner a disposición de los usuarios información sobre los servicios ofrecidos por BUDDY MARKET IA, S.L., así como facilitar el acceso a la plataforma Buddy One y sus módulos asociados:</P>
+          <P>El presente sitio web (www.buddyone.io y sus subdominios) tiene por objeto poner a disposición de los usuarios información sobre los servicios ofrecidos por BUDDY MARKET IA, S.L., así como facilitar el acceso a la plataforma Buddy One y sus módulos asociados:</P>
           <ul style={{ paddingLeft: 24, display: "flex", flexDirection: "column", gap: 6, marginTop: 12 }}>
             <li><strong>BuddyIA:</strong> Generación de menús nutricionales personalizados mediante inteligencia artificial.</li>
             <li><strong>Buddy Market:</strong> Generación automática de listas de la compra.</li>

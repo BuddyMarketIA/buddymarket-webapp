@@ -56,7 +56,7 @@ async function sendRecipeAssignedEmail(params: {
           </a>
         </div>
         <div style="padding:16px 32px;background:#f9fafb;border-top:1px solid #e5e7eb;text-align:center">
-          <p style="margin:0;font-size:12px;color:#9ca3af">BuddyMarket · Tu gestor nutricional inteligente</p>
+          <p style="margin:0;font-size:12px;color:#9ca3af">BuddyOne · Tu gestor nutricional inteligente</p>
         </div>
       </div>
     `,
@@ -158,7 +158,7 @@ export const householdRecipesRouter = router({
             recipeImageUrl: recipe[0].imageUrl,
             mealType: input.mealType ?? null,
             note: input.note ?? null,
-            appUrl: input.origin ?? "https://buddyoneapp.com",
+            appUrl: input.origin ?? "https://buddyone.io",
           });
         }
       } catch (_) { /* email no crítico */ }

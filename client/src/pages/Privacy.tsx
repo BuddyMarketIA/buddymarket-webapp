@@ -33,8 +33,8 @@ export default function Privacy() {
             <p>De conformidad con el Reglamento (UE) 2016/679 del Parlamento Europeo y del Consejo (RGPD) y la Ley Orgánica 3/2018, de 5 de diciembre, de Protección de Datos Personales y garantía de los derechos digitales (LOPDGDD), le informamos que el responsable del tratamiento de sus datos personales es:</p>
             <div style={{ background: "#f9fafb", borderRadius: 12, padding: "20px 24px", marginTop: 16 }}>
               <p><strong>Razón social:</strong> Buddy One S.L.</p>
-              <p><strong>Email de contacto:</strong> info@buddyoneapp.com</p>
-              <p><strong>Delegado de Protección de Datos:</strong> info@buddyoneapp.com</p>
+              <p><strong>Email de contacto:</strong> luis@buddyone.io</p>
+              <p><strong>Delegado de Protección de Datos:</strong> luis@buddyone.io</p>
             </div>
           </Section>
 
@@ -104,7 +104,7 @@ export default function Privacy() {
                 </div>
               ))}
             </div>
-            <p style={{ marginTop: 16 }}>Para ejercer cualquiera de estos derechos, puede enviar una solicitud a <a href="mailto:info@buddyoneapp.com" style={{ color: ORANGE }}>info@buddyoneapp.com</a> adjuntando copia de su documento de identidad. Responderemos en el plazo máximo de 30 días.</p>
+            <p style={{ marginTop: 16 }}>Para ejercer cualquiera de estos derechos, puede enviar una solicitud a <a href="mailto:luis@buddyone.io" style={{ color: ORANGE }}>luis@buddyone.io</a> adjuntando copia de su documento de identidad. Responderemos en el plazo máximo de 30 días.</p>
             <p style={{ marginTop: 12 }}>También tiene derecho a presentar una reclamación ante la Agencia Española de Protección de Datos (AEPD) en <a href="https://www.aepd.es" target="_blank" rel="noopener noreferrer" style={{ color: ORANGE }}>www.aepd.es</a>.</p>
           </Section>
 
@@ -126,7 +126,7 @@ export default function Privacy() {
           <Section title="7. Contacto">
             <p>Para cualquier consulta sobre esta Política de Privacidad o el tratamiento de sus datos personales, puede contactar con nosotros en:</p>
             <ul style={{ marginTop: 12, paddingLeft: 24, display: "flex", flexDirection: "column", gap: 8 }}>
-              <li><strong>Email:</strong> info@buddyoneapp.com</li>
+              <li><strong>Email:</strong> luis@buddyone.io</li>
             </ul>
           </Section>
         </div>

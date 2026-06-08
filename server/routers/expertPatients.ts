@@ -223,7 +223,7 @@ export const expertPatientsRouter = router({
       // Enviar email de invitación
       try {
         const expertName = ctx.user.name ?? "Tu nutricionista";
-        const appUrl = process.env.PUBLIC_APP_URL || "https://buddyoneapp.com";
+        const appUrl = process.env.PUBLIC_APP_URL || "https://buddyone.io";
         const isNewUser = !patientUser;
         const { sendEmail } = await import("../email");
         // URL de acción: si el usuario no existe, primero registrarse y luego aceptar
@@ -233,25 +233,25 @@ export const expertPatientsRouter = router({
         const actionLabel = isNewUser ? "Crear cuenta y aceptar invitación" : "Aceptar invitación";
         await sendEmail({
           to: input.email,
-          subject: `${expertName} te ha invitado a BuddyMarket`,
+          subject: `${expertName} te ha invitado a BuddyOne`,
           html: `
             <tr>
               <td style="background:linear-gradient(135deg,#F97316 0%,#EA580C 100%);padding:44px 40px 36px;text-align:center;">
                 <div style="font-size:48px;margin-bottom:12px;">🎓</div>
                 <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:0 0 8px;">¡Tienes una invitación!</h1>
-                <p style="color:rgba(255,255,255,0.85);font-size:15px;margin:0;">${expertName} te ha invitado a BuddyMarket</p>
+                <p style="color:rgba(255,255,255,0.85);font-size:15px;margin:0;">${expertName} te ha invitado a BuddyOne</p>
               </td>
             </tr>
             <tr><td style="padding:40px;">
               <p style="color:#374151;font-size:15px;margin:0 0 16px;">Hola,</p>
               <p style="color:#374151;font-size:15px;margin:0 0 16px;">
-                <strong>${expertName}</strong> te ha invitado a seguir tu plan nutricional personalizado en BuddyMarket.
+                <strong>${expertName}</strong> te ha invitado a seguir tu plan nutricional personalizado en BuddyOne.
               </p>
               ${isNewUser ? `
               <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 20px;border:1px solid #FED7AA;border-radius:12px;overflow:hidden;">
                 <tr><td style="background:#FFF7ED;padding:16px 20px;">
-                  <p style="color:#92400E;font-size:14px;font-weight:700;margin:0 0 8px;">¿Qué es BuddyMarket?</p>
-                  <p style="color:#78350F;font-size:13px;margin:0 0 6px;">BuddyMarket es la plataforma de nutrición inteligente que conecta a nutricionistas con sus pacientes. Con BuddyMarket podrás:</p>
+                  <p style="color:#92400E;font-size:14px;font-weight:700;margin:0 0 8px;">¿Qué es BuddyOne?</p>
+                  <p style="color:#78350F;font-size:13px;margin:0 0 6px;">BuddyOne es la plataforma de nutrición inteligente que conecta a nutricionistas con sus pacientes. Con BuddyOne podrás:</p>
                   <ul style="color:#78350F;font-size:13px;margin:4px 0 0;padding-left:18px;">
                     <li style="margin-bottom:4px;">Acceder a tus menús personalizados creados por tu nutricionista</li>
                     <li style="margin-bottom:4px;">Comunicarte directamente con ${expertName} por mensajes</li>
@@ -263,7 +263,7 @@ export const expertPatientsRouter = router({
               ` : ""}
               <p style="color:#374151;font-size:15px;margin:0 0 24px;">
                 ${isNewUser
-                  ? "Para empezar, crea tu cuenta gratuita en BuddyMarket. Solo tarda 1 minuto y no necesitas tarjeta de crédito."
+                  ? "Para empezar, crea tu cuenta gratuita en BuddyOne. Solo tarda 1 minuto y no necesitas tarjeta de crédito."
                   : "Acepta la invitación para acceder a tus menús personalizados, mensajería directa con tu nutricionista y seguimiento de tu evolución."
                 }
               </p>
@@ -310,28 +310,28 @@ export const expertPatientsRouter = router({
       const patientEmail = (rel as any).inviteEmail;
       if (!patientEmail) throw new TRPCError({ code: "BAD_REQUEST", message: "No se encontró el email del paciente" });
       const expertName = ctx.user.name ?? "Tu nutricionista";
-      const appUrl = process.env.PUBLIC_APP_URL || "https://buddyoneapp.com";
+      const appUrl = process.env.PUBLIC_APP_URL || "https://buddyone.io";
       const token = rel.inviteToken ?? "";
       const actionUrl = `${appUrl}/register?invite=${token}&email=${encodeURIComponent(patientEmail)}`;
       const { sendEmail } = await import("../email");
       await sendEmail({
         to: patientEmail,
-        subject: `Recordatorio: ${expertName} te espera en BuddyMarket`,
+        subject: `Recordatorio: ${expertName} te espera en BuddyOne`,
         html: `
           <tr>
             <td style="background:linear-gradient(135deg,#F97316 0%,#EA580C 100%);padding:44px 40px 36px;text-align:center;">
               <div style="font-size:48px;margin-bottom:12px;">⏰</div>
               <h1 style="color:#ffffff;font-size:26px;font-weight:800;margin:0 0 8px;">Recordatorio de invitación</h1>
-              <p style="color:rgba(255,255,255,0.85);font-size:15px;margin:0;">${expertName} te está esperando en BuddyMarket</p>
+              <p style="color:rgba(255,255,255,0.85);font-size:15px;margin:0;">${expertName} te está esperando en BuddyOne</p>
             </td>
           </tr>
           <tr><td style="padding:40px;">
             <p style="color:#374151;font-size:15px;margin:0 0 16px;">Hola,</p>
             <p style="color:#374151;font-size:15px;margin:0 0 16px;">
-              <strong>${expertName}</strong> te invitó a BuddyMarket hace unos días y aún no has creado tu cuenta.
+              <strong>${expertName}</strong> te invitó a BuddyOne hace unos días y aún no has creado tu cuenta.
             </p>
             <p style="color:#374151;font-size:15px;margin:0 0 24px;">
-              BuddyMarket es la plataforma donde podrás acceder a tus menús personalizados, chatear con tu nutricionista y registrar tu progreso. ¡Es gratis para pacientes!
+              BuddyOne es la plataforma donde podrás acceder a tus menús personalizados, chatear con tu nutricionista y registrar tu progreso. ¡Es gratis para pacientes!
             </p>
             <table width="100%" cellpadding="0" cellspacing="0" style="margin:28px 0 20px;">
               <tr><td align="center">
@@ -702,7 +702,7 @@ export const expertPatientsRouter = router({
         const gcalTitle = encodeURIComponent(input.title);
         const gcalStart = startTime.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
         const gcalEnd = endTime.toISOString().replace(/[-:]/g, "").split(".")[0] + "Z";
-        const gcalDetails = encodeURIComponent(input.description ?? "Consulta nutricional BuddyMarket");
+        const gcalDetails = encodeURIComponent(input.description ?? "Consulta nutricional BuddyOne");
         gcalLink = `https://calendar.google.com/calendar/render?action=TEMPLATE&text=${gcalTitle}&dates=${gcalStart}/${gcalEnd}&details=${gcalDetails}`;
       }
 

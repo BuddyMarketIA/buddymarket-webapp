@@ -579,7 +579,7 @@ export const appRouter = router({
               // In-app notification
               await createInAppNotif(newUser.id, {
                 title: "\uD83C\uDF81 \u00a1Tu a\u00f1o PRO est\u00e1 activado!",
-                body: "Como usuario original de BuddyMarket, tienes 1 a\u00f1o de PRO gratis. \u00a1Bienvenido/a de vuelta!",
+                body: "Como usuario original de BuddyOne, tienes 1 a\u00f1o de PRO gratis. \u00a1Bienvenido/a de vuelta!",
                 type: "promo",
                 link: "/app/dashboard",
               });
@@ -1179,7 +1179,7 @@ Devuelve SOLO JSON válido con esta estructura:
       }
       // Welcome in-app notification
       createInAppNotif(ctx.user.id, {
-        title: `Bienvenido a BuddyMarket, ${ctx.user.name?.split(" ")[0] || "usuario"}!`,
+        title: `Bienvenido a BuddyOne, ${ctx.user.name?.split(" ")[0] || "usuario"}!`,
         body: "Tu perfil esta listo. Explora recetas, genera menus con IA y lleva un seguimiento de tu nutricion diaria.",
         type: "success",
         link: "/app/dashboard",
@@ -4179,7 +4179,7 @@ IMPORTANTE: Estima los valores nutricionales basándote en las porciones visible
           for (let i = 0; i < attempts; i++) {
             try {
               const res = await fetch(url, {
-                headers: { "User-Agent": "BuddyMarket/1.0 (info@buddyoneapp.com)" },
+                headers: { "User-Agent": "BuddyOne/1.0 (luis@buddyone.io)" },
                 signal: AbortSignal.timeout(10000),
               });
               if (res.ok) return res;
@@ -4872,7 +4872,7 @@ Responde SOLO con JSON válido, sin texto adicional:
                 amount: inv.amount_paid,
                 currency: inv.currency,
                 status: inv.status,
-                description: inv.lines?.data?.[0]?.description ?? 'Suscripción BuddyMarket',
+                description: inv.lines?.data?.[0]?.description ?? 'Suscripción BuddyOne',
                 created: inv.created,
                 receiptUrl: inv.hosted_invoice_url ?? null,
                 pdfUrl: inv.invoice_pdf ?? null,
@@ -6944,7 +6944,7 @@ Responde SOLO con JSON válido, sin texto adicional:
           if (input.action === "approve") {
             await notifyOwner({
               title: `✅ Tu solicitud de ${app.type === "expert" ? "BuddyExpert" : "BuddyMaker"} ha sido aprobada`,
-              content: `¡Enhorabuena ${app.displayName}! Tu cuenta ha sido verificada. Ya puedes acceder a todas las funciones de ${app.type === "expert" ? "BuddyExpert" : "BuddyMaker"} en BuddyMarket.`,
+              content: `¡Enhorabuena ${app.displayName}! Tu cuenta ha sido verificada. Ya puedes acceder a todas las funciones de ${app.type === "expert" ? "BuddyExpert" : "BuddyMaker"} en BuddyOne.`,
             });
           } else {
             await notifyOwner({
@@ -7063,11 +7063,11 @@ Responde SOLO con JSON válido, sin texto adicional:
                   const roleLabel = app.type === "expert" ? "BuddyExpert" : "BuddyMaker";
                   await sendEmail({
                     to: user.email,
-                    subject: "Bienvenido a BuddyMarket - Tu codigo de referido es " + code,
+                    subject: "Bienvenido a BuddyOne - Tu codigo de referido es " + code,
                     html: "<div style='font-family:sans-serif;max-width:600px;margin:0 auto;padding:32px'>" +
                       "<h1 style='color:#f97316'>Tu cuenta " + roleLabel + " esta activa!</h1>" +
                       "<p>Hola <strong>" + (app.displayName ?? user.name ?? "Embajador") + "</strong>,</p>" +
-                      "<p>Tu solicitud ha sido aprobada. Como embajador de BuddyMarket tienes acceso a <strong>Pro Max de forma completamente gratuita</strong>.</p>" +
+                      "<p>Tu solicitud ha sido aprobada. Como embajador de BuddyOne tienes acceso a <strong>Pro Max de forma completamente gratuita</strong>.</p>" +
                       "<h2 style='color:#f97316'>Tu codigo de referido exclusivo:</h2>" +
                       "<div style='background:#fff7ed;border:2px solid #f97316;border-radius:12px;padding:24px;text-align:center;margin:16px 0 24px'>" +
                       "<span style='font-size:36px;font-weight:bold;letter-spacing:6px;color:#ea580c'>" + code + "</span>" +
@@ -7075,7 +7075,7 @@ Responde SOLO con JSON válido, sin texto adicional:
                       "<p>Comparte este codigo con tu comunidad:</p>" +
                       "<ul><li>Ellos reciben un <strong>15% de descuento</strong> en su primera suscripcion</li>" +
                       "<li>Tu recibes el <strong>20% de comision</strong> de cada pago mientras la suscripcion este activa</li></ul>" +
-                      "<p>Puedes ver tus ganancias en tu dashboard de BuddyMarket.</p>" +
+                      "<p>Puedes ver tus ganancias en tu dashboard de BuddyOne.</p>" +
                       "</div>",
                   });
                 } catch (emailErr) {
@@ -7338,7 +7338,7 @@ Responde SOLO con JSON válido, sin texto adicional:
         { displayName: "Enrique Ortiz", specialty: "Dietista", bio: "Especialista en nutrición vegana y plant-based.", category: "vegano" as const, verified: true, featured: false, followersCount: 15200, plansCount: 9, rating: 4.6, reviewsCount: 312, avatarUrl: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=200&q=80", coverUrl: "https://images.unsplash.com/photo-1540420773420-3366772f4999?w=600&q=80" },
       ];
       for (const expert of demoExperts) {
-        const [userRes] = await drizzleDb.insert(usersTable).values({ openId: `demo_expert_${expert.displayName.replace(/ /g, "_")}`, name: expert.displayName, email: `${expert.displayName.toLowerCase().replace(/ /g, ".")}@buddyoneapp.com`, role: "buddyexpert" }).returning({ id: usersTable.id });
+        const [userRes] = await drizzleDb.insert(usersTable).values({ openId: `demo_expert_${expert.displayName.replace(/ /g, "_")}`, name: expert.displayName, email: `${expert.displayName.toLowerCase().replace(/ /g, ".")}@buddyone.io`, role: "buddyexpert" }).returning({ id: usersTable.id });
         const userId = userRes?.id ?? 0;
         const [expRes] = await drizzleDb.insert(beTable).values({ userId, ...expert }).returning({ id: beTable.id });
         const expertId = expRes?.id ?? 0;
@@ -8740,7 +8740,7 @@ Responde SOLO con JSON válido, sin texto adicional:
           ? `\n\n══ PERFIL DEL USUARIO (usa SIEMPRE estos datos para personalizar tus respuestas) ══\n${profileLines.join("\n")}\n\nCUANDO el usuario pregunte por cantidades, calorías, macros o recomendaciones, SIEMPRE usa sus datos reales (peso, TDEE, objetivo) en lugar de ejemplos genéricos. Si el usuario pregunta "cuánta proteína necesito", calcula con su peso real. Si pregunta por un menú, adáptalo a sus calorías objetivo y restricciones.`
           : "";
 
-        const systemPrompt = `Eres BuddyIA, el asistente nutricional inteligente de BuddyMarket. Eres un experto en nutrición, dietética y alimentación saludable. Tu objetivo es ayudar a los usuarios a:
+        const systemPrompt = `Eres BuddyIA, el asistente nutricional inteligente de BuddyOne. Eres un experto en nutrición, dietética y alimentación saludable. Tu objetivo es ayudar a los usuarios a:
 - Crear menús semanales personalizados
 - Calcular calorías y macronutrientes
 - Sugerir recetas saludables y deliciosas
@@ -9519,7 +9519,7 @@ Genera un JSON con esta estructura exacta:
           // ── COVER PAGE ──
           doc.rect(0, 0, doc.page.width, 180).fill('#FF6B00');
           doc.fillColor('white').fontSize(28).font('Helvetica-Bold')
-            .text('BuddyMarket', 50, 40, { align: 'center' });
+            .text('BuddyOne', 50, 40, { align: 'center' });
           doc.fontSize(14).font('Helvetica')
             .text('Informe Nutricional Personalizado', 50, 80, { align: 'center' });
           doc.fontSize(20).font('Helvetica-Bold')
@@ -9628,7 +9628,7 @@ Genera un JSON con esta estructura exacta:
 
           // ── FOOTER ──
           doc.fontSize(8).fillColor('#AAAAAA')
-            .text('Generado por BuddyMarket — Tu asistente nutricional inteligente', 50, doc.page.height - 40, { align: 'center' });
+            .text('Generado por BuddyOne — Tu asistente nutricional inteligente', 50, doc.page.height - 40, { align: 'center' });
 
           doc.end();
           const pdfBuffer = await pdfReady;
@@ -10143,7 +10143,7 @@ Devuelve EXACTAMENTE este JSON:
         const { sendPushToUser } = await import("./pushNotifications.js");
         const sent = await sendPushToUser(ctx.user.id, {
           title: "🔔 Notificaciones activadas",
-          body: "Las notificaciones push de BuddyMarket están funcionando correctamente.",
+          body: "Las notificaciones push de BuddyOne están funcionando correctamente.",
           icon: "/icons/icon-192x192.png",
           url: "/app/dashboard",
           tag: "test-push",
@@ -10164,7 +10164,7 @@ Devuelve EXACTAMENTE este JSON:
         await drizzleDb.insert(inAppNotifications).values([
           {
             userId: ctx.user.id,
-            title: "¡Bienvenid@ a BuddyMarket! 🎉",
+            title: "¡Bienvenid@ a BuddyOne! 🎉",
             body: "Estamos muy contentos de tenerte aquí. Completa tu perfil para obtener recomendaciones personalizadas y empieza a disfrutar de tu gestor nutricional inteligente.",
             type: "success",
             link: "/app/profile",

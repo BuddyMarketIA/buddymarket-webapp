@@ -177,7 +177,7 @@ export const codesRouter = router({
       if (existingMember) {
         throw new TRPCError({
           code: "CONFLICT",
-          message: "Ya eres miembro de esta empresa en BuddyMarket.",
+          message: "Ya eres miembro de esta empresa en BuddyOne.",
         });
       }
 

@@ -29,12 +29,12 @@ import { registerStorageProxy } from "./storageProxy";
 // ─── Allowed origins ─────────────────────────────────────────────────────────
 const ALLOWED_ORIGINS = [
   // Primary production domain
-  "https://buddyoneapp.com",
-  "https://www.buddyoneapp.com",
+  "https://buddyone.io",
+  "https://www.buddyone.io",
   // Legacy / Manus preview domains
   "https://buddymarket-ndjzmo7p.manus.space",
-  "https://buddyoneapp.com",
-  "https://www.buddyoneapp.com",
+  "https://buddyone.io",
+  "https://www.buddyone.io",
   // Local development
   "http://localhost:3000",
   "http://localhost:5173",
@@ -66,12 +66,12 @@ async function startServer() {
   // Trust proxy (needed for rate limiting behind load balancers / Manus proxy)
   app.set("trust proxy", 1);
 
-  // ─── Domain redirect: buddymarketapp.com → buddyoneapp.com (301 permanent) ───────
+  // ─── Domain redirect: buddymarket.io → buddyone.io (301 permanent) ───────
   const LEGACY_DOMAINS = ["buddymarketapp.com", "www.buddymarketapp.com"];
   app.use((req: any, res: any, next: any) => {
     const host = req.hostname;
     if (LEGACY_DOMAINS.includes(host)) {
-      const newUrl = `https://buddyoneapp.com${req.originalUrl}`;
+      const newUrl = `https://buddyone.io${req.originalUrl}`;
       logger.info(`[Redirect] ${host}${req.originalUrl} → ${newUrl}`);
       return res.redirect(301, newUrl);
     }
@@ -567,7 +567,7 @@ setTimeout(() => {
   logger.info("[Email] Sequence scheduler started (every 15 min)");
 }, 5000);
 
-// ─── BuddyMarket Email Jobs (check-in, inactividad, citas, resumen experto) ──────
+// ─── BuddyOne Email Jobs (check-in, inactividad, citas, resumen experto) ──────
 setTimeout(() => {
   import("../jobs/email-jobs").then(({ startEmailJobs }) => {
     startEmailJobs();
@@ -642,7 +642,7 @@ async function gracefulShutdown(signal: string) {
   if (process.env.NODE_ENV === "production") {
     try {
       const { alert: sendAlert } = await import("./alerts");
-      await sendAlert("info", `BuddyMarket server shutting down (${signal})`, {
+      await sendAlert("info", `BuddyOne server shutting down (${signal})`, {
         message: `Graceful shutdown initiated. Signal: ${signal}`,
       });
     } catch { /* ignore */ }

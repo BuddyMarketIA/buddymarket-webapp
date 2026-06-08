@@ -1,5 +1,5 @@
 /**
- * BuddyMarket — SSO: Sign in with Apple & Sign in with Google
+ * BuddyOne — SSO: Sign in with Apple & Sign in with Google
  *
  * Expone dos endpoints REST (no tRPC porque necesitan manejar cookies directamente):
  *   POST /api/auth/apple   — valida el identity token de Apple

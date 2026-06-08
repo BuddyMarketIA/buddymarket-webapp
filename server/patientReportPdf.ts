@@ -575,7 +575,7 @@ function buildReportHtml(opts: GeneratePdfOptions): string {
     Este informe ha sido generado con <span class="footer-brand">BuddyOne</span> y es de carácter orientativo.
     No sustituye el criterio clínico del profesional de la salud. Consulta siempre a tu nutricionista antes de realizar cambios en tu dieta.
   </div>
-  <div>buddyoneapp.com</div>
+  <div>buddyone.io</div>
 </div>
 
 </body>

@@ -219,7 +219,7 @@ export const companyRemindersRouter = router({
     if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Database not available" });
 
       const campaignName = `Recordatorio activación — ${new Date().toLocaleDateString("es-ES")}`;
-      const subject = `${company.name} te invita a activar BuddyMarket Pro`;
+      const subject = `${company.name} te invita a activar BuddyOne Pro`;
 
       const [campaign] = await db
         .insert(companyReminderCampaigns)

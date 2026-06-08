@@ -1,7 +1,7 @@
-// BuddyMarket Stripe subscription plans
+// BuddyOne Stripe subscription plans
 export const STRIPE_PLANS = {
   basic: {
-    name: "BuddyMarket Basic",
+    name: "BuddyOne Basic",
     description: "Plan básico con acceso a recetas, menús y listas de compra",
     priceMonthly: 499, // 4.99€ in cents
     features: [
@@ -12,7 +12,7 @@ export const STRIPE_PLANS = {
     ],
   },
   premium: {
-    name: "BuddyMarket Premium",
+    name: "BuddyOne Premium",
     description: "Plan premium con IA, seguimiento nutricional avanzado y más",
     priceMonthly: 999, // 9.99€ in cents
     features: [
@@ -25,7 +25,7 @@ export const STRIPE_PLANS = {
     ],
   },
   pro_max: {
-    name: "BuddyMarket Pro Max",
+    name: "BuddyOne Pro Max",
     description: "Plan profesional para nutricionistas y expertos en salud",
     priceMonthly: 1999, // 19.99€ in cents
     features: [

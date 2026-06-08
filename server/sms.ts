@@ -22,7 +22,7 @@ function getClient() {
  * @param code - Código OTP de 6 dígitos
  */
 export async function sendSMSOTP(to: string, code: string): Promise<void> {
-  const body = `Tu código de verificación de BuddyMarketAI es: ${code}\n\nExpira en 10 minutos. No lo compartas con nadie.`;
+  const body = `Tu código de verificación de BuddyOne es: ${code}\n\nExpira en 10 minutos. No lo compartas con nadie.`;
   await getClient().messages.create({
     body,
     from: fromNumber,

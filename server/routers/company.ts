@@ -591,7 +591,7 @@ export const companyRouter = router({
       };
     }),
 
-  /** Disparar sincronización manual de licencias activas (solo admin de BuddyMarket) */
+  /** Disparar sincronización manual de licencias activas (solo admin de BuddyOne) */
   triggerBillingSync: protectedProcedure
     .mutation(async ({ ctx }) => {
       if (ctx.user.role !== "admin") throw new TRPCError({ code: "FORBIDDEN" });

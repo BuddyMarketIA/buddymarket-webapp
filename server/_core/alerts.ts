@@ -70,7 +70,7 @@ async function sendSlackAlert(payload: AlertPayload): Promise<void> {
               }))
             : []),
         ],
-        footer: "BuddyMarket Alerts",
+        footer: "BuddyOne Alerts",
       },
     ],
   };
@@ -278,7 +278,7 @@ export function startSupabaseMonitor(): void {
 export async function sendStartupAlert(): Promise<void> {
   const env = process.env.NODE_ENV ?? "development";
   if (env === "production") {
-    await alert("info", `BuddyMarket server started`, {
+    await alert("info", `BuddyOne server started`, {
       environment: env,
       version: process.env.npm_package_version ?? "unknown",
       nodeVersion: process.version,

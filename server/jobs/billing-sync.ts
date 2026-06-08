@@ -7,7 +7,7 @@
  *   2. Actualiza la quantity en Stripe para que la factura refleje las licencias reales
  *   3. Inserta un snapshot en companyBillingSnapshots para auditoría
  *   4. Envía email de resumen previo a la empresa
- *   5. Notifica al owner de BuddyMarket con el total estimado
+ *   5. Notifica al owner de BuddyOne con el total estimado
  */
 
 import { eq, and, gte, isNotNull } from "drizzle-orm";

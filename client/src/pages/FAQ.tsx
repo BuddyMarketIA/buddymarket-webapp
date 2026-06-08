@@ -371,7 +371,7 @@ export default function FAQ() {
           </p>
           <div style={{ display: "flex", gap: 12, justifyContent: "center", flexWrap: "wrap" }}>
             <a
-              href="mailto:soporte@buddyoneapp.com"
+              href="mailto:soporte@buddyone.io"
               style={{ padding: "12px 24px", borderRadius: 10, background: "#F97316", color: "white", textDecoration: "none", fontWeight: 600, fontSize: 14 }}
             >
               Contactar soporte

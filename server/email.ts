@@ -2,11 +2,11 @@ import { Resend } from "resend";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
 
-// Use verified Resend domain as sender. To use a custom domain (info@buddyoneapp.com),
-// verify buddyoneapp.com at https://resend.com/domains and update this value.
+// Use verified Resend domain as sender. To use a custom domain (info@buddyone.io),
+// verify buddyone.io at https://resend.com/domains and update this value.
 const CUSTOM_FROM_EMAIL = process.env.EMAIL_FROM || "Luis de BuddyOne <luis@buddyone.io>";
 const FROM_EMAIL = CUSTOM_FROM_EMAIL;
-const APP_URL = process.env.PUBLIC_APP_URL || "https://buddyoneapp.com";
+const APP_URL = process.env.PUBLIC_APP_URL || "https://buddyone.io";
 
 // ─── Shared HTML helpers ──────────────────────────────────────────────────────
 
@@ -16,31 +16,39 @@ function emailWrapper(content: string): string {
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="color-scheme" content="light">
 </head>
-<body style="margin:0;padding:0;background-color:#FFF8F0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
-  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#FFF8F0;padding:40px 20px;">
+<body style="margin:0;padding:0;background-color:#F0F2F5;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="background-color:#F0F2F5;padding:32px 16px;">
     <tr>
       <td align="center">
-        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:20px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
+        <table width="600" cellpadding="0" cellspacing="0" style="max-width:600px;width:100%;background:#ffffff;border-radius:16px;overflow:hidden;box-shadow:0 2px 20px rgba(0,0,0,0.08);">
           ${content}
           <!-- Footer -->
           <tr>
-            <td style="padding:0 40px;"><hr style="border:none;border-top:1px solid #f0e8e0;margin:0;"></td>
-          </tr>
-          <tr>
-            <td style="padding:24px 40px;text-align:center;">
-              <p style="color:#999;font-size:13px;margin:0 0 8px;line-height:1.6;">
-                Has recibido este correo porque eres usuario de BuddyMarket.<br>
-                Si tienes alguna pregunta, responde a este email.
+            <td style="background:#0f172a;padding:36px 40px;text-align:center;">
+              <table cellpadding="0" cellspacing="0" style="margin:0 auto 20px;">
+                <tr>
+                  <td style="vertical-align:middle;padding-right:10px;">
+                    <img src="data:image/png;base64,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" width="40" height="40" alt="BuddyOne" style="display:block;border-radius:10px;">
+                  </td>
+                  <td style="vertical-align:middle;">
+                    <span style="color:#ffffff;font-size:20px;font-weight:800;letter-spacing:-0.5px;">Buddy<span style="background:linear-gradient(135deg,#f97316,#ef4444);-webkit-background-clip:text;-webkit-text-fill-color:transparent;background-clip:text;">One</span></span>
+                  </td>
+                </tr>
+              </table>
+              <p style="color:#64748b;font-size:13px;margin:0 0 16px;line-height:1.7;">
+                Has recibido este correo porque eres usuario de <strong style="color:#94a3b8;">BuddyOne</strong>.<br>
+                Si tienes alguna pregunta, responde a este email o visita nuestro soporte en <a href="${APP_URL}/soporte" style="color:#f97316;text-decoration:none;">buddyone.io/soporte</a>.
               </p>
-              <p style="margin:0;">
-                <a href="${APP_URL}" style="color:#F97316;text-decoration:none;font-size:13px;font-weight:600;">buddyoneapp.com</a>
-                <span style="color:#ccc;margin:0 8px;">·</span>
-                <a href="${APP_URL}/privacidad" style="color:#999;text-decoration:none;font-size:13px;">Privacidad</a>
-                <span style="color:#ccc;margin:0 8px;">·</span>
-                <a href="${APP_URL}/baja" style="color:#999;text-decoration:none;font-size:13px;">Darse de baja</a>
+              <p style="margin:0 0 16px;">
+                <a href="${APP_URL}" style="color:#f97316;text-decoration:none;font-size:13px;font-weight:700;">buddyone.io</a>
+                <span style="color:#1e293b;margin:0 10px;">·</span>
+                <a href="${APP_URL}/privacidad" style="color:#64748b;text-decoration:none;font-size:13px;">Privacidad</a>
+                <span style="color:#1e293b;margin:0 10px;">·</span>
+                <a href="${APP_URL}/baja" style="color:#64748b;text-decoration:none;font-size:13px;">Darse de baja</a>
               </p>
-              <p style="color:#bbb;font-size:12px;margin:12px 0 0;">© 2026 BuddyMarket · Hecho con 🧡 en España</p>
+              <p style="color:#334155;font-size:12px;margin:0;line-height:1.6;">© 2026 BuddyOne · El sistema operativo de tu bienestar · Hecho con 🧡 en España</p>
             </td>
           </tr>
         </table>
@@ -51,41 +59,38 @@ function emailWrapper(content: string): string {
 </html>`;
 }
 
-function emailHeader(emoji: string, title: string, subtitle: string, bgColor = "linear-gradient(135deg,#F97316 0%,#EA580C 100%)"): string {
+function emailHeader(emoji: string, title: string, subtitle: string, bgColor = "linear-gradient(135deg,#f97316 0%,#ef4444 100%)"): string {
   return `
   <tr>
-    <td style="background:${bgColor};padding:44px 40px 36px;text-align:center;">
-      <table cellpadding="0" cellspacing="0" style="margin:0 auto 20px;">
+    <td style="background:${bgColor};padding:48px 40px 40px;text-align:center;position:relative;">
+      <!-- Logo -->
+      <table cellpadding="0" cellspacing="0" style="margin:0 auto 24px;">
         <tr>
-          <td style="background:rgba(255,255,255,0.15);border-radius:16px;padding:10px 18px;">
-            <span style="color:#ffffff;font-size:20px;font-weight:800;letter-spacing:-0.5px;">🥗 BUDDY<span style="color:#FED7AA;">MARKET</span></span>
+          <td style="vertical-align:middle;padding-right:10px;">
+            <img src="data:image/png;base64,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" width="44" height="44" alt="BuddyOne" style="display:block;border-radius:11px;box-shadow:0 4px 12px rgba(0,0,0,0.2);">
+          </td>
+          <td style="vertical-align:middle;">
+            <span style="color:#ffffff;font-size:22px;font-weight:800;letter-spacing:-0.5px;text-shadow:0 1px 3px rgba(0,0,0,0.2);">Buddy<span style="color:rgba(255,255,255,0.75);">One</span></span>
           </td>
         </tr>
       </table>
-      <div style="font-size:48px;margin-bottom:12px;">${emoji}</div>
-      <h1 style="color:#ffffff;font-size:28px;font-weight:800;margin:0 0 8px;line-height:1.2;">${title}</h1>
-      <p style="color:rgba(255,255,255,0.85);font-size:15px;margin:0;line-height:1.5;">${subtitle}</p>
+      <!-- Emoji & Title -->
+      <div style="font-size:52px;margin-bottom:16px;filter:drop-shadow(0 2px 4px rgba(0,0,0,0.15));">${emoji}</div>
+      <h1 style="color:#ffffff;font-size:30px;font-weight:800;margin:0 0 10px;line-height:1.2;text-shadow:0 1px 3px rgba(0,0,0,0.15);">${title}</h1>
+      <p style="color:rgba(255,255,255,0.88);font-size:16px;margin:0;line-height:1.6;max-width:440px;margin:0 auto;">${subtitle}</p>
     </td>
   </tr>
   <tr>
-    <td style="padding:0;">
-      <table width="100%" cellpadding="0" cellspacing="0">
-        <tr>
-          <td width="33%" style="background:#FED7AA;height:5px;"></td>
-          <td width="34%" style="background:#F97316;height:5px;"></td>
-          <td width="33%" style="background:#EA580C;height:5px;"></td>
-        </tr>
-      </table>
-    </td>
+    <td style="padding:0;height:4px;background:linear-gradient(90deg,#fbbf24 0%,#f97316 50%,#ef4444 100%);"></td>
   </tr>`;
 }
 
 function ctaButton(text: string, url: string): string {
   return `
-  <table width="100%" cellpadding="0" cellspacing="0" style="margin:28px 0 20px;">
+  <table width="100%" cellpadding="0" cellspacing="0" style="margin:32px 0 24px;">
     <tr>
       <td align="center">
-        <a href="${url}" style="display:inline-block;background:linear-gradient(135deg,#F97316,#EA580C);color:#ffffff;text-decoration:none;font-size:16px;font-weight:700;padding:16px 40px;border-radius:50px;letter-spacing:0.3px;">${text}</a>
+        <a href="${url}" style="display:inline-block;background:linear-gradient(135deg,#f97316 0%,#ef4444 100%);color:#ffffff;text-decoration:none;font-size:16px;font-weight:700;padding:16px 44px;border-radius:50px;letter-spacing:0.3px;box-shadow:0 4px 16px rgba(249,115,22,0.4);">${text} →</a>
       </td>
     </tr>
   </table>`;
@@ -100,7 +105,7 @@ function welcomeEmailHtml(name: string, accountType: string): string {
   const roleMessage = isCreator
     ? `<p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 16px;">
         Tu solicitud como <strong>${accountType === "buddymaker" ? "BuddyMaker" : "BuddyExpert"}</strong> está siendo revisada por nuestro equipo. 
-        Te avisaremos en cuanto sea aprobada. Mientras tanto, ya puedes explorar todas las funcionalidades de BuddyMarket.
+        Te avisaremos en cuanto sea aprobada. Mientras tanto, ya puedes explorar todas las funcionalidades de BuddyOne.
       </p>`
     : `<p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 16px;">
         Tu cuenta está lista. Empieza a explorar recetas personalizadas, planifica tus menús semanales 
@@ -169,7 +174,7 @@ function day2EmailHtml(name: string): string {
   <tr>
     <td style="padding:40px 40px 32px;">
       <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 20px;">
-        Llevas 2 días con nosotros y queremos asegurarnos de que estás sacando el máximo partido a BuddyMarket. 
+        Llevas 2 días con nosotros y queremos asegurarnos de que estás sacando el máximo partido a BuddyOne. 
         El catálogo de recetas es el corazón de la app — ¡y hay mucho que descubrir!
       </p>
 
@@ -215,7 +220,7 @@ function day2EmailHtml(name: string): string {
             <p style="color:#1e40af;font-size:14px;font-weight:700;margin:0 0 8px;">💡 Consejo del día</p>
             <p style="color:#1e40af;font-size:13px;line-height:1.6;margin:0;">
               Añade los ingredientes que tienes en casa a tu <strong>inventario</strong>. 
-              BuddyMarket te mostrará qué recetas puedes cocinar ahora mismo con lo que tienes, 
+              BuddyOne te mostrará qué recetas puedes cocinar ahora mismo con lo que tienes, 
               sin necesidad de ir al supermercado.
             </p>
           </td>
@@ -244,7 +249,7 @@ function day4EmailHtml(name: string): string {
     <td style="padding:40px 40px 32px;">
       <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 20px;">
         Hola ${firstName}, ¿sabías que la planificación semanal es el hábito número 1 de las personas que 
-        consiguen sus objetivos nutricionales? Con BuddyMarket es más fácil que nunca.
+        consiguen sus objetivos nutricionales? Con BuddyOne es más fácil que nunca.
       </p>
 
       <!-- How it works -->
@@ -321,13 +326,13 @@ function day4EmailHtml(name: string): string {
   return emailWrapper(body);
 }
 
-// ─── Day 7 Email: ¡Una semana con BuddyMarket! ───────────────────────────────
+// ─── Day 7 Email: ¡Una semana con BuddyOne! ───────────────────────────────
 
 function day7EmailHtml(name: string): string {
   const firstName = name?.split(" ")[0] || "amigo";
 
   const body = `
-  ${emailHeader("🏆", `¡Una semana contigo, ${firstName}!`, "Gracias por confiar en BuddyMarket para tu nutrición", "linear-gradient(135deg,#059669 0%,#047857 100%)")}
+  ${emailHeader("🏆", `¡Una semana contigo, ${firstName}!`, "Gracias por confiar en BuddyOne para tu nutrición", "linear-gradient(135deg,#059669 0%,#047857 100%)")}
   <tr>
     <td style="padding:40px 40px 32px;">
       <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 20px;">
@@ -393,10 +398,10 @@ function day7EmailHtml(name: string): string {
           <td>
             <p style="color:#F97316;font-size:20px;margin:0 0 8px;">⭐⭐⭐⭐⭐</p>
             <p style="color:#333;font-size:14px;font-style:italic;line-height:1.6;margin:0 0 8px;">
-              "BuddyMarket ha cambiado completamente mi relación con la comida. En solo 3 semanas perdí 2kg 
+              "BuddyOne ha cambiado completamente mi relación con la comida. En solo 3 semanas perdí 2kg 
               sin pasar hambre, simplemente siguiendo los menús que me genera la IA."
             </p>
-            <p style="color:#888;font-size:13px;margin:0;font-weight:600;">— María G., usuaria de BuddyMarket</p>
+            <p style="color:#888;font-size:13px;margin:0;font-weight:600;">— María G., usuaria de BuddyOne</p>
           </td>
         </tr>
       </table>
@@ -405,7 +410,7 @@ function day7EmailHtml(name: string): string {
 
       <p style="color:#888;font-size:13px;text-align:center;margin:16px 0 0;line-height:1.6;">
         ¿Tienes feedback sobre tu primera semana? Nos encantaría escucharte. 
-        <a href="mailto:info@buddyoneapp.com" style="color:#F97316;text-decoration:none;">Escríbenos aquí</a>
+        <a href="mailto:info@buddyone.io" style="color:#F97316;text-decoration:none;">Escríbenos aquí</a>
       </p>
     </td>
   </tr>`;
@@ -430,7 +435,7 @@ export async function sendWelcomeEmail(params: {
     const { data, error } = await resend.emails.send({
       from: FROM_EMAIL,
       to: params.to,
-      subject: `¡Bienvenido a BuddyMarket, ${firstName}! 🥗`,
+      subject: `¡Bienvenido a BuddyOne, ${firstName}! 🥗`,
       html: welcomeEmailHtml(params.name, params.accountType),
     });
 
@@ -471,7 +476,7 @@ export async function sendSequenceEmail(params: {
       html: day4EmailHtml(params.name),
     },
     3: {
-      subject: `¡Una semana con BuddyMarket! Tu resumen 🏆`,
+      subject: `¡Una semana con BuddyOne! Tu resumen 🏆`,
       html: day7EmailHtml(params.name),
     },
   };
@@ -575,11 +580,11 @@ export async function processPendingEmails(): Promise<void> {
 
 function otpEmailHtml(otpCode: string): string {
   const body = `
-  ${emailHeader("🔐", "Tu código de acceso", "Usa este código para iniciar sesión en BuddyMarket")}
+  ${emailHeader("🔐", "Tu código de acceso", "Usa este código para iniciar sesión en BuddyOne")}
   <tr>
     <td style="padding:40px 40px 32px;">
       <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 24px;">
-        Hemos recibido una solicitud para iniciar sesión en tu cuenta de BuddyMarket. 
+        Hemos recibido una solicitud para iniciar sesión en tu cuenta de BuddyOne. 
         Introduce el siguiente código en la app para acceder:
       </p>
       <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 28px;">
@@ -620,7 +625,7 @@ export async function sendOTPEmail(email: string, otpCode: string): Promise<void
   const { error } = await resend.emails.send({
     from: FROM_EMAIL,
     to: email,
-    subject: `${otpCode} es tu código de acceso a BuddyMarket`,
+    subject: `${otpCode} es tu código de acceso a BuddyOne`,
     html: otpEmailHtml(otpCode),
   });
   if (error) {
@@ -673,7 +678,7 @@ function planAssignedEmailHtml(params: {
         Hola <strong>${firstName}</strong>,
       </p>
       <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 24px;">
-        Tu BuddyExpert <strong style="color:#F97316;">${params.expertName}</strong>${params.expertSpecialty ? ` (${params.expertSpecialty})` : ""} te ha asignado un nuevo plan nutricional personalizado. Ya puedes acceder a él desde tu panel de BuddyMarket.
+        Tu BuddyExpert <strong style="color:#F97316;">${params.expertName}</strong>${params.expertSpecialty ? ` (${params.expertSpecialty})` : ""} te ha asignado un nuevo plan nutricional personalizado. Ya puedes acceder a él desde tu panel de BuddyOne.
       </p>
       <table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#FFF7ED,#FFEDD5);border:1px solid #FED7AA;border-radius:16px;padding:24px;margin:0 0 24px;">
         <tr><td>
@@ -692,7 +697,7 @@ function planAssignedEmailHtml(params: {
           <p style="color:#15803D;font-size:13px;margin:0;">📄 <strong>Descargar el PDF</strong> — Accede al plan completo elaborado por tu experto.</p>
         </td></tr>
       </table>
-      ${ctaButton("Ver mi plan en BuddyMarket →", `${params.appUrl}/app/my-plans`)}
+      ${ctaButton("Ver mi plan en BuddyOne →", `${params.appUrl}/app/my-plans`)}
       <p style="color:#9CA3AF;font-size:13px;line-height:1.6;margin:24px 0 0;text-align:center;">
         Si tienes dudas sobre tu plan, contacta directamente con tu BuddyExpert a través de la app.
       </p>
@@ -753,9 +758,9 @@ export async function sendPlanAssignedEmail(params: {
 // ─── Payment Confirmation Emails ──────────────────────────────────────────────
 
 const PLAN_LABELS: Record<string, { name: string; emoji: string; color: string }> = {
-  basic:   { name: "BuddyMarket Basic",   emoji: "🌱", color: "#22C55E" },
-  premium: { name: "BuddyMarket Premium", emoji: "⭐", color: "#F97316" },
-  pro_max: { name: "BuddyMarket Pro Max", emoji: "🚀", color: "#8B5CF6" },
+  basic:   { name: "BuddyOne Basic",   emoji: "🌱", color: "#22C55E" },
+  premium: { name: "BuddyOne Premium", emoji: "⭐", color: "#F97316" },
+  pro_max: { name: "BuddyOne Pro Max", emoji: "🚀", color: "#8B5CF6" },
 };
 
 function paymentConfirmationHtml(params: {
@@ -882,19 +887,19 @@ function founderWelcomeHtml(params: { userName: string; userEmail: string }): st
     </tr>
   `).join("");
   return emailWrapper(`
-    ${emailHeader("🎁", "¡Tu año PRO está activado!", "Bienvenido/a de vuelta a BuddyMarket", "linear-gradient(135deg, #F97316, #FB923C)")}
+    ${emailHeader("🎁", "¡Tu año PRO está activado!", "Bienvenido/a de vuelta a BuddyOne", "linear-gradient(135deg, #F97316, #FB923C)")}
     <tr><td style="padding:40px 40px 0;">
       <p style="font-size:17px;color:#374151;line-height:1.7;margin:0 0 20px;">
         Hola <strong style="color:#1a1a1a;">${name}</strong>,
       </p>
       <p style="font-size:17px;color:#374151;line-height:1.7;margin:0 0 20px;">
-        Eres uno de los usuarios originales de BuddyMarket y eso tiene un valor enorme para nosotros.
+        Eres uno de los usuarios originales de BuddyOne y eso tiene un valor enorme para nosotros.
         <strong style="color:#1a1a1a;">Confiaste en nosotros desde el principio, y hoy te devolvemos ese favor.</strong>
       </p>
       <table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#fff8f0,#fef3e8);border-radius:16px;border:2px solid #fde8d0;margin:24px 0;">
         <tr><td style="padding:24px;text-align:center;">
           <p style="font-size:40px;margin:0 0 8px;">🎁</p>
-          <p style="font-size:20px;font-weight:900;color:#1a1a1a;margin:0 0 6px;letter-spacing:-0.02em;">1 año de BuddyMarket PRO activado</p>
+          <p style="font-size:20px;font-weight:900;color:#1a1a1a;margin:0 0 6px;letter-spacing:-0.02em;">1 año de BuddyOne PRO activado</p>
           <p style="font-size:14px;color:#6b7280;margin:0;">Tu cuenta PRO está activa hasta el ${proUntil}</p>
         </td></tr>
       </table>
@@ -911,7 +916,7 @@ function founderWelcomeHtml(params: { userName: string; userEmail: string }): st
         Gracias por haber esperado. Gracias por haber confiado.
       </p>
       <p style="font-size:15px;color:#374151;line-height:1.7;margin:0;">
-        <strong style="color:#1a1a1a;">El equipo de BuddyMarket</strong>
+        <strong style="color:#1a1a1a;">El equipo de BuddyOne</strong>
       </p>
     </td></tr>
   `);
@@ -922,7 +927,7 @@ export async function sendFounderWelcomeEmail(params: { userName: string; userEm
     const { data, error } = await resend.emails.send({
       from: FROM_EMAIL,
       to: params.userEmail,
-      subject: "🎁 ¡Tu año PRO está activado! Bienvenido/a de vuelta a BuddyMarket",
+      subject: "🎁 ¡Tu año PRO está activado! Bienvenido/a de vuelta a BuddyOne",
       html: founderWelcomeHtml(params),
     });
     if (error) { console.error("[Email] Failed to send founder welcome:", error); return false; }
@@ -942,8 +947,8 @@ function reminderActivationHtml(params: {
   return emailWrapper(`
     <tr><td style="padding:40px 40px 0;text-align:center;">
       <div style="width:72px;height:72px;background:linear-gradient(135deg,#F97316,#FB923C);border-radius:20px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:24px;font-size:36px;">🎁</div>
-      <h1 style="font-size:26px;font-weight:900;color:#1a1a1a;margin:0 0 12px;">Tu empresa te regala BuddyMarket Pro</h1>
-      <p style="font-size:16px;color:#6b7280;margin:0 0 32px;line-height:1.6;">Hola <strong style="color:#1a1a1a;">${recipientName}</strong>, <strong style="color:#F97316;">${companyName}</strong> ha activado BuddyMarket para sus empleados.</p>
+      <h1 style="font-size:26px;font-weight:900;color:#1a1a1a;margin:0 0 12px;">Tu empresa te regala BuddyOne Pro</h1>
+      <p style="font-size:16px;color:#6b7280;margin:0 0 32px;line-height:1.6;">Hola <strong style="color:#1a1a1a;">${recipientName}</strong>, <strong style="color:#F97316;">${companyName}</strong> ha activado BuddyOne para sus empleados.</p>
     </td></tr>
     <tr><td style="padding:0 40px 40px;">
       ${customMessage ? `<p style="font-size:15px;color:#374151;line-height:1.7;margin:0 0 24px;padding:20px;background:#FFF8F0;border-radius:12px;border-left:4px solid #F97316;">${customMessage}</p>` : ""}
@@ -970,14 +975,14 @@ function reminderEngagementHtml(params: {
     <tr><td style="padding:40px 40px 0;text-align:center;">
       <div style="width:72px;height:72px;background:linear-gradient(135deg,#10b981,#059669);border-radius:20px;display:inline-flex;align-items:center;justify-content:center;margin-bottom:24px;font-size:36px;">🥗</div>
       <h1 style="font-size:26px;font-weight:900;color:#1a1a1a;margin:0 0 12px;">Como va tu nutricion esta semana?</h1>
-      <p style="font-size:16px;color:#6b7280;margin:0 0 32px;line-height:1.6;">Hola <strong style="color:#1a1a1a;">${recipientName}</strong>, desde <strong style="color:#F97316;">${companyName}</strong> queremos recordarte que tienes BuddyMarket disponible.</p>
+      <p style="font-size:16px;color:#6b7280;margin:0 0 32px;line-height:1.6;">Hola <strong style="color:#1a1a1a;">${recipientName}</strong>, desde <strong style="color:#F97316;">${companyName}</strong> queremos recordarte que tienes BuddyOne disponible.</p>
     </td></tr>
     <tr><td style="padding:0 40px 40px;">
       ${customMessage ? `<p style="font-size:15px;color:#374151;line-height:1.7;margin:0 0 24px;padding:20px;background:#f0fdf4;border-radius:12px;border-left:4px solid #10b981;">${customMessage}</p>` : ""}
       <p style="font-size:15px;color:#374151;line-height:1.7;margin:0 0 32px;">Genera tu menu semanal en segundos y lleva un seguimiento de tu nutricion. Todo desde el movil, en menos de 2 minutos al dia.</p>
       <table cellpadding="0" cellspacing="0" style="margin:0 auto;">
         <tr><td style="background:linear-gradient(135deg,#F97316,#ea580c);border-radius:14px;padding:16px 40px;text-align:center;">
-          <a href="${APP_URL}/app/dashboard" style="color:#ffffff;font-size:16px;font-weight:900;text-decoration:none;">Abrir BuddyMarket</a>
+          <a href="${APP_URL}/app/dashboard" style="color:#ffffff;font-size:16px;font-weight:900;text-decoration:none;">Abrir BuddyOne</a>
         </td></tr>
       </table>
     </td></tr>
@@ -1048,7 +1053,7 @@ export async function sendBillingPreviewEmail(params: {
 }): Promise<{ success: boolean; messageId?: string; error?: string }> {
   const { to, companyName, activeLicenses, pricePerLicense, totalAmount, billingDate } = params;
   const billingDateStr = billingDate.toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" });
-  const subject = "Resumen de facturacion BuddyMarket - " + billingDate.toLocaleDateString("es-ES", { month: "long", year: "numeric" });
+  const subject = "Resumen de facturacion BuddyOne - " + billingDate.toLocaleDateString("es-ES", { month: "long", year: "numeric" });
   const html = emailWrapper(emailHeader("Resumen de facturacion", companyName + " - " + billingDateStr, "linear-gradient(135deg,#1e40af 0%,#1d4ed8 100%)") + "<tr><td style='padding:40px;'><p style='color:#374151;font-size:15px;'>Hola, equipo de " + companyName + ". El cargo de " + totalAmount.toFixed(2) + " EUR (" + activeLicenses + " licencias x " + pricePerLicense.toFixed(2) + " EUR/mes) se realizara el " + billingDateStr + ".</p>" + ctaButton("Ver panel de empresa", `${APP_URL}/empresa/dashboard`) + "</td></tr>");
   try {
     const { data, error } = await resend.emails.send({ from: FROM_EMAIL, to, subject, html });
@@ -1090,7 +1095,7 @@ function passwordResetHtml(name: string, resetUrl: string): string {
   return emailHeader("🔐", "Restablecer contraseña", "Solicitud de cambio de contraseña") +
     `<tr><td style="padding:40px;">
       <p style="color:#374151;font-size:15px;margin:0 0 16px;">Hola <strong>${name}</strong>,</p>
-      <p style="color:#374151;font-size:15px;margin:0 0 24px;">Hemos recibido una solicitud para restablecer la contraseña de tu cuenta BuddyMarket. Haz clic en el botón de abajo para crear una nueva contraseña.</p>
+      <p style="color:#374151;font-size:15px;margin:0 0 24px;">Hemos recibido una solicitud para restablecer la contraseña de tu cuenta BuddyOne. Haz clic en el botón de abajo para crear una nueva contraseña.</p>
       ${ctaButton("Restablecer contraseña", resetUrl)}
       <p style="color:#6b7280;font-size:13px;margin:24px 0 0;">Este enlace expira en 1 hora. Si no solicitaste este cambio, puedes ignorar este email de forma segura.</p>
     </td></tr>`;
@@ -1106,7 +1111,7 @@ export async function sendPasswordResetEmail(
     const { error } = await resend.emails.send({
       from: FROM_EMAIL,
       to: email,
-      subject: "Restablecer tu contraseña de BuddyMarket",
+      subject: "Restablecer tu contraseña de BuddyOne",
       html: emailWrapper(html),
     });
     if (error) console.error("[Email] Password reset email failed:", error);
@@ -1118,7 +1123,7 @@ export async function sendPasswordResetEmail(
 
 
 // ═══════════════════════════════════════════════════════════════════════════════
-// NUEVOS FLUJOS DE EMAIL — BuddyMarket Lifecycle Emails
+// NUEVOS FLUJOS DE EMAIL — BuddyOne Lifecycle Emails
 // ═══════════════════════════════════════════════════════════════════════════════
 
 // ─── Check-in Semanal Recordatorio ────────────────────────────────────────────
@@ -1285,10 +1290,10 @@ function reactivationEmailHtml(name: string, daysInactive: number): string {
       </p>
       <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 24px;">
         ${daysInactive >= 30
-          ? "Han pasado 30 días desde tu última visita a BuddyMarket. Sabemos que la vida se complica, pero tu salud siempre merece un momento. Para ayudarte a retomar el camino, hemos preparado algo especial para ti."
+          ? "Han pasado 30 días desde tu última visita a BuddyOne. Sabemos que la vida se complica, pero tu salud siempre merece un momento. Para ayudarte a retomar el camino, hemos preparado algo especial para ti."
           : daysInactive >= 7
           ? "Llevas una semana sin registrar tu progreso. Tu nutricionista sigue ahí, con tu plan actualizado y esperando tus datos. ¿Qué tal ha ido la semana?"
-          : "Llevas 3 días sin abrir BuddyMarket. Tu menú semanal está listo y tu diario nutricional espera tus registros. ¡Solo 2 minutos al día marcan la diferencia!"}
+          : "Llevas 3 días sin abrir BuddyOne. Tu menú semanal está listo y tu diario nutricional espera tus registros. ¡Solo 2 minutos al día marcan la diferencia!"}
       </p>
       <table width="100%" cellpadding="0" cellspacing="0" style="background:#FFF7ED;border-radius:16px;padding:24px;margin:0 0 24px;">
         <tr><td>
@@ -1302,10 +1307,10 @@ function reactivationEmailHtml(name: string, daysInactive: number): string {
       <table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#FFF7ED,#FFEDD5);border:2px solid #FED7AA;border-radius:16px;padding:24px;margin:0 0 24px;text-align:center;">
         <tr><td>
           <p style="color:#C2410C;font-size:16px;font-weight:800;margin:0 0 8px;">🎁 Oferta especial de reactivación</p>
-          <p style="color:#92400E;font-size:14px;margin:0;">Escríbenos a <a href="mailto:hola@buddyoneapp.com" style="color:#F97316;">hola@buddyoneapp.com</a> con el asunto "VUELVO" y te regalamos 1 mes de seguimiento extra con tu nutricionista.</p>
+          <p style="color:#92400E;font-size:14px;margin:0;">Escríbenos a <a href="mailto:hola@buddyone.io" style="color:#F97316;">hola@buddyone.io</a> con el asunto "VUELVO" y te regalamos 1 mes de seguimiento extra con tu nutricionista.</p>
         </td></tr>
       </table>` : ""}
-      ${ctaButton("Volver a BuddyMarket →", `${APP_URL}/app/dashboard`)}
+      ${ctaButton("Volver a BuddyOne →", `${APP_URL}/app/dashboard`)}
     </td>
   </tr>`;
   return emailWrapper(body);
@@ -1323,7 +1328,7 @@ export async function sendReactivationEmail(params: {
       ? `🎁 ${firstName}, ¡te echamos de menos! Vuelve con una sorpresa`
       : params.daysInactive >= 7
       ? `💭 ${firstName}, ¿todo bien? Tu nutricionista te espera`
-      : `👋 ${firstName}, tu menú semanal te espera en BuddyMarket`;
+      : `👋 ${firstName}, tu menú semanal te espera en BuddyOne`;
     const { data, error } = await resend.emails.send({
       from: FROM_EMAIL,
       to: params.userEmail,
@@ -1577,7 +1582,7 @@ function newHireRequestEmailHtml(params: {
         Hola <strong>${firstName}</strong>,
       </p>
       <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 24px;">
-        <strong style="color:#7C3AED;">${params.patientName}</strong> ha enviado una solicitud para contratar tus servicios en BuddyMarket.
+        <strong style="color:#7C3AED;">${params.patientName}</strong> ha enviado una solicitud para contratar tus servicios en BuddyOne.
       </p>
       <table width="100%" cellpadding="0" cellspacing="0" style="background:#F5F3FF;border:1px solid #DDD6FE;border-radius:16px;padding:24px;margin:0 0 24px;">
         <tr><td>
@@ -1612,7 +1617,7 @@ function newHireRequestEmailHtml(params: {
       </table>` : ""}
       ${ctaButton("Ver solicitud y responder →", `${APP_URL}/app/expert/hire-requests`)}
       <p style="color:#9CA3AF;font-size:13px;line-height:1.6;margin:16px 0 0;text-align:center;">
-        Acepta o rechaza la solicitud desde tu panel de BuddyMarket.
+        Acepta o rechaza la solicitud desde tu panel de BuddyOne.
       </p>
     </td>
   </tr>`;
@@ -1666,7 +1671,7 @@ function hireRequestResponseEmailHtml(params: {
       </p>
       ${params.accepted ? `
       <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 24px;">
-        ¡Excelente noticia! <strong style="color:#059669;">${params.expertName}</strong> ha aceptado tu solicitud del plan <strong>${params.planName}</strong>. Ya estás vinculado a tu nutricionista en BuddyMarket.
+        ¡Excelente noticia! <strong style="color:#059669;">${params.expertName}</strong> ha aceptado tu solicitud del plan <strong>${params.planName}</strong>. Ya estás vinculado a tu nutricionista en BuddyOne.
       </p>
       <table width="100%" cellpadding="0" cellspacing="0" style="background:#F0FDF4;border-radius:16px;padding:24px;margin:0 0 24px;">
         <tr><td>
@@ -1740,7 +1745,7 @@ function expertWeeklySummaryHtml(params: {
   <tr>
     <td style="padding:40px 40px 32px;">
       <p style="color:#374151;font-size:16px;line-height:1.7;margin:0 0 20px;">
-        Hola <strong>${firstName}</strong>, aquí tienes el resumen de tu actividad esta semana en BuddyMarket:
+        Hola <strong>${firstName}</strong>, aquí tienes el resumen de tu actividad esta semana en BuddyOne:
       </p>
       <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
         <tr>
@@ -1799,7 +1804,7 @@ export async function sendExpertWeeklySummary(params: {
     const { data, error } = await resend.emails.send({
       from: FROM_EMAIL,
       to: params.expertEmail,
-      subject: `📊 Tu resumen semanal BuddyMarket — ${params.activePatients} pacientes activos`,
+      subject: `📊 Tu resumen semanal BuddyOne — ${params.activePatients} pacientes activos`,
       html: expertWeeklySummaryHtml(params),
     });
     if (error) { console.error("[Email] Expert weekly summary failed:", error); return false; }
@@ -1879,7 +1884,7 @@ function expertWelcomeEmailHtml(expertName: string): string {
         Hola <strong>${firstName}</strong>,
       </p>
       <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 24px;">
-        Tu perfil como <strong style="color:#7C3AED;">BuddyExpert</strong> ha sido aprobado y ya está activo en BuddyMarket. Ahora puedes empezar a conectar con pacientes y gestionar tu consulta de forma digital.
+        Tu perfil como <strong style="color:#7C3AED;">BuddyExpert</strong> ha sido aprobado y ya está activo en BuddyOne. Ahora puedes empezar a conectar con pacientes y gestionar tu consulta de forma digital.
       </p>
       <table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 24px;">
         <tr>
@@ -1912,7 +1917,7 @@ function expertWelcomeEmailHtml(expertName: string): string {
       </table>
       ${ctaButton("Ir a mi panel de experto →", `${APP_URL}/app/buddyexpert/dashboard`)}
       <p style="color:#9CA3AF;font-size:13px;line-height:1.6;margin:16px 0 0;text-align:center;">
-        Si tienes alguna duda, escríbenos a <a href="mailto:hola@buddyoneapp.com" style="color:#F97316;">hola@buddyoneapp.com</a>
+        Si tienes alguna duda, escríbenos a <a href="mailto:hola@buddyone.io" style="color:#F97316;">hola@buddyone.io</a>
       </p>
     </td>
   </tr>`;
@@ -2020,7 +2025,7 @@ function streakEmailHtml(name: string, streakDays: number): string {
           <div style="font-size:64px;margin-bottom:8px;">${milestone}</div>
           <p style="color:#C2410C;font-size:48px;font-weight:900;margin:0 0 4px;letter-spacing:-0.04em;">${streakDays}</p>
           <p style="color:#92400E;font-size:18px;font-weight:700;margin:0;">días consecutivos</p>
-          <p style="color:#B45309;font-size:14px;margin:12px 0 0;">registrando tus comidas en BuddyMarket</p>
+          <p style="color:#B45309;font-size:14px;margin:12px 0 0;">registrando tus comidas en BuddyOne</p>
         </td></tr>
       </table>
       <table width="100%" cellpadding="0" cellspacing="0" style="background:#F0FDF4;border-radius:16px;padding:20px 24px;margin:0 0 24px;">
@@ -2059,7 +2064,7 @@ export async function sendStreakEmail(params: {
     const { data, error } = await resend.emails.send({
       from: FROM_EMAIL,
       to: params.userEmail,
-      subject: `${milestone} ¡${firstName}, llevas ${params.streakDays} días de racha en BuddyMarket!`,
+      subject: `${milestone} ¡${firstName}, llevas ${params.streakDays} días de racha en BuddyOne!`,
       html: streakEmailHtml(params.userName, params.streakDays),
     });
     if (error) { console.error("[Email] Streak email failed:", error); return false; }
@@ -2087,7 +2092,7 @@ function achievementEmailHtml(name: string, achievementTitle: string, achievemen
         </td></tr>
       </table>
       <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 24px;">
-        Acabas de desbloquear este logro en BuddyMarket. Cada logro es un recordatorio de tu progreso y tu dedicación. ¡Sigue así!
+        Acabas de desbloquear este logro en BuddyOne. Cada logro es un recordatorio de tu progreso y tu dedicación. ¡Sigue así!
       </p>
       ${ctaButton("Ver todos mis logros 🏆", `${APP_URL}/app/achievements`)}
     </td>
@@ -2108,7 +2113,7 @@ export async function sendAchievementEmail(params: {
     const { data, error } = await resend.emails.send({
       from: FROM_EMAIL,
       to: params.userEmail,
-      subject: `🏅 ¡${firstName}, has desbloqueado un nuevo logro en BuddyMarket!`,
+      subject: `🏅 ¡${firstName}, has desbloqueado un nuevo logro en BuddyOne!`,
       html: achievementEmailHtml(params.userName, params.achievementTitle, params.achievementDescription, params.achievementEmoji),
     });
     if (error) { console.error("[Email] Achievement email failed:", error); return false; }
@@ -2128,7 +2133,7 @@ function firstAIMenuEmailHtml(name: string, menuName: string): string {
         ¡Enhorabuena, <strong>${firstName}</strong>! 🎉
       </p>
       <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 24px;">
-        Tu primer menú generado con Inteligencia Artificial ya está disponible en BuddyMarket.
+        Tu primer menú generado con Inteligencia Artificial ya está disponible en BuddyOne.
         Ha sido creado teniendo en cuenta tus objetivos nutricionales, preferencias y restricciones alimentarias.
       </p>
       <table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#F0FDF4,#DCFCE7);border:2px solid #BBF7D0;border-radius:20px;padding:28px;margin:0 0 24px;">
@@ -2163,9 +2168,9 @@ function firstAIMenuEmailHtml(name: string, menuName: string): string {
       </table>
       <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 24px;">
         Puedes aplicar este menú a tu diario nutricional, generar la lista de la compra automáticamente
-        y ajustarlo a tus preferencias. ¡La IA de BuddyMarket aprende de ti con cada menú que generas!
+        y ajustarlo a tus preferencias. ¡La IA de BuddyOne aprende de ti con cada menú que generas!
       </p>
-      ${ctaButton("Ver mi menú en BuddyMarket →", `${APP_URL}/app/menus`)}
+      ${ctaButton("Ver mi menú en BuddyOne →", `${APP_URL}/app/menus`)}
       <p style="color:#9CA3AF;font-size:13px;text-align:center;margin:16px 0 0;">
         ¿Quieres otro menú diferente? Puedes generar tantos como quieras desde la sección de IA.
       </p>
@@ -2185,7 +2190,7 @@ export async function sendFirstAIMenuEmail(params: {
     const { data, error } = await resend.emails.send({
       from: FROM_EMAIL,
       to: params.userEmail,
-      subject: `🥗 ¡${firstName}, tu primer menú IA está listo en BuddyMarket!`,
+      subject: `🥗 ¡${firstName}, tu primer menú IA está listo en BuddyOne!`,
       html: firstAIMenuEmailHtml(params.userName, params.menuName),
     });
     if (error) { console.error("[Email] First AI menu email failed:", error); return false; }
@@ -2302,7 +2307,7 @@ export async function sendUserWeeklyProgress(params: {
     const { data, error } = await resend.emails.send({
       from: FROM_EMAIL,
       to: params.userEmail,
-      subject: `📊 ${firstName}, tu resumen semanal de BuddyMarket está listo`,
+      subject: `📊 ${firstName}, tu resumen semanal de BuddyOne está listo`,
       html: userWeeklyProgressHtml(params),
     });
     if (error) { console.error("[Email] User weekly progress failed:", error); return false; }
@@ -2324,7 +2329,7 @@ function streakReminderHtml(name: string, streakDays: number, caloriesLogged: nu
         Hola, <strong>${firstName}</strong> 👋
       </p>
       <p style="color:#555;font-size:15px;line-height:1.7;margin:0 0 20px;">
-        Llevas <strong>${streakDays} días</strong> registrando tus comidas en BuddyMarket. ¡Es un logro increíble! Pero hoy aún no has registrado nada y son las 20:00. Tienes tiempo para hacerlo.
+        Llevas <strong>${streakDays} días</strong> registrando tus comidas en BuddyOne. ¡Es un logro increíble! Pero hoy aún no has registrado nada y son las 20:00. Tienes tiempo para hacerlo.
       </p>
       <table width="100%" cellpadding="0" cellspacing="0" style="background:#FFF7ED;border:2px solid #FED7AA;border-radius:16px;padding:24px;margin:0 0 24px;text-align:center;">
         <tr><td>
@@ -2614,9 +2619,9 @@ function b2bPerkCampaignHtml(params: {
             </div>
           </td></tr>
           <!-- SIGNATURE -->
-          <tr><td style="background:#0d0d0d;padding:36px 48px;border-left:1px solid #1f1f1f;border-right:1px solid #1f1f1f;border-top:1px solid #1f1f1f;"><table width="100%" cellpadding="0" cellspacing="0"><tr><td width="48" style="vertical-align:top;"><div style="width:44px;height:44px;background:linear-gradient(135deg,#f97316,#ea580c);border-radius:12px;text-align:center;line-height:44px;font-size:20px;font-weight:900;color:#ffffff;">JP</div></td><td style="vertical-align:top;padding-left:14px;"><p style="font-size:15px;font-weight:700;color:#ffffff;margin:0 0 2px;">Javier Pérez</p><p style="font-size:13px;color:#737373;margin:0 0 2px;">CEO & Co-founder, BuddyOne</p><p style="font-size:13px;color:#525252;margin:0;">javier@buddyoneapp.com · +34 600 000 000</p></td></tr></table></td></tr>
+          <tr><td style="background:#0d0d0d;padding:36px 48px;border-left:1px solid #1f1f1f;border-right:1px solid #1f1f1f;border-top:1px solid #1f1f1f;"><table width="100%" cellpadding="0" cellspacing="0"><tr><td width="48" style="vertical-align:top;"><div style="width:44px;height:44px;background:linear-gradient(135deg,#f97316,#ea580c);border-radius:12px;text-align:center;line-height:44px;font-size:20px;font-weight:900;color:#ffffff;">JP</div></td><td style="vertical-align:top;padding-left:14px;"><p style="font-size:15px;font-weight:700;color:#ffffff;margin:0 0 2px;">Javier Pérez</p><p style="font-size:13px;color:#737373;margin:0 0 2px;">CEO & Co-founder, BuddyOne</p><p style="font-size:13px;color:#525252;margin:0;">javier@buddyone.io · +34 600 000 000</p></td></tr></table></td></tr>
           <!-- FOOTER -->
-          <tr><td style="background:#080808;padding:28px 48px;text-align:center;border-radius:0 0 24px 24px;border:1px solid #1f1f1f;border-top:none;"><p style="font-size:12px;color:#525252;margin:0 0 12px;line-height:1.6;">Este email es una comunicación comercial de BuddyOne Technologies S.L.<br>Si no deseas recibir más emails, <a href="${APP_URL}/baja" style="color:#737373;text-decoration:underline;">date de baja aquí</a>.</p><p style="margin:0;"><a href="${APP_URL}" style="color:#7c3aed;text-decoration:none;font-size:12px;font-weight:600;">buddyoneapp.com</a><span style="color:#333;margin:0 8px;">·</span><a href="${APP_URL}/privacidad" style="color:#525252;text-decoration:none;font-size:12px;">Privacidad</a><span style="color:#333;margin:0 8px;">·</span><a href="${APP_URL}/empresas" style="color:#525252;text-decoration:none;font-size:12px;">Empresas</a></p></td></tr>
+          <tr><td style="background:#080808;padding:28px 48px;text-align:center;border-radius:0 0 24px 24px;border:1px solid #1f1f1f;border-top:none;"><p style="font-size:12px;color:#525252;margin:0 0 12px;line-height:1.6;">Este email es una comunicación comercial de BuddyOne Technologies S.L.<br>Si no deseas recibir más emails, <a href="${APP_URL}/baja" style="color:#737373;text-decoration:underline;">date de baja aquí</a>.</p><p style="margin:0;"><a href="${APP_URL}" style="color:#7c3aed;text-decoration:none;font-size:12px;font-weight:600;">buddyone.io</a><span style="color:#333;margin:0 8px;">·</span><a href="${APP_URL}/privacidad" style="color:#525252;text-decoration:none;font-size:12px;">Privacidad</a><span style="color:#333;margin:0 8px;">·</span><a href="${APP_URL}/empresas" style="color:#525252;text-decoration:none;font-size:12px;">Empresas</a></p></td></tr>
         </table>
       </td>
     </tr>
@@ -2647,7 +2652,7 @@ export async function sendB2BPerkCampaignEmail(recipient: B2BPerkCampaignRecipie
         companyName: recipient.companyName,
         employeeCount: recipient.employeeCount,
       }),
-      replyTo: "javier@buddyoneapp.com",
+      replyTo: "javier@buddyone.io",
     });
     if (error) {
       console.error("[Email] B2B perk campaign failed:", error, "→", recipient.contactEmail);

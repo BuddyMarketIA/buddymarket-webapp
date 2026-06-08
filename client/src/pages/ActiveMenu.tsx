@@ -232,7 +232,7 @@ function exportMenuToPDF(
     doc.setFontSize(7);
     doc.setFont("helvetica", "normal");
     doc.setTextColor(180, 180, 180);
-    doc.text(`Buddy One · buddyoneapp.com · Página ${i} de ${pageCount}`, pageW / 2, 292, { align: "center" });
+    doc.text(`Buddy One · buddyone.io · Página ${i} de ${pageCount}`, pageW / 2, 292, { align: "center" });
   }
   doc.save(`menu-${(activeMenu.name ?? "semanal").replace(/\s+/g, "-").toLowerCase()}.pdf`);
 }

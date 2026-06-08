@@ -3,7 +3,7 @@ import type { Express, Request, Response } from "express";
 import * as db from "./db";
 import { sendPaymentConfirmationEmail, sendPaymentAdminNotification } from "./email";
 
-const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "info@buddyoneapp.com";
+const ADMIN_EMAIL = process.env.ADMIN_EMAIL || "luis@buddyone.io";
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY || "");
 
@@ -465,9 +465,9 @@ export async function createCheckoutSession({
   };
 
   const planNames: Record<string, string> = {
-    basic: "BuddyMarket Basic",
-    premium: "BuddyMarket Premium",
-    pro_max: "BuddyMarket Pro Max",
+    basic: "BuddyOne Basic",
+    premium: "BuddyOne Premium",
+    pro_max: "BuddyOne Pro Max",
   };
 
   const sessionParams: Stripe.Checkout.SessionCreateParams = {

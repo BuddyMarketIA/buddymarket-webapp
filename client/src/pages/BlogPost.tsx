@@ -4,7 +4,7 @@ import { trpc } from "@/lib/trpc";
 
 const ORANGE = "#F97316";
 const LOGO_ICON = "https://d2xsxph8kpxj0f.cloudfront.net/310519663235208479/ndjzMo7PxeapbzLjBHjsKj/logo-icon-orange_0a0f0e6b.png";
-const BASE_URL = "https://buddyoneapp.com";
+const BASE_URL = "https://buddyone.io";
 
 const STATIC_BLOG_CONTENT: Record<string, { title: string; excerpt: string; content: string; category: string; coverImageUrl: string; readTimeMinutes: number; publishedAt: string; authorName: string }> = {
   "planificar-menu-semanal": {

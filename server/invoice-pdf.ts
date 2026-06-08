@@ -83,11 +83,11 @@ export async function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
 
       // Emisor (left)
       doc.fontSize(8).fillColor(orange).text("EMISOR", 50, infoY);
-      doc.fontSize(10).fillColor(darkGray).text("BuddyMarket Technologies S.L.", 50, infoY + 14);
+      doc.fontSize(10).fillColor(darkGray).text("BuddyOne Technologies S.L.", 50, infoY + 14);
       doc.fontSize(8).fillColor(medGray)
         .text("CIF: B-XXXXXXXX", 50, infoY + 28)
         .text("Madrid, España", 50, infoY + 40)
-        .text("facturacion@buddyoneapp.com", 50, infoY + 52);
+        .text("facturacion@buddyone.io", 50, infoY + 52);
 
       // Receptor (right)
       const rightX = 320;
@@ -184,14 +184,14 @@ export async function generateInvoicePdf(data: InvoiceData): Promise<Buffer> {
       doc.fontSize(8).fillColor(medGray)
         .text("• La facturación se basa en las licencias activas durante el período indicado.", 60, notesY + 24)
         .text("• Una licencia se considera activa si el empleado ha utilizado la app en los últimos 30 días.", 60, notesY + 36)
-        .text("• Para consultas sobre esta factura, contacte con facturacion@buddyoneapp.com", 60, notesY + 48);
+        .text("• Para consultas sobre esta factura, contacte con facturacion@buddyone.io", 60, notesY + 48);
 
       // ─── FOOTER ───────────────────────────────────────────────────
       const footerY = doc.page.height - 60;
       doc.moveTo(50, footerY).lineTo(50 + pageWidth, footerY).strokeColor("#E5E7EB").lineWidth(0.5).stroke();
       doc.fontSize(7).fillColor(medGray)
         .text(
-          "BuddyMarket Technologies S.L. · CIF: B-XXXXXXXX · Madrid, España · buddyoneapp.com",
+          "BuddyOne Technologies S.L. · CIF: B-XXXXXXXX · Madrid, España · buddyone.io",
           50, footerY + 10,
           { align: "center", width: pageWidth }
         );

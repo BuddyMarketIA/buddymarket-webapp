@@ -43,7 +43,7 @@ async function sendHouseholdInviteEmail(params: {
   await resend.emails.send({
     from: process.env.EMAIL_FROM || "Luis de BuddyOne <luis@buddyone.io>",
     to: params.invitedEmail,
-    subject: `${params.inviterName} te invita a unirte al hogar "${params.householdName}" en BuddyMarket`,
+    subject: `${params.inviterName} te invita a unirte al hogar "${params.householdName}" en BuddyOne`,
     html: `
 <!DOCTYPE html>
 <html lang="es">
@@ -53,14 +53,14 @@ async function sendHouseholdInviteEmail(params: {
     <tr><td align="center">
       <table width="560" cellpadding="0" cellspacing="0" style="background:#fff;border-radius:16px;overflow:hidden;box-shadow:0 4px 24px rgba(0,0,0,0.08);">
         <tr><td style="background:linear-gradient(135deg,#1a1a2e 0%,#16213e 100%);padding:32px 40px;text-align:center;">
-          <h1 style="color:#f97316;margin:0;font-size:28px;font-weight:800;">BuddyMarket</h1>
+          <h1 style="color:#f97316;margin:0;font-size:28px;font-weight:800;">BuddyOne</h1>
           <p style="color:#94a3b8;margin:8px 0 0;font-size:14px;">Nutrición inteligente para toda la familia</p>
         </td></tr>
         <tr><td style="padding:40px;">
           <h2 style="color:#1a1a2e;margin:0 0 16px;font-size:22px;">¡Te han invitado al hogar familiar!</h2>
           <p style="color:#64748b;line-height:1.6;margin:0 0 24px;">
             <strong style="color:#1a1a2e;">${params.inviterName}</strong> te invita a unirte al hogar 
-            <strong style="color:#f97316;">"${params.householdName}"</strong> en BuddyMarket para compartir 
+            <strong style="color:#f97316;">"${params.householdName}"</strong> en BuddyOne para compartir 
             el menú semanal y la lista de la compra.
           </p>
           <div style="background:#fff7ed;border:1px solid #fed7aa;border-radius:12px;padding:20px;margin:0 0 28px;">
@@ -82,7 +82,7 @@ async function sendHouseholdInviteEmail(params: {
           </p>
         </td></tr>
         <tr><td style="background:#f8fafc;padding:20px 40px;text-align:center;border-top:1px solid #e2e8f0;">
-          <p style="color:#94a3b8;font-size:12px;margin:0;">© 2026 BuddyMarket · <a href="https://buddyoneapp.com" style="color:#f97316;text-decoration:none;">buddyoneapp.com</a></p>
+          <p style="color:#94a3b8;font-size:12px;margin:0;">© 2026 BuddyOne · <a href="https://buddyone.io" style="color:#f97316;text-decoration:none;">buddyone.io</a></p>
         </td></tr>
       </table>
     </td></tr>

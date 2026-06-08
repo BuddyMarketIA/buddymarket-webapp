@@ -1,5 +1,5 @@
 /**
- * Jobs de email programados para BuddyMarket
+ * Jobs de email programados para BuddyOne
  *
  * Flujos implementados:
  * - Lunes 08:00 UTC: Recordatorio de check-in semanal a todos los pacientes activos
@@ -829,7 +829,7 @@ export async function runDailySummaryJob() {
             .limit(1);
           if (suggestedRecipe[0]) {
             tomorrowRecipeName = suggestedRecipe[0].name;
-            tomorrowRecipeUrl = `${process.env.PUBLIC_APP_URL || "https://buddyoneapp.com"}/app/recipes/${suggestedRecipe[0].id}`;
+            tomorrowRecipeUrl = `${process.env.PUBLIC_APP_URL || "https://buddyone.io"}/app/recipes/${suggestedRecipe[0].id}`;
           }
         } catch (_) { /* no recipe suggestion */ }
 

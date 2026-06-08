@@ -45,8 +45,8 @@ export default function RGPD() {
                 ["Denominación social", "BUDDY MARKET IA, S.L."],
                 ["CIF", "B-56.819.576"],
                 ["Domicilio social", "Calle Villanueva 2, Esc. 3, 3ºC, 28001 Madrid (España)"],
-                ["Email de contacto", "info@buddyoneapp.com"],
-                ["Delegado de Protección de Datos (DPO)", "dpo@buddyoneapp.com"],
+                ["Email de contacto", "luis@buddyone.io"],
+                ["Delegado de Protección de Datos (DPO)", "dpo@buddyone.io"],
                 ["Registro Mercantil", "Inscrita en el Registro Mercantil de Madrid"],
               ].map(([label, value], i) => (
                 <tr key={i} style={{ borderBottom: "1px solid #f3f4f6" }}>
@@ -179,7 +179,7 @@ export default function RGPD() {
 
           <div style={{ marginTop: 24, padding: "16px 20px", background: "#f0fdf4", borderRadius: 12, border: "1px solid #bbf7d0" }}>
             <p style={{ fontSize: 14, color: "#166534", margin: 0 }}>
-              <strong>Cómo ejercer sus derechos:</strong> Envíe un email a <a href="mailto:dpo@buddyoneapp.com" style={{ color: ORANGE }}>dpo@buddyoneapp.com</a> indicando el derecho que desea ejercer y adjuntando copia de su DNI/NIE/Pasaporte. Plazo de respuesta: máximo 30 días naturales (prorrogable 2 meses en casos complejos, Art. 12.3 RGPD).
+              <strong>Cómo ejercer sus derechos:</strong> Envíe un email a <a href="mailto:dpo@buddyone.io" style={{ color: ORANGE }}>dpo@buddyone.io</a> indicando el derecho que desea ejercer y adjuntando copia de su DNI/NIE/Pasaporte. Plazo de respuesta: máximo 30 días naturales (prorrogable 2 meses en casos complejos, Art. 12.3 RGPD).
             </p>
           </div>
 
@@ -223,7 +223,7 @@ export default function RGPD() {
           <ul style={{ paddingLeft: 24, display: "flex", flexDirection: "column", gap: 6 }}>
             <li>Obtener intervención humana por parte de nuestro equipo.</li>
             <li>Expresar su punto de vista respecto a las recomendaciones.</li>
-            <li>Impugnar cualquier decisión automatizada contactando a dpo@buddyoneapp.com.</li>
+            <li>Impugnar cualquier decisión automatizada contactando a dpo@buddyone.io.</li>
           </ul>
         </Section>
 
@@ -319,7 +319,7 @@ export default function RGPD() {
         <Section title="13. Contacto del Delegado de Protección de Datos">
           <div style={{ background: "#f0fdf4", borderRadius: 12, padding: "20px 24px", border: "1px solid #bbf7d0" }}>
             <p style={{ fontSize: 15, color: "#166534", margin: "0 0 8px", fontWeight: 700 }}>Delegado de Protección de Datos (DPO)</p>
-            <p style={{ fontSize: 14, color: "#374151", margin: "0 0 4px" }}>Email: <a href="mailto:dpo@buddyoneapp.com" style={{ color: ORANGE, fontWeight: 600 }}>dpo@buddyoneapp.com</a></p>
+            <p style={{ fontSize: 14, color: "#374151", margin: "0 0 4px" }}>Email: <a href="mailto:dpo@buddyone.io" style={{ color: ORANGE, fontWeight: 600 }}>dpo@buddyone.io</a></p>
             <p style={{ fontSize: 14, color: "#374151", margin: "0 0 4px" }}>Dirección postal: BUDDY MARKET IA, S.L. — Att. DPO — Calle Villanueva 2, Esc. 3, 3ºC, 28001 Madrid</p>
             <p style={{ fontSize: 12, color: "#6b7280", margin: "12px 0 0" }}>El DPO atenderá cualquier consulta relativa al tratamiento de datos personales en un plazo máximo de 30 días naturales.</p>
           </div>

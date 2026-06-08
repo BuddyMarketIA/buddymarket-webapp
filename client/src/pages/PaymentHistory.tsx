@@ -222,8 +222,8 @@ export default function PaymentHistory() {
         {/* Info note */}
         <p className="text-xs text-muted-foreground/70 text-center pb-4">
           Para cualquier consulta sobre pagos, contacta con nosotros en{" "}
-          <a href="mailto:soporte@buddyoneapp.com" className="text-orange-500 underline">
-            soporte@buddyoneapp.com
+          <a href="mailto:soporte@buddyone.io" className="text-orange-500 underline">
+            soporte@buddyone.io
           </a>
         </p>
       </div>

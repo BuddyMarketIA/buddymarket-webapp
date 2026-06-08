@@ -56,7 +56,7 @@ async function sendTicketConfirmationEmail(
   try {
     await sendEmail({
       to: userEmail,
-      subject: `[BuddyMarket Soporte #${ticketId}] Hemos recibido tu consulta`,
+      subject: `[BuddyOne Soporte #${ticketId}] Hemos recibido tu consulta`,
       html: `
         <div style="font-family:Inter,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;border:1px solid #e5e7eb;">
           <div style="background:linear-gradient(135deg,#F97316,#EA580C);padding:32px 40px;">
@@ -78,13 +78,13 @@ async function sendTicketConfirmationEmail(
               <strong>Soporte</strong> de tu cuenta.
             </p>
             <div style="margin-top:28px;">
-              <a href="https://buddyoneapp.com/soporte" style="background:#F97316;color:#fff;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;display:inline-block;">
+              <a href="https://buddyone.io/soporte" style="background:#F97316;color:#fff;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;display:inline-block;">
                 Ver mi ticket →
               </a>
             </div>
           </div>
           <div style="padding:20px 40px;border-top:1px solid #f3f4f6;text-align:center;">
-            <p style="color:#9ca3af;font-size:12px;margin:0;">BuddyMarket · <a href="mailto:info@buddyoneapp.com" style="color:#F97316;text-decoration:none;">info@buddyoneapp.com</a></p>
+            <p style="color:#9ca3af;font-size:12px;margin:0;">BuddyOne · <a href="mailto:info@buddyone.io" style="color:#F97316;text-decoration:none;">info@buddyone.io</a></p>
           </div>
         </div>
       `,
@@ -104,7 +104,7 @@ async function sendAdminReplyEmail(
   try {
     await sendEmail({
       to: userEmail,
-      subject: `[BuddyMarket Soporte #${ticketId}] Hemos respondido a tu consulta`,
+      subject: `[BuddyOne Soporte #${ticketId}] Hemos respondido a tu consulta`,
       html: `
         <div style="font-family:Inter,sans-serif;max-width:560px;margin:0 auto;background:#fff;border-radius:16px;overflow:hidden;border:1px solid #e5e7eb;">
           <div style="background:linear-gradient(135deg,#F97316,#EA580C);padding:32px 40px;">
@@ -113,18 +113,18 @@ async function sendAdminReplyEmail(
           </div>
           <div style="padding:32px 40px;">
             <p style="color:#374151;font-size:15px;line-height:1.7;">Hola <strong>${userName}</strong>,</p>
-            <p style="color:#374151;font-size:15px;line-height:1.7;">El equipo de BuddyMarket ha respondido a tu consulta:</p>
+            <p style="color:#374151;font-size:15px;line-height:1.7;">El equipo de BuddyOne ha respondido a tu consulta:</p>
             <div style="background:#f9fafb;border-left:4px solid #F97316;border-radius:0 12px 12px 0;padding:20px 24px;margin:20px 0;">
               <p style="color:#374151;font-size:14px;line-height:1.8;margin:0;white-space:pre-wrap;">${replyMessage}</p>
             </div>
             <div style="margin-top:28px;">
-              <a href="https://buddyoneapp.com/soporte" style="background:#F97316;color:#fff;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;display:inline-block;">
+              <a href="https://buddyone.io/soporte" style="background:#F97316;color:#fff;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:700;font-size:14px;display:inline-block;">
                 Ver conversación completa →
               </a>
             </div>
           </div>
           <div style="padding:20px 40px;border-top:1px solid #f3f4f6;text-align:center;">
-            <p style="color:#9ca3af;font-size:12px;margin:0;">BuddyMarket · <a href="mailto:info@buddyoneapp.com" style="color:#F97316;text-decoration:none;">info@buddyoneapp.com</a></p>
+            <p style="color:#9ca3af;font-size:12px;margin:0;">BuddyOne · <a href="mailto:info@buddyone.io" style="color:#F97316;text-decoration:none;">info@buddyone.io</a></p>
           </div>
         </div>
       `,
