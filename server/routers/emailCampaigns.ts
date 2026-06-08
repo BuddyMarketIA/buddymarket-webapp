@@ -13,7 +13,7 @@ import { Resend } from "resend";
 import { TRPCError } from "@trpc/server";
 
 const resend = new Resend(process.env.RESEND_API_KEY);
-const FROM_EMAIL = process.env.EMAIL_FROM || "BuddyMarket <info@buddymarket.io>";
+const FROM_EMAIL = process.env.EMAIL_FROM || "Luis de BuddyOne <luis@buddyone.io>";
 
 // Rate limit: max 10 emails per second (Resend free tier limit)
 function sleep(ms: number) {

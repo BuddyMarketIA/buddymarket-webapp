@@ -4,7 +4,7 @@ const resend = new Resend(process.env.RESEND_API_KEY);
 
 // Use verified Resend domain as sender. To use a custom domain (info@buddyoneapp.com),
 // verify buddyoneapp.com at https://resend.com/domains and update this value.
-const CUSTOM_FROM_EMAIL = process.env.EMAIL_FROM || "BuddyMarket <onboarding@resend.dev>";
+const CUSTOM_FROM_EMAIL = process.env.EMAIL_FROM || "Luis de BuddyOne <luis@buddyone.io>";
 const FROM_EMAIL = CUSTOM_FROM_EMAIL;
 const APP_URL = process.env.PUBLIC_APP_URL || "https://buddyoneapp.com";
 

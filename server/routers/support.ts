@@ -12,7 +12,7 @@ import { notifyOwner } from "../_core/notification";
 import { Resend } from "resend";
 
 const _resend = new Resend(process.env.RESEND_API_KEY);
-const _FROM = process.env.EMAIL_FROM || "BuddyMarket <onboarding@resend.dev>";
+const _FROM = process.env.EMAIL_FROM || "Luis de BuddyOne <luis@buddyone.io>";
 async function sendEmail(opts: { to: string; subject: string; html: string }) {
   try {
     await _resend.emails.send({ from: _FROM, to: opts.to, subject: opts.subject, html: opts.html });

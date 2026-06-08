@@ -500,7 +500,7 @@ Duración: ${input.durationWeeks} semana(s)`;
       const resend = new Resend(resendKey);
       const dateLabel = new Date(input.weekStartDate).toLocaleDateString("es-ES", { day: "numeric", month: "long" });
       await resend.emails.send({
-        from: "BuddyOne <noreply@buddyone.app>",
+        from: "Luis de BuddyOne <luis@buddyone.io>",
         to: patient.email,
         subject: `Tu informe nutricional — semana del ${dateLabel}`,
         html: `<!DOCTYPE html><html lang="es"><body style="font-family:system-ui,sans-serif;background:#f9fafb;padding:24px">
@@ -582,7 +582,7 @@ Duración: ${input.durationWeeks} semana(s)`;
 
       const resend = new Resend(resendKey);
       await resend.emails.send({
-        from: "BuddyOne <noreply@buddyone.app>",
+        from: "Luis de BuddyOne <luis@buddyone.io>",
         to: patient.email,
         subject: `${expertName} te invita a unirte a BuddyOne`,
         html: `<!DOCTYPE html><html lang="es"><body style="font-family:system-ui,sans-serif;background:#f9fafb;padding:24px">

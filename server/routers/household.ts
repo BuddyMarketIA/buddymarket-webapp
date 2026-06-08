@@ -41,7 +41,7 @@ async function sendHouseholdInviteEmail(params: {
   if (!process.env.RESEND_API_KEY) return;
   const resend = new Resend(process.env.RESEND_API_KEY);
   await resend.emails.send({
-    from: process.env.EMAIL_FROM || "BuddyMarket <onboarding@resend.dev>",
+    from: process.env.EMAIL_FROM || "Luis de BuddyOne <luis@buddyone.io>",
     to: params.invitedEmail,
     subject: `${params.inviterName} te invita a unirte al hogar "${params.householdName}" en BuddyMarket`,
     html: `
