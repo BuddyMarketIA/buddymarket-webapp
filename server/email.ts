@@ -2693,3 +2693,330 @@ export async function sendB2BPerkCampaignBatch(recipients: B2BPerkCampaignRecipi
 
   return { total: recipients.length, sent, failed, results };
 }
+
+
+// ═══════════════════════════════════════════════════════════════════════════════
+// NUEVOS TEMPLATES v2 — BuddyOne
+// ═══════════════════════════════════════════════════════════════════════════════
+
+function featureCardHtml(emoji: string, title: string, desc: string, bg = "#fff7ed", border = "#fed7aa", titleColor = "#c2410c"): string {
+  return `<table width="100%" cellpadding="0" cellspacing="0" style="background:${bg};border-radius:16px;padding:20px 24px;margin:0 0 16px;border:1.5px solid ${border};">
+  <tr>
+    <td width="52" style="vertical-align:top;padding-right:16px;font-size:32px;line-height:1;">${emoji}</td>
+    <td style="vertical-align:top;">
+      <p style="color:${titleColor};font-size:15px;font-weight:700;margin:0 0 6px;">${title}</p>
+      <p style="color:#475569;font-size:14px;line-height:1.6;margin:0;">${desc}</p>
+    </td>
+  </tr>
+</table>`;
+}
+
+function stepProgressHtml(step: number, total: number, color = "#7c3aed"): string {
+  const pct = Math.round((step / total) * 100);
+  return `<p style="color:#94a3b8;font-size:12px;font-weight:700;text-align:center;text-transform:uppercase;letter-spacing:1.5px;margin:0 0 8px;">Paso ${step} de ${total}</p>
+<table width="100%" cellpadding="0" cellspacing="0" style="margin:0 0 32px;">
+  <tr><td style="background:#f1f5f9;border-radius:50px;height:8px;overflow:hidden;">
+    <div style="background:${color};width:${pct}%;height:8px;border-radius:50px;"></div>
+  </td></tr>
+</table>`;
+}
+
+// ── ONBOARDING DÍA 0 v2: BIENVENIDA CON TOUR COMPLETO ───────────────────────
+export function welcomeOnboardingEmailHtml(userName: string): string {
+  return emailWrapper(
+    emailHeader("🎉", "¡Bienvenido a BuddyOne!", "Todo lo que necesitas para cuidarte, en un solo lugar", "linear-gradient(135deg,#7c3aed 0%,#4f46e5 100%)") + `
+  <tr><td style="padding:44px 40px 36px;">
+    ${stepProgressHtml(1, 4, "#7c3aed")}
+    <p style="color:#475569;font-size:15px;line-height:1.7;margin:0 0 28px;">Hola <strong>${userName}</strong> 👋 Acabas de unirte a BuddyOne. En los próximos días te presentaremos todo lo que puedes hacer. Hoy, lo más importante: <strong>¿qué es BuddyOne?</strong></p>
+    ${featureCardHtml("🥗", "BuddyMarket — Tu despensa inteligente", "Gestiona tu inventario, genera la lista de la compra automáticamente y descubre qué recetas puedes cocinar con lo que tienes en casa.", "#fff7ed", "#fed7aa", "#c2410c")}
+    ${featureCardHtml("🤖", "Menús con IA — Personalizados para ti", "La IA genera tu menú semanal completo basándose en tus objetivos, preferencias, alergias y lo que tienes en casa. Listo en 30 segundos.", "#faf5ff", "#c4b5fd", "#6d28d9")}
+    ${featureCardHtml("👨‍⚕️", "BuddyExperts — Tu nutricionista online", "Conecta con nutricionistas certificados que diseñan tu plan personalizado, hacen seguimiento semanal y responden tus dudas.", "#f0f9ff", "#7dd3fc", "#0369a1")}
+    ${featureCardHtml("📊", "Diario nutricional — Registra lo que comes", "Escanea el código de barras, busca alimentos o dicta por voz. BuddyOne calcula automáticamente tus macros y calorías.", "#f0fdf4", "#86efac", "#166534")}
+    ${featureCardHtml("🏆", "Retos y logros — Mantente motivado", "Completa retos diarios, desbloquea logros y mantén tu racha activa. Comparte tus victorias con amigos.", "#fffbeb", "#fde68a", "#92400e")}
+    ${ctaButton("Empezar mi aventura en BuddyOne", APP_URL + "/app")}
+    <p style="color:#94a3b8;font-size:13px;text-align:center;margin:0;">Mañana te contamos cómo registrar tus comidas de forma rápida 📱</p>
+  </td></tr>`
+  );
+}
+
+export async function sendWelcomeOnboardingEmail(to: string, userName: string): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  return sendEmail({ to, subject: `🎉 ¡Bienvenido a BuddyOne, ${userName}! Tu guía de inicio`, html: welcomeOnboardingEmailHtml(userName) });
+}
+
+// ── ONBOARDING DÍA 2: DIARIO NUTRICIONAL ────────────────────────────────────
+export function onboardingDay2EmailHtml(userName: string): string {
+  return emailWrapper(
+    emailHeader("📱", "Registra lo que comes", "El diario nutricional más rápido que has visto", "linear-gradient(135deg,#7c3aed 0%,#4f46e5 100%)") + `
+  <tr><td style="padding:44px 40px 36px;">
+    ${stepProgressHtml(2, 4, "#7c3aed")}
+    <p style="color:#475569;font-size:15px;line-height:1.7;margin:0 0 28px;">Hola <strong>${userName}</strong> 👋 El mayor secreto del éxito nutricional es <strong>saber qué estás comiendo</strong>. BuddyOne lo hace tan fácil que no tendrás excusa.</p>
+    ${featureCardHtml("📷", "Escanea el código de barras", "Apunta la cámara al producto y BuddyOne rellena todos los datos nutricionales automáticamente.", "#fff7ed", "#fed7aa", "#c2410c")}
+    ${featureCardHtml("🔍", "Busca en nuestra base de datos", "Más de 2 millones de alimentos españoles y europeos. Busca por nombre y añade en un tap.", "#f0f9ff", "#7dd3fc", "#0369a1")}
+    ${featureCardHtml("🎤", "Dicta por voz", "Di 'pollo a la plancha 150 gramos' y BuddyOne lo registra automáticamente.", "#f0fdf4", "#86efac", "#166534")}
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#faf5ff,#ede9fe);border-radius:16px;padding:20px 24px;margin:24px 0;border:1.5px solid #c4b5fd;">
+      <tr><td>
+        <p style="color:#6d28d9;font-size:14px;font-weight:700;margin:0 0 8px;">💡 Tip de hoy</p>
+        <p style="color:#4c1d95;font-size:14px;line-height:1.6;margin:0;">Registrar las comidas durante <strong>21 días seguidos</strong> aumenta un 73% las probabilidades de alcanzar tu objetivo de peso. ¡Empieza hoy!</p>
+      </td></tr>
+    </table>
+    ${ctaButton("Registrar mi primera comida", APP_URL + "/app/diary")}
+    <p style="color:#94a3b8;font-size:13px;text-align:center;margin:0;">En 2 días: cómo generar tu menú semanal con IA 🤖</p>
+  </td></tr>`
+  );
+}
+
+export async function sendOnboardingDay2Email(to: string, userName: string): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  return sendEmail({ to, subject: `📱 Día 2 — Registra tus comidas en 10 segundos`, html: onboardingDay2EmailHtml(userName) });
+}
+
+// ── ONBOARDING DÍA 4: MENÚ IA ───────────────────────────────────────────────
+export function onboardingDay4EmailHtml(userName: string): string {
+  return emailWrapper(
+    emailHeader("🤖", "Menús con IA para toda la semana", "Personalizados. Automáticos. Deliciosos.", "linear-gradient(135deg,#f97316 0%,#ef4444 100%)") + `
+  <tr><td style="padding:44px 40px 36px;">
+    ${stepProgressHtml(3, 4, "#f97316")}
+    <p style="color:#475569;font-size:15px;line-height:1.7;margin:0 0 28px;">Hola <strong>${userName}</strong> 🤖 ¿Y si no tuvieras que pensar nunca más qué comer? BuddyOne genera tu menú semanal completo en 30 segundos.</p>
+    ${featureCardHtml("🎯", "Tus objetivos personales", "Pérdida de peso, ganancia muscular, mantenimiento o rendimiento deportivo.", "#fff7ed", "#fed7aa", "#c2410c")}
+    ${featureCardHtml("🚫", "Tus alergias e intolerancias", "Sin gluten, sin lactosa, vegetariano, vegano... BuddyOne lo respeta siempre.", "#fef2f2", "#fecaca", "#b91c1c")}
+    ${featureCardHtml("🛒", "Lo que tienes en casa", "Conectado con tu inventario, la IA prioriza los ingredientes que ya tienes para reducir el desperdicio.", "#f0fdf4", "#86efac", "#166534")}
+    ${featureCardHtml("💰", "Tu presupuesto semanal", "Indica cuánto quieres gastar y la IA optimiza el menú para ajustarse.", "#fffbeb", "#fde68a", "#92400e")}
+    ${ctaButton("Generar mi primer menú con IA", APP_URL + "/app/menus/generate")}
+    <p style="color:#94a3b8;font-size:13px;text-align:center;margin:0;">En 3 días: cómo conectar con un nutricionista experto 👨‍⚕️</p>
+  </td></tr>`
+  );
+}
+
+export async function sendOnboardingDay4Email(to: string, userName: string): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  return sendEmail({ to, subject: `🤖 Día 4 — Tu menú semanal generado por IA en 30 segundos`, html: onboardingDay4EmailHtml(userName) });
+}
+
+// ── ONBOARDING DÍA 7: BUDDYEXPERTS ──────────────────────────────────────────
+export function onboardingDay7EmailHtml(userName: string, streakDays = 7): string {
+  return emailWrapper(
+    emailHeader("👨‍⚕️", "¡Una semana con BuddyOne!", "Ahora conoce a tus nutricionistas online", "linear-gradient(135deg,#059669 0%,#047857 100%)") + `
+  <tr><td style="padding:44px 40px 36px;">
+    ${stepProgressHtml(4, 4, "#059669")}
+    <p style="color:#475569;font-size:15px;line-height:1.7;margin:0 0 28px;">Hola <strong>${userName}</strong> 🎉 Llevas una semana completa con BuddyOne. Eso ya es un logro. Ahora te presentamos el nivel siguiente: <strong>BuddyExperts</strong>.</p>
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-radius:20px;padding:28px;margin:0 0 28px;border:2px solid #86efac;text-align:center;">
+      <tr><td>
+        <p style="color:#166534;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:0 0 8px;">Tu logro de la semana</p>
+        <p style="color:#0f172a;font-size:48px;font-weight:900;margin:0;line-height:1;">🔥 ${streakDays} días</p>
+        <p style="color:#059669;font-size:14px;margin:8px 0 0;">de racha activa · ¡Sigue así!</p>
+      </td></tr>
+    </table>
+    ${featureCardHtml("📋", "Diseña tu plan nutricional personalizado", "Un nutricionista certificado analiza tu perfil y crea un plan 100% adaptado a ti.", "#f0fdf4", "#86efac", "#166534")}
+    ${featureCardHtml("📊", "Seguimiento semanal de tu progreso", "Cada semana revisa tus métricas, ajusta el plan y te da feedback personalizado.", "#f0f9ff", "#7dd3fc", "#0369a1")}
+    ${featureCardHtml("💬", "Chat directo con tu nutricionista", "Resuelve dudas, comparte fotos de tus platos y recibe orientación en tiempo real.", "#faf5ff", "#c4b5fd", "#6d28d9")}
+    ${ctaButton("Conocer a los BuddyExperts", APP_URL + "/app/experts")}
+  </td></tr>`
+  );
+}
+
+export async function sendOnboardingDay7Email(to: string, userName: string, streakDays?: number): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  return sendEmail({ to, subject: `👨‍⚕️ ¡Una semana con BuddyOne! Conoce a tus nutricionistas`, html: onboardingDay7EmailHtml(userName, streakDays) });
+}
+
+// ── ONBOARDING DÍA 14: MÉTRICAS ─────────────────────────────────────────────
+export function onboardingDay14EmailHtml(userName: string): string {
+  return emailWrapper(
+    emailHeader("📈", "2 semanas con BuddyOne", "Es hora de ver tus primeros resultados", "linear-gradient(135deg,#059669 0%,#047857 100%)") + `
+  <tr><td style="padding:44px 40px 36px;">
+    <p style="color:#475569;font-size:15px;line-height:1.7;margin:0 0 28px;">Hola <strong>${userName}</strong> 💪 Llevas 2 semanas con BuddyOne. Es el momento perfecto para revisar tus métricas.</p>
+    ${featureCardHtml("⚖️", "Peso corporal", "Registra tu peso semanalmente y visualiza la tendencia real de tu progreso.", "#f0fdf4", "#86efac", "#166534")}
+    ${featureCardHtml("📏", "Medidas corporales", "Cintura, cadera, pecho, brazos... Fotos de progreso con comparativa lado a lado.", "#f0f9ff", "#7dd3fc", "#0369a1")}
+    ${featureCardHtml("⚡", "Energía y bienestar", "Registra cómo te sientes cada día. BuddyOne correlaciona tu energía con tu alimentación.", "#faf5ff", "#c4b5fd", "#6d28d9")}
+    ${featureCardHtml("🏃", "Actividad física", "Conecta con Apple Health, Google Fit o Garmin para sincronizar tus entrenamientos.", "#fff7ed", "#fed7aa", "#c2410c")}
+    ${ctaButton("Ver mis métricas de progreso", APP_URL + "/app/metrics")}
+  </td></tr>`
+  );
+}
+
+export async function sendOnboardingDay14Email(to: string, userName: string): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  return sendEmail({ to, subject: `📈 Día 14 — ¿Estás viendo resultados? Mide tu progreso`, html: onboardingDay14EmailHtml(userName) });
+}
+
+// ── RECORDATORIO: ¿ESTÁS REGISTRANDO TUS COMIDAS? ───────────────────────────
+export function mealTrackingReminderEmailHtml(userName: string, currentStreak = 12): string {
+  return emailWrapper(
+    emailHeader("🍽️", "¿Has registrado tus comidas hoy?", "Son las 20:00 y aún no has anotado nada", "linear-gradient(135deg,#f97316 0%,#ef4444 100%)") + `
+  <tr><td style="padding:44px 40px 36px;">
+    <p style="color:#475569;font-size:15px;line-height:1.7;margin:0 0 24px;">Hola <strong>${userName}</strong> 👋 Son las 20:00 y tu diario de hoy está vacío. Registrar ahora lo que has comido tarda menos de 2 minutos.</p>
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#fff7ed,#ffedd5);border-radius:20px;padding:28px;margin:0 0 24px;border:2px solid #fed7aa;text-align:center;">
+      <tr><td>
+        <p style="color:#c2410c;font-size:13px;font-weight:700;margin:0 0 8px;">Tu racha actual</p>
+        <p style="color:#0f172a;font-size:48px;font-weight:900;margin:0;line-height:1;">🔥 ${currentStreak}</p>
+        <p style="color:#f97316;font-size:14px;font-weight:700;margin:8px 0 0;">días consecutivos · ¡No la pierdas!</p>
+      </td></tr>
+    </table>
+    ${featureCardHtml("📷", "Escanea el código de barras", "El método más rápido. Apunta la cámara y listo.", "#fff7ed", "#fed7aa", "#c2410c")}
+    ${featureCardHtml("🎤", "Usa la voz", "Di lo que has comido y BuddyOne lo registra automáticamente.", "#f0fdf4", "#86efac", "#166534")}
+    ${featureCardHtml("📋", "Copia de ayer", "Si hoy has comido parecido a ayer, copia el registro con un tap.", "#f0f9ff", "#7dd3fc", "#0369a1")}
+    ${ctaButton("Registrar mis comidas ahora", APP_URL + "/app/diary")}
+    <p style="color:#94a3b8;font-size:12px;text-align:center;margin:0;">Puedes desactivar estos recordatorios en tu perfil → Notificaciones</p>
+  </td></tr>`
+  );
+}
+
+export async function sendMealTrackingReminderEmail(to: string, userName: string, currentStreak?: number): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  return sendEmail({ to, subject: `🍽️ ${userName}, ¿has registrado lo que has comido hoy?`, html: mealTrackingReminderEmailHtml(userName, currentStreak) });
+}
+
+// ── RECORDATORIO: PESA TU PROGRESO SEMANAL ──────────────────────────────────
+export function weeklyWeighInReminderEmailHtml(userName: string): string {
+  return emailWrapper(
+    emailHeader("⚖️", "¡Es lunes, hora de pesarte!", "Registra tu peso semanal para ver tu progreso real", "linear-gradient(135deg,#059669 0%,#047857 100%)") + `
+  <tr><td style="padding:44px 40px 36px;">
+    <p style="color:#475569;font-size:15px;line-height:1.7;margin:0 0 24px;">Hola <strong>${userName}</strong> ⚖️ El lunes por la mañana, en ayunas, es el mejor momento para pesarte. Es la medición más consistente y te da la tendencia real.</p>
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#faf5ff,#ede9fe);border-radius:16px;padding:20px 24px;margin:0 0 24px;border:1.5px solid #c4b5fd;">
+      <tr><td>
+        <p style="color:#6d28d9;font-size:14px;font-weight:700;margin:0 0 8px;">💡 ¿Por qué pesarse el lunes en ayunas?</p>
+        <p style="color:#4c1d95;font-size:14px;line-height:1.6;margin:0;">El peso fluctúa hasta ±2kg al día. Pesarte siempre en las mismas condiciones elimina el ruido y muestra la tendencia real de tu progreso.</p>
+      </td></tr>
+    </table>
+    ${ctaButton("Registrar mi peso de hoy", APP_URL + "/app/metrics/weight")}
+  </td></tr>`
+  );
+}
+
+export async function sendWeeklyWeighInReminderEmail(to: string, userName: string): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  return sendEmail({ to, subject: `⚖️ Es lunes — Momento de pesarte y registrar tu progreso`, html: weeklyWeighInReminderEmailHtml(userName) });
+}
+
+// ── NOVEDADES DE BUDDYONE (NEWSLETTER) ──────────────────────────────────────
+export function buddyOneNewsletterEmailHtml(userName: string, month = "Junio 2026"): string {
+  return emailWrapper(
+    emailHeader("🚀", "Novedades de BuddyOne", `${month} — Lo nuevo que hemos lanzado para ti`, "linear-gradient(135deg,#0f172a 0%,#1e3a5f 100%)") + `
+  <tr><td style="padding:44px 40px 36px;">
+    <p style="color:#475569;font-size:15px;line-height:1.7;margin:0 0 28px;">Hola <strong>${userName}</strong> 👋 Este mes hemos lanzado nuevas funcionalidades. Aquí tienes el resumen.</p>
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#0f172a,#1e3a5f);border-radius:20px;padding:28px;margin:0 0 16px;">
+      <tr><td>
+        <p style="color:#f97316;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin:0 0 12px;">🆕 NUEVO</p>
+        <p style="color:#fff;font-size:20px;font-weight:800;margin:0 0 8px;">Análisis de platos con foto</p>
+        <p style="color:#94a3b8;font-size:14px;line-height:1.6;margin:0 0 16px;">Fotografía tu plato y la IA estima automáticamente las calorías y macros.</p>
+        <a href="${APP_URL}/app/diary" style="display:inline-block;background:linear-gradient(135deg,#f97316,#ef4444);color:#fff;text-decoration:none;font-size:13px;font-weight:700;padding:10px 24px;border-radius:50px;">Probar ahora →</a>
+      </td></tr>
+    </table>
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#0f172a,#1e3a5f);border-radius:20px;padding:28px;margin:0 0 16px;">
+      <tr><td>
+        <p style="color:#7c3aed;font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1.5px;margin:0 0 12px;">🆕 NUEVO</p>
+        <p style="color:#fff;font-size:20px;font-weight:800;margin:0 0 8px;">Retos sociales</p>
+        <p style="color:#94a3b8;font-size:14px;line-height:1.6;margin:0 0 16px;">Crea retos con amigos, compite en rankings y celebra los logros juntos.</p>
+        <a href="${APP_URL}/app/challenges" style="display:inline-block;background:linear-gradient(135deg,#7c3aed,#4f46e5);color:#fff;text-decoration:none;font-size:13px;font-weight:700;padding:10px 24px;border-radius:50px;">Ver retos →</a>
+      </td></tr>
+    </table>
+    ${ctaButton("Ver todas las novedades", APP_URL + "/novedades")}
+    <p style="color:#94a3b8;font-size:12px;text-align:center;margin:0;">Recibes este email porque te suscribiste a las novedades · <a href="${APP_URL}/baja" style="color:#64748b;">Darse de baja</a></p>
+  </td></tr>`
+  );
+}
+
+export async function sendBuddyOneNewsletterEmail(to: string, userName: string, month?: string): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  return sendEmail({ to, subject: `🚀 Novedades BuddyOne — ${month || "Junio 2026"}`, html: buddyOneNewsletterEmailHtml(userName, month) });
+}
+
+// ── TIP NUTRICIONAL SEMANAL (NEWSLETTER) ────────────────────────────────────
+export function weeklyNutritionTipEmailHtml(userName: string, tipTitle: string, tipContent: string, tipEmoji = "💡"): string {
+  return emailWrapper(
+    emailHeader(tipEmoji, "Tip nutricional de la semana", tipTitle, "linear-gradient(135deg,#059669 0%,#0d9488 100%)") + `
+  <tr><td style="padding:44px 40px 36px;">
+    <p style="color:#475569;font-size:15px;line-height:1.7;margin:0 0 24px;">Hola <strong>${userName}</strong> 🌱 Cada semana te traemos un consejo nutricional basado en evidencia científica.</p>
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#f0fdf4,#dcfce7);border-radius:20px;padding:32px;margin:0 0 24px;border:2px solid #86efac;text-align:center;">
+      <tr><td>
+        <p style="font-size:56px;margin:0 0 16px;">${tipEmoji}</p>
+        <p style="color:#166534;font-size:13px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:0 0 8px;">Tip de la semana</p>
+        <p style="color:#0f172a;font-size:22px;font-weight:800;margin:0 0 12px;">${tipTitle}</p>
+        <p style="color:#166534;font-size:14px;line-height:1.7;margin:0;">${tipContent}</p>
+      </td></tr>
+    </table>
+    ${ctaButton("Aplicar este tip en mi plan", APP_URL + "/app")}
+    <p style="color:#94a3b8;font-size:12px;text-align:center;margin:0;">Recibes este email porque activaste los tips nutricionales · <a href="${APP_URL}/baja" style="color:#64748b;">Darse de baja</a></p>
+  </td></tr>`
+  );
+}
+
+export async function sendWeeklyNutritionTipEmail(to: string, userName: string, tipTitle: string, tipContent: string, tipEmoji?: string): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  return sendEmail({ to, subject: `💡 Tip de la semana — ${tipTitle}`, html: weeklyNutritionTipEmailHtml(userName, tipTitle, tipContent, tipEmoji) });
+}
+
+// ── REENGAGEMENT AVANZADO ────────────────────────────────────────────────────
+export function reengagementAdvancedEmailHtml(userName: string, daysSinceLastLogin = 7, lastStreak = 12): string {
+  return emailWrapper(
+    emailHeader("😔", `Te echamos de menos, ${userName}`, `Llevas ${daysSinceLastLogin} días sin registrar tus comidas`, "linear-gradient(135deg,#f97316 0%,#ef4444 100%)") + `
+  <tr><td style="padding:44px 40px 36px;">
+    <p style="color:#475569;font-size:15px;line-height:1.7;margin:0 0 24px;">Hola <strong>${userName}</strong> 👋 Llevas ${daysSinceLastLogin} días sin abrir BuddyOne. Sin juicios — solo queremos ayudarte a retomar el camino.</p>
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#fff7ed,#ffedd5);border-radius:20px;padding:28px;margin:0 0 24px;border:2px solid #fed7aa;text-align:center;">
+      <tr><td>
+        <p style="color:#c2410c;font-size:13px;font-weight:700;margin:0 0 8px;">Tu última racha</p>
+        <p style="color:#0f172a;font-size:48px;font-weight:900;margin:0;line-height:1;">🔥 ${lastStreak}</p>
+        <p style="color:#f97316;font-size:14px;font-weight:700;margin:8px 0 0;">días consecutivos · Puedes volver a construirla</p>
+      </td></tr>
+    </table>
+    ${featureCardHtml("😓", "¿Demasiado complicado?", "Prueba el modo simplificado: solo registra proteína y calorías. 30 segundos al día.", "#fef2f2", "#fecaca", "#b91c1c")}
+    ${featureCardHtml("🤷", "¿No sabes qué comer?", "Genera un menú semanal con IA ahora mismo. En 30 segundos tienes todo planificado.", "#fff7ed", "#fed7aa", "#c2410c")}
+    ${featureCardHtml("💪", "¿Necesitas más motivación?", "Únete a un reto con amigos o conecta con un BuddyExpert que te acompañe.", "#f0fdf4", "#86efac", "#166534")}
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#0f172a,#1e293b);border-radius:16px;padding:24px;margin:24px 0;text-align:center;">
+      <tr><td>
+        <p style="color:#f97316;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:0 0 8px;">🎁 Para que vuelvas</p>
+        <p style="color:#fff;font-size:18px;font-weight:800;margin:0 0 4px;">7 días de Premium gratis</p>
+        <p style="color:#94a3b8;font-size:13px;margin:0 0 16px;">Actívalo ahora — caduca en 48 horas</p>
+        <a href="${APP_URL}/app?promo=vuelta7" style="display:inline-block;background:linear-gradient(135deg,#f97316,#ef4444);color:#fff;text-decoration:none;font-size:14px;font-weight:700;padding:12px 32px;border-radius:50px;">Volver a BuddyOne →</a>
+      </td></tr>
+    </table>
+  </td></tr>`
+  );
+}
+
+export async function sendReengagementAdvancedEmail(to: string, userName: string, daysSinceLastLogin?: number, lastStreak?: number): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  return sendEmail({ to, subject: `😔 ${userName}, llevas ${daysSinceLastLogin || 7} días sin registrar — ¿Estás bien?`, html: reengagementAdvancedEmailHtml(userName, daysSinceLastLogin, lastStreak) });
+}
+
+// ── RECETA DE LA SEMANA (NEWSLETTER) ────────────────────────────────────────
+export interface WeeklyRecipe {
+  name: string;
+  time: string;
+  kcal: number;
+  protein: number;
+  carbs: number;
+  fat: number;
+  ingredients: Array<{ emoji: string; name: string; amount: string }>;
+  url?: string;
+}
+
+export function weeklyRecipeEmailHtml(userName: string, recipe: WeeklyRecipe): string {
+  const recipeUrl = recipe.url || (APP_URL + "/app/recipes");
+  const ingredientRows = recipe.ingredients.map(i =>
+    `<tr><td style="color:#475569;font-size:14px;padding:5px 0;border-bottom:1px solid #e2e8f0;">${i.emoji} ${i.name}</td><td style="color:#0f172a;font-size:14px;font-weight:700;text-align:right;padding:5px 0;border-bottom:1px solid #e2e8f0;">${i.amount}</td></tr>`
+  ).join("");
+  return emailWrapper(
+    emailHeader("👨‍🍳", "Receta de la semana", `${recipe.name} · ${recipe.time} · ${recipe.kcal} kcal`, "linear-gradient(135deg,#f97316 0%,#ef4444 100%)") + `
+  <tr><td style="padding:44px 40px 36px;">
+    <p style="color:#475569;font-size:15px;line-height:1.7;margin:0 0 24px;">Hola <strong>${userName}</strong> 🍳 Esta semana te traemos una receta alta en proteína, fácil de preparar y deliciosa.</p>
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:linear-gradient(135deg,#fff7ed,#ffedd5);border-radius:20px;padding:28px;margin:0 0 24px;border:2px solid #fed7aa;">
+      <tr><td>
+        <p style="color:#c2410c;font-size:12px;font-weight:700;text-transform:uppercase;letter-spacing:1px;margin:0 0 16px;">📊 Información nutricional (por ración)</p>
+        <table width="100%" cellpadding="0" cellspacing="0">
+          <tr>
+            <td style="text-align:center;padding:12px;background:rgba(255,255,255,0.5);border-radius:10px;"><p style="color:#c2410c;font-size:10px;font-weight:700;text-transform:uppercase;margin:0 0 4px;">KCAL</p><p style="color:#0f172a;font-size:28px;font-weight:900;margin:0;">${recipe.kcal}</p></td>
+            <td width="8px"></td>
+            <td style="text-align:center;padding:12px;background:rgba(255,255,255,0.5);border-radius:10px;"><p style="color:#7c3aed;font-size:10px;font-weight:700;text-transform:uppercase;margin:0 0 4px;">PROTEÍNA</p><p style="color:#0f172a;font-size:28px;font-weight:900;margin:0;">${recipe.protein}g</p></td>
+            <td width="8px"></td>
+            <td style="text-align:center;padding:12px;background:rgba(255,255,255,0.5);border-radius:10px;"><p style="color:#0ea5e9;font-size:10px;font-weight:700;text-transform:uppercase;margin:0 0 4px;">CARBS</p><p style="color:#0f172a;font-size:28px;font-weight:900;margin:0;">${recipe.carbs}g</p></td>
+            <td width="8px"></td>
+            <td style="text-align:center;padding:12px;background:rgba(255,255,255,0.5);border-radius:10px;"><p style="color:#059669;font-size:10px;font-weight:700;text-transform:uppercase;margin:0 0 4px;">GRASA</p><p style="color:#0f172a;font-size:28px;font-weight:900;margin:0;">${recipe.fat}g</p></td>
+          </tr>
+        </table>
+      </td></tr>
+    </table>
+    <p style="color:#0f172a;font-size:16px;font-weight:700;margin:0 0 16px;">🛒 Ingredientes (2 raciones):</p>
+    <table width="100%" cellpadding="0" cellspacing="0" style="background:#f8fafc;border-radius:14px;padding:20px;margin:0 0 24px;border:1px solid #e2e8f0;">
+      <tr><td><table width="100%" cellpadding="0" cellspacing="0">${ingredientRows}</table></td></tr>
+    </table>
+    ${ctaButton("Ver receta completa + vídeo", recipeUrl)}
+    <p style="color:#94a3b8;font-size:12px;text-align:center;margin:0;">¿Quieres añadir esta receta a tu menú? <a href="${APP_URL}/app/menus" style="color:#f97316;font-weight:700;">Añadir al menú →</a></p>
+  </td></tr>`
+  );
+}
+
+export async function sendWeeklyRecipeEmail(to: string, userName: string, recipe: WeeklyRecipe): Promise<{ success: boolean; messageId?: string; error?: string }> {
+  return sendEmail({ to, subject: `👨‍🍳 Receta de la semana — ${recipe.name} (${recipe.time})`, html: weeklyRecipeEmailHtml(userName, recipe) });
+}
