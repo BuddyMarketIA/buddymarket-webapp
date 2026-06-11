@@ -1206,8 +1206,8 @@ describe("Security: CORS configuration", () => {
   it("allowed origins list includes production domains", () => {
     // These are the domains that should be in the CORS whitelist
     const expectedDomains = [
-      "https://www.buddyoneapp.com",
-      "https://buddyoneapp.com",
+      "https://www.buddyone.io",
+      "https://buddyone.io",
     ];
     // This test documents the expected CORS policy
     // In production, requests from these origins must be allowed

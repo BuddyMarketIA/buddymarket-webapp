@@ -188,7 +188,7 @@ function makeCtx(user: AuthenticatedUser): TrpcContext {
     user,
     req: {
       protocol: "https",
-      headers: { origin: "https://buddyoneapp.com" },
+      headers: { origin: "https://buddyone.io" },
     } as TrpcContext["req"],
     res: {
       clearCookie: vi.fn(),
@@ -347,7 +347,7 @@ describe("Plan Enforcement: subscriptions.createCheckout", () => {
     const caller = makeCaller(user);
     const result = await caller.subscriptions.createCheckout({
       plan: "basic",
-      origin: "https://buddyoneapp.com",
+      origin: "https://buddyone.io",
     });
     expect(result).toHaveProperty("url");
     expect(result.url).toContain("stripe.com");
@@ -357,7 +357,7 @@ describe("Plan Enforcement: subscriptions.createCheckout", () => {
     const caller = makeCaller(user);
     const result = await caller.subscriptions.createCheckout({
       plan: "premium",
-      origin: "https://buddyoneapp.com",
+      origin: "https://buddyone.io",
     });
     expect(result).toHaveProperty("url");
   });
@@ -366,7 +366,7 @@ describe("Plan Enforcement: subscriptions.createCheckout", () => {
     const caller = makeCaller(user);
     const result = await caller.subscriptions.createCheckout({
       plan: "pro_max",
-      origin: "https://buddyoneapp.com",
+      origin: "https://buddyone.io",
     });
     expect(result).toHaveProperty("url");
   });

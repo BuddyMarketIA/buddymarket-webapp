@@ -184,7 +184,7 @@ function makeCtx(user: AuthenticatedUser): TrpcContext {
     user,
     req: {
       protocol: "https",
-      headers: { origin: "https://buddyoneapp.com" },
+      headers: { origin: "https://buddyone.io" },
     } as TrpcContext["req"],
     res: {
       clearCookie: vi.fn(),

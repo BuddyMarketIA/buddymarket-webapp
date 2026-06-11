@@ -31,7 +31,7 @@ const DEMO_ACCOUNTS = [
   {
     key: "admin",
     name: "Admin BuddyMarket",
-    email: "admin.demo@buddyoneapp.com",
+    email: "admin.demo@buddyone.io",
     password: "BuddyAdmin2025!",
     role: "admin" as const,
     accountType: "user" as const,
@@ -46,7 +46,7 @@ const DEMO_ACCOUNTS = [
   {
     key: "user_free",
     name: "Carlos García",
-    email: "carlos.demo@buddyoneapp.com",
+    email: "carlos.demo@buddyone.io",
     password: "BuddyFree2025!",
     role: "user" as const,
     accountType: "user" as const,
@@ -61,7 +61,7 @@ const DEMO_ACCOUNTS = [
   {
     key: "user_pro",
     name: "María López",
-    email: "maria.demo@buddyoneapp.com",
+    email: "maria.demo@buddyone.io",
     password: "BuddyPro2025!",
     role: "user" as const,
     accountType: "user" as const,
@@ -76,7 +76,7 @@ const DEMO_ACCOUNTS = [
   {
     key: "user_promax",
     name: "Alejandro Martínez",
-    email: "alejandro.demo@buddyoneapp.com",
+    email: "alejandro.demo@buddyone.io",
     password: "BuddyProMax2025!",
     role: "user" as const,
     accountType: "user" as const,
@@ -91,7 +91,7 @@ const DEMO_ACCOUNTS = [
   {
     key: "buddyexpert",
     name: "Dra. Laura Sánchez",
-    email: "laura.expert@buddyoneapp.com",
+    email: "laura.expert@buddyone.io",
     password: "BuddyExpert2025!",
     role: "buddyexpert" as const,
     accountType: "buddyexpert" as const,
@@ -116,7 +116,7 @@ const DEMO_ACCOUNTS = [
   {
     key: "buddymaker",
     name: "Pablo Cocina",
-    email: "pablo.maker@buddyoneapp.com",
+    email: "pablo.maker@buddyone.io",
     password: "BuddyMaker2025!",
     role: "buddymaker" as const,
     accountType: "buddymaker" as const,
@@ -144,7 +144,7 @@ const DEMO_ACCOUNTS = [
   {
     key: "empresa_admin",
     name: "Sofía Ruiz",
-    email: "sofia.empresa@buddyoneapp.com",
+    email: "sofia.empresa@buddyone.io",
     password: "BuddyEmpresa2025!",
     role: "business" as const,
     accountType: "business" as const,
@@ -158,7 +158,7 @@ const DEMO_ACCOUNTS = [
     companyData: {
       name: "TecnoSoluciones S.L.",
       taxId: "B-12345678",
-      contactEmail: "sofia.empresa@buddyoneapp.com",
+      contactEmail: "sofia.empresa@buddyone.io",
       contactName: "Sofía Ruiz",
       contactPhone: "+34 91 234 5678",
       plan: "business" as const,
@@ -174,7 +174,7 @@ const DEMO_ACCOUNTS = [
   {
     key: "empleado",
     name: "Javier Torres",
-    email: "javier.empleado@buddyoneapp.com",
+    email: "javier.empleado@buddyone.io",
     password: "BuddyEmpleado2025!",
     role: "user" as const,
     accountType: "user" as const,

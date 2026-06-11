@@ -75,12 +75,12 @@ describe("Payment Email Notifications", () => {
       invoiceId: "inv_test_123",
       userId: 42,
       stripeCustomerId: "cus_test_abc",
-      adminEmail: "hola@buddyoneapp.com",
+      adminEmail: "hola@buddyone.io",
     });
     expect(result).toBe(true);
     expect(mockSend).toHaveBeenCalledWith(
       expect.objectContaining({
-        to: "hola@buddyoneapp.com",
+        to: "hola@buddyone.io",
         subject: expect.stringContaining("Nuevo pago"),
       })
     );

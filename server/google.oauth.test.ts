@@ -1,11 +1,11 @@
 /**
  * Test: Google OAuth secrets configuration
  * Verifica que los secrets de Google OAuth están configurados correctamente
- * para buddyoneapp.com y que se pueden usar para autenticación.
+ * para buddyone.io y que se pueden usar para autenticación.
  */
 import { describe, it, expect } from "vitest";
 
-describe("Google OAuth secrets for buddyoneapp.com", () => {
+describe("Google OAuth secrets for buddyone.io", () => {
   it("should have VITE_GOOGLE_CLIENT_ID configured", () => {
     const clientId = process.env.VITE_GOOGLE_CLIENT_ID;
     expect(clientId).toBeTruthy();
@@ -55,10 +55,10 @@ describe("Google OAuth secrets for buddyoneapp.com", () => {
     
     // The client ID should be suitable for use in:
     // https://accounts.google.com/o/oauth2/v2/auth?client_id={clientId}&...
-    const oauthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=https://buddyoneapp.com/api/oauth/callback&response_type=code&scope=openid%20email%20profile`;
+    const oauthUrl = `https://accounts.google.com/o/oauth2/v2/auth?client_id=${clientId}&redirect_uri=https://buddyone.io/api/oauth/callback&response_type=code&scope=openid%20email%20profile`;
     
     expect(oauthUrl).toContain(clientId);
-    expect(oauthUrl).toContain("buddyoneapp.com");
+    expect(oauthUrl).toContain("buddyone.io");
     expect(oauthUrl).toContain("/api/oauth/callback");
   });
 });
