@@ -66,8 +66,13 @@ async function startServer() {
   // Trust proxy (needed for rate limiting behind load balancers / Manus proxy)
   app.set("trust proxy", 1);
 
-  // ─── Domain redirect: buddymarket.io → buddyone.io (301 permanent) ───────
-  const LEGACY_DOMAINS = ["buddymarketapp.com", "www.buddymarketapp.com"];
+  // ─── Domain redirect: legacy domains → buddyone.io (301 permanent) ────────
+  const LEGACY_DOMAINS = [
+    "buddymarketapp.com",
+    "www.buddymarketapp.com",
+    "buddyoneapp.com",
+    "www.buddyoneapp.com",
+  ];
   app.use((req: any, res: any, next: any) => {
     const host = req.hostname;
     if (LEGACY_DOMAINS.includes(host)) {
