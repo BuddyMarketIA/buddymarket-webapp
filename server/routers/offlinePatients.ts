@@ -1,12 +1,14 @@
 import { z } from "zod";
-import { protectedProcedure, router } from "../_core/trpc";
+import { protectedProcedure, publicProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
 import {
   offlinePatients,
   patientWeightHistory,
   patientPlansSent,
+  offlinePatientPrivacy,
 } from "../../drizzle/schema";
 import { eq, and, desc, inArray } from "drizzle-orm";
+import crypto from "crypto";
 import { invokeLLM } from "../_core/llm";
 import { TRPCError } from "@trpc/server";
 import { Resend } from "resend";
@@ -562,7 +564,7 @@ Duración: ${input.durationWeeks} semana(s)`;
       return { text, waUrl, phone: patient.phone };
     }),
 
-  // ─── Send invite to register in Buddy ─────────────────────────────────────
+  // ─── Send invite to register in BuddyOne (with secure token) ────────────────
   sendInvite: protectedProcedure
     .input(z.object({
       patientId: z.number(),
@@ -574,8 +576,12 @@ Duración: ${input.durationWeeks} semana(s)`;
       if (!patient) throw new TRPCError({ code: "NOT_FOUND" });
       if (!patient.email) throw new TRPCError({ code: "BAD_REQUEST", message: "El paciente no tiene email registrado" });
 
+      // Generate secure token (valid for 30 days)
+      const token = crypto.randomBytes(32).toString("hex");
+      const expiresAt = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000);
+
       const expertName = ctx.user.name ?? "Tu nutricionista";
-      const registerUrl = `${input.origin}/register?ref=expert&expertId=${ctx.user.id}`;
+      const acceptUrl = `${input.origin}/patient-invite/${token}`;
 
       const resendKey = process.env.RESEND_API_KEY;
       if (!resendKey) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Email no configurado" });
@@ -585,19 +591,258 @@ Duración: ${input.durationWeeks} semana(s)`;
         from: "Luis de BuddyOne <luis@buddyone.io>",
         to: patient.email,
         subject: `${expertName} te invita a unirte a BuddyOne`,
-        html: `<!DOCTYPE html><html lang="es"><body style="font-family:system-ui,sans-serif;background:#f9fafb;padding:24px">
-          <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:16px;padding:32px;box-shadow:0 2px 8px rgba(0,0,0,0.06)">
-            <h1 style="color:#F97316;margin:0 0 8px">🥗 BuddyOne</h1>
-            <h2 style="color:#1B2B4B;margin:0 0 16px">Hola ${patient.name},</h2>
-            <p style="color:#374151">${expertName} te ha invitado a unirte a <strong>BuddyOne</strong>, la plataforma de nutrición inteligente donde podrás ver tus planes, registrar tu progreso y comunicarte directamente con tu nutricionista.</p>
-            <a href="${registerUrl}" style="display:inline-block;margin:20px 0;background:#F97316;color:#fff;padding:12px 28px;border-radius:10px;text-decoration:none;font-weight:700">Crear mi cuenta gratis</a>
-            <p style="color:#9ca3af;font-size:12px;margin-top:24px">Si no esperabas este mensaje, puedes ignorarlo.</p>
+        html: `<!DOCTYPE html><html lang="es"><head><meta charset="UTF-8"></head><body style="margin:0;padding:0;background:#f9fafb;font-family:system-ui,-apple-system,sans-serif">
+          <div style="max-width:520px;margin:0 auto;padding:32px 16px">
+            <div style="background:linear-gradient(135deg,#F97316,#FB923C);border-radius:16px;padding:24px;margin-bottom:24px;text-align:center">
+              <h1 style="color:#fff;margin:0;font-size:22px">🥗 BuddyOne</h1>
+              <p style="color:rgba(255,255,255,0.9);margin:6px 0 0;font-size:14px">Nutrición inteligente</p>
+            </div>
+            <div style="background:#fff;border-radius:16px;padding:28px;box-shadow:0 2px 8px rgba(0,0,0,0.06)">
+              <h2 style="color:#1B2B4B;margin:0 0 12px;font-size:20px">Hola ${patient.name} 👋</h2>
+              <p style="color:#374151;line-height:1.6"><strong>${expertName}</strong> te ha invitado a unirte a <strong>BuddyOne</strong>, la plataforma de nutrición inteligente donde podrás:</p>
+              <ul style="color:#374151;line-height:2;padding-left:20px">
+                <li>📅 Ver tus menús y planes nutricionales</li>
+                <li>📊 Seguir tu evolución de peso y medidas</li>
+                <li>💬 Comunicarte directamente con tu nutricionista</li>
+                <li>🎯 Registrar tu diario de alimentación</li>
+              </ul>
+              <div style="text-align:center;margin:24px 0">
+                <a href="${acceptUrl}" style="display:inline-block;background:linear-gradient(135deg,#F97316,#ef4444);color:#fff;padding:14px 32px;border-radius:12px;text-decoration:none;font-weight:700;font-size:16px;box-shadow:0 4px 12px rgba(249,115,22,0.4)">✨ Crear mi cuenta gratis</a>
+              </div>
+              <p style="color:#6b7280;font-size:13px;text-align:center">Este enlace es válido durante 30 días. Si no esperabas este mensaje, puedes ignorarlo.</p>
+            </div>
+            <p style="text-align:center;font-size:11px;color:#9ca3af;margin-top:16px">BuddyOne · buddyone.io</p>
           </div>
         </body></html>`,
       });
 
-      await getDb().update(offlinePatients).set({ inviteSentAt: new Date(), updatedAt: new Date() }).where(eq(offlinePatients.id, input.patientId));
-      return { success: true };
+      await getDb().update(offlinePatients).set({
+        inviteSentAt: new Date(),
+        inviteToken: token,
+        inviteExpiresAt: expiresAt,
+        updatedAt: new Date(),
+      }).where(eq(offlinePatients.id, input.patientId));
+      return { success: true, tokenGenerated: true };
+    }),
+
+  // ─── Get invite info by token (public — for the accept page) ─────────────
+  getOfflineInviteInfo: publicProcedure
+    .input(z.object({ token: z.string() }))
+    .query(async ({ input }) => {
+      const db = await getDb();
+      if (!db) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Base de datos no disponible" });
+      const [patient] = await db
+        .select()
+        .from(offlinePatients)
+        .where(eq(offlinePatients.inviteToken, input.token))
+        .limit(1);
+      if (!patient) throw new TRPCError({ code: "NOT_FOUND", message: "Invitación no válida o expirada" });
+      if (patient.inviteExpiresAt && new Date() > patient.inviteExpiresAt) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Esta invitación ha expirado" });
+      }
+      // Get expert name
+      const { users } = await import("../../drizzle/schema");
+      const [expertUser] = await db.select({ name: users.name, imageUrl: users.imageUrl }).from(users).where(eq(users.id, patient.expertUserId)).limit(1);
+      return {
+        patientName: patient.name,
+        expertName: expertUser?.name ?? "Tu nutricionista",
+        expertImage: expertUser?.imageUrl ?? null,
+        alreadyAccepted: !!patient.inviteAcceptedAt,
+        token: input.token,
+      };
+    }),
+
+  // ─── Accept offline invite (links BuddyOne account to offline patient) ────
+  acceptOfflineInvite: protectedProcedure
+    .input(z.object({ token: z.string() }))
+    .mutation(async ({ ctx, input }) => {
+      const [patient] = await getDb()
+        .select()
+        .from(offlinePatients)
+        .where(eq(offlinePatients.inviteToken, input.token))
+        .limit(1);
+      if (!patient) throw new TRPCError({ code: "NOT_FOUND", message: "Invitación no válida" });
+      if (patient.inviteExpiresAt && new Date() > patient.inviteExpiresAt) {
+        throw new TRPCError({ code: "BAD_REQUEST", message: "Esta invitación ha expirado" });
+      }
+      if (patient.inviteAcceptedAt) {
+        throw new TRPCError({ code: "CONFLICT", message: "Esta invitación ya fue aceptada" });
+      }
+      // Link the BuddyOne account to the offline patient record
+      await getDb().update(offlinePatients).set({
+        buddyUserId: ctx.user.id,
+        inviteAcceptedAt: new Date(),
+        updatedAt: new Date(),
+      }).where(eq(offlinePatients.id, patient.id));
+      // Get expert name for the success page
+      const { users } = await import("../../drizzle/schema");
+      const [expertUser] = await getDb().select({ name: users.name }).from(users).where(eq(users.id, patient.expertUserId)).limit(1);
+      return { success: true, expertUserId: patient.expertUserId, patientId: patient.id, expertName: expertUser?.name ?? null, patientName: patient.name };
+    }),
+
+  // ─── Export all patients as CSV data ──────────────────────────────────────
+  exportPatients: protectedProcedure
+    .input(z.object({ includeWeightHistory: z.boolean().default(false) }).optional())
+    .query(async ({ ctx, input }) => {
+      requireExpert(ctx);
+      const patients = await getDb()
+        .select()
+        .from(offlinePatients)
+        .where(and(
+          eq(offlinePatients.expertUserId, ctx.user.id),
+          eq(offlinePatients.isActive, true),
+        ))
+        .orderBy(offlinePatients.name);
+
+      // Get weight history if requested
+      let weightMap: Map<number, any[]> = new Map();
+      if (input?.includeWeightHistory && patients.length > 0) {
+        const patientIds = patients.map(p => p.id);
+        const weights = await getDb()
+          .select()
+          .from(patientWeightHistory)
+          .where(and(
+            inArray(patientWeightHistory.patientId, patientIds),
+            eq(patientWeightHistory.expertUserId, ctx.user.id),
+          ))
+          .orderBy(patientWeightHistory.recordedAt);
+        for (const w of weights) {
+          if (!weightMap.has(w.patientId)) weightMap.set(w.patientId, []);
+          weightMap.get(w.patientId)!.push(w);
+        }
+      }
+
+      // Build CSV
+      const headers = [
+        "ID", "Nombre", "Email", "Teléfono", "Fecha nacimiento", "Género",
+        "Altura (cm)", "Peso inicial (kg)", "Peso objetivo (kg)", "Nivel actividad",
+        "Objetivo", "Alergias", "Patologías", "Medicación", "Notas",
+        "Frecuencia consulta (semanas)", "Invitación enviada", "Invitación aceptada",
+        "Fecha creación",
+      ];
+
+      const escapeCSV = (val: any) => {
+        if (val == null) return "";
+        const str = String(val);
+        if (str.includes(",") || str.includes('"') || str.includes("\n")) {
+          return `"${str.replace(/"/g, '""')}"`;
+        }
+        return str;
+      };
+
+      const rows = patients.map(p => [
+        p.id,
+        p.name,
+        p.email ?? "",
+        p.phone ?? "",
+        p.birthDate ? new Date(p.birthDate).toLocaleDateString("es-ES") : "",
+        p.gender ?? "",
+        p.heightCm ?? "",
+        p.initialWeightKg ?? "",
+        p.targetWeightKg ?? "",
+        p.activityLevel ?? "",
+        p.objective ?? "",
+        p.allergies ?? "",
+        p.pathologies ?? "",
+        p.medications ?? "",
+        p.notes ?? "",
+        p.consultationFrequencyWeeks ?? "",
+        p.inviteSentAt ? new Date(p.inviteSentAt).toLocaleDateString("es-ES") : "No",
+        p.inviteAcceptedAt ? new Date(p.inviteAcceptedAt).toLocaleDateString("es-ES") : "No",
+        new Date(p.createdAt).toLocaleDateString("es-ES"),
+      ].map(escapeCSV).join(","));
+
+      const csv = [headers.join(","), ...rows].join("\n");
+      const totalPatients = patients.length;
+      const withEmail = patients.filter(p => p.email).length;
+      const withInvite = patients.filter(p => p.inviteSentAt).length;
+      const accepted = patients.filter(p => p.inviteAcceptedAt).length;
+
+      return {
+        csv,
+        stats: { total: totalPatients, withEmail, withInvite, accepted },
+        filename: `pacientes_buddyone_${new Date().toISOString().split("T")[0]}.csv`,
+      };
+    }),
+
+  // ─── Get privacy settings for a patient ──────────────────────────────────
+  getPrivacySettings: protectedProcedure
+    .input(z.object({ patientId: z.number() }))
+    .query(async ({ ctx, input }) => {
+      requireExpert(ctx);
+      // Verify patient belongs to expert
+      const [patient] = await getDb().select().from(offlinePatients).where(and(eq(offlinePatients.id, input.patientId), eq(offlinePatients.expertUserId, ctx.user.id)));
+      if (!patient) throw new TRPCError({ code: "NOT_FOUND" });
+
+      const [settings] = await getDb()
+        .select()
+        .from(offlinePatientPrivacy)
+        .where(eq(offlinePatientPrivacy.offlinePatientId, input.patientId))
+        .limit(1);
+
+      // Return defaults if no settings exist yet
+      if (!settings) {
+        return {
+          offlinePatientId: input.patientId,
+          showWeight: true,
+          showBodyFat: true,
+          showMeasurements: true,
+          showPathologies: false,
+          showMedications: false,
+          showExpertNotes: false,
+          showSessionNotes: false,
+          showInternalAssessment: false,
+          showAssignedMenus: true,
+          showPlanHistory: true,
+          showAppointmentHistory: true,
+        };
+      }
+      return settings;
+    }),
+
+  // ─── Update privacy settings for a patient ───────────────────────────────
+  updatePrivacySettings: protectedProcedure
+    .input(z.object({
+      patientId: z.number(),
+      showWeight: z.boolean().optional(),
+      showBodyFat: z.boolean().optional(),
+      showMeasurements: z.boolean().optional(),
+      showPathologies: z.boolean().optional(),
+      showMedications: z.boolean().optional(),
+      showExpertNotes: z.boolean().optional(),
+      showSessionNotes: z.boolean().optional(),
+      showInternalAssessment: z.boolean().optional(),
+      showAssignedMenus: z.boolean().optional(),
+      showPlanHistory: z.boolean().optional(),
+      showAppointmentHistory: z.boolean().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      requireExpert(ctx);
+      const { patientId, ...settings } = input;
+      // Verify patient belongs to expert
+      const [patient] = await getDb().select().from(offlinePatients).where(and(eq(offlinePatients.id, patientId), eq(offlinePatients.expertUserId, ctx.user.id)));
+      if (!patient) throw new TRPCError({ code: "NOT_FOUND" });
+
+      const [existing] = await getDb().select().from(offlinePatientPrivacy).where(eq(offlinePatientPrivacy.offlinePatientId, patientId)).limit(1);
+
+      if (existing) {
+        const [updated] = await getDb()
+          .update(offlinePatientPrivacy)
+          .set({ ...settings, updatedAt: new Date() })
+          .where(eq(offlinePatientPrivacy.offlinePatientId, patientId))
+          .returning();
+        return updated;
+      } else {
+        const [created] = await getDb()
+          .insert(offlinePatientPrivacy)
+          .values({
+            offlinePatientId: patientId,
+            expertUserId: ctx.user.id,
+            ...settings,
+          })
+          .returning();
+        return created;
+      }
     }),
 
   // ─── Plans sent history ────────────────────────────────────────────────────

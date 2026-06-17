@@ -2395,6 +2395,8 @@ export const expertPatients = pgTable("expert_patients", {
   inviteToken: varchar("inviteToken", { length: 64 }),
   inviteEmail: varchar("inviteEmail", { length: 255 }),
   inviteAcceptedAt: timestamp("inviteAcceptedAt"),
+  inviteToken: varchar("inviteToken", { length: 64 }),
+  inviteExpiresAt: timestamp("inviteExpiresAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 }, (t) => ({
@@ -4739,11 +4741,14 @@ export const offlinePatients = pgTable("offline_patients", {
   isActive: boolean("isActive").default(true).notNull(),
   inviteSentAt: timestamp("inviteSentAt"),
   inviteAcceptedAt: timestamp("inviteAcceptedAt"),
+  inviteToken: varchar("inviteToken", { length: 64 }),
+  inviteExpiresAt: timestamp("inviteExpiresAt"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 }, (t) => ({
   expertIdx: index("op_expert_idx").on(t.expertUserId),
   emailIdx: index("op_email_idx").on(t.email),
+  tokenIdx: index("op_token_idx").on(t.inviteToken),
 }));
 export type OfflinePatient = typeof offlinePatients.$inferSelect;
 export type InsertOfflinePatient = typeof offlinePatients.$inferInsert;
@@ -4784,3 +4789,37 @@ export const patientPlansSent = pgTable("patient_plans_sent", {
 }));
 export type PatientPlanSent = typeof patientPlansSent.$inferSelect;
 export type InsertPatientPlanSent = typeof patientPlansSent.$inferInsert;
+
+// =============================================================================
+// OFFLINE PATIENT PRIVACY SETTINGS — Control de visibilidad por campo
+// =============================================================================
+// Cuando un paciente offline acepta la invitación y crea cuenta en BuddyOne,
+// el experto puede controlar qué datos puede ver el paciente desde su perfil.
+
+export const offlinePatientPrivacy = pgTable("offline_patient_privacy", {
+  id: serial("id").primaryKey(),
+  offlinePatientId: integer("offlinePatientId").notNull(),
+  expertUserId: integer("expertUserId").notNull(),
+  // Campos de datos clínicos
+  showWeight: boolean("showWeight").default(true).notNull(),
+  showBodyFat: boolean("showBodyFat").default(true).notNull(),
+  showMeasurements: boolean("showMeasurements").default(true).notNull(),
+  showPathologies: boolean("showPathologies").default(false).notNull(),
+  showMedications: boolean("showMedications").default(false).notNull(),
+  // Notas y evaluaciones del experto
+  showExpertNotes: boolean("showExpertNotes").default(false).notNull(),
+  showSessionNotes: boolean("showSessionNotes").default(false).notNull(),
+  showInternalAssessment: boolean("showInternalAssessment").default(false).notNull(),
+  // Planes y menús
+  showAssignedMenus: boolean("showAssignedMenus").default(true).notNull(),
+  showPlanHistory: boolean("showPlanHistory").default(true).notNull(),
+  showAppointmentHistory: boolean("showAppointmentHistory").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  patientIdx: index("opp_patient_idx").on(t.offlinePatientId),
+  expertIdx: index("opp_expert_idx").on(t.expertUserId),
+  uniquePatient: uniqueIndex("opp_unique_patient").on(t.offlinePatientId),
+}));
+export type OfflinePatientPrivacy = typeof offlinePatientPrivacy.$inferSelect;
+export type InsertOfflinePatientPrivacy = typeof offlinePatientPrivacy.$inferInsert;

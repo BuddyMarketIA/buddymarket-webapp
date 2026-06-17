@@ -6,7 +6,7 @@ import { useLocation, useParams } from "wouter";
 import {
   ArrowLeft, Mail, MessageCircle, Sparkles, Plus, Trash2,
   Scale, TrendingDown, TrendingUp, Send, ChevronDown, ChevronUp,
-  UserCheck, Copy, ExternalLink,
+  UserCheck, Copy, ExternalLink, Shield, Eye, EyeOff, RefreshCw,
 } from "lucide-react";
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine,
@@ -54,6 +54,8 @@ export default function PatientDetail() {
   const [expandedDay, setExpandedDay] = useState<number | null>(null);
   const [waMessage, setWaMessage] = useState<{ text: string; waUrl: string | null } | null>(null);
   const [showInviteConfirm, setShowInviteConfirm] = useState(false);
+  const [showPrivacyPanel, setShowPrivacyPanel] = useState(false);
+  const [localPrivacy, setLocalPrivacy] = useState<Record<string, boolean>>({});
 
   const monday = addDays(getMonday(), weekOffset * 7);
   const sunday = addDays(monday, 6);
@@ -90,6 +92,14 @@ export default function PatientDetail() {
 
   const sendInvite = trpc.offlinePatients.sendInvite.useMutation({
     onSuccess: () => { toast.success("Invitación enviada"); setShowInviteConfirm(false); },
+    onError: (e) => toast.error("Error: " + e.message),
+  });
+  const { data: privacySettings, refetch: refetchPrivacy } = trpc.offlinePatients.getPrivacySettings.useQuery(
+    { patientId },
+    { enabled: !!patientId && showPrivacyPanel }
+  );
+  const updatePrivacy = trpc.offlinePatients.updatePrivacySettings.useMutation({
+    onSuccess: () => { toast.success("Configuración guardada"); refetchPrivacy(); },
     onError: (e) => toast.error("Error: " + e.message),
   });
 
@@ -151,6 +161,16 @@ export default function PatientDetail() {
             <span className="flex items-center gap-1 px-2 py-1 rounded-xl bg-green-50 text-green-600 text-xs font-bold">
               <UserCheck size={12} /> En Buddy
             </span>
+          )}
+          {/* Botón de privacidad — solo visible si el paciente tiene email o ya fue invitado */}
+          {(patient.email || patient.inviteSentAt) && (
+            <button
+              onClick={() => setShowPrivacyPanel(true)}
+              title="Configurar privacidad"
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-purple-50 text-purple-600 text-xs font-bold hover:bg-purple-100 transition-colors"
+            >
+              <Shield size={13} /> Privacidad
+            </button>
           )}
         </div>
 
@@ -499,6 +519,129 @@ export default function PatientDetail() {
               )}
             </div>
             <button onClick={() => setWaMessage(null)} className="w-full py-2 text-sm text-muted-foreground hover:text-foreground transition-colors">Cerrar</button>
+          </div>
+        </div>
+      )}
+
+      {/* ─── Privacy settings panel ─────────────────────────────────────── */}
+      {showPrivacyPanel && (
+        <div className="fixed inset-0 bg-black/50 flex items-end sm:items-center justify-center z-50 p-4">
+          <div className="bg-card rounded-2xl p-6 w-full max-w-lg space-y-4 max-h-[90vh] overflow-y-auto">
+            <div className="flex items-center justify-between">
+              <div className="flex items-center gap-2">
+                <Shield size={18} className="text-purple-500" />
+                <h3 className="text-base font-black text-foreground">Privacidad del paciente</h3>
+              </div>
+              <button onClick={() => setShowPrivacyPanel(false)} className="p-1.5 rounded-lg hover:bg-muted transition-colors text-muted-foreground">✕</button>
+            </div>
+            <div className="bg-purple-50 border border-purple-200 rounded-xl p-3">
+              <p className="text-xs text-purple-800">
+                <strong>Controla qué datos puede ver {patient.name}</strong> cuando acepte la invitación y acceda a su cuenta en BuddyOne. Los datos marcados como ocultos solo los verás tú.
+              </p>
+            </div>
+            {/* Estado de invitación */}
+            <div className="bg-muted/30 rounded-xl p-3 space-y-2">
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Estado de la invitación</p>
+              {patient.inviteAcceptedAt ? (
+                <div className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-green-500 flex-shrink-0" />
+                  <span className="text-sm text-green-700 font-semibold">Invitación aceptada</span>
+                  <span className="text-xs text-muted-foreground ml-auto">{new Date(patient.inviteAcceptedAt).toLocaleDateString("es-ES")}</span>
+                </div>
+              ) : patient.inviteSentAt ? (
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-yellow-500 flex-shrink-0" />
+                    <span className="text-sm text-yellow-700 font-semibold">Pendiente de aceptar</span>
+                    <span className="text-xs text-muted-foreground">{new Date(patient.inviteSentAt).toLocaleDateString("es-ES")}</span>
+                  </div>
+                  {patient.email && (
+                    <button
+                      onClick={() => sendInvite.mutate({ patientId, origin: window.location.origin })}
+                      disabled={sendInvite.isPending}
+                      className="flex items-center gap-1 px-2 py-1 rounded-lg bg-yellow-100 text-yellow-700 text-xs font-bold hover:bg-yellow-200 transition-colors disabled:opacity-50"
+                    >
+                      <RefreshCw size={11} /> Reenviar
+                    </button>
+                  )}
+                </div>
+              ) : (
+                <div className="flex items-center justify-between gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-2 h-2 rounded-full bg-muted-foreground flex-shrink-0" />
+                    <span className="text-sm text-muted-foreground">No invitado aún</span>
+                  </div>
+                  {patient.email && (
+                    <button
+                      onClick={() => sendInvite.mutate({ patientId, origin: window.location.origin })}
+                      disabled={sendInvite.isPending}
+                      className="flex items-center gap-1 px-2 py-1 rounded-lg bg-blue-100 text-blue-700 text-xs font-bold hover:bg-blue-200 transition-colors disabled:opacity-50"
+                    >
+                      <UserCheck size={11} /> Invitar ahora
+                    </button>
+                  )}
+                </div>
+              )}
+            </div>
+            {/* Campos de privacidad */}
+            <div className="space-y-2">
+              <p className="text-xs font-bold text-muted-foreground uppercase tracking-wide">Campos visibles para el paciente</p>
+              {([
+                { field: "showWeight" as const, label: "Peso y evolución", icon: "⚖️", description: "Gráfica y registros de peso" },
+                { field: "showExpertNotes" as const, label: "Notas del experto", icon: "📝", description: "Notas internas de sesión (ocultas por defecto)" },
+                { field: "showSessionNotes" as const, label: "Notas de sesión", icon: "💬", description: "Notas de seguimiento" },
+                { field: "showPathologies" as const, label: "Patologías", icon: "⚠️", description: "Historial de patologías" },
+                { field: "showMedications" as const, label: "Medicación", icon: "💊", description: "Medicación actual" },
+                { field: "showAssignedMenus" as const, label: "Menús asignados", icon: "🍽️", description: "Planes nutricionales" },
+                { field: "showPlanHistory" as const, label: "Historial de planes", icon: "📋", description: "Planes enviados anteriormente" },
+                { field: "showAppointmentHistory" as const, label: "Citas", icon: "📅", description: "Historial de citas" },
+              ] as const).map(({ field, label, icon, description }) => {
+                const isVisible = localPrivacy[field] !== undefined
+                  ? localPrivacy[field]
+                  : (privacySettings?.[field] ?? (field === "showWeight" || field === "showAssignedMenus" || field === "showPlanHistory" || field === "showAppointmentHistory"));
+                return (
+                  <div key={field} className="flex items-center justify-between p-3 rounded-xl border border-border hover:bg-muted/20 transition-colors">
+                    <div className="flex items-center gap-3">
+                      <span className="text-lg">{icon}</span>
+                      <div>
+                        <p className="text-sm font-semibold text-foreground">{label}</p>
+                        <p className="text-xs text-muted-foreground">{description}</p>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => setLocalPrivacy(prev => ({ ...prev, [field]: !isVisible }))}
+                      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-bold transition-colors ${
+                        isVisible
+                          ? "bg-green-100 text-green-700 hover:bg-green-200"
+                          : "bg-red-100 text-red-600 hover:bg-red-200"
+                      }`}
+                    >
+                      {isVisible ? <Eye size={12} /> : <EyeOff size={12} />}
+                      {isVisible ? "Visible" : "Oculto"}
+                    </button>
+                  </div>
+                );
+              })}
+            </div>
+            <div className="flex gap-3 pt-2">
+              <button onClick={() => { setShowPrivacyPanel(false); setLocalPrivacy({}); }} className="flex-1 py-2.5 rounded-xl border border-border font-semibold text-sm hover:bg-muted transition-colors">Cancelar</button>
+              <button
+                onClick={() => {
+                  const fields = ["showWeight", "showExpertNotes", "showSessionNotes", "showPathologies", "showMedications", "showAssignedMenus", "showPlanHistory", "showAppointmentHistory"] as const;
+                  const payload: Record<string, boolean> = {};
+                  fields.forEach(f => {
+                    payload[f] = localPrivacy[f] !== undefined
+                      ? (localPrivacy[f] as boolean)
+                      : (privacySettings?.[f] ?? (f === "showWeight" || f === "showAssignedMenus" || f === "showPlanHistory" || f === "showAppointmentHistory"));
+                  });
+                  updatePrivacy.mutate({ patientId, ...payload });
+                }}
+                disabled={updatePrivacy.isPending}
+                className="flex-1 py-2.5 rounded-xl bg-purple-500 text-white font-bold text-sm hover:bg-purple-600 transition-colors disabled:opacity-50"
+              >
+                {updatePrivacy.isPending ? "Guardando..." : "Guardar configuración"}
+              </button>
+            </div>
           </div>
         </div>
       )}

@@ -3877,3 +3877,17 @@
 - [ ] Mejora 9: Modo "Evento especial" accesible desde el flujo principal de Menús
 - [ ] Mejora 10: Botón "Compartir con mi familia" en RecipeDetail y ActiveMenu
 - [ ] Mejora 12: Resumen diario automático del Buddy Coach al abrir Health Hub por la tarde/noche
+
+## Gestión Profesional de Pacientes Offline (Jun 2026)
+- [x] Schema: añadir inviteToken + inviteExpiresAt a offline_patients
+- [x] Schema: nueva tabla offline_patient_privacy (configuración de privacidad por campo)
+- [x] Migrar BD con pnpm db:push
+- [x] Backend: procedimiento exportPatients (genera CSV con todos los datos)
+- [x] Backend: procedimiento sendInviteWithToken (token seguro + email con link de aceptación)
+- [x] Backend: procedimiento acceptOfflineInvite (vincula cuenta BuddyOne con paciente offline)
+- [x] Backend: procedimientos getPrivacySettings / updatePrivacySettings
+- [x] Frontend: botón "Exportar base de datos" en ExpertPatients con descarga CSV
+- [x] Frontend: modal "Nuevo paciente" mejorado con todos los campos clínicos
+- [x] Frontend: panel de privacidad en ficha de paciente offline (qué ve el paciente)
+- [x] Frontend: flujo de aceptación de invitación (/patient-invite/:token)
+- [x] Frontend: badge/indicador de estado de invitación en ficha de paciente

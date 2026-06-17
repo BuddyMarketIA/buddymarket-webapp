@@ -7,7 +7,7 @@ import { toast } from "@/components/sonner-a11y-shim";
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Upload, Users, MessageCircle } from "lucide-react";
+import { Upload, Users, MessageCircle, Download, UserPlus2 } from "lucide-react";
 import OfflinePatientsSection from "@/components/OfflinePatientsSection";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
@@ -32,6 +32,10 @@ export default function ExpertPatients() {
   const [invitePhone, setInvitePhone] = useState("");
   const [inviteMode, setInviteMode] = useState<"email" | "whatsapp">("email");
   const [expertName, setExpertName] = useState("");
+  const [showNewOfflineModal, setShowNewOfflineModal] = useState(false);
+  const [isExporting, setIsExporting] = useState(false);
+  // New offline patient form state
+  const [newPatient, setNewPatient] = useState({ name: "", email: "", phone: "", birthDate: "", gender: "", heightCm: "", initialWeightKg: "", targetWeightKg: "", objective: "", allergies: "", notes: "" });
 
   // WhatsApp helpers
   const getWhatsAppInviteUrl = (phone: string, name?: string | null) => {
@@ -70,6 +74,39 @@ export default function ExpertPatients() {
     onSuccess: () => toast.success("Recordatorio enviado al paciente"),
     onError: (err) => toast.error(err.message || "Error al enviar el recordatorio"),
   });
+
+  const exportQuery = trpc.offlinePatients.exportPatients.useQuery(undefined, { enabled: false });
+  const createOfflinePatient = trpc.offlinePatients.create.useMutation({
+    onSuccess: () => {
+      toast.success("Paciente creado correctamente");
+      setShowNewOfflineModal(false);
+      setNewPatient({ name: "", email: "", phone: "", birthDate: "", gender: "", heightCm: "", initialWeightKg: "", targetWeightKg: "", objective: "", allergies: "", notes: "" });
+    },
+    onError: (err) => toast.error(err.message || "Error al crear el paciente"),
+  });
+
+  const handleExportCSV = async () => {
+    setIsExporting(true);
+    try {
+      const result = await exportQuery.refetch();
+      if (result.data?.csv) {
+        const blob = new Blob([result.data.csv], { type: "text/csv;charset=utf-8;" });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement("a");
+        a.href = url;
+        a.download = result.data.filename ?? "pacientes.csv";
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        URL.revokeObjectURL(url);
+        toast.success(`Exportados ${result.data.stats.total} pacientes`);
+      }
+    } catch (e) {
+      toast.error("Error al exportar pacientes");
+    } finally {
+      setIsExporting(false);
+    }
+  };
 
   const inviteMutation = trpc.expertPatients.invitePatient.useMutation({
     onSuccess: (data) => {
@@ -122,6 +159,21 @@ export default function ExpertPatients() {
             </p>
           </div>
           <div className="flex gap-2 flex-wrap">
+            <Button
+              variant="outline"
+              onClick={handleExportCSV}
+              disabled={isExporting}
+              className="flex items-center gap-1.5"
+            >
+              <Download size={14} /> {isExporting ? "Exportando..." : "Exportar BD"}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => setShowNewOfflineModal(true)}
+              className="flex items-center gap-1.5 border-orange-300 text-orange-700 hover:bg-orange-50"
+            >
+              <UserPlus2 size={14} /> Nuevo paciente
+            </Button>
             <Button
               variant="outline"
               onClick={() => navigate("/app/expert/patients/import")}
@@ -321,6 +373,100 @@ export default function ExpertPatients() {
 
       {/* ── Pacientes offline (importados) ── */}
       <OfflinePatientsSection />
+
+      {/* Modal nuevo paciente offline */}
+      <Dialog open={showNewOfflineModal} onOpenChange={setShowNewOfflineModal}>
+        <DialogContent className="max-w-lg max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>Nuevo paciente (sin cuenta)</DialogTitle>
+          </DialogHeader>
+          <div className="bg-orange-50 border border-orange-200 rounded-xl p-3 mb-2">
+            <p className="text-xs text-orange-800">
+              <strong>Modo profesional:</strong> Crea la ficha del paciente sin que necesite registrarse. Podrás gestionar sus datos, generar menús y enviarle planes por email o WhatsApp. Cuando quieras, puedes invitarle a crear su cuenta en BuddyOne.
+            </p>
+          </div>
+          <div className="grid grid-cols-2 gap-3">
+            <div className="col-span-2">
+              <Label>Nombre completo *</Label>
+              <Input value={newPatient.name} onChange={e => setNewPatient(p => ({ ...p, name: e.target.value }))} placeholder="María García" className="mt-1" />
+            </div>
+            <div>
+              <Label>Email</Label>
+              <Input type="email" value={newPatient.email} onChange={e => setNewPatient(p => ({ ...p, email: e.target.value }))} placeholder="paciente@email.com" className="mt-1" />
+            </div>
+            <div>
+              <Label>Teléfono</Label>
+              <Input type="tel" value={newPatient.phone} onChange={e => setNewPatient(p => ({ ...p, phone: e.target.value }))} placeholder="+34 600 000 000" className="mt-1" />
+            </div>
+            <div>
+              <Label>Fecha de nacimiento</Label>
+              <Input type="date" value={newPatient.birthDate} onChange={e => setNewPatient(p => ({ ...p, birthDate: e.target.value }))} className="mt-1" />
+            </div>
+            <div>
+              <Label>Género</Label>
+              <select value={newPatient.gender} onChange={e => setNewPatient(p => ({ ...p, gender: e.target.value }))} className="mt-1 w-full h-9 rounded-md border border-input bg-background px-3 text-sm">
+                <option value="">Seleccionar...</option>
+                <option value="male">Hombre</option>
+                <option value="female">Mujer</option>
+                <option value="other">Otro</option>
+              </select>
+            </div>
+            <div>
+              <Label>Altura (cm)</Label>
+              <Input type="number" value={newPatient.heightCm} onChange={e => setNewPatient(p => ({ ...p, heightCm: e.target.value }))} placeholder="170" className="mt-1" />
+            </div>
+            <div>
+              <Label>Peso inicial (kg)</Label>
+              <Input type="number" value={newPatient.initialWeightKg} onChange={e => setNewPatient(p => ({ ...p, initialWeightKg: e.target.value }))} placeholder="70" className="mt-1" />
+            </div>
+            <div>
+              <Label>Peso objetivo (kg)</Label>
+              <Input type="number" value={newPatient.targetWeightKg} onChange={e => setNewPatient(p => ({ ...p, targetWeightKg: e.target.value }))} placeholder="65" className="mt-1" />
+            </div>
+            <div className="col-span-2">
+              <Label>Objetivo principal</Label>
+              <select value={newPatient.objective} onChange={e => setNewPatient(p => ({ ...p, objective: e.target.value }))} className="mt-1 w-full h-9 rounded-md border border-input bg-background px-3 text-sm">
+                <option value="">Seleccionar...</option>
+                <option value="lose_weight">Perder peso</option>
+                <option value="gain_muscle">Ganar músculo</option>
+                <option value="maintain">Mantener peso</option>
+                <option value="improve_health">Mejorar salud</option>
+                <option value="eat_healthier">Comer más sano</option>
+              </select>
+            </div>
+            <div className="col-span-2">
+              <Label>Alergias e intolerancias</Label>
+              <Input value={newPatient.allergies} onChange={e => setNewPatient(p => ({ ...p, allergies: e.target.value }))} placeholder="Gluten, lactosa..." className="mt-1" />
+            </div>
+            <div className="col-span-2">
+              <Label>Notas internas (solo visibles para ti)</Label>
+              <Textarea value={newPatient.notes} onChange={e => setNewPatient(p => ({ ...p, notes: e.target.value }))} placeholder="Observaciones, historial previo..." className="mt-1" rows={3} />
+            </div>
+          </div>
+          <DialogFooter className="mt-4">
+            <Button variant="outline" onClick={() => setShowNewOfflineModal(false)}>Cancelar</Button>
+            <Button
+              onClick={() => createOfflinePatient.mutate({
+                name: newPatient.name,
+                email: newPatient.email || undefined,
+                phone: newPatient.phone || undefined,
+                birthDate: newPatient.birthDate || undefined,
+                gender: newPatient.gender || undefined,
+                heightCm: newPatient.heightCm ? parseFloat(newPatient.heightCm) : undefined,
+                initialWeightKg: newPatient.initialWeightKg ? parseFloat(newPatient.initialWeightKg) : undefined,
+                targetWeightKg: newPatient.targetWeightKg ? parseFloat(newPatient.targetWeightKg) : undefined,
+                objective: newPatient.objective || undefined,
+                allergies: newPatient.allergies || undefined,
+                notes: newPatient.notes || undefined,
+              })}
+              disabled={!newPatient.name || createOfflinePatient.isPending}
+              className="bg-orange-500 hover:bg-orange-600 text-white"
+            >
+              {createOfflinePatient.isPending ? "Creando..." : "Crear paciente"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Modal invitar paciente */}
       <Dialog open={showInviteModal} onOpenChange={(open) => { setShowInviteModal(open); if (!open) setInviteMode("email"); }}>
