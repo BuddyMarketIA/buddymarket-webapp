@@ -146,6 +146,9 @@ const PatientImport = lazyWithRetry(() => import("./pages/PatientImport"));
 const PatientDetailOffline = lazyWithRetry(() => import("./pages/PatientDetail"));
 const ExpertPatientDetail = lazyWithRetry(() => import("./pages/ExpertPatientDetail"));
 const AcceptPatientInvite = lazyWithRetry(() => import("./pages/AcceptPatientInvite"));
+const ExpertKanban = lazyWithRetry(() => import("./pages/ExpertKanban"));
+const ExpertProDashboard = lazyWithRetry(() => import("./pages/ExpertProDashboard"));
+const ExpertQuestionnaires = lazyWithRetry(() => import("./pages/ExpertQuestionnaires"));
 const ExpertChat = lazyWithRetry(() => import("./pages/ExpertChat"));
 const ExpertDashboard = lazyWithRetry(() => import("./pages/ExpertDashboard"));
 const MenuTemplates = lazyWithRetry(() => import("./pages/expert/MenuTemplates"));
@@ -349,6 +352,9 @@ function Router() {
       <Route path="/app/expert/patients/:id">{() => <ProtectedPage><ExpertPatientDetail /></ProtectedPage>}</Route>
       <Route path="/app/expert/offline-patients/:id">{() => <ProtectedPage><PatientDetailOffline /></ProtectedPage>}</Route>
       <Route path="/patient-invite/:token" component={AcceptPatientInvite} />
+      <Route path="/app/expert/kanban">{() => <ProtectedPage><ExpertKanban /></ProtectedPage>}</Route>
+      <Route path="/app/expert/pro-dashboard">{() => <ProtectedPage><ExpertProDashboard /></ProtectedPage>}</Route>
+      <Route path="/app/expert/questionnaires">{() => <ProtectedPage><ExpertQuestionnaires /></ProtectedPage>}</Route>
       <Route path="/app/expert/chat">{() => <ProtectedPage><ExpertChat /></ProtectedPage>}</Route>
       <Route path="/app/expert/menu-templates">{() => <ProtectedPage><MenuTemplates /></ProtectedPage>}</Route>
       <Route path="/app/expert/food-substitutions">{() => <ProtectedPage><FoodSubstitutions /></ProtectedPage>}</Route>

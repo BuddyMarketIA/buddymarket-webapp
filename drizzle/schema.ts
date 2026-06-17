@@ -4823,3 +4823,185 @@ export const offlinePatientPrivacy = pgTable("offline_patient_privacy", {
 }));
 export type OfflinePatientPrivacy = typeof offlinePatientPrivacy.$inferSelect;
 export type InsertOfflinePatientPrivacy = typeof offlinePatientPrivacy.$inferInsert;
+
+// =============================================================================
+// OFFLINE PATIENT LABELS (Etiquetas personalizadas por paciente)
+// =============================================================================
+export const offlinePatientLabels = pgTable("offline_patient_labels", {
+  id: serial("id").primaryKey(),
+  expertUserId: integer("expertUserId").notNull(),
+  name: varchar("name", { length: 64 }).notNull(),
+  color: varchar("color", { length: 16 }).default("#6366f1").notNull(), // hex color
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  expertIdx: index("opl_expert_idx").on(t.expertUserId),
+}));
+export type OfflinePatientLabel = typeof offlinePatientLabels.$inferSelect;
+export type InsertOfflinePatientLabel = typeof offlinePatientLabels.$inferInsert;
+
+export const offlinePatientLabelAssignments = pgTable("offline_patient_label_assignments", {
+  id: serial("id").primaryKey(),
+  patientId: integer("patientId").notNull(),
+  labelId: integer("labelId").notNull(),
+  expertUserId: integer("expertUserId").notNull(),
+  assignedAt: timestamp("assignedAt").defaultNow().notNull(),
+}, (t) => ({
+  patientIdx: index("opla_patient_idx").on(t.patientId),
+  labelIdx: index("opla_label_idx").on(t.labelId),
+  uniqueAssignment: uniqueIndex("opla_unique").on(t.patientId, t.labelId),
+}));
+export type OfflinePatientLabelAssignment = typeof offlinePatientLabelAssignments.$inferSelect;
+
+// =============================================================================
+// OFFLINE PATIENT BODY MEASUREMENTS (Medidas corporales)
+// =============================================================================
+export const offlineBodyMeasurements = pgTable("offline_body_measurements", {
+  id: serial("id").primaryKey(),
+  patientId: integer("patientId").notNull(),
+  expertUserId: integer("expertUserId").notNull(),
+  recordedAt: timestamp("recordedAt").defaultNow().notNull(),
+  // Circumferences (cm)
+  waist: real("waist"),
+  hip: real("hip"),
+  chest: real("chest"),
+  leftArm: real("leftArm"),
+  rightArm: real("rightArm"),
+  leftThigh: real("leftThigh"),
+  rightThigh: real("rightThigh"),
+  leftCalf: real("leftCalf"),
+  rightCalf: real("rightCalf"),
+  neck: real("neck"),
+  shoulder: real("shoulder"),
+  // Body composition
+  bodyFatPct: real("bodyFatPct"),
+  muscleMassPct: real("muscleMassPct"),
+  bmi: real("bmi"),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  patientIdx: index("obm_patient_idx").on(t.patientId),
+  expertIdx: index("obm_expert_idx").on(t.expertUserId),
+  dateIdx: index("obm_date_idx").on(t.recordedAt),
+}));
+export type OfflineBodyMeasurement = typeof offlineBodyMeasurements.$inferSelect;
+export type InsertOfflineBodyMeasurement = typeof offlineBodyMeasurements.$inferInsert;
+
+// =============================================================================
+// OFFLINE PROGRESS PHOTOS (Fotos de progreso antes/después)
+// =============================================================================
+export const offlineProgressPhotos = pgTable("offline_progress_photos", {
+  id: serial("id").primaryKey(),
+  patientId: integer("patientId").notNull(),
+  expertUserId: integer("expertUserId").notNull(),
+  photoUrl: text("photoUrl").notNull(),
+  photoType: varchar("photoType", { length: 16 }).default("progress").notNull(), // progress | before | after
+  angle: varchar("angle", { length: 16 }).default("front"), // front | back | side_left | side_right
+  takenAt: timestamp("takenAt").defaultNow().notNull(),
+  notes: text("notes"),
+  isVisibleToPatient: boolean("isVisibleToPatient").default(false).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  patientIdx: index("opp2_patient_idx").on(t.patientId),
+  expertIdx: index("opp2_expert_idx").on(t.expertUserId),
+  dateIdx: index("opp2_date_idx").on(t.takenAt),
+}));
+export type OfflineProgressPhoto = typeof offlineProgressPhotos.$inferSelect;
+export type InsertOfflineProgressPhoto = typeof offlineProgressPhotos.$inferInsert;
+
+// =============================================================================
+// OFFLINE PATIENT CHANGE LOG (Historial de cambios en la ficha)
+// =============================================================================
+export const offlinePatientChangeLog = pgTable("offline_patient_change_log", {
+  id: serial("id").primaryKey(),
+  patientId: integer("patientId").notNull(),
+  expertUserId: integer("expertUserId").notNull(),
+  fieldName: varchar("fieldName", { length: 64 }).notNull(),
+  oldValue: text("oldValue"),
+  newValue: text("newValue"),
+  changedAt: timestamp("changedAt").defaultNow().notNull(),
+}, (t) => ({
+  patientIdx: index("opcl_patient_idx").on(t.patientId),
+  dateIdx: index("opcl_date_idx").on(t.changedAt),
+}));
+export type OfflinePatientChangeLog = typeof offlinePatientChangeLog.$inferSelect;
+
+// =============================================================================
+// OFFLINE PATIENT QUESTIONNAIRES (Cuestionarios personalizados)
+// =============================================================================
+export const offlineQuestionnaires = pgTable("offline_questionnaires", {
+  id: serial("id").primaryKey(),
+  expertUserId: integer("expertUserId").notNull(),
+  title: varchar("title", { length: 256 }).notNull(),
+  description: text("description"),
+  questions: text("questions").notNull(), // JSON: [{id, type, label, options, required}]
+  isActive: boolean("isActive").default(true).notNull(),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  expertIdx: index("oq_expert_idx").on(t.expertUserId),
+}));
+export type OfflineQuestionnaire = typeof offlineQuestionnaires.$inferSelect;
+export type InsertOfflineQuestionnaire = typeof offlineQuestionnaires.$inferInsert;
+
+export const offlineQuestionnaireResponses = pgTable("offline_questionnaire_responses", {
+  id: serial("id").primaryKey(),
+  questionnaireId: integer("questionnaireId").notNull(),
+  patientId: integer("patientId").notNull(),
+  expertUserId: integer("expertUserId").notNull(),
+  answers: text("answers").notNull(), // JSON: {questionId: answer}
+  completedAt: timestamp("completedAt"),
+  sentAt: timestamp("sentAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  questionnaireIdx: index("oqr_q_idx").on(t.questionnaireId),
+  patientIdx: index("oqr_patient_idx").on(t.patientId),
+}));
+export type OfflineQuestionnaireResponse = typeof offlineQuestionnaireResponses.$inferSelect;
+
+// =============================================================================
+// OFFLINE PATIENT INVOICES (Gestión de cobros y facturas)
+// =============================================================================
+export const invoiceStatusEnum = pgEnum("invoiceStatus", ["draft", "sent", "paid", "overdue", "cancelled"]);
+export const offlineInvoices = pgTable("offline_invoices", {
+  id: serial("id").primaryKey(),
+  expertUserId: integer("expertUserId").notNull(),
+  patientId: integer("patientId").notNull(),
+  invoiceNumber: varchar("invoiceNumber", { length: 32 }).notNull(),
+  concept: varchar("concept", { length: 256 }).notNull(),
+  amount: real("amount").notNull(), // EUR
+  currency: varchar("currency", { length: 8 }).default("EUR").notNull(),
+  status: invoiceStatusEnum("status").default("draft").notNull(),
+  issuedAt: timestamp("issuedAt").defaultNow().notNull(),
+  dueAt: timestamp("dueAt"),
+  paidAt: timestamp("paidAt"),
+  notes: text("notes"),
+  pdfUrl: text("pdfUrl"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  expertIdx: index("oi_expert_idx").on(t.expertUserId),
+  patientIdx: index("oi_patient_idx").on(t.patientId),
+  statusIdx: index("oi_status_idx").on(t.status),
+  numberIdx: uniqueIndex("oi_number_idx").on(t.invoiceNumber),
+}));
+export type OfflineInvoice = typeof offlineInvoices.$inferSelect;
+export type InsertOfflineInvoice = typeof offlineInvoices.$inferInsert;
+
+// =============================================================================
+// OFFLINE PATIENT KANBAN STAGE (Estado Kanban del paciente)
+// =============================================================================
+export const kanbanStageEnum = pgEnum("kanbanStage", ["new", "active", "follow_up", "inactive", "discharged"]);
+export const offlinePatientKanban = pgTable("offline_patient_kanban", {
+  id: serial("id").primaryKey(),
+  patientId: integer("patientId").notNull(),
+  expertUserId: integer("expertUserId").notNull(),
+  stage: kanbanStageEnum("stage").default("new").notNull(),
+  stageOrder: integer("stageOrder").default(0).notNull(), // position within stage
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  patientIdx: uniqueIndex("opk_patient_idx").on(t.patientId),
+  expertIdx: index("opk_expert_idx").on(t.expertUserId),
+  stageIdx: index("opk_stage_idx").on(t.stage),
+}));
+export type OfflinePatientKanban = typeof offlinePatientKanban.$inferSelect;
+export type InsertOfflinePatientKanban = typeof offlinePatientKanban.$inferInsert;

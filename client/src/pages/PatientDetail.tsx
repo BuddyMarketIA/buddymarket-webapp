@@ -7,6 +7,7 @@ import {
   ArrowLeft, Mail, MessageCircle, Sparkles, Plus, Trash2,
   Scale, TrendingDown, TrendingUp, Send, ChevronDown, ChevronUp,
   UserCheck, Copy, ExternalLink, Shield, Eye, EyeOff, RefreshCw,
+  Ruler, Tag, History, X,
 } from "lucide-react";
 import {
   LineChart, Line, XAxis, YAxis, Tooltip, ResponsiveContainer, CartesianGrid, ReferenceLine,
@@ -56,6 +57,16 @@ export default function PatientDetail() {
   const [showInviteConfirm, setShowInviteConfirm] = useState(false);
   const [showPrivacyPanel, setShowPrivacyPanel] = useState(false);
   const [localPrivacy, setLocalPrivacy] = useState<Record<string, boolean>>({});
+  // Medidas corporales
+  const [showMeasures, setShowMeasures] = useState(false);
+  const [showAddMeasure, setShowAddMeasure] = useState(false);
+  const [measureForm, setMeasureForm] = useState({ waistCm: "", hipCm: "", chestCm: "", armCm: "", thighCm: "", neckCm: "", recordedAt: new Date().toISOString().split("T")[0] });
+  // Etiquetas
+  const [showLabels, setShowLabels] = useState(false);
+  const [newLabelName, setNewLabelName] = useState("");
+  const [newLabelColor, setNewLabelColor] = useState("#6366f1");
+  // Historial de cambios
+  const [showChangelog, setShowChangelog] = useState(false);
 
   const monday = addDays(getMonday(), weekOffset * 7);
   const sunday = addDays(monday, 6);
@@ -94,6 +105,39 @@ export default function PatientDetail() {
     onSuccess: () => { toast.success("Invitación enviada"); setShowInviteConfirm(false); },
     onError: (e) => toast.error("Error: " + e.message),
   });
+  // Medidas corporales
+  const { data: bodyMeasures = [], refetch: refetchMeasures } = trpc.expertPro.listBodyMeasurements.useQuery(
+    { patientId },
+    { enabled: !!patientId && showMeasures }
+  );
+  const addMeasure = trpc.expertPro.addBodyMeasurement.useMutation({
+    onSuccess: () => { toast.success("Medidas guardadas"); setShowAddMeasure(false); setMeasureForm({ waistCm: "", hipCm: "", chestCm: "", armCm: "", thighCm: "", neckCm: "", recordedAt: new Date().toISOString().split("T")[0] }); refetchMeasures(); },
+    onError: (e) => toast.error(e.message),
+  });
+  // Etiquetas
+  const { data: patientLabels = [], refetch: refetchLabels } = trpc.expertPro.getPatientLabels.useQuery(
+    { patientId },
+    { enabled: !!patientId && showLabels }
+  );
+  const { data: allLabels = [] } = trpc.expertPro.listLabels.useQuery(undefined, { enabled: showLabels });
+  const addLabel = trpc.expertPro.assignLabel.useMutation({
+    onSuccess: () => { refetchLabels(); },
+    onError: (e) => toast.error(e.message),
+  });
+  const removeLabel = trpc.expertPro.removeLabel.useMutation({
+    onSuccess: () => refetchLabels(),
+    onError: (e) => toast.error(e.message),
+  });
+  const createLabel = trpc.expertPro.createLabel.useMutation({
+    onSuccess: () => { toast.success("Etiqueta creada"); setNewLabelName(""); },
+    onError: (e) => toast.error(e.message),
+  });
+  // Historial de cambios
+  const { data: changelog = [] } = trpc.expertPro.getChangeLog.useQuery(
+    { patientId },
+    { enabled: !!patientId && showChangelog }
+  );
+
   const { data: privacySettings, refetch: refetchPrivacy } = trpc.offlinePatients.getPrivacySettings.useQuery(
     { patientId },
     { enabled: !!patientId && showPrivacyPanel }
@@ -474,6 +518,225 @@ export default function PatientDetail() {
             </div>
           </div>
         )}
+
+        {/* ─── Medidas corporales ──────────────────────────────────────────── */}
+        <div className="bg-card rounded-2xl border border-border p-4 mb-6">
+          <button
+            onClick={() => setShowMeasures(!showMeasures)}
+            className="w-full flex items-center justify-between"
+          >
+            <div className="flex items-center gap-2">
+              <Ruler size={16} className="text-teal-500" />
+              <h2 className="text-base font-black text-foreground">Medidas corporales</h2>
+              {bodyMeasures.length > 0 && (
+                <span className="text-xs font-bold px-2 py-0.5 rounded-full bg-teal-100 text-teal-700">{bodyMeasures.length}</span>
+              )}
+            </div>
+            {showMeasures ? <ChevronUp size={16} className="text-muted-foreground" /> : <ChevronDown size={16} className="text-muted-foreground" />}
+          </button>
+
+          {showMeasures && (
+            <div className="mt-4">
+              <div className="flex justify-end mb-3">
+                <button
+                  onClick={() => setShowAddMeasure(!showAddMeasure)}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-teal-500 text-white text-xs font-bold hover:bg-teal-600 transition-colors"
+                >
+                  <Plus size={12} /> Registrar medidas
+                </button>
+              </div>
+
+              {showAddMeasure && (
+                <div className="bg-muted/30 rounded-xl p-4 mb-4 space-y-3">
+                  <div className="grid grid-cols-3 gap-3">
+                    {[
+                      { key: "waistCm", label: "Cintura (cm)" },
+                      { key: "hipCm", label: "Cadera (cm)" },
+                      { key: "chestCm", label: "Pecho (cm)" },
+                      { key: "armCm", label: "Brazo (cm)" },
+                      { key: "thighCm", label: "Muslo (cm)" },
+                      { key: "neckCm", label: "Cuello (cm)" },
+                    ].map(({ key, label }) => (
+                      <div key={key}>
+                        <label className="text-xs font-bold text-muted-foreground mb-1 block">{label}</label>
+                        <input
+                          type="number" step="0.5"
+                          value={(measureForm as any)[key]}
+                          onChange={(e) => setMeasureForm(p => ({ ...p, [key]: e.target.value }))}
+                          className="w-full rounded-lg border border-border px-2 py-1.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-teal-400"
+                          placeholder="—"
+                        />
+                      </div>
+                    ))}
+                  </div>
+                  <div>
+                    <label className="text-xs font-bold text-muted-foreground mb-1 block">Fecha</label>
+                    <input type="date" value={measureForm.recordedAt} onChange={(e) => setMeasureForm(p => ({ ...p, recordedAt: e.target.value }))}
+                      className="w-full rounded-lg border border-border px-3 py-2 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-teal-400" />
+                  </div>
+                  <div className="flex gap-2">
+                    <button onClick={() => setShowAddMeasure(false)} className="flex-1 py-2 rounded-lg border border-border text-sm font-semibold hover:bg-muted transition-colors">Cancelar</button>
+                    <button
+                      onClick={() => addMeasure.mutate({
+                        patientId,
+                        waist: measureForm.waistCm ? parseFloat(measureForm.waistCm) : undefined,
+                        hip: measureForm.hipCm ? parseFloat(measureForm.hipCm) : undefined,
+                        chest: measureForm.chestCm ? parseFloat(measureForm.chestCm) : undefined,
+                        leftArm: measureForm.armCm ? parseFloat(measureForm.armCm) : undefined,
+                        leftThigh: measureForm.thighCm ? parseFloat(measureForm.thighCm) : undefined,
+                        neck: measureForm.neckCm ? parseFloat(measureForm.neckCm) : undefined,
+                        recordedAt: measureForm.recordedAt,
+                      })}
+                      disabled={addMeasure.isPending}
+                      className="flex-1 py-2 rounded-lg bg-teal-500 text-white text-sm font-bold hover:bg-teal-600 transition-colors disabled:opacity-50"
+                    >
+                      {addMeasure.isPending ? "Guardando..." : "Guardar"}
+                    </button>
+                  </div>
+                </div>
+              )}
+
+              {bodyMeasures.length > 0 ? (
+                <div className="overflow-x-auto">
+                  <table className="w-full text-xs">
+                    <thead>
+                      <tr className="border-b border-border">
+                        <th className="text-left py-2 text-muted-foreground font-bold">Fecha</th>
+                        <th className="text-center py-2 text-muted-foreground font-bold">Cintura</th>
+                        <th className="text-center py-2 text-muted-foreground font-bold">Cadera</th>
+                        <th className="text-center py-2 text-muted-foreground font-bold">Pecho</th>
+                        <th className="text-center py-2 text-muted-foreground font-bold">Brazo</th>
+                        <th className="text-center py-2 text-muted-foreground font-bold">Muslo</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {bodyMeasures.slice(0, 8).map((m: any) => (
+                        <tr key={m.id} className="border-b border-border/30 hover:bg-muted/20">
+                          <td className="py-2 text-muted-foreground">{fmtDate(m.recordedAt)}</td>
+                          <td className="py-2 text-center font-semibold">{m.waistCm ? `${m.waistCm}` : "—"}</td>
+                          <td className="py-2 text-center font-semibold">{m.hipCm ? `${m.hipCm}` : "—"}</td>
+                          <td className="py-2 text-center font-semibold">{m.chestCm ? `${m.chestCm}` : "—"}</td>
+                          <td className="py-2 text-center font-semibold">{m.armCm ? `${m.armCm}` : "—"}</td>
+                          <td className="py-2 text-center font-semibold">{m.thighCm ? `${m.thighCm}` : "—"}</td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-4">Sin medidas registradas</p>
+              )}
+            </div>
+          )}
+        </div>
+
+        {/* ─── Etiquetas ──────────────────────────────────────────────────── */}
+        <div className="bg-card rounded-2xl border border-border p-4 mb-6">
+          <button
+            onClick={() => setShowLabels(!showLabels)}
+            className="w-full flex items-center justify-between"
+          >
+            <div className="flex items-center gap-2">
+              <Tag size={16} className="text-violet-500" />
+              <h2 className="text-base font-black text-foreground">Etiquetas</h2>
+              {patientLabels.length > 0 && (
+                <div className="flex gap-1 flex-wrap">
+                  {patientLabels.slice(0, 3).map((l: any) => (
+                    <span key={l.id} className="text-xs px-2 py-0.5 rounded-full font-medium" style={{ background: l.color + "22", color: l.color }}>{l.name}</span>
+                  ))}
+                </div>
+              )}
+            </div>
+            {showLabels ? <ChevronUp size={16} className="text-muted-foreground" /> : <ChevronDown size={16} className="text-muted-foreground" />}
+          </button>
+
+          {showLabels && (
+            <div className="mt-4 space-y-3">
+              {/* Etiquetas actuales */}
+              {patientLabels.length > 0 && (
+                <div className="flex flex-wrap gap-2">
+                  {patientLabels.map((l: any) => (
+                    <div key={l.id} className="flex items-center gap-1 px-2 py-1 rounded-full text-xs font-medium" style={{ background: l.color + "22", color: l.color }}>
+                      {l.name}
+                      <button onClick={() => removeLabel.mutate({ patientId, labelId: l.id })} className="hover:opacity-70">
+                        <X size={10} />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+              {/* Añadir etiqueta existente */}
+              {allLabels.filter((l: any) => !patientLabels.find((pl: any) => pl.id === l.id)).length > 0 && (
+                <div className="flex flex-wrap gap-1.5">
+                  <p className="w-full text-xs text-muted-foreground font-bold mb-1">Añadir etiqueta:</p>
+                  {allLabels.filter((l: any) => !patientLabels.find((pl: any) => pl.id === l.id)).map((l: any) => (
+                    <button key={l.id} onClick={() => addLabel.mutate({ patientId, labelId: l.id })}
+                      className="text-xs px-2 py-1 rounded-full border border-dashed hover:opacity-80 transition-opacity"
+                      style={{ borderColor: l.color, color: l.color }}
+                    >
+                      + {l.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+              {/* Crear nueva etiqueta */}
+              <div className="flex gap-2 items-center pt-2 border-t border-border">
+                <input
+                  type="color" value={newLabelColor} onChange={e => setNewLabelColor(e.target.value)}
+                  className="w-8 h-8 rounded-lg border border-border cursor-pointer"
+                />
+                <input
+                  type="text" value={newLabelName} onChange={e => setNewLabelName(e.target.value)}
+                  placeholder="Nueva etiqueta..."
+                  className="flex-1 rounded-lg border border-border px-3 py-1.5 text-sm bg-background focus:outline-none focus:ring-2 focus:ring-violet-400"
+                />
+                <button
+                  onClick={() => { if (newLabelName.trim()) createLabel.mutate({ name: newLabelName.trim(), color: newLabelColor }); }}
+                  disabled={!newLabelName.trim() || createLabel.isPending}
+                  className="px-3 py-1.5 rounded-lg bg-violet-500 text-white text-xs font-bold hover:bg-violet-600 disabled:opacity-50 transition-colors"
+                >
+                  Crear
+                </button>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* ─── Historial de cambios ────────────────────────────────────────── */}
+        <div className="bg-card rounded-2xl border border-border p-4 mb-6">
+          <button
+            onClick={() => setShowChangelog(!showChangelog)}
+            className="w-full flex items-center justify-between"
+          >
+            <div className="flex items-center gap-2">
+              <History size={16} className="text-slate-500" />
+              <h2 className="text-base font-black text-foreground">Historial de cambios</h2>
+            </div>
+            {showChangelog ? <ChevronUp size={16} className="text-muted-foreground" /> : <ChevronDown size={16} className="text-muted-foreground" />}
+          </button>
+
+          {showChangelog && (
+            <div className="mt-4">
+              {changelog.length > 0 ? (
+                <div className="space-y-2">
+                  {changelog.map((c: any) => (
+                    <div key={c.id} className="flex items-start gap-3 py-2 border-b border-border/30 last:border-0">
+                      <div className="w-6 h-6 rounded-full bg-slate-100 flex items-center justify-center flex-shrink-0 mt-0.5">
+                        <History size={10} className="text-slate-500" />
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <p className="text-xs font-semibold text-foreground">{c.fieldName}: <span className="text-muted-foreground line-through">{c.oldValue ?? "—"}</span> → <span className="text-foreground">{c.newValue ?? "—"}</span></p>
+                        <p className="text-xs text-muted-foreground">{fmtDate(c.changedAt)}</p>
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              ) : (
+                <p className="text-sm text-muted-foreground text-center py-4">Sin cambios registrados</p>
+              )}
+            </div>
+          )}
+        </div>
       </div>
 
       {/* ─── Email send modal ─────────────────────────────────────────────── */}

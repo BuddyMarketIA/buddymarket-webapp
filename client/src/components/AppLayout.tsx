@@ -513,6 +513,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       label: "Pacientes",
       items: [
         { key: "/app/expert/patients", label: "Mis Pacientes", to: "/app/expert/patients", emoji: "👥" },
+        { key: "/app/expert/kanban", label: "Vista Cartera", to: "/app/expert/kanban", emoji: "📌" },
         { key: "/app/expert/hire-requests", label: "Solicitudes", to: "/app/expert/hire-requests", emoji: "📩" },
         { key: "/app/expert/chat", label: "Chat con Pacientes", to: "/app/expert/chat", emoji: "💬" },
         { key: "/app/expert/alerts", label: "Alertas Pacientes", to: "/app/expert/alerts", emoji: "🔔" },
@@ -523,6 +524,8 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
     {
       label: "Herramientas Pro",
       items: [
+        { key: "/app/expert/pro-dashboard", label: "KPIs y Negocio", to: "/app/expert/pro-dashboard", emoji: "💰" },
+        { key: "/app/expert/questionnaires", label: "Cuestionarios", to: "/app/expert/questionnaires", emoji: "📋" },
         { key: "/app/expert/ai-plan", label: "Plan con IA", to: "/app/expert/ai-plan", emoji: "🤖" },
         { key: "/app/expert/video", label: "Videoconsultas", to: "/app/expert/video", emoji: "📹" },
         { key: "/app/expert/availability", label: "Disponibilidad", to: "/app/expert/availability", emoji: "📅" },
