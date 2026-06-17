@@ -6,6 +6,8 @@ import {
   patientWeightHistory,
   patientPlansSent,
   offlinePatientPrivacy,
+  offlinePatientLabels,
+  offlinePatientLabelAssignments,
 } from "../../drizzle/schema";
 import { eq, and, desc, inArray } from "drizzle-orm";
 import crypto from "crypto";
@@ -142,7 +144,23 @@ export const offlinePatientsRouter = router({
         .where(inArray(patientWeightHistory.patientId, patientIds))
         .groupBy(patientWeightHistory.patientId);
       const weightMap = new Map(latestWeights.map(w => [w.patientId, w.weight]));
-      return patients.map(p => ({ ...p, lastWeight: weightMap.get(p.id) ?? p.initialWeightKg }));
+      // Get labels for each patient
+      const labelAssignments = patientIds.length > 0 ? await db
+        .select({
+          patientId: offlinePatientLabelAssignments.patientId,
+          labelId: offlinePatientLabels.id,
+          labelName: offlinePatientLabels.name,
+          labelColor: offlinePatientLabels.color,
+        })
+        .from(offlinePatientLabelAssignments)
+        .innerJoin(offlinePatientLabels, eq(offlinePatientLabelAssignments.labelId, offlinePatientLabels.id))
+        .where(inArray(offlinePatientLabelAssignments.patientId, patientIds)) : [];
+      const labelsMap = new Map<number, Array<{ id: number; name: string; color: string }>>();
+      for (const a of labelAssignments) {
+        if (!labelsMap.has(a.patientId)) labelsMap.set(a.patientId, []);
+        labelsMap.get(a.patientId)!.push({ id: a.labelId, name: a.labelName, color: a.labelColor });
+      }
+      return patients.map(p => ({ ...p, lastWeight: weightMap.get(p.id) ?? p.initialWeightKg, labels: labelsMap.get(p.id) ?? [] }));
     }),
 
   // Get single patient

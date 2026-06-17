@@ -6,7 +6,7 @@ import { toast } from "@/components/sonner-a11y-shim";
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Upload, MessageCircle, Download, UserPlus2, UserCheck, Users, Plus, ChevronRight, Mail } from "lucide-react";
+import { Upload, MessageCircle, Download, UserPlus2, UserCheck, Users, Plus, ChevronRight, Mail, Search, Tag, X } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -26,6 +26,7 @@ export default function ExpertPatients() {
   const [search, setSearch] = useState("");
   const [offlineSearch, setOfflineSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "invited" | "paused" | "discharged">("all");
+  const [selectedLabelId, setSelectedLabelId] = useState<number | null>(null);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteNotes, setInviteNotes] = useState("");
@@ -71,6 +72,7 @@ export default function ExpertPatients() {
   const { data: offlinePatients, isLoading: offlineLoading, refetch: refetchOffline } = trpc.offlinePatients.list.useQuery(
     undefined, { enabled: !!user }
   );
+  const { data: allLabels } = trpc.expertPro.listLabels.useQuery(undefined, { enabled: !!user });
   const { data: adherenceData } = trpc.expertPatients.checkPatientsAdherence.useQuery(
     undefined, { enabled: !!user && statusFilter !== "invited" }
   );
@@ -146,9 +148,12 @@ export default function ExpertPatients() {
   }) ?? [];
 
   const filteredOffline = offlinePatients?.filter((p: any) => {
-    if (!offlineSearch) return true;
-    const s = offlineSearch.toLowerCase();
-    return p.name?.toLowerCase().includes(s) || p.email?.toLowerCase().includes(s);
+    const matchesSearch = !offlineSearch || 
+      p.name?.toLowerCase().includes(offlineSearch.toLowerCase()) || 
+      p.email?.toLowerCase().includes(offlineSearch.toLowerCase());
+    const matchesLabel = !selectedLabelId || 
+      (p.labels ?? []).some((l: any) => l.id === selectedLabelId);
+    return matchesSearch && matchesLabel;
   }) ?? [];
 
   const totalOnline = patients?.length ?? 0;
@@ -272,17 +277,48 @@ export default function ExpertPatients() {
               </button>
             </div>
 
-            {/* Buscador */}
-            {totalOffline > 3 && (
-              <div className="mb-4">
+            {/* Buscador + Filtros por etiqueta */}
+            <div className="mb-4 space-y-2">
+              <div className="relative">
+                <Search size={15} className="absolute left-3 top-1/2 -translate-y-1/2 text-muted-foreground" />
                 <Input
-                  placeholder="Buscar paciente..."
+                  placeholder="Buscar por nombre, email..."
                   value={offlineSearch}
                   onChange={e => setOfflineSearch(e.target.value)}
-                  className="max-w-sm"
+                  className="pl-9"
                 />
+                {offlineSearch && (
+                  <button onClick={() => setOfflineSearch("")} className="absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground hover:text-foreground">
+                    <X size={14} />
+                  </button>
+                )}
               </div>
-            )}
+              {allLabels && allLabels.length > 0 && (
+                <div className="flex items-center gap-2 flex-wrap">
+                  <span className="text-xs text-muted-foreground flex items-center gap-1"><Tag size={11} /> Etiquetas:</span>
+                  <button
+                    onClick={() => setSelectedLabelId(null)}
+                    className={`px-2.5 py-1 rounded-full text-xs font-medium transition-colors ${
+                      !selectedLabelId ? "bg-foreground text-background" : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                    }`}
+                  >
+                    Todas
+                  </button>
+                  {allLabels.map((label: any) => (
+                    <button
+                      key={label.id}
+                      onClick={() => setSelectedLabelId(selectedLabelId === label.id ? null : label.id)}
+                      className={`px-2.5 py-1 rounded-full text-xs font-medium transition-all border ${
+                        selectedLabelId === label.id ? "text-white border-transparent shadow-sm" : "bg-background border-border hover:border-current"
+                      }`}
+                      style={selectedLabelId === label.id ? { backgroundColor: label.color, borderColor: label.color } : { color: label.color }}
+                    >
+                      {label.name}
+                    </button>
+                  ))}
+                </div>
+              )}
+            </div>
 
             {/* Lista offline */}
             {offlineLoading ? (
@@ -339,6 +375,18 @@ export default function ExpertPatients() {
                         ) : patient.inviteSentAt ? (
                           <Badge className="text-xs py-0 h-4 bg-yellow-100 text-yellow-700 border-0">Invitación enviada</Badge>
                         ) : null}
+                        {(patient.labels ?? []).slice(0, 2).map((label: any) => (
+                          <span
+                            key={label.id}
+                            className="inline-flex items-center px-1.5 py-0 rounded-full text-xs font-medium"
+                            style={{ backgroundColor: label.color + "22", color: label.color, border: `1px solid ${label.color}44` }}
+                          >
+                            {label.name}
+                          </span>
+                        ))}
+                        {(patient.labels ?? []).length > 2 && (
+                          <span className="text-xs text-muted-foreground">+{patient.labels.length - 2}</span>
+                        )}
                       </div>
                     </div>
                     {/* Acciones rápidas */}

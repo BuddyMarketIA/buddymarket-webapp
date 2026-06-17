@@ -193,6 +193,20 @@ export default defineConfig({
     // Without this, the default "esnext" target produces code that crashes on
     // iOS < 15 with a SyntaxError before any JS executes.
     target: ["es2019", "safari13"],
+    rollupOptions: {
+      output: {
+        manualChunks(id) {
+          if (id.includes("node_modules")) {
+            if (id.includes("react") || id.includes("react-dom")) return "vendor-react";
+            if (id.includes("@radix-ui")) return "vendor-ui";
+            if (id.includes("lucide")) return "vendor-icons";
+            if (id.includes("recharts") || id.includes("d3-")) return "vendor-charts";
+            if (id.includes("@tanstack") || id.includes("@trpc")) return "vendor-trpc";
+            return "vendor";
+          }
+        },
+      },
+    },
   },
   server: {
     host: true,
