@@ -5005,3 +5005,57 @@ export const offlinePatientKanban = pgTable("offline_patient_kanban", {
 }));
 export type OfflinePatientKanban = typeof offlinePatientKanban.$inferSelect;
 export type InsertOfflinePatientKanban = typeof offlinePatientKanban.$inferInsert;
+
+// ─────────────────────────────────────────────
+// EXPERT RECIPE SYSTEM
+// ─────────────────────────────────────────────
+
+// Collections / folders for organizing expert recipes
+export const expertRecipeCollections = pgTable("expert_recipe_collections", {
+  id: serial("id").primaryKey(),
+  expertUserId: integer("expertUserId").notNull(),
+  name: varchar("name", { length: 128 }).notNull(),
+  description: text("description"),
+  color: varchar("color", { length: 16 }).default("#f97316"), // hex color
+  icon: varchar("icon", { length: 32 }).default("book"),
+  recipeCount: integer("recipeCount").default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  expertIdx: index("erc_expert_idx").on(t.expertUserId),
+}));
+export type ExpertRecipeCollection = typeof expertRecipeCollections.$inferSelect;
+export type InsertExpertRecipeCollection = typeof expertRecipeCollections.$inferInsert;
+
+// Many-to-many: recipe <-> collection
+export const expertRecipeCollectionItems = pgTable("expert_recipe_collection_items", {
+  id: serial("id").primaryKey(),
+  collectionId: integer("collectionId").notNull(),
+  recipeId: integer("recipeId").notNull(),
+  addedAt: timestamp("addedAt").defaultNow().notNull(),
+}, (t) => ({
+  collectionIdx: index("erci_collection_idx").on(t.collectionId),
+  recipeIdx: index("erci_recipe_idx").on(t.recipeId),
+  uniqueItem: uniqueIndex("erci_unique_item").on(t.collectionId, t.recipeId),
+}));
+export type ExpertRecipeCollectionItem = typeof expertRecipeCollectionItems.$inferSelect;
+
+// Assignments: expert assigns a recipe to an offline patient
+export const expertRecipeAssignments = pgTable("expert_recipe_assignments", {
+  id: serial("id").primaryKey(),
+  expertUserId: integer("expertUserId").notNull(),
+  patientId: integer("patientId").notNull(), // offline_patients.id
+  recipeId: integer("recipeId").notNull(),   // recipes.id
+  notes: text("notes"),                      // expert notes for this patient
+  servings: integer("servings").default(1),
+  mealTime: mealTimeEnum("mealTime").default("cualquiera"),
+  assignedAt: timestamp("assignedAt").defaultNow().notNull(),
+  sentByEmail: boolean("sentByEmail").default(false),
+  emailSentAt: timestamp("emailSentAt"),
+}, (t) => ({
+  expertIdx: index("era_expert_idx").on(t.expertUserId),
+  patientIdx: index("era_patient_idx").on(t.patientId),
+  recipeIdx: index("era_recipe_idx").on(t.recipeId),
+}));
+export type ExpertRecipeAssignment = typeof expertRecipeAssignments.$inferSelect;
+export type InsertExpertRecipeAssignment = typeof expertRecipeAssignments.$inferInsert;

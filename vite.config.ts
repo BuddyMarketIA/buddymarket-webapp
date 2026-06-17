@@ -193,6 +193,7 @@ export default defineConfig({
     // Without this, the default "esnext" target produces code that crashes on
     // iOS < 15 with a SyntaxError before any JS executes.
     target: ["es2019", "safari13"],
+    chunkSizeWarningLimit: 1000,
     rollupOptions: {
       output: {
         manualChunks(id) {

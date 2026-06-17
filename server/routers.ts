@@ -31,6 +31,7 @@ import { ecosystemSyncRouter } from "./routers/ecosystemSync";
 import { ecosystemEnhancedRouter } from "./routers/ecosystemEnhanced";
 import { expertEnhancedRouter } from "./routers/expertEnhanced";
 import { expertProRouter } from "./routers/expertPro";
+import { expertRecipesRouter } from "./routers/expertRecipes";
 import { expertDocumentsRouter } from "./routers/expertDocuments";
 import { expertFeatureRequestsRouter } from "./routers/expertFeatureRequests";
 import { recipeImagesRouter } from "./routers/recipeImages";
@@ -305,6 +306,7 @@ export const appRouter = router({
   ecosystemEnhanced: ecosystemEnhancedRouter,
   expertEnhanced: expertEnhancedRouter,
   expertPro: expertProRouter,
+  expertRecipes: expertRecipesRouter,
   expertDocuments: expertDocumentsRouter,
   recipeImages: recipeImagesRouter,
   instagramRecipe: instagramRecipeRouter,

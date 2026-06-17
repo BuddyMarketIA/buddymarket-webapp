@@ -525,6 +525,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       label: "Herramientas Pro",
       items: [
         { key: "/app/expert/pro-dashboard", label: "KPIs y Negocio", to: "/app/expert/pro-dashboard", emoji: "💰" },
+        { key: "/app/expert/recipes", label: "Mis Recetas", to: "/app/expert/recipes", emoji: "🍽️" },
         { key: "/app/expert/questionnaires", label: "Cuestionarios", to: "/app/expert/questionnaires", emoji: "📋" },
         { key: "/app/expert/ai-plan", label: "Plan con IA", to: "/app/expert/ai-plan", emoji: "🤖" },
         { key: "/app/expert/video", label: "Videoconsultas", to: "/app/expert/video", emoji: "📹" },
