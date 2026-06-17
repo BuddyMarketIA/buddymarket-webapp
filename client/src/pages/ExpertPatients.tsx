@@ -6,7 +6,7 @@ import { toast } from "@/components/sonner-a11y-shim";
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Upload, MessageCircle, Download, UserPlus2, UserCheck, Users, Plus, ChevronRight, Mail, Search, Tag, X, CheckSquare, Square, Send, ClipboardList, CheckCheck } from "lucide-react";
+import { Upload, MessageCircle, Download, UserPlus2, UserCheck, Plus, ChevronRight, Mail, Search, X, Tag, CheckSquare, Square, Send, ClipboardList, CheckCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -390,6 +390,7 @@ export default function ExpertPatients() {
                 )}
               </div>
             ) : (
+              <>
               {/* ── Selection toolbar ── */}
               <div className="flex items-center justify-between mb-2 min-h-[36px]">
                 <button
@@ -495,7 +496,7 @@ export default function ExpertPatients() {
                       {!patient.inviteSentAt && patient.email && (
                         <button
                           title="Invitar a Buddy One"
-                          onClick={() => sendInvite.mutate({ patientId: patient.id })}
+                          onClick={() => sendInvite.mutate({ patientId: patient.id, origin: window.location.origin })}
                           disabled={sendInvite.isPending}
                           className="flex items-center gap-1 px-2 py-1 rounded-lg border border-orange-300 text-orange-600 text-xs font-semibold hover:bg-orange-50 transition-colors disabled:opacity-50"
                         >
@@ -507,6 +508,7 @@ export default function ExpertPatients() {
                   </div>
                 ))}
               </div>
+              </>
             )}
           </div>
         )}
@@ -667,9 +669,9 @@ export default function ExpertPatients() {
                           >
                             ⏰ Email
                           </button>
-                          {patient.user?.phone && (
+                          {(patient.user as any)?.phone && (
                             <button
-                              onClick={(e) => { e.stopPropagation(); sendWhatsAppReminder(patient.user.phone, patient.user?.name); }}
+                              onClick={(e) => { e.stopPropagation(); sendWhatsAppReminder((patient.user as any).phone, patient.user?.name); }}
                               className="flex items-center gap-1 px-3 py-1.5 rounded-lg border border-green-400 text-green-700 text-xs font-semibold hover:bg-green-50 transition-colors"
                             >
                               <MessageCircle size={12} /> WA
