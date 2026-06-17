@@ -863,6 +863,120 @@ Duración: ${input.durationWeeks} semana(s)`;
       }
     }),
 
+
+  // ─── Bulk message (email) to multiple patients ────────────────────────────
+  bulkSendMessage: protectedProcedure
+    .input(z.object({
+      patientIds: z.array(z.number()).min(1).max(200),
+      subject: z.string().min(1).max(200),
+      message: z.string().min(1).max(5000),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      requireExpert(ctx);
+      const resendKey = process.env.RESEND_API_KEY;
+      if (!resendKey) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "Email no configurado" });
+      // Get patients that belong to this expert and have email
+      const { inArray: inArr } = await import('drizzle-orm');
+      const patients = await getDb().select().from(offlinePatients).where(
+        and(
+          inArr(offlinePatients.id, input.patientIds),
+          eq(offlinePatients.expertUserId, ctx.user.id),
+          eq(offlinePatients.isActive, true),
+        )
+      );
+      const withEmail = patients.filter(p => p.email);
+      if (withEmail.length === 0) throw new TRPCError({ code: "BAD_REQUEST", message: "Ninguno de los pacientes seleccionados tiene email registrado" });
+      const expertName = ctx.user.name ?? "Tu nutricionista";
+      const resend = new Resend(resendKey);
+      const results: { patientId: number; name: string; email: string; sent: boolean; error?: string }[] = [];
+      for (const patient of withEmail) {
+        try {
+          await resend.emails.send({
+            from: `${expertName} via BuddyOne <noreply@buddyone.io>`,
+            to: patient.email!,
+            subject: input.subject,
+            html: `<!DOCTYPE html><html lang="es"><body style="font-family:system-ui,sans-serif;background:#f9fafb;padding:24px">
+              <div style="max-width:520px;margin:0 auto;background:#fff;border-radius:16px;padding:32px;box-shadow:0 2px 8px rgba(0,0,0,0.06)">
+                <h1 style="color:#F97316;margin:0 0 8px">🥗 BuddyOne</h1>
+                <h2 style="color:#1B2B4B;margin:0 0 16px">Hola ${patient.name},</h2>
+                <div style="color:#374151;line-height:1.6;white-space:pre-wrap">${input.message.replace(/</g,"&lt;").replace(/>/g,"&gt;")}</div>
+                <p style="color:#6b7280;font-size:13px;margin-top:24px;border-top:1px solid #f3f4f6;padding-top:16px">Enviado por <strong>${expertName}</strong> a través de BuddyOne · buddyone.app</p>
+              </div>
+            </body></html>`,
+          });
+          results.push({ patientId: patient.id, name: patient.name, email: patient.email!, sent: true });
+        } catch (err: any) {
+          results.push({ patientId: patient.id, name: patient.name, email: patient.email!, sent: false, error: err?.message });
+        }
+      }
+      const sent = results.filter(r => r.sent).length;
+      const failed = results.filter(r => !r.sent).length;
+      return { sent, failed, results, skippedNoEmail: patients.length - withEmail.length };
+    }),
+
+  // ─── Bulk assign a nutritional plan (AI-generated menu) to multiple patients ─
+  bulkAssignPlan: protectedProcedure
+    .input(z.object({
+      patientIds: z.array(z.number()).min(1).max(100),
+      planTitle: z.string().min(1).max(200),
+      planDescription: z.string().optional(),
+      menuData: z.any(),
+      weekStartDate: z.string(),
+      weekEndDate: z.string(),
+      sendByEmail: z.boolean().default(false),
+      customMessage: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      requireExpert(ctx);
+      const { inArray: inArr } = await import('drizzle-orm');
+      const patients = await getDb().select().from(offlinePatients).where(
+        and(
+          inArr(offlinePatients.id, input.patientIds),
+          eq(offlinePatients.expertUserId, ctx.user.id),
+          eq(offlinePatients.isActive, true),
+        )
+      );
+      if (patients.length === 0) throw new TRPCError({ code: "NOT_FOUND", message: "No se encontraron pacientes" });
+      const weekLabel = `${new Date(input.weekStartDate).toLocaleDateString("es-ES", { day: "numeric", month: "long" })} – ${new Date(input.weekEndDate).toLocaleDateString("es-ES", { day: "numeric", month: "long", year: "numeric" })}`;
+      const results: { patientId: number; name: string; assigned: boolean; emailSent?: boolean; error?: string }[] = [];
+      const resendKey = process.env.RESEND_API_KEY;
+      for (const patient of patients) {
+        try {
+          // Log the plan assignment
+          await getDb().insert(patientPlansSent).values({
+            patientId: patient.id,
+            expertUserId: ctx.user.id,
+            weekStartDate: new Date(input.weekStartDate),
+            weekEndDate: new Date(input.weekEndDate),
+            menuData: input.menuData,
+            sentVia: input.sendByEmail && patient.email ? "email" : "manual",
+            sentAt: new Date(),
+          });
+          let emailSent = false;
+          // Optionally send by email
+          if (input.sendByEmail && patient.email && resendKey) {
+            try {
+              const resend = new Resend(resendKey);
+              const expertName = ctx.user.name ?? "Tu nutricionista";
+              const dateLabel = new Date(input.weekStartDate).toLocaleDateString("es-ES", { day: "numeric", month: "long" });
+              await resend.emails.send({
+                from: `${expertName} via BuddyOne <noreply@buddyone.io>`,
+                to: patient.email,
+                subject: `Tu plan nutricional — semana del ${dateLabel}`,
+                html: buildMenuHtml(input.menuData, patient.name, weekLabel, []),
+              });
+              emailSent = true;
+            } catch {}
+          }
+          results.push({ patientId: patient.id, name: patient.name, assigned: true, emailSent });
+        } catch (err: any) {
+          results.push({ patientId: patient.id, name: patient.name, assigned: false, error: err?.message });
+        }
+      }
+      const assigned = results.filter(r => r.assigned).length;
+      const emailsSent = results.filter(r => r.emailSent).length;
+      return { assigned, emailsSent, results };
+    }),
   // ─── Plans sent history ────────────────────────────────────────────────────
   getPlansSent: protectedProcedure
     .input(z.object({ patientId: z.number() }))

@@ -6,7 +6,7 @@ import { toast } from "@/components/sonner-a11y-shim";
 import AppLayout from "@/components/AppLayout";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Upload, MessageCircle, Download, UserPlus2, UserCheck, Users, Plus, ChevronRight, Mail, Search, Tag, X } from "lucide-react";
+import { Upload, MessageCircle, Download, UserPlus2, UserCheck, Users, Plus, ChevronRight, Mail, Search, Tag, X, CheckSquare, Square, Send, ClipboardList, CheckCheck } from "lucide-react";
 import { Badge } from "@/components/ui/badge";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from "@/components/ui/dialog";
 import { Textarea } from "@/components/ui/textarea";
@@ -27,6 +27,15 @@ export default function ExpertPatients() {
   const [offlineSearch, setOfflineSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState<"all" | "active" | "invited" | "paused" | "discharged">("all");
   const [selectedLabelId, setSelectedLabelId] = useState<number | null>(null);
+  // Multi-select state
+  const [selectedPatientIds, setSelectedPatientIds] = useState<Set<number>>(new Set());
+  const [showBulkMessageModal, setShowBulkMessageModal] = useState(false);
+  const [showBulkPlanModal, setShowBulkPlanModal] = useState(false);
+  const [bulkSubject, setBulkSubject] = useState("");
+  const [bulkMessage, setBulkMessage] = useState("");
+  const [bulkPlanTitle, setBulkPlanTitle] = useState("");
+  const [bulkPlanDesc, setBulkPlanDesc] = useState("");
+  const [bulkSendEmail, setBulkSendEmail] = useState(true);
   const [showInviteModal, setShowInviteModal] = useState(false);
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteNotes, setInviteNotes] = useState("");
@@ -96,6 +105,27 @@ export default function ExpertPatients() {
     onSuccess: () => toast.success("Invitación enviada"),
     onError: (e) => toast.error(e.message),
   });
+  const bulkSendMessage = trpc.offlinePatients.bulkSendMessage.useMutation({
+    onSuccess: (data) => {
+      toast.success(`Mensaje enviado a ${data.sent} paciente${data.sent !== 1 ? "s" : ""}${data.failed > 0 ? ` (${data.failed} fallaron)` : ""}${data.skippedNoEmail > 0 ? ` · ${data.skippedNoEmail} sin email omitidos` : ""}`);
+      setShowBulkMessageModal(false);
+      setBulkSubject("");
+      setBulkMessage("");
+      setSelectedPatientIds(new Set());
+    },
+    onError: (e) => toast.error(e.message || "Error al enviar mensajes"),
+  });
+  const bulkAssignPlan = trpc.offlinePatients.bulkAssignPlan.useMutation({
+    onSuccess: (data) => {
+      toast.success(`Plan asignado a ${data.assigned} paciente${data.assigned !== 1 ? "s" : ""}${data.emailsSent > 0 ? ` · ${data.emailsSent} emails enviados` : ""}`);
+      setShowBulkPlanModal(false);
+      setBulkPlanTitle("");
+      setBulkPlanDesc("");
+      setSelectedPatientIds(new Set());
+      refetchOffline();
+    },
+    onError: (e) => toast.error(e.message || "Error al asignar planes"),
+  });
   const inviteMutation = trpc.expertPatients.invitePatient.useMutation({
     onSuccess: (data) => {
       toast.success(data.patientFound
@@ -160,6 +190,22 @@ export default function ExpertPatients() {
   const totalOffline = offlinePatients?.length ?? 0;
 
   const getInitials = (name: string) => name?.split(" ").map(n => n[0]).join("").toUpperCase().slice(0, 2) || "?";
+  const togglePatientSelection = (id: number, e: React.MouseEvent) => {
+    e.stopPropagation();
+    setSelectedPatientIds(prev => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  };
+  const toggleSelectAll = () => {
+    if (selectedPatientIds.size === filteredOffline.length) {
+      setSelectedPatientIds(new Set());
+    } else {
+      setSelectedPatientIds(new Set(filteredOffline.map((p: any) => p.id)));
+    }
+  };
+  const clearSelection = () => setSelectedPatientIds(new Set());
 
   return (
     <AppLayout>
@@ -344,13 +390,61 @@ export default function ExpertPatients() {
                 )}
               </div>
             ) : (
+              {/* ── Selection toolbar ── */}
+              <div className="flex items-center justify-between mb-2 min-h-[36px]">
+                <button
+                  onClick={toggleSelectAll}
+                  className="flex items-center gap-1.5 text-xs text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  {selectedPatientIds.size === filteredOffline.length && filteredOffline.length > 0
+                    ? <CheckCheck size={14} className="text-orange-500" />
+                    : <CheckSquare size={14} />
+                  }
+                  {selectedPatientIds.size === 0
+                    ? "Seleccionar todos"
+                    : `${selectedPatientIds.size} seleccionado${selectedPatientIds.size !== 1 ? "s" : ""}`
+                  }
+                </button>
+                {selectedPatientIds.size > 0 && (
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      className="h-7 text-xs gap-1.5 border-orange-300 text-orange-600 hover:bg-orange-50"
+                      onClick={() => setShowBulkMessageModal(true)}
+                    >
+                      <Send size={12} /> Mensaje masivo
+                    </Button>
+                    <Button
+                      size="sm"
+                      className="h-7 text-xs gap-1.5 bg-orange-500 hover:bg-orange-600 text-white"
+                      onClick={() => setShowBulkPlanModal(true)}
+                    >
+                      <ClipboardList size={12} /> Asignar plan
+                    </Button>
+                    <button onClick={clearSelection} className="text-xs text-muted-foreground hover:text-foreground ml-1">
+                      <X size={13} />
+                    </button>
+                  </div>
+                )}
+              </div>
               <div className="border border-border rounded-2xl overflow-hidden divide-y divide-border">
                 {filteredOffline.map((patient: any) => (
                   <div
                     key={patient.id}
-                    className="flex items-center gap-3 px-4 py-3.5 hover:bg-muted/20 transition-colors cursor-pointer group"
+                    className={`flex items-center gap-3 px-4 py-3.5 hover:bg-muted/20 transition-colors cursor-pointer group ${selectedPatientIds.has(patient.id) ? "bg-orange-50/60" : ""}`}
                     onClick={() => navigate(`/app/expert/offline-patients/${patient.id}`)}
                   >
+                    {/* Checkbox */}
+                    <div
+                      onClick={(e) => togglePatientSelection(patient.id, e)}
+                      className="flex-shrink-0 cursor-pointer"
+                    >
+                      {selectedPatientIds.has(patient.id)
+                        ? <CheckSquare size={18} className="text-orange-500" />
+                        : <Square size={18} className="text-muted-foreground/30 group-hover:text-muted-foreground/60 transition-colors" />
+                      }
+                    </div>
                     {/* Avatar */}
                     <div className="w-10 h-10 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white font-bold text-sm flex-shrink-0">
                       {getInitials(patient.name)}
@@ -791,6 +885,127 @@ export default function ExpertPatients() {
                 <MessageCircle size={14} className="mr-1" /> Abrir WhatsApp
               </Button>
             )}
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+      {/* ── Modal: Mensaje masivo ── */}
+      <Dialog open={showBulkMessageModal} onOpenChange={setShowBulkMessageModal}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Send size={18} className="text-orange-500" /> Mensaje masivo
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="bg-orange-50 border border-orange-200 rounded-xl px-4 py-3 text-sm text-orange-700">
+              Se enviará a <strong>{selectedPatientIds.size} paciente{selectedPatientIds.size !== 1 ? "s" : ""}</strong> seleccionados que tengan email registrado.
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="bulk-subject">Asunto del email</Label>
+              <Input
+                id="bulk-subject"
+                placeholder="Ej: Recordatorio de tu plan nutricional"
+                value={bulkSubject}
+                onChange={e => setBulkSubject(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="bulk-message">Mensaje</Label>
+              <Textarea
+                id="bulk-message"
+                placeholder="Escribe tu mensaje aquí..."
+                value={bulkMessage}
+                onChange={e => setBulkMessage(e.target.value)}
+                rows={5}
+                className="resize-none"
+              />
+              <p className="text-xs text-muted-foreground">El mensaje se enviará con tu nombre como remitente a través de BuddyOne.</p>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowBulkMessageModal(false)}>Cancelar</Button>
+            <Button
+              className="bg-orange-500 hover:bg-orange-600 text-white gap-2"
+              disabled={!bulkSubject.trim() || !bulkMessage.trim() || bulkSendMessage.isPending}
+              onClick={() => bulkSendMessage.mutate({
+                patientIds: Array.from(selectedPatientIds),
+                subject: bulkSubject,
+                message: bulkMessage,
+              })}
+            >
+              <Send size={14} /> {bulkSendMessage.isPending ? "Enviando..." : `Enviar a ${selectedPatientIds.size} paciente${selectedPatientIds.size !== 1 ? "s" : ""}`}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Modal: Asignar plan nutricional masivo ── */}
+      <Dialog open={showBulkPlanModal} onOpenChange={setShowBulkPlanModal}>
+        <DialogContent className="max-w-lg">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ClipboardList size={18} className="text-orange-500" /> Asignar plan nutricional
+            </DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div className="bg-orange-50 border border-orange-200 rounded-xl px-4 py-3 text-sm text-orange-700">
+              Se asignará a <strong>{selectedPatientIds.size} paciente{selectedPatientIds.size !== 1 ? "s" : ""}</strong> seleccionados. El plan quedará registrado en el historial de cada uno.
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="bulk-plan-title">Nombre del plan</Label>
+              <Input
+                id="bulk-plan-title"
+                placeholder="Ej: Plan hipocalórico semana 24"
+                value={bulkPlanTitle}
+                onChange={e => setBulkPlanTitle(e.target.value)}
+              />
+            </div>
+            <div className="space-y-1.5">
+              <Label htmlFor="bulk-plan-desc">Descripción / notas (opcional)</Label>
+              <Textarea
+                id="bulk-plan-desc"
+                placeholder="Instrucciones generales, objetivos, restricciones..."
+                value={bulkPlanDesc}
+                onChange={e => setBulkPlanDesc(e.target.value)}
+                rows={3}
+                className="resize-none"
+              />
+            </div>
+            <div className="flex items-center gap-3 bg-muted/30 rounded-xl px-4 py-3">
+              <input
+                type="checkbox"
+                id="bulk-send-email"
+                checked={bulkSendEmail}
+                onChange={e => setBulkSendEmail(e.target.checked)}
+                className="w-4 h-4 accent-orange-500"
+              />
+              <Label htmlFor="bulk-send-email" className="cursor-pointer text-sm">
+                Enviar también por email a los pacientes que tengan email registrado
+              </Label>
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowBulkPlanModal(false)}>Cancelar</Button>
+            <Button
+              className="bg-orange-500 hover:bg-orange-600 text-white gap-2"
+              disabled={!bulkPlanTitle.trim() || bulkAssignPlan.isPending}
+              onClick={() => {
+                const today = new Date();
+                const nextWeek = new Date(today);
+                nextWeek.setDate(today.getDate() + 7);
+                bulkAssignPlan.mutate({
+                  patientIds: Array.from(selectedPatientIds),
+                  planTitle: bulkPlanTitle,
+                  planDescription: bulkPlanDesc || undefined,
+                  menuData: { title: bulkPlanTitle, description: bulkPlanDesc, days: [] },
+                  weekStartDate: today.toISOString().split("T")[0],
+                  weekEndDate: nextWeek.toISOString().split("T")[0],
+                  sendByEmail: bulkSendEmail,
+                });
+              }}
+            >
+              <ClipboardList size={14} /> {bulkAssignPlan.isPending ? "Asignando..." : `Asignar a ${selectedPatientIds.size} paciente${selectedPatientIds.size !== 1 ? "s" : ""}`}
+            </Button>
           </DialogFooter>
         </DialogContent>
       </Dialog>
