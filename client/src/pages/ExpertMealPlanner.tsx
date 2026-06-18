@@ -17,6 +17,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Textarea } from "@/components/ui/textarea";
+import { Checkbox } from "@/components/ui/checkbox";
 import {
   Dialog,
   DialogContent,
@@ -51,6 +52,10 @@ import {
   LayoutTemplate,
   FolderOpen,
   Star,
+  ShoppingCart,
+  Check,
+  ClipboardCopy,
+  Printer,
 } from "lucide-react";
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
@@ -212,6 +217,11 @@ export default function ExpertMealPlanner() {
   const [recipeSearch, setRecipeSearch] = useState("");
   const [recipeMealFilter, setRecipeMealFilter] = useState<string>("all");
 
+  // Lista de la compra
+  const [showShoppingListModal, setShowShoppingListModal] = useState(false);
+  const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
+  const [shoppingListEnabled, setShoppingListEnabled] = useState(false);
+
   // Plantillas
   const [showSaveTemplateModal, setShowSaveTemplateModal] = useState(false);
   const [showTemplatesModal, setShowTemplatesModal] = useState(false);
@@ -235,6 +245,12 @@ export default function ExpertMealPlanner() {
     { enabled: !!selectedPlanId }
   );
   const { data: myRecipes = [] } = trpc.expertRecipes.listRecipes.useQuery({});
+
+  // Query para lista de la compra (solo cuando el modal está abierto)
+  const { data: shoppingListData, isLoading: shoppingListLoading } = trpc.expertMealPlanner.generateShoppingList.useQuery(
+    { planId: selectedPlanId!, servingsMultiplier: 1 },
+    { enabled: !!selectedPlanId && shoppingListEnabled }
+  );
   const { data: patients = [] } = trpc.offlinePatients.list.useQuery();
 
   // ─── Mutations ─────────────────────────────────────────────────────────────
@@ -543,6 +559,19 @@ export default function ExpertMealPlanner() {
                     >
                       <Star className="w-3 h-3 mr-1" />
                       Guardar plantilla
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setCheckedItems(new Set());
+                        setShoppingListEnabled(true);
+                        setShowShoppingListModal(true);
+                      }}
+                      className="text-xs h-8 text-green-600 border-green-200 hover:bg-green-50"
+                    >
+                      <ShoppingCart className="w-3 h-3 mr-1" />
+                      Lista de la compra
                     </Button>
                     <Button
                       size="sm"
@@ -1032,6 +1061,217 @@ export default function ExpertMealPlanner() {
               className="bg-orange-500 hover:bg-orange-600 text-white"
             >
               {sendPlan.isPending ? "Enviando..." : "Enviar por email"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Modal: Lista de la compra ──────────────────────────────────────── */}
+      <Dialog open={showShoppingListModal} onOpenChange={(open) => {
+        setShowShoppingListModal(open);
+        if (!open) setShoppingListEnabled(false);
+      }}>
+        <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <ShoppingCart className="w-5 h-5 text-green-500" />
+              Lista de la compra
+              {shoppingListData && (
+                <span className="text-sm font-normal text-gray-500 ml-1">
+                  — {shoppingListData.planTitle}
+                </span>
+              )}
+            </DialogTitle>
+          </DialogHeader>
+
+          <div className="flex-1 overflow-y-auto">
+            {shoppingListLoading ? (
+              <div className="flex items-center justify-center py-12">
+                <div className="text-center">
+                  <div className="w-8 h-8 border-2 border-green-500 border-t-transparent rounded-full animate-spin mx-auto mb-3" />
+                  <p className="text-sm text-gray-500">Generando lista de la compra...</p>
+                </div>
+              </div>
+            ) : shoppingListData ? (
+              <div className="space-y-1">
+                {/* Resumen */}
+                <div className="flex items-center gap-4 p-3 bg-green-50 rounded-lg mb-4">
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-green-600">{shoppingListData.totalItems}</p>
+                    <p className="text-xs text-gray-500">productos</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-orange-500">{shoppingListData.totalRecipes}</p>
+                    <p className="text-xs text-gray-500">recetas</p>
+                  </div>
+                  <div className="text-center">
+                    <p className="text-2xl font-bold text-blue-500">
+                      {shoppingListData.categorizedList.length}
+                    </p>
+                    <p className="text-xs text-gray-500">categorías</p>
+                  </div>
+                  {checkedItems.size > 0 && (
+                    <div className="ml-auto text-center">
+                      <p className="text-2xl font-bold text-gray-400">{checkedItems.size}/{shoppingListData.totalItems}</p>
+                      <p className="text-xs text-gray-400">marcados</p>
+                    </div>
+                  )}
+                </div>
+
+                {/* Lista por categorías */}
+                {shoppingListData.categorizedList.length === 0 ? (
+                  <div className="text-center py-8">
+                    <ShoppingCart className="w-12 h-12 text-gray-200 mx-auto mb-3" />
+                    <p className="text-gray-400 text-sm">No se encontraron ingredientes en este plan.</p>
+                    <p className="text-gray-300 text-xs mt-1">
+                      Asegúrate de que las recetas tienen ingredientes definidos.
+                    </p>
+                  </div>
+                ) : (
+                  shoppingListData.categorizedList.map((cat: {
+                    category: string;
+                    items: Array<{ name: string; amount: number; unit: string; recipeCount: number; recipeNames: string[] }>;
+                  }) => (
+                    <div key={cat.category} className="mb-4">
+                      <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 px-1 flex items-center gap-2">
+                        <span className="flex-1 border-b border-gray-100 pb-1">{cat.category}</span>
+                        <span className="text-gray-300 font-normal normal-case tracking-normal">
+                          {cat.items.filter((item: { name: string }) => checkedItems.has(`${cat.category}-${item.name}`)).length}/{cat.items.length}
+                        </span>
+                      </h4>
+                      <div className="space-y-1">
+                        {cat.items.map((item: { name: string; amount: number; unit: string; recipeCount: number; recipeNames: string[] }) => {
+                          const itemKey = `${cat.category}-${item.name}`;
+                          const isChecked = checkedItems.has(itemKey);
+                          return (
+                            <div
+                              key={itemKey}
+                              className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors ${
+                                isChecked ? "bg-gray-50 opacity-60" : "hover:bg-gray-50"
+                              }`}
+                              onClick={() => {
+                                const newSet = new Set(checkedItems);
+                                if (isChecked) newSet.delete(itemKey);
+                                else newSet.add(itemKey);
+                                setCheckedItems(newSet);
+                              }}
+                            >
+                              <Checkbox
+                                checked={isChecked}
+                                onCheckedChange={(checked) => {
+                                  const newSet = new Set(checkedItems);
+                                  if (checked) newSet.add(itemKey);
+                                  else newSet.delete(itemKey);
+                                  setCheckedItems(newSet);
+                                }}
+                                onClick={(e) => e.stopPropagation()}
+                                className="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
+                              />
+                              <div className="flex-1 min-w-0">
+                                <span className={`text-sm ${isChecked ? "line-through text-gray-400" : "text-gray-700"}`}>
+                                  {item.name}
+                                </span>
+                                {item.recipeNames.length > 0 && (
+                                  <p className="text-xs text-gray-400 truncate" title={item.recipeNames.join(", ")}>
+                                    {item.recipeNames.slice(0, 2).join(", ")}
+                                    {item.recipeNames.length > 2 ? ` +${item.recipeNames.length - 2}` : ""}
+                                  </p>
+                                )}
+                              </div>
+                              <div className="text-right flex-shrink-0">
+                                <span className={`text-sm font-medium ${isChecked ? "text-gray-400" : "text-gray-600"}`}>
+                                  {item.amount > 0 ? `${item.amount} ${item.unit}` : item.unit}
+                                </span>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  ))
+                )}
+
+                {/* Comidas personalizadas sin receta */}
+                {shoppingListData.customMeals && shoppingListData.customMeals.length > 0 && (
+                  <div className="mt-4 p-3 bg-yellow-50 rounded-lg">
+                    <p className="text-xs font-semibold text-yellow-700 mb-2">
+                      Comidas sin receta asignada (no incluidas en la lista):
+                    </p>
+                    <ul className="space-y-1">
+                      {shoppingListData.customMeals.map((meal: { name: string; day: string; mealTime: string }, idx: number) => (
+                        <li key={idx} className="text-xs text-yellow-600">
+                          {meal.day} — {meal.mealTime}: {meal.name}
+                        </li>
+                      ))}
+                    </ul>
+                  </div>
+                )}
+              </div>
+            ) : (
+              <div className="text-center py-8 text-gray-400 text-sm">
+                No se pudo cargar la lista de la compra.
+              </div>
+            )}
+          </div>
+
+          <DialogFooter className="flex-shrink-0 gap-2 border-t pt-3">
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                if (!shoppingListData) return;
+                let text = `Lista de la compra — ${shoppingListData.planTitle}\n`;
+                text += `Generada el ${new Date().toLocaleDateString("es-ES")}\n\n`;
+                shoppingListData.categorizedList.forEach((cat: {
+                  category: string;
+                  items: Array<{ name: string; amount: number; unit: string }>;
+                }) => {
+                  text += `── ${cat.category.toUpperCase()} ──\n`;
+                  cat.items.forEach((item: { name: string; amount: number; unit: string }) => {
+                    text += `  • ${item.name}: ${item.amount > 0 ? `${item.amount} ${item.unit}` : item.unit}\n`;
+                  });
+                  text += "\n";
+                });
+                navigator.clipboard.writeText(text).then(() => {
+                  toast({ title: "✅ Lista copiada", description: "La lista de la compra está en tu portapapeles" });
+                });
+              }}
+              disabled={!shoppingListData || shoppingListData.totalItems === 0}
+              className="text-xs"
+            >
+              <ClipboardCopy className="w-3 h-3 mr-1" />
+              Copiar al portapapeles
+            </Button>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => window.print()}
+              disabled={!shoppingListData || shoppingListData.totalItems === 0}
+              className="text-xs"
+            >
+              <Printer className="w-3 h-3 mr-1" />
+              Imprimir
+            </Button>
+            {checkedItems.size > 0 && (
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => setCheckedItems(new Set())}
+                className="text-xs text-gray-400"
+              >
+                Desmarcar todo
+              </Button>
+            )}
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                setShowShoppingListModal(false);
+                setShoppingListEnabled(false);
+              }}
+              className="text-xs ml-auto"
+            >
+              Cerrar
             </Button>
           </DialogFooter>
         </DialogContent>

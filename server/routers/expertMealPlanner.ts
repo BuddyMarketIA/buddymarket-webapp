@@ -7,6 +7,8 @@ import {
   expertWeeklyPlanSlots,
   offlinePatients,
   recipes,
+  recipeIngredients,
+  ingredients,
 } from "../../drizzle/schema";
 import { eq, and, inArray, desc } from "drizzle-orm";
 import { TRPCError } from "@trpc/server";
@@ -598,6 +600,181 @@ export const expertMealPlannerRouter = router({
       await db.delete(expertWeeklyPlanSlots).where(eq(expertWeeklyPlanSlots.weeklyPlanId, input.templateId));
       await db.delete(expertWeeklyPlans).where(eq(expertWeeklyPlans.id, input.templateId));
       return { ok: true };
+    }),
+
+  // ─── Generar lista de la compra consolidada ──────────────────────────────
+  generateShoppingList: protectedProcedure
+    .input(z.object({
+      planId: z.number(),
+      servingsMultiplier: z.number().min(0.5).max(10).default(1),
+    }))
+    .query(async ({ ctx, input }) => {
+      const db = getDb();
+      const [plan] = await db
+        .select()
+        .from(expertWeeklyPlans)
+        .where(and(
+          eq(expertWeeklyPlans.id, input.planId),
+          eq(expertWeeklyPlans.expertUserId, ctx.user.id)
+        ));
+      if (!plan) throw new TRPCError({ code: "NOT_FOUND", message: "Plan no encontrado" });
+
+      const slots = await db
+        .select()
+        .from(expertWeeklyPlanSlots)
+        .where(eq(expertWeeklyPlanSlots.weeklyPlanId, input.planId));
+
+      const recipeIds = [...new Set(slots.filter(s => s.recipeId).map(s => s.recipeId!))];
+
+      const recipeServingsMap: Record<number, number> = {};
+      for (const slot of slots) {
+        if (slot.recipeId) {
+          recipeServingsMap[slot.recipeId] = (recipeServingsMap[slot.recipeId] || 0) + (slot.servings ?? 1);
+        }
+      }
+
+      // Obtener ingredientes estructurados (tabla recipeIngredients + ingredients)
+      type IngredientRow = {
+        recipeId: number;
+        amount: number;
+        unit: string | null;
+        ingredientId: number;
+        nameEs: string;
+        category: string | null;
+        purchaseUnitSingular: string | null;
+        purchaseGramsPerUnit: number | null;
+      };
+      let ingredientRows: IngredientRow[] = [];
+      if (recipeIds.length > 0) {
+        ingredientRows = await db
+          .select({
+            recipeId: recipeIngredients.recipeId,
+            amount: recipeIngredients.amount,
+            unit: recipeIngredients.notes,
+            ingredientId: ingredients.id,
+            nameEs: ingredients.nameEs,
+            category: ingredients.category,
+            purchaseUnitSingular: ingredients.purchaseUnitSingular,
+            purchaseGramsPerUnit: ingredients.purchaseGramsPerUnit,
+          })
+          .from(recipeIngredients)
+          .innerJoin(ingredients, eq(recipeIngredients.ingredientId, ingredients.id))
+          .where(inArray(recipeIngredients.recipeId, recipeIds));
+      }
+
+      // Obtener ingredientsJson de las recetas (campo libre)
+      const recipeRows = recipeIds.length > 0 ? await db
+        .select({ id: recipes.id, name: recipes.name, ingredientsJson: recipes.ingredientsJson, servings: recipes.servings })
+        .from(recipes)
+        .where(inArray(recipes.id, recipeIds)) : [];
+
+      type ConsolidatedItem = {
+        name: string;
+        totalAmount: number;
+        unit: string;
+        category: string;
+        recipeCount: number;
+        recipeNames: string[];
+      };
+      const consolidated: Record<string, ConsolidatedItem> = {};
+
+      const normalizeKey = (name: string) => name.toLowerCase()
+        .normalize("NFD").replace(/[\u0300-\u036f]/g, "")
+        .replace(/[^a-z0-9 ]/g, "").trim();
+
+      // Procesar ingredientes estructurados
+      for (const row of ingredientRows) {
+        const servings = recipeServingsMap[row.recipeId] ?? 1;
+        const multiplier = input.servingsMultiplier;
+        const key = normalizeKey(row.nameEs);
+        const amount = row.amount * servings * multiplier;
+        const unit = row.purchaseUnitSingular || "g";
+        const category = row.category || "Otros";
+        const recipeName = recipeRows.find(r => r.id === row.recipeId)?.name || "";
+
+        if (consolidated[key]) {
+          consolidated[key].totalAmount += amount;
+          if (!consolidated[key].recipeNames.includes(recipeName)) {
+            consolidated[key].recipeNames.push(recipeName);
+            consolidated[key].recipeCount++;
+          }
+        } else {
+          consolidated[key] = { name: row.nameEs, totalAmount: amount, unit, category, recipeCount: 1, recipeNames: [recipeName] };
+        }
+      }
+
+      // Procesar ingredientsJson (campo libre)
+      for (const recipe of recipeRows) {
+        if (!recipe.ingredientsJson) continue;
+        try {
+          const items = JSON.parse(recipe.ingredientsJson) as Array<{ name: string; amount?: number; unit?: string; category?: string }>;
+          const servings = recipeServingsMap[recipe.id] ?? 1;
+          const recipeServings = recipe.servings ?? 1;
+          const multiplier = input.servingsMultiplier;
+          for (const item of items) {
+            if (!item.name) continue;
+            const key = normalizeKey(item.name);
+            const amount = ((item.amount ?? 1) / recipeServings) * servings * multiplier;
+            const unit = item.unit || "unidad";
+            const category = item.category || "Otros";
+            if (consolidated[key]) {
+              consolidated[key].totalAmount += amount;
+              if (!consolidated[key].recipeNames.includes(recipe.name)) {
+                consolidated[key].recipeNames.push(recipe.name);
+                consolidated[key].recipeCount++;
+              }
+            } else {
+              consolidated[key] = { name: item.name, totalAmount: amount, unit, category, recipeCount: 1, recipeNames: [recipe.name] };
+            }
+          }
+        } catch { /* JSON inválido */ }
+      }
+
+      const CATEGORY_ORDER = [
+        "frutas", "verduras", "hortalizas", "carnes", "pescados", "mariscos",
+        "lácteos", "huevos", "cereales", "legumbres", "frutos secos",
+        "aceites", "condimentos", "especias", "bebidas", "otros"
+      ];
+
+      const byCategory: Record<string, ConsolidatedItem[]> = {};
+      for (const item of Object.values(consolidated)) {
+        const cat = item.category.toLowerCase();
+        if (!byCategory[cat]) byCategory[cat] = [];
+        byCategory[cat].push(item);
+      }
+
+      const sortedCategories = Object.keys(byCategory).sort((a, b) => {
+        const ai = CATEGORY_ORDER.indexOf(a);
+        const bi = CATEGORY_ORDER.indexOf(b);
+        if (ai === -1 && bi === -1) return a.localeCompare(b);
+        if (ai === -1) return 1;
+        if (bi === -1) return -1;
+        return ai - bi;
+      });
+
+      const categorizedList = sortedCategories.map(cat => ({
+        category: cat.charAt(0).toUpperCase() + cat.slice(1),
+        items: byCategory[cat].map(item => ({
+          name: item.name,
+          amount: Math.round(item.totalAmount * 10) / 10,
+          unit: item.unit,
+          recipeCount: item.recipeCount,
+          recipeNames: item.recipeNames,
+        })).sort((a, b) => a.name.localeCompare(b.name)),
+      }));
+
+      const totalItems = Object.keys(consolidated).length;
+      const customSlots = slots.filter(s => !s.recipeId && s.customName);
+
+      return {
+        planTitle: plan.title,
+        weekStartDate: plan.weekStartDate,
+        totalRecipes: recipeIds.length,
+        totalItems,
+        categorizedList,
+        customMeals: customSlots.map(s => ({ name: s.customName!, day: DAYS[s.dayOfWeek], mealTime: s.mealTime })),
+        hasStructuredIngredients: ingredientRows.length > 0,
+      };
     }),
 });
 

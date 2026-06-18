@@ -3891,3 +3891,17 @@
 - [x] Frontend: panel de privacidad en ficha de paciente offline (qué ve el paciente)
 - [x] Frontend: flujo de aceptación de invitación (/patient-invite/:token)
 - [x] Frontend: badge/indicador de estado de invitación en ficha de paciente
+
+## Lista de la compra consolidada desde menú semanal (Jun 2026)
+- [x] Backend: procedimiento generateShoppingList en expertMealPlanner router
+- [x] Backend: consolida ingredientes de recipeIngredients (tabla relacional) e ingredientsJson (campo libre)
+- [x] Backend: agrupa por categoría con orden predefinido (frutas, verduras, carnes, etc.)
+- [x] Backend: normaliza nombres para evitar duplicados, suma cantidades × servings × multiplicador
+- [x] Backend: retorna lista categorizada con cantidades, unidades y recetas de origen
+- [x] Frontend: botón "Lista de la compra" (icono verde) en header del plan activo
+- [x] Frontend: modal con resumen (total productos, recetas, categorías)
+- [x] Frontend: lista agrupada por categoría con checkboxes para tachar items
+- [x] Frontend: cantidades con unidades y tooltip con recetas de origen
+- [x] Frontend: botón "Copiar al portapapeles" (exportar como texto)
+- [x] Frontend: botón "Imprimir"
+- [x] Frontend: comidas personalizadas sin receta mostradas como aviso
