@@ -1068,4 +1068,197 @@ export const companyRouter = router({
 
       return result;
     }),
+
+  // ─── Panel de empresa: gestión de licencias ───────────────────────────────────
+
+  /** Lista todos los miembros con datos de usuario */
+  getMembers: protectedProcedure
+    .input(z.object({
+      search: z.string().optional(),
+      status: z.enum(["all", "active", "inactive"]).default("all"),
+      limit: z.number().min(1).max(100).default(50),
+      offset: z.number().min(0).default(0),
+    }))
+    .query(async ({ ctx, input }) => {
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { companies, companyMembers, users } = await import("../../drizzle/schema.js");
+      const [company] = await drizzleDb.select().from(companies)
+        .where(eq(companies.adminUserId, ctx.user.id)).limit(1);
+      if (!company) throw new TRPCError({ code: "NOT_FOUND", message: "No tienes una empresa asociada." });
+      const conditions: any[] = [eq(companyMembers.companyId, company.id)];
+      if (input.status === "active") conditions.push(eq(companyMembers.isActive, true));
+      if (input.status === "inactive") conditions.push(eq(companyMembers.isActive, false));
+      const members = await drizzleDb
+        .select({
+          memberId: companyMembers.id,
+          userId: companyMembers.userId,
+          isActive: companyMembers.isActive,
+          joinedAt: companyMembers.joinedAt,
+          lastActiveAt: companyMembers.lastActiveAt,
+          activationCodeId: companyMembers.activationCodeId,
+          userName: users.name,
+          userEmail: users.email,
+          userAvatar: users.avatarUrl,
+        })
+        .from(companyMembers)
+        .leftJoin(users, eq(companyMembers.userId, users.id))
+        .where(and(...conditions))
+        .orderBy(desc(companyMembers.joinedAt))
+        .limit(input.limit)
+        .offset(input.offset);
+      const [totalResult] = await drizzleDb
+        .select({ total: count() })
+        .from(companyMembers)
+        .where(and(...conditions));
+      return { members, total: totalResult?.total ?? 0, companyId: company.id };
+    }),
+
+  /** Lista los códigos de activación */
+  getActivationCodes: protectedProcedure
+    .input(z.object({
+      status: z.enum(["all", "available", "used", "expired", "revoked"]).default("all"),
+      limit: z.number().min(1).max(200).default(100),
+    }))
+    .query(async ({ ctx, input }) => {
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { companies, companyActivationCodes, users } = await import("../../drizzle/schema.js");
+      const [company] = await drizzleDb.select().from(companies)
+        .where(eq(companies.adminUserId, ctx.user.id)).limit(1);
+      if (!company) throw new TRPCError({ code: "NOT_FOUND", message: "No tienes una empresa asociada." });
+      const conditions: any[] = [eq(companyActivationCodes.companyId, company.id)];
+      if (input.status !== "all") conditions.push(eq(companyActivationCodes.status, input.status));
+      const codes = await drizzleDb
+        .select({
+          id: companyActivationCodes.id,
+          code: companyActivationCodes.code,
+          status: companyActivationCodes.status,
+          redeemedByUserId: companyActivationCodes.redeemedByUserId,
+          redeemedAt: companyActivationCodes.redeemedAt,
+          expiresAt: companyActivationCodes.expiresAt,
+          createdAt: companyActivationCodes.createdAt,
+          redeemedByName: users.name,
+          redeemedByEmail: users.email,
+        })
+        .from(companyActivationCodes)
+        .leftJoin(users, eq(companyActivationCodes.redeemedByUserId, users.id))
+        .where(and(...conditions))
+        .orderBy(desc(companyActivationCodes.createdAt))
+        .limit(input.limit);
+      const [statsResult] = await drizzleDb
+        .select({ total: count() })
+        .from(companyActivationCodes)
+        .where(eq(companyActivationCodes.companyId, company.id));
+      return { codes, total: statsResult?.total ?? 0 };
+    }),
+
+  /** Genera nuevos códigos de activación */
+  generateCodes: protectedProcedure
+    .input(z.object({ quantity: z.number().min(1).max(50) }))
+    .mutation(async ({ ctx, input }) => {
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { companies, companyActivationCodes } = await import("../../drizzle/schema.js");
+      const [company] = await drizzleDb.select().from(companies)
+        .where(eq(companies.adminUserId, ctx.user.id)).limit(1);
+      if (!company) throw new TRPCError({ code: "NOT_FOUND", message: "No tienes una empresa asociada." });
+      const [usedResult] = await drizzleDb
+        .select({ used: count() })
+        .from(companyActivationCodes)
+        .where(and(eq(companyActivationCodes.companyId, company.id), eq(companyActivationCodes.status, "used")));
+      const [availResult] = await drizzleDb
+        .select({ available: count() })
+        .from(companyActivationCodes)
+        .where(and(eq(companyActivationCodes.companyId, company.id), eq(companyActivationCodes.status, "available")));
+      const totalExisting = (usedResult?.used ?? 0) + (availResult?.available ?? 0);
+      if (totalExisting + input.quantity > company.licensesTotal) {
+        throw new TRPCError({
+          code: "BAD_REQUEST",
+          message: `Solo puedes generar ${company.licensesTotal - totalExisting} códigos más (límite: ${company.licensesTotal} licencias).`,
+        });
+      }
+      const newCodes = Array.from({ length: input.quantity }, () => ({
+        companyId: company.id,
+        code: generateActivationCode(),
+        status: "available" as const,
+      }));
+      await drizzleDb.insert(companyActivationCodes).values(newCodes);
+      return { generated: newCodes.length, codes: newCodes.map(c => c.code) };
+    }),
+
+  /** Revoca la licencia de un miembro */
+  revokeMemberLicense: protectedProcedure
+    .input(z.object({ memberId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { companies, companyMembers, companyActivationCodes } = await import("../../drizzle/schema.js");
+      const [company] = await drizzleDb.select().from(companies)
+        .where(eq(companies.adminUserId, ctx.user.id)).limit(1);
+      if (!company) throw new TRPCError({ code: "NOT_FOUND", message: "No tienes una empresa asociada." });
+      const [member] = await drizzleDb.select().from(companyMembers)
+        .where(and(eq(companyMembers.id, input.memberId), eq(companyMembers.companyId, company.id))).limit(1);
+      if (!member) throw new TRPCError({ code: "NOT_FOUND", message: "Miembro no encontrado." });
+      await drizzleDb.update(companyMembers).set({ isActive: false })
+        .where(eq(companyMembers.id, input.memberId));
+      if (member.activationCodeId) {
+        await drizzleDb.update(companyActivationCodes).set({ status: "revoked" })
+          .where(eq(companyActivationCodes.id, member.activationCodeId));
+      }
+      return { success: true };
+    }),
+
+  /** Reactiva la licencia de un miembro */
+  reactivateMemberLicense: protectedProcedure
+    .input(z.object({ memberId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { companies, companyMembers } = await import("../../drizzle/schema.js");
+      const [company] = await drizzleDb.select().from(companies)
+        .where(eq(companies.adminUserId, ctx.user.id)).limit(1);
+      if (!company) throw new TRPCError({ code: "NOT_FOUND", message: "No tienes una empresa asociada." });
+      await drizzleDb.update(companyMembers).set({ isActive: true })
+        .where(and(eq(companyMembers.id, input.memberId), eq(companyMembers.companyId, company.id)));
+      return { success: true };
+    }),
+
+  /** Actualiza el mensaje de bienvenida */
+  updateWelcomeMessage: protectedProcedure
+    .input(z.object({ welcomeMessage: z.string().max(500) }))
+    .mutation(async ({ ctx, input }) => {
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { companies } = await import("../../drizzle/schema.js");
+      const [company] = await drizzleDb.select().from(companies)
+        .where(eq(companies.adminUserId, ctx.user.id)).limit(1);
+      if (!company) throw new TRPCError({ code: "NOT_FOUND", message: "No tienes una empresa asociada." });
+      await drizzleDb.update(companies)
+        .set({ welcomeMessage: input.welcomeMessage, updatedAt: new Date() })
+        .where(eq(companies.id, company.id));
+      return { success: true };
+    }),
+
+  /** Revoca un código disponible (no usado) */
+  revokeCode: protectedProcedure
+    .input(z.object({ codeId: z.number() }))
+    .mutation(async ({ ctx, input }) => {
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+      const { companies, companyActivationCodes } = await import("../../drizzle/schema.js");
+      const [company] = await drizzleDb.select().from(companies)
+        .where(eq(companies.adminUserId, ctx.user.id)).limit(1);
+      if (!company) throw new TRPCError({ code: "NOT_FOUND", message: "No tienes una empresa asociada." });
+      const [code] = await drizzleDb.select().from(companyActivationCodes)
+        .where(and(
+          eq(companyActivationCodes.id, input.codeId),
+          eq(companyActivationCodes.companyId, company.id),
+          eq(companyActivationCodes.status, "available")
+        )).limit(1);
+      if (!code) throw new TRPCError({ code: "NOT_FOUND", message: "Código no encontrado o ya no está disponible." });
+      await drizzleDb.update(companyActivationCodes).set({ status: "revoked" })
+        .where(eq(companyActivationCodes.id, input.codeId));
+      return { success: true };
+    }),
 });

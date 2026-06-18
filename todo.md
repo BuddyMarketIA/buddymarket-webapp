@@ -3931,3 +3931,9 @@
 - [x] Admin: página AdminProfileApplications para revisar/aprobar/rechazar solicitudes
 - [x] Admin: enlace en panel de admin a solicitudes de perfil
 - [x] Rutas: /profile-setup, /profile-setup/apply, /profile-setup/org, /profile-setup/pending, /app/admin/profile-applications
+
+## Panel de control para empresas (gestión de licencias)
+- [x] Backend: procedimientos getMembers, getActivationCodes, generateCodes, revokeMemberLicense, reactivateMemberLicense, revokeCode, updateWelcomeMessage en router company
+- [x] Frontend: CorporateDashboard.tsx con 4 pestañas (Resumen, Empleados, Códigos, Configuración)
+- [x] Ruta /empresa/dashboard actualizada al nuevo CorporateDashboard
+- [x] Ruta /empresa/dashboard-legacy preserva el panel anterior

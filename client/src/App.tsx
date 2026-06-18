@@ -255,7 +255,8 @@ function Router() {
       <Route path="/calculadora" component={CalculadoraNutricional} />
       <Route path="/empresas" component={Empresas} />
       <Route path="/contacto" component={Contacto} />
-      <Route path="/empresa/dashboard">{() => <ProtectedPage><EmpresaDashboard /></ProtectedPage>}</Route>
+      <Route path="/empresa/dashboard">{() => <ProtectedPage><CorporateDashboard /></ProtectedPage>}</Route>
+      <Route path="/empresa/dashboard-legacy">{() => <ProtectedPage><EmpresaDashboard /></ProtectedPage>}</Route>
       <Route path="/activar" component={ActivarCodigo} />
       <Route path="/app/soporte">{() => <ProtectedRoute component={Soporte} />}</Route>
       <Route path="/familia" component={Familia} />
