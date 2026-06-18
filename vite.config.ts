@@ -208,56 +208,11 @@ export default defineConfig({
       // Limit parallelism to reduce peak memory usage during build
       maxParallelFileOps: 20,
       output: {
-        manualChunks(id) {
-          if (id.includes("node_modules")) {
-            // Core React runtime — always needed
-            if (id.includes("/react/") || id.includes("/react-dom/")) return "vendor-react";
-            // UI primitives
-            if (id.includes("@radix-ui")) return "vendor-radix";
-            // Icons — large but tree-shakeable; keep separate
-            if (id.includes("lucide-react") || id.includes("@heroicons")) return "vendor-icons";
-            // Charts
-            if (id.includes("recharts") || id.includes("/d3-") || id.includes("/d3/")) return "vendor-charts";
-            // Data fetching / RPC
-            if (id.includes("@tanstack") || id.includes("@trpc")) return "vendor-trpc";
-            // PDF generation — heavy, lazy-loaded by pages
-            if (id.includes("jspdf") || id.includes("pdf-lib")) return "vendor-pdf";
-            // i18n — must be in same chunk as React because react-i18next calls
-            // React.createContext() at module evaluation time. If in a separate chunk,
-            // the ES module evaluator may run i18n before React exports are ready,
-            // causing: TypeError: Cannot read properties of undefined (reading 'createContext')
-            if (id.includes("i18next") || id.includes("react-i18next")) return "vendor-react";
-            // Workbox / PWA — only needed after install
-            if (id.includes("workbox")) return "vendor-pwa";
-            // Stripe
-            if (id.includes("@stripe")) return "vendor-stripe";
-            // Date utilities
-            if (id.includes("date-fns")) return "vendor-dates";
-            // Form handling
-            if (id.includes("react-hook-form") || id.includes("@hookform") || id.includes("zod")) return "vendor-forms";
-            // Animation — framer-motion is large (~3 MB)
-            if (id.includes("framer-motion") || id.includes("framer")) return "vendor-motion";
-            // Drag and drop
-            if (id.includes("@dnd-kit")) return "vendor-dnd";
-            // Date picker
-            if (id.includes("react-day-picker")) return "vendor-datepicker";
-            // Image/media utilities
-            if (id.includes("react-easy-crop") || id.includes("embla-carousel")) return "vendor-media";
-            // Misc UI utilities
-            if (id.includes("sonner") || id.includes("vaul") || id.includes("cmdk") || id.includes("input-otp")) return "vendor-ui-misc";
-            // Routing
-            if (id.includes("wouter")) return "vendor-router";
-            // Streaming / markdown and its heavy deps
-            if (id.includes("streamdown")) return "vendor-streaming";
-            if (id.includes("mermaid") || id.includes("dagre") || id.includes("cytoscape") || id.includes("khroma")) return "vendor-mermaid";
-            if (id.includes("shiki") || id.includes("@shikijs") || id.includes("vscode-oniguruma") || id.includes("tm-grammars") || id.includes("tm-themes")) return "vendor-shiki";
-            if (id.includes("katex") || id.includes("rehype-katex") || id.includes("remark-math")) return "vendor-katex";
-            if (id.includes("react-markdown") || id.includes("rehype") || id.includes("remark") || id.includes("unified") || id.includes("micromark") || id.includes("mdast") || id.includes("hast")) return "vendor-markdown";
-            if (id.includes("marked")) return "vendor-markdown";
-            // Everything else
-            return "vendor-misc";
-          }
-        },
+        // NOTE: No manualChunks — Rollup's automatic chunking avoids
+        // TDZ (Temporal Dead Zone) errors caused by ES module evaluation
+        // order issues when React-dependent packages (recharts, react-i18next)
+        // end up in separate chunks that may be evaluated before vendor-react.
+        // The PWA plugin's maximumFileSizeToCacheInBytes handles large chunks.
       },
     },
   },
