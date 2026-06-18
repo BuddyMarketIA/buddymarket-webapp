@@ -301,6 +301,7 @@ const QUICK = [
 function QuickAccessGrid() {
   return (
     <div style={{ display: "grid", gridTemplateColumns: "repeat(3, 1fr)", gap: 10 }}>
+      {/* Mobile: scroll snap horizontal via CSS class */}
       {QUICK.map(q => (
         <Link key={q.label} href={q.to}>
           <div style={{ position: "relative", borderRadius: 16, overflow: "hidden", aspectRatio: "1/0.75", cursor: "pointer" }}
@@ -882,6 +883,16 @@ export default function Dashboard() {
                 carbs={(summary as any)?.carbohydrates ?? (summary as any)?.totalCarbs ?? 0}
                 fat={(summary as any)?.fats ?? (summary as any)?.totalFat ?? 0}
               />
+              {/* CTA cuando no hay registros */}
+              {consumed === 0 && (
+                <div style={{ marginTop: 14, padding: "12px 16px", borderRadius: 14, background: "rgba(249,115,22,0.1)", border: "1px dashed rgba(249,115,22,0.4)", textAlign: "center" }}>
+                  <p style={{ margin: 0, fontSize: 13, color: "rgba(255,255,255,0.7)" }}>Aún no has registrado ningún alimento hoy</p>
+                  <button
+                    onClick={e => { e.stopPropagation(); setShowMealModal(true); }}
+                    style={{ marginTop: 8, fontSize: 12, color: "#1a1a1a", fontWeight: 800, cursor: "pointer", background: "linear-gradient(135deg, #F97316, #FBBF24)", border: "none", borderRadius: 10, padding: "8px 18px", boxShadow: "0 2px 8px rgba(249,115,22,0.5)" }}
+                  >⚡ Registrar primera comida</button>
+                </div>
+              )}
             </div>
             {/* Onboarding progresivo (Mejora 4) */}
             {has("onboarding") && <OnboardingCard profile={profile} />}

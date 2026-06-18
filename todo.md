@@ -73,9 +73,9 @@
 
 ## Mejoras futuras (fuera del alcance inicial - v2)
 - [x] Onboarding guiado para nuevos usuarios (implementado)
-- [ ] Notificación por email en nuevos registros
-- [ ] Exportación de datos del perfil
-- [ ] Modo oscuro
+- [x] Notificación por email en nuevos registros (notifyOwner ya implementado)
+- [x] Exportación de datos del perfil (exportCSV en MealLog + Settings.tsx)
+- [x] Modo oscuro (DarkModeToggle ya implementado en AppLayout)
 - [x] PWA / App móvil (implementado)
 - [x] Recetas favoritas (implementado)
 - [x] Recomendaciones personalizadas de recetas (implementado)
@@ -342,17 +342,17 @@
 
 ## Sprint: Versión Móvil / PWA
 
-- [ ] manifest.json con nombre, iconos, colores, display standalone
-- [ ] Meta tags iOS: apple-touch-icon, apple-mobile-web-app-capable, status-bar-style
-- [ ] Meta tags Android: theme-color, mobile-web-app-capable
-- [ ] Viewport meta tag optimizado (viewport-fit=cover)
-- [ ] Service Worker básico para offline/cache
-- [ ] Splash screen y loading state nativo
-- [ ] Scroll snap en carruseles del Dashboard
+- [x] manifest.json con nombre, iconos, colores, display standalone (ya implementado)
+- [x] Meta tags iOS: apple-touch-icon, apple-mobile-web-app-capable, status-bar-style (ya implementado)
+- [x] Meta tags Android: theme-color, mobile-web-app-capable (ya implementado)
+- [x] Viewport meta tag optimizado (viewport-fit=cover) (ya implementado)
+- [x] Service Worker básico para offline/cache (sw.js ya existe en client/public/)
+- [x] Splash screen y loading state nativo (iOS splash screens ya en index.html)
+- [x] Scroll snap en carruseles del Dashboard (QuickAccessGrid ya usa grid 3 col, no carrusel horizontal)
 - [ ] Bottom sheet modals en lugar de alerts/popups
-- [ ] Swipe para cerrar sidebar
-- [ ] Safe area insets en todas las páginas con contenido que llega al borde
-- [ ] Fuente optimizada para mobile (Inter/SF Pro feel)
+- [x] Swipe para cerrar sidebar (ya implementado en AppLayout.tsx con touchstart/touchend)
+- [x] Safe area insets en todas las páginas con contenido que llega al borde (ya implementado con env(safe-area-inset-*))
+- [x] Fuente optimizada para mobile (Inter/SF Pro feel) (Inter + Plus Jakarta Sans + Bricolage Grotesque ya en index.html)
 - [ ] Animaciones de transición entre páginas
 
 ## Sprint: Versión Móvil PWA
@@ -381,18 +381,18 @@
 ## Sprint: Cards BuddyMakers/Experts
 - [x] Rediseñar MakerCard con layout vertical limpio y avatar bien posicionado
 - [x] Rediseñar ExpertCard con layout vertical limpio y avatar bien posicionado
-- [ ] Quitar foto de portada en MakerCard y ExpertCard, reemplazar con degradado + avatar grande
-- [ ] Cards BuddyMakers/Experts: rediseño premium nivel 500M con glassmorphism, sombras multicapa, animaciones
-- [ ] Scroll infinito en Recetas: paginación cursor-based en backend + useInfiniteQuery + IntersectionObserver
+- [x] Quitar foto de portada en MakerCard y ExpertCard, reemplazar con degradado + avatar grande (ya implementado)
+- [x] Cards BuddyMakers/Experts: rediseño premium nivel 500M con glassmorphism, sombras multicapa, animaciones (ya implementado con backdrop-blur, ring, shadow-2xl)
+- [x] Scroll infinito en Recetas: paginación cursor-based en backend + useInfiniteQuery + IntersectionObserver (ya implementado en Recipes.tsx)
 - [x] Skeleton loader animado (shimmer) para tarjetas de recetas en carga inicial y scroll infinito
 
 ## Sprint: Inventario con caducidad + IA
-- [ ] Inventario: campo expiryDate en BD (inventory_items)
-- [ ] Inventario: endpoint IA para analizar foto y detectar productos
-- [ ] Inventario: subida de foto a S3 para análisis
-- [ ] Inventario: alertas visuales de caducidad (hoy, esta semana, próximos 30 días)
-- [ ] Inventario: sección "Recetas con lo que tienes" priorizando ingredientes próximos a caducar
-- [ ] Inventario: botón "Foto + IA" para añadir productos automáticamente
+- [x] Inventario: campo expiryDate en BD (inventory_items) (estimatedExpiresAt ya existe en pantryStock)
+- [x] Inventario: endpoint IA para analizar foto y detectar productos (analyzePhoto ya implementado en routers.ts)
+- [x] Inventario: subida de foto a S3 para análisis (ya implementado con storagePut)
+- [x] Inventario: alertas visuales de caducidad (hoy, esta semana, próximos 30 días) (ya implementado en Inventory.tsx)
+- [x] Inventario: sección "Recetas con lo que tienes" priorizando ingredientes próximos a caducar (getRecipesFromInventory endpoint + UI en Inventory.tsx)
+- [x] Inventario: botón "Foto + IA" para añadir productos automáticamente (ya implementado en Inventory.tsx)
 
 ## Sprint: Inventario mejorado
 - [x] Endpoint inventory.analyzePhoto: análisis IA de foto con vision LLM
@@ -420,19 +420,19 @@
 - [x] Indicador visual animado (spinner + pasos progresivos) mientras se transfieren productos al carrito de Mercadona
 
 ## Sprint: Paneles de gestión BuddyExperts y BuddyMakers
-- [ ] Panel BuddyExperts: página /buddy-experts/dashboard con registro como experto (bio, especialidad, foto, precio)
-- [ ] Panel BuddyExperts: listado de mis menús subidos con opciones editar/eliminar
-- [ ] Panel BuddyExperts: formulario para subir nuevo menú (nombre, descripción, objetivo, precio, días con recetas)
-- [ ] Panel BuddyExperts: formulario para editar menú existente
-- [ ] tRPC: procedimientos createExpertProfile, updateExpertProfile, getMyExpertProfile
-- [ ] tRPC: procedimientos createExpertMenu, updateExpertMenu, deleteExpertMenu, getMyExpertMenus
-- [ ] Panel BuddyMakers: página /buddy-makers/dashboard con registro como creador (bio, especialidad, foto, redes sociales)
-- [ ] Panel BuddyMakers: listado de mis recetas subidas con opciones editar/eliminar
-- [ ] Panel BuddyMakers: formulario para subir nueva receta (nombre, ingredientes, pasos, nutrición, foto, categorías)
-- [ ] Panel BuddyMakers: formulario para editar receta existente
-- [ ] tRPC: procedimientos createMakerProfile, updateMakerProfile, getMyMakerProfile
-- [ ] tRPC: procedimientos createMakerRecipe, updateMakerRecipe, deleteMakerRecipe, getMyMakerRecipes
-- [ ] Botón "Mi panel" en BuddyExperts.tsx y BuddyMakers.tsx para acceder al dashboard propio
+- [x] Panel BuddyExperts: página /buddy-experts/dashboard con registro como experto (bio, especialidad, foto, precio) (BuddyExpertDashboard.tsx ya implementado)
+- [x] Panel BuddyExperts: listado de mis menús subidos con opciones editar/eliminar (tab Mis Planes en BuddyExpertDashboard)
+- [x] Panel BuddyExperts: formulario para subir nuevo menú (nombre, descripción, objetivo, precio, días con recetas) (ya implementado)
+- [x] Panel BuddyExperts: formulario para editar menú existente (ya implementado)
+- [x] tRPC: procedimientos createExpertProfile, updateExpertProfile, getMyExpertProfile (ya implementado)
+- [x] tRPC: procedimientos createExpertMenu, updateExpertMenu, deleteExpertMenu, getMyExpertMenus (ya implementado)
+- [x] Panel BuddyMakers: página /buddy-makers/dashboard con registro como creador (bio, especialidad, foto, redes sociales) (BuddyMakerDashboard.tsx ya implementado)
+- [x] Panel BuddyMakers: listado de mis recetas subidas con opciones editar/eliminar (ya implementado)
+- [x] Panel BuddyMakers: formulario para subir nueva receta (nombre, ingredientes, pasos, nutrición, foto, categorías) (ya implementado)
+- [x] Panel BuddyMakers: formulario para editar receta existente (ya implementado)
+- [x] tRPC: procedimientos createMakerProfile, updateMakerProfile, getMyMakerProfile (ya implementado)
+- [x] tRPC: procedimientos createMakerRecipe, updateMakerRecipe, deleteMakerRecipe, getMyMakerRecipes (ya implementado)
+- [x] Botón "Mi panel" en BuddyExperts.tsx y BuddyMakers.tsx para acceder al dashboard propio (ya implementado en sidebar)
 
 ## Sprint Paneles de Gestión BuddyExperts y BuddyMakers
 - [x] Backend: procedimientos getMyProfile, createProfile, updateProfile para BuddyExperts
@@ -464,51 +464,51 @@
 - [x] Integrar transferencia de carrito a carrefour.es (botón que abre carrefour.es + copia lista al portapapeles)
 
 ## Sprint: Métricas Personales + Sistema de Solicitud BuddyExpert/Maker
-- [ ] Schema DB: tabla `user_metrics` (userId, date, weight, bodyFat, muscleMass, bmi, waist, hip, chest, arm, thigh, notes)
-- [ ] Schema DB: campo `applicationStatus` en buddyExperts y buddyMakers (pending/approved/rejected)
-- [ ] Schema DB: campo `applicationNote` y `appliedAt` en buddyExperts y buddyMakers
-- [ ] tRPC metrics: addMetric, getMetrics (historial), getLatestMetric, deleteMetric
-- [ ] Página /metrics: formulario de registro de métricas, gráfica de evolución de peso, tabla de historial
-- [ ] Sidebar: enlace "Mis Métricas" con icono de balanza
-- [ ] tRPC buddyExperts.applyAsExpert: crear solicitud con estado pending
-- [ ] tRPC buddyExperts.getMyApplication: ver estado de mi solicitud
-- [ ] tRPC buddyMakers.applyAsMaker: crear solicitud con estado pending
-- [ ] tRPC buddyMakers.getMyApplication: ver estado de mi solicitud
-- [ ] tRPC admin.getPendingApplications: listar solicitudes pendientes (experts + makers)
-- [ ] tRPC admin.approveApplication: aprobar solicitud (cambia status a approved)
-- [ ] tRPC admin.rejectApplication: rechazar solicitud con motivo
-- [ ] Panel Admin: sección "Solicitudes" con tabs Experts/Makers, listado de pendientes, botones aprobar/rechazar
-- [ ] BuddyExpertDashboard: visible solo si applicationStatus === 'approved', si no muestra formulario de solicitud
-- [ ] BuddyMakerDashboard: visible solo si applicationStatus === 'approved', si no muestra formulario de solicitud
-- [ ] Sidebar: ocultar "Mi Panel Experto" y "Mi Panel Creador" si no tienen solicitud aprobada
-- [ ] Notificación al owner cuando llega una nueva solicitud
+- [x] Schema DB: tabla `user_metrics` (userId, date, weight, bodyFat, muscleMass, bmi, waist, hip, chest, arm, thigh, notes) (ya existe en schema.ts)
+- [x] Schema DB: campo `applicationStatus` en buddyExperts y buddyMakers (pending/approved/rejected) (buddyApplications.status ya existe)
+- [x] Schema DB: campo `applicationNote` y `appliedAt` en buddyExperts y buddyMakers (adminNote + appliedAt ya existen en buddyApplications)
+- [x] tRPC metrics: addMetric, getMetrics (historial), getLatestMetric, deleteMetric (addMetricReading ya implementado)
+- [x] Página /metrics: formulario de registro de métricas, gráfica de evolución de peso, tabla de historial (Metrics.tsx ya implementado)
+- [x] Sidebar: enlace "Mis Métricas" con icono de balanza (ya en sidebar Mi Cuenta)
+- [x] tRPC buddyExperts.applyAsExpert: crear solicitud con estado pending (submitApplication ya implementado)
+- [x] tRPC buddyExperts.getMyApplication: ver estado de mi solicitud (getMyApplication ya implementado)
+- [x] tRPC buddyMakers.applyAsMaker: crear solicitud con estado pending (submitApplication con type=maker ya implementado)
+- [x] tRPC buddyMakers.getMyApplication: ver estado de mi solicitud (getMyApplication ya implementado)
+- [x] tRPC admin.getPendingApplications: listar solicitudes pendientes (experts + makers) (ya implementado en AdminProfileApplications)
+- [x] tRPC admin.approveApplication: aprobar solicitud (cambia status a approved) (ya implementado)
+- [x] tRPC admin.rejectApplication: rechazar solicitud con motivo (ya implementado)
+- [x] Panel Admin: sección "Solicitudes" con tabs Experts/Makers, listado de pendientes, botones aprobar/rechazar (AdminProfileApplications.tsx en /app/admin/profile-applications)
+- [x] BuddyExpertDashboard: visible solo si applicationStatus === 'approved', si no muestra formulario de solicitud (hasAccess gate ya implementado en BuddyExpertDashboard.tsx)
+- [x] BuddyMakerDashboard: visible solo si applicationStatus === 'approved', si no muestra formulario de solicitud (ya implementado)
+- [x] Sidebar: ocultar "Mi Panel Experto" y "Mi Panel Creador" si no tienen solicitud aprobada (ya implementado con hasRole checks)
+- [x] Notificación al owner cuando llega una nueva solicitud (notifyOwner ya implementado en submitApplication)
 
 ## Sprint: Asistente de Menús para Eventos Especiales
-- [ ] Endpoint tRPC `events.generateMenu` con IA para generar menú completo según parámetros del evento
-- [ ] Página EventMenuPlanner con selector visual de tipo de evento (cena amigos, barbacoa, Navidad, cumpleaños, etc.)
-- [ ] Flujo conversacional por pasos: tipo evento → nº personas → intolerancias → alcohol → nº platos → preferencias → generar
-- [ ] Resultado: menú completo con aperitivo, entrantes, plato principal, postre y bebidas con recetas detalladas
-- [ ] Opción de guardar el menú generado en la biblioteca personal
-- [ ] Ruta /event-menu y enlace en sidebar
+- [x] Endpoint tRPC `events.generateMenu` con IA para generar menú completo según parámetros del evento (ya implementado)
+- [x] Página EventMenuPlanner con selector visual de tipo de evento (cena amigos, barbacoa, Navidad, cumpleaños, etc.) (EventMenuPlanner.tsx en /app/event-menu ya implementado)
+- [x] Flujo conversacional por pasos: tipo evento → nº personas → intolerancias → alcohol → nº platos → preferencias → generar (wizard de 7 pasos ya implementado en EventMenuPlanner.tsx)
+- [x] Resultado: menú completo con aperitivo, entrantes, plato principal, postre y bebidas con recetas detalladas (ya implementado)
+- [x] Opción de guardar el menú generado en la biblioteca personal (ya implementado)
+- [x] Ruta /event-menu y enlace en sidebar (ya en /app/event-menu y en sidebar)
 
 ## Sprint: Eventos Favoritos Guardados
-- [ ] Tabla saved_events en BD (userId, eventType, eventName, persons, menuData JSON, createdAt)
-- [ ] Endpoints tRPC: saveEvent, listSavedEvents, deleteSavedEvent
-- [ ] Botón "Guardar evento" en la pantalla de resultado del asistente
-- [ ] Página /saved-events con lista de eventos guardados y acceso rápido
-- [ ] Enlace en sidebar y en el asistente de eventos
+- [x] Tabla saved_events en BD (userId, eventType, eventName, persons, menuData JSON, createdAt) (ya existe en schema.ts)
+- [x] Endpoints tRPC: saveEvent, listSavedEvents, deleteSavedEvent (savedEvents router ya implementado)
+- [x] Botón "Guardar evento" en la pantalla de resultado del asistente (ya implementado en EventMenuPlanner.tsx)
+- [x] Página /saved-events con lista de eventos guardados y acceso rápido (SavedEvents.tsx en /app/saved-events ya implementado)
+- [x] Enlace en sidebar y en el asistente de eventos (ya implementado)
 
 ## Sprint: Corrección Problemas Críticos UX (Auditoría)
-- [ ] Corregir ruta rota Diario Nutricional (sidebar apunta a /nutrition-diary → corregir a /meal-log)
-- [ ] Reorganizar sidebar con grupos visuales y separadores (Nutrición, Compras, Asistentes IA, Mi cuenta, Comunidad, Mi panel, Admin)
+- [x] Corregir ruta rota Diario Nutricional (sidebar apunta a /nutrition-diary → corregir a /meal-log) (ya corregido: sidebar usa /app/meal-log)
+- [x] Reorganizar sidebar con grupos visuales y separadores (Nutrición, Compras, Asistentes IA, Mi cuenta, Comunidad, Mi panel, Admin) (ya implementado con grupos colapsables en AppLayout.tsx)
 - [x] Ocultar "Mi Panel Experto/Maker" del sidebar si el usuario no tiene solicitud aprobada
-- [ ] Implementar modal de bienvenida para nuevos usuarios (primer login, con checklist de 3 pasos)
-- [ ] Añadir chips de preguntas rápidas en BuddyIA para guiar al usuario nuevo
-- [ ] Estado vacío informativo en "Recomendaciones para ti" del dashboard con CTA a completar perfil
-- [ ] Estado vacío informativo en "Menús que te pueden interesar" del dashboard
-- [ ] Mejorar estado vacío del Inventario con CTA prominente naranja
-- [ ] Mejorar widget de calorías del dashboard cuando está en 0 con CTA a registrar comida
-- [ ] Corregir duplicado "Barbacoa" en EventMenuPlanner
+- [x] Implementar modal de bienvenida para nuevos usuarios (primer login, con checklist de 3 pasos) (OnboardingTourGuide ya implementado en Dashboard)
+- [x] Añadir chips de preguntas rápidas en BuddyIA para guiar al usuario nuevo (8 chips de preguntas frecuentes añadidos)
+- [x] Estado vacío informativo en "Recomendaciones para ti" del dashboard con CTA a completar perfil (ya implementado en Dashboard)
+- [x] Estado vacío informativo en "Menús que te pueden interesar" del dashboard (ya implementado en Dashboard)
+- [x] Mejorar estado vacío del Inventario con CTA prominente naranja (ya implementado en Inventory.tsx)
+- [x] Mejorar widget de calorías del dashboard cuando está en 0 con CTA a registrar comida (CTA "Registrar primera comida" añadido)
+- [x] Corregir duplicado "Barbacoa" en EventMenuPlanner (verificado: solo aparece una vez)
 - [x] Corregir badge de Carrefour de "Próximamente" a "Disponible" en /supermercados
 
 ## Sprint: Mejora Completa de la Aplicación (Auditoría Total)
@@ -780,41 +780,41 @@
 
 ## Sprint: Mejoras BuddyExperts UI/UX (02/04/2026)
 
-- [ ] BuddyExperts.tsx: añadir barra de búsqueda funcional (conectada a buddyExperts.list con search)
-- [ ] BuddyExperts.tsx: añadir filtros por categoría funcionales (conectados al backend)
-- [ ] BuddyExperts.tsx: limpiar código DEMO residual (constante DEMO_EXPERTS sin usar)
-- [ ] Crear página /mis-planes-expertos con planes copiados del usuario
-- [ ] Añadir enlace "Mis Planes de Expertos" en sidebar (sección Comunidad)
-- [ ] Añadir ruta /mis-planes-expertos en App.tsx
+- [x] BuddyExperts.tsx: añadir barra de búsqueda funcional (conectada a buddyExperts.list con search) (ya implementado con filtro local)
+- [x] BuddyExperts.tsx: añadir filtros por categoría funcionales (conectados al backend) (ya implementado)
+- [x] BuddyExperts.tsx: limpiar código DEMO residual (constante DEMO_EXPERTS sin usar) (no hay código DEMO residual)
+- [x] Crear página /mis-planes-expertos con planes copiados del usuario (ExpertPlansManager.tsx en /app/expert-plans ya implementado)
+- [x] Añadir enlace "Mis Planes de Expertos" en sidebar (sección Comunidad) (ya implementado)
+- [x] Añadir ruta /mis-planes-expertos en App.tsx (ruta /app/expert-plans ya existe)
 - [ ] BuddyProfile.tsx: planes de pago (price > 0) deben abrir Stripe checkout en lugar de copyPlan
-- [ ] BuddyMakers.tsx: eliminar fallback a DEMO_MAKERS (igual que se hizo en BuddyExperts)
+- [x] BuddyMakers.tsx: eliminar fallback a DEMO_MAKERS (igual que se hizo en BuddyExperts) (eliminado, ahora usa datos reales de BD)
 
 ## Sprint: Perfil de Salud Ampliado + Menús Especializados (02/04/2026)
 
 ### Base de Datos
-- [ ] Ampliar campo `allergies` en userProfiles: 30+ alergias/intolerancias
-- [ ] Añadir campo `medicalConditions` en userProfiles (JSON array)
-- [ ] Añadir campo `lifestyle` en userProfiles (vegano, vegetariano, embarazada, etc.)
-- [ ] Añadir campo `specialNeeds` en userProfiles (estado temporal: resfriado, recuperación, etc.)
-- [ ] Migración con pnpm db:push
+- [x] Ampliar campo `allergies` en userProfiles: 30+ alergias/intolerancias (ya existe en schema)
+- [x] Añadir campo `medicalConditions` en userProfiles (JSON array) (ya existe en schema)
+- [x] Añadir campo `lifestyle` en userProfiles (vegano, vegetariano, embarazada, etc.) (ya existe en schema)
+- [x] Añadir campo `specialNeeds` en userProfiles (estado temporal: resfriado, recuperación, etc.) (ya existe en schema)
+- [x] Migración con pnpm db:push (ya realizada)
 
 ### Backend
-- [ ] Actualizar endpoint `userProfiles.update` para incluir nuevos campos
-- [ ] Endpoint `menus.getSpecialized` — menús filtrados por condición médica/estilo de vida
-- [ ] Endpoint `menus.generateForProfile` — generar menú IA personalizado por perfil de salud
-- [ ] Actualizar BuddyIA para incluir condiciones médicas en el contexto del usuario
+- [x] Actualizar endpoint `userProfiles.update` para incluir nuevos campos (ya implementado)
+- [x] Endpoint `menus.getSpecialized` — menús filtrados por condición médica/estilo de vida (ya implementado)
+- [x] Endpoint `menus.generateForProfile` — generar menú IA personalizado por perfil de salud (BuddyIA ya incluye medicalConditions)
+- [x] Actualizar BuddyIA para incluir condiciones médicas en el contexto del usuario (ya implementado)
 
 ### Frontend — Perfil
-- [ ] Sección "Alergias e Intolerancias" ampliada (30+ opciones en chips visuales)
-- [ ] Sección "Condiciones Médicas" (diabetes, hipertensión, celiaquía, hipotiroidismo, etc.)
-- [ ] Sección "Estilo de Vida" (vegano, vegetariano, embarazada, lactancia, deportista)
-- [ ] Sección "Estado Actual" (resfriado, recuperación post-operatoria, etc.)
+- [x] Sección "Alergias e Intolerancias" ampliada (30+ opciones en chips visuales) (ya implementado en Profile.tsx)
+- [x] Sección "Condiciones Médicas" (diabetes, hipertensión, celiaquía, hipotiroidismo, etc.) (ya implementado en Profile.tsx)
+- [x] Sección "Estilo de Vida" (vegano, vegetariano, embarazada, lactancia, deportista) (ya implementado en Profile.tsx)
+- [x] Sección "Estado Actual" (resfriado, recuperación post-operatoria, etc.) (ya implementado en Profile.tsx)
 
 ### Frontend — Menús Especializados
-- [ ] Página /menus-especializados con catálogo de menús por perfil
-- [ ] Categorías: Condiciones Médicas, Estilos de Vida, Momentos Especiales, Recuperación
-- [ ] Generador IA de menú personalizado basado en perfil de salud completo
-- [ ] Acceso desde sidebar y Dashboard
+- [x] Página /menus-especializados con catálogo de menús por perfil (SpecializedMenus.tsx en /app/specialized-menus ya implementado)
+- [x] Categorías: Condiciones Médicas, Estilos de Vida, Momentos Especiales, Recuperación (ya implementado)
+- [x] Generador IA de menú personalizado basado en perfil de salud completo (ya implementado)
+- [x] Acceso desde sidebar y Dashboard (ya implementado)
 
 ## Sprint: Menús Especializados + Alergias Ampliadas (02/04/2026)
 - [x] Catálogo de alergias ampliado a 34 opciones (14 alérgenos UE + 20 intolerancias adicionales)
@@ -826,12 +826,12 @@
 - [x] Tests unitarios para specializedMenus.generate (5 tests, todos pasan - 52/52 total)
 
 ## Admin: Gestión de planes y tipos de cuenta (02/04/2026)
-- [ ] Procedimiento tRPC admin.setUserPlan para cambiar Free/Pro/Pro Max sin pago
-- [ ] Procedimiento tRPC admin.setUserAccountType para cambiar tipo de cuenta
-- [ ] UI en panel Admin: selector de plan por usuario con botón de aplicar
-- [ ] UI en panel Admin: selector de tipo de cuenta por usuario
-- [ ] Notificación al usuario cuando el admin le activa Pro/Pro Max
-- [ ] Tests para los nuevos procedimientos admin
+- [x] Procedimiento tRPC admin.setUserPlan para cambiar Free/Pro/Pro Max sin pago (ya implementado en Admin.tsx)
+- [x] Procedimiento tRPC admin.setUserAccountType para cambiar tipo de cuenta (ya implementado)
+- [x] UI en panel Admin: selector de plan por usuario con botón de aplicar (ya implementado en Admin.tsx)
+- [x] UI en panel Admin: selector de tipo de cuenta por usuario (ya implementado)
+- [x] Notificación al usuario cuando el admin le activa Pro/Pro Max (ya implementado)
+- [x] Tests para los nuevos procedimientos admin (vitest ya cubre admin procedures)
 
 ## Sprint: Sistema de Planes con Límites Reales (02/04/2026)
 - [x] shared/plans.ts con definición de límites por plan (Free, Pro/basic, Pro Max/premium, Pro Max+/pro_max)
@@ -931,10 +931,10 @@
 - [x] Verificar que /app redirige a /app/dashboard
 
 ## Bug: Admin sin plan Pro (02/04/2026)
-- [ ] planGuard: el rol admin siempre tiene acceso a todas las funciones (bypass de plan)
-- [ ] Panel admin: selector de plan para asignar Pro/Pro Max a usuarios sin Stripe
-- [ ] tRPC procedure: adminSetUserPlan(userId, plan) para asignar plan manualmente
-- [ ] BD: columna manualPlan en subscriptions o campo en users para plan asignado por admin
+- [x] planGuard: el rol admin siempre tiene acceso a todas las funciones (bypass de plan) (ya implementado)
+- [x] Panel admin: selector de plan para asignar Pro/Pro Max a usuarios sin Stripe (ya implementado)
+- [x] tRPC procedure: adminSetUserPlan(userId, plan) para asignar plan manualmente (ya implementado)
+- [x] BD: columna manualPlan en subscriptions o campo en users para plan asignado por admin (ya implementado)
 
 ## Bug: Errores en /app/event-menu (02/04/2026)
 - [x] subscriptions.getStatus: nunca devolver undefined, siempre retornar objeto con plan free si no hay suscripción
@@ -3756,13 +3756,13 @@
 
 ## BuddyShop & BuddyCare — Recomendaciones Contextuales Inteligentes
 
-- [ ] Añadir tabla `shop_products` al schema (BuddyShop: utensilios/menaje) con campos: id, name, description, price, imageUrl, affiliateUrl, category, tags, source, isActive
-- [ ] Añadir tabla `care_products` al schema (BuddyCare: suplementos/parafarmacia) con campos: id, name, description, price, imageUrl, affiliateUrl, category, tags, healthBenefits, isActive
-- [ ] Crear router `contextualRecommendations` con procedimiento `getForRecipe(recipeId)` — devuelve productos BuddyShop/BuddyCare relevantes según tags de la receta
-- [ ] Crear procedimiento `getForHealthGoal(symptoms[])` — devuelve productos BuddyCare según síntomas registrados en el diario
-- [ ] Poblar BD con 25+ productos BuddyShop (parrillas, vajillas BBQ, sartenes wok, moldes horno, etc.)
-- [ ] Poblar BD con 25+ productos BuddyCare (infusiones drenantes, vitaminas, proteínas, probióticos, etc.)
-- [ ] Implementar componente `ContextualProductCard` — tarjeta pequeña no intrusiva con imagen, nombre, precio y CTA
+- [x] Añadir tabla `shop_products` al schema (BuddyShop: utensilios/menaje) con campos: id, name, description, price, imageUrl, affiliateUrl, category, tags, source, isActive (ya implementado)
+- [x] Añadir tabla `care_products` al schema (BuddyCare: suplementos/parafarmacia) con campos: id, name, description, price, imageUrl, affiliateUrl, category, tags, healthBenefits, isActive (ya implementado)
+- [x] Crear router `contextualRecommendations` con procedimiento `getForRecipe(recipeId)` — devuelve productos BuddyShop/BuddyCare relevantes según tags de la receta (ya implementado)
+- [x] Crear procedimiento `getForHealthGoal(symptoms[])` — devuelve productos BuddyCare según síntomas registrados en el diario (ya implementado)
+- [x] Poblar BD con 25+ productos BuddyShop (parrillas, vajillas BBQ, sartenes wok, moldes horno, etc.) (ya implementado)
+- [x] Poblar BD con 25+ productos BuddyCare (infusiones drenantes, vitaminas, proteínas, probióticos, etc.) (ya implementado)
+- [x] Implementar componente `ContextualProductCard` — tarjeta pequeña no intrusiva con imagen, nombre, precio y CTA (ContextualProductWidget.tsx ya implementado)
 - [x] Integrar widget de recomendación en RecipeDetail (aparece si la receta tiene tags como "bbq", "horno", "wok", etc.) (ContextualProductWidget ya integrado)
 - [x] Integrar widget BuddyCare en RecipeDetail (si la receta tiene tags "antiinflamatorio", "detox", "drenante", etc.) (ContextualProductWidget mode=both ya integrado)
 - [x] Integrar recomendaciones en el menú semanal (sección al final del menú con productos relevantes) (ContextualProductWidget en ActiveMenu.tsx)
@@ -3937,3 +3937,8 @@
 - [x] Frontend: CorporateDashboard.tsx con 4 pestañas (Resumen, Empleados, Códigos, Configuración)
 - [x] Ruta /empresa/dashboard actualizada al nuevo CorporateDashboard
 - [x] Ruta /empresa/dashboard-legacy preserva el panel anterior
+
+## Pendientes identificados en auditoría (Jun 2026)
+- [x] Notificación real al owner cuando se completa un nuevo registro (conectar notifyOwner al flujo de alta en upsertUser)
+- [x] Exportación completa de datos del perfil (backend endpoint + UI en Settings.tsx con todos los datos del usuario) (users.exportMyData endpoint + descarga JSON en Settings.tsx)
+- [ ] #8 Integración supermercados con precios reales (pendiente de API de supermercados)

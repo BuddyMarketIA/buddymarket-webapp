@@ -190,7 +190,24 @@ export async function upsertUser(user: InsertUser): Promise<void> {
   if (!values.lastSignedIn) values.lastSignedIn = new Date();
   if (Object.keys(updateSet).length === 0) updateSet.lastSignedIn = new Date();
 
+  // Detect if this is a new user (insert) vs update
+  const existingBeforeUpsert = await db.select({ id: users.id }).from(users).where(eq(users.openId, user.openId)).limit(1);
+  const isNewUser = existingBeforeUpsert.length === 0;
+
   await db.insert(users).values(values).onConflictDoUpdate({ target: users.openId, set: updateSet });
+
+  // Notify owner on new user registration (fire-and-forget)
+  if (isNewUser && user.email) {
+    try {
+      const { notifyOwner } = await import("./_core/notification");
+      await notifyOwner({
+        title: "Nuevo registro en BuddyOne",
+        content: `Un nuevo usuario se ha registrado: ${user.name || "Sin nombre"} (${user.email}). Fecha: ${new Date().toLocaleString("es-ES", { timeZone: "Europe/Madrid" })}.`,
+      });
+    } catch (e) {
+      console.warn("[upsertUser] Failed to send new user notification:", e);
+    }
+  }
 
   // Post-upsert: auto-approve BuddyExpert role request for trusted emails
   if ((values as Record<string, unknown>).__autoExpert && user.email) {

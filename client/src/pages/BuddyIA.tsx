@@ -1897,6 +1897,30 @@ export default function BuddyIA() {
         </div>
       </div>
 
+      <div>
+        <h2 className="text-xs font-semibold text-muted-foreground uppercase tracking-wide mb-3">Preguntas frecuentes</h2>
+        <div className="flex flex-wrap gap-2">
+          {[
+            "¿Cuántas calorías necesito?",
+            "Menú para perder peso",
+            "Recetas sin gluten",
+            "Batch cooking para 2 personas",
+            "Desayunos proteicos",
+            "Recetas con pollo en 15 min",
+            "Plan vegano semanal",
+            "Snacks saludables",
+          ].map((q) => (
+            <button
+              key={q}
+              onClick={() => { setMode("chat"); }}
+              className="text-xs px-3 py-1.5 rounded-full bg-orange-50 dark:bg-orange-950/30 border border-orange-200 dark:border-orange-800 text-orange-700 dark:text-orange-300 hover:bg-orange-100 dark:hover:bg-orange-900/40 transition-colors font-medium"
+            >
+              {q}
+            </button>
+          ))}
+        </div>
+      </div>
+
       <p className="text-xs text-center text-muted-foreground">
         ⚠️ BuddyIA no sustituye el consejo de un profesional de la salud o nutricionista
       </p>

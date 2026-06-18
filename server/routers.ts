@@ -1331,6 +1331,48 @@ Devuelve SOLO JSON válido con esta estructura:
         return { success: true };
       }),
 
+    // -- Export all user data (GDPR-compliant data portability) ---------------
+    exportMyData: protectedProcedure
+      .query(async ({ ctx }) => {
+        const userId = ctx.user.id;
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+
+        const { userProfiles, userMedicalProfiles, userPreferences, userAllergies, userDietRestrictions,
+          userHealthMetrics, mealLogs, menuOrganizers, shoppingLists, userInventoryItems, userFavoriteRecipes } = await import("../drizzle/schema");
+        const { eq } = await import("drizzle-orm");
+
+        const [profile, medicalProfile, preferences, allergies, dietRestrictions, metrics, logs, menus, lists, inventory, favorites] = await Promise.all([
+          drizzleDb.select().from(userProfiles).where(eq(userProfiles.userId, userId)).limit(1),
+          drizzleDb.select().from(userMedicalProfiles).where(eq(userMedicalProfiles.userId, userId)).limit(1),
+          drizzleDb.select().from(userPreferences).where(eq(userPreferences.userId, userId)).limit(1),
+          drizzleDb.select().from(userAllergies).where(eq(userAllergies.userId, userId)),
+          drizzleDb.select().from(userDietRestrictions).where(eq(userDietRestrictions.userId, userId)),
+          drizzleDb.select().from(userHealthMetrics).where(eq(userHealthMetrics.userId, userId)).orderBy(userHealthMetrics.recordedAt),
+          drizzleDb.select().from(mealLogs).where(eq(mealLogs.userId, userId)).orderBy(mealLogs.logDate).limit(500),
+          drizzleDb.select().from(menuOrganizers).where(eq(menuOrganizers.userId, userId)).limit(50),
+          drizzleDb.select().from(shoppingLists).where(eq(shoppingLists.userId, userId)).limit(50),
+          drizzleDb.select().from(userInventoryItems).where(eq(userInventoryItems.userId, userId)).limit(200),
+          drizzleDb.select().from(userFavoriteRecipes).where(eq(userFavoriteRecipes.userId, userId)),
+        ]);
+
+        return {
+          exportedAt: new Date().toISOString(),
+          user: { id: ctx.user.id, name: ctx.user.name, email: ctx.user.email },
+          profile: profile[0] ?? null,
+          medicalProfile: medicalProfile[0] ?? null,
+          preferences: preferences[0] ?? null,
+          allergies,
+          dietRestrictions,
+          healthMetrics: metrics,
+          mealLogs: logs,
+          menus,
+          shoppingLists: lists,
+          inventory,
+          favoriteRecipes: favorites,
+        };
+      }),
+
     // -- Upload profile photo to S3 and update imageUrl/avatarUrl ---------------
     uploadProfilePhoto: protectedProcedure
       .input(z.object({

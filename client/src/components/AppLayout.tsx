@@ -545,6 +545,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
         { key: "/app/health-hub", label: "Health Hub", to: "/app/health-hub", emoji: "💓" },
         { key: "/app/referrals", label: "Invita amigos 🎁", to: "/app/referrals", emoji: "👥" },
         ...(isApprovedMaker ? [{ key: "/app/buddy-maker-dashboard", label: "Panel BuddyMaker", to: "/app/buddy-maker-dashboard", emoji: "🍳" }] : []),
+        { key: "/app/settings", label: "Ajustes", to: "/app/settings", emoji: "⚙️" },
         { key: "/app/soporte", label: "Soporte", to: "/app/soporte", emoji: "🎫" },
       ],
     },

@@ -280,7 +280,7 @@ export default function BuddyMakers() {
     onError: () => toast.error("Error al seguir"),
   });
 
-  const makers = (makersQuery.data && makersQuery.data.length > 0) ? makersQuery.data : DEMO_MAKERS;
+  const makers = makersQuery.data ?? [];
   const recipes = recipesQuery.data?.recipes ?? [];
 
   const handleFollow = (id: number) => {
