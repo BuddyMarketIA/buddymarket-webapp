@@ -222,8 +222,11 @@ export default defineConfig({
             if (id.includes("@tanstack") || id.includes("@trpc")) return "vendor-trpc";
             // PDF generation — heavy, lazy-loaded by pages
             if (id.includes("jspdf") || id.includes("pdf-lib")) return "vendor-pdf";
-            // i18n
-            if (id.includes("i18next") || id.includes("react-i18next")) return "vendor-i18n";
+            // i18n — must be in same chunk as React because react-i18next calls
+            // React.createContext() at module evaluation time. If in a separate chunk,
+            // the ES module evaluator may run i18n before React exports are ready,
+            // causing: TypeError: Cannot read properties of undefined (reading 'createContext')
+            if (id.includes("i18next") || id.includes("react-i18next")) return "vendor-react";
             // Workbox / PWA — only needed after install
             if (id.includes("workbox")) return "vendor-pwa";
             // Stripe
