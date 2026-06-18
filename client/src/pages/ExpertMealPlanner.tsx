@@ -48,6 +48,9 @@ import {
   Droplets,
   BookOpen,
   ChevronRight,
+  LayoutTemplate,
+  FolderOpen,
+  Star,
 } from "lucide-react";
 
 // ─── Constantes ───────────────────────────────────────────────────────────────
@@ -209,6 +212,16 @@ export default function ExpertMealPlanner() {
   const [recipeSearch, setRecipeSearch] = useState("");
   const [recipeMealFilter, setRecipeMealFilter] = useState<string>("all");
 
+  // Plantillas
+  const [showSaveTemplateModal, setShowSaveTemplateModal] = useState(false);
+  const [showTemplatesModal, setShowTemplatesModal] = useState(false);
+  const [templateName, setTemplateName] = useState("");
+  const [templateDescription, setTemplateDescription] = useState("");
+  const [applyTemplateId, setApplyTemplateId] = useState<number | null>(null);
+  const [applyPatientId, setApplyPatientId] = useState<string>("");
+  const [applyWeekDate, setApplyWeekDate] = useState("");
+  const [applyPlanTitle, setApplyPlanTitle] = useState("");
+
   // Sensores drag & drop
   const sensors = useSensors(
     useSensor(PointerSensor, { activationConstraint: { distance: 8 } })
@@ -216,6 +229,7 @@ export default function ExpertMealPlanner() {
 
   // ─── Queries ───────────────────────────────────────────────────────────────
   const { data: plans = [] } = trpc.expertMealPlanner.listPlans.useQuery({});
+  const { data: templates = [] } = trpc.expertMealPlanner.listTemplates.useQuery();
   const { data: planData } = trpc.expertMealPlanner.getPlan.useQuery(
     { planId: selectedPlanId! },
     { enabled: !!selectedPlanId }
@@ -268,6 +282,35 @@ export default function ExpertMealPlanner() {
       setSelectedPlanId(plan.id);
       toast({ title: "Plan duplicado", description: plan.title });
     },
+  });
+
+  const saveAsTemplate = trpc.expertMealPlanner.saveAsTemplate.useMutation({
+    onSuccess: () => {
+      utils.expertMealPlanner.listTemplates.invalidate();
+      setShowSaveTemplateModal(false);
+      setTemplateName("");
+      setTemplateDescription("");
+      toast({ title: "✅ Plantilla guardada", description: "Puedes reutilizarla con cualquier paciente desde el botón Plantillas" });
+    },
+    onError: (e) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
+  const applyTemplate = trpc.expertMealPlanner.applyTemplate.useMutation({
+    onSuccess: (newPlan) => {
+      utils.expertMealPlanner.listPlans.invalidate();
+      setShowTemplatesModal(false);
+      setApplyTemplateId(null);
+      setApplyPatientId("");
+      setApplyWeekDate("");
+      setApplyPlanTitle("");
+      setSelectedPlanId(newPlan.id);
+      toast({ title: "✅ Plantilla aplicada", description: `Plan "${newPlan.title}" creado` });
+    },
+    onError: (e) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+  });
+
+  const deleteTemplate = trpc.expertMealPlanner.deleteTemplate.useMutation({
+    onSuccess: () => utils.expertMealPlanner.listTemplates.invalidate(),
   });
 
   const sendPlan = trpc.expertMealPlanner.sendPlanByEmail.useMutation({
@@ -381,6 +424,16 @@ export default function ExpertMealPlanner() {
             <div className="p-3 border-b border-gray-100">
               <div className="flex items-center justify-between mb-2">
                 <h3 className="text-sm font-semibold text-gray-700">Mis planes</h3>
+                <div className="flex items-center gap-1">
+                <Button
+                  size="sm"
+                  variant="ghost"
+                  title="Mis plantillas"
+                  className="h-6 w-6 p-0 text-purple-500 hover:bg-purple-50"
+                  onClick={() => setShowTemplatesModal(true)}
+                >
+                  <LayoutTemplate className="w-3.5 h-3.5" />
+                </Button>
                 <Button
                   size="sm"
                   variant="ghost"
@@ -389,6 +442,7 @@ export default function ExpertMealPlanner() {
                 >
                   <Plus className="w-4 h-4" />
                 </Button>
+                </div>
               </div>
             </div>
             <div className="flex-1 overflow-y-auto p-2 space-y-1">
@@ -477,6 +531,19 @@ export default function ExpertMealPlanner() {
                     )}
                   </div>
                   <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => {
+                        setTemplateName(plan?.title ? `${plan.title} — plantilla` : "");
+                        setTemplateDescription("");
+                        setShowSaveTemplateModal(true);
+                      }}
+                      className="text-xs h-8 text-purple-600 border-purple-200 hover:bg-purple-50"
+                    >
+                      <Star className="w-3 h-3 mr-1" />
+                      Guardar plantilla
+                    </Button>
                     <Button
                       size="sm"
                       variant="outline"
@@ -732,6 +799,181 @@ export default function ExpertMealPlanner() {
               Añadir
             </Button>
           </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Modal: Guardar como plantilla ──────────────────────────────────── */}
+      <Dialog open={showSaveTemplateModal} onOpenChange={setShowSaveTemplateModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <Star className="w-5 h-5 text-purple-500" />
+              Guardar como plantilla
+            </DialogTitle>
+          </DialogHeader>
+          <p className="text-sm text-gray-500">
+            Guarda este menú semanal como plantilla para reutilizarlo fácilmente con otros pacientes.
+          </p>
+          <div className="space-y-3">
+            <div>
+              <label className="text-sm font-medium text-gray-700">Nombre de la plantilla *</label>
+              <Input
+                value={templateName}
+                onChange={(e) => setTemplateName(e.target.value)}
+                placeholder="Ej: Menú pérdida de peso — semana tipo"
+                className="mt-1"
+                autoFocus
+              />
+            </div>
+            <div>
+              <label className="text-sm font-medium text-gray-700">Descripción (opcional)</label>
+              <Textarea
+                value={templateDescription}
+                onChange={(e) => setTemplateDescription(e.target.value)}
+                placeholder="Para qué tipo de paciente es este menú..."
+                rows={2}
+                className="mt-1"
+              />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowSaveTemplateModal(false)}>Cancelar</Button>
+            <Button
+              onClick={() => {
+                if (!selectedPlanId || !templateName.trim()) return;
+                saveAsTemplate.mutate({
+                  planId: selectedPlanId,
+                  templateName: templateName.trim(),
+                  description: templateDescription || undefined,
+                });
+              }}
+              disabled={!templateName.trim() || saveAsTemplate.isPending}
+              className="bg-purple-600 hover:bg-purple-700 text-white"
+            >
+              {saveAsTemplate.isPending ? "Guardando..." : "Guardar plantilla"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* ── Modal: Mis plantillas ──────────────────────────────────────────── */}
+      <Dialog open={showTemplatesModal} onOpenChange={setShowTemplatesModal}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle className="flex items-center gap-2">
+              <FolderOpen className="w-5 h-5 text-purple-500" />
+              Mis plantillas de menú
+            </DialogTitle>
+          </DialogHeader>
+          {(templates as Array<{ id: number; title: string; description?: string | null; slotCount: number; totalCalories?: number | null; createdAt: Date }>).length === 0 ? (
+            <div className="text-center py-10">
+              <LayoutTemplate className="w-12 h-12 text-gray-200 mx-auto mb-3" />
+              <p className="text-gray-500 font-medium">Aún no tienes plantillas guardadas</p>
+              <p className="text-sm text-gray-400 mt-1">
+                Crea un plan semanal y usa el botón <strong>"Guardar plantilla"</strong> para guardarlo aquí.
+              </p>
+            </div>
+          ) : (
+            <div className="space-y-2 max-h-[400px] overflow-y-auto">
+              {!applyTemplateId ? (
+                (templates as Array<{ id: number; title: string; description?: string | null; slotCount: number; totalCalories?: number | null; createdAt: Date }>).map((t) => (
+                  <div key={t.id} className="flex items-center gap-3 p-3 rounded-lg border border-gray-100 hover:border-purple-200 hover:bg-purple-50/30 transition-colors">
+                    <div className="w-10 h-10 rounded-lg bg-purple-100 flex items-center justify-center flex-shrink-0">
+                      <LayoutTemplate className="w-5 h-5 text-purple-500" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-medium text-gray-800 truncate">{t.title}</p>
+                      <div className="flex items-center gap-2 mt-0.5">
+                        <span className="text-xs text-gray-400">{t.slotCount} comidas</span>
+                        {t.totalCalories && <span className="text-xs text-orange-400">{t.totalCalories} kcal/día</span>}
+                        {t.description && <span className="text-xs text-gray-400 truncate">· {t.description}</span>}
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-1 flex-shrink-0">
+                      <Button
+                        size="sm"
+                        onClick={() => {
+                          setApplyTemplateId(t.id);
+                          setApplyPlanTitle(t.title);
+                        }}
+                        className="bg-purple-600 hover:bg-purple-700 text-white text-xs h-7"
+                      >
+                        Usar plantilla
+                      </Button>
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => {
+                          if (confirm(`¿Eliminar la plantilla "${t.title}"?`)) deleteTemplate.mutate({ templateId: t.id });
+                        }}
+                        className="text-red-400 hover:text-red-600 hover:bg-red-50 h-7 w-7 p-0"
+                      >
+                        <Trash2 className="w-3 h-3" />
+                      </Button>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <div className="space-y-3 p-1">
+                  <div className="flex items-center gap-2 mb-4">
+                    <button onClick={() => setApplyTemplateId(null)} className="text-sm text-gray-400 hover:text-gray-600 flex items-center gap-1">
+                      <ChevronLeft className="w-4 h-4" /> Volver
+                    </button>
+                    <p className="text-sm font-medium text-gray-700">Aplicar plantilla a paciente</p>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">Nombre del plan *</label>
+                    <Input
+                      value={applyPlanTitle}
+                      onChange={(e) => setApplyPlanTitle(e.target.value)}
+                      placeholder="Ej: Semana 1 — María García"
+                      className="mt-1"
+                    />
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">Paciente *</label>
+                    <Select value={applyPatientId} onValueChange={setApplyPatientId}>
+                      <SelectTrigger className="mt-1">
+                        <SelectValue placeholder="Seleccionar paciente..." />
+                      </SelectTrigger>
+                      <SelectContent>
+                        {(patients as Array<{ id: number; name: string }>).map((p) => (
+                          <SelectItem key={p.id} value={String(p.id)}>{p.name}</SelectItem>
+                        ))}
+                      </SelectContent>
+                    </Select>
+                  </div>
+                  <div>
+                    <label className="text-sm font-medium text-gray-700">Semana de inicio (opcional)</label>
+                    <Input
+                      type="date"
+                      value={applyWeekDate}
+                      onChange={(e) => setApplyWeekDate(e.target.value)}
+                      className="mt-1"
+                    />
+                  </div>
+                  <div className="flex justify-end gap-2 pt-2">
+                    <Button variant="outline" onClick={() => setApplyTemplateId(null)}>Cancelar</Button>
+                    <Button
+                      onClick={() => {
+                        if (!applyTemplateId || !applyPatientId || !applyPlanTitle.trim()) return;
+                        applyTemplate.mutate({
+                          templateId: applyTemplateId,
+                          offlinePatientId: parseInt(applyPatientId),
+                          weekStartDate: applyWeekDate || new Date().toISOString().split("T")[0],
+                          planTitle: applyPlanTitle.trim(),
+                        });
+                      }}
+                      disabled={!applyPatientId || !applyPlanTitle.trim() || applyTemplate.isPending}
+                      className="bg-purple-600 hover:bg-purple-700 text-white"
+                    >
+                      {applyTemplate.isPending ? "Creando plan..." : "Crear plan desde plantilla"}
+                    </Button>
+                  </div>
+                </div>
+              )}
+            </div>
+          )}
         </DialogContent>
       </Dialog>
 

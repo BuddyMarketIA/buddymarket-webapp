@@ -8,7 +8,8 @@ import {
   offlinePatients,
   recipes,
 } from "../../drizzle/schema";
-import { eq, and, inArray } from "drizzle-orm";
+import { eq, and, inArray, desc } from "drizzle-orm";
+import { TRPCError } from "@trpc/server";
 import { Resend } from "resend";
 const resend = new Resend(process.env.RESEND_API_KEY);
 
@@ -439,6 +440,163 @@ export const expertMealPlannerRouter = router({
         .set({ sentAt: new Date(), sentChannel: "email", updatedAt: new Date() })
         .where(eq(expertWeeklyPlans.id, input.planId));
 
+      return { ok: true };
+    }),
+
+  // ─── Guardar plan actual como plantilla reutilizable ────────────────────
+  saveAsTemplate: protectedProcedure
+    .input(z.object({
+      planId: z.number().int(),
+      templateName: z.string().min(1).max(256),
+      description: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const db = getDb();
+      const [original] = await db
+        .select()
+        .from(expertWeeklyPlans)
+        .where(and(eq(expertWeeklyPlans.id, input.planId), eq(expertWeeklyPlans.expertUserId, ctx.user.id)));
+      if (!original) throw new TRPCError({ code: "NOT_FOUND", message: "Plan no encontrado" });
+
+      const [template] = await db
+        .insert(expertWeeklyPlans)
+        .values({
+          expertUserId: ctx.user.id,
+          offlinePatientId: null,
+          title: input.templateName,
+          description: input.description ?? original.description,
+          weekStartDate: null,
+          isTemplate: true,
+          totalCalories: original.totalCalories,
+          totalProtein: original.totalProtein,
+          totalCarbs: original.totalCarbs,
+          totalFat: original.totalFat,
+          notes: original.notes,
+        })
+        .returning();
+
+      const slots = await db
+        .select()
+        .from(expertWeeklyPlanSlots)
+        .where(eq(expertWeeklyPlanSlots.weeklyPlanId, input.planId));
+
+      if (slots.length > 0) {
+        await db.insert(expertWeeklyPlanSlots).values(
+          slots.map(s => ({
+            weeklyPlanId: template.id,
+            dayOfWeek: s.dayOfWeek,
+            mealTime: s.mealTime,
+            recipeId: s.recipeId,
+            customName: s.customName,
+            customCalories: s.customCalories,
+            servings: s.servings,
+            notes: s.notes,
+            sortOrder: s.sortOrder,
+          }))
+        );
+      }
+      return template;
+    }),
+
+  // ─── Listar plantillas del experto ───────────────────────────────────────
+  listTemplates: protectedProcedure
+    .query(async ({ ctx }) => {
+      const db = getDb();
+      const templates = await db
+        .select()
+        .from(expertWeeklyPlans)
+        .where(and(
+          eq(expertWeeklyPlans.expertUserId, ctx.user.id),
+          eq(expertWeeklyPlans.isTemplate, true)
+        ))
+        .orderBy(desc(expertWeeklyPlans.createdAt));
+
+      const result = await Promise.all(templates.map(async (t) => {
+        const slots = await db
+          .select({ id: expertWeeklyPlanSlots.id })
+          .from(expertWeeklyPlanSlots)
+          .where(eq(expertWeeklyPlanSlots.weeklyPlanId, t.id));
+        return { ...t, slotCount: slots.length };
+      }));
+      return result;
+    }),
+
+  // ─── Aplicar plantilla a un paciente y semana concreta ───────────────────
+  applyTemplate: protectedProcedure
+    .input(z.object({
+      templateId: z.number().int(),
+      offlinePatientId: z.number().int(),
+      weekStartDate: z.string(),
+      planTitle: z.string().optional(),
+    }))
+    .mutation(async ({ ctx, input }) => {
+      const db = getDb();
+      const [template] = await db
+        .select()
+        .from(expertWeeklyPlans)
+        .where(and(
+          eq(expertWeeklyPlans.id, input.templateId),
+          eq(expertWeeklyPlans.expertUserId, ctx.user.id),
+          eq(expertWeeklyPlans.isTemplate, true)
+        ));
+      if (!template) throw new TRPCError({ code: "NOT_FOUND", message: "Plantilla no encontrada" });
+
+      const [newPlan] = await db
+        .insert(expertWeeklyPlans)
+        .values({
+          expertUserId: ctx.user.id,
+          offlinePatientId: input.offlinePatientId,
+          title: input.planTitle ?? template.title,
+          description: template.description,
+          weekStartDate: input.weekStartDate,
+          isTemplate: false,
+          totalCalories: template.totalCalories,
+          totalProtein: template.totalProtein,
+          totalCarbs: template.totalCarbs,
+          totalFat: template.totalFat,
+          notes: template.notes,
+        })
+        .returning();
+
+      const templateSlots = await db
+        .select()
+        .from(expertWeeklyPlanSlots)
+        .where(eq(expertWeeklyPlanSlots.weeklyPlanId, input.templateId));
+
+      if (templateSlots.length > 0) {
+        await db.insert(expertWeeklyPlanSlots).values(
+          templateSlots.map(s => ({
+            weeklyPlanId: newPlan.id,
+            dayOfWeek: s.dayOfWeek,
+            mealTime: s.mealTime,
+            recipeId: s.recipeId,
+            customName: s.customName,
+            customCalories: s.customCalories,
+            servings: s.servings,
+            notes: s.notes,
+            sortOrder: s.sortOrder,
+          }))
+        );
+      }
+      return newPlan;
+    }),
+
+  // ─── Eliminar plantilla ────────────────────────────────────────────────
+  deleteTemplate: protectedProcedure
+    .input(z.object({ templateId: z.number().int() }))
+    .mutation(async ({ ctx, input }) => {
+      const db = getDb();
+      const [template] = await db
+        .select({ id: expertWeeklyPlans.id })
+        .from(expertWeeklyPlans)
+        .where(and(
+          eq(expertWeeklyPlans.id, input.templateId),
+          eq(expertWeeklyPlans.expertUserId, ctx.user.id),
+          eq(expertWeeklyPlans.isTemplate, true)
+        ));
+      if (!template) throw new TRPCError({ code: "NOT_FOUND", message: "Plantilla no encontrada" });
+      await db.delete(expertWeeklyPlanSlots).where(eq(expertWeeklyPlanSlots.weeklyPlanId, input.templateId));
+      await db.delete(expertWeeklyPlans).where(eq(expertWeeklyPlans.id, input.templateId));
       return { ok: true };
     }),
 });
