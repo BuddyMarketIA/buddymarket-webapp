@@ -1022,7 +1022,7 @@ export const appRouter = router({
         basalMetabolicRate: z.number().optional(),
       }).optional())
       .mutation(async ({ ctx, input }) => {
-      await db.updateUser(ctx.user.id, { onboardingCompleted: true });
+      await db.updateUser(ctx.user.id, { onboardingCompleted: true, registrationStep: "completed" as any });
 
       // Save profile data from setup wizard
       if (input) {
@@ -6849,6 +6849,7 @@ Responde SOLO con JSON válido, sin texto adicional:
           followersCount: input.followersCount ?? null,
           contentFrequency: input.contentFrequency ?? null,
         };
+        const { users: usersTable } = await import("../drizzle/schema");
         if (existing.length > 0 && existing[0].status === "rejected") {
           // Allow re-apply after rejection — update the existing record
           await drizzleDb.update(appsTable).set({
@@ -6857,11 +6858,15 @@ Responde SOLO con JSON válido, sin texto adicional:
             reviewedAt: null,
             reviewedBy: null,
           }).where(eq(appsTable.id, existing[0].id));
+          // Update registrationStep to pending_approval so the wizard shows the correct screen
+          await drizzleDb.update(usersTable).set({ registrationStep: "pending_approval" as any }).where(eq(usersTable.id, ctx.user.id));
           // Notify owner
           try { const { notifyOwner } = await import("./_core/notification"); await notifyOwner({ title: `Nueva solicitud ${input.type}: ${input.displayName}`, content: `${ctx.user.name || ctx.user.email} quiere ser ${input.type === "expert" ? "BuddyExpert" : "BuddyMaker"}. Especialidad: ${input.specialty || "N/A"}` }); } catch {}
           return { success: true, id: existing[0].id };
         }
         const result = await drizzleDb.insert(appsTable).values(insertData);
+        // Update registrationStep to pending_approval so the wizard shows the correct screen
+        await drizzleDb.update(usersTable).set({ registrationStep: "pending_approval" as any }).where(eq(usersTable.id, ctx.user.id));
         // Notify owner
         try { const { notifyOwner } = await import("./_core/notification"); await notifyOwner({ title: `Nueva solicitud ${input.type}: ${input.displayName}`, content: `${ctx.user.name || ctx.user.email} quiere ser ${input.type === "expert" ? "BuddyExpert" : "BuddyMaker"}. Especialidad: ${input.specialty || "N/A"}` }); } catch {}
         return { success: true, id: (result as any)[0]?.id ?? 0 };
@@ -6941,10 +6946,15 @@ Responde SOLO con JSON válido, sin texto adicional:
           reviewedAt: new Date(),
           reviewedBy: ctx.user.id,
         }).where(eq(appsTable.id, input.id));
-        // Update user registrationStep
+        // Update user registrationStep, role and accountType
+        const roleForType = app.type === "expert" ? "buddyexpert" : "buddymaker";
         await drizzleDb.update(usersTable).set({
           registrationStep: (input.action === "approve" ? "completed" : "application") as any,
-          ...(input.action === "approve" ? { onboardingCompleted: true } : {}),
+          ...(input.action === "approve" ? {
+            onboardingCompleted: true,
+            role: roleForType as any,
+            accountType: roleForType as any,
+          } : {}),
         }).where(eq(usersTable.id, app.userId));
         // Notify the applicant
         try {

@@ -41,6 +41,77 @@ export function registerStripeWebhook(app: Express) {
         switch (event.type) {
           case "checkout.session.completed": {
             const session = event.data.object as Stripe.Checkout.Session;
+
+            // ── B2B Company Subscription ──
+            if (session.metadata?.type === "company_subscription" && session.subscription) {
+              try {
+                const { getDb } = await import("./db.js");
+                const { companies, companyActivationCodes } = await import("../drizzle/schema.js");
+                const { eq } = await import("drizzle-orm");
+                const drizzleDb = await getDb();
+                if (drizzleDb) {
+                  const companyName = session.metadata.companyName || "Empresa";
+                  const contactEmail = session.metadata.contactEmail || session.customer_email || "";
+                  const contactName = session.metadata.contactName || "";
+                  const plan = (session.metadata.plan as "starter" | "growth" | "business" | "enterprise" | "corporate" | "global") || "starter";
+                  const employeeCount = parseInt(session.metadata.employeeCount || "10");
+                  const stripeCustomerId = session.customer as string;
+                  const stripeSubscriptionId = session.subscription as string;
+
+                  // Check if company already exists (idempotency)
+                  const existing = await drizzleDb.select({ id: companies.id })
+                    .from(companies)
+                    .where(eq(companies.stripeSubscriptionId, stripeSubscriptionId))
+                    .limit(1);
+
+                  if (existing.length === 0) {
+                    // Generate unique access code
+                    const accessCode = `${companyName.replace(/[^A-Z0-9]/gi, "").toUpperCase().slice(0, 8)}${Math.floor(1000 + Math.random() * 9000)}`;
+
+                    const [newCompany] = await drizzleDb.insert(companies).values({
+                      name: companyName,
+                      contactEmail,
+                      contactName,
+                      plan,
+                      status: "active",
+                      licensesTotal: employeeCount,
+                      licensesActive: 0,
+                      stripeCustomerId,
+                      stripeSubscriptionId,
+                      employeeCount,
+                      accessCode,
+                      contractStartAt: new Date(),
+                    }).returning();
+
+                    // Generate initial activation codes (employeeCount codes)
+                    const chars = "ABCDEFGHJKLMNPQRSTUVWXYZ23456789";
+                    const codesToInsert = Array.from({ length: Math.min(employeeCount, 500) }, () => {
+                      let code = "";
+                      for (let i = 0; i < 10; i++) code += chars[Math.floor(Math.random() * chars.length)];
+                      return { companyId: newCompany.id, code, status: "available" as const };
+                    });
+                    if (codesToInsert.length > 0) {
+                      await drizzleDb.insert(companyActivationCodes).values(codesToInsert);
+                    }
+
+                    console.log(`[Stripe B2B] Company created: ${newCompany.id} (${companyName}), ${codesToInsert.length} codes generated`);
+
+                    // Notify admin
+                    try {
+                      const { notifyOwner } = await import("./_core/notification.js");
+                      await notifyOwner({
+                        title: `🏢 Nueva empresa activada: ${companyName}`,
+                        content: `**Empresa:** ${companyName}\n**Contacto:** ${contactName} (${contactEmail})\n**Plan:** ${plan}\n**Empleados:** ${employeeCount}\n**Códigos generados:** ${codesToInsert.length}\n**Código de acceso:** ${accessCode}`,
+                      });
+                    } catch (_) {}
+                  }
+                }
+              } catch (b2bErr: any) {
+                console.error("[Stripe B2B] Error creating company from checkout:", b2bErr?.message);
+              }
+              break;
+            }
+
             const userId = session.metadata?.user_id ? parseInt(session.metadata.user_id) : null;
             const plan = (session.metadata?.plan as "basic" | "premium" | "pro_max") || "basic";
 

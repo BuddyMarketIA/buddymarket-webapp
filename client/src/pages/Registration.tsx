@@ -1,7 +1,28 @@
-import { useState, useEffect, useCallback } from "react";
+import React, { useState, useEffect, useCallback, useMemo, useRef } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "@/components/sonner-a11y-shim";
+
+// ─── Shared styles ───────────────────────────────────────────────────────────
+
+const labelStyle: React.CSSProperties = {
+  display: "block", fontSize: 13, fontWeight: 700, color: "#374151", marginBottom: 7,
+};
+
+const inputStyle: React.CSSProperties = {
+  width: "100%", padding: "11px 14px", borderRadius: 12, border: "2px solid #E5E7EB",
+  fontSize: 14, fontWeight: 500, color: "#1a1a1a", background: "white",
+  outline: "none", boxSizing: "border-box", fontFamily: "inherit",
+  transition: "border-color 0.2s ease",
+};
+
+const btnPrimary: React.CSSProperties = {
+  background: "linear-gradient(135deg, #F97316 0%, #EA580C 100%)",
+  color: "white", border: "none", borderRadius: 14, padding: "15px 32px",
+  fontSize: 15, fontWeight: 800, cursor: "pointer",
+  boxShadow: "0 4px 18px rgba(249,115,22,0.4)",
+  transition: "all 0.2s ease",
+};
 
 // ─── Assets ───────────────────────────────────────────────────────────────────
 
@@ -18,7 +39,7 @@ const FOOD_IMAGES = [
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 type AccountType = "user" | "buddymaker" | "buddyexpert" | "business";
-type RegistrationStep = "account_type" | "profile_setup" | "application" | "pending_approval" | "completed";
+type RegistrationStep = "account_type" | "profile_setup" | "application" | "business_setup" | "pending_approval" | "completed";
 
 // ─── Left panel data per main step ───────────────────────────────────────────
 
@@ -40,6 +61,12 @@ const PANEL_DATA: Record<string, { img: string; headline: string; sub: string; b
     headline: "Forma parte de nuestra comunidad de creadores",
     sub: "BuddyMakers y BuddyExperts que comparten su pasión por la nutrición",
     bullets: ["👥 +5.000 usuarios activos", "🌟 Perfil verificado y destacado", "💰 Monetización futura", "📈 Estadísticas de tu contenido"],
+  },
+  business_setup: {
+    img: FOOD_IMAGES[1],
+    headline: "Bienestar nutricional para tu equipo",
+    sub: "Ofrece a tus empleados acceso a la app de nutrición más completa del mercado",
+    bullets: ["🏢 Panel RRHH con métricas agregadas", "🔑 Códigos de activación individuales", "💳 Facturación por licencias activas", "📊 Informes de bienestar para dirección"],
   },
   pending_approval: {
     img: FOOD_IMAGES[3],
@@ -97,9 +124,8 @@ const ACCOUNT_TYPES = [
     color: "#3B82F6",
     gradient: "linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)",
     features: ["Perfil de empresa", "Publicación de productos", "Analytics avanzado", "Integración catálogo"],
-    badge: "Próximamente",
-    badgeColor: "#6B7280",
-    disabled: true,
+    badge: "Plan empresarial",
+    badgeColor: "#3B82F6",
   },
 ];
 
@@ -128,6 +154,7 @@ function LeftPanel({ step, accountType }: { step: RegistrationStep; accountType:
   const key = step === "account_type" ? "account_type"
     : step === "profile_setup" ? "profile_setup"
     : step === "application" ? "application"
+    : step === "business_setup" ? "business_setup"
     : "pending_approval";
   const data = PANEL_DATA[key];
   const accentColor = accountType === "buddymaker" ? "#F97316"
@@ -360,7 +387,7 @@ function StepAccountType({ onSelect }: { onSelect: (type: AccountType) => void }
 
 // ─── Step: Profile Setup ──────────────────────────────────────────────────────
 
-function StepProfileSetup({ accountType, onNext }: { accountType: AccountType; onNext: () => void }) {
+function StepProfileSetup({ accountType, onNext }: { accountType: AccountType; onNext: (nextStep?: string) => void }) {
   const [subStep, setSubStep] = useState(0);
   const [form, setForm] = useState({
     name: "", gender: "", birthYear: "", height: "", weight: "", mainGoal: "",
@@ -432,7 +459,7 @@ function StepProfileSetup({ accountType, onNext }: { accountType: AccountType; o
       }
       const nextStep = (accountType === "buddymaker" || accountType === "buddyexpert") ? "application" : "completed";
       await advanceStep.mutateAsync({ step: nextStep as any });
-      onNext();
+      onNext(accountType === "business" ? "business_setup" : nextStep);
     } catch {
       toast.error("Error al guardar el perfil");
     }
@@ -774,6 +801,184 @@ function StepProfileSetup({ accountType, onNext }: { accountType: AccountType; o
   );
 }
 
+// ─── Step: Business Setup ────────────────────────────────────────────────────
+
+const B2B_TIERS = [
+  { id: "starter" as const, name: "Starter", price: 3.90, min: 10, max: 49, label: "10–49 empleados" },
+  { id: "growth" as const, name: "Growth", price: 3.50, min: 50, max: 199, label: "50–199 empleados" },
+  { id: "business" as const, name: "Business", price: 3.40, min: 200, max: 499, label: "200–499 empleados" },
+  { id: "enterprise" as const, name: "Enterprise", price: 2.50, min: 500, max: 999, label: "500–999 empleados" },
+  { id: "corporate" as const, name: "Corporate", price: 2.20, min: 1000, max: 4999, label: "1.000–4.999 empleados" },
+  { id: "global" as const, name: "Global", price: 1.90, min: 5000, max: 99999, label: "5.000+ empleados" },
+];
+
+const B2B_INDUSTRIES = [
+  "Tecnología", "Finanzas y Banca", "Salud y Farmacia", "Retail y Comercio",
+  "Manufactura", "Educación", "Consultoría", "Medios y Comunicación",
+  "Logística y Transporte", "Hostelería y Turismo", "Sector Público", "Otro",
+];
+
+function StepBusinessSetup() {
+  const [form, setForm] = useState({
+    companyName: "",
+    contactName: "",
+    contactEmail: "",
+    contactPhone: "",
+    employeeCount: 25,
+    industry: "",
+  });
+  const createCheckout = trpc.company.createCheckout.useMutation({
+    onSuccess: (data: any) => {
+      if (data.checkoutUrl) {
+        toast.info("Redirigiendo al proceso de pago...");
+        window.location.href = data.checkoutUrl;
+      }
+    },
+    onError: (err: any) => toast.error(err.message || "Error al iniciar el pago."),
+  });
+
+  const selectedTier = B2B_TIERS.find(t => form.employeeCount >= t.min && form.employeeCount <= t.max) || B2B_TIERS[0];
+  const monthlyTotal = selectedTier.price * form.employeeCount;
+  const annualTotal = monthlyTotal * 10;
+  const annualSavings = monthlyTotal * 12 - annualTotal;
+
+  const handleCheckout = () => {
+    if (!form.companyName || !form.contactName || !form.contactEmail) {
+      toast.error("Completa los campos obligatorios");
+      return;
+    }
+    if (!form.contactEmail.includes("@")) {
+      toast.error("Introduce un email válido");
+      return;
+    }
+    createCheckout.mutate({
+      plan: selectedTier.id,
+      employeeCount: form.employeeCount,
+      companyName: form.companyName,
+      contactEmail: form.contactEmail,
+      contactName: form.contactName,
+      origin: window.location.origin,
+    });
+  };
+
+  return (
+    <div>
+      <div style={{ marginBottom: 24 }}>
+        <div style={{
+          display: "inline-flex", alignItems: "center", gap: 8,
+          background: "#EFF6FF", borderRadius: 20,
+          padding: "6px 14px", marginBottom: 10,
+        }}>
+          <span style={{ fontSize: 18 }}>🏢</span>
+          <span style={{ fontSize: 13, fontWeight: 700, color: "#3B82F6" }}>Plan Empresarial</span>
+        </div>
+        <h3 style={{ fontSize: 22, fontWeight: 900, color: "#1a1a1a", margin: "0 0 6px", letterSpacing: "-0.02em" }}>
+          Configura tu plan de empresa
+        </h3>
+        <p style={{ fontSize: 14, color: "#6B7280", margin: 0, lineHeight: 1.5 }}>
+          Ofrece Buddy One Pro Max a todos tus empleados. Facturación mensual por licencias activas.
+        </p>
+      </div>
+
+      {/* Employee count slider */}
+      <div style={{ background: "#F9FAFB", borderRadius: 16, padding: 20, marginBottom: 20 }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
+          <label style={{ fontSize: 14, fontWeight: 700, color: "#374151" }}>Número de empleados</label>
+          <span style={{ fontSize: 22, fontWeight: 900, color: "#3B82F6" }}>{form.employeeCount}</span>
+        </div>
+        <input
+          type="range" min={10} max={5000} step={5}
+          value={form.employeeCount}
+          onChange={e => setForm(f => ({ ...f, employeeCount: parseInt(e.target.value) }))}
+          style={{ width: "100%", accentColor: "#3B82F6" }}
+        />
+        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#9CA3AF", marginTop: 4 }}>
+          <span>10</span><span>500</span><span>1.000</span><span>5.000+</span>
+        </div>
+      </div>
+
+      {/* Pricing card */}
+      <div style={{
+        background: "linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)",
+        borderRadius: 18, padding: 20, marginBottom: 20, color: "white",
+      }}>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-start" }}>
+          <div>
+            <div style={{ fontSize: 12, fontWeight: 700, opacity: 0.8, marginBottom: 4 }}>Plan {selectedTier.name} — {selectedTier.label}</div>
+            <div style={{ fontSize: 28, fontWeight: 900 }}>{selectedTier.price.toFixed(2)}€<span style={{ fontSize: 14, fontWeight: 500, opacity: 0.8 }}>/empleado/mes</span></div>
+          </div>
+          <div style={{ textAlign: "right" }}>
+            <div style={{ fontSize: 12, opacity: 0.8 }}>Total mensual</div>
+            <div style={{ fontSize: 20, fontWeight: 800 }}>{monthlyTotal.toFixed(2)}€</div>
+          </div>
+        </div>
+        <div style={{ marginTop: 12, padding: "10px 14px", background: "rgba(255,255,255,0.15)", borderRadius: 12 }}>
+          <span style={{ fontSize: 13, fontWeight: 700 }}>📅 Facturación anual: {(annualTotal/12).toFixed(2)}€/mes</span>
+          <span style={{ fontSize: 12, opacity: 0.85, marginLeft: 8 }}>(¡{annualSavings.toFixed(0)}€ de ahorro al año!)</span>
+        </div>
+      </div>
+
+      {/* Contact form */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 14, marginBottom: 20 }}>
+        <div>
+          <label style={labelStyle}>Nombre de la empresa *</label>
+          <input style={inputStyle} placeholder="Acme Corp S.L." value={form.companyName}
+            onChange={e => setForm(f => ({ ...f, companyName: e.target.value }))} />
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div>
+            <label style={labelStyle}>Nombre de contacto *</label>
+            <input style={inputStyle} placeholder="María García" value={form.contactName}
+              onChange={e => setForm(f => ({ ...f, contactName: e.target.value }))} />
+          </div>
+          <div>
+            <label style={labelStyle}>Email de contacto *</label>
+            <input style={inputStyle} type="email" placeholder="rrhh@empresa.com" value={form.contactEmail}
+              onChange={e => setForm(f => ({ ...f, contactEmail: e.target.value }))} />
+          </div>
+        </div>
+        <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 12 }}>
+          <div>
+            <label style={labelStyle}>Teléfono (opcional)</label>
+            <input style={inputStyle} placeholder="+34 600 000 000" value={form.contactPhone}
+              onChange={e => setForm(f => ({ ...f, contactPhone: e.target.value }))} />
+          </div>
+          <div>
+            <label style={labelStyle}>Sector (opcional)</label>
+            <select style={inputStyle} value={form.industry}
+              onChange={e => setForm(f => ({ ...f, industry: e.target.value }))}>
+              <option value="">Selecciona sector</option>
+              {B2B_INDUSTRIES.map(ind => <option key={ind} value={ind}>{ind}</option>)}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div style={{ background: "#F0FDF4", borderRadius: 12, padding: "12px 16px", marginBottom: 20, fontSize: 13, color: "#166534" }}>
+        ✅ Tras el pago recibirás códigos de activación para distribuir entre tus empleados. Cada empleado activa su acceso Pro Max de forma autónoma.
+      </div>
+
+      <button
+        onClick={handleCheckout}
+        disabled={createCheckout.isPending || !form.companyName || !form.contactName || !form.contactEmail}
+        style={{
+          ...btnPrimary,
+          width: "100%",
+          background: "linear-gradient(135deg, #3B82F6 0%, #2563EB 100%)",
+          opacity: createCheckout.isPending || !form.companyName || !form.contactName || !form.contactEmail ? 0.5 : 1,
+          cursor: createCheckout.isPending || !form.companyName || !form.contactName || !form.contactEmail ? "not-allowed" : "pointer",
+        }}
+      >
+        {createCheckout.isPending ? "Procesando..." : `💳 Contratar plan ${selectedTier.name} — ${monthlyTotal.toFixed(2)}€/mes`}
+      </button>
+
+      <p style={{ textAlign: "center", fontSize: 12, color: "#9CA3AF", marginTop: 12 }}>
+        Pago seguro con Stripe · Cancela en cualquier momento · Sin permanencia
+      </p>
+    </div>
+  );
+}
+
 // ─── Step: Application ────────────────────────────────────────────────────────
 
 function StepApplication({ accountType, onNext }: { accountType: AccountType; onNext: () => void }) {
@@ -1001,8 +1206,14 @@ export default function Registration() {
         navigate("/app/dashboard");
         return;
       }
-      setLocalStep(regStatus.registrationStep as RegistrationStep);
-      setLocalAccountType(regStatus.accountType as AccountType);
+      // For business accounts, skip profile_setup and go directly to business_setup
+      const step = regStatus.registrationStep as RegistrationStep;
+      const accountType = regStatus.accountType as AccountType;
+      const resolvedStep = (accountType === "business" && step === "profile_setup")
+        ? "business_setup"
+        : step;
+      setLocalStep(resolvedStep);
+      setLocalAccountType(accountType);
     }
   }, [regStatus]);
 
@@ -1014,6 +1225,9 @@ export default function Registration() {
     { id: "profile_setup", label: "Tu perfil" },
     ...(currentAccountType === "buddymaker" || currentAccountType === "buddyexpert"
       ? [{ id: "application", label: "Solicitud" }]
+      : []),
+    ...(currentAccountType === "business"
+      ? [{ id: "business_setup", label: "Plan empresa" }]
       : []),
     { id: "pending_approval", label: "Confirmación" },
   ];
@@ -1089,14 +1303,16 @@ export default function Registration() {
           {currentStep === "account_type" && (
             <StepAccountType onSelect={(type) => {
               setLocalAccountType(type);
-              setLocalStep("profile_setup");
+              setLocalStep(type === "business" ? "business_setup" : "profile_setup");
               refetch();
             }} />
           )}
           {currentStep === "profile_setup" && (
-            <StepProfileSetup accountType={currentAccountType} onNext={() => {
-              const nextStep = (currentAccountType === "buddymaker" || currentAccountType === "buddyexpert")
-                ? "application" : "pending_approval";
+            <StepProfileSetup accountType={currentAccountType} onNext={(overrideStep) => {
+              const nextStep = overrideStep
+                ? overrideStep as RegistrationStep
+                : (currentAccountType === "buddymaker" || currentAccountType === "buddyexpert")
+                  ? "application" : "pending_approval";
               setLocalStep(nextStep);
               refetch();
             }} />
@@ -1106,6 +1322,9 @@ export default function Registration() {
               setLocalStep("pending_approval");
               refetch();
             }} />
+          )}
+          {currentStep === "business_setup" && (
+            <StepBusinessSetup />
           )}
           {(currentStep === "pending_approval" || currentStep === "completed") && (
             <StepPendingApproval accountType={currentAccountType} application={regStatus?.application} />
@@ -1136,17 +1355,6 @@ export default function Registration() {
 
 // ─── Shared Styles ────────────────────────────────────────────────────────────
 
-const labelStyle: React.CSSProperties = {
-  display: "block", fontSize: 13, fontWeight: 700, color: "#374151", marginBottom: 7,
-};
-
-const inputStyle: React.CSSProperties = {
-  width: "100%", padding: "11px 14px", borderRadius: 12, border: "2px solid #E5E7EB",
-  fontSize: 14, fontWeight: 500, color: "#1a1a1a", background: "white",
-  outline: "none", boxSizing: "border-box", fontFamily: "inherit",
-  transition: "border-color 0.2s ease",
-};
-
 const chipStyle: React.CSSProperties = {
   background: "white", border: "2px solid #E5E7EB", borderRadius: 20,
   padding: "10px 16px", fontSize: 14, fontWeight: 600, color: "#374151",
@@ -1157,14 +1365,6 @@ const chipActiveStyle: React.CSSProperties = {
   background: "linear-gradient(135deg, #F97316 0%, #EA580C 100%)",
   border: "2px solid transparent", color: "white",
   boxShadow: "0 4px 12px rgba(249,115,22,0.35)",
-};
-
-const btnPrimary: React.CSSProperties = {
-  background: "linear-gradient(135deg, #F97316 0%, #EA580C 100%)",
-  color: "white", border: "none", borderRadius: 14, padding: "15px 32px",
-  fontSize: 15, fontWeight: 800, cursor: "pointer",
-  boxShadow: "0 4px 18px rgba(249,115,22,0.4)",
-  transition: "all 0.2s ease",
 };
 
 const btnSecondary: React.CSSProperties = {
