@@ -18,17 +18,25 @@ self.skipWaiting();
 cleanupOutdatedCaches();
 
 // Precache all build assets injected by Workbox at build time
-precacheAndRoute(self.__WB_MANIFEST);
+// IMPORTANT: Exclude index.html from precache so the browser always fetches
+// the latest HTML from the network. This prevents stale-cache blank screens
+// when a new build is deployed with different chunk hashes.
+const manifest = self.__WB_MANIFEST.filter(
+  (entry) => !(typeof entry === 'object' && entry.url === 'index.html')
+);
+precacheAndRoute(manifest);
 
-// ─── Navigation: serve app shell from cache (SPA fallback) ────────────────────
+// ─── Navigation: ALWAYS fetch from network (never serve stale index.html) ─────
+// This is critical: index.html must always come from the network so the browser
+// loads the correct chunk hashes for the current build.
 registerRoute(
   new NavigationRoute(
     new NetworkFirst({
       cacheName: "bm-pages",
-      networkTimeoutSeconds: 3,
+      networkTimeoutSeconds: 5,
       plugins: [
         new CacheableResponsePlugin({ statuses: [0, 200] }),
-        new ExpirationPlugin({ maxEntries: 20, maxAgeSeconds: 7 * 24 * 60 * 60 }),
+        new ExpirationPlugin({ maxEntries: 5, maxAgeSeconds: 60 }), // 1 min only
       ],
     })
   )

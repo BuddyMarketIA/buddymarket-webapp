@@ -152,8 +152,8 @@ function vitePluginManusDebugCollector(): Plugin {
 }
 
 const pwaPlugin = VitePWA({
-  registerType: "autoUpdate",
-  injectRegister: "auto",
+  registerType: "prompt",
+  injectRegister: "script",
   strategies: "injectManifest",
   srcDir: "src",
   filename: "sw.ts",
@@ -165,7 +165,11 @@ const pwaPlugin = VitePWA({
     swSrc: path.resolve(import.meta.dirname, "client/src/sw.ts"),
     swDest: path.resolve(import.meta.dirname, "dist/public/sw.js"),
     globDirectory: path.resolve(import.meta.dirname, "dist/public"),
-    globPatterns: ["**/*.{js,css,html,ico,png,svg,webp,woff,woff2}"],
+    globPatterns: ["**/*.{js,css,ico,png,svg,webp,woff,woff2}"],
+    // CRITICAL: Exclude index.html from precache so the browser always fetches
+    // the latest HTML from the network. Caching index.html causes blank screens
+    // after deployments because the SW serves stale HTML with old chunk hashes.
+    globIgnores: ["index.html", "**/index.html"],
     // Increase limit to 15 MB to accommodate large vendor chunks
     maximumFileSizeToCacheInBytes: 15 * 1024 * 1024,
   },
