@@ -32,7 +32,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "@/components/sonner-a11y-shim";
 import {
   Plus,
   Trash2,
@@ -188,7 +188,6 @@ function DroppableSlot({
 // ─── Componente principal ─────────────────────────────────────────────────────
 export default function ExpertMealPlanner() {
   const [, navigate] = useLocation();
-  const { toast } = useToast();
   const utils = trpc.useUtils();
 
   // Estado del planificador
@@ -300,7 +299,7 @@ export default function ExpertMealPlanner() {
       setNewPlanTitle("");
       setNewPlanPatientId("");
       setNewPlanNotes("");
-      toast({ title: "Plan creado", description: plan.title });
+      toast.success("Plan creado");
     },
   });
 
@@ -308,7 +307,7 @@ export default function ExpertMealPlanner() {
     onSuccess: () => {
       utils.expertMealPlanner.listPlans.invalidate();
       setSelectedPlanId(null);
-      toast({ title: "Plan eliminado" });
+      toast.success("Plan eliminado");
     },
   });
 
@@ -334,7 +333,7 @@ export default function ExpertMealPlanner() {
     onSuccess: (plan) => {
       utils.expertMealPlanner.listPlans.invalidate();
       setSelectedPlanId(plan.id);
-      toast({ title: "Plan duplicado", description: plan.title });
+      toast.success("Plan duplicado");
     },
   });
 
@@ -344,9 +343,9 @@ export default function ExpertMealPlanner() {
       setShowSaveTemplateModal(false);
       setTemplateName("");
       setTemplateDescription("");
-      toast({ title: "✅ Plantilla guardada", description: "Puedes reutilizarla con cualquier paciente desde el botón Plantillas" });
+      toast.success("✅ Plantilla guardada: Puedes reutilizarla con cualquier paciente desde el botón Plantillas");
     },
-    onError: (e) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+    onError: (e) => toast.error("Error: " + e.message),
   });
 
   const applyTemplate = trpc.expertMealPlanner.applyTemplate.useMutation({
@@ -358,9 +357,9 @@ export default function ExpertMealPlanner() {
       setApplyWeekDate("");
       setApplyPlanTitle("");
       setSelectedPlanId(newPlan.id);
-      toast({ title: "✅ Plantilla aplicada", description: `Plan "${newPlan.title}" creado` });
+      toast.success(`✅ Plantilla aplicada: Plan "${newPlan.title}" creado`);
     },
-    onError: (e) => toast({ title: "Error", description: e.message, variant: "destructive" }),
+    onError: (e) => toast.error("Error: " + e.message),
   });
 
   const deleteTemplate = trpc.expertMealPlanner.deleteTemplate.useMutation({
@@ -370,9 +369,9 @@ export default function ExpertMealPlanner() {
   const sendPlan = trpc.expertMealPlanner.sendPlanByEmail.useMutation({
     onSuccess: () => {
       setShowSendModal(false);
-      toast({ title: "Plan enviado", description: "El menú semanal ha sido enviado al paciente por email" });
+      toast.success("Plan enviado: El menú semanal ha sido enviado al paciente por email");
     },
-    onError: (e) => toast({ title: "Error al enviar", description: e.message, variant: "destructive" }),
+    onError: (e) => toast.error("Error al enviar: " + e.message),
   });
 
   // ─── Drag & Drop handlers ──────────────────────────────────────────────────
@@ -1485,7 +1484,7 @@ export default function ExpertMealPlanner() {
                   text += "\n";
                 });
                 navigator.clipboard.writeText(text).then(() => {
-                  toast({ title: "✅ Lista copiada", description: "La lista de la compra está en tu portapapeles" });
+                  toast.success("✅ Lista copiada: La lista de la compra está en tu portapapeles");
                 });
               }}
               disabled={!shoppingListData || (shoppingListData.totalItems === 0 && manualItems.length === 0)}
