@@ -3905,3 +3905,15 @@
 - [x] Frontend: botón "Copiar al portapapeles" (exportar como texto)
 - [x] Frontend: botón "Imprimir"
 - [x] Frontend: comidas personalizadas sin receta mostradas como aviso
+
+## Artículos manuales en lista de la compra (Jun 2026)
+- [x] Frontend: sección "Artículos adicionales" al final del modal de lista de la compra
+- [x] Frontend: botón "+ Añadir artículo" en la cabecera de la sección
+- [x] Frontend: formulario inline con nombre, cantidad, unidad y categoría
+- [x] Frontend: selector de unidades (ud, g, kg, ml, l, taza, cucharada, paquete, bote, lata, bolsa, docena)
+- [x] Frontend: selector de categorías (16 categorías incluyendo Limpieza y hogar, Congelados, Bebidas, etc.)
+- [x] Frontend: artículos manuales con checkbox para tachar igual que los de recetas
+- [x] Frontend: botón eliminar artículo manual (icono X, visible en hover)
+- [x] Frontend: resumen actualizado: contador "añadidos" en morado para artículos manuales
+- [x] Frontend: artículos manuales incluidos en exportación al portapapeles
+- [x] Frontend: estado de artículos manuales se resetea al cerrar/reabrir el modal

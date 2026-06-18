@@ -222,6 +222,15 @@ export default function ExpertMealPlanner() {
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
   const [shoppingListEnabled, setShoppingListEnabled] = useState(false);
 
+  // Artículos manuales de la lista de la compra
+  interface ManualItem { id: string; name: string; amount: string; unit: string; category: string; }
+  const [manualItems, setManualItems] = useState<ManualItem[]>([]);
+  const [showAddManualForm, setShowAddManualForm] = useState(false);
+  const [manualName, setManualName] = useState("");
+  const [manualAmount, setManualAmount] = useState("");
+  const [manualUnit, setManualUnit] = useState("ud");
+  const [manualCategory, setManualCategory] = useState("Otros");
+
   // Plantillas
   const [showSaveTemplateModal, setShowSaveTemplateModal] = useState(false);
   const [showTemplatesModal, setShowTemplatesModal] = useState(false);
@@ -565,6 +574,12 @@ export default function ExpertMealPlanner() {
                       variant="outline"
                       onClick={() => {
                         setCheckedItems(new Set());
+                        setManualItems([]);
+                        setShowAddManualForm(false);
+                        setManualName("");
+                        setManualAmount("");
+                        setManualUnit("ud");
+                        setManualCategory("Otros");
                         setShoppingListEnabled(true);
                         setShowShoppingListModal(true);
                       }}
@@ -1069,7 +1084,11 @@ export default function ExpertMealPlanner() {
       {/* ── Modal: Lista de la compra ──────────────────────────────────────── */}
       <Dialog open={showShoppingListModal} onOpenChange={(open) => {
         setShowShoppingListModal(open);
-        if (!open) setShoppingListEnabled(false);
+        if (!open) {
+          setShoppingListEnabled(false);
+          setManualItems([]);
+          setShowAddManualForm(false);
+        }
       }}>
         <DialogContent className="max-w-2xl max-h-[85vh] flex flex-col">
           <DialogHeader>
@@ -1097,7 +1116,7 @@ export default function ExpertMealPlanner() {
                 {/* Resumen */}
                 <div className="flex items-center gap-4 p-3 bg-green-50 rounded-lg mb-4">
                   <div className="text-center">
-                    <p className="text-2xl font-bold text-green-600">{shoppingListData.totalItems}</p>
+                    <p className="text-2xl font-bold text-green-600">{shoppingListData.totalItems + manualItems.length}</p>
                     <p className="text-xs text-gray-500">productos</p>
                   </div>
                   <div className="text-center">
@@ -1110,9 +1129,15 @@ export default function ExpertMealPlanner() {
                     </p>
                     <p className="text-xs text-gray-500">categorías</p>
                   </div>
+                  {manualItems.length > 0 && (
+                    <div className="text-center">
+                      <p className="text-2xl font-bold text-purple-500">{manualItems.length}</p>
+                      <p className="text-xs text-gray-500">añadidos</p>
+                    </div>
+                  )}
                   {checkedItems.size > 0 && (
                     <div className="ml-auto text-center">
-                      <p className="text-2xl font-bold text-gray-400">{checkedItems.size}/{shoppingListData.totalItems}</p>
+                      <p className="text-2xl font-bold text-gray-400">{checkedItems.size}/{shoppingListData.totalItems + manualItems.length}</p>
                       <p className="text-xs text-gray-400">marcados</p>
                     </div>
                   )}
@@ -1206,6 +1231,202 @@ export default function ExpertMealPlanner() {
                     </ul>
                   </div>
                 )}
+
+                {/* ── Artículos añadidos manualmente ─────────────────────── */}
+                <div className="mt-4">
+                  <div className="flex items-center justify-between mb-2 px-1">
+                    <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide flex items-center gap-2">
+                      <span className="flex-1 border-b border-gray-100 pb-1">Artículos adicionales</span>
+                      {manualItems.length > 0 && (
+                        <span className="text-gray-300 font-normal normal-case tracking-normal">
+                          {manualItems.filter(mi => checkedItems.has(`manual-${mi.id}`)).length}/{manualItems.length}
+                        </span>
+                      )}
+                    </h4>
+                    <button
+                      onClick={() => setShowAddManualForm(!showAddManualForm)}
+                      className="flex items-center gap-1 text-xs text-green-600 hover:text-green-700 font-medium ml-2 flex-shrink-0"
+                    >
+                      <Plus className="w-3 h-3" />
+                      Añadir artículo
+                    </button>
+                  </div>
+
+                  {/* Formulario de añadir artículo manual */}
+                  {showAddManualForm && (
+                    <div className="mb-3 p-3 bg-green-50 rounded-lg border border-green-100">
+                      <p className="text-xs font-medium text-green-700 mb-2">Nuevo artículo</p>
+                      <div className="space-y-2">
+                        <Input
+                          placeholder="Nombre del producto (ej: Papel de horno)"
+                          value={manualName}
+                          onChange={(e) => setManualName(e.target.value)}
+                          className="h-8 text-xs"
+                          onKeyDown={(e) => {
+                            if (e.key === "Enter" && manualName.trim()) {
+                              const newItem: ManualItem = {
+                                id: `${Date.now()}-${Math.random()}`,
+                                name: manualName.trim(),
+                                amount: manualAmount.trim(),
+                                unit: manualUnit,
+                                category: manualCategory,
+                              };
+                              setManualItems(prev => [...prev, newItem]);
+                              setManualName("");
+                              setManualAmount("");
+                              setManualUnit("ud");
+                              setManualCategory("Otros");
+                              setShowAddManualForm(false);
+                            }
+                          }}
+                          autoFocus
+                        />
+                        <div className="flex gap-2">
+                          <Input
+                            placeholder="Cantidad (ej: 2)"
+                            value={manualAmount}
+                            onChange={(e) => setManualAmount(e.target.value)}
+                            className="h-8 text-xs w-24 flex-shrink-0"
+                            type="text"
+                          />
+                          <Select value={manualUnit} onValueChange={setManualUnit}>
+                            <SelectTrigger className="h-8 text-xs w-28 flex-shrink-0">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {["ud", "g", "kg", "ml", "l", "taza", "cucharada", "cucharadita", "paquete", "bote", "lata", "bolsa", "docena"].map(u => (
+                                <SelectItem key={u} value={u}>{u}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                          <Select value={manualCategory} onValueChange={setManualCategory}>
+                            <SelectTrigger className="h-8 text-xs flex-1">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              {["Frutas", "Verduras y hortalizas", "Carnes", "Pescados y mariscos", "Lácteos", "Huevos", "Cereales y harinas", "Legumbres", "Frutos secos", "Aceites y grasas", "Condimentos y especias", "Bebidas", "Congelados", "Conservas", "Limpieza y hogar", "Otros"].map(cat => (
+                                <SelectItem key={cat} value={cat}>{cat}</SelectItem>
+                              ))}
+                            </SelectContent>
+                          </Select>
+                        </div>
+                        <div className="flex gap-2 justify-end">
+                          <Button
+                            size="sm"
+                            variant="ghost"
+                            className="h-7 text-xs text-gray-500"
+                            onClick={() => {
+                              setShowAddManualForm(false);
+                              setManualName("");
+                              setManualAmount("");
+                              setManualUnit("ud");
+                              setManualCategory("Otros");
+                            }}
+                          >
+                            Cancelar
+                          </Button>
+                          <Button
+                            size="sm"
+                            className="h-7 text-xs bg-green-500 hover:bg-green-600 text-white"
+                            disabled={!manualName.trim()}
+                            onClick={() => {
+                              if (!manualName.trim()) return;
+                              const newItem: ManualItem = {
+                                id: `${Date.now()}-${Math.random()}`,
+                                name: manualName.trim(),
+                                amount: manualAmount.trim(),
+                                unit: manualUnit,
+                                category: manualCategory,
+                              };
+                              setManualItems(prev => [...prev, newItem]);
+                              setManualName("");
+                              setManualAmount("");
+                              setManualUnit("ud");
+                              setManualCategory("Otros");
+                              setShowAddManualForm(false);
+                            }}
+                          >
+                            <Plus className="w-3 h-3 mr-1" />
+                            Añadir
+                          </Button>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Lista de artículos manuales */}
+                  {manualItems.length === 0 && !showAddManualForm ? (
+                    <div className="text-center py-4 border-2 border-dashed border-gray-100 rounded-lg">
+                      <p className="text-xs text-gray-400">
+                        Añade productos extra que no están en las recetas
+                      </p>
+                      <button
+                        onClick={() => setShowAddManualForm(true)}
+                        className="text-xs text-green-500 hover:text-green-600 mt-1 font-medium"
+                      >
+                        + Añadir primer artículo
+                      </button>
+                    </div>
+                  ) : (
+                    <div className="space-y-1">
+                      {manualItems.map((item) => {
+                        const itemKey = `manual-${item.id}`;
+                        const isChecked = checkedItems.has(itemKey);
+                        return (
+                          <div
+                            key={item.id}
+                            className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors group ${
+                              isChecked ? "bg-gray-50 opacity-60" : "hover:bg-gray-50"
+                            }`}
+                            onClick={() => {
+                              const newSet = new Set(checkedItems);
+                              if (isChecked) newSet.delete(itemKey);
+                              else newSet.add(itemKey);
+                              setCheckedItems(newSet);
+                            }}
+                          >
+                            <Checkbox
+                              checked={isChecked}
+                              onCheckedChange={(checked) => {
+                                const newSet = new Set(checkedItems);
+                                if (checked) newSet.add(itemKey);
+                                else newSet.delete(itemKey);
+                                setCheckedItems(newSet);
+                              }}
+                              onClick={(e) => e.stopPropagation()}
+                              className="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
+                            />
+                            <div className="flex-1 min-w-0">
+                              <span className={`text-sm ${isChecked ? "line-through text-gray-400" : "text-gray-700"}`}>
+                                {item.name}
+                              </span>
+                              <p className="text-xs text-purple-400">{item.category}</p>
+                            </div>
+                            <div className="text-right flex-shrink-0 flex items-center gap-2">
+                              {(item.amount || item.unit !== "ud") && (
+                                <span className={`text-sm font-medium ${isChecked ? "text-gray-400" : "text-gray-600"}`}>
+                                  {item.amount ? `${item.amount} ${item.unit}` : item.unit}
+                                </span>
+                              )}
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                  setManualItems(prev => prev.filter(mi => mi.id !== item.id));
+                                  const newSet = new Set(checkedItems);
+                                  newSet.delete(itemKey);
+                                  setCheckedItems(newSet);
+                                }}
+                                className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-red-100 transition-all"
+                              >
+                                <X className="w-3 h-3 text-red-400" />
+                              </button>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </div>
               </div>
             ) : (
               <div className="text-center py-8 text-gray-400 text-sm">
@@ -1232,11 +1453,18 @@ export default function ExpertMealPlanner() {
                   });
                   text += "\n";
                 });
+                if (manualItems.length > 0) {
+                  text += `── ARTÍCULOS ADICIONALES ──\n`;
+                  manualItems.forEach((item) => {
+                    text += `  • ${item.name}${item.amount ? `: ${item.amount} ${item.unit}` : ""}\n`;
+                  });
+                  text += "\n";
+                }
                 navigator.clipboard.writeText(text).then(() => {
                   toast({ title: "✅ Lista copiada", description: "La lista de la compra está en tu portapapeles" });
                 });
               }}
-              disabled={!shoppingListData || shoppingListData.totalItems === 0}
+              disabled={!shoppingListData || (shoppingListData.totalItems === 0 && manualItems.length === 0)}
               className="text-xs"
             >
               <ClipboardCopy className="w-3 h-3 mr-1" />
@@ -1246,7 +1474,7 @@ export default function ExpertMealPlanner() {
               variant="outline"
               size="sm"
               onClick={() => window.print()}
-              disabled={!shoppingListData || shoppingListData.totalItems === 0}
+              disabled={!shoppingListData || (shoppingListData.totalItems === 0 && manualItems.length === 0)}
               className="text-xs"
             >
               <Printer className="w-3 h-3 mr-1" />
