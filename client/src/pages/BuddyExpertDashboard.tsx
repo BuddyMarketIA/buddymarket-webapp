@@ -113,8 +113,9 @@ export default function BuddyExpertDashboard() {
     enabled: !!user && !!myProfile,
   });
 
-  const { data: myPlans, refetch: refetchPlans } = trpc.buddyExperts.getMyPlans.useQuery(undefined, {
+  const { data: myPlans, isLoading: plansLoading, refetch: refetchPlans } = trpc.buddyExperts.getMyPlans.useQuery(undefined, {
     enabled: !!user && !!myProfile,
+    retry: false,
   });
 
   const createProfileMutation = trpc.buddyExperts.createProfile.useMutation({
@@ -355,7 +356,7 @@ export default function BuddyExpertDashboard() {
   }
 
   return (
-    <AppLayout>
+    <AppLayout title="Panel BuddyExpert">
       <div className="max-w-3xl mx-auto px-4 py-6 pb-24">
         {/* Header */}
         <div className="flex items-center gap-3 mb-6">
@@ -605,7 +606,11 @@ export default function BuddyExpertDashboard() {
                 >
                   + Crear nuevo plan nutricional
                 </button>
-                {(!myPlans || myPlans.length === 0) ? (
+                {plansLoading ? (
+                  <div className="space-y-3">
+                    {[1,2,3].map(i => <div key={i} className="h-24 bg-muted rounded-2xl animate-pulse" />)}
+                  </div>
+                ) : (!myPlans || myPlans.length === 0) ? (
                   <div className="text-center py-12 text-muted-foreground/70">
                     <div className="text-5xl mb-3">📊</div>
                     <p className="font-semibold">Aún no has creado ningún plan</p>

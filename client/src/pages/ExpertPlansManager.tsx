@@ -28,7 +28,9 @@ export default function ExpertPlansManager() {
   const [uploadingPlanId, setUploadingPlanId] = useState<number | null>(null);
 
   const utils = trpc.useUtils();
-  const { data: plans = [], isLoading } = trpc.expertPlans.myPlans.useQuery({ status: "all" });
+  const { data: plans = [], isLoading, error } = trpc.expertPlans.myPlans.useQuery({ status: "all" }, {
+    retry: false,
+  });
 
   const createPlan = trpc.expertPlans.create.useMutation({
     onSuccess: () => {
@@ -138,9 +140,15 @@ export default function ExpertPlansManager() {
         </div>
 
         {/* Plans list */}
-        {isLoading ? (
+        {isLoading && !error ? (
           <div className="space-y-4">
             {[1, 2, 3].map(i => <div key={i} className="h-32 bg-muted rounded-xl animate-pulse" />)}
+          </div>
+        ) : error ? (
+          <div className="text-center py-16 bg-orange-50 dark:bg-orange-950/20 rounded-2xl border-2 border-dashed border-orange-200 dark:border-orange-800">
+            <FileText className="h-12 w-12 text-orange-300 mx-auto mb-4" />
+            <h3 className="text-lg font-semibold text-foreground mb-2">Acceso restringido</h3>
+            <p className="text-muted-foreground mb-4">Solo los BuddyExperts aprobados pueden gestionar planes. Si ya enviaste tu solicitud, espera la aprobación del equipo.</p>
           </div>
         ) : plans.length === 0 ? (
           <div className="text-center py-16 bg-orange-50 dark:bg-orange-950/20 rounded-2xl border-2 border-dashed border-orange-200 dark:border-orange-800">
