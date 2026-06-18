@@ -3690,6 +3690,46 @@ Si no puedes detectar productos, devuelve {"products": []}. No incluyas texto ad
         return { recipes, expiringIngredients: expiring };
       }),
 
+    // Recetas con lo que tienes en casa: cruza ingredientes del inventario con recetas
+    getRecipesFromInventory: protectedProcedure
+      .query(async ({ ctx }) => {
+        // Obtener ingredientes del inventario del usuario
+        const items = await db.getInventoryItems(ctx.user.id);
+        const ingredientNames = items
+          .map((row: any) => row.ingredient?.nameEs ?? row.item?.customName ?? null)
+          .filter(Boolean)
+          .slice(0, 15) as string[];
+
+        if (ingredientNames.length === 0) {
+          return { recipes: [], inventoryIngredients: [] };
+        }
+
+        // Buscar recetas que coincidan con los ingredientes del inventario
+        // Hacemos varias búsquedas y desduplicamos por ID
+        const recipeMap = new Map<number, any>();
+        const searchTerms = ingredientNames.slice(0, 5); // Top 5 ingredientes
+        for (const term of searchTerms) {
+          const result = await db.getRecipes({ userId: ctx.user.id, search: term, limit: 8 });
+          const found = Array.isArray(result) ? result : (result as any).recipes ?? result;
+          for (const r of found) {
+            if (!recipeMap.has(r.id)) recipeMap.set(r.id, r);
+          }
+          if (recipeMap.size >= 12) break;
+        }
+
+        // Ordenar por cuántos ingredientes del inventario coinciden
+        const recipes = Array.from(recipeMap.values())
+          .map(r => {
+            const ingText = (r.ingredientsJson ?? r.ingredients ?? "").toString().toLowerCase();
+            const matches = ingredientNames.filter(n => ingText.includes(n.toLowerCase())).length;
+            return { ...r, _inventoryMatches: matches };
+          })
+          .sort((a, b) => b._inventoryMatches - a._inventoryMatches)
+          .slice(0, 9);
+
+        return { recipes, inventoryIngredients: ingredientNames };
+      }),
+
     // Suggest expiration date for a product using AI (with fast lookup table fallback)
     suggestExpirationDate: protectedProcedure
       .input(z.object({ productName: z.string().min(1) }))
@@ -3957,6 +3997,33 @@ Si no puedes detectar productos, devuelve {"products": []}. No incluyas texto ad
     dailySummary: protectedProcedure
       .input(z.object({ date: z.string() }))
       .query(({ ctx, input }) => db.getDailyNutritionSummary(ctx.user.id, input.date)),
+
+    exportCSV: protectedProcedure
+      .input(z.object({
+        startDate: z.string().optional(),
+        endDate: z.string().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const logs = await db.getMealLogs(ctx.user.id, input.startDate, input.endDate);
+        if (!logs || (logs as any[]).length === 0) return { csv: "", count: 0 };
+
+        const rows = logs as any[];
+        const headers = ["Fecha", "Franja", "Nombre", "Calorías", "Proteínas (g)", "Carbohidratos (g)", "Grasas (g)", "Fibra (g)", "Fuente"];
+        const csvRows = rows.map((r: any) => [
+          r.logDate ?? r.date ?? "",
+          r.dayPartName ?? r.mealType ?? "",
+          (r.foodName ?? r.name ?? "").replace(/,/g, ";"),
+          r.calories ?? 0,
+          r.protein ?? 0,
+          r.carbs ?? 0,
+          r.fat ?? 0,
+          r.fiber ?? 0,
+          r.source ?? "manual",
+        ].join(","));
+
+        const csv = [headers.join(","), ...csvRows].join("\n");
+        return { csv, count: rows.length };
+      }),
 
     monthlySummary: protectedProcedure
       .input(z.object({

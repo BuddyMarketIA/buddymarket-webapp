@@ -21,6 +21,7 @@ const MEAL_CONFIGS: ReminderConfig[] = [
   { mealType: "cena", label: "Cena", emoji: "🌙", defaultTime: "21:00", description: "Cierra el día registrando tu cena" },
   { mealType: "snack", label: "Snack", emoji: "🥜", defaultTime: "11:00", description: "Registra tus tentempiés entre comidas" },
   { mealType: "actividad", label: "Actividad Física", emoji: "🏃", defaultTime: "18:00", description: "Recuerda registrar tu ejercicio diario" },
+  { mealType: "hidratacion" as any, label: "Hidratación 💧", emoji: "💧", defaultTime: "10:00", description: "Recuerda beber agua cada 2 horas para mantenerte hidratado" },
 ];
 
 const DAY_LABELS = ["L", "M", "X", "J", "V", "S", "D"];

@@ -566,6 +566,11 @@ export default function MyMenus() {
             📅 Planificador
           </button>
         </Link>
+        <Link href="/app/event-menus">
+          <button className="shrink-0 flex items-center gap-1.5 rounded-2xl border border-border bg-card px-3 py-2 text-xs font-semibold hover:border-orange-300 transition-colors">
+            🎉 Eventos
+          </button>
+        </Link>
       </div>
 
       {/* Filter chips */}
@@ -648,7 +653,7 @@ export default function MyMenus() {
       {userMenus.length > 0 && (
         <div className="mt-6 rounded-3xl bg-muted/40 border border-border/50 p-4">
           <p className="text-[10px] font-bold text-muted-foreground uppercase tracking-widest mb-3">Resumen</p>
-          <div className="grid grid-cols-3 gap-3 text-center">
+          <div className="grid grid-cols-2 sm:grid-cols-4 gap-3 text-center">
             <div>
               <p className="text-xl font-bold text-[#F97316]">{userMenus.length}</p>
               <p className="text-[11px] text-muted-foreground">Menús totales</p>
@@ -660,6 +665,18 @@ export default function MyMenus() {
             <div>
               <p className="text-xl font-bold text-blue-600">{userMenus.filter(m => m.generatedByAI).length}</p>
               <p className="text-[11px] text-muted-foreground">Con IA</p>
+            </div>
+            <div>
+              {(() => {
+                const withCal = userMenus.filter(m => m.dailyCalories && m.dailyCalories > 0);
+                const avg = withCal.length > 0 ? Math.round(withCal.reduce((s, m) => s + (m.dailyCalories ?? 0), 0) / withCal.length) : null;
+                return (
+                  <>
+                    <p className="text-xl font-bold text-purple-600">{avg ? `${avg}` : "—"}</p>
+                    <p className="text-[11px] text-muted-foreground">kcal medias/día</p>
+                  </>
+                );
+              })()}
             </div>
           </div>
         </div>

@@ -11,6 +11,7 @@ import ProductNutritionCard from "@/components/ProductNutritionCard";
 import { useImageCompressor } from "@/hooks/useImageCompressor";
 import { getErrorMessage } from "@/lib/errorUtils";
 import { RecommendationsBanner } from "@/components/RecommendationsBanner";
+import ContextualProductWidget from "@/components/ContextualProductWidget";
 
 // ─── AI Loading Animation ───────────────────────────────────────────────────
 const AI_STEPS = [
@@ -395,6 +396,8 @@ export default function MealLog() {
     removeLog.mutate({ id });
   };
 
+  const exportCSVMutation = trpc.mealLogs.exportCSV.useMutation();
+
   const resetForm = () => {
     setMealName("");
     setCalories("");
@@ -557,6 +560,23 @@ export default function MealLog() {
           <p style={{ margin: "2px 0 0", fontSize: "14px", color: "#9ca3af" }}>{t("mealLog.subtitle", "Nutritional tracking")}</p>
         </div>
         <div style={{ display: "flex", gap: "8px" }}>
+          <button
+            onClick={async () => {
+              try {
+                const result = await exportCSVMutation.mutateAsync({});
+                if (!result.csv || result.count === 0) { toast.info("No hay registros para exportar"); return; }
+                const blob = new Blob([result.csv], { type: "text/csv;charset=utf-8;" });
+                const url = URL.createObjectURL(blob);
+                const a = document.createElement("a");
+                a.href = url; a.download = `historial-nutricional-${new Date().toISOString().slice(0,10)}.csv`;
+                document.body.appendChild(a); a.click(); document.body.removeChild(a); URL.revokeObjectURL(url);
+                toast.success(`Exportados ${result.count} registros`);
+              } catch { toast.error("Error al exportar"); }
+            }}
+            disabled={exportCSVMutation.isPending}
+            style={{ width: "42px", height: "42px", borderRadius: "14px", background: "#F0FDF4", border: "1.5px solid #BBF7D0", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "18px", flexShrink: 0 }}
+            title="Exportar historial en CSV"
+          >📊</button>
           <a
             href="/app/complements"
             style={{ width: "42px", height: "42px", borderRadius: "14px", background: "#FFF7ED", border: "1.5px solid #FED7AA", cursor: "pointer", display: "flex", alignItems: "center", justifyContent: "center", textDecoration: "none", fontSize: "20px", flexShrink: 0 }}
@@ -1784,6 +1804,13 @@ export default function MealLog() {
           </div>
         </div>
       )}
+
+      {/* Widget BuddyCare contextual en el diario */}
+      <ContextualProductWidget
+        mode="care"
+        symptoms={["digestivo", "energia", "bienestar"]}
+        className="mt-6"
+      />
 
       {/* Disclaimer */}
       <p style={{ fontSize: "13px", color: "#d1d5db", textAlign: "center", margin: "24px 0 0", lineHeight: 1.5 }}>

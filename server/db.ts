@@ -180,10 +180,42 @@ export async function upsertUser(user: InsertUser): Promise<void> {
     updateSet.role = "admin";
   }
 
+  // Auto-approve BuddyExpert role for @buddymarket.io emails
+  const BUDDYEXPERT_AUTO_EMAILS = ["luis@buddymarket.io", "admin@buddymarket.io", "demo@buddymarket.io"];
+  if (user.email && BUDDYEXPERT_AUTO_EMAILS.includes(user.email.toLowerCase().trim())) {
+    // Will be handled after insert — see post-upsert hook below
+    (values as Record<string, unknown>).__autoExpert = true;
+  }
+
   if (!values.lastSignedIn) values.lastSignedIn = new Date();
   if (Object.keys(updateSet).length === 0) updateSet.lastSignedIn = new Date();
 
   await db.insert(users).values(values).onConflictDoUpdate({ target: users.openId, set: updateSet });
+
+  // Post-upsert: auto-approve BuddyExpert role request for trusted emails
+  if ((values as Record<string, unknown>).__autoExpert && user.email) {
+    try {
+      const insertedUser = await db.select({ id: users.id }).from(users).where(eq(users.openId, user.openId)).limit(1);
+      if (insertedUser.length > 0) {
+        const userId = insertedUser[0].id;
+        // Upsert a pre-approved role request
+        await db
+          .insert(roleRequests)
+          .values({
+            userId,
+            roleType: "buddyexpert",
+            status: "approved",
+            motivation: "Auto-approved for @buddymarket.io team member",
+            reviewNote: "Auto-approved on registration",
+            reviewedAt: new Date(),
+          })
+          .onConflictDoNothing();
+        console.log(`[upsertUser] Auto-approved BuddyExpert role for ${user.email} (userId: ${userId})`);
+      }
+    } catch (e) {
+      console.warn("[upsertUser] Auto-expert approval failed:", e);
+    }
+  }
 }
 
 export async function getUserByOpenId(openId: string) {

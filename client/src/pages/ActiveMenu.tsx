@@ -26,6 +26,7 @@ import {
 } from "@heroicons/react/24/outline";
 import { CheckCircleIcon as CheckCircleSolid } from "@heroicons/react/24/solid";
 import MercadonaCartExport from "@/components/MercadonaCartExport";
+import ContextualProductWidget from "@/components/ContextualProductWidget";
 import LidlCartExport from "@/components/LidlCartExport";
 import CarrefourCartExport from "@/components/CarrefourCartExport";
 import AlcampoCartExport from "@/components/AlcampoCartExport";
@@ -1177,6 +1178,14 @@ export default function ActiveMenu() {
           </button>
         </div>
       </div>
+
+      {/* BuddyShop contextual recommendations */}
+      <ContextualProductWidget
+        context="menu"
+        tags={["cocina", "utensilios", "planificación"]}
+        mode="shop"
+        maxProducts={2}
+      />
 
       {/* PDF + Change menu */}
       <div className="flex gap-2">

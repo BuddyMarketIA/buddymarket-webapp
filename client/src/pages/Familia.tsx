@@ -825,31 +825,91 @@ function RoleBadge({ role }: { role: string }) {
 
 // ─── Empty state ──────────────────────────────────────────────────────────────
 function EmptyHousehold({ onCreate }: { onCreate: () => void }) {
+  const [step, setStep] = useState(0);
+  const steps = [
+    {
+      icon: "🏠",
+      title: "Bienvenido al modo Familia",
+      desc: "Buddy One te permite gestionar la alimentación de toda tu familia desde un solo lugar. Cada miembro tiene su propio perfil nutricional.",
+      cta: "Empezar",
+    },
+    {
+      icon: "🍽️",
+      title: "Menús personalizados por persona",
+      desc: "Genera menús adaptados a las necesidades de cada miembro: niños, adultos, personas con condiciones médicas o preferencias especiales.",
+      cta: "Siguiente",
+    },
+    {
+      icon: "🛒",
+      title: "Lista de la compra unificada",
+      desc: "Buddy One consolida los ingredientes de todos los menús familiares en una sola lista de la compra optimizada.",
+      cta: "Siguiente",
+    },
+    {
+      icon: "🥗",
+      title: "Preferencias y restricciones",
+      desc: "Cada miembro puede tener sus propias alergias, intolerancias y preferencias. La IA las respeta al generar menús.",
+      cta: "Crear mi hogar familiar",
+      isLast: true,
+    },
+  ];
+  const current = steps[step];
+
   return (
-    <div className="flex flex-col items-center justify-center min-h-[60vh] text-center px-4">
-      <div className="w-20 h-20 rounded-full bg-orange-100 flex items-center justify-center mb-6">
-        <Home className="w-10 h-10 text-orange-500" />
-      </div>
-      <h2 className="text-2xl font-bold text-foreground mb-3">Crea tu hogar familiar</h2>
-      <p className="text-muted-foreground max-w-md mb-8 leading-relaxed">
-        Comparte el menú semanal y la lista de la compra con toda tu familia. Cada miembro puede tener sus propias preferencias y restricciones dietéticas.
-      </p>
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4 mb-8 max-w-lg w-full">
-        {[
-          { icon: "🍽️", title: "Menú compartido", desc: "Planifica las comidas de toda la familia" },
-          { icon: "🛒", title: "Lista unificada", desc: "Una sola lista de la compra para todos" },
-          { icon: "🥗", title: "Preferencias propias", desc: "Cada miembro con sus restricciones" },
-        ].map((f) => (
-          <div key={f.title} className="bg-card border rounded-xl p-4 text-center">
-            <div className="text-3xl mb-2">{f.icon}</div>
-            <p className="font-semibold text-sm text-foreground">{f.title}</p>
-            <p className="text-xs text-muted-foreground mt-1">{f.desc}</p>
-          </div>
+    <div className="flex flex-col items-center justify-center min-h-[70vh] text-center px-4">
+      {/* Progress dots */}
+      <div className="flex gap-2 mb-8">
+        {steps.map((_, i) => (
+          <div
+            key={i}
+            className={`w-2 h-2 rounded-full transition-all ${
+              i === step ? "bg-orange-500 w-6" : i < step ? "bg-orange-300" : "bg-muted"
+            }`}
+          />
         ))}
       </div>
-      <Button onClick={onCreate} size="lg" className="bg-orange-500 hover:bg-orange-600 text-white gap-2">
-        <Home className="w-5 h-5" /> Crear mi hogar
-      </Button>
+
+      {/* Step content */}
+      <div className="w-24 h-24 rounded-3xl bg-orange-100 flex items-center justify-center mb-6 text-5xl">
+        {current.icon}
+      </div>
+      <h2 className="text-2xl font-bold text-foreground mb-3">{current.title}</h2>
+      <p className="text-muted-foreground max-w-md mb-10 leading-relaxed">{current.desc}</p>
+
+      {/* Benefit chips (only on first step) */}
+      {step === 0 && (
+        <div className="grid grid-cols-3 gap-3 mb-8 max-w-sm w-full">
+          {[
+            { icon: "👨‍👩‍👧", label: "Toda la familia" },
+            { icon: "🤖", label: "IA personalizada" },
+            { icon: "⚡", label: "Sincronizado" },
+          ].map((b) => (
+            <div key={b.label} className="bg-orange-50 border border-orange-200 rounded-xl p-3 text-center">
+              <div className="text-2xl mb-1">{b.icon}</div>
+              <p className="text-xs font-semibold text-orange-800">{b.label}</p>
+            </div>
+          ))}
+        </div>
+      )}
+
+      <div className="flex gap-3">
+        {step > 0 && (
+          <Button variant="outline" onClick={() => setStep(s => s - 1)} className="gap-1">
+            Atrás
+          </Button>
+        )}
+        <Button
+          onClick={() => {
+            if ((current as any).isLast) onCreate();
+            else setStep(s => s + 1);
+          }}
+          size="lg"
+          className="bg-orange-500 hover:bg-orange-600 text-white gap-2"
+        >
+          {(current as any).isLast ? <Home className="w-5 h-5" /> : null}
+          {current.cta}
+        </Button>
+      </div>
     </div>
   );
 }

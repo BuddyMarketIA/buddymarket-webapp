@@ -612,6 +612,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
         { key: "/app/buddy-experts", label: t("nav.buddyExperts"), to: "/app/buddy-experts", emoji: "🧑‍⚕️" },
         { key: "/app/buddy-makers", label: t("nav.buddyMakers"), to: "/app/buddy-makers", emoji: "👨‍🍳" },
         { key: "/app/my-expert", label: "Mi nutricionista", to: "/app/my-expert", emoji: "👩‍⚕️" },
+        { key: "https://buddycoach.io", label: "BuddyCoach", to: "https://buddycoach.io", emoji: "🏋️" },
       ],
     },
     {

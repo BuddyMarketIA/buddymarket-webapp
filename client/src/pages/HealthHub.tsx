@@ -78,6 +78,32 @@ export default function HealthHub() {
   ]);
   const [isTyping, setIsTyping] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
+  const [dailySummaryShown, setDailySummaryShown] = useState(false);
+
+  // Resumen diario automático por la tarde/noche (después de las 15:00)
+  useEffect(() => {
+    const hour = new Date().getHours();
+    const isAfternoonOrEvening = hour >= 15;
+    const storageKey = `buddy_coach_daily_summary_${new Date().toDateString()}`;
+    const alreadyShown = sessionStorage.getItem(storageKey);
+    if (isAfternoonOrEvening && !alreadyShown && !dailySummaryShown) {
+      const timer = setTimeout(() => {
+        const summaryMsg: ChatMessage = {
+          id: "daily-summary-" + Date.now(),
+          role: "coach",
+          content: `¡Buenas tardes${user?.name ? `, ${user.name.split(" ")[0]}` : ""}! 🌞 He preparado tu **resumen del día**:\n\n• 🍽️ **Nutrición**: Revisa si has completado tus comidas de hoy en el diario\n• 💧 **Hidratación**: Recuerda llegar a tu objetivo de agua diario\n• 💪 **Actividad**: Consulta tus métricas de hoy en el panel de estado\n• 😴 **Recuperación**: Prioriza el sueño esta noche para mañana\n\n¿Quieres que analice algo en concreto?`,
+          time: new Date().toLocaleTimeString("es-ES", { hour: "2-digit", minute: "2-digit" }),
+          suggestions: ["Analiza mi semana", "¿Qué debo comer para recuperarme?", "¿Estoy listo para entrenar hoy?"],
+        };
+        setChatMessages(prev => [...prev, summaryMsg]);
+        setDailySummaryShown(true);
+        sessionStorage.setItem(storageKey, "1");
+        // Cambiar al tab del coach para mostrar el resumen
+        setActiveTab("coach");
+      }, 800);
+      return () => clearTimeout(timer);
+    }
+  }, [user?.name]);
 
   // Wearables
   const { data: wearableConnections, refetch: refetchConnections } = trpc.wearables.getConnections.useQuery();

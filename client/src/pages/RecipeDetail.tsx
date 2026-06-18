@@ -98,6 +98,15 @@ export default function RecipeDetail() {
   });
 
   const utils = trpc.useUtils();
+  const [showShareFamilyModal, setShowShareFamilyModal] = useState(false);
+  const assignToFamily = trpc.householdRecipes.assign.useMutation({
+    onSuccess: () => {
+      toast.success("¡Receta compartida con tu familia! 👨‍👩‍👧");
+      setShowShareFamilyModal(false);
+    },
+    onError: (err) => toast.error(err.message || "Error al compartir con la familia"),
+  });
+  const { data: householdData } = trpc.household.get.useQuery(undefined, { enabled: !!user });
 
   const { data: likeStatus } = trpc.recipeLikes.getStatus.useQuery(
     { recipeId: Number(id) },
@@ -978,6 +987,38 @@ export default function RecipeDetail() {
         recipeDescription={recipe.description ?? undefined}
         variant="bar"
       />
+
+      {/* Compartir con familia */}
+      {householdData && householdData.members && householdData.members.length > 1 && (
+        <div className="mt-4 rounded-2xl border border-orange-200 bg-orange-50 p-4">
+          <p className="text-sm font-bold text-orange-800 mb-3">👨‍👩‍👧 Compartir con mi familia</p>
+          <div className="flex flex-wrap gap-2">
+            {householdData.members
+              .filter((m: any) => m.userId !== user?.id)
+              .map((member: any) => (
+                <button
+                  key={member.id}
+                  onClick={() => assignToFamily.mutate({
+                    householdId: householdData.id,
+                    memberId: member.id,
+                    recipeId: recipe.id,
+                    origin: window.location.origin,
+                  })}
+                  disabled={assignToFamily.isPending}
+                  className="flex items-center gap-2 rounded-xl bg-white border border-orange-200 px-3 py-2 text-xs font-semibold text-orange-700 hover:bg-orange-100 transition-colors disabled:opacity-50"
+                >
+                  <span className="w-6 h-6 rounded-full bg-orange-200 flex items-center justify-center text-xs font-bold">
+                    {(member.displayName ?? member.userName ?? "?")[0].toUpperCase()}
+                  </span>
+                  {member.displayName ?? member.userName ?? "Miembro"}
+                </button>
+              ))}
+          </div>
+          {assignToFamily.isSuccess && (
+            <p className="mt-2 text-xs text-green-700">✓ Receta compartida con éxito</p>
+          )}
+        </div>
+      )}
 
       {/* BuddyShop / BuddyCare contextual recommendations */}
       {recipe && (
