@@ -74,7 +74,7 @@ const MODULES = [
   { icon: "💊", color: "#D97706", bg: "#FFFBEB", tag: "Buddy Care", title: "Suplementos Nutricionales Personalizados",
     desc: "Tu tienda de suplementos nutricionales con recomendaciones basadas en tu perfil. Omega 3, creatina, proteína, vitaminas y más, seleccionados según tus objetivos y necesidades.",
     img: FOOD.ensalada, highlights: ["Recomendaciones personalizadas", "Omega 3, creatina, vitaminas", "Seguimiento de tomas diarias"] },
-  { icon: "🍳", color: "#B45309", bg: "#FFFBEB", tag: "Buddy Shop", title: "Marketplace de Utensilios de Cocina",
+  { icon: "🥄", color: "#B45309", bg: "#FFFBEB", tag: "Buddy Shop", title: "Marketplace de Utensilios de Cocina",
     desc: "Todo lo que necesitas para cocinar mejor: sartenes, ollas, robots de cocina, básculas, tuppers y más. Productos seleccionados para facilitar tu día a día en la cocina.",
     img: FOOD.pantry, highlights: ["Utensilios de cocina", "Robots y básculas", "Envío a domicilio"] },
   { icon: "💪", color: "#f59e0b", bg: "#fffbeb", tag: "Buddy Coach", title: "Tu Entrenador Personal Online",
@@ -90,7 +90,7 @@ const ECOSYSTEM = [
   { name: "Buddy Market", tagline: "Compra inteligente", color: "#F97316", bg: "#FFF7ED", border: "#FED7AA", icon: "🛒" },
   { name: "Buddy Coach", tagline: "Tu entrenador personal", color: "#EA580C", bg: "#FFF7ED", border: "#FDBA74", icon: "💪" },
   { name: "Buddy Experts", tagline: "Nutricionistas online", color: "#C2410C", bg: "#FFF7ED", border: "#FED7AA", icon: "🧑‍⚕️" },
-  { name: "Buddy Shop", tagline: "Utensilios de cocina", color: "#FB923C", bg: "#FFF7ED", border: "#FDBA74", icon: "🍳" },
+  { name: "Buddy Shop", tagline: "Utensilios de cocina", color: "#FB923C", bg: "#FFF7ED", border: "#FDBA74", icon: "🥄" },
   { name: "Buddy Care", tagline: "Suplementos nutricionales", color: "#D97706", bg: "#FFFBEB", border: "#FDE68A", icon: "💊" },
   { name: "Buddy Pets", tagline: "Nutrición para mascotas", color: "#B45309", bg: "#FFFBEB", border: "#FDE68A", icon: "🐾" },
 ];
@@ -597,7 +597,7 @@ export default function LandingPage() {
         <div style={{ maxWidth: 1160, margin: "0 auto", textAlign: "center" }}>
           <p style={{ fontSize: "12px", color: "#F97316", fontWeight: 700, letterSpacing: "0.10em", textTransform: "uppercase", marginBottom: "16px" }}>El ecosistema Buddy One</p>
           <h2 style={{ fontSize: "clamp(24px,3.5vw,40px)", fontWeight: 900, color: C.textPrimary, margin: "0 0 12px", letterSpacing: "-0.02em" }}>
-            Cinco módulos. Un solo ecosistema.
+            Seis módulos. Un solo ecosistema.
           </h2>
           <p style={{ fontSize: 17, color: C.textMuted, maxWidth: 480, margin: "0 auto 48px", lineHeight: 1.6 }}>
             Cada módulo trabaja de forma independiente y en conjunto para transformar tu bienestar.
@@ -608,7 +608,7 @@ export default function LandingPage() {
             style={{ maxWidth: "420px", width: "100%", height: "auto", objectFit: "contain", margin: "0 auto 48px", display: "block" }}
           />
           {/* Tarjetas de módulos */}
-          <div style={{ display: "grid", gridTemplateColumns: "repeat(5,1fr)", gap: 12 }} className="lp-ecosystem-grid">
+          <div style={{ display: "grid", gridTemplateColumns: "repeat(6,1fr)", gap: 12 }} className="lp-ecosystem-grid">
             {ECOSYSTEM.map(m => (
               <div key={m.name} style={{ background: m.bg, border: `1.5px solid ${m.border}`, borderRadius: 18, padding: "20px 14px", textAlign: "center", transition: "all 0.2s", cursor: "default" }}
                 onMouseEnter={e => { (e.currentTarget as HTMLElement).style.transform = "translateY(-4px)"; (e.currentTarget as HTMLElement).style.boxShadow = `0 12px 32px ${m.color}20`; }}

@@ -1143,7 +1143,22 @@ Devuelve SOLO JSON válido con esta estructura:
                     if (dayData.meals) {
                       for (const meal of dayData.meals) {
                         const mealTimeName = meal.mealTime ?? "comida";
-                        const dayPart = allDayParts.find((dp) => dp.nameEs?.toLowerCase().includes(mealTimeName.toLowerCase()) || mealTimeName.toLowerCase().includes((dp.nameEs ?? "").toLowerCase()) || dp.apiParam?.toLowerCase().includes(mealTimeName.toLowerCase()));
+                        // Mapa de nombres alternativos para mejorar el matching
+                        const mealTimeAliases: Record<string, string[]> = {
+                          breakfast: ["desayuno", "breakfast"],
+                          mid_morning: ["media_manana", "media mañana", "media manana", "mid_morning", "mid morning", "almuerzo"],
+                          lunch: ["comida", "almuerzo", "lunch"],
+                          afternoon_snack: ["merienda", "afternoon_snack", "snack"],
+                          dinner: ["cena", "dinner"],
+                        };
+                        const normalizedMeal = mealTimeName.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[\s_-]+/g, "_");
+                        const dayPart = allDayParts.find((dp) => {
+                          const aliases = mealTimeAliases[dp.apiParam ?? ""] ?? [];
+                          return aliases.some(a => normalizedMeal.includes(a.replace(/[\s_-]+/g, "_")) || a.replace(/[\s_-]+/g, "_").includes(normalizedMeal)) ||
+                            dp.nameEs?.toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[\s_-]+/g, "_").includes(normalizedMeal) ||
+                            normalizedMeal.includes((dp.nameEs ?? "").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[\s_-]+/g, "_")) ||
+                            dp.apiParam?.toLowerCase().replace(/[\s_-]+/g, "_").includes(normalizedMeal);
+                        });
                         if (!dayPart) continue;
                         const [dpInsert] = await drizzleDb.insert(menuOrganizerDayParts).values({
                           menuOrganizerId: menuId,

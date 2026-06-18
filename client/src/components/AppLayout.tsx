@@ -664,7 +664,67 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
   if (!loading && !isAuthenticated && !wasAuthenticated) { window.location.href = "/login"; return null; }
 
   const shouldShowNav = !hideNav;
-  const pageTitle = title || currentNavItem?.label || currentSidebarItem?.label || "Buddy One";
+  // Mapa de rutas adicionales que no están en el sidebar pero necesitan título
+  const ROUTE_TITLE_MAP: Record<string, string> = {
+    "/app/buddy-setup": "Configuración inicial",
+    "/app/tour": "Tour de bienvenida",
+    "/app/progress": "Mi Progreso",
+    "/app/weekly-checkin": "Check-in semanal",
+    "/app/buddy-scan": "BuddyScan",
+    "/app/buddy-ia": "BuddyIA",
+    "/app/active-menu": "Menú activo",
+    "/app/menu-library": "Biblioteca de Menús",
+    "/app/my-menus": "Mis Menús",
+    "/app/menus": "Menús",
+    "/app/shopping-lists": "Lista de la compra",
+    "/app/supermercados": "Supermercados",
+    "/app/inventory": "Inventario",
+    "/app/metrics": "Mis Métricas",
+    "/app/health-hub": "Health Hub",
+    "/app/referrals": "Invitar amigos",
+    "/app/soporte": "Soporte",
+    "/app/favorites": "Mis Favoritas",
+    "/app/meal-notifications": "Recordatorios",
+    "/app/buddy-shop": "BuddyShop",
+    "/app/buddy-care": "BuddyCare",
+    "/app/buddy-experts": "Buddy Experts",
+    "/app/buddy-makers": "BuddyMakers",
+    "/app/my-expert": "Mi Nutricionista",
+    "/app/buddy-pet": "BuddyPet",
+    "/app/buddy-pet-preview": "BuddyPet",
+    "/app/vet-clinic": "Clínica Veterinaria",
+    "/app/pet-menus": "Menús para Mascotas",
+    "/app/buddy-kids": "BuddyKids",
+    "/app/kids-menus": "Menús para Niños",
+    "/app/specialized-menus": "Menús Especiales",
+    "/app/event-menu": "Menú para Eventos",
+    "/app/saved-events": "Eventos guardados",
+    "/app/expert/dashboard": "Dashboard Profesional",
+    "/app/expert/patients": "Mis Pacientes",
+    "/app/expert/kanban": "Vista Cartera",
+    "/app/expert/hire-requests": "Solicitudes de pacientes",
+    "/app/expert/chat": "Chat con Pacientes",
+    "/app/expert/alerts": "Alertas de Pacientes",
+    "/app/expert/trends": "Análisis de Tendencias",
+    "/app/expert/pro-dashboard": "KPIs y Negocio",
+    "/app/expert/recipes": "Mis Recetas",
+    "/app/expert/meal-planner": "Planificador Semanal",
+    "/app/expert/questionnaires": "Cuestionarios",
+    "/app/expert/ai-plan": "Plan con IA",
+    "/app/expert/video": "Videoconsultas",
+    "/app/expert/availability": "Disponibilidad",
+    "/app/expert/reviews": "Reseñas",
+    "/app/expert/referrals": "Referidos",
+    "/app/expert/b2b": "Plan B2B Empresas",
+    "/app/buddy-expert-stats": "Estadísticas",
+    "/app/expert-plans": "Mis Planes",
+    "/app/buddy-maker-dashboard": "Panel BuddyMaker",
+    "/familia": "Mi Hogar",
+    "/familia/calendario": "Calendario Familiar",
+    "/familia/mis-recetas": "Mis Recetas Asignadas",
+  };
+  const routeTitle = Object.entries(ROUTE_TITLE_MAP).find(([path]) => location === path || location.startsWith(path + "/"))?.[1];
+  const pageTitle = title || currentNavItem?.label || currentSidebarItem?.label || routeTitle || "Buddy One";
   const userName = user?.name || "Usuario";
   const userEmail = user?.email || "";
   const userAvatarUrl = profileData.data?.user?.imageUrl || (user as any)?.imageUrl || null;

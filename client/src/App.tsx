@@ -273,6 +273,7 @@ function Router() {
       <Route path="/gdpr" component={RGPDPage} />
       <Route path="/herramientas" component={Herramientas} />
       <Route path="/nutricionistas" component={Nutricionistas} />
+      <Route path="/experto/:id" component={BuddyProfile} />
       <Route path="/calculadora" component={CalculadoraNutricional} />
       <Route path="/empresas" component={Empresas} />
       <Route path="/contacto" component={Contacto} />

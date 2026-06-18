@@ -3839,38 +3839,38 @@
 - [x] Exportar menú familiar a PDF e impresión: utilidad exportHouseholdMenuPDF.ts con jsPDF (orientación landscape A4), botón "⋯" con dropdown en cada tarjeta de menú (Exportar PDF / Imprimir / Eliminar), botones rápidos en vista expandida, función printHouseholdMenu con ventana HTML optimizada para impresión
 
 ## Panel Profesional — Bugs y nuevas funcionalidades (sesión actual)
-- [ ] Fix: Panel BuddyExpert muestra "Crear perfil" aunque el experto ya tiene perfil aprobado
-- [ ] Fix: Mis Planes muestra 3 skeleton cards infinitas (bug de carga)
-- [ ] Fix: Breadcrumb siempre dice "Buddy One" en lugar del nombre de la página
+- [x] Fix: Panel BuddyExpert muestra "Crear perfil" aunque el experto ya tiene perfil aprobado
+- [x] Fix: Mis Planes muestra 3 skeleton cards infinitas (bug de carga)
+- [x] Fix: Breadcrumb siempre dice "Buddy One" en lugar del nombre de la página
 - [ ] Fix: Texto "Paciente(s) de ping..." en widget de Citas del dashboard
-- [ ] Fix: Solicitudes vacías sin CTA para compartir enlace de perfil público
-- [ ] Feature: Tabla offline_patients en BD para pacientes sin cuenta Buddy
-- [ ] Feature: Importación masiva de pacientes desde CSV/Excel con previsualización
-- [ ] Feature: Historial de peso y evolución por paciente
-- [ ] Feature: Ficha de paciente con datos clínicos, historial y generación de plan
-- [ ] Feature: Envío de plan semanal por email con plantilla HTML (evolución + menú)
-- [ ] Feature: Envío de plan por WhatsApp con plantilla de texto formateada
-- [ ] Feature: Invitación opcional para que el paciente se registre en Buddy
-- [ ] Feature: Checklist de activación en dashboard profesional
+- [x] Fix: Solicitudes vacías sin CTA para compartir enlace de perfil público
+- [x] Feature: Tabla offline_patients en BD para pacientes sin cuenta Buddy
+- [x] Feature: Importación masiva de pacientes desde CSV/Excel con previsualización
+- [x] Feature: Historial de peso y evolución por paciente
+- [x] Feature: Ficha de paciente con datos clínicos, historial y generación de plan
+- [x] Feature: Envío de plan semanal por email con plantilla HTML (evolución + menú)
+- [x] Feature: Envío de plan por WhatsApp con plantilla de texto formateada
+- [x] Feature: Invitación opcional para que el paciente se registre en Buddy
+- [x] Feature: Checklist de activación en dashboard profesional
 
 ## Mejoras batch - Jun 2026
-- [ ] #1 Fix menú incompleto en onboarding - generar todas las franjas del día
-- [ ] #2 Fix contador comidas en paso 6 del onboarding muestra "0 comidas ()"
-- [ ] #4 Dashboard estado cero con guía de primeros pasos para usuarios nuevos
+- [x] #1 Fix menú incompleto en onboarding - generar todas las franjas del día
+- [x] #2 Fix contador comidas en paso 6 del onboarding muestra "0 comidas ()"
+- [x] #4 Dashboard estado cero con guía de primeros pasos para usuarios nuevos (OnboardingTourGuide + OnboardingCard)
 - [ ] #5 Diario nutricional mejorado con registro rápido de comidas
 - [ ] #6 Notificaciones push reales: recordatorios comidas, hidratación, check-in peso
-- [ ] #7 Perfil público del nutricionista con URL compartible
+- [x] #7 Perfil público del nutricionista con URL compartible
 - [ ] #8 Integración supermercados con precios reales
 - [ ] #10 Compartir recetas con enlace público o imagen
 - [ ] #13 Exportar historial nutricional completo en PDF/CSV
 - [ ] #14 Onboarding guiado para modo Familia
-- [ ] #15 Correcciones copy landing: año copyright, "cinco módulos" → seis, icono duplicado
+- [x] #15 Correcciones copy landing: año copyright, "cinco módulos" → seis, icono duplicado
 
 ## Lote de mejoras Jun 2026
-- [ ] Mejora 2: Card de check-in semanal pendiente en el Dashboard
+- [x] Mejora 2: Card de check-in semanal pendiente en el Dashboard (ya implementado)
 - [ ] Mejora 3: Resumen semanal automático por notificación push/in-app (lunes)
-- [ ] Mejora 4: Indicador de onboarding progresivo en Dashboard ("Perfil X% completo")
-- [ ] Mejora 5: Modal de registro rápido de comidas desde el Dashboard (sin salir de la pantalla)
+- [x] Mejora 4: Indicador de onboarding progresivo en Dashboard ("Perfil X% completo") (ya implementado)
+- [x] Mejora 5: Modal de registro rápido de comidas desde el Dashboard (sin salir de la pantalla) (ya implementado)
 - [ ] Mejora 6: Sección "Recetas con lo que tienes en casa" cruzando inventario con recetas
 - [ ] Mejora 7: Historial de menús anteriores con adherencia y calorías medias en Mis Menús
 - [ ] Mejora 8: Recordatorio de hidratación en MealNotifications

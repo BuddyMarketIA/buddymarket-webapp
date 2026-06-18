@@ -117,6 +117,9 @@ export default function BuddyExpertDashboard() {
     enabled: !!user && !!myProfile,
     retry: false,
   });
+  // Si myProfile no está cargado aún, plansLoading puede quedar en true indefinidamente
+  // Usamos profileLoading para saber si aún estamos esperando el perfil
+  const plansActuallyLoading = plansLoading && !!myProfile;
 
   const createProfileMutation = trpc.buddyExperts.createProfile.useMutation({
     onSuccess: () => { toast.success("Perfil de experto creado"); refetchProfile(); },
@@ -453,11 +456,11 @@ export default function BuddyExpertDashboard() {
         {activeTab === "/app/profile" && !profileLoading && (
           <form onSubmit={handleSaveProfile} className="bg-background rounded-3xl p-6 shadow-sm border border-border/50 space-y-4">
             <h2 className="text-base font-black text-foreground mb-2">
-              {myProfile ? "Editar perfil de experto" : "Crear perfil de experto"}
+              {myProfile ? "Editar perfil de experto" : "Completa tu perfil de experto"}
             </h2>
             {!myProfile && (
-              <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4 text-sm text-orange-800">
-                <strong>¿Eres nutricionista, dietista o experto en nutrición?</strong> Crea tu perfil para aparecer en la sección BuddyExperts y compartir menús con la comunidad.
+              <div className="bg-blue-50 border border-blue-200 rounded-2xl p-4 text-sm text-blue-800">
+                <strong>¡Bienvenido al panel de experto!</strong> Completa tu perfil para aparecer en la sección BuddyExperts, compartir menús con la comunidad y recibir solicitudes de pacientes.
               </div>
             )}
             <div className="grid grid-cols-1 gap-4">
@@ -606,7 +609,7 @@ export default function BuddyExpertDashboard() {
                 >
                   + Crear nuevo plan nutricional
                 </button>
-                {plansLoading ? (
+                {plansActuallyLoading ? (
                   <div className="space-y-3">
                     {[1,2,3].map(i => <div key={i} className="h-24 bg-muted rounded-2xl animate-pulse" />)}
                   </div>

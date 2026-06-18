@@ -841,7 +841,11 @@ function StepConfirm({ data, setData }: { data: SetupData; setData: React.Dispat
         <SummaryRow
           emoji="🍽️"
           label="Comidas al día"
-          value={`${data.mealTimes.length} comidas (${data.mealTimes.join(", ")})`}
+          value={
+            data.mealTimes.length === 0
+              ? "Sin especificar"
+              : `${data.mealTimes.length} comidas (${data.mealTimes.map(id => MEAL_TIMES.find(m => m.id === id)?.label ?? id).join(", ")})`
+          }
         />
         <SummaryRow
           emoji="⏱️"

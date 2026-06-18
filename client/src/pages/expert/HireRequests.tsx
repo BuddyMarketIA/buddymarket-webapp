@@ -60,10 +60,64 @@ export default function HireRequests() {
           )}
 
           {!isLoading && pending.length === 0 && responded.length === 0 && (
-            <div className="text-center py-16">
-              <div className="text-5xl mb-3">📭</div>
-              <h3 className="font-bold text-foreground mb-1">Sin solicitudes</h3>
-              <p className="text-sm text-muted-foreground">Cuando un paciente solicite tus servicios, aparecerá aquí.</p>
+            <div className="space-y-4">
+              <div className="text-center py-8">
+                <div className="text-5xl mb-3">💭</div>
+                <h3 className="font-bold text-foreground mb-1">Sin solicitudes todavía</h3>
+                <p className="text-sm text-muted-foreground">Cuando un paciente solicite tus servicios, aparecerá aquí.</p>
+              </div>
+              {/* CTA para compartir perfil */}
+              <div className="bg-gradient-to-br from-orange-50 to-amber-50 border border-orange-200 rounded-2xl p-5">
+                <div className="flex items-start gap-3">
+                  <div className="text-2xl">🔗</div>
+                  <div className="flex-1">
+                    <h4 className="font-bold text-foreground text-sm mb-1">¿Cómo conseguir pacientes?</h4>
+                    <p className="text-xs text-muted-foreground leading-relaxed mb-3">
+                      Comparte tu enlace de perfil público para que los pacientes puedan encontrarte y solicitar tus servicios.
+                    </p>
+                    <div className="flex flex-col gap-2">
+                      <button
+                        onClick={() => {
+                          const profileUrl = `${window.location.origin}/experto/${encodeURIComponent((window as any).__expertSlug ?? "")}`;
+                          const shareUrl = `${window.location.origin}/app/buddy-experts`;
+                          if (navigator.share) {
+                            navigator.share({ title: "Mi perfil de experto en BuddyOne", url: shareUrl });
+                          } else {
+                            navigator.clipboard.writeText(shareUrl);
+                            toast.success("¡Enlace copiado al portapapeles!");
+                          }
+                        }}
+                        className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl bg-orange-500 text-white text-sm font-bold hover:bg-orange-600 transition-colors"
+                      >
+                        📱 Compartir mi perfil
+                      </button>
+                      <a
+                        href="/app/buddy-experts"
+                        className="flex items-center justify-center gap-2 w-full py-2.5 rounded-xl border border-orange-300 text-orange-600 text-sm font-medium hover:bg-orange-50 transition-colors"
+                      >
+                        👤 Ver mi perfil público
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              {/* Tips para conseguir pacientes */}
+              <div className="bg-muted/30 rounded-2xl p-4">
+                <h4 className="font-bold text-foreground text-sm mb-2">💡 Consejos para conseguir tus primeros pacientes</h4>
+                <ul className="space-y-1.5">
+                  {[
+                    "Completa tu perfil con foto y descripción detallada",
+                    "Publica menús de muestra para mostrar tu estilo",
+                    "Comparte tu enlace en redes sociales",
+                    "Configura tus precios y servicios en la pestaña Servicios",
+                  ].map((tip, i) => (
+                    <li key={i} className="flex items-start gap-2 text-xs text-muted-foreground">
+                      <span className="text-orange-400 font-bold mt-0.5">•</span>
+                      {tip}
+                    </li>
+                  ))}
+                </ul>
+              </div>
             </div>
           )}
 

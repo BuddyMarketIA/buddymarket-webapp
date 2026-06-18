@@ -347,7 +347,7 @@ function PlanCard({ plan, onCopy, onBuy, alreadyCopied, copying, buying }: {
 }
 
 // ─── Expert profile ───────────────────────────────────────────────────────────
-function ExpertProfile({ id }: { id: number }) {
+function ExpertProfile({ id, isPublicRoute }: { id: number; isPublicRoute?: boolean }) {
   const { user } = useAuth();
   const utils = trpc.useUtils();
 
@@ -406,6 +406,16 @@ function ExpertProfile({ id }: { id: number }) {
 
   const { expert, user: expertUser, plans, menus } = data;
   const isFollowing = followData?.following ?? false;
+  const publicProfileUrl = `${window.location.origin}/experto/${id}`;
+  const isOwnProfile = user && (user as any).buddyExpertId === id;
+
+  const handleShareProfile = () => {
+    if (navigator.share) {
+      navigator.share({ title: `${expert.displayName} - Nutricionista en Buddy One`, text: expert.bio ?? `Consulta el perfil de ${expert.displayName}`, url: publicProfileUrl });
+    } else {
+      navigator.clipboard.writeText(publicProfileUrl).then(() => toast.success("Enlace copiado al portapapeles 🔗"));
+    }
+  };
 
   return (
     <ProfileLayout
@@ -429,6 +439,24 @@ function ExpertProfile({ id }: { id: number }) {
       badge="BuddyExpert"
       badgeColor="from-orange-500 to-red-500"
     >
+      {/* ── Botón compartir perfil público ── */}
+      {(isOwnProfile || isPublicRoute) && (
+        <section>
+          <div className="bg-orange-50 border border-orange-200 rounded-2xl p-4 flex items-center gap-3">
+            <div className="flex-1">
+              <p className="text-sm font-bold text-orange-900">{isPublicRoute ? "Perfil público" : "🔗 Comparte tu perfil público"}</p>
+              <p className="text-xs text-orange-700 mt-0.5 break-all">{publicProfileUrl}</p>
+            </div>
+            <button
+              onClick={handleShareProfile}
+              className="flex-shrink-0 bg-orange-500 text-white text-xs font-bold px-3 py-2 rounded-xl hover:bg-orange-600 transition-colors"
+            >
+              {isPublicRoute ? "🔗 Compartir" : "🔗 Copiar enlace"}
+            </button>
+          </div>
+        </section>
+      )}
+
       {/* ── Planes de contratación de servicio ── SIEMPRE VISIBLE ── */}
       <section>
         <div className="flex items-center justify-between mb-3">
@@ -1201,6 +1229,7 @@ function ExpertReviewsSection({ expertId, expertPatientId }: { expertId: number;
 export default function BuddyProfile() {
   const [matchExpert, paramsExpert] = useRoute("/app/buddy-experts/:id");
   const [matchMaker, paramsMaker] = useRoute("/app/buddy-makers/:id");
+  const [matchPublicExpert, paramsPublicExpert] = useRoute("/experto/:id");
 
   if (matchExpert && paramsExpert?.id) {
     const id = parseInt(paramsExpert.id);
@@ -1209,6 +1238,10 @@ export default function BuddyProfile() {
   if (matchMaker && paramsMaker?.id) {
     const id = parseInt(paramsMaker.id);
     if (!isNaN(id)) return <MakerProfile id={id} />;
+  }
+  if (matchPublicExpert && paramsPublicExpert?.id) {
+    const id = parseInt(paramsPublicExpert.id);
+    if (!isNaN(id)) return <ExpertProfile id={id} isPublicRoute />;
   }
   return <NotFound type="perfil" />;
 }
