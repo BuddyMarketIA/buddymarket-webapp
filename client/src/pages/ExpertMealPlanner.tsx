@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useCallback, useEffect } from "react";
 import { useLocation } from "wouter";
 import {
   DndContext,
@@ -222,14 +222,43 @@ export default function ExpertMealPlanner() {
   const [checkedItems, setCheckedItems] = useState<Set<string>>(new Set());
   const [shoppingListEnabled, setShoppingListEnabled] = useState(false);
 
-  // Artículos manuales de la lista de la compra
+  // Artículos manuales de la lista de la compra (persistidos en localStorage por plan)
   interface ManualItem { id: string; name: string; amount: string; unit: string; category: string; }
+
+  const getManualItemsKey = (planId: number) => `buddymarket_manual_items_plan_${planId}`;
+
+  const loadManualItems = (planId: number): ManualItem[] => {
+    try {
+      const raw = localStorage.getItem(getManualItemsKey(planId));
+      return raw ? (JSON.parse(raw) as ManualItem[]) : [];
+    } catch {
+      return [];
+    }
+  };
+
+  const saveManualItems = (planId: number, items: ManualItem[]) => {
+    try {
+      localStorage.setItem(getManualItemsKey(planId), JSON.stringify(items));
+    } catch {
+      // storage unavailable — silently ignore
+    }
+  };
+
   const [manualItems, setManualItems] = useState<ManualItem[]>([]);
   const [showAddManualForm, setShowAddManualForm] = useState(false);
   const [manualName, setManualName] = useState("");
   const [manualAmount, setManualAmount] = useState("");
   const [manualUnit, setManualUnit] = useState("ud");
   const [manualCategory, setManualCategory] = useState("Otros");
+
+  // Cargar artículos manuales guardados cuando cambia el plan seleccionado
+  useEffect(() => {
+    if (selectedPlanId) {
+      setManualItems(loadManualItems(selectedPlanId));
+    } else {
+      setManualItems([]);
+    }
+  }, [selectedPlanId]);
 
   // Plantillas
   const [showSaveTemplateModal, setShowSaveTemplateModal] = useState(false);
@@ -574,7 +603,6 @@ export default function ExpertMealPlanner() {
                       variant="outline"
                       onClick={() => {
                         setCheckedItems(new Set());
-                        setManualItems([]);
                         setShowAddManualForm(false);
                         setManualName("");
                         setManualAmount("");
@@ -1086,7 +1114,6 @@ export default function ExpertMealPlanner() {
         setShowShoppingListModal(open);
         if (!open) {
           setShoppingListEnabled(false);
-          setManualItems([]);
           setShowAddManualForm(false);
         }
       }}>
@@ -1271,7 +1298,11 @@ export default function ExpertMealPlanner() {
                                 unit: manualUnit,
                                 category: manualCategory,
                               };
-                              setManualItems(prev => [...prev, newItem]);
+                              setManualItems(prev => {
+                                const updated = [...prev, newItem];
+                                if (selectedPlanId) saveManualItems(selectedPlanId, updated);
+                                return updated;
+                              });
                               setManualName("");
                               setManualAmount("");
                               setManualUnit("ud");
@@ -1338,7 +1369,11 @@ export default function ExpertMealPlanner() {
                                 unit: manualUnit,
                                 category: manualCategory,
                               };
-                              setManualItems(prev => [...prev, newItem]);
+                              setManualItems(prev => {
+                                const updated = [...prev, newItem];
+                                if (selectedPlanId) saveManualItems(selectedPlanId, updated);
+                                return updated;
+                              });
                               setManualName("");
                               setManualAmount("");
                               setManualUnit("ud");
@@ -1411,7 +1446,11 @@ export default function ExpertMealPlanner() {
                               <button
                                 onClick={(e) => {
                                   e.stopPropagation();
-                                  setManualItems(prev => prev.filter(mi => mi.id !== item.id));
+                                  setManualItems(prev => {
+                                    const updated = prev.filter(mi => mi.id !== item.id);
+                                    if (selectedPlanId) saveManualItems(selectedPlanId, updated);
+                                    return updated;
+                                  });
                                   const newSet = new Set(checkedItems);
                                   newSet.delete(itemKey);
                                   setCheckedItems(newSet);
