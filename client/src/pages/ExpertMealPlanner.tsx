@@ -1152,16 +1152,14 @@ export default function ExpertMealPlanner() {
                   </div>
                   <div className="text-center">
                     <p className="text-2xl font-bold text-blue-500">
-                      {shoppingListData.categorizedList.length}
+                      {(() => {
+                        const cats = new Set(shoppingListData.categorizedList.map((c: { category: string }) => c.category));
+                        manualItems.forEach(mi => cats.add(mi.category));
+                        return cats.size;
+                      })()}
                     </p>
                     <p className="text-xs text-gray-500">categorías</p>
                   </div>
-                  {manualItems.length > 0 && (
-                    <div className="text-center">
-                      <p className="text-2xl font-bold text-purple-500">{manualItems.length}</p>
-                      <p className="text-xs text-gray-500">añadidos</p>
-                    </div>
-                  )}
                   {checkedItems.size > 0 && (
                     <div className="ml-auto text-center">
                       <p className="text-2xl font-bold text-gray-400">{checkedItems.size}/{shoppingListData.totalItems + manualItems.length}</p>
@@ -1170,78 +1168,139 @@ export default function ExpertMealPlanner() {
                   )}
                 </div>
 
-                {/* Lista por categorías */}
-                {shoppingListData.categorizedList.length === 0 ? (
-                  <div className="text-center py-8">
-                    <ShoppingCart className="w-12 h-12 text-gray-200 mx-auto mb-3" />
-                    <p className="text-gray-400 text-sm">No se encontraron ingredientes en este plan.</p>
-                    <p className="text-gray-300 text-xs mt-1">
-                      Asegúrate de que las recetas tienen ingredientes definidos.
-                    </p>
-                  </div>
-                ) : (
-                  shoppingListData.categorizedList.map((cat: {
-                    category: string;
-                    items: Array<{ name: string; amount: number; unit: string; recipeCount: number; recipeNames: string[] }>;
-                  }) => (
-                    <div key={cat.category} className="mb-4">
-                      <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 px-1 flex items-center gap-2">
-                        <span className="flex-1 border-b border-gray-100 pb-1">{cat.category}</span>
-                        <span className="text-gray-300 font-normal normal-case tracking-normal">
-                          {cat.items.filter((item: { name: string }) => checkedItems.has(`${cat.category}-${item.name}`)).length}/{cat.items.length}
-                        </span>
-                      </h4>
-                      <div className="space-y-1">
-                        {cat.items.map((item: { name: string; amount: number; unit: string; recipeCount: number; recipeNames: string[] }) => {
-                          const itemKey = `${cat.category}-${item.name}`;
-                          const isChecked = checkedItems.has(itemKey);
-                          return (
-                            <div
-                              key={itemKey}
-                              className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors ${
-                                isChecked ? "bg-gray-50 opacity-60" : "hover:bg-gray-50"
-                              }`}
-                              onClick={() => {
-                                const newSet = new Set(checkedItems);
-                                if (isChecked) newSet.delete(itemKey);
-                                else newSet.add(itemKey);
-                                setCheckedItems(newSet);
-                              }}
-                            >
-                              <Checkbox
-                                checked={isChecked}
-                                onCheckedChange={(checked) => {
+                {/* Lista por categorías — recetas + artículos manuales mezclados */}
+                {(() => {
+                  // Construir mapa de categorías con artículos manuales inyectados
+                  const CATEGORY_ORDER = [
+                    "Frutas", "Verduras y hortalizas", "Carnes", "Pescados y mariscos",
+                    "Lácteos", "Huevos", "Cereales y harinas", "Legumbres", "Frutos secos",
+                    "Aceites y grasas", "Condimentos y especias", "Bebidas", "Congelados",
+                    "Conservas", "Limpieza y hogar", "Otros",
+                  ];
+                  // Categorías de recetas
+                  const recipeCategories: Record<string, { fromRecipe: true; name: string; amount: number; unit: string; recipeCount: number; recipeNames: string[] }[]> = {};
+                  shoppingListData.categorizedList.forEach((cat: { category: string; items: Array<{ name: string; amount: number; unit: string; recipeCount: number; recipeNames: string[] }> }) => {
+                    recipeCategories[cat.category] = cat.items.map(i => ({ ...i, fromRecipe: true as const }));
+                  });
+                  // Inyectar artículos manuales en su categoría
+                  const allCategories: Record<string, { fromRecipe: boolean; id?: string; name: string; amount: number | string; unit: string; recipeCount?: number; recipeNames?: string[] }[]> = { ...recipeCategories };
+                  manualItems.forEach((mi) => {
+                    if (!allCategories[mi.category]) allCategories[mi.category] = [];
+                    allCategories[mi.category] = [...allCategories[mi.category], { fromRecipe: false, id: mi.id, name: mi.name, amount: mi.amount, unit: mi.unit }];
+                  });
+                  // Ordenar categorías según el orden predefinido
+                  const sortedCategories = Object.keys(allCategories).sort((a, b) => {
+                    const ia = CATEGORY_ORDER.indexOf(a);
+                    const ib = CATEGORY_ORDER.indexOf(b);
+                    if (ia === -1 && ib === -1) return a.localeCompare(b);
+                    if (ia === -1) return 1;
+                    if (ib === -1) return -1;
+                    return ia - ib;
+                  });
+                  const totalCombined = shoppingListData.totalItems + manualItems.length;
+                  if (sortedCategories.length === 0) return (
+                    <div className="text-center py-8">
+                      <ShoppingCart className="w-12 h-12 text-gray-200 mx-auto mb-3" />
+                      <p className="text-gray-400 text-sm">No se encontraron ingredientes en este plan.</p>
+                      <p className="text-gray-300 text-xs mt-1">Asegúrate de que las recetas tienen ingredientes definidos.</p>
+                    </div>
+                  );
+                  return sortedCategories.map((catName) => {
+                    const items = allCategories[catName];
+                    const checkedCount = items.filter(item =>
+                      item.fromRecipe
+                        ? checkedItems.has(`${catName}-${item.name}`)
+                        : checkedItems.has(`manual-${item.id}`)
+                    ).length;
+                    return (
+                      <div key={catName} className="mb-4">
+                        <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-2 px-1 flex items-center gap-2">
+                          <span className="flex-1 border-b border-gray-100 pb-1">{catName}</span>
+                          <span className="text-gray-300 font-normal normal-case tracking-normal">
+                            {checkedCount}/{items.length}
+                          </span>
+                        </h4>
+                        <div className="space-y-1">
+                          {items.map((item) => {
+                            const itemKey = item.fromRecipe ? `${catName}-${item.name}` : `manual-${item.id}`;
+                            const isChecked = checkedItems.has(itemKey);
+                            return (
+                              <div
+                                key={itemKey}
+                                className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors group ${
+                                  isChecked ? "bg-gray-50 opacity-60" : "hover:bg-gray-50"
+                                }`}
+                                onClick={() => {
                                   const newSet = new Set(checkedItems);
-                                  if (checked) newSet.add(itemKey);
-                                  else newSet.delete(itemKey);
+                                  if (isChecked) newSet.delete(itemKey);
+                                  else newSet.add(itemKey);
                                   setCheckedItems(newSet);
                                 }}
-                                onClick={(e) => e.stopPropagation()}
-                                className="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
-                              />
-                              <div className="flex-1 min-w-0">
-                                <span className={`text-sm ${isChecked ? "line-through text-gray-400" : "text-gray-700"}`}>
-                                  {item.name}
-                                </span>
-                                {item.recipeNames.length > 0 && (
-                                  <p className="text-xs text-gray-400 truncate" title={item.recipeNames.join(", ")}>
-                                    {item.recipeNames.slice(0, 2).join(", ")}
-                                    {item.recipeNames.length > 2 ? ` +${item.recipeNames.length - 2}` : ""}
-                                  </p>
-                                )}
+                              >
+                                <Checkbox
+                                  checked={isChecked}
+                                  onCheckedChange={(checked) => {
+                                    const newSet = new Set(checkedItems);
+                                    if (checked) newSet.add(itemKey);
+                                    else newSet.delete(itemKey);
+                                    setCheckedItems(newSet);
+                                  }}
+                                  onClick={(e) => e.stopPropagation()}
+                                  className="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
+                                />
+                                <div className="flex-1 min-w-0">
+                                  <span className={`text-sm ${isChecked ? "line-through text-gray-400" : "text-gray-700"}`}>
+                                    {item.name}
+                                  </span>
+                                  {item.fromRecipe && item.recipeNames && item.recipeNames.length > 0 && (
+                                    <p className="text-xs text-gray-400 truncate" title={item.recipeNames.join(", ")}>
+                                      {item.recipeNames.slice(0, 2).join(", ")}
+                                      {item.recipeNames.length > 2 ? ` +${item.recipeNames.length - 2}` : ""}
+                                    </p>
+                                  )}
+                                  {!item.fromRecipe && (
+                                    <p className="text-xs text-purple-400">Añadido manualmente</p>
+                                  )}
+                                </div>
+                                <div className="text-right flex-shrink-0 flex items-center gap-2">
+                                  {item.fromRecipe ? (
+                                    <span className={`text-sm font-medium ${isChecked ? "text-gray-400" : "text-gray-600"}`}>
+                                      {(item.amount as number) > 0 ? `${item.amount} ${item.unit}` : item.unit}
+                                    </span>
+                                  ) : (
+                                    (item.amount || item.unit !== "ud") && (
+                                      <span className={`text-sm font-medium ${isChecked ? "text-gray-400" : "text-gray-600"}`}>
+                                        {item.amount ? `${item.amount} ${item.unit}` : item.unit}
+                                      </span>
+                                    )
+                                  )}
+                                  {!item.fromRecipe && (
+                                    <button
+                                      onClick={(e) => {
+                                        e.stopPropagation();
+                                        setManualItems(prev => {
+                                          const updated = prev.filter(mi => mi.id !== item.id);
+                                          if (selectedPlanId) saveManualItems(selectedPlanId, updated);
+                                          return updated;
+                                        });
+                                        const newSet = new Set(checkedItems);
+                                        newSet.delete(itemKey);
+                                        setCheckedItems(newSet);
+                                      }}
+                                      className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-red-100 transition-all"
+                                    >
+                                      <X className="w-3 h-3 text-red-400" />
+                                    </button>
+                                  )}
+                                </div>
                               </div>
-                              <div className="text-right flex-shrink-0">
-                                <span className={`text-sm font-medium ${isChecked ? "text-gray-400" : "text-gray-600"}`}>
-                                  {item.amount > 0 ? `${item.amount} ${item.unit}` : item.unit}
-                                </span>
-                              </div>
-                            </div>
-                          );
-                        })}
+                            );
+                          })}
+                        </div>
                       </div>
-                    </div>
-                  ))
-                )}
+                    );
+                  });
+                })()}
 
                 {/* Comidas personalizadas sin receta */}
                 {shoppingListData.customMeals && shoppingListData.customMeals.length > 0 && (
@@ -1259,29 +1318,18 @@ export default function ExpertMealPlanner() {
                   </div>
                 )}
 
-                {/* ── Artículos añadidos manualmente ─────────────────────── */}
-                <div className="mt-4">
-                  <div className="flex items-center justify-between mb-2 px-1">
-                    <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wide flex items-center gap-2">
-                      <span className="flex-1 border-b border-gray-100 pb-1">Artículos adicionales</span>
-                      {manualItems.length > 0 && (
-                        <span className="text-gray-300 font-normal normal-case tracking-normal">
-                          {manualItems.filter(mi => checkedItems.has(`manual-${mi.id}`)).length}/{manualItems.length}
-                        </span>
-                      )}
-                    </h4>
+                {/* Botón para añadir artículo manual — siempre visible al final */}
+                <div className="mt-4 border-t border-gray-100 pt-3">
+                  {!showAddManualForm ? (
                     <button
-                      onClick={() => setShowAddManualForm(!showAddManualForm)}
-                      className="flex items-center gap-1 text-xs text-green-600 hover:text-green-700 font-medium ml-2 flex-shrink-0"
+                      onClick={() => setShowAddManualForm(true)}
+                      className="w-full flex items-center justify-center gap-2 py-2 text-xs text-green-600 hover:text-green-700 hover:bg-green-50 rounded-lg border-2 border-dashed border-green-200 hover:border-green-300 transition-colors font-medium"
                     >
                       <Plus className="w-3 h-3" />
-                      Añadir artículo
+                      Añadir artículo adicional
                     </button>
-                  </div>
-
-                  {/* Formulario de añadir artículo manual */}
-                  {showAddManualForm && (
-                    <div className="mb-3 p-3 bg-green-50 rounded-lg border border-green-100">
+                  ) : (
+                    <div className="p-3 bg-green-50 rounded-lg border border-green-100">
                       <p className="text-xs font-medium text-green-700 mb-2">Nuevo artículo</p>
                       <div className="space-y-2">
                         <Input
@@ -1388,83 +1436,6 @@ export default function ExpertMealPlanner() {
                       </div>
                     </div>
                   )}
-
-                  {/* Lista de artículos manuales */}
-                  {manualItems.length === 0 && !showAddManualForm ? (
-                    <div className="text-center py-4 border-2 border-dashed border-gray-100 rounded-lg">
-                      <p className="text-xs text-gray-400">
-                        Añade productos extra que no están en las recetas
-                      </p>
-                      <button
-                        onClick={() => setShowAddManualForm(true)}
-                        className="text-xs text-green-500 hover:text-green-600 mt-1 font-medium"
-                      >
-                        + Añadir primer artículo
-                      </button>
-                    </div>
-                  ) : (
-                    <div className="space-y-1">
-                      {manualItems.map((item) => {
-                        const itemKey = `manual-${item.id}`;
-                        const isChecked = checkedItems.has(itemKey);
-                        return (
-                          <div
-                            key={item.id}
-                            className={`flex items-center gap-3 p-2 rounded-lg cursor-pointer transition-colors group ${
-                              isChecked ? "bg-gray-50 opacity-60" : "hover:bg-gray-50"
-                            }`}
-                            onClick={() => {
-                              const newSet = new Set(checkedItems);
-                              if (isChecked) newSet.delete(itemKey);
-                              else newSet.add(itemKey);
-                              setCheckedItems(newSet);
-                            }}
-                          >
-                            <Checkbox
-                              checked={isChecked}
-                              onCheckedChange={(checked) => {
-                                const newSet = new Set(checkedItems);
-                                if (checked) newSet.add(itemKey);
-                                else newSet.delete(itemKey);
-                                setCheckedItems(newSet);
-                              }}
-                              onClick={(e) => e.stopPropagation()}
-                              className="data-[state=checked]:bg-green-500 data-[state=checked]:border-green-500"
-                            />
-                            <div className="flex-1 min-w-0">
-                              <span className={`text-sm ${isChecked ? "line-through text-gray-400" : "text-gray-700"}`}>
-                                {item.name}
-                              </span>
-                              <p className="text-xs text-purple-400">{item.category}</p>
-                            </div>
-                            <div className="text-right flex-shrink-0 flex items-center gap-2">
-                              {(item.amount || item.unit !== "ud") && (
-                                <span className={`text-sm font-medium ${isChecked ? "text-gray-400" : "text-gray-600"}`}>
-                                  {item.amount ? `${item.amount} ${item.unit}` : item.unit}
-                                </span>
-                              )}
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setManualItems(prev => {
-                                    const updated = prev.filter(mi => mi.id !== item.id);
-                                    if (selectedPlanId) saveManualItems(selectedPlanId, updated);
-                                    return updated;
-                                  });
-                                  const newSet = new Set(checkedItems);
-                                  newSet.delete(itemKey);
-                                  setCheckedItems(newSet);
-                                }}
-                                className="opacity-0 group-hover:opacity-100 p-0.5 rounded hover:bg-red-100 transition-all"
-                              >
-                                <X className="w-3 h-3 text-red-400" />
-                              </button>
-                            </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  )}
                 </div>
               </div>
             ) : (
@@ -1482,23 +1453,37 @@ export default function ExpertMealPlanner() {
                 if (!shoppingListData) return;
                 let text = `Lista de la compra — ${shoppingListData.planTitle}\n`;
                 text += `Generada el ${new Date().toLocaleDateString("es-ES")}\n\n`;
-                shoppingListData.categorizedList.forEach((cat: {
-                  category: string;
-                  items: Array<{ name: string; amount: number; unit: string }>;
-                }) => {
-                  text += `── ${cat.category.toUpperCase()} ──\n`;
+                // Merge recipe categories with manual items
+                const CATEGORY_ORDER_EXPORT = [
+                  "Frutas", "Verduras y hortalizas", "Carnes", "Pescados y mariscos",
+                  "Lácteos", "Huevos", "Cereales y harinas", "Legumbres", "Frutos secos",
+                  "Aceites y grasas", "Condimentos y especias", "Bebidas", "Congelados",
+                  "Conservas", "Limpieza y hogar", "Otros",
+                ];
+                const mergedExport: Record<string, string[]> = {};
+                shoppingListData.categorizedList.forEach((cat: { category: string; items: Array<{ name: string; amount: number; unit: string }> }) => {
+                  if (!mergedExport[cat.category]) mergedExport[cat.category] = [];
                   cat.items.forEach((item: { name: string; amount: number; unit: string }) => {
-                    text += `  • ${item.name}: ${item.amount > 0 ? `${item.amount} ${item.unit}` : item.unit}\n`;
+                    mergedExport[cat.category].push(`  • ${item.name}: ${item.amount > 0 ? `${item.amount} ${item.unit}` : item.unit}`);
                   });
+                });
+                manualItems.forEach((item) => {
+                  if (!mergedExport[item.category]) mergedExport[item.category] = [];
+                  mergedExport[item.category].push(`  • ${item.name}${item.amount ? `: ${item.amount} ${item.unit}` : ""} (añadido)`);
+                });
+                const sortedExportCats = Object.keys(mergedExport).sort((a, b) => {
+                  const ia = CATEGORY_ORDER_EXPORT.indexOf(a);
+                  const ib = CATEGORY_ORDER_EXPORT.indexOf(b);
+                  if (ia === -1 && ib === -1) return a.localeCompare(b);
+                  if (ia === -1) return 1;
+                  if (ib === -1) return -1;
+                  return ia - ib;
+                });
+                sortedExportCats.forEach((cat) => {
+                  text += `── ${cat.toUpperCase()} ──\n`;
+                  mergedExport[cat].forEach(line => { text += line + "\n"; });
                   text += "\n";
                 });
-                if (manualItems.length > 0) {
-                  text += `── ARTÍCULOS ADICIONALES ──\n`;
-                  manualItems.forEach((item) => {
-                    text += `  • ${item.name}${item.amount ? `: ${item.amount} ${item.unit}` : ""}\n`;
-                  });
-                  text += "\n";
-                }
                 navigator.clipboard.writeText(text).then(() => {
                   toast({ title: "✅ Lista copiada", description: "La lista de la compra está en tu portapapeles" });
                 });
