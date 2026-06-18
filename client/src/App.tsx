@@ -218,17 +218,38 @@ function WithLayout({ component: Component, ...props }: { component: React.Compo
 }
 
 // Protects app routes — redirects to /login if not authenticated
+// Also redirects to /register if user hasn't completed registration
 function ProtectedRoute({ component: Component, params }: { component: React.ComponentType<any>; params?: any }) {
   const { user, loading } = useAuth();
+  const [location] = useLocation();
   if (loading) return <PageLoader />;
   if (!user) return <Redirect to="/login" />;
+  // Redirect to registration wizard if not completed
+  // onboardingCompleted takes priority: if true, user has fully set up their account
+  const step = (user as any).registrationStep ?? "account_type";
+  const completed = (user as any).onboardingCompleted ?? false;
+  const isRegRoute = location.startsWith("/register") || location.startsWith("/buddy-setup");
+  // Only redirect if: not completed AND registrationStep is not completed AND not already on reg route
+  if (!completed && step !== "completed" && step !== "profile_setup" && !isRegRoute) {
+    return <Redirect to="/register" />;
+  }
   return <WithLayout component={Component} params={params} />;
 }
 
 function ProtectedPage({ children }: { children: React.ReactNode }) {
   const { user, loading } = useAuth();
+  const [location] = useLocation();
   if (loading) return <PageLoader />;
   if (!user) return <Redirect to="/login" />;
+  // Redirect to registration wizard if not completed
+  // onboardingCompleted takes priority: if true, user has fully set up their account
+  const step = (user as any).registrationStep ?? "account_type";
+  const completed = (user as any).onboardingCompleted ?? false;
+  const isRegRoute = location.startsWith("/register") || location.startsWith("/buddy-setup");
+  // Only redirect if: not completed AND registrationStep is not completed AND not already on reg route
+  if (!completed && step !== "completed" && step !== "profile_setup" && !isRegRoute) {
+    return <Redirect to="/register" />;
+  }
   return <>{children}</>;
 }
 

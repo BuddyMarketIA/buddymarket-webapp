@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import { useLocation } from "wouter";
 import { useTheme } from "@/contexts/ThemeContext";
 import NutritionalCalculatorSection from "@/components/NutritionalCalculatorSection";
 import HabitsChecklistSection from "@/components/HabitsChecklistSection";
@@ -293,10 +294,24 @@ export default function LandingPage() {
   const C = isDark ? DARK_COLORS : LIGHT_COLORS;
   const { user, loading: authLoading } = useAuth();
   const isLoggedIn = !authLoading && !!user;
+  const [, setLocation] = useLocation();
   const createCheckout = trpc.subscriptions.createCheckout.useMutation();
   const appUrl = window.location.origin;
   const loginUrl = `${appUrl}/login`;
   const dashboardUrl = `${appUrl}/app/dashboard`;
+
+  // Auto-redirect authenticated users who haven't completed registration to /register
+  // Skip if user is in profile_setup (they may be completing BuddySetup)
+  useEffect(() => {
+    if (!authLoading && user) {
+      const step = (user as any).registrationStep ?? "account_type";
+      const completed = (user as any).onboardingCompleted ?? false;
+      // Only redirect if user is at account_type step (never selected a type)
+      if (!completed && step === "account_type") {
+        setLocation("/register");
+      }
+    }
+  }, [authLoading, user, setLocation]);
 
   const [mobileOpen, setMobileOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);

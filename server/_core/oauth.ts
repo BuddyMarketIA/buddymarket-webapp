@@ -70,7 +70,31 @@ export function registerOAuthRoutes(app: Express) {
       const cookieOptions = getSessionCookieOptions(req);
       res.cookie(COOKIE_NAME, sessionToken, { ...cookieOptions, maxAge: ONE_YEAR_MS });
 
-      res.redirect(302, "/");
+      // Determine redirect destination based on registration state
+      // Load the user to check registrationStep
+      const user = await db.getUserByOpenId(userInfo.openId);
+      const registrationStep = (user as any)?.registrationStep ?? "account_type";
+      const onboardingCompleted = (user as any)?.onboardingCompleted ?? false;
+
+      // Parse returnPath from state if present (format: "<origin>|<returnPath>")
+      let returnPath = "/";
+      try {
+        const stateDecoded = Buffer.from(state, "base64").toString("utf8");
+        const parsed = JSON.parse(stateDecoded);
+        if (parsed.returnPath && typeof parsed.returnPath === "string") {
+          returnPath = parsed.returnPath;
+        }
+      } catch {
+        // state is not JSON, ignore
+      }
+
+      // If user hasn't completed registration, always send to /register
+      // (unless they were going somewhere specific like /empresas or /register/*)
+      const isRegistrationRoute = returnPath.startsWith("/register");
+      const shouldGoToRegister = !onboardingCompleted && registrationStep !== "completed" && !isRegistrationRoute;
+      const finalDest = shouldGoToRegister ? "/register" : (returnPath || "/");
+
+      res.redirect(302, finalDest);
     } catch (error) {
       console.error("[OAuth] Callback failed", error);
       // Redirect to login page with error instead of showing a raw JSON error
