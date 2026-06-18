@@ -3942,3 +3942,80 @@
 - [x] Notificación real al owner cuando se completa un nuevo registro (conectar notifyOwner al flujo de alta en upsertUser)
 - [x] Exportación completa de datos del perfil (backend endpoint + UI en Settings.tsx con todos los datos del usuario) (users.exportMyData endpoint + descarga JSON en Settings.tsx)
 - [ ] #8 Integración supermercados con precios reales (pendiente de API de supermercados)
+
+## Sprint Mega - Jun 2026 (sesión actual)
+
+### Panel Experto — Tab Evolución mejorado
+- [ ] Medidas antropométricas completas: cintura, cadera, brazo, muslo, pecho (gráficas Chart.js)
+- [ ] Métricas clínicas avanzadas: tensión sistólica/diastólica, glucosa, colesterol total/HDL/LDL
+- [ ] Gráficas de evolución multi-línea con selector de rango temporal (1m, 3m, 6m, 1a)
+- [ ] Alertas inteligentes automáticas: inactividad >7 días, subida de peso >2kg, sin cita programada >30 días
+- [ ] Dashboard expert: métricas de negocio (nº pacientes activos, ingresos mes, valoración media, retención)
+
+### Panel Paciente (MyExpert) — Nuevos tabs
+- [ ] Tab "Diario": registro diario de peso, energía (1-10), adherencia (%), síntomas, fotos
+- [ ] Tab "Mi Plan": visualización mejorada del plan nutricional con recetas enlazadas y progreso
+- [ ] Tab "Pagos": historial de facturas descargables del paciente
+- [ ] Registro de peso diario desde dashboard del paciente (widget rápido)
+- [ ] Notificación cuando el expert sube un documento o actualiza el plan
+
+### Lista de la compra — Mejoras inteligentes
+- [ ] Selector de tamaños de envase por item (variantes: 500g, 1kg, pack 6ud, etc.)
+- [ ] Motor de matching inteligente: sinónimos/alias (jamón→jamón serrano lonchas), normalización tildes
+- [ ] Fallback por categoría si no hay match exacto
+- [ ] Mostrar nombre normalizado del producto junto al original
+
+### Menús IA — Mejoras de gestión
+- [ ] Indicador visual "Generado por IA" en menú guardado (badge/chip)
+- [ ] Guardar automáticamente menú generado en "Mis Menús" con categoría
+- [ ] Editar nombre del menú desde Mis Menús
+- [ ] Duplicar/reutilizar menú existente
+- [ ] Eliminar menú desde Mis Menús
+
+### BuddyProfile — Stripe checkout
+- [ ] Planes de pago (price > 0) abren Stripe checkout en lugar de copyPlan
+
+### Sistema de Campañas de Email (Resend)
+- [ ] Schema DB: tablas emailContacts, emailLists, emailCampaigns, emailCampaignSends
+- [ ] Backend: router emailCampaigns (CRUD contactos, listas, campañas, envío masivo con Resend)
+- [ ] Frontend: página admin Campañas con listado, estadísticas y editor HTML
+- [ ] Frontend: gestión de contactos y listas (importar CSV, añadir manual)
+- [ ] Templates: email BuddyOne branded (bienvenida, newsletter, promoción)
+
+### Modo Hogar — Menús familiares + QR
+- [ ] Menús familiares por persona (Menú niños / Menú adultos / Menú por condición médica)
+- [ ] Nutrición infantil conectada con perfiles del hogar
+- [ ] Invitación por QR al hogar (generar QR con token de invitación)
+- [ ] Health Hub centralizado (métricas, documentos, diario, evolución en una sola página)
+
+### BD Ingredientes Nutricionales
+- [ ] Schema BD: tabla ingredientNutrition (calorías, proteínas, carbos, grasas, fibra, azúcares, sodio por 100g)
+- [ ] Generar 500 ingredientes base con valores nutricionales
+- [ ] Vincular ingredientes de recetas con la tabla de nutrición
+- [ ] UI: mostrar nutrición calculada desde BD en RecipeDetail
+
+### Carrusel de Recomendaciones en Dashboard
+- [ ] Componente RecommendationsCarousel (3-5 recomendaciones, auto-rotación 5s)
+- [ ] Integrar en Home.tsx debajo del greeting
+- [ ] Tracking de impressions y clicks (CTR)
+
+## Sprint Jun 2026 - Mega Sprint
+
+- [x] Panel Experto: Tab Evolución mejorado con campos brazo/muslo/pecho en modal de progreso
+- [x] Panel Experto: Dashboard de métricas de negocio en ExpertProfessionalDashboard (ingresos, retención, pacientes activos)
+- [x] Panel Experto: Router expertBilling con endpoints getBusinessMetrics, listInvoices, getSummary, createInvoice, updateStatus, deleteInvoice
+- [x] Panel Experto: Tabla expertInvoices en BD con migración aplicada
+- [x] Panel Paciente (MyExpert): Tabla patientDailyLog en BD (peso, energía, ánimo, sueño, agua, síntomas)
+- [x] Panel Paciente (MyExpert): Router patientDiary con endpoints logDay, getHistory, getStats
+- [x] Panel Paciente (MyExpert): Vista "Diario" en MyExpert con formulario de registro diario
+- [x] Panel Paciente (MyExpert): Vista "Pagos" en MyExpert con historial de facturas descargables
+- [x] Panel Paciente (MyExpert): Botones de acceso rápido a Diario y Pagos en dashboard de MyExpert
+- [x] Lista de la compra: Campo packageSize añadido a shoppingListItems en BD
+- [x] Lista de la compra: Endpoint updateItem actualizado para aceptar packageSize
+- [x] Lista de la compra: Modal de selector de tamaño de envase en ShoppingLists (250ml, 500ml, 1L, etc.)
+- [x] Menús IA: Indicador visual "Generado por IA" en tarjetas de menú en Menus.tsx
+- [x] Menús IA: Auto-guardado al generar menú en BuddyIA (GeneratedMenuViewer)
+- [x] Dashboard: Carrusel de recomendaciones con auto-rotación cada 4s, dot indicators y tracking de CTR
+- [x] Modo Hogar: Página Household.tsx registrada en App.tsx (/app/household)
+- [x] Modo Hogar: Enlace "Modo Hogar" añadido en sidebar de AppLayout (sección Familia)
+- [x] BD Ingredientes: 231 ingredientes nutricionales en ingredient_nutrition (38 verduras, 35 condimentos, 27 frutas, 22 lácteos, 21 cereales, 18 pescados, 15 carnes, 12 legumbres...)

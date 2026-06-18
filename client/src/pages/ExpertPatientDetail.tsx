@@ -85,6 +85,7 @@ export default function ExpertPatientDetail() {
   const [expandedDiaryDay, setExpandedDiaryDay] = useState<string | null>(null);
 
   // Formulario de progreso
+  const [progressRangeFilter, setProgressRangeFilter] = useState<"1m" | "3m" | "6m" | "1a">("3m");
   const [progressForm, setProgressForm] = useState({
     weight: "", bodyFat: "", muscleMass: "", waist: "", hip: "", chest: "", arm: "", thigh: "", notes: "",
   });
@@ -1045,31 +1046,120 @@ export default function ExpertPatientDetail() {
               </Button>
             </div>
 
-            {/* Gráfico de peso con Recharts */}
-            {combinedWeightData.length > 1 && (
-              <div className="p-4 bg-background rounded-xl border border-border mb-4">
-                <h4 className="text-sm font-semibold text-foreground/80 mb-3">📈 Evolución del peso y composición corporal</h4>
-                <ResponsiveContainer width="100%" height={220}>
-                  <LineChart data={combinedWeightData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
-                    <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
-                    <XAxis dataKey="date" tick={{ fontSize: 11 }} />
-                    <YAxis tick={{ fontSize: 11 }} />
-                    <Tooltip
-                      contentStyle={{ borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: "12px" }}
-                      formatter={(value: number, name: string) => [`${value} ${name === "Peso" || name === "Músculo" ? "kg" : "%"}`, name]}
-                    />
-                    <Legend wrapperStyle={{ fontSize: "12px" }} />
-                    <Line type="monotone" dataKey="Peso" stroke="#f97316" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
-                    {progressRecords.some(r => r.bodyFat) && (
-                      <Line type="monotone" dataKey="Grasa" stroke="#3b82f6" strokeWidth={2} dot={{ r: 3 }} strokeDasharray="5 5" />
-                    )}
-                    {progressRecords.some(r => r.muscleMass) && (
-                      <Line type="monotone" dataKey="Músculo" stroke="#10b981" strokeWidth={2} dot={{ r: 3 }} strokeDasharray="5 5" />
-                    )}
-                  </LineChart>
-                </ResponsiveContainer>
+            {/* Selector de rango temporal */}
+            {progressRecords.length > 1 && (
+              <div className="flex gap-2 mb-3">
+                {(["1m", "3m", "6m", "1a"] as const).map(r => (
+                  <button key={r} onClick={() => setProgressRangeFilter(r)}
+                    className={`px-3 py-1 rounded-full text-xs font-medium transition-colors ${
+                      progressRangeFilter === r ? "bg-orange-500 text-white" : "bg-muted/50 text-muted-foreground hover:bg-muted"
+                    }`}>
+                    {r === "1m" ? "1 mes" : r === "3m" ? "3 meses" : r === "6m" ? "6 meses" : "1 año"}
+                  </button>
+                ))}
               </div>
             )}
+            {/* Gráfico de peso con Recharts */}
+            {combinedWeightData.length > 1 && (() => {
+              const now = Date.now();
+              const msMap = { "1m": 30, "3m": 90, "6m": 180, "1a": 365 };
+              const filteredData = combinedWeightData.filter(d => {
+                const [day, month, year] = d.date.split("/").map(Number);
+                const ts = new Date(year, month - 1, day).getTime();
+                return now - ts <= msMap[progressRangeFilter] * 86400000;
+              });
+              const dataToShow = filteredData.length > 1 ? filteredData : combinedWeightData;
+              return (
+                <div className="p-4 bg-background rounded-xl border border-border mb-4">
+                  <h4 className="text-sm font-semibold text-foreground/80 mb-3">📈 Evolución del peso y composición corporal</h4>
+                  <ResponsiveContainer width="100%" height={220}>
+                    <LineChart data={dataToShow} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                      <XAxis dataKey="date" tick={{ fontSize: 10 }} />
+                      <YAxis tick={{ fontSize: 11 }} />
+                      <Tooltip
+                        contentStyle={{ borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: "12px" }}
+                        formatter={(value: number, name: string) => [`${value} ${name === "Peso" || name === "M\u00fasculo" ? "kg" : "%"}`, name]}
+                      />
+                      <Legend wrapperStyle={{ fontSize: "12px" }} />
+                      <Line type="monotone" dataKey="Peso" stroke="#f97316" strokeWidth={2} dot={{ r: 3 }} activeDot={{ r: 5 }} />
+                      {progressRecords.some(r => r.bodyFat) && (
+                        <Line type="monotone" dataKey="Grasa" stroke="#3b82f6" strokeWidth={2} dot={{ r: 3 }} strokeDasharray="5 5" />
+                      )}
+                      {progressRecords.some(r => r.muscleMass) && (
+                        <Line type="monotone" dataKey="M\u00fasculo" stroke="#10b981" strokeWidth={2} dot={{ r: 3 }} strokeDasharray="5 5" />
+                      )}
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              );
+            })()}
+            {/* Gráfico de medidas antropométricas */}
+            {progressRecords.some(r => r.waist || r.hip || r.arm || r.thigh || r.chest) && (() => {
+              const now = Date.now();
+              const msMap = { "1m": 30, "3m": 90, "6m": 180, "1a": 365 };
+              const anthropoData = progressRecords
+                .filter(r => {
+                  const ts = new Date(r.recordedAt).getTime();
+                  return now - ts <= msMap[progressRangeFilter] * 86400000;
+                })
+                .map(r => ({
+                  date: new Date(r.recordedAt).toLocaleDateString("es-ES", { day: "2-digit", month: "2-digit" }),
+                  Cintura: r.waist ?? undefined,
+                  Cadera: r.hip ?? undefined,
+                  Brazo: r.arm ?? undefined,
+                  Muslo: r.thigh ?? undefined,
+                  Pecho: r.chest ?? undefined,
+                }))
+                .filter(d => d.Cintura || d.Cadera || d.Brazo || d.Muslo || d.Pecho);
+              if (anthropoData.length < 2) return null;
+              return (
+                <div className="p-4 bg-background rounded-xl border border-border mb-4">
+                  <h4 className="text-sm font-semibold text-foreground/80 mb-3">📏 Medidas antropom\u00e9tricas (cm)</h4>
+                  <ResponsiveContainer width="100%" height={200}>
+                    <LineChart data={anthropoData} margin={{ top: 5, right: 20, left: 0, bottom: 5 }}>
+                      <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                      <XAxis dataKey="date" tick={{ fontSize: 10 }} />
+                      <YAxis tick={{ fontSize: 11 }} />
+                      <Tooltip contentStyle={{ borderRadius: "8px", border: "1px solid #e5e7eb", fontSize: "12px" }} />
+                      <Legend wrapperStyle={{ fontSize: "12px" }} />
+                      {progressRecords.some(r => r.waist) && <Line type="monotone" dataKey="Cintura" stroke="#f97316" strokeWidth={2} dot={{ r: 3 }} />}
+                      {progressRecords.some(r => r.hip) && <Line type="monotone" dataKey="Cadera" stroke="#8b5cf6" strokeWidth={2} dot={{ r: 3 }} />}
+                      {progressRecords.some(r => r.arm) && <Line type="monotone" dataKey="Brazo" stroke="#10b981" strokeWidth={2} dot={{ r: 3 }} />}
+                      {progressRecords.some(r => r.thigh) && <Line type="monotone" dataKey="Muslo" stroke="#3b82f6" strokeWidth={2} dot={{ r: 3 }} />}
+                      {progressRecords.some(r => r.chest) && <Line type="monotone" dataKey="Pecho" stroke="#ef4444" strokeWidth={2} dot={{ r: 3 }} />}
+                    </LineChart>
+                  </ResponsiveContainer>
+                </div>
+              );
+            })()}
+            {/* Alertas inteligentes */}
+            {progressRecords.length > 0 && (() => {
+              const alerts: { type: "warning" | "info"; msg: string }[] = [];
+              const lastRecord = progressRecords[progressRecords.length - 1];
+              const daysSinceLastRecord = lastRecord ? Math.floor((Date.now() - new Date(lastRecord.recordedAt).getTime()) / 86400000) : 999;
+              if (daysSinceLastRecord > 14) alerts.push({ type: "warning", msg: `⚠️ Sin registro de peso desde hace ${daysSinceLastRecord} d\u00edas` });
+              const weights = progressRecords.filter(r => r.weight).map(r => r.weight!);
+              if (weights.length >= 2) {
+                const last2 = weights.slice(-2);
+                if (last2[1] - last2[0] > 2) alerts.push({ type: "warning", msg: `📈 Subida de peso de ${(last2[1] - last2[0]).toFixed(1)} kg desde el \u00faltimo registro` });
+              }
+              const lastAppt = appointments.filter(a => a.status === "scheduled").sort((a, b) => new Date(a.scheduledAt).getTime() - new Date(b.scheduledAt).getTime())[0];
+              const daysSinceLastAppt = appointments.length === 0 ? 999 : Math.floor((Date.now() - new Date(appointments[appointments.length - 1].scheduledAt).getTime()) / 86400000);
+              if (!lastAppt && daysSinceLastAppt > 30) alerts.push({ type: "info", msg: "📅 Sin cita programada en los pr\u00f3ximos 30 d\u00edas" });
+              if (alerts.length === 0) return null;
+              return (
+                <div className="space-y-2 mb-4">
+                  {alerts.map((a, i) => (
+                    <div key={i} className={`flex items-center gap-2 px-3 py-2 rounded-xl text-sm ${
+                      a.type === "warning" ? "bg-yellow-50 text-yellow-800 border border-yellow-200" : "bg-blue-50 text-blue-800 border border-blue-200"
+                    }`}>
+                      {a.msg}
+                    </div>
+                  ))}
+                </div>
+              );
+            })()}
 
             {/* Resumen estadístico */}
             {progressRecords.length > 0 && (
@@ -2505,6 +2595,21 @@ export default function ExpertPatientDetail() {
                 <Input type="number" step="0.5" placeholder="95" value={progressForm.hip}
                   onChange={e => setProgressForm(prev => ({ ...prev, hip: e.target.value }))} className="mt-1" />
               </div>
+              <div>
+                <Label>Brazo (cm)</Label>
+                <Input type="number" step="0.5" placeholder="32" value={progressForm.arm}
+                  onChange={e => setProgressForm(prev => ({ ...prev, arm: e.target.value }))} className="mt-1" />
+              </div>
+              <div>
+                <Label>Muslo (cm)</Label>
+                <Input type="number" step="0.5" placeholder="55" value={progressForm.thigh}
+                  onChange={e => setProgressForm(prev => ({ ...prev, thigh: e.target.value }))} className="mt-1" />
+              </div>
+              <div>
+                <Label>Pecho (cm)</Label>
+                <Input type="number" step="0.5" placeholder="95" value={progressForm.chest}
+                  onChange={e => setProgressForm(prev => ({ ...prev, chest: e.target.value }))} className="mt-1" />
+              </div>
             </div>
             <div>
               <Label>Notas del registro</Label>
@@ -2522,6 +2627,9 @@ export default function ExpertPatientDetail() {
                 muscleMass: progressForm.muscleMass ? parseFloat(progressForm.muscleMass) : undefined,
                 waist: progressForm.waist ? parseFloat(progressForm.waist) : undefined,
                 hip: progressForm.hip ? parseFloat(progressForm.hip) : undefined,
+                arm: progressForm.arm ? parseFloat(progressForm.arm) : undefined,
+                thigh: progressForm.thigh ? parseFloat(progressForm.thigh) : undefined,
+                chest: progressForm.chest ? parseFloat(progressForm.chest) : undefined,
                 notes: progressForm.notes || undefined,
               })}
               disabled={addProgressMutation.isPending}

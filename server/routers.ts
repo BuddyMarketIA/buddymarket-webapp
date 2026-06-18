@@ -36,6 +36,7 @@ import { expertMealPlannerRouter } from "./routers/expertMealPlanner";
 import { profileSetupRouter } from "./routers/profileSetup";
 import { expertDocumentsRouter } from "./routers/expertDocuments";
 import { expertBillingRouter } from "./routers/expertBilling";
+import { patientDiaryRouter } from "./routers/patientDiary";
 import { expertFeatureRequestsRouter } from "./routers/expertFeatureRequests";
 import { recipeImagesRouter } from "./routers/recipeImages";
 import { instagramRecipeRouter } from "./routers/instagramRecipe";
@@ -314,6 +315,7 @@ export const appRouter = router({
   profileSetup: profileSetupRouter,
   expertDocuments: expertDocumentsRouter,
   expertBilling: expertBillingRouter,
+  patientDiary: patientDiaryRouter,
   recipeImages: recipeImagesRouter,
   instagramRecipe: instagramRecipeRouter,
   quickSuggest: quickSuggestRouter,
@@ -3075,6 +3077,8 @@ Responde SOLO con JSON válido con esta estructura:
           amount: z.number().optional(),
           checked: z.boolean().optional(),
           customName: z.string().optional(),
+          packageSize: z.string().max(64).optional().nullable(),
+          packageNotes: z.string().max(256).optional().nullable(),
         })
       )
       .mutation(async ({ ctx, input }) => {

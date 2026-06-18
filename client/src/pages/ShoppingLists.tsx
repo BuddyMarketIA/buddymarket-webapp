@@ -89,6 +89,37 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
   const [showMenuFromList, setShowMenuFromList] = useState(false);
   const [generatedMenu, setGeneratedMenu] = useState<any>(null);
   const [showBarcodeScanner, setShowBarcodeScanner] = useState(false);
+  const [packageSizeItemId, setPackageSizeItemId] = useState<number | null>(null);
+  const [packageSizeInput, setPackageSizeInput] = useState("");
+
+  const updateItemMutation = trpc.shoppingLists.updateItem.useMutation({
+    onSuccess: () => utils.shoppingLists.getById.invalidate({ id: listId }),
+    onError: () => toast.error("Error al actualizar el producto"),
+  });
+
+  const PACKAGE_SIZE_SUGGESTIONS: Record<string, string[]> = {
+    default: ["100g", "200g", "250g", "500g", "1kg", "1L", "500mL", "250mL", "6 uds", "12 uds"],
+    aceite: ["250mL", "500mL", "750mL", "1L"],
+    leche: ["1L", "2L", "6x1L"],
+    yogur: ["125g", "4 uds", "8 uds"],
+    huevo: ["6 uds", "12 uds"],
+    pan: ["400g", "500g", "800g"],
+    pasta: ["250g", "500g", "1kg"],
+    arroz: ["500g", "1kg", "2kg"],
+    carne: ["250g", "500g", "1kg"],
+    pescado: ["200g", "400g", "500g"],
+    fruta: ["500g", "1kg", "2kg"],
+    verdura: ["250g", "500g", "1kg"],
+  };
+
+  function getPackageSuggestions(itemName: string): string[] {
+    const name = (itemName ?? "").toLowerCase();
+    for (const [key, sizes] of Object.entries(PACKAGE_SIZE_SUGGESTIONS)) {
+      if (key !== "default" && name.includes(key)) return sizes;
+    }
+    return PACKAGE_SIZE_SUGGESTIONS.default;
+  }
+
   const generateMenuMutation = trpc.shoppingLists.generateMenuFromList.useMutation({
     onSuccess: (data) => {
       setGeneratedMenu(data.menu);
@@ -581,7 +612,27 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
                       {item.amount ?? item.quantity} {item.measure?.name ?? item.unit ?? ""}
                     </p>
                   )}
+                  {/* Package size badge */}
+                  {item.packageSize && (
+                    <button
+                      onClick={() => { setPackageSizeItemId(item.id); setPackageSizeInput(item.packageSize ?? ""); }}
+                      className="inline-flex items-center gap-1 px-2 py-0.5 rounded-full bg-blue-50 border border-blue-200 text-[10px] font-semibold text-blue-700 hover:bg-blue-100"
+                    >
+                      📦 {item.packageSize}
+                    </button>
+                  )}
                 </div>
+
+                {/* Package size button (if no size set) */}
+                {!item.packageSize && !item.isPurchased && (
+                  <button
+                    onClick={() => { setPackageSizeItemId(item.id); setPackageSizeInput(""); }}
+                    className="flex h-7 w-7 items-center justify-center rounded-full text-gray-300 hover:bg-blue-50 hover:text-blue-400"
+                    title="Indicar tamaño de envase"
+                  >
+                    📦
+                  </button>
+                )}
 
                 {/* Pantry toggle button */}
                 <button
@@ -631,6 +682,62 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
           <button onClick={() => setShowAdd(true)} className="btn-vively">{t("shoppingList.addProduct", "Add product")}</button>
         </div>
       )}
+
+      {/* Package Size Modal */}
+      {packageSizeItemId !== null && (() => {
+        const targetItem = (listData?.items ?? []).find((i: any) => i.id === packageSizeItemId);
+        const itemName = targetItem?.ingredient?.name ?? targetItem?.customName ?? targetItem?.name ?? "Producto";
+        const suggestions = getPackageSuggestions(itemName);
+        return (
+          <div className="modal-overlay" onClick={(e) => { if (e.target === e.currentTarget) setPackageSizeItemId(null); }}>
+            <div className="w-full max-w-sm rounded-3xl bg-background p-6 shadow-2xl animate-slide-up">
+              <h3 className="text-lg font-bold text-foreground mb-1">📦 Tamaño de envase</h3>
+              <p className="text-sm text-muted-foreground mb-4">{itemName}</p>
+              <div className="flex flex-wrap gap-2 mb-4">
+                {suggestions.map(s => (
+                  <button
+                    key={s}
+                    onClick={() => setPackageSizeInput(s)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-semibold border transition-colors ${
+                      packageSizeInput === s ? "bg-orange-500 text-white border-orange-500" : "bg-background border-border text-foreground/70 hover:border-orange-300"
+                    }`}
+                  >{s}</button>
+                ))}
+              </div>
+              <input
+                value={packageSizeInput}
+                onChange={e => setPackageSizeInput(e.target.value)}
+                placeholder="Ej: 500g, 1L, 6 uds..."
+                className="w-full border border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 mb-4"
+              />
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    updateItemMutation.mutate({ id: packageSizeItemId, packageSize: null });
+                    setPackageSizeItemId(null);
+                  }}
+                  className="flex-1 py-2.5 text-sm border border-border rounded-xl text-muted-foreground hover:bg-muted/50"
+                >Quitar</button>
+                <button
+                  onClick={() => setPackageSizeItemId(null)}
+                  className="flex-1 py-2.5 text-sm border border-border rounded-xl text-foreground/70 hover:bg-muted/50"
+                >Cancelar</button>
+                <button
+                  onClick={() => {
+                    if (packageSizeInput.trim()) {
+                      updateItemMutation.mutate({ id: packageSizeItemId, packageSize: packageSizeInput.trim() });
+                      toast.success(`Envase: ${packageSizeInput.trim()}`);
+                    }
+                    setPackageSizeItemId(null);
+                  }}
+                  disabled={!packageSizeInput.trim()}
+                  className="flex-1 py-2.5 text-sm font-bold bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white rounded-xl transition-colors"
+                >Guardar</button>
+              </div>
+            </div>
+          </div>
+        );
+      })()}
 
       {/* Barcode Scanner Modal */}
       {showBarcodeScanner && (

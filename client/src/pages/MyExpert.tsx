@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { ChatMarkdown } from "@/lib/renderChatMarkdown";
 
-type View = "dashboard" | "messages" | "menus" | "menu_detail" | "appointments" | "progress" | "request_appointment" | "documents";
+type View = "dashboard" | "messages" | "menus" | "menu_detail" | "appointments" | "progress" | "request_appointment" | "documents" | "diary" | "payments";
 
 const DAY_LABELS: Record<string, string> = {
   monday: "Lunes", tuesday: "Martes", wednesday: "Miércoles",
@@ -126,6 +126,29 @@ export default function MyExpert() {
   const { data: patientDocuments, refetch: refetchPatientDocs } = trpc.expertDocuments.getDocuments.useQuery(
     { expertPatientId: activeRelId ?? 0, documentType: "all" },
     { enabled: !!activeRelId && view === "documents" }
+  );
+
+  // Diario diario
+  const todayStr = new Date().toISOString().split("T")[0];
+  const [diaryDate, setDiaryDate] = useState(todayStr);
+  const [diaryForm, setDiaryForm] = useState({ weight: "", energyLevel: 3, moodLevel: 3, sleepHours: "", waterLiters: "", symptoms: "", notes: "" });
+  const { data: diaryEntries, refetch: refetchDiary } = trpc.patientDiary.getEntries.useQuery(
+    { limit: 30 },
+    { enabled: !!user && view === "diary" }
+  );
+  const { data: todayEntry, refetch: refetchTodayEntry } = trpc.patientDiary.getByDate.useQuery(
+    { logDate: diaryDate },
+    { enabled: !!user && view === "diary" }
+  );
+  const upsertDiaryMutation = trpc.patientDiary.upsertEntry.useMutation({
+    onSuccess: () => { toast.success("✅ Registro guardado"); refetchDiary(); refetchTodayEntry(); },
+    onError: () => toast.error("Error al guardar el registro"),
+  });
+
+  // Pagos / facturas del paciente
+  const { data: myInvoices } = trpc.expertBilling.listInvoices.useQuery(
+    { limit: 50 },
+    { enabled: !!user && view === "payments" }
   );
   const handlePatientDocUpload = async () => {
     if (!patientDocFile || !patientDocForm.title || !activeRelId) return;
@@ -557,8 +580,20 @@ export default function MyExpert() {
                   🥗 Mis menús
                 </button>
                 <button onClick={() => setView("documents")}
-                  className="flex items-center justify-center gap-1.5 bg-background/20 hover:bg-background/30 transition-colors rounded-xl py-2.5 text-sm font-semibold col-span-2">
-                  📂 Mis documentos
+                  className="flex items-center justify-center gap-1.5 bg-background/20 hover:bg-background/30 transition-colors rounded-xl py-2.5 text-sm font-semibold">
+                  📂 Documentos
+                </button>
+                <button onClick={() => setView("diary")}
+                  className="flex items-center justify-center gap-1.5 bg-background/20 hover:bg-background/30 transition-colors rounded-xl py-2.5 text-sm font-semibold">
+                  📓 Mi Diario
+                </button>
+                <button onClick={() => setView("progress")}
+                  className="flex items-center justify-center gap-1.5 bg-background/20 hover:bg-background/30 transition-colors rounded-xl py-2.5 text-sm font-semibold">
+                  📊 Evolución
+                </button>
+                <button onClick={() => setView("payments")}
+                  className="flex items-center justify-center gap-1.5 bg-background/20 hover:bg-background/30 transition-colors rounded-xl py-2.5 text-sm font-semibold">
+                  💳 Mis Pagos
                 </button>
               </div>
             </div>
@@ -1119,6 +1154,242 @@ export default function MyExpert() {
             </div>
           </div>
         )}
+      </AppLayout>
+    );
+  }
+
+  // ─── VISTA: DIARIO DIARIO ──────────────────────────────────────────────────
+  if (view === "diary") {
+    const ENERGY_LABELS = ["😴 Sin energía", "😞 Baja", "😐 Normal", "😊 Buena", "⚡ Excelente"];
+    const MOOD_LABELS = ["😢 Muy mal", "😕 Mal", "😐 Regular", "🙂 Bien", "😄 Muy bien"];
+    const SYMPTOM_OPTIONS = ["Hinchazón", "Estreñimiento", "Diarrea", "Náuseas", "Acidez", "Cansancio", "Dolor de cabeza", "Ansiedad", "Insomnio", "Sin síntomas"];
+    const selectedSymptoms = diaryForm.symptoms ? diaryForm.symptoms.split(",").map(s => s.trim()).filter(Boolean) : [];
+    const toggleSymptom = (s: string) => {
+      const current = selectedSymptoms;
+      const updated = current.includes(s) ? current.filter(x => x !== s) : [...current, s];
+      setDiaryForm(prev => ({ ...prev, symptoms: updated.join(", ") }));
+    };
+    return (
+      <AppLayout>
+        <div className="max-w-2xl mx-auto px-4 py-6">
+          <button onClick={() => setView("dashboard")} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
+            ← Volver
+          </button>
+          <div className="flex items-center justify-between mb-4">
+            <h2 className="text-xl font-bold text-foreground">📓 Mi Diario</h2>
+            <input
+              type="date"
+              value={diaryDate}
+              onChange={e => setDiaryDate(e.target.value)}
+              max={todayStr}
+              className="border border-border rounded-xl px-3 py-1.5 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+            />
+          </div>
+
+          {/* Formulario de registro */}
+          <div className="bg-card border border-border rounded-2xl p-5 mb-6 space-y-5">
+            <h3 className="font-semibold text-foreground">Registro del {new Date(diaryDate + "T12:00:00").toLocaleDateString("es-ES", { weekday: "long", day: "numeric", month: "long" })}</h3>
+
+            {/* Peso */}
+            <div>
+              <label className="block text-sm font-medium text-foreground/80 mb-1">⚖️ Peso (kg)</label>
+              <input
+                type="number" step="0.1" min="20" max="500"
+                value={diaryForm.weight}
+                onChange={e => setDiaryForm(prev => ({ ...prev, weight: e.target.value }))}
+                placeholder={todayEntry?.weight ? String(todayEntry.weight) : "Ej: 72.5"}
+                className="w-full border border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+              />
+            </div>
+
+            {/* Energía */}
+            <div>
+              <label className="block text-sm font-medium text-foreground/80 mb-2">⚡ Nivel de energía</label>
+              <div className="flex gap-2">
+                {[1,2,3,4,5].map(n => (
+                  <button
+                    key={n}
+                    onClick={() => setDiaryForm(prev => ({ ...prev, energyLevel: n }))}
+                    className={`flex-1 py-2 rounded-xl text-sm font-medium border transition-colors ${
+                      diaryForm.energyLevel === n ? "bg-orange-500 text-white border-orange-500" : "bg-background border-border text-foreground/70 hover:border-orange-300"
+                    }`}
+                  >{n}</button>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">{ENERGY_LABELS[diaryForm.energyLevel - 1]}</p>
+            </div>
+
+            {/* Estado de ánimo */}
+            <div>
+              <label className="block text-sm font-medium text-foreground/80 mb-2">😊 Estado de ánimo</label>
+              <div className="flex gap-2">
+                {[1,2,3,4,5].map(n => (
+                  <button
+                    key={n}
+                    onClick={() => setDiaryForm(prev => ({ ...prev, moodLevel: n }))}
+                    className={`flex-1 py-2 rounded-xl text-sm font-medium border transition-colors ${
+                      diaryForm.moodLevel === n ? "bg-orange-500 text-white border-orange-500" : "bg-background border-border text-foreground/70 hover:border-orange-300"
+                    }`}
+                  >{n}</button>
+                ))}
+              </div>
+              <p className="text-xs text-muted-foreground mt-1">{MOOD_LABELS[diaryForm.moodLevel - 1]}</p>
+            </div>
+
+            {/* Sueño y agua */}
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <label className="block text-sm font-medium text-foreground/80 mb-1">🌙 Horas de sueño</label>
+                <input
+                  type="number" step="0.5" min="0" max="24"
+                  value={diaryForm.sleepHours}
+                  onChange={e => setDiaryForm(prev => ({ ...prev, sleepHours: e.target.value }))}
+                  placeholder={todayEntry?.sleepHours ? String(todayEntry.sleepHours) : "Ej: 7.5"}
+                  className="w-full border border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                />
+              </div>
+              <div>
+                <label className="block text-sm font-medium text-foreground/80 mb-1">💧 Agua (litros)</label>
+                <input
+                  type="number" step="0.1" min="0" max="20"
+                  value={diaryForm.waterLiters}
+                  onChange={e => setDiaryForm(prev => ({ ...prev, waterLiters: e.target.value }))}
+                  placeholder={todayEntry?.waterLiters ? String(todayEntry.waterLiters) : "Ej: 2.0"}
+                  className="w-full border border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400"
+                />
+              </div>
+            </div>
+
+            {/* Síntomas */}
+            <div>
+              <label className="block text-sm font-medium text-foreground/80 mb-2">🩺 Síntomas de hoy</label>
+              <div className="flex flex-wrap gap-2">
+                {SYMPTOM_OPTIONS.map(s => (
+                  <button
+                    key={s}
+                    onClick={() => toggleSymptom(s)}
+                    className={`px-3 py-1.5 rounded-full text-xs font-medium border transition-colors ${
+                      selectedSymptoms.includes(s) ? "bg-orange-500 text-white border-orange-500" : "bg-background border-border text-foreground/70 hover:border-orange-300"
+                    }`}
+                  >{s}</button>
+                ))}
+              </div>
+            </div>
+
+            {/* Notas */}
+            <div>
+              <label className="block text-sm font-medium text-foreground/80 mb-1">📝 Notas del día</label>
+              <textarea
+                value={diaryForm.notes}
+                onChange={e => setDiaryForm(prev => ({ ...prev, notes: e.target.value }))}
+                placeholder="¿Cómo te has sentido hoy? ¿Has seguido el plan? ¿Algo especial?..."
+                rows={3}
+                className="w-full border border-border rounded-xl px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none"
+              />
+            </div>
+
+            <button
+              onClick={() => upsertDiaryMutation.mutate({
+                logDate: diaryDate,
+                expertPatientId: activeRelId ?? undefined,
+                weight: diaryForm.weight ? parseFloat(diaryForm.weight) : undefined,
+                energyLevel: diaryForm.energyLevel,
+                moodLevel: diaryForm.moodLevel,
+                sleepHours: diaryForm.sleepHours ? parseFloat(diaryForm.sleepHours) : undefined,
+                waterLiters: diaryForm.waterLiters ? parseFloat(diaryForm.waterLiters) : undefined,
+                symptoms: diaryForm.symptoms || undefined,
+                notes: diaryForm.notes || undefined,
+              })}
+              disabled={upsertDiaryMutation.isPending}
+              className="w-full py-3 bg-orange-500 hover:bg-orange-600 disabled:opacity-50 text-white font-bold rounded-xl transition-colors"
+            >
+              {upsertDiaryMutation.isPending ? "Guardando..." : "💾 Guardar registro"}
+            </button>
+          </div>
+
+          {/* Historial */}
+          {diaryEntries && diaryEntries.length > 0 && (
+            <div>
+              <h3 className="font-semibold text-foreground mb-3">📊 Historial reciente</h3>
+              <div className="space-y-3">
+                {diaryEntries.slice(0, 10).map(entry => (
+                  <div key={entry.id} className="bg-card border border-border rounded-xl p-4">
+                    <div className="flex items-center justify-between mb-2">
+                      <span className="text-sm font-medium text-foreground">
+                        {new Date(entry.logDate + "T12:00:00").toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short" })}
+                      </span>
+                      <div className="flex gap-3 text-xs text-muted-foreground">
+                        {entry.weight && <span>⚖️ {entry.weight} kg</span>}
+                        {entry.energyLevel && <span>⚡ {entry.energyLevel}/5</span>}
+                        {entry.moodLevel && <span>😊 {entry.moodLevel}/5</span>}
+                      </div>
+                    </div>
+                    {entry.symptoms && <p className="text-xs text-orange-600 mb-1">🩺 {entry.symptoms}</p>}
+                    {entry.notes && <p className="text-xs text-muted-foreground line-clamp-2">{entry.notes}</p>}
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+        </div>
+      </AppLayout>
+    );
+  }
+
+  // ─── VISTA: PAGOS ─────────────────────────────────────────────────────────
+  if (view === "payments") {
+    const statusLabels: Record<string, string> = {
+      draft: "Borrador", sent: "Enviada", paid: "Pagada", cancelled: "Cancelada",
+    };
+    const statusColors: Record<string, string> = {
+      draft: "bg-muted text-muted-foreground",
+      sent: "bg-blue-50 text-blue-700",
+      paid: "bg-green-50 text-green-700",
+      cancelled: "bg-red-50 text-red-600",
+    };
+    return (
+      <AppLayout>
+        <div className="max-w-2xl mx-auto px-4 py-6">
+          <button onClick={() => setView("dashboard")} className="flex items-center gap-2 text-sm text-muted-foreground hover:text-foreground mb-4">
+            ← Volver
+          </button>
+          <h2 className="text-xl font-bold text-foreground mb-4">💳 Mis Pagos</h2>
+          <div className="bg-orange-50 border border-orange-100 rounded-xl p-3 mb-5">
+            <p className="text-sm text-orange-700">Aquí puedes ver las facturas que tu nutricionista ha generado para tus consultas.</p>
+          </div>
+          {!myInvoices || myInvoices.invoices.length === 0 ? (
+            <div className="text-center py-12 text-muted-foreground">
+              <div className="text-4xl mb-3">📄</div>
+              <p className="font-medium">Sin facturas todavía</p>
+              <p className="text-sm mt-1">Tu nutricionista aún no ha generado ninguna factura para ti.</p>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {myInvoices.invoices.map(inv => (
+                <div key={inv.id} className="bg-card border border-border rounded-2xl p-4">
+                  <div className="flex items-start justify-between mb-2">
+                    <div>
+                      <p className="font-semibold text-foreground text-sm">{inv.concept}</p>
+                      <p className="text-xs text-muted-foreground mt-0.5">Nº {inv.invoiceNumber}</p>
+                    </div>
+                    <div className="text-right">
+                      <p className="font-bold text-foreground">{(inv.amount / 100).toFixed(2)} {inv.currency}</p>
+                      <span className={`text-xs px-2 py-0.5 rounded-full font-medium ${statusColors[inv.status] ?? "bg-muted text-muted-foreground"}`}>
+                        {statusLabels[inv.status] ?? inv.status}
+                      </span>
+                    </div>
+                  </div>
+                  <p className="text-xs text-muted-foreground">
+                    Emitida: {new Date(inv.issuedAt).toLocaleDateString("es-ES")}
+                    {inv.dueDate && ` · Vence: ${new Date(inv.dueDate).toLocaleDateString("es-ES")}`}
+                    {inv.paidAt && ` · Pagada: ${new Date(inv.paidAt).toLocaleDateString("es-ES")}`}
+                  </p>
+                  {inv.notes && <p className="text-xs text-muted-foreground mt-1 italic">{inv.notes}</p>}
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
       </AppLayout>
     );
   }

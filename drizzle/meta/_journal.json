@@ -673,6 +673,20 @@
       "when": 1781815611118,
       "tag": "0095_panoramic_micromax",
       "breakpoints": true
+    },
+    {
+      "idx": 96,
+      "version": "7",
+      "when": 1781825408086,
+      "tag": "0096_free_the_renegades",
+      "breakpoints": true
+    },
+    {
+      "idx": 97,
+      "version": "7",
+      "when": 1781825610290,
+      "tag": "0097_peaceful_triathlon",
+      "breakpoints": true
     }
   ]
 }

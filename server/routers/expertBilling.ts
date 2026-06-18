@@ -1,7 +1,7 @@
 import { z } from "zod";
 import { protectedProcedure, router } from "../_core/trpc";
 import { getDb } from "../db";
-import { expertInvoices, expertPatients, buddyExperts } from "../../drizzle/schema";
+import { expertInvoices, expertPatients, expertAppointments } from "../../drizzle/schema";
 import { eq, and, desc, count, sum } from "drizzle-orm";
 
 export const expertBillingRouter = router({
@@ -61,6 +61,75 @@ export const expertBillingRouter = router({
       totalPending: Number(pendingRow?.total ?? 0),
       pendingCount: Number(pendingRow?.cnt ?? 0),
       draftCount: Number(draftRow?.cnt ?? 0),
+    };
+  }),
+
+  // ─── Business metrics dashboard for expert ───────────────────────────────
+  getBusinessMetrics: protectedProcedure.query(async ({ ctx }) => {
+    const db = await getDb();
+    // Active patients (accepted status)
+    const allPatients = await db
+      .select()
+      .from(expertPatients)
+      .where(eq(expertPatients.expertUserId, ctx.user.id));
+    const activePatients = allPatients.filter(p => p.status === "accepted");
+
+    // Total revenue (paid invoices)
+    const [totalRow] = await db
+      .select({ total: sum(expertInvoices.amount), cnt: count() })
+      .from(expertInvoices)
+      .where(and(
+        eq(expertInvoices.expertUserId, ctx.user.id),
+        eq(expertInvoices.status, "paid"),
+      ));
+
+    // Pending invoices
+    const [pendingRow] = await db
+      .select({ total: sum(expertInvoices.amount), cnt: count() })
+      .from(expertInvoices)
+      .where(and(
+        eq(expertInvoices.expertUserId, ctx.user.id),
+        eq(expertInvoices.status, "sent"),
+      ));
+
+    // Average rating from appointments
+    const ratedAppts = await db
+      .select({ rating: expertAppointments.rating })
+      .from(expertAppointments)
+      .where(eq(expertAppointments.expertUserId, ctx.user.id))
+      .limit(200);
+    const ratings = ratedAppts.filter(a => a.rating !== null).map(a => a.rating!);
+    const avgRating = ratings.length > 0
+      ? parseFloat((ratings.reduce((a, b) => a + b, 0) / ratings.length).toFixed(1))
+      : null;
+
+    // Retention: patients with >1 appointment
+    const apptCounts = await db
+      .select({ patientId: expertAppointments.patientUserId, cnt: count() })
+      .from(expertAppointments)
+      .where(eq(expertAppointments.expertUserId, ctx.user.id))
+      .groupBy(expertAppointments.patientUserId);
+    const retainedPatients = apptCounts.filter(r => Number(r.cnt) > 1).length;
+    const retentionRate = apptCounts.length > 0
+      ? Math.round((retainedPatients / apptCounts.length) * 100)
+      : 0;
+
+    // Total appointments
+    const [apptTotal] = await db
+      .select({ cnt: count() })
+      .from(expertAppointments)
+      .where(eq(expertAppointments.expertUserId, ctx.user.id));
+
+    return {
+      activePatientsCount: activePatients.length,
+      totalPatientsCount: allPatients.length,
+      totalRevenue: Number(totalRow?.total ?? 0) / 100, // convert cents to euros
+      paidInvoicesCount: Number(totalRow?.cnt ?? 0),
+      pendingAmount: Number(pendingRow?.total ?? 0) / 100,
+      pendingCount: Number(pendingRow?.cnt ?? 0),
+      avgRating,
+      retentionRate,
+      totalAppointments: Number(apptTotal?.cnt ?? 0),
     };
   }),
 

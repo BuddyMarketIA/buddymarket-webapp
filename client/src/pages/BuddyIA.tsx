@@ -1162,8 +1162,11 @@ function MenuResultView({
   const [showSaveModal, setShowSaveModal] = useState(false);
   const utils = trpc.useUtils();
 
-  // ── Mutable local copy of the menu (allows replacing meals) ──────────────
+  // ── Mutable local copy of the menu (allows replacing meals) ────────────────────
   const [localMenu, setLocalMenu] = useState<GeneratedMenu>(() => JSON.parse(JSON.stringify(menu)));
+
+  // ── Auto-save when the menu is first generated ──────────────────────────────
+  const autoSaveRef = React.useRef(false);
 
   // ── Replace-meal panel state ──────────────────────────────────────────────
   type ReplaceState = { dayIdx: number; mealIdx: number } | null;
@@ -1315,6 +1318,30 @@ function MenuResultView({
     },
     onError: () => toast.error("Error al guardar el menú. Comprueba tu conexión."),
   });
+
+  // Auto-save on first render (once menu is generated)
+  React.useEffect(() => {
+    if (autoSaveRef.current || saved || saveMutation.isPending) return;
+    autoSaveRef.current = true;
+    const baseDate = questionnaireData.startDate || new Date().toISOString().split("T")[0];
+    saveMutation.mutate({
+      menuName: localMenu.menuName || "Mi menú personalizado",
+      startDate: baseDate,
+      goal: questionnaireData.goal || "mantenimiento",
+      persons: localMenu.persons || questionnaireData.persons || 1,
+      targetCalories: localMenu.targetCalories || 2000,
+      days: localMenu.days.map((d, idx) => {
+        let dayDate = d.date;
+        if (!dayDate) {
+          const base = new Date(baseDate + 'T12:00:00Z');
+          base.setUTCDate(base.getUTCDate() + idx);
+          dayDate = base.toISOString().split('T')[0];
+        }
+        return { day: d.day, date: dayDate, totalCalories: d.totalCalories, meals: d.meals };
+      }),
+    });
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const handleCreateShoppingList = () => {
     if (!savedMenuId) return;

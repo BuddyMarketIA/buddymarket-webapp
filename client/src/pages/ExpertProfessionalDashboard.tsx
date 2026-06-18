@@ -90,6 +90,7 @@ export default function ExpertProfessionalDashboard() {
   const { data, isLoading } = trpc.expertDashboard.getMetrics.useQuery(undefined, {
     refetchInterval: 60_000,
   });
+  const { data: bizMetrics } = trpc.expertBilling.getBusinessMetrics.useQuery();
 
   const stats = data?.stats;
   const todayAppts = data?.todayAppointments ?? [];
@@ -472,6 +473,44 @@ export default function ExpertProfessionalDashboard() {
           </Card>
         </Link>
       </div>
+
+      {/* ── Métricas de negocio ── */}
+      {bizMetrics && (
+        <Card>
+          <CardHeader className="pb-3">
+            <CardTitle className="text-base flex items-center gap-2">
+              <Activity className="w-4 h-4 text-emerald-500" />
+              Métricas de negocio
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+              <div className="p-4 bg-emerald-50 dark:bg-emerald-950/30 rounded-xl text-center">
+                <p className="text-xs text-muted-foreground mb-1">Ingresos totales</p>
+                <p className="text-2xl font-bold text-emerald-600">{bizMetrics.totalRevenue.toFixed(0)}€</p>
+                <p className="text-xs text-muted-foreground mt-1">{bizMetrics.paidInvoicesCount} facturas cobradas</p>
+              </div>
+              <div className="p-4 bg-orange-50 dark:bg-orange-950/30 rounded-xl text-center">
+                <p className="text-xs text-muted-foreground mb-1">Pendiente de cobro</p>
+                <p className="text-2xl font-bold text-orange-600">{bizMetrics.pendingAmount.toFixed(0)}€</p>
+                <p className="text-xs text-muted-foreground mt-1">{bizMetrics.pendingCount} facturas enviadas</p>
+              </div>
+              <div className="p-4 bg-blue-50 dark:bg-blue-950/30 rounded-xl text-center">
+                <p className="text-xs text-muted-foreground mb-1">Retención de pacientes</p>
+                <p className="text-2xl font-bold text-blue-600">{bizMetrics.retentionRate}%</p>
+                <p className="text-xs text-muted-foreground mt-1">{bizMetrics.activePatientsCount} activos de {bizMetrics.totalPatientsCount}</p>
+              </div>
+              <div className="p-4 bg-purple-50 dark:bg-purple-950/30 rounded-xl text-center">
+                <p className="text-xs text-muted-foreground mb-1">Valoración media</p>
+                <p className="text-2xl font-bold text-purple-600">
+                  {bizMetrics.avgRating ? `★ ${bizMetrics.avgRating}` : "—"}
+                </p>
+                <p className="text-xs text-muted-foreground mt-1">{bizMetrics.totalAppointments} citas totales</p>
+              </div>
+            </div>
+          </CardContent>
+        </Card>
+      )}
     </div>
   );
 }

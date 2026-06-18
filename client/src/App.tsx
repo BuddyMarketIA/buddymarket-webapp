@@ -196,6 +196,7 @@ const CorporateDashboard = lazyWithRetry(() => import("./pages/CorporateDashboar
 const Contacto = lazyWithRetry(() => import("./pages/Contacto"));
 const RGPDPage = lazyWithRetry(() => import("./pages/RGPD"));
 const AvisoLegal = lazyWithRetry(() => import("./pages/AvisoLegal"));
+const Household = lazyWithRetry(() => import("./pages/Household"));
 
 // ─── Page loading fallback ────────────────────────────────────────────────────
 function PageLoader() {
@@ -286,6 +287,7 @@ function Router() {
       <Route path="/familia/unirse" component={FamiliaUnirse} />
       <Route path="/familia/mis-recetas">{() => <ProtectedPage><MisRecetasAsignadas /></ProtectedPage>}</Route>
       <Route path="/familia/calendario">{() => <ProtectedPage><FamiliaCalendario /></ProtectedPage>}</Route>
+      <Route path="/app/household">{() => <ProtectedRoute component={Household} />}</Route>
       <Route path="/creators" component={Creators} />
       <Route path="/creator-dashboard">{() => <ProtectedPage><CreatorDashboard /></ProtectedPage>}</Route>
       {/* Onboarding wizard — requires auth, no AppLayout */}

@@ -606,6 +606,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       label: "Familia",
       items: [
         { key: "/familia", label: "Mi Hogar", to: "/familia", emoji: "🏡" },
+        { key: "/app/household", label: "Modo Hogar", to: "/app/household", emoji: "👨‍👩‍👧‍👦" },
         { key: "/familia/calendario", label: "Calendario Familiar", to: "/familia/calendario", emoji: "📅" },
         { key: "/familia/mis-recetas", label: "Mis Recetas Asignadas", to: "/familia/mis-recetas", emoji: "🍽️" },
       ],

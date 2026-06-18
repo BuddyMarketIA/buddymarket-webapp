@@ -182,6 +182,11 @@ function MenuCard({
               {getGoalLabel(menu.goal)}
             </span>
           )}
+          {(menu as any).isAiGenerated && (
+            <span className="inline-flex items-center gap-1 rounded-full bg-purple-600 px-2.5 py-1 text-[10px] font-bold text-white shadow">
+              ✨ IA
+            </span>
+          )}
         </div>
 
         {/* Calories badge bottom-right */}

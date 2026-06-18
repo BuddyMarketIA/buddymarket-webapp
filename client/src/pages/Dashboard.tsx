@@ -444,23 +444,63 @@ function StreakWidget({ streak, level, levelName }: { streak: number; level: num
 
 // ─── Recommendations ──────────────────────────────────────────────────────────
 function RecommendationsList({ recipes }: { recipes: any[] }) {
+  const [currentIdx, setCurrentIdx] = React.useState(0);
+  const trackInteraction = trpc.recommendations.trackInteraction.useMutation();
+
+  // Auto-rotate every 4 seconds
+  React.useEffect(() => {
+    if (recipes.length <= 1) return;
+    const timer = setInterval(() => setCurrentIdx(i => (i + 1) % Math.min(recipes.length, 6)), 4000);
+    return () => clearInterval(timer);
+  }, [recipes.length]);
+
   if (!recipes.length) return null;
+  const visible = recipes.slice(0, 6);
+  const current = visible[currentIdx];
+
+  const handleClick = (recipeId: number) => {
+    trackInteraction.mutate({ entityType: "recipe", entityId: recipeId, action: "long_view" });
+  };
+
   return (
     <div style={{ background: "white", borderRadius: 18, padding: "16px 18px", border: "1px solid #f3f4f6" }}>
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 12 }}>
         <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#1a1a1a" }}>✨ Para ti hoy</p>
         <Link href="/app/recipes"><span style={{ fontSize: 12, color: "#F97316", fontWeight: 600, cursor: "pointer" }}>Ver todas →</span></Link>
       </div>
-      <div style={{ display: "flex", flexDirection: "column", gap: 8 }}>
-        {recipes.slice(0, 3).map((r: any) => (
-          <Link key={r.id} href={`/app/recipes/${r.id}`}>
-            <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "8px 10px", borderRadius: 12, background: "#FFF7ED", cursor: "pointer" }}>
-              {r.imageUrl && <img src={r.imageUrl} alt={r.name} style={{ width: 44, height: 44, borderRadius: 10, objectFit: "cover", flexShrink: 0 }} />}
+      {/* Featured carousel item */}
+      {current && (
+        <Link key={current.id} href={`/app/recipes/${current.id}`} onClick={() => handleClick(current.id)}>
+          <div style={{ display: "flex", alignItems: "center", gap: 12, padding: "10px 12px", borderRadius: 14, background: "#FFF7ED", cursor: "pointer", marginBottom: 10, border: "1.5px solid #FED7AA" }}>
+            {current.imageUrl && <img src={current.imageUrl} alt={current.name} style={{ width: 56, height: 56, borderRadius: 12, objectFit: "cover", flexShrink: 0 }} />}
+            <div style={{ flex: 1, minWidth: 0 }}>
+              <p style={{ margin: 0, fontSize: 14, fontWeight: 700, color: "#1a1a1a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{current.name}</p>
+              <p style={{ margin: "3px 0 0", fontSize: 12, color: "#9ca3af" }}>🔥 {current.calories ?? "–"} kcal</p>
+            </div>
+            <span style={{ fontSize: 18, color: "#F97316" }}>›</span>
+          </div>
+        </Link>
+      )}
+      {/* Dot indicators */}
+      {visible.length > 1 && (
+        <div style={{ display: "flex", justifyContent: "center", gap: 5, marginBottom: 10 }}>
+          {visible.map((_, i) => (
+            <button key={i} onClick={() => setCurrentIdx(i)}
+              style={{ width: i === currentIdx ? 16 : 6, height: 6, borderRadius: 3, background: i === currentIdx ? "#F97316" : "#E5E7EB", border: "none", cursor: "pointer", padding: 0, transition: "all 0.3s" }}
+            />
+          ))}
+        </div>
+      )}
+      {/* Mini list of remaining */}
+      <div style={{ display: "flex", flexDirection: "column", gap: 6 }}>
+        {visible.filter((_, i) => i !== currentIdx).slice(0, 2).map((r: any) => (
+          <Link key={r.id} href={`/app/recipes/${r.id}`} onClick={() => handleClick(r.id)}>
+            <div style={{ display: "flex", alignItems: "center", gap: 10, padding: "7px 10px", borderRadius: 10, background: "#F9FAFB", cursor: "pointer" }}>
+              {r.imageUrl && <img src={r.imageUrl} alt={r.name} style={{ width: 36, height: 36, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} />}
               <div style={{ flex: 1, minWidth: 0 }}>
-                <p style={{ margin: 0, fontSize: 13, fontWeight: 700, color: "#1a1a1a", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.name}</p>
-                <p style={{ margin: "2px 0 0", fontSize: 11, color: "#9ca3af" }}>🔥 {r.calories ?? "–"} kcal</p>
+                <p style={{ margin: 0, fontSize: 12, fontWeight: 600, color: "#374151", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>{r.name}</p>
+                <p style={{ margin: 0, fontSize: 11, color: "#9ca3af" }}>{r.calories ?? "–"} kcal</p>
               </div>
-              <span style={{ fontSize: 16, color: "#F97316" }}>›</span>
             </div>
           </Link>
         ))}

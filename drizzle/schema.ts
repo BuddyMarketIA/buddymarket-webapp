@@ -657,6 +657,8 @@ export const shoppingListItems = pgTable("shopping_list_items", {
   checked: boolean("checked").default(false),
   inPantry: boolean("inPantry").default(false),
   order: integer("order").default(0),
+  packageSize: text("packageSize"), // e.g. "500g", "1L", "6 unidades"
+  packageNotes: text("packageNotes"), // custom notes about the package
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });
@@ -5236,3 +5238,27 @@ export const expertInvoices = pgTable("expert_invoices", {
 }));
 export type ExpertInvoice = typeof expertInvoices.$inferSelect;
 export type InsertExpertInvoice = typeof expertInvoices.$inferInsert;
+
+/**
+ * Patient daily log — diario diario del paciente (peso, energía, síntomas, notas)
+ */
+export const patientDailyLog = pgTable("patient_daily_log", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull(),
+  expertPatientId: integer("expertPatientId"),
+  logDate: text("logDate").notNull(), // YYYY-MM-DD
+  weight: real("weight"),
+  energyLevel: integer("energyLevel"), // 1-5
+  moodLevel: integer("moodLevel"), // 1-5
+  sleepHours: real("sleepHours"),
+  waterLiters: real("waterLiters"),
+  symptoms: text("symptoms"),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  patientDailyLogUserIdx: index("patient_daily_log_user_idx").on(t.userId),
+  patientDailyLogDateIdx: index("patient_daily_log_date_idx").on(t.userId, t.logDate),
+}));
+export type PatientDailyLog = typeof patientDailyLog.$inferSelect;
+export type InsertPatientDailyLog = typeof patientDailyLog.$inferInsert;
