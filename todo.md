@@ -3917,3 +3917,17 @@
 - [x] Frontend: resumen actualizado: contador "añadidos" en morado para artículos manuales
 - [x] Frontend: artículos manuales incluidos en exportación al portapapeles
 - [x] Frontend: estado de artículos manuales se resetea al cerrar/reabrir el modal
+
+## Registro por tipo de perfil y onboarding (Jun 2026)
+- [x] Schema DB: tablas profileApplications, companyProfiles, onboardingProgress
+- [x] Backend: router profileSetup con procedimientos selectProfileType, submitApplication, getOnboardingStatus, completeTour, listApplications (admin), reviewApplication (admin)
+- [x] Frontend: página ProfileTypeSelection con tarjetas visuales para 6 tipos de perfil
+- [x] Frontend: formulario ProfileApplicationForm para Expert/Maker/Colaborador con motivación, experiencia, especialidades, certificaciones, redes sociales
+- [x] Frontend: formulario OrgProfileForm para Empresa y Clínica Veterinaria con CIF, empleados, dirección, etc.
+- [x] Frontend: pantalla ProfilePendingApproval para solicitudes pendientes de aprobación
+- [x] Frontend: componente OnboardingTourGuide con tour guiado por flechas/tooltips específico por tipo de perfil (6 tours distintos)
+- [x] Frontend: tour integrado en Dashboard con detección automática (se muestra si tourCompleted=false)
+- [x] Frontend: botón TourTriggerButton para relanzar el tour desde cualquier lugar
+- [x] Admin: página AdminProfileApplications para revisar/aprobar/rechazar solicitudes
+- [x] Admin: enlace en panel de admin a solicitudes de perfil
+- [x] Rutas: /profile-setup, /profile-setup/apply, /profile-setup/org, /profile-setup/pending, /app/admin/profile-applications

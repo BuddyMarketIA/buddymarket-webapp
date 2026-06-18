@@ -2,6 +2,7 @@ import { useState, useMemo, useEffect, useCallback } from "react";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
+import { OnboardingTourGuide } from "@/components/OnboardingTourGuide";
 
 // ─── Widget Config ───────────────────────────────────────────────────────────
 const ALL_WIDGETS = [
@@ -744,6 +745,15 @@ export default function Dashboard() {
   const [showCheckinCard, setShowCheckinCard] = useState(true);
   const [showMealModal, setShowMealModal] = useState(false);
   const [showWidgetConfig, setShowWidgetConfig] = useState(false);
+  // Onboarding tour
+  const onboardingStatus = trpc.profileSetup.getOnboardingStatus.useQuery();
+  const [showTour, setShowTour] = useState(false);
+  useEffect(() => {
+    if (onboardingStatus.data && !onboardingStatus.data.tourCompleted) {
+      const t = setTimeout(() => setShowTour(true), 900);
+      return () => clearTimeout(t);
+    }
+  }, [onboardingStatus.data]);
   const { activeWidgets, toggle, moveUp, moveDown, reset } = useWidgetConfig();
   const has = (id: string) => activeWidgets.includes(id);
 
@@ -777,6 +787,14 @@ export default function Dashboard() {
   return (
     <>
       {showMealModal && <QuickMealModal onClose={() => setShowMealModal(false)} today={today} />}
+      {/* Onboarding tour */}
+      {showTour && (
+        <OnboardingTourGuide
+          profileType={user?.accountType ?? "user"}
+          onComplete={() => setShowTour(false)}
+          onSkip={() => setShowTour(false)}
+        />
+      )}
       {showWidgetConfig && (
         <WidgetConfigPanel
           onClose={() => setShowWidgetConfig(false)}

@@ -5109,3 +5109,100 @@ export const expertWeeklyPlanSlots = pgTable("expert_weekly_plan_slots", {
 }));
 export type ExpertWeeklyPlanSlot = typeof expertWeeklyPlanSlots.$inferSelect;
 export type InsertExpertWeeklyPlanSlot = typeof expertWeeklyPlanSlots.$inferInsert;
+
+// =============================================================================
+// PROFILE SELECTION & ONBOARDING SYSTEM
+// =============================================================================
+
+/** Extended profile types for the post-login profile selection flow */
+export const profileTypeEnum = pgEnum("profileType", [
+  "user",           // Usuario normal
+  "buddyexpert",    // Nutricionista / experto
+  "buddymaker",     // Creador de contenido
+  "empresa",        // Empresa que ofrece licencias a empleados
+  "clinica_vet",    // Clínica veterinaria
+  "colaborador",    // Colaborador (20% comisión, invisible públicamente)
+]);
+
+/**
+ * Applications for roles that require admin approval:
+ * buddyexpert, buddymaker, colaborador
+ */
+export const profileApplications = pgTable("profile_applications", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull(),
+  profileType: profileTypeEnum("profileType").notNull(),
+  status: statusEnum("status").default("pending").notNull(),
+  motivation: text("motivation"),
+  experience: text("experience"),
+  socialLinks: text("socialLinks"),
+  specialties: text("specialties"),
+  certifications: text("certifications"),
+  portfolioUrl: text("portfolioUrl"),
+  referralNetwork: text("referralNetwork"),
+  reviewNote: text("reviewNote"),
+  reviewedAt: timestamp("reviewedAt"),
+  reviewedBy: integer("reviewedBy"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  paUserIdx: index("profile_apps_user_idx").on(t.userId),
+  paStatusIdx: index("profile_apps_status_idx").on(t.status),
+  paUserTypeUnique: unique("profile_apps_user_type_unique").on(t.userId, t.profileType),
+}));
+export type ProfileApplication = typeof profileApplications.$inferSelect;
+export type InsertProfileApplication = typeof profileApplications.$inferInsert;
+
+/**
+ * Extended data for Empresa and Clínica Veterinaria profiles
+ */
+export const organizationProfiles = pgTable("organization_profiles", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().unique(),
+  profileType: profileTypeEnum("profileType").notNull(),
+  organizationName: varchar("organizationName", { length: 256 }).notNull(),
+  cif: varchar("cif", { length: 20 }),
+  address: text("address"),
+  city: varchar("city", { length: 128 }),
+  postalCode: varchar("postalCode", { length: 10 }),
+  country: varchar("country", { length: 64 }).default("España"),
+  phone: varchar("phone", { length: 32 }),
+  website: text("website"),
+  logoUrl: text("logoUrl"),
+  employeeCount: integer("employeeCount"),
+  sector: varchar("sector", { length: 128 }),
+  licenseCount: integer("licenseCount").default(0),
+  contactPersonName: varchar("contactPersonName", { length: 128 }),
+  contactPersonEmail: varchar("contactPersonEmail", { length: 320 }),
+  contactPersonPhone: varchar("contactPersonPhone", { length: 32 }),
+  vetLicenseNumber: varchar("vetLicenseNumber", { length: 64 }),
+  specializations: text("specializations"),
+  vetCount: integer("vetCount"),
+  verified: boolean("verified").default(false).notNull(),
+  verifiedAt: timestamp("verifiedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  opUserIdx: index("org_profiles_user_idx").on(t.userId),
+}));
+export type OrganizationProfile = typeof organizationProfiles.$inferSelect;
+export type InsertOrganizationProfile = typeof organizationProfiles.$inferInsert;
+
+/**
+ * Tracks which onboarding tour steps each user has seen
+ */
+export const onboardingProgress = pgTable("onboarding_progress", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull().unique(),
+  profileType: profileTypeEnum("profileType").notNull(),
+  completedSteps: text("completedSteps").array().default([]).notNull(),
+  tourCompleted: boolean("tourCompleted").default(false).notNull(),
+  tourCompletedAt: timestamp("tourCompletedAt"),
+  tourRestartedAt: timestamp("tourRestartedAt"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  obpUserIdx: index("onboarding_progress_user_idx").on(t.userId),
+}));
+export type OnboardingProgress = typeof onboardingProgress.$inferSelect;
+export type InsertOnboardingProgress = typeof onboardingProgress.$inferInsert;

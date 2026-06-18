@@ -513,6 +513,13 @@ export default function Admin() {
                 <span>🖼️ Generador de Imágenes de Recetas (IA)</span>
                 <span className="text-green-400">→</span>
               </Link>
+              <Link
+                href="/app/admin/profile-applications"
+                className="flex w-full items-center justify-between rounded-xl bg-orange-50 border border-orange-200 px-4 py-2.5 text-sm font-semibold text-orange-700 hover:bg-orange-100"
+              >
+                <span>👥 Solicitudes de perfil (Expert / Maker / Colaborador)</span>
+                <span className="text-orange-400">→</span>
+              </Link>
               {[
                 { label: "Gestionar recetas y fotos", tab: "recipes" },
                 { label: "Gestionar alergias", tab: "allergies" },
