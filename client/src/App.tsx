@@ -150,6 +150,7 @@ const ExpertKanban = lazyWithRetry(() => import("./pages/ExpertKanban"));
 const ExpertRecipes = lazyWithRetry(() => import("./pages/ExpertRecipes"));
 const ExpertProDashboard = lazyWithRetry(() => import("./pages/ExpertProDashboard"));
 const ExpertQuestionnaires = lazyWithRetry(() => import("./pages/ExpertQuestionnaires"));
+const ExpertMealPlanner = lazyWithRetry(() => import("./pages/ExpertMealPlanner"));
 const ExpertChat = lazyWithRetry(() => import("./pages/ExpertChat"));
 const ExpertDashboard = lazyWithRetry(() => import("./pages/ExpertDashboard"));
 const MenuTemplates = lazyWithRetry(() => import("./pages/expert/MenuTemplates"));
@@ -357,6 +358,7 @@ function Router() {
       <Route path="/app/expert/recipes">{() => <ProtectedPage><ExpertRecipes /></ProtectedPage>}</Route>
       <Route path="/app/expert/pro-dashboard">{() => <ProtectedPage><ExpertProDashboard /></ProtectedPage>}</Route>
       <Route path="/app/expert/questionnaires">{() => <ProtectedPage><ExpertQuestionnaires /></ProtectedPage>}</Route>
+      <Route path="/app/expert/meal-planner">{() => <ProtectedPage><ExpertMealPlanner /></ProtectedPage>}</Route>
       <Route path="/app/expert/chat">{() => <ProtectedPage><ExpertChat /></ProtectedPage>}</Route>
       <Route path="/app/expert/menu-templates">{() => <ProtectedPage><MenuTemplates /></ProtectedPage>}</Route>
       <Route path="/app/expert/food-substitutions">{() => <ProtectedPage><FoodSubstitutions /></ProtectedPage>}</Route>

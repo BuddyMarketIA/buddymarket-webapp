@@ -5059,3 +5059,53 @@ export const expertRecipeAssignments = pgTable("expert_recipe_assignments", {
 }));
 export type ExpertRecipeAssignment = typeof expertRecipeAssignments.$inferSelect;
 export type InsertExpertRecipeAssignment = typeof expertRecipeAssignments.$inferInsert;
+
+// =============================================================================
+// EXPERT WEEKLY MEAL PLANNER — Planificador semanal visual para pacientes
+// =============================================================================
+
+// Plan semanal creado por el experto para un paciente offline
+export const expertWeeklyPlans = pgTable("expert_weekly_plans", {
+  id: serial("id").primaryKey(),
+  expertUserId: integer("expertUserId").notNull(),
+  offlinePatientId: integer("offlinePatientId"),       // null = plantilla sin paciente
+  title: varchar("title", { length: 256 }).notNull(),
+  description: text("description"),
+  weekStartDate: date("weekStartDate"),                 // Lunes de la semana
+  isTemplate: boolean("isTemplate").default(false).notNull(),
+  totalCalories: integer("totalCalories"),
+  totalProtein: real("totalProtein"),
+  totalCarbs: real("totalCarbs"),
+  totalFat: real("totalFat"),
+  sentAt: timestamp("sentAt"),
+  sentChannel: varchar("sentChannel", { length: 20 }),
+  notes: text("notes"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  expertIdx: index("ewp_expert_idx").on(t.expertUserId),
+  patientIdx: index("ewp_patient_idx").on(t.offlinePatientId),
+  templateIdx: index("ewp_template_idx").on(t.isTemplate),
+}));
+export type ExpertWeeklyPlan = typeof expertWeeklyPlans.$inferSelect;
+export type InsertExpertWeeklyPlan = typeof expertWeeklyPlans.$inferInsert;
+
+// Cada slot del planificador: día × momento del día × receta
+export const expertWeeklyPlanSlots = pgTable("expert_weekly_plan_slots", {
+  id: serial("id").primaryKey(),
+  weeklyPlanId: integer("weeklyPlanId").notNull(),
+  dayOfWeek: integer("dayOfWeek").notNull(),            // 0=Lunes … 6=Domingo
+  mealTime: mealTimeEnum("mealTime").notNull(),
+  recipeId: integer("recipeId"),                         // null si es texto libre
+  customName: varchar("customName", { length: 256 }),
+  customCalories: integer("customCalories"),
+  servings: real("servings").default(1),
+  notes: text("notes"),
+  sortOrder: integer("sortOrder").default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+}, (t) => ({
+  planIdx: index("ewps_plan_idx").on(t.weeklyPlanId),
+  planDayIdx: index("ewps_plan_day_idx").on(t.weeklyPlanId, t.dayOfWeek),
+}));
+export type ExpertWeeklyPlanSlot = typeof expertWeeklyPlanSlots.$inferSelect;
+export type InsertExpertWeeklyPlanSlot = typeof expertWeeklyPlanSlots.$inferInsert;
