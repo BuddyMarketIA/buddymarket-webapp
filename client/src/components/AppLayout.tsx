@@ -27,6 +27,7 @@ import LogoutConfirmDialog from "@/components/LogoutConfirmDialog";
 import { OnboardingModal } from "@/components/OnboardingModal";
 import OfflineIndicator from "@/components/OfflineIndicator";
 import FeedbackButton from "@/components/FeedbackButton";
+import { useBadgeNotifications } from "@/components/BadgeUnlockedToast";
 
 // ─── Hook: detecta si estamos en desktop (≥1024px) ───────────────────────────
 function useIsDesktop() {
@@ -446,6 +447,8 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
 
   // ⚠️ These hooks MUST be here (before any conditional return) to avoid React error #300
   const { planDisplay, isFree } = usePlan();
+  // Badge notifications — polls every 30s and shows toast when a new badge is awarded
+  useBadgeNotifications();
   const profileData = trpc.profile.get.useQuery(undefined, { enabled: !!user, staleTime: 5 * 60 * 1000 });
 
   const [installPrompt, setInstallPrompt] = useState<any>(null);
@@ -614,6 +617,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
         { key: "/app/buddy-makers", label: t("nav.buddyMakers"), to: "/app/buddy-makers", emoji: "👨‍🍳" },
         { key: "/app/my-expert", label: "Mi nutricionista", to: "/app/my-expert", emoji: "👩‍⚕️" },
         { key: "https://buddycoach.io", label: "BuddyCoach", to: "https://buddycoach.io", emoji: "🏋️" },
+        { key: "/app/badges", label: "Mis Insignias", to: "/app/badges", emoji: "🏆" },
       ],
     },
     {
@@ -684,6 +688,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
     "/app/metrics": "Mis Métricas",
     "/app/health-hub": "Health Hub",
     "/app/referrals": "Invitar amigos",
+    "/app/badges": "Mis Insignias",
     "/app/soporte": "Soporte",
     "/app/favorites": "Mis Favoritas",
     "/app/meal-notifications": "Recordatorios",

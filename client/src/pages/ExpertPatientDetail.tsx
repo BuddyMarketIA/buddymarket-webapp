@@ -17,7 +17,7 @@ import { MessageCircle } from "lucide-react";
 import { generatePatientPDF } from "@/hooks/usePDFReport";
 import { ChatMarkdown } from "@/lib/renderChatMarkdown";
 
-type Tab = "messages" | "menus" | "appointments" | "progress" | "notes" | "profile" | "diary" | "sessions" | "analysis" | "checkins" | "documents" | "clinical";
+type Tab = "messages" | "menus" | "appointments" | "progress" | "notes" | "profile" | "diary" | "sessions" | "analysis" | "checkins" | "documents" | "clinical" | "billing";
 
 const NOTE_TYPE_LABELS: Record<string, { label: string; color: string; icon: string }> = {
   general: { label: "General", color: "bg-muted/50 text-foreground/80", icon: "📝" },
@@ -292,6 +292,35 @@ export default function ExpertPatientDetail() {
     onSuccess: () => { toast.success("Visibilidad actualizada"); refetchDocuments(); },
   });
 
+  // Facturación queries & mutations
+  const [showInvoiceModal, setShowInvoiceModal] = useState(false);
+  const [invoiceForm, setInvoiceForm] = useState({ concept: "", amount: "", patientName: "", patientEmail: "", dueDate: "", notes: "" });
+  const { data: invoicesData, refetch: refetchInvoices } = trpc.expertBilling.listInvoices.useQuery(
+    { expertPatientId: patientRelId },
+    { enabled: !!user && patientRelId > 0 && activeTab === "billing" }
+  );
+  const { data: billingSummary } = trpc.expertBilling.getSummary.useQuery(
+    undefined,
+    { enabled: !!user && activeTab === "billing" }
+  );
+  const createInvoiceMutation = trpc.expertBilling.createInvoice.useMutation({
+    onSuccess: () => {
+      toast.success("💰 Factura creada correctamente");
+      setShowInvoiceModal(false);
+      setInvoiceForm({ concept: "", amount: "", patientName: "", patientEmail: "", dueDate: "", notes: "" });
+      refetchInvoices();
+    },
+    onError: () => toast.error("Error al crear la factura"),
+  });
+  const updateInvoiceStatusMutation = trpc.expertBilling.updateStatus.useMutation({
+    onSuccess: () => { toast.success("Estado de factura actualizado"); refetchInvoices(); },
+    onError: () => toast.error("Error al actualizar la factura"),
+  });
+  const deleteInvoiceMutation = trpc.expertBilling.deleteInvoice.useMutation({
+    onSuccess: () => { toast.success("Factura eliminada"); refetchInvoices(); },
+    onError: () => toast.error("Error al eliminar la factura"),
+  });
+
   // Métricas clínicas queries & mutations
   const { data: clinicalData, refetch: refetchClinical } = trpc.expertDocuments.getClinicalMetrics.useQuery(
     { expertPatientId: patientRelId },
@@ -392,6 +421,7 @@ export default function ExpertPatientDetail() {
     { id: "sessions", label: "Historial", icon: "📋", count: undefined },
     { id: "checkins", label: "Check-ins", icon: "✅" },
     { id: "analysis", label: "Análisis IA", icon: "🧠" },
+    { id: "billing", label: "Facturación", icon: "💰" },
     { id: "profile", label: "Perfil", icon: "👤" },
   ];
 
@@ -1782,7 +1812,164 @@ export default function ExpertPatientDetail() {
             )}
           </div>
         )}
-      </div>
+            </div>
+
+      {/* ─── TAB: FACTURACIÓN ────────────────────────────────────────────────────────────────────── */}
+      {activeTab === "billing" && (
+        <div className="space-y-4">
+          <div className="flex items-center justify-between">
+            <div>
+              <h3 className="font-semibold text-foreground/80">💰 Facturación</h3>
+              <p className="text-xs text-muted-foreground/70 mt-0.5">Facturas y cobros de consultas con este paciente</p>
+            </div>
+            <Button onClick={() => setShowInvoiceModal(true)} className="bg-orange-500 hover:bg-orange-600 text-white" size="sm">
+              + Nueva factura
+            </Button>
+          </div>
+
+          {/* Resumen de facturación */}
+          {billingSummary && (
+            <div className="grid grid-cols-3 gap-3">
+              <div className="p-3 bg-green-50 rounded-xl text-center">
+                <p className="text-xs text-muted-foreground">Cobrado</p>
+                <p className="text-lg font-bold text-green-600">{(billingSummary.totalPaid / 100).toFixed(2)}€</p>
+                <p className="text-xs text-muted-foreground">{billingSummary.paidCount} facturas</p>
+              </div>
+              <div className="p-3 bg-yellow-50 rounded-xl text-center">
+                <p className="text-xs text-muted-foreground">Pendiente</p>
+                <p className="text-lg font-bold text-yellow-600">{(billingSummary.totalPending / 100).toFixed(2)}€</p>
+                <p className="text-xs text-muted-foreground">{billingSummary.pendingCount} facturas</p>
+              </div>
+              <div className="p-3 bg-muted/30 rounded-xl text-center">
+                <p className="text-xs text-muted-foreground">Borradores</p>
+                <p className="text-lg font-bold text-foreground/70">{billingSummary.draftCount}</p>
+                <p className="text-xs text-muted-foreground">sin enviar</p>
+              </div>
+            </div>
+          )}
+
+          {/* Lista de facturas */}
+          {!invoicesData || invoicesData.length === 0 ? (
+            <div className="text-center py-12 bg-muted/30 rounded-xl border border-dashed border-border">
+              <div className="text-4xl mb-2">💰</div>
+              <p className="text-muted-foreground font-medium">Sin facturas registradas</p>
+              <p className="text-sm text-muted-foreground/70 mt-1">Crea tu primera factura para este paciente</p>
+              <Button onClick={() => setShowInvoiceModal(true)} className="mt-3 bg-orange-500 hover:bg-orange-600 text-white" size="sm">
+                Crear factura
+              </Button>
+            </div>
+          ) : (
+            <div className="space-y-3">
+              {invoicesData.map(invoice => {
+                const statusConfig: Record<string, { label: string; color: string }> = {
+                  draft: { label: "Borrador", color: "bg-muted/50 text-foreground/70" },
+                  sent: { label: "Enviada", color: "bg-yellow-100 text-yellow-700" },
+                  paid: { label: "Pagada", color: "bg-green-100 text-green-700" },
+                  cancelled: { label: "Cancelada", color: "bg-red-100 text-red-700" },
+                };
+                const sc = statusConfig[invoice.status] ?? statusConfig.draft;
+                return (
+                  <div key={invoice.id} className="p-4 bg-background rounded-xl border border-border">
+                    <div className="flex items-start justify-between gap-2">
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <span className="font-medium text-sm text-foreground/80">{invoice.invoiceNumber}</span>
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-medium ${sc.color}`}>{sc.label}</span>
+                        </div>
+                        <p className="text-sm text-foreground/70 mt-0.5">{invoice.concept}</p>
+                        {invoice.patientName && <p className="text-xs text-muted-foreground mt-0.5">👤 {invoice.patientName}</p>}
+                        <p className="text-xs text-muted-foreground mt-0.5">{new Date(invoice.issuedAt).toLocaleDateString("es-ES")}</p>
+                      </div>
+                      <div className="text-right">
+                        <p className="font-bold text-lg text-foreground">{(invoice.amount / 100).toFixed(2)}€</p>
+                        <div className="flex gap-1 mt-1 justify-end">
+                          {invoice.status === "draft" && (
+                            <Button size="sm" variant="outline" className="text-xs h-6 px-2"
+                              onClick={() => updateInvoiceStatusMutation.mutate({ invoiceId: invoice.id, status: "sent" })}>
+                              Enviar
+                            </Button>
+                          )}
+                          {invoice.status === "sent" && (
+                            <Button size="sm" variant="outline" className="text-xs h-6 px-2 text-green-700 border-green-300"
+                              onClick={() => updateInvoiceStatusMutation.mutate({ invoiceId: invoice.id, status: "paid" })}>
+                              Marcar pagada
+                            </Button>
+                          )}
+                          {invoice.status === "draft" && (
+                            <Button size="sm" variant="outline" className="text-xs h-6 px-2 text-red-600 border-red-300"
+                              onClick={() => { if (confirm("\u00bfEliminar factura?")) deleteInvoiceMutation.mutate({ invoiceId: invoice.id }); }}>
+                              Eliminar
+                            </Button>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    {invoice.notes && <p className="text-xs text-muted-foreground/70 mt-2 italic">{invoice.notes}</p>}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+        </div>
+      )}
+
+      {/* Modal: Nueva factura */}
+      <Dialog open={showInvoiceModal} onOpenChange={setShowInvoiceModal}>
+        <DialogContent className="max-w-md">
+          <DialogHeader>
+            <DialogTitle>💰 Nueva factura</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-2">
+            <div>
+              <Label>Concepto *</Label>
+              <Input placeholder="Ej: Consulta nutricional inicial, Plan mensual..." value={invoiceForm.concept}
+                onChange={e => setInvoiceForm(prev => ({ ...prev, concept: e.target.value }))} className="mt-1" />
+            </div>
+            <div>
+              <Label>Importe (€) *</Label>
+              <Input type="number" step="0.01" min="0" placeholder="50.00" value={invoiceForm.amount}
+                onChange={e => setInvoiceForm(prev => ({ ...prev, amount: e.target.value }))} className="mt-1" />
+            </div>
+            <div className="grid grid-cols-2 gap-3">
+              <div>
+                <Label>Nombre del paciente</Label>
+                <Input placeholder="Nombre" value={invoiceForm.patientName}
+                  onChange={e => setInvoiceForm(prev => ({ ...prev, patientName: e.target.value }))} className="mt-1" />
+              </div>
+              <div>
+                <Label>Fecha vencimiento</Label>
+                <Input type="date" value={invoiceForm.dueDate}
+                  onChange={e => setInvoiceForm(prev => ({ ...prev, dueDate: e.target.value }))} className="mt-1" />
+              </div>
+            </div>
+            <div>
+              <Label>Notas (opcional)</Label>
+              <Textarea placeholder="Observaciones adicionales..." value={invoiceForm.notes}
+                onChange={e => setInvoiceForm(prev => ({ ...prev, notes: e.target.value }))} className="mt-1" rows={2} />
+            </div>
+          </div>
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setShowInvoiceModal(false)}>Cancelar</Button>
+            <Button
+              onClick={() => {
+                if (!invoiceForm.concept.trim() || !invoiceForm.amount) return;
+                createInvoiceMutation.mutate({
+                  expertPatientId: patientRelId,
+                  concept: invoiceForm.concept.trim(),
+                  amount: parseFloat(invoiceForm.amount),
+                  patientName: invoiceForm.patientName.trim() || undefined,
+                  dueDate: invoiceForm.dueDate || undefined,
+                  notes: invoiceForm.notes.trim() || undefined,
+                });
+              }}
+              disabled={!invoiceForm.concept.trim() || !invoiceForm.amount || createInvoiceMutation.isPending}
+              className="bg-orange-500 hover:bg-orange-600 text-white"
+            >
+              {createInvoiceMutation.isPending ? "Creando..." : "Crear factura"}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
 
       {/* Modal: Sesión / Acta de consulta */}
       <Dialog open={showSessionModal} onOpenChange={setShowSessionModal}>

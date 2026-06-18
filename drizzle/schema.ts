@@ -5206,3 +5206,33 @@ export const onboardingProgress = pgTable("onboarding_progress", {
 }));
 export type OnboardingProgress = typeof onboardingProgress.$inferSelect;
 export type InsertOnboardingProgress = typeof onboardingProgress.$inferInsert;
+
+/**
+ * Expert invoices — billing records for expert consultations
+ */
+export const expertInvoiceStatusEnum = pgEnum("expert_invoice_status", ["draft", "sent", "paid", "cancelled"]);
+
+export const expertInvoices = pgTable("expert_invoices", {
+  id: serial("id").primaryKey(),
+  expertUserId: integer("expertUserId").notNull(),
+  patientUserId: integer("patientUserId"),
+  expertPatientId: integer("expertPatientId"),
+  invoiceNumber: text("invoiceNumber").notNull(),
+  concept: text("concept").notNull(),
+  amount: integer("amount").notNull(), // in cents
+  currency: text("currency").default("EUR").notNull(),
+  status: expertInvoiceStatusEnum("status").default("draft").notNull(),
+  issuedAt: timestamp("issuedAt").defaultNow().notNull(),
+  paidAt: timestamp("paidAt"),
+  dueDate: timestamp("dueDate"),
+  notes: text("notes"),
+  patientName: text("patientName"),
+  patientEmail: text("patientEmail"),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  expertInvExpertIdx: index("expert_inv_expert_idx").on(t.expertUserId),
+  expertInvPatientIdx: index("expert_inv_patient_idx").on(t.patientUserId),
+}));
+export type ExpertInvoice = typeof expertInvoices.$inferSelect;
+export type InsertExpertInvoice = typeof expertInvoices.$inferInsert;

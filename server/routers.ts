@@ -35,6 +35,7 @@ import { expertRecipesRouter } from "./routers/expertRecipes";
 import { expertMealPlannerRouter } from "./routers/expertMealPlanner";
 import { profileSetupRouter } from "./routers/profileSetup";
 import { expertDocumentsRouter } from "./routers/expertDocuments";
+import { expertBillingRouter } from "./routers/expertBilling";
 import { expertFeatureRequestsRouter } from "./routers/expertFeatureRequests";
 import { recipeImagesRouter } from "./routers/recipeImages";
 import { instagramRecipeRouter } from "./routers/instagramRecipe";
@@ -312,6 +313,7 @@ export const appRouter = router({
   expertMealPlanner: expertMealPlannerRouter,
   profileSetup: profileSetupRouter,
   expertDocuments: expertDocumentsRouter,
+  expertBilling: expertBillingRouter,
   recipeImages: recipeImagesRouter,
   instagramRecipe: instagramRecipeRouter,
   quickSuggest: quickSuggestRouter,
@@ -1685,6 +1687,22 @@ Devuelve SOLO JSON válido con esta estructura:
         if (categoryIds) await db.setRecipeCategories(id, categoryIds);
         if (allergyIds) await db.setRecipeAllergies(id, allergyIds);
         if (restrictionIds) await db.setRecipeDietRestrictions(id, restrictionIds);
+        // Award badges when sharing a recipe for the first time
+        if (data.isPublic === true && !recipe.isPublic) {
+          try {
+            const drizzleDb = await db.getDb();
+            if (drizzleDb) {
+              const { recipes: recipesTable } = await import("../drizzle/schema.js");
+              const { eq, and, count } = await import("drizzle-orm");
+              const [sharedCount] = await drizzleDb.select({ count: count() }).from(recipesTable)
+                .where(and(eq(recipesTable.userId, ctx.user.id), eq(recipesTable.isPublic, true)));
+              const total = Number(sharedCount?.count ?? 0);
+              if (total >= 1) await db.awardBadge(ctx.user.id, "first_share");
+              if (total >= 5) await db.awardBadge(ctx.user.id, "recipe_sharer");
+              if (total >= 10) await db.awardBadge(ctx.user.id, "recipe_influencer");
+            }
+          } catch { /* non-critical */ }
+        }
         return { success: true };
       }),
 

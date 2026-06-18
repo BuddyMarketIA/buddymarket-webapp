@@ -666,6 +666,13 @@
       "when": 1781781944191,
       "tag": "0094_condemned_xavin",
       "breakpoints": true
+    },
+    {
+      "idx": 95,
+      "version": "7",
+      "when": 1781815611118,
+      "tag": "0095_panoramic_micromax",
+      "breakpoints": true
     }
   ]
 }
