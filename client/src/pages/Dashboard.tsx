@@ -822,7 +822,7 @@ export default function Dashboard() {
   const streak = streakData.data?.currentStreak ?? 0;
   const lvl = levelInfo.data;
   const recipe = contextualRecipe.data;
-  const recs = recommendedRecipes.data ?? [];
+  const recs = (recommendedRecipes.data as any)?.recipes ?? recommendedRecipes.data ?? [];
   const hasPendingCheckin = (pendingCheckins.data?.length ?? 0) > 0;
 
   return (
