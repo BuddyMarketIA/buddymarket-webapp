@@ -1,4 +1,4 @@
-import { useState, useCallback, useEffect } from "react";
+import { useState, useCallback, useEffect, useRef } from "react";
 import { useTranslation } from "react-i18next";
 import { trpc } from "@/lib/trpc";
 import { toast } from "@/components/sonner-a11y-shim";
@@ -1166,7 +1166,7 @@ function MenuResultView({
   const [localMenu, setLocalMenu] = useState<GeneratedMenu>(() => JSON.parse(JSON.stringify(menu)));
 
   // ── Auto-save when the menu is first generated ──────────────────────────────
-  const autoSaveRef = React.useRef(false);
+  const autoSaveRef = useRef(false);
 
   // ── Replace-meal panel state ──────────────────────────────────────────────
   type ReplaceState = { dayIdx: number; mealIdx: number } | null;
@@ -1320,7 +1320,7 @@ function MenuResultView({
   });
 
   // Auto-save on first render (once menu is generated)
-  React.useEffect(() => {
+  useEffect(() => {
     if (autoSaveRef.current || saved || saveMutation.isPending) return;
     autoSaveRef.current = true;
     const baseDate = questionnaireData.startDate || new Date().toISOString().split("T")[0];

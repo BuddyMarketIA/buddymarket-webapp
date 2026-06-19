@@ -444,11 +444,11 @@ function StreakWidget({ streak, level, levelName }: { streak: number; level: num
 
 // ─── Recommendations ──────────────────────────────────────────────────────────
 function RecommendationsList({ recipes }: { recipes: any[] }) {
-  const [currentIdx, setCurrentIdx] = React.useState(0);
+  const [currentIdx, setCurrentIdx] = useState(0);
   const trackInteraction = trpc.recommendations.trackInteraction.useMutation();
 
   // Auto-rotate every 4 seconds
-  React.useEffect(() => {
+  useEffect(() => {
     if (recipes.length <= 1) return;
     const timer = setInterval(() => setCurrentIdx(i => (i + 1) % Math.min(recipes.length, 6)), 4000);
     return () => clearInterval(timer);
