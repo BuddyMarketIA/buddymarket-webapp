@@ -102,10 +102,10 @@ export function useBadgeNotifications() {
   });
 
   useEffect(() => {
-    if (!myBadges) return;
+    if (!myBadges?.badges) return;
     const now = Date.now();
     // Find badges earned in the last 35 seconds (slightly more than refetch interval)
-    const newBadges = myBadges.filter((ub: any) => {
+    const newBadges = myBadges.badges.filter((ub: any) => {
       const earnedAt = new Date(ub.userBadge?.earnedAt ?? ub.earnedAt ?? 0).getTime();
       return earnedAt > lastCheckedRef.current - 35000 && earnedAt > Date.now() - 60000;
     });

@@ -1,20 +1,20 @@
 /**
- * BuddyMarket Service Worker v2.0
+ * BuddyMarket Service Worker v3.0
  * - Notificaciones push de recordatorios de comidas
  * - Caché offline para assets estáticos
  */
 
-const CACHE_NAME = "buddymarket-v2";
+const CACHE_NAME = "buddymarket-v3";
 
 // ─── Install ──────────────────────────────────────────────────────────────────
 self.addEventListener("install", (event) => {
-  console.log("[SW] Installing BuddyMarket SW v2");
+  console.log("[SW] Installing BuddyMarket SW v3");
   event.waitUntil(self.skipWaiting());
 });
 
 // ─── Activate ─────────────────────────────────────────────────────────────────
 self.addEventListener("activate", (event) => {
-  console.log("[SW] Activating BuddyMarket SW v2");
+  console.log("[SW] Activating BuddyMarket SW v3");
   event.waitUntil(
     caches.keys()
       .then((keys) => Promise.all(keys.filter((k) => k !== CACHE_NAME).map((k) => caches.delete(k))))
@@ -35,7 +35,21 @@ self.addEventListener("fetch", (event) => {
     return;
   }
 
-  if (url.pathname.match(/\.(js|css|woff2?|png|jpg|webp|svg|ico)$/)) {
+  // JS/CSS: network-first para siempre recibir código actualizado
+  if (url.pathname.match(/\.js$|\.css$/)) {
+    event.respondWith(
+      fetch(event.request).then((response) => {
+        if (response.ok) {
+          const clone = response.clone();
+          caches.open(CACHE_NAME).then((cache) => cache.put(event.request, clone));
+        }
+        return response;
+      }).catch(() => caches.match(event.request))
+    );
+    return;
+  }
+  // Otros assets estáticos: cache-first
+  if (url.pathname.match(/\.(woff2?|png|jpg|webp|svg|ico)$/)) {
     event.respondWith(
       caches.match(event.request).then(
         (cached) => cached || fetch(event.request).then((response) => {
