@@ -565,11 +565,11 @@ function SaveMenuDialog({
 
   const saveMutation = trpc.menus.saveFromLibrary.useMutation({
     onSuccess: () => {
-      toast.success("¡Menú activado! Redirigiendo a tu menú en curso...");
+      toast.success("✅ ¡Menú guardado y activado! Abriendo el planificador...");
       utils.menus.list.invalidate();
       utils.menus.getActive.invalidate();
       onClose();
-      setTimeout(() => navigate("/app/active-menu"), 500);
+      setTimeout(() => navigate("/app/menus"), 500);
     },
     onError: (err) => {
       toast.error("Error al guardar el menú: " + err.message);

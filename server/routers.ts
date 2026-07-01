@@ -2309,10 +2309,15 @@ Adapta esta receta eliminando los ingredientes prohibidos y sustituyéndolos por
 
     // Get all items for a specific date across all user menus
     getItemsByDate: protectedProcedure
-      .input(z.object({ date: z.string() }))
+      .input(z.object({ date: z.string(), menuId: z.number().optional() }))
       .query(async ({ ctx, input }) => {
-        const userMenus = await db.getMenuOrganizers(ctx.user.id);
+        let userMenus = await db.getMenuOrganizers(ctx.user.id);
         if (!userMenus.length) return [];
+        // If menuId is provided, filter to only that specific menu
+        if (input.menuId) {
+          userMenus = userMenus.filter((m: any) => m.id === input.menuId);
+          if (!userMenus.length) return [];
+        }
         const results: any[] = [];
         const targetDate = new Date(input.date + "T00:00:00Z");
         for (const menu of userMenus) {

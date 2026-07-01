@@ -297,8 +297,9 @@ function MenuCard({
 
 // ─── Sub-component: Tab "Menú en curso" ──────────────────────────────────────
 
-function ActiveMenuTab() {
+function ActiveMenuTab({ editMenuId }: { editMenuId?: number }) {
   const { t }                 = useTranslation();
+  const [, navigate]          = useLocation();
   const MEAL_TYPES            = MEAL_TYPE_KEYS.map(m => ({ ...m, label: t(m.tKey, m.label) }));
   const [weekOffset, setWeekOffset]   = useState(0);
   const [selectedDate, setSelectedDate] = useState<Date>(() => new Date());
@@ -315,9 +316,13 @@ function ActiveMenuTab() {
 
   const { data: menus }    = trpc.menus.list.useQuery();
   const activeMenu         = useMemo(() => menus?.find((m: any) => m.isActive) ?? null, [menus]);
+  // If editMenuId is provided, use that specific menu; otherwise use the active menu
+  const editMenu           = useMemo(() => editMenuId ? (menus?.find((m: any) => m.id === editMenuId) ?? null) : null, [menus, editMenuId]);
+  const targetMenu         = editMenu ?? activeMenu;
+  const isEditingOtherMenu = !!editMenuId && editMenu && !editMenu.isActive;
   const { data: dayItems, refetch: refetchDayItems, isLoading: loadingDayItems } = trpc.menus.getItemsByDate.useQuery(
-    { date: selectedDateStr },
-    { enabled: !!activeMenu }
+    { date: selectedDateStr, menuId: editMenuId },
+    { enabled: !!targetMenu }
   );
   const { data: recipeResults } = trpc.recipes.list.useQuery(
     { search: recipeSearch, limit: 20, excludeUserAllergens: true },
@@ -346,9 +351,9 @@ function ActiveMenuTab() {
   });
 
   const handleAddToMeal = async (mealType: string) => {
-    if (!activeMenu) { toast.error("No tienes ningún menú activo. Ve a 'Mis menús' para activar uno."); return; }
+    if (!targetMenu) { toast.error("No tienes ningún menú activo. Ve a 'Mis menús' para activar uno."); return; }
     try {
-      const result = await ensureDayPart.mutateAsync({ menuId: activeMenu.id, date: selectedDateStr, mealType });
+      const result = await ensureDayPart.mutateAsync({ menuId: targetMenu.id, date: selectedDateStr, mealType });
       setShowAddRecipe({ dayPartId: result.id, mealType });
     } catch { toast.error("Error preparando el menú"); }
   };
@@ -382,7 +387,7 @@ function ActiveMenuTab() {
   });
 
   // ── No active menu state ──
-  if (!activeMenu) {
+  if (!targetMenu) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center px-4">
         <div className="mb-4 flex h-20 w-20 items-center justify-center rounded-3xl bg-orange-50">
@@ -406,17 +411,52 @@ function ActiveMenuTab() {
 
   return (
     <div>
-      {/* Active menu banner */}
-      <div className="mb-4 rounded-2xl overflow-hidden shadow-sm">
-        {activeMenu.coverImage ? (
-          <div className="relative h-24">
-            <img src={activeMenu.coverImage} alt={activeMenu.name} className="w-full h-full object-cover" />
-            <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-black/20 flex items-center justify-between px-4">
-              <div className="flex items-center gap-2">
+      {/* Banner: editing another menu vs active menu */}
+      {isEditingOtherMenu ? (
+        <div className="mb-4 rounded-2xl bg-blue-50 border border-blue-200 p-4 flex items-center justify-between">
+          <div className="flex items-center gap-2 min-w-0">
+            <span className="text-lg">✏️</span>
+            <div className="min-w-0">
+              <p className="text-xs font-semibold text-blue-600 uppercase tracking-wide">Editando menú</p>
+              <p className="text-sm font-bold text-foreground truncate">{targetMenu.name}</p>
+            </div>
+          </div>
+          <button
+            onClick={() => navigate("/app/my-menus")}
+            className="shrink-0 flex items-center gap-1.5 rounded-xl bg-blue-600 px-3 py-1.5 text-xs font-bold text-white"
+          >
+            ← Volver
+          </button>
+        </div>
+      ) : (
+        <div className="mb-4 rounded-2xl overflow-hidden shadow-sm">
+          {targetMenu.coverImage ? (
+            <div className="relative h-24">
+              <img src={targetMenu.coverImage} alt={targetMenu.name} className="w-full h-full object-cover" />
+              <div className="absolute inset-0 bg-gradient-to-r from-black/60 to-black/20 flex items-center justify-between px-4">
+                <div className="flex items-center gap-2">
+                  <CheckCircleIcon className="h-5 w-5 text-[#F97316] shrink-0" />
+                  <div>
+                    <p className="text-[10px] font-semibold text-orange-300 uppercase tracking-wide">Menú en curso</p>
+                    <p className="text-sm font-bold text-white">{targetMenu.name}</p>
+                  </div>
+                </div>
+                <button
+                  onClick={() => { setShowApplyModal(true); setApplyStartDate(new Date().toISOString().split("T")[0]); }}
+                  className="shrink-0 flex items-center gap-1.5 rounded-xl bg-[#F97316] px-3 py-1.5 text-xs font-bold text-white"
+                >
+                  <CalendarDaysIcon className="h-3.5 w-3.5" />
+                  Aplicar al diario
+                </button>
+              </div>
+            </div>
+          ) : (
+            <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-100 p-4 flex items-center justify-between">
+              <div className="flex items-center gap-2 min-w-0">
                 <CheckCircleIcon className="h-5 w-5 text-[#F97316] shrink-0" />
-                <div>
-                  <p className="text-[10px] font-semibold text-orange-300 uppercase tracking-wide">Menú en curso</p>
-                  <p className="text-sm font-bold text-white">{activeMenu.name}</p>
+                <div className="min-w-0">
+                  <p className="text-xs font-semibold text-orange-500 uppercase tracking-wide">Menú en curso</p>
+                  <p className="text-sm font-bold text-foreground truncate">{targetMenu.name}</p>
                 </div>
               </div>
               <button
@@ -427,26 +467,9 @@ function ActiveMenuTab() {
                 Aplicar al diario
               </button>
             </div>
-          </div>
-        ) : (
-          <div className="bg-gradient-to-r from-orange-50 to-amber-50 border border-orange-100 p-4 flex items-center justify-between">
-            <div className="flex items-center gap-2 min-w-0">
-              <CheckCircleIcon className="h-5 w-5 text-[#F97316] shrink-0" />
-              <div className="min-w-0">
-                <p className="text-xs font-semibold text-orange-500 uppercase tracking-wide">Menú en curso</p>
-                <p className="text-sm font-bold text-foreground truncate">{activeMenu.name}</p>
-              </div>
-            </div>
-            <button
-              onClick={() => { setShowApplyModal(true); setApplyStartDate(new Date().toISOString().split("T")[0]); }}
-              className="shrink-0 flex items-center gap-1.5 rounded-xl bg-[#F97316] px-3 py-1.5 text-xs font-bold text-white"
-            >
-              <CalendarDaysIcon className="h-3.5 w-3.5" />
-              Aplicar al diario
-            </button>
-          </div>
-        )}
-      </div>
+          )}
+        </div>
+      )}
 
       {/* Week navigation */}
       <div className="mb-3 flex items-center justify-between">
@@ -648,7 +671,7 @@ function ActiveMenuTab() {
             <div className="flex gap-3">
               <button onClick={() => setShowApplyModal(false)} className="flex-1 rounded-2xl border border-border py-3 text-sm font-semibold text-muted-foreground">Cancelar</button>
               <button
-                onClick={() => applyToCalendar.mutate({ menuId: activeMenu.id, startDate: applyStartDate })}
+                onClick={() => applyToCalendar.mutate({ menuId: targetMenu!.id, startDate: applyStartDate })}
                 disabled={applyToCalendar.isPending}
                 className="flex-1 btn-vively"
               >
@@ -995,6 +1018,8 @@ function ExploreMenusTab() {
 export default function Menus() {
   const [searchParams] = useState(() => new URLSearchParams(window.location.search));
   const initialTab = (searchParams.get("tab") as TabId) ?? "active";
+  const editMenuIdParam = searchParams.get("editMenu");
+  const editMenuId = editMenuIdParam ? parseInt(editMenuIdParam, 10) : undefined;
   const [tab, setTab] = useState<TabId>(initialTab);
 
   return (
@@ -1008,7 +1033,7 @@ export default function Menus() {
       <TabBar tab={tab} setTab={setTab} />
 
       {/* Tab content */}
-      {tab === "active"  && <ActiveMenuTab />}
+      {tab === "active"  && <ActiveMenuTab editMenuId={editMenuId} />}
       {tab === "saved"   && <SavedMenusTab />}
       {tab === "explore" && <ExploreMenusTab />}
     </div>

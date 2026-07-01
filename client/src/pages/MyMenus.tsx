@@ -17,6 +17,7 @@ import {
   EllipsisVerticalIcon,
   CheckCircleIcon,
   ClockIcon,
+  PencilSquareIcon,
 } from "@heroicons/react/24/outline";
 import { CheckCircleIcon as CheckCircleSolid } from "@heroicons/react/24/solid";
 
@@ -431,6 +432,23 @@ function MenuCard({ menu, onRefresh }: { menu: MenuOrganizer; onRefresh: () => v
         {/* Dropdown menu */}
         {menuOpen && (
           <div className="border-t border-border bg-muted/20">
+            {/* Edit recipes - full width button */}
+            <button
+              onClick={() => {
+                setMenuOpen(false);
+                if (menu.isActive) {
+                  // Active menu: go directly to the planner
+                  navigate("/app/menus");
+                } else {
+                  // Non-active menu: open planner in edit mode for this specific menu
+                  navigate(`/app/menus?tab=active&editMenu=${menu.id}`);
+                }
+              }}
+              className="w-full flex items-center gap-2 px-4 py-3 text-xs font-semibold text-[#F97316] hover:bg-orange-50 transition-colors border-b border-border"
+            >
+              <PencilSquareIcon className="h-3.5 w-3.5" />
+              ✏️ Editar recetas del menú
+            </button>
             <div className="grid grid-cols-2">
               <button
                 onClick={() => { setMenuOpen(false); setShowRename(true); }}
