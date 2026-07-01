@@ -151,6 +151,8 @@ export default function Inventory() {
   const suggestExpiry = trpc.inventory.suggestExpirationDate.useMutation();
   const generateAntiWaste = trpc.inventory.generateRecipesFromExpiring.useMutation();
   const generateFromInventory = trpc.inventory.generateRecipesFromInventory.useMutation();
+  const canCookNowQuery = trpc.inventory.canCookNow.useQuery({ limit: 12 }, { staleTime: 5 * 60 * 1000 });
+  const [showCanCookNow, setShowCanCookNow] = useState(false);
   const [showInventoryRecipes, setShowInventoryRecipes] = useState(false);
   const [generatingInventoryRecipes, setGeneratingInventoryRecipes] = useState(false);
   const [inventoryRecipes, setInventoryRecipes] = useState<Array<{
@@ -488,6 +490,46 @@ export default function Inventory() {
         </div>
       )}
 
+      {/* Puedes cocinar ahora — exact ingredient match section */}
+      {(canCookNowQuery.data?.recipes?.length ?? 0) > 0 && (
+        <div className="mb-5 rounded-2xl border border-green-200 bg-gradient-to-br from-green-50 to-emerald-50 p-4">
+          <div className="mb-3 flex items-center justify-between">
+            <div className="flex items-center gap-2">
+              <span className="text-xl">🍳</span>
+              <div>
+                <p className="text-sm font-bold text-green-900">Puedes cocinar ahora</p>
+                <p className="text-xs text-green-600">{canCookNowQuery.data!.recipes.length} receta{canCookNowQuery.data!.recipes.length !== 1 ? "s" : ""} con tus ingredientes exactos</p>
+              </div>
+            </div>
+            <button
+              onClick={() => setShowCanCookNow(!showCanCookNow)}
+              className="flex items-center gap-1 rounded-xl bg-green-600 px-3 py-2 text-xs font-bold text-white shadow-sm active:scale-95 transition-transform"
+            >
+              {showCanCookNow ? "Ocultar" : "Ver recetas"}
+            </button>
+          </div>
+          {showCanCookNow && (
+            <div className="grid grid-cols-2 gap-2 mt-2">
+              {canCookNowQuery.data!.recipes.map((r) => (
+                <button
+                  key={r.id}
+                  onClick={() => navigate(`/app/recipes/${r.id}`)}
+                  className="flex flex-col items-start gap-1 rounded-xl border border-green-200 bg-white p-3 text-left shadow-sm hover:border-green-400 active:scale-95 transition-transform"
+                >
+                  {r.imageUrl && (
+                    <img src={r.imageUrl} alt={r.name} className="w-full h-20 object-cover rounded-lg mb-1" />
+                  )}
+                  <p className="text-xs font-bold text-foreground line-clamp-2">{r.name}</p>
+                  <div className="flex gap-2 flex-wrap">
+                    {r.calories && <span className="text-xs text-green-700">🔥 {r.calories} kcal</span>}
+                    {r.prepTime && <span className="text-xs text-muted-foreground">⏱ {r.prepTime} min</span>}
+                  </div>
+                </button>
+              ))}
+            </div>
+          )}
+        </div>
+      )}
       {/* Recetas con lo que tienes — AI section */}
       {(items ?? []).length > 0 && (
         <div className="mb-5 rounded-2xl border border-indigo-200 bg-gradient-to-br from-indigo-50 to-violet-50 p-4">

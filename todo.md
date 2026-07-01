@@ -646,7 +646,7 @@
 - [ ] Añadir breadcrumbs/título de sección en todas las páginas (pendiente)
 - [ ] Mejorar página Menús: drag-and-drop entre días/comidas
 - [x] Añadir página de estadísticas nutricionales (gráficos de evolución)
-- [ ] Mejorar BuddyIA: historial de conversaciones guardado en BD
+- [x] Mejorar BuddyIA: historial de conversaciones guardado en BD
 - [ ] Añadir página de ajustes/configuración de usuario
 - [x] Mejorar lista de compra: marcar items como comprados con animación (ya implementado)
 
@@ -1143,7 +1143,7 @@
 
 ## Sprint Recetas Sugeridas por Inventario
 - [ ] Procedimiento tRPC recipes.cookableNow: cruza inventario con ingredientes de recetas
-- [ ] Sección "Puedes cocinar ahora" en Recipes.tsx con cards y % de ingredientes disponibles
+- [x] Sección "Puedes cocinar ahora" en Inventory.tsx (endpoint canCookNow + UI verde)
 - [ ] Badge de ingredientes faltantes en cada card de receta cookable
 
 ## Sprint BuddySetup - Onboarding guiado con IA

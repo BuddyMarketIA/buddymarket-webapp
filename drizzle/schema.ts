@@ -5261,3 +5261,20 @@ export const patientDailyLog = pgTable("patient_daily_log", {
 }));
 export type PatientDailyLog = typeof patientDailyLog.$inferSelect;
 export type InsertPatientDailyLog = typeof patientDailyLog.$inferInsert;
+
+/**
+ * AI Chat Sessions — historial de conversaciones con BuddyIA
+ */
+export const aiChatSessions = pgTable("ai_chat_sessions", {
+  id: serial("id").primaryKey(),
+  userId: integer("userId").notNull(),
+  title: text("title").notNull().default("Nueva conversación"),
+  messages: text("messages").notNull().default("[]"), // JSON array of {role, content}
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().notNull(),
+}, (t) => ({
+  aiChatUserIdx: index("ai_chat_user_idx").on(t.userId),
+  aiChatUpdatedIdx: index("ai_chat_updated_idx").on(t.userId, t.updatedAt),
+}));
+export type AiChatSession = typeof aiChatSessions.$inferSelect;
+export type InsertAiChatSession = typeof aiChatSessions.$inferInsert;

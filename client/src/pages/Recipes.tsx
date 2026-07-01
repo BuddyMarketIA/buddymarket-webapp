@@ -1166,7 +1166,7 @@ export default function Recipes() {
             )}
           </div>
           {isLoadingInventory ? (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
               {[1,2,3,4].map(i => <RecipeCardSkeleton key={i} />)}
             </div>
           ) : inventoryRecipesData?.inventoryCount === 0 ? (
@@ -1183,7 +1183,7 @@ export default function Recipes() {
               <p style={{ fontSize: "13px", color: "#9ca3af", margin: 0 }}>Tienes {inventoryRecipesData?.inventoryCount} ingredientes pero ninguna receta coincide al 40%+. Añade más ingredientes o baja el umbral.</p>
             </div>
           ) : (
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+            <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
               {(inventoryRecipesData?.recipes ?? []).map((recipe: any) => (
                 <div key={recipe.id} style={{ position: "relative" }}>
                   <RecipeCard
@@ -1223,13 +1223,13 @@ export default function Recipes() {
         </div>
 
         {isLoading ? (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {[1, 2, 3, 4, 5, 6, 7, 8].map(i => (
               <RecipeCardSkeleton key={i} />
             ))}
           </div>
         ) : recipes && recipes.length > 0 ? (
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
             {(recipes as Recipe[]).map((recipe) => (
               <RecipeCard
                 key={recipe.id}

@@ -4054,6 +4054,58 @@ Si no puedes detectar productos, devuelve {"products": []}. No incluyas texto ad
           return { recipes: [], message: "No se pudieron generar recetas. Inténtalo de nuevo." };
         }
       }),
+    // ── Can Cook Now: recipes whose required ingredients are all in inventory ──
+    canCookNow: protectedProcedure
+      .input(z.object({ limit: z.number().default(20) }))
+      .query(async ({ ctx, input }) => {
+        try {
+          const drizzleDb = await db.getDb();
+          if (!drizzleDb) return { recipes: [] };
+          const { userInventoryItems, recipeIngredients, recipes } = await import("../drizzle/schema");
+          const { eq, inArray } = await import("drizzle-orm");
+          // Get all ingredient IDs the user has in inventory
+          const inventoryRows = await drizzleDb
+            .select({ ingredientId: userInventoryItems.ingredientId })
+            .from(userInventoryItems)
+            .where(eq(userInventoryItems.userId, ctx.user.id));
+          const inventoryIngredientIds = inventoryRows
+            .map(r => r.ingredientId)
+            .filter((id): id is number => id !== null && id !== undefined);
+          if (inventoryIngredientIds.length === 0) return { recipes: [] };
+          // Get public recipes (limit to 300 for performance)
+          const allRecipes = await drizzleDb
+            .select({ id: recipes.id, name: recipes.name, imageUrl: recipes.imageUrl, calories: recipes.calories, prepTime: recipes.prepTime, difficulty: recipes.difficulty })
+            .from(recipes)
+            .where(eq(recipes.isPublic, true))
+            .limit(300);
+          if (allRecipes.length === 0) return { recipes: [] };
+          const recipeIds = allRecipes.map(r => r.id);
+          // Get required (non-optional) ingredients for these recipes
+          const reqIngredients = await drizzleDb
+            .select({ recipeId: recipeIngredients.recipeId, ingredientId: recipeIngredients.ingredientId, optional: recipeIngredients.optional })
+            .from(recipeIngredients)
+            .where(inArray(recipeIngredients.recipeId, recipeIds));
+          // Group by recipe
+          const recipeIngMap: Record<number, number[]> = {};
+          for (const ri of reqIngredients) {
+            if (ri.optional) continue; // skip optional ingredients
+            if (!recipeIngMap[ri.recipeId]) recipeIngMap[ri.recipeId] = [];
+            if (ri.ingredientId) recipeIngMap[ri.recipeId].push(ri.ingredientId);
+          }
+          const inventorySet = new Set(inventoryIngredientIds);
+          // Find recipes where ALL required ingredients are in inventory
+          const cookableRecipes = allRecipes
+            .filter(r => {
+              const required = recipeIngMap[r.id] || [];
+              if (required.length === 0) return false;
+              return required.every(id => inventorySet.has(id));
+            })
+            .slice(0, input.limit);
+          return { recipes: cookableRecipes };
+        } catch {
+          return { recipes: [] };
+        }
+      }),
   }),
   // ---------------------------------------------------------------------------
   // MEAL LOGSS
@@ -9890,6 +9942,70 @@ Devuelve SOLO JSON válido con esta estructura exacta:
           console.error("[buddyIA.replaceMeal] error:", err?.message || err);
           return { alternative: null, error: "No se pudo generar la alternativa. Inténtalo de nuevo." };
         }
+      }),
+    // ── Chat History ──────────────────────────────────────────────────────────
+    listSessions: protectedProcedure.query(async ({ ctx }) => {
+      const { aiChatSessions } = await import("../drizzle/schema.js");
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) return [];
+      const { desc } = await import("drizzle-orm");
+      const { eq } = await import("drizzle-orm");
+      const sessions = await drizzleDb
+        .select({ id: aiChatSessions.id, title: aiChatSessions.title, createdAt: aiChatSessions.createdAt, updatedAt: aiChatSessions.updatedAt })
+        .from(aiChatSessions)
+        .where(eq(aiChatSessions.userId, ctx.user.id))
+        .orderBy(desc(aiChatSessions.updatedAt))
+        .limit(50);
+      return sessions;
+    }),
+    getSession: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const { aiChatSessions } = await import("../drizzle/schema.js");
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { eq, and } = await import("drizzle-orm");
+        const [session] = await drizzleDb.select().from(aiChatSessions)
+          .where(and(eq(aiChatSessions.id, input.id), eq(aiChatSessions.userId, ctx.user.id)))
+          .limit(1);
+        if (!session) throw new TRPCError({ code: "NOT_FOUND" });
+        return { ...session, messages: JSON.parse(session.messages || "[]") };
+      }),
+    saveSession: protectedProcedure
+      .input(z.object({
+        id: z.number().optional(),
+        title: z.string().max(200).optional(),
+        messages: z.array(z.object({ role: z.enum(["user", "assistant"]), content: z.string() })),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { aiChatSessions } = await import("../drizzle/schema.js");
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { eq, and } = await import("drizzle-orm");
+        const messagesJson = JSON.stringify(input.messages);
+        const autoTitle = input.title || (input.messages.find((m: any) => m.role === "user")?.content?.slice(0, 60) ?? "Nueva conversación");
+        if (input.id) {
+          await drizzleDb.update(aiChatSessions)
+            .set({ messages: messagesJson, title: autoTitle, updatedAt: new Date() })
+            .where(and(eq(aiChatSessions.id, input.id), eq(aiChatSessions.userId, ctx.user.id)));
+          return { id: input.id };
+        } else {
+          const [created] = await drizzleDb.insert(aiChatSessions)
+            .values({ userId: ctx.user.id, title: autoTitle, messages: messagesJson })
+            .returning({ id: aiChatSessions.id });
+          return { id: created.id };
+        }
+      }),
+    deleteSession: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const { aiChatSessions } = await import("../drizzle/schema.js");
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { eq, and } = await import("drizzle-orm");
+        await drizzleDb.delete(aiChatSessions)
+          .where(and(eq(aiChatSessions.id, input.id), eq(aiChatSessions.userId, ctx.user.id)));
+        return { ok: true };
       }),
   }),
   // ---------------------------------------------------------------------------

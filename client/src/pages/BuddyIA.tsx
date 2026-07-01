@@ -189,6 +189,37 @@ interface ChatMsg { role: "user" | "assistant"; content: string; }
 function ChatView({ onBack }: { onBack: () => void }) {
   const [messages, setMessages] = useState<ChatMsg[]>([]);
   const [input, setInput] = useState("");
+  const [sessionId, setSessionId] = useState<number | undefined>(undefined);
+  const [showHistory, setShowHistory] = useState(false);
+  const utils = trpc.useUtils();
+
+  // History queries
+  const sessionsQuery = trpc.buddyIA.listSessions.useQuery();
+  const saveSessionMut = trpc.buddyIA.saveSession.useMutation({
+    onSuccess: (data) => { setSessionId(data.id); utils.buddyIA.listSessions.invalidate(); },
+  });
+  const deleteSessionMut = trpc.buddyIA.deleteSession.useMutation({
+    onSuccess: () => utils.buddyIA.listSessions.invalidate(),
+  });
+
+  const loadSession = async (id: number) => {
+    const result = await utils.buddyIA.getSession.fetch({ id });
+    setMessages(result.messages as ChatMsg[]);
+    setSessionId(id);
+    setShowHistory(false);
+  };
+
+  const startNewChat = () => {
+    setMessages([]);
+    setSessionId(undefined);
+    setShowHistory(false);
+  };
+
+  // Auto-save after assistant reply
+  const autoSave = useCallback((msgs: ChatMsg[]) => {
+    if (msgs.length < 2) return;
+    saveSessionMut.mutate({ id: sessionId, messages: msgs });
+  }, [sessionId, saveSessionMut]);
 
   // Load user profile to personalize suggested prompts and show profile indicator
   const profileData = trpc.profile.get.useQuery();
@@ -217,7 +248,6 @@ function ChatView({ onBack }: { onBack: () => void }) {
     if (userProfile?.dislikedIngredients) {
       prompts.push(`Dame recetas sin ${userProfile.dislikedIngredients.split(",")[0].trim()}`);
     }
-    // Fill with generic prompts if not enough personalized ones
     const generic = [
       "¿Qué puedo comer antes de entrenar?",
       "Dame ideas de snacks saludables",
@@ -234,7 +264,11 @@ function ChatView({ onBack }: { onBack: () => void }) {
 
   const chatMutation = trpc.buddyIA.chat.useMutation({
     onSuccess: (data) => {
-      setMessages(prev => [...prev, { role: "assistant", content: data.content as string }]);
+      setMessages(prev => {
+        const updated = [...prev, { role: "assistant" as const, content: data.content as string }];
+        autoSave(updated);
+        return updated;
+      });
     },
     onError: () => toast.error("Error al conectar con BuddyIA"),
   });
@@ -247,16 +281,65 @@ function ChatView({ onBack }: { onBack: () => void }) {
     chatMutation.mutate({ messages: newMessages });
   }, [messages, chatMutation]);
 
+  // History panel
+  if (showHistory) {
+    return (
+      <div className="flex flex-col h-full">
+        <div className="flex items-center gap-3 p-4 border-b border-border bg-background">
+          <button onClick={() => setShowHistory(false)} className="text-muted-foreground hover:text-foreground text-sm">← Volver al chat</button>
+          <h2 className="font-semibold text-sm flex-1">Historial de conversaciones</h2>
+          <button onClick={startNewChat} className="text-xs px-3 py-1.5 rounded-lg bg-orange-500 text-white hover:bg-orange-600">
+            + Nuevo chat
+          </button>
+        </div>
+        <div className="flex-1 overflow-y-auto p-4 space-y-2">
+          {sessionsQuery.isLoading && <p className="text-sm text-muted-foreground text-center py-8">Cargando...</p>}
+          {!sessionsQuery.isLoading && (!sessionsQuery.data || sessionsQuery.data.length === 0) && (
+            <div className="text-center py-12">
+              <p className="text-4xl mb-3">💬</p>
+              <p className="text-sm text-muted-foreground">No tienes conversaciones guardadas</p>
+              <button onClick={startNewChat} className="mt-4 text-sm text-orange-500 hover:underline">Iniciar una nueva conversación</button>
+            </div>
+          )}
+          {sessionsQuery.data?.map((s) => (
+            <div key={s.id} className="flex items-center gap-2 p-3 rounded-xl border border-border hover:border-orange-300 hover:bg-orange-50 dark:hover:bg-orange-950/20 cursor-pointer group"
+              onClick={() => loadSession(s.id)}>
+              <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white text-xs font-bold flex-shrink-0">B</div>
+              <div className="flex-1 min-w-0">
+                <p className="text-sm font-medium truncate">{s.title}</p>
+                <p className="text-xs text-muted-foreground">{new Date(s.updatedAt).toLocaleDateString("es-ES", { day: "numeric", month: "short", hour: "2-digit", minute: "2-digit" })}</p>
+              </div>
+              <button onClick={(e) => { e.stopPropagation(); deleteSessionMut.mutate({ id: s.id }); }}
+                className="opacity-0 group-hover:opacity-100 text-muted-foreground hover:text-red-500 text-xs px-2 py-1 rounded">
+                🗑️
+              </button>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="flex flex-col h-full">
       <div className="flex items-center gap-3 p-4 border-b border-border bg-background">
         <button onClick={onBack} className="text-muted-foreground hover:text-foreground text-sm">← Volver</button>
-        <div className="flex items-center gap-2">
+        <div className="flex items-center gap-2 flex-1">
           <div className="w-8 h-8 rounded-full bg-gradient-to-br from-orange-400 to-orange-600 flex items-center justify-center text-white text-sm font-bold">B</div>
           <div>
             <p className="font-semibold text-sm">{"BuddyIA"}</p>
-            <p className="text-xs text-muted-foreground">{"Nutritional assistant"}</p>
+            <p className="text-xs text-muted-foreground">{sessionId ? "Conversación guardada" : "Asistente nutricional"}</p>
           </div>
+        </div>
+        <div className="flex gap-2">
+          {messages.length > 0 && (
+            <button onClick={startNewChat} className="text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded-lg border border-border hover:border-orange-300" title="Nueva conversación">
+              + Nuevo
+            </button>
+          )}
+          <button onClick={() => setShowHistory(true)} className="text-xs text-muted-foreground hover:text-foreground px-2 py-1 rounded-lg border border-border hover:border-orange-300" title="Ver historial">
+            📜 Historial
+          </button>
         </div>
       </div>
 
@@ -269,7 +352,6 @@ function ChatView({ onBack }: { onBack: () => void }) {
               <p className="text-sm text-muted-foreground mt-1">¿En qué puedo ayudarte hoy?</p>
             </div>
 
-            {/* Profile loaded indicator */}
             {hasProfile && (
               <div className="flex items-center gap-2 px-3 py-2 rounded-xl bg-green-50 dark:bg-green-950/30 border border-green-200 dark:border-green-800">
                 <span className="text-green-500 text-sm">✓</span>
@@ -334,7 +416,7 @@ function ChatView({ onBack }: { onBack: () => void }) {
             value={input}
             onChange={(e) => setInput(e.target.value)}
             onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(input); } }}
-            placeholder={"Type your question..."}
+            placeholder="Escribe tu pregunta..."
             className="resize-none min-h-[44px] max-h-[120px]"
             rows={1}
           />
