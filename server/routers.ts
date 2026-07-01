@@ -878,9 +878,9 @@ export const appRouter = router({
             if (mainGoal === 'lose_weight') {
               profileData.dailyCalorieGoal = Math.max(1200, tdee - dailyAdjustment);
             } else if (mainGoal === 'gain_muscle') {
-              profileData.dailyCalorieGoal = tdee + dailyAdjustment;
+              profileData.dailyCalorieGoal = Math.max(1500, tdee + dailyAdjustment);
             } else {
-              profileData.dailyCalorieGoal = tdee;
+              profileData.dailyCalorieGoal = Math.max(1200, tdee);
             }
           }
         }
@@ -1082,9 +1082,9 @@ export const appRouter = router({
                 const tmb = 10 * input.weightKg + 6.25 * input.heightCm - 5 * input.age + (input.gender === 'male' ? 5 : -161);
                 const activityFactors: Record<string, number> = { sedentary: 1.2, light: 1.375, moderate: 1.55, active: 1.725, very_active: 1.9 };
                 const tdee = Math.round(tmb * (activityFactors[input.activityLevel ?? 'moderate'] ?? 1.375));
-                if (input.mainGoal === 'lose_weight') serverCalorieGoal = tdee - 400;
-                else if (input.mainGoal === 'gain_muscle') serverCalorieGoal = tdee + 250;
-                else serverCalorieGoal = tdee;
+                if (input.mainGoal === 'lose_weight') serverCalorieGoal = Math.max(1200, tdee - 400);
+                else if (input.mainGoal === 'gain_muscle') serverCalorieGoal = Math.max(1500, tdee + 250);
+                else serverCalorieGoal = Math.max(1200, tdee);
               }
               const calorieInfo = serverCalorieGoal
                 ? `Calorías objetivo diarias: ${serverCalorieGoal} kcal (calculadas con Mifflin-St Jeor). Distribuye las calorías entre las comidas del día de forma equilibrada.`
@@ -8949,7 +8949,7 @@ IMPORTANTE: No eres un médico. Siempre recomienda consultar con un profesional 
           mantenimiento: "mantenimiento",
           definicion: "definición corporal",
         };
-        const prompt = `Crea un menú semanal completo (7 días) para un objetivo de ${goalLabels[input.goal]} con ${input.calories} kcal/día.${input.restrictions?.length ? ` Restricciones: ${input.restrictions.join(", ")}.` : ""}${input.preferences ? ` Preferencias: ${input.preferences}.` : ""}
+        const prompt = `Crea un menú semanal completo (7 días) para un objetivo de ${goalLabels[input.goal]} con EXACTAMENTE ${input.calories} kcal/día. LÍMITE CALÓRICO ESTRICTO: el total de calorías de cada día NO PUEDE superar ${input.calories} kcal. Si la suma de las comidas supera este límite, REDUCE las porciones hasta cumplirlo.${input.restrictions?.length ? ` Restricciones: ${input.restrictions.join(", ")}.` : ""}${input.preferences ? ` Preferencias: ${input.preferences}.` : ""}
 REGLAS ESTRICTAS POR FRANJA HORARIA:
 - DESAYUNO: solo alimentos ligeros (tostadas, avena, yogur, fruta, huevos, batido). NUNCA ensaladas, guisos, arroces, pastas, carnes, pescados, legumbres.
 - MEDIA MAÑANA: solo snack pequeño (fruta, yogur, frutos secos, barrita). NUNCA platos completos, ensaladas, carnes, pescados.
@@ -9220,6 +9220,7 @@ ${input.cookingStyle === "tuppers" ? "- Todas las comidas deben ser aptas para t
 ${input.cookingStyle === "rapido" ? "- Tiempo máximo de preparación: 20 minutos\n- Usa ingredientes fáciles de encontrar y preparar" : ""}
 ${input.cookingStyle === "restaurante" ? "- Los días de restaurante: sugiere qué pedir en un menú del día típico español (primer plato, segundo, postre) que sea saludable y se ajuste al objetivo" : ""}
 
+🔢 LÍMITE CALÓRICO ESTRICTO (OBLIGATORIO): El total de calorías de CADA DÍA debe ser EXACTAMENTE ${Math.round(targetCalories)} kcal (±5% de margen máximo). Suma las calorías de todas las comidas del día antes de devolver el JSON. Si la suma supera ${Math.round(targetCalories * 1.05)} kcal, REDUCE las porciones. Si no llega a ${Math.round(targetCalories * 0.95)} kcal, AUMENTA las porciones. Este límite es INNEGOCIABLE.
 ⚠️ REGLAS ESTRICTAS POR FRANJA HORARIA (OBLIGATORIO - INCUMPLIRLAS ES UN ERROR GRAVE):
 
 🌅 DESAYUNO (7:00-9:30h) - Comida LIGERA para empezar el día:
@@ -11356,7 +11357,9 @@ REGLAS OBLIGATORIAS POR FRANJA HORARIA:
         const isAssignedClient = plan.clientUserId === ctx.user.id;
         if (!isExpertOwner && !isAssignedClient) throw new TRPCError({ code: "FORBIDDEN" });
         if (!plan.pdfUrl) throw new TRPCError({ code: "BAD_REQUEST", message: "Sube el PDF del plan primero." });
-        const [profile] = await drizzleDb.select().from(userProfiles).where(eq(userProfiles.userId, ctx.user.id)).limit(1);
+        // P1 fix: si quien llama es el experto, usar el perfil del paciente (clientUserId), no del profesional
+        const profileUserId = isExpertOwner && plan.clientUserId ? plan.clientUserId : ctx.user.id;
+        const [profile] = await drizzleDb.select().from(userProfiles).where(eq(userProfiles.userId, profileUserId)).limit(1);
         const prefs = input.userPreferences;
         const profileCtx = profile ? `Objetivo: ${profile.mainGoal ?? "no especificado"}, Calorías/día: ${profile.dailyCalorieGoal ?? "no especificado"} kcal, Alergias: ${profile.menuAllergies ?? "ninguna"}, Dieta: ${profile.menuDietType ?? "omnívora"}, Personas: ${profile.menuPersons ?? 1}` : "";
         const extraCtx = prefs ? `Alergias extra: ${prefs.allergies ?? "ninguna"}, Restricciones: ${prefs.restrictions ?? "ninguna"}, No le gusta: ${prefs.dislikedFoods ?? "ninguno"}, Tiempo cocina: ${prefs.cookingTime ?? "no especificado"}, Personas: ${prefs.persons ?? 1}, Notas: ${prefs.notes ?? "ninguna"}` : "";

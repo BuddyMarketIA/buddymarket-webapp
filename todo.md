@@ -4019,3 +4019,17 @@
 - [x] Modo Hogar: Página Household.tsx registrada en App.tsx (/app/household)
 - [x] Modo Hogar: Enlace "Modo Hogar" añadido en sidebar de AppLayout (sección Familia)
 - [x] BD Ingredientes: 231 ingredientes nutricionales en ingredient_nutrition (38 verduras, 35 condimentos, 27 frutas, 22 lácteos, 21 cereales, 18 pescados, 15 carnes, 12 legumbres...)
+
+## Backlog Julio 2026 — Bugs corregidos
+- [x] [P1] Calorías negativas en BuddyIA — Math.max(1200) en todos los cálculos TDEE
+- [x] [P1] Menús IA no respetan límite calórico — instrucción explícita en ambos prompts
+- [x] [P1] Cálculo de calorías restantes incorrecto — muestra "X kcal de más" en rojo al superar objetivo
+- [x] [P1] Cuenta empresa pierde panel/códigos tras cerrar sesión — endpoint claimCompany vincula empresa por email
+- [x] [P1] BuddyIA usa datos del profesional en lugar del paciente — generateAiMenu usa clientUserId del plan
+- [x] [P1] Menú asignado no visible para el paciente — enlace "Planes de mi Nutricionista" añadido en sidebar
+- [x] [P2] Selector de empleados solo permite saltos de 5 — cambiado a step=1 + input numérico libre
+- [x] [P2] Campos Semana/Año en modal de plan — eliminados del formulario PDF en BuddyExpertDashboard
+- [ ] [P1] Check-in semanal sin nutricionista — ya filtrado en servidor (no reproducible)
+- [ ] [P2] Borrar paciente sin confirmación — ya tiene confirm() en ExpertPatientDetail
+- [ ] [P3] Iconos de género incorrectos — ya correctos (👩👨🧑)
+- [ ] [P3] Límite recetas IA — no hay límite hardcoded, controlado por plan de suscripción

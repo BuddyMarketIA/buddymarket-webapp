@@ -575,6 +575,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       label: "Menús",
       items: [
         { key: "/app/my-menus", label: "Mis Menús", to: "/app/my-menus", emoji: "📅", matches: ["/app/my-menus", "/app/menus", "/app/menu-library", "/app/active-menu"] },
+        { key: "/app/my-plans", label: "Planes de mi Nutricionista", to: "/app/my-plans", emoji: "📋", matches: ["/app/my-plans"] },
         { key: "/app/specialized-menus", label: "Menús Especiales", to: "/app/specialized-menus", emoji: "🎉", matches: ["/app/specialized-menus"] },
         { key: "/app/event-menu", label: "Menú para Eventos", to: "/app/event-menu", emoji: "🥂", matches: ["/app/event-menu", "/app/saved-events"] },
       ],

@@ -1261,4 +1261,55 @@ export const companyRouter = router({
         .where(eq(companyActivationCodes.id, input.codeId));
       return { success: true };
     }),
+
+  /**
+   * Vincular empresa al usuario actual por email (llamado tras el pago de Stripe).
+   * Busca una empresa con contactEmail == user.email y adminUserId == null,
+   * y la asigna al usuario actual.
+   */
+  claimCompany: protectedProcedure
+    .mutation(async ({ ctx }) => {
+      const drizzleDb = await getDb();
+      if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR", message: "DB no disponible" });
+      const { companies } = await import("../../drizzle/schema.js");
+      const { users } = await import("../../drizzle/schema.js");
+      const { isNull, or } = await import("drizzle-orm");
+      const userId = ctx.user.id;
+      const userEmail = ctx.user.email;
+      // Buscar empresa sin adminUserId cuyo contactEmail coincida con el usuario
+      const [unclaimedCompany] = await drizzleDb
+        .select()
+        .from(companies)
+        .where(and(
+          eq(companies.contactEmail, userEmail),
+          or(isNull(companies.adminUserId), eq(companies.adminUserId, 0))
+        ))
+        .limit(1);
+      if (!unclaimedCompany) {
+        // Ya puede estar vinculada (idempotente)
+        const [alreadyClaimed] = await drizzleDb
+          .select({ id: companies.id })
+          .from(companies)
+          .where(eq(companies.adminUserId, userId))
+          .limit(1);
+        if (alreadyClaimed) return { success: true, alreadyClaimed: true };
+        throw new TRPCError({ code: "NOT_FOUND", message: "No se encontr\u00f3 ninguna empresa pendiente de vinculaci\u00f3n para tu email." });
+      }
+      // Vincular empresa al usuario
+      await drizzleDb.update(companies)
+        .set({ adminUserId: userId })
+        .where(eq(companies.id, unclaimedCompany.id));
+      // Actualizar rol del usuario a business (secondaryRoles)
+      const [currentUser] = await drizzleDb.select({ secondaryRoles: users.secondaryRoles })
+        .from(users).where(eq(users.id, userId)).limit(1);
+      const existingRoles: string[] = currentUser?.secondaryRoles ? JSON.parse(currentUser.secondaryRoles as string) : [];
+      if (!existingRoles.includes("business")) {
+        existingRoles.push("business");
+        await drizzleDb.update(users)
+          .set({ secondaryRoles: JSON.stringify(existingRoles) })
+          .where(eq(users.id, userId));
+      }
+      console.log(`[Company] Claimed company ${unclaimedCompany.id} (${unclaimedCompany.name}) by user ${userId} (${userEmail})`);
+      return { success: true, companyId: unclaimedCompany.id, companyName: unclaimedCompany.name };
+    }),
 });

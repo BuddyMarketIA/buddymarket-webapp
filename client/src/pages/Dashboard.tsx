@@ -203,7 +203,7 @@ function capitalize(s: string) { return s.charAt(0).toUpperCase() + s.slice(1); 
 function CalorieRing({ consumed, goal, protein, carbs, fat }: { consumed: number; goal: number; protein: number; carbs: number; fat: number }) {
   const pct = Math.min(consumed / Math.max(goal, 1), 1);
   const r = 58; const circ = 2 * Math.PI * r;
-  const remaining = Math.max(goal - consumed, 0);
+  const remaining = goal - consumed; // puede ser negativo (exceso)
   const over = consumed > goal;
   const macros = [
     { label: "Proteínas", val: Math.round(protein), unit: "g", icon: "💪" },
@@ -232,8 +232,8 @@ function CalorieRing({ consumed, goal, protein, carbs, fat }: { consumed: number
             </defs>
           </svg>
           <div style={{ position: "absolute", inset: 0, display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center" }}>
-            <span style={{ fontSize: 26, fontWeight: 900, color: over ? "#FCA5A5" : "white", lineHeight: 1, letterSpacing: "-0.04em" }}>{remaining}</span>
-            <span style={{ fontSize: 10, color: "rgba(255,255,255,0.6)", fontWeight: 600, marginTop: 2 }}>kcal restantes</span>
+            <span style={{ fontSize: 26, fontWeight: 900, color: over ? "#FCA5A5" : "white", lineHeight: 1, letterSpacing: "-0.04em" }}>{Math.abs(remaining)}</span>
+            <span style={{ fontSize: 10, color: over ? "#FCA5A5" : "rgba(255,255,255,0.6)", fontWeight: 600, marginTop: 2 }}>{over ? "kcal de más" : "kcal restantes"}</span>
           </div>
         </div>
         {/* Stats */}

@@ -1626,16 +1626,7 @@ function PdfPlansTab({ expertProfile }: { expertProfile: any }) {
             <label className="text-xs font-bold text-muted-foreground mb-1 block">Descripción</label>
             <textarea value={form.description} onChange={(e) => setForm(p => ({ ...p, description: e.target.value }))} rows={2} placeholder="Breve descripción del plan..." className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none" />
           </div>
-          <div className="grid grid-cols-2 gap-3">
-            <div>
-              <label className="text-xs font-bold text-muted-foreground mb-1 block">Semana nº</label>
-              <input type="number" min="1" max="52" value={form.weekNumber} onChange={(e) => setForm(p => ({ ...p, weekNumber: e.target.value }))} placeholder="Ej: 1" className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
-            </div>
-            <div>
-              <label className="text-xs font-bold text-muted-foreground mb-1 block">Año</label>
-              <input type="number" min="2024" max="2030" value={form.year} onChange={(e) => setForm(p => ({ ...p, year: e.target.value }))} className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400" />
-            </div>
-          </div>
+          {/* Campos Semana/Año eliminados — no aportan valor (P2 fix) */}
           <div>
             <label className="text-xs font-bold text-muted-foreground mb-1 block">Notas internas</label>
             <textarea value={form.notes} onChange={(e) => setForm(p => ({ ...p, notes: e.target.value }))} rows={2} placeholder="Notas para el cliente, ajustes especiales..." className="w-full rounded-xl border border-border px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-orange-400 resize-none" />

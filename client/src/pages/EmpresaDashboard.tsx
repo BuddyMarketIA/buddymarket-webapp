@@ -1,5 +1,5 @@
-import { useState } from "react";
-import { Link } from "wouter";
+import { useState, useEffect } from "react";
+import { Link, useSearch } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { Button } from "@/components/ui/button";
@@ -21,7 +21,26 @@ import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContaine
 
 export default function EmpresaDashboard() {
   const { user, loading: authLoading } = useAuth();
+  const searchStr = useSearch();
   const [searchCode, setSearchCode] = useState("");
+  const [claimDone, setClaimDone] = useState(false);
+
+  const claimCompanyMutation = trpc.company.claimCompany.useMutation({
+    onSuccess: (result) => {
+      if (!result.alreadyClaimed) {
+        toast.success(`¡Empresa vinculada correctamente! Bienvenido al panel de ${result.companyName}.`);
+      }
+      setClaimDone(true);
+      refetch();
+    },
+    onError: (err) => {
+      // Si ya está vinculada o no hay empresa pendiente, ignorar silenciosamente
+      if (err.data?.code !== "NOT_FOUND") {
+        toast.error(`Error al vincular empresa: ${err.message}`);
+      }
+      setClaimDone(true);
+    },
+  });
   const [showReminderModal, setShowReminderModal] = useState(false);
   const [reminderType, setReminderType] = useState<"activation" | "engagement" | "expiry_warning">("activation");
   const [reminderSubject, setReminderSubject] = useState("");
@@ -34,6 +53,15 @@ export default function EmpresaDashboard() {
     enabled: !!user,
     retry: false,
   });
+
+  // Vincular empresa automáticamente tras el pago de Stripe (?setup=success)
+  useEffect(() => {
+    const params = new URLSearchParams(searchStr);
+    if (params.get("setup") === "success" && user && !claimDone) {
+      claimCompanyMutation.mutate();
+    }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [user, searchStr]);
   const { data: companyAccess, refetch: refetchAccess } = trpc.codes.getMyCompanyAccess.useQuery(undefined, {
     enabled: !!user,
   });

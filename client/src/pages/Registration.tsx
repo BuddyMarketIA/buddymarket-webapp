@@ -887,13 +887,27 @@ function StepBusinessSetup() {
           <span style={{ fontSize: 22, fontWeight: 900, color: "#3B82F6" }}>{form.employeeCount}</span>
         </div>
         <input
-          type="range" min={10} max={5000} step={5}
+          type="range" min={10} max={5000} step={1}
           value={form.employeeCount}
           onChange={e => setForm(f => ({ ...f, employeeCount: parseInt(e.target.value) }))}
           style={{ width: "100%", accentColor: "#3B82F6" }}
         />
-        <div style={{ display: "flex", justifyContent: "space-between", fontSize: 11, color: "#9CA3AF", marginTop: 4 }}>
-          <span>10</span><span>500</span><span>1.000</span><span>5.000+</span>
+        <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginTop: 8 }}>
+          <div style={{ display: "flex", gap: 16 }}>
+            <span style={{ fontSize: 11, color: "#9CA3AF" }}>10</span>
+            <span style={{ fontSize: 11, color: "#9CA3AF" }}>500</span>
+            <span style={{ fontSize: 11, color: "#9CA3AF" }}>1.000</span>
+            <span style={{ fontSize: 11, color: "#9CA3AF" }}>5.000+</span>
+          </div>
+          <input
+            type="number" min={10} max={100000}
+            value={form.employeeCount}
+            onChange={e => {
+              const v = parseInt(e.target.value);
+              if (!isNaN(v) && v >= 10) setForm(f => ({ ...f, employeeCount: Math.min(v, 100000) }));
+            }}
+            style={{ width: 90, padding: "4px 8px", borderRadius: 8, border: "1px solid #D1D5DB", fontSize: 14, fontWeight: 700, color: "#374151", textAlign: "center" }}
+          />
         </div>
       </div>
 

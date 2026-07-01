@@ -20,7 +20,7 @@ function capitalize(s: string) { return s.charAt(0).toUpperCase() + s.slice(1); 
 function CalorieRing({ consumed, goal, protein, carbs, fat }: { consumed: number; goal: number; protein: number; carbs: number; fat: number }) {
   const pct = Math.min(consumed / Math.max(goal, 1), 1);
   const r = 52; const circ = 2 * Math.PI * r;
-  const remaining = Math.max(goal - consumed, 0);
+  const remaining = goal - consumed; // puede ser negativo (exceso)
   const over = consumed > goal;
   return (
     <div style={{ display: "flex", alignItems: "center", gap: "24px" }}>
