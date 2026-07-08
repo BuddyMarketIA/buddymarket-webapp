@@ -1553,3 +1553,26 @@
     min-width: 44px;
   }
 }
+
+/* ─── Dark mode overrides para clases Tailwind hardcodeadas ─────────────── */
+/* bg-white, bg-gray-50, bg-gray-100 no respetan variables CSS de tema.      */
+/* Estos overrides aseguran que el contenido sea legible en modo oscuro.     */
+.dark .bg-white {
+  background-color: var(--card) !important;
+}
+.dark .bg-gray-50 {
+  background-color: var(--muted) !important;
+}
+.dark .bg-gray-100 {
+  background-color: var(--secondary) !important;
+}
+/* Texto oscuro sobre fondos claros hardcodeados */
+.dark .text-gray-900 { color: var(--foreground) !important; }
+.dark .text-gray-800 { color: oklch(0.90 0.005 65) !important; }
+.dark .text-gray-700 { color: oklch(0.80 0.005 65) !important; }
+.dark .text-gray-600 { color: var(--muted-foreground) !important; }
+.dark .text-gray-500 { color: oklch(0.60 0.005 65) !important; }
+/* Bordes en dark mode */
+.dark .border-gray-100 { border-color: var(--border) !important; }
+.dark .border-gray-200 { border-color: var(--border) !important; }
+.dark .border-gray-300 { border-color: oklch(0.30 0.015 30) !important; }

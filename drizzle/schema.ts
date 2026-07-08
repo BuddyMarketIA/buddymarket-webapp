@@ -231,6 +231,7 @@ export const userPreferences = pgTable("user_preferences", {
   wantsShoppingListAutomation: boolean("wantsShoppingListAutomation").default(false),
   wantsCalorieTracking: boolean("wantsCalorieTracking").default(false),
   wantsMacroTracking: boolean("wantsMacroTracking").default(false),
+  preferredLanguage: varchar("preferredLanguage", { length: 10 }).default("es"),
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().notNull(),
 });

@@ -936,6 +936,7 @@ export const appRouter = router({
           wantsShoppingListAutomation: z.boolean().optional(),
           wantsCalorieTracking: z.boolean().optional(),
           wantsMacroTracking: z.boolean().optional(),
+          preferredLanguage: z.string().max(10).optional(),
         })
       )
       .mutation(async ({ ctx, input }) => {
