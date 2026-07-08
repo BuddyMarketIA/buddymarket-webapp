@@ -1527,3 +1527,29 @@
     transform: translateY(0);
   }
 }
+
+/* ─── Bottom Sheet Mobile Modals ──────────────────────────────────────────── */
+/* En mobile (< 768px), los modals se comportan como bottom sheets */
+@media (max-width: 767px) {
+  .modal-overlay {
+    align-items: flex-end !important;
+    padding: 0 0 env(safe-area-inset-bottom) 0 !important;
+  }
+  .modal-overlay > div:not(.modal-no-sheet),
+  .modal-overlay > .modal-content {
+    border-radius: 24px 24px 0 0 !important;
+    max-height: 88dvh !important;
+    width: 100% !important;
+    max-width: 100% !important;
+    animation: slide-up 0.3s cubic-bezier(0.32, 0.72, 0, 1) !important;
+  }
+}
+
+/* ─── Touch targets mínimo 44px en mobile ────────────────────────────────── */
+@media (max-width: 1023px) {
+  .bottom-nav-bar button,
+  .bottom-nav-bar a {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}

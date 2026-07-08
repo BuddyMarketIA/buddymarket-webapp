@@ -3530,6 +3530,68 @@ Para cada plato incluye también: lista de ingredientes con cantidades (ingredie
         const parsed = JSON.parse(typeof content === "string" ? content : '{"menuName":"Menú semanal","days":[]}');
         return { menu: parsed, ingredientCount: items.length };
       }),
+
+    // ── Marcar ítem como comprado y actualizar despensa ──────────────────────
+    markItemPurchased: protectedProcedure
+      .input(z.object({
+        itemId: z.number(),
+        purchased: z.boolean(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const { shoppingListItems, shoppingLists, pantryStock } = await import("../drizzle/schema.js");
+        const { eq, and } = await import("drizzle-orm");
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        // Verificar ownership
+        const [item] = await drizzleDb
+          .select({ id: shoppingListItems.id, ingredientKey: shoppingListItems.ingredientKey, commercialLabel: shoppingListItems.commercialLabel, quantity: shoppingListItems.quantity, listId: shoppingListItems.listId })
+          .from(shoppingListItems)
+          .innerJoin(shoppingLists, eq(shoppingListItems.listId, shoppingLists.id))
+          .where(and(eq(shoppingListItems.id, input.itemId), eq(shoppingLists.userId, ctx.user.id)))
+          .limit(1);
+        if (!item) throw new TRPCError({ code: "NOT_FOUND" });
+        // Actualizar estado del ítem
+        await drizzleDb.update(shoppingListItems).set({ checked: input.purchased }).where(eq(shoppingListItems.id, input.itemId));
+        // Si se marca como comprado, upsert en pantryStock
+        if (input.purchased && item.ingredientKey) {
+          const expiresAt = new Date(Date.now() + 14 * 24 * 60 * 60 * 1000); // 14 días
+          await drizzleDb
+            .insert(pantryStock)
+            .values({
+              userId: ctx.user.id,
+              ingredientKey: item.ingredientKey,
+              commercialLabel: item.commercialLabel ?? item.ingredientKey,
+              quantityAvailable: item.quantity ?? 1,
+              purchasedAt: new Date(),
+              estimatedExpiresAt: expiresAt,
+            })
+            .onConflictDoUpdate({
+              target: [pantryStock.userId, pantryStock.ingredientKey],
+              set: {
+                quantityAvailable: item.quantity ?? 1,
+                purchasedAt: new Date(),
+                estimatedExpiresAt: expiresAt,
+              },
+            });
+        }
+        return { success: true };
+      }),
+
+    // ── Limpiar stock caducado de la despensa ────────────────────────────────
+    clearExpiredStock: protectedProcedure
+      .mutation(async ({ ctx }) => {
+        const { pantryStock } = await import("../drizzle/schema.js");
+        const { eq, and, lt } = await import("drizzle-orm");
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        await drizzleDb
+          .delete(pantryStock)
+          .where(and(
+            eq(pantryStock.userId, ctx.user.id),
+            lt(pantryStock.estimatedExpiresAt, new Date()),
+          ));
+        return { success: true };
+      }),
   }),
   // ---------------------------------------------------------------------------
   // INVENTORYY

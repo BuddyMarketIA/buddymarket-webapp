@@ -311,16 +311,16 @@
 ## Sprint: Optimización Mobile-First
 
 - [x] AppLayout: nav inferior con safe-area, sidebar responsive, header sin overflow (ya implementado con env(safe-area-inset-*))
-- [ ] Dashboard: cards apiladas en mobile, gráficos responsivos, botones táctiles grandes
-- [ ] Recipes: grid 1 col en mobile, filtros colapsables, search bar sticky sin overflow
+- [x] Dashboard: cards apiladas en mobile, gráficos responsivos, botones táctiles grandes
+- [x] Recipes: grid 1 col en mobile, filtros colapsables, search bar sticky sin overflow
 - [ ] BuddyExperts/Makers: cards premium navegables, botones grandes, stats legibles
-- [ ] BuddyProfile: hero cover responsive, stats pills sin overflow, botones táctiles
+- [x] BuddyProfile: hero cover responsive, stats pills sin overflow, botones táctiles
 - [ ] Following: cards apiladas, botones táctiles, empty state centrado
 - [ ] Profile: formulario multi-step sin overflow horizontal, inputs táctiles, progress bar visible
-- [ ] MealLog: foto upload mobile-friendly, preview responsive, formulario sin scroll horizontal
-- [ ] Menus: calendario responsive, modal full-screen en mobile
-- [ ] Favorites: grid 1 col en mobile, filtros colapsables
-- [ ] General: touch targets mínimo 44px, texto legible (14px+), sin scroll horizontal
+- [x] MealLog: foto upload mobile-friendly, preview responsive, formulario sin scroll horizontal
+- [x] Menus: calendario responsive, modal full-screen en mobile
+- [x] Favorites: grid 1 col en mobile, filtros colapsables
+- [x] General: touch targets mínimo 44px, texto legible (14px+), sin scroll horizontal
 
 ## Completado Sprint Mobile-First
 
@@ -349,11 +349,11 @@
 - [x] Service Worker básico para offline/cache (sw.js ya existe en client/public/)
 - [x] Splash screen y loading state nativo (iOS splash screens ya en index.html)
 - [x] Scroll snap en carruseles del Dashboard (QuickAccessGrid ya usa grid 3 col, no carrusel horizontal)
-- [ ] Bottom sheet modals en lugar de alerts/popups
+- [x] Bottom sheet modals en lugar de alerts/popups
 - [x] Swipe para cerrar sidebar (ya implementado en AppLayout.tsx con touchstart/touchend)
 - [x] Safe area insets en todas las páginas con contenido que llega al borde (ya implementado con env(safe-area-inset-*))
 - [x] Fuente optimizada para mobile (Inter/SF Pro feel) (Inter + Plus Jakarta Sans + Bricolage Grotesque ya en index.html)
-- [ ] Animaciones de transición entre páginas
+- [x] Animaciones de transición entre páginas
 
 ## Sprint: Versión Móvil PWA
 - [x] manifest.json con iconos 72-512px, shortcuts y categorías
@@ -373,10 +373,10 @@
 ## Sprint: Card de Calorías Visual
 - [x] Rediseñar card de calorías con anillo de progreso SVG circular
 - [x] Mostrar macros (P/C/G) con barras de progreso horizontales y colores
-- [ ] Añadir streak de días consecutivos registrando comidas
+- [x] Añadir streak de días consecutivos registrando comidas
 - [x] Card clickeable que navega a /meal-log
-- [ ] Animación de entrada del anillo de progreso
-- [ ] Animación confeti al completar todos los macros del día
+- [x] Animación de entrada del anillo de progreso
+- [x] Animación confeti al completar todos los macros del día
 
 ## Sprint: Cards BuddyMakers/Experts
 - [x] Rediseñar MakerCard con layout vertical limpio y avatar bien posicionado
@@ -403,7 +403,7 @@
 - [x] Modal foto+IA: captura foto, preview, análisis, selección de productos, fecha de caducidad por producto
 - [x] Colores de alerta por días restantes (verde/amarillo/naranja/rojo)
 - [x] Campo de caducidad en modal de añadir manual
-- [ ] Añadir acceso directo a BuddyCoach.io en sidebar bajo sección Comunidad Vively
+- [x] Añadir acceso directo a BuddyCoach.io en sidebar bajo sección Comunidad Vively
 - [ ] Integrar imágenes de productos de Mercadona en la sección de supermercados
 
 ## Sprint: Integración Catálogo Mercadona
@@ -518,7 +518,7 @@
 - [x] Mejorar endpoint de métricas: validar rangos de valores (ej: peso 20-500kg)
 - [x] Añadir endpoint para eliminar cuenta de usuario
 - [x] Mejorar manejo de errores en endpoints de IA (timeout, fallback)
-- [ ] Revisar y corregir endpoint de BuddyApplication (evitar solicitudes duplicadas)
+- [x] Revisar y corregir endpoint de BuddyApplication (evitar solicitudes duplicadas)
 - [x] Añadir paginación real a endpoints principales (cursor-based en recetas)
 - [x] Mejorar endpoint de inventario: validar fechas de caducidad
 
@@ -536,7 +536,7 @@
 - [x] Perfil: añadir checklist visual de completitud con % y CTA por sección
 
 ### Frontend - Navegación y UX (DUPLICADO - ya completado)
-- [ ] Añadir breadcrumbs o título de sección en todas las páginas (pendiente real)
+- [x] Añadir breadcrumbs o título de sección en todas las páginas (pendiente real)
 - [x] Mejorar la página de Perfil: organizar en secciones colapsables
 - [x] Añadir ejemplos de preguntas en BuddyIA (chips de sugerencias visibles)
 - [x] Mejorar página de Suscripción: mostrar plan actual claramente
@@ -595,7 +595,7 @@
 - [x] Frontend: Sección de eliminar cuenta en Perfil con confirmación de texto
 - [x] Bug: Claves duplicadas en EventMenuPlanner.tsx corregido
 - [x] Frontend: Métricas mostrar solo campos relevantes según tipo (selector de tipo: Peso, Composición, Medidas, Báscula IA)
-- [ ] Frontend: Añadir breadcrumbs o título de sección en todas las páginas
+- [x] Frontend: Añadir breadcrumbs o título de sección en todas las páginas
 - [x] Tests: Añadir test para endpoint de métricas
 - [x] Tests: Añadir test para endpoint de BuddyApplication
 - [x] Tests: 25/25 tests pasando
@@ -643,17 +643,17 @@
 ## Sprint: Nuevas Mejoras de Alto Impacto (02/04/2026)
 
 ### UX General
-- [ ] Añadir breadcrumbs/título de sección en todas las páginas (pendiente)
+- [x] Añadir breadcrumbs/título de sección en todas las páginas (pendiente)
 - [x] Mejorar página Menús: drag-and-drop entre días/comidas
 - [x] Añadir página de estadísticas nutricionales (gráficos de evolución)
 - [x] Mejorar BuddyIA: historial de conversaciones guardado en BD
-- [ ] Añadir página de ajustes/configuración de usuario
+- [x] Añadir página de ajustes/configuración de usuario
 - [x] Mejorar lista de compra: marcar items como comprados con animación (ya implementado)
 
 ### Backend
 - [x] Endpoint para obtener estadísticas nutricionales históricas (últimos 7/30 días)
-- [ ] Endpoint para exportar datos del perfil en JSON
-- [ ] Mejorar endpoint BuddyApplication: evitar solicitudes duplicadas
+- [x] Endpoint para exportar datos del perfil en JSON
+- [x] Mejorar endpoint BuddyApplication: evitar solicitudes duplicadas
 
 ### Tests
 - [x] Añadir tests para endpoints de favoritos (nutritionalHistory + streak)
@@ -786,7 +786,7 @@
 - [x] Crear página /mis-planes-expertos con planes copiados del usuario (ExpertPlansManager.tsx en /app/expert-plans ya implementado)
 - [x] Añadir enlace "Mis Planes de Expertos" en sidebar (sección Comunidad) (ya implementado)
 - [x] Añadir ruta /mis-planes-expertos en App.tsx (ruta /app/expert-plans ya existe)
-- [ ] BuddyProfile.tsx: planes de pago (price > 0) deben abrir Stripe checkout en lugar de copyPlan
+- [x] BuddyProfile.tsx: planes de pago (price > 0) deben abrir Stripe checkout en lugar de copyPlan
 - [x] BuddyMakers.tsx: eliminar fallback a DEMO_MAKERS (igual que se hizo en BuddyExperts) (eliminado, ahora usa datos reales de BD)
 
 ## Sprint: Perfil de Salud Ampliado + Menús Especializados (02/04/2026)
@@ -958,7 +958,7 @@
 - [x] Las recetas nuevas generadas por la IA que no existan en la BD se añaden automáticamente a la base de datos
 - [x] Desde el menú guardado, permitir asignar una fecha de inicio para el menú
 - [x] Al asignar fecha de inicio, volcar las comidas del menú al diario/calendario día a día
-- [ ] Mostrar indicador visual "Generado por IA" en el menú guardado
+- [x] Mostrar indicador visual "Generado por IA" en el menú guardado
 
 ## Bug: App móvil con zoom y movimiento horizontal (03/04/2026)
 - [x] Corregir viewport: overflow-x hidden en html y body en index.css
@@ -1027,10 +1027,10 @@
 - [x] Error en Inventory.tsx linea 434 corregido (caracteres box-drawing en comentario JSX)
 
 ## Plantillas de Lista de la Compra
-- [ ] Tabla shoppingListTemplates en drizzle/schema.ts (id, userId, name, items JSON, createdAt)
-- [ ] Procedimientos tRPC: saveAsTemplate, listTemplates, createFromTemplate, deleteTemplate
-- [ ] Botón 'Guardar como plantilla' en cabecera de ShoppingListDetail
-- [ ] Sección 'Plantillas' en ShoppingLists para crear nueva lista desde plantilla guardada
+- [x] Tabla shoppingListTemplates en drizzle/schema.ts (id, userId, name, items JSON, createdAt)
+- [x] Procedimientos tRPC: saveAsTemplate, listTemplates, createFromTemplate, deleteTemplate
+- [x] Botón 'Guardar como plantilla' en cabecera de ShoppingListDetail
+- [x] Sección 'Plantillas' en ShoppingLists para crear nueva lista desde plantilla guardada
 - [ ] Lista de la compra desde menú en curso: mostrar vista Mercadona completa (foto, nombre, precio, controles cantidad, total, botón enviar al carrito)
 
 ## Integración Lidl Supermercado (fase actual)
@@ -1135,11 +1135,11 @@
 - [ ] Mostrar en la lista el nombre normalizado del producto (ej: "Jamón serrano lonchas") junto al original
 
 ## Sprint Despensa Inteligente (fase actual)
-- [ ] Tabla pantryStock en BD: userId, ingredientKey, commercialLabel, quantityAvailable, purchasedAt, estimatedExpiresAt
-- [ ] Al marcar item como comprado (checked=true) en lista de la compra → upsert en pantryStock
-- [ ] Al generar nueva lista de la compra → cruzar ingredientes con pantryStock y marcar inStock=true si hay stock disponible
-- [ ] Badge "Ya lo tienes" en items de la lista con stock disponible en despensa
-- [ ] Procedimientos tRPC: getPantryStock, markItemPurchased (con upsert pantry), clearExpiredStock
+- [x] Tabla pantryStock en BD: userId, ingredientKey, commercialLabel, quantityAvailable, purchasedAt, estimatedExpiresAt
+- [x] Al marcar item como comprado (checked=true) en lista de la compra → upsert en pantryStock
+- [x] Al generar nueva lista de la compra → cruzar ingredientes con pantryStock y marcar inStock=true si hay stock disponible
+- [x] Badge "Ya lo tienes" en items de la lista con stock disponible en despensa
+- [x] Procedimientos tRPC: getPantryStock, markItemPurchased (con upsert pantry), clearExpiredStock
 
 ## Sprint Recetas Sugeridas por Inventario
 - [ ] Procedimiento tRPC recipes.cookableNow: cruza inventario con ingredientes de recetas
@@ -1147,8 +1147,8 @@
 - [ ] Badge de ingredientes faltantes en cada card de receta cookable
 
 ## Sprint BuddySetup - Onboarding guiado con IA
-- [ ] Página /buddy-setup con flujo de 5 pasos (objetivo, restricciones, horarios, presupuesto, generación menú)
-- [ ] Redirigir a /buddy-setup si onboardingCompleted = false tras el login
+- [x] Página /buddy-setup con flujo de 5 pasos (objetivo, restricciones, horarios, presupuesto, generación menú)
+- [x] Redirigir a /buddy-setup si onboardingCompleted = false tras el login
 - [ ] tRPC: completeOnboarding que guarda los datos y genera el primer menú con IA
 - [ ] Animaciones de transición entre pasos
 - [ ] Marcar onboardingCompleted = true al finalizar

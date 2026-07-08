@@ -334,14 +334,23 @@ function ShoppingListDetail({ listId, onBack }: { listId: number; onBack: () => 
     return (pantryData ?? []).find((p: any) => p.ingredientKey === key);
   }
 
+  const markItemPurchasedMut = trpc.shoppingLists.markItemPurchased.useMutation({
+    onSuccess: () => utils.shoppingLists.getPantryStock.invalidate(),
+  });
   const toggleItem = trpc.shoppingLists.toggleItem.useMutation({
     onMutate: async ({ id }) => {
       await utils.shoppingLists.getById.cancel({ id: listId });
       const prev = utils.shoppingLists.getById.getData({ id: listId });
+      const currentItem = (prev as any)?.items?.find((i: any) => i.id === id);
+      const willBePurchased = !currentItem?.isPurchased;
       utils.shoppingLists.getById.setData({ id: listId }, (old: any) => {
         if (!old) return old;
         return { ...old, items: old.items.map((item: any) => item.id === id ? { ...item, checked: !item.checked, isPurchased: !item.isPurchased } : item) };
       });
+      // Actualizar despensa en background al marcar como comprado
+      if (willBePurchased) {
+        markItemPurchasedMut.mutate({ itemId: id, purchased: true });
+      }
       return { prev };
     },
     onError: (_err: any, _vars: any, ctx: any) => {
