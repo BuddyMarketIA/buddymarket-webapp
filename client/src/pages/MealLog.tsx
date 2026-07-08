@@ -1294,7 +1294,7 @@ export default function MealLog() {
             </div>
 
             {/* Mode selector */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr 1fr 1fr", gap: "6px", marginBottom: "16px", width: "100%" }}>
+            <div style={{ display: "grid", gridTemplateColumns: "repeat(4, minmax(0, 1fr))", gap: "4px", marginBottom: "16px", width: "100%", boxSizing: "border-box" }}>
               <button
                 onClick={() => setAddMode("manual")}
                 style={{ padding: "10px 4px", borderRadius: "14px", border: "none", cursor: "pointer", fontSize: "12px", fontWeight: 700, background: addMode === "manual" ? "#F97316" : "#f3f4f6", color: addMode === "manual" ? "white" : "#6b7280", transition: "all 0.2s", whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}

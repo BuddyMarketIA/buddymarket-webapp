@@ -2307,6 +2307,34 @@ Adapta esta receta eliminando los ingredientes prohibidos y sustituyéndolos por
         return db.removeRecipeFromMenuDayPart(input.menuOrganizerDayPartId, input.recipeId);
       }),
 
+    moveRecipeBetweenDayParts: protectedProcedure
+      .input(z.object({
+        fromDayPartId: z.number(),
+        toDayPartId: z.number(),
+        recipeId: z.number(),
+        servings: z.number().optional(),
+      }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { menuOrganizerDayParts, menuOrganizers } = await import("../drizzle/schema.js");
+        const { eq } = await import("drizzle-orm");
+        const [fromDp] = await drizzleDb.select({ menuOrganizerId: menuOrganizerDayParts.menuOrganizerId })
+          .from(menuOrganizerDayParts).where(eq(menuOrganizerDayParts.id, input.fromDayPartId)).limit(1);
+        const [toDp] = await drizzleDb.select({ menuOrganizerId: menuOrganizerDayParts.menuOrganizerId })
+          .from(menuOrganizerDayParts).where(eq(menuOrganizerDayParts.id, input.toDayPartId)).limit(1);
+        if (!fromDp || !toDp) throw new TRPCError({ code: "NOT_FOUND" });
+        const [fromMenu] = await drizzleDb.select({ userId: menuOrganizers.userId })
+          .from(menuOrganizers).where(eq(menuOrganizers.id, fromDp.menuOrganizerId)).limit(1);
+        const [toMenu] = await drizzleDb.select({ userId: menuOrganizers.userId })
+          .from(menuOrganizers).where(eq(menuOrganizers.id, toDp.menuOrganizerId)).limit(1);
+        if (!fromMenu || !toMenu) throw new TRPCError({ code: "NOT_FOUND" });
+        requireOwnership(fromMenu.userId, ctx.user.id, ctx.user.role);
+        requireOwnership(toMenu.userId, ctx.user.id, ctx.user.role);
+        await db.removeRecipeFromMenuDayPart(input.fromDayPartId, input.recipeId);
+        return db.addRecipeToMenuDayPart(input.toDayPartId, input.recipeId, input.servings);
+      }),
+
     // Get all items for a specific date across all user menus
     getItemsByDate: protectedProcedure
       .input(z.object({ date: z.string(), menuId: z.number().optional() }))

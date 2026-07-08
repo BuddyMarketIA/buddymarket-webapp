@@ -371,7 +371,7 @@
 - [x] apple-touch-icon.png (180x180)
 
 ## Sprint: Card de Calorías Visual
-- [ ] Rediseñar card de calorías con anillo de progreso SVG circular
+- [x] Rediseñar card de calorías con anillo de progreso SVG circular
 - [x] Mostrar macros (P/C/G) con barras de progreso horizontales y colores
 - [ ] Añadir streak de días consecutivos registrando comidas
 - [x] Card clickeable que navega a /meal-log
@@ -644,7 +644,7 @@
 
 ### UX General
 - [ ] Añadir breadcrumbs/título de sección en todas las páginas (pendiente)
-- [ ] Mejorar página Menús: drag-and-drop entre días/comidas
+- [x] Mejorar página Menús: drag-and-drop entre días/comidas
 - [x] Añadir página de estadísticas nutricionales (gráficos de evolución)
 - [x] Mejorar BuddyIA: historial de conversaciones guardado en BD
 - [ ] Añadir página de ajustes/configuración de usuario

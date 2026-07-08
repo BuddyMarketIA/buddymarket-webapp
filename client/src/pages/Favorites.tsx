@@ -308,7 +308,7 @@ export default function Favorites() {
       <div style={{ padding: "16px 16px 0" }}>
         {isLoading ? (
           /* Skeleton */
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+          <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: "12px" }}>
             {[1, 2, 3, 4].map(i => (
               <div key={i} style={{ borderRadius: "18px", overflow: "hidden", background: "white" }}>
                 <div style={{ height: "160px", background: "linear-gradient(90deg, #f3f4f6 25%, #e5e7eb 50%, #f3f4f6 75%)", backgroundSize: "200% 100%", animation: "shimmer 1.5s infinite" }} />
@@ -358,7 +358,7 @@ export default function Favorites() {
               </p>
             )}
             {/* Grid */}
-            <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px" }}>
+            <div className="grid grid-cols-1 sm:grid-cols-2" style={{ gap: "12px" }}>
               {filtered.map(recipe => (
                 <FavoriteRecipeCard
                   key={recipe.id}

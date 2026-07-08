@@ -1,4 +1,5 @@
-import { useState, useMemo, useEffect } from "react";
+import React, { useState, useMemo, useEffect, useRef } from "react";
+import { DndContext, DragOverlay, useDraggable, useDroppable, type DragEndEvent } from "@dnd-kit/core";
 import { useTranslation } from "react-i18next";
 import { trpc } from "@/lib/trpc";
 import { getErrorMessage } from "@/lib/errorUtils";
@@ -25,6 +26,7 @@ import {
   UserCircleIcon,
   ChevronDownIcon,
   ChevronUpIcon,
+  Bars3Icon,
 } from "@heroicons/react/24/outline";
 import { CheckCircleIcon, StarIcon as StarSolidIcon } from "@heroicons/react/24/solid";
 
@@ -295,8 +297,53 @@ function MenuCard({
   );
 }
 
-// ─── Sub-component: Tab "Menú en curso" ──────────────────────────────────────
+// ─── DnD Components ─────────────────────────────────────────────────────────
+function DraggableRecipeCard({ item, onRemove }: { item: any; onRemove: () => void }) {
+  const { attributes, listeners, setNodeRef, transform, isDragging } = useDraggable({
+    id: `recipe-${item.menuOrganizerDayPartId}-${item.recipeId}`,
+    data: { item },
+  });
+  const style = transform ? { transform: `translate3d(${transform.x}px, ${transform.y}px, 0)`, zIndex: 50, opacity: 0.85 } : undefined;
+  return (
+    <div ref={setNodeRef} style={style} className={`flex items-center gap-3 rounded-2xl bg-muted/20 border border-border/40 p-2.5 ${isDragging ? "shadow-xl ring-2 ring-orange-300" : ""}`}>
+      <button {...listeners} {...attributes} className="flex h-7 w-7 shrink-0 cursor-grab items-center justify-center rounded-lg text-muted-foreground/40 hover:bg-muted active:cursor-grabbing touch-none">
+        <Bars3Icon className="h-4 w-4" />
+      </button>
+      <img src={item.recipe?.imageUrl || RECIPE_PLACEHOLDER_IMAGE} alt="" className="h-12 w-12 rounded-xl object-cover shrink-0" onError={e => { (e.target as HTMLImageElement).src = RECIPE_PLACEHOLDER_IMAGE; }} />
+      <div className="flex-1 min-w-0">
+        <p className="text-sm font-semibold text-foreground leading-tight">{item.recipe?.name ?? "Receta eliminada"}</p>
+        <div className="flex items-center gap-2 mt-0.5">
+          {item.recipe?.caloriesPerServing && (
+            <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground/70">
+              <FireIcon className="h-3 w-3 text-orange-400" />
+              {item.recipe.caloriesPerServing} kcal
+            </span>
+          )}
+          {item.recipe?.preparationTime && (
+            <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground/70">
+              <ClockIcon className="h-3 w-3" />
+              {item.recipe.preparationTime} min
+            </span>
+          )}
+        </div>
+      </div>
+      <button onClick={onRemove} className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-muted-foreground/40 hover:bg-red-50 hover:text-red-400 transition-all">
+        <TrashIcon className="h-4 w-4" />
+      </button>
+    </div>
+  );
+}
 
+function DroppableMealSlot({ id, children, isOver }: { id: string; children: React.ReactNode; isOver: boolean }) {
+  const { setNodeRef } = useDroppable({ id });
+  return (
+    <div ref={setNodeRef} className={`min-h-[20px] rounded-xl transition-all ${isOver ? "ring-2 ring-orange-300 bg-orange-50/30" : ""}`}>
+      {children}
+    </div>
+  );
+}
+
+// ─── Sub-component: Tab "Menú en curso" ──────────────────────────────────────
 function ActiveMenuTab({ editMenuId }: { editMenuId?: number }) {
   const { t }                 = useTranslation();
   const [, navigate]          = useLocation();
@@ -338,6 +385,11 @@ function ActiveMenuTab({ editMenuId }: { editMenuId?: number }) {
   const removeRecipe = trpc.menus.removeRecipeFromDayPart.useMutation({
     onSuccess: () => { refetchDayItems(); toast.success("Receta eliminada"); },
   });
+  const moveRecipe = trpc.menus.moveRecipeBetweenDayParts.useMutation({
+    onSuccess: () => { refetchDayItems(); toast.success("Receta movida"); },
+    onError: (err: any) => toast.error(getErrorMessage(err, "Error al mover receta")),
+  });
+  const [activeDragItem, setActiveDragItem] = useState<any | null>(null);
   const applyToCalendar = trpc.menus.applyToCalendar.useMutation({
     onSuccess: (data) => {
       utils.mealLogs.list.invalidate();
@@ -438,7 +490,10 @@ function ActiveMenuTab({ editMenuId }: { editMenuId?: number }) {
                   <CheckCircleIcon className="h-5 w-5 text-[#F97316] shrink-0" />
                   <div>
                     <p className="text-[10px] font-semibold text-orange-300 uppercase tracking-wide">Menú en curso</p>
-                    <p className="text-sm font-bold text-white">{targetMenu.name}</p>
+                    <div className="flex items-center gap-1.5">
+                      <p className="text-sm font-bold text-white">{targetMenu.name}</p>
+                      {(targetMenu as any).generatedByAI && <span className="text-[10px] bg-purple-500/80 text-white font-bold px-1.5 py-0.5 rounded-full">✨ IA</span>}
+                    </div>
                   </div>
                 </div>
                 <button
@@ -456,7 +511,10 @@ function ActiveMenuTab({ editMenuId }: { editMenuId?: number }) {
                 <CheckCircleIcon className="h-5 w-5 text-[#F97316] shrink-0" />
                 <div className="min-w-0">
                   <p className="text-xs font-semibold text-orange-500 uppercase tracking-wide">Menú en curso</p>
-                  <p className="text-sm font-bold text-foreground truncate">{targetMenu.name}</p>
+                  <div className="flex items-center gap-1.5">
+                    <p className="text-sm font-bold text-foreground truncate">{targetMenu.name}</p>
+                    {(targetMenu as any).generatedByAI && <span className="text-[10px] bg-purple-100 text-purple-700 font-bold px-1.5 py-0.5 rounded-full shrink-0">✨ IA</span>}
+                  </div>
                 </div>
               </div>
               <button
@@ -485,16 +543,16 @@ function ActiveMenuTab({ editMenuId }: { editMenuId?: number }) {
       </div>
 
       {/* Day selector */}
-      <div className="mb-5 flex gap-2 overflow-x-auto pb-1">
+      <div className="mb-5 grid grid-cols-7 gap-1">
         {weekDates.map(date => {
           const ds       = date.toISOString().split("T")[0];
           const isSel    = ds === selectedDateStr;
           const isToday  = ds === new Date().toISOString().split("T")[0];
           return (
             <button key={ds} onClick={() => setSelectedDate(date)}
-              className={`flex shrink-0 flex-col items-center rounded-2xl px-3 py-2 transition-all ${isSel ? "bg-[#F97316] text-white shadow-sm" : "bg-muted/50 text-muted-foreground hover:bg-muted"}`}>
-              <span className="text-[13px] font-medium">{DAYS_ES[date.getDay()]}</span>
-              <span className={`text-base font-bold ${isToday && !isSel ? "text-[#F97316]" : ""}`}>{date.getDate()}</span>
+              className={`flex flex-col items-center rounded-xl px-1 py-2 transition-all ${isSel ? "bg-[#F97316] text-white shadow-sm" : "bg-muted/50 text-muted-foreground hover:bg-muted"}`}>
+              <span className="text-[11px] font-medium">{DAYS_ES[date.getDay()]}</span>
+              <span className={`text-sm font-bold ${isToday && !isSel ? "text-[#F97316]" : ""}`}>{date.getDate()}</span>
             </button>
           );
         })}
@@ -517,13 +575,38 @@ function ActiveMenuTab({ editMenuId }: { editMenuId?: number }) {
         </div>
       )}
 
-      {/* Meal slots */}
-      {!loadingDayItems && MEAL_TYPES.map(mealType => {
+            {/* Meal slots — wrapped in DndContext for drag-and-drop between meal types */}
+      {!loadingDayItems && (
+        <DndContext
+          onDragStart={({ active }) => setActiveDragItem(active.data.current?.item ?? null)}
+          onDragEnd={({ active, over }: DragEndEvent) => {
+            setActiveDragItem(null);
+            if (!over || active.id === over.id) return;
+            const item = active.data.current?.item;
+            if (!item) return;
+            // over.id is the droppable meal slot id: `slot-${mealType.apiParam}`
+            const toMealType = String(over.id).replace("slot-", "");
+            const fromDayPartId = item.menuOrganizerDayPartId;
+            // Find the target day part id for the destination meal type
+            const toDayPartItems = mealMap[toMealType] ?? [];
+            if (toDayPartItems.length > 0) {
+              const toDayPartId = toDayPartItems[0].menuOrganizerDayPartId;
+              if (toDayPartId !== fromDayPartId) {
+                moveRecipe.mutate({ fromDayPartId, toDayPartId, recipeId: item.recipeId, servings: item.servings });
+              }
+            } else {
+              // Need to ensure the day part exists first, then move
+              ensureDayPart.mutateAsync({ menuId: targetMenu!.id, date: selectedDateStr, mealType: toMealType })
+                .then(dp => moveRecipe.mutate({ fromDayPartId, toDayPartId: dp.id, recipeId: item.recipeId, servings: item.servings }))
+                .catch(() => toast.error("Error al mover receta"));
+            }
+          }}
+        >
+      {MEAL_TYPES.map(mealType => {
         const items = mealMap[mealType.apiParam] ?? [];
         const confirmKey = `${selectedDateStr}-${mealType.apiParam}`;
         const isConfirmed = confirmedMeals.has(confirmKey);
         const isConfirming = confirmingMeals.has(confirmKey);
-
         return (
           <div key={mealType.key} className={`vively-card mb-3 transition-all ${isConfirmed ? "border-green-200 bg-green-50/30" : ""}`}>
             <div className="mb-3 flex items-center justify-between">
@@ -555,41 +638,18 @@ function ActiveMenuTab({ editMenuId }: { editMenuId?: number }) {
               </button>
             ) : (
               <div>
-                {/* Recipe cards */}
-                <div className="space-y-2 mb-3">
-                  {items.map((item: any) => (
-                    <div key={item.id} className="flex items-center gap-3 rounded-2xl bg-muted/20 border border-border/40 p-2.5">
-                      <img
-                        src={item.recipe?.imageUrl || RECIPE_PLACEHOLDER_IMAGE}
-                        alt=""
-                        className="h-14 w-14 rounded-xl object-cover shrink-0"
-                        onError={e => { (e.target as HTMLImageElement).src = RECIPE_PLACEHOLDER_IMAGE; }}
+                {/* Recipe cards — draggable */}
+                <DroppableMealSlot id={`slot-${mealType.apiParam}`} isOver={false}>
+                  <div className="space-y-2 mb-3">
+                    {items.map((item: any) => (
+                      <DraggableRecipeCard
+                        key={`${item.menuOrganizerDayPartId}-${item.recipeId}`}
+                        item={item}
+                        onRemove={() => removeRecipe.mutate({ menuOrganizerDayPartId: item.menuOrganizerDayPartId, recipeId: item.recipeId })}
                       />
-                      <div className="flex-1 min-w-0">
-                        <p className="text-sm font-semibold text-foreground leading-tight">{item.recipe?.name ?? "Receta eliminada"}</p>
-                        <div className="flex items-center gap-2 mt-0.5">
-                          {item.recipe?.caloriesPerServing && (
-                            <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground/70">
-                              <FireIcon className="h-3 w-3 text-orange-400" />
-                              {item.recipe.caloriesPerServing} kcal
-                            </span>
-                          )}
-                          {item.recipe?.preparationTime && (
-                            <span className="flex items-center gap-0.5 text-[10px] text-muted-foreground/70">
-                              <ClockIcon className="h-3 w-3" />
-                              {item.recipe.preparationTime} min
-                            </span>
-                          )}
-                        </div>
-                      </div>
-                      <button
-                        onClick={() => removeRecipe.mutate({ menuOrganizerDayPartId: item.menuOrganizerDayPartId, recipeId: item.recipeId })}
-                        className="flex h-7 w-7 shrink-0 items-center justify-center rounded-full text-muted-foreground/40 hover:bg-red-50 hover:text-red-400 transition-all">
-                        <TrashIcon className="h-4 w-4" />
-                      </button>
-                    </div>
-                  ))}
-                </div>
+                    ))}
+                  </div>
+                </DroppableMealSlot>
 
                 {/* Confirm to diary button */}
                 {!isConfirmed && (
@@ -610,8 +670,17 @@ function ActiveMenuTab({ editMenuId }: { editMenuId?: number }) {
             )}
           </div>
         );
-      })}
-
+            })}
+        <DragOverlay>
+          {activeDragItem ? (
+            <div className="flex items-center gap-3 rounded-2xl bg-background border border-orange-300 shadow-2xl p-2.5 opacity-90">
+              <img src={activeDragItem.recipe?.imageUrl || RECIPE_PLACEHOLDER_IMAGE} alt="" className="h-12 w-12 rounded-xl object-cover shrink-0" />
+              <p className="text-sm font-semibold text-foreground">{activeDragItem.recipe?.name ?? "Receta"}</p>
+            </div>
+          ) : null}
+        </DragOverlay>
+        </DndContext>
+      )}
       {/* Shopping list CTA */}
       <div className="vively-card mb-4 bg-gradient-to-r from-orange-50 to-amber-50">
         <div className="flex items-center gap-3">

@@ -1,4 +1,5 @@
-import { useState, useMemo, useEffect, useCallback } from "react";
+import { useState, useMemo, useEffect, useCallback, useRef } from "react";
+import confetti from "canvas-confetti";
 import { Link, useLocation } from "wouter";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { trpc } from "@/lib/trpc";
@@ -817,6 +818,25 @@ export default function Dashboard() {
 
   const profile = profileData.data;
   const summary = dailySummary.data;
+
+  // Confetti when macros goal is reached
+  const confettiFiredRef = useRef(false);
+  const proteinGoal = profile?.proteinGoal ?? 150;
+  const carbsGoal   = profile?.carbsGoal   ?? 250;
+  const fatGoal     = profile?.fatGoal     ?? 65;
+  const goalCal0    = profile?.dailyCalorieGoal ?? 2000;
+  const protein0    = (summary as any)?.protein ?? 0;
+  const carbs0      = (summary as any)?.carbs   ?? 0;
+  const fat0        = (summary as any)?.fat     ?? 0;
+  const consumed0   = (summary as any)?.calories ?? (summary as any)?.totalCalories ?? 0;
+  const macrosComplete = protein0 >= proteinGoal && carbs0 >= carbsGoal && fat0 >= fatGoal && consumed0 >= goalCal0 * 0.9;
+  useEffect(() => {
+    if (macrosComplete && !confettiFiredRef.current && dailySummary.isFetched) {
+      confettiFiredRef.current = true;
+      confetti({ particleCount: 120, spread: 80, origin: { y: 0.5 }, colors: ["#F97316", "#FBBF24", "#10B981", "#3B82F6", "#8B5CF6"] });
+    }
+    if (!macrosComplete) confettiFiredRef.current = false;
+  }, [macrosComplete, dailySummary.isFetched]);
   const goalCal = profile?.dailyCalorieGoal ?? 2000;
   const consumed = (summary as any)?.calories ?? (summary as any)?.totalCalories ?? 0;
   const streak = streakData.data?.currentStreak ?? 0;
