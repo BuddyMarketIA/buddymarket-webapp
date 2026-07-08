@@ -860,7 +860,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
           )}
 
           {/* Content — sin padding-bottom para barra inferior */}
-          <main id="main-content" style={{ flex: 1, padding: "0" }}>
+          <main id="main-content" style={{ flex: 1, padding: "0" }} className="animate-fade-in">
             {children}
           </main>
         </div>
@@ -953,7 +953,7 @@ export default function AppLayout({ children, title, showBack = false, onBack, h
       </header>
 
       {/* Content */}
-      <main id="main-content" style={{ paddingTop: "calc(env(safe-area-inset-top) + 64px)", paddingBottom: shouldShowNav ? "calc(64px + env(safe-area-inset-bottom))" : "0" }}>
+      <main id="main-content" style={{ paddingTop: "calc(env(safe-area-inset-top) + 64px)", paddingBottom: shouldShowNav ? "calc(64px + env(safe-area-inset-bottom))" : "0" }} className="animate-fade-in">
         {children}
       </main>
 

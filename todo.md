@@ -289,7 +289,7 @@
 - [x] Botón corazón en tarjeta de receta (toggle optimista, animación)
 - [x] Página /favorites "Mis Favoritas" con grid de recetas y filtros (Favorites.tsx ya implementado)
 - [x] Entrada en sidebar/navegación para Mis Favoritas
-- [ ] Tests vitest para los nuevos endpoints
+- [x] Tests vitest para los nuevos endpoints (canCookNow, moveRecipeBetweenDayParts, BuddyIA sessions)
 - [x] Acceso directo a buddycoach.io en sidebar (sección Comunidad Vively)
 - [x] Banner/card de BuddyCoach en Dashboard con link a buddycoach.io (enlace en sidebar sección Comunidad)
 - [x] Ampliar perfil: campos detallados de salud, estilo de vida, preferencias culinarias y objetivos
