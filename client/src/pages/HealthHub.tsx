@@ -3,6 +3,7 @@
  * NO duplica páginas. Muestra resumen de estado + Buddy Coach + accesos directos.
  */
 import { useState, useEffect, useMemo, useRef } from "react";
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from "recharts";
 import { trpc } from "@/lib/trpc";
 import { useAuth } from "@/_core/hooks/useAuth";
 import { toast } from "@/components/sonner-a11y-shim";
@@ -79,6 +80,10 @@ export default function HealthHub() {
   const [isTyping, setIsTyping] = useState(false);
   const chatEndRef = useRef<HTMLDivElement>(null);
   const [dailySummaryShown, setDailySummaryShown] = useState(false);
+  const [chartDays, setChartDays] = useState<7 | 30>(30);
+
+  // Métricas históricas para gráficas
+  const { data: metricsData } = trpc.wearables.getMetrics.useQuery({ days: chartDays });
 
   // Resumen diario automático por la tarde/noche (después de las 15:00)
   useEffect(() => {
@@ -313,6 +318,112 @@ export default function HealthHub() {
                   </Link>
                 ))}
               </div>
+            </div>
+
+            {/* ── GRÁFICAS DE EVOLUCIÓN ── */}
+            <div className="bg-card rounded-2xl border border-border p-4 shadow-sm">
+              <div className="flex items-center justify-between mb-3">
+                <h3 className="text-sm font-bold text-foreground">Evolución de métricas</h3>
+                <div className="flex gap-1">
+                  {([7, 30] as const).map(d => (
+                    <button
+                      key={d}
+                      onClick={() => setChartDays(d)}
+                      className={`px-2.5 py-1 rounded-full text-xs font-semibold transition-all ${
+                        chartDays === d ? "bg-orange-500 text-white" : "bg-muted text-muted-foreground hover:bg-orange-100"
+                      }`}
+                    >
+                      {d}d
+                    </button>
+                  ))}
+                </div>
+              </div>
+
+              {/* Gráfica de Scores (Oura) */}
+              {metricsData?.oura && metricsData.oura.length > 0 ? (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-2">Scores Oura Ring (sueño, actividad, preparación)</p>
+                  <div style={{ height: 180 }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={metricsData.oura.map(d => ({
+                        date: d.date?.slice(5), // MM-DD
+                        Sueño: d.sleepScore,
+                        Actividad: d.activityScore,
+                        Preparación: d.readinessScore,
+                      }))} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                        <XAxis dataKey="date" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
+                        <YAxis domain={[0, 100]} tick={{ fontSize: 10 }} />
+                        <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} />
+                        <Legend wrapperStyle={{ fontSize: 11 }} />
+                        <Line type="monotone" dataKey="Sueño" stroke="#7C3AED" strokeWidth={2} dot={false} />
+                        <Line type="monotone" dataKey="Actividad" stroke="#F97316" strokeWidth={2} dot={false} />
+                        <Line type="monotone" dataKey="Preparación" stroke="#0EA5E9" strokeWidth={2} dot={false} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              ) : metricsData?.whoop && metricsData.whoop.length > 0 ? (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-2">Scores Whoop (recuperación, esfuerzo)</p>
+                  <div style={{ height: 180 }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={metricsData.whoop.map(d => ({
+                        date: d.date?.slice(5),
+                        Recuperación: d.recoveryScore,
+                        Esfuerzo: d.strainScore,
+                        Sueño: d.sleepScore,
+                      }))} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                        <XAxis dataKey="date" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
+                        <YAxis domain={[0, 100]} tick={{ fontSize: 10 }} />
+                        <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} />
+                        <Legend wrapperStyle={{ fontSize: 11 }} />
+                        <Line type="monotone" dataKey="Recuperación" stroke="#16A34A" strokeWidth={2} dot={false} />
+                        <Line type="monotone" dataKey="Esfuerzo" stroke="#F97316" strokeWidth={2} dot={false} />
+                        <Line type="monotone" dataKey="Sueño" stroke="#7C3AED" strokeWidth={2} dot={false} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              ) : metricsData?.userMetrics && metricsData.userMetrics.length > 0 ? (
+                <div>
+                  <p className="text-xs text-muted-foreground mb-2">Evolución de peso y composición corporal</p>
+                  <div style={{ height: 180 }}>
+                    <ResponsiveContainer width="100%" height="100%">
+                      <LineChart data={metricsData.userMetrics.map(d => ({
+                        date: d.recordedAt?.slice(5),
+                        Peso: d.weight,
+                        "Grasa %": d.bodyFatPercentage,
+                      }))} margin={{ top: 4, right: 4, left: -20, bottom: 0 }}>
+                        <CartesianGrid strokeDasharray="3 3" stroke="#f0f0f0" />
+                        <XAxis dataKey="date" tick={{ fontSize: 10 }} interval="preserveStartEnd" />
+                        <YAxis tick={{ fontSize: 10 }} />
+                        <Tooltip contentStyle={{ fontSize: 11, borderRadius: 8 }} />
+                        <Legend wrapperStyle={{ fontSize: 11 }} />
+                        <Line type="monotone" dataKey="Peso" stroke="#F97316" strokeWidth={2} dot={{ r: 3 }} />
+                        <Line type="monotone" dataKey="Grasa %" stroke="#EF4444" strokeWidth={2} dot={{ r: 3 }} />
+                      </LineChart>
+                    </ResponsiveContainer>
+                  </div>
+                </div>
+              ) : (
+                <div className="flex flex-col items-center justify-center py-6 text-center">
+                  <span className="text-3xl mb-2">📊</span>
+                  <p className="text-sm font-semibold text-foreground">Sin datos de métricas aún</p>
+                  <p className="text-xs text-muted-foreground mt-1">Conecta un wearable o registra tus métricas corporales para ver gráficas de evolución.</p>
+                  <div className="flex gap-2 mt-3">
+                    <button onClick={() => setActiveTab("dispositivos")} className="px-3 py-1.5 rounded-full text-xs font-semibold bg-orange-500 text-white hover:bg-orange-600 transition-colors">
+                      Conectar wearable
+                    </button>
+                    <Link href="/app/metrics">
+                      <span className="px-3 py-1.5 rounded-full text-xs font-semibold bg-muted text-muted-foreground hover:bg-orange-100 hover:text-orange-700 transition-colors cursor-pointer">
+                        Registrar métricas
+                      </span>
+                    </Link>
+                  </div>
+                </div>
+              )}
             </div>
 
             {/* Síntomas rápidos */}

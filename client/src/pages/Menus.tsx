@@ -762,6 +762,11 @@ function SavedMenusTab() {
   const { can }           = usePlan();
   const [showNewMenu, setShowNewMenu]   = useState(false);
   const [showAI, setShowAI]             = useState(false);
+  const [aiStep, setAiStep]             = useState(0);
+  const [aiDays, setAiDays]             = useState(7);
+  const [aiMealsPerDay, setAiMealsPerDay] = useState(3);
+  const [aiDifficulty, setAiDifficulty] = useState<"easy" | "medium" | "any">("any");
+  const [aiPersons, setAiPersons]       = useState(1);
   const [menuName, setMenuName]         = useState("");
   const [aiObjective, setAiObjective]   = useState("");
   const [generating, setGenerating]     = useState(false);
@@ -876,30 +881,142 @@ function SavedMenusTab() {
         </div>
       )}
 
-      {/* AI modal */}
+      {/* AI Wizard modal */}
       {showAI && (
-        <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) setShowAI(false); }}>
+        <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) { setShowAI(false); setAiStep(0); } }}>
           <div className="w-full max-w-sm rounded-3xl bg-background p-6 shadow-2xl animate-slide-up">
+            {/* Header */}
             <div className="mb-4 flex items-center gap-3">
               <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-blue-50">
                 <SparklesIcon className="h-5 w-5 text-blue-600" />
               </div>
-              <div>
-                <h3 className="text-lg font-bold text-foreground">Generar menú con IA</h3>
-                <p className="text-xs text-muted-foreground">La IA creará un menú personalizado para ti</p>
+              <div className="flex-1">
+                <h3 className="text-lg font-bold text-foreground">Menú con IA</h3>
+                <p className="text-xs text-muted-foreground">Paso {aiStep + 1} de 4</p>
               </div>
-            </div>
-            <textarea value={aiObjective} onChange={e => setAiObjective(e.target.value)}
-              placeholder="Describe tu objetivo: perder peso, ganar músculo, dieta mediterránea, sin gluten..." className="vively-input mb-4 h-24 resize-none" />
-            <div className="flex gap-3">
-              <button onClick={() => setShowAI(false)} className="flex-1 rounded-2xl border border-border py-3 text-sm font-semibold text-muted-foreground">Cancelar</button>
-              <button
-                onClick={() => { setGenerating(true); generateAI.mutate({ days: 7, mealsPerDay: 3, objective: aiObjective || "menú equilibrado semanal" }); }}
-                disabled={generating}
-                className="flex-1 btn-vively flex items-center justify-center gap-2">
-                {generating ? <><span className="animate-spin">⏳</span> Generando...</> : <><SparklesIcon className="h-4 w-4" /> Generar</>}
+              <button onClick={() => { setShowAI(false); setAiStep(0); }} className="text-muted-foreground hover:text-foreground">
+                <span className="text-lg">×</span>
               </button>
             </div>
+            {/* Progress bar */}
+            <div className="mb-5 h-1.5 rounded-full bg-muted">
+              <div className="h-full rounded-full bg-blue-500 transition-all" style={{ width: `${((aiStep + 1) / 4) * 100}%` }} />
+            </div>
+
+            {/* Step 0: Días */}
+            {aiStep === 0 && (
+              <div>
+                <p className="mb-1 text-sm font-bold text-foreground">¿Para cuántos días quieres el menú?</p>
+                <p className="mb-4 text-xs text-muted-foreground">La IA planificará todas las comidas de esos días</p>
+                <div className="grid grid-cols-4 gap-2 mb-6">
+                  {[3, 5, 7, 14].map(d => (
+                    <button key={d} onClick={() => setAiDays(d)}
+                      className={`rounded-2xl py-3 text-sm font-bold transition-all ${
+                        aiDays === d ? "bg-blue-600 text-white shadow-md" : "bg-muted text-muted-foreground hover:bg-muted/80"
+                      }`}>{d} días</button>
+                  ))}
+                </div>
+                <button onClick={() => setAiStep(1)} className="w-full btn-vively">Siguiente →</button>
+              </div>
+            )}
+
+            {/* Step 1: Comidas por día */}
+            {aiStep === 1 && (
+              <div>
+                <p className="mb-1 text-sm font-bold text-foreground">¿Cuántas comidas al día?</p>
+                <p className="mb-4 text-xs text-muted-foreground">Elige el patrón que mejor se adapta a tu rutina</p>
+                <div className="grid grid-cols-1 gap-2 mb-6">
+                  {[
+                    { v: 2, label: "2 comidas", sub: "Ayuno intermitente (almuerzo + cena)" },
+                    { v: 3, label: "3 comidas", sub: "Clásico: desayuno, comida y cena" },
+                    { v: 5, label: "5 comidas", sub: "Con snacks (desayuno, media mañana, comida, merienda, cena)" },
+                  ].map(o => (
+                    <button key={o.v} onClick={() => setAiMealsPerDay(o.v)}
+                      className={`rounded-2xl p-3 text-left transition-all ${
+                        aiMealsPerDay === o.v ? "bg-blue-600 text-white shadow-md" : "bg-muted text-muted-foreground hover:bg-muted/80"
+                      }`}>
+                      <p className="text-sm font-bold">{o.label}</p>
+                      <p className={`text-[10px] mt-0.5 ${aiMealsPerDay === o.v ? "text-blue-100" : "text-muted-foreground/70"}`}>{o.sub}</p>
+                    </button>
+                  ))}
+                </div>
+                <div className="flex gap-3">
+                  <button onClick={() => setAiStep(0)} className="flex-1 rounded-2xl border border-border py-3 text-sm font-semibold text-muted-foreground">← Atrás</button>
+                  <button onClick={() => setAiStep(2)} className="flex-1 btn-vively">Siguiente →</button>
+                </div>
+              </div>
+            )}
+
+            {/* Step 2: Dificultad + Personas */}
+            {aiStep === 2 && (
+              <div>
+                <p className="mb-4 text-sm font-bold text-foreground">¿Cuántas personas y qué dificultad?</p>
+                <div className="mb-4">
+                  <p className="mb-2 text-xs font-semibold text-muted-foreground">Número de personas</p>
+                  <div className="flex items-center gap-4">
+                    <button onClick={() => setAiPersons(p => Math.max(1, p - 1))} className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-lg font-bold">−</button>
+                    <span className="text-xl font-extrabold text-foreground w-8 text-center">{aiPersons}</span>
+                    <button onClick={() => setAiPersons(p => Math.min(10, p + 1))} className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-lg font-bold">+</button>
+                  </div>
+                </div>
+                <div className="mb-6">
+                  <p className="mb-2 text-xs font-semibold text-muted-foreground">Dificultad de preparación</p>
+                  <div className="grid grid-cols-3 gap-2">
+                    {[
+                      { v: "easy", label: "Fácil", emoji: "😊", sub: "Recetas rápidas" },
+                      { v: "medium", label: "Normal", emoji: "👨‍🍳", sub: "Algo de cocina" },
+                      { v: "any", label: "Cualquiera", emoji: "🎲", sub: "Sin filtro" },
+                    ].map(o => (
+                      <button key={o.v} onClick={() => setAiDifficulty(o.v as any)}
+                        className={`rounded-2xl p-3 text-center transition-all ${
+                          aiDifficulty === o.v ? "bg-blue-600 text-white shadow-md" : "bg-muted text-muted-foreground hover:bg-muted/80"
+                        }`}>
+                        <p className="text-xl">{o.emoji}</p>
+                        <p className="text-xs font-bold mt-1">{o.label}</p>
+                        <p className={`text-[9px] mt-0.5 ${aiDifficulty === o.v ? "text-blue-100" : "text-muted-foreground/70"}`}>{o.sub}</p>
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="flex gap-3">
+                  <button onClick={() => setAiStep(1)} className="flex-1 rounded-2xl border border-border py-3 text-sm font-semibold text-muted-foreground">← Atrás</button>
+                  <button onClick={() => setAiStep(3)} className="flex-1 btn-vively">Siguiente →</button>
+                </div>
+              </div>
+            )}
+
+            {/* Step 3: Objetivo + Generar */}
+            {aiStep === 3 && (
+              <div>
+                <p className="mb-1 text-sm font-bold text-foreground">¿Algún objetivo o preferencia extra?</p>
+                <p className="mb-3 text-xs text-muted-foreground">Elige uno o escribe el tuyo propio</p>
+                <div className="mb-3 flex flex-wrap gap-2">
+                  {["Perder peso", "Ganar músculo", "Mediterráneo", "Sin gluten", "Vegetariano", "Bajo en carbos", "Alto en proteína"].map(tag => (
+                    <button key={tag}
+                      onClick={() => setAiObjective(prev => prev.includes(tag) ? prev.replace(tag, "").replace(/,\s*/g, ",").replace(/^,|,$/g, "").trim() : (prev ? prev + ", " + tag : tag))}
+                      className={`rounded-full px-3 py-1.5 text-xs font-semibold transition-all ${
+                        aiObjective.includes(tag) ? "bg-blue-600 text-white" : "bg-muted text-muted-foreground hover:bg-muted/80"
+                      }`}>{tag}</button>
+                  ))}
+                </div>
+                <textarea value={aiObjective} onChange={e => setAiObjective(e.target.value)}
+                  placeholder="O escribe tu objetivo personalizado..." className="vively-input mb-4 h-20 resize-none" />
+                <div className="flex gap-3">
+                  <button onClick={() => setAiStep(2)} className="flex-1 rounded-2xl border border-border py-3 text-sm font-semibold text-muted-foreground">← Atrás</button>
+                  <button
+                    onClick={() => {
+                      setGenerating(true);
+                      const parts = [aiObjective, aiDifficulty !== "any" ? `dificultad ${aiDifficulty}` : "", aiPersons > 1 ? `${aiPersons} personas` : ""].filter(Boolean);
+                      const objectiveText = parts.join(", ") || "menú equilibrado semanal";
+                      generateAI.mutate({ days: aiDays, mealsPerDay: aiMealsPerDay, objective: objectiveText });
+                    }}
+                    disabled={generating}
+                    className="flex-1 btn-vively flex items-center justify-center gap-2">
+                    {generating ? <><span className="animate-spin">⏳</span> Generando...</> : <><SparklesIcon className="h-4 w-4" /> Generar</>}
+                  </button>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       )}

@@ -3703,6 +3703,32 @@ Para cada plato incluye también: lista de ingredientes con cantidades (ingredie
           ));
         return { success: true };
       }),
+    toggleComplete: protectedProcedure
+      .input(z.object({ id: z.number(), completed: z.boolean() }))
+      .mutation(async ({ ctx, input }) => {
+        const { shoppingLists } = await import("../drizzle/schema.js");
+        const { eq } = await import("drizzle-orm");
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const list = await db.getShoppingListById(input.id);
+        if (!list) throw new TRPCError({ code: "NOT_FOUND" });
+        requireOwnership(list.userId, ctx.user.id, ctx.user.role);
+        await drizzleDb.update(shoppingLists)
+          .set({ completed: input.completed, updatedAt: new Date() })
+          .where(eq(shoppingLists.id, input.id));
+        return { success: true };
+      }),
+    listCompleted: protectedProcedure.query(async ({ ctx }) => {
+      const { shoppingLists } = await import("../drizzle/schema.js");
+      const { eq, and, desc } = await import("drizzle-orm");
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) return [];
+      const lists = await drizzleDb.select().from(shoppingLists)
+        .where(and(eq(shoppingLists.userId, ctx.user.id), eq(shoppingLists.completed, true)))
+        .orderBy(desc(shoppingLists.updatedAt))
+        .limit(20);
+      return lists;
+    }),
   }),
   // ---------------------------------------------------------------------------
   // INVENTORYY

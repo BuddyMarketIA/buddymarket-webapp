@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useCallback } from "react";
 import { useLocation } from "wouter";
 import { trpc } from "@/lib/trpc";
 import { toast } from "@/components/sonner-a11y-shim";
@@ -63,6 +63,11 @@ export default function LoginPage() {
   const [rememberMe, setRememberMe] = useState(() => !!localStorage.getItem("bm_remembered_email"));
   const [acceptTerms, setAcceptTerms] = useState(false);
   const [acceptPrivacy, setAcceptPrivacy] = useState(false);
+  // SSO Terms modal state
+  const [ssoTermsOpen, setSsoTermsOpen] = useState(false);
+  const [ssoTermsAcceptTerms, setSsoTermsAcceptTerms] = useState(false);
+  const [ssoTermsAcceptPrivacy, setSsoTermsAcceptPrivacy] = useState(false);
+  const [pendingSSOAction, setPendingSSOAction] = useState<(() => void) | null>(null);
   const [forgotEmail, setForgotEmail] = useState("");
   const [otpEmail, setOtpEmail] = useState("");
   const [otpCode, setOtpCode] = useState("");
@@ -75,6 +80,18 @@ export default function LoginPage() {
   const sendOTPMut = trpc.auth.sendOTP.useMutation();
   const verifyOTPMut = trpc.auth.verifyOTP.useMutation();
   const acceptTermsMut = trpc.auth.acceptTerms.useMutation();
+
+  const handleBeforeSSO = useCallback((_provider: "google" | "apple", action: () => void) => {
+    clearLogoutFlag();
+    // In login mode, skip TyC modal (user already accepted during registration)
+    if (mode === "login") { action(); return; }
+    // In register mode, show TyC modal before proceeding
+    setSsoTermsAcceptTerms(false);
+    setSsoTermsAcceptPrivacy(false);
+    setPendingSSOAction(() => action);
+    setSsoTermsOpen(true);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode]);
 
   // Check if already logged in — single redirect path
   const meQuery = trpc.auth.me.useQuery(undefined, { retry: false, refetchOnWindowFocus: false });
@@ -269,7 +286,7 @@ export default function LoginPage() {
               </div>
 
               {/* SSO */}
-              <WebSSOButtons onSuccess={() => { clearLogoutFlag(); afterAuth(); }} onBeforeSSO={(_, action) => { clearLogoutFlag(); action(); }} />
+              <WebSSOButtons onSuccess={() => { clearLogoutFlag(); afterAuth(); }} onBeforeSSO={handleBeforeSSO} />
 
               <div className="flex items-center gap-3">
                 <div className="flex-1 h-px bg-muted" />
@@ -325,7 +342,7 @@ export default function LoginPage() {
               </div>
 
               {/* SSO */}
-              <WebSSOButtons onSuccess={() => { clearLogoutFlag(); afterAuth(); }} onBeforeSSO={(_, action) => { clearLogoutFlag(); action(); }} />
+              <WebSSOButtons onSuccess={() => { clearLogoutFlag(); afterAuth(); }} onBeforeSSO={handleBeforeSSO} />
 
               <div className="flex items-center gap-3">
                 <div className="flex-1 h-px bg-muted" />
@@ -475,6 +492,57 @@ export default function LoginPage() {
 
         </div>
       </div>
+
+      {/* ── SSO Terms Modal ── */}
+      {ssoTermsOpen && (
+        <div className="fixed inset-0 z-[200] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+          <div className="bg-background rounded-3xl shadow-2xl w-full max-w-sm p-6 space-y-5">
+            <div className="text-center">
+              <div className="w-12 h-12 rounded-2xl bg-[#F97316]/10 flex items-center justify-center mx-auto mb-3">
+                <svg className="w-6 h-6 text-[#F97316]" fill="none" stroke="currentColor" strokeWidth={2} viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+              </div>
+              <h2 className="text-lg font-bold text-foreground">Antes de continuar</h2>
+              <p className="text-sm text-muted-foreground/80 mt-1">Acepta los términos para crear tu cuenta con SSO</p>
+            </div>
+            <div className="space-y-3">
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input type="checkbox" checked={ssoTermsAcceptTerms} onChange={e => setSsoTermsAcceptTerms(e.target.checked)} className="mt-0.5 w-4 h-4 rounded accent-[#F97316] flex-shrink-0" />
+                <span className="text-[12px] text-muted-foreground leading-relaxed">
+                  Acepto los <a href="/terms" target="_blank" rel="noopener noreferrer" className="text-[#F97316] underline">Términos y Condiciones</a> <span className="text-red-500">*</span>
+                </span>
+              </label>
+              <label className="flex items-start gap-3 cursor-pointer">
+                <input type="checkbox" checked={ssoTermsAcceptPrivacy} onChange={e => setSsoTermsAcceptPrivacy(e.target.checked)} className="mt-0.5 w-4 h-4 rounded accent-[#F97316] flex-shrink-0" />
+                <span className="text-[12px] text-muted-foreground leading-relaxed">
+                  Acepto la <a href="/privacy" target="_blank" rel="noopener noreferrer" className="text-[#F97316] underline">Política de Privacidad</a> <span className="text-red-500">*</span>
+                </span>
+              </label>
+            </div>
+            <div className="flex gap-3">
+              <button
+                type="button"
+                onClick={() => { setSsoTermsOpen(false); setPendingSSOAction(null); }}
+                className="flex-1 h-11 rounded-2xl border border-border bg-muted/30 text-foreground/80 text-sm font-medium hover:bg-muted/50 transition-colors"
+              >
+                Cancelar
+              </button>
+              <button
+                type="button"
+                disabled={!ssoTermsAcceptTerms || !ssoTermsAcceptPrivacy}
+                onClick={async () => {
+                  setSsoTermsOpen(false);
+                  try { await acceptTermsMut.mutateAsync({ termsVersion: "2.0", acceptPrivacy: ssoTermsAcceptPrivacy, marketingConsent: false }); } catch { /* non-critical */ }
+                  pendingSSOAction?.();
+                  setPendingSSOAction(null);
+                }}
+                className="flex-1 h-11 rounded-2xl bg-[#F97316] hover:bg-[#ea6c0f] text-white text-sm font-semibold disabled:opacity-50 transition-colors"
+              >
+                Continuar
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

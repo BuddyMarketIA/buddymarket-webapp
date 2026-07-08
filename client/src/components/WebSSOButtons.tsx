@@ -193,18 +193,40 @@ export default function WebSSOButtons({
     }
   };
 
+  // Detect Safari / iOS WebKit (blocks third-party cookies → One Tap fails)
+  const isSafariOrIOS = /^((?!chrome|android).)*safari/i.test(navigator.userAgent)
+    || /iPad|iPhone|iPod/.test(navigator.userAgent);
+
   const _doGoogleRedirect = async () => {
     if (!GOOGLE_CLIENT_ID) {
       toast.error("Google SSO no configurado", { description: "Añade VITE_GOOGLE_CLIENT_ID en los secretos" });
       return;
     }
-    // Usar Google One Tap (más seguro, sin problemas de redirect_uri)
+    // Safari / iOS: use full OAuth redirect flow to avoid third-party cookie issues
+    if (isSafariOrIOS) {
+      const origin = window.location.origin;
+      const returnPath = window.location.pathname !== "/login" ? window.location.pathname : "/";
+      const url = `/api/auth/google/login?origin=${encodeURIComponent(origin)}&returnPath=${encodeURIComponent(returnPath)}`;
+      window.location.assign(url);
+      return;
+    }
+    // Non-Safari: use Google One Tap (popup-based, faster UX)
     if (window.google?.accounts?.id) {
       window.google.accounts.id.prompt((notification) => {
         if (notification.isNotDisplayed() || notification.isSkippedMoment()) {
-          toast.error("Google One Tap no disponible", { description: "Intenta de nuevo" });
+          // One Tap blocked (e.g. Brave, Firefox strict) → fallback to redirect
+          const origin = window.location.origin;
+          const returnPath = window.location.pathname !== "/login" ? window.location.pathname : "/";
+          const url = `/api/auth/google/login?origin=${encodeURIComponent(origin)}&returnPath=${encodeURIComponent(returnPath)}`;
+          window.location.assign(url);
         }
       });
+    } else {
+      // Script not loaded yet → redirect fallback
+      const origin = window.location.origin;
+      const returnPath = window.location.pathname !== "/login" ? window.location.pathname : "/";
+      const url = `/api/auth/google/login?origin=${encodeURIComponent(origin)}&returnPath=${encodeURIComponent(returnPath)}`;
+      window.location.assign(url);
     }
   };
 

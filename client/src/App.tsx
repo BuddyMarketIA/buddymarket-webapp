@@ -91,6 +91,7 @@ const AdminFeedback = lazyWithRetry(() => import("./pages/AdminFeedback"));
 const AdminRecipeImages = lazyWithRetry(() => import("./pages/AdminRecipeImages"));
 const AdminCampaigns = lazyWithRetry(() => import("./pages/AdminCampaigns"));
 const AdminProfileApplications = lazyWithRetry(() => import("./pages/AdminProfileApplications"));
+const AdminApiMonitor = lazyWithRetry(() => import("./pages/AdminApiMonitor"));
 const Settings = lazyWithRetry(() => import("./pages/Settings"));
 const ProfileTypeSelection = lazyWithRetry(() => import("./pages/ProfileTypeSelection"));
 const ProfileApplicationForm = lazyWithRetry(() => import("./pages/ProfileApplicationForm"));
@@ -322,6 +323,7 @@ function Router() {
       <Route path="/app/admin/recipe-images">{() => <ProtectedRoute component={AdminRecipeImages} />}</Route>
       <Route path="/app/admin/campaigns">{() => <ProtectedRoute component={AdminCampaigns} />}</Route>
       <Route path="/app/admin/profile-applications">{() => <ProtectedRoute component={AdminProfileApplications} />}</Route>
+      <Route path="/app/admin/api-monitor">{() => <ProtectedRoute component={AdminApiMonitor} />}</Route>
       <Route path="/app/settings">{() => <ProtectedRoute component={Settings} />}</Route>
       {/* Profile setup flow (post-login) */}
       <Route path="/profile-setup">{() => <ProtectedPage><ProfileTypeSelection /></ProtectedPage>}</Route>

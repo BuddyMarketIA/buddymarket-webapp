@@ -1154,6 +1154,7 @@ export default function ShoppingLists() {
   const ocrFileRef = useRef<HTMLInputElement>(null);
 
   const { data: lists, isLoading, refetch } = trpc.shoppingLists.list.useQuery();
+  const { data: completedLists, refetch: refetchCompleted } = trpc.shoppingLists.listCompleted.useQuery();
   const { data: templates, refetch: refetchTemplates } = trpc.shoppingLists.listTemplates.useQuery();
   const createFromTemplate = trpc.shoppingLists.createFromTemplate.useMutation({
     onSuccess: (data: any) => {
@@ -1194,6 +1195,10 @@ export default function ShoppingLists() {
   const duplicateList = trpc.shoppingLists.duplicate.useMutation({
     onSuccess: (data: any) => { refetch(); toast.success("Lista duplicada", { description: `"${data.name}" lista para usar` }); },
     onError: () => toast.error("Error al duplicar la lista"),
+  });
+  const toggleComplete = trpc.shoppingLists.toggleComplete.useMutation({
+    onSuccess: () => { refetch(); refetchCompleted(); },
+    onError: () => toast.error("Error al actualizar la lista"),
   });
 
   const parseFromPhoto = trpc.shoppingLists.parseFromPhoto.useMutation({
@@ -1333,6 +1338,18 @@ export default function ShoppingLists() {
                   <button
                     onClick={(e) => {
                       e.stopPropagation();
+                      toggleComplete.mutate({ id: list.id, completed: true });
+                      toast.success("Lista marcada como completada");
+                    }}
+                    disabled={toggleComplete.isPending}
+                    className="flex h-8 w-8 items-center justify-center rounded-full text-gray-300 hover:bg-green-50 hover:text-green-500 transition-colors"
+                    title="Marcar como completada"
+                  >
+                    <CheckIcon className="h-4 w-4" />
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
                       duplicateList.mutate({ id: list.id });
                     }}
                     disabled={duplicateList.isPending}
@@ -1393,6 +1410,42 @@ export default function ShoppingLists() {
                   onClick={(e) => { e.stopPropagation(); deleteTemplate.mutate({ id: tpl.id }); }}
                   className="flex h-8 w-8 items-center justify-center rounded-full text-gray-300 hover:bg-red-50 hover:text-red-400"
                   title="Eliminar plantilla"
+                >
+                  <TrashIcon className="h-4 w-4" />
+                </button>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+      {/* Completed lists history */}
+      {completedLists && completedLists.length > 0 && (
+        <div className="mt-6">
+          <h2 className="mb-3 text-sm font-bold text-foreground/80 uppercase tracking-wide">Historial de listas</h2>
+          <div className="space-y-2">
+            {completedLists.map((list: any) => (
+              <div key={list.id} className="vively-card flex items-center gap-3 opacity-70">
+                <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-2xl bg-green-50">
+                  <CheckIcon className="h-5 w-5 text-green-500" />
+                </div>
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm font-semibold text-foreground truncate">{list.name}</p>
+                  <p className="text-xs text-muted-foreground/70">
+                    Completada {new Date(list.updatedAt).toLocaleDateString("es-ES", { day: "numeric", month: "short" })}
+                  </p>
+                </div>
+                <button
+                  onClick={() => duplicateList.mutate({ id: list.id })}
+                  disabled={duplicateList.isPending}
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-gray-300 hover:bg-orange-50 hover:text-orange-400 transition-colors"
+                  title="Repetir lista"
+                >
+                  <DocumentDuplicateIcon className="h-4 w-4" />
+                </button>
+                <button
+                  onClick={() => handleDeleteList(list.id, list.name ?? "Lista")}
+                  className="flex h-8 w-8 items-center justify-center rounded-full text-gray-300 hover:bg-red-50 hover:text-red-400 transition-colors"
+                  title="Eliminar"
                 >
                   <TrashIcon className="h-4 w-4" />
                 </button>

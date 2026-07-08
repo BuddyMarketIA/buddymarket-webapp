@@ -7,12 +7,16 @@ import { Label } from "@/components/ui/label";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
-import { Plus } from "lucide-react";
+import { Plus, Lock } from "lucide-react";
 import { trpc } from "@/lib/trpc";
 import { toast } from "@/components/sonner-a11y-shim";
 import SavedMenusGrid from "@/components/SavedMenusGrid";
+import { usePlan } from "@/hooks/usePlan";
+import { UpgradeGate, UpgradeModal } from "@/components/UpgradeGate";
 
 export default function SpecialMenus() {
+  const { isFree, tier } = usePlan();
+  const [showUpgradeModal, setShowUpgradeModal] = useState(false);
   const [isCreateOpen, setIsCreateOpen] = useState(false);
   const [formData, setFormData] = useState({
     name: "",
@@ -107,6 +111,11 @@ export default function SpecialMenus() {
 
   return (
     <div className="max-w-6xl mx-auto p-4 space-y-6">
+      {/* Upgrade modal */}
+      {showUpgradeModal && (
+        <UpgradeModal feature="canAccessSpecializedMenus" currentTier={tier} onClose={() => setShowUpgradeModal(false)} />
+      )}
+
       {/* Header */}
       <div className="flex items-center justify-between flex-wrap gap-3">
         <div>
@@ -115,6 +124,12 @@ export default function SpecialMenus() {
             Crea y gestiona menús adaptados a dietas especiales, alergias y restricciones
           </p>
         </div>
+        {isFree ? (
+          <Button onClick={() => setShowUpgradeModal(true)} className="bg-orange-500 hover:bg-orange-600 text-white">
+            <Lock className="h-4 w-4 mr-2" />
+            Desbloquear menús especiales
+          </Button>
+        ) : (
         <Dialog open={isCreateOpen} onOpenChange={setIsCreateOpen}>
           <DialogTrigger asChild>
             <Button className="bg-orange-500 hover:bg-orange-600 text-white">
@@ -252,7 +267,25 @@ export default function SpecialMenus() {
             </form>
           </DialogContent>
         </Dialog>
+        )}
       </div>
+
+      {/* Free plan upgrade banner */}
+      {isFree && (
+        <div
+          className="rounded-2xl border border-orange-200 bg-orange-50 p-4 flex items-center gap-4 cursor-pointer"
+          onClick={() => setShowUpgradeModal(true)}
+        >
+          <div className="w-10 h-10 rounded-xl bg-orange-100 flex items-center justify-center flex-shrink-0">
+            <Lock className="w-5 h-5 text-orange-500" />
+          </div>
+          <div className="flex-1 min-w-0">
+            <p className="text-sm font-bold text-orange-800">Menús especiales — funcionalidad Pro</p>
+            <p className="text-xs text-orange-600/80 mt-0.5">Crea menús adaptados a dietas especiales, alergias y condiciones médicas. Actualiza tu plan para acceder.</p>
+          </div>
+          <span className="text-xs font-extrabold text-orange-500 bg-orange-100 px-3 py-1.5 rounded-full flex-shrink-0">PRO</span>
+        </div>
+      )}
 
       {/* Tabs */}
       <Tabs defaultValue="all" className="w-full">

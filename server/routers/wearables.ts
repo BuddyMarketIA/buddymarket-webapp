@@ -313,6 +313,54 @@ export const wearablesRouter = router({
     return { success: true, message: "Whoop data synced", recordsCount: (data.records || []).length };
   }),
 
+  // ─────────────────────────────────────────────────────────────────────────
+  // Metrics History (for charts)
+  // ─────────────────────────────────────────────────────────────────────────
+
+  getMetrics: protectedProcedure
+    .input(z.object({
+      days: z.number().int().min(7).max(90).default(30),
+    }))
+    .query(async ({ ctx, input }) => {
+      const drizzleDb = await db.getDb();
+      if (!drizzleDb) return { oura: [], whoop: [], userMetrics: [] };
+      const { ouraRingData, whoopData, userHealthMetrics } = await import("../../drizzle/schema");
+      const { eq, and, gte } = await import("drizzle-orm");
+      const startDate = new Date();
+      startDate.setDate(startDate.getDate() - input.days);
+      const startDateStr = startDate.toISOString().split("T")[0];
+      const [ouraRows, whoopRows, healthRows] = await Promise.all([
+        drizzleDb.select({
+          date: ouraRingData.date,
+          sleepDuration: ouraRingData.sleepDuration,
+          sleepScore: ouraRingData.sleepScore,
+          steps: ouraRingData.steps,
+          activeCalories: ouraRingData.activeCalories,
+          activityScore: ouraRingData.activityScore,
+          readinessScore: ouraRingData.readinessScore,
+          restingHeartRate: ouraRingData.restingHeartRate,
+          heartRateVariability: ouraRingData.heartRateVariability,
+        }).from(ouraRingData)
+          .where(and(eq(ouraRingData.userId, ctx.user.id), gte(ouraRingData.date, startDateStr)))
+          .orderBy(ouraRingData.date),
+        drizzleDb.select({
+          date: whoopData.date,
+          strain: whoopData.strain,
+          strainScore: whoopData.strainScore,
+          recovery: whoopData.recovery,
+          recoveryScore: whoopData.recoveryScore,
+          sleepDuration: whoopData.sleepDuration,
+          sleepScore: whoopData.sleepScore,
+        }).from(whoopData)
+          .where(and(eq(whoopData.userId, ctx.user.id), gte(whoopData.date, startDateStr)))
+          .orderBy(whoopData.date),
+        drizzleDb.select().from(userHealthMetrics)
+          .where(and(eq(userHealthMetrics.userId, ctx.user.id), gte(userHealthMetrics.recordedAt, startDateStr)))
+          .orderBy(userHealthMetrics.recordedAt),
+      ]);
+      return { oura: ouraRows, whoop: whoopRows, userMetrics: healthRows };
+    }),
+
   getSyncStatus: protectedProcedure.query(async ({ ctx }) => {
     const drizzleDb = await db.getDb();
     if (!drizzleDb) return [];
