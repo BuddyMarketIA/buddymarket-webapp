@@ -2975,6 +2975,105 @@ Responde SOLO con JSON válido con esta estructura:
         }).where(eq(usersTable.id, ctx.user.id));
         return { success: true, acceptedAt: now };
       }),
+    // ── Menu management extras ─────────────────────────────────────────────
+    renameMenu: protectedProcedure
+      .input(z.object({ id: z.number(), name: z.string().min(1).max(120) }))
+      .mutation(async ({ ctx, input }) => {
+        const menu = await db.getMenuOrganizerById(input.id);
+        if (!menu) throw new TRPCError({ code: "NOT_FOUND" });
+        requireOwnership(menu.userId, ctx.user.id, ctx.user.role);
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { menuOrganizers } = await import("../drizzle/schema.js");
+        const { eq } = await import("drizzle-orm");
+        await drizzleDb.update(menuOrganizers).set({ name: input.name }).where(eq(menuOrganizers.id, input.id));
+        return { success: true };
+      }),
+    duplicateMenu: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { menuOrganizers, menuOrganizerDayParts, menuOrganizerDayPartRecipes } = await import("../drizzle/schema.js");
+        const { eq } = await import("drizzle-orm");
+        const original = await db.getMenuOrganizerById(input.id);
+        if (!original) throw new TRPCError({ code: "NOT_FOUND" });
+        requireOwnership(original.userId, ctx.user.id, ctx.user.role);
+        const [newMenu] = await drizzleDb.insert(menuOrganizers).values({
+          userId: ctx.user.id,
+          name: `${original.name} (copia)`,
+          description: original.description ?? null,
+          durationDays: original.durationDays ?? 7,
+          coverImage: original.coverImage ?? null,
+          tags: original.tags ?? null,
+          isPublic: false,
+          isActive: false,
+          generatedByAI: original.generatedByAI ?? false,
+        });
+        const newMenuId = (newMenu as any).insertId ?? (newMenu as any).lastInsertRowid;
+        const dayParts = await drizzleDb.select().from(menuOrganizerDayParts)
+          .where(eq(menuOrganizerDayParts.menuOrganizerId, input.id));
+        for (const dp of dayParts) {
+          const [newDp] = await drizzleDb.insert(menuOrganizerDayParts).values({
+            menuOrganizerId: newMenuId,
+            dayNumber: dp.dayNumber,
+            mealType: dp.mealType,
+            label: dp.label ?? null,
+            targetCalories: dp.targetCalories ?? null,
+            targetProtein: dp.targetProtein ?? null,
+            targetCarbs: dp.targetCarbs ?? null,
+            targetFat: dp.targetFat ?? null,
+          });
+          const newDpId = (newDp as any).insertId ?? (newDp as any).lastInsertRowid;
+          const recipes = await drizzleDb.select().from(menuOrganizerDayPartRecipes)
+            .where(eq(menuOrganizerDayPartRecipes.menuOrganizerDayPartId, dp.id));
+          if (recipes.length > 0) {
+            await drizzleDb.insert(menuOrganizerDayPartRecipes).values(
+              recipes.map((r) => ({
+                menuOrganizerDayPartId: newDpId,
+                recipeId: r.recipeId,
+                servings: r.servings ?? 1,
+                notes: r.notes ?? null,
+                order: r.order ?? 0,
+              }))
+            );
+          }
+        }
+        return { success: true, newMenuId };
+      }),
+    getMenuRecipes: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ ctx, input }) => {
+        const drizzleDb = await db.getDb();
+        if (!drizzleDb) throw new TRPCError({ code: "INTERNAL_SERVER_ERROR" });
+        const { menuOrganizerDayParts, menuOrganizerDayPartRecipes, recipes } = await import("../drizzle/schema.js");
+        const { eq } = await import("drizzle-orm");
+        const menu = await db.getMenuOrganizerById(input.id);
+        if (!menu) throw new TRPCError({ code: "NOT_FOUND" });
+        requireOwnership(menu.userId, ctx.user.id, ctx.user.role);
+        const rows = await drizzleDb
+          .select({
+            dayNumber: menuOrganizerDayParts.dayNumber,
+            mealType: menuOrganizerDayParts.mealType,
+            recipeId: menuOrganizerDayPartRecipes.recipeId,
+            servings: menuOrganizerDayPartRecipes.servings,
+            order: menuOrganizerDayPartRecipes.order,
+            recipeName: recipes.name,
+            recipeImage: recipes.image,
+            recipeCalories: recipes.calories,
+            recipeProtein: recipes.protein,
+            recipeCarbs: recipes.carbs,
+            recipeFat: recipes.fat,
+            recipePrepTime: recipes.prepTime,
+            recipeCookTime: recipes.cookTime,
+          })
+          .from(menuOrganizerDayParts)
+          .innerJoin(menuOrganizerDayPartRecipes, eq(menuOrganizerDayPartRecipes.menuOrganizerDayPartId, menuOrganizerDayParts.id))
+          .innerJoin(recipes, eq(recipes.id, menuOrganizerDayPartRecipes.recipeId))
+          .where(eq(menuOrganizerDayParts.menuOrganizerId, input.id))
+          .orderBy(menuOrganizerDayParts.dayNumber, menuOrganizerDayParts.mealType);
+        return { menu, recipes: rows };
+      }),
     getTermsStatus: protectedProcedure.query(async ({ ctx }) => {
       const drizzleDb = await db.getDb();
       if (!drizzleDb) return null;

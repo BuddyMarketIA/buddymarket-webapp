@@ -18,6 +18,8 @@ import {
   CheckCircleIcon,
   ClockIcon,
   PencilSquareIcon,
+  BookOpenIcon,
+  XMarkIcon,
 } from "@heroicons/react/24/outline";
 import { CheckCircleIcon as CheckCircleSolid } from "@heroicons/react/24/solid";
 
@@ -274,12 +276,103 @@ function AIGenerateModal({ onClose, onDone }: { onClose: () => void; onDone: () 
   );
 }
 
+// ─── View Recipes Modal ─────────────────────────────────────────────────────
+function ViewRecipesModal({ menuId, menuName, onClose }: { menuId: number; menuName: string; onClose: () => void }) {
+  const { data, isLoading } = trpc.menus.getMenuRecipes.useQuery({ id: menuId });
+  const recipes = (data as any)?.recipes ?? [];
+
+  // Group by dayNumber
+  const byDay: Record<number, any[]> = {};
+  for (const r of recipes) {
+    const d = r.dayNumber ?? 1;
+    if (!byDay[d]) byDay[d] = [];
+    byDay[d].push(r);
+  }
+  const days = Object.keys(byDay).map(Number).sort((a, b) => a - b);
+
+  const MEAL_LABELS: Record<string, string> = {
+    breakfast: "Desayuno",
+    lunch: "Comida",
+    dinner: "Cena",
+    snack: "Merienda",
+    snack_morning: "Media mañana",
+    snack_afternoon: "Merienda",
+  };
+
+  return (
+    <div className="modal-overlay" onClick={e => { if (e.target === e.currentTarget) onClose(); }}>
+      <div className="w-full max-w-lg max-h-[85vh] flex flex-col rounded-3xl bg-background shadow-2xl animate-slide-up" onClick={e => e.stopPropagation()}>
+        {/* Header */}
+        <div className="flex items-center justify-between px-5 py-4 border-b border-border shrink-0">
+          <div className="flex items-center gap-2">
+            <BookOpenIcon className="h-5 w-5 text-[#F97316]" />
+            <div>
+              <h3 className="text-base font-bold text-foreground leading-tight">{menuName}</h3>
+              <p className="text-xs text-muted-foreground">Recetas del menú</p>
+            </div>
+          </div>
+          <button onClick={onClose} className="rounded-full p-1.5 hover:bg-muted transition-colors">
+            <XMarkIcon className="h-5 w-5 text-muted-foreground" />
+          </button>
+        </div>
+
+        {/* Content */}
+        <div className="overflow-y-auto flex-1 p-4 space-y-4">
+          {isLoading && (
+            <div className="flex items-center justify-center py-12">
+              <div className="animate-spin h-6 w-6 border-2 border-[#F97316] border-t-transparent rounded-full" />
+            </div>
+          )}
+          {!isLoading && recipes.length === 0 && (
+            <div className="text-center py-12">
+              <BookOpenIcon className="h-10 w-10 text-muted-foreground/40 mx-auto mb-3" />
+              <p className="text-sm text-muted-foreground">Este menú no tiene recetas aún</p>
+              <p className="text-xs text-muted-foreground/60 mt-1">Edita el menú para añadir recetas</p>
+            </div>
+          )}
+          {!isLoading && days.map(day => (
+            <div key={day}>
+              <h4 className="text-xs font-bold text-muted-foreground uppercase tracking-wider mb-2">Día {day}</h4>
+              <div className="space-y-2">
+                {byDay[day].map((r: any, i: number) => (
+                  <div key={i} className="flex items-center gap-3 rounded-2xl bg-muted/30 p-3">
+                    {r.recipeImage ? (
+                      <img src={r.recipeImage} alt={r.recipeName} className="h-12 w-12 rounded-xl object-cover shrink-0" />
+                    ) : (
+                      <div className="h-12 w-12 rounded-xl bg-orange-100 flex items-center justify-center shrink-0">
+                        <span className="text-xl">🍽️</span>
+                      </div>
+                    )}
+                    <div className="flex-1 min-w-0">
+                      <p className="text-sm font-semibold text-foreground truncate">{r.recipeName || "Receta"}</p>
+                      <p className="text-xs text-muted-foreground">{MEAL_LABELS[r.mealType] || r.mealType}</p>
+                    </div>
+                    {r.recipeCalories && (
+                      <span className="text-xs font-semibold text-[#F97316] shrink-0">{r.recipeCalories} kcal</span>
+                    )}
+                  </div>
+                ))}
+              </div>
+            </div>
+          ))}
+        </div>
+
+        {/* Footer */}
+        <div className="px-5 py-4 border-t border-border shrink-0">
+          <button onClick={onClose} className="w-full btn-vively">Cerrar</button>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 // ─── Menu Card ────────────────────────────────────────────────────────────────
 function MenuCard({ menu, onRefresh }: { menu: MenuOrganizer; onRefresh: () => void }) {
   const [, navigate] = useLocation();
   const [menuOpen, setMenuOpen] = useState(false);
   const [showRename, setShowRename] = useState(false);
   const [showChangeDate, setShowChangeDate] = useState(false);
+  const [showRecipes, setShowRecipes] = useState(false);
   const utils = trpc.useUtils();
 
   const goalKey = menu.goal || menu.objective || "";
@@ -451,6 +544,12 @@ function MenuCard({ menu, onRefresh }: { menu: MenuOrganizer; onRefresh: () => v
             </button>
             <div className="grid grid-cols-2">
               <button
+                onClick={() => { setMenuOpen(false); setShowRecipes(true); }}
+                className="col-span-2 flex items-center gap-2 px-4 py-3 text-xs font-medium hover:bg-muted transition-colors border-b border-border"
+              >
+                <BookOpenIcon className="h-3.5 w-3.5 text-muted-foreground" /> Ver recetas del menú
+              </button>
+              <button
                 onClick={() => { setMenuOpen(false); setShowRename(true); }}
                 className="flex items-center gap-2 px-4 py-3 text-xs font-medium hover:bg-muted transition-colors border-r border-border"
               >
@@ -488,6 +587,7 @@ function MenuCard({ menu, onRefresh }: { menu: MenuOrganizer; onRefresh: () => v
 
       {showRename && <RenameModal menu={menu} onClose={() => setShowRename(false)} onDone={onRefresh} />}
       {showChangeDate && <ChangeDateModal menu={menu} onClose={() => setShowChangeDate(false)} onDone={onRefresh} />}
+      {showRecipes && <ViewRecipesModal menuId={menu.id} menuName={menu.name} onClose={() => setShowRecipes(false)} />}
     </>
   );
 }
