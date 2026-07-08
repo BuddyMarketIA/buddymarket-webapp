@@ -1787,11 +1787,22 @@ Devuelve SOLO JSON válido con esta estructura:
       )
       .mutation(async ({ ctx, input }) => {
         try {
+          // CRITICAL SAFETY: Load user allergies and dietary restrictions
+          const [allergies, restrictions, profile] = await Promise.all([
+            db.getUserAllergies(ctx.user.id),
+            db.getUserDietRestrictions(ctx.user.id),
+            db.getUserProfile(ctx.user.id),
+          ]);
+          const recipeForbiddenBlock = buildForbiddenIngredientsBlock({
+            allergies,
+            restrictions,
+            dislikedIngredients: profile?.dislikedIngredients,
+          });
           const response = await invokeLLM({
             messages: [
               {
                 role: "system",
-                content: `Eres un chef experto en nutrición. Genera recetas saludables y deliciosas en formato JSON. 
+                content: `Eres un chef experto en nutrición. Genera recetas saludables y deliciosas en formato JSON.${recipeForbiddenBlock ? `\n\n${recipeForbiddenBlock}` : ""}
               Responde SOLO con JSON válido con esta estructura:
               {
                 "name": "nombre de la receta",
@@ -1828,7 +1839,7 @@ Devuelve SOLO JSON válido con esta estructura:
         }
       }),
 
-    // ── Generar imagen de receta con IA (auto, para recetas sin foto) ──────────
+        // ── Generar imagen de receta con IA (auto, para recetas sin foto) ──────────
     generateAIImage: protectedProcedure
       .input(z.object({ recipeId: z.number() }))
       .mutation(async ({ input }) => {

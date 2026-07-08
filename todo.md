@@ -1608,14 +1608,14 @@
 - [ ] Menú inicial no obligatorio en BuddySetup
 - [ ] Datos de perfil unificados en una sola fuente de verdad (BD)
 
-- [ ] CRÍTICO: Alergias/restricciones no se respetan en recetas y menús generados por IA
+- [x] CRÍTICO: Alergias/restricciones no se respetan en recetas y menús generados por IA — añadido buildForbiddenIngredientsBlock a recipes.generateWithAI (menús ya lo tenía)
 
 ## Sprint Monetización + Bugs + UX (Abril 2026)
 
 ### Bugs críticos
-- [ ] Bug: lista de la compra desde menú da 404 - corregir ruta/endpoint
-- [ ] Bug: filtros de recetas muestran nombres internos de BD (mealTime, cuisineType, cookingMethod)
-- [ ] Bug: opciones de filtro de recetas salen en inglés (breakfast, midMorning) en lugar del idioma seleccionado
+- [x] Bug: lista de la compra desde menú da 404 - corregir ruta/endpoint (endpoint generateFromMenu existe y funciona; ActiveMenu.tsx ya tiene fallback a /app/shopping-lists)
+- [x] Bug: filtros de recetas muestran nombres internos de BD (mealTime, cuisineType, cookingMethod)
+- [x] Bug: opciones de filtro de recetas salen en inglés (breakfast, midMorning) en lugar del idioma seleccionado
 - [x] Bug: botones "Ver menú / Usar menú / carrito" descentrados en cards de biblioteca de menús
 
 ### Estrategia de monetización (hacer como app de 500M)
@@ -2252,20 +2252,20 @@
 - [ ] Restablecimiento de contraseña: procedimiento tRPC auth.resetPassword (verifica token, actualiza contraseña, invalida token)
 - [ ] Restablecimiento de contraseña: flujo en LoginPage modo "forgot" ya existente conectado al backend
 - [ ] Restablecimiento de contraseña: página /reset-password?token=xxx para introducir nueva contraseña
-- [ ] Bug: nav.metrics no se traduce correctamente en el sidebar — mostrar "Mis Métricas" en lugar de la clave raw
-- [ ] Bug: tarjetas BuddyExperts no muestran el nombre del experto ni la descripción/bio
-- [ ] Bug crítico: al cerrar sesión, LoginPage muestra el formulario 1 segundo y luego redirige automáticamente al dashboard porque auth.me devuelve el usuario antes de que la cookie expire
+- [x] Bug: nav.metrics no se traduce correctamente en el sidebar — mostrar "Mis Métricas" en lugar de la clave raw — traducciones añadidas a es.json
+- [x] Bug: tarjetas BuddyExperts no muestran el nombre del experto ni la descripción/bio — añadido fallback a user.name/email
+- [x] Bug crítico: al cerrar sesión, LoginPage muestra el formulario 1 segundo y luego redirige automáticamente al dashboard porque auth.me devuelve el usuario antes de que la cookie expire — corregido con bm_just_logged_out flag
 - [x] Bug crítico producción: servidor devuelve HTML en lugar de JSON para llamadas tRPC en buddymarketapp.com — corregido fallback SPA en vite.ts para excluir rutas /api/*
 - [x] Bug crítico: se pueden crear múltiples cuentas con el mismo email — añadir constraint UNIQUE en BD y validación en registro
 - [x] Tarea: fusionar/eliminar cuentas duplicadas de luismariaccc@gmail.com en producción — eliminadas IDs 2732 y 2865
 - [x] Bug persistente: error HTML en lugar de JSON en producción — Service Worker v5 tenía caché HTML de respuestas API. Corregido con SW v6: limpia todas las cachés antiguas y excluye rutas de auth del caché
-- [ ] Bug crítico: cerrar sesión vuelve a abrir la cuenta automáticamente — el logout no destruye la sesión correctamente y LoginPage redirige al usuario de vuelta
+- [x] Bug crítico: cerrar sesión vuelve a abrir la cuenta automáticamente — el logout no destruye la sesión correctamente y LoginPage redirige al usuario de vuelta — corregido
 - [x] Tarea: convertir iabuddymarket@gmail.com a tipo BuddyExpert en la BD de producción — completado, ID 4335 ahora accountType=buddyexpert
 
 ## Fixes Apr 15 (sesión 2)
 - [x] Bug crítico: logout vuelve a abrir la sesión — corregido con sessionStorage flag bm_just_logged_out + window.location.replace + invalidate completo del caché tRPC en useAuth.ts
 - [x] LoginPage: lee flag sessionStorage bm_just_logged_out para bloquear auto-redirección post-logout, lo limpia tras 2 segundos
-- [ ] Bug: nav.metrics y nav.connectedHealth no se muestran en sidebar — pendiente verificar AppLayout.tsx
+- [x] Bug: nav.metrics y nav.connectedHealth no se muestran en sidebar — pendiente verificar AppLayout.tsx — traducciones añadidas
 - [ ] SSO Google: iabuddymarket@gmail.com no aparece como BuddyExpert al hacer login — pendiente verificar server/routers/auth.ts
 
 ## Bugs reportados Apr 15 (sesión 3)
