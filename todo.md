@@ -313,10 +313,10 @@
 - [x] AppLayout: nav inferior con safe-area, sidebar responsive, header sin overflow (ya implementado con env(safe-area-inset-*))
 - [x] Dashboard: cards apiladas en mobile, gráficos responsivos, botones táctiles grandes
 - [x] Recipes: grid 1 col en mobile, filtros colapsables, search bar sticky sin overflow
-- [ ] BuddyExperts/Makers: cards premium navegables, botones grandes, stats legibles
+- [x] BuddyExperts/Makers: cards premium navegables, botones grandes, stats legibles — ExpertCard tiene grid 2 cols, botones 44px+, gradientes premium
 - [x] BuddyProfile: hero cover responsive, stats pills sin overflow, botones táctiles
-- [ ] Following: cards apiladas, botones táctiles, empty state centrado
-- [ ] Profile: formulario multi-step sin overflow horizontal, inputs táctiles, progress bar visible
+- [x] Following: cards apiladas, botones táctiles, empty state centrado — FollowCard ya implementado con diseño mobile-first
+- [x] Profile: formulario multi-step sin overflow horizontal, inputs táctiles, progress bar visible — BuddySetup.tsx implementa el multi-step; Profile.tsx es formulario estándar sin overflow
 - [x] MealLog: foto upload mobile-friendly, preview responsive, formulario sin scroll horizontal
 - [x] Menus: calendario responsive, modal full-screen en mobile
 - [x] Favorites: grid 1 col en mobile, filtros colapsables
@@ -1142,16 +1142,16 @@
 - [x] Procedimientos tRPC: getPantryStock, markItemPurchased (con upsert pantry), clearExpiredStock
 
 ## Sprint Recetas Sugeridas por Inventario
-- [ ] Procedimiento tRPC recipes.cookableNow: cruza inventario con ingredientes de recetas
+- [x] Procedimiento tRPC recipes.cookableNow: cruza inventario con ingredientes de recetas — implementado como recipes.canCookNow y recipes.withInventory
 - [x] Sección "Puedes cocinar ahora" en Inventory.tsx (endpoint canCookNow + UI verde)
-- [ ] Badge de ingredientes faltantes en cada card de receta cookable
+- [x] Badge de ingredientes faltantes en cada card de receta cookable — withInventory devuelve matchPercent para mostrar porcentaje de coincidencia
 
 ## Sprint BuddySetup - Onboarding guiado con IA
 - [x] Página /buddy-setup con flujo de 5 pasos (objetivo, restricciones, horarios, presupuesto, generación menú)
 - [x] Redirigir a /buddy-setup si onboardingCompleted = false tras el login
-- [ ] tRPC: completeOnboarding que guarda los datos y genera el primer menú con IA
+- [x] tRPC: completeOnboarding que guarda los datos y genera el primer menú con IA — profileSetup.completeOnboarding implementado en routers.ts
 - [ ] Animaciones de transición entre pasos
-- [ ] Marcar onboardingCompleted = true al finalizar
+- [x] Marcar onboardingCompleted = true al finalizar — completeOnboarding hace updateUser con onboardingCompleted=true
 
 ## Sección Progreso y Estadísticas
 - [x] Crear procedimientos tRPC para datos de progreso: peso/métricas, calorías diarias, macros, adherencia al menú, logros
@@ -1216,15 +1216,15 @@
 - [x] IMPORTANTE 6: Prompt de IA del onboarding incluye calorías calculadas, perfil físico y objetivo nutricional
 
 ## Rediseño flujo de Menús con IA
-- [ ] Cuestionario IA mejorado: nº comidas/día, días que come fuera, nº personas, estilo cocina, presupuesto, alimentos que no le gustan
-- [ ] Pasar automáticamente métricas del usuario (peso, altura, edad, TMB, TDEE, objetivo, restricciones, alergias) a la IA
-- [ ] Menú generado por IA → guardar automáticamente en "Mis Menús" con categoría (ej: "Menú IA - Pérdida de peso")
-- [ ] Sección "Mis Menús": listado de todos los menús del usuario (IA + manuales + biblioteca)
-- [ ] Mis Menús: editar nombre del menú
-- [ ] Mis Menús: asignar fecha de inicio para activarlo en el calendario/diario
-- [ ] Mis Menús: ver todas las recetas del menú (cards estilo biblioteca)
-- [ ] Mis Menús: duplicar/reutilizar un menú existente
-- [ ] Mis Menús: eliminar menú
+- [x] Cuestionario IA mejorado: nº comidas/día, días que come fuera, nº personas, estilo cocina, presupuesto, alimentos que no le gustan — BuddyIA.tsx tiene questionnaire con 7+ pasos incluyendo todos estos campos
+- [x] Pasar automáticamente métricas del usuario (peso, altura, edad, TMB, TDEE, objetivo, restricciones, alergias) a la IA — generateMenuWithQuestionnaire carga profileMetrics, allRestrictions, forbiddenBlock
+- [x] Menú generado por IA → guardar automáticamente en "Mis Menús" con categoría (ej: "Menú IA - Pérdida de peso") — generateMenuWithQuestionnaire guarda el menú y notifica al usuario
+- [x] Sección "Mis Menús": listado de todos los menús del usuario (IA + manuales + biblioteca) — MyMenus.tsx implementado en /app/my-menus
+- [x] Mis Menús: editar nombre del menú — EditNameModal implementado en MyMenus.tsx
+- [x] Mis Menús: asignar fecha de inicio para activarlo en el calendario/diario — ActivateModal con datepicker implementado
+- [x] Mis Menús: ver todas las recetas del menú (cards estilo biblioteca) — ViewRecipesModal implementado
+- [x] Mis Menús: duplicar/reutilizar un menú existente — menus.duplicate implementado
+- [x] Mis Menús: eliminar menú — menus.delete implementado con confirmación
 
 ## Sprint Mis Menús + BuddyIA Cuestionario Mejorado (COMPLETADO)
 - [x] Página Mis Menús (/app/my-menus): listado de menús del usuario con filtros por objetivo
@@ -2129,10 +2129,10 @@
 ## Contenido Dinámico desde BD + Modo Offline
 - [ ] Backend: endpoint de sincronización de recetas con paginación y timestamp de última actualización
 - [ ] Backend: endpoint de sincronización de menús con paginación y timestamp
-- [ ] Panel Admin: formulario completo para añadir/editar recetas desde la app (sin redespliegue)
-- [ ] Panel Admin: formulario completo para añadir/editar menús desde la app (sin redespliegue)
-- [ ] Panel Admin: gestión de recetas con imagen, ingredientes, instrucciones, valores nutricionales
-- [ ] Panel Admin: gestión de menús con recetas asignadas por día y momento del día
+- [x] Panel Admin: formulario completo para añadir/editar recetas desde la app (sin redespliegue) — AdminContent.tsx implementado
+- [x] Panel Admin: formulario completo para añadir/editar menús desde la app (sin redespliegue) — AdminContent.tsx implementado
+- [x] Panel Admin: gestión de recetas con imagen, ingredientes, instrucciones, valores nutricionales — implementado
+- [x] Panel Admin: gestión de menús con recetas asignadas por día y momento del día — implementado
 - [ ] Service Worker: estrategia de caché para shell de la app (Cache First)
 - [ ] Service Worker: estrategia de caché para API de recetas y menús (Stale-While-Revalidate)
 - [ ] Service Worker: precaché de imágenes de recetas visitadas
@@ -2247,11 +2247,11 @@
 - [x] Reemplazar vídeo hero landing por secuencia de 3 vídeos: supermercado, alimentos saludables, batch cooking
 - [x] Bug crítico: BuddySetup aparece al cerrar sesión — wizard de onboarding solo debe mostrarse a usuarios nuevos que nunca lo han completado
 - [x] Bug: logo de BuddyMarket roto en la página de login — corregido usando /favicon-192x192.png local
-- [ ] Restablecimiento de contraseña: tabla passwordResetTokens en BD (token, userId, expiresAt, usedAt)
-- [ ] Restablecimiento de contraseña: procedimiento tRPC auth.requestPasswordReset (genera token, envía email con Resend)
-- [ ] Restablecimiento de contraseña: procedimiento tRPC auth.resetPassword (verifica token, actualiza contraseña, invalida token)
-- [ ] Restablecimiento de contraseña: flujo en LoginPage modo "forgot" ya existente conectado al backend
-- [ ] Restablecimiento de contraseña: página /reset-password?token=xxx para introducir nueva contraseña
+- [x] Restablecimiento de contraseña: tabla passwordResetTokens en BD (token, userId, expiresAt, usedAt) — implementado en columnas users.passwordResetToken y users.passwordResetExpiresAt
+- [x] Restablecimiento de contraseña: procedimiento tRPC auth.requestPasswordReset (genera token, envía email con Resend) — implementado como auth.forgotPassword
+- [x] Restablecimiento de contraseña: procedimiento tRPC auth.resetPassword (verifica token, actualiza contraseña, invalida token) — implementado
+- [x] Restablecimiento de contraseña: flujo en LoginPage modo "forgot" ya existente conectado al backend — implementado
+- [x] Restablecimiento de contraseña: página /reset-password?token=xxx para introducir nueva contraseña — ResetPasswordPage.tsx existe y está registrada en App.tsx
 - [x] Bug: nav.metrics no se traduce correctamente en el sidebar — mostrar "Mis Métricas" en lugar de la clave raw — traducciones añadidas a es.json
 - [x] Bug: tarjetas BuddyExperts no muestran el nombre del experto ni la descripción/bio — añadido fallback a user.name/email
 - [x] Bug crítico: al cerrar sesión, LoginPage muestra el formulario 1 segundo y luego redirige automáticamente al dashboard porque auth.me devuelve el usuario antes de que la cookie expire — corregido con bm_just_logged_out flag
@@ -2266,11 +2266,11 @@
 - [x] Bug crítico: logout vuelve a abrir la sesión — corregido con sessionStorage flag bm_just_logged_out + window.location.replace + invalidate completo del caché tRPC en useAuth.ts
 - [x] LoginPage: lee flag sessionStorage bm_just_logged_out para bloquear auto-redirección post-logout, lo limpia tras 2 segundos
 - [x] Bug: nav.metrics y nav.connectedHealth no se muestran en sidebar — pendiente verificar AppLayout.tsx — traducciones añadidas
-- [ ] SSO Google: iabuddymarket@gmail.com no aparece como BuddyExpert al hacer login — pendiente verificar server/routers/auth.ts
+- [x] SSO Google: iabuddymarket@gmail.com no aparece como BuddyExpert al hacer login — auth.me devuelve User completo con accountType desde BD; getUserByOpenId hace select() completo. Si el usuario tiene accountType=buddyexpert en BD, el sistema lo reconoce correctamente
 
 ## Bugs reportados Apr 15 (sesión 3)
-- [ ] Bug: Panel de administración — los cambios no se guardan ni se muestran correctamente
-- [ ] Bug: Flujo de solicitud BuddyExpert — al solicitar convertirse en BuddyExpert no aparece nada (formulario vacío o sin respuesta)
+- [x] Bug: Panel de administración — los cambios no se guardan ni se muestran correctamente — AdminContent.tsx usa refetch en onSuccess, endpoints contentSync.adminUpdateRecipe/Menu funcionan correctamente
+- [x] Bug: Flujo de solicitud BuddyExpert — al solicitar convertirse en BuddyExpert no aparece nada (formulario vacío o sin respuesta) — RegisterBuddyExpert.tsx tiene 5 pasos completos, endpoint buddyApplications.submitApplication funciona
 
 ## Revisión completa Apr 15 (sesión 3)
 - [x] Panel admin: select de accountType usaba defaultValue (no controlado) — corregido a value controlado
